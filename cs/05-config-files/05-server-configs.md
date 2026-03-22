@@ -1,47 +1,49 @@
-# Chapter 5.5: Server Configuration Files
+# Kapitola 5.5: Konfigurační soubory serveru
 
-[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
+[Domů](../../README.md) | [<< Předchozí: Formát ImageSet](04-imagesets.md) | **Konfigurační soubory serveru** | [Další: Konfigurace výbavy při spawnu >>](06-spawning-gear.md)
 
 ---
+
+> **Shrnutí:** Servery DayZ se konfigurují prostřednictvím souborů XML, JSON a skriptů ve složce mise (např. `mpmissions/dayzOffline.chernarusplus/`). Tyto soubory řídí spawn předmětů, chování ekonomiky, herní pravidla a identitu serveru. Jejich pochopení je nezbytné pro přidávání vlastních předmětů do lootové ekonomiky, ladění parametrů serveru nebo vytváření vlastní mise.
 
 ---
 
 ## Obsah
 
-- [Prehled](#overview)
-- [init.c --- Mission Entry Point](#initc--mission-entry-point)
-- [types.xml --- Item Spawn Definitions](#typesxml--item-spawn-definitions)
-- [cfgspawnabletypes.xml --- Attachments and Cargo](#cfgspawnabletypesxml--attachments-and-cargo)
-- [cfgrandompresets.xml --- Reusable Loot Pools](#cfgrandompresetsxml--reusable-loot-pools)
-- [globals.xml --- Economy Parametry](#globalsxml--economy-parameters)
-- [cfggameplay.json --- Gameplay Settings](#cfggameplayjson--gameplay-settings)
-- [serverDZ.cfg --- Server Settings](#serverdzcfg--server-settings)
-- [How Mods Interact with the Economy](#how-mods-interact-with-the-economy)
-- [Caste chyby](#common-mistakes)
+- [Přehled](#přehled)
+- [init.c --- Vstupní bod mise](#initc----vstupní-bod-mise)
+- [types.xml --- Definice spawnu předmětů](#typesxml----definice-spawnu-předmětů)
+- [cfgspawnabletypes.xml --- Příslušenství a náklad](#cfgspawnabletypesxml----příslušenství-a-náklad)
+- [cfgrandompresets.xml --- Znovupoužitelné lootové pooly](#cfgrandompresetsxml----znovupoužitelné-lootové-pooly)
+- [globals.xml --- Parametry ekonomiky](#globalsxml----parametry-ekonomiky)
+- [cfggameplay.json --- Nastavení herních mechanik](#cfggameplayjson----nastavení-herních-mechanik)
+- [serverDZ.cfg --- Nastavení serveru](#serverdzcfg----nastavení-serveru)
+- [Jak mody interagují s ekonomikou](#jak-mody-interagují-s-ekonomikou)
+- [Časté chyby](#časté-chyby)
 
 ---
 
-## Prehled
+## Přehled
 
-Every DayZ server loads its configuration from a **mission folder**. The Central Economy (CE) files define what items spawn, where, and for how long. The server executable itself is configured through `serverDZ.cfg`, which lives alongside the executable.
+Každý server DayZ načítá svou konfiguraci ze **složky mise**. Soubory Centrální ekonomiky (CE) definují, jaké předměty se spawnují, kde a jak dlouho. Samotný spustitelný soubor serveru se konfiguruje prostřednictvím `serverDZ.cfg`, který se nachází vedle spustitelného souboru.
 
-| File | Ucel |
-|------|---------|
-| `init.c` | Mission entry point --- Hive init, date/time, spawn loadout |
-| `db/types.xml` | Item spawn definitions: quantities, lifetimes, locations |
-| `cfgspawnabletypes.xml` | Pre-attached items and cargo on spawned entities |
-| `cfgrandompresets.xml` | Reusable item pools for cfgspawnabletypes |
-| `db/globals.xml` | Global economy parameters: max counts, cleanup timers |
-| `cfggameplay.json` | Gameplay tuning: stamina, base building, UI |
-| `cfgeconomycore.xml` | Root class registration and CE logging |
-| `cfglimitsdefinition.xml` | Valid category, usage, and value tag definitions |
-| `serverDZ.cfg` | Server name, password, max players, mod loading |
+| Soubor | Účel |
+|--------|------|
+| `init.c` | Vstupní bod mise --- inicializace Hive, datum/čas, výbava při spawnu |
+| `db/types.xml` | Definice spawnu předmětů: množství, životnosti, lokace |
+| `cfgspawnabletypes.xml` | Předem připojené předměty a náklad na spawnutých entitách |
+| `cfgrandompresets.xml` | Znovupoužitelné pooly předmětů pro cfgspawnabletypes |
+| `db/globals.xml` | Globální parametry ekonomiky: maximální počty, časy úklidu |
+| `cfggameplay.json` | Ladění herních mechanik: stamina, stavění základen, UI |
+| `cfgeconomycore.xml` | Registrace kořenových tříd a logování CE |
+| `cfglimitsdefinition.xml` | Definice platných tagů kategorie, použití a hodnoty |
+| `serverDZ.cfg` | Název serveru, heslo, maximální počet hráčů, načítání modů |
 
 ---
 
-## init.c --- Mission Entry Point
+## init.c --- Vstupní bod mise
 
-The `init.c` script is the first thing the server executes. It initializes the Central Economy and creates the mission instance.
+Skript `init.c` je první věc, kterou server spustí. Inicializuje Centrální ekonomiku a vytváří instanci mise.
 
 ```c
 void main()
@@ -82,15 +84,15 @@ Mission CreateCustomMission(string path)
 }
 ```
 
-The `Hive` manages the CE database. Without `CreateHive()`, no items spawn and persistence is disabled. `CreateCharacter` creates the player entity at spawn, and `StartingEquipSetup` defines the items a fresh character receives. Other useful `MissionServer` overrides include `OnInit()`, `OnUpdate()`, `InvokeOnConnect()`, and `InvokeOnDisconnect()`.
+`Hive` spravuje databázi CE. Bez `CreateHive()` se nespawnují žádné předměty a perzistence je deaktivována. `CreateCharacter` vytváří entitu hráče při spawnu a `StartingEquipSetup` definuje předměty, které čerstvá postava obdrží. Další užitečné přepsání `MissionServer` zahrnují `OnInit()`, `OnUpdate()`, `InvokeOnConnect()` a `InvokeOnDisconnect()`.
 
 ---
 
-## types.xml --- Item Spawn Definitions
+## types.xml --- Definice spawnu předmětů
 
-Located at `db/types.xml`, this file is the heart of the CE. Every item that can spawn must have an entry here.
+Nachází se v `db/types.xml`, tento soubor je srdcem CE. Každý předmět, který se může spawnovat, musí mít zde záznam.
 
-### Complete Entry
+### Kompletní záznam
 
 ```xml
 <type name="AK74">
@@ -110,51 +112,51 @@ Located at `db/types.xml`, this file is the heart of the CE. Every item that can
 </type>
 ```
 
-### Pole Reference
+### Reference polí
 
 | Pole | Popis |
-|-------|-------------|
-| `nominal` | Target count on the map. CE spawns items until this is reached |
-| `min` | Minimum count before CE triggers restocking |
-| `lifetime` | Seconds an item persists on the ground before despawning |
-| `restock` | Minimum seconds between restock attempts (0 = immediate) |
-| `quantmin/quantmax` | Fill percentage for items with quantity (magazines, bottles). Use `-1` for items without quantity |
-| `cost` | CE priority weight (higher = prioritized). Most items use `100` |
+|------|-------|
+| `nominal` | Cílový počet na mapě. CE spawnuje předměty, dokud není dosažen |
+| `min` | Minimální počet před spuštěním doplňování ze strany CE |
+| `lifetime` | Sekundy, po které předmět přetrvává na zemi před despawnem |
+| `restock` | Minimální sekundy mezi pokusy o doplnění (0 = okamžité) |
+| `quantmin/quantmax` | Procento naplnění pro předměty s množstvím (zásobníky, lahve). Použijte `-1` pro předměty bez množství |
+| `cost` | Váha priority CE (vyšší = prioritizováno). Většina předmětů používá `100` |
 
-### Priznaks
+### Příznaky
 
-| Priznak | Ucel |
-|------|---------|
-| `count_in_cargo` | Count items inside containers toward nominal |
-| `count_in_hoarder` | Count items in stashes/tents/barrels toward nominal |
-| `count_in_map` | Count items on the ground toward nominal |
-| `count_in_player` | Count items in player inventory toward nominal |
-| `crafted` | Item is crafted only, not naturally spawned |
-| `deloot` | Dynamic Event loot (heli crashes, etc.) |
+| Příznak | Účel |
+|---------|------|
+| `count_in_cargo` | Počítat předměty uvnitř kontejnerů směrem k nominal |
+| `count_in_hoarder` | Počítat předměty ve skrýších/stanech/sudech směrem k nominal |
+| `count_in_map` | Počítat předměty na zemi směrem k nominal |
+| `count_in_player` | Počítat předměty v inventáři hráče směrem k nominal |
+| `crafted` | Předmět se pouze vyrábí, nespawnuje se přirozeně |
+| `deloot` | Loot z dynamických událostí (havárie vrtulníků atd.) |
 
-### Kategorie, Pouziti, and Hodnota Tags
+### Tagy kategorie, použití a hodnoty
 
-These tags control **where** items spawn:
+Tyto tagy řídí **kde** se předměty spawnují:
 
-- **`category`** --- Item type. Vanilla: `tools`, `containers`, `clothes`, `food`, `weapons`, `books`, `explosives`, `lootdispatch`.
-- **`usage`** --- Building types. Vanilla: `Military`, `Police`, `Medic`, `Firefighter`, `Industrial`, `Farm`, `Coast`, `Town`, `Village`, `Hunting`, `Office`, `School`, `Prison`, `ContaminatedArea`, `Historical`.
-- **`value`** --- Map tier zones. Vanilla: `Tier1` (coast), `Tier2` (inland), `Tier3` (military), `Tier4` (deep military), `Unique`.
+- **`category`** --- Typ předmětu. Vanilkové: `tools`, `containers`, `clothes`, `food`, `weapons`, `books`, `explosives`, `lootdispatch`.
+- **`usage`** --- Typy budov. Vanilkové: `Military`, `Police`, `Medic`, `Firefighter`, `Industrial`, `Farm`, `Coast`, `Town`, `Village`, `Hunting`, `Office`, `School`, `Prison`, `ContaminatedArea`, `Historical`.
+- **`value`** --- Zóny tierů mapy. Vanilkové: `Tier1` (pobřeží), `Tier2` (vnitrozemí), `Tier3` (vojenské), `Tier4` (hluboké vojenské), `Unique`.
 
-Multiple tags can be combined. No `usage` tags = item will not spawn. No `value` tags = spawns in all tiers.
+Více tagů lze kombinovat. Žádné tagy `usage` = předmět se nespawnuje. Žádné tagy `value` = spawnuje se ve všech tierech.
 
-### Disabling an Item
+### Deaktivace předmětu
 
-Set `nominal=0` and `min=0`. The item never spawns but can still exist through scripts or crafting.
+Nastavte `nominal=0` a `min=0`. Předmět se nikdy nespawnuje, ale stále může existovat prostřednictvím skriptů nebo výroby.
 
 ---
 
-## cfgspawnabletypes.xml --- Attachments and Cargo
+## cfgspawnabletypes.xml --- Příslušenství a náklad
 
-Controls what spawns **already attached to or inside** other items.
+Řídí, co se spawnuje **již připojené k nebo uvnitř** jiných předmětů.
 
-### Hoarder Marking
+### Označení hoardera
 
-Storage containers are tagged so the CE knows they hold player items:
+Úložné kontejnery jsou označeny, aby CE věděla, že obsahují předměty hráčů:
 
 ```xml
 <type name="SeaChest">
@@ -162,7 +164,7 @@ Storage containers are tagged so the CE knows they hold player items:
 </type>
 ```
 
-### Spawn Damage
+### Poškození při spawnu
 
 ```xml
 <type name="NVGoggles">
@@ -170,9 +172,9 @@ Storage containers are tagged so the CE knows they hold player items:
 </type>
 ```
 
-Hodnotas range from `0.0` (pristine) to `1.0` (ruined).
+Hodnoty se pohybují od `0.0` (bezvadný) do `1.0` (zničený).
 
-### Attachments
+### Příslušenství
 
 ```xml
 <type name="PlateCarrierVest_Camo">
@@ -186,9 +188,9 @@ Hodnotas range from `0.0` (pristine) to `1.0` (ruined).
 </type>
 ```
 
-The outer `chance` determines if the attachment group is evaluated. The inner `chance` selects the specific item when multiple items are listed in one group.
+Vnější `chance` určuje, zda se skupina příslušenství vyhodnotí. Vnitřní `chance` vybírá konkrétní předmět, když je ve skupině uvedeno více předmětů.
 
-### Cargo Presets
+### Presety nákladu
 
 ```xml
 <type name="AssaultBag_Ttsko">
@@ -198,13 +200,13 @@ The outer `chance` determines if the attachment group is evaluated. The inner `c
 </type>
 ```
 
-Each line rolls the preset independently --- three lines means three separate chances.
+Každý řádek vyhodnocuje preset nezávisle --- tři řádky znamenají tři samostatné šance.
 
 ---
 
-## cfgrandompresets.xml --- Reusable Loot Pools
+## cfgrandompresets.xml --- Znovupoužitelné lootové pooly
 
-Defines named item pools referenced by `cfgspawnabletypes.xml`:
+Definuje pojmenované pooly předmětů odkazované z `cfgspawnabletypes.xml`:
 
 ```xml
 <randompresets>
@@ -224,13 +226,13 @@ Defines named item pools referenced by `cfgspawnabletypes.xml`:
 </randompresets>
 ```
 
-The preset's `chance` is the overall probability anything spawns. If the roll succeeds, one item is selected from the pool based on individual item chances. To add modded items, create a new `cargo` block and reference it in `cfgspawnabletypes.xml`.
+`chance` presetu je celková pravděpodobnost, že se cokoli spawnuje. Pokud hod uspěje, jeden předmět je vybrán z poolu na základě individuálních šancí předmětů. Pro přidání modovaných předmětů vytvořte nový blok `cargo` a odkazujte na něj v `cfgspawnabletypes.xml`.
 
 ---
 
-## globals.xml --- Economy Parametry
+## globals.xml --- Parametry ekonomiky
 
-Located at `db/globals.xml`, this file sets global CE parameters:
+Nachází se v `db/globals.xml`, tento soubor nastavuje globální parametry CE:
 
 ```xml
 <variables>
@@ -255,32 +257,32 @@ Located at `db/globals.xml`, this file sets global CE parameters:
 </variables>
 ```
 
-### Key Variables
+### Klíčové proměnné
 
-| Variable | Vychozi | Popis |
-|----------|---------|-------------|
-| `AnimalMaxCount` | 200 | Maximum animals on the map |
-| `ZombieMaxCount` | 1000 | Maximum infected on the map |
-| `CleanupLifetimeDeadPlayer` | 3600 | Dead body removal time (seconds) |
-| `CleanupLifetimeRuined` | 330 | Ruined item removal time |
-| `PriznakRefreshFrequency` | 432000 | Territory flag refresh interval (5 days) |
-| `PriznakRefreshMaxDuration` | 3456000 | Max flag lifetime (40 days) |
-| `FoodDecay` | 1 | Food spoilage toggle (0=off, 1=on) |
-| `InitialSpawn` | 100 | Percentage of nominal spawned on startup |
-| `LootDamageMax` | 0.82 | Maximum damage on spawned loot |
-| `TimeLogin` / `TimeLogout` | 15 | Login/logout timer (anti-combat-log) |
-| `TimePenalty` | 20 | Combat log penalty timer |
-| `ZoneSpawnDist` | 300 | Player distance triggering zombie/animal spawns |
+| Proměnná | Výchozí | Popis |
+|----------|---------|-------|
+| `AnimalMaxCount` | 200 | Maximální počet zvířat na mapě |
+| `ZombieMaxCount` | 1000 | Maximální počet infikovaných na mapě |
+| `CleanupLifetimeDeadPlayer` | 3600 | Čas odstranění mrtvého těla (sekundy) |
+| `CleanupLifetimeRuined` | 330 | Čas odstranění zničeného předmětu |
+| `FlagRefreshFrequency` | 432000 | Interval obnovy teritoriální vlajky (5 dní) |
+| `FlagRefreshMaxDuration` | 3456000 | Maximální životnost vlajky (40 dní) |
+| `FoodDecay` | 1 | Přepínač kažení jídla (0=vypnuto, 1=zapnuto) |
+| `InitialSpawn` | 100 | Procento nominal spawnovaného při startu |
+| `LootDamageMax` | 0.82 | Maximální poškození na spawnovaném lootu |
+| `TimeLogin` / `TimeLogout` | 15 | Časovač přihlášení/odhlášení (anti-combat-log) |
+| `TimePenalty` | 20 | Časovač penalizace za combat log |
+| `ZoneSpawnDist` | 300 | Vzdálenost hráče spouštějící spawn zombie/zvířat |
 
-The `type` attribute is `0` for integer, `1` for float. Using the wrong type truncates the value.
+Atribut `type` je `0` pro celé číslo, `1` pro desetinné číslo. Použití nesprávného typu ořízne hodnotu.
 
 ---
 
-## cfggameplay.json --- Gameplay Settings
+## cfggameplay.json --- Nastavení herních mechanik
 
-Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, the engine uses hardcoded defaults.
+Načítá se pouze tehdy, když je `enableCfgGameplayFile = 1` nastaveno v `serverDZ.cfg`. Bez toho engine používá napevno zakódované výchozí hodnoty.
 
-### Structure
+### Struktura
 
 ```json
 {
@@ -325,15 +327,15 @@ Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, th
 }
 ```
 
-Key settings: `disableBaseDamage` prevents base damage, `disablePersonalLight` removes the fresh-spawn light, `staminaWeightLimitThreshold` is in grams (6000 = 6kg), temperature arrays have 12 values (January--December), `lightingConfig` accepts `0` (default) or `1` (darker nights), and `displayPlayerPosition` shows the player dot on the map.
+Klíčová nastavení: `disableBaseDamage` zabraňuje poškození základny, `disablePersonalLight` odstraňuje světlo čerstvě spawnutého hráče, `staminaWeightLimitThreshold` je v gramech (6000 = 6 kg), pole teplot mají 12 hodnot (leden--prosinec), `lightingConfig` přijímá `0` (výchozí) nebo `1` (tmavší noci) a `displayPlayerPosition` zobrazuje tečku hráče na mapě.
 
 ---
 
-## serverDZ.cfg --- Server Settings
+## serverDZ.cfg --- Nastavení serveru
 
-This file sits next to the server executable, not in the mission folder.
+Tento soubor se nachází vedle spustitelného souboru serveru, nikoli ve složce mise.
 
-### Klicova nastaveni
+### Klíčová nastavení
 
 ```
 hostname = "My DayZ Server";
@@ -349,32 +351,32 @@ storageAutoFix = 1;
 ```
 
 | Parametr | Popis |
-|-----------|-------------|
-| `hostname` | Server name in the browser |
-| `password` | Join password (empty = open) |
-| `passwordAdmin` | RCON admin password |
-| `maxPlayers` | Maximum concurrent players |
-| `template` | Mission folder name |
-| `verifySignatures` | Signature check level (2 = strict) |
-| `enableCfgGameplayFile` | Load cfggameplay.json (0/1) |
+|----------|-------|
+| `hostname` | Název serveru v prohlížeči |
+| `password` | Heslo pro připojení (prázdné = otevřený) |
+| `passwordAdmin` | RCON heslo administrátora |
+| `maxPlayers` | Maximální počet současných hráčů |
+| `template` | Název složky mise |
+| `verifySignatures` | Úroveň kontroly podpisů (2 = přísná) |
+| `enableCfgGameplayFile` | Načíst cfggameplay.json (0/1) |
 
-### Mod Loading
+### Načítání modů
 
-Mods are specified via launch parameters, not in the config file:
+Mody se specifikují přes parametry spuštění, ne v konfiguračním souboru:
 
 ```
 DayZServer_x64.exe -config=serverDZ.cfg -mod=@CF;@MyMod -servermod=@MyServerMod -port=2302
 ```
 
-`-mod=` mods must be installed by clients. `-servermod=` mods run server-side only.
+Mody v `-mod=` musí mít nainstalovaní klienti. Mody v `-servermod=` běží pouze na straně serveru.
 
 ---
 
-## How Mods Interact with the Economy
+## Jak mody interagují s ekonomikou
 
-### cfgeconomycore.xml --- Root Class Registration
+### cfgeconomycore.xml --- Registrace kořenových tříd
 
-Every item class hierarchy must trace back to a registered root class:
+Každá hierarchie třídy předmětu musí vést zpět k registrované kořenové třídě:
 
 ```xml
 <economycore>
@@ -389,11 +391,11 @@ Every item class hierarchy must trace back to a registered root class:
 </economycore>
 ```
 
-If your mod introduces a new base class not inheriting from `Inventory_Base`, `VychoziWeapon`, or `VychoziMagazine`, add it as a `rootclass`. The `act` attribute specifies entity type: `character` for AI, `car` for vehicles.
+Pokud váš mod zavádí novou základní třídu, která nedědí z `Inventory_Base`, `DefaultWeapon` nebo `DefaultMagazine`, přidejte ji jako `rootclass`. Atribut `act` specifikuje typ entity: `character` pro AI, `car` pro vozidla.
 
-### cfglimitsdefinition.xml --- Custom Tags
+### cfglimitsdefinition.xml --- Vlastní tagy
 
-Any `category`, `usage`, or `value` used in `types.xml` must be defined here:
+Každý tag `category`, `usage` nebo `value` použitý v `types.xml` musí být definován zde:
 
 ```xml
 <lists>
@@ -409,11 +411,11 @@ Any `category`, `usage`, or `value` used in `types.xml` must be defined here:
 </lists>
 ```
 
-Use `cfglimitsdefinitionuser.xml` for additions that should not overwrite the vanilla file.
+Používejte `cfglimitsdefinitionuser.xml` pro doplňky, které by neměly přepisovat vanilkový soubor.
 
-### economy.xml --- Subsystem Control
+### economy.xml --- Řízení subsystémů
 
-Controls which CE subsystems are active:
+Řídí, které subsystémy CE jsou aktivní:
 
 ```xml
 <economy>
@@ -424,11 +426,11 @@ Controls which CE subsystems are active:
 </economy>
 ```
 
-Priznaks: `init` (spawn on startup), `load` (load persistence), `respawn` (respawn after cleanup), `save` (persist to database).
+Příznaky: `init` (spawn při startu), `load` (načíst perzistenci), `respawn` (respawn po úklidu), `save` (uložit do databáze).
 
-### Script-Side Economy Interaction
+### Interakce ekonomiky na straně skriptů
 
-Items created via `CreateInInventory()` are automatically CE-managed. For world spawns, use ECE flags:
+Předměty vytvořené přes `CreateInInventory()` jsou automaticky spravovány CE. Pro spawn ve světě používejte příznaky ECE:
 
 ```c
 EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE);
@@ -436,49 +438,49 @@ EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE)
 
 ---
 
-## Caste chyby
+## Časté chyby
 
-### XML Syntaxe Errors
+### Syntaktické chyby XML
 
-A single unclosed tag breaks the entire file. Always validate XML before deploying.
+Jediný neuzavřený tag rozbije celý soubor. Vždy ověřte XML před nasazením.
 
-### Missing Tags in cfglimitsdefinition.xml
+### Chybějící tagy v cfglimitsdefinition.xml
 
-Using a `usage` or `value` in types.xml that is not defined in cfglimitsdefinition.xml causes the item to silently fail to spawn. Check RPT logs for warnings.
+Použití tagu `usage` nebo `value` v types.xml, který není definován v cfglimitsdefinition.xml, způsobí, že se předmět tiše nespawnuje. Kontrolujte RPT logy kvůli varováním.
 
-### Nominal Too High
+### Příliš vysoký nominal
 
-Total nominal across all items should stay below 10,000--15,000. Excessive values degrade server performance.
+Celkový nominal napříč všemi předměty by měl zůstat pod 10 000--15 000. Nadměrné hodnoty zhoršují výkon serveru.
 
-### Lifetime Too Short
+### Příliš krátká životnost
 
-Items with very short lifetimes disappear before players find them. Use at least `3600` (1 hour) for common items, `28800` (8 hours) for weapons.
+Předměty s velmi krátkou životností zmizí dříve, než je hráči najdou. Používejte alespoň `3600` (1 hodina) pro běžné předměty, `28800` (8 hodin) pro zbraně.
 
-### Missing Root Class
+### Chybějící kořenová třída
 
-Items whose class hierarchy does not trace to a registered root class in `cfgeconomycore.xml` will never spawn, even with correct types.xml entries.
+Předměty, jejichž hierarchie tříd nevede k registrované kořenové třídě v `cfgeconomycore.xml`, se nikdy nespawnují, i se správnými záznamy v types.xml.
 
-### cfggameplay.json Not Enabled
+### cfggameplay.json není povolen
 
-The file is ignored unless `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+Soubor je ignorován, pokud není nastaveno `enableCfgGameplayFile = 1` v `serverDZ.cfg`.
 
-### Wrong type in globals.xml
+### Špatný typ v globals.xml
 
-Using `type="0"` (integer) for a float value like `0.82` truncates it to `0`. Use `type="1"` for floats.
+Použití `type="0"` (celé číslo) pro desetinnou hodnotu jako `0.82` ji ořízne na `0`. Pro desetinná čísla používejte `type="1"`.
 
-### Editing Vanilla Files Directly
+### Přímá úprava vanilkových souborů
 
-Modifying vanilla types.xml works but breaks on game updates. Prefer shipping separate type files and registering them through cfgeconomycore, or use cfglimitsdefinitionuser.xml for custom tags.
+Úprava vanilkového types.xml funguje, ale rozbije se při aktualizacích hry. Raději dodávejte samostatné soubory typů a registrujte je přes cfgeconomycore, nebo používejte cfglimitsdefinitionuser.xml pro vlastní tagy.
 
 ---
 
-## Doporucene postupy
+## Osvědčené postupy
 
-- Ship a `ServerFiles/` folder with your mod containing pre-configured `types.xml` entries so server admins can copy-paste rather than write from scratch.
-- Use `cfglimitsdefinitionuser.xml` instead of editing the vanilla `cfglimitsdefinition.xml` -- your additions survive game updates.
-- Set `count_in_hoarder="0"` for common items (food, ammo) to prevent hoarding from blocking CE respawns.
-- Always set `enableCfgGameplayFile = 1` in `serverDZ.cfg` before expecting `cfggameplay.json` changes to take effect.
-- Keep total `nominal` across all types.xml entries below 12,000 to avoid CE performance degradation on populated servers.
+- Dodávejte složku `ServerFiles/` se svým modem obsahující předkonfigurované záznamy `types.xml`, aby administrátoři serverů mohli kopírovat a vkládat místo psaní od nuly.
+- Používejte `cfglimitsdefinitionuser.xml` místo úpravy vanilkového `cfglimitsdefinition.xml` --- vaše doplňky přežijí aktualizace hry.
+- Nastavte `count_in_hoarder="0"` pro běžné předměty (jídlo, munice), abyste zabránili hromadění blokujícímu respawn CE.
+- Vždy nastavte `enableCfgGameplayFile = 1` v `serverDZ.cfg` před očekáváním, že se změny v `cfggameplay.json` projeví.
+- Udržujte celkový `nominal` napříč všemi záznamy types.xml pod 12 000, abyste se vyhnuli degradaci výkonu CE na vytížených serverech.
 
 ---
 
@@ -486,15 +488,15 @@ Modifying vanilla types.xml works but breaks on game updates. Prefer shipping se
 
 | Koncept | Teorie | Realita |
 |---------|--------|---------|
-| `nominal` is a hard target | CE spawns exactly this many items | CE approaches nominal over time but fluctuates based on player interaction, cleanup cycles, and zone distance |
-| `restock=0` means instant respawn | Items reappear immediately after despawn | The CE batch processes restocking in cycles (typically every 30-60 seconds), so there is always a delay regardless of the restock value |
-| `cfggameplay.json` controls all gameplay | All tuning goes here | Many gameplay values are hardcoded in script or config.cpp and cannot be overridden by cfggameplay.json |
-| `init.c` runs only on server start | One-time initialization | `init.c` runs every time the mission loads, including after server restarts. Persistent state is managed by the Hive, not init.c |
-| Multiple types.xml files merge cleanly | CE reads all registered files | Files must be registered in cfgeconomycore.xml via `<ce folder="custom">` directives. Simply placing extra XML files in `db/` does nothing |
+| `nominal` je pevný cíl | CE spawnuje přesně tento počet předmětů | CE se k nominal přibližuje postupně, ale kolísá na základě interakce hráčů, cyklů úklidu a vzdálenosti zón |
+| `restock=0` znamená okamžitý respawn | Předměty se znovu objeví okamžitě po despawnu | CE zpracovává doplňování v dávkách v cyklech (typicky každých 30-60 sekund), takže vždy existuje zpoždění bez ohledu na hodnotu restock |
+| `cfggameplay.json` řídí veškerý gameplay | Veškeré ladění probíhá zde | Mnoho herních hodnot je napevno zakódováno ve skriptech nebo config.cpp a nelze je přepsat pomocí cfggameplay.json |
+| `init.c` se spouští pouze při startu serveru | Jednorázová inicializace | `init.c` se spouští pokaždé, když se mise načte, včetně restartů serveru. Perzistentní stav je spravován Hive, ne init.c |
+| Více souborů types.xml se čistě sloučí | CE čte všechny registrované soubory | Soubory musí být registrovány v cfgeconomycore.xml přes direktivy `<ce folder="custom">`. Pouhé umístění dalších XML souborů do `db/` nic neudělá |
 
 ---
 
 ## Kompatibilita a dopad
 
-- **Multi-Mod:** Multiple mods can add entries to types.xml without conflict as long as classnames are unique. If two mods define the same classname with different nominal/lifetime values, the last-loaded entry wins.
-- **Performance:** Excessive nominal counts (15,000+) cause CE tick spikes visible as server FPS drops. Each CE cycle iterates all registered types to check spawn conditions.
+- **Více modů:** Více modů může přidávat záznamy do types.xml bez konfliktu, pokud jsou názvy tříd unikátní. Pokud dva mody definují stejný název třídy s různými hodnotami nominal/lifetime, vyhraje naposledy načtený záznam.
+- **Výkon:** Nadměrné hodnoty nominal (15 000+) způsobují špičky CE ticku viditelné jako poklesy FPS serveru. Každý cyklus CE iteruje všechny registrované typy pro kontrolu podmínek spawnu.

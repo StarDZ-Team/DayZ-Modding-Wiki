@@ -1,55 +1,59 @@
-# Chapter 5.4: ImageSet Format
+# 第 5.4 章：ImageSet 格式
 
-[Home](../../README.md) | [<< Previous: Credits.json](03-credits-json.md) | **ImageSet Format** | [Next: Server Configuration Files >>](05-server-configs.md)
+[首页](../../README.md) | [<< 上一章：Credits.json](03-credits-json.md) | **ImageSet 格式** | [下一章：服务器配置文件 >>](05-server-configs.md)
+
+---
+
+> **摘要：** ImageSets 定义纹理图集中的命名精灵区域。它们是 DayZ 从布局文件和脚本中引用图标、UI 图形和精灵表的主要机制。你不需要加载数百个单独的图像文件，而是将所有图标打包到单个纹理中，并在 imageset 定义文件中描述每个图标的位置和大小。
 
 ---
 
 ## 目录
 
-- [Overview](#overview)
-- [How ImageSets Work](#how-imagesets-work)
-- [DayZ Native ImageSet Format](#dayz-native-imageset-format)
-- [XML ImageSet Format](#xml-imageset-format)
-- [Registering ImageSets in config.cpp](#registering-imagesets-in-configcpp)
-- [Referencing Images in Layouts](#referencing-images-in-layouts)
-- [Referencing Images in Scripts](#referencing-images-in-scripts)
-- [Image Flags](#image-flags)
-- [Multi-Resolution Textures](#multi-resolution-textures)
-- [Creating Custom Icon Sets](#creating-custom-icon-sets)
-- [Font Awesome Integration Pattern](#font-awesome-integration-pattern)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+- [概述](#概述)
+- [ImageSets 的工作原理](#imagesets-的工作原理)
+- [DayZ 原生 ImageSet 格式](#dayz-原生-imageset-格式)
+- [XML ImageSet 格式](#xml-imageset-格式)
+- [在 config.cpp 中注册 ImageSets](#在-configcpp-中注册-imagesets)
+- [在布局中引用图像](#在布局中引用图像)
+- [在脚本中引用图像](#在脚本中引用图像)
+- [图像标志](#图像标志)
+- [多分辨率纹理](#多分辨率纹理)
+- [创建自定义图标集](#创建自定义图标集)
+- [Font Awesome 集成模式](#font-awesome-集成模式)
+- [实际示例](#实际示例)
+- [常见错误](#常见错误)
 
 ---
 
 ## 概述
 
-A texture atlas is a single large image (typically in `.edds` format) containing many smaller icons arranged in a grid or freeform layout. An imageset file maps human-readable names to rectangular regions within that atlas.
+纹理图集是一个包含许多较小图标的大型单一图像（通常为 `.edds` 格式），这些图标排列在网格或自由形式的布局中。imageset 文件将人类可读的名称映射到该图集中的矩形区域。
 
-For example, a 1024x1024 texture might contain 64 icons at 64x64 pixels each. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and the engine extracts the correct sub-rectangle from the atlas at render time.
+例如，一个 1024x1024 的纹理可能包含 64 个 64x64 像素的图标。imageset 文件说明"名为 `arrow_down` 的图标位于位置 (128, 64)，大小为 64x64 像素。"你的布局文件和脚本按名称引用 `arrow_down`，引擎在渲染时从图集中提取正确的子矩形。
 
-This approach is efficient: one GPU texture load serves all icons, reducing draw calls and memory overhead.
-
----
-
-## How ImageSets Work
-
-The data flow:
-
-1. **Texture atlas** (`.edds` file) --- a single image containing all icons
-2. **ImageSet definition** (`.imageset` file) --- maps names to regions in the atlas
-3. **config.cpp registration** --- tells the engine to load the imageset at startup
-4. **Layout/script reference** --- uses `set:name image:iconName` syntax to render a specific icon
-
-Once registered, any widget in any layout file can reference any image from the set by name.
+这种方法很高效：一次 GPU 纹理加载即可服务所有图标，减少绘制调用和内存开销。
 
 ---
 
-## DayZ Native ImageSet Format
+## ImageSets 的工作原理
 
-The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). This is the format used by the vanilla game and most established mods.
+数据流：
 
-### Structure
+1. **纹理图集**（`.edds` 文件）--- 包含所有图标的单一图像
+2. **ImageSet 定义**（`.imageset` 文件）--- 将名称映射到图集中的区域
+3. **config.cpp 注册** --- 告诉引擎在启动时加载 imageset
+4. **布局/脚本引用** --- 使用 `set:name image:iconName` 语法渲染特定图标
+
+注册后，任何布局文件中的任何控件都可以按名称引用该集合中的任何图像。
+
+---
+
+## DayZ 原生 ImageSet 格式
+
+原生格式使用 Enfusion 引擎基于类的语法（类似于 config.cpp）。这是原版游戏和大多数成熟 Mod 使用的格式。
+
+### 结构
 
 ```
 ImageSetClass {
@@ -72,34 +76,34 @@ ImageSetClass {
 }
 ```
 
-### Top-Level Fields
+### 顶级字段
 
-| Field | Description |
-|-------|-------------|
-| `Name` | The set name. Used in the `set:` part of image references. Must be unique across all loaded mods. |
-| `RefSize` | Reference dimensions of the texture (width height). Used for coordinate mapping. |
-| `Textures` | Contains one or more `ImageSetTextureClass` entries for different resolution mip levels. |
+| 字段 | 说明 |
+|------|------|
+| `Name` | 集合名称。用于图像引用的 `set:` 部分。在所有已加载的 Mod 中必须唯一。 |
+| `RefSize` | 纹理的参考尺寸（宽度 高度）。用于坐标映射。 |
+| `Textures` | 包含一个或多个用于不同分辨率 mip 级别的 `ImageSetTextureClass` 条目。 |
 
-### Texture Entry Fields
+### 纹理条目字段
 
-| Field | Description |
-|-------|-------------|
-| `mpix` | Minimum pixel level (mip level). `0` = lowest resolution, `1` = standard resolution. |
-| `path` | Path to the `.edds` texture file, relative to the mod root. Can use Enfusion GUID format (`{GUID}path`) or plain relative paths. |
+| 字段 | 说明 |
+|------|------|
+| `mpix` | 最小像素级别（mip 级别）。`0` = 最低分辨率，`1` = 标准分辨率。 |
+| `path` | `.edds` 纹理文件的路径，相对于 Mod 根目录。可以使用 Enfusion GUID 格式（`{GUID}path`）或普通相对路径。 |
 
-### Image Entry Fields
+### 图像条目字段
 
-Each image is an `ImageSetDefClass` inside the `Images` block:
+每个图像是 `Images` 块内的一个 `ImageSetDefClass`：
 
-| Field | Description |
-|-------|-------------|
-| Class name | Must match the `Name` field (used for engine lookups) |
-| `Name` | The image identifier. Used in the `image:` part of references. |
-| `Pos` | Top-left corner position in the atlas (x y), in pixels |
-| `Size` | Dimensions (width height), in pixels |
-| `Flags` | Tiling behavior flags (see [Image Flags](#image-flags)) |
+| 字段 | 说明 |
+|------|------|
+| 类名 | 必须与 `Name` 字段匹配（用于引擎查找） |
+| `Name` | 图像标识符。用于引用的 `image:` 部分。 |
+| `Pos` | 图集中的左上角位置（x y），以像素为单位 |
+| `Size` | 尺寸（宽度 高度），以像素为单位 |
+| `Flags` | 平铺行为标志（参见[图像标志](#图像标志)） |
 
-### Full Example (DayZ Vanilla)
+### 完整示例（DayZ 原版）
 
 ```
 ImageSetClass {
@@ -134,11 +138,11 @@ ImageSetClass {
 
 ---
 
-## XML ImageSet Format
+## XML ImageSet 格式
 
-An alternative XML-based format exists and is used by some mods. It is simpler but offers fewer features (no multi-resolution support).
+存在一种替代的基于 XML 的格式，一些 Mod 使用它。它更简单但功能较少（不支持多分辨率）。
 
-### Structure
+### 结构
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -149,41 +153,41 @@ An alternative XML-based format exists and is used by some mods. It is simpler b
 </imageset>
 ```
 
-### XML Attributes
+### XML 属性
 
-**`<imageset>` element:**
+**`<imageset>` 元素：**
 
-| Attribute | Description |
-|-----------|-------------|
-| `name` | The set name (equivalent to native `Name`) |
-| `file` | Path to the texture file (equivalent to native `path`) |
+| 属性 | 说明 |
+|------|------|
+| `name` | 集合名称（等同于原生格式的 `Name`） |
+| `file` | 纹理文件路径（等同于原生格式的 `path`） |
 
-**`<image>` element:**
+**`<image>` 元素：**
 
-| Attribute | Description |
-|-----------|-------------|
-| `name` | Image identifier |
-| `pos` | Top-left position as `"x y"` |
-| `size` | Dimensions as `"width height"` |
+| 属性 | 说明 |
+|------|------|
+| `name` | 图像标识符 |
+| `pos` | 左上角位置，格式为 `"x y"` |
+| `size` | 尺寸，格式为 `"width height"` |
 
-### When to Use Which Format
+### 何时使用哪种格式
 
-| Feature | Native Format | XML Format |
-|---------|---------------|------------|
-| Multi-resolution (mip levels) | Yes | No |
-| Tiling flags | Yes | No |
-| Enfusion GUID paths | Yes | Yes |
-| Simplicity | Lower | Higher |
-| Used by vanilla DayZ | Yes | No |
-| Used by Expansion, MyMod, VPP | Yes | Occasionally |
+| 功能 | 原生格式 | XML 格式 |
+|------|----------|----------|
+| 多分辨率（mip 级别） | 是 | 否 |
+| 平铺标志 | 是 | 否 |
+| Enfusion GUID 路径 | 是 | 是 |
+| 简洁性 | 较低 | 较高 |
+| 原版 DayZ 使用 | 是 | 否 |
+| Expansion、MyMod、VPP 使用 | 是 | 偶尔 |
 
-**Recommendation:** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that do not need tiling or multi-resolution support.
+**建议：** 生产 Mod 使用原生格式。快速原型设计或不需要平铺或多分辨率支持的简单图标集使用 XML 格式。
 
 ---
 
-## Registering ImageSets in config.cpp
+## 在 config.cpp 中注册 ImageSets
 
-ImageSet files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Without this registration, the engine never loads the imageset and your image references fail silently.
+ImageSet 文件必须在你的 Mod 的 `config.cpp` 中的 `CfgMods` > `class defs` > `class imageSets` 块下注册。没有此注册，引擎永远不会加载 imageset，你的图像引用会静默失败。
 
 ### 语法
 
@@ -192,7 +196,7 @@ class CfgMods
 {
     class MyMod
     {
-        // ... other fields ...
+        // ... 其他字段 ...
         class defs
         {
             class imageSets
@@ -208,9 +212,9 @@ class CfgMods
 };
 ```
 
-### Real Example: MyFramework
+### 实际示例：MyMod Core
 
-MyFramework registers seven imagesets including Font Awesome icon sets:
+MyMod Core 注册了七个 imagesets，包括 Font Awesome 图标集：
 
 ```cpp
 class defs
@@ -231,7 +235,7 @@ class defs
 };
 ```
 
-### Real Example: VPP Admin Tools
+### 实际示例：VPP Admin Tools
 
 ```cpp
 class defs
@@ -246,7 +250,7 @@ class defs
 };
 ```
 
-### Real Example: DayZ Editor
+### 实际示例：DayZ Editor
 
 ```cpp
 class defs
@@ -263,9 +267,9 @@ class defs
 
 ---
 
-## Referencing Images in Layouts
+## 在布局中引用图像
 
-In `.layout` files, use the `image0` property with the `set:name image:imageName` syntax:
+在 `.layout` 文件中，使用 `image0` 属性和 `set:name image:imageName` 语法：
 
 ```
 ImageWidgetClass MyIcon {
@@ -276,18 +280,18 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-### 语法 Breakdown
+### 语法解析
 
 ```
 set:SETNAME image:IMAGENAME
 ```
 
-- `SETNAME` --- the `Name` field from the imageset definition (e.g., `dayz_gui`, `solid`, `brands`)
-- `IMAGENAME` --- the `Name` field from a specific `ImageSetDefClass` entry (e.g., `icon_refresh`, `arrow_down`)
+- `SETNAME` --- imageset 定义中的 `Name` 字段（例如 `dayz_gui`、`solid`、`brands`）
+- `IMAGENAME` --- 特定 `ImageSetDefClass` 条目中的 `Name` 字段（例如 `icon_refresh`、`arrow_down`）
 
-### Multiple Image States
+### 多图像状态
 
-Some widgets support multiple image states (normal, hover, pressed):
+某些控件支持多个图像状态（正常、悬停、按下）：
 
 ```
 ImageWidgetClass icon {
@@ -299,21 +303,21 @@ ButtonWidgetClass btn {
 }
 ```
 
-### Examples from Real Mods
+### 来自实际 Mod 的示例
 
 ```
-image0 "set:regular image:arrow_down_short_wide"     -- MyMod: Font Awesome regular icon
-image0 "set:dayz_gui image:icon_minus"                -- MyMod: vanilla DayZ icon
-image0 "set:dayz_gui image:icon_collapse"             -- MyMod: vanilla DayZ icon
-image0 "set:dayz_gui image:circle"                    -- MyMod: vanilla DayZ shape
-image0 "set:dayz_editor_gui image:eye_open"           -- DayZ Editor: custom icon
+image0 "set:regular image:arrow_down_short_wide"     -- MyMod：Font Awesome regular 图标
+image0 "set:dayz_gui image:icon_minus"                -- MyMod：原版 DayZ 图标
+image0 "set:dayz_gui image:icon_collapse"             -- MyMod：原版 DayZ 图标
+image0 "set:dayz_gui image:circle"                    -- MyMod：原版 DayZ 形状
+image0 "set:dayz_editor_gui image:eye_open"           -- DayZ Editor：自定义图标
 ```
 
 ---
 
-## Referencing Images in Scripts
+## 在脚本中引用图像
 
-In Enforce Script, use `ImageWidget.LoadImageFile()` or set image properties on widgets:
+在 Enforce Script 中，使用 `ImageWidget.LoadImageFile()` 或在控件上设置图像属性：
 
 ### LoadImageFile
 
@@ -322,47 +326,47 @@ ImageWidget icon = ImageWidget.Cast(layoutRoot.FindAnyWidget("MyIcon"));
 icon.LoadImageFile(0, "set:solid image:circle");
 ```
 
-The `0` parameter is the image index (corresponding to `image0` in layouts).
+`0` 参数是图像索引（对应布局中的 `image0`）。
 
-### Multiple States via Index
+### 通过索引切换多个状态
 
 ```c
 ImageWidget collapseIcon;
-collapseIcon.LoadImageFile(0, "set:regular image:square_plus");    // Normal state
-collapseIcon.LoadImageFile(1, "set:solid image:square_minus");     // Toggled state
+collapseIcon.LoadImageFile(0, "set:regular image:square_plus");    // 正常状态
+collapseIcon.LoadImageFile(1, "set:solid image:square_minus");     // 切换状态
 ```
 
-Switch between states using `SetImage(index)`:
+使用 `SetImage(index)` 在状态之间切换：
 
 ```c
 collapseIcon.SetImage(isExpanded ? 1 : 0);
 ```
 
-### Using String Variables
+### 使用字符串变量
 
 ```c
-// From DayZ Editor
+// 来自 DayZ Editor
 string icon = "set:dayz_editor_gui image:search";
 searchBarIcon.LoadImageFile(0, icon);
 
-// Later, change dynamically
+// 之后动态更改
 searchBarIcon.LoadImageFile(0, "set:dayz_gui image:icon_x");
 ```
 
 ---
 
-## Image Flags
+## 图像标志
 
-The `Flags` field in native-format imageset entries controls tiling behavior when the image is stretched beyond its natural size.
+原生格式 imageset 条目中的 `Flags` 字段控制当图像拉伸超过其原始大小时的平铺行为。
 
-| Flag | Value | Description |
-|------|-------|-------------|
-| `0` | 0 | No tiling. The image stretches to fill the widget. |
-| `ISHorizontalTile` | 1 | Tiles horizontally when the widget is wider than the image. |
-| `ISVerticalTile` | 2 | Tiles vertically when the widget is taller than the image. |
-| Both | 3 | Tiles in both directions (`ISHorizontalTile` + `ISVerticalTile`). |
+| 标志 | 值 | 说明 |
+|------|-----|------|
+| `0` | 0 | 不平铺。图像拉伸以填充控件。 |
+| `ISHorizontalTile` | 1 | 当控件比图像宽时水平平铺。 |
+| `ISVerticalTile` | 2 | 当控件比图像高时垂直平铺。 |
+| 两者 | 3 | 双向平铺（`ISHorizontalTile` + `ISVerticalTile`）。 |
 
-### Usage
+### 用法
 
 ```
 ImageSetDefClass Gradient {
@@ -373,15 +377,15 @@ ImageSetDefClass Gradient {
 }
 ```
 
-This `Gradient` image is 75x5 pixels. When used in a widget taller than 5 pixels, it tiles vertically to fill the height, creating a repeating gradient stripe.
+这个 `Gradient` 图像是 75x5 像素。当用在高于 5 像素的控件中时，它会垂直平铺以填充高度，创建重复的渐变条纹。
 
-Most icons use `Flags 0` (no tiling). Tiling flags are primarily for UI elements like borders, dividers, and repeating patterns.
+大多数图标使用 `Flags 0`（不平铺）。平铺标志主要用于 UI 元素，如边框、分隔线和重复图案。
 
 ---
 
-## Multi-Resolution Textures
+## 多分辨率纹理
 
-The native format supports multiple resolution textures for the same imageset. This allows the engine to use higher-resolution artwork on high-DPI displays.
+原生格式支持同一 imageset 的多分辨率纹理。这允许引擎在高 DPI 显示器上使用更高分辨率的图稿。
 
 ```
 Textures {
@@ -396,14 +400,14 @@ Textures {
 }
 ```
 
-- `mpix 0` --- low resolution (used on low-quality settings or distant UI elements)
-- `mpix 1` --- standard/high resolution (default)
+- `mpix 0` --- 低分辨率（在低质量设置或远距离 UI 元素上使用）
+- `mpix 1` --- 标准/高分辨率（默认）
 
-The `@2x` naming convention is borrowed from Apple's Retina display system but is not enforced --- you can name the file anything.
+`@2x` 命名约定借鉴自 Apple 的 Retina 显示系统，但不是强制的——你可以随意命名文件。
 
-### In Practice
+### 实际使用
 
-Most mods only include `mpix 1` (a single resolution). Multi-resolution support is primarily used by the vanilla game:
+大多数 Mod 只包含 `mpix 1`（单一分辨率）。多分辨率支持主要由原版游戏使用：
 
 ```
 Textures {
@@ -416,28 +420,28 @@ Textures {
 
 ---
 
-## Creating Custom Icon Sets
+## 创建自定义图标集
 
-### Step-by-Step Workflow
+### 分步工作流程
 
-**1. Create the Texture Atlas**
+**1. 创建纹理图集**
 
-Use an image editor (Photoshop, GIMP, etc.) to arrange your icons on a single canvas:
-- Choose a power-of-two size (256x256, 512x512, 1024x1024, etc.)
-- Arrange icons in a grid for easy coordinate calculation
-- Leave some padding between icons to prevent texture bleeding
-- Save as `.tga` or `.png`
+使用图像编辑器（Photoshop、GIMP 等）在单个画布上排列你的图标：
+- 选择 2 的幂次方尺寸（256x256、512x512、1024x1024 等）
+- 在网格中排列图标以便于坐标计算
+- 在图标之间留出一些间距以防止纹理渗色
+- 保存为 `.tga` 或 `.png`
 
-**2. Convert to EDDS**
+**2. 转换为 EDDS**
 
-DayZ uses `.edds` (Enfusion DDS) format for textures. Use the DayZ Workbench or Mikero's tools to convert:
-- Import your `.tga` into DayZ Workbench
-- Or use `Pal2PacE.exe` to convert `.paa` to `.edds`
-- The output must be an `.edds` file
+DayZ 使用 `.edds`（Enfusion DDS）格式的纹理。使用 DayZ Workbench 或 Mikero 的工具转换：
+- 将你的 `.tga` 导入 DayZ Workbench
+- 或使用 `Pal2PacE.exe` 将 `.paa` 转换为 `.edds`
+- 输出必须是 `.edds` 文件
 
-**3. Write the ImageSet Definition**
+**3. 编写 ImageSet 定义**
 
-Map each icon to a named region. If your icons are on a 64-pixel grid:
+将每个图标映射到命名区域。如果你的图标在 64 像素网格上：
 
 ```
 ImageSetClass {
@@ -472,9 +476,9 @@ ImageSetClass {
 }
 ```
 
-**4. Register in config.cpp**
+**4. 在 config.cpp 中注册**
 
-Add the imageset path to your mod's config.cpp:
+将 imageset 路径添加到你的 Mod 的 config.cpp：
 
 ```cpp
 class imageSets
@@ -486,7 +490,7 @@ class imageSets
 };
 ```
 
-**5. Use in Layouts and Scripts**
+**5. 在布局和脚本中使用**
 
 ```
 ImageWidgetClass SettingsIcon {
@@ -499,29 +503,29 @@ ImageWidgetClass SettingsIcon {
 
 ---
 
-## Font Awesome Integration Pattern
+## Font Awesome 集成模式
 
-MyFramework (inherited from DabsFramework) demonstrates a powerful pattern: converting Font Awesome icon fonts into DayZ imagesets. This gives mods access to thousands of professional-quality icons without creating custom artwork.
+MyMod Core（继承自 DabsFramework）展示了一个强大的模式：将 Font Awesome 图标字体转换为 DayZ imagesets。这使 Mod 可以访问数千个专业品质的图标，而无需创建自定义图稿。
 
 ### 工作原理
 
-1. Font Awesome icons are rendered to a texture atlas at a fixed grid size (64x64 per icon)
-2. Each icon style gets its own imageset: `solid`, `regular`, `light`, `thin`, `brands`
-3. Icon names in the imageset match Font Awesome icon names (e.g., `circle`, `arrow_down`, `discord`)
-4. The imagesets are registered in config.cpp and available to any layout or script
+1. Font Awesome 图标以固定网格大小（每个图标 64x64）渲染到纹理图集
+2. 每种图标样式获得自己的 imageset：`solid`、`regular`、`light`、`thin`、`brands`
+3. imageset 中的图标名称与 Font Awesome 图标名称匹配（例如 `circle`、`arrow_down`、`discord`）
+4. imagesets 在 config.cpp 中注册，可供任何布局或脚本使用
 
-### MyFramework / DabsFramework Icon Sets
+### MyMod Core / DabsFramework 图标集
 
 ```
 MyFramework/GUI/icons/
-  solid.imageset       -- Filled icons (3648x3712 atlas, 64x64 per icon)
-  regular.imageset     -- Outlined icons
-  light.imageset       -- Light-weight outlined icons
-  thin.imageset        -- Ultra-thin outlined icons
-  brands.imageset      -- Brand logos (Discord, GitHub, etc.)
+  solid.imageset       -- 填充图标（3648x3712 图集，每个图标 64x64）
+  regular.imageset     -- 轮廓图标
+  light.imageset       -- 轻量轮廓图标
+  thin.imageset        -- 超细轮廓图标
+  brands.imageset      -- 品牌标志（Discord、GitHub 等）
 ```
 
-### Usage in Layouts
+### 在布局中使用
 
 ```
 image0 "set:solid image:circle"
@@ -531,25 +535,25 @@ image0 "set:brands image:discord"
 image0 "set:brands image:500px"
 ```
 
-### Usage in Scripts
+### 在脚本中使用
 
 ```c
-// DayZ Editor using the solid set
+// DayZ Editor 使用 solid 集
 CollapseIcon.LoadImageFile(1, "set:solid image:square_minus");
 CollapseIcon.LoadImageFile(0, "set:regular image:square_plus");
 ```
 
-### Why This Pattern Works Well
+### 为什么这种模式效果好
 
-- **Massive icon library**: Thousands of icons available without any artwork creation
-- **Consistent style**: All icons share the same visual weight and style
-- **Multiple weights**: Choose solid, regular, light, or thin for different visual contexts
-- **Brand icons**: Ready-made logos for Discord, Steam, GitHub, etc.
-- **Standard names**: Icon names follow Font Awesome conventions, making discovery easy
+- **庞大的图标库**：无需创建任何图稿即可使用数千个图标
+- **一致的风格**：所有图标共享相同的视觉重量和风格
+- **多种粗细**：为不同的视觉场景选择 solid、regular、light 或 thin
+- **品牌图标**：Discord、Steam、GitHub 等现成的标志
+- **标准名称**：图标名称遵循 Font Awesome 约定，便于发现
 
-### The Atlas Structure
+### 图集结构
 
-The solid imageset, for example, has a `RefSize` of 3648x3712 with icons arranged at 64-pixel intervals:
+例如，solid imageset 的 `RefSize` 为 3648x3712，图标以 64 像素间隔排列：
 
 ```
 ImageSetClass {
@@ -581,11 +585,11 @@ ImageSetClass {
 
 ---
 
-## Real Examples
+## 实际示例
 
 ### VPP Admin Tools
 
-VPP packs all admin tool icons into a single 1920x1080 atlas with freeform positioning (not a strict grid):
+VPP 将所有管理工具图标打包到单个 1920x1080 图集中，使用自由形式定位（不是严格的网格）：
 
 ```
 ImageSetClass {
@@ -614,14 +618,14 @@ ImageSetClass {
 }
 ```
 
-Referenced in layouts as:
+在布局中引用为：
 ```
 image0 "set:dayz_gui_vpp image:vpp_icon_cloud"
 ```
 
-### MyWeapons Mod
+### MyMod Weapons
 
-Weapon and attachment icons packed into large atlases with varied icon sizes:
+武器和附件图标打包到大型图集中，图标大小各异：
 
 ```
 ImageSetClass {
@@ -650,11 +654,11 @@ ImageSetClass {
 }
 ```
 
-This shows that icons do not need to be uniform size --- inventory icons for weapons use 300x300 while UI icons typically use 64x64.
+这表明图标不需要统一大小——武器的物品栏图标使用 300x300，而 UI 图标通常使用 64x64。
 
-### MyFramework Prefabs
+### MyMod Core Prefabs
 
-UI primitives (rounded corners, alpha gradients) packed into a small 256x256 atlas:
+UI 基元（圆角、Alpha 渐变）打包到小型 256x256 图集中：
 
 ```
 ImageSetClass {
@@ -683,11 +687,11 @@ ImageSetClass {
 }
 ```
 
-Notable: image names can contain spaces when quoted (e.g., `"Alpha 10"`). However, referencing these in layouts requires the exact name including the space.
+值得注意的是：图像名称在加引号时可以包含空格（例如 `"Alpha 10"`）。但在布局中引用这些图像时需要包含空格的完整名称。
 
-### MyMod Market Hub (XML Format)
+### MyMod Market Hub（XML 格式）
 
-A simpler XML imageset for the market hub module:
+一个更简单的 XML imageset，用于 market hub 模块：
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -702,7 +706,7 @@ A simpler XML imageset for the market hub module:
 </imageset>
 ```
 
-Referenced as:
+引用方式为：
 ```
 image0 "set:mh_icons image:icon_store"
 ```
@@ -711,41 +715,84 @@ image0 "set:mh_icons image:icon_store"
 
 ## 常见错误
 
-### Forgetting config.cpp Registration
+### 忘记 config.cpp 注册
 
-The most common issue. If your imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, the engine never loads it. All image references will fail silently (widgets appear blank).
+最常见的问题。如果你的 imageset 文件存在但未在 config.cpp 的 `class imageSets { files[] = { ... }; };` 中列出，引擎永远不会加载它。所有图像引用将静默失败（控件显示为空白）。
 
-### Set Name Collisions
+### 集合名称冲突
 
-If two mods register imagesets with the same `Name`, only one is loaded (the last one wins). Use a unique prefix:
-
-```
-Name "mymod_icons"     -- Good
-Name "icons"           -- Risky, too generic
-```
-
-### Wrong Texture Path
-
-The `path` must be relative to the PBO root (how the file appears inside the packed PBO):
+如果两个 Mod 注册了相同 `Name` 的 imagesets，只有一个会被加载（后加载的获胜）。使用唯一前缀：
 
 ```
-path "MyMod/GUI/imagesets/icons.edds"     -- Correct if MyMod is the PBO root
-path "GUI/imagesets/icons.edds"            -- Wrong if the PBO root is MyMod/
-path "C:/Users/dev/icons.edds"            -- Wrong: absolute paths do not work
+Name "mymod_icons"     -- 好
+Name "icons"           -- 有风险，太通用
 ```
 
-### Mismatched RefSize
+### 纹理路径错误
 
-The `RefSize` must match the actual pixel dimensions of your texture. If you specify `RefSize 512 512` but your texture is 1024x1024, all icon positions will be off by a factor of two.
+`path` 必须相对于 PBO 根目录（文件在打包的 PBO 内的显示方式）：
 
-### Pos Coordinates Off by One
+```
+path "MyMod/GUI/imagesets/icons.edds"     -- 如果 MyMod 是 PBO 根目录则正确
+path "GUI/imagesets/icons.edds"            -- 如果 PBO 根目录是 MyMod/ 则错误
+path "C:/Users/dev/icons.edds"            -- 错误：绝对路径不起作用
+```
 
-`Pos` is the top-left corner of the icon region. If your icons are at 64-pixel intervals but you accidentally offset by 1 pixel, icons will have a thin slice of the adjacent icon visible.
+### RefSize 不匹配
 
-### Using .png or .tga Directly
+`RefSize` 必须与纹理的实际像素尺寸匹配。如果你指定 `RefSize 512 512` 但纹理是 1024x1024，所有图标位置都会偏差两倍。
 
-The engine requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Always convert to `.edds` using DayZ Workbench or Mikero's tools.
+### Pos 坐标偏移一个像素
 
-### Spaces in Image Names
+`Pos` 是图标区域的左上角。如果你的图标以 64 像素间隔排列但不小心偏移了 1 个像素，图标会显示相邻图标的一条细线。
 
-While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in some parsing contexts. Prefer underscores: `Alpha_10`.
+### 直接使用 .png 或 .tga
+
+引擎要求 imageset 引用的纹理图集使用 `.edds` 格式。原始 `.png` 或 `.tga` 文件无法加载。始终使用 DayZ Workbench 或 Mikero 的工具转换为 `.edds`。
+
+### 图像名称中的空格
+
+虽然引擎支持图像名称中的空格（例如 `"Alpha 10"`），但在某些解析上下文中可能导致问题。建议使用下划线：`Alpha_10`。
+
+---
+
+## 最佳实践
+
+- 始终使用唯一的、带 Mod 前缀的集合名称（例如 `"mymod_icons"` 而不是 `"icons"`）。Mod 之间的集合名称冲突会导致一个集合静默覆盖另一个。
+- 使用 2 的幂次方纹理尺寸（256x256、512x512、1024x1024）。非 2 的幂次方纹理可以工作，但在某些 GPU 上可能降低渲染性能。
+- 在图集中的图标之间添加 1-2 像素的间距以防止纹理渗色，尤其是当纹理以非原始大小显示时。
+- 生产 Mod 优先使用原生 `.imageset` 格式而非 XML。它支持 XML 格式缺乏的多分辨率纹理和平铺标志。
+- 验证 `RefSize` 与实际纹理尺寸完全匹配。不匹配会导致所有图标坐标按比例偏移。
+
+---
+
+## 理论与实践
+
+> 文档所说的与运行时实际工作方式的对比。
+
+| 概念 | 理论 | 现实 |
+|------|------|------|
+| config.cpp 注册是必需的 | ImageSets 必须在 `class imageSets` 中列出 | 正确，这是"空白图标"错误最常见的来源。如果缺少注册，引擎不会给出错误——控件只是渲染为空 |
+| `RefSize` 映射坐标 | 坐标在 `RefSize` 空间中 | `RefSize` 必须与实际纹理像素尺寸匹配。如果你的纹理是 1024x1024 但 `RefSize` 写的是 512x512，所有 `Pos` 值都会以双倍缩放解释 |
+| XML 格式更简单 | 功能更少但工作方式相同 | XML imagesets 无法指定平铺标志或多分辨率 mip 级别。对于图标来说没问题，但对于重复的 UI 元素（边框、渐变）你需要原生格式 |
+| 多个 `mpix` 条目 | 引擎根据质量设置选择 | 实际上，大多数 Mod 只提供 `mpix 1`。如果只提供一个 mip 级别，引擎会优雅地回退——没有视觉故障，只是没有高 DPI 优化 |
+| 图像名称区分大小写 | `"MyIcon"` 和 `"myicon"` 是不同的 | 在 imageset 定义中确实如此，但在某些引擎版本中 `LoadImageFile()` 的查找不区分大小写。为安全起见始终精确匹配大小写 |
+
+---
+
+## 兼容性与影响
+
+- **多 Mod 共存：** 集合名称冲突是主要风险。如果两个 Mod 都定义了名为 `"icons"` 的 imageset，只有一个会被加载（后加载的 PBO 获胜）。失败 Mod 中所有对 `set:icons` 的引用都会静默失效。始终使用 Mod 特定的前缀。
+- **性能：** 每个唯一的 imageset 纹理是一次 GPU 纹理加载。将图标合并到更少、更大的图集中可减少绘制调用。一个拥有 10 个单独 64x64 纹理的 Mod 性能不如一个包含 10 个图标的 512x512 图集。
+- **版本：** 原生 `.imageset` 格式和 `set:name image:name` 引用语法自 DayZ 1.0 以来一直稳定。XML 格式自早期版本起作为替代方案可用，但未被 Bohemia 官方文档记录。
+
+---
+
+## 在实际 Mod 中观察到的模式
+
+| 模式 | Mod | 详情 |
+|------|-----|------|
+| Font Awesome 图标图集 | DabsFramework / StarDZ Core | 将 Font Awesome 图标渲染到大型图集（3648x3712），通过 `set:solid`、`set:regular`、`set:brands` 提供数千个专业图标 |
+| 自由形式图集布局 | VPP Admin Tools | 图标以非均匀方式排列在 1920x1080 图集上，大小各异，最大化纹理空间利用 |
+| 按功能分的小图集 | Expansion | 每个 Expansion 子模块有自己的小 imageset，而不是一个巨大的图集，保持 PBO 大小最小 |
+| 300x300 物品栏图标 | SNAFU Weapons | 武器/附件物品栏插槽使用大图标尺寸，细节更重要，不同于 64x64 的 UI 图标 |

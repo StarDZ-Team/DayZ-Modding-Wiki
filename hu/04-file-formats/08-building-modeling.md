@@ -1,80 +1,80 @@
-# Chapter 4.8: Building Modeling -- Doors & Ladders
+# 4.8. fejezet: Épület modellezés -- Ajtók és létrák
 
-[Home](../../README.md) | [<< Previous: Workbench Guide](07-workbench-guide.md) | **Building Modeling**
-
----
-
-## Bevezetes
-
-Buildings in DayZ are more than static scenery. Players interact with them constantly -- opening doors, climbing ladders, taking cover behind walls. Creating a custom building that supports these interactions requires careful model setup: doors need rotation axes and named selections across multiple LODs, ladders need precisely placed climbing paths defined entirely through Memory LOD vertices.
-
-This chapter covers the complete workflow for adding interactive doors and climbable ladders to custom building models, based on official Bohemia Interactive documentation.
-
-### Elofeletelek
-
-- A working **Work-drive** with your custom mod folder structure.
-- **Object Builder** (from the DayZ Tools package) with **Buldozer** (model preview) configured.
-- The ability to binarize and pack custom mod files into PBOs.
-- Familiarity with the LOD system and named selections (covered in [Chapter 4.2: 3D Models](02-models.md)).
+[Főoldal](../../README.md) | [<< Előző: Workbench útmutató](07-workbench-guide.md) | **Épület modellezés**
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [Attekintes](#introduction)
-- [Ajto konfiguracio](#door-configuration)
-  - [Model Setup](#model-setup-for-doors)
-  - [model.cfg -- Skeletons and Animations](#modelcfg----skeletons-and-animations)
-  - [Jatek konfiguracio (config.cpp)](#game-config-configcpp)
-  - [Dupla ajtok](#double-doors)
-  - [Tolo ajtok](#shifting-doors)
-  - [Hatarolo gomb problemak](#bounding-sphere-issues)
-- [Letra konfiguracio](#ladder-configuration)
-  - [Tamogatott letra tipusok](#supported-ladder-types)
-  - [Memory LOD nevesitett szelekciok](#memory-lod-named-selections)
-  - [View Geometry kovetelmenyek](#view-geometry-requirements)
-  - [Letra meretek](#ladder-dimensions)
-  - [Utkozesi ter](#collision-space)
-  - [Konfiguracios kovetelmenyek letrakhoz](#config-requirements-for-ladders)
-- [Modell kovetelmenyek osszefoglalasa](#model-requirements-summary)
+A DayZ épületei többek, mint statikus díszletek. A játékosok folyamatosan interakcióba lépnek velük -- ajtókat nyitnak, létrákon másznak, falak mögé bújnak. Egy olyan egyéni épület létrehozása, amely támogatja ezeket az interakciókat, gondos modell beállítást igényel: az ajtóknak forgástengelyekre és elnevezett szelekciókra van szükségük több LOD-on keresztül, a létráknak pedig precízen elhelyezett mászási útvonalakra, amelyeket teljes egészében Memory LOD csúcspontokon keresztül definiálnak.
+
+Ez a fejezet az interaktív ajtók és megmászható létrák egyéni épületmodellekhez való hozzáadásának teljes munkafolyamatát ismerteti, a hivatalos Bohemia Interactive dokumentáció alapján.
+
+### Előfeltételek
+
+- Működő **Work-drive** az egyéni mod mappa struktúrával.
+- **Object Builder** (a DayZ Tools csomagból) a **Buldozer** (modell előnézet) konfigurálásával.
+- Képesség egyéni mod fájlok binarizálására és PBO-kba csomagolására.
+- Az LOD rendszer és az elnevezett szelekciók ismerete (lásd: [4.2. fejezet: 3D modellek](02-models.md)).
+
+---
+
+## Tartalomjegyzék
+
+- [Áttekintés](#introduction)
+- [Ajtó konfiguráció](#door-configuration)
+  - [Modell beállítás](#model-setup-for-doors)
+  - [model.cfg -- Csontvázak és animációk](#modelcfg----skeletons-and-animations)
+  - [Játék konfiguráció (config.cpp)](#game-config-configcpp)
+  - [Dupla ajtók](#double-doors)
+  - [Toló ajtók](#shifting-doors)
+  - [Határoló gömb problémák](#bounding-sphere-issues)
+- [Létra konfiguráció](#ladder-configuration)
+  - [Támogatott létra típusok](#supported-ladder-types)
+  - [Memory LOD elnevezett szelekciók](#memory-lod-named-selections)
+  - [View Geometry követelmények](#view-geometry-requirements)
+  - [Létra méretek](#ladder-dimensions)
+  - [Ütközési tér](#collision-space)
+  - [Konfigurációs követelmények létrákhoz](#config-requirements-for-ladders)
+- [Modell követelmények összefoglalása](#model-requirements-summary)
 - [Legjobb gyakorlatok](#best-practices)
-- [Gyakori hibak](#common-mistakes)
-- [Hivatkozasok](#references)
+- [Gyakori hibák](#common-mistakes)
+- [Hivatkozások](#references)
 
 ---
 
-## Ajto konfiguracio
+## Ajtó konfiguráció
 
-Interactive doors require three things to come together: the P3D model with correctly named selections and memory points, a `model.cfg` that defines the animation skeleton and rotation parameters, and a `config.cpp` game config that links the door to sounds, damage zones, and game logic.
+Az interaktív ajtók három dolog összhangját igénylik: a P3D modell helyesen elnevezett szelekciókkal és memória pontokkal, egy `model.cfg`, amely definiálja az animációs csontvázat és forgási paramétereket, és egy `config.cpp` játék konfiguráció, amely összekapcsolja az ajtót a hangokkal, sérülési zónákkal és játék logikával.
 
-### Modell beallitas ajtokhoz
+### Modell beállítás ajtókhoz
 
-A door in the P3D model must include the following:
+Egy ajtónak a P3D modellben a következőket kell tartalmaznia:
 
-1. **Named selections across all relevant LODs.** The geometry that represents the door must be assigned to a named selection (e.g., `door1`) in each of these LODs:
-   - **Resolution LOD** -- the visual mesh the player sees.
-   - **Geometry LOD** -- the physical collision shape. Must also contain a named property `class` with the value `house`.
-   - **View Geometry LOD** -- used for visibility checks and action ray-casting. The selection name here corresponds to the `component` parameter in the game config.
-   - **Fire Geometry LOD** -- used for ballistic hit detection.
+1. **Elnevezett szelekciók az összes releváns LOD-on keresztül.** Az ajtót képviselő geometriát hozzá kell rendelni egy elnevezett szelekcióhoz (pl. `door1`) mindegyik LOD-ban:
+   - **Resolution LOD** -- a játékos által látható vizuális háló.
+   - **Geometry LOD** -- a fizikai ütközési alakzat. Tartalmaznia kell egy `class` nevű tulajdonságot `house` értékkel is.
+   - **View Geometry LOD** -- láthatósági ellenőrzésekhez és akció sugárvetéshez. A szelekció neve itt megfelel a játék konfigurációban lévő `component` paraméternek.
+   - **Fire Geometry LOD** -- ballisztikus találat érzékeléshez.
 
-2. **Memory LOD vertices** that define:
-   - **Rotation axis** -- Two vertices forming the axis of rotation, assigned to a named selection like `door1_axis`. This axis defines the hinge line around which the door pivots.
-   - **Sound position** -- A vertex assigned to a named selection like `door1_action`, marking where door sounds originate.
-   - **Akcio widget position** -- Where the interaction widget is displayed to the player.
+2. **Memory LOD csúcspontok**, amelyek definiálják:
+   - **Forgástengely** -- Két csúcspont, amely a forgástengelyt alkotja, egy elnevezett szelekcióhoz rendelve, mint `door1_axis`. Ez a tengely határozza meg a zsanér vonalat, amely körül az ajtó fordul.
+   - **Hang pozíció** -- Egy csúcspont egy elnevezett szelekcióhoz rendelve, mint `door1_action`, amely jelzi, honnan származnak az ajtóhangok.
+   - **Akció widget pozíció** -- Ahol az interakciós widget megjelenik a játékos számára.
 
-#### Ajanlott ajto meretek
+#### Ajánlott ajtó méretek
 
-Almost all doors in vanilla DayZ are **120 x 220 cm** (width x height). Using these standard dimensions ensures animations look correct and characters fit through openings naturally. Model your doors **closed by default** and animate them to the open position -- Bohemia plans to support doors opening in both directions in the future.
+A vanilla DayZ szinte minden ajtaja **120 x 220 cm** (szélesség x magasság). Ezeknek a szabványos méreteknek a használata biztosítja, hogy az animációk helyesen nézzenek ki és a karakterek természetesen átférjenek a nyílásokon. Modellezd az ajtókat **alapértelmezetten zárva** és animáld őket nyitott pozícióba -- a Bohemia tervezi, hogy a jövőben mindkét irányban nyitható ajtókat támogat.
 
-### model.cfg -- Skeletons and Animations
+### model.cfg -- Csontvázak és animációk
 
-Any animated door requires a `model.cfg` file. This config defines the bone structure (skeleton) and the animation parameters. Place `model.cfg` near your model file, or higher in the folder structure -- the exact location is flexible as long as the binarizer can find it.
+Minden animált ajtóhoz `model.cfg` fájl szükséges. Ez a konfiguráció definiálja a csontstruktúrát (csontváz) és az animációs paramétereket. Helyezd a `model.cfg`-t a modellfájlod közelébe, vagy magasabban a mappa struktúrában -- a pontos hely rugalmas, amíg a binarizáló megtalálja.
 
-The `model.cfg` has two sections:
+A `model.cfg`-nek két szekciója van:
 
 #### CfgSkeletons
 
-Defines the animated bones. Each door gets a bone entry. Bones are listed as pairs: the bone name followed by its parent (empty string `""` for root-level bones).
+Definiálja az animált csontokat. Minden ajtó kap egy csont bejegyzést. A csontok párokként vannak felsorolva: a csont neve, amelyet a szülője követ (üres sztring `""` a gyökér szintű csontokhoz).
 
 ```cpp
 class CfgSkeletons
@@ -99,7 +99,7 @@ class CfgSkeletons
 
 #### CfgModels
 
-Defines the animations for each bone. The class name under `CfgModels` **must match your model's filename** (without extension) for the link to work.
+Definiálja az animációkat minden csonthoz. A `CfgModels` alatti osztálynévnek **meg kell egyeznie a modellfájl nevével** (kiterjesztés nélkül), hogy a kapcsolat működjön.
 
 ```cpp
 class CfgModels
@@ -144,25 +144,25 @@ class CfgModels
 };
 ```
 
-**Key parameters explained:**
+**Kulcs paraméterek magyarázata:**
 
-| Parameter | Leiras |
+| Paraméter | Leírás |
 |-----------|-------------|
-| `type` | Animation type. Use `"rotation"` for swinging doors, `"translation"` for sliding doors. |
-| `selection` | The named selection in the model that should be animated. |
-| `source` | Links to the game config's `Doors` class. Must match the class name in `config.cpp`. |
-| `axis` | Named selection in the Memory LOD defining the rotation axis (two vertices). |
-| `memory` | Set to `1` to indicate the axis is defined in the Memory LOD. |
-| `minErtek` / `maxErtek` | Animation phase range. Typically `0` to `1`. |
-| `angle0` / `angle1` | Rotation angles in **radians**. `angle1` defines how far the door opens. Use negative values to reverse direction. A value of `1.4` radians is approximately 80 degrees. |
+| `type` | Animáció típus. Használj `"rotation"`-t lengő ajtókhoz, `"translation"`-t csúszó ajtókhoz. |
+| `selection` | Az a elnevezett szelekció a modellben, amelyet animálni kell. |
+| `source` | Kapcsolódik a játék konfiguráció `Doors` osztályához. Meg kell egyeznie a `config.cpp` osztálynevével. |
+| `axis` | Elnevezett szelekció a Memory LOD-ban, amely a forgástengelyt definiálja (két csúcspont). |
+| `memory` | Állítsd `1`-re, hogy jelezd, a tengely a Memory LOD-ban van definiálva. |
+| `minValue` / `maxValue` | Animációs fázis tartomány. Jellemzően `0`-tól `1`-ig. |
+| `angle0` / `angle1` | Forgási szögek **radiánban**. Az `angle1` határozza meg, mennyire nyílik ki az ajtó. Használj negatív értékeket az irány megfordításához. Az `1.4` radián megközelítőleg 80 fok. |
 
-#### Ellenorzes a Buldozerben
+#### Ellenőrzés a Buldozerben
 
-After writing the `model.cfg`, open your model in Object Builder with Buldozer running. Use the `[` and `]` keys to cycle through available animation sources, and `;` / `'` (or mouse wheel up/down) to advance or recede the animation. This lets you verify that the door pivots correctly on its axis.
+A `model.cfg` megírása után nyisd meg a modelled az Object Builderben a Buldozer futtatásával. Használd a `[` és `]` billentyűket az elérhető animációs források közötti váltáshoz, és a `;` / `'` billentyűket (vagy az egér görgőjét fel/le) az animáció előre- és hátraléptetéséhez. Ez lehetővé teszi az ellenőrzést, hogy az ajtó helyesen forog-e a tengelye körül.
 
-### Jatek konfiguracio (config.cpp)
+### Játék konfiguráció (config.cpp)
 
-The game config connects the animated model to game systems -- sounds, damage, and door state logic. The config class name **must** follow the pattern `land_modelname` to link correctly with the model.
+A játék konfiguráció összekapcsolja az animált modellt a játék rendszerekkel -- hangok, sérülés és ajtó állapot logika. A konfiguráció osztálynévnek **kötelezően** a `land_modellnév` mintát kell követnie a helyes összekapcsoláshoz.
 
 ```cpp
 class CfgPatches
@@ -296,214 +296,214 @@ class CfgVehicles
 };
 ```
 
-**Door config parameters explained:**
+**Ajtó konfiguráció paraméterek magyarázata:**
 
-| Parameter | Leiras |
+| Paraméter | Leírás |
 |-----------|-------------|
-| `component` | Named selection in the **View Geometry LOD** used for this door. |
-| `soundPos` | Named selection in the **Memory LOD** where door sounds are played. |
-| `animPeriod` | Speed of the door animation (in seconds). |
-| `initPhase` | Initial animation phase (`0` = closed, `1` = fully open). Test in Buldozer to verify which value corresponds to which state. |
-| `initOpened` | Probability that the door spawns open in the world. `0.5` means a 50% chance. |
-| `soundOpen` | Sound class from `CfgAkcioSounds` played when the door opens. See `DZ\sounds\hpp\config.cpp` for available sound sets. |
-| `soundClose` | Sound class played when the door closes. |
-| `soundLocked` | Sound class played when a player tries to open a locked door. |
-| `soundOpenABit` | Sound class played when a player breaks open a locked door. |
+| `component` | Elnevezett szelekció a **View Geometry LOD**-ban, amely ehhez az ajtóhoz használt. |
+| `soundPos` | Elnevezett szelekció a **Memory LOD**-ban, ahol az ajtóhangok lejátszásra kerülnek. |
+| `animPeriod` | Az ajtó animáció sebessége (másodpercben). |
+| `initPhase` | Kezdeti animációs fázis (`0` = zárt, `1` = teljesen nyitott). Teszteld a Buldozerben, hogy melyik érték melyik állapotnak felel meg. |
+| `initOpened` | Annak valószínűsége, hogy az ajtó nyitva jelenik meg a világban. `0.5` 50%-os esélyt jelent. |
+| `soundOpen` | A `CfgActionSounds`-ból származó hangkategória, amely az ajtó nyitásakor szól. Lásd `DZ\sounds\hpp\config.cpp` az elérhető hangkészletekért. |
+| `soundClose` | Az ajtó zárásakor lejátszott hangkategória. |
+| `soundLocked` | Az a hangkategória, amely akkor szól, amikor a játékos zárt ajtót próbál nyitni. |
+| `soundOpenABit` | Az a hangkategória, amely akkor szól, amikor a játékos feltöri a zárt ajtót. |
 
-**Important notes on the config:**
+**Fontos megjegyzések a konfigurációhoz:**
 
-- All buildings in DayZ inherit from `HouseNoDestruct`.
-- Each class name under `class Doors` must correspond to the `source` parameter defined in `model.cfg`.
-- The `DamageSystem` section must include a `DamageZones` subclass for each door. The `componentNames[]` array references the named selection from the model's Fire Geometry LOD.
-- Adding the `class=house` named property and a game config class requires your terrain to be re-binarized (model paths in `.wrp` files get replaced with game config class references).
+- A DayZ összes épülete a `HouseNoDestruct` osztályból öröklődik.
+- A `class Doors` alatti minden osztálynévnek meg kell felelnie a `model.cfg`-ben definiált `source` paraméternek.
+- A `DamageSystem` szekciónak tartalmaznia kell egy `DamageZones` alosztályt minden ajtóhoz. A `componentNames[]` tömb a modell Fire Geometry LOD-jából származó elnevezett szekcióra hivatkozik.
+- A `class=house` elnevezett tulajdonság és egy játék konfiguráció osztály hozzáadása megköveteli a terepet újra binarizálni (a `.wrp` fájlokban lévő modell elérési utak játék konfiguráció osztály hivatkozásokkal lesznek helyettesítve).
 
-### Dupla ajtok
+### Dupla ajtók
 
-Double doors (two wings that open together from a single interaction) are common in DayZ. They require special setup:
+A dupla ajtók (két szárny, amelyek egyetlen interakció hatására együtt nyílnak) gyakoriak a DayZ-ben. Speciális beállítást igényelnek:
 
-**In the model:**
-- Configure each wing as an individual door with its own named selection (e.g., `door3_1` and `door3_2`).
-- In the **Memory LOD**, the action point must be **shared** between the two wings -- use one named selection and one vertex for the action position.
-- The no-suffix named selection (e.g., `door3` without wing suffix) must cover **both** door handles.
-- **View Geometry** and **Fire Geometry** require an additional named selection that covers both wings together.
+**A modellben:**
+- Konfigurálj minden szárnyat egyedi ajtóként saját elnevezett szelekcióval (pl. `door3_1` és `door3_2`).
+- A **Memory LOD**-ban az akció pontnak **közösnek** kell lennie a két szárny között -- használj egy elnevezett szelekciót és egy csúcspontot az akció pozícióhoz.
+- Az utótag nélküli elnevezett szelekciónak (pl. `door3` szárny utótag nélkül) **mindkét** ajtókilincset le kell fednie.
+- A **View Geometry** és **Fire Geometry** további elnevezett szelekciót igényel, amely mindkét szárnyat együtt fedi le.
 
-**In model.cfg:**
-- Define each wing as a separate animation class, but set the **same `source` parameter** for both wings (e.g., `"doors34"` for both).
-- Set `angle1` to a **positive** value for one wing and **negative** for the other, so they swing in opposite directions.
+**A model.cfg-ben:**
+- Definiáld minden szárnyat külön animációs osztályként, de állítsd be **ugyanazt a `source` paramétert** mindkét szárnyhoz (pl. `"doors34"` mindkettőhöz).
+- Állítsd az `angle1`-et **pozitív** értékre az egyik szárnyhoz és **negatívra** a másikhoz, hogy ellentétes irányba nyíljanak.
 
-**In config.cpp:**
-- Define only **one** class under `class Doors`, with its name matching the shared `source` parameter.
-- Similarly, define only **one** entry in `DamageZones` for the double door pair.
+**A config.cpp-ben:**
+- Definiálj csak **egy** osztályt a `class Doors` alatt, amelynek neve megegyezik a közös `source` paraméterrel.
+- Hasonlóan, definiálj csak **egy** bejegyzést a `DamageZones`-ban a dupla ajtó párhoz.
 
-### Tolo ajtok
+### Toló ajtók
 
-For doors that slide along a track rather than swinging (such as barn doors or sliding panels), change the animation `type` in `model.cfg` from `"rotation"` to `"translation"`. The axis vertices in the Memory LOD then define the direction of travel instead of the pivot line.
+Olyan ajtókhoz, amelyek sínen csúsznak a lengés helyett (mint pajta ajtók vagy csúszó panelek), változtasd meg az animáció `type`-ját a `model.cfg`-ben `"rotation"`-ról `"translation"`-ra. A Memory LOD tengely csúcspontjai ekkor a mozgás irányát definiálják a forgáspont vonal helyett.
 
-### Hatarolo gomb problemak
+### Határoló gömb problémák
 
-By default, a model's bounding sphere is sized to contain the entire object. When doors are modeled in the closed position, the open position may extend **outside** this bounding sphere. This causes problems:
+Alapértelmezetten egy modell határoló gömbje úgy van méretezve, hogy az egész objektumot magában foglalja. Ha az ajtók zárt helyzetben vannak modellezve, a nyitott pozíció **kívül** eshet ezen a határoló gömbön. Ez problémákat okoz:
 
-- **Akcios stop working** -- ray-casting for door interactions fails from certain angles.
-- **Ballistics ignore the door** -- bullets pass through geometry that lies outside the bounding sphere.
+- **Az akciók nem működnek** -- a sugárvetés az ajtó interakciókhoz bizonyos szögekből meghiúsul.
+- **A ballisztika figyelmen kívül hagyja az ajtót** -- a golyók átmennek a határoló gömbön kívül eső geometrián.
 
-**Solution:** Create a named selection in the Memory LOD that covers the larger area the building occupies when doors are fully open. Then add a `bounding` parameter to your game config class:
+**Megoldás:** Hozz létre egy elnevezett szelekciót a Memory LOD-ban, amely lefedi azt a nagyobb területet, amelyet az épület elfoglal, amikor az ajtók teljesen nyitva vannak. Ezután adj hozzá egy `bounding` paramétert a játék konfigurációs osztályodhoz:
 
 ```cpp
 class land_modelname: HouseNoDestruct
 {
     bounding = "selection_name";
-    // ... rest of config
+    // ... a konfiguráció többi része
 };
 ```
 
-This overrides the automatic bounding sphere calculation with one that encompasses all door positions.
+Ez felülírja az automatikus határoló gömb számítást olyannal, amely magában foglalja az összes ajtó pozíciót.
 
 ---
 
-## Letra konfiguracio
+## Létra konfiguráció
 
-Unlike doors, ladders in DayZ require **no animation config** and **no special game config entries** beyond the base building class. The entire ladder setup is done through Memory LOD vertex placement and one View Geometry selection. This makes ladders simpler to set up than doors, but the vertex placement must be precise.
+Az ajtókkal ellentétben a DayZ létrák **nem igényelnek animációs konfigurációt** és **nem igényelnek speciális játék konfigurációs bejegyzéseket** az alap épület osztályon kívül. A teljes létra beállítás Memory LOD csúcspont elhelyezéssel és egy View Geometry szelekcióval történik. Ez egyszerűbbé teszi a létrák beállítását az ajtóknál, de a csúcspont elhelyezésnek precíznek kell lennie.
 
-### Tamogatott letra tipusok
+### Támogatott létra típusok
 
-DayZ supports two types of ladders:
+A DayZ két típusú létrát támogat:
 
-1. **Front bottom enter with side-way top exit** -- The player approaches from the front at the bottom and exits to the side at the top (against a wall).
-2. **Front bottom enter with front top exit** -- The player approaches from the front at the bottom and exits forward at the top (onto a roof or platform).
+1. **Elöl alul belépés oldalsó felső kilépéssel** -- A játékos elölről közelíti meg alul és oldalt lép ki felül (fal mellett).
+2. **Elöl alul belépés elöl felső kilépéssel** -- A játékos elölről közelíti meg alul és előre lép ki felül (tetőre vagy platformra).
 
-Both types also support **middle side-way enter and exit points**, allowing players to get on and off the ladder at intermediate floors. Ladders can also be placed **at an angle** rather than strictly vertical.
+Mindkét típus támogatja a **középső oldalsó be- és kilépési pontokat** is, lehetővé téve a játékosok számára, hogy közbenső emeleteken szálljanak fel és le a létráról. A létrák **szögben** is elhelyezhetők a szigorúan függőleges helyett.
 
-### Memory LOD nevesitett szelekciok
+### Memory LOD elnevezett szelekciók
 
-The ladder is defined entirely by named vertices in the Memory LOD. Every selection name begins with `ladderN_` where **N** is the ladder ID, starting from `1`. A building can have multiple ladders (`ladder1_`, `ladder2_`, `ladder3_`, etc.).
+A létrát teljes egészében elnevezett csúcspontok definiálják a Memory LOD-ban. Minden szelekciónév `ladderN_`-nel kezdődik, ahol **N** a létra azonosító, `1`-től kezdve. Egy épületnek több létrája is lehet (`ladder1_`, `ladder2_`, `ladder3_`, stb.).
 
-Here is the complete set of named selections for a ladder:
+Itt a létra elnevezett szelekciók teljes készlete:
 
-| Named Selection | Leiras |
+| Elnevezett szelekció | Leírás |
 |----------------|-------------|
-| `ladderN_bottom_front` | Defines the bottom entry step -- where the player begins climbing. |
-| `ladderN_middle_left` | Defines a middle entry/exit point (left side). Can contain multiple vertices if the ladder passes multiple floors. |
-| `ladderN_middle_right` | Defines a middle entry/exit point (right side). Can contain multiple vertices for multi-floor ladders. |
-| `ladderN_top_front` | Defines the upper exit step -- where the player finishes climbing (front exit type). |
-| `ladderN_top_left` | Defines the upper exit direction for wall-mounted ladders (left side). Must be at least **5 ladder steps higher** than the floor (approximately the height of a standing player on a ladder). |
-| `ladderN_top_right` | Defines the upper exit direction for wall-mounted ladders (right side). Same height requirement as `top_left`. |
-| `ladderN` | Defines where the "Enter Ladder" action widget appears to the player. |
-| `ladderN_dir` | Defines the direction from which the ladder can be climbed (approach direction). |
-| `ladderN_con` | The measurement point for the enter action. **Must be placed at floor level.** |
-| `ladderN_con_dir` | Defines the direction of a 180-degree cone (originating from `ladderN_con`) within which the action to enter the ladder is available. |
+| `ladderN_bottom_front` | Definiálja az alsó belépési lépcsőt -- ahol a játékos elkezdi a mászást. |
+| `ladderN_middle_left` | Definiál egy középső be-/kilépési pontot (bal oldal). Több csúcspontot tartalmazhat, ha a létra több emeleten halad át. |
+| `ladderN_middle_right` | Definiál egy középső be-/kilépési pontot (jobb oldal). Több csúcspontot tartalmazhat többemeletes létrákhoz. |
+| `ladderN_top_front` | Definiálja a felső kilépési lépcsőt -- ahol a játékos befejezi a mászást (elülső kilépés típus). |
+| `ladderN_top_left` | Definiálja a felső kilépési irányt fali létrákhoz (bal oldal). Legalább **5 létra lépcsővel magasabbnak** kell lennie a padlószintnél (megközelítőleg egy álló játékos magassága a létrán). |
+| `ladderN_top_right` | Definiálja a felső kilépési irányt fali létrákhoz (jobb oldal). Ugyanaz a magassági követelmény, mint a `top_left`-nél. |
+| `ladderN` | Definiálja, hol jelenik meg a "Létra használata" akció widget a játékos számára. |
+| `ladderN_dir` | Definiálja az irányt, ahonnan a létrán lehet mászni (megközelítési irány). |
+| `ladderN_con` | A belépési akció mérési pontja. **A padlószintre kell helyezni.** |
+| `ladderN_con_dir` | Definiálja egy 180 fokos kúp irányát (a `ladderN_con`-ból kiindulva), amelyen belül a létrára szállás akció elérhető. |
 
-Each of these is a vertex (or set of vertices for middle points) that you place manually in Object Builder's Memory LOD.
+Ezek mindegyike egy csúcspont (vagy csúcspont készlet a középső pontokhoz), amelyet manuálisan helyezel el az Object Builder Memory LOD-jában.
 
-### View Geometry kovetelmenyek
+### View Geometry követelmények
 
-In addition to the Memory LOD setup, you must create a **View Geometry** component with a named selection called `ladderN`. This selection must cover the **entire volume** of the ladder -- the full height and width of the climbable area. Without this View Geometry selection, the ladder will not function correctly.
+A Memory LOD beállítás mellett létre kell hoznod egy **View Geometry** komponenst `ladderN` nevű elnevezett szelekcióval. Ennek a szelekciónak le kell fednie a létra **teljes térfogatát** -- a mászható terület teljes magasságát és szélességét. Ezen View Geometry szelekció nélkül a létra nem fog helyesen működni.
 
-### Letra meretek
+### Létra méretek
 
-Ladder climbing animations are designed for **fixed dimensions**. Your ladder rungs and spacing should match the vanilla ladder proportions to ensure animations align correctly. Refer to the official DayZ Samples repository for exact measurements -- the sample ladder parts are the same ones used on most vanilla buildings.
+A létra mászási animációk **rögzített méretekhez** vannak tervezve. A létra fokaid és térközeid a vanilla létra arányainak kell megfelelniük az animációk helyes illeszkedéséhez. Tekintsd meg a hivatalos DayZ Samples adattárat a pontos mérésekért -- a minta létra részek ugyanazok, amelyeket a legtöbb vanilla épületen használnak.
 
-### Utkozesi ter
+### Ütközési tér
 
-Characters **collide with geometry while climbing a ladder**. This means you must ensure there is enough clear space around the ladder for the climbing character in both:
+A karakterek **ütköznek a geometriával létra mászás közben**. Ez azt jelenti, hogy elegendő szabad helyet kell biztosítanod a létra körül a mászó karakter számára mind a:
 
-- **Geometry LOD** -- physical collision.
-- **Roadway LOD** -- surface interaction.
+- **Geometry LOD** -- fizikai ütközés.
+- **Roadway LOD** -- felszín interakció.
 
-If the space is too tight, the character will clip into walls or get stuck during the climbing animation.
+Ha a tér túl szűk, a karakter beleakad a falakba vagy elakad a mászási animáció során.
 
-### Konfiguracios kovetelmenyek letrakhoz
+### Konfigurációs követelmények létrákhoz
 
-Unlike the Arma series, DayZ does **not** require a `ladders[]` array in the game config class. However, two things are still necessary:
+Az Arma sorozattal ellentétben a DayZ **nem** igényel `ladders[]` tömböt a játék konfigurációs osztályban. Mindazonáltal két dolog még mindig szükséges:
 
-1. Your model must have a **config representation** -- a `config.cpp` with a `CfgVehicles` class (the same base class used for doors; see the door config section above).
-2. The **Geometry LOD** must contain the named property `class` with the value `house`.
+1. A modellednek rendelkeznie kell **konfigurációs reprezentációval** -- egy `config.cpp` `CfgVehicles` osztállyal (ugyanaz az alap osztály, amelyet az ajtókhoz használnak; lásd az ajtó konfiguráció szekciót fentebb).
+2. A **Geometry LOD**-nak tartalmaznia kell a `class` elnevezett tulajdonságot `house` értékkel.
 
-Beyond these two requirements, the ladder is fully defined by the Memory LOD vertices and the View Geometry selection. No `model.cfg` animation entries are needed.
+Ezen két követelményen kívül a létrát teljes egészében a Memory LOD csúcspontok és a View Geometry szelekció definiálja. Nincs szükség `model.cfg` animációs bejegyzésekre.
 
 ---
 
-## Modell kovetelmenyek osszefoglalasa
+## Modell követelmények összefoglalása
 
-Buildings with doors and ladders must include several LODs, each serving a distinct purpose. The table below summarizes what each LOD must contain:
+Az ajtókkal és létrákkal rendelkező épületeknek több LOD-ot kell tartalmazniuk, mindegyik különálló célt szolgálva. Az alábbi táblázat összefoglalja, mit kell tartalmaznia minden LOD-nak:
 
-| LOD | Cel | Door Requirements | Ladder Requirements |
+| LOD | Cél | Ajtó követelmények | Létra követelmények |
 |-----|---------|-------------------|---------------------|
-| **Resolution LOD** | Visual mesh displayed to the player. | Named selection for the door geometry (e.g., `door1`). | No specific requirements. |
-| **Geometry LOD** | Physical collision detection. | Named selection for the door geometry. Named property `class = "house"`. | Named property `class = "house"`. Sufficient clearance around the ladder for climbing characters. |
-| **Fire Geometry LOD** | Ballistic hit detection (bullets, projectiles). | Named selection matching `componentNames[]` in the damage zone config. | No specific requirements. |
-| **View Geometry LOD** | Visibility checks, action ray-casting. | Named selection matching the `component` parameter in the door config. | Named selection `ladderN` covering the full volume of the ladder. |
-| **Memory LOD** | Axis definitions, action points, sound positions. | Axis vertices (`door1_axis`), sound position (`door1_action`), action widget position. | Full set of ladder vertices (`ladderN_bottom_front`, `ladderN_top_left`, `ladderN_dir`, `ladderN_con`, etc.). |
-| **Roadway LOD** | Surface interaction for characters. | Not typically required. | Sufficient clearance around the ladder for climbing characters. |
+| **Resolution LOD** | A játékos számára megjelenített vizuális háló. | Elnevezett szelekció az ajtó geometriához (pl. `door1`). | Nincs specifikus követelmény. |
+| **Geometry LOD** | Fizikai ütközés érzékelés. | Elnevezett szelekció az ajtó geometriához. `class = "house"` elnevezett tulajdonság. | `class = "house"` elnevezett tulajdonság. Elegendő szabad hely a létra körül a mászó karakterek számára. |
+| **Fire Geometry LOD** | Ballisztikus találat érzékelés (golyók, lövedékek). | A sérülési zóna konfigurációban lévő `componentNames[]` értékkel egyező elnevezett szelekció. | Nincs specifikus követelmény. |
+| **View Geometry LOD** | Láthatósági ellenőrzések, akció sugárvetés. | Az ajtó konfigurációban lévő `component` paraméterrel egyező elnevezett szelekció. | `ladderN` elnevezett szelekció, amely lefedi a létra teljes térfogatát. |
+| **Memory LOD** | Tengely definíciók, akció pontok, hang pozíciók. | Tengely csúcspontok (`door1_axis`), hang pozíció (`door1_action`), akció widget pozíció. | Létra csúcspontok teljes készlete (`ladderN_bottom_front`, `ladderN_top_left`, `ladderN_dir`, `ladderN_con`, stb.). |
+| **Roadway LOD** | Felszín interakció karakterek számára. | Jellemzően nem szükséges. | Elegendő szabad hely a létra körül a mászó karakterek számára. |
 
-### Nevesitett szelekcio konzisztencia
+### Elnevezett szelekció konzisztencia
 
-A critical requirement is that **named selections must be consistent across all LODs** that reference them. If a selection is called `door1` in the Resolution LOD, it must also be `door1` in the Geometry, Fire Geometry, and View Geometry LODs. Mismatched names between LODs will cause the door or ladder to fail silently.
+Kritikus követelmény, hogy az **elnevezett szelekcióknak konzisztensnek kell lenniük az összes hivatkozó LOD-on keresztül**. Ha egy szelekciót `door1`-nek nevezünk a Resolution LOD-ban, annak szintén `door1`-nek kell lennie a Geometry, Fire Geometry és View Geometry LOD-okban. A LOD-ok közötti eltérő nevek az ajtó vagy létra csendes meghibásodását okozzák.
 
 ---
 
 ## Legjobb gyakorlatok
 
-1. **Model doors closed by default.** Animate from closed to open. Bohemia plans to support opening doors in both directions, so starting from closed is future-proof.
+1. **Modellezd az ajtókat alapértelmezetten zárva.** Animálj zártból nyitottba. A Bohemia tervezi, hogy támogatja az ajtók mindkét irányú nyitását, így a zártból indulás jövőbiztos.
 
-2. **Use standard door dimensions.** Stick to 120 x 220 cm for door openings unless you have a specific design reason not to. This matches vanilla buildings and ensures character animations look correct.
+2. **Használj szabványos ajtó méreteket.** Maradj a 120 x 220 cm-nél az ajtónyílásokhoz, hacsak nincs konkrét tervezési indokod. Ez megegyezik a vanilla épületekkel és biztosítja, hogy a karakter animációk helyesek legyenek.
 
-3. **Test animations in Buldozer before packing.** Use `[` / `]` to cycle sources and `;` / `'` or mouse wheel to scrub the animation. Catching axis or angle errors here saves significant time.
+3. **Teszteld az animációkat a Buldozerben csomagolás előtt.** Használd a `[` / `]` billentyűket a források váltásához és a `;` / `'` billentyűket vagy az egér görgőjét az animáció lejátszásához. A tengely vagy szög hibák korai észlelése jelentős időt takarít meg.
 
-4. **Override bounding spheres for large buildings.** If your building has doors that swing outward significantly, create a Memory LOD selection covering the full animated extent and link it with the `bounding` config parameter.
+4. **Írd felül a határoló gömböket nagy épületeknél.** Ha az épületednek jelentősen kifelé lengő ajtói vannak, hozz létre egy Memory LOD szelekciót, amely lefedi a teljes animált kiterjedést, és kapcsold össze a `bounding` konfiguráció paraméterrel.
 
-5. **Place ladder vertices precisely.** Climbing animations are fixed to specific dimensions. Vertices that are too far apart or misaligned will cause the character to float, clip, or get stuck.
+5. **Helyezd el precízen a létra csúcspontokat.** A mászási animációk rögzített méretekhez vannak kötve. A túl távol lévő vagy rosszul igazított csúcspontok lebegő, beakadó vagy elakadó karaktert eredményeznek.
 
-6. **Ensure clearance around ladders.** Leave enough space in the Geometry and Roadway LODs for the character model while climbing.
+6. **Biztosíts szabad helyet a létrák körül.** Hagyj elegendő teret a Geometry és Roadway LOD-okban a karakter modell számára mászás közben.
 
-7. **Keep one `model.cfg` per model or folder.** The `model.cfg` does not need to sit next to the `.p3d` file, but keeping them close makes organization easier. It can also be placed higher in the folder structure to cover multiple models.
+7. **Tarts egy `model.cfg`-t modellenként vagy mappánként.** A `model.cfg`-nek nem kell a `.p3d` fájl mellett lennie, de az egymáshoz közeli elhelyezés megkönnyíti a szervezést. Magasabban is elhelyezhető a mappa struktúrában, hogy több modellt fedjen le.
 
-8. **Use the DayZ Samples repository.** Bohemia provides working samples for both doors (`Test_Building`) and ladders (`Test_Ladders`) at `https://github.com/BohemiaInteractive/DayZ-Samples`. Study these before building your own.
+8. **Használd a DayZ Samples adattárat.** A Bohemia működő mintákat biztosít mind az ajtókhoz (`Test_Building`), mind a létrákhoz (`Test_Ladders`) a `https://github.com/BohemiaInteractive/DayZ-Samples` címen. Tanulmányozd ezeket, mielőtt sajátot építesz.
 
-9. **Re-binarize terrain after adding building configs.** Adding `class=house` and a game config class means model paths in `.wrp` files are replaced with class references. Your terrain must be re-binarized for this to take effect.
+9. **Binarizáld újra a terepet épület konfigurációk hozzáadása után.** A `class=house` és egy játék konfigurációs osztály hozzáadása azt jelenti, hogy a `.wrp` fájlokban lévő modell elérési utak osztályhivatkozásokkal lesznek helyettesítve. A terepet újra kell binarizálni, hogy ez érvénybe lépjen.
 
-10. **Update the navmesh after placing buildings.** Rebuilt terrain without an updated navmesh can cause AI to walk through doors instead of using them properly.
+10. **Frissítsd a navmesh-t épületek elhelyezése után.** A frissített navmesh nélkül újraépített terep azt okozhatja, hogy az AI átmegy az ajtókon ahelyett, hogy megfelelően használná őket.
 
 ---
 
-## Gyakori hibak
+## Gyakori hibák
 
-### Doors
+### Ajtók
 
-| Hiba | Tunet | Javitas |
+| Hiba | Tünet | Javítás |
 |---------|---------|-----|
-| `CfgModels` class name does not match model filename. | Door animation does not play. | Rename the class to match the `.p3d` filename exactly (without extension). |
-| Missing named selection in one or more LODs. | Door is visible but not interactive, or bullets pass through. | Ensure the selection exists in Resolution, Geometry, View Geometry, and Fire Geometry LODs. |
-| Axis vertices missing or only one vertex defined. | Door pivots from the wrong point or does not rotate at all. | Place exactly two vertices in the Memory LOD for the axis selection (e.g., `door1_axis`). |
-| `source` in `model.cfg` does not match class name in `config.cpp` Doors. | Door is not linked to game logic -- no sounds, no state changes. | Ensure the `source` parameter and the Doors class name are identical. |
-| Forgetting `class = "house"` named property in Geometry LOD. | Building is not recognized as an interactive structure. | Add the named property in Object Builder's Geometry LOD. |
-| Bounding sphere too small. | Door actions or ballistics fail from certain angles. | Add a `bounding` selection in Memory LOD and reference it in the config. |
-| Negative vs. positive `angle1` confusion for double doors. | Both wings swing the same direction and clip through each other. | One wing needs positive `angle1`, the other negative. |
+| A `CfgModels` osztálynév nem egyezik a modell fájlnévvel. | Az ajtó animáció nem játszódik le. | Nevezd át az osztályt, hogy pontosan egyezzen a `.p3d` fájlnévvel (kiterjesztés nélkül). |
+| Hiányzó elnevezett szelekció egy vagy több LOD-ban. | Az ajtó látható, de nem interaktív, vagy a golyók átmennek rajta. | Biztosítsd, hogy a szelekció létezzen a Resolution, Geometry, View Geometry és Fire Geometry LOD-okban. |
+| Tengely csúcspontok hiányoznak vagy csak egy csúcspont van definiálva. | Az ajtó rossz pontból forog vagy egyáltalán nem forog. | Helyezz el pontosan két csúcspontot a Memory LOD-ban a tengely szelekcióhoz (pl. `door1_axis`). |
+| A `model.cfg`-beli `source` nem egyezik a `config.cpp` Doors osztálynévvel. | Az ajtó nincs összekapcsolva a játék logikával -- nincsenek hangok, nincsenek állapotváltozások. | Biztosítsd, hogy a `source` paraméter és a Doors osztálynév azonos legyen. |
+| A `class = "house"` elnevezett tulajdonság elfelejtése a Geometry LOD-ban. | Az épület nem interaktív struktúraként van felismerve. | Add hozzá az elnevezett tulajdonságot az Object Builder Geometry LOD-jában. |
+| A határoló gömb túl kicsi. | Az ajtó akciók vagy a ballisztika bizonyos szögekből nem működik. | Adj hozzá egy `bounding` szelekciót a Memory LOD-ban és hivatkozd a konfigurációban. |
+| Negatív vs. pozitív `angle1` zavar dupla ajtóknál. | Mindkét szárny azonos irányba leng és egymásba akad. | Az egyik szárnynak pozitív `angle1`-re, a másiknak negatívra van szüksége. |
 
-### Ladders
+### Létrák
 
-| Hiba | Tunet | Javitas |
+| Hiba | Tünet | Javítás |
 |---------|---------|-----|
-| `ladderN_con` not placed at floor level. | "Enter Ladder" action does not appear or appears at the wrong height. | Move the vertex to ground/floor level. |
-| Missing View Geometry selection `ladderN`. | Ladder cannot be interacted with. | Create a View Geometry component with a named selection covering the full ladder volume. |
-| `ladderN_top_left` / `ladderN_top_right` too low. | Character clips through the wall or floor at the top exit. | These must be at least 5 ladder steps higher than the floor level. |
-| Insufficient clearance in Geometry LOD. | Character gets stuck or clips into walls while climbing. | Widen the gap around the ladder in the Geometry and Roadway LODs. |
-| Ladder numbering starts at 0. | Ladder does not function. | Numbering starts at `1` (`ladder1_`, not `ladder0_`). |
-| Specifying `ladders[]` in game config. | Wasted effort (harmless but unnecessary). | DayZ does not use the `ladders[]` array. Remove it and rely on Memory LOD vertex placement. |
+| A `ladderN_con` nincs padlószintre helyezve. | A "Létra használata" akció nem jelenik meg vagy rossz magasságban jelenik meg. | Mozgasd a csúcspontot a talaj/padló szintjére. |
+| Hiányzó View Geometry szelekció `ladderN`. | A létrával nem lehet interakcióba lépni. | Hozz létre egy View Geometry komponenst elnevezett szelekcióval, amely lefedi a teljes létra térfogatot. |
+| A `ladderN_top_left` / `ladderN_top_right` túl alacsony. | A karakter átmegy a falon vagy padlón a felső kilépésnél. | Ezeknek legalább 5 létra lépcsővel magasabbnak kell lenniük a padlószintnél. |
+| Elégtelen szabad hely a Geometry LOD-ban. | A karakter elakad vagy beakad a falakba mászás közben. | Szélesítsd a rést a létra körül a Geometry és Roadway LOD-okban. |
+| A létra számozás 0-val kezdődik. | A létra nem működik. | A számozás `1`-gyel kezdődik (`ladder1_`, nem `ladder0_`). |
+| `ladders[]` megadása a játék konfigurációban. | Felesleges erőfeszítés (ártalmatlan, de szükségtelen). | A DayZ nem használja a `ladders[]` tömböt. Távolítsd el és támaszkodj a Memory LOD csúcspont elhelyezésre. |
 
 ---
 
-## Hivatkozasok
+## Hivatkozások
 
-- [Bohemia Interactive -- Doors on buildings](https://community.bistudio.com/wiki/DayZ:Doors_on_buildings) (official BI documentation)
-- [Bohemia Interactive -- Ladders on buildings](https://community.bistudio.com/wiki/DayZ:Ladders_on_buildings) (official BI documentation)
-- [DayZ Samples -- Test_Building](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Building) (working door sample)
-- [DayZ Samples -- Test_Ladders](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Ladders) (working ladder sample)
-- [Chapter 4.2: 3D Models](02-models.md) -- LOD system, named selections, `model.cfg` fundamentals
+- [Bohemia Interactive -- Ajtók épületeken](https://community.bistudio.com/wiki/DayZ:Doors_on_buildings) (hivatalos BI dokumentáció)
+- [Bohemia Interactive -- Létrák épületeken](https://community.bistudio.com/wiki/DayZ:Ladders_on_buildings) (hivatalos BI dokumentáció)
+- [DayZ Samples -- Test_Building](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Building) (működő ajtó minta)
+- [DayZ Samples -- Test_Ladders](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Ladders) (működő létra minta)
+- [4.2. fejezet: 3D modellek](02-models.md) -- LOD rendszer, elnevezett szelekciók, `model.cfg` alapok
 
 ---
 
-## Navigacio
+## Navigáció
 
-| Elozo | Up | Kovetkezo |
+| Előző | Fel | Következő |
 |----------|----|------|
-| [4.7 Workbench Guide](07-workbench-guide.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | -- |
+| [4.7 Workbench útmutató](07-workbench-guide.md) | [4. rész: Fájlformátumok és DayZ Tools](01-textures.md) | -- |

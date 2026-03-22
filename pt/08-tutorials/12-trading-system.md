@@ -1,63 +1,67 @@
-# Chapter 8.12: Building a Trading System
+# Capítulo 8.12: Construindo um Sistema de Comércio
 
-[Home](../../README.md) | [<< Previous: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Next: The Diagnostic Menu >>](13-diag-menu.md)
+[Início](../../README.md) | [<< Anterior: Criando Roupas Personalizadas](11-clothing-mod.md) | **Construindo um Sistema de Comércio** | [Próximo: O Menu de Diagnóstico >>](13-diag-menu.md)
+
+---
+
+> **Resumo:** Construa um sistema de loja completo sem NPCs: configuração JSON, compra/venda validada pelo servidor, interface categorizada, transações baseadas em moeda. O tutorial mais complexo desta wiki -- abrange modelagem de dados, ciclos de RPC, manipulação de inventário e princípios anti-cheat.
 
 ---
 
 ## Sumário
 
-- [What We Are Building](#what-we-are-building)
-- [Step 1: Data Model (3_Game)](#step-1-data-model-3_game)
-- [Step 2: RPC Constantes (3_Game)](#step-2-rpc-constants-3_game)
-- [Step 3: Server-Side Shop Manager (4_World)](#step-3-server-side-shop-manager-4_world)
-- [Step 4: Client-Side Shop UI (5_Mission)](#step-4-client-side-shop-ui-5_mission)
-- [Step 5: Layout File](#step-5-layout-file)
-- [Step 6: Mission Hook and Keybind](#step-6-mission-hook-and-keybind)
-- [Step 7: Currency Item](#step-7-currency-item)
-- [Step 8: Shop Config JSON](#step-8-shop-config-json)
-- [Step 9: Build and Test](#step-9-build-and-test)
-- [Security Considerations](#security-considerations)
-- [Complete Code Reference](#complete-code-reference)
-- [Boas Práticas / Erros Comuns / What You Learned](#best-practices)
+- [O Que Estamos Construindo](#o-que-estamos-construindo)
+- [Passo 1: Modelo de Dados (3_Game)](#passo-1-modelo-de-dados-3_game)
+- [Passo 2: Constantes RPC (3_Game)](#passo-2-constantes-rpc-3_game)
+- [Passo 3: Gerenciador do Servidor (4_World)](#passo-3-gerenciador-do-servidor-4_world)
+- [Passo 4: Interface da Loja no Cliente (5_Mission)](#passo-4-interface-da-loja-no-cliente-5_mission)
+- [Passo 5: Arquivo de Layout](#passo-5-arquivo-de-layout)
+- [Passo 6: Hook de Missão e Tecla de Atalho](#passo-6-hook-de-missão-e-tecla-de-atalho)
+- [Passo 7: Item de Moeda](#passo-7-item-de-moeda)
+- [Passo 8: JSON de Configuração da Loja](#passo-8-json-de-configuração-da-loja)
+- [Passo 9: Compilar e Testar](#passo-9-compilar-e-testar)
+- [Considerações de Segurança](#considerações-de-segurança)
+- [Referência Completa do Código](#referência-completa-do-código)
+- [Boas Práticas / Erros Comuns / O Que Você Aprendeu](#boas-práticas)
 
 ---
 
-## What We Are Building
+## O Que Estamos Construindo
 
-Players press F6 to open a shop menu, browse items by category (Weapons, Food, Medical), and buy/sell using a currency item. The server validates every transaction -- the client never decides prices or spawns items.
+Os jogadores pressionam F6 para abrir um menu de loja, navegam por itens por categoria (Armas, Comida, Médico) e compram/vendem usando um item de moeda. O servidor valida cada transação -- o cliente nunca decide preços nem cria itens.
 
 ```mermaid
 sequenceDiagram
-    participant P as Player (Client)
+    participant P as Jogador (Cliente)
     participant UI as ShopMenu
-    participant S as ShopManager (Server)
+    participant S as ShopManager (Servidor)
 
-    P->>UI: Opens shop (keybind)
+    P->>UI: Abre a loja (tecla de atalho)
     UI->>S: RPC: RequestShopData
-    S-->>UI: RPC: ShopDataResponse(categories, items)
-    UI->>UI: Populate UI with items
-    P->>UI: Clicks "Buy AKM"
+    S-->>UI: RPC: ShopDataResponse(categorias, itens)
+    UI->>UI: Preenche a interface com itens
+    P->>UI: Clica em "Comprar AKM"
     UI->>S: RPC: BuyItem("AKM")
-    S->>S: Validate currency count
-    S->>S: Delete currency items
-    S->>S: Spawn purchased item
-    S-->>UI: RPC: TransactionResult(success)
-    UI->>UI: Update balance display
+    S->>S: Valida quantidade de moeda
+    S->>S: Remove itens de moeda
+    S->>S: Cria item comprado
+    S-->>UI: RPC: TransactionResult(sucesso)
+    UI->>UI: Atualiza exibição do saldo
 ```
 
 ```
-CLIENT                                SERVER
-1. Press F6 --> REQUEST_SHOP_DATA ->  2. Load config, count currency
-                                         SHOP_DATA_RESPONSE ->
-3. Show categories + items
-   Click Buy --> BUY_ITEM (cls,qty) -> 4. Validate, remove currency, spawn
-                                         TRANSACTION_RESULT ->
-5. Show result, update balance
+CLIENTE                               SERVIDOR
+1. Pressiona F6 --> REQUEST_SHOP_DATA -> 2. Carrega config, conta moeda
+                                           SHOP_DATA_RESPONSE ->
+3. Mostra categorias + itens
+   Clica Comprar --> BUY_ITEM (cls,qty) -> 4. Valida, remove moeda, cria item
+                                              TRANSACTION_RESULT ->
+5. Mostra resultado, atualiza saldo
 ```
 
-**Key rule:** Client sends `(className, quantity)` only. Server looks up the price.
+**Regra principal:** O cliente envia apenas `(className, quantity)`. O servidor consulta o preço.
 
-### Mod Structure
+### Estrutura do Mod
 
 ```
 ShopDemo/
@@ -71,7 +75,7 @@ ShopDemo/
 
 ---
 
-## Step 1: Data Model (3_Game)
+## Passo 1: Modelo de Dados (3_Game)
 
 ### `Scripts/3_Game/ShopDemo/ShopDemoData.c`
 
@@ -100,28 +104,28 @@ class ShopConfig
 };
 ```
 
-Keep `SellPrice < BuyPrice` always to prevent infinite money loops.
+Mantenha sempre `SellPrice < BuyPrice` para evitar loops infinitos de dinheiro.
 
 ---
 
-## Step 2: RPC Constantes (3_Game)
+## Passo 2: Constantes RPC (3_Game)
 
 ### `Scripts/3_Game/ShopDemo/ShopDemoRPC.c`
 
 ```c
 class ShopDemoRPC
 {
-    static const int REQUEST_SHOP_DATA   = 79101;  // Client -> Server
+    static const int REQUEST_SHOP_DATA   = 79101;  // Cliente -> Servidor
     static const int BUY_ITEM            = 79102;
     static const int SELL_ITEM           = 79103;
-    static const int SHOP_DATA_RESPONSE  = 79201;  // Server -> Client
+    static const int SHOP_DATA_RESPONSE  = 79201;  // Servidor -> Cliente
     static const int TRANSACTION_RESULT  = 79202;
 };
 ```
 
 ---
 
-## Step 3: Server-Side Shop Manager (4_World)
+## Passo 3: Gerenciador do Servidor (4_World)
 
 ### `Scripts/4_World/ShopDemo/ShopDemoManager.c`
 
@@ -316,7 +320,7 @@ modded class PlayerBase
         if (!player) return;
         ShopDemoManager mgr = ShopDemoManager.Get();
         ShopConfig cfg = mgr.GetConfig();
-        // Serialize: "CatName|cls,name,buy,sell;cls2,...\nCat2|..."
+        // Serializa: "CatName|cls,name,buy,sell;cls2,...\nCat2|..."
         string payload = "";
         for (int c = 0; c < cfg.Categories.Count(); c++)
         {
@@ -357,11 +361,11 @@ modded class MissionServer
 };
 ```
 
-**Key decisions:** Currency removed *before* spawning items (prevents duplication). Always `DeleteSafe()` for networked items. Quantity clamped to 1-10 to prevent abuse.
+**Decisões importantes:** A moeda é removida *antes* de criar os itens (previne duplicação). Sempre use `DeleteSafe()` para itens em rede. Quantidade limitada a 1-10 para prevenir abuso.
 
 ---
 
-## Step 4: Client-Side Shop UI (5_Mission)
+## Passo 4: Interface da Loja no Cliente (5_Mission)
 
 ### `Scripts/5_Mission/ShopDemo/ShopDemoMenu.c`
 
@@ -454,7 +458,7 @@ class ShopDemoMenu extends ScriptedWidgetEventHandler
             }
             m_CatItems.Insert(ci);
         }
-        // Build category buttons
+        // Cria botões de categoria
         if (m_CategoryPanel)
         {
             for (int b = 0; b < m_CatNames.Count(); b++)
@@ -531,11 +535,11 @@ class ShopDemoMenu extends ScriptedWidgetEventHandler
 
 ---
 
-## Step 5: Layout File
+## Passo 5: Arquivo de Layout
 
 ### `GUI/layouts/shop_menu.layout`
 
-Three columns: Categories (left 20%), Items (center 46%), Detalhes (right 26%).
+Três colunas: Categorias (esquerda 20%), Itens (centro 46%), Detalhes (direita 26%).
 
 ```
 FrameWidgetClass ShopMenuRoot {
@@ -568,7 +572,7 @@ FrameWidgetClass ShopMenuRoot {
 
 ---
 
-## Step 6: Mission Hook and Keybind
+## Passo 6: Hook de Missão e Tecla de Atalho
 
 ### `Scripts/5_Mission/ShopDemo/ShopDemoMission.c`
 
@@ -608,7 +612,7 @@ modded class MissionGameplay
 };
 ```
 
-For released mods, use `inputs.xml` so players can remap the key:
+Para mods publicados, use `inputs.xml` para que os jogadores possam reconfigurar a tecla:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -621,95 +625,95 @@ For released mods, use `inputs.xml` so players can remap the key:
 
 ---
 
-## Step 7: Currency Item
+## Passo 7: Item de Moeda
 
-You can use any existing item -- set `CurrencyClassName` to `"Rag"` in the JSON and rags become money. For a custom coin, see [Capítulo 8.2: Custom Item](02-custom-item.md).
-
----
-
-## Step 8: Shop Config JSON
-
-Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edit prices, add categories/items, restart server. Always keep `SellPrice < BuyPrice`.
+Você pode usar qualquer item existente -- defina `CurrencyClassName` como `"Rag"` no JSON e trapos se tornam dinheiro. Para uma moeda personalizada, veja o [Capítulo 8.2: Item Personalizado](02-custom-item.md).
 
 ---
 
-## Step 9: Build and Test
+## Passo 8: JSON de Configuração da Loja
 
-1. Pack `ShopDemo/` into PBO, add to server+client `@ShopDemo/addons/`, add `-mod=@ShopDemo`
-2. Spawn currency, press F6, browse, buy/sell
-3. Check server log for `[ShopDemo]` lines
-
-| Test Case | Expected |
-|-----------|----------|
-| Buy with no currency | "Need X, have 0" |
-| Buy unknown class (hacked) | "Item not in shop" |
-| Sell item not owned | "You don't have that item" |
-| Inventory full on buy | Item drops on ground |
+Gerado automaticamente em `$profile:ShopDemo/ShopConfig.json` na primeira inicialização do servidor. Edite preços, adicione categorias/itens e reinicie o servidor. Sempre mantenha `SellPrice < BuyPrice`.
 
 ---
 
-## Security Considerations
+## Passo 9: Compilar e Testar
 
-1. **NEVER trust client-sent prices.** Client sends `(className, qty)` only. Server looks up price.
-2. **Delete before spawn.** Remove currency first, then create items. Prevents duplication.
-3. **Validate existence.** Confirm item is in inventory before giving sell currency.
-4. **Log everything.** Print player name, item, amount for every transaction.
-5. **Quantity bounds.** Reject `qty <= 0` or `qty > 10`.
-6. **Rate limit** in production: 500ms cooldown per player per transaction.
+1. Empacote `ShopDemo/` em PBO, adicione a server+client `@ShopDemo/addons/`, adicione `-mod=@ShopDemo`
+2. Crie moeda, pressione F6, navegue, compre/venda
+3. Verifique o log do servidor pelas linhas `[ShopDemo]`
+
+| Caso de Teste | Esperado |
+|---------------|----------|
+| Comprar sem moeda | "Need X, have 0" |
+| Comprar classe desconhecida (hackeado) | "Item not in shop" |
+| Vender item que não possui | "You don't have that item" |
+| Inventário cheio ao comprar | Item cai no chão |
 
 ---
 
-## Complete Code Reference
+## Considerações de Segurança
 
-| File | Camada | Propósito |
-|------|-------|---------|
-| `ShopDemoRPC.c` | 3_Game | RPC ID constants |
-| `ShopDemoData.c` | 3_Game | Data classes: ShopItem, ShopCategory, ShopConfig |
-| `ShopDemoManager.c` | 4_World | Server: config, buy/sell logic, inventory, RPC handlers |
-| `ShopDemoMenu.c` | 5_Mission | Client: UI, dynamic widgets, RPC send/receive |
-| `ShopDemoMission.c` | 5_Mission | Mission hook: init, keybind, RPC routing |
-| `shop_menu.layout` | GUI | 3-panel layout |
+1. **NUNCA confie em preços enviados pelo cliente.** O cliente envia apenas `(className, qty)`. O servidor consulta o preço.
+2. **Remova antes de criar.** Remova a moeda primeiro, depois crie os itens. Previne duplicação.
+3. **Valide a existência.** Confirme que o item está no inventário antes de dar a moeda da venda.
+4. **Registre tudo.** Imprima nome do jogador, item e quantidade para cada transação.
+5. **Limites de quantidade.** Rejeite `qty <= 0` ou `qty > 10`.
+6. **Limite de taxa** em produção: 500ms de cooldown por jogador por transação.
+
+---
+
+## Referência Completa do Código
+
+| Arquivo | Camada | Finalidade |
+|---------|--------|------------|
+| `ShopDemoRPC.c` | 3_Game | Constantes de ID RPC |
+| `ShopDemoData.c` | 3_Game | Classes de dados: ShopItem, ShopCategory, ShopConfig |
+| `ShopDemoManager.c` | 4_World | Servidor: config, lógica de compra/venda, inventário, handlers RPC |
+| `ShopDemoMenu.c` | 5_Mission | Cliente: interface, widgets dinâmicos, envio/recebimento RPC |
+| `ShopDemoMission.c` | 5_Mission | Hook de missão: init, tecla de atalho, roteamento RPC |
+| `shop_menu.layout` | GUI | Layout de 3 painéis |
 
 ---
 
 ## Boas Práticas
 
-- **Server is the single source of truth.** Client is a display terminal.
-- **Use `DeleteSafe()` not `Delete()`.** Handles network sync and locked slots.
-- **Data classes in 3_Game.** Visible to both 4_World and 5_Mission.
-- **Always call `super` in overrides.** Breaking the chain breaks other mods.
-- **Clean up dynamic widgets.** Every `CreateWidget` needs `Unlink` on close.
+- **O servidor é a única fonte da verdade.** O cliente é um terminal de exibição.
+- **Use `DeleteSafe()` e não `Delete()`.** Lida com sincronização de rede e slots bloqueados.
+- **Classes de dados na 3_Game.** Visíveis tanto pela 4_World quanto pela 5_Mission.
+- **Sempre chame `super` nos overrides.** Quebrar a cadeia quebra outros mods.
+- **Limpe widgets dinâmicos.** Cada `CreateWidget` precisa de `Unlink` ao fechar.
 
 ## Teoria vs Prática
 
 | Conceito | Teoria | Realidade |
-|---------|--------|---------|
-| `JsonFileLoader.LoadFile()` | Loads cleanly | Trailing commas cause silent failures. Validate JSON externally. |
-| String RPC serialization | Simple | 500+ items may hit size limits. Paginate for large shops. |
-| `CreateInInventory()` | Always works | Retorna null if inventory full. Always check. |
-| Listen server testing | Fast iteration | Hides network bugs. Test on dedicated server. |
+|----------|--------|-----------|
+| `JsonFileLoader.LoadFile()` | Carrega sem problemas | Vírgulas finais causam falhas silenciosas. Valide o JSON externamente. |
+| Serialização RPC via string | Simples | 500+ itens podem atingir limites de tamanho. Pagine para lojas grandes. |
+| `CreateInInventory()` | Sempre funciona | Retorna null se o inventário estiver cheio. Sempre verifique. |
+| Teste em listen server | Iteração rápida | Esconde bugs de rede. Teste em servidor dedicado. |
 
-## What You Learned
+## O Que Você Aprendeu
 
-- JSON config loading with `JsonFileLoader<T>` and auto-generation of defaults
-- Singleton pattern for server-side game managers
-- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning
-- String serialization of complex data over RPC (categories, items, prices)
-- Dynamic widget creation for data-driven UI
-- Full buy/sell transaction flow with server-only authority
-- Security principles for multiplayer economy systems
+- Carregamento de configuração JSON com `JsonFileLoader<T>` e geração automática de padrões
+- Padrão singleton para gerenciadores do lado do servidor
+- Enumeração de inventário, contagem, exclusão (`DeleteSafe`) e criação de itens
+- Serialização de dados complexos via string por RPC (categorias, itens, preços)
+- Criação dinâmica de widgets para interface orientada por dados
+- Fluxo completo de transação compra/venda com autoridade exclusiva do servidor
+- Princípios de segurança para sistemas de economia multiplayer
 
 ## Erros Comuns
 
 | Erro | Correção |
-|---------|-----|
-| Client sends price | Send `(className, qty)` only. Server decides price. |
-| Spawn before paying | Remove currency first, then create items. |
-| Skip `super.OnRPC()` | Always call super -- other mods need the chain. |
-| `Delete()` on networked items | Use `DeleteSafe()`. |
-| Ignore `CreateInInventory` return | Check for null, fall back to ground spawn. |
-| Redeclare vars in else-if | Declare once before the if-chain (Enforce Script rule). |
+|------|----------|
+| Cliente envia o preço | Envie apenas `(className, qty)`. O servidor decide o preço. |
+| Criar item antes de pagar | Remova a moeda primeiro, depois crie os itens. |
+| Pular `super.OnRPC()` | Sempre chame super -- outros mods precisam da cadeia. |
+| `Delete()` em itens de rede | Use `DeleteSafe()`. |
+| Ignorar retorno de `CreateInInventory` | Verifique null, use criação no chão como fallback. |
+| Redeclarar variáveis em else-if | Declare uma vez antes da cadeia if (regra do Enforce Script). |
 
 ---
 
-**Anterior:** [Capítulo 8.11: Clothing Mod](11-clothing-mod.md)
+**Anterior:** [Capítulo 8.11: Mod de Roupas](11-clothing-mod.md)

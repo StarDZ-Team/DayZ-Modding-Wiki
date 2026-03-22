@@ -1,125 +1,125 @@
-# Chapter 4.4: Audio (.ogg, .wss)
+# 第 4.4 章：音频（.ogg、.wss）
 
-[Home](../../README.md) | [<< Previous: Materials](03-materials.md) | **Audio** | [Next: DayZ Tools Workflow >>](05-dayz-tools.md)
+[首页](../../README.md) | [<< 上一章：材质](03-materials.md) | **音频** | [下一章：DayZ 工具工作流 >>](05-dayz-tools.md)
 
 ---
 
 ## 简介
 
-Sound design is one of the most immersive aspects of DayZ modding. From the crack of a rifle to the ambient wind in a forest, audio brings the game world to life. DayZ uses **OGG Vorbis** as its primary audio format and configures sound playback through a layered system of **CfgSoundShaders** and **CfgSoundSets** defined in `config.cpp`. Understanding this pipeline -- from raw audio file to spatialized in-game sound -- is essential for any mod that introduces custom weapons, vehicles, ambient effects, or UI feedback.
+声音设计是 DayZ Mod 制作中最具沉浸感的方面之一。从步枪的枪声到森林中的环境风声，音频为游戏世界注入了生命力。DayZ 使用 **OGG Vorbis** 作为其主要音频格式，并通过在 `config.cpp` 中定义的 **CfgSoundShaders** 和 **CfgSoundSets** 分层系统来配置声音播放。理解这个管道——从原始音频文件到游戏内空间化声音——对于任何引入自定义武器、载具、环境音效或 UI 反馈的 Mod 都至关重要。
 
-This chapter covers audio formats, the config-driven sound system, 3D positional audio, volume and distance attenuation, looping, and the complete workflow for adding custom sounds to a DayZ mod.
+本章涵盖音频格式、基于配置的声音系统、3D 定位音频、音量和距离衰减、循环播放，以及将自定义声音添加到 DayZ Mod 的完整工作流程。
 
 ---
 
 ## 目录
 
-- [Audio Formats](#audio-formats)
-- [CfgSoundShaders and CfgSoundSets](#cfgsoundshaders-and-cfgsoundsets)
-- [Sound Categories](#sound-categories)
-- [3D Positional Audio](#3d-positional-audio)
-- [Volume and Distance Attenuation](#volume-and-distance-attenuation)
-- [Looping Sounds](#looping-sounds)
-- [Adding Custom Sounds to a Mod](#adding-custom-sounds-to-a-mod)
-- [Audio Production Tools](#audio-production-tools)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [音频格式](#音频格式)
+- [CfgSoundShaders 和 CfgSoundSets](#cfgsoundshaders-和-cfgsoundsets)
+- [声音类别](#声音类别)
+- [3D 定位音频](#3d-定位音频)
+- [音量和距离衰减](#音量和距离衰减)
+- [循环声音](#循环声音)
+- [向 Mod 添加自定义声音](#向-mod-添加自定义声音)
+- [音频制作工具](#音频制作工具)
+- [常见错误](#常见错误)
+- [最佳实践](#最佳实践)
 
 ---
 
-## Audio Formats
+## 音频格式
 
-### OGG Vorbis (Primary Format)
+### OGG Vorbis（主要格式）
 
-**OGG Vorbis** is DayZ's primary audio format. All custom sounds should be exported as `.ogg` files.
+**OGG Vorbis** 是 DayZ 的主要音频格式。所有自定义声音都应导出为 `.ogg` 文件。
 
-| Property | Value |
-|----------|-------|
-| **Extension** | `.ogg` |
-| **Codec** | Vorbis (lossy compression) |
-| **Sample rates** | 44100 Hz (standard), 22050 Hz (acceptable for ambient) |
-| **Bit depth** | Managed by encoder (quality setting) |
-| **Channels** | Mono (for 3D sounds) or Stereo (for music/UI) |
-| **Quality range** | -1 to 10 (5-7 recommended for game audio) |
+| 属性 | 值 |
+|------|-----|
+| **扩展名** | `.ogg` |
+| **编解码器** | Vorbis（有损压缩） |
+| **采样率** | 44100 Hz（标准）、22050 Hz（环境音可接受） |
+| **位深度** | 由编码器管理（质量设置） |
+| **声道** | 单声道（用于 3D 声音）或立体声（用于音乐/UI） |
+| **质量范围** | -1 到 10（游戏音频推荐 5-7） |
 
-### Key Rules for OGG in DayZ
+### DayZ 中 OGG 的关键规则
 
-- **3D positional sounds MUST be mono.** If you provide a stereo file for a 3D sound, the engine may not spatialize it correctly or may ignore one channel.
-- **UI and music sounds can be stereo.** Non-positional sounds (menus, HUD feedback, background music) work correctly in stereo.
-- **Sample rate should be 44100 Hz** for most sounds. Lower rates (22050 Hz) can be used for distant ambient sounds to save space.
+- **3D 定位声音必须是单声道。** 如果你为 3D 声音提供立体声文件，引擎可能无法正确进行空间化处理，或者可能忽略一个声道。
+- **UI 和音乐声音可以是立体声。** 非定位声音（菜单、HUD 反馈、背景音乐）在立体声下正常工作。
+- **采样率应为 44100 Hz** 适用于大多数声音。较低的采样率（22050 Hz）可用于远处的环境声音以节省空间。
 
-### WSS (Legacy Format)
+### WSS（旧版格式）
 
-**WSS** is a legacy sound format from older Bohemia titles (Arma series). DayZ can still load WSS files, but new mods should use OGG exclusively.
+**WSS** 是来自较早 Bohemia 游戏（Arma 系列）的旧版声音格式。DayZ 仍然可以加载 WSS 文件，但新 Mod 应该专门使用 OGG。
 
-| Property | Value |
-|----------|-------|
-| **Extension** | `.wss` |
-| **Status** | Legacy, not recommended for new mods |
-| **Conversion** | WSS files can be converted to OGG with Audacity or similar tools |
+| 属性 | 值 |
+|------|-----|
+| **扩展名** | `.wss` |
+| **状态** | 旧版，不推荐用于新 Mod |
+| **转换** | WSS 文件可以使用 Audacity 或类似工具转换为 OGG |
 
-You will encounter WSS files when examining vanilla DayZ data or porting content from older Bohemia games.
+在检查原版 DayZ 数据或从较早的 Bohemia 游戏移植内容时，你会遇到 WSS 文件。
 
 ---
 
-## CfgSoundShaders and CfgSoundSets
+## CfgSoundShaders 和 CfgSoundSets
 
-DayZ's audio system uses a two-layer configuration approach defined in `config.cpp`. A **SoundShader** defines what audio file to play and how, while a **SoundSet** defines where and how the sound is heard in the world.
+DayZ 的音频系统使用在 `config.cpp` 中定义的两层配置方法。**SoundShader** 定义要播放什么音频文件以及如何播放，而 **SoundSet** 定义声音在世界中的听觉效果和位置。
 
-### The Relationship
+### 关系
 
 ```
 config.cpp
   |
-  |--> CfgSoundShaders     (WHAT to play: file, volume, frequency)
+  |--> CfgSoundShaders     （播放什么：文件、音量、频率）
   |      |
-  |      |--> MyShader      references --> sound\my_sound.ogg
+  |      |--> MyShader      引用 --> sound\my_sound.ogg
   |
-  |--> CfgSoundSets         (HOW to play: 3D position, distance, spatial)
+  |--> CfgSoundSets         （如何播放：3D 位置、距离、空间）
          |
-         |--> MySoundSet    references --> MyShader
+         |--> MySoundSet    引用 --> MyShader
 ```
 
-Game code and other configs reference **SoundSets**, never SoundShaders directly. SoundSets are the public interface; SoundShaders are the implementation detail.
+游戏代码和其他配置引用 **SoundSets**，从不直接引用 SoundShaders。SoundSets 是公共接口；SoundShaders 是实现细节。
 
 ### CfgSoundShaders
 
-A SoundShader defines the raw audio content and basic playback parameters:
+SoundShader 定义原始音频内容和基本播放参数：
 
 ```cpp
 class CfgSoundShaders
 {
     class MyMod_GunShot_SoundShader
     {
-        // Array of audio files -- engine picks one randomly
+        // 音频文件数组——引擎随机选择一个
         samples[] =
         {
-            {"MyMod\sound\gunshot_01", 1},    // {path (no extension), probability weight}
+            {"MyMod\sound\gunshot_01", 1},    // {路径（无扩展名），概率权重}
             {"MyMod\sound\gunshot_02", 1},
             {"MyMod\sound\gunshot_03", 1}
         };
-        volume = 1.0;                          // Base volume (0.0 - 1.0)
-        range = 300;                           // Maximum audible distance (meters)
-        rangeCurve[] = {{0, 1.0}, {300, 0.0}}; // Volume falloff curve
+        volume = 1.0;                          // 基础音量（0.0 - 1.0）
+        range = 300;                           // 最大可听距离（米）
+        rangeCurve[] = {{0, 1.0}, {300, 0.0}}; // 音量衰减曲线
     };
 };
 ```
 
-#### SoundShader Properties
+#### SoundShader 属性
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `samples[]` | array | List of `{path, weight}` pairs. Path excludes the file extension. |
-| `volume` | float | Base volume multiplier (0.0 to 1.0). |
-| `range` | float | Maximum audible distance in meters. |
-| `rangeCurve[]` | array | Array of `{distance, volume}` points defining attenuation over distance. |
-| `frequency` | float | Playback speed multiplier. 1.0 = normal, 0.5 = half speed (lower pitch), 2.0 = double speed (higher pitch). |
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `samples[]` | array | `{路径, 权重}` 对的列表。路径不包含文件扩展名。 |
+| `volume` | float | 基础音量倍数（0.0 到 1.0）。 |
+| `range` | float | 最大可听距离（米）。 |
+| `rangeCurve[]` | array | 定义距离衰减的 `{距离, 音量}` 点数组。 |
+| `frequency` | float | 播放速度倍数。1.0 = 正常，0.5 = 半速（音调降低），2.0 = 双速（音调升高）。 |
 
-> **重要：** The `samples[]` path does NOT include the file extension. The engine appends `.ogg` (or `.wss`) automatically based on what it finds on disk.
+> **重要：** `samples[]` 路径不包含文件扩展名。引擎会根据磁盘上找到的内容自动附加 `.ogg`（或 `.wss`）。
 
 ### CfgSoundSets
 
-A SoundSet wraps one or more SoundShaders and defines the spatial and behavioral properties:
+SoundSet 包装一个或多个 SoundShaders 并定义空间和行为属性：
 
 ```cpp
 class CfgSoundSets
@@ -127,52 +127,52 @@ class CfgSoundSets
     class MyMod_GunShot_SoundSet
     {
         soundShaders[] = {"MyMod_GunShot_SoundShader"};
-        volumeFactor = 1.0;          // Volume scaling (applied on top of shader volume)
-        frequencyFactor = 1.0;       // Frequency scaling
-        volumeCurve = "InverseSquare"; // Predefined attenuation curve name
-        spatial = 1;                  // 1 = 3D positional, 0 = 2D (HUD/menu)
-        doppler = 0;                  // 1 = enable Doppler effect
-        loop = 0;                     // 1 = loop continuously
+        volumeFactor = 1.0;          // 音量缩放（在 shader 音量之上应用）
+        frequencyFactor = 1.0;       // 频率缩放
+        volumeCurve = "InverseSquare"; // 预定义衰减曲线名称
+        spatial = 1;                  // 1 = 3D 定位，0 = 2D（HUD/菜单）
+        doppler = 0;                  // 1 = 启用多普勒效应
+        loop = 0;                     // 1 = 连续循环
     };
 };
 ```
 
-#### SoundSet Properties
+#### SoundSet 属性
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `soundShaders[]` | array | List of SoundShader class names to combine. |
-| `volumeFactor` | float | Additional volume multiplier applied on top of shader volume. |
-| `frequencyFactor` | float | Additional frequency/pitch multiplier. |
-| `frequencyRandomizer` | float | Random pitch variation (0.0 = none, 0.1 = +/- 10%). |
-| `volumeCurve` | string | Named attenuation curve: `"InverseSquare"`, `"Linear"`, `"Logarithmic"`. |
-| `spatial` | int | `1` for 3D positional audio, `0` for 2D (UI, music). |
-| `doppler` | int | `1` to enable Doppler pitch shift for moving sources. |
-| `loop` | int | `1` for continuous looping, `0` for one-shot. |
-| `distanceFilter` | int | `1` to apply low-pass filter at distance (muffled far-away sounds). |
-| `occlusionFactor` | float | How much walls/terrain muffle the sound (0.0 to 1.0). |
-| `obstructionFactor` | float | How much obstacles between source and listener affect the sound. |
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `soundShaders[]` | array | 要组合的 SoundShader 类名列表。 |
+| `volumeFactor` | float | 在 shader 音量之上应用的额外音量倍数。 |
+| `frequencyFactor` | float | 额外的频率/音调倍数。 |
+| `frequencyRandomizer` | float | 随机音调变化（0.0 = 无，0.1 = +/- 10%）。 |
+| `volumeCurve` | string | 命名衰减曲线：`"InverseSquare"`、`"Linear"`、`"Logarithmic"`。 |
+| `spatial` | int | `1` 为 3D 定位音频，`0` 为 2D（UI、音乐）。 |
+| `doppler` | int | `1` 启用移动声源的多普勒音调偏移。 |
+| `loop` | int | `1` 连续循环，`0` 单次播放。 |
+| `distanceFilter` | int | `1` 在远距离应用低通滤波器（远处声音变闷）。 |
+| `occlusionFactor` | float | 墙壁/地形对声音的消音程度（0.0 到 1.0）。 |
+| `obstructionFactor` | float | 声源和听者之间的障碍物对声音的影响程度。 |
 
 ---
 
-## Sound Categories
+## 声音类别
 
-DayZ organizes sounds into categories that affect how they interact with the game's audio mixing system.
+DayZ 将声音组织为不同类别，影响它们与游戏音频混合系统的交互方式。
 
-### Weapon Sounds
+### 武器声音
 
-Weapon sounds are the most complex audio in DayZ, typically involving multiple SoundSets for different aspects of a single gunshot:
+武器声音是 DayZ 中最复杂的音频，通常涉及多个 SoundSets 来处理单次射击的不同方面：
 
 ```
-Shot fired
-  |--> Close shot SoundSet       (the "bang" heard nearby)
-  |--> Distance shot SoundSet    (the rumble/echo heard far away)
-  |--> Tail SoundSet             (reverb/echo that follows)
-  |--> Supersonic crack SoundSet (bullet passing overhead)
-  |--> Mechanical SoundSet       (bolt cycling, magazine insertion)
+射击发生
+  |--> 近距离射击 SoundSet       （近距离听到的"砰"声）
+  |--> 远距离射击 SoundSet    （远距离听到的隆隆声/回声）
+  |--> 尾音 SoundSet             （随后的混响/回声）
+  |--> 超音速裂声 SoundSet （子弹从头顶飞过）
+  |--> 机械 SoundSet       （枪栓循环、弹匣插入）
 ```
 
-Example weapon sound config:
+武器声音配置示例：
 
 ```cpp
 class CfgSoundShaders
@@ -226,9 +226,9 @@ class CfgSoundSets
 };
 ```
 
-### Ambient Sounds
+### 环境声音
 
-Environmental audio for atmosphere:
+用于营造氛围的环境音频：
 
 ```cpp
 class MyMod_Wind_SoundShader
@@ -242,87 +242,87 @@ class MyMod_Wind_SoundSet
 {
     soundShaders[] = {"MyMod_Wind_SoundShader"};
     volumeFactor = 0.6;
-    spatial = 0;           // Non-positional (ambient surround)
-    loop = 1;              // Continuous loop
+    spatial = 0;           // 非定位（环绕环境音）
+    loop = 1;              // 连续循环
 };
 ```
 
-### UI Sounds
+### UI 声音
 
-Interface feedback sounds (button clicks, notifications):
+界面反馈声音（按钮点击、通知）：
 
 ```cpp
 class MyMod_ButtonClick_SoundShader
 {
     samples[] = {{"MyMod\sound\ui\click_01", 1}};
     volume = 0.7;
-    range = 0;             // No spatial range needed
+    range = 0;             // 不需要空间范围
 };
 
 class MyMod_ButtonClick_SoundSet
 {
     soundShaders[] = {"MyMod_ButtonClick_SoundShader"};
     volumeFactor = 0.8;
-    spatial = 0;           // 2D -- plays in the listener's head
+    spatial = 0;           // 2D——在听者脑中播放
     loop = 0;
 };
 ```
 
-### Vehicle Sounds
+### 载具声音
 
-Vehicles use complex sound configurations with multiple components:
+载具使用具有多个组件的复杂声音配置：
 
-- **Engine idle** -- looping, pitch varies with RPM
-- **Engine acceleration** -- looping, volume and pitch scale with throttle
-- **Tire noise** -- looping, volume scales with speed
-- **Horn** -- triggered, looping while held
-- **Crash** -- one-shot on collision
+- **引擎怠速** -- 循环，音调随转速变化
+- **引擎加速** -- 循环，音量和音调随油门缩放
+- **轮胎噪音** -- 循环，音量随速度缩放
+- **喇叭** -- 触发，按住时循环
+- **碰撞** -- 碰撞时单次播放
 
-### Character Sounds
+### 角色声音
 
-Player-related sounds include:
+与玩家相关的声音包括：
 
-- **Footsteps** -- varies by surface material (concrete, grass, wood, metal)
-- **Breathing** -- stamina-dependent
-- **Voice** -- emotes and commands
-- **Inventory** -- item manipulation sounds
+- **脚步声** -- 根据地面材质变化（混凝土、草地、木头、金属）
+- **呼吸声** -- 取决于体力
+- **语音** -- 表情和命令
+- **物品栏** -- 物品操作声音
 
 ---
 
-## 3D Positional Audio
+## 3D 定位音频
 
-DayZ uses 3D spatial audio to position sounds in the game world. When a gun fires 200 meters to your left, you hear it from your left speaker/headphone with appropriate volume reduction.
+DayZ 使用 3D 空间音频在游戏世界中定位声音。当一把枪在你左边 200 米处开火时，你会从左侧扬声器/耳机听到声音，并且音量会相应降低。
 
-### Requirements for 3D Audio
+### 3D 音频的要求
 
-1. **Audio file must be mono.** Stereo files will not spatialize correctly.
-2. **SoundSet `spatial` must be `1`.** This enables the 3D positioning system.
-3. **Sound source must have a world position.** The engine needs coordinates to calculate direction and distance.
+1. **音频文件必须是单声道。** 立体声文件无法正确进行空间化处理。
+2. **SoundSet 的 `spatial` 必须为 `1`。** 这启用了 3D 定位系统。
+3. **声源必须有世界位置。** 引擎需要坐标来计算方向和距离。
 
-### How the Engine Spatializes Sound
+### 引擎如何进行声音空间化
 
 ```
-Sound Source (world position)
+声源（世界位置）
   |
-  |--> Calculate distance to listener
-  |--> Calculate direction relative to listener facing
-  |--> Apply distance attenuation (rangeCurve)
-  |--> Apply occlusion (walls, terrain)
-  |--> Apply Doppler effect (if enabled and source is moving)
-  |--> Output to correct speaker channels
+  |--> 计算到听者的距离
+  |--> 计算相对于听者朝向的方向
+  |--> 应用距离衰减（rangeCurve）
+  |--> 应用遮挡（墙壁、地形）
+  |--> 应用多普勒效应（如果启用且声源在移动）
+  |--> 输出到正确的扬声器声道
 ```
 
-### Triggering 3D Sounds from Script
+### 从脚本触发 3D 声音
 
 ```c
-// Play a positional sound at a world location
+// 在世界位置播放定位声音
 void PlaySoundAtPosition(vector position)
 {
     EffectSound sound;
     SEffectManager.PlaySound("MyMod_Rifle_Shot_SoundSet", position);
 }
 
-// Play a sound attached to an object (moves with it)
+// 在对象上播放声音（随对象移动）
 void PlaySoundOnObject(Object obj)
 {
     EffectSound sound;
@@ -332,49 +332,49 @@ void PlaySoundOnObject(Object obj)
 
 ---
 
-## Volume and Distance Attenuation
+## 音量和距离衰减
 
-### Range Curve
+### 范围曲线
 
-The `rangeCurve[]` in a SoundShader defines how volume decreases with distance. It is an array of `{distance, volume}` pairs:
+SoundShader 中的 `rangeCurve[]` 定义音量如何随距离降低。它是 `{距离, 音量}` 对的数组：
 
 ```cpp
 rangeCurve[] =
 {
-    {0, 1.0},       // At 0m: full volume
-    {50, 0.7},      // At 50m: 70% volume
-    {150, 0.3},     // At 150m: 30% volume
-    {300, 0.0}      // At 300m: silent
+    {0, 1.0},       // 0米：满音量
+    {50, 0.7},      // 50米：70% 音量
+    {150, 0.3},     // 150米：30% 音量
+    {300, 0.0}      // 300米：静音
 };
 ```
 
-The engine interpolates linearly between defined points. You can create any falloff curve by adding more control points.
+引擎在定义的点之间进行线性插值。你可以通过添加更多控制点来创建任何衰减曲线。
 
-### Predefined Volume Curves
+### 预定义音量曲线
 
-SoundSets can reference named curves via the `volumeCurve` property:
+SoundSets 可以通过 `volumeCurve` 属性引用命名曲线：
 
-| Curve Name | Behavior |
-|------------|----------|
-| `"InverseSquare"` | Realistic falloff (volume = 1/distance^2). Natural-sounding. |
-| `"Linear"` | Even falloff from max to zero over the range. |
-| `"Logarithmic"` | Loud up close, drops quickly at medium distance, then tapers slowly. |
+| 曲线名称 | 行为 |
+|----------|------|
+| `"InverseSquare"` | 真实衰减（音量 = 1/距离^2）。听起来自然。 |
+| `"Linear"` | 从最大到零在范围内均匀衰减。 |
+| `"Logarithmic"` | 近距离响亮，中距离快速下降，然后缓慢减弱。 |
 
-### Practical Attenuation Examples
+### 实际衰减示例
 
-**Gunshot (loud, carries far):**
+**枪声（响亮，传播远）：**
 ```cpp
 range = 800;
 rangeCurve[] = {{0, 1.0}, {100, 0.6}, {300, 0.3}, {600, 0.1}, {800, 0.0}};
 ```
 
-**Footstep (quiet, close range):**
+**脚步声（安静，近距离）：**
 ```cpp
 range = 30;
 rangeCurve[] = {{0, 1.0}, {10, 0.5}, {20, 0.15}, {30, 0.0}};
 ```
 
-**Vehicle engine (medium range, sustained):**
+**载具引擎（中等距离，持续）：**
 ```cpp
 range = 200;
 rangeCurve[] = {{0, 1.0}, {50, 0.7}, {100, 0.4}, {200, 0.0}};
@@ -382,26 +382,26 @@ rangeCurve[] = {{0, 1.0}, {50, 0.7}, {100, 0.4}, {200, 0.0}};
 
 ---
 
-## Looping Sounds
+## 循环声音
 
-Looping sounds repeat continuously until explicitly stopped. They are used for engines, ambient atmosphere, alarms, and any sustained audio.
+循环声音会持续重复直到明确停止。它们用于引擎、环境氛围、警报和任何持续的音频。
 
-### Configuring a Looping Sound
+### 配置循环声音
 
-In the SoundSet:
+在 SoundSet 中：
 ```cpp
 class MyMod_Alarm_SoundSet
 {
     soundShaders[] = {"MyMod_Alarm_SoundShader"};
     spatial = 1;
-    loop = 1;              // Enable looping
+    loop = 1;              // 启用循环
 };
 ```
 
-### Looping from Script
+### 从脚本循环播放
 
 ```c
-// Start a looping sound
+// 启动循环声音
 EffectSound m_AlarmSound;
 
 void StartAlarm(vector position)
@@ -412,7 +412,7 @@ void StartAlarm(vector position)
     }
 }
 
-// Stop the looping sound
+// 停止循环声音
 void StopAlarm()
 {
     if (m_AlarmSound)
@@ -423,29 +423,29 @@ void StopAlarm()
 }
 ```
 
-### Audio File Preparation for Loops
+### 循环音频文件的准备
 
-For seamless looping, the audio file itself must loop cleanly:
+要实现无缝循环，音频文件本身必须能够干净地循环：
 
-1. **Zero-crossing at start and end.** The waveform should cross zero amplitude at both endpoints to avoid a click/pop at the loop point.
-2. **Matched start and end.** The end of the file should blend seamlessly into the beginning.
-3. **No fade in/out.** Fades would be audible on each loop iteration.
-4. **Test the loop in Audacity.** Select the entire clip, enable loop playback, and listen for clicks or discontinuities.
+1. **首尾零交叉。** 波形应在两个端点处穿过零振幅，以避免在循环点出现咔嗒声/爆音。
+2. **首尾匹配。** 文件的结尾应无缝衔接到开头。
+3. **无淡入/淡出。** 淡化效果在每次循环迭代中都会被听到。
+4. **在 Audacity 中测试循环。** 选择整个片段，启用循环播放，检听是否有咔嗒声或不连续。
 
 ---
 
-## Adding Custom Sounds to a Mod
+## 向 Mod 添加自定义声音
 
-### Complete Workflow
+### 完整工作流程
 
-**Step 1: Prepare audio files**
-- Record or source your audio.
-- Edit in Audacity (or your preferred audio editor).
-- For 3D sounds: convert to mono.
-- Export as OGG Vorbis (quality 5-7).
-- Name files descriptively: `rifle_shot_01.ogg`, `rifle_shot_02.ogg`.
+**步骤 1：准备音频文件**
+- 录制或获取你的音频。
+- 在 Audacity（或你首选的音频编辑器）中编辑。
+- 对于 3D 声音：转换为单声道。
+- 导出为 OGG Vorbis（质量 5-7）。
+- 描述性地命名文件：`rifle_shot_01.ogg`、`rifle_shot_02.ogg`。
 
-**Step 2: Organize in mod directory**
+**步骤 2：在 Mod 目录中组织**
 
 ```
 MyMod/
@@ -464,7 +464,7 @@ MyMod/
   config.cpp
 ```
 
-**Step 3: Define SoundShaders in config.cpp**
+**步骤 3：在 config.cpp 中定义 SoundShaders**
 
 ```cpp
 class CfgPatches
@@ -508,16 +508,16 @@ class CfgSoundSets
 };
 ```
 
-**Step 4: Reference from weapon/item config**
+**步骤 4：从武器/物品配置中引用**
 
-For weapons, the SoundSet is referenced in the weapon's config class:
+对于武器，SoundSet 在武器的配置类中引用：
 
 ```cpp
 class CfgWeapons
 {
     class MyMod_Rifle: Rifle_Base
     {
-        // ... other config ...
+        // ... 其他配置 ...
 
         class Sounds
         {
@@ -530,44 +530,44 @@ class CfgWeapons
 };
 ```
 
-**Step 5: Build and test**
-- Pack the PBO (use `-packonly` since OGG files do not need binarization).
-- Launch the game with the mod loaded.
-- Test the sound in-game at various distances.
+**步骤 5：构建和测试**
+- 打包 PBO（使用 `-packonly`，因为 OGG 文件不需要二进制化）。
+- 加载 Mod 启动游戏。
+- 在不同距离在游戏内测试声音。
 
 ---
 
-## Audio Production Tools
+## 音频制作工具
 
-### Audacity (Free, Open Source)
+### Audacity（免费，开源）
 
-Audacity is the recommended tool for DayZ audio production:
+Audacity 是推荐的 DayZ 音频制作工具：
 
-- **Download:** [audacityteam.org](https://www.audacityteam.org/)
-- **OGG export:** File --> Export --> Export as OGG
-- **Mono conversion:** Tracks --> Mix --> Mix Stereo Down to Mono
-- **Normalization:** Effect --> Normalize (set peak to -1 dB to prevent clipping)
-- **Noise removal:** Effect --> Noise Reduction
-- **Loop testing:** Transport --> Loop Play (Shift+Space)
+- **下载：** [audacityteam.org](https://www.audacityteam.org/)
+- **OGG 导出：** File --> Export --> Export as OGG
+- **单声道转换：** Tracks --> Mix --> Mix Stereo Down to Mono
+- **标准化：** Effect --> Normalize（设置峰值为 -1 dB 以防止削波）
+- **降噪：** Effect --> Noise Reduction
+- **循环测试：** Transport --> Loop Play（Shift+Space）
 
-### OGG Export Settings in Audacity
+### Audacity 中的 OGG 导出设置
 
 1. **File --> Export --> Export as OGG Vorbis**
-2. **Quality:** 5-7 (5 for ambient/UI, 7 for weapon/important sounds)
-3. **Channels:** Mono for 3D sounds, Stereo for UI/music
+2. **质量：** 5-7（环境/UI 用 5，武器/重要声音用 7）
+3. **声道：** 3D 声音用单声道，UI/音乐用立体声
 
-### Other Useful Tools
+### 其他有用工具
 
-| Tool | Purpose | Cost |
-|------|---------|------|
-| **Audacity** | General audio editing, format conversion | Free |
-| **Reaper** | Professional DAW, advanced editing | $60 (personal license) |
-| **FFmpeg** | Command-line batch audio conversion | Free |
-| **Ocenaudio** | Simple editor with real-time preview | Free |
+| 工具 | 用途 | 费用 |
+|------|------|------|
+| **Audacity** | 通用音频编辑、格式转换 | 免费 |
+| **Reaper** | 专业 DAW，高级编辑 | $60（个人许可） |
+| **FFmpeg** | 命令行批量音频转换 | 免费 |
+| **Ocenaudio** | 简单编辑器，带实时预览 | 免费 |
 
-### Batch Conversion with FFmpeg
+### 使用 FFmpeg 批量转换
 
-Convert all WAV files in a directory to mono OGG:
+将目录中的所有 WAV 文件转换为单声道 OGG：
 
 ```bash
 for file in *.wav; do
@@ -579,41 +579,41 @@ done
 
 ## 常见错误
 
-### 1. Stereo File for 3D Sound
+### 1. 3D 声音使用立体声文件
 
-**症状：** Sound does not spatialize, plays centered or only in one ear.
-**修复：** Convert to mono before exporting. 3D positional sounds require mono audio files.
+**症状：** 声音没有空间化，居中播放或只在一个耳朵中播放。
+**修复：** 在导出前转换为单声道。3D 定位声音需要单声道音频文件。
 
-### 2. File Extension in samples[] Path
+### 2. samples[] 路径中包含文件扩展名
 
-**症状：** Sound does not play, no error in log (engine silently fails to find the file).
-**修复：** Remove the `.ogg` extension from the path in `samples[]`. The engine adds it automatically.
+**症状：** 声音不播放，日志中没有错误（引擎静默地找不到文件）。
+**修复：** 从 `samples[]` 中的路径移除 `.ogg` 扩展名。引擎会自动添加。
 
 ```cpp
-// WRONG
+// 错误
 samples[] = {{"MyMod\sound\gunshot_01.ogg", 1}};
 
-// CORRECT
+// 正确
 samples[] = {{"MyMod\sound\gunshot_01", 1}};
 ```
 
-### 3. Missing CfgPatches requiredAddons
+### 3. 缺少 CfgPatches requiredAddons
 
-**症状：** SoundShaders or SoundSets not recognized, sounds do not play.
-**修复：** Add `"DZ_Sounds_Effects"` to your CfgPatches `requiredAddons[]` to ensure the base sound system loads before your definitions.
+**症状：** SoundShaders 或 SoundSets 无法识别，声音不播放。
+**修复：** 将 `"DZ_Sounds_Effects"` 添加到你的 CfgPatches `requiredAddons[]` 中，以确保基础声音系统在你的定义之前加载。
 
-### 4. Range Too Short
+### 4. Range 太短
 
-**症状：** Sound cuts off abruptly at a short distance, feels unnatural.
-**修复：** Set `range` to a realistic value. Gunshots should carry 300-800m, footsteps 20-40m, voices 50-100m.
+**症状：** 声音在很短的距离内突然切断，感觉不自然。
+**修复：** 将 `range` 设置为合理的值。枪声应传播 300-800 米，脚步声 20-40 米，语音 50-100 米。
 
-### 5. No Random Variation
+### 5. 没有随机变化
 
-**症状：** Sound feels repetitive and artificial after hearing it multiple times.
-**修复：** Provide multiple samples in the SoundShader and add `frequencyRandomizer` to the SoundSet for pitch variation.
+**症状：** 声音在多次听到后感觉重复和人工。
+**修复：** 在 SoundShader 中提供多个样本，并在 SoundSet 中添加 `frequencyRandomizer` 进行音调变化。
 
 ```cpp
-// Multiple samples for variety
+// 多个样本以增加变化
 samples[] =
 {
     {"MyMod\sound\step_01", 1},
@@ -622,39 +622,58 @@ samples[] =
     {"MyMod\sound\step_04", 1}
 };
 
-// Plus pitch randomization in the SoundSet
-frequencyRandomizer = 0.05;    // +/- 5% pitch variation
+// 加上 SoundSet 中的音调随机化
+frequencyRandomizer = 0.05;    // +/- 5% 音调变化
 ```
 
-### 6. Clipping / Distortion
+### 6. 削波/失真
 
-**症状：** Sound crackles or distorts, especially at close range.
-**修复：** Normalize your audio to -1 dB or -3 dB peak in Audacity before exporting. Never set `volume` or `volumeFactor` above 1.0 unless the source audio is very quiet.
+**症状：** 声音噼啪作响或失真，尤其是在近距离。
+**修复：** 在导出前在 Audacity 中将音频标准化到 -1 dB 或 -3 dB 峰值。除非源音频非常安静，否则不要将 `volume` 或 `volumeFactor` 设置为超过 1.0。
 
 ---
 
-## Best Practices
+## 最佳实践
 
-1. **Always export 3D sounds as mono OGG.** This is the single most important rule. Stereo files will not spatialize.
+1. **始终将 3D 声音导出为单声道 OGG。** 这是最重要的规则。立体声文件无法进行空间化处理。
 
-2. **Provide 3-5 sample variants** for frequently heard sounds (gunshots, footsteps, impacts). Random selection prevents the "machine gun effect" of identical repeated audio.
+2. **为经常听到的声音提供 3-5 个样本变体**（枪声、脚步声、撞击声）。随机选择可以防止相同重复音频的"机关枪效应"。
 
-3. **Use `frequencyRandomizer`** between 0.03 and 0.08 for natural pitch variation. Even subtle variation significantly improves perceived audio quality.
+3. **使用 `frequencyRandomizer`**，值在 0.03 到 0.08 之间以获得自然的音调变化。即使微妙的变化也能显著改善感知的音频质量。
 
-4. **Set realistic range values.** Study vanilla DayZ sounds for reference. A rifle shot at 600-800m range, a suppressed shot at 150-200m, footsteps at 20-40m.
+4. **设置真实的 range 值。** 研究原版 DayZ 声音作为参考。步枪射击 600-800 米范围，消音射击 150-200 米，脚步声 20-40 米。
 
-5. **Layer your sounds.** Complex audio events (gunshots) should use multiple SoundSets: close shot + distant rumble + tail/echo. This creates depth that a single sound file cannot achieve.
+5. **分层你的声音。** 复杂的音频事件（枪声）应使用多个 SoundSets：近距离射击 + 远距离隆隆声 + 尾音/回声。这创造了单个声音文件无法实现的深度。
 
-6. **Test at multiple distances.** Walk away from the sound source in-game and verify the attenuation curve feels natural. Adjust `rangeCurve[]` control points iteratively.
+6. **在多个距离测试。** 在游戏内走离声源并验证衰减曲线是否感觉自然。迭代调整 `rangeCurve[]` 控制点。
 
-7. **Organize your sound directory.** Use subdirectories by category (`weapons/`, `ambient/`, `ui/`, `vehicles/`). A flat directory with 200 OGG files is unmanageable.
+7. **组织你的声音目录。** 按类别使用子目录（`weapons/`、`ambient/`、`ui/`、`vehicles/`）。一个包含 200 个 OGG 文件的平面目录是无法管理的。
 
-8. **Keep file sizes reasonable.** Game audio does not need studio quality. OGG quality 5-7 is sufficient. Most individual sound files should be under 500 KB.
+8. **保持合理的文件大小。** 游戏音频不需要录音室质量。OGG 质量 5-7 就足够了。大多数单个声音文件应在 500 KB 以下。
+
+---
+
+## 在实际 Mod 中观察到的模式
+
+| 模式 | Mod | 详情 |
+|------|-----|------|
+| 通过 SoundSets 的自定义通知声音 | Expansion（通知模块） | 为不同通知类型（成功、警告、错误）定义多个 `CfgSoundSets`，使用 `spatial = 0` |
+| 带缓存播放的 UI 点击声音 | VPP Admin Tools | 使用 `SEffectManager.PlaySoundCachedParams()` 进行按钮点击以避免每次重新解析配置 |
+| 多层武器音频（射击 + 尾音 + 裂声） | 社区武器包（RFCP、MuchStuffPack） | 每个武器为每次射击事件定义 3-5 个独立的 SoundSets，用于近距离射击、远距离隆隆声、超音速裂声 |
+| 脚步变化的 `frequencyRandomizer` | 原版 DayZ | 在脚步 SoundSets 上使用 0.05-0.08 的音调随机化以防止机械式重复 |
+
+---
+
+## 兼容性与影响
+
+- **多 Mod 共存：** SoundShader 和 SoundSet 类名是全局的。两个 Mod 定义相同的类名会冲突（后加载的获胜）。始终在名称前加上你的 Mod 标识符（例如 `MyMod_Shot_SoundShader`）。
+- **性能：** OGG 文件在运行时解压缩。拥有数百个独特音频文件的 Mod 会增加内存使用。保持单个文件在 500 KB 以下，并在变体之间重用样本。
+- **版本：** DayZ 的音频系统（CfgSoundShaders/CfgSoundSets）自 1.0 版本以来一直稳定。`sound3DProcessingType` 和 `volumeCurve` 命名预设在后续更新中添加，但向后兼容。
 
 ---
 
 ## 导航
 
 | 上一章 | 上级 | 下一章 |
-|----------|----|------|
-| [4.3 Materials](03-materials.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.5 DayZ Tools Workflow](05-dayz-tools.md) |
+|--------|------|--------|
+| [4.3 材质](03-materials.md) | [第 4 部分：文件格式与 DayZ 工具](01-textures.md) | [4.5 DayZ 工具工作流](05-dayz-tools.md) |

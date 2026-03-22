@@ -1,55 +1,59 @@
-# Chapter 5.4: ImageSet Format
+# 5.4. fejezet: ImageSet formátum
 
-[Home](../../README.md) | [<< Previous: Credits.json](03-credits-json.md) | **ImageSet Format** | [Next: Server Configuration Files >>](05-server-configs.md)
-
----
-
-## Tartalomjegyzek
-
-- [Overview](#overview)
-- [How ImageSets Work](#how-imagesets-work)
-- [DayZ Native ImageSet formatum](#dayz-native-imageset-format)
-- [XML ImageSet formatum](#xml-imageset-format)
-- [Registering ImageSets in config.cpp](#registering-imagesets-in-configcpp)
-- [Referencing Images in Layouts](#referencing-images-in-layouts)
-- [Referencing Images in Scripts](#referencing-images-in-scripts)
-- [Image Flags](#image-flags)
-- [Multi-Resolution Texturak](#multi-resolution-textures)
-- [Creating Custom Icon Sets](#creating-custom-icon-sets)
-- [Font Awesome Integration Pattern](#font-awesome-integration-pattern)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+[Főoldal](../../README.md) | [<< Előző: Credits.json](03-credits-json.md) | **ImageSet formátum** | [Következő: Szerver konfigurációs fájlok >>](05-server-configs.md)
 
 ---
 
-## Attekintes
-
-A texture atlas is a single large image (typically in `.edds` format) containing many smaller icons arranged in a grid or freeform layout. An imageset file maps human-readable names to rectangular regions within that atlas.
-
-For example, a 1024x1024 texture might contain 64 icons at 64x64 pixels each. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and the engine extracts the correct sub-rectangle from the atlas at render time.
-
-This approach is efficient: one GPU texture load serves all icons, reducing draw calls and memory overhead.
+> **Összefoglalás:** Az ImageSet-ek megnevezett sprite régiókat definiálnak egy textúra atlaszon belül. Ezek a DayZ elsődleges mechanizmusa ikonok, UI grafikák és sprite sheet-ek hivatkozásához layout fájlokból és szkriptekből. Ahelyett, hogy több száz egyedi képfájlt töltenél be, az összes ikont egyetlen textúrába csomagolod, és az imageset definíciós fájlban leírod minden ikon pozícióját és méretét.
 
 ---
 
-## How ImageSets Work
+## Tartalomjegyzék
 
-The data flow:
-
-1. **Texture atlas** (`.edds` file) --- a single image containing all icons
-2. **ImageSet definition** (`.imageset` file) --- maps names to regions in the atlas
-3. **config.cpp registration** --- tells the engine to load the imageset at startup
-4. **Layout/script reference** --- uses `set:name image:iconName` syntax to render a specific icon
-
-Once registered, any widget in any layout file can reference any image from the set by name.
+- [Áttekintés](#overview)
+- [Hogyan működnek az ImageSet-ek](#how-imagesets-work)
+- [DayZ natív ImageSet formátum](#dayz-native-imageset-format)
+- [XML ImageSet formátum](#xml-imageset-format)
+- [ImageSet-ek regisztrálása a config.cpp-ben](#registering-imagesets-in-configcpp)
+- [Képek hivatkozása layoutokban](#referencing-images-in-layouts)
+- [Képek hivatkozása szkriptekben](#referencing-images-in-scripts)
+- [Kép jelzők](#image-flags)
+- [Többfelbontású textúrák](#multi-resolution-textures)
+- [Egyéni ikon készletek létrehozása](#creating-custom-icon-sets)
+- [Font Awesome integráció minta](#font-awesome-integration-pattern)
+- [Valós példák](#real-examples)
+- [Gyakori hibák](#common-mistakes)
 
 ---
 
-## DayZ Native ImageSet formatum
+## Áttekintés
 
-The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). This is the format used by the vanilla game and most established mods.
+A textúra atlasz egyetlen nagy kép (jellemzően `.edds` formátumban), amely sok kisebb ikont tartalmaz rácsban vagy szabadon elrendezve. Az imageset fájl ember által olvasható neveket rendel az atlasz téglalap alakú régióihoz.
 
-### Structure
+Például egy 1024x1024 textúra tartalmazhat 64 ikont, egyenként 64x64 pixelben. Az imageset fájl azt mondja: "az `arrow_down` nevű ikon a (128, 64) pozícióban van és 64x64 pixel." A layout fájljaid és szkriptjeid név szerint hivatkozzák az `arrow_down`-t, és a motor rendereléskor kivonja a megfelelő al-téglalapot az atlaszból.
+
+Ez a megközelítés hatékony: egyetlen GPU textúra betöltés szolgálja ki az összes ikont, csökkentve a rajzolási hívásokat és a memória terhelést.
+
+---
+
+## Hogyan működnek az ImageSet-ek
+
+Az adatfolyam:
+
+1. **Textúra atlasz** (`.edds` fájl) --- egyetlen kép, amely az összes ikont tartalmazza
+2. **ImageSet definíció** (`.imageset` fájl) --- neveket rendel az atlasz régióihoz
+3. **config.cpp regisztráció** --- megmondja a motornak, hogy töltse be az imageset-et indításkor
+4. **Layout/szkript hivatkozás** --- `set:név image:ikonNév` szintaxissal renderel egy adott ikont
+
+Regisztráció után bármely widget bármely layout fájlban név szerint hivatkozhat bármely képre a készletből.
+
+---
+
+## DayZ natív ImageSet formátum
+
+A natív formátum az Enfusion motor osztály-alapú szintaxisát használja (hasonlóan a config.cpp-hez). Ezt a formátumot használja a vanilla játék és a legtöbb kialakult mod.
+
+### Struktúra
 
 ```
 ImageSetClass {
@@ -72,34 +76,34 @@ ImageSetClass {
 }
 ```
 
-### Top-Level Fields
+### Felső szintű mezők
 
-| Field | Leiras |
+| Mező | Leírás |
 |-------|-------------|
-| `Name` | The set name. Used in the `set:` part of image references. Must be unique across all loaded mods. |
-| `RefSize` | Reference dimensions of the texture (width height). Used for coordinate mapping. |
-| `Texturak` | Contains one or more `ImageSetTextureClass` entries for different resolution mip levels. |
+| `Name` | A készlet neve. A képhivatkozások `set:` részében használt. Egyedinek kell lennie az összes betöltött mod között. |
+| `RefSize` | A textúra referencia méretei (szélesség magasság). Koordináta leképezéshez használt. |
+| `Textures` | Egy vagy több `ImageSetTextureClass` bejegyzést tartalmaz különböző felbontású mip szintekhez. |
 
-### Texture Entry Fields
+### Textúra bejegyzés mezők
 
-| Field | Leiras |
+| Mező | Leírás |
 |-------|-------------|
-| `mpix` | Minimum pixel level (mip level). `0` = lowest resolution, `1` = standard resolution. |
-| `path` | Path to the `.edds` texture file, relative to the mod root. Can use Enfusion GUID format (`{GUID}path`) or plain relative paths. |
+| `mpix` | Minimális pixel szint (mip szint). `0` = legalacsonyabb felbontás, `1` = szabványos felbontás. |
+| `path` | A `.edds` textúra fájl elérési útja, a mod gyökerhez képest. Használhat Enfusion GUID formátumot (`{GUID}elérési_út`) vagy egyszerű relatív elérési utakat. |
 
-### Image Entry Fields
+### Kép bejegyzés mezők
 
-Each image is an `ImageSetDefClass` inside the `Images` block:
+Minden kép egy `ImageSetDefClass` az `Images` blokkon belül:
 
-| Field | Leiras |
+| Mező | Leírás |
 |-------|-------------|
-| Class name | Must match the `Name` field (used for engine lookups) |
-| `Name` | The image identifier. Used in the `image:` part of references. |
-| `Pos` | Top-left corner position in the atlas (x y), in pixels |
-| `Size` | Dimensions (width height), in pixels |
-| `Flags` | Tiling behavior flags (see [Image Flags](#image-flags)) |
+| Osztály név | Meg kell egyeznie a `Name` mezővel (motor keresésekhez használt) |
+| `Name` | A kép azonosító. A hivatkozások `image:` részében használt. |
+| `Pos` | Bal felső sarok pozíció az atlaszban (x y), pixelben |
+| `Size` | Méretek (szélesség magasság), pixelben |
+| `Flags` | Csempézési viselkedés jelzők (lásd [Kép jelzők](#image-flags)) |
 
-### Full Example (DayZ Vanilla)
+### Teljes példa (DayZ vanilla)
 
 ```
 ImageSetClass {
@@ -134,11 +138,11 @@ ImageSetClass {
 
 ---
 
-## XML ImageSet formatum
+## XML ImageSet formátum
 
-An alternative XML-based format exists and is used by some mods. It is simpler but offers fewer features (no multi-resolution support).
+Létezik egy alternatív XML-alapú formátum is, amelyet egyes modok használnak. Egyszerűbb, de kevesebb funkciót kínál (nincs többfelbontású támogatás).
 
-### Structure
+### Struktúra
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -149,50 +153,50 @@ An alternative XML-based format exists and is used by some mods. It is simpler b
 </imageset>
 ```
 
-### XML Attributes
+### XML attribútumok
 
-**`<imageset>` element:**
+**`<imageset>` elem:**
 
-| Attributum | Leiras |
+| Attribútum | Leírás |
 |-----------|-------------|
-| `name` | The set name (equivalent to native `Name`) |
-| `file` | Path to the texture file (equivalent to native `path`) |
+| `name` | A készlet neve (a natív `Name` megfelelője) |
+| `file` | A textúra fájl elérési útja (a natív `path` megfelelője) |
 
-**`<image>` element:**
+**`<image>` elem:**
 
-| Attributum | Leiras |
+| Attribútum | Leírás |
 |-----------|-------------|
-| `name` | Image identifier |
-| `pos` | Top-left position as `"x y"` |
-| `size` | Dimensions as `"width height"` |
+| `name` | Kép azonosító |
+| `pos` | Bal felső pozíció mint `"x y"` |
+| `size` | Méretek mint `"szélesség magasság"` |
 
-### Mikor hasznaljuk Which Format
+### Mikor melyik formátumot használd
 
-| Funkcio | Native Format | XML Format |
+| Funkció | Natív formátum | XML formátum |
 |---------|---------------|------------|
-| Multi-resolution (mip levels) | Yes | No |
-| Tiling flags | Yes | No |
-| Enfusion GUID paths | Yes | Yes |
-| Simplicity | Lower | Higher |
-| Used by vanilla DayZ | Yes | No |
-| Used by Expansion, MyMod, VPP | Yes | Occasionally |
+| Többfelbontás (mip szintek) | Igen | Nem |
+| Csempézési jelzők | Igen | Nem |
+| Enfusion GUID elérési utak | Igen | Igen |
+| Egyszerűség | Alacsonyabb | Magasabb |
+| A vanilla DayZ használja | Igen | Nem |
+| Expansion, MyMod, VPP használja | Igen | Alkalmanként |
 
-**Recommendation:** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that do not need tiling or multi-resolution support.
+**Ajánlás:** Használd a natív formátumot éles modokhoz. Használd az XML formátumot gyors prototípus készítéshez vagy egyszerű ikon készletekhez, amelyek nem igényelnek csempézést vagy többfelbontású támogatást.
 
 ---
 
-## Registering ImageSets in config.cpp
+## ImageSet-ek regisztrálása a config.cpp-ben
 
-ImageSet files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Without this registration, the engine never loads the imageset and your image references fail silently.
+Az ImageSet fájlokat regisztrálni kell a mod `config.cpp` fájljában a `CfgMods` > `class defs` > `class imageSets` blokk alatt. E regisztráció nélkül a motor soha nem tölti be az imageset-et, és a képhivatkozásaid csendben meghiúsulnak.
 
-### Syntax
+### Szintaxis
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        // ... other fields ...
+        // ... egyéb mezők ...
         class defs
         {
             class imageSets
@@ -208,9 +212,9 @@ class CfgMods
 };
 ```
 
-### Real Example: MyFramework
+### Valós példa: MyFramework
 
-MyFramework registers seven imagesets including Font Awesome icon sets:
+A MyFramework hét imageset-et regisztrál, beleértve a Font Awesome ikon készleteket:
 
 ```cpp
 class defs
@@ -231,7 +235,7 @@ class defs
 };
 ```
 
-### Real Example: VPP Admin Tools
+### Valós példa: VPP Admin Tools
 
 ```cpp
 class defs
@@ -246,7 +250,7 @@ class defs
 };
 ```
 
-### Real Example: DayZ Editor
+### Valós példa: DayZ Editor
 
 ```cpp
 class defs
@@ -263,9 +267,9 @@ class defs
 
 ---
 
-## Referencing Images in Layouts
+## Képek hivatkozása layoutokban
 
-In `.layout` files, use the `image0` property with the `set:name image:imageName` syntax:
+A `.layout` fájlokban használd az `image0` tulajdonságot a `set:név image:képNév` szintaxissal:
 
 ```
 ImageWidgetClass MyIcon {
@@ -276,18 +280,18 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-### Syntax Breakdown
+### Szintaxis bontás
 
 ```
-set:SETNAME image:IMAGENAME
+set:KÉSZLETNÉV image:KÉPNÉV
 ```
 
-- `SETNAME` --- the `Name` field from the imageset definition (e.g., `dayz_gui`, `solid`, `brands`)
-- `IMAGENAME` --- the `Name` field from a specific `ImageSetDefClass` entry (e.g., `icon_refresh`, `arrow_down`)
+- `KÉSZLETNÉV` --- a `Name` mező az imageset definícióból (pl. `dayz_gui`, `solid`, `brands`)
+- `KÉPNÉV` --- a `Name` mező egy adott `ImageSetDefClass` bejegyzésből (pl. `icon_refresh`, `arrow_down`)
 
-### Multiple Image States
+### Több kép állapot
 
-Some widgets support multiple image states (normal, hover, pressed):
+Egyes widgetek több kép állapotot támogatnak (normál, hover, megnyomott):
 
 ```
 ImageWidgetClass icon {
@@ -299,21 +303,21 @@ ButtonWidgetClass btn {
 }
 ```
 
-### Examples from Real Mods
+### Példák valós modokból
 
 ```
-image0 "set:regular image:arrow_down_short_wide"     -- MyMod: Font Awesome regular icon
-image0 "set:dayz_gui image:icon_minus"                -- MyMod: vanilla DayZ icon
-image0 "set:dayz_gui image:icon_collapse"             -- MyMod: vanilla DayZ icon
-image0 "set:dayz_gui image:circle"                    -- MyMod: vanilla DayZ shape
-image0 "set:dayz_editor_gui image:eye_open"           -- DayZ Editor: custom icon
+image0 "set:regular image:arrow_down_short_wide"     -- MyMod: Font Awesome regular ikon
+image0 "set:dayz_gui image:icon_minus"                -- MyMod: vanilla DayZ ikon
+image0 "set:dayz_gui image:icon_collapse"             -- MyMod: vanilla DayZ ikon
+image0 "set:dayz_gui image:circle"                    -- MyMod: vanilla DayZ alakzat
+image0 "set:dayz_editor_gui image:eye_open"           -- DayZ Editor: egyéni ikon
 ```
 
 ---
 
-## Referencing Images in Scripts
+## Képek hivatkozása szkriptekben
 
-In Enforce Script, use `ImageWidget.LoadImageFile()` or set image properties on widgets:
+Enforce Scriptben használd az `ImageWidget.LoadImageFile()` metódust vagy állíts be kép tulajdonságokat widgeteken:
 
 ### LoadImageFile
 
@@ -322,47 +326,47 @@ ImageWidget icon = ImageWidget.Cast(layoutRoot.FindAnyWidget("MyIcon"));
 icon.LoadImageFile(0, "set:solid image:circle");
 ```
 
-The `0` parameter is the image index (corresponding to `image0` in layouts).
+A `0` paraméter a kép index (amely a layoutok `image0` értékének felel meg).
 
-### Multiple States via Index
+### Több állapot index szerint
 
 ```c
 ImageWidget collapseIcon;
-collapseIcon.LoadImageFile(0, "set:regular image:square_plus");    // Normal state
-collapseIcon.LoadImageFile(1, "set:solid image:square_minus");     // Toggled state
+collapseIcon.LoadImageFile(0, "set:regular image:square_plus");    // Normál állapot
+collapseIcon.LoadImageFile(1, "set:solid image:square_minus");     // Kapcsolt állapot
 ```
 
-Switch between states using `SetImage(index)`:
+Válts állapotok között a `SetImage(index)` használatával:
 
 ```c
 collapseIcon.SetImage(isExpanded ? 1 : 0);
 ```
 
-### Using String Variables
+### Sztring változók használata
 
 ```c
-// From DayZ Editor
+// DayZ Editorból
 string icon = "set:dayz_editor_gui image:search";
 searchBarIcon.LoadImageFile(0, icon);
 
-// Later, change dynamically
+// Később, dinamikus módosítás
 searchBarIcon.LoadImageFile(0, "set:dayz_gui image:icon_x");
 ```
 
 ---
 
-## Image Flags
+## Kép jelzők
 
-The `Flags` field in native-format imageset entries controls tiling behavior when the image is stretched beyond its natural size.
+A natív formátumú imageset bejegyzések `Flags` mezője szabályozza a csempézési viselkedést, amikor a kép a természetes méretén túl van nyújtva.
 
-| Flag | Ertek | Leiras |
+| Jelző | Érték | Leírás |
 |------|-------|-------------|
-| `0` | 0 | No tiling. The image stretches to fill the widget. |
-| `ISHorizontalTile` | 1 | Tiles horizontally when the widget is wider than the image. |
-| `ISVerticalTile` | 2 | Tiles vertically when the widget is taller than the image. |
-| Both | 3 | Tiles in both directions (`ISHorizontalTile` + `ISVerticalTile`). |
+| `0` | 0 | Nincs csempézés. A kép nyúlik, hogy kitöltse a widgetet. |
+| `ISHorizontalTile` | 1 | Vízszintesen csempéz, amikor a widget szélesebb a képnél. |
+| `ISVerticalTile` | 2 | Függőlegesen csempéz, amikor a widget magasabb a képnél. |
+| Mindkettő | 3 | Mindkét irányban csempéz (`ISHorizontalTile` + `ISVerticalTile`). |
 
-### Usage
+### Használat
 
 ```
 ImageSetDefClass Gradient {
@@ -373,15 +377,15 @@ ImageSetDefClass Gradient {
 }
 ```
 
-This `Gradient` image is 75x5 pixels. When used in a widget taller than 5 pixels, it tiles vertically to fill the height, creating a repeating gradient stripe.
+Ez a `Gradient` kép 75x5 pixel. Ha egy 5 pixelnél magasabb widgetben használják, függőlegesen csempéz a magasság kitöltéséhez, ismétlődő gradiens csíkot létrehozva.
 
-Most icons use `Flags 0` (no tiling). Tiling flags are primarily for UI elements like borders, dividers, and repeating patterns.
+A legtöbb ikon `Flags 0`-t használ (nincs csempézés). A csempézési jelzők elsősorban UI elemekhez használatosak, mint szegélyek, elválasztók és ismétlődő minták.
 
 ---
 
-## Multi-Resolution Texturak
+## Többfelbontású textúrák
 
-The native format supports multiple resolution textures for the same imageset. This allows the engine to use higher-resolution artwork on high-DPI displays.
+A natív formátum több felbontású textúrákat támogat ugyanahhoz az imageset-hez. Ez lehetővé teszi, hogy a motor magasabb felbontású grafikát használjon magas DPI kijelzőkön.
 
 ```
 Textures {
@@ -396,14 +400,14 @@ Textures {
 }
 ```
 
-- `mpix 0` --- low resolution (used on low-quality settings or distant UI elements)
-- `mpix 1` --- standard/high resolution (default)
+- `mpix 0` --- alacsony felbontás (alacsony minőségű beállításokon vagy távoli UI elemeknél használt)
+- `mpix 1` --- szabványos/magas felbontás (alapértelmezett)
 
-The `@2x` naming convention is borrowed from Apple's Retina display system but is not enforced --- you can name the file anything.
+A `@2x` elnevezési konvenció az Apple Retina kijelző rendszeréből származik, de nem kötelező --- a fájlt bárhogyan elnevezheted.
 
-### In Practice
+### A gyakorlatban
 
-Most mods only include `mpix 1` (a single resolution). Multi-resolution support is primarily used by the vanilla game:
+A legtöbb mod csak `mpix 1`-et tartalmaz (egyetlen felbontás). A többfelbontású támogatást elsősorban a vanilla játék használja:
 
 ```
 Textures {
@@ -416,28 +420,28 @@ Textures {
 
 ---
 
-## Creating Custom Icon Sets
+## Egyéni ikon készletek létrehozása
 
-### Step-by-Step Workflow
+### Lépésről lépésre munkafolyamat
 
-**1. Create the Texture Atlas**
+**1. Textúra atlasz létrehozása**
 
-Use an image editor (Photoshop, GIMP, etc.) to arrange your icons on a single canvas:
-- Choose a power-of-two size (256x256, 512x512, 1024x1024, etc.)
-- Arrange icons in a grid for easy coordinate calculation
-- Leave some padding between icons to prevent texture bleeding
-- Save as `.tga` or `.png`
+Használj egy képszerkesztőt (Photoshop, GIMP, stb.) az ikonok egyetlen vászonra rendezéséhez:
+- Válassz kettő hatványának megfelelő méretet (256x256, 512x512, 1024x1024, stb.)
+- Rendezd az ikonokat rácsba az egyszerű koordináta számításhoz
+- Hagyj némi térközt az ikonok között a textúra átszivárgás megelőzéséhez
+- Mentsd el `.tga` vagy `.png` formátumban
 
-**2. Convert to EDDS**
+**2. Konvertálás EDDS-re**
 
-DayZ uses `.edds` (Enfusion DDS) format for textures. Use the DayZ Workbench or Mikero's tools to convert:
-- Import your `.tga` into DayZ Workbench
-- Or use `Pal2PacE.exe` to convert `.paa` to `.edds`
-- The output must be an `.edds` file
+A DayZ `.edds` (Enfusion DDS) formátumot használ textúrákhoz. Használd a DayZ Workbench-et vagy Mikero eszközeit a konvertáláshoz:
+- Importáld a `.tga`-dat a DayZ Workbench-be
+- Vagy használd a `Pal2PacE.exe` eszközt a `.paa` konvertálásához `.edds`-re
+- A kimenetnek `.edds` fájlnak kell lennie
 
-**3. Write the ImageSet Definition**
+**3. ImageSet definíció megírása**
 
-Map each icon to a named region. If your icons are on a 64-pixel grid:
+Rendeld hozzá az ikonokat megnevezett régiókhoz. Ha az ikonjaid 64 pixeles rácson vannak:
 
 ```
 ImageSetClass {
@@ -472,9 +476,9 @@ ImageSetClass {
 }
 ```
 
-**4. Register in config.cpp**
+**4. Regisztrálás a config.cpp-ben**
 
-Add the imageset path to your mod's config.cpp:
+Add hozzá az imageset elérési útját a mod config.cpp-jéhez:
 
 ```cpp
 class imageSets
@@ -486,7 +490,7 @@ class imageSets
 };
 ```
 
-**5. Use in Layouts and Scripts**
+**5. Használat layoutokban és szkriptekben**
 
 ```
 ImageWidgetClass SettingsIcon {
@@ -499,29 +503,29 @@ ImageWidgetClass SettingsIcon {
 
 ---
 
-## Font Awesome Integration Pattern
+## Font Awesome integráció minta
 
-MyFramework (inherited from DabsFramework) demonstrates a powerful pattern: converting Font Awesome icon fonts into DayZ imagesets. This gives mods access to thousands of professional-quality icons without creating custom artwork.
+A MyFramework (a DabsFramework-ből örökölve) egy hatékony mintát mutat be: a Font Awesome ikon betűtípusok DayZ imageset-ekké konvertálását. Ez hozzáférést biztosít a modoknak több ezer professzionális minőségű ikonhoz egyéni grafika készítése nélkül.
 
-### How It Works
+### Hogyan működik
 
-1. Font Awesome icons are rendered to a texture atlas at a fixed grid size (64x64 per icon)
-2. Each icon style gets its own imageset: `solid`, `regular`, `light`, `thin`, `brands`
-3. Icon names in the imageset match Font Awesome icon names (e.g., `circle`, `arrow_down`, `discord`)
-4. The imagesets are registered in config.cpp and available to any layout or script
+1. A Font Awesome ikonok textúra atlaszra vannak renderelve rögzített rács méretben (64x64 ikonként)
+2. Minden ikon stílus saját imageset-et kap: `solid`, `regular`, `light`, `thin`, `brands`
+3. Az imageset ikon nevei megegyeznek a Font Awesome ikon nevekkel (pl. `circle`, `arrow_down`, `discord`)
+4. Az imageset-ek regisztrálva vannak a config.cpp-ben és bármely layout vagy szkript számára elérhetők
 
-### MyFramework / DabsFramework Icon Sets
+### MyFramework / DabsFramework ikon készletek
 
 ```
 MyFramework/GUI/icons/
-  solid.imageset       -- Filled icons (3648x3712 atlas, 64x64 per icon)
-  regular.imageset     -- Outlined icons
-  light.imageset       -- Light-weight outlined icons
-  thin.imageset        -- Ultra-thin outlined icons
-  brands.imageset      -- Brand logos (Discord, GitHub, etc.)
+  solid.imageset       -- Kitöltött ikonok (3648x3712 atlasz, 64x64 ikonként)
+  regular.imageset     -- Körvonalazott ikonok
+  light.imageset       -- Könnyű súlyú körvonalazott ikonok
+  thin.imageset        -- Ultra-vékony körvonalazott ikonok
+  brands.imageset      -- Márka logók (Discord, GitHub, stb.)
 ```
 
-### Usage in Layouts
+### Használat layoutokban
 
 ```
 image0 "set:solid image:circle"
@@ -531,25 +535,25 @@ image0 "set:brands image:discord"
 image0 "set:brands image:500px"
 ```
 
-### Usage in Scripts
+### Használat szkriptekben
 
 ```c
-// DayZ Editor using the solid set
+// DayZ Editor a solid készletet használva
 CollapseIcon.LoadImageFile(1, "set:solid image:square_minus");
 CollapseIcon.LoadImageFile(0, "set:regular image:square_plus");
 ```
 
-### Why This Pattern Works Well
+### Miért működik jól ez a minta
 
-- **Massive icon library**: Thousands of icons available without any artwork creation
-- **Consistent style**: All icons share the same visual weight and style
-- **Multiple weights**: Choose solid, regular, light, or thin for different visual contexts
-- **Brand icons**: Ready-made logos for Discord, Steam, GitHub, etc.
-- **Standard names**: Icon names follow Font Awesome conventions, making discovery easy
+- **Hatalmas ikon könyvtár**: Több ezer ikon elérhető grafikai munka nélkül
+- **Egységes stílus**: Minden ikon azonos vizuális súlyt és stílust oszt
+- **Több vastagság**: Válassz solid, regular, light vagy thin változatot különböző vizuális kontextusokhoz
+- **Márka ikonok**: Kész logók a Discord, Steam, GitHub stb. számára
+- **Szabványos nevek**: Az ikon nevek a Font Awesome konvenciókat követik, megkönnyítve a felfedezést
 
-### The Atlas Structure
+### Az atlasz struktúra
 
-The solid imageset, for example, has a `RefSize` of 3648x3712 with icons arranged at 64-pixel intervals:
+A solid imageset például `RefSize` 3648x3712 méretű, az ikonok 64 pixeles intervallumokban rendezve:
 
 ```
 ImageSetClass {
@@ -581,11 +585,11 @@ ImageSetClass {
 
 ---
 
-## Valos peldak
+## Valós példák
 
 ### VPP Admin Tools
 
-VPP packs all admin tool icons into a single 1920x1080 atlas with freeform positioning (not a strict grid):
+A VPP az összes admin eszköz ikont egyetlen 1920x1080 atlaszba csomagolja szabadon pozícionálva (nem szigorú rácson):
 
 ```
 ImageSetClass {
@@ -614,14 +618,14 @@ ImageSetClass {
 }
 ```
 
-Referenced in layouts as:
+Hivatkozás layoutokban:
 ```
 image0 "set:dayz_gui_vpp image:vpp_icon_cloud"
 ```
 
 ### MyWeapons Mod
 
-Weapon and attachment icons packed into large atlases with varied icon sizes:
+Fegyver és kiegészítő ikonok nagy atlaszokba csomagolva változó ikon méretekkel:
 
 ```
 ImageSetClass {
@@ -650,11 +654,11 @@ ImageSetClass {
 }
 ```
 
-This shows that icons do not need to be uniform size --- inventory icons for weapons use 300x300 while UI icons typically use 64x64.
+Ez megmutatja, hogy az ikonoknak nem kell egyforma méretűnek lenniük --- a leltári ikonok fegyverekhez 300x300-at használnak, míg az UI ikonok jellemzően 64x64-et.
 
 ### MyFramework Prefabs
 
-UI primitives (rounded corners, alpha gradients) packed into a small 256x256 atlas:
+UI primitívek (lekerekített sarkok, alfa gradiensek) kis 256x256 atlaszba csomagolva:
 
 ```
 ImageSetClass {
@@ -683,11 +687,11 @@ ImageSetClass {
 }
 ```
 
-Notable: image names can contain spaces when quoted (e.g., `"Alpha 10"`). However, referencing these in layouts requires the exact name including the space.
+Megjegyzés: a kép nevek tartalmazhatnak szóközöket idézőjelezve (pl. `"Alpha 10"`). Mindazonáltal ezek layoutokban való hivatkozása megköveteli a pontos nevet a szóközzel együtt.
 
-### MyMod Market Hub (XML Format)
+### MyMod Market Hub (XML formátum)
 
-A simpler XML imageset for the market hub module:
+Egyszerűbb XML imageset a market hub modulhoz:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -702,50 +706,50 @@ A simpler XML imageset for the market hub module:
 </imageset>
 ```
 
-Referenced as:
+Hivatkozás:
 ```
 image0 "set:mh_icons image:icon_store"
 ```
 
 ---
 
-## Gyakori hibak
+## Gyakori hibák
 
-### Forgetting config.cpp Registration
+### config.cpp regisztráció elfelejtése
 
-The most common issue. If your imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, the engine never loads it. All image references will fail silently (widgets appear blank).
+A leggyakoribb probléma. Ha az imageset fájlod létezik, de nincs felsorolva a `class imageSets { files[] = { ... }; };` blokkban a config.cpp-ben, a motor soha nem tölti be. Minden képhivatkozás csendben meghiúsul (a widgetek üresen jelennek meg).
 
-### Set Name Collisions
+### Készletnév ütközések
 
-If two mods register imagesets with the same `Name`, only one is loaded (the last one wins). Use a unique prefix:
-
-```
-Name "mymod_icons"     -- Good
-Name "icons"           -- Risky, too generic
-```
-
-### Wrong Texture Path
-
-The `path` must be relative to the PBO root (how the file appears inside the packed PBO):
+Ha két mod azonos `Name`-mel regisztrál imageset-eket, csak az egyik töltődik be (az utolsó nyer). Használj egyedi előtagot:
 
 ```
-path "MyMod/GUI/imagesets/icons.edds"     -- Correct if MyMod is the PBO root
-path "GUI/imagesets/icons.edds"            -- Wrong if the PBO root is MyMod/
-path "C:/Users/dev/icons.edds"            -- Wrong: absolute paths do not work
+Name "mymod_icons"     -- Jó
+Name "icons"           -- Kockázatos, túl általános
 ```
 
-### Mismatched RefSize
+### Rossz textúra elérési út
 
-The `RefSize` must match the actual pixel dimensions of your texture. If you specify `RefSize 512 512` but your texture is 1024x1024, all icon positions will be off by a factor of two.
+A `path`-nak relatívnak kell lennie a PBO gyökérhez (ahogy a fájl megjelenik a csomagolt PBO-ban):
 
-### Pos Coordinates Off by One
+```
+path "MyMod/GUI/imagesets/icons.edds"     -- Helyes, ha MyMod a PBO gyökér
+path "GUI/imagesets/icons.edds"            -- Helytelen, ha a PBO gyökér MyMod/
+path "C:/Users/dev/icons.edds"            -- Helytelen: abszolút elérési utak nem működnek
+```
 
-`Pos` is the top-left corner of the icon region. If your icons are at 64-pixel intervals but you accidentally offset by 1 pixel, icons will have a thin slice of the adjacent icon visible.
+### Eltérő RefSize
 
-### Using .png or .tga Directly
+A `RefSize`-nak meg kell egyeznie a textúra tényleges pixel méreteivel. Ha `RefSize 512 512`-t adsz meg, de a textúrád 1024x1024, az összes ikon pozíció kétszeres tényezővel el lesz csúszva.
 
-The engine requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Always convert to `.edds` using DayZ Workbench or Mikero's tools.
+### Pos koordináták eltérése
 
-### Spaces in Image Names
+A `Pos` az ikon régió bal felső sarka. Ha az ikonjaid 64 pixeles intervallumokon vannak, de véletlenül 1 pixellel eltolsz, az ikonok a szomszédos ikon egy vékony szeletét fogják mutatni.
 
-While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in some parsing contexts. Prefer underscores: `Alpha_10`.
+### .png vagy .tga közvetlen használata
+
+A motor `.edds` formátumot igényel az imageset-ek által hivatkozott textúra atlaszokhoz. A nyers `.png` vagy `.tga` fájlok nem töltődnek be. Mindig konvertálj `.edds`-re a DayZ Workbench vagy Mikero eszközei használatával.
+
+### Szóközök a kép nevekben
+
+Bár a motor támogatja a szóközöket a kép nevekben (pl. `"Alpha 10"`), egyes elemzési kontextusokban problémákat okozhatnak. Inkább használj aláhúzásjeleket: `Alpha_10`.
