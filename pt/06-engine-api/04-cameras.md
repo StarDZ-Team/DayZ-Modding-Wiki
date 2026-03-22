@@ -1,6 +1,6 @@
-# Capítulo 6.4: Sistema de Câmeras
+# Chapter 6.4: Camera System
 
-[<< Anterior: Clima](03-weather.md) | **Câmeras** | [Próximo: Efeitos Pós-Processamento >>](05-ppe.md)
+[Home](../../README.md) | [<< Previous: Weather](03-weather.md) | **Cameras** | [Next: Post-Process Effects >>](05-ppe.md)
 
 ---
 

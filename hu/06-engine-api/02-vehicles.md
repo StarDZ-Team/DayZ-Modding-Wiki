@@ -1,6 +1,6 @@
 # Chapter 6.2: Vehicle System
 
-[<< Elozo: Entitas rendszer](01-entity-system.md) | **Jarmuvek** | [Kovetkezo: Idojaras >>](03-weather.md)
+[Home](../../README.md) | [<< Previous: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
 
 ---
 

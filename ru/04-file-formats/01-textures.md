@@ -1,6 +1,6 @@
-# Chapter 4.1: Текстуры (.paa, .edds, .tga)
+# Chapter 4.1: Textures (.paa, .edds, .tga)
 
-[Главная](../../README.md) | **Textures** | [Следующая: 3D Models >>](02-models.md)
+[Home](../../README.md) | **Textures** | [Next: 3D Models >>](02-models.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# 第1.10章 — Enum とプリプロセッサ
+# Chapter 1.10: Enums & Preprocessor
 
-> **目標：** Enum 宣言、Enum リフレクションツール、ビットフラグパターン、定数、および条件コンパイルのためのプリプロセッサシステムを理解する。
+[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
 
 ---
 

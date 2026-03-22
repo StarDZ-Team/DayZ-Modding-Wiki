@@ -1,6 +1,6 @@
-# Capitulo 6.1: Sistema de Entidades
+# Chapter 6.1: Entity System
 
-[Inicio](../../README.md) | **Sistema de Entidades** | [Siguiente: Vehicles >>](02-vehicles.md)
+[Home](../../README.md) | **Entity System** | [Next: Vehicles >>](02-vehicles.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# 第2.1章：5層スクリプト階層
+# Chapter 2.1: The 5-Layer Script Hierarchy
 
-> **要約：** DayZ は全スクリプトを5つのコンパイルレイヤーに整理する。これらのレイヤーを理解することは DayZ Modding で最も重要な概念であり、Mod内の各ファイルの配置場所、アクセスできる型、実行タイミングを決定する。
+[Home](../../README.md) | **The 5-Layer Script Hierarchy** | [Next: config.cpp Deep Dive >>](02-config-cpp.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Руководство по устранению неполадок
+# Troubleshooting Guide
 
-[Главная](../README.md) | **Руководство по устранению неполадок**
+[Home](../README.md) | **Troubleshooting Guide**
 
 ---
 

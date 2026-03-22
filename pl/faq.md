@@ -1,6 +1,6 @@
-# Najczesciej zadawane pytania
+# Frequently Asked Questions
 
-[Strona glowna](../README.md) | **FAQ**
+[Home](../README.md) | **FAQ**
 
 ---
 

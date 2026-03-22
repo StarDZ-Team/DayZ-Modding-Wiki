@@ -1,6 +1,6 @@
-# Capitulo 4.6: Empacotamento PBO
+# Chapter 4.6: PBO Packing
 
-[<< Anterior: Fluxo de Trabalho DayZ Tools](05-dayz-tools.md) | **Empacotamento PBO** | [Proximo: Parte 5 >>](../05-config-files/01-stringtable.md)
+[Home](../../README.md) | [<< Previous: DayZ Tools Workflow](05-dayz-tools.md) | **PBO Packing** | [Next: Workbench Guide >>](07-workbench-guide.md)
 
 ---
 

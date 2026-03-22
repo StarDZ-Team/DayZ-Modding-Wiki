@@ -1,6 +1,6 @@
-# Chapter 1.13: Functions & Metodas
+# Chapter 1.13: Functions & Methods
 
-[Strona glowna](../../README.md) | [<< Poprzedni: Gotchas](12-gotchas.md) | **Functions & Metodas**
+[Home](../../README.md) | [<< Previous: Gotchas](12-gotchas.md) | **Functions & Methods**
 
 ---
 

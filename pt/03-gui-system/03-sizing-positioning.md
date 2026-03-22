@@ -1,6 +1,6 @@
-# 3.3 Dimensionamento e Posicionamento
+# Chapter 3.3: Sizing & Positioning
 
-O sistema de layout do DayZ usa um **modo de coordenadas dual** -- cada dimensao pode ser proporcional (relativa ao pai) ou baseada em pixels (pixels absolutos da tela). Nao entender esse sistema e a principal fonte de bugs de layout. Este capitulo o explica completamente.
+[Home](../../README.md) | [<< Previous: Layout File Format](02-layout-files.md) | **Sizing & Positioning** | [Next: Container Widgets >>](04-containers.md)
 
 ---
 

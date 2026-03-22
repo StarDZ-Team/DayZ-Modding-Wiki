@@ -1,6 +1,6 @@
 # Chapter 7.5: Permission Systems
 
-[<< Elozo: Konfiguracio perzisztencia](04-config-persistence.md) | [Kezdolap](../../README.md) | [Kovetkezo: Event-Driven Architecture >>](06-events.md)
+[Home](../../README.md) | [<< Previous: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Next: Event-Driven Architecture >>](06-events.md)
 
 ---
 

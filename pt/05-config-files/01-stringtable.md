@@ -1,6 +1,6 @@
-# Capitulo 5.1: stringtable.csv --- Localizacao
+# Chapter 5.1: stringtable.csv --- Localization
 
-> **Resumo:** O arquivo `stringtable.csv` fornece texto localizado para o seu mod de DayZ. O motor le este CSV na inicializacao e resolve chaves de traducao com base na configuracao de idioma do jogador. Toda string visivel ao usuario --- labels de UI, nomes de key bindings, descricoes de itens, texto de notificacao --- deve estar em uma stringtable em vez de ser hardcoded.
+[Home](../../README.md) | **stringtable.csv** | [Next: inputs.xml >>](02-inputs-xml.md)
 
 ---
 

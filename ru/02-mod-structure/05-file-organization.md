@@ -1,8 +1,8 @@
-# Глава 2.5: Лучшие практики организации файлов
+# Chapter 2.5: File Organization Best Practices
 
+[Home](../../README.md) | [<< Previous: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Next: Server vs Client Architecture >>](06-server-client-split.md)
 
-> **Итоги:** Организация файлов определяет, будет ли ваш мод поддерживаемым при 10 файлах или при 1000. Эта глава охватывает каноническую структуру каталогов, соглашения об именовании, контентные vs скриптовые vs фреймворковые моды, разделение клиент-сервер и уроки из профессиональных модов DayZ.
-
+---
 
 ---
 

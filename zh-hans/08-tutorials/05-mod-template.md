@@ -1,6 +1,6 @@
-# 第 8.5 章：使用 DayZ Mod 模板
+# Chapter 8.5: Using the DayZ Mod Template
 
-> **摘要：** 本教程说明如何使用 InclementDab 的开源 DayZ Mod 模板，在数秒内创建新的 Mod 项目。您不需要从零创建每个文件，只需克隆一个已包含正确文件夹结构、config.cpp、mod.cpp 和脚本层级存根的现成骨架。重命名几个项目后，即可立即开始编写代码。
+[Home](../../README.md) | [<< Previous: Adding Chat Commands](04-chat-commands.md) | **Using the DayZ Mod Template** | [Next: Debugging & Testing >>](06-debugging-testing.md)
 
 ---
 

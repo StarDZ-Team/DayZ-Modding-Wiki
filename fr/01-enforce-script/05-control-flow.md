@@ -1,6 +1,6 @@
-# Chapitre 1.5 : Flux de controle
+# Chapter 1.5: Control Flow
 
-[<< 1.4: Classes moddees](04-modded-classes.md) | [Accueil](../../README.md) | [1.6: Operations sur les chaines >>](06-strings.md)
+[Home](../../README.md) | [<< Previous: Modded Classes](04-modded-classes.md) | **Control Flow** | [Next: String Operations >>](06-strings.md)
 
 ---
 

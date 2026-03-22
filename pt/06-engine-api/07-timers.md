@@ -1,6 +1,6 @@
-# Capítulo 6.7: Timers & CallQueue
+# Chapter 6.7: Timers & CallQueue
 
-[<< Anterior: Notificações](06-notifications.md) | **Timers & CallQueue** | [Próximo: File I/O & JSON >>](08-file-io.md)
+[Home](../../README.md) | [<< Previous: Notifications](06-notifications.md) | **Timers & CallQueue** | [Next: File I/O & JSON >>](08-file-io.md)
 
 ---
 

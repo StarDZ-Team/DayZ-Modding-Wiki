@@ -1,6 +1,6 @@
-# Chapitre 6.21 : Systeme Zombie et IA
+# Chapter 6.21: Zombie & AI System
 
-[Accueil](../../README.md) | [<< Precedent : Particle Effects](20-particle-effects.md) | **Systeme Zombie et IA**
+[Home](../../README.md) | [<< Previous: Particle & Effect System](20-particle-effects.md) | **Zombie & AI System** | [Next: Admin & Server Management >>](22-admin-server.md)
 
 ---
 

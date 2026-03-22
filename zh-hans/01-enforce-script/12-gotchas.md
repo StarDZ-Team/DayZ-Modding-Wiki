@@ -1,6 +1,6 @@
-# 第 1.12 章 — What Does NOT Exist (Gotchas)
+# Chapter 1.12: What Does NOT Exist (Gotchas)
 
-> **目标：** 这是一份完整的目录，列出了你从 C++、C#、Java 或 Python 中习惯使用但在 Enforce Script 中**缺失**或**不同**的特性。每个条目都解释了你可能会尝试什么、实际会发生什么，以及正确的解决方法。
+[Home](../../README.md) | [<< Previous: Error Handling](11-error-handling.md) | **Gotchas** | [Next: Functions & Methods >>](13-functions-methods.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Chapter 7.1: Singleton Pattern
 
-[ホーム](../../README.md) | **Singleton Pattern** | [次： Module Systems >>](02-module-systems.md)
+[Home](../../README.md) | **Singleton Pattern** | [Next: Module Systems >>](02-module-systems.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Chapter 4.6: PBO csomagolas
+# Chapter 4.6: PBO Packing
 
-[<< Elozo: DayZ eszkozok munkamenet](05-dayz-tools.md) | **PBO csomagolas** | [Kovetkezo: Part 5 >>](../05-config-files/01-textures.md)
+[Home](../../README.md) | [<< Previous: DayZ Tools Workflow](05-dayz-tools.md) | **PBO Packing** | [Next: Workbench Guide >>](07-workbench-guide.md)
 
 ---
 

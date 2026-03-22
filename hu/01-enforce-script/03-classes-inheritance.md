@@ -1,6 +1,6 @@
-# Chapter 1.3: Osztalyok es oroklodes
+# Chapter 1.3: Classes & Inheritance
 
-[Kezdolap](../../README.md) | [<< Elozo: Tombok, Map-ek es Set-ek](02-arrays-maps-sets.md) | **Osztalyok es oroklodes** | [Kovetkezo: Modded osztalyok >>](04-modded-classes.md)
+[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
 
 ---
 

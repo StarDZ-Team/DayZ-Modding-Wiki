@@ -1,6 +1,6 @@
-# Referencia Rapida da API do Motor
+# Engine API Quick Reference
 
-> Referencia condensada em uma unica pagina para os metodos mais utilizados do motor DayZ. Para explicacoes detalhadas e exemplos, consulte os capitulos completos vinculados no cabecalho de cada secao.
+[Home](../../README.md) | **Engine API Quick Reference**
 
 ---
 

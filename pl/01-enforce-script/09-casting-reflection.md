@@ -1,6 +1,6 @@
-# Rozdzial 1.9 — Rzutowanie i refleksja
+# Chapter 1.9: Casting & Reflection
 
-> **Goal:** Master safe type casting, runtime type checks, and Enforce Script's reflection API for dynamic property access.
+[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
 
 ---
 

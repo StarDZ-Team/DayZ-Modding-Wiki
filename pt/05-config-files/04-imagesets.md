@@ -1,6 +1,6 @@
-# Capitulo 5.4: Formato ImageSet
+# Chapter 5.4: ImageSet Format
 
-> **Resumo:** ImageSets definem regioes de sprites nomeadas dentro de um atlas de textura. Sao o mecanismo principal do DayZ para referenciar icones, graficos de UI e sprite sheets a partir de arquivos de layout e scripts. Em vez de carregar centenas de arquivos de imagem individuais, voce empacota todos os icones em uma unica textura e descreve a posicao e tamanho de cada icone em um arquivo de definicao de imageset.
+[Home](../../README.md) | [<< Previous: Credits.json](03-credits-json.md) | **ImageSet Format** | [Next: Server Configuration Files >>](05-server-configs.md)
 
 ---
 

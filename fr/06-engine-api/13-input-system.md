@@ -1,6 +1,6 @@
-# Chapitre 6.13 : Systeme d'Entrees
+# Chapter 6.13: Input System
 
-[Accueil](../../README.md) | [<< Precedent : Action System](12-action-system.md) | **Systeme d'Entrees**
+[Home](../../README.md) | [<< Previous: Action System](12-action-system.md) | **Input System** | [Next: Player System >>](14-player-system.md)
 
 ---
 

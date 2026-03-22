@@ -2,6 +2,8 @@
 
 [Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
 
+---
+
 > **Summary:** DayZ has two complementary systems that control how players enter the world: **spawn points** determine *where* a character appears on the map, and **spawn gear** determines *what equipment* they carry. This chapter covers both systems in depth, including file structure, field reference, practical presets, and mod integration.
 
 ---

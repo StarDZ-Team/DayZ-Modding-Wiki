@@ -1,6 +1,6 @@
-# Capitulo 4.8: Modelado de Edificios -- Puertas y Escaleras
+# Chapter 4.8: Building Modeling -- Doors & Ladders
 
-[<< Previous: Workbench Guide](07-workbench-guide.md) | **Modelado de Edificios**
+[Home](../../README.md) | [<< Previous: Workbench Guide](07-workbench-guide.md) | **Building Modeling**
 
 ---
 

@@ -1,6 +1,6 @@
-# Capítulo 6.3: Sistema de Clima
+# Chapter 6.3: Weather System
 
-[<< Anterior: Veículos](02-vehicles.md) | **Clima** | [Próximo: Câmeras >>](04-cameras.md)
+[Home](../../README.md) | [<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
 
 ---
 

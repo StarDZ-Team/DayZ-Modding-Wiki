@@ -1,6 +1,6 @@
-# Capitulo 2.5: Boas Praticas de Organizacao de Arquivos
+# Chapter 2.5: File Organization Best Practices
 
-> **Resumo:** Como voce organiza seus arquivos determina se seu mod e sustentavel com 10 arquivos ou 1.000. Este capitulo cobre a estrutura de diretorios canonica, convencoes de nomenclatura, mods de conteudo vs script vs framework, divisoes cliente-servidor e licoes de mods profissionais de DayZ.
+[Home](../../README.md) | [<< Previous: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Next: Server vs Client Architecture >>](06-server-client-split.md)
 
 ---
 

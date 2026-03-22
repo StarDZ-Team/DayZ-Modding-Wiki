@@ -1,6 +1,6 @@
-# Capitulo 6.2: Sistema de Vehiculos
+# Chapter 6.2: Vehicle System
 
-[<< Anterior: Entity System](01-entity-system.md) | **Vehicles** | [Siguiente: Weather >>](03-weather.md)
+[Home](../../README.md) | [<< Previous: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
 
 ---
 

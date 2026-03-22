@@ -1,6 +1,6 @@
-# 3.2 Layout ファイル形式 (.layout)
+# Chapter 3.2: Layout File Format (.layout)
 
-DayZ は UI レイアウトファイルに独自のテキストベース形式を使用します。これらの `.layout` ファイルは **XML ではありません** — config.cpp に似た中括弧区切り形式を使用します。DayZ Workbench エディタが生成しますが、形式を理解することでレイアウトの手動編集やデバッグが可能になります。
+[Home](../../README.md) | [<< Previous: Widget Types](01-widget-types.md) | **Layout File Format** | [Next: Sizing & Positioning >>](03-sizing-positioning.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Capítulo 6.22: Administração e Gerenciamento de Servidor
+# Chapter 6.22: Admin & Server Management
 
-[Home](../../README.md) | [<< Anterior: Sistema de Zumbis e IA](21-zombie-ai-system.md) | **Administração e Gerenciamento de Servidor** | [Próximo: Sistemas do Mundo >>](23-world-systems.md)
+[Home](../../README.md) | [<< Previous: Zombie & AI System](21-zombie-ai-system.md) | **Admin & Server Management** | [Next: World Systems >>](23-world-systems.md)
 
 ---
 

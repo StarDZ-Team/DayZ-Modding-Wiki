@@ -1,6 +1,6 @@
-# 第 1.3 章：类与继承
+# Chapter 1.3: Classes & Inheritance
 
-[Home](../../README.md) | [<< 上一章：数组、映射与集合](02-arrays-maps-sets.md) | **类与继承** | [下一章：Modded 类 >>](04-modded-classes.md)
+[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Rozdzial 5.2: inputs.xml — niestandardowe skroty klawiszowe
+# Chapter 5.2: inputs.xml --- Custom Keybindings
 
-> **Summary:** The `inputs.xml` file lets your mod register custom keybindings that appear in the player's Controls settings menu. Players can view, rebind, and toggle these inputs just like vanilla actions. This is the standard mechanism for adding hotkeys to DayZ mods.
+[Home](../../README.md) | [<< Previous: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Next: Credits.json >>](03-credits-json.md)
 
 ---
 

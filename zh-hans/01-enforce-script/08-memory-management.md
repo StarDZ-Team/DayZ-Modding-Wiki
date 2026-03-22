@@ -1,6 +1,6 @@
-# Chapter 1.8：内存管理
+# Chapter 1.8: Memory Management
 
-[<< 1.7：数学与向量](07-math-vectors.md) | [Home](../../README.md) | [1.9：类型转换与反射 >>](09-casting-reflection.md)
+[Home](../../README.md) | [<< Previous: Math & Vectors](07-math-vectors.md) | **Memory Management** | [Next: Casting & Reflection >>](09-casting-reflection.md)
 
 ---
 

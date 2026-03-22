@@ -1,6 +1,6 @@
-# Rychlá reference API enginu
+# Engine API Quick Reference
 
-> Zkrácená jednostránková reference nejčastěji používaných metod enginu DayZ. Podrobná vysvětlení a příklady naleznete v plných kapitolách odkazovaných v záhlaví každé sekce.
+[Home](../../README.md) | **Engine API Quick Reference**
 
 ---
 

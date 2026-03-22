@@ -1,6 +1,6 @@
-# Глава 1.13: Функции и методы
+# Chapter 1.13: Functions & Methods
 
-[Главная](../../README.md) | [<< Назад: Подводные камни](12-gotchas.md) | **Функции и методы**
+[Home](../../README.md) | [<< Previous: Gotchas](12-gotchas.md) | **Functions & Methods**
 
 ---
 

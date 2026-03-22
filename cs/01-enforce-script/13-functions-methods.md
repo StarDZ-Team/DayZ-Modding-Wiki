@@ -1,6 +1,6 @@
-# Chapter 1.13: Functions & Metodas
+# Chapter 1.13: Functions & Methods
 
-[Domu](../../README.md) | [<< Predchozi: Gotchas](12-gotchas.md) | **Functions & Metodas**
+[Home](../../README.md) | [<< Previous: Gotchas](12-gotchas.md) | **Functions & Methods**
 
 ---
 

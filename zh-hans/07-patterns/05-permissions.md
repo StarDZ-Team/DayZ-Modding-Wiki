@@ -1,6 +1,6 @@
 # Chapter 7.5: Permission Systems
 
-[<< 上一章: Config Persistence](04-config-persistence.md) | [Home](../../README.md) | [下一章: Event-Driven Architecture >>](06-events.md)
+[Home](../../README.md) | [<< Previous: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Next: Event-Driven Architecture >>](06-events.md)
 
 ---
 

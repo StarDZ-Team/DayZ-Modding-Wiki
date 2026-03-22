@@ -1,5 +1,9 @@
 # Chapter 5.3: Credits.json
 
+[Home](../../README.md) | [<< Previous: inputs.xml](02-inputs-xml.md) | **Credits.json** | [Next: ImageSet Format >>](04-imagesets.md)
+
+---
+
 > **Summary:** The `Credits.json` file defines the credits that DayZ displays for your mod in the game's mod menu. It lists team members, contributors, and acknowledgments organized by departments and sections. While purely cosmetic, it is the standard way to give credit to your development team.
 
 ---

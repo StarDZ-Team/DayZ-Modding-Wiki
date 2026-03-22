@@ -1,8 +1,8 @@
-# Глава 1.12 — Чего НЕ существует (ловушки)
+# Chapter 1.12: What Does NOT Exist (Gotchas)
 
+[Home](../../README.md) | [<< Previous: Error Handling](11-error-handling.md) | **Gotchas** | [Next: Functions & Methods >>](13-functions-methods.md)
 
-> **Цель:** Полный каталог возможностей, которые вы ожидаете от C++, C#, Java или Python, но которые **отсутствуют** или **отличаются** в Enforce Script. Каждая запись объясняет, что вы бы попробовали, что произойдёт и правильное обходное решение.
-
+---
 
 ---
 

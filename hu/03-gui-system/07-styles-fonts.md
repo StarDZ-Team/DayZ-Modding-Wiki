@@ -1,6 +1,6 @@
-# 3.7 Stilusok, betutipusok es kepek
+# Chapter 3.7: Styles, Fonts & Images
 
-This chapter covers the visual building blocks of DayZ UI: predefined styles, font usage, text sizing, image widgets with imageset references, and how to create custom imagesets for your mod.
+[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
 
 ---
 

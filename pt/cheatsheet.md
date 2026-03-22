@@ -1,6 +1,6 @@
-# Folha de Referencia do Enforce Script
+# Enforce Script Cheat Sheet
 
-> Referencia rapida em pagina unica para o Enforce Script do DayZ. Salve nos favoritos.
+[Home](../README.md) | **Cheat Sheet**
 
 ---
 

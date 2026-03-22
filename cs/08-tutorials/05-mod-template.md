@@ -1,6 +1,6 @@
-# Kapitola 8.5: Použití šablony DayZ modu
+# Chapter 8.5: Using the DayZ Mod Template
 
-> **Shrnutí:** Tento tutoriál ukazuje, jak pomocí open-source šablony DayZ modu od InclementDaba rychle vytvořit nový mod. Místo vytváření každého souboru od nuly naklonujete hotovou kostru, která již obsahuje správnou adresářovou strukturu, config.cpp, mod.cpp a zárodky skriptových vrstev. Poté přejmenujete pár věcí a okamžitě začnete psát kód.
+[Home](../../README.md) | [<< Previous: Adding Chat Commands](04-chat-commands.md) | **Using the DayZ Mod Template** | [Next: Debugging & Testing >>](06-debugging-testing.md)
 
 ---
 

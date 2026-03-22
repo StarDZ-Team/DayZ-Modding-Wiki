@@ -1,6 +1,6 @@
-# 第 1.10 章 — Enums & Preprocessor
+# Chapter 1.10: Enums & Preprocessor
 
-> **目标：** 理解枚举声明、枚举反射工具、位标志模式、常量以及用于条件编译的预处理器系统。
+[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# 3.7 Estilos, Fontes e Imagens
+# Chapter 3.7: Styles, Fonts & Images
 
-Este capitulo cobre os blocos visuais de construcao da UI do DayZ: estilos predefinidos, uso de fontes, dimensionamento de texto, widgets de imagem com referencias de imageset, e como criar imagesets customizados para seu mod.
+[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
 
 ---
 

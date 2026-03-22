@@ -1,6 +1,6 @@
-# Capítulo 1.13: Funções e Métodos
+# Chapter 1.13: Functions & Methods
 
-[Home](../../README.md) | [<< Anterior: Gotchas](12-gotchas.md) | **Funções e Métodos**
+[Home](../../README.md) | [<< Previous: Gotchas](12-gotchas.md) | **Functions & Methods**
 
 ---
 

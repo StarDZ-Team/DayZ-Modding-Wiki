@@ -1,6 +1,6 @@
 # Chapter 1.2: Arrays, Maps & Sets
 
-[Domů](../README.md) | [<< Předchozí: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Další: Classes & Inheritance >>](03-classes-inheritance.md)
+[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# 第1.1章：変数と型
+# Chapter 1.1: Variables & Types
 
-[ホーム](../../README.md) | **Variables & Types** | [次： Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
+[Home](../../README.md) | **Variables & Types** | [Next: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
 
 ---
 

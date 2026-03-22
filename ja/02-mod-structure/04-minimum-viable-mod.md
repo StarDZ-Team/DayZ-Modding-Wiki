@@ -1,6 +1,6 @@
-# 第2.4章：はじめての Mod — 最小構成
+# Chapter 2.4: Your First Mod -- Minimum Viable
 
-> **要約：** この章ではゼロから最小構成の DayZ Mod を作成する手順を案内する。最後には、ゲーム開始時にスクリプトログにメッセージを出力する動作するModが完成する。ファイル3つ、依存関係ゼロ、5分以内。
+[Home](../../README.md) | [<< Previous: mod.cpp & Workshop](03-mod-cpp.md) | **Minimum Viable Mod** | [Next: File Organization >>](05-file-organization.md)
 
 ---
 

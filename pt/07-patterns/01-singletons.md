@@ -1,6 +1,6 @@
-# Capítulo 7.1: Padrão Singleton
+# Chapter 7.1: Singleton Pattern
 
-[Início](../../README.md) | **Padrão Singleton** | [Próximo: Sistemas de Módulos >>](02-module-systems.md)
+[Home](../../README.md) | **Singleton Pattern** | [Next: Module Systems >>](02-module-systems.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Capítulo 6.8: File I/O & JSON
+# Chapter 6.8: File I/O & JSON
 
-[<< Anterior: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Próximo: Networking & RPC >>](09-networking.md)
+[Home](../../README.md) | [<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
 
 ---
 

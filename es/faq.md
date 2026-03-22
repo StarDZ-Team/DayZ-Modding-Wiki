@@ -1,6 +1,6 @@
-# Preguntas Frecuentes
+# Frequently Asked Questions
 
-[Home](../README.md) | **Preguntas Frecuentes**
+[Home](../README.md) | **FAQ**
 
 ---
 

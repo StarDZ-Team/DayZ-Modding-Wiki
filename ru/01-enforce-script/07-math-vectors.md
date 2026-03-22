@@ -1,8 +1,8 @@
-# Глава 1.7: Математика и векторы
+# Chapter 1.7: Math & Vector Operations
 
+[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
 
-[<< 1.6: String Operations](06-strings.md) | [Главная](../../README.md) | [1.8: Memory Management >>](08-memory-management.md)
-
+---
 ---
 
 ## Введение

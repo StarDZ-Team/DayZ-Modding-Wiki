@@ -1,6 +1,6 @@
-# Chapter 4.1: Texturak (.paa, .edds, .tga)
+# Chapter 4.1: Textures (.paa, .edds, .tga)
 
-[Kezdolap](../../README.md) | **Texturak** | [Kovetkezo: 3D modellek >>](02-models.md)
+[Home](../../README.md) | **Textures** | [Next: 3D Models >>](02-models.md)
 
 ---
 

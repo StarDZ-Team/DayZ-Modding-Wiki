@@ -1,6 +1,6 @@
-# Capítulo 6.15: Sistema de Som
+# Chapter 6.15: Sound System
 
-[Home](../../README.md) | [<< Anterior: Sistema do Jogador](14-player-system.md) | **Sistema de Som**
+[Home](../../README.md) | [<< Previous: Player System](14-player-system.md) | **Sound System** | [Next: Crafting System >>](16-crafting-system.md)
 
 ---
 

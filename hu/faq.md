@@ -1,6 +1,6 @@
-# Gyakran Ismetelt Kerdesek
+# Frequently Asked Questions
 
-[Fooldal](../README.md) | **GYIK**
+[Home](../README.md) | **FAQ**
 
 ---
 

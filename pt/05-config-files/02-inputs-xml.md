@@ -1,6 +1,6 @@
-# Capitulo 5.2: inputs.xml --- Keybindings Personalizados
+# Chapter 5.2: inputs.xml --- Custom Keybindings
 
-> **Resumo:** O arquivo `inputs.xml` permite que seu mod registre keybindings personalizados que aparecem no menu de Controles das configuracoes do jogador. Jogadores podem visualizar, reconfigurar e alternar esses inputs como acoes vanilla. Este e o mecanismo padrao para adicionar teclas de atalho a mods de DayZ.
+[Home](../../README.md) | [<< Previous: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Next: Credits.json >>](03-credits-json.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Chapitre 6.19 : Requetes Terrain et Monde
+# Chapter 6.19: Terrain & World Queries
 
-[Accueil](../../README.md) | [<< Precedent : Animation System](18-animation-system.md) | **Requetes Terrain et Monde**
+[Home](../../README.md) | [<< Previous: Animation System](18-animation-system.md) | **Terrain & World Queries** | [Next: Particle & Effect System >>](20-particle-effects.md)
 
 ---
 

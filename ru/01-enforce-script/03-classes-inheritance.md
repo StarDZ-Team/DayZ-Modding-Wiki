@@ -1,8 +1,8 @@
-# Глава 1.3: Классы и наследование
+# Chapter 1.3: Classes & Inheritance
 
+[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
 
-[Главная](../../README.md) | [<< Предыдущая: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Следующая: Modded Classes >>](04-modded-classes.md)
-
+---
 ---
 
 ## Введение

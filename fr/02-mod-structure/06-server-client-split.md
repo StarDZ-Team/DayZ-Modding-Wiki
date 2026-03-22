@@ -1,6 +1,6 @@
-# Chapitre 2.6 : Server vs Client Architecture
+# Chapter 2.6: Server vs Client Architecture
 
-> **Resume :** DayZ est un jeu client-serveur. Every line of code you write runs in a specific context -- server, client, or both. Understanding this split is essential for writing secure, functional mods. This chapter explains where code runs, how to detect which side you are on, how to structure multi-package mods, and the patterns that keep server and client code properly separated.
+[Home](../../README.md) | [<< Previous: File Organization](05-file-organization.md) | **Server vs Client Architecture**
 
 ---
 

@@ -1,6 +1,6 @@
-# Chapitre 6.23 : Systemes de Configuration du Monde
+# Chapter 6.23: World Configuration Systems
 
-[<< Precedent : Admin & Server Management](22-admin-server.md) | **Systemes du Monde**
+[Home](../../README.md) | [<< Previous: Admin & Server Management](22-admin-server.md) | **World Systems**
 
 ---
 

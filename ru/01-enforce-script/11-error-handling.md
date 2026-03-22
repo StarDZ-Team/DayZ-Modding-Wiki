@@ -1,8 +1,8 @@
-# Глава 1.11 — Обработка ошибок
+# Chapter 1.11: Error Handling
 
+[Home](../../README.md) | [<< Previous: Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Next: Gotchas >>](12-gotchas.md)
 
-> **Цель:** Научиться обрабатывать ошибки в языке без try/catch. Освоить защитные проверки, защитное программирование и паттерны структурированного логирования для стабильности мода.
-
+---
 
 ---
 

@@ -1,6 +1,6 @@
-# Capitulo 1.11 -- Tratamento de Erros
+# Chapter 1.11: Error Handling
 
-> **Objetivo:** Aprender a lidar com erros em uma linguagem sem try/catch. Dominar guard clauses, codificacao defensiva e padroes de logging estruturado que mantem seu mod estavel.
+[Home](../../README.md) | [<< Previous: Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Next: Gotchas >>](12-gotchas.md)
 
 ---
 

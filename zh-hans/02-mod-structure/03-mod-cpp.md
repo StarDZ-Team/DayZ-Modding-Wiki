@@ -1,6 +1,6 @@
-# 第 2.3 章：mod.cpp 与 Workshop
+# Chapter 2.3: mod.cpp & Workshop
 
-> **摘要：** The `mod.cpp` file is pure metadata -- it controls how your mod appears in the DayZ launcher, in-game mod list, and Steam Workshop. It has no effect on gameplay, scripting, or load order. If `config.cpp` is the engine, `mod.cpp` is the paint job.
+[Home](../../README.md) | [<< Previous: config.cpp Deep Dive](02-config-cpp.md) | **mod.cpp & Workshop** | [Next: Minimum Viable Mod >>](04-minimum-viable-mod.md)
 
 ---
 

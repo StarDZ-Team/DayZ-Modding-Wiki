@@ -1,6 +1,6 @@
 # Chapter 2.1: The 5-Layer Script Hierarchy
 
-> **Riepilogo:** DayZ organizes all scripts into five compilation layers. Understanding these layers is the single most important concept in DayZ modding -- it determines where every file in your mod lives, what it can accesso, and when it executes.
+[Home](../../README.md) | **The 5-Layer Script Hierarchy** | [Next: config.cpp Deep Dive >>](02-config-cpp.md)
 
 ---
 

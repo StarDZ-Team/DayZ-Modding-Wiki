@@ -1,6 +1,6 @@
-# Capitulo 1.9 -- Casting & Reflexao
+# Chapter 1.9: Casting & Reflection
 
-> **Objetivo:** Dominar conversao segura de tipos, verificacoes de tipo em tempo de execucao, e a API de reflexao do Enforce Script para acesso dinamico a propriedades.
+[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
 
 ---
 

@@ -1,8 +1,8 @@
-# Глава 1.2: Arrays, Maps и Sets
+# Chapter 1.2: Arrays, Maps & Sets
 
+[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
 
-[Главная](../../README.md) | [<< Предыдущая: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Следующая: Classes & Inheritance >>](03-classes-inheritance.md)
-
+---
 ---
 
 ## Введение

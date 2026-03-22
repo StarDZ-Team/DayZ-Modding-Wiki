@@ -1,6 +1,6 @@
-# Chapter 1.13: Functions & Metoduss
+# Chapter 1.13: Functions & Methods
 
-[Fooldal](../../README.md) | [<< Elozo: Gotchas](12-gotchas.md) | **Functions & Metoduss**
+[Home](../../README.md) | [<< Previous: Gotchas](12-gotchas.md) | **Functions & Methods**
 
 ---
 

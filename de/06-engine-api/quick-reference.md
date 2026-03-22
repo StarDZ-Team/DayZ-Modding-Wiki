@@ -1,6 +1,6 @@
-# Engine-API-Schnellreferenz
+# Engine API Quick Reference
 
-> Komprimierte Einzelseiten-Referenz fuer die am haeufigsten verwendeten DayZ-Engine-Methoden. Fuer detaillierte Erklaerungen und Beispiele siehe die vollstaendigen Kapitel, die in den jeweiligen Abschnittskoepfen verlinkt sind.
+[Home](../../README.md) | **Engine API Quick Reference**
 
 ---
 

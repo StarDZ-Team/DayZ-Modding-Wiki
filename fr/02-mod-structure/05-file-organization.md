@@ -1,6 +1,6 @@
-# Chapitre 2.5 : Bonnes pratiques d'organisation des fichiers
+# Chapter 2.5: File Organization Best Practices
 
-> **Resume :** Comment vous organisez vos fichiers determine si votre mod est maintenable at 10 files or 1,000. Ce chapitre couvre the canonical directory structure, naming conventions, content vs script vs framework mods, client-server splits, and lessons from professional DayZ mods.
+[Home](../../README.md) | [<< Previous: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Next: Server vs Client Architecture >>](06-server-client-split.md)
 
 ---
 

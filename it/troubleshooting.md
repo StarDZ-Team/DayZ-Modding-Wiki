@@ -1,6 +1,6 @@
-# Guida alla Risoluzione dei Problemi
+# Troubleshooting Guide
 
-[Home](../README.md) | **Guida alla Risoluzione dei Problemi**
+[Home](../README.md) | **Troubleshooting Guide**
 
 ---
 

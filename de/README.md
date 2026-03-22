@@ -1,202 +1,181 @@
-# Vollstaendiger Leitfaden zum DayZ Modding
+<p align="center">
+  <strong>DayZ Modding - Kompletter Leitfaden</strong><br/>
+  Umfassende DayZ-Modding-Dokumentation — 92 Kapitel, von Null zum fertigen Mod.
+</p>
 
-> Die umfassendste DayZ-Modding-Dokumentation, die es gibt. Vom Nullpunkt zum veroeffentlichten Mod.
-
-[![English](https://flagsapi.com/US/flat/48.png)](../en/README.md) [![Portugues](https://flagsapi.com/BR/flat/48.png)](../pt/README.md) [![Deutsch](https://flagsapi.com/DE/flat/48.png)](README.md) [![Russkij](https://flagsapi.com/RU/flat/48.png)](../ru/README.md) [![Cestina](https://flagsapi.com/CZ/flat/48.png)](../cs/README.md) [![Polski](https://flagsapi.com/PL/flat/48.png)](../pl/README.md) [![Magyar](https://flagsapi.com/HU/flat/48.png)](../hu/README.md) [![Italiano](https://flagsapi.com/IT/flat/48.png)](../it/README.md) [![Espanol](https://flagsapi.com/ES/flat/48.png)](../es/README.md) [![Francais](https://flagsapi.com/FR/flat/48.png)](../fr/README.md) [![Nihongo](https://flagsapi.com/JP/flat/48.png)](../ja/README.md) [![Jiantizi Zhongwen](https://flagsapi.com/CN/flat/48.png)](../zh-hans/README.md)
-
----
-
-## Inhaltsverzeichnis
-
-### Teil 1: Enforce Script Sprache
-Lerne die Skriptsprache von DayZ von Grund auf.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [1.1](../de/01-enforce-script/01-variables-types.md) | Variablen & Typen | ✅ |
-| [1.2](../de/01-enforce-script/02-arrays-maps-sets.md) | Arrays, Maps & Sets | ✅ |
-| [1.3](../de/01-enforce-script/03-classes-inheritance.md) | Klassen & Vererbung | ✅ |
-| [1.4](../de/01-enforce-script/04-modded-classes.md) | Modded-Klassen | ✅ |
-| [1.5](../de/01-enforce-script/05-control-flow.md) | Kontrollfluss | ✅ |
-| [1.6](../de/01-enforce-script/06-strings.md) | String-Operationen | ✅ |
-| [1.7](../de/01-enforce-script/07-math-vectors.md) | Mathematik & Vektoren | ✅ |
-| [1.8](../de/01-enforce-script/08-memory-management.md) | Speicherverwaltung | ✅ |
-| [1.9](../de/01-enforce-script/09-casting-reflection.md) | Casting & Reflection | ✅ |
-| [1.10](../de/01-enforce-script/10-enums-preprocessor.md) | Enums & Praeprozessor | ✅ |
-| [1.11](../de/01-enforce-script/11-error-handling.md) | Fehlerbehandlung | ✅ |
-| [1.12](../de/01-enforce-script/12-gotchas.md) | Was es NICHT gibt | ✅ |
-| [1.13](../en/01-enforce-script/13-functions-methods.md) | Functions & Methods (English) | 🔄 |
-
-### Teil 2: Mod-Struktur
-Verstehe, wie DayZ-Mods organisiert sind.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [2.1](../de/02-mod-structure/01-five-layers.md) | Die 5-Schichten-Skripthierarchie | ✅ |
-| [2.2](../de/02-mod-structure/02-config-cpp.md) | config.cpp im Detail | ✅ |
-| [2.3](../de/02-mod-structure/03-mod-cpp.md) | mod.cpp & Workshop | ✅ |
-| [2.4](../de/02-mod-structure/04-minimum-viable-mod.md) | Dein erster Mod | ✅ |
-| [2.5](../de/02-mod-structure/05-file-organization.md) | Dateiorganisation | ✅ |
-| [2.6](../en/02-mod-structure/06-server-client-split.md) | Server/Client Architecture (English) | 🔄 |
-
-### Teil 3: GUI- & Layout-System
-Baue Benutzeroberflaechen fuer DayZ.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [3.1](../de/03-gui-system/01-widget-types.md) | Widget-Typen | ✅ |
-| [3.2](../de/03-gui-system/02-layout-files.md) | Layout-Dateiformat | ✅ |
-| [3.3](../de/03-gui-system/03-sizing-positioning.md) | Groessenbestimmung & Positionierung | ✅ |
-| [3.4](../de/03-gui-system/04-containers.md) | Container-Widgets | ✅ |
-| [3.5](../de/03-gui-system/05-programmatic-widgets.md) | Programmatische Erstellung | ✅ |
-| [3.6](../de/03-gui-system/06-event-handling.md) | Ereignisbehandlung | ✅ |
-| [3.7](../de/03-gui-system/07-styles-fonts.md) | Stile, Schriften & Bilder | ✅ |
-| [3.8](../en/03-gui-system/08-dialogs-modals.md) | Dialogs & Modals (English) | 🔄 |
-| [3.9](../en/03-gui-system/09-real-mod-patterns.md) | Real Mod UI Patterns (English) | 🔄 |
-| [3.10](../en/03-gui-system/10-advanced-widgets.md) | Advanced Widgets (English) | 🔄 |
-
-### Teil 4: Dateiformate & Werkzeuge
-Arbeiten mit der DayZ-Asset-Pipeline.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [4.1](../de/04-file-formats/01-textures.md) | Texturen (.paa, .edds, .tga) | ✅ |
-| [4.2](../de/04-file-formats/02-models.md) | 3D-Modelle (.p3d) | ✅ |
-| [4.3](../de/04-file-formats/03-materials.md) | Materialien (.rvmat) | ✅ |
-| [4.4](../de/04-file-formats/04-audio.md) | Audio (.ogg, .wss) | ✅ |
-| [4.5](../de/04-file-formats/05-dayz-tools.md) | DayZ Tools Arbeitsablauf | ✅ |
-| [4.6](../de/04-file-formats/06-pbo-packing.md) | PBO-Paketierung | ✅ |
-| [4.7](../en/04-file-formats/07-workbench-guide.md) | Workbench Guide (English) | 🔄 |
-
-### Teil 5: Konfigurationsdateien
-Wichtige Konfigurationsdateien fuer jeden Mod.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [5.1](../de/05-config-files/01-stringtable.md) | stringtable.csv (13 Sprachen) | ✅ |
-| [5.2](../de/05-config-files/02-inputs-xml.md) | Inputs.xml (Tastenbelegung) | ✅ |
-| [5.3](../de/05-config-files/03-credits-json.md) | Credits.json | ✅ |
-| [5.4](../de/05-config-files/04-imagesets.md) | ImageSet-Format | ✅ |
-| [5.5](../en/05-config-files/05-server-configs.md) | Server Configuration Files (English) | 🔄 |
-| [5.6](../en/05-config-files/06-spawning-gear.md) | Spawning Gear Configuration (English) | 🔄 |
-
-### Teil 6: Engine-API-Referenz
-DayZ-Engine-APIs fuer Mod-Entwickler.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [6.1](../de/06-engine-api/01-entity-system.md) | Entity-System | ✅ |
-| [6.2](../de/06-engine-api/02-vehicles.md) | Fahrzeugsystem | ✅ |
-| [6.3](../de/06-engine-api/03-weather.md) | Wettersystem | ✅ |
-| [6.4](../de/06-engine-api/04-cameras.md) | Kamerasystem | ✅ |
-| [6.5](../de/06-engine-api/05-ppe.md) | Nachbearbeitungseffekte | ✅ |
-| [6.6](../de/06-engine-api/06-notifications.md) | Benachrichtigungssystem | ✅ |
-| [6.7](../de/06-engine-api/07-timers.md) | Timer & CallQueue | ✅ |
-| [6.8](../de/06-engine-api/08-file-io.md) | Datei-I/O & JSON | ✅ |
-| [6.9](../de/06-engine-api/09-networking.md) | Netzwerk & RPC | ✅ |
-| [6.10](../de/06-engine-api/10-central-economy.md) | Zentralwirtschaft | ✅ |
-| [6.11](../en/06-engine-api/11-mission-hooks.md) | Mission Hooks (English) | 🔄 |
-| [6.12](../en/06-engine-api/12-action-system.md) | Action System (English) | 🔄 |
-| [6.13](../en/06-engine-api/13-input-system.md) | Input System (English) | 🔄 |
-| [6.14](../en/06-engine-api/14-player-system.md) | Player System (English) | 🔄 |
-| [6.15](../en/06-engine-api/15-sound-system.md) | Sound System (English) | 🔄 |
-| [6.16](../en/06-engine-api/16-crafting-system.md) | Crafting System (English) | 🔄 |
-| [6.17](../en/06-engine-api/17-construction-system.md) | Construction System (English) | 🔄 |
-| [6.18](../en/06-engine-api/18-animation-system.md) | Animation System (English) | 🔄 |
-| [6.19](../en/06-engine-api/19-terrain-queries.md) | Terrain & World Queries (English) | 🔄 |
-| [6.20](../en/06-engine-api/20-particle-effects.md) | Particle & Effect System (English) | 🔄 |
-| [6.21](../en/06-engine-api/21-zombie-ai-system.md) | Zombie & AI System (English) | 🔄 |
-| [6.22](../en/06-engine-api/22-admin-server.md) | Admin & Server Management (English) | 🔄 |
-
-### Teil 7: Muster & Best Practices
-Praxiserprobte Muster aus professionellen Mods.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [7.1](../de/07-patterns/01-singletons.md) | Singleton-Muster | ✅ |
-| [7.2](../de/07-patterns/02-module-systems.md) | Modul-/Plugin-Systeme | ✅ |
-| [7.3](../de/07-patterns/03-rpc-patterns.md) | RPC-Kommunikation | ✅ |
-| [7.4](../de/07-patterns/04-config-persistence.md) | Konfigurationspersistenz | ✅ |
-| [7.5](../de/07-patterns/05-permissions.md) | Berechtigungssysteme | ✅ |
-| [7.6](../de/07-patterns/06-events.md) | Ereignisgesteuerte Architektur | ✅ |
-| [7.7](../de/07-patterns/07-performance.md) | Leistungsoptimierung | ✅ |
-
-### Teil 8: Tutorials
-Schritt-fuer-Schritt-Anleitungen.
-
-| Kapitel | Thema | Status |
-|---------|-------|--------|
-| [8.1](../de/08-tutorials/01-first-mod.md) | Dein erster Mod (Hello World) | ✅ |
-| [8.2](../de/08-tutorials/02-custom-item.md) | Ein benutzerdefiniertes Item erstellen | ✅ |
-| [8.3](../de/08-tutorials/03-admin-panel.md) | Ein Admin-Panel bauen | ✅ |
-| [8.4](../de/08-tutorials/04-chat-commands.md) | Chat-Befehle hinzufuegen | ✅ |
-| [8.5](../de/08-tutorials/05-mod-template.md) | Das DayZ Mod Template verwenden | ✅ |
-| [8.6](../en/08-tutorials/06-debugging-testing.md) | Debugging & Testing (English) | 🔄 |
-| [8.7](../en/08-tutorials/07-publishing-workshop.md) | Publishing to Steam Workshop (English) | 🔄 |
-| [8.8](../en/08-tutorials/08-hud-overlay.md) | Building a HUD Overlay (English) | 🔄 |
-| [8.9](../en/08-tutorials/09-professional-template.md) | Professional Mod Template (English) | 🔄 |
-| [8.10](../en/08-tutorials/10-vehicle-mod.md) | Creating a Vehicle Mod (English) | 🔄 |
-| [8.11](../en/08-tutorials/11-clothing-mod.md) | Creating a Clothing Mod (English) | 🔄 |
-| [8.12](../en/08-tutorials/12-trading-system.md) | Building a Trading System (English) | 🔄 |
-| [8.13](../en/08-tutorials/13-diag-menu.md) | Diag Menu Reference (English) | 🔄 |
+<p align="center">
+  <a href="../en/README.md"><img src="https://flagsapi.com/US/flat/48.png" alt="English" /></a>
+  <a href="../pt/README.md"><img src="https://flagsapi.com/BR/flat/48.png" alt="Portugues" /></a>
+  <a href="README.md"><img src="https://flagsapi.com/DE/flat/48.png" alt="Deutsch" /></a>
+  <a href="../ru/README.md"><img src="https://flagsapi.com/RU/flat/48.png" alt="Russki" /></a>
+  <a href="../es/README.md"><img src="https://flagsapi.com/ES/flat/48.png" alt="Espanol" /></a>
+  <a href="../fr/README.md"><img src="https://flagsapi.com/FR/flat/48.png" alt="Francais" /></a>
+  <a href="../ja/README.md"><img src="https://flagsapi.com/JP/flat/48.png" alt="Nihongo" /></a>
+  <a href="../zh-hans/README.md"><img src="https://flagsapi.com/CN/flat/48.png" alt="Jiantizi Zhongwen" /></a>
+  <a href="../cs/README.md"><img src="https://flagsapi.com/CZ/flat/48.png" alt="Cestina" /></a>
+  <a href="../pl/README.md"><img src="https://flagsapi.com/PL/flat/48.png" alt="Polski" /></a>
+  <a href="../hu/README.md"><img src="https://flagsapi.com/HU/flat/48.png" alt="Magyar" /></a>
+  <a href="../it/README.md"><img src="https://flagsapi.com/IT/flat/48.png" alt="Italiano" /></a>
+</p>
 
 ---
 
-## Unterstuetzte Sprachen
+## Vollstaendiges Seitenverzeichnis
 
-| Sprache | Code | Status |
-|---------|------|--------|
-| English | `en` | ✅ Original |
-| Portugues | `pt` | ✅ Uebersetzt |
-| Deutsch | `de` | ✅ Uebersetzt |
-| Russkij | `ru` | Geplant |
-| Cestina | `cs` | Geplant |
-| Polski | `pl` | Geplant |
-| Magyar | `hu` | Geplant |
-| Italiano | `it` | Geplant |
-| Espanol | `es` | Geplant |
-| Francais | `fr` | Geplant |
-| Nihongo | `ja` | Geplant |
-| Jiantizi Zhongwen | `zh-hans` | Geplant |
+### Teil 1: Enforce Script Sprache (13 Kapitel)
 
----
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 1.1 | [Variablen & Typen](01-enforce-script/01-variables-types.md) | Primitive Typen, Variablendeklaration, Konvertierungen und Standardwerte |
+| 1.2 | [Arrays, Maps & Sets](01-enforce-script/02-arrays-maps-sets.md) | Datensammlungen: Array, Map, Set — Iteration, Suche, Sortierung |
+| 1.3 | [Klassen & Vererbung](01-enforce-script/03-classes-inheritance.md) | Klassendefinition, Vererbung, Konstruktoren, Polymorphismus |
+| 1.4 | [Modded Classes](01-enforce-script/04-modded-classes.md) | Modded-Class-System, Methoden-Override, Super-Aufrufe |
+| 1.5 | [Kontrollfluss](01-enforce-script/05-control-flow.md) | If/else, switch, while/for-Schleifen, break, continue |
+| 1.6 | [String-Operationen](01-enforce-script/06-strings.md) | String-Manipulation, Formatierung, Suche, Vergleich |
+| 1.7 | [Mathematik & Vektoren](01-enforce-script/07-math-vectors.md) | Mathematische Funktionen, 3D-Vektoren, Entfernungen, Richtungen |
+| 1.8 | [Speicherverwaltung](01-enforce-script/08-memory-management.md) | Referenzzaehlung, ref, Leak-Vermeidung, Referenzzyklen |
+| 1.9 | [Casting & Reflexion](01-enforce-script/09-casting-reflection.md) | Typumwandlung, Class.CastTo, Laufzeit-Typueberpruefung |
+| 1.10 | [Enums & Praeprozessor](01-enforce-script/10-enums-preprocessor.md) | Aufzaehlungen, #ifdef, #define, bedingte Kompilierung |
+| 1.11 | [Fehlerbehandlung](01-enforce-script/11-error-handling.md) | Fehlerbehandlung ohne try/catch, Guard Clauses |
+| 1.12 | [Was es NICHT gibt](01-enforce-script/12-gotchas.md) | 30+ Fallstricke und Einschraenkungen von Enforce Script |
+| 1.13 | [Funktionen & Methoden](01-enforce-script/13-functions-methods.md) | Funktionsdeklaration, Parameter, Rueckgabewerte, static, proto |
 
-## Schnellreferenz
+### Teil 2: Mod-Struktur (6 Kapitel)
 
-- [Enforce Script Spickzettel](../de/cheatsheet.md)
-- [Widget-Typ-Referenz](../de/03-gui-system/01-widget-types.md)
-- [API-Schnellreferenz](../de/06-engine-api/quick-reference.md)
-- [Haeufige Fallstricke](../de/01-enforce-script/12-gotchas.md)
-- [Glossary (English)](../en/glossary.md) 🔄
-- [FAQ (English)](../en/faq.md) 🔄
-- [Troubleshooting Guide (English)](../en/troubleshooting.md) 🔄
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 2.1 | [Die 5-Schichten-Hierarchie](02-mod-structure/01-five-layers.md) | Die 5 Script-Schichten von DayZ und Kompilierungsreihenfolge |
+| 2.2 | [config.cpp im Detail](02-mod-structure/02-config-cpp.md) | Vollstaendige config.cpp-Struktur, CfgPatches, CfgMods |
+| 2.3 | [mod.cpp & Workshop](02-mod-structure/03-mod-cpp.md) | mod.cpp-Datei, Veroeffentlichung im Steam Workshop |
+| 2.4 | [Dein erster Mod](02-mod-structure/04-minimum-viable-mod.md) | Minimaler funktionsfaehiger Mod — essentielle Dateien und Struktur |
+| 2.5 | [Dateiorganisation](02-mod-structure/05-file-organization.md) | Namenskonventionen, empfohlene Ordnerstruktur |
+| 2.6 | [Server/Client-Architektur](02-mod-structure/06-server-client-split.md) | Trennung von Server- und Client-Code, Sicherheit |
 
----
+### Teil 3: GUI & Layout-System (10 Kapitel)
 
-## Mitwirken
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 3.1 | [Widget-Typen](03-gui-system/01-widget-types.md) | Alle verfuegbaren Widget-Typen: Text, Bild, Button usw. |
+| 3.2 | [Layout-Dateiformat](03-gui-system/02-layout-files.md) | Struktur von .layout-XML-Dateien fuer Oberflaechen |
+| 3.3 | [Groesse & Positionierung](03-gui-system/03-sizing-positioning.md) | Koordinatensystem, Groessen-Flags, Verankerung |
+| 3.4 | [Container](03-gui-system/04-containers.md) | Container-Widgets: WrapSpacer, GridSpacer, ScrollWidget |
+| 3.5 | [Programmatische Erstellung](03-gui-system/05-programmatic-widgets.md) | Widgets per Code erstellen, GetWidgetUnderCursor, SetHandler |
+| 3.6 | [Ereignisbehandlung](03-gui-system/06-event-handling.md) | UI-Callbacks: OnClick, OnChange, OnMouseEnter |
+| 3.7 | [Stile, Schriften & Bilder](03-gui-system/07-styles-fonts.md) | Verfuegbare Schriften, Stile, Bildladen |
+| 3.8 | [Dialoge & Modale](03-gui-system/08-dialogs-modals.md) | Dialogerstellung, modale Menues, Bestaetigungen |
+| 3.9 | [Echte Mod-UI-Muster](03-gui-system/09-real-mod-patterns.md) | UI-Muster von COT, VPP, Expansion, Dabs Framework |
+| 3.10 | [Erweiterte Widgets](03-gui-system/10-advanced-widgets.md) | MapWidget, RenderTargetWidget, spezialisierte Widgets |
 
-Diese Dokumentation wurde durch das Studium folgender Quellen erstellt:
-- 10+ professionelle DayZ-Mods (COT, VPP, Expansion, Dabs Framework, DayZ Editor, Colorful UI)
-- 15 offizielle Beispiel-Mods von Bohemia Interactive
-- 2.800+ Vanilla-DayZ-Skriptdateien
-- Community-Framework-Quellcode
+### Teil 4: Dateiformate & Werkzeuge (8 Kapitel)
 
-Pull Requests sind willkommen! Siehe [CONTRIBUTING.md](../CONTRIBUTING.md) fuer Richtlinien.
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 4.1 | [Texturen](04-file-formats/01-textures.md) | Formate .paa, .edds, .tga — Konvertierung und Verwendung |
+| 4.2 | [3D-Modelle](04-file-formats/02-models.md) | Format .p3d, LODs, Geometrie, Memory-Points |
+| 4.3 | [Materialien](04-file-formats/03-materials.md) | .rvmat-Dateien, Shader, Oberflaecheneigenschaften |
+| 4.4 | [Audio](04-file-formats/04-audio.md) | Formate .ogg und .wss, Soundkonfiguration |
+| 4.5 | [DayZ Tools](04-file-formats/05-dayz-tools.md) | Arbeitsablauf mit offiziellen DayZ Tools |
+| 4.6 | [PBO-Verpackung](04-file-formats/06-pbo-packing.md) | Erstellung und Extraktion von PBO-Dateien |
+| 4.7 | [Workbench-Anleitung](04-file-formats/07-workbench-guide.md) | Nutzung der Workbench fuer Skript- und Asset-Bearbeitung |
+| 4.8 | [Gebaeude-Modellierung](04-file-formats/08-building-modeling.md) | Gebaeude modellieren mit Tueren und Leitern |
+
+### Teil 5: Konfigurationsdateien (6 Kapitel)
+
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 5.1 | [stringtable.csv](05-config-files/01-stringtable.md) | Lokalisierung mit stringtable.csv fuer 13 Sprachen |
+| 5.2 | [inputs.xml](05-config-files/02-inputs-xml.md) | Tastenbelegung und benutzerdefinierte Keybindings |
+| 5.3 | [credits.json](05-config-files/03-credits-json.md) | Credits-Datei des Mods |
+| 5.4 | [ImageSets](05-config-files/04-imagesets.md) | ImageSet-Format fuer Icons und Sprites |
+| 5.5 | [Server-Konfiguration](05-config-files/05-server-configs.md) | DayZ-Server-Konfigurationsdateien |
+| 5.6 | [Spawn-Konfiguration](05-config-files/06-spawning-gear.md) | Startausruestung und Spawnpunkt-Konfiguration |
+
+### Teil 6: Engine-API-Referenz (23 Kapitel)
+
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 6.1 | [Entitaetensystem](06-engine-api/01-entity-system.md) | Entitaetshierarchie, EntityAI, ItemBase, Object |
+| 6.2 | [Fahrzeugsystem](06-engine-api/02-vehicles.md) | Fahrzeug-API, Motoren, Fluessigkeiten, Physiksimulation |
+| 6.3 | [Wettersystem](06-engine-api/03-weather.md) | Wettersteuerung, Regen, Nebel, Bewoelkung |
+| 6.4 | [Kamerasystem](06-engine-api/04-cameras.md) | Benutzerdefinierte Kameras, Position, Rotation, Uebergaenge |
+| 6.5 | [Post-Processing-Effekte](06-engine-api/05-ppe.md) | PPE: Blur, chromatische Aberration, Farbkorrektur |
+| 6.6 | [Benachrichtigungssystem](06-engine-api/06-notifications.md) | Bildschirmbenachrichtigungen, Spielernachrichten |
+| 6.7 | [Timer & CallQueue](06-engine-api/07-timers.md) | Zeitgeber, verzoegerte Aufrufe, Wiederholung |
+| 6.8 | [Datei-I/O & JSON](06-engine-api/08-file-io.md) | Datei lesen/schreiben, JSON-Parsing |
+| 6.9 | [Netzwerk & RPC](06-engine-api/09-networking.md) | Netzwerkkommunikation, RPCs, Client-Server-Synchronisation |
+| 6.10 | [Zentralwirtschaft](06-engine-api/10-central-economy.md) | Loot-System, Kategorien, Flags, Min/Max |
+| 6.11 | [Mission Hooks](06-engine-api/11-mission-hooks.md) | Missions-Hooks, MissionBase, MissionServer |
+| 6.12 | [Aktionssystem](06-engine-api/12-action-system.md) | Spieleraktionen, ActionBase, Ziele, Bedingungen |
+| 6.13 | [Eingabesystem](06-engine-api/13-input-system.md) | Tastenerkennung, Mapping, UAInput |
+| 6.14 | [Spielersystem](06-engine-api/14-player-system.md) | PlayerBase, Inventar, Leben, Ausdauer, Statistiken |
+| 6.15 | [Soundsystem](06-engine-api/15-sound-system.md) | Audiowiedergabe, SoundOnVehicle, Umgebung |
+| 6.16 | [Crafting-System](06-engine-api/16-crafting-system.md) | Handwerksrezepte, Zutaten, Ergebnisse |
+| 6.17 | [Bausystem](06-engine-api/17-construction-system.md) | Basisbau, Bauteile, Zustaende |
+| 6.18 | [Animationssystem](06-engine-api/18-animation-system.md) | Spieleranimation, Command-IDs, Callbacks |
+| 6.19 | [Gelaendeabfragen](06-engine-api/19-terrain-queries.md) | Raycasts, Gelaendeposition, Oberflaechen |
+| 6.20 | [Partikeleffekte](06-engine-api/20-particle-effects.md) | Partikelsystem, Emitter, visuelle Effekte |
+| 6.21 | [Zombie- & KI-System](06-engine-api/21-zombie-ai-system.md) | ZombieBase, Infizierten-KI, Verhalten |
+| 6.22 | [Admin & Server](06-engine-api/22-admin-server.md) | Serververwaltung, Bans, Kicks, RCON |
+| 6.23 | [Weltsysteme](06-engine-api/23-world-systems.md) | Tageszeit, Datum, Weltfunktionen |
+
+### Teil 7: Muster & Best Practices (7 Kapitel)
+
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 7.1 | [Singleton-Muster](07-patterns/01-singletons.md) | Einzelinstanzen, globaler Zugriff, Initialisierung |
+| 7.2 | [Modulsysteme](07-patterns/02-module-systems.md) | Modulregistrierung, Lebenszyklus, CF-Module |
+| 7.3 | [RPC-Kommunikation](07-patterns/03-rpc-patterns.md) | Muster fuer sichere und effiziente RPCs |
+| 7.4 | [Konfigurationspersistenz](07-patterns/04-config-persistence.md) | JSON-Konfigurationen speichern/laden, Versionierung |
+| 7.5 | [Berechtigungssysteme](07-patterns/05-permissions.md) | Hierarchische Berechtigungen, Wildcards, Gruppen |
+| 7.6 | [Ereignisgesteuerte Architektur](07-patterns/06-events.md) | Event-Bus, Publish/Subscribe, Entkopplung |
+| 7.7 | [Leistungsoptimierung](07-patterns/07-performance.md) | Profiling, Cache, Pooling, RPC-Reduzierung |
+
+### Teil 8: Tutorials (13 Kapitel)
+
+| # | Kapitel | Beschreibung |
+|---|---------|--------------|
+| 8.1 | [Dein erster Mod (Hello World)](08-tutorials/01-first-mod.md) | Schritt-fuer-Schritt: Mod erstellen und laden |
+| 8.2 | [Benutzerdefiniertes Item erstellen](08-tutorials/02-custom-item.md) | Item mit Modell, Textur und Config erstellen |
+| 8.3 | [Admin-Panel bauen](08-tutorials/03-admin-panel.md) | Admin-UI mit Teleport, Spawn, Verwaltung |
+| 8.4 | [Chat-Befehle hinzufuegen](08-tutorials/04-chat-commands.md) | Benutzerdefinierte Befehle im Spielchat |
+| 8.5 | [Mod-Template verwenden](08-tutorials/05-mod-template.md) | Das offizielle DayZ-Mod-Template nutzen |
+| 8.6 | [Debugging & Testen](08-tutorials/06-debugging-testing.md) | Logs, Debug, Diagnosewerkzeuge |
+| 8.7 | [Im Workshop veroeffentlichen](08-tutorials/07-publishing-workshop.md) | Mod im Steam Workshop veroeffentlichen |
+| 8.8 | [HUD-Overlay bauen](08-tutorials/08-hud-overlay.md) | Benutzerdefiniertes HUD-Overlay ueber dem Spiel |
+| 8.9 | [Professionelles Mod-Template](08-tutorials/09-professional-template.md) | Vollstaendiges produktionsreifes Template |
+| 8.10 | [Fahrzeug-Mod erstellen](08-tutorials/10-vehicle-mod.md) | Benutzerdefiniertes Fahrzeug mit Physik und Config |
+| 8.11 | [Kleidungs-Mod erstellen](08-tutorials/11-clothing-mod.md) | Benutzerdefinierte Kleidung mit Texturen und Slots |
+| 8.12 | [Handelssystem bauen](08-tutorials/12-trading-system.md) | Handelssystem zwischen Spielern/NPCs |
+| 8.13 | [Diag-Menu-Referenz](08-tutorials/13-diag-menu.md) | Diagnosemenues fuer die Entwicklung |
+
+### Schnellreferenz
+
+| Seite | Beschreibung |
+|-------|--------------|
+| [Cheatsheet](cheatsheet.md) | Kurzuebersicht der Enforce-Script-Syntax |
+| [API-Schnellreferenz](06-engine-api/quick-reference.md) | Meistgenutzte Engine-API-Methoden |
+| [Glossar](glossary.md) | Begriffsdefinitionen fuer DayZ-Modding |
+| [FAQ](faq.md) | Haeufig gestellte Fragen zum Modding |
+| [Fehlerbehebung](troubleshooting.md) | 91 haeufige Probleme mit Loesungen |
 
 ---
 
 ## Credits
 
-- **Bohemia Interactive** -- DayZ-Engine & offizielle Beispiele
-- **Jacob_Mango** -- Community Framework & Community Online Tools
-- **InclementDab** -- Dabs Framework & DayZ Editor
-- **DaOne & GravityWolf** -- VPP Admin Tools
-- **DayZ Expansion Team** -- Expansion Scripts
-- **Brian Orr (DrkDevil)** -- Colorful UI, Farbthemensystem
-- **lothsun** -- Colorful UI, UI-Farbsysteme
-- **StarDZ Team** -- Zusammenstellung, Uebersetzung & Dokumentation
+| Entwickler | Projekte | Hauptbeitraege |
+|------------|----------|----------------|
+| [**Jacob_Mango**](https://github.com/Jacob-Mango) | Community Framework, COT | Modulsystem, RPC, Berechtigungen, ESP |
+| [**InclementDab**](https://github.com/InclementDab) | Dabs Framework, DayZ Editor, Mod Template | MVC, ViewBinding, Editor-UI |
+| [**salutesh**](https://github.com/salutesh) | DayZ Expansion | Markt, Gruppen, Kartenmarkierungen, Fahrzeuge |
+| [**Arkensor**](https://github.com/Arkensor) | DayZ Expansion | Zentralwirtschaft, Einstellungsversionierung |
+| [**DaOne**](https://github.com/Da0ne) | VPP Admin Tools | Spielerverwaltung, Webhooks, ESP |
+| [**GravityWolf**](https://github.com/GravityWolfNotAmused) | VPP Admin Tools | Berechtigungen, Serververwaltung |
+| [**Brian Orr (DrkDevil)**](https://github.com/DrkDevil) | Colorful UI | Farbthemen, Modded-Class-UI-Muster |
+| [**lothsun**](https://github.com/lothsun) | Colorful UI | UI-Farbsysteme, visuelle Verbesserung |
+| [**Bohemia Interactive**](https://github.com/BohemiaInteractive) | DayZ Engine & Samples | Enforce Script, Vanilla-Skripte, DayZ Tools |
+| [**StarDZ Team**](https://github.com/StarDZ-Team) | Dieses Wiki | Dokumentation, Uebersetzung & Organisation |
 
 ## Lizenz
 
-Diese Dokumentation ist lizenziert unter [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
-Codebeispiele sind lizenziert unter [MIT](https://opensource.org/licenses/MIT).
+Die Dokumentation ist lizenziert unter [**CC BY-SA 4.0**](https://creativecommons.org/licenses/by-sa/4.0/).
+Codebeispiele sind lizenziert unter [**MIT**](../LICENCE).

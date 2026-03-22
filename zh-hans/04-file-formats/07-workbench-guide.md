@@ -1,6 +1,6 @@
-# 第 4.7: Workbench Guide
+# Chapter 4.7: Workbench Guide
 
-[Home](../../README.md) | [<< 上一章: PBO Packing](06-pbo-packing.md) | **Workbench Guide** | [下一章: Building Modeling >>](08-building-modeling.md)
+[Home](../../README.md) | [<< Previous: PBO Packing](06-pbo-packing.md) | **Workbench Guide** | [Next: Building Modeling >>](08-building-modeling.md)
 
 ---
 

@@ -1,8 +1,8 @@
-# 第 5.5: Server Configuration Files
+# Chapter 5.5: Server Configuration Files
 
-[Home](../../README.md) | [<< 前: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [次: Spawning Gear Configuration >>](06-spawning-gear.md)
+[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
 
-> **概要:** DayZ servers are configured through XML, JSON, and script files in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`). These files control item spawns, economy behavior, gameplay rules, and server identity. Understanding them is essential for adding custom items to the loot economy, tuning server parameters, or building a custom mission.
+---
 
 ---
 

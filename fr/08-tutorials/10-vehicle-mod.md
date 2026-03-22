@@ -1,6 +1,6 @@
-# Chapitre 8.10 : Creer un Mod de Vehicule Personnalise
+# Chapter 8.10: Creating a Custom Vehicle Mod
 
-> **Resume :** Ce tutoriel vous guide dans la creation d'une variante de vehicule personnalise in DayZ by extending an existing vanilla vehicle. You will define the vehicle in config.cpp, customize its stats and textures, write script behavior for doors and engine, add it to the server spawn table with pre-attached parts, and test it in-game. By the end, you will have a fully drivable custom Offroad Hatchback variant with modified performance and appearance.
+[Home](../../README.md) | [<< Previous: Professional Mod Template](09-professional-template.md) | **Creating a Custom Vehicle** | [Next: Creating Custom Clothing >>](11-clothing-mod.md)
 
 ---
 

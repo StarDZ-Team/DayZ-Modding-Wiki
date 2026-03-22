@@ -1,6 +1,6 @@
-# 第 1.11 章 — Error Handling
+# Chapter 1.11: Error Handling
 
-> **目标：** 学习如何在没有 try/catch 的语言中处理错误。掌握守卫子句、防御性编码和结构化日志模式，让你的 Mod 保持稳定。
+[Home](../../README.md) | [<< Previous: Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Next: Gotchas >>](12-gotchas.md)
 
 ---
 

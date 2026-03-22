@@ -1,6 +1,6 @@
-# Slownik moddingu DayZ
+# DayZ Modding Glossary & Page Index
 
-[Strona glowna](../README.md) | **Slownik**
+[Home](../README.md) | **Glossary & Index**
 
 ---
 

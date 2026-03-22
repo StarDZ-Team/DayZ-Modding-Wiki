@@ -1,8 +1,8 @@
-# Глава 1.9 — Casting и Reflection
+# Chapter 1.9: Casting & Reflection
 
+[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
 
-> **Цель:** Освоить безопасное приведение типов, проверки типов во время выполнения и API reflection Enforce Script для динамического доступа к свойствам.
-
+---
 
 ---
 

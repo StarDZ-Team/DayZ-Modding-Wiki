@@ -1,6 +1,6 @@
-# Kapitel 1.3: Classes & Inheritance
+# Chapter 1.3: Classes & Inheritance
 
-[Startseite](../../README.md) | [<< Zurueck: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
+[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
 
 ---
 

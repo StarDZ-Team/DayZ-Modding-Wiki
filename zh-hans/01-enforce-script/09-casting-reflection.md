@@ -1,6 +1,6 @@
-# 第 1.9 章 — Casting & Reflection
+# Chapter 1.9: Casting & Reflection
 
-> **目标：** 掌握安全类型转换、运行时类型检查以及 Enforce Script 的反射 API，实现动态属性访问。
+[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
 
 ---
 

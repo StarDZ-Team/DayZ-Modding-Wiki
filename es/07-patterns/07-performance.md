@@ -1,6 +1,6 @@
-# Capitulo 7.7: Optimizacion de Rendimiento
+# Chapter 7.7: Performance Optimization
 
-[<< Anterior: Event-Driven Architecture](06-events.md) | [Inicio](../../README.md)
+[Home](../../README.md) | [<< Previous: Event-Driven Architecture](06-events.md) | **Performance Optimization**
 
 ---
 

@@ -1,6 +1,6 @@
-# 8.5. fejezet: A DayZ Mod Sablon hasznalata
+# Chapter 8.5: Using the DayZ Mod Template
 
-> **Osszefoglalas:** Ez az oktato megmutatja, hogyan hasznald az InclementDab altal keszitett nyilt forraskodu DayZ Mod Sablont uj mod projekt pillanatok alatti elinditasahoz. Ahelyett, hogy minden fajlt a semmibol hoznal letre, klonozol egy kesz vazat, amely mar tartalmazza a helyes mappaszerkezetet, a config.cpp-t, a mod.cpp-t es a script reteg stubokat. Ezutan atnevezel nehany dolgot es azonnal elkezdhetsz kodolni.
+[Home](../../README.md) | [<< Previous: Adding Chat Commands](04-chat-commands.md) | **Using the DayZ Mod Template** | [Next: Debugging & Testing >>](06-debugging-testing.md)
 
 ---
 

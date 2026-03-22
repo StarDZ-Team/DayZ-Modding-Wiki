@@ -1,6 +1,6 @@
-# Capitolo 6.22: Admin & Server Management
+# Chapter 6.22: Admin & Server Management
 
-[Home](../../README.md) | [<< Precedente: Zombie & AI System](21-zombie-ai-system.md) | **Admin & Server Management** | [Successivo: World Systems >>](23-world-systems.md)
+[Home](../../README.md) | [<< Previous: Zombie & AI System](21-zombie-ai-system.md) | **Admin & Server Management** | [Next: World Systems >>](23-world-systems.md)
 
 ---
 

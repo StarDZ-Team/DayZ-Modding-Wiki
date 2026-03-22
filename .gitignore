@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# VitePress build output
+.vitepress/cache/
+.vitepress/dist/
+
+# Lock files (regenerated on install)
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*

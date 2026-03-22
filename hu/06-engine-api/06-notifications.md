@@ -1,6 +1,6 @@
 # Chapter 6.6: Notification System
 
-[<< Elozo: Post-Process Effects](05-ppe.md) | **Ertesitesek** | [Kovetkezo: Idozitok & CallQueue >>](07-timers.md)
+[Home](../../README.md) | [<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
 
 ---
 

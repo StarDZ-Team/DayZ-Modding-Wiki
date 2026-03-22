@@ -1,6 +1,6 @@
-# Chapter 6.1: Entitas rendszer
+# Chapter 6.1: Entity System
 
-[Kezdolap](../../README.md) | **Entitas rendszer** | [Kovetkezo: Jarmuvek >>](02-vehicles.md)
+[Home](../../README.md) | **Entity System** | [Next: Vehicles >>](02-vehicles.md)
 
 ---
 

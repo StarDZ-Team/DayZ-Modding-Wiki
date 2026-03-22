@@ -1,8 +1,8 @@
-# 3.8 Dialogos y Modales
+# Chapter 3.8: Dialogs & Modals
 
-[Home](../../README.md) | [<< Previous: Styles & Fonts](07-styles-fonts.md) | **Dialogos y Modales**
+[Home](../../README.md) | [<< Previous: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Next: Real Mod UI Patterns >>](09-real-mod-patterns.md)
 
-Los dialogos son ventanas de overlay temporales que demandan interaccion del usuario -- confirmaciones, mensajes de alerta, formularios de entrada y paneles de configuracion. Este capitulo cubre the built-in dialog system, manual dialog patterns, layout structure, focus management, and common pitfalls.
+---
 
 ---
 

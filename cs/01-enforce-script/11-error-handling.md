@@ -1,6 +1,6 @@
-# Chapter 1.11 — Error Handling
+# Chapter 1.11: Error Handling
 
-> **Cíl:** Learn how to handle errors in a language with no try/catch. Master guard clauses, defensive coding, and structured logging patterns that keep your mod stable.
+[Home](../../README.md) | [<< Previous: Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Next: Gotchas >>](12-gotchas.md)
 
 ---
 

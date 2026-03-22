@@ -1,6 +1,6 @@
-# Capitulo 1.1: Variables y Tipos
+# Chapter 1.1: Variables & Types
 
-[Inicio](../../README.md) | **Variables y Tipos** | [Siguiente: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
+[Home](../../README.md) | **Variables & Types** | [Next: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
 
 ---
 

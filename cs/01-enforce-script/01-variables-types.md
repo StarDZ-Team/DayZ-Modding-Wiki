@@ -1,6 +1,6 @@
 # Chapter 1.1: Variables & Types
 
-[Domů](../README.md) | **Variables & Types** | [Další: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
+[Home](../../README.md) | **Variables & Types** | [Next: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
 
 ---
 

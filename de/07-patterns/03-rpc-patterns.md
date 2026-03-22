@@ -1,6 +1,6 @@
-# Kapitel 7.3: RPC Communication Patterns
+# Chapter 7.3: RPC Communication Patterns
 
-[<< Zurueck: Module Systems](02-module-systems.md) | [Startseite](../../README.md) | [Next: Config Persistence >>](04-config-persistence.md)
+[Home](../../README.md) | [<< Previous: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Next: Config Persistence >>](04-config-persistence.md)
 
 ---
 

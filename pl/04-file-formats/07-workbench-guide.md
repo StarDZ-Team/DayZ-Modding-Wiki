@@ -1,6 +1,6 @@
 # Chapter 4.7: Workbench Guide
 
-[Strona glowna](../../README.md) | [<< Poprzedni: PBO Packing](06-pbo-packing.md) | **Workbench Guide** | [Nastepny: Building Modeling >>](08-building-modeling.md)
+[Home](../../README.md) | [<< Previous: PBO Packing](06-pbo-packing.md) | **Workbench Guide** | [Next: Building Modeling >>](08-building-modeling.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Capitulo 1.12 — Lo que NO Existe (Trampas)
+# Chapter 1.12: What Does NOT Exist (Gotchas)
 
-> **Objetivo:** A complete catalog of features you expect from C++, C#, Java, or Python that are **missing** or **different** in Enforce Script. Each entry explains what you would try, what happens, and the correct workaround.
+[Home](../../README.md) | [<< Previous: Error Handling](11-error-handling.md) | **Gotchas** | [Next: Functions & Methods >>](13-functions-methods.md)
 
 ---
 

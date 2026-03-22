@@ -1,6 +1,6 @@
 # Chapter 7.4: Config Persistence
 
-[<< Předchozí: RPC Patterns](03-rpc-patterns.md) | [Domů](../README.md) | [Další: Permission Systems >>](05-permissions.md)
+[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
 
 ---
 

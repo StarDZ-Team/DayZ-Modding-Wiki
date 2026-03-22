@@ -1,6 +1,6 @@
-# 第 6.22: Admin & Server Management
+# Chapter 6.22: Admin & Server Management
 
-[Home](../../README.md) | [<< 上一章: Zombie & AI System](21-zombie-ai-system.md) | **Admin & Server Management** | [下一章: World Systems >>](23-world-systems.md)
+[Home](../../README.md) | [<< Previous: Zombie & AI System](21-zombie-ai-system.md) | **Admin & Server Management** | [Next: World Systems >>](23-world-systems.md)
 
 ---
 

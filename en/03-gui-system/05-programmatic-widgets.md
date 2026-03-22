@@ -1,4 +1,8 @@
-# 3.5 Programmatic Widget Creation
+# Chapter 3.5: Programmatic Widget Creation
+
+[Home](../../README.md) | [<< Previous: Container Widgets](04-containers.md) | **Programmatic Widget Creation** | [Next: Event Handling >>](06-event-handling.md)
+
+---
 
 While `.layout` files are the standard way to define UI structure, you can also create and configure widgets entirely from code. This is useful for dynamic UIs, procedurally generated elements, and situations where the layout is not known at compile time.
 

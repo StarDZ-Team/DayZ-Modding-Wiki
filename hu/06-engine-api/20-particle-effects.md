@@ -1,6 +1,6 @@
 # Chapter 6.20: Particle & Effect System
 
-[Fooldal](../../README.md) | [<< Elozo: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System**
+[Home](../../README.md) | [<< Previous: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System** | [Next: Zombie & AI System >>](21-zombie-ai-system.md)
 
 ---
 

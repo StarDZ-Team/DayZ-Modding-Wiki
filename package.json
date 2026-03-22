@@ -1,0 +1,16 @@
+{
+  "name": "dayz-modding-wiki",
+  "version": "1.0.0",
+  "description": "The most comprehensive DayZ modding documentation",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "mermaid": "^11.4.1"
+  },
+  "license": "CC-BY-SA-4.0"
+}

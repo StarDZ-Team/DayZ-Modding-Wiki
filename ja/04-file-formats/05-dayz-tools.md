@@ -1,6 +1,6 @@
 # Chapter 4.5: DayZ Tools Workflow
 
-[<< 前： Audio](04-audio.md) | **DayZ Tools** | [次： PBO Packing >>](06-pbo-packing.md)
+[Home](../../README.md) | [<< Previous: Audio](04-audio.md) | **DayZ Tools** | [Next: PBO Packing >>](06-pbo-packing.md)
 
 ---
 

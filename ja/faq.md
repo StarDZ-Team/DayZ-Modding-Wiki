@@ -1,4 +1,4 @@
-# よくある質問
+# Frequently Asked Questions
 
 [Home](../README.md) | **FAQ**
 

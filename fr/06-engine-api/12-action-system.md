@@ -1,6 +1,6 @@
-# Chapitre 6.12 : Systeme d'Actions
+# Chapter 6.12: Action System
 
-[Accueil](../../README.md) | [<< Precedent : Central Economy](10-central-economy.md) | **Systeme d'Actions**
+[Home](../../README.md) | [<< Previous: Mission Hooks](11-mission-hooks.md) | **Action System** | [Next: Input System >>](13-input-system.md)
 
 ---
 

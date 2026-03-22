@@ -1,6 +1,6 @@
-# Chapitre 6.20 : Systeme de Particules et Effets
+# Chapter 6.20: Particle & Effect System
 
-[Accueil](../../README.md) | [<< Precedent : Terrain & World Queries](19-terrain-queries.md) | **Systeme de Particules et Effets**
+[Home](../../README.md) | [<< Previous: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System** | [Next: Zombie & AI System >>](21-zombie-ai-system.md)
 
 ---
 

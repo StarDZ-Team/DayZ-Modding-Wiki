@@ -1,6 +1,6 @@
-# Rozdzial 8.5: Uzycie szablonu moda DayZ
+# Chapter 8.5: Using the DayZ Mod Template
 
-> **Podsumowanie:** Ten poradnik pokazuje, jak uzyc open-source'owego szablonu moda DayZ od InclementDaba, aby w kilka sekund uruchomic nowy projekt moda. Zamiast tworzyc kazdy plik od zera, klonujesz gotowy szkielet, ktory juz zawiera poprawna strukture folderow, config.cpp, mod.cpp i stuby warstw skryptow. Nastepnie zmieniasz nazwe kilku rzeczy i od razu zaczynasz pisac kod.
+[Home](../../README.md) | [<< Previous: Adding Chat Commands](04-chat-commands.md) | **Using the DayZ Mod Template** | [Next: Debugging & Testing >>](06-debugging-testing.md)
 
 ---
 

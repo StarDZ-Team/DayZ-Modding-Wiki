@@ -1,6 +1,6 @@
-# 第 6.13: Input System
+# Chapter 6.13: Input System
 
-[Home](../../README.md) | [<< 上一章: Action System](12-action-system.md) | **Input System**
+[Home](../../README.md) | [<< Previous: Action System](12-action-system.md) | **Input System** | [Next: Player System >>](14-player-system.md)
 
 ---
 

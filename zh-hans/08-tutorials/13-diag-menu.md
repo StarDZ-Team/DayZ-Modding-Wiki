@@ -1,6 +1,6 @@
-# 第 8.13: The Diagnostic Menu (Diag Menu)
+# Chapter 8.13: The Diagnostic Menu (Diag Menu)
 
-> **摘要:** The Diag Menu is DayZ's built-in diagnostic tool, available only through the DayZDiag executable. It provides FPS counters, script profiling, render debugging, free camera, physics visualization, weather control, Central Economy tools, AI navigation debugging, and sound diagnostics. This chapter documents every menu category, option, and keyboard shortcut based on the official Bohemia Interactive documentation.
+[Home](../../README.md) | [<< Previous: Building a Trading System](12-trading-system.md) | **The Diagnostic Menu**
 
 ---
 

@@ -1,6 +1,6 @@
-# Chapter 6.7: Idozitok & CallQueue
+# Chapter 6.7: Timers & CallQueue
 
-[<< Elozo: Ertesitesek](06-notifications.md) | **Idozitok & CallQueue** | [Kovetkezo: Fajl I/O & JSON >>](08-file-io.md)
+[Home](../../README.md) | [<< Previous: Notifications](06-notifications.md) | **Timers & CallQueue** | [Next: File I/O & JSON >>](08-file-io.md)
 
 ---
 

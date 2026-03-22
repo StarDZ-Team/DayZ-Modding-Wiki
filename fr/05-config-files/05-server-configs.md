@@ -1,8 +1,8 @@
-# Chapitre 5.5 : Fichiers de Configuration Serveur
+# Chapter 5.5: Server Configuration Files
 
-[Accueil](../../README.md) | [<< Precedent : ImageSet Format](04-imagesets.md) | **Fichiers de Configuration Serveur** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
+[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
 
-> **Resume :** Les serveurs DayZ sont configures via des fichiers XML, JSON et de script in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`). These files control item spawns, economy behavior, gameplay rules, and server identity. Understanding them is essential for adding custom items to the loot economy, tuning server parameters, or building a custom mission.
+---
 
 ---
 

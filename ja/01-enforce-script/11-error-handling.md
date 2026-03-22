@@ -1,6 +1,6 @@
-# 第1.11章 — エラーハンドリング
+# Chapter 1.11: Error Handling
 
-> **目標：** try/catch のない言語でのエラー処理方法を学ぶ。ガード節、防御的コーディング、そしてModの安定性を保つ構造化ログパターンを習得する。
+[Home](../../README.md) | [<< Previous: Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Next: Gotchas >>](12-gotchas.md)
 
 ---
 

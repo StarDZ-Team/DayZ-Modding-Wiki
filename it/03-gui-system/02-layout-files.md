@@ -1,6 +1,6 @@
-# 3.2 Layout File Format (.layout)
+# Chapter 3.2: Layout File Format (.layout)
 
-DayZ uses a custom text-based format for UI layout files. These `.layout` files are **NOT XML** -- they use a brace-delimited format similar to config.cpp. The DayZ Workbench editor generates them, but understanding the format lets you hand-edit layouts and debug problems.
+[Home](../../README.md) | [<< Previous: Widget Types](01-widget-types.md) | **Layout File Format** | [Next: Sizing & Positioning >>](03-sizing-positioning.md)
 
 ---
 

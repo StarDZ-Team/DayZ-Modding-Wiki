@@ -1,6 +1,6 @@
-# Chapitre 8.8 : Construire un Overlay HUD
+# Chapter 8.8: Building a HUD Overlay
 
-> **Resume :** Ce tutoriel vous guide dans la construction d'un overlay HUD personnalise that displays server information in the top-right corner of the screen. You will create a layout file, write a controller class, hook into the mission lifecycle, request data from the server via RPC, add a toggle keybind, and polish the result with fade animations and smart visibility. By the end, you will have a non-intrusive Server Info HUD showing the server name, player count, and current in-game time -- plus a solid understanding of how HUD overlays work in DayZ.
+[Home](../../README.md) | [<< Previous: Publishing to the Steam Workshop](07-publishing-workshop.md) | **Building a HUD Overlay** | [Next: Professional Mod Template >>](09-professional-template.md)
 
 ---
 

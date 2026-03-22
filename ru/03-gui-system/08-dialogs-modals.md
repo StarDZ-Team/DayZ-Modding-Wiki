@@ -1,8 +1,8 @@
-# 3.8 Диалоги и модальные окна
+# Chapter 3.8: Dialogs & Modals
 
-[Главная](../../README.md) | [<< Previous: Styles & Fonts](07-styles-fonts.md) | **Dialogs & Modals**
+[Home](../../README.md) | [<< Previous: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Next: Real Mod UI Patterns >>](09-real-mod-patterns.md)
 
-Диалоги --- это временные оверлейные окна, требующие взаимодействия пользователя --- запросы подтверждения, уведомления, формы ввода и панели настроек. Эта глава охватывает встроенную систему диалогов, паттерны ручных диалогов, структуру макетов, управление фокусом и типичные ошибки.
+---
 
 ---
 

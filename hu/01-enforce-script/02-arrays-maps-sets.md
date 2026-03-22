@@ -1,6 +1,6 @@
-# Chapter 1.2: Tombok, Map-ek es Set-ek
+# Chapter 1.2: Arrays, Maps & Sets
 
-[Kezdolap](../../README.md) | [<< Elozo: Valtozok es tipusok](01-variables-types.md) | **Tombok, Map-ek es Set-ek** | [Kovetkezo: Osztalyok es oroklodes >>](03-classes-inheritance.md)
+[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
 
 ---
 

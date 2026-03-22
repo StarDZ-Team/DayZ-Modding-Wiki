@@ -1,8 +1,8 @@
-# 3.10 Widgets Avanzados
+# Chapter 3.10: Advanced Widgets
 
-[Home](../../README.md) | [<< Previous: Real Mod Patterns](09-real-mod-patterns.md) | **Widgets Avanzados**
+[Home](../../README.md) | [<< Previous: Real Mod UI Patterns](09-real-mod-patterns.md) | **Advanced Widgets**
 
-Beyond the standard containers, text, and image widgets covered in earlier chapters, DayZ provides specialized widget types for rich text formatting, 2D canvas drawing, map display, 3D item previews, video playback, and render-to-texture. These widgets unlock capabilities that simple layouts cannot achieve.
+---
 
 Este capitulo cubre every advanced widget type with confirmed API signatures extracted from vanilla source code and real mod usage.
 

@@ -1,6 +1,6 @@
-# Poradnik rozwiazywania problemow
+# Troubleshooting Guide
 
-[Strona glowna](../README.md) | **Poradnik rozwiazywania problemow**
+[Home](../README.md) | **Troubleshooting Guide**
 
 ---
 

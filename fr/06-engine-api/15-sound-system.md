@@ -1,6 +1,6 @@
-# Chapitre 6.15 : Systeme Sonore
+# Chapter 6.15: Sound System
 
-[Accueil](../../README.md) | [<< Precedent : Player System](14-player-system.md) | **Systeme Sonore**
+[Home](../../README.md) | [<< Previous: Player System](14-player-system.md) | **Sound System** | [Next: Crafting System >>](16-crafting-system.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Chapter 7.6: Event-Driven Architecture
 
-[<< 上一章: Permission Systems](05-permissions.md) | [Home](../../README.md) | [下一章: Performance Optimization >>](07-performance.md)
+[Home](../../README.md) | [<< Previous: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Next: Performance Optimization >>](07-performance.md)
 
 ---
 

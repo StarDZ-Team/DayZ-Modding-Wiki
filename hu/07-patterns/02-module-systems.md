@@ -1,6 +1,6 @@
 # Chapter 7.2: Module / Plugin Systems
 
-[<< Elozo: Singleton Pattern](01-singletons.md) | [Kezdolap](../../README.md) | [Kovetkezo: RPC mintak >>](03-rpc-patterns.md)
+[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
 
 ---
 

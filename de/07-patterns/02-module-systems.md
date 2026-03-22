@@ -1,6 +1,6 @@
-# Kapitel 7.2: Module / Plugin Systems
+# Chapter 7.2: Module / Plugin Systems
 
-[<< Zurueck: Singleton Pattern](01-singletons.md) | [Startseite](../../README.md) | [Next: RPC Patterns >>](03-rpc-patterns.md)
+[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
 
 ---
 

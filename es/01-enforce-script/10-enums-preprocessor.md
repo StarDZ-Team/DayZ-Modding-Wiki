@@ -1,6 +1,6 @@
-# Capitulo 1.10 — Enums y Preprocesador
+# Chapter 1.10: Enums & Preprocessor
 
-> **Objetivo:** Understand enum declarations, enum reflection tools, bitflag patterns, constants, and the preprocessor system for conditional compilation.
+[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
 
 ---
 

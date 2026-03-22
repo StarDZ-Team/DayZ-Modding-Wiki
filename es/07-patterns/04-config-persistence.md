@@ -1,6 +1,6 @@
-# Capitulo 7.4: Persistencia de Configuracion
+# Chapter 7.4: Config Persistence
 
-[<< Anterior: RPC Patterns](03-rpc-patterns.md) | [Inicio](../../README.md) | [Siguiente: Permission Systems >>](05-permissions.md)
+[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
 
 ---
 

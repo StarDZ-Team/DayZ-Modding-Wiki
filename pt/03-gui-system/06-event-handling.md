@@ -1,6 +1,6 @@
-# 3.6 Tratamento de Eventos
+# Chapter 3.6: Event Handling
 
-Widgets geram eventos quando o usuario interage com eles -- clicando botoes, digitando em edit boxes, movendo o mouse, arrastando elementos. Este capitulo cobre como receber e tratar esses eventos.
+[Home](../../README.md) | [<< Previous: Programmatic Widget Creation](05-programmatic-widgets.md) | **Event Handling** | [Next: Styles, Fonts & Images >>](07-styles-fonts.md)
 
 ---
 

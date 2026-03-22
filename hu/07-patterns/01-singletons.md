@@ -1,6 +1,6 @@
 # Chapter 7.1: Singleton Pattern
 
-[Kezdolap](../../README.md) | **Singleton Pattern** | [Kovetkezo: Modul rendszerek >>](02-module-systems.md)
+[Home](../../README.md) | **Singleton Pattern** | [Next: Module Systems >>](02-module-systems.md)
 
 ---
 

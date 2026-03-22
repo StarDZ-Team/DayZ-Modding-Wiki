@@ -1,6 +1,6 @@
-# Chapitre 7.5 : Systemes de permissions
+# Chapter 7.5: Permission Systems
 
-[<< Previous: Config Persistence](04-config-persistence.md) | [Accueil](../../README.md) | [Next: Event-Driven Architecture >>](06-events.md)
+[Home](../../README.md) | [<< Previous: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Next: Event-Driven Architecture >>](06-events.md)
 
 ---
 

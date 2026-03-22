@@ -1,6 +1,6 @@
-# 引擎 API 快速参考
+# Engine API Quick Reference
 
-> 本页为 DayZ 引擎最常用方法的精简单页参考。如需详细说明与示例，请参阅各区段标题中链接的完整章节。
+[Home](../../README.md) | **Engine API Quick Reference**
 
 ---
 

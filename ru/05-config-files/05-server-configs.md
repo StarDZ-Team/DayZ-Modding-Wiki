@@ -1,8 +1,8 @@
-# Глава 5.5: Файлы конфигурации сервера
+# Chapter 5.5: Server Configuration Files
 
-[Главная](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
+[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
 
-> **Краткое описание:** Серверы DayZ настраиваются через файлы XML, JSON и скриптов в папке миссии (e.g., `mpmissions/dayzOffline.chernarusplus/`). Эти файлы управляют спавном предметов, поведением экономики, правилами геймплея и идентификацией сервера. Их понимание необходимо для добавления пользовательских предметов в экономику лута, настройки параметров сервера или создания пользовательской миссии.
+---
 
 ---
 

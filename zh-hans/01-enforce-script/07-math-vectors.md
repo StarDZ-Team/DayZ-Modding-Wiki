@@ -1,6 +1,6 @@
-# 第 1.7 章：数学与向量运算
+# Chapter 1.7: Math & Vector Operations
 
-[<< 1.6：字符串操作](06-strings.md) | [Home](../../README.md) | [1.8：内存管理 >>](08-memory-management.md)
+[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
 
 ---
 

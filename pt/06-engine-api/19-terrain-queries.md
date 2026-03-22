@@ -1,6 +1,6 @@
-# Capítulo 6.19: Consultas de Terreno e Mundo
+# Chapter 6.19: Terrain & World Queries
 
-[Home](../../README.md) | [<< Anterior: Sistema de Animação](18-animation-system.md) | **Consultas de Terreno e Mundo**
+[Home](../../README.md) | [<< Previous: Animation System](18-animation-system.md) | **Terrain & World Queries** | [Next: Particle & Effect System >>](20-particle-effects.md)
 
 ---
 

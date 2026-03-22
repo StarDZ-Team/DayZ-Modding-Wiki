@@ -1,6 +1,6 @@
-# Capitulo 1.12 -- O Que NAO Existe (Gotchas)
+# Chapter 1.12: What Does NOT Exist (Gotchas)
 
-> **Objetivo:** Um catalogo completo de recursos que voce espera de C++, C#, Java ou Python que estao **ausentes** ou **diferentes** no Enforce Script. Cada entrada explica o que voce tentaria, o que acontece e a solucao correta.
+[Home](../../README.md) | [<< Previous: Error Handling](11-error-handling.md) | **Gotchas** | [Next: Functions & Methods >>](13-functions-methods.md)
 
 ---
 

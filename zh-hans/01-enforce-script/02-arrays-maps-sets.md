@@ -1,6 +1,6 @@
-# 第 1.2 章：数组、映射与集合
+# Chapter 1.2: Arrays, Maps & Sets
 
-[Home](../../README.md) | [<< 上一章：变量与类型](01-variables-types.md) | **数组、映射与集合** | [下一章：类与继承 >>](03-classes-inheritance.md)
+[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
 
 ---
 

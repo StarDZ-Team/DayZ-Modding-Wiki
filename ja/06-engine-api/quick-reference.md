@@ -1,6 +1,6 @@
-# エンジン API クイックリファレンス
+# Engine API Quick Reference
 
-> DayZ エンジンで最もよく使用されるメソッドをまとめた1ページのリファレンスです。詳細な説明と例については、各セクションヘッダーのリンク先にあるフルチャプターをご参照ください。
+[Home](../../README.md) | **Engine API Quick Reference**
 
 ---
 

@@ -1,4 +1,4 @@
-# Rozdzial 1.1: Zmienne i typy
+# Chapter 1.1: Variables & Types
 
 [Home](../../README.md) | **Variables & Types** | [Next: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
 

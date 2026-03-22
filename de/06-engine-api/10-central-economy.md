@@ -1,6 +1,6 @@
-# Kapitel 6.10: Central Economy
+# Chapter 6.10: Central Economy
 
-[<< Zurueck: Networking & RPC](09-networking.md) | **Central Economy** | [Startseite](../../README.md)
+[Home](../../README.md) | [<< Previous: Networking & RPC](09-networking.md) | **Central Economy** | [Next: Mission Hooks >>](11-mission-hooks.md)
 
 ---
 

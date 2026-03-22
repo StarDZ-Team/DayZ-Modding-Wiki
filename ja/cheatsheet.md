@@ -1,6 +1,6 @@
-# Enforce Script チートシート
+# Enforce Script Cheat Sheet
 
-> DayZ Enforce Script のシングルページクイックリファレンス。ブックマークしてください。
+[Home](../README.md) | **Cheat Sheet**
 
 ---
 

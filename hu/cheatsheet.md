@@ -1,6 +1,6 @@
-# Enforce Script puska (Cheat Sheet)
+# Enforce Script Cheat Sheet
 
-> Single-page quick reference for DayZ Enforce Script. Bookmark this.
+[Home](../README.md) | **Cheat Sheet**
 
 ---
 

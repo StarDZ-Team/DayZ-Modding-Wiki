@@ -1,8 +1,8 @@
-# Глава 1.10 — Enums и препроцессор
+# Chapter 1.10: Enums & Preprocessor
 
+[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
 
-> **Цель:** Разобраться с объявлением enum, инструментами reflection для enum, паттернами битовых флагов, константами и системой препроцессора для условной компиляции.
-
+---
 
 ---
 

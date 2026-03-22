@@ -1,8 +1,8 @@
-# 3.1 Widget の種類
+# Chapter 3.1: Widget Types
 
-DayZ の GUI システムは Widget をベースに構築されています — シンプルなコンテナから複雑なインタラクティブコントロールまで、再利用可能な UI コンポーネントです。画面上のすべての可視要素は Widget であり、全カタログを理解することがMod UIの構築に不可欠です。
+[Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
 
-この章では Enforce Script で利用可能なすべての Widget 型の完全リファレンスを提供します。
+---
 
 ---
 

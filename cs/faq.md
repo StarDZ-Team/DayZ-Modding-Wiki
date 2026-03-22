@@ -1,6 +1,6 @@
-# Často kladené otázky
+# Frequently Asked Questions
 
-[Domů](../README.md) | **FAQ**
+[Home](../README.md) | **FAQ**
 
 ---
 

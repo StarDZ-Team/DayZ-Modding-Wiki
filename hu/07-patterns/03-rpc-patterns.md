@@ -1,6 +1,6 @@
 # Chapter 7.3: RPC Communication Patterns
 
-[<< Elozo: Modul rendszerek](02-module-systems.md) | [Kezdolap](../../README.md) | [Kovetkezo: Konfiguracio perzisztencia >>](04-config-persistence.md)
+[Home](../../README.md) | [<< Previous: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Next: Config Persistence >>](04-config-persistence.md)
 
 ---
 

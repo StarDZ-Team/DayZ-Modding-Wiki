@@ -1,6 +1,6 @@
-# Chapter 4.4: Hang (.ogg, .wss)
+# Chapter 4.4: Audio (.ogg, .wss)
 
-[<< Elozo: Anyagok](03-materials.md) | **Hang** | [Kovetkezo: DayZ eszkozok munkamenet >>](05-dayz-tools.md)
+[Home](../../README.md) | [<< Previous: Materials](03-materials.md) | **Audio** | [Next: DayZ Tools Workflow >>](05-dayz-tools.md)
 
 ---
 

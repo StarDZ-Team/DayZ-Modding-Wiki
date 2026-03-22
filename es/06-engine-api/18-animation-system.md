@@ -1,6 +1,6 @@
-# Capitulo 6.18: Sistema de Animacion
+# Chapter 6.18: Animation System
 
-[Home](../../README.md) | [<< Previous: Construction System](17-construction-system.md) | **Animation System**
+[Home](../../README.md) | [<< Previous: Construction System](17-construction-system.md) | **Animation System** | [Next: Terrain & World Queries >>](19-terrain-queries.md)
 
 ---
 

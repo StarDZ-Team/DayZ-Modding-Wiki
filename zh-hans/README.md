@@ -1,160 +1,181 @@
-# DayZ Mod 开发百科全书（简体中文版）
+<p align="center">
+  <strong>DayZ Mod 开发完全指南</strong><br/>
+  全面的 DayZ Mod 开发文档 — 92 章，从零到发布 Mod。
+</p>
 
-[![English](https://flagsapi.com/US/flat/48.png)](../en/README.md) [![Português](https://flagsapi.com/BR/flat/48.png)](../pt/README.md) [![Deutsch](https://flagsapi.com/DE/flat/48.png)](../de/README.md) [![Русский](https://flagsapi.com/RU/flat/48.png)](../ru/README.md) [![Čeština](https://flagsapi.com/CZ/flat/48.png)](../cs/README.md) [![Polski](https://flagsapi.com/PL/flat/48.png)](../pl/README.md) [![Magyar](https://flagsapi.com/HU/flat/48.png)](../hu/README.md) [![Italiano](https://flagsapi.com/IT/flat/48.png)](../it/README.md) [![Español](https://flagsapi.com/ES/flat/48.png)](../es/README.md) [![Français](https://flagsapi.com/FR/flat/48.png)](../fr/README.md) [![日本語](https://flagsapi.com/JP/flat/48.png)](../ja/README.md) [![简体中文](https://flagsapi.com/CN/flat/48.png)](../zh-hans/README.md)
-
-> 本文档从英文版翻译而来。代码示例保持原样，技术术语保留英文。
+<p align="center">
+  <a href="../en/README.md"><img src="https://flagsapi.com/US/flat/48.png" alt="English" /></a>
+  <a href="../pt/README.md"><img src="https://flagsapi.com/BR/flat/48.png" alt="Portugues" /></a>
+  <a href="../de/README.md"><img src="https://flagsapi.com/DE/flat/48.png" alt="Deutsch" /></a>
+  <a href="../ru/README.md"><img src="https://flagsapi.com/RU/flat/48.png" alt="Russki" /></a>
+  <a href="../es/README.md"><img src="https://flagsapi.com/ES/flat/48.png" alt="Espanol" /></a>
+  <a href="../fr/README.md"><img src="https://flagsapi.com/FR/flat/48.png" alt="Francais" /></a>
+  <a href="../ja/README.md"><img src="https://flagsapi.com/JP/flat/48.png" alt="Nihongo" /></a>
+  <a href="README.md"><img src="https://flagsapi.com/CN/flat/48.png" alt="Jiantizi Zhongwen" /></a>
+  <a href="../cs/README.md"><img src="https://flagsapi.com/CZ/flat/48.png" alt="Cestina" /></a>
+  <a href="../pl/README.md"><img src="https://flagsapi.com/PL/flat/48.png" alt="Polski" /></a>
+  <a href="../hu/README.md"><img src="https://flagsapi.com/HU/flat/48.png" alt="Magyar" /></a>
+  <a href="../it/README.md"><img src="https://flagsapi.com/IT/flat/48.png" alt="Italiano" /></a>
+</p>
 
 ---
 
-## 目录
+## 完整页面索引
 
-### 第一部分：Enforce Script 语言
+### 第1部分：Enforce Script 语言（13章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [1.1](01-enforce-script/01-variables-types.md) | 变量与类型 | 基本类型、声明、类型转换 |
-| [1.2](01-enforce-script/02-arrays-maps-sets.md) | 数组、映射与集合 | `array<T>`、`map<K,V>`、`set<T>` |
-| [1.3](01-enforce-script/03-classes-inheritance.md) | 类与继承 | 类声明、继承、访问修饰符 |
-| [1.4](01-enforce-script/04-modded-classes.md) | Modded 类 | DayZ Mod 开发的核心机制 |
-| [1.5](01-enforce-script/05-control-flow.md) | 控制流 | if/else、for、while、foreach、switch |
-| [1.6](01-enforce-script/06-strings.md) | 字符串操作 | 完整的字符串方法参考 |
-| [1.7](01-enforce-script/07-math-vectors.md) | 数学与向量 | Math 类、vector 类型、3D 运算 |
-| [1.8](01-enforce-script/08-memory-management.md) | 内存管理 | ref、autoptr、引用计数、循环引用 |
-| [1.9](01-enforce-script/09-casting-reflection.md) | 类型转换与反射 | CastTo、IsInherited、反射 API |
-| [1.10](01-enforce-script/10-enums-preprocessor.md) | 枚举与预处理器 | enum、#ifdef、条件编译 |
-| [1.11](01-enforce-script/11-error-handling.md) | 错误处理 | 守卫子句、ErrorEx、日志记录 |
-| [1.12](01-enforce-script/12-gotchas.md) | 陷阱大全 | 30 个常见"坑"与解决方案 |
-| [1.13](../en/01-enforce-script/13-functions-methods.md) | Functions & Methods (English) | 函数与方法 🔄 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 1.1 | [变量与类型](01-enforce-script/01-variables-types.md) | 基本类型、变量声明、类型转换和默认值 |
+| 1.2 | [数组、映射与集合](01-enforce-script/02-arrays-maps-sets.md) | 数据集合：array、map、set — 迭代、搜索、排序 |
+| 1.3 | [类与继承](01-enforce-script/03-classes-inheritance.md) | 类定义、继承、构造函数、多态 |
+| 1.4 | [Modded 类](01-enforce-script/04-modded-classes.md) | Modded class 系统、方法覆盖、super 调用 |
+| 1.5 | [控制流](01-enforce-script/05-control-flow.md) | if/else、switch、while/for 循环、break、continue |
+| 1.6 | [字符串操作](01-enforce-script/06-strings.md) | 字符串操作、格式化、搜索、比较 |
+| 1.7 | [数学与向量](01-enforce-script/07-math-vectors.md) | 数学函数、3D向量、距离、方向 |
+| 1.8 | [内存管理](01-enforce-script/08-memory-management.md) | 引用计数、ref、防止内存泄漏、引用循环 |
+| 1.9 | [类型转换与反射](01-enforce-script/09-casting-reflection.md) | 类型转换、Class.CastTo、运行时类型检查 |
+| 1.10 | [枚举与预处理器](01-enforce-script/10-enums-preprocessor.md) | 枚举、#ifdef、#define、条件编译 |
+| 1.11 | [错误处理](01-enforce-script/11-error-handling.md) | 无 try/catch 的错误处理模式、守卫子句 |
+| 1.12 | [不存在的特性](01-enforce-script/12-gotchas.md) | Enforce Script 语言的30+陷阱和限制 |
+| 1.13 | [函数与方法](01-enforce-script/13-functions-methods.md) | 函数声明、参数、返回值、static、proto |
 
-### 第二部分：Mod 结构
+### 第2部分：Mod 结构（6章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [2.1](02-mod-structure/01-five-layers.md) | 五层脚本层次结构 | 1_Core 到 5_Mission 的编译层级 |
-| [2.2](02-mod-structure/02-config-cpp.md) | config.cpp 深入解析 | CfgPatches、CfgMods、脚本模块 |
-| [2.3](02-mod-structure/03-mod-cpp.md) | mod.cpp 与 Workshop | 启动器元数据、Workshop 发布 |
-| [2.4](02-mod-structure/04-minimum-viable-mod.md) | 你的第一个 Mod | 从零开始的最小可行 Mod |
-| [2.5](02-mod-structure/05-file-organization.md) | 文件组织最佳实践 | 目录结构、命名规范、PBO 组织 |
-| [2.6](../en/02-mod-structure/06-server-client-split.md) | Server/Client Architecture (English) | 服务器/客户端架构 🔄 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 2.1 | [5层脚本层级](02-mod-structure/01-five-layers.md) | DayZ 的5个脚本层和编译顺序 |
+| 2.2 | [config.cpp 详解](02-mod-structure/02-config-cpp.md) | config.cpp 完整结构、CfgPatches、CfgMods |
+| 2.3 | [mod.cpp 与 Workshop](02-mod-structure/03-mod-cpp.md) | mod.cpp 文件、Steam Workshop 发布 |
+| 2.4 | [你的第一个 Mod](02-mod-structure/04-minimum-viable-mod.md) | 最小可运行 Mod — 必要文件和结构 |
+| 2.5 | [文件组织](02-mod-structure/05-file-organization.md) | 命名规范、推荐的文件夹结构 |
+| 2.6 | [服务端/客户端架构](02-mod-structure/06-server-client-split.md) | 服务端与客户端代码分离、安全性 |
 
-### 第三部分：GUI 系统
+### 第3部分：GUI 与布局系统（10章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [3.1](03-gui-system/01-widget-types.md) | Widget 类型 | 所有 Widget 类型参考 |
-| [3.2](03-gui-system/02-layout-files.md) | 布局文件 | .layout XML 格式 |
-| [3.3](03-gui-system/03-sizing-positioning.md) | 尺寸与定位 | 锚点、对齐、尺寸模式 |
-| [3.4](03-gui-system/04-containers.md) | 容器 | 面板布局、滚动、网格 |
-| [3.5](03-gui-system/05-programmatic-widgets.md) | 代码创建 Widget | 代码中创建和操作 Widget |
-| [3.6](03-gui-system/06-event-handling.md) | 事件处理 | 输入事件、回调、焦点 |
-| [3.7](03-gui-system/07-styles-fonts.md) | 样式与字体 | .styles 文件、字体、主题 |
-| [3.8](../en/03-gui-system/08-dialogs-modals.md) | Dialogs & Modals (English) | 对话框与模态窗口 🔄 |
-| [3.9](../en/03-gui-system/09-real-mod-patterns.md) | Real Mod UI Patterns (English) | 真实 Mod UI 模式 🔄 |
-| [3.10](../en/03-gui-system/10-advanced-widgets.md) | Advanced Widgets (English) | 高级控件 🔄 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 3.1 | [控件类型](03-gui-system/01-widget-types.md) | 所有可用控件类型：文本、图片、按钮等 |
+| 3.2 | [布局文件格式](03-gui-system/02-layout-files.md) | 界面用 .layout XML 文件结构 |
+| 3.3 | [尺寸与定位](03-gui-system/03-sizing-positioning.md) | 坐标系、尺寸标志、锚定 |
+| 3.4 | [容器控件](03-gui-system/04-containers.md) | 容器控件：WrapSpacer、GridSpacer、ScrollWidget |
+| 3.5 | [程序化创建](03-gui-system/05-programmatic-widgets.md) | 通过代码创建控件、GetWidgetUnderCursor、SetHandler |
+| 3.6 | [事件处理](03-gui-system/06-event-handling.md) | UI 回调：OnClick、OnChange、OnMouseEnter |
+| 3.7 | [样式、字体与图片](03-gui-system/07-styles-fonts.md) | 可用字体、样式、图片加载 |
+| 3.8 | [对话框与模态窗口](03-gui-system/08-dialogs-modals.md) | 创建对话框、模态菜单、确认框 |
+| 3.9 | [真实 Mod UI 模式](03-gui-system/09-real-mod-patterns.md) | COT、VPP、Expansion、Dabs Framework 的 UI 模式 |
+| 3.10 | [高级控件](03-gui-system/10-advanced-widgets.md) | MapWidget、RenderTargetWidget、特殊控件 |
 
-### 第四部分：文件格式
+### 第4部分：文件格式与工具（8章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [4.1](04-file-formats/01-textures.md) | 纹理 | .paa、.edds 格式、TexView2 |
-| [4.2](04-file-formats/02-models.md) | 模型 | .p3d 格式、Object Builder |
-| [4.3](04-file-formats/03-materials.md) | 材质 | .rvmat 格式、着色器 |
-| [4.4](04-file-formats/04-audio.md) | 音频 | .ogg 格式、CfgSoundSets |
-| [4.5](04-file-formats/05-dayz-tools.md) | DayZ Tools | 工具套件概览 |
-| [4.6](04-file-formats/06-pbo-packing.md) | PBO 打包 | 打包、签名、部署 |
-| [4.7](../en/04-file-formats/07-workbench-guide.md) | Workbench Guide (English) | Workbench 指南 🔄 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 4.1 | [纹理](04-file-formats/01-textures.md) | .paa、.edds、.tga 格式 — 转换与使用 |
+| 4.2 | [3D 模型](04-file-formats/02-models.md) | .p3d 格式、LOD、几何体、内存点 |
+| 4.3 | [材质](04-file-formats/03-materials.md) | .rvmat 文件、着色器、表面属性 |
+| 4.4 | [音频](04-file-formats/04-audio.md) | .ogg 和 .wss 格式、声音配置 |
+| 4.5 | [DayZ Tools](04-file-formats/05-dayz-tools.md) | 官方 DayZ Tools 工作流程 |
+| 4.6 | [PBO 打包](04-file-formats/06-pbo-packing.md) | PBO 文件的创建和解包 |
+| 4.7 | [Workbench 指南](04-file-formats/07-workbench-guide.md) | 使用 Workbench 编辑脚本和资源 |
+| 4.8 | [建筑建模](04-file-formats/08-building-modeling.md) | 带门和梯子的建筑建模 |
 
-### 第五部分：配置文件
+### 第5部分：配置文件（6章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [5.1](05-config-files/01-stringtable.md) | 字符串表 | stringtable.csv 本地化 |
-| [5.2](05-config-files/02-inputs-xml.md) | 输入绑定 | Inputs.xml 按键绑定 |
-| [5.3](05-config-files/03-credits-json.md) | Credits.json | 作者署名文件 |
-| [5.4](05-config-files/04-imagesets.md) | ImageSets | 图标集与纹理图集 |
-| [5.5](../en/05-config-files/05-server-configs.md) | Server Configuration Files (English) | 服务器配置文件 🔄 |
-| [5.6](../en/05-config-files/06-spawning-gear.md) | Spawning Gear Configuration (English) | 出生装备配置 🔄 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 5.1 | [stringtable.csv](05-config-files/01-stringtable.md) | 使用 stringtable.csv 进行13种语言的本地化 |
+| 5.2 | [inputs.xml](05-config-files/02-inputs-xml.md) | 按键配置和自定义键位绑定 |
+| 5.3 | [credits.json](05-config-files/03-credits-json.md) | Mod 的制作名单文件 |
+| 5.4 | [ImageSets](05-config-files/04-imagesets.md) | 图标和精灵图的 ImageSet 格式 |
+| 5.5 | [服务器配置](05-config-files/05-server-configs.md) | DayZ 服务器配置文件 |
+| 5.6 | [出生配置](05-config-files/06-spawning-gear.md) | 初始装备和出生点配置 |
 
-### 第六部分：引擎 API
+### 第6部分：引擎 API 参考（23章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [6.1](06-engine-api/01-entity-system.md) | 实体系统 | Object、EntityAI、生命周期 |
-| [6.2](06-engine-api/02-vehicles.md) | 载具 | CarScript、引擎、物理 |
-| [6.3](06-engine-api/03-weather.md) | 天气 | Weather API、雾、风、雨 |
-| [6.4](06-engine-api/04-cameras.md) | 摄像机 | 摄像机类型、自定义视角 |
-| [6.5](06-engine-api/05-ppe.md) | 后处理效果 | PPE 材质、模糊、色调 |
-| [6.6](06-engine-api/06-notifications.md) | 通知 | 通知系统 API |
-| [6.7](06-engine-api/07-timers.md) | 定时器 | CallLater、Timer、调度 |
-| [6.8](06-engine-api/08-file-io.md) | 文件 I/O | 文件读写、JSON、路径 |
-| [6.9](06-engine-api/09-networking.md) | 网络 | RPC、同步变量、复制 |
-| [6.10](06-engine-api/10-central-economy.md) | 中央经济 | types.xml、生成系统 |
-| [6.11](../en/06-engine-api/11-mission-hooks.md) | Mission Hooks (English) | 任务钩子 🔄 |
-| [6.12](../en/06-engine-api/12-action-system.md) | Action System (English) | 动作系统 🔄 |
-| [6.13](../en/06-engine-api/13-input-system.md) | Input System (English) | 输入系统 🔄 |
-| [6.14](../en/06-engine-api/14-player-system.md) | Player System (English) | 玩家系统 🔄 |
-| [6.15](../en/06-engine-api/15-sound-system.md) | Sound System (English) | 音效系统 🔄 |
-| [6.16](../en/06-engine-api/16-crafting-system.md) | Crafting System (English) | 制作系统 🔄 |
-| [6.17](../en/06-engine-api/17-construction-system.md) | Construction System (English) | 建造系统 🔄 |
-| [6.18](../en/06-engine-api/18-animation-system.md) | Animation System (English) | 动画系统 🔄 |
-| [6.19](../en/06-engine-api/19-terrain-queries.md) | Terrain & World Queries (English) | 地形与世界查询 🔄 |
-| [6.20](../en/06-engine-api/20-particle-effects.md) | Particle & Effect System (English) | 粒子与特效系统 🔄 |
-| [6.21](../en/06-engine-api/21-zombie-ai-system.md) | Zombie & AI System (English) | 僵尸与 AI 系统 🔄 |
-| [6.22](../en/06-engine-api/22-admin-server.md) | Admin & Server Management (English) | 管理与服务器管理 🔄 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 6.1 | [实体系统](06-engine-api/01-entity-system.md) | 实体层级、EntityAI、ItemBase、Object |
+| 6.2 | [载具系统](06-engine-api/02-vehicles.md) | 载具 API、引擎、液体、物理模拟 |
+| 6.3 | [天气系统](06-engine-api/03-weather.md) | 天气控制、雨、雾、云量 |
+| 6.4 | [相机系统](06-engine-api/04-cameras.md) | 自定义相机、位置、旋转、过渡 |
+| 6.5 | [后处理效果](06-engine-api/05-ppe.md) | PPE：模糊、色差、颜色分级 |
+| 6.6 | [通知系统](06-engine-api/06-notifications.md) | 屏幕通知、玩家消息 |
+| 6.7 | [定时器与 CallQueue](06-engine-api/07-timers.md) | 定时器、延迟调用、重复 |
+| 6.8 | [文件 I/O 与 JSON](06-engine-api/08-file-io.md) | 文件读写、JSON 解析 |
+| 6.9 | [网络与 RPC](06-engine-api/09-networking.md) | 网络通信、RPC、客户端-服务器同步 |
+| 6.10 | [中心经济](06-engine-api/10-central-economy.md) | 战利品系统、分类、标志、最小/最大值 |
+| 6.11 | [任务钩子](06-engine-api/11-mission-hooks.md) | 任务钩子、MissionBase、MissionServer |
+| 6.12 | [动作系统](06-engine-api/12-action-system.md) | 玩家动作、ActionBase、目标、条件 |
+| 6.13 | [输入系统](06-engine-api/13-input-system.md) | 按键捕获、映射、UAInput |
+| 6.14 | [玩家系统](06-engine-api/14-player-system.md) | PlayerBase、背包、生命值、耐力、统计 |
+| 6.15 | [声音系统](06-engine-api/15-sound-system.md) | 音频播放、SoundOnVehicle、环境音 |
+| 6.16 | [合成系统](06-engine-api/16-crafting-system.md) | 合成配方、材料、结果 |
+| 6.17 | [建造系统](06-engine-api/17-construction-system.md) | 基地建造、建造部件、状态 |
+| 6.18 | [动画系统](06-engine-api/18-animation-system.md) | 玩家动画、命令 ID、回调 |
+| 6.19 | [地形查询](06-engine-api/19-terrain-queries.md) | 射线检测、地形位置、表面 |
+| 6.20 | [粒子效果](06-engine-api/20-particle-effects.md) | 粒子系统、发射器、视觉效果 |
+| 6.21 | [僵尸与 AI 系统](06-engine-api/21-zombie-ai-system.md) | ZombieBase、感染者 AI、行为 |
+| 6.22 | [管理与服务器](06-engine-api/22-admin-server.md) | 服务器管理、封禁、踢出、RCON |
+| 6.23 | [世界系统](06-engine-api/23-world-systems.md) | 时间、日期、世界函数 |
 
-### 第七部分：设计模式
+### 第7部分：模式与最佳实践（7章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [7.1](07-patterns/01-singletons.md) | 单例模式 | 全局管理器模式 |
-| [7.2](07-patterns/02-module-systems.md) | 模块系统 | 模块注册与生命周期 |
-| [7.3](07-patterns/03-rpc-patterns.md) | RPC 模式 | 远程过程调用最佳实践 |
-| [7.4](07-patterns/04-config-persistence.md) | 配置持久化 | JSON 配置加载/保存 |
-| [7.5](07-patterns/05-permissions.md) | 权限系统 | 权限检查与管理 |
-| [7.6](07-patterns/06-events.md) | 事件系统 | 事件总线、发布/订阅 |
-| [7.7](07-patterns/07-performance.md) | 性能优化 | 性能陷阱与优化技巧 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 7.1 | [单例模式](07-patterns/01-singletons.md) | 单一实例、全局访问、初始化 |
+| 7.2 | [模块系统](07-patterns/02-module-systems.md) | 模块注册、生命周期、CF 模块 |
+| 7.3 | [RPC 通信](07-patterns/03-rpc-patterns.md) | 安全高效的 RPC 模式 |
+| 7.4 | [配置持久化](07-patterns/04-config-persistence.md) | JSON 配置的保存/加载、版本管理 |
+| 7.5 | [权限系统](07-patterns/05-permissions.md) | 分层权限、通配符、分组 |
+| 7.6 | [事件驱动架构](07-patterns/06-events.md) | 事件总线、发布/订阅、解耦 |
+| 7.7 | [性能优化](07-patterns/07-performance.md) | 性能分析、缓存、对象池、减少 RPC |
 
-### 第八部分：教程
+### 第8部分：教程（13章）
 
-| 章节 | 主题 | 说明 |
-|------|------|------|
-| [8.1](08-tutorials/01-first-mod.md) | 第一个 Mod | 完整的入门教程 |
-| [8.2](08-tutorials/02-custom-item.md) | 自定义物品 | 创建自定义游戏物品 |
-| [8.3](08-tutorials/03-admin-panel.md) | 管理面板 | 构建管理员面板 |
-| [8.4](08-tutorials/04-chat-commands.md) | 聊天命令 | 实现聊天命令系统 |
-| [8.5](08-tutorials/05-mod-template.md) | Mod 模板 | 使用 DayZ Mod 模板 |
-| [8.6](../en/08-tutorials/06-debugging-testing.md) | Debugging & Testing (English) | 调试与测试 🔄 |
-| [8.7](../en/08-tutorials/07-publishing-workshop.md) | Publishing to Steam Workshop (English) | 发布到 Steam Workshop 🔄 |
-| [8.8](../en/08-tutorials/08-hud-overlay.md) | Building a HUD Overlay (English) | 构建 HUD 覆盖层 🔄 |
-| [8.9](../en/08-tutorials/09-professional-template.md) | Professional Mod Template (English) | 专业 Mod 模板 🔄 |
-| [8.10](../en/08-tutorials/10-vehicle-mod.md) | Creating a Vehicle Mod (English) | 创建载具 Mod 🔄 |
-| [8.11](../en/08-tutorials/11-clothing-mod.md) | Creating a Clothing Mod (English) | 创建服装 Mod 🔄 |
-| [8.12](../en/08-tutorials/12-trading-system.md) | Building a Trading System (English) | 构建交易系统 🔄 |
-| [8.13](../en/08-tutorials/13-diag-menu.md) | Diag Menu Reference (English) | 诊断菜单参考 🔄 |
+| # | 章节 | 说明 |
+|---|------|------|
+| 8.1 | [你的第一个 Mod (Hello World)](08-tutorials/01-first-mod.md) | 分步教程：创建并加载一个 Mod |
+| 8.2 | [创建自定义物品](08-tutorials/02-custom-item.md) | 创建带模型、纹理和配置的物品 |
+| 8.3 | [构建管理面板](08-tutorials/03-admin-panel.md) | 带传送、刷出、管理功能的管理员 UI |
+| 8.4 | [添加聊天命令](08-tutorials/04-chat-commands.md) | 游戏聊天中的自定义命令 |
+| 8.5 | [使用 Mod 模板](08-tutorials/05-mod-template.md) | 如何使用官方 DayZ Mod 模板 |
+| 8.6 | [调试与测试](08-tutorials/06-debugging-testing.md) | 日志、调试、诊断工具 |
+| 8.7 | [发布到 Workshop](08-tutorials/07-publishing-workshop.md) | 将 Mod 发布到 Steam Workshop |
+| 8.8 | [构建 HUD 叠加层](08-tutorials/08-hud-overlay.md) | 游戏上方的自定义 HUD 叠加层 |
+| 8.9 | [专业 Mod 模板](08-tutorials/09-professional-template.md) | 可投入生产的完整模板 |
+| 8.10 | [创建载具 Mod](08-tutorials/10-vehicle-mod.md) | 带物理和配置的自定义载具 |
+| 8.11 | [创建服装 Mod](08-tutorials/11-clothing-mod.md) | 带纹理和插槽的自定义服装 |
+| 8.12 | [构建交易系统](08-tutorials/12-trading-system.md) | 玩家/NPC 间的交易系统 |
+| 8.13 | [Diag Menu 参考](08-tutorials/13-diag-menu.md) | 开发用诊断菜单 |
 
-### 速查表
+### 快速参考
 
 | 页面 | 说明 |
 |------|------|
-| [速查表](cheatsheet.md) | 单页 Enforce Script 快速参考 |
-| [引擎 API 快速参考](06-engine-api/quick-reference.md) | 引擎 API 方法的单页参考 |
-| [Glossary (English)](../en/glossary.md) | 术语表 🔄 |
-| [FAQ (English)](../en/faq.md) | 常见问题 🔄 |
-| [Troubleshooting Guide (English)](../en/troubleshooting.md) | 故障排除指南 🔄 |
+| [速查表](cheatsheet.md) | Enforce Script 语法快速概览 |
+| [API 快速参考](06-engine-api/quick-reference.md) | 最常用的引擎 API 方法 |
+| [术语表](glossary.md) | DayZ Mod 开发中使用的术语定义 |
+| [常见问题](faq.md) | Mod 开发常见问题解答 |
+| [故障排除指南](troubleshooting.md) | 91个常见问题及解决方案 |
 
 ---
 
-## Credits
+## 致谢
 
-- **Bohemia Interactive** -- DayZ 引擎与官方示例
-- **Jacob_Mango** -- Community Framework 与 Community Online Tools
-- **InclementDab** -- Dabs Framework 与 DayZ Editor
-- **DaOne & GravityWolf** -- VPP Admin Tools
-- **DayZ Expansion Team** -- Expansion Scripts
-- **Brian Orr (DrkDevil)** -- Colorful UI，颜色主题系统
-- **lothsun** -- Colorful UI，UI 颜色系统
-- **StarDZ Team** -- 文档编辑、翻译与组织
+| 开发者 | 项目 | 主要贡献 |
+|--------|------|----------|
+| [**Jacob_Mango**](https://github.com/Jacob-Mango) | Community Framework, COT | 模块系统、RPC、权限、ESP |
+| [**InclementDab**](https://github.com/InclementDab) | Dabs Framework, DayZ Editor, Mod Template | MVC、ViewBinding、编辑器 UI |
+| [**salutesh**](https://github.com/salutesh) | DayZ Expansion | 市场、队伍、地图标记、载具 |
+| [**Arkensor**](https://github.com/Arkensor) | DayZ Expansion | 中心经济、设置版本管理 |
+| [**DaOne**](https://github.com/Da0ne) | VPP Admin Tools | 玩家管理、Webhook、ESP |
+| [**GravityWolf**](https://github.com/GravityWolfNotAmused) | VPP Admin Tools | 权限、服务器管理 |
+| [**Brian Orr (DrkDevil)**](https://github.com/DrkDevil) | Colorful UI | 颜色主题、Modded class UI 模式 |
+| [**lothsun**](https://github.com/lothsun) | Colorful UI | UI 颜色系统、视觉增强 |
+| [**Bohemia Interactive**](https://github.com/BohemiaInteractive) | DayZ Engine & Samples | Enforce Script、原版脚本、DayZ Tools |
+| [**StarDZ Team**](https://github.com/StarDZ-Team) | 本 Wiki | 文档编写、翻译与组织 |
 
----
+## 许可证
 
-> 翻译说明：所有代码示例保持英文原样。技术术语（如 `modded class`、`override`、`ref` 等）保留英文，并在首次出现时给出中文解释。导航链接指向中文版页面。
+文档采用 [**CC BY-SA 4.0**](https://creativecommons.org/licenses/by-sa/4.0/) 许可。
+代码示例采用 [**MIT**](../LICENCE) 许可。

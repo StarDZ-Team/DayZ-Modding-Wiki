@@ -1,6 +1,6 @@
-# Chapter 7.7: Teljesitmeny Optimization
+# Chapter 7.7: Performance Optimization
 
-[<< Elozo: Event-Driven Architecture](06-events.md) | [Kezdolap](../../README.md)
+[Home](../../README.md) | [<< Previous: Event-Driven Architecture](06-events.md) | **Performance Optimization**
 
 ---
 

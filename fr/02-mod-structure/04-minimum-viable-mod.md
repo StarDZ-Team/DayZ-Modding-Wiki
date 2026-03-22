@@ -1,6 +1,6 @@
-# Chapitre 2.4 : Votre premier mod -- Minimum viable
+# Chapter 2.4: Your First Mod -- Minimum Viable
 
-> **Resume :** Ce chapitre vous guide dans la creation du plus petit mod DayZ possible depuis zero. A la fin, vous aurez un mod fonctionnel qui affiche un message dans le journal de scripts au demarrage du jeu. Trois fichiers, zero dependance, en moins de cinq minutes.
+[Home](../../README.md) | [<< Previous: mod.cpp & Workshop](03-mod-cpp.md) | **Minimum Viable Mod** | [Next: File Organization >>](05-file-organization.md)
 
 ---
 

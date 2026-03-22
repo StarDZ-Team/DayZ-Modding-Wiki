@@ -1,8 +1,8 @@
-# 3.8 Dialogues et Fenetres Modales
+# Chapter 3.8: Dialogs & Modals
 
-[Accueil](../../README.md) | [<< Precedent : Styles & Fonts](07-styles-fonts.md) | **Dialogues et Fenetres Modales**
+[Home](../../README.md) | [<< Previous: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Next: Real Mod UI Patterns >>](09-real-mod-patterns.md)
 
-Les dialogues sont des fenetres superposees temporaires qui exigent une interaction utilisateur -- confirmation prompts, alert messages, input forms, and settings panels. This chapter covers the built-in dialog system, manual dialog patterns, layout structure, focus management, and common pitfalls.
+---
 
 ---
 

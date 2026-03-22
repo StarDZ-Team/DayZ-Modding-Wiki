@@ -1,6 +1,6 @@
-# Hibaelharitas utmutato
+# Troubleshooting Guide
 
-[Fooldal](../README.md) | **Hibaelharitas utmutato**
+[Home](../README.md) | **Troubleshooting Guide**
 
 ---
 

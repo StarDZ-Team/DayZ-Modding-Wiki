@@ -1,6 +1,6 @@
-# Engine API gyors referencia
+# Engine API Quick Reference
 
-> Tomoritett egyoldalas referencia a leggyakrabban hasznalt DayZ engine metodusokhoz. Reszletes magyarazatokat es peldakat az egyes szekcio fejlecekben linkelt teljes fejezetekben talalsz.
+[Home](../../README.md) | **Engine API Quick Reference**
 
 ---
 

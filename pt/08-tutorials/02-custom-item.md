@@ -1,6 +1,6 @@
-# Capítulo 8.2: Criando um Item Personalizado
+# Chapter 8.2: Creating a Custom Item
 
-> **Resumo:** Este tutorial guia você pela adição de um item completamente novo ao DayZ. Você vai definir o item em config.cpp, dar texturas usando hidden selections, adicioná-lo à tabela de spawn do servidor, criar uma string table para seu nome de exibição e testá-lo in-game. No final, você terá um item personalizado que jogadores podem encontrar, pegar e carregar no inventário.
+[Home](../../README.md) | [<< Previous: Your First Mod](01-first-mod.md) | **Creating a Custom Item** | [Next: Building an Admin Panel >>](03-admin-panel.md)
 
 ---
 

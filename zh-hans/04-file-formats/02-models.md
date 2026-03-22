@@ -1,6 +1,6 @@
 # Chapter 4.2: 3D Models (.p3d)
 
-[<< 上一章: Textures](01-textures.md) | **3D Models** | [下一章: Materials >>](03-materials.md)
+[Home](../../README.md) | [<< Previous: Textures](01-textures.md) | **3D Models** | [Next: Materials >>](03-materials.md)
 
 ---
 

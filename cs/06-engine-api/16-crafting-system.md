@@ -1,6 +1,6 @@
 # Chapter 6.16: Crafting System
 
-[Domu](../../README.md) | [<< Predchozi: Sound System](15-sound-system.md) | **Crafting System**
+[Home](../../README.md) | [<< Previous: Sound System](15-sound-system.md) | **Crafting System** | [Next: Construction System >>](17-construction-system.md)
 
 ---
 

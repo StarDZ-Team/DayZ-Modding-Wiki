@@ -1,6 +1,6 @@
-# 故障排除指南
+# Troubleshooting Guide
 
-[Home](../README.md) | **故障排除指南**
+[Home](../README.md) | **Troubleshooting Guide**
 
 ---
 

@@ -1,6 +1,6 @@
-# Kapitel 1.4: Modded Classes (The Key to DayZ Modding)
+# Chapter 1.4: Modded Classes (The Key to DayZ Modding)
 
-[Startseite](../../README.md) | [<< Zurueck: Classes & Inheritance](03-classes-inheritance.md) | **Modded Classes** | [Next: Control Flow >>](05-control-flow.md)
+[Home](../../README.md) | [<< Previous: Classes & Inheritance](03-classes-inheritance.md) | **Modded Classes** | [Next: Control Flow >>](05-control-flow.md)
 
 ---
 

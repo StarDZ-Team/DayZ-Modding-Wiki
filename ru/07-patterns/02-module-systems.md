@@ -1,6 +1,6 @@
 # Chapter 7.2: Module / Plugin Systems
 
-[<< Предыдущая: Singleton Pattern](01-singletons.md) | [Главная](../../README.md) | [Следующая: RPC Patterns >>](03-rpc-patterns.md)
+[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# 第1.12章 — 存在しない機能（落とし穴一覧）
+# Chapter 1.12: What Does NOT Exist (Gotchas)
 
-> **目標：** C++、C#、Java、Python で当然あると思う機能のうち、Enforce Script では**存在しない**または**異なる**ものの完全カタログ。各項目では、試みるコード、起こること、正しい回避策を説明する。
+[Home](../../README.md) | [<< Previous: Error Handling](11-error-handling.md) | **Gotchas** | [Next: Functions & Methods >>](13-functions-methods.md)
 
 ---
 

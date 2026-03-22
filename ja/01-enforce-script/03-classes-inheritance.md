@@ -1,6 +1,6 @@
-# 第1.3章：クラスと継承
+# Chapter 1.3: Classes & Inheritance
 
-[ホーム](../../README.md) | [<< 前： Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [次： Modded Classes >>](04-modded-classes.md)
+[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
 
 ---
 

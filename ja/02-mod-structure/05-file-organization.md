@@ -1,6 +1,6 @@
-# 第2.5章：ファイル構成のベストプラクティス
+# Chapter 2.5: File Organization Best Practices
 
-> **要約：** ファイルの整理方法がModの保守性を決める（10ファイルでも1,000ファイルでも）。この章では標準的なディレクトリ構成、命名規則、コンテンツMod・スクリプトMod・フレームワークModの違い、クライアント・サーバー分離、プロのDayZ Modからの教訓を扱う。
+[Home](../../README.md) | [<< Previous: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Next: Server vs Client Architecture >>](06-server-client-split.md)
 
 ---
 

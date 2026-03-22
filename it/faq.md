@@ -1,4 +1,4 @@
-# Domande Frequenti
+# Frequently Asked Questions
 
 [Home](../README.md) | **FAQ**
 

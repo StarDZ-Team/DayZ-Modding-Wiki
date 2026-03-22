@@ -1,6 +1,6 @@
-# Chapter 7.4: Konfiguracio perzisztencia
+# Chapter 7.4: Config Persistence
 
-[<< Elozo: RPC mintak](03-rpc-patterns.md) | [Kezdolap](../../README.md) | [Kovetkezo: Permission Systems >>](05-permissions.md)
+[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
 
 ---
 

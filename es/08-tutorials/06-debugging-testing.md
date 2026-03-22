@@ -1,6 +1,6 @@
-# Capitulo 8.6: Depuracion y Pruebas de tu Mod
+# Chapter 8.6: Debugging & Testing Your Mod
 
-> **Resumen:** This tutorial teaches you how to debug and test DayZ mods effectively. You will learn to read script logs, use Print debugging, work with DayZDiag and file patching for rapid iteration, diagnose common error messages, and establish a reliable testing workflow. No IDE debugger exists for retail builds -- your tools are script logs, Print statements, Workbench, DayZDiag, and file patching.
+[Home](../../README.md) | [<< Previous: Using the DayZ Mod Template](05-mod-template.md) | **Debugging & Testing** | [Next: Publishing to the Steam Workshop >>](07-publishing-workshop.md)
 
 ---
 

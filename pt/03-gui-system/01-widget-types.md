@@ -1,8 +1,8 @@
-# 3.1 Tipos de Widget
+# Chapter 3.1: Widget Types
 
-O sistema de GUI do DayZ e construido sobre widgets -- componentes de UI reutilizaveis que vao de simples containers a controles interativos complexos. Todo elemento visivel na tela e um widget, e entender o catalogo completo e essencial para construir UIs de mods.
+[Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
 
-Este capitulo fornece uma referencia completa de todos os tipos de widget disponiveis em Enforce Script.
+---
 
 ---
 

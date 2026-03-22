@@ -1,6 +1,6 @@
 # Chapter 6.19: Terrain & World Queries
 
-[Главная](../../README.md) | [<< Previous: Animation System](18-animation-system.md) | **Terrain & World Queries**
+[Home](../../README.md) | [<< Previous: Animation System](18-animation-system.md) | **Terrain & World Queries** | [Next: Particle & Effect System >>](20-particle-effects.md)
 
 ---
 

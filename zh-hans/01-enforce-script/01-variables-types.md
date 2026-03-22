@@ -1,6 +1,6 @@
-# 第 1.1 章：变量与类型
+# Chapter 1.1: Variables & Types
 
-[Home](../../README.md) | **变量与类型** | [下一章：数组、映射与集合 >>](02-arrays-maps-sets.md)
+[Home](../../README.md) | **Variables & Types** | [Next: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
 
 ---
 

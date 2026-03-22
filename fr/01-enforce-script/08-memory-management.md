@@ -1,6 +1,6 @@
-# Chapitre 1.8 : Gestion de la memoire
+# Chapter 1.8: Memory Management
 
-[<< 1.7: Mathematiques et vecteurs](07-math-vectors.md) | [Accueil](../../README.md) | [1.9: Casting et reflexion >>](09-casting-reflection.md)
+[Home](../../README.md) | [<< Previous: Math & Vectors](07-math-vectors.md) | **Memory Management** | [Next: Casting & Reflection >>](09-casting-reflection.md)
 
 ---
 

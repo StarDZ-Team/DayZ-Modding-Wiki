@@ -1,6 +1,8 @@
+# Chapter 3.1: Widget Types
+
 [Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
 
-# 3.1 Widget Types
+---
 
 DayZ's GUI system is built on widgets -- reusable UI components that range from simple containers to complex interactive controls. Every visible element on screen is a widget, and understanding the full catalog is essential for building mod UIs.
 

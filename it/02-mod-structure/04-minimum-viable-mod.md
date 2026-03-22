@@ -1,6 +1,6 @@
 # Chapter 2.4: Your First Mod -- Minimum Viable
 
-> **Riepilogo:** This chapter walks you through creating the smallest possible DayZ mod from scratch. By the end, you will have a working mod that prints a message to the script log when the game starts. Three files, zero dependencies, under five minutes.
+[Home](../../README.md) | [<< Previous: mod.cpp & Workshop](03-mod-cpp.md) | **Minimum Viable Mod** | [Next: File Organization >>](05-file-organization.md)
 
 ---
 

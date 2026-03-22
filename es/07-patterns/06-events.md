@@ -1,6 +1,6 @@
-# Capitulo 7.6: Arquitectura Basada en Eventos
+# Chapter 7.6: Event-Driven Architecture
 
-[<< Anterior: Permission Systems](05-permissions.md) | [Inicio](../../README.md) | [Siguiente: Performance Optimization >>](07-performance.md)
+[Home](../../README.md) | [<< Previous: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Next: Performance Optimization >>](07-performance.md)
 
 ---
 

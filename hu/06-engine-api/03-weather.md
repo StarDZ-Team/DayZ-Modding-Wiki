@@ -1,6 +1,6 @@
-# Chapter 6.3: Idojaras System
+# Chapter 6.3: Weather System
 
-[<< Elozo: Jarmuvek](02-vehicles.md) | **Idojaras** | [Kovetkezo: Kamerak >>](04-cameras.md)
+[Home](../../README.md) | [<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
 
 ---
 

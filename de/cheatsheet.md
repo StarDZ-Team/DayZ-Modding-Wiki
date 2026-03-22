@@ -1,6 +1,6 @@
-# Enforce Script Spickzettel
+# Enforce Script Cheat Sheet
 
-> Einseitige Schnellreferenz fuer DayZ Enforce Script. Setze ein Lesezeichen.
+[Home](../README.md) | **Cheat Sheet**
 
 ---
 

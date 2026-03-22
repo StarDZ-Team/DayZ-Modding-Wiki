@@ -1,6 +1,6 @@
-# Capitulo 8.5: Usando el Template de Mod para DayZ
+# Chapter 8.5: Using the DayZ Mod Template
 
-> **Resumen:** Este tutorial te muestra como usar el template de mod open-source de InclementDab para DayZ para iniciar un nuevo proyecto de mod en segundos. En lugar de crear cada archivo desde cero, clonas un esqueleto listo que ya tiene la estructura de carpetas correcta, config.cpp, mod.cpp y stubs de capa de script. Luego renombras algunas cosas y comienzas a escribir codigo inmediatamente.
+[Home](../../README.md) | [<< Previous: Adding Chat Commands](04-chat-commands.md) | **Using the DayZ Mod Template** | [Next: Debugging & Testing >>](06-debugging-testing.md)
 
 ---
 

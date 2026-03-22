@@ -1,6 +1,6 @@
-# DayZ Modding Szotar
+# DayZ Modding Glossary & Page Index
 
-[Fooldal](../README.md) | **Szotar**
+[Home](../README.md) | **Glossary & Index**
 
 ---
 

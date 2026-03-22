@@ -1,6 +1,6 @@
-# Глава 6.17: Система строительства
+# Chapter 6.17: Construction System
 
-[Главная](../../README.md) | [<< Previous: Crafting System](16-crafting-system.md) | **Construction System**
+[Home](../../README.md) | [<< Previous: Crafting System](16-crafting-system.md) | **Construction System** | [Next: Animation System >>](18-animation-system.md)
 
 ---
 

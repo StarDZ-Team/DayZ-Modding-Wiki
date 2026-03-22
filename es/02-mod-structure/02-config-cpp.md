@@ -1,6 +1,6 @@
-# Capitulo 2.2: config.cpp a Fondo
+# Chapter 2.2: config.cpp Deep Dive
 
-> **Resumen:** The `config.cpp` file is the heart of every DayZ mod. It tells the engine what your mod depends on, where your scripts live, what items it defines, and how it integrates with the game. Every PBO must have one. Getting it wrong means your mod silently fails to load.
+[Home](../../README.md) | [<< Previous: The 5-Layer Script Hierarchy](01-five-layers.md) | **config.cpp Deep Dive** | [Next: mod.cpp & Workshop >>](03-mod-cpp.md)
 
 ---
 

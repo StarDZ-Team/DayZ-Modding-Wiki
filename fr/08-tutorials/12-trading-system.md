@@ -1,6 +1,6 @@
-# Chapitre 8.12 : Construire un Systeme de Commerce
+# Chapter 8.12: Building a Trading System
 
-> **Resume :** Construisez un systeme de boutique complet sans PNJ: JSON config, server-validated buy/sell, categorized UI, currency-based transactions. The most complex tutorial in this wiki -- covers data modeling, RPC roundtrips, inventory manipulation, and anti-cheat principles.
+[Home](../../README.md) | [<< Previous: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Next: The Diagnostic Menu >>](13-diag-menu.md)
 
 ---
 

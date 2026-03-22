@@ -1,6 +1,6 @@
-# Capitulo 5.3: Credits.json
+# Chapter 5.3: Credits.json
 
-> **Resumo:** O arquivo `Credits.json` define os creditos que o DayZ exibe para o seu mod no menu de mods do jogo. Ele lista membros da equipe, colaboradores e agradecimentos organizados por departamentos e secoes. Embora seja puramente cosmetico, e a forma padrao de dar credito a sua equipe de desenvolvimento.
+[Home](../../README.md) | [<< Previous: inputs.xml](02-inputs-xml.md) | **Credits.json** | [Next: ImageSet Format >>](04-imagesets.md)
 
 ---
 

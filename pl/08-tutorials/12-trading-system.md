@@ -1,6 +1,6 @@
 # Chapter 8.12: Building a Trading System
 
-> **Podsumowanie:** Build a complete NPC-less shop system: JSON config, server-validated buy/sell, categorized UI, currency-based transactions. The most complex tutorial in this wiki -- covers data modeling, RPC roundtrips, inventory manipulation, and anti-cheat principles.
+[Home](../../README.md) | [<< Previous: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Next: The Diagnostic Menu >>](13-diag-menu.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# Chapter 6.10: Kozponti gazdasag
+# Chapter 6.10: Central Economy
 
-[<< Elozo: Halozatkezeles & RPC](09-networking.md) | **Kozponti gazdasag** | [Kezdolap](../../README.md)
+[Home](../../README.md) | [<< Previous: Networking & RPC](09-networking.md) | **Central Economy** | [Next: Mission Hooks >>](11-mission-hooks.md)
 
 ---
 

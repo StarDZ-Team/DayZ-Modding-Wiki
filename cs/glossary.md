@@ -1,6 +1,6 @@
-# Slovnik pojmu pro modding DayZ
+# DayZ Modding Glossary & Page Index
 
-[Domu](../README.md) | **Slovnik**
+[Home](../README.md) | **Glossary & Index**
 
 ---
 

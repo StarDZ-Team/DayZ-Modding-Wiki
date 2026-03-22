@@ -1,6 +1,6 @@
-# Chapter 1.1: Valtozok es tipusok
+# Chapter 1.1: Variables & Types
 
-[Kezdolap](../../README.md) | **Valtozok es tipusok** | [Kovetkezo: Tombok, Map-ek es Set-ek >>](02-arrays-maps-sets.md)
+[Home](../../README.md) | **Variables & Types** | [Next: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
 
 ---
 

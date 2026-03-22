@@ -1,8 +1,8 @@
-# Глава 1.5: Управление потоком выполнения
+# Chapter 1.5: Control Flow
 
+[Home](../../README.md) | [<< Previous: Modded Classes](04-modded-classes.md) | **Control Flow** | [Next: String Operations >>](06-strings.md)
 
-[<< 1.4: Modded Classes](04-modded-classes.md) | [Главная](../../README.md) | [1.6: String Operations >>](06-strings.md)
-
+---
 ---
 
 ## Введение

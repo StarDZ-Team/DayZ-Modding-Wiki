@@ -1,6 +1,6 @@
-# 第 8.7: Publishing to the Steam Workshop
+# Chapter 8.7: Publishing to the Steam Workshop
 
-> **概要:** Your mod is built, tested, and ready for the world. This tutorial walks you through the complete publishing process from start to finish: preparing your mod folder, signing PBOs for multiplayer compatibility, creating a Steam Workshop item, uploading via DayZ Tools or command line, and maintaining updates over time. By the end, your mod will be live on the Workshop and playable by anyone.
+[Home](../../README.md) | [<< Previous: Debugging & Testing](06-debugging-testing.md) | **Publishing to the Steam Workshop** | [Next: Building a HUD Overlay >>](08-hud-overlay.md)
 
 ---
 

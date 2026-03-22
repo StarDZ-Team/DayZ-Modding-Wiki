@@ -1,6 +1,6 @@
 # Chapter 1.3: Classes & Inheritance
 
-[Domů](../README.md) | [<< Předchozí: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Další: Modded Classes >>](04-modded-classes.md)
+[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
 
 ---
 

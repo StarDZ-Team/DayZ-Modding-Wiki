@@ -1,6 +1,6 @@
 # Chapter 6.1: Entity System
 
-[Domů](../README.md) | **Entity System** | [Další: Vehicles >>](02-vehicles.md)
+[Home](../../README.md) | **Entity System** | [Next: Vehicles >>](02-vehicles.md)
 
 ---
 

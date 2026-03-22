@@ -1,6 +1,6 @@
-# Глава 6.16: Система крафта
+# Chapter 6.16: Crafting System
 
-[Главная](../../README.md) | [<< Previous: Sound System](15-sound-system.md) | **Crafting System**
+[Home](../../README.md) | [<< Previous: Sound System](15-sound-system.md) | **Crafting System** | [Next: Construction System >>](17-construction-system.md)
 
 ---
 

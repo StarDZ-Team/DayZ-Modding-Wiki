@@ -1,6 +1,6 @@
-# Глава 6.12: Система действий
+# Chapter 6.12: Action System
 
-[Главная](../../README.md) | [<< Previous: Central Economy](10-central-economy.md) | **Action System**
+[Home](../../README.md) | [<< Previous: Mission Hooks](11-mission-hooks.md) | **Action System** | [Next: Input System >>](13-input-system.md)
 
 ---
 

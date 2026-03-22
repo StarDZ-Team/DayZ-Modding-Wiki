@@ -1,6 +1,6 @@
-# Capitulo 1.6: Operaciones con Strings
+# Chapter 1.6: String Operations
 
-[<< 1.5: Control Flow](05-control-flow.md) | [Inicio](../../README.md) | [1.7: Math & Vectors >>](07-math-vectors.md)
+[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
 
 ---
 

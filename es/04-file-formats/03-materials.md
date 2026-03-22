@@ -1,6 +1,6 @@
-# Capitulo 4.3: Materiales (.rvmat)
+# Chapter 4.3: Materials (.rvmat)
 
-[<< Anterior: 3D Models](02-models.md) | **Materiales** | [Siguiente: Audio >>](04-audio.md)
+[Home](../../README.md) | [<< Previous: 3D Models](02-models.md) | **Materials** | [Next: Audio >>](04-audio.md)
 
 ---
 

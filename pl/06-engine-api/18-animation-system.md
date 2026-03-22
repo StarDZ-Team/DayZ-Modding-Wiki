@@ -1,6 +1,6 @@
 # Chapter 6.18: Animation System
 
-[Strona glowna](../../README.md) | [<< Poprzedni: Construction System](17-construction-system.md) | **Animation System**
+[Home](../../README.md) | [<< Previous: Construction System](17-construction-system.md) | **Animation System** | [Next: Terrain & World Queries >>](19-terrain-queries.md)
 
 ---
 

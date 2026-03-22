@@ -1,6 +1,6 @@
-# Capitulo 7.1: Patron Singleton
+# Chapter 7.1: Singleton Pattern
 
-[Inicio](../../README.md) | **Patron Singleton** | [Siguiente: Module Systems >>](02-module-systems.md)
+[Home](../../README.md) | **Singleton Pattern** | [Next: Module Systems >>](02-module-systems.md)
 
 ---
 

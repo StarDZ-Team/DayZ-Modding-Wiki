@@ -1,6 +1,6 @@
-# DayZ Modding 用語集
+# DayZ Modding Glossary & Page Index
 
-[Home](../README.md) | **用語集**
+[Home](../README.md) | **Glossary & Index**
 
 ---
 

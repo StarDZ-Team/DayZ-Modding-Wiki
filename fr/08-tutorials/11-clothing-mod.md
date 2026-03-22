@@ -1,6 +1,6 @@
-# Chapitre 8.11 : Creer des Vetements Personnalises
+# Chapter 8.11: Creating Custom Clothing
 
-> **Resume :** Ce tutoriel vous guide dans la creation d'une veste tactique personnalisee for DayZ. You will choose a base class, define the clothing in config.cpp with insulation and cargo properties, retexture it with a camo pattern using hidden selections, add localization and spawning, and optionally extend it with scripted behavior. By the end, you will have a wearable jacket that keeps players warm, holds items, and spawns in the world.
+[Home](../../README.md) | [<< Previous: Creating a Custom Vehicle](10-vehicle-mod.md) | **Creating Custom Clothing** | [Next: Building a Trading System >>](12-trading-system.md)
 
 ---
 

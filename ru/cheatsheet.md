@@ -1,6 +1,6 @@
-# Шпаргалка по Enforce Script
+# Enforce Script Cheat Sheet
 
-> Краткая справка на одной странице по Enforce Script для DayZ. Добавьте в закладки.
+[Home](../README.md) | **Cheat Sheet**
 
 ---
 

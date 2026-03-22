@@ -1,6 +1,6 @@
-# Pruvodce resenim problemu
+# Troubleshooting Guide
 
-[Domu](../README.md) | **Pruvodce resenim problemu**
+[Home](../README.md) | **Troubleshooting Guide**
 
 ---
 

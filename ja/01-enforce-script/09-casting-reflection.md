@@ -1,6 +1,6 @@
-# 第1.9章 — キャストとリフレクション
+# Chapter 1.9: Casting & Reflection
 
-> **目標：** 安全な型キャスト、ランタイム型チェック、および動的プロパティアクセスのための Enforce Script リフレクション API を習得する。
+[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
 
 ---
 

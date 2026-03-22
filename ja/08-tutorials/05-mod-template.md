@@ -1,6 +1,6 @@
-# 第8.5章: DayZ Mod テンプレートの使い方
+# Chapter 8.5: Using the DayZ Mod Template
 
-> **概要:** このチュートリアルでは、InclementDab のオープンソース DayZ Mod テンプレートを使用して、新しい Mod プロジェクトを数秒でブートストラップする方法を解説します。すべてのファイルをゼロから作成する代わりに、正しいフォルダ構造、config.cpp、mod.cpp、およびスクリプトレイヤーのスタブがすでに用意されたスケルトンをクローンします。いくつかの名前を変更するだけで、すぐにコードを書き始めることができます。
+[Home](../../README.md) | [<< Previous: Adding Chat Commands](04-chat-commands.md) | **Using the DayZ Mod Template** | [Next: Debugging & Testing >>](06-debugging-testing.md)
 
 ---
 

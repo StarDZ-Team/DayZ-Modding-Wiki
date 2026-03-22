@@ -1,6 +1,6 @@
-# Chapitre 2.1 : La hierarchie des 5 couches de scripts
+# Chapter 2.1: The 5-Layer Script Hierarchy
 
-> **Resume :** DayZ organise tous les scripts en cinq couches de compilation. Comprendre ces couches est le concept le plus important du modding DayZ -- cela determine ou chaque fichier de votre mod se trouve, ce qu'il peut acceder, et quand il s'execute.
+[Home](../../README.md) | **The 5-Layer Script Hierarchy** | [Next: config.cpp Deep Dive >>](02-config-cpp.md)
 
 ---
 

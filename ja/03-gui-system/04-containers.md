@@ -1,6 +1,6 @@
-# 3.4 コンテナ Widget
+# Chapter 3.4: Container Widgets
 
-コンテナ Widget は子 Widget を内部で整理します。`FrameWidget` は最もシンプル（不可視のボックス、手動配置）ですが、DayZ はレイアウトを自動処理する3つの特殊コンテナを提供します：`WrapSpacerWidget`、`GridSpacerWidget`、`ScrollWidget`。
+[Home](../../README.md) | [<< Previous: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Next: Programmatic Widgets >>](05-programmatic-widgets.md)
 
 ---
 

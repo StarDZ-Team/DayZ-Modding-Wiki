@@ -1,6 +1,6 @@
-# 第2.3章：mod.cpp と Workshop
+# Chapter 2.3: mod.cpp & Workshop
 
-> **要約：** `mod.cpp` ファイルは純粋なメタデータ — DayZ ランチャー、ゲーム内Modリスト、Steam Workshop でのModの表示方法を制御する。ゲームプレイ、スクリプティング、ロード順序には影響しない。`config.cpp` がエンジンなら `mod.cpp` は塗装。
+[Home](../../README.md) | [<< Previous: config.cpp Deep Dive](02-config-cpp.md) | **mod.cpp & Workshop** | [Next: Minimum Viable Mod >>](04-minimum-viable-mod.md)
 
 ---
 

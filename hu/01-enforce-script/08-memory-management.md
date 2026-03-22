@@ -1,6 +1,6 @@
-# Chapter 1.8: Memoriakezelees
+# Chapter 1.8: Memory Management
 
-[<< 1.7: Matematika es vektorok](07-math-vectors.md) | [Kezdolap](../../README.md) | [1.9: Tipuskenyszerites es reflekszio >>](09-casting-reflection.md)
+[Home](../../README.md) | [<< Previous: Math & Vectors](07-math-vectors.md) | **Memory Management** | [Next: Casting & Reflection >>](09-casting-reflection.md)
 
 ---
 

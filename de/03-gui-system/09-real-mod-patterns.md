@@ -1,8 +1,8 @@
-# 3.9 Real Mod UI Patterns
+# Chapter 3.9: Real Mod UI Patterns
 
 [Home](../../README.md) | [<< Previous: Dialogs & Modals](08-dialogs-modals.md) | **Real Mod UI Patterns** | [Next: Advanced Widgets >>](10-advanced-widgets.md)
 
-Dieses Kapitel untersucht UI patterns found in six professional DayZ mods: COT (Community Online Tools), VPP Admin Tools, DabsFramework, Colorful UI, Expansion, and DayZ Editor. Each mod solves different problems. Studying their approaches gives you a library of proven patterns beyond what official documentation covers.
+---
 
 All code shown is extracted from actual mod source. File paths reference the original repositories.
 

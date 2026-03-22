@@ -1,8 +1,8 @@
-# Глава 2.3: mod.cpp и Workshop
+# Chapter 2.3: mod.cpp & Workshop
 
+[Home](../../README.md) | [<< Previous: config.cpp Deep Dive](02-config-cpp.md) | **mod.cpp & Workshop** | [Next: Minimum Viable Mod >>](04-minimum-viable-mod.md)
 
-> **Итоги:** Файл `mod.cpp` -- это чистые метаданные: он управляет тем, как ваш мод отображается в лаунчере DayZ, в списке модов в игре и в Steam Workshop. Он не влияет на геймплей, скрипты или порядок загрузки. Если `config.cpp` -- это двигатель, то `mod.cpp` -- это покраска.
-
+---
 
 ---
 

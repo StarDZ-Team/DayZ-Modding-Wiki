@@ -1,6 +1,6 @@
-# Chapitre 6.5 : Effets post-traitement (PPE)
+# Chapter 6.5: Post-Process Effects (PPE)
 
-[<< Previous: Cameras](04-cameras.md) | **Post-Process Effects** | [Next: Notifications >>](06-notifications.md)
+[Home](../../README.md) | [<< Previous: Cameras](04-cameras.md) | **Post-Process Effects** | [Next: Notifications >>](06-notifications.md)
 
 ---
 

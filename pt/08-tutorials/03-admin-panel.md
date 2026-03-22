@@ -1,6 +1,6 @@
-# Capítulo 8.3: Construindo um Módulo de Painel Admin
+# Chapter 8.3: Building an Admin Panel Module
 
-> **Resumo:** Este tutorial guia você pela construção de um módulo de painel admin completo do zero. Você vai criar um layout de UI, vincular widgets em script, tratar cliques de botão, enviar um RPC do cliente para o servidor, processar a requisição no servidor, enviar uma resposta de volta e exibir o resultado na UI. Isso cobre o roundtrip completo cliente-servidor-cliente que todo mod com rede precisa.
+[Home](../../README.md) | [<< Previous: Creating a Custom Item](02-custom-item.md) | **Building an Admin Panel** | [Next: Adding Chat Commands >>](04-chat-commands.md)
 
 ---
 

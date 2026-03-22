@@ -1,6 +1,6 @@
-# Capitulo 8.1: Tu Primer Mod (Hello World)
+# Chapter 8.1: Your First Mod (Hello World)
 
-> **Resumen:** This tutorial walks you through creating your very first DayZ mod from absolute zero. You will install the tools, set up your workspace, write three files, pack a PBO, load the mod in DayZ, and verify it works by reading the script log. No prior DayZ modding experience required.
+[Home](../../README.md) | **Your First Mod** | [Next: Creating a Custom Item >>](02-custom-item.md)
 
 ---
 

@@ -1,6 +1,6 @@
-# 3.4 Widgets de Container
+# Chapter 3.4: Container Widgets
 
-Widgets de container organizam widgets filhos dentro deles. Enquanto `FrameWidget` e o mais simples (caixa invisivel, posicionamento manual), o DayZ fornece tres containers especializados que lidam com layout automaticamente: `WrapSpacerWidget`, `GridSpacerWidget` e `ScrollWidget`.
+[Home](../../README.md) | [<< Previous: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Next: Programmatic Widgets >>](05-programmatic-widgets.md)
 
 ---
 

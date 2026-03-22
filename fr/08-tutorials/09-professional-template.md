@@ -1,6 +1,6 @@
-# Chapitre 8.9 : Template de Mod Professionnel
+# Chapter 8.9: Professional Mod Template
 
-> **Resume :** Ce chapitre fournit un template de mod complet, pret pour la production with every file you need for a professional DayZ mod. Unlike [Chapter 8.5](05-mod-template.md) which introduces InclementDab's starter skeleton, this is a full-featured template with a config system, singleton manager, client-server RPC, UI panel, keybinds, localization, and build automation. Every file is copy-paste ready and heavily commented to explain **why** each line exists.
+[Home](../../README.md) | [<< Previous: Building a HUD Overlay](08-hud-overlay.md) | **Professional Mod Template** | [Next: Creating a Custom Vehicle >>](10-vehicle-mod.md)
 
 ---
 

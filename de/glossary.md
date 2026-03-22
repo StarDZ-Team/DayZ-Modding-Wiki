@@ -1,6 +1,6 @@
-# DayZ-Modding-Glossar
+# DayZ Modding Glossary & Page Index
 
-[Home](../README.md) | **Glossar**
+[Home](../README.md) | **Glossary & Index**
 
 ---
 

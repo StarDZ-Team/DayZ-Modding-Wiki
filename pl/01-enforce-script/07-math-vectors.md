@@ -1,6 +1,6 @@
-# Rozdzial 1.7: Operacje matematyczne i wektorowe
+# Chapter 1.7: Math & Vector Operations
 
-[<< 1.6: String Operations](06-strings.md) | [Home](../../README.md) | [1.8: Memory Management >>](08-memory-management.md)
+[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
 
 ---
 

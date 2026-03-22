@@ -1,6 +1,6 @@
-# Chapitre 6.11 : Hooks de Mission
+# Chapter 6.11: Mission Hooks
 
-[<< Precedent : Central Economy](10-central-economy.md) | **Hooks de Mission** | [Next: Action System >>](12-action-system.md)
+[Home](../../README.md) | [<< Previous: Central Economy](10-central-economy.md) | **Mission Hooks** | [Next: Action System >>](12-action-system.md)
 
 ---
 

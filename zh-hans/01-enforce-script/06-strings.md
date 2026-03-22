@@ -1,6 +1,6 @@
-# Chapter 1.6：字符串操作
+# Chapter 1.6: String Operations
 
-[<< 1.5：控制流](05-control-flow.md) | [Home](../../README.md) | [1.7：数学与向量 >>](07-math-vectors.md)
+[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
 
 ---
 

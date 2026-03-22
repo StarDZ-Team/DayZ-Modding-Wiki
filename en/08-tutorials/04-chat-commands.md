@@ -1,5 +1,9 @@
 # Chapter 8.4: Adding Chat Commands
 
+[Home](../../README.md) | [<< Previous: Building an Admin Panel](03-admin-panel.md) | **Adding Chat Commands** | [Next: Using the DayZ Mod Template >>](05-mod-template.md)
+
+---
+
 > **Summary:** This tutorial walks you through creating a chat command system for DayZ. You will hook into the chat input, parse command prefixes and arguments, check admin permissions, execute a server-side action, and send feedback to the player. By the end, you will have a working `/heal` command that fully heals the admin's character, along with a framework for adding more commands.
 
 ---

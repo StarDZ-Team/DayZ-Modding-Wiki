@@ -1,5 +1,9 @@
 # Engine API Quick Reference
 
+[Home](../../README.md) | **Engine API Quick Reference**
+
+---
+
 > Condensed single-page reference for the most commonly used DayZ engine methods. For detailed explanations and examples, see the full chapters linked in each section header.
 
 ---

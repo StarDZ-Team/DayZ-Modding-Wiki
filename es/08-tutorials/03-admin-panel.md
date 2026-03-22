@@ -1,6 +1,6 @@
-# Capitulo 8.3: Building an Admin Panel Module
+# Chapter 8.3: Building an Admin Panel Module
 
-> **Resumen:** This tutorial walks you through building a complete admin panel module from scratch. You will create a UI layout, bind widgets in script, handle button clicks, send an RPC from client to server, process the request on the server, send a response back, and display the result in the UI. This covers the full client-server-client roundtrip that every networked mod needs.
+[Home](../../README.md) | [<< Previous: Creating a Custom Item](02-custom-item.md) | **Building an Admin Panel** | [Next: Adding Chat Commands >>](04-chat-commands.md)
 
 ---
 

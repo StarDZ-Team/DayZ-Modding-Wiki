@@ -1,6 +1,6 @@
-# 3.3 サイズとポジション
+# Chapter 3.3: Sizing & Positioning
 
-DayZ のレイアウトシステムは**二重座標モード**を使用します — すべての寸法が比率指定（親に対する相対値）またはピクセル指定（絶対的な画面ピクセル値）のどちらかになります。このシステムの誤解がレイアウトバグの最大の原因です。この章ではこれを徹底的に説明します。
+[Home](../../README.md) | [<< Previous: Layout File Format](02-layout-files.md) | **Sizing & Positioning** | [Next: Container Widgets >>](04-containers.md)
 
 ---
 

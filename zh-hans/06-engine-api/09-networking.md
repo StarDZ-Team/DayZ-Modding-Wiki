@@ -1,6 +1,6 @@
 # Chapter 6.9: Networking & RPC
 
-[<< 上一章: File I/O & JSON](08-file-io.md) | **Networking & RPC** | [下一章: Central Economy >>](10-central-economy.md)
+[Home](../../README.md) | [<< Previous: File I/O & JSON](08-file-io.md) | **Networking & RPC** | [Next: Central Economy >>](10-central-economy.md)
 
 ---
 

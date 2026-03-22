@@ -1,6 +1,6 @@
-# Chapter 6.12: Akce System
+# Chapter 6.12: Action System
 
-[Domu](../../README.md) | [<< Predchozi: Central Economy](10-central-economy.md) | **Akce System**
+[Home](../../README.md) | [<< Previous: Mission Hooks](11-mission-hooks.md) | **Action System** | [Next: Input System >>](13-input-system.md)
 
 ---
 

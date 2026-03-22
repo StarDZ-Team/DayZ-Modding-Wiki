@@ -1,6 +1,6 @@
-# Chapter 1.6: String muveletek
+# Chapter 1.6: String Operations
 
-[<< 1.5: Vezerlesszerkezetek](05-control-flow.md) | [Kezdolap](../../README.md) | [1.7: Matematika es vektorok >>](07-math-vectors.md)
+[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
 
 ---
 

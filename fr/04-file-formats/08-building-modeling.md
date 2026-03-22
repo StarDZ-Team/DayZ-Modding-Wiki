@@ -1,6 +1,6 @@
-# Chapitre 4.8 : Modelisation de Batiments -- Portes et Echelles
+# Chapter 4.8: Building Modeling -- Doors & Ladders
 
-[<< Precedent : Workbench Guide](07-workbench-guide.md) | **Modelisation de Batiments**
+[Home](../../README.md) | [<< Previous: Workbench Guide](07-workbench-guide.md) | **Building Modeling**
 
 ---
 
