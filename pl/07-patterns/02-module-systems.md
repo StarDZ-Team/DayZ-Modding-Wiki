@@ -1,36 +1,36 @@
-# Chapter 7.2: Module / Plugin Systems
+# Rozdział 7.2: Systemy modułów / wtyczek
 
-[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
+[Strona główna](../../README.md) | [<< Poprzedni: Wzorzec Singleton](01-singletons.md) | **Systemy modułów / wtyczek** | [Dalej: Wzorce RPC >>](03-rpc-patterns.md)
 
 ---
 
 ## Wprowadzenie
 
-Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle events --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- to each module in a predictable order.
+Każdy poważny framework moda DayZ używa systemu modułów lub wtyczek do organizowania kodu w samodzielne jednostki ze zdefiniowanymi hookami cyklu życia. Zamiast rozrzucać logikę inicjalizacji po zmoddowanych klasach misji, moduły rejestrują się w centralnym managerze, który rozsyła zdarzenia cyklu życia --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- do każdego modułu w przewidywalnej kolejności.
 
-This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and MyMod's `MyModuleManager`. Each solves the same problem differently; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
+Ten rozdział analizuje cztery podejścia z praktyki: `CF_ModuleCore` z Community Framework, `PluginBase` / `ConfigurablePlugin` z VPP, rejestrację opartą na atrybutach z Dabs Framework oraz własny statyczny manager modułów. Każde rozwiązuje ten sam problem w inny sposób; zrozumienie wszystkich czterech pomoże ci wybrać odpowiedni wzorzec dla twojego moda lub płynnie zintegrować się z istniejącym frameworkiem.
 
 ---
 
-## Spis tresci
+## Spis treści
 
-- [Why Modules?](#why-modules)
+- [Dlaczego moduły?](#dlaczego-moduły)
 - [CF_ModuleCore (COT / Expansion)](#cf_modulecore-cot--expansion)
 - [VPP PluginBase / ConfigurablePlugin](#vpp-pluginbase--configurableplugin)
-- [Dabs Attribute-Based Registration](#dabs-attribute-based-registration)
-- [MyMod MyModuleManager](#custom-static-module-manager)
-- [Module Lifecycle: The Universal Contract](#module-lifecycle-the-universal-contract)
-- [Best Practices for Module Design](#best-practices-for-module-design)
-- [Comparison Table](#comparison-table)
+- [Dabs — rejestracja oparta na atrybutach](#dabs--rejestracja-oparta-na-atrybutach)
+- [Własny statyczny manager modułów](#własny-statyczny-manager-modułów)
+- [Cykl życia modułu: uniwersalny kontrakt](#cykl-życia-modułu-uniwersalny-kontrakt)
+- [Dobre praktyki projektowania modułów](#dobre-praktyki-projektowania-modułów)
+- [Tabela porównawcza](#tabela-porównawcza)
 
 ---
 
-## Why Modules?
+## Dlaczego moduły?
 
-Without a module system, a DayZ mod typically ends up with a monolithic modded `MissionServer` or `MissionGameplay` class that grows until it becomes unmanageable:
+Bez systemu modułów mod DayZ zazwyczaj kończy z monolityczną zmoddowaną klasą `MissionServer` lub `MissionGameplay`, która rośnie aż staje się niezarządzalna:
 
 ```c
-// BAD: Everything crammed into one modded class
+// ŹLE: Wszystko upchane w jednej zmoddowanej klasie
 modded class MissionServer
 {
     override void OnInit()
@@ -42,7 +42,7 @@ modded class MissionServer
         InitWeatherController();
         InitAdminPanel();
         InitKillfeedHUD();
-        // ... 20 more systems
+        // ... 20 kolejnych systemów
     }
 
     override void OnUpdate(float timeslice)
@@ -51,12 +51,12 @@ modded class MissionServer
         TickLootSystem(timeslice);
         TickVehicleTracker(timeslice);
         TickWeatherController(timeslice);
-        // ... 20 more ticks
+        // ... 20 kolejnych ticków
     }
 };
 ```
 
-A module system replaces this with a single, stable hook point:
+System modułów zastępuje to jednym, stabilnym punktem zaczepienia:
 
 ```c
 modded class MissionServer
@@ -72,81 +72,81 @@ modded class MissionServer
     override void OnMissionStart()
     {
         super.OnMissionStart();
-        MyModuleManager.OnMissionStart();  // Dispatches to all modules
+        MyModuleManager.OnMissionStart();  // Rozsyła do wszystkich modułów
     }
 
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
-        MyModuleManager.OnServerUpdate(timeslice);  // Dispatches to all modules
+        MyModuleManager.OnServerUpdate(timeslice);  // Rozsyła do wszystkich modułów
     }
 };
 ```
 
-Each module is an independent class with its own file, its own state, and its own lifecycle hooks. Adding a new feature means adding a new module --- not editing a 3000-line mission class.
+Każdy moduł to niezależna klasa z własnym plikiem, własnym stanem i własnymi hookami cyklu życia. Dodanie nowej funkcji oznacza dodanie nowego modułu --- nie edycję 3000-linijkowej klasy misji.
 
 ---
 
 ## CF_ModuleCore (COT / Expansion)
 
-Community Framework (CF) provides the most widely-used module system in the DayZ modding ecosystem. Both COT and Expansion build on it.
+Community Framework (CF) dostarcza najszerzej używany system modułów w ekosystemie moddingu DayZ. Zarówno COT jak i Expansion bazują na nim.
 
-### Jak to dziala
+### Jak to działa
 
-1. You declare a module class that extends one of CF's module base classes
-2. You register it in `config.cpp` under `CfgPatches` / `CfgMods`
-3. CF's `CF_ModuleCoreManager` auto-discovers and instantiates all registered module classes at startup
-4. Lifecycle events are dispatched automatically
+1. Deklarujesz klasę modułu rozszerzającą jedną z bazowych klas modułów CF
+2. Rejestrujesz ją w `config.cpp` pod `CfgPatches` / `CfgMods`
+3. `CF_ModuleCoreManager` z CF automatycznie odkrywa i instancjonuje wszystkie zarejestrowane klasy modułów przy starcie
+4. Zdarzenia cyklu życia są rozsyłane automatycznie
 
-### Module Base Classes
+### Bazowe klasy modułów
 
-CF provides three base classes corresponding to DayZ's script layers:
+CF dostarcza trzy klasy bazowe odpowiadające warstwom skryptów DayZ:
 
-| Base Class | Layer | Typical Use |
+| Klasa bazowa | Warstwa | Typowe zastosowanie |
 |-----------|-------|-------------|
-| `CF_ModuleGame` | 3_Game | Early init, RPC registration, data classes |
-| `CF_ModuleWorld` | 4_World | Entity interaction, gameplay systems |
-| `CF_ModuleMission` | 5_Mission | UI, HUD, mission-level hooks |
+| `CF_ModuleGame` | 3_Game | Wczesna inicjalizacja, rejestracja RPC, klasy danych |
+| `CF_ModuleWorld` | 4_World | Interakcja z encjami, systemy rozgrywki |
+| `CF_ModuleMission` | 5_Mission | UI, HUD, hooki poziomu misji |
 
-### Example: A CF Module
+### Przykład: moduł CF
 
 ```c
 class MyLootModule : CF_ModuleWorld
 {
-    // CF calls this once during module initialization
+    // CF wywołuje to raz podczas inicjalizacji modułu
     override void OnInit()
     {
         super.OnInit();
-        // Register RPC handlers, allocate data structures
+        // Rejestracja handlerów RPC, alokacja struktur danych
     }
 
-    // CF calls this when the mission starts
+    // CF wywołuje to gdy misja się rozpoczyna
     override void OnMissionStart(Class sender, CF_EventArgs args)
     {
         super.OnMissionStart(sender, args);
-        // Load configs, spawn initial loot
+        // Ładowanie konfiguracji, spawn początkowego łupu
     }
 
-    // CF calls this every frame on the server
+    // CF wywołuje to co klatkę na serwerze
     override void OnUpdate(Class sender, CF_EventArgs args)
     {
         super.OnUpdate(sender, args);
-        // Tick loot respawn timers
+        // Tick timerów respawnu łupu
     }
 
-    // CF calls this when the mission ends
+    // CF wywołuje to gdy misja się kończy
     override void OnMissionFinish(Class sender, CF_EventArgs args)
     {
         super.OnMissionFinish(sender, args);
-        // Save state, release resources
+        // Zapis stanu, zwolnienie zasobów
     }
 };
 ```
 
-### Accessing a CF Module
+### Dostęp do modułu CF
 
 ```c
-// Get a reference to a running module by type
+// Pobierz referencję do działającego modułu po typie
 MyLootModule lootMod;
 CF_Modules<MyLootModule>.Get(lootMod);
 if (lootMod)
@@ -157,28 +157,28 @@ if (lootMod)
 
 ### Kluczowe cechy
 
-- **Auto-discovery**: modules are instantiated by CF based on `config.cpp` declarations --- no manual `new` calls
-- **Event args**: lifecycle hooks receive `CF_EventArgs` with context data
-- **Dependency on CF**: your mod requires Community Framework as a dependency
-- **Widely supported**: if your mod targets servers that already run COT or Expansion, CF is already present
+- **Automatyczne odkrywanie**: moduły są instancjonowane przez CF na podstawie deklaracji w `config.cpp` --- bez ręcznych wywołań `new`
+- **Argumenty zdarzeń**: hooki cyklu życia otrzymują `CF_EventArgs` z danymi kontekstu
+- **Zależność od CF**: twój mod wymaga Community Framework jako zależności
+- **Szerokie wsparcie**: jeśli twój mod celuje w serwery, które już uruchamiają COT lub Expansion, CF jest już obecny
 
 ---
 
 ## VPP PluginBase / ConfigurablePlugin
 
-VPP Admin Tools uses a plugin architecture where each admin tool is a plugin class registered with a central manager.
+VPP Admin Tools używa architektury wtyczek, gdzie każde narzędzie administracyjne jest klasą wtyczki zarejestrowaną w centralnym managerze.
 
 ### Plugin Base
 
 ```c
-// VPP pattern (simplified)
+// Wzorzec VPP (uproszczony)
 class PluginBase : Managed
 {
     void OnInit();
     void OnUpdate(float dt);
     void OnDestroy();
 
-    // Plugin identity
+    // Tożsamość wtyczki
     string GetPluginName();
     bool IsServerOnly();
 };
@@ -186,12 +186,12 @@ class PluginBase : Managed
 
 ### ConfigurablePlugin
 
-VPP extends the base with a config-aware variant that automatically loads/saves settings:
+VPP rozszerza bazę o wariant świadomy konfiguracji, który automatycznie ładuje/zapisuje ustawienia:
 
 ```c
 class ConfigurablePlugin : PluginBase
 {
-    // VPP auto-loads this from JSON on init
+    // VPP automatycznie ładuje to z JSON przy inicjalizacji
     ref PluginConfigBase m_Config;
 
     override void OnInit()
@@ -217,12 +217,12 @@ class ConfigurablePlugin : PluginBase
 };
 ```
 
-### Registration
+### Rejestracja
 
-VPP registers plugins in the modded `MissionServer.OnInit()`:
+VPP rejestruje wtyczki w zmoddowanym `MissionServer.OnInit()`:
 
 ```c
-// VPP pattern
+// Wzorzec VPP
 GetPluginManager().RegisterPlugin(new VPPESPPlugin());
 GetPluginManager().RegisterPlugin(new VPPTeleportPlugin());
 GetPluginManager().RegisterPlugin(new VPPWeatherPlugin());
@@ -230,23 +230,23 @@ GetPluginManager().RegisterPlugin(new VPPWeatherPlugin());
 
 ### Kluczowe cechy
 
-- **Manual registration**: each plugin is explicitly `new`-ed and registered
-- **Config integration**: `ConfigurablePlugin` merges config management with the module lifecycle
-- **Self-contained**: no dependency on CF; VPP's plugin manager is its own system
-- **Clear ownership**: the plugin manager holds `ref` to all plugins, controlling their lifetime
+- **Ręczna rejestracja**: każda wtyczka jest jawnie tworzona przez `new` i rejestrowana
+- **Integracja z konfiguracją**: `ConfigurablePlugin` łączy zarządzanie konfiguracją z cyklem życia modułu
+- **Samodzielna**: brak zależności od CF; manager wtyczek VPP jest własnym systemem
+- **Jasna własność**: manager wtyczek trzyma `ref` do wszystkich wtyczek, kontrolując ich czas życia
 
 ---
 
-## Dabs Attribute-Based Registration
+## Dabs — rejestracja oparta na atrybutach
 
-The Dabs Framework (used in Dabs Framework Admin Tools) uses a more modern approach: C#-style attributes for auto-registration.
+Dabs Framework (używany w Dabs Framework Admin Tools) stosuje bardziej nowoczesne podejście: atrybuty w stylu C# do automatycznej rejestracji.
 
-### The Concept
+### Koncepcja
 
-Instead of manually registering modules, you annotate a class with an attribute, and the framework discovers it at startup using reflection:
+Zamiast ręcznie rejestrować moduły, adnotujesz klasę atrybutem, a framework odkrywa ją przy starcie używając refleksji:
 
 ```c
-// Dabs pattern (conceptual)
+// Wzorzec Dabs (koncepcyjny)
 [CF_RegisterModule(DabsAdminESP)]
 class DabsAdminESP : CF_ModuleWorld
 {
@@ -258,40 +258,40 @@ class DabsAdminESP : CF_ModuleWorld
 };
 ```
 
-The `CF_RegisterModule` attribute tells CF's module manager to instantiate this class automatically. No manual `Register()` call needed.
+Atrybut `CF_RegisterModule` mówi managerowi modułów CF, aby automatycznie zinstancjonował tę klasę. Nie potrzeba ręcznego wywołania `Register()`.
 
-### How Discovery Works
+### Jak działa odkrywanie
 
-At startup, CF scans all loaded script classes for the registration attribute. For each match, it creates an instance and adds it to the module manager. This happens before `OnInit()` is called on any module.
+Przy starcie CF skanuje wszystkie załadowane klasy skryptów w poszukiwaniu atrybutu rejestracji. Dla każdego dopasowania tworzy instancję i dodaje ją do managera modułów. Dzieje się to przed wywołaniem `OnInit()` na jakimkolwiek module.
 
 ### Kluczowe cechy
 
-- **Zero boilerplate**: no registration code in mission classes
-- **Declarative**: the class itself declares that it is a module
-- **Relies on CF**: only works with Community Framework's attribute processing
-- **Discoverability**: you can find all modules by searching for the attribute in the codebase
+- **Zero boilerplate'u**: brak kodu rejestracji w klasach misji
+- **Deklaratywne**: sama klasa deklaruje, że jest modułem
+- **Wymaga CF**: działa tylko z przetwarzaniem atrybutów Community Framework
+- **Odkrywalność**: możesz znaleźć wszystkie moduły szukając atrybutu w bazie kodu
 
 ---
 
-## MyMod MyModuleManager
+## Własny statyczny manager modułów
 
-MyFramework uses an explicit registration pattern with a static manager class. There is no instance of the manager --- it is entirely static methods and static storage.
+To podejście używa jawnego wzorca rejestracji ze statyczną klasą managera. Nie ma instancji managera --- składa się wyłącznie ze statycznych metod i statycznego przechowywania. Jest to przydatne gdy chcesz zero zależności od zewnętrznych frameworków.
 
-### Module Base Classes
+### Bazowe klasy modułów
 
 ```c
-// Base: lifecycle hooks
+// Baza: hooki cyklu życia
 class MyModuleBase : Managed
 {
-    bool IsServer();       // Override in subclass
-    bool IsClient();       // Override in subclass
+    bool IsServer();       // Nadpisz w podklasie
+    bool IsClient();       // Nadpisz w podklasie
     string GetModuleName();
     void OnInit();
     void OnMissionStart();
     void OnMissionFinish();
 };
 
-// Server-side module: adds OnUpdate + player events
+// Moduł serwerowy: dodaje OnUpdate + zdarzenia graczy
 class MyServerModule : MyModuleBase
 {
     void OnUpdate(float dt);
@@ -299,26 +299,26 @@ class MyServerModule : MyModuleBase
     void OnPlayerDisconnect(PlayerIdentity identity, string uid);
 };
 
-// Client-side module: adds OnUpdate
+// Moduł kliencki: dodaje OnUpdate
 class MyClientModule : MyModuleBase
 {
     void OnUpdate(float dt);
 };
 ```
 
-### Registration
+### Rejestracja
 
-Modules register themselves explicitly, typically from modded mission classes:
+Moduły rejestrują się jawnie, zazwyczaj ze zmoddowanych klas misji:
 
 ```c
-// In modded MissionServer.OnInit():
+// W zmoddowanym MissionServer.OnInit():
 MyModuleManager.Register(new MyMissionServerModule());
 MyModuleManager.Register(new MyAIServerModule());
 ```
 
-### Lifecycle Dispatch
+### Rozsyłanie cyklu życia
 
-The modded mission classes call into `MyModuleManager` at each lifecycle point:
+Zmoddowane klasy misji wywołują `MyModuleManager` w każdym punkcie cyklu życia:
 
 ```c
 modded class MissionServer
@@ -344,95 +344,98 @@ modded class MissionServer
 };
 ```
 
-### Listen-Server Safety
+### Bezpieczeństwo na Listen Serverze
 
-MyMod's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle events twice on listen servers (where both `MissionServer` and `MissionGameplay` run in the same process).
+Bazowe klasy modułów własnego systemu wymuszają krytyczny niezmiennik: `MyServerModule` zwraca `true` z `IsServer()` i `false` z `IsClient()`, podczas gdy `MyClientModule` robi odwrotnie. Manager używa tych flag, aby uniknąć podwójnego rozsyłania zdarzeń cyklu życia na listen serwerach (gdzie zarówno `MissionServer` jak i `MissionGameplay` działają w tym samym procesie).
 
-The base `MyModuleBase` returns `true` from both --- which is why the codebase warns against subclassing it directly.
+Bazowy `MyModuleBase` zwraca `true` z obu --- dlatego baza kodu ostrzega przed bezpośrednim dziedziczeniem z niego.
 
 ### Kluczowe cechy
 
-- **Zero dependencies**: no CF, no external frameworks
-- **Static manager**: no `GetInstance()` needed; purely static API
-- **Explicit registration**: full control over what gets registered and when
-- **Listen-server safe**: typed subclasses prevent double-dispatch
-- **Centralized cleanup**: `MyModuleManager.Cleanup()` tears down all modules and core timers
+- **Zero zależności**: brak CF, brak zewnętrznych frameworków
+- **Statyczny manager**: nie potrzeba `GetInstance()`; czysto statyczne API
+- **Jawna rejestracja**: pełna kontrola nad tym co jest rejestrowane i kiedy
+- **Bezpieczny dla listen serverów**: typowane podklasy zapobiegają podwójnemu rozsyłaniu
+- **Scentralizowane czyszczenie**: `MyModuleManager.Cleanup()` niszczy wszystkie moduły i centralne timery
 
 ---
 
-## Module Lifecycle: The Universal Contract
+## Cykl życia modułu: uniwersalny kontrakt
 
-Despite implementation differences, all four frameworks follow the same lifecycle contract:
+Pomimo różnic w implementacji, wszystkie cztery frameworki podążają za tym samym kontraktem cyklu życia:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Registration / Discovery                            │
-│  Module instance is created and registered            │
+│  Rejestracja / Odkrywanie                            │
+│  Instancja modułu jest tworzona i rejestrowana       │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnInit()                                            │
-│  One-time setup: allocate collections, register RPCs │
-│  Called once per module after registration            │
+│  Jednorazowa konfiguracja: alokacja kolekcji,        │
+│  rejestracja RPC                                     │
+│  Wywoływane raz na moduł po rejestracji              │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionStart()                                    │
-│  Mission is live: load configs, start timers,        │
-│  subscribe to events, spawn initial entities         │
+│  Misja jest aktywna: ładowanie konfiguracji,         │
+│  start timerów, subskrypcja zdarzeń,                 │
+│  spawn początkowych encji                            │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
-│  OnUpdate(float dt)         [repeating every frame]  │
-│  Per-frame tick: process queues, update timers,      │
-│  check conditions, advance state machines            │
+│  OnUpdate(float dt)         [powtarzane co klatkę]   │
+│  Tick co klatkę: przetwarzanie kolejek,              │
+│  aktualizacja timerów, sprawdzanie warunków,         │
+│  przesuwanie maszyn stanów                           │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionFinish()                                   │
-│  Teardown: save state, unsubscribe events,           │
-│  clear collections, null out references              │
+│  Czyszczenie: zapis stanu, wypisanie ze zdarzeń,     │
+│  czyszczenie kolekcji, zerowanie referencji          │
 └─────────────────────────────────────────────────────┘
 ```
 
 ### Zasady
 
-1. **OnInit comes before OnMissionStart.** Never load configs or spawn entities in `OnInit()` --- the world may not be ready yet.
-2. **OnUpdate receives delta time.** Always use `dt` for time-based logic, never assume a fixed frame rate.
-3. **OnMissionFinish must clean up everything.** Every `ref` collection must be cleared. Every event subscription must be removed. Every singleton must be destroyed. This is the only reliable teardown point.
-4. **Modules should not depend on each other's initialization order.** If Module A needs Module B, use lazy access (`GetModule()`) rather than assuming B was registered first.
+1. **OnInit przychodzi przed OnMissionStart.** Nigdy nie ładuj konfiguracji ani nie spawnuj encji w `OnInit()` --- świat może jeszcze nie być gotowy.
+2. **OnUpdate otrzymuje delta time.** Zawsze używaj `dt` dla logiki opartej na czasie, nigdy nie zakładaj stałej liczby klatek.
+3. **OnMissionFinish musi wyczyścić wszystko.** Każda kolekcja `ref` musi być wyczyszczona. Każda subskrypcja zdarzeń musi być usunięta. Każdy singleton musi być zniszczony. To jedyny niezawodny punkt czyszczenia.
+4. **Moduły nie powinny zależeć od kolejności inicjalizacji innych modułów.** Jeśli Moduł A potrzebuje Modułu B, użyj leniwego dostępu (`GetModule()`) zamiast zakładać, że B został zarejestrowany pierwszy.
 
 ---
 
-## Best Practices for Module Design
+## Dobre praktyki projektowania modułów
 
-### 1. One Module, One Responsibility
+### 1. Jeden moduł, jedna odpowiedzialność
 
-A module should own exactly one domain. If you find yourself writing `VehicleAndWeatherAndLootModule`, split it.
+Moduł powinien posiadać dokładnie jedną domenę. Jeśli piszesz `VehicleAndWeatherAndLootModule`, podziel go.
 
 ```c
-// GOOD: Focused modules
+// DOBRZE: Skoncentrowane moduły
 class MyLootModule : MyServerModule { ... }
 class MyVehicleModule : MyServerModule { ... }
 class MyWeatherModule : MyServerModule { ... }
 
-// BAD: God module
+// ŹLE: Moduł-bóg
 class MyEverythingModule : MyServerModule { ... }
 ```
 
-### 2. Keep OnUpdate Cheap
+### 2. Utrzymuj OnUpdate tani
 
-`OnUpdate` runs every frame. If your module does expensive work (file I/O, world scans, pathfinding), do it on a timer or batch it across frames:
+`OnUpdate` działa co klatkę. Jeśli twój moduł wykonuje kosztowną pracę (I/O plików, skanowanie świata, pathfinding), rób to na timerze lub rozłóż na klatki:
 
 ```c
 class MyCleanupModule : MyServerModule
 {
     protected float m_CleanupTimer;
-    protected const float CLEANUP_INTERVAL = 300.0;  // Every 5 minutes
+    protected const float CLEANUP_INTERVAL = 300.0;  // Co 5 minut
 
     override void OnUpdate(float dt)
     {
@@ -446,9 +449,9 @@ class MyCleanupModule : MyServerModule
 };
 ```
 
-### 3. Register RPCs in OnInit, Not OnMissionStart
+### 3. Rejestruj RPC w OnInit, nie w OnMissionStart
 
-RPC handlers must be in place before any client can send a message. `OnInit()` runs during module registration, which happens early in the mission setup. `OnMissionStart()` may be too late if clients connect fast.
+Handlery RPC muszą być na miejscu zanim jakikolwiek klient wyśle wiadomość. `OnInit()` działa podczas rejestracji modułu, co następuje wcześnie w konfiguracji misji. `OnMissionStart()` może być za późno jeśli klienci łączą się szybko.
 
 ```c
 class MyModule : MyServerModule
@@ -461,17 +464,17 @@ class MyModule : MyServerModule
 
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // Handle RPC
+        // Obsługa RPC
     }
 };
 ```
 
-### 4. Use the Module Manager for Cross-Module Access
+### 4. Używaj managera modułów do dostępu między modułami
 
-Do not hold direct references to other modules. Use the manager's lookup:
+Nie trzymaj bezpośrednich referencji do innych modułów. Używaj wyszukiwania managera:
 
 ```c
-// GOOD: Loose coupling through the manager
+// DOBRZE: Luźne wiązanie przez managera
 MyModuleBase mod = MyModuleManager.GetModule("MyAIServerModule");
 MyAIServerModule aiMod;
 if (Class.CastTo(aiMod, mod))
@@ -479,28 +482,28 @@ if (Class.CastTo(aiMod, mod))
     aiMod.PauseSpawning();
 }
 
-// BAD: Direct static reference creates hard coupling
+// ŹLE: Bezpośrednia statyczna referencja tworzy twarde wiązanie
 MyAIServerModule.s_Instance.PauseSpawning();
 ```
 
-### 5. Guard Against Missing Dependencies
+### 5. Zabezpiecz się przed brakującymi zależnościami
 
-Not every server runs every mod. If your module optionally integrates with another mod, use preprocessor checks:
+Nie każdy serwer uruchamia każdy mod. Jeśli twój moduł opcjonalnie integruje się z innym modem, użyj sprawdzeń preprocesora:
 
 ```c
 override void OnMissionStart()
 {
     super.OnMissionStart();
 
-    #ifdef MyAI
+    #ifdef MYMOD_AI
     MyEventBus.OnMissionStarted.Insert(OnAIMissionStarted);
     #endif
 }
 ```
 
-### 6. Log Module Lifecycle Events
+### 6. Loguj zdarzenia cyklu życia modułu
 
-Logging makes debugging straightforward. Every module should log when it initializes and shuts down:
+Logowanie ułatwia debugowanie. Każdy moduł powinien logować kiedy się inicjalizuje i zamyka:
 
 ```c
 override void OnInit()
@@ -512,27 +515,60 @@ override void OnInit()
 override void OnMissionFinish()
 {
     MyLog.Info("MyModule", "Shutting down");
-    // Cleanup...
+    // Czyszczenie...
 }
 ```
 
 ---
 
-## Comparison Table
+## Tabela porównawcza
 
-| Feature | CF_ModuleCore | VPP Plugin | Dabs Attribute | MyMod Module |
+| Cecha | CF_ModuleCore | VPP Plugin | Dabs Attribute | Własny moduł |
 |---------|--------------|------------|----------------|---------------|
-| **Discovery** | config.cpp + auto | Manual `Register()` | Attribute scan | Manual `Register()` |
-| **Base classes** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribute | ServerModule / ClientModule |
-| **Dependencies** | Requires CF | Self-contained | Requires CF | Self-contained |
-| **Listen-server safe** | CF handles it | Manual check | CF handles it | Typed subclasses |
-| **Config integration** | Separate | Built into ConfigurablePlugin | Separate | Via MyConfigManager |
-| **Update dispatch** | Automatic | Manager calls `OnUpdate` | Automatic | Manager calls `OnUpdate` |
-| **Cleanup** | CF handles it | Manual `OnDestroy` | CF handles it | `MyModuleManager.Cleanup()` |
-| **Cross-mod access** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
+| **Odkrywanie** | config.cpp + auto | Ręczne `Register()` | Skanowanie atrybutów | Ręczne `Register()` |
+| **Klasy bazowe** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + atrybut | ServerModule / ClientModule |
+| **Zależności** | Wymaga CF | Samodzielny | Wymaga CF | Samodzielny |
+| **Bezpieczny dla listen serverów** | CF to obsługuje | Ręczne sprawdzenie | CF to obsługuje | Typowane podklasy |
+| **Integracja z konfiguracją** | Oddzielna | Wbudowana w ConfigurablePlugin | Oddzielna | Przez MyConfigManager |
+| **Rozsyłanie aktualizacji** | Automatyczne | Manager wywołuje `OnUpdate` | Automatyczne | Manager wywołuje `OnUpdate` |
+| **Czyszczenie** | CF to obsługuje | Ręczne `OnDestroy` | CF to obsługuje | `MyModuleManager.Cleanup()` |
+| **Dostęp między modami** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
 
-Choose the approach that matches your mod's dependency profile. If you already depend on CF, use `CF_ModuleCore`. If you want zero external dependencies, build your own system following the MyMod or VPP pattern.
+Wybierz podejście odpowiadające profilowi zależności twojego moda. Jeśli już zależysz od CF, użyj `CF_ModuleCore`. Jeśli chcesz zero zewnętrznych zależności, zbuduj własny system wzorowany na własnym managerze lub wzorcu VPP.
 
 ---
 
-[<< Previous: Singleton Pattern](01-singletons.md) | [Home](../../README.md) | [Next: RPC Patterns >>](03-rpc-patterns.md)
+## Kompatybilność i wpływ
+
+- **Wielomodowość:** Wiele modów może rejestrować własne moduły w tym samym managerze (CF, VPP lub własnym). Kolizje nazw zdarzają się tylko gdy dwa mody rejestrują ten sam typ klasy --- używaj unikalnych nazw klas z prefiksem tagu twojego moda.
+- **Kolejność ładowania:** CF automatycznie odkrywa moduły z `config.cpp`, więc kolejność ładowania wynika z `requiredAddons`. Własne managery rejestrują moduły w `OnInit()`, gdzie łańcuch `modded class` determinuje kolejność. Moduły nie powinny zależeć od kolejności rejestracji --- używaj wzorców leniwego dostępu.
+- **Listen Server:** Na listen serwerach zarówno `MissionServer` jak i `MissionGameplay` działają w tym samym procesie. Jeśli twój manager modułów rozsyła `OnUpdate` z obu, moduły otrzymują podwójne ticki. Używaj typowanych podklas (`ServerModule` / `ClientModule`), które zwracają `IsServer()` lub `IsClient()` aby temu zapobiec.
+- **Wydajność:** Rozsyłanie do modułów dodaje jedną iterację pętli na zarejestrowany moduł na wywołanie cyklu życia. Przy 10--20 modułach jest to pomijalne. Upewnij się, że indywidualne metody `OnUpdate` modułów są tanie (patrz Rozdział 7.7).
+- **Migracja:** Przy aktualizacji wersji DayZ systemy modułów są stabilne dopóki API klasy bazowej (`CF_ModuleWorld`, `PluginBase`, itp.) się nie zmieni. Przypnij wersję zależności CF, aby uniknąć problemów.
+
+---
+
+## Częste błędy
+
+| Błąd | Skutek | Rozwiązanie |
+|---------|--------|-----|
+| Brak czyszczenia `OnMissionFinish` w module | Kolekcje, timery i subskrypcje zdarzeń przeżywają restarty misji, powodując nieaktualne dane lub crashe | Nadpisz `OnMissionFinish`, wyczyść wszystkie kolekcje `ref`, wypisz się ze wszystkich zdarzeń |
+| Podwójne rozsyłanie zdarzeń cyklu życia na listen serwerach | Moduły serwerowe uruchamiają logikę klienta i odwrotnie; duplikaty spawnów, podwójne wysyłki RPC | Użyj zabezpieczeń `IsServer()` / `IsClient()` lub typowanych podklas modułów wymuszających podział |
+| Rejestrowanie RPC w `OnMissionStart` zamiast w `OnInit` | Klienci łączący się podczas konfiguracji misji mogą wysyłać RPC zanim handlery są gotowe --- wiadomości są cicho odrzucane | Zawsze rejestruj handlery RPC w `OnInit()`, które działa podczas rejestracji modułu przed połączeniem jakiegokolwiek klienta |
+| Jeden "moduł-bóg" obsługujący wszystko | Niemożliwe do debugowania, testowania czy rozszerzania; konflikty merge'ów gdy wielu programistów nad nim pracuje | Podziel na skoncentrowane moduły z jedną odpowiedzialnością |
+| Trzymanie bezpośredniego `ref` do instancji innego modułu | Tworzy twarde wiązanie i potencjalne wycieki pamięci z cykli ref | Użyj wyszukiwania managera modułów (`GetModule()`, `CF_Modules<T>.Get()`) do dostępu między modułami |
+
+---
+
+## Teoria vs praktyka
+
+| Podręcznik mówi | Rzeczywistość DayZ |
+|---------------|-------------|
+| Odkrywanie modułów powinno być automatyczne przez refleksję | Refleksja Enforce Script jest ograniczona; odkrywanie oparte na `config.cpp` (CF) lub jawne wywołania `Register()` to jedyne niezawodne podejścia |
+| Moduły powinny być wymienialne w czasie działania | DayZ nie wspiera przeładowywania skryptów na gorąco; moduły żyją przez cały cykl życia misji |
+| Używaj interfejsów do kontraktów modułów | Enforce Script nie ma słowa kluczowego `interface`; używaj wirtualnych metod klasy bazowej (`override`) |
+| Wstrzykiwanie zależności rozłącza moduły | Nie istnieje framework DI; używaj wyszukiwania managera i zabezpieczeń `#ifdef` dla opcjonalnych zależności między modami |
+
+---
+
+[Strona główna](../../README.md) | [<< Poprzedni: Wzorzec Singleton](01-singletons.md) | **Systemy modułów / wtyczek** | [Dalej: Wzorce RPC >>](03-rpc-patterns.md)

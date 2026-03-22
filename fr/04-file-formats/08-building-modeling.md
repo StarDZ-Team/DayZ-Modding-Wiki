@@ -1,80 +1,80 @@
-# Chapitre 4.8: Building Modeling -- Doors & Ladders
+# Chapitre 4.8 : Modélisation de bâtiments -- Portes et échelles
 
-[Accueil](../../README.md) | [<< Précédent : Workbench Guide](07-workbench-guide.md) | **Building Modeling**
+[Accueil](../../README.md) | [<< Précédent : Guide Workbench](07-workbench-guide.md) | **Modélisation de bâtiments**
 
 ---
 
 ## Introduction
 
-Buildings in DayZ are more than static scenery. Players interact with them constantly -- opening doors, climbing ladders, taking cover behind walls. Creating a custom building that supports these interactions requires careful model setup: doors need rotation axes and named selections across multiple LODs, ladders need precisely placed climbing paths defined entirely through Memory LOD vertices.
+Les bâtiments dans DayZ sont bien plus que du décor statique. Les joueurs interagissent constamment avec eux -- ouvrant des portes, grimpant aux échelles, se mettant à couvert derrière les murs. Créer un bâtiment personnalisé qui supporte ces interactions nécessite une configuration soigneuse du modèle : les portes ont besoin d'axes de rotation et de sélections nommées à travers plusieurs LODs, les échelles ont besoin de chemins d'escalade précisément placés définis entièrement par des sommets dans le LOD Memory.
 
-Ce chapitre couvre the complete workflow for adding interactive doors and climbable ladders to custom building models, based on official Bohemia Interactive documentation.
+Ce chapitre couvre le flux de travail complet pour ajouter des portes interactives et des échelles grimpables aux modèles de bâtiments personnalisés, basé sur la documentation officielle de Bohemia Interactive.
 
-### Prerequisites
+### Prérequis
 
-- A working **Work-drive** with your custom mod folder structure.
-- **Object Builder** (from the DayZ Tools package) with **Buldozer** (model preview) configured.
-- The ability to binarize and pack custom mod files into PBOs.
-- Familiarity with the LOD system and named selections (covered in [Chapter 4.2: 3D Models](02-models.md)).
+- Un **Work-drive** fonctionnel avec la structure de dossiers de votre mod personnalisé.
+- **Object Builder** (du package DayZ Tools) avec **Buldozer** (prévisualisation de modèle) configuré.
+- La capacité de binariser et empaqueter des fichiers de mod personnalisés en PBO.
+- Familiarité avec le système de LOD et les sélections nommées (couvert dans le [Chapitre 4.2 : Modèles 3D](02-models.md)).
 
 ---
 
 ## Table des matières
 
-- [Overview](#introduction)
-- [Door Configuration](#door-configuration)
-  - [Model Setup](#model-setup-for-doors)
-  - [model.cfg -- Skeletons and Animations](#modelcfg----skeletons-and-animations)
-  - [Game Config (config.cpp)](#game-config-configcpp)
-  - [Double Doors](#double-doors)
-  - [Shifting Doors](#shifting-doors)
-  - [Bounding Sphere Issues](#bounding-sphere-issues)
-- [Ladder Configuration](#ladder-configuration)
-  - [Supported Ladder Types](#supported-ladder-types)
-  - [Memory LOD Named Selections](#memory-lod-named-selections)
-  - [View Geometry Requirements](#view-geometry-requirements)
-  - [Ladder Dimensions](#ladder-dimensions)
-  - [Collision Space](#collision-space)
-  - [Config Requirements for Ladders](#config-requirements-for-ladders)
-- [Model Requirements Summary](#model-requirements-summary)
-- [Best Practices](#best-practices)
-- [Common Mistakes](#common-mistakes)
-- [References](#references)
+- [Vue d'ensemble](#introduction)
+- [Configuration des portes](#configuration-des-portes)
+  - [Configuration du modèle](#configuration-du-modèle-pour-les-portes)
+  - [model.cfg -- Squelettes et animations](#modelcfg----squelettes-et-animations)
+  - [Configuration de jeu (config.cpp)](#configuration-de-jeu-configcpp)
+  - [Portes doubles](#portes-doubles)
+  - [Portes coulissantes](#portes-coulissantes)
+  - [Problèmes de sphère englobante](#problèmes-de-sphère-englobante)
+- [Configuration des échelles](#configuration-des-échelles)
+  - [Types d'échelles supportés](#types-déchelles-supportés)
+  - [Sélections nommées du LOD Memory](#sélections-nommées-du-lod-memory)
+  - [Exigences du View Geometry](#exigences-du-view-geometry)
+  - [Dimensions des échelles](#dimensions-des-échelles)
+  - [Espace de collision](#espace-de-collision)
+  - [Exigences de config pour les échelles](#exigences-de-config-pour-les-échelles)
+- [Résumé des exigences du modèle](#résumé-des-exigences-du-modèle)
+- [Bonnes pratiques](#bonnes-pratiques)
+- [Erreurs courantes](#erreurs-courantes)
+- [Références](#références)
 
 ---
 
-## Door Configuration
+## Configuration des portes
 
-Interactive doors require three things to come together: the P3D model with correctly named selections and memory points, a `model.cfg` that defines the animation skeleton and rotation parameters, and a `config.cpp` game config that links the door to sounds, zones de dégâts, and game logic.
+Les portes interactives nécessitent trois choses qui convergent : le modèle P3D avec des sélections correctement nommées et des points mémoire, un `model.cfg` qui définit le squelette d'animation et les paramètres de rotation, et un `config.cpp` de jeu qui lie la porte aux sons, zones de dommages et logique de jeu.
 
-### Model Setup for Doors
+### Configuration du modèle pour les portes
 
-A door in the P3D model must include the following:
+Une porte dans le modèle P3D doit inclure les éléments suivants :
 
-1. **Named selections across all relevant LODs.** The geometry that represents the door must be assigned to a named selection (e.g., `door1`) in each of these LODs:
-   - **Resolution LOD** -- the visual mesh le joueur sees.
-   - **Geometry LOD** -- the physical collision shape. Must also contain a named property `class` with the value `house`.
-   - **View Geometry LOD** -- used for visibility checks and action ray-casting. The selection name here corresponds to the `component` parameter in le jeu config.
-   - **Fire Geometry LOD** -- used for ballistic hit detection.
+1. **Sélections nommées à travers tous les LODs pertinents.** La géométrie qui représente la porte doit être assignée à une sélection nommée (ex. `door1`) dans chacun de ces LODs :
+   - **LOD Resolution** -- le maillage visuel que le joueur voit.
+   - **LOD Geometry** -- la forme de collision physique. Doit aussi contenir une propriété nommée `class` avec la valeur `house`.
+   - **LOD View Geometry** -- utilisé pour les vérifications de visibilité et le ray-casting d'action. Le nom de la sélection ici correspond au paramètre `component` dans la config de jeu.
+   - **LOD Fire Geometry** -- utilisé pour la détection de tir balistique.
 
-2. **Memory LOD vertices** that define:
-   - **Rotation axis** -- Two vertices forming the axis of rotation, assigned to a named selection like `door1_axis`. This axis defines the hinge line around which the door pivots.
-   - **Sound position** -- A vertex assigned to a named selection like `door1_action`, marking where door sounds originate.
-   - **Action widget position** -- Where the interaction widget is displayed to le joueur.
+2. **Sommets du LOD Memory** qui définissent :
+   - **Axe de rotation** -- Deux sommets formant l'axe de rotation, assignés à une sélection nommée comme `door1_axis`. Cet axe définit la ligne de charnière autour de laquelle la porte pivote.
+   - **Position du son** -- Un sommet assigné à une sélection nommée comme `door1_action`, marquant l'origine des sons de la porte.
+   - **Position du widget d'action** -- Où le widget d'interaction est affiché au joueur.
 
-#### Recommended Door Dimensions
+#### Dimensions recommandées des portes
 
-Almost all doors in le DayZ vanilla are **120 x 220 cm** (width x height). Using these standard dimensions ensures animations look correct and characters fit through openings naturally. Model your doors **closed by default** and animate them to the open position -- Bohemia plans to support doors opening in both directions in the future.
+Presque toutes les portes dans DayZ vanilla font **120 x 220 cm** (largeur x hauteur). Utiliser ces dimensions standard garantit que les animations semblent correctes et que les personnages passent naturellement à travers les ouvertures. Modélisez vos portes **fermées par défaut** et animez-les vers la position ouverte -- Bohemia prévoit de supporter l'ouverture des portes dans les deux sens à l'avenir.
 
-### model.cfg -- Skeletons and Animations
+### model.cfg -- Squelettes et animations
 
-Any animated door requires a `model.cfg` file. This config defines the bone structure (skeleton) and the animation parameters. Place `model.cfg` near your model file, or higher in the folder structure -- the exact location is flexible as long as the binarizer can find it.
+Toute porte animée nécessite un fichier `model.cfg`. Cette config définit la structure osseuse (squelette) et les paramètres d'animation. Placez `model.cfg` près de votre fichier de modèle, ou plus haut dans la structure de dossiers -- l'emplacement exact est flexible tant que le binariseur peut le trouver.
 
-The `model.cfg` has two sections:
+Le `model.cfg` a deux sections :
 
 #### CfgSkeletons
 
-Defines the animated bones. Each door gets a bone entry. Bones are listed as pairs: the bone name followed by its parent (empty string `""` for root-level bones).
+Définit les os animés. Chaque porte obtient une entrée d'os. Les os sont listés en paires : le nom de l'os suivi de son parent (chaîne vide `""` pour les os de niveau racine).
 
 ```cpp
 class CfgSkeletons
@@ -99,7 +99,7 @@ class CfgSkeletons
 
 #### CfgModels
 
-Defines the animations for each bone. The class name under `CfgModels` **must match your model's filename** (without extension) for the link to work.
+Définit les animations pour chaque os. Le nom de la classe sous `CfgModels` **doit correspondre au nom de fichier de votre modèle** (sans extension) pour que le lien fonctionne.
 
 ```cpp
 class CfgModels
@@ -144,25 +144,25 @@ class CfgModels
 };
 ```
 
-**Key parameters explained:**
+**Paramètres clés expliqués :**
 
 | Paramètre | Description |
 |-----------|-------------|
-| `type` | Animation type. Use `"rotation"` for swinging doors, `"translation"` for sliding doors. |
-| `selection` | The named selection in the model that should be animated. |
-| `source` | Links to le jeu config's `Doors` class. Must match the class name in `config.cpp`. |
-| `axis` | Named selection in the Memory LOD defining the rotation axis (two vertices). |
-| `memory` | Set to `1` to indicate the axis is defined in the Memory LOD. |
-| `minValue` / `maxValue` | Animation phase range. Typically `0` to `1`. |
-| `angle0` / `angle1` | Rotation angles in **radians**. `angle1` defines how far the door opens. Use negative values to reverse direction. A value of `1.4` radians is approximately 80 degrees. |
+| `type` | Type d'animation. Utilisez `"rotation"` pour les portes battantes, `"translation"` pour les portes coulissantes. |
+| `selection` | La sélection nommée dans le modèle qui doit être animée. |
+| `source` | Se lie à la classe `Doors` de la config de jeu. Doit correspondre au nom de la classe dans `config.cpp`. |
+| `axis` | Sélection nommée dans le LOD Memory définissant l'axe de rotation (deux sommets). |
+| `memory` | Mis à `1` pour indiquer que l'axe est défini dans le LOD Memory. |
+| `minValue` / `maxValue` | Plage de phase d'animation. Typiquement `0` à `1`. |
+| `angle0` / `angle1` | Angles de rotation en **radians**. `angle1` définit la distance d'ouverture de la porte. Utilisez des valeurs négatives pour inverser la direction. Une valeur de `1.4` radians fait approximativement 80 degrés. |
 
-#### Verifying in Buldozer
+#### Vérification dans Buldozer
 
-After writing the `model.cfg`, open your model in Object Builder with Buldozer running. Use the `[` and `]` keys to cycle through available animation sources, and `;` / `'` (or mouse wheel up/down) to advance or recede the animation. This lets you verify that the door pivots correctly on its axis.
+Après avoir écrit le `model.cfg`, ouvrez votre modèle dans Object Builder avec Buldozer en cours d'exécution. Utilisez les touches `[` et `]` pour parcourir les sources d'animation disponibles, et `;` / `'` (ou molette de souris haut/bas) pour avancer ou reculer l'animation. Cela vous permet de vérifier que la porte pivote correctement sur son axe.
 
-### Game Config (config.cpp)
+### Configuration de jeu (config.cpp)
 
-Le jeu config connects the animated model to game systems -- sounds, damage, and door state logic. The config class name **must** follow the pattern `land_modelname` to link correctly with the model.
+La config de jeu connecte le modèle animé aux systèmes de jeu -- sons, dommages et logique d'état des portes. Le nom de la classe de config **doit** suivre le patron `land_modelname` pour se lier correctement avec le modèle.
 
 ```cpp
 class CfgPatches
@@ -296,214 +296,214 @@ class CfgVehicles
 };
 ```
 
-**Door config parameters explained:**
+**Paramètres de config de porte expliqués :**
 
 | Paramètre | Description |
 |-----------|-------------|
-| `component` | Named selection in the **View Geometry LOD** used for this door. |
-| `soundPos` | Named selection in the **Memory LOD** where door sounds are played. |
-| `animPeriod` | Speed of the door animation (in seconds). |
-| `initPhase` | Initial animation phase (`0` = closed, `1` = fully open). Test in Buldozer to verify which value corresponds to which state. |
-| `initOpened` | Probability that the door apparitions open in le monde. `0.5` means a 50% chance. |
-| `soundOpen` | Sound class from `CfgActionSounds` played when the door opens. See `DZ\sounds\hpp\config.cpp` for available sound sets. |
-| `soundClose` | Sound class played when the door closes. |
-| `soundLocked` | Sound class played when a player tries to open a locked door. |
-| `soundOpenABit` | Sound class played when a player breaks open a locked door. |
+| `component` | Sélection nommée dans le **LOD View Geometry** utilisée pour cette porte. |
+| `soundPos` | Sélection nommée dans le **LOD Memory** où les sons de porte sont joués. |
+| `animPeriod` | Vitesse de l'animation de la porte (en secondes). |
+| `initPhase` | Phase initiale de l'animation (`0` = fermée, `1` = complètement ouverte). Testez dans Buldozer pour vérifier quelle valeur correspond à quel état. |
+| `initOpened` | Probabilité que la porte apparaisse ouverte dans le monde. `0.5` signifie 50% de chance. |
+| `soundOpen` | Classe de son de `CfgActionSounds` jouée quand la porte s'ouvre. Voir `DZ\sounds\hpp\config.cpp` pour les sets de sons disponibles. |
+| `soundClose` | Classe de son jouée quand la porte se ferme. |
+| `soundLocked` | Classe de son jouée quand un joueur essaie d'ouvrir une porte verrouillée. |
+| `soundOpenABit` | Classe de son jouée quand un joueur force l'ouverture d'une porte verrouillée. |
 
-**Important notes on the config:**
+**Notes importantes sur la config :**
 
-- All buildings in DayZ inherit from `HouseNoDestruct`.
-- Each class name under `class Doors` must correspond to the `source` parameter defined in `model.cfg`.
-- The `DamageSystem` section must include a `DamageZones` subclass for each door. The `componentNames[]` array references the named selection from the model's Fire Geometry LOD.
-- Adding the `class=house` named property and a game config class requires your terrain to be re-binarized (model paths in `.wrp` files get replaced with game config class references).
+- Tous les bâtiments dans DayZ héritent de `HouseNoDestruct`.
+- Chaque nom de classe sous `class Doors` doit correspondre au paramètre `source` défini dans `model.cfg`.
+- La section `DamageSystem` doit inclure une sous-classe `DamageZones` pour chaque porte. Le tableau `componentNames[]` référence la sélection nommée du LOD Fire Geometry du modèle.
+- Ajouter la propriété nommée `class=house` et une classe de config de jeu nécessite que votre terrain soit re-binarisé (les chemins de modèles dans les fichiers `.wrp` sont remplacés par des références de classes de config de jeu).
 
-### Double Doors
+### Portes doubles
 
-Double doors (two wings that open together from a single interaction) are common in DayZ. They require special setup:
+Les portes doubles (deux battants qui s'ouvrent ensemble depuis une seule interaction) sont courantes dans DayZ. Elles nécessitent une configuration spéciale :
 
-**In the model:**
-- Configure each wing as an individual door with its own named selection (e.g., `door3_1` and `door3_2`).
-- In the **Memory LOD**, the action point must be **shared** between the two wings -- use one named selection and one vertex for the action position.
-- The no-suffix named selection (e.g., `door3` without wing suffix) must cover **both** door handles.
-- **View Geometry** and **Fire Geometry** require an additional named selection that covers both wings together.
+**Dans le modèle :**
+- Configurez chaque battant comme une porte individuelle avec sa propre sélection nommée (ex. `door3_1` et `door3_2`).
+- Dans le **LOD Memory**, le point d'action doit être **partagé** entre les deux battants -- utilisez une sélection nommée et un sommet pour la position d'action.
+- La sélection nommée sans suffixe (ex. `door3` sans suffixe de battant) doit couvrir **les deux** poignées de porte.
+- **View Geometry** et **Fire Geometry** nécessitent une sélection nommée supplémentaire qui couvre les deux battants ensemble.
 
-**In model.cfg:**
-- Define each wing as a separate animation class, but set the **same `source` parameter** for both wings (e.g., `"doors34"` for both).
-- Set `angle1` to a **positive** value for one wing and **negative** for the other, so they swing in opposite directions.
+**Dans model.cfg :**
+- Définissez chaque battant comme une classe d'animation séparée, mais définissez le **même paramètre `source`** pour les deux battants (ex. `"doors34"` pour les deux).
+- Définissez `angle1` à une valeur **positive** pour un battant et **négative** pour l'autre, pour qu'ils s'ouvrent dans des directions opposées.
 
-**In config.cpp:**
-- Define only **one** class under `class Doors`, with its name matching the shared `source` parameter.
-- Similarly, define only **one** entry in `DamageZones` for the double door pair.
+**Dans config.cpp :**
+- Définissez seulement **une** classe sous `class Doors`, avec son nom correspondant au paramètre `source` partagé.
+- De même, définissez seulement **une** entrée dans `DamageZones` pour la paire de portes doubles.
 
-### Shifting Doors
+### Portes coulissantes
 
-For doors that slide along a track rather than swinging (such as barn doors or sliding panels), change the animation `type` in `model.cfg` from `"rotation"` to `"translation"`. The axis vertices in the Memory LOD then define the direction of travel instead of the pivot line.
+Pour les portes qui glissent sur un rail plutôt que de battre (comme les portes de grange ou les panneaux coulissants), changez le `type` de l'animation dans `model.cfg` de `"rotation"` à `"translation"`. Les sommets de l'axe dans le LOD Memory définissent alors la direction de déplacement au lieu de la ligne de pivot.
 
-### Bounding Sphere Issues
+### Problèmes de sphère englobante
 
-By default, a model's bounding sphere is sized to contain the entire object. When doors are modeled in the closed position, the open position may extend **outside** this bounding sphere. This causes problems:
+Par défaut, la sphère englobante d'un modèle est dimensionnée pour contenir l'objet entier. Quand les portes sont modélisées en position fermée, la position ouverte peut s'étendre **en dehors** de cette sphère englobante. Cela cause des problèmes :
 
-- **Actions stop working** -- ray-casting for door interactions fails from certain angles.
-- **Ballistics ignore the door** -- bullets pass through geometry that lies outside the bounding sphere.
+- **Les actions cessent de fonctionner** -- le ray-casting pour les interactions de porte échoue depuis certains angles.
+- **La balistique ignore la porte** -- les balles traversent la géométrie qui se trouve en dehors de la sphère englobante.
 
-**Solution:** Create a named selection in the Memory LOD that covers the larger area the building occupies when doors are fully open. Then add a `bounding` parameter to your game config class:
+**Solution :** Créez une sélection nommée dans le LOD Memory qui couvre la zone plus grande qu'occupe le bâtiment quand les portes sont complètement ouvertes. Puis ajoutez un paramètre `bounding` à votre classe de config de jeu :
 
 ```cpp
 class land_modelname: HouseNoDestruct
 {
     bounding = "selection_name";
-    // ... rest of config
+    // ... reste de la config
 };
 ```
 
-This overrides the automatic bounding sphere calculation with one that encompasses all door positions.
+Cela remplace le calcul automatique de la sphère englobante par une qui englobe toutes les positions de porte.
 
 ---
 
-## Ladder Configuration
+## Configuration des échelles
 
-Unlike doors, ladders in DayZ require **no animation config** and **no special game config entries** beyond the base building class. The entire ladder setup is done through Memory LOD vertex placement and one View Geometry selection. This makes ladders simpler to set up than doors, but the vertex placement must be precise.
+Contrairement aux portes, les échelles dans DayZ ne nécessitent **pas de config d'animation** et **pas d'entrées spéciales dans la config de jeu** au-delà de la classe de base du bâtiment. Toute la configuration des échelles se fait par le placement de sommets dans le LOD Memory et une sélection View Geometry. Cela rend les échelles plus simples à configurer que les portes, mais le placement des sommets doit être précis.
 
-### Supported Ladder Types
+### Types d'échelles supportés
 
-DayZ supports two types of ladders:
+DayZ supporte deux types d'échelles :
 
-1. **Front bottom enter with side-way top exit** -- Le joueur approaches from the front at the bottom and exits to the side at the top (against a wall).
-2. **Front bottom enter with front top exit** -- Le joueur approaches from the front at the bottom and exits forward at the top (onto a roof or platform).
+1. **Entrée frontale en bas avec sortie latérale en haut** -- Le joueur approche par l'avant en bas et sort sur le côté en haut (contre un mur).
+2. **Entrée frontale en bas avec sortie frontale en haut** -- Le joueur approche par l'avant en bas et sort vers l'avant en haut (sur un toit ou une plateforme).
 
-Both types also support **middle side-way enter and exit points**, allowing players to get on and off the ladder at intermediate floors. Ladders can also be placed **at an angle** rather than strictly vertical.
+Les deux types supportent aussi des **points d'entrée et de sortie latéraux au milieu**, permettant aux joueurs de monter et descendre de l'échelle à des étages intermédiaires. Les échelles peuvent aussi être placées **en angle** plutôt que strictement verticales.
 
-### Memory LOD Named Selections
+### Sélections nommées du LOD Memory
 
-The ladder is defined entirely by named vertices in the Memory LOD. Every selection name begins with `ladderN_` where **N** is the ladder ID, starting from `1`. A building can have multiple ladders (`ladder1_`, `ladder2_`, `ladder3_`, etc.).
+L'échelle est définie entièrement par des sommets nommés dans le LOD Memory. Chaque nom de sélection commence par `ladderN_` où **N** est l'ID de l'échelle, commençant à `1`. Un bâtiment peut avoir plusieurs échelles (`ladder1_`, `ladder2_`, `ladder3_`, etc.).
 
-Here is the complete set of named selections for a ladder:
+Voici le jeu complet de sélections nommées pour une échelle :
 
-| Named Selection | Description |
-|----------------|-------------|
-| `ladderN_bottom_front` | Defines the bottom entry step -- where le joueur begins climbing. |
-| `ladderN_middle_left` | Defines a middle entry/exit point (left side). Can contain multiple vertices if the ladder passes multiple floors. |
-| `ladderN_middle_right` | Defines a middle entry/exit point (right side). Can contain multiple vertices for multi-floor ladders. |
-| `ladderN_top_front` | Defines the upper exit step -- where le joueur finishes climbing (front exit type). |
-| `ladderN_top_left` | Defines the upper exit direction for wall-mounted ladders (left side). Must be at least **5 ladder steps higher** than the floor (approximately the height of a standing player on a ladder). |
-| `ladderN_top_right` | Defines the upper exit direction for wall-mounted ladders (right side). Same height requirement as `top_left`. |
-| `ladderN` | Defines where the "Enter Ladder" action widget appears to le joueur. |
-| `ladderN_dir` | Defines the direction from which the ladder can be climbed (approach direction). |
-| `ladderN_con` | The measurement point for the enter action. **Must be placed at floor level.** |
-| `ladderN_con_dir` | Defines the direction of a 180-degree cone (originating from `ladderN_con`) within which the action to enter the ladder is available. |
+| Sélection nommée | Description |
+|-----------------|-------------|
+| `ladderN_bottom_front` | Définit la marche d'entrée en bas -- où le joueur commence l'escalade. |
+| `ladderN_middle_left` | Définit un point d'entrée/sortie au milieu (côté gauche). Peut contenir plusieurs sommets si l'échelle traverse plusieurs étages. |
+| `ladderN_middle_right` | Définit un point d'entrée/sortie au milieu (côté droit). Peut contenir plusieurs sommets pour les échelles multi-étages. |
+| `ladderN_top_front` | Définit la marche de sortie supérieure -- où le joueur finit l'escalade (type sortie frontale). |
+| `ladderN_top_left` | Définit la direction de sortie supérieure pour les échelles murales (côté gauche). Doit être au moins **5 marches d'échelle plus haut** que le sol (approximativement la hauteur d'un joueur debout sur une échelle). |
+| `ladderN_top_right` | Définit la direction de sortie supérieure pour les échelles murales (côté droit). Même exigence de hauteur que `top_left`. |
+| `ladderN` | Définit où le widget d'action « Monter à l'échelle » apparaît au joueur. |
+| `ladderN_dir` | Définit la direction depuis laquelle l'échelle peut être escaladée (direction d'approche). |
+| `ladderN_con` | Le point de mesure pour l'action d'entrée. **Doit être placé au niveau du sol.** |
+| `ladderN_con_dir` | Définit la direction d'un cône de 180 degrés (originant de `ladderN_con`) dans lequel l'action pour entrer sur l'échelle est disponible. |
 
-Each of these is a vertex (or set of vertices for middle points) that you place manually in Object Builder's Memory LOD.
+Chacun de ces éléments est un sommet (ou un ensemble de sommets pour les points du milieu) que vous placez manuellement dans le LOD Memory d'Object Builder.
 
-### View Geometry Requirements
+### Exigences du View Geometry
 
-In addition to the Memory LOD setup, you must create a **View Geometry** component with a named selection called `ladderN`. This selection must cover the **entire volume** of the ladder -- the full height and width of the climbable area. Without this View Geometry selection, the ladder will not function correctly.
+En plus de la configuration du LOD Memory, vous devez créer un composant **View Geometry** avec une sélection nommée appelée `ladderN`. Cette sélection doit couvrir le **volume entier** de l'échelle -- la hauteur et la largeur complètes de la zone grimpable. Sans cette sélection View Geometry, l'échelle ne fonctionnera pas correctement.
 
-### Ladder Dimensions
+### Dimensions des échelles
 
-Ladder climbing animations are designed for **fixed dimensions**. Your ladder rungs and spacing should match le vanilla ladder proportions to ensure animations align correctly. Refer to the official DayZ Samples repository for exact measurements -- the sample ladder parts are the same ones used on most vanilla buildings.
+Les animations d'escalade sont conçues pour des **dimensions fixes**. Les barreaux et l'espacement de votre échelle doivent correspondre aux proportions des échelles vanilla pour que les animations s'alignent correctement. Référez-vous au dépôt officiel DayZ Samples pour les mesures exactes -- les pièces d'échelle de référence sont les mêmes que celles utilisées sur la plupart des bâtiments vanilla.
 
-### Collision Space
+### Espace de collision
 
-Characters **collide with geometry while climbing a ladder**. This means you must ensure there is enough clear space around the ladder for the climbing character in both:
+Les personnages **entrent en collision avec la géométrie pendant l'escalade d'une échelle**. Cela signifie que vous devez vous assurer qu'il y a suffisamment d'espace libre autour de l'échelle pour le personnage grimpant dans :
 
-- **Geometry LOD** -- physical collision.
-- **Roadway LOD** -- surface interaction.
+- **LOD Geometry** -- collision physique.
+- **LOD Roadway** -- interaction de surface.
 
-If the space is too tight, the character will clip into walls or get stuck during the climbing animation.
+Si l'espace est trop étroit, le personnage traversera les murs ou restera bloqué pendant l'animation d'escalade.
 
-### Config Requirements for Ladders
+### Exigences de config pour les échelles
 
-Unlike the Arma series, DayZ does **not** require a `ladders[]` array in le jeu config class. Cependant, two things are still necessary:
+Contrairement à la série Arma, DayZ **ne nécessite pas** de tableau `ladders[]` dans la classe de config de jeu. Cependant, deux choses sont toujours nécessaires :
 
-1. Your model must have a **config representation** -- a `config.cpp` with a `CfgVehicles` class (the same base class used for doors; see the door config section above).
-2. The **Geometry LOD** must contain the named property `class` with the value `house`.
+1. Votre modèle doit avoir une **représentation de config** -- un `config.cpp` avec une classe `CfgVehicles` (la même classe de base utilisée pour les portes ; voir la section config de porte ci-dessus).
+2. Le **LOD Geometry** doit contenir la propriété nommée `class` avec la valeur `house`.
 
-Beyond these two requirements, the ladder is fully defined by the Memory LOD vertices and the View Geometry selection. No `model.cfg` animation entries are needed.
+Au-delà de ces deux exigences, l'échelle est entièrement définie par les sommets du LOD Memory et la sélection View Geometry. Aucune entrée d'animation `model.cfg` n'est nécessaire.
 
 ---
 
-## Model Requirements Summary
+## Résumé des exigences du modèle
 
-Buildings with doors and ladders must include several LODs, each serving a distinct purpose. The table below summarizes what each LOD must contain:
+Les bâtiments avec portes et échelles doivent inclure plusieurs LODs, chacun servant un objectif distinct. Le tableau ci-dessous résume ce que chaque LOD doit contenir :
 
-| LOD | Purpose | Door Requirements | Ladder Requirements |
-|-----|---------|-------------------|---------------------|
-| **Resolution LOD** | Visual mesh displayed to le joueur. | Named selection for the door geometry (e.g., `door1`). | No specific requirements. |
-| **Geometry LOD** | Physical collision detection. | Named selection for the door geometry. Named property `class = "house"`. | Named property `class = "house"`. Sufficient clearance around the ladder for climbing characters. |
-| **Fire Geometry LOD** | Ballistic hit detection (bullets, projectiles). | Named selection matching `componentNames[]` in the damage zone config. | No specific requirements. |
-| **View Geometry LOD** | Visibility checks, action ray-casting. | Named selection matching the `component` parameter in the door config. | Named selection `ladderN` covering the full volume of the ladder. |
-| **Memory LOD** | Axis definitions, action points, sound positions. | Axis vertices (`door1_axis`), sound position (`door1_action`), action widget position. | Full set of ladder vertices (`ladderN_bottom_front`, `ladderN_top_left`, `ladderN_dir`, `ladderN_con`, etc.). |
-| **Roadway LOD** | Surface interaction for characters. | Not typically required. | Sufficient clearance around the ladder for climbing characters. |
+| LOD | Objectif | Exigences porte | Exigences échelle |
+|-----|----------|----------------|-------------------|
+| **LOD Resolution** | Maillage visuel affiché au joueur. | Sélection nommée pour la géométrie de la porte (ex. `door1`). | Pas d'exigences spécifiques. |
+| **LOD Geometry** | Détection de collision physique. | Sélection nommée pour la géométrie de la porte. Propriété nommée `class = "house"`. | Propriété nommée `class = "house"`. Dégagement suffisant autour de l'échelle pour les personnages grimpants. |
+| **LOD Fire Geometry** | Détection de tir balistique (balles, projectiles). | Sélection nommée correspondant à `componentNames[]` dans la config de zone de dommages. | Pas d'exigences spécifiques. |
+| **LOD View Geometry** | Vérifications de visibilité, ray-casting d'action. | Sélection nommée correspondant au paramètre `component` dans la config de porte. | Sélection nommée `ladderN` couvrant le volume complet de l'échelle. |
+| **LOD Memory** | Définitions d'axes, points d'action, positions de sons. | Sommets d'axe (`door1_axis`), position du son (`door1_action`), position du widget d'action. | Jeu complet de sommets d'échelle (`ladderN_bottom_front`, `ladderN_top_left`, `ladderN_dir`, `ladderN_con`, etc.). |
+| **LOD Roadway** | Interaction de surface pour les personnages. | Pas typiquement requis. | Dégagement suffisant autour de l'échelle pour les personnages grimpants. |
 
-### Named Selection Consistency
+### Cohérence des sélections nommées
 
-A critical requirement is that **named selections must be consistent across all LODs** that reference them. If a selection is called `door1` in the Resolution LOD, it must also be `door1` in the Geometry, Fire Geometry, and View Geometry LODs. Mismatched names between LODs will cause the door or ladder to fail silently.
+Une exigence critique est que les **sélections nommées doivent être cohérentes à travers tous les LODs** qui les référencent. Si une sélection est appelée `door1` dans le LOD Resolution, elle doit aussi être `door1` dans les LODs Geometry, Fire Geometry et View Geometry. Des noms incohérents entre les LODs feront échouer silencieusement la porte ou l'échelle.
 
 ---
 
 ## Bonnes pratiques
 
-1. **Model doors closed by default.** Animate from closed to open. Bohemia plans to support opening doors in both directions, so starting from closed is future-proof.
+1. **Modélisez les portes fermées par défaut.** Animez de fermé à ouvert. Bohemia prévoit de supporter l'ouverture des portes dans les deux sens, donc partir de fermé est pérenne.
 
-2. **Use standard door dimensions.** Stick to 120 x 220 cm for door openings unless you have a specific design reason not to. This matches vanilla buildings and ensures character animations look correct.
+2. **Utilisez les dimensions standard des portes.** Restez à 120 x 220 cm pour les ouvertures de porte sauf si vous avez une raison de conception spécifique de ne pas le faire. Cela correspond aux bâtiments vanilla et assure que les animations des personnages semblent correctes.
 
-3. **Test animations in Buldozer before packing.** Use `[` / `]` to cycle sources and `;` / `'` or mouse wheel to scrub the animation. Catching axis or angle errors here saves significant time.
+3. **Testez les animations dans Buldozer avant l'empaquetage.** Utilisez `[` / `]` pour parcourir les sources et `;` / `'` ou la molette de souris pour balayer l'animation. Attraper les erreurs d'axe ou d'angle ici économise un temps significatif.
 
-4. **Override bounding spheres for large buildings.** If your building has doors that swing outward significantly, create a Memory LOD selection covering the full animated extent and link it with the `bounding` config parameter.
+4. **Surchargez les sphères englobantes pour les grands bâtiments.** Si votre bâtiment a des portes qui s'ouvrent significativement vers l'extérieur, créez une sélection dans le LOD Memory couvrant l'étendue animée complète et liez-la avec le paramètre de config `bounding`.
 
-5. **Place ladder vertices precisely.** Climbing animations are fixed to specific dimensions. Vertices that are too far apart or misaligned will cause the character to float, clip, or get stuck.
+5. **Placez les sommets d'échelle précisément.** Les animations d'escalade sont fixées à des dimensions spécifiques. Des sommets trop éloignés ou mal alignés feront que le personnage flotte, traverse ou reste bloqué.
 
-6. **Ensure clearance around ladders.** Leave enough space in the Geometry and Roadway LODs for the character model while climbing.
+6. **Assurez le dégagement autour des échelles.** Laissez suffisamment d'espace dans les LODs Geometry et Roadway pour le modèle du personnage pendant l'escalade.
 
-7. **Keep one `model.cfg` per model or folder.** The `model.cfg` does not need to sit next to the `.p3d` file, but keeping them close makes organization easier. It can also be placed higher in the folder structure to cover multiple models.
+7. **Gardez un `model.cfg` par modèle ou dossier.** Le `model.cfg` n'a pas besoin d'être à côté du fichier `.p3d`, mais les garder proches facilite l'organisation. Il peut aussi être placé plus haut dans la structure de dossiers pour couvrir plusieurs modèles.
 
-8. **Use the DayZ Samples repository.** Bohemia provides working samples for both doors (`Test_Building`) and ladders (`Test_Ladders`) at `https://github.com/BohemiaInteractive/DayZ-Samples`. Study these before building your own.
+8. **Utilisez le dépôt DayZ Samples.** Bohemia fournit des exemples fonctionnels pour les portes (`Test_Building`) et les échelles (`Test_Ladders`) à `https://github.com/BohemiaInteractive/DayZ-Samples`. Étudiez-les avant de construire les vôtres.
 
-9. **Re-binarize terrain after adding building configs.** Adding `class=house` and a game config class means model paths in `.wrp` files are replaced with class references. Your terrain must be re-binarized for this to take effect.
+9. **Re-binarisez le terrain après ajout des configs de bâtiments.** Ajouter `class=house` et une classe de config de jeu signifie que les chemins de modèles dans les fichiers `.wrp` sont remplacés par des références de classes. Votre terrain doit être re-binarisé pour que cela prenne effet.
 
-10. **Update the navmesh after placing buildings.** Rebuilt terrain without an updated navmesh can cause AI to walk through doors instead of using them properly.
+10. **Mettez à jour le navmesh après le placement des bâtiments.** Un terrain reconstruit sans navmesh mis à jour peut faire que l'IA traverse les portes au lieu de les utiliser correctement.
 
 ---
 
 ## Erreurs courantes
 
-### Doors
+### Portes
 
-| Mistake | Symptom | Fix |
-|---------|---------|-----|
-| `CfgModels` class name does not match model filename. | Door animation does not play. | Rename the class to match the `.p3d` filename exactly (without extension). |
-| Missing named selection in one or more LODs. | Door is visible but not interactive, or bullets pass through. | Ensure the selection exists in Resolution, Geometry, View Geometry, and Fire Geometry LODs. |
-| Axis vertices missing or only one vertex defined. | Door pivots from the wrong point or does not rotate at all. | Place exactly two vertices in the Memory LOD for the axis selection (e.g., `door1_axis`). |
-| `source` in `model.cfg` does not match class name in `config.cpp` Doors. | Door is not linked to game logic -- no sounds, no state changes. | Ensure the `source` parameter and the Doors class name are identical. |
-| Forgetting `class = "house"` named property in Geometry LOD. | Building is not recognized as an interactive structure. | Add the named property in Object Builder's Geometry LOD. |
-| Bounding sphere too small. | Door actions or ballistics fail from certain angles. | Add a `bounding` selection in Memory LOD and reference it in the config. |
-| Negative vs. positive `angle1` confusion for double doors. | Both wings swing the same direction and clip through each other. | One wing needs positive `angle1`, the other negative. |
+| Erreur | Symptôme | Correction |
+|--------|----------|------------|
+| Le nom de classe `CfgModels` ne correspond pas au nom de fichier du modèle. | L'animation de la porte ne joue pas. | Renommez la classe pour correspondre exactement au nom du fichier `.p3d` (sans extension). |
+| Sélection nommée manquante dans un ou plusieurs LODs. | La porte est visible mais pas interactive, ou les balles passent à travers. | Assurez-vous que la sélection existe dans les LODs Resolution, Geometry, View Geometry et Fire Geometry. |
+| Sommets d'axe manquants ou un seul sommet défini. | La porte pivote depuis le mauvais point ou ne tourne pas du tout. | Placez exactement deux sommets dans le LOD Memory pour la sélection d'axe (ex. `door1_axis`). |
+| `source` dans `model.cfg` ne correspond pas au nom de classe dans `config.cpp` Doors. | La porte n'est pas liée à la logique de jeu -- pas de sons, pas de changements d'état. | Assurez-vous que le paramètre `source` et le nom de la classe Doors sont identiques. |
+| Oubli de la propriété nommée `class = "house"` dans le LOD Geometry. | Le bâtiment n'est pas reconnu comme une structure interactive. | Ajoutez la propriété nommée dans le LOD Geometry d'Object Builder. |
+| Sphère englobante trop petite. | Les actions de porte ou la balistique échouent depuis certains angles. | Ajoutez une sélection `bounding` dans le LOD Memory et référencez-la dans la config. |
+| Confusion entre `angle1` négatif et positif pour les portes doubles. | Les deux battants s'ouvrent dans la même direction et se traversent. | Un battant a besoin d'un `angle1` positif, l'autre négatif. |
 
-### Ladders
+### Échelles
 
-| Mistake | Symptom | Fix |
-|---------|---------|-----|
-| `ladderN_con` not placed at floor level. | "Enter Ladder" action does not appear or appears at the wrong height. | Move the vertex to ground/floor level. |
-| Missing View Geometry selection `ladderN`. | Ladder cannot be interacted with. | Create a View Geometry component with a named selection covering the full ladder volume. |
-| `ladderN_top_left` / `ladderN_top_right` too low. | Character clips through the wall or floor at the top exit. | These must be at least 5 ladder steps higher than the floor level. |
-| Insufficient clearance in Geometry LOD. | Character gets stuck or clips into walls while climbing. | Widen the gap around the ladder in the Geometry and Roadway LODs. |
-| Ladder numbering starts at 0. | Ladder does not function. | Numbering starts at `1` (`ladder1_`, not `ladder0_`). |
-| Specifying `ladders[]` in game config. | Wasted effort (harmless but unnecessary). | DayZ does not use the `ladders[]` array. Remove it and rely on Memory LOD vertex placement. |
+| Erreur | Symptôme | Correction |
+|--------|----------|------------|
+| `ladderN_con` pas placé au niveau du sol. | L'action « Monter à l'échelle » n'apparaît pas ou apparaît à la mauvaise hauteur. | Déplacez le sommet au niveau du sol/plancher. |
+| Sélection View Geometry `ladderN` manquante. | L'échelle ne peut pas être interagie. | Créez un composant View Geometry avec une sélection nommée couvrant le volume complet de l'échelle. |
+| `ladderN_top_left` / `ladderN_top_right` trop bas. | Le personnage traverse le mur ou le sol à la sortie en haut. | Ceux-ci doivent être au moins 5 marches d'échelle plus haut que le niveau du sol. |
+| Dégagement insuffisant dans le LOD Geometry. | Le personnage reste bloqué ou traverse les murs pendant l'escalade. | Élargissez l'espace autour de l'échelle dans les LODs Geometry et Roadway. |
+| La numérotation des échelles commence à 0. | L'échelle ne fonctionne pas. | La numérotation commence à `1` (`ladder1_`, pas `ladder0_`). |
+| Spécifier `ladders[]` dans la config de jeu. | Effort gaspillé (inoffensif mais inutile). | DayZ n'utilise pas le tableau `ladders[]`. Supprimez-le et fiez-vous au placement des sommets du LOD Memory. |
 
 ---
 
-## References
+## Références
 
-- [Bohemia Interactive -- Doors on buildings](https://community.bistudio.com/wiki/DayZ:Doors_on_buildings) (official BI documentation)
-- [Bohemia Interactive -- Ladders on buildings](https://community.bistudio.com/wiki/DayZ:Ladders_on_buildings) (official BI documentation)
-- [DayZ Samples -- Test_Building](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Building) (working door sample)
-- [DayZ Samples -- Test_Ladders](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Ladders) (working ladder sample)
-- [Chapter 4.2: 3D Models](02-models.md) -- LOD system, named selections, `model.cfg` fundamentals
+- [Bohemia Interactive -- Portes sur les bâtiments](https://community.bistudio.com/wiki/DayZ:Doors_on_buildings) (documentation officielle BI)
+- [Bohemia Interactive -- Échelles sur les bâtiments](https://community.bistudio.com/wiki/DayZ:Ladders_on_buildings) (documentation officielle BI)
+- [DayZ Samples -- Test_Building](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Building) (exemple fonctionnel de porte)
+- [DayZ Samples -- Test_Ladders](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Ladders) (exemple fonctionnel d'échelle)
+- [Chapitre 4.2 : Modèles 3D](02-models.md) -- Système de LOD, sélections nommées, fondamentaux de `model.cfg`
 
 ---
 
 ## Navigation
 
-| Previous | Up | Next |
-|----------|----|------|
-| [4.7 Workbench Guide](07-workbench-guide.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | -- |
+| Précédent | Haut | Suivant |
+|-----------|------|---------|
+| [4.7 Guide Workbench](07-workbench-guide.md) | [Partie 4 : Formats de fichiers et outils DayZ](01-textures.md) | -- |

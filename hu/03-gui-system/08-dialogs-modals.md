@@ -1,34 +1,36 @@
-# Chapter 3.8: Dialogs & Modals
+# 3.8. fejezet: Dialógusok és modális ablakok
 
-[Home](../../README.md) | [<< Previous: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Next: Real Mod UI Patterns >>](09-real-mod-patterns.md)
-
----
+[Főoldal](../../README.md) | [<< Előző: Stílusok, betűtípusok és képek](07-styles-fonts.md) | **Dialógusok és modális ablakok** | [Következő: Valós mod UI minták >>](09-real-mod-patterns.md)
 
 ---
 
-## Modal vs. Modeless
-
-There are two fundamental types of dialog:
-
-- **Modal** -- Blocks all interaction with content behind the dialog. The user must respond (confirm, cancel, close) before doing anything else. Peldas: quit confirmation, delete warning, rename prompt.
-- **Modeless** -- Allows the user to interact with content behind the dialog while it remains open. Peldas: info panels, settings windows, tool palettes.
-
-In DayZ, the distinction is controlled by whether you lock game input when the dialog opens. A modal dialog calls `ValtozasGameFocus(1)` and shows the cursor; a modeless dialog may skip this or use a toggle approach.
+A dialógusok ideiglenes átfedő ablakok, amelyek felhasználói interakciót igényelnek -- megerősítő kérdések, figyelmeztető üzenetek, beviteli űrlapok és beállítási panelek. Ez a fejezet a beépített dialógus rendszert, a kézi dialógus mintákat, a layout struktúrát, a fókusz kezelést és a gyakori buktatókat tárgyalja.
 
 ---
 
-## UIScriptedMenu -- The Built-in System
+## Modális vs. nem modális
 
-`UIScriptedMenu` is the engine-level base class for all menu screens in DayZ. It integrates with the `UIManager` menu stack, handles input locking automatically, and provides lifecycle hooks. Vanilla DayZ uses it for the in-game menu, logout dialog, respawn dialog, options menu, and many others.
+Két alapvető típusú dialógus létezik:
 
-### Osztalyhierarchia
+- **Modális** -- Blokkolja a dialógus mögötti tartalommal való összes interakciót. A felhasználónak válaszolnia kell (megerősítés, mégsem, bezárás), mielőtt bármi mást tehetne. Példák: kilépés megerősítés, törlés figyelmeztetés, átnevezés kérdés.
+- **Nem modális** -- Lehetővé teszi a felhasználó számára, hogy interakcióba lépjen a dialógus mögötti tartalommal, amíg az nyitva marad. Példák: információs panelek, beállítás ablakok, eszközpaletták.
+
+A DayZ-ben a különbséget az határozza meg, hogy zárolod-e a játék bevitelt a dialógus megnyitásakor. Egy modális dialógus meghívja a `ChangeGameFocus(1)`-et és megjeleníti a kurzort; egy nem modális dialógus kihagyhatja ezt, vagy kapcsoló megközelítést használhat.
+
+---
+
+## UIScriptedMenu -- A beépített rendszer
+
+A `UIScriptedMenu` a motor szintű alaposztály a DayZ összes menü képernyőjéhez. Integrálódik a `UIManager` menü veremmel, automatikusan kezeli a bevitel zárolást, és életciklus hook-okat biztosít. A vanilla DayZ a játékon belüli menühöz, kilépés dialógushoz, újraéledés dialógushoz, opciók menühöz és sok máshoz használja.
+
+### Osztályhierarchia
 
 ```
-UIMenuPanel          (base: menu stack, Close(), submenu management)
-  UIScriptedMenu     (scripted menus: Init(), OnShow(), OnHide(), Update())
+UIMenuPanel          (alap: menü verem, Close(), almenü kezelés)
+  UIScriptedMenu     (szkriptelt menük: Init(), OnShow(), OnHide(), Update())
 ```
 
-### Minimal UIScriptedMenu Dialog
+### Minimális UIScriptedMenu dialógus
 
 ```c
 class MyDialog extends UIScriptedMenu
@@ -55,7 +57,7 @@ class MyDialog extends UIScriptedMenu
     override void OnShow()
     {
         super.OnShow();
-        // super.OnShow() calls LockControls() which handles:
+        // a super.OnShow() meghívja a LockControls()-t, amely kezeli:
         //   GetGame().GetInput().ChangeGameFocus(1);
         //   GetGame().GetUIManager().ShowUICursor(true);
     }
@@ -63,7 +65,7 @@ class MyDialog extends UIScriptedMenu
     override void OnHide()
     {
         super.OnHide();
-        // super.OnHide() calls UnlockControls() which handles:
+        // a super.OnHide() meghívja az UnlockControls()-t, amely kezeli:
         //   GetGame().GetInput().ChangeGameFocus(-1);
         //   GetGame().GetUIManager().ShowUICursor(false);
     }
@@ -74,7 +76,7 @@ class MyDialog extends UIScriptedMenu
 
         if (w == m_BtnConfirm)
         {
-            // Do action
+            // Akció végrehajtása
             Close();
             return true;
         }
@@ -92,7 +94,7 @@ class MyDialog extends UIScriptedMenu
     {
         super.Update(timeslice);
 
-        // ESC to close
+        // ESC a bezáráshoz
         if (GetUApi().GetInputByID(UAUIBack).LocalPress())
         {
             Close();
@@ -101,38 +103,38 @@ class MyDialog extends UIScriptedMenu
 }
 ```
 
-### Opening and Closing
+### Megnyitás és bezárás
 
 ```c
-// Opening -- create the menu and push it onto the UIManager stack
+// Megnyitás -- a menü létrehozása és a UIManager verembe helyezése
 MyDialog dialog = new MyDialog();
 GetGame().GetUIManager().ShowScriptedMenu(dialog, null);
 
-// Closing from outside
+// Bezárás kívülről
 GetGame().GetUIManager().HideScriptedMenu(dialog);
 
-// Closing from inside the dialog class
+// Bezárás a dialógus osztályon belülről
 Close();
 ```
 
-`ShowScriptedMenu()` pushes the menu onto the engine menu stack, triggers `Init()`, then `OnShow()`. `Close()` triggers `OnHide()`, pops it from the stack, and destroys the widget tree.
+A `ShowScriptedMenu()` a menüt a motor menü verembe helyezi, kiváltja az `Init()`-et, majd az `OnShow()`-t. A `Close()` kiváltja az `OnHide()`-ot, eltávolítja a veremből, és megsemmisíti a widget fát.
 
-### Key Lifecycle Metoduss
+### Fő életciklus metódusok
 
-| Metodus | Mikor hivodik | Tipikus hasznalat |
-|--------|------------|-------------|
-| `Init()` | Once, when menu is created | Create widgets, cache references |
-| `OnShow()` | After menu becomes visible | Lock input, start timers |
-| `OnHide()` | After menu is hidden | Unlock input, cancel timers |
-| `Update(float timeslice)` | Every frame while visible | Poll input (ESC key), animations |
-| `Cleanup()` | Before destruction | Release resources |
+| Metódus | Mikor hívódik | Tipikus használat |
+|---------|--------------|-------------------|
+| `Init()` | Egyszer, a menü létrehozásakor | Widgetek létrehozása, referenciák gyorsítótárazása |
+| `OnShow()` | Miután a menü láthatóvá válik | Bevitel zárolása, időzítők indítása |
+| `OnHide()` | Miután a menü el van rejtve | Bevitel feloldása, időzítők leállítása |
+| `Update(float timeslice)` | Minden képkockában, amíg látható | Bevitel lekérdezés (ESC billentyű), animációk |
+| `Cleanup()` | Megsemmisítés előtt | Erőforrások felszabadítása |
 
 ### LockControls / UnlockControls
 
-`UIScriptedMenu` provides built-in methods that `OnShow()` and `OnHide()` call automatically:
+A `UIScriptedMenu` beépített metódusokat biztosít, amelyeket az `OnShow()` és `OnHide()` automatikusan meghív:
 
 ```c
-// Inside UIScriptedMenu (engine code, simplified):
+// A UIScriptedMenu-n belül (motor kód, egyszerűsítve):
 void LockControls()
 {
     g_Game.GetInput().ChangeGameFocus(1, INPUT_DEVICE_MOUSE);
@@ -146,38 +148,38 @@ void UnlockControls()
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_MOUSE);
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_KEYBOARD);
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_GAMEPAD);
-    // Cursor visibility depends on whether a parent menu exists
+    // A kurzor láthatósága attól függ, hogy létezik-e szülő menü
 }
 ```
 
-Because `UIScriptedMenu` handles focus management automatically in `OnShow()`/`OnHide()`, you rarely need to call `ValtozasGameFocus()` yourself when using this base class. Simply call `super.OnShow()` and `super.OnHide()`.
+Mivel a `UIScriptedMenu` automatikusan kezeli a fókuszt az `OnShow()`/`OnHide()` metódusokban, ritkán kell magadnak meghívnod a `ChangeGameFocus()`-t, ha ezt az alaposztályt használod. Egyszerűen hívd meg a `super.OnShow()`-t és `super.OnHide()`-ot.
 
 ---
 
-## Built-in ShowDialog (Native Uzenet Boxes)
+## Beépített ShowDialog (natív üzenetdobozok)
 
-The engine provides a native dialog system for simple confirmation prompts. It renders a platform-appropriate dialog box without requiring any layout file.
+A motor natív dialógus rendszert biztosít egyszerű megerősítő kérdésekhez. Platform-megfelelő dialógusdobozt renderel layout fájl nélkül.
 
-### Hasznalat
+### Használat
 
 ```c
-// Show a Yes/No confirmation dialog
+// Igen/Nem megerősítő dialógus megjelenítése
 const int MY_DIALOG_ID = 500;
 
 g_Game.GetUIManager().ShowDialog(
-    "Confirm Action",                  // caption
-    "Are you sure you want to do this?", // text
-    MY_DIALOG_ID,                      // custom ID to identify this dialog
-    DBT_YESNO,                         // button configuration
-    DBB_YES,                           // default button
-    DMT_QUESTION,                      // icon type
-    this                               // handler (receives OnModalResult)
+    "Confirm Action",                  // felirat
+    "Are you sure you want to do this?", // szöveg
+    MY_DIALOG_ID,                      // egyéni ID a dialógus azonosításához
+    DBT_YESNO,                         // gomb konfiguráció
+    DBB_YES,                           // alapértelmezett gomb
+    DMT_QUESTION,                      // ikon típus
+    this                               // kezelő (megkapja az OnModalResult-ot)
 );
 ```
 
-### Receiving the Result
+### Az eredmény fogadása
 
-The handler (the `UIScriptedMenu` passed as the last argument) receives the result through `OnModalResult`:
+A kezelő (az utolsó argumentumként átadott `UIScriptedMenu`) az eredményt az `OnModalResult`-on keresztül kapja:
 
 ```c
 override bool OnModalResult(Widget w, int x, int y, int code, int result)
@@ -188,7 +190,7 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
         {
             PerformAction();
         }
-        // DBB_NO means user declined -- do nothing
+        // DBB_NO azt jelenti, hogy a felhasználó elutasította -- nem csinálunk semmit
         return true;
     }
 
@@ -198,45 +200,45 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
 
 ### Konstansok
 
-**Button configurations** (`DBT_` -- DialogBoxTipus):
+**Gomb konfigurációk** (`DBT_` -- DialogBoxType):
 
-| Konstans | Buttons Shown |
-|----------|---------------|
+| Konstans | Megjelenő gombok |
+|----------|-----------------|
 | `DBT_OK` | OK |
-| `DBT_YESNO` | Yes, No |
-| `DBT_YESNOCANCEL` | Yes, No, Cancel |
+| `DBT_YESNO` | Igen, Nem |
+| `DBT_YESNOCANCEL` | Igen, Nem, Mégsem |
 
-**Button identifiers** (`DBB_` -- DialogBoxButton):
+**Gomb azonosítók** (`DBB_` -- DialogBoxButton):
 
-| Konstans | Ertek | Jelentes |
+| Konstans | Érték | Jelentés |
 |----------|-------|---------|
-| `DBB_NONE` | 0 | No default |
-| `DBB_OK` | 1 | OK button |
-| `DBB_YES` | 2 | Yes button |
-| `DBB_NO` | 3 | No button |
-| `DBB_CANCEL` | 4 | Cancel button |
+| `DBB_NONE` | 0 | Nincs alapértelmezett |
+| `DBB_OK` | 1 | OK gomb |
+| `DBB_YES` | 2 | Igen gomb |
+| `DBB_NO` | 3 | Nem gomb |
+| `DBB_CANCEL` | 4 | Mégsem gomb |
 
-**Uzenet types** (`DMT_` -- DialogUzenetTipus):
+**Üzenet típusok** (`DMT_` -- DialogMessageType):
 
 | Konstans | Ikon |
 |----------|------|
-| `DMT_NONE` | No icon |
-| `DMT_INFO` | Info |
-| `DMT_WARNING` | Warning |
-| `DMT_QUESTION` | Question mark |
-| `DMT_EXCLAMATION` | Exclamation |
+| `DMT_NONE` | Nincs ikon |
+| `DMT_INFO` | Információ |
+| `DMT_WARNING` | Figyelmeztetés |
+| `DMT_QUESTION` | Kérdőjel |
+| `DMT_EXCLAMATION` | Felkiáltójel |
 
-### Mikor hasznald ShowDialog
+### Mikor használd a ShowDialog-ot
 
-Use `ShowDialog()` for simple alerts and confirmations that do not need custom styling. It is reliable and handles focus/cursor automatically. For branded or complex dialogs (custom layout, input fields, multiple options), build your own dialog class.
+Használd a `ShowDialog()`-ot egyszerű riasztásokhoz és megerősítésekhez, amelyek nem igényelnek egyéni stílust. Megbízható és automatikusan kezeli a fókuszt/kurzort. Márkázott vagy összetett dialógusokhoz (egyéni layout, beviteli mezők, több opció) készítsd el a saját dialógus osztályodat.
 
 ---
 
-## Manual Dialog Minta (Without UIScriptedMenu)
+## Kézi dialógus minta (UIScriptedMenu nélkül)
 
-When you need a dialog that is not part of the engine menu stack -- for example, a popup inside an existing panel -- extend `ScriptedWidgetEventHandler` instead of `UIScriptedMenu`. This gives you full control but requires manual focus and lifecycle management.
+Ha olyan dialógusra van szükséged, amely nem része a motor menü veremnek -- például egy felugró ablak egy meglévő panelen belül -- a `ScriptedWidgetEventHandler`-t bővítsd a `UIScriptedMenu` helyett. Ez teljes kontrollt ad, de kézi fókusz és életciklus kezelést igényel.
 
-### Basic Minta
+### Alapminta
 
 ```c
 class SimplePopup : ScriptedWidgetEventHandler
@@ -258,7 +260,7 @@ class SimplePopup : ScriptedWidgetEventHandler
 
         m_Message.SetText(message);
 
-        // Lock game input so player cannot move/shoot
+        // Játék bevitel zárolása, hogy a játékos ne tudjon mozogni/lőni
         GetGame().GetInput().ChangeGameFocus(1);
         GetGame().GetUIManager().ShowUICursor(true);
     }
@@ -271,7 +273,7 @@ class SimplePopup : ScriptedWidgetEventHandler
             m_Root = null;
         }
 
-        // Restore game input -- MUST match the +1 from Show()
+        // Játék bevitel visszaállítása -- EGYEZNIE KELL a Show() +1-ével
         GetGame().GetInput().ChangeGameFocus(-1);
         GetGame().GetUIManager().ShowUICursor(false);
     }
@@ -301,14 +303,14 @@ class SimplePopup : ScriptedWidgetEventHandler
 
     protected void OnConfirm()
     {
-        // Override in subclasses or set a callback
+        // Felülírás alosztályokban vagy visszahívás beállítása
     }
 }
 ```
 
-### VPP-Style Popup (OnWidgetScriptInit Minta)
+### VPP-stílusú felugró ablak (OnWidgetScriptInit minta)
 
-VPP Admin Tools and other mods use `OnWidgetScriptInit()` to initialize popups. The widget is created by a parent, and the script class is attached via `scriptclass` in the layout file:
+A VPP Admin Tools és más modok az `OnWidgetScriptInit()` metódust használják felugró ablakok inicializálásához. A widgetet egy szülő hozza létre, és a szkript osztályt a layout fájl `scriptclass` attribútumán keresztül csatolják:
 
 ```c
 class MyPopup : ScriptedWidgetEventHandler
@@ -327,7 +329,7 @@ class MyPopup : ScriptedWidgetEventHandler
         m_BtnSave   = ButtonWidget.Cast(m_Root.FindAnyWidget("BtnSave"));
         m_NameInput = EditBoxWidget.Cast(m_Root.FindAnyWidget("NameInput"));
 
-        // Push dialog above other widgets
+        // Dialógus más widgetek fölé emelése
         m_Root.SetSort(1024, true);
     }
 
@@ -361,35 +363,35 @@ class MyPopup : ScriptedWidgetEventHandler
 
     protected void SaveName(string name)
     {
-        // Process the input
+        // Bevitel feldolgozása
     }
 }
 ```
 
-The parent creates the popup by creating the layout widget as a child:
+A szülő a layout widget gyermekként való létrehozásával hozza létre a felugró ablakot:
 
 ```c
 Widget popup = GetGame().GetWorkspace().CreateWidgets(
     "MyMod/GUI/layouts/popup.layout", parentWidget);
 ```
 
-The engine automatically calls `OnWidgetScriptInit()` on the script class specified in the layout's `scriptclass` attribute.
+A motor automatikusan meghívja az `OnWidgetScriptInit()` metódust a layout `scriptclass` attribútumában megadott szkript osztályon.
 
 ---
 
-## Dialog Layout Structure
+## Dialógus layout struktúra
 
-A dialog layout typically has three layers: a full-screen root for click interception, a semi-transparent overlay for dimming, and the centered dialog panel.
+Egy dialógus layout jellemzően három réteggel rendelkezik: egy teljes képernyős gyökér a kattintás elfogáshoz, egy félig átlátszó átfedés a háttér tompításához, és a középre igazított dialógus panel.
 
-### Layout File Pelda
+### Layout fájl példa
 
 ```
 FrameWidget "DialogRoot" {
-    size 1 1 0 0        // Full screen
+    size 1 1 0 0        // Teljes képernyő
     halign fill
     valign fill
 
-    // Semi-transparent background overlay
+    // Félig átlátszó háttér átfedés
     ImageWidget "Overlay" {
         size 1 1 0 0
         halign fill
@@ -397,7 +399,7 @@ FrameWidget "DialogRoot" {
         color "0 0 0 180"
     }
 
-    // Centered dialog panel
+    // Középre igazított dialógus panel
     FrameWidget "DialogPanel" {
         halign center
         valign center
@@ -405,9 +407,9 @@ FrameWidget "DialogRoot" {
         vexactsize 1
         hexactpos  1
         vexactpos  1
-        size 0 0 500 300   // 500x300 pixel dialog
+        size 0 0 500 300   // 500x300 pixeles dialógus
 
-        // Title bar
+        // Címsor
         TextWidget "TitleText" {
             halign fill
             size 1 0 0 30
@@ -415,14 +417,14 @@ FrameWidget "DialogRoot" {
             font "gui/fonts/MetronBook24"
         }
 
-        // Content area
+        // Tartalom terület
         MultilineTextWidget "ContentText" {
             position 0 0 0 35
             size 1 0 0 200
             halign fill
         }
 
-        // Button row at bottom
+        // Gombsor az alján
         FrameWidget "ButtonRow" {
             valign bottom
             halign fill
@@ -444,20 +446,20 @@ FrameWidget "DialogRoot" {
 }
 ```
 
-### Key Layout Principles
+### Fő layout elvek
 
-1. **Full-screen root** -- The outermost widget covers the entire screen so clicks outside the dialog are intercepted.
-2. **Semi-transparent overlay** -- An `ImageWidget` or panel with alpha (e.g., `color "0 0 0 180"`) dims the background, visually indicating a modal state.
-3. **Centered panel** -- Use `halign center` and `valign center` with exact pixel sizes for predictable dimensions.
-4. **Button alignment** -- Place buttons in a horizontal container at the bottom of the dialog panel.
+1. **Teljes képernyős gyökér** -- A legkülső widget lefedi az egész képernyőt, hogy a dialóguson kívüli kattintások elfogásra kerüljenek.
+2. **Félig átlátszó átfedés** -- Egy `ImageWidget` vagy panel alfa csatornával (pl. `color "0 0 0 180"`) tompítja a hátteret, vizuálisan jelezve a modális állapotot.
+3. **Középre igazított panel** -- Használd a `halign center` és `valign center` beállításokat pontos pixeles méretekkel a kiszámítható méretekhez.
+4. **Gomb igazítás** -- Helyezd a gombokat egy vízszintes konténerbe a dialógus panel alján.
 
 ---
 
-## Confirmation Dialog Minta
+## Megerősítő dialógus minta
 
-A reusable confirmation dialog accepts a title, message, and callback. This is the most common dialog pattern in DayZ mods.
+Egy újrafelhasználható megerősítő dialógus, amely címet, üzenetet és visszahívást fogad el. Ez a leggyakoribb dialógus minta a DayZ modokban.
 
-### Implementation
+### Megvalósítás
 
 ```c
 class ConfirmDialog : ScriptedWidgetEventHandler
@@ -493,7 +495,7 @@ class ConfirmDialog : ScriptedWidgetEventHandler
         m_TitleText.SetText(title);
         m_ContentText.SetText(message);
 
-        // Ensure dialog renders above other UI
+        // Dialógus renderelése más UI fölé
         m_Root.SetSort(1024, true);
 
         GetGame().GetInput().ChangeGameFocus(1);
@@ -511,11 +513,11 @@ class ConfirmDialog : ScriptedWidgetEventHandler
         GetGame().GetInput().ChangeGameFocus(-1);
         GetGame().GetUIManager().ShowUICursor(false);
 
-        // Call the callback function on the target object
+        // A visszahívás függvény meghívása a cél objektumon
         GetGame().GameScript.CallFunction(
             m_CallbackTarget, m_CallbackFunc, null, confirmed);
 
-        // Clean up -- defer deletion to avoid issues
+        // Takarítás -- törlés halasztása a problémák elkerüléséhez
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
             DestroyDialog, 0, false);
     }
@@ -544,10 +546,10 @@ class ConfirmDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### Hasznalat
+### Használat
 
 ```c
-// In the calling class:
+// A hívó osztályban:
 void AskDeleteItem()
 {
     new ConfirmDialog(
@@ -567,216 +569,79 @@ void OnDeleteConfirmed(bool confirmed)
 }
 ```
 
-The callback uses `GameScript.CallFunction()` which invokes a function by name on the target object. This is the standard way DayZ mods implement dialog callbacks since Enforce Script does not support closures or delegates.
+A visszahívás a `GameScript.CallFunction()` metódust használja, amely név alapján hív meg egy függvényt a cél objektumon. Ez a szabványos módja a DayZ modok dialógus visszahívásainak, mivel az Enforce Script nem támogatja a closure-öket vagy a delegátokat.
 
 ---
 
-## Input Dialog Minta
+## Fókusz kezelés
 
-An input dialog adds an `EditBoxWidget` for text entry with validation.
+A fókusz kezelés a dialógus megvalósítás legkritikusabb aspektusa. A DayZ **referencia-számlált** fókusz rendszert használ -- minden `ChangeGameFocus(1)` hívásnak egyensúlyban kell lennie egy `ChangeGameFocus(-1)` hívással.
 
-```c
-class InputDialog : ScriptedWidgetEventHandler
-{
-    protected Widget         m_Root;
-    protected TextWidget     m_TitleText;
-    protected EditBoxWidget  m_InputBox;
-    protected ButtonWidget   m_BtnOk;
-    protected ButtonWidget   m_BtnCancel;
-    protected TextWidget     m_ErrorText;
-
-    protected Class          m_CallbackTarget;
-    protected string         m_CallbackFunc;
-
-    void InputDialog(string title, string defaultText,
-                     Class callbackTarget, string callbackFunc)
-    {
-        m_CallbackTarget = callbackTarget;
-        m_CallbackFunc   = callbackFunc;
-
-        m_Root = GetGame().GetWorkspace().CreateWidgets(
-            "MyMod/GUI/layouts/input_dialog.layout");
-        m_Root.SetHandler(this);
-
-        m_TitleText = TextWidget.Cast(
-            m_Root.FindAnyWidget("TitleText"));
-        m_InputBox  = EditBoxWidget.Cast(
-            m_Root.FindAnyWidget("InputBox"));
-        m_BtnOk     = ButtonWidget.Cast(
-            m_Root.FindAnyWidget("BtnOk"));
-        m_BtnCancel = ButtonWidget.Cast(
-            m_Root.FindAnyWidget("BtnCancel"));
-        m_ErrorText = TextWidget.Cast(
-            m_Root.FindAnyWidget("ErrorText"));
-
-        m_TitleText.SetText(title);
-        m_InputBox.SetText(defaultText);
-        m_ErrorText.Show(false);
-
-        m_Root.SetSort(1024, true);
-        GetGame().GetInput().ChangeGameFocus(1);
-        GetGame().GetUIManager().ShowUICursor(true);
-    }
-
-    void ~InputDialog()
-    {
-        if (m_Root)
-            m_Root.Unlink();
-    }
-
-    override bool OnClick(Widget w, int x, int y, int button)
-    {
-        if (w == m_BtnOk)
-        {
-            string text = m_InputBox.GetText();
-            text.Trim();
-
-            if (text == "")
-            {
-                m_ErrorText.SetText("Name cannot be empty");
-                m_ErrorText.Show(true);
-                return true;
-            }
-
-            GetGame().GetInput().ChangeGameFocus(-1);
-            GetGame().GetUIManager().ShowUICursor(false);
-
-            // Send result as Param2: OK status + text
-            GetGame().GameScript.CallFunctionParams(
-                m_CallbackTarget, m_CallbackFunc, null,
-                new Param2<bool, string>(true, text));
-
-            GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
-                DeleteSelf, 0, false);
-            return true;
-        }
-
-        if (w == m_BtnCancel)
-        {
-            GetGame().GetInput().ChangeGameFocus(-1);
-            GetGame().GetUIManager().ShowUICursor(false);
-
-            GetGame().GameScript.CallFunctionParams(
-                m_CallbackTarget, m_CallbackFunc, null,
-                new Param2<bool, string>(false, ""));
-
-            GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
-                DeleteSelf, 0, false);
-            return true;
-        }
-
-        return false;
-    }
-
-    override bool OnChange(Widget w, int x, int y, bool finished)
-    {
-        if (w == m_InputBox)
-        {
-            // Hide error when user starts typing
-            m_ErrorText.Show(false);
-
-            // Submit on Enter key
-            if (finished)
-            {
-                OnClick(m_BtnOk, 0, 0, 0);
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    protected void DeleteSelf()
-    {
-        delete this;
-    }
-}
-```
-
----
-
-## Fokusz kezeles
-
-Focus management is the most critical aspect of dialog implementation. DayZ uses a **reference-counted** focus system -- every `ValtozasGameFocus(1)` must be balanced by a `ValtozasGameFocus(-1)`.
-
-### Hogyan mukodik
+### Hogyan működik
 
 ```c
-// Increment focus counter -- game input is suppressed while counter > 0
+// Fókusz számláló növelése -- a játék bevitel elnyomva, amíg a számláló > 0
 GetGame().GetInput().ChangeGameFocus(1);
 
-// Show the mouse cursor
+// Az egér kurzor megjelenítése
 GetGame().GetUIManager().ShowUICursor(true);
 
-// ... dialog interaction ...
+// ... dialógus interakció ...
 
-// Decrement focus counter -- game input resumes when counter reaches 0
+// Fókusz számláló csökkentése -- a játék bevitel folytatódik, amikor a számláló eléri a 0-t
 GetGame().GetInput().ChangeGameFocus(-1);
 
-// Hide cursor (only if no other menus need it)
+// Kurzor elrejtése (csak ha nincs más menü, amely igényli)
 GetGame().GetUIManager().ShowUICursor(false);
 ```
 
-### Szabalyok
+### Szabályok
 
-1. **Every +1 must have a matching -1.** If you call `ValtozasGameFocus(1)` in `Show()`, you must call `ValtozasGameFocus(-1)` in `Hide()`, with no exceptions.
+1. **Minden +1-nek kell legyen egy párosított -1.** Ha meghívod a `ChangeGameFocus(1)`-et a `Show()`-ban, meg kell hívnod a `ChangeGameFocus(-1)`-et a `Hide()`-ban, kivétel nélkül.
 
-2. **Call -1 even on error paths.** If the dialog is destroyed unexpectedly (player dies, server disconnect), the destructor must still decrement. Put cleanup in the destructor as a safety net.
+2. **Hívd meg a -1-et még hiba útvonalakon is.** Ha a dialógus váratlanul megsemmisül (játékos meghal, szerver lecsatlakozás), a destruktornak továbbra is csökkentenie kell. Helyezz el takarítást a destruktorban biztonsági hálóként.
 
-3. **UIScriptedMenu handles this automatically.** If you extend `UIScriptedMenu` and call `super.OnShow()` / `super.OnHide()`, focus is managed for you. Only manage it manually when using `ScriptedWidgetEventHandler`.
+3. **A UIScriptedMenu ezt automatikusan kezeli.** Ha a `UIScriptedMenu`-t bővíted és meghívod a `super.OnShow()` / `super.OnHide()` metódusokat, a fókusz kezelve van. Csak a `ScriptedWidgetEventHandler` használatakor kezeld kézzel.
 
-4. **Per-device focus is optional.** The engine supports per-device focus locking (`INPUT_DEVICE_MOUSE`, `INPUT_DEVICE_KEYBOARD`, `INPUT_DEVICE_GAMEPAD`). For most mod dialogs, a single `ValtozasGameFocus(1)` (no device argument) locks all input.
+4. **Az eszközönkénti fókusz opcionális.** A motor támogatja az eszközönkénti fókusz zárolást (`INPUT_DEVICE_MOUSE`, `INPUT_DEVICE_KEYBOARD`, `INPUT_DEVICE_GAMEPAD`). A legtöbb mod dialógushoz egyetlen `ChangeGameFocus(1)` (eszköz argumentum nélkül) minden bevitelt zárol.
 
-5. **ResetGameFocus() is a nuclear option.** It forces the counter to zero. Use it only in top-level cleanup (e.g., when closing an entire admin tool), never inside individual dialog classes.
+5. **A ResetGameFocus() egy végső megoldás.** A számlálót nullára kényszeríti. Csak legfelső szintű takarításkor használd (pl. egy teljes admin eszköz bezárásakor), soha nem egyedi dialógus osztályokon belül.
 
-### What Goes Wrong
+### Mi romolhat el
 
-| Hiba | Tunet |
-|---------|---------|
-| Forgot `ValtozasGameFocus(-1)` on close | Player cannot move, shoot, or interact after dialog closes |
-| Called `-1` twice | Focus counter goes negative; next menu that opens will not properly lock input |
-| Forgot `ShowUICursor(false)` | Mouse cursor stays visible permanently |
-| Called `ShowUICursor(false)` when parent menu is still open | Cursor disappears while parent menu is still active |
+| Hiba | Tünet |
+|------|-------|
+| Elfelejtett `ChangeGameFocus(-1)` bezáráskor | A játékos nem tud mozogni, lőni vagy interakcióba lépni a dialógus bezárása után |
+| Kétszer hívott `-1` | A fókusz számláló negatívba megy; a következő megnyíló menü nem fogja megfelelően zárolni a bevitelt |
+| Elfelejtett `ShowUICursor(false)` | Az egér kurzor véglegesen látható marad |
+| `ShowUICursor(false)` hívás, amikor a szülő menü még nyitva van | A kurzor eltűnik, miközben a szülő menü még aktív |
 
 ---
 
-## Z-Order and Layering
+## Z-sorrend és rétegezés
 
-When a dialog opens on top of existing UI, it must render above everything else. DayZ provides two mechanisms:
+Amikor egy dialógus meglévő UI fölött nyílik meg, a többi fölött kell renderelődnie. A DayZ két mechanizmust biztosít:
 
-### Widget Sort Order
+### Widget rendezési sorrend
 
 ```c
-// Push widget above all siblings (sort value 1024)
+// Widget emelése minden testvér fölé (rendezési érték 1024)
 m_Root.SetSort(1024, true);
 ```
 
-The `SetSort()` method sets the rendering priority. Higher values render on top. The second parameter (`true`) applies recursively to children. VPP Admin Tools use `SetSort(1024, true)` for all dialog boxes.
+A `SetSort()` metódus beállítja a renderelési prioritást. Magasabb értékek felül renderelődnek. A második paraméter (`true`) rekurzívan alkalmazza a gyermekekre. A VPP Admin Tools minden dialógusdobozhoz `SetSort(1024, true)`-t használ.
 
-### Layout Priority (Static)
+### Bevált gyakorlatok
 
-In layout files, you can set priority directly:
-
-```
-FrameWidget "DialogRoot" {
-    // Higher values render on top
-    // Normal UI: 0-100
-    // Overlay:   998
-    // Dialog:    999
-}
-```
-
-### Legjobb gyakorlatok
-
-- **Overlay background**: Use a high sort value (e.g., 998) for the semi-transparent background.
-- **Dialog panel**: Use a higher sort value (e.g., 999 or 1024) for the dialog itself.
-- **Stacking dialogs**: If your system supports nested dialogs, increment the sort value for each new dialog layer.
+- **Átfedés háttér**: Használj magas rendezési értéket (pl. 998) a félig átlátszó háttérhez.
+- **Dialógus panel**: Használj magasabb rendezési értéket (pl. 999 vagy 1024) magához a dialógushoz.
+- **Egymásra helyezett dialógusok**: Ha a rendszered támogatja a beágyazott dialógusokat, növeld a rendezési értéket minden új dialógus réteghez.
 
 ---
 
-## Gyakori mintak
+## Gyakori minták
 
-### Toggle Panel (Open/Close with Same Key)
+### Kapcsoló panel (megnyitás/bezárás ugyanazzal a billentyűvel)
 
 ```c
 class TogglePanel : ScriptedWidgetEventHandler
@@ -819,10 +684,10 @@ class TogglePanel : ScriptedWidgetEventHandler
 }
 ```
 
-### ESC to Close
+### ESC a bezáráshoz
 
 ```c
-// Inside Update() of a UIScriptedMenu:
+// A UIScriptedMenu Update()-jén belül:
 override void Update(float timeslice)
 {
     super.Update(timeslice);
@@ -833,8 +698,8 @@ override void Update(float timeslice)
     }
 }
 
-// Inside a ScriptedWidgetEventHandler (no Update loop):
-// You must poll from an external update source, or use OnKeyDown:
+// A ScriptedWidgetEventHandler-en belül (nincs Update ciklus):
+// Külső frissítési forrásból kell lekérdezni, vagy OnKeyDown-t használni:
 override bool OnKeyDown(Widget w, int x, int y, int key)
 {
     if (key == KeyCode.KC_ESCAPE)
@@ -846,9 +711,9 @@ override bool OnKeyDown(Widget w, int x, int y, int key)
 }
 ```
 
-### Click Outside to Close
+### Kattintás kívülre a bezáráshoz
 
-Make the full-screen overlay widget clickable. When clicked, close the dialog:
+Tedd a teljes képernyős átfedő widgetet kattinthatóvá. Kattintáskor zárd be a dialógust:
 
 ```c
 class OverlayDialog : ScriptedWidgetEventHandler
@@ -864,13 +729,13 @@ class OverlayDialog : ScriptedWidgetEventHandler
         m_Overlay = m_Root.FindAnyWidget("Overlay");
         m_Panel   = m_Root.FindAnyWidget("DialogPanel");
 
-        // Register handler on both overlay and panel widgets
+        // Kezelő regisztrálása mind az átfedés, mind a panel widgetekre
         m_Root.SetHandler(this);
     }
 
     override bool OnClick(Widget w, int x, int y, int button)
     {
-        // If user clicked the overlay (not the panel), close
+        // Ha a felhasználó az átfedésre kattintott (nem a panelre), bezárás
         if (w == m_Overlay)
         {
             Hide();
@@ -882,92 +747,24 @@ class OverlayDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### Dialog Result Callbacks
-
-For dialogs that need to return complex results, use `GameScript.CallFunctionParams()` with `Param` objects:
-
-```c
-// Sending a result with multiple values
-GetGame().GameScript.CallFunctionParams(
-    m_CallbackTarget,
-    m_CallbackFunc,
-    null,
-    new Param2<int, string>(RESULT_OK, inputText)
-);
-
-// Receiving in the caller
-void OnDialogResult(int result, string text)
-{
-    if (result == RESULT_OK)
-    {
-        ProcessInput(text);
-    }
-}
-```
-
-This is the same pattern VPP Admin Tools uses for its `VPPDialogBox` callback system.
-
 ---
 
-## UIScriptedWindow -- Floating Windows
+## Gyakori hibák
 
-DayZ has a second built-in system: `UIScriptedWindow`, for floating windows that exist alongside a `UIScriptedMenu`. Unlike `UIScriptedMenu`, windows are tracked in a static map and their events are routed through the active menu.
+### 1. Játék fókusz nem visszaállítása bezáráskor
 
-```c
-class MyWindow extends UIScriptedWindow
-{
-    void MyWindow(int id) : UIScriptedWindow(id)
-    {
-    }
-
-    override Widget Init()
-    {
-        m_WgtRoot = GetGame().GetWorkspace().CreateWidgets(
-            "MyMod/GUI/layouts/my_window.layout");
-        return m_WgtRoot;
-    }
-
-    override bool OnClick(Widget w, int x, int y, int button)
-    {
-        // Handle clicks
-        return false;
-    }
-}
-```
-
-Windows are opened and closed through the `UIManager`:
+**A probléma:** A játékos nem tud mozogni, lőni vagy interakcióba lépni a dialógus bezárása után.
 
 ```c
-// Open
-GetGame().GetUIManager().OpenWindow(MY_WINDOW_ID);
-
-// Close
-GetGame().GetUIManager().CloseWindow(MY_WINDOW_ID);
-
-// Check if open
-GetGame().GetUIManager().IsWindowOpened(MY_WINDOW_ID);
-```
-
-In practice, most mod developers use `ScriptedWidgetEventHandler`-based popups rather than `UIScriptedWindow`, because the window system requires registering with the engine's switch-case in `MissionBase` and the events route through the active `UIScriptedMenu`. The manual pattern is simpler and more flexible.
-
----
-
-## Gyakori hibak
-
-### 1. Not Restoring Game Focus on Close
-
-**A problema:** Player cannot move, shoot, or interact after the dialog closes.
-
-```c
-// WRONG -- no focus restoration
+// HELYTELEN -- nincs fókusz visszaállítás
 void CloseDialog()
 {
     m_Root.Unlink();
     m_Root = null;
-    // Focus counter is still incremented!
+    // A fókusz számláló még mindig növelt!
 }
 
-// CORRECT -- always decrement
+// HELYES -- mindig csökkentsd
 void CloseDialog()
 {
     m_Root.Unlink();
@@ -977,18 +774,18 @@ void CloseDialog()
 }
 ```
 
-### 2. Not Unlinking Widgets on Close
+### 2. Widgetek nem leválasztása bezáráskor
 
-**A problema:** Widget tree stays in memory, events keep firing, memory leaks accumulate.
+**A probléma:** A widget fa a memóriában marad, az események továbbra is kiváltódnak, memóriaszivárgások halmozódnak.
 
 ```c
-// WRONG -- just hiding
+// HELYTELEN -- csak elrejtés
 void Hide()
 {
-    m_Root.Show(false);  // Widget still exists and consumes memory
+    m_Root.Show(false);  // A widget továbbra is létezik és memóriát fogyaszt
 }
 
-// CORRECT -- unlink destroys the widget tree
+// HELYES -- az unlink megsemmisíti a widget fát
 void Hide()
 {
     if (m_Root)
@@ -999,23 +796,23 @@ void Hide()
 }
 ```
 
-If you need to show/hide the same dialog repeatedly, keeping the widget and using `Show(true/false)` is fine -- just ensure you `Unlink()` in the destructor.
+Ha ugyanazt a dialógust ismételten meg kell jeleníteni/elrejteni, a widget megtartása és `Show(true/false)` használata rendben van -- csak győződj meg, hogy `Unlink()`-et használsz a destruktorban.
 
-### 3. Dialog Renders Behind Other UI
+### 3. Dialógus más UI mögött renderelődik
 
-**A problema:** Dialog is invisible or partially hidden because other widgets have higher rendering priority.
+**A probléma:** A dialógus láthatatlan vagy részben el van rejtve, mert más widgeteknek magasabb renderelési prioritásuk van.
 
-**A javitas:** Use `SetSort()` to push the dialog above everything:
+**A javítás:** Használd a `SetSort()` metódust a dialógus minden fölé emeléséhez:
 
 ```c
 m_Root.SetSort(1024, true);
 ```
 
-### 4. Multiple Dialogs Stacking Focus Valtozass
+### 4. Több dialógus halmozott fókusz változásai
 
-**A problema:** Opening dialog A (+1), then dialog B (+1), then closing B (-1) -- focus counter is still 1, so input is still locked even though the user sees no dialog.
+**A probléma:** Az A dialógus megnyitása (+1), majd a B dialógus (+1), majd B bezárása (-1) -- a fókusz számláló még mindig 1, tehát a bevitel még mindig zárolva van, bár a felhasználó nem lát dialógust.
 
-**A javitas:** Track whether each dialog instance has locked focus, and only decrement if it did:
+**A javítás:** Kövesd nyomon, hogy minden dialógus példány zárolta-e a fókuszt, és csak akkor csökkentsd, ha zárolta:
 
 ```c
 class SafeDialog : ScriptedWidgetEventHandler
@@ -1054,66 +851,22 @@ class SafeDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### 5. Calling Close() or Delete in the Constructor
+---
 
-**A problema:** Calling `Close()` or `delete this` during construction causes crashes or undefined behavior because the object is not fully initialized.
+## Összefoglalás
 
-**A javitas:** Defer closure using `CallLater`:
+| Megközelítés | Alaposztály | Fókusz kezelés | Legjobb ehhez |
+|-------------|-------------|----------------|---------------|
+| Motor menü verem | `UIScriptedMenu` | Automatikus a `LockControls`/`UnlockControls` révén | Teljes képernyős menük, fő dialógusok |
+| Natív dialógus | `ShowDialog()` | Automatikus | Egyszerű Igen/Nem/OK kérdések |
+| Kézi felugró ablak | `ScriptedWidgetEventHandler` | Kézi `ChangeGameFocus` | Panel belüli felugró ablakok, egyéni dialógusok |
+| Lebegő ablak | `UIScriptedWindow` | Szülő menün keresztül | Eszköz ablakok menü mellett |
 
-```c
-void MyDialog()
-{
-    // ...
-    if (someErrorCondition)
-    {
-        // WRONG: Close(); or delete this;
-        // CORRECT:
-        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
-            DeferredClose, 0, false);
-    }
-}
-
-void DeferredClose()
-{
-    Close();  // or: delete this;
-}
-```
-
-### 6. Not Checking for Null Before Widget Operations
-
-**A problema:** Crash when accessing a widget that was already destroyed or never created.
-
-```c
-// WRONG
-void UpdateMessage(string text)
-{
-    m_MessageText.SetText(text);  // Crash if m_MessageText is null
-}
-
-// CORRECT
-void UpdateMessage(string text)
-{
-    if (m_MessageText)
-        m_MessageText.SetText(text);
-}
-```
+Az aranyszabály: **minden `ChangeGameFocus(1)` hívásnak egyeznie kell egy `ChangeGameFocus(-1)` hívással.** Helyezd a fókusz takarítást a destruktorodba biztonsági hálóként, mindig használj `Unlink()`-et a widgetekre, ha végeztél, és használd a `SetSort()`-ot annak biztosítására, hogy a dialógusod felül renderelődjön.
 
 ---
 
-## Osszefoglalas
+## Következő lépések
 
-| Megkozelites | Alaposztaly | Fokusz kezeles | Legjobb ehhez |
-|----------|-----------|-----------------|----------|
-| Engine menu stack | `UIScriptedMenu` | Automatic via `LockControls`/`UnlockControls` | Full-screen menus, major dialogs |
-| Native dialog | `ShowDialog()` | Automatic | Simple Yes/No/OK prompts |
-| Manual popup | `ScriptedWidgetEventHandler` | Manual `ValtozasGameFocus` | In-panel popups, custom dialogs |
-| Floating window | `UIScriptedWindow` | Via parent menu | Tool windows alongside a menu |
-
-The golden rule: **every `ValtozasGameFocus(1)` must be matched by a `ValtozasGameFocus(-1)`.** Put focus cleanup in your destructor as a safety net, always `Unlink()` widgets when done, and use `SetSort()` to ensure your dialog renders on top.
-
----
-
-## Kovetkezo lepesek
-
-- [3.6 Event Handling](06-event-handling.md) -- Handle clicks, hover, keyboard events inside dialogs
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Build dialog content dynamically in code
+- [3.6 Eseménykezelés](06-event-handling.md) -- Kattintások, hover, billentyűzet események kezelése dialógusokban
+- [3.5 Programozottan létrehozott widgetek](05-programmatic-widgets.md) -- Dialógus tartalom dinamikus építése kódban

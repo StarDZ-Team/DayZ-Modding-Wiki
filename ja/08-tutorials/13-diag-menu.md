@@ -1,115 +1,119 @@
-# Chapter 8.13: The Diagnostic Menu (Diag Menu)
+# Chapter 8.13: 診断メニュー（Diag Menu）
 
-[Home](../../README.md) | [<< Previous: Building a Trading System](12-trading-system.md) | **The Diagnostic Menu**
+[Home](../../README.md) | [<< 前へ: トレーディングシステムの構築](12-trading-system.md) | **診断メニュー**
+
+---
+
+> **概要:** Diag MenuはDayZに内蔵された診断ツールで、DayZDiag実行ファイルでのみ利用可能です。FPSカウンター、スクリプトプロファイリング、レンダーデバッグ、フリーカメラ、物理演算の可視化、天候制御、Central Economyツール、AIナビゲーションデバッグ、サウンド診断を提供します。この章では、Bohemia Interactive公式ドキュメントに基づき、すべてのメニューカテゴリ、オプション、キーボードショートカットを文書化します。
 
 ---
 
 ## 目次
 
-- [What is the Diag Menu?](#what-is-the-diag-menu)
-- [How to Access](#how-to-access)
-- [Navigation Controls](#navigation-controls)
-- [Quick-Access Keyboard Shortcuts](#quick-access-keyboard-shortcuts)
-- [Menu Categories Overview](#menu-categories-overview)
+- [Diag Menuとは](#what-is-the-diag-menu)
+- [アクセス方法](#how-to-access)
+- [ナビゲーションコントロール](#navigation-controls)
+- [クイックアクセスキーボードショートカット](#quick-access-keyboard-shortcuts)
+- [メニューカテゴリの概要](#menu-categories-overview)
 - [Statistics](#statistics)
 - [Enfusion Renderer](#enfusion-renderer)
-- [Enfusion World (Physics)](#enfusion-world-physics)
+- [Enfusion World（物理演算）](#enfusion-world-physics)
 - [DayZ Render](#dayz-render)
 - [Game](#game)
 - [AI](#ai)
 - [Sounds](#sounds)
-- [Useful Features for Modders](#useful-features-for-modders)
-- [When to Use the Diag Menu](#when-to-use-the-diag-menu)
-- [Common Mistakes](#common-mistakes)
-- [Next Steps](#next-steps)
+- [モッダーに便利な機能](#useful-features-for-modders)
+- [Diag Menuを使用するタイミング](#when-to-use-the-diag-menu)
+- [よくある間違い](#common-mistakes)
+- [次のステップ](#next-steps)
 
 ---
 
-## What is the Diag Menu?
+## Diag Menuとは
 
-The Diag Menu is a hierarchical debug menu built into the DayZ diagnostic executable. It lists options used to debug game scripting and assets across seven major categories: Statistics, Enfusion Renderer, Enfusion World, DayZ Render, Game, AI, and Sounds.
+Diag Menuは、DayZ診断実行ファイルに組み込まれた階層型デバッグメニューです。Statistics、Enfusion Renderer、Enfusion World、DayZ Render、Game、AI、Soundsの7つの主要カテゴリにわたって、ゲームスクリプトとアセットのデバッグに使用されるオプションをリストします。
 
-The Diag Menu is **not available** in the retail DayZ executable (`DayZ_x64.exe`). You must use `DayZDiag_x64.exe` -- the diagnostic build that ships alongside the retail version in your DayZ installation or DayZ Server directories.
+Diag Menuは製品版DayZ実行ファイル（`DayZ_x64.exe`）では**利用できません**。`DayZDiag_x64.exe` を使用する必要があります。これはDayZインストールフォルダまたはDayZ Serverディレクトリに製品版と並んで含まれている診断ビルドです。
 
 ---
 
-## How to Access
+## アクセス方法
 
-### Requirements
+### 要件
 
-- **DayZDiag_x64.exe** -- The diagnostic executable. Found in your DayZ installation folder alongside the regular `DayZ_x64.exe`.
-- You must be running the game (not sitting in a loading screen). The menu is available in any 3D viewport.
+- **DayZDiag_x64.exe** -- 診断実行ファイル。DayZインストールフォルダ内の通常の `DayZ_x64.exe` と同じ場所にあります。
+- ゲームが実行中である必要があります（ロード画面ではなく）。メニューはあらゆる3Dビューポートで利用可能です。
 
-### Opening the Menu
+### メニューを開く
 
-Press **Win + Alt** to open the Diag Menu.
+**Win + Alt** を押してDiag Menuを開きます。
 
-An alternative shortcut is **Ctrl + Win**, but this conflicts with a Windows 11 system shortcut and is not recommended on that platform.
+代替ショートカットは **Ctrl + Win** ですが、Windows 11のシステムショートカットと競合するため、そのプラットフォームでは推奨されません。
 
-### Enabling Mouse Cursor
+### マウスカーソルの有効化
 
-Some Diag Menu options require you to interact with the screen using your mouse. The mouse cursor can be toggled by pressing:
+一部のDiag Menuオプションでは、マウスを使用して画面を操作する必要があります。マウスカーソルは以下のキーで切り替えられます：
 
 **LCtrl + Numpad 9**
 
-This key binding is registered through script (`PluginKeyBinding`).
+このキーバインドはスクリプト（`PluginKeyBinding`）を通じて登録されています。
 
 ---
 
-## ナビゲーション Controls
+## ナビゲーションコントロール
 
-Once the Diag Menu is open:
+Diag Menuが開いた状態で：
 
-| Key | アクション |
+| キー | アクション |
 |-----|--------|
-| **Up / Down arrow** | Navigate between menu items |
-| **Right arrow** | Enter a sub-menu, or cycle through option values |
-| **Left arrow** | Cycle option values in reverse direction |
-| **Backspace** | Leave the current sub-menu (go back one level) |
+| **上 / 下矢印** | メニュー項目間を移動 |
+| **右矢印** | サブメニューに入る、またはオプション値を切り替える |
+| **左矢印** | オプション値を逆方向に切り替える |
+| **Backspace** | 現在のサブメニューを離れる（一階層戻る） |
 
-When options show multiple values, they are listed in the order they appear in the menu. The first option is typically the default.
+オプションに複数の値がある場合、メニューに表示される順序でリストされます。最初のオプションが通常デフォルトです。
 
 ---
 
-## Quick-Access Keyboard Shortcuts
+## クイックアクセスキーボードショートカット
 
-These shortcuts work at any time while running DayZDiag, without needing to open the menu:
+これらのショートカットはDayZDiag実行中いつでも機能し、メニューを開く必要はありません：
 
-| ショートカット | Function |
+| ショートカット | 機能 |
 |----------|----------|
-| **LCtrl + Numpad 1** | Toggle FPS counter |
-| **LCtrl + Numpad 9** | Toggle mouse cursor on screen |
-| **RCtrl + RAlt + W** | Cycle render debug mode |
-| **LCtrl + LAlt + P** | Toggle postprocess effects |
-| **LAlt + Numpad 6** | Toggle physics body visualization |
-| **Page Up** | Free Camera: toggle player movement |
-| **Page Down** | Free Camera: freeze/unfreeze camera |
-| **Insert** | Teleport player to cursor position (while in free camera) |
-| **Home** | Toggle free camera / disable and teleport player to cursor |
-| **Numpad /** | Toggle free camera (without teleport) |
-| **End** | Disable free camera (return to player camera) |
+| **LCtrl + Numpad 1** | FPSカウンターの切り替え |
+| **LCtrl + Numpad 9** | 画面上のマウスカーソルの切り替え |
+| **RCtrl + RAlt + W** | レンダーデバッグモードの切り替え |
+| **LCtrl + LAlt + P** | ポストプロセスエフェクトの切り替え |
+| **LAlt + Numpad 6** | 物理ボディ可視化の切り替え |
+| **Page Up** | フリーカメラ：プレイヤー移動の切り替え |
+| **Page Down** | フリーカメラ：カメラのフリーズ/解除 |
+| **Insert** | プレイヤーをカーソル位置にテレポート（フリーカメラ中） |
+| **Home** | フリーカメラの切り替え / 無効化してカーソル位置にテレポート |
+| **Numpad /** | フリーカメラの切り替え（テレポートなし） |
+| **End** | フリーカメラを無効化（プレイヤーカメラに戻る） |
 
-> **注意：** Any mention of "Cheat Inputs" in the official documentation refers to inputs hardcoded on the C++ side, not accessible through script.
+> **注意：** 公式ドキュメントの「Cheat Inputs」への言及は、C++側でハードコードされた入力を指しており、スクリプトからはアクセスできません。
 
 ---
 
-## Menu Categories Overview
+## メニューカテゴリの概要
 
-The Diag Menu contains seven top-level categories:
+Diag Menuには7つのトップレベルカテゴリがあります：
 
-1. **Statistics** -- FPS counter and script profiler
-2. **Enfusion Renderer** -- Lighting, shadows, materials, occlusion, postprocess, terrain, widgets
-3. **Enfusion World** -- Physics engine (Bullet) visualization and debug
-4. **DayZ Render** -- Sky rendering, geometry diagnostics
-5. **Game** -- Weather, free camera, vehicles, combat, Central Economy, surface sounds
-6. **AI** -- Navigation mesh, pathfinding, AI agent behavior
-7. **Sounds** -- Playing samples debug, sound system info
+1. **Statistics** -- FPSカウンターとスクリプトプロファイラー
+2. **Enfusion Renderer** -- ライティング、シャドウ、マテリアル、オクルージョン、ポストプロセス、テレイン、ウィジェット
+3. **Enfusion World** -- 物理エンジン（Bullet）の可視化とデバッグ
+4. **DayZ Render** -- 空のレンダリング、ジオメトリ診断
+5. **Game** -- 天候、フリーカメラ、車両、戦闘、Central Economy、サーフェスサウンド
+6. **AI** -- ナビゲーションメッシュ、パスファインディング、AIエージェントの動作
+7. **Sounds** -- 再生サンプルのデバッグ、サウンドシステム情報
 
 ---
 
 ## Statistics
 
-### Menu Structure
+### メニュー構成
 
 ```
 Statistics
@@ -127,78 +131,78 @@ Statistics
 
 ### FPS
 
-Enables the FPS counter in the top-left corner of the screen.
+画面左上隅にFPSカウンターを表示します。
 
-The FPS value is calculated from the time between the last 10 frames, so it reflects a short rolling average rather than an instantaneous reading.
+FPS値は直近10フレーム間の時間から計算されるため、瞬間値ではなく短い移動平均を反映します。
 
 ### Script Profiler UI
 
-Turns on the on-screen Script Profiler, which displays real-time performance data for script execution.
+画面上のScript Profilerを有効にし、スクリプト実行のリアルタイムパフォーマンスデータを表示します。
 
-The profiler shows six data sections:
+プロファイラーは6つのデータセクションを表示します：
 
-| Section | What It Shows |
+| セクション | 表示内容 |
 |---------|---------------|
-| **Time per class** | Total time of all function calls belonging to a class (top 20) |
-| **Time per function** | Total time of all calls to a specific function (top 20) |
-| **Class allocations** | Number of allocations of a class (top 20) |
-| **Count per function** | Number of times a function was called (top 20) |
-| **Class count** | Number of live instances of a class (top 40) |
-| **Stats and settings** | Current profiler configuration and frame counters |
+| **Time per class** | クラスに属するすべての関数呼び出しの合計時間（上位20） |
+| **Time per function** | 特定の関数のすべての呼び出しの合計時間（上位20） |
+| **Class allocations** | クラスのアロケーション回数（上位20） |
+| **Count per function** | 関数が呼び出された回数（上位20） |
+| **Class count** | クラスのライブインスタンス数（上位40） |
+| **Stats and settings** | 現在のプロファイラー設定とフレームカウンター |
 
-The Stats and settings panel shows:
+Stats and settingsパネルの表示内容：
 
 | フィールド | 意味 |
 |-------|---------|
-| UI enabled (DIAG) | Whether the script profiler UI is active |
-| Profiling enabled (SCRP) | Whether profiling runs even when UI is not active |
-| Profiling enabled (SCRC) | Whether profiling is actually occurring |
-| Flags | Current data gathering flags |
-| モジュール | Currently profiled module |
-| Interval | Current update interval |
-| Time Resolution | Current time resolution |
-| Average | Whether values displayed are averages |
-| Game Frame | Total frames passed |
-| Session Frame | Total frames in this profiling session |
-| Total Frames | Total frames across all profiling sessions |
-| Profiled Sess Frms | Frames profiled in this session |
-| Profiled Frames | Frames profiled across all sessions |
+| UI enabled (DIAG) | スクリプトプロファイラーUIがアクティブかどうか |
+| Profiling enabled (SCRP) | UIが非アクティブでもプロファイリングが実行されているかどうか |
+| Profiling enabled (SCRC) | プロファイリングが実際に行われているかどうか |
+| Flags | 現在のデータ収集フラグ |
+| Module | 現在プロファイリングされているモジュール |
+| Interval | 現在の更新間隔 |
+| Time Resolution | 現在の時間解像度 |
+| Average | 表示値が平均かどうか |
+| Game Frame | 経過した合計フレーム数 |
+| Session Frame | このプロファイリングセッションの合計フレーム数 |
+| Total Frames | すべてのプロファイリングセッションにわたる合計フレーム数 |
+| Profiled Sess Frms | このセッションでプロファイリングされたフレーム数 |
+| Profiled Frames | すべてのセッションにわたってプロファイリングされたフレーム数 |
 
-> **Important:** The Script Profiler only profiles script code. Proto (engine-bound) methods are not measured as separate entries, but their execution time is included in the total time of the script method that calls them.
+> **重要：** Script Profilerはスクリプトコードのみをプロファイリングします。Proto（エンジンバインド）メソッドは個別のエントリとして計測されませんが、それらを呼び出すスクリプトメソッドの合計時間にその実行時間が含まれます。
 
-> **Important:** The EnProfiler API and the script profiler itself are only available on the diagnostic executable.
+> **重要：** EnProfiler APIとスクリプトプロファイラー自体は、診断実行ファイルでのみ利用可能です。
 
 ### Script Profiler Settings
 
-These settings control how profiling data is gathered. They can also be adjusted programmatically through the `EnProfiler` API (documented in `EnProfiler.c`).
+これらの設定は、プロファイリングデータの収集方法を制御します。`EnProfiler` API（`EnProfiler.c` に記載）を通じてプログラムで調整することもできます。
 
 #### Always Enabled
 
-Profiling data gathering is not enabled デフォルトでは. This toggle shows whether it is currently active.
+プロファイリングデータの収集はデフォルトでは有効になっていません。このトグルは現在アクティブかどうかを表示します。
 
-To enable profiling at startup, use the launch parameter `-profile`.
+起動時にプロファイリングを有効にするには、起動パラメータ `-profile` を使用します。
 
-The Script Profiler UI ignores this setting -- it always forces profiling while the UI is visible. When the UI is turned off, profiling stops again (unless "Always enabled" is set to true).
+Script Profiler UIはこの設定を無視します -- UIが表示されている間は常にプロファイリングを強制します。UIをオフにすると、プロファイリングは再び停止します（「Always enabled」がtrueに設定されている場合を除く）。
 
-#### フラグ
+#### Flags
 
-Controls how data is gathered. Four combinations are available:
+データの収集方法を制御します。4つの組み合わせが利用可能です：
 
-| フラグ Combination | Scope | Data Lifetime |
+| フラグの組み合わせ | スコープ | データの有効期間 |
 |-----------------|-------|---------------|
-| `SPF_RESET \| SPF_RECURSIVE` | Selected module + children | Per frame (reset each frame) |
-| `SPF_RECURSIVE` | Selected module + children | Accumulated across frames |
-| `SPF_RESET` | Selected module only | Per frame (reset each frame) |
-| `SPF_NONE` | Selected module only | Accumulated across frames |
+| `SPF_RESET \| SPF_RECURSIVE` | 選択したモジュール + 子 | フレームごと（各フレームでリセット） |
+| `SPF_RECURSIVE` | 選択したモジュール + 子 | フレーム間で蓄積 |
+| `SPF_RESET` | 選択したモジュールのみ | フレームごと（各フレームでリセット） |
+| `SPF_NONE` | 選択したモジュールのみ | フレーム間で蓄積 |
 
-- **SPF_RECURSIVE**: Enables profiling of child modules (recursively)
-- **SPF_RESET**: Clears data at the end of each frame
+- **SPF_RECURSIVE**：子モジュールのプロファイリングを有効にします（再帰的）
+- **SPF_RESET**：各フレームの終了時にデータをクリアします
 
 #### Module
 
-Selects which script module to profile:
+プロファイリングするスクリプトモジュールを選択します：
 
-| Option | Script Layer |
+| オプション | スクリプトレイヤー |
 |--------|-------------|
 | CORE | 1_Core |
 | GAMELIB | 2_GameLib |
@@ -209,43 +213,43 @@ Selects which script module to profile:
 
 #### Update Interval
 
-The number of frames to wait before updating the sorted data display. This also delays the reset caused by `SPF_RESET`.
+ソートされたデータ表示を更新するまでに待機するフレーム数です。これは `SPF_RESET` によるリセットも遅延させます。
 
-Available values: 0, 5, 10, 20, 30, 50, 60, 120, 144
+利用可能な値：0, 5, 10, 20, 30, 50, 60, 120, 144
 
 #### Average
 
-Enable or disable the displaying of average values.
+平均値の表示を有効または無効にします。
 
-- With `SPF_RESET` and no interval: values are the raw per-frame value
-- Without `SPF_RESET`: divides accumulated value by session frame count
-- With an interval set: divides by the interval
+- `SPF_RESET` を使用しインターバルなし：値はフレームごとの生の値
+- `SPF_RESET` なし：蓄積値をセッションフレーム数で割る
+- インターバル設定あり：インターバルで割る
 
-Class count is never averaged -- it always shows the current instance count. Allocations will show the average number of times an instance was created.
+クラスカウントは平均されません -- 常に現在のインスタンス数を表示します。アロケーションはインスタンスが作成された平均回数を表示します。
 
 #### Time Resolution
 
-Sets the time unit for display. The value represents the denominator (nth of a second):
+表示の時間単位を設定します。値は分母（1秒のn分の1）を表します：
 
-| 値 | Unit |
+| 値 | 単位 |
 |-------|------|
-| 1 | Seconds |
-| 1000 | Milliseconds |
-| 1000000 | Microseconds |
+| 1 | 秒 |
+| 1000 | ミリ秒 |
+| 1000000 | マイクロ秒 |
 
-Available values: 1, 10, 100, 1000, 10000, 100000, 1000000
+利用可能な値：1, 10, 100, 1000, 10000, 100000, 1000000
 
 #### (UI) Scale
 
-Adjusts the visual scale of the on-screen profiler display for different screen sizes and resolutions.
+異なる画面サイズと解像度向けに、画面上のプロファイラー表示のビジュアルスケールを調整します。
 
-Range: 0.5 to 1.5 (default: 1.0, step: 0.05)
+範囲：0.5〜1.5（デフォルト：1.0、ステップ：0.05）
 
 ---
 
 ## Enfusion Renderer
 
-### Menu Structure
+### メニュー構成
 
 ```
 Enfusion Renderer
@@ -279,43 +283,43 @@ Enfusion Renderer
 
 ### Lights
 
-Toggles actual light sources (such as `PersonalLight` or in-game items like flashlights). This does not affect environment lighting -- use the Lighting sub-menu for that.
+実際のライトソース（`PersonalLight` やフラッシュライトなどのゲーム内アイテム）を切り替えます。環境ライティングには影響しません -- それにはLightingサブメニューを使用してください。
 
-### Lighting Sub-Menu
+### Lightingサブメニュー
 
-Each toggle controls a specific lighting component:
+各トグルは特定のライティングコンポーネントを制御します：
 
-| Option | Effect When Disabled |
+| オプション | 無効時の効果 |
 |--------|---------------------|
-| **Ambient lighting** | Removes the general ambient light in the scene |
-| **Ground lighting** | Removes light reflected from the ground (visible on roofs, character underarms) |
-| **Directional lighting** | Removes main directional (sun/moon) light. Also disables bidirectional lighting |
-| **Bidirectional lighting** | Removes bidirectional light component |
-| **Specular lighting** | Removes specular highlights (visible on shiny surfaces like cupboards, cars) |
-| **Reflection** | Removes reflection lighting (visible on metallic/glossy surfaces) |
-| **Emission lighting** | Removes emission (self-illumination) from materials |
+| **Ambient lighting** | シーン内の一般的なアンビエントライトを除去 |
+| **Ground lighting** | 地面から反射されるライトを除去（屋根、キャラクターの脇の下で確認可能） |
+| **Directional lighting** | メインのディレクショナル（太陽/月）ライトを除去。双方向ライティングも無効化 |
+| **Bidirectional lighting** | 双方向ライトコンポーネントを除去 |
+| **Specular lighting** | スペキュラーハイライトを除去（食器棚、車などの光沢のある表面で確認可能） |
+| **Reflection** | リフレクションライティングを除去（金属/光沢のある表面で確認可能） |
+| **Emission lighting** | マテリアルからのエミッション（自己発光）を除去 |
 
-These toggles are useful for isolating specific lighting contributions when debugging visual issues in custom models or scenes.
+これらのトグルは、カスタムモデルやシーンのビジュアル問題をデバッグする際に、特定のライティング寄与を分離するのに便利です。
 
 ### Shadows
 
-Enables or disables shadow rendering. Disabling also removes the culling of rain inside objects (rain will fall through roofs).
+シャドウレンダリングを有効または無効にします。無効にすると、オブジェクト内の雨のカリングも除去されます（雨が屋根を通り抜けるようになります）。
 
 ### Terrain Shadows
 
-Controls how terrain shadows are generated.
+テレインシャドウの生成方法を制御します。
 
-Options: `on (slice)`, `on (full)`, `no update`, `disabled`
+オプション：`on (slice)`, `on (full)`, `no update`, `disabled`
 
 ### Render Debug Mode
 
-Switches between render visualization modes to inspect mesh geometry in-game.
+ゲーム内でメッシュジオメトリを検査するためのレンダー可視化モードを切り替えます。
 
-Options: `normal`, `wire`, `wire only`, `overdraw`, `overdrawZ`
+オプション：`normal`, `wire`, `wire only`, `overdraw`, `overdrawZ`
 
-Different materials display in different wireframe colors:
+異なるマテリアルは異なるワイヤーフレームカラーで表示されます：
 
-| Material | Color (RGB) |
+| マテリアル | カラー (RGB) |
 |----------|-------------|
 | TreeTrunk | 179, 126, 55 |
 | TreeCrown | 143, 227, 94 |
@@ -332,42 +336,42 @@ Different materials display in different wireframe colors:
 
 ### Occluders
 
-A set of toggles for the occlusion culling system:
+オクルージョンカリングシステムのトグルセットです：
 
-| Option | Effect |
+| オプション | 効果 |
 |--------|--------|
-| **Occluders** | Enable/disable object occlusion |
-| **Occlude entities** | Enable/disable entity occlusion |
-| **Occlude proxies** | Enable/disable proxy occlusion |
-| **Show occluder volumes** | Takes a snapshot and draws debug shapes visualizing occlusion volumes |
-| **Show active occluders** | Shows currently active occluders with debug shapes |
-| **Show occluded** | Visualizes occluded objects with debug shapes |
+| **Occluders** | オブジェクトオクルージョンの有効/無効 |
+| **Occlude entities** | エンティティオクルージョンの有効/無効 |
+| **Occlude proxies** | プロキシオクルージョンの有効/無効 |
+| **Show occluder volumes** | スナップショットを取得し、オクルージョンボリュームを可視化するデバッグシェイプを描画 |
+| **Show active occluders** | 現在アクティブなオクルーダーをデバッグシェイプで表示 |
+| **Show occluded** | オクルードされたオブジェクトをデバッグシェイプで可視化 |
 
 ### Widgets
 
-Enable or disable the rendering of all UI widgets. Useful for taking clean screenshots or isolating rendering issues.
+すべてのUIウィジェットのレンダリングを有効または無効にします。クリーンなスクリーンショットの撮影やレンダリング問題の分離に便利です。
 
 ### Postprocess
 
-Enable or disable post-processing effects (bloom, color correction, vignette, etc.).
+ポストプロセスエフェクト（ブルーム、色補正、ビネットなど）を有効または無効にします。
 
 ### Terrain
 
-Enable or disable terrain rendering entirely.
+テレインレンダリングを完全に有効または無効にします。
 
-### Materials Sub-Menu
+### Materialsサブメニュー
 
-Toggle the rendering of specific material types. Most are self-explanatory. Notable entries:
+特定のマテリアルタイプのレンダリングを切り替えます。ほとんどは名前から明らかです。注目すべきエントリ：
 
-- **Super** -- An overarching toggle that covers every material related to the "super" shader
-- **Old Terrain** -- Covers both Terrain and Terrain Simple materials
-- **Water** -- Covers every material related to water (ocean, shore, rivers)
+- **Super** -- 「super」シェーダーに関連するすべてのマテリアルを網羅する包括的なトグル
+- **Old Terrain** -- TerrainとTerrain Simpleの両方のマテリアルをカバー
+- **Water** -- 水に関連するすべてのマテリアル（海、海岸、川）をカバー
 
 ---
 
-## Enfusion World (Physics)
+## Enfusion World（物理演算）
 
-### Menu Structure
+### メニュー構成
 
 ```
 Enfusion World
@@ -386,38 +390,38 @@ Enfusion World
   Show bodies                      [LAlt + Numpad 6]
 ```
 
-> **注意：** "Bullet" here refers to the Bullet physics engine, not ammunition.
+> **注意：** ここでの「Bullet」はBullet物理エンジンを指し、弾薬ではありません。
 
 ### Show Bullet
 
-Turns on the debug visualization for the Bullet physics engine.
+Bullet物理エンジンのデバッグ可視化を有効にします。
 
-### Bullet Sub-Menu
+### Bulletサブメニュー
 
-| Option | 説明 |
+| オプション | 説明 |
 |--------|-------------|
-| **Draw Char Ctrl** | Visualize the player character controller. Depends on "Draw Bullet shape" |
-| **Draw Simple Char Ctrl** | Visualize the AI character controller. Depends on "Draw Bullet shape" |
-| **Max. Collider Distance** | Maximum distance from player to visualize colliders (values: 0, 1, 2, 5, 10, 20, 50, 100, 200, 500). Default is 0 |
-| **Draw Bullet shape** | Visualize physics collider shapes |
-| **Draw Bullet wireframe** | Show colliders as wireframe only. Depends on "Draw Bullet shape" |
-| **Draw Bullet shape AABB** | Show axis-aligned bounding boxes of colliders |
-| **Draw obj center of mass** | Show object centers of mass |
-| **Draw Bullet contacts** | Visualize colliders making contact |
-| **Force sleep Bullet** | Force all physics bodies to sleep |
-| **Show stats** | Show debug stats (options: disabled, basic, all). Stats remain visible for 10 seconds after disabling |
+| **Draw Char Ctrl** | プレイヤーキャラクターコントローラーを可視化。「Draw Bullet shape」に依存 |
+| **Draw Simple Char Ctrl** | AIキャラクターコントローラーを可視化。「Draw Bullet shape」に依存 |
+| **Max. Collider Distance** | コライダーを可視化するプレイヤーからの最大距離（値：0, 1, 2, 5, 10, 20, 50, 100, 200, 500）。デフォルトは0 |
+| **Draw Bullet shape** | 物理コライダーシェイプを可視化 |
+| **Draw Bullet wireframe** | コライダーをワイヤーフレームのみで表示。「Draw Bullet shape」に依存 |
+| **Draw Bullet shape AABB** | コライダーの軸平行バウンディングボックスを表示 |
+| **Draw obj center of mass** | オブジェクトの重心を表示 |
+| **Draw Bullet contacts** | 接触しているコライダーを可視化 |
+| **Force sleep Bullet** | すべての物理ボディをスリープ状態に強制 |
+| **Show stats** | デバッグ統計を表示（オプション：disabled, basic, all）。無効化後10秒間表示が残る |
 
-> **Warning:** Max. Collider Distance is 0 デフォルトでは because this visualization is expensive. Setting it to a large distance will cause significant performance degradation.
+> **警告：** Max. Collider Distanceはデフォルトで0です。この可視化は負荷が高いためです。大きな距離に設定すると、パフォーマンスが大幅に低下します。
 
 ### Show Bodies
 
-Visualize Bullet physics bodies. Options: `disabled`, `only`, `all`
+Bullet物理ボディを可視化します。オプション：`disabled`, `only`, `all`
 
 ---
 
 ## DayZ Render
 
-### Menu Structure
+### メニュー構成
 
 ```
 DayZ Render
@@ -439,38 +443,38 @@ DayZ Render
       diagnostic mode
 ```
 
-### Sky Sub-Menu
+### Skyサブメニュー
 
-Toggle individual sky rendering components:
+個別の空レンダリングコンポーネントを切り替えます：
 
-| Option | What It Controls |
+| オプション | 制御対象 |
 |--------|-----------------|
-| **Space** | The background texture behind the stars |
-| **Stars** | Star rendering |
-| **Sun** | Sun and its halo effect (not god rays) |
-| **Moon** | Moon and its halo effect (not god rays) |
-| **Atmosphere** | The atmosphere texture in the sky |
-| **Far (Clouds)** | Upper/distant clouds. These do not affect light shafts (less dense) |
-| **Near (Clouds)** | Lower/closer clouds. These are denser and act as occlusion for light shafts |
-| **Physical (Clouds)** | Deprecated object-based clouds. Removed from Chernarus and Livonia in DayZ 1.23 |
-| **Horizon** | Horizon rendering. The horizon will prevent light shafts |
-| **God Rays** | Light shaft post-process effect |
+| **Space** | 星の背後の背景テクスチャ |
+| **Stars** | 星のレンダリング |
+| **Sun** | 太陽とそのハロー効果（ゴッドレイではない） |
+| **Moon** | 月とそのハロー効果（ゴッドレイではない） |
+| **Atmosphere** | 空の大気テクスチャ |
+| **Far (Clouds)** | 上層/遠方の雲。ライトシャフトには影響しない（密度が低い） |
+| **Near (Clouds)** | 下層/近い雲。より密度が高く、ライトシャフトのオクルージョンとして機能 |
+| **Physical (Clouds)** | 非推奨のオブジェクトベースの雲。DayZ 1.23でChernarusとLivoniaから削除済み |
+| **Horizon** | 水平線のレンダリング。水平線はライトシャフトを遮断する |
+| **God Rays** | ライトシャフトのポストプロセスエフェクト |
 
 ### Geometry Diagnostic
 
-Enables debug shape drawing to visualize how an object's geometry looks in-game.
+オブジェクトのジオメトリがゲーム内でどのように見えるかを可視化するデバッグシェイプ描画を有効にします。
 
-Geometry types: `normal`, `roadway`, `geometry`, `viewGeometry`, `fireGeometry`, `paths`, `memory`, `wreck`
+ジオメトリタイプ：`normal`, `roadway`, `geometry`, `viewGeometry`, `fireGeometry`, `paths`, `memory`, `wreck`
 
-Drawing modes: `solid+wire`, `Zsolid+wire`, `wire`, `ZWire`, `geom only`
+描画モード：`solid+wire`, `Zsolid+wire`, `wire`, `ZWire`, `geom only`
 
-This is extremely useful for modders creating custom models -- you can verify that your fire geometry, view geometry, and memory points are correctly configured without leaving the game.
+これはカスタムモデルを作成するモッダーにとって非常に便利です -- ゲームを離れることなく、ファイアジオメトリ、ビュージオメトリ、メモリポイントが正しく設定されているか確認できます。
 
 ---
 
 ## Game
 
-### Menu Structure
+### メニュー構成
 
 ```
 Game
@@ -545,25 +549,25 @@ Game
 
 ### Weather & Environment
 
-Debug functionality for the weather system.
+天候システムのデバッグ機能です。
 
 #### Display
 
-Enables the weather debug visualization. This shows an on-screen debug of fog/view distance and opens a separate real-time window with detailed weather data.
+天候デバッグの可視化を有効にします。霧/視程の画面上デバッグを表示し、詳細な天候データを含む別のリアルタイムウィンドウを開きます。
 
-To enable the separate window while running as a server, use the launch parameter `-debugweather`.
+サーバーとして実行中に別ウィンドウを有効にするには、起動パラメータ `-debugweather` を使用します。
 
-Window settings are stored in profiles as `weather_client_imgui.ini` / `weather_client_imgui.bin` (or `weather_server_*` for servers).
+ウィンドウ設定はプロファイルに `weather_client_imgui.ini` / `weather_client_imgui.bin`（サーバーの場合は `weather_server_*`）として保存されます。
 
 #### Force Fog at Camera
 
-Forces the fog height to match the player camera height. Has priority over the Height bias setting.
+霧の高さをプレイヤーカメラの高さに合わせます。Height bias設定よりも優先されます。
 
 #### Override Fog
 
-Enables overriding fog values with manual settings:
+手動設定で霧の値をオーバーライドできます：
 
-| パラメータ | Range | Step |
+| パラメータ | 範囲 | ステップ |
 |-----------|-------|------|
 | Distance density | 0 -- 1 | 0.01 |
 | Height density | 0 -- 1 | 0.01 |
@@ -572,190 +576,190 @@ Enables overriding fog values with manual settings:
 
 ### Free Camera
 
-The free camera detaches the view from the player character and allows flying through the world. This is one of the most useful debug tools for modders.
+フリーカメラはプレイヤーキャラクターからビューを切り離し、ワールド内を自由に飛行できるようにします。モッダーにとって最も便利なデバッグツールの一つです。
 
-#### Free Camera Controls
+#### フリーカメラの操作
 
-| Key | Origin | Function |
+| キー | 起源 | 機能 |
 |-----|--------|----------|
-| **W / A / S / D** | Inputs (xml) | Move forward / left / backward / right |
-| **Q** | Inputs (xml) | Move up |
-| **Z** | Inputs (xml) | Move down |
-| **Mouse** | Inputs (xml) | Look around |
-| **Mouse wheel up** | Inputs (C++) | Increase speed |
-| **Mouse wheel down** | Inputs (C++) | Decrease speed |
-| **Spacebar** | Cheat Inputs (C++) | Toggle on-screen debug of targeted object |
-| **Ctrl / Shift** | Cheat Inputs (C++) | Current speed x 10 |
-| **Alt** | Cheat Inputs (C++) | Current speed / 10 |
-| **End** | Cheat Inputs (C++) | Disable free camera (return to player) |
-| **Enter** | Cheat Inputs (C++) | Link camera to target object |
-| **Page Up** | Cheat Inputs (C++) | Toggle player movement while in free camera |
-| **Page Down** | Cheat Inputs (C++) | Freeze/unfreeze camera position |
-| **Insert** | PluginKeyBinding (Script) | Teleport player to cursor position |
-| **Home** | PluginKeyBinding (Script) | Toggle free camera / disable and teleport to cursor |
-| **Numpad /** | PluginKeyBinding (Script) | Toggle free camera (no teleport) |
+| **W / A / S / D** | Inputs (xml) | 前進 / 左 / 後退 / 右へ移動 |
+| **Q** | Inputs (xml) | 上昇 |
+| **Z** | Inputs (xml) | 下降 |
+| **マウス** | Inputs (xml) | 周囲を見る |
+| **マウスホイール上** | Inputs (C++) | 速度増加 |
+| **マウスホイール下** | Inputs (C++) | 速度減少 |
+| **スペースバー** | Cheat Inputs (C++) | ターゲットオブジェクトの画面上デバッグを切り替え |
+| **Ctrl / Shift** | Cheat Inputs (C++) | 現在の速度 x 10 |
+| **Alt** | Cheat Inputs (C++) | 現在の速度 / 10 |
+| **End** | Cheat Inputs (C++) | フリーカメラを無効化（プレイヤーに戻る） |
+| **Enter** | Cheat Inputs (C++) | カメラをターゲットオブジェクトにリンク |
+| **Page Up** | Cheat Inputs (C++) | フリーカメラ中のプレイヤー移動を切り替え |
+| **Page Down** | Cheat Inputs (C++) | カメラ位置のフリーズ/解除 |
+| **Insert** | PluginKeyBinding (Script) | プレイヤーをカーソル位置にテレポート |
+| **Home** | PluginKeyBinding (Script) | フリーカメラの切り替え / 無効化してカーソル位置にテレポート |
+| **Numpad /** | PluginKeyBinding (Script) | フリーカメラの切り替え（テレポートなし） |
 
-#### Free Camera Options
+#### フリーカメラオプション
 
-| Option | 説明 |
+| オプション | 説明 |
 |--------|-------------|
-| **FrCam Player Move** | Enable/disable player inputs (WASD) moving the player while in free camera |
-| **FrCam NoClip** | Enable/disable the camera passing through terrain |
-| **FrCam Freeze** | Enable/disable inputs moving the camera |
+| **FrCam Player Move** | フリーカメラ中にプレイヤー入力（WASD）がプレイヤーを動かすかどうかを有効/無効 |
+| **FrCam NoClip** | カメラがテレインを通過できるかどうかを有効/無効 |
+| **FrCam Freeze** | 入力によるカメラの移動を有効/無効 |
 
 ### Vehicles
 
-Extended debug functionality for vehicles. These only work while the player is inside a vehicle.
+車両の拡張デバッグ機能です。プレイヤーが車両内にいる場合のみ動作します。
 
-- **Audio** -- Opens a separate window to tweak sound settings in real time. Includes visualization of audio controllers.
-- **Simulation** -- Opens a separate window with car simulation debug: tweaking physics parameters and visualization.
+- **Audio** -- サウンド設定をリアルタイムで調整する別ウィンドウを開きます。オーディオコントローラーの可視化を含みます。
+- **Simulation** -- 車両シミュレーションデバッグの別ウィンドウを開きます：物理パラメータの調整と可視化。
 
 ### Combat
 
-Debug tools for combat, shooting, and hitpoints:
+戦闘、射撃、ヒットポイントのデバッグツールです：
 
-| Option | 説明 |
+| オプション | 説明 |
 |--------|-------------|
-| **DECombat** | Shows on-screen text with distances to cars, AI, and players |
-| **DEShots** | Projectile debug sub-menu (see below) |
-| **DEHitpoints** | Displays the DamageSystem of the player and the object they are looking at |
-| **DEExplosions** | Shows explosion penetration data. Numbers show slowdown values. Red cross = stopped. Green cross = penetrated |
+| **DECombat** | 車両、AI、プレイヤーまでの距離を画面上テキストで表示 |
+| **DEShots** | 弾道デバッグサブメニュー（以下参照） |
+| **DEHitpoints** | プレイヤーと注視しているオブジェクトのDamageSystemを表示 |
+| **DEExplosions** | 爆発の貫通データを表示。数値は減速値。赤い十字 = 停止。緑の十字 = 貫通 |
 
-**DEShots sub-menu:**
+**DEShowサブメニュー：**
 
-| Option | 説明 |
+| オプション | 説明 |
 |--------|-------------|
-| Clear vis. | Clear any existing shot visualization |
-| Vis. trajectory | Trace the path of a shot, showing exit points and stop point |
-| Always Deflect | Forces all client-fired shots to deflect |
+| Clear vis. | 既存の射撃可視化をクリア |
+| Vis. trajectory | 射撃の軌道をトレースし、出口点と停止点を表示 |
+| Always Deflect | クライアントから発射されたすべての弾を跳弾させる |
 
 ### Legacy/Obsolete
 
-- **DEAmbient** -- Displays variables influencing ambient sounds
-- **DELight** -- Displays stats regarding the current lighting environment
+- **DEAmbient** -- アンビエントサウンドに影響する変数を表示
+- **DELight** -- 現在のライティング環境に関する統計を表示
 
 ### DESurfaceSound
 
-Displays the surface type the player is standing on and the attenuation type.
+プレイヤーが立っているサーフェスタイプと減衰タイプを表示します。
 
 ### Central Economy
 
-A comprehensive set of debugging tools for the Central Economy (CE) system.
+Central Economy（CE）システムの包括的なデバッグツールセットです。
 
-> **Important:** Most CE debug options only work in single-player client with CE enabled. Only "Building Stats" works in a multiplayer environment or when CE is turned off.
+> **重要：** ほとんどのCEデバッグオプションは、CEが有効なシングルプレイヤークライアントでのみ動作します。「Building Stats」のみがマルチプレイヤー環境またはCEがオフの場合に動作します。
 
-> **注意：** Many of these functions are also available through the `CEApi` in script (`CentralEconomy.c`).
+> **注意：** これらの機能の多くは、スクリプトの `CEApi`（`CentralEconomy.c`）を通じても利用可能です。
 
 #### Loot Spawn Edit
 
-Tools for creating and editing loot spawn points on objects. Free camera must be enabled to use the Edit Volume tool.
+オブジェクト上のルートスポーンポイントを作成・編集するためのツールです。Edit Volumeツールを使用するにはフリーカメラを有効にする必要があります。
 
-| Option | 説明 | Script Equivalent |
+| オプション | 説明 | スクリプト相当 |
 |--------|-------------|-------------------|
-| **Spawn Volume Vis** | Visualize loot spawn points. Options: Off, Adaptive, Volume, Occupied | `GetCEApi().LootSetSpawnVolumeVisualisation()` |
-| **Setup Vis** | Show CE setup properties on screen with color-coded containers | `GetCEApi().LootToggleSpawnSetup()` |
-| **Edit Volume** | Interactive loot point editor (requires free camera) | `GetCEApi().LootToggleVolumeEditing()` |
-| **Re-Trace Group Points** | Re-trace loot points to fix hovering issues | `GetCEApi().LootRetraceGroupPoints()` |
-| **Spawn Candy** | Spawn loot in all spawn points of selected group | -- |
-| **Spawn Rotation Test** | Test rotation flags at cursor position | -- |
-| **Placement Test** | Visualize placement with sphere cylinder | -- |
-| **Export Group** | Export selected group to `storage/export/mapGroup_CLASSNAME.xml` | `GetCEApi().LootExportGroup()` |
-| **Export All Groups** | Export all groups to `storage/export/mapgroupproto.xml` | `GetCEApi().LootExportAllGroups()` |
-| **Export Map** | Generate `storage/export/mapgrouppos.xml` | `GetCEApi().LootExportMap()` |
-| **Export Clusters** | Generate `storage/export/mapgroupcluster.xml` | `GetCEApi().ExportClusterData()` |
-| **Export Economy [csv]** | Export economy to `storage/log/economy.csv` | `GetCEApi().EconomyLog(EconomyLogCategories.Economy)` |
-| **Export Respawn Queue [csv]** | Export respawn queue to `storage/log/respawn_queue.csv` | `GetCEApi().EconomyLog(EconomyLogCategories.RespawnQueue)` |
+| **Spawn Volume Vis** | ルートスポーンポイントを可視化。オプション：Off, Adaptive, Volume, Occupied | `GetCEApi().LootSetSpawnVolumeVisualisation()` |
+| **Setup Vis** | CE設定プロパティをカラーコード付きコンテナで画面上に表示 | `GetCEApi().LootToggleSpawnSetup()` |
+| **Edit Volume** | インタラクティブなルートポイントエディター（フリーカメラが必要） | `GetCEApi().LootToggleVolumeEditing()` |
+| **Re-Trace Group Points** | ルートポイントを再トレースして浮遊問題を修正 | `GetCEApi().LootRetraceGroupPoints()` |
+| **Spawn Candy** | 選択したグループのすべてのスポーンポイントにルートをスポーン | -- |
+| **Spawn Rotation Test** | カーソル位置でローテーションフラグをテスト | -- |
+| **Placement Test** | スフィアシリンダーで配置を可視化 | -- |
+| **Export Group** | 選択したグループを `storage/export/mapGroup_CLASSNAME.xml` にエクスポート | `GetCEApi().LootExportGroup()` |
+| **Export All Groups** | すべてのグループを `storage/export/mapgroupproto.xml` にエクスポート | `GetCEApi().LootExportAllGroups()` |
+| **Export Map** | `storage/export/mapgrouppos.xml` を生成 | `GetCEApi().LootExportMap()` |
+| **Export Clusters** | `storage/export/mapgroupcluster.xml` を生成 | `GetCEApi().ExportClusterData()` |
+| **Export Economy [csv]** | エコノミーを `storage/log/economy.csv` にエクスポート | `GetCEApi().EconomyLog(EconomyLogCategories.Economy)` |
+| **Export Respawn Queue [csv]** | リスポーンキューを `storage/log/respawn_queue.csv` にエクスポート | `GetCEApi().EconomyLog(EconomyLogCategories.RespawnQueue)` |
 
-**Edit Volume key bindings:**
+**Edit Volumeのキーバインド：**
 
-| Key | Function |
+| キー | 機能 |
 |-----|----------|
-| **[** | Iterate backwards through containers |
-| **]** | Iterate forwards through containers |
-| **LMB** | Insert new point |
-| **RMB** | Delete point |
-| **;** | Increase point size |
-| **'** | Decrease point size |
-| **Insert** | Spawn loot at point |
-| **M** | Spawn 48 "AmmoBox_762x54_20Rnd" |
-| **Backspace** | Mark nearby loot for cleanup (depletes lifetime, not instant) |
+| **[** | コンテナを後方にイテレート |
+| **]** | コンテナを前方にイテレート |
+| **LMB** | 新しいポイントを挿入 |
+| **RMB** | ポイントを削除 |
+| **;** | ポイントサイズを増加 |
+| **'** | ポイントサイズを減少 |
+| **Insert** | ポイントにルートをスポーン |
+| **M** | 48個の "AmmoBox_762x54_20Rnd" をスポーン |
+| **Backspace** | 近くのルートをクリーンアップ対象にマーク（ライフタイムを消費、即座ではない） |
 
 #### Loot Tool
 
-| Option | 説明 | Script Equivalent |
+| オプション | 説明 | スクリプト相当 |
 |--------|-------------|-------------------|
-| **Deplete Lifetime** | Depletes lifetime to 3 seconds (scheduled for cleanup) | `GetCEApi().LootDepleteLifetime()` |
-| **Set Damage = 1.0** | Sets health to 0 | `GetCEApi().LootSetDamageToOne()` |
-| **Damage + Deplete** | Performs both of the above | `GetCEApi().LootDepleteAndDamage()` |
-| **Invert Avoidance** | Toggles player avoidance (detection of nearby players) | -- |
-| **Project Target Loot** | Emulates spawning of targeted item, generates images and logs. Requires "Loot Vis" enabled | `GetCEApi().SpawnAnalyze()` and `GetCEApi().EconomyMap()` |
+| **Deplete Lifetime** | ライフタイムを3秒に消費（クリーンアップ予約） | `GetCEApi().LootDepleteLifetime()` |
+| **Set Damage = 1.0** | ヘルスを0に設定 | `GetCEApi().LootSetDamageToOne()` |
+| **Damage + Deplete** | 上記の両方を実行 | `GetCEApi().LootDepleteAndDamage()` |
+| **Invert Avoidance** | プレイヤー回避（近くのプレイヤーの検出）を切り替え | -- |
+| **Project Target Loot** | ターゲットアイテムのスポーンをエミュレートし、画像とログを生成。「Loot Vis」の有効化が必要 | `GetCEApi().SpawnAnalyze()` と `GetCEApi().EconomyMap()` |
 
 #### Infected
 
-| Option | 説明 | Script Equivalent |
+| オプション | 説明 | スクリプト相当 |
 |--------|-------------|-------------------|
-| **Infected Vis** | Visualize zombie zones, locations, alive/dead status | `GetCEApi().InfectedToggleVisualisation()` |
-| **Infected Zone Info** | On-screen debug when camera is inside an infected zone | `GetCEApi().InfectedToggleZoneInfo()` |
-| **Infected Spawn** | Spawn infected in selected zone (or "InfectedArmy" at cursor) | `GetCEApi().InfectedSpawn()` |
-| **Reset Cleanup** | Sets cleanup timer to 3 seconds | `GetCEApi().InfectedResetCleanup()` |
+| **Infected Vis** | ゾンビゾーン、ロケーション、生存/死亡ステータスを可視化 | `GetCEApi().InfectedToggleVisualisation()` |
+| **Infected Zone Info** | カメラがインフェクテッドゾーン内にあるときの画面上デバッグ | `GetCEApi().InfectedToggleZoneInfo()` |
+| **Infected Spawn** | 選択したゾーンにインフェクテッドをスポーン（またはカーソル位置に "InfectedArmy"） | `GetCEApi().InfectedSpawn()` |
+| **Reset Cleanup** | クリーンアップタイマーを3秒に設定 | `GetCEApi().InfectedResetCleanup()` |
 
 #### Animal
 
-| Option | 説明 | Script Equivalent |
+| オプション | 説明 | スクリプト相当 |
 |--------|-------------|-------------------|
-| **Animal Vis** | Visualize animal zones, locations, alive/dead status | `GetCEApi().AnimalToggleVisualisation()` |
-| **Animal Spawn** | Spawn animal in selected zone (or "AnimalGoat" at cursor) | `GetCEApi().AnimalSpawn()` |
-| **Ambient Spawn** | Spawn "AmbientHen" at cursor target | `GetCEApi().AnimalAmbientSpawn()` |
+| **Animal Vis** | 動物ゾーン、ロケーション、生存/死亡ステータスを可視化 | `GetCEApi().AnimalToggleVisualisation()` |
+| **Animal Spawn** | 選択したゾーンに動物をスポーン（またはカーソル位置に "AnimalGoat"） | `GetCEApi().AnimalSpawn()` |
+| **Ambient Spawn** | カーソルターゲットに "AmbientHen" をスポーン | `GetCEApi().AnimalAmbientSpawn()` |
 
 #### Building
 
-**Building Stats** shows on-screen debug about building door states:
+**Building Stats** は建物のドア状態に関する画面上デバッグを表示します：
 
-- Left side: whether each door is open/closed and free/locked
-- Middle: stats regarding `buildings.bin` (building persistence)
+- 左側：各ドアが開いている/閉じている、フリー/ロックされているか
+- 中央：`buildings.bin`（建物の永続性）に関する統計
 
-Door randomization uses the `initOpened` config value. When `rand < initOpened`, the door spawns opened (so `initOpened=0` means doors never spawn open).
+ドアのランダム化は `initOpened` config値を使用します。`rand < initOpened` のとき、ドアは開いた状態でスポーンします（そのため `initOpened=0` はドアが開いた状態でスポーンしないことを意味します）。
 
-Common `<building/>` setups in economy.xml:
+economy.xmlでの一般的な `<building/>` 設定：
 
-| Setup | Behavior |
+| 設定 | 動作 |
 |-------|----------|
-| `init="0" load="0" respawn="0" save="0"` | No persistence, no randomization, default state after restart |
-| `init="1" load="0" respawn="0" save="0"` | No persistence, doors randomized by initOpened |
-| `init="1" load="1" respawn="0" save="1"` | Saves only locked doors, doors randomized by initOpened |
-| `init="0" load="1" respawn="0" save="1"` | Full persistence, saves exact door state, no randomization |
+| `init="0" load="0" respawn="0" save="0"` | 永続性なし、ランダム化なし、再起動後デフォルト状態 |
+| `init="1" load="0" respawn="0" save="0"` | 永続性なし、initOpenedによるドアのランダム化 |
+| `init="1" load="1" respawn="0" save="1"` | ロックされたドアのみ保存、initOpenedによるドアのランダム化 |
+| `init="0" load="1" respawn="0" save="1"` | 完全な永続性、正確なドア状態を保存、ランダム化なし |
 
-#### Other Central Economy Tools
+#### その他のCentral Economyツール
 
-| Option | 説明 | Script Equivalent |
+| オプション | 説明 | スクリプト相当 |
 |--------|-------------|-------------------|
-| **Vehicle&Wreck Vis** | Visualize objects registered to "Vehicle" avoidance. Yellow = Car, Pink = Wrecks (Building), Blue = InventoryItem | `GetCEApi().ToggleVehicleAndWreckVisualisation()` |
-| **Loot Vis** | On-screen Economy Data for anything you look at (loot, infected, dynamic events) | `GetCEApi().ToggleLootVisualisation()` |
-| **Cluster Vis** | On-screen Trajectory DE stats | `GetCEApi().ToggleClusterVisualisation()` |
-| **Dynamic Events Status** | On-screen DE statistics | `GetCEApi().ToggleDynamicEventStatus()` |
-| **Dynamic Events Vis** | Visualize and edit DE spawn points | `GetCEApi().ToggleDynamicEventVisualisation()` |
-| **Dynamic Events Spawn** | Spawn a dynamic event at nearest point or "StaticChristmasTree" as fallback | `GetCEApi().DynamicEventSpawn()` |
-| **Export Dyn Event** | Export DE points to `storage/export/eventSpawn_CLASSNAME.xml` | `GetCEApi().DynamicEventExport()` |
-| **Overall Stats** | On-screen CE statistics | `GetCEApi().ToggleOverallStats()` |
-| **Updaters State** | Shows what the CE is currently processing | -- |
-| **Idle Mode** | Puts CE to sleep (stops processing) | -- |
-| **Force Save** | Forces saving of the entire `storage/data` folder (excludes player database) | -- |
+| **Vehicle&Wreck Vis** | 「Vehicle」回避に登録されたオブジェクトを可視化。黄色 = 車、ピンク = レック（Building）、青 = InventoryItem | `GetCEApi().ToggleVehicleAndWreckVisualisation()` |
+| **Loot Vis** | 注視しているもの（ルート、インフェクテッド、ダイナミックイベント）のエコノミーデータを画面上に表示 | `GetCEApi().ToggleLootVisualisation()` |
+| **Cluster Vis** | Trajectory DEの統計を画面上に表示 | `GetCEApi().ToggleClusterVisualisation()` |
+| **Dynamic Events Status** | DEの統計を画面上に表示 | `GetCEApi().ToggleDynamicEventStatus()` |
+| **Dynamic Events Vis** | DEスポーンポイントを可視化・編集 | `GetCEApi().ToggleDynamicEventVisualisation()` |
+| **Dynamic Events Spawn** | 最寄りのポイントにダイナミックイベントをスポーン、またはフォールバックとして "StaticChristmasTree" | `GetCEApi().DynamicEventSpawn()` |
+| **Export Dyn Event** | DEポイントを `storage/export/eventSpawn_CLASSNAME.xml` にエクスポート | `GetCEApi().DynamicEventExport()` |
+| **Overall Stats** | CE統計を画面上に表示 | `GetCEApi().ToggleOverallStats()` |
+| **Updaters State** | CEが現在処理している内容を表示 | -- |
+| **Idle Mode** | CEをスリープ状態にする（処理を停止） | -- |
+| **Force Save** | `storage/data` フォルダ全体の保存を強制（プレイヤーデータベースは除外） | -- |
 
-**Dynamic Events Vis key bindings:**
+**Dynamic Events Visのキーバインド：**
 
-| Key | Function |
+| キー | 機能 |
 |-----|----------|
-| **[** | Iterate backwards through available DE |
-| **]** | Iterate forwards through available DE |
-| **LMB** | Insert new point for selected DE |
-| **RMB** | Delete point nearest to cursor |
-| **MMB** | Hold or click to rotate angle |
+| **[** | 利用可能なDEを後方にイテレート |
+| **]** | 利用可能なDEを前方にイテレート |
+| **LMB** | 選択したDEの新しいポイントを挿入 |
+| **RMB** | カーソルに最も近いポイントを削除 |
+| **MMB** | ホールドまたはクリックで角度を回転 |
 
 ---
 
 ## AI
 
-### Menu Structure
+### メニュー構成
 
 ```
 AI
@@ -765,40 +769,40 @@ AI
   Debug AI Agent
 ```
 
-> **Important:** AI debugging currently does not work in a multiplayer environment.
+> **重要：** AIデバッグは現在マルチプレイヤー環境では動作しません。
 
 ### Show NavMesh
 
-Draws debug shapes to visualize the navigation mesh. Shows an on-screen debug with stats.
+ナビゲーションメッシュを可視化するデバッグシェイプを描画します。統計を含む画面上デバッグを表示します。
 
-| Key | Function |
+| キー | 機能 |
 |-----|----------|
-| **Numpad 0** | Register "Test start" at camera position |
-| **Numpad 1** | Regenerate tile at camera position |
-| **Numpad 2** | Regenerate tiles around camera position |
-| **Numpad 3** | Iterate forwards through visualization types |
-| **LAlt + Numpad 3** | Iterate backwards through visualization types |
-| **Numpad 4** | Register "Test end" at camera position. Draws spheres and a line between start and end. Green = path found, Red = no path |
-| **Numpad 5** | NavMesh nearest position test (SamplePosition). Blue sphere = query, pink sphere = result |
-| **Numpad 6** | NavMesh raycast test. Blue sphere = query, pink sphere = result |
+| **Numpad 0** | カメラ位置に「Test start」を登録 |
+| **Numpad 1** | カメラ位置のタイルを再生成 |
+| **Numpad 2** | カメラ位置周辺のタイルを再生成 |
+| **Numpad 3** | 可視化タイプを前方にイテレート |
+| **LAlt + Numpad 3** | 可視化タイプを後方にイテレート |
+| **Numpad 4** | カメラ位置に「Test end」を登録。スタートとエンド間にスフィアとラインを描画。緑 = パスあり、赤 = パスなし |
+| **Numpad 5** | NavMesh最近傍位置テスト（SamplePosition）。青のスフィア = クエリ、ピンクのスフィア = 結果 |
+| **Numpad 6** | NavMeshレイキャストテスト。青のスフィア = クエリ、ピンクのスフィア = 結果 |
 
 ### Debug Pathgraph World
 
-On-screen debug showing how many path job requests have been completed and how many are currently pending.
+完了したパスジョブリクエスト数と現在ペンディング中の数を表示する画面上デバッグです。
 
 ### Debug Path Agent
 
-On-screen debug and debug shapes for an AI's pathing. Target an AI entity to select it for tracking. Use this when you are specifically interested in how an AI finds its path.
+AIのパスに関する画面上デバッグとデバッグシェイプです。AIエンティティをターゲットにして追跡対象として選択します。AIがどのようにパスを見つけるかに特に興味がある場合に使用します。
 
 ### Debug AI Agent
 
-On-screen debug and debug shapes for an AI's alertness and behavior. Target an AI entity to select it for tracking. Use this when you want to understand an AI's decision-making and awareness state.
+AIの警戒度と動作に関する画面上デバッグとデバッグシェイプです。AIエンティティをターゲットにして追跡対象として選択します。AIの意思決定と認識状態を理解したい場合に使用します。
 
 ---
 
 ## Sounds
 
-### Menu Structure
+### メニュー構成
 
 ```
 Sounds
@@ -808,100 +812,100 @@ Sounds
 
 ### Show Playing Samples
 
-Debug visualization for currently playing sounds.
+現在再生中のサウンドのデバッグ可視化です。
 
-| Option | 説明 |
+| オプション | 説明 |
 |--------|-------------|
-| **none** | Default, no debug |
-| **ImGui** | Separate window (newest iteration). Supports filtering, full category coverage. Settings saved as `playing_sounds_imgui.ini` / `.bin` in profiles |
-| **DbgUI** | Legacy. Has category filtering, more readable, but goes off-screen and lacks vehicle category |
-| **Engine** | Legacy. Shows real-time color-coded data with stats, but goes off-screen and has no color legend |
+| **none** | デフォルト、デバッグなし |
+| **ImGui** | 別ウィンドウ（最新版）。フィルタリング対応、全カテゴリカバー。設定はプロファイルに `playing_sounds_imgui.ini` / `.bin` として保存 |
+| **DbgUI** | レガシー。カテゴリフィルタリングあり、より読みやすいが、画面外に出る場合があり車両カテゴリが欠如 |
+| **Engine** | レガシー。リアルタイムのカラーコード付きデータと統計を表示するが、画面外に出る場合がありカラー凡例なし |
 
 ### Show System Info
 
-On-screen debug stats of the sound system (buffer counts, active sources, etc.).
+サウンドシステムの画面上デバッグ統計（バッファ数、アクティブソース数など）です。
 
 ---
 
-## Useful Features for Modders
+## モッダーに便利な機能
 
-While every option has its use, these are the ones modders reach for most frequently:
+すべてのオプションに用途がありますが、モッダーが最も頻繁に利用するものは以下です：
 
-### Performance Analysis
+### パフォーマンス分析
 
-1. **FPS counter** (LCtrl + Numpad 1) -- Quick check that your mod is not destroying frame rate
-2. **Script Profiler** -- Find which of your classes or functions consume the most CPU time. Set module to WORLD or MISSION to focus on your mod's script layer
+1. **FPSカウンター**（LCtrl + Numpad 1）-- Modがフレームレートを破壊していないかの簡易チェック
+2. **Script Profiler** -- どのクラスや関数が最もCPU時間を消費しているか特定。ModのスクリプトレイヤーにフォーカスするにはモジュールをWORLDまたはMISSIONに設定
 
-### Visual Debugging
+### ビジュアルデバッグ
 
-1. **Free Camera** -- Fly around to inspect spawned objects, verify positions, check AI behavior from a distance
-2. **Geometry Diagnostic** -- Verify your custom model's fire geometry, view geometry, roadway LOD, and memory points without leaving the game
-3. **Render Debug Mode** (RCtrl + RAlt + W) -- See wireframe overlays to check mesh density and material assignments
+1. **フリーカメラ** -- スポーンされたオブジェクトの検査、位置の確認、遠距離からのAI動作のチェックのために飛び回る
+2. **Geometry Diagnostic** -- ゲームを離れることなく、カスタムモデルのファイアジオメトリ、ビュージオメトリ、ロードウェイLOD、メモリポイントを検証
+3. **Render Debug Mode**（RCtrl + RAlt + W）-- メッシュ密度とマテリアル割り当てを確認するためのワイヤーフレームオーバーレイを表示
 
-### Gameplay Testing
+### ゲームプレイテスト
 
-1. **Free Camera + Insert** -- Teleport your player anywhere on the map instantly
-2. **Weather Override** -- Force specific fog conditions to test visibility-dependent features
-3. **Central Economy tools** -- Spawn infected, animals, loot, and dynamic events on demand
-4. **Combat debug** -- Trace shot trajectories, inspect hitpoint damage systems, test explosion penetration
+1. **フリーカメラ + Insert** -- マップ上のどこにでもプレイヤーを瞬時にテレポート
+2. **Weather Override** -- 視界依存機能をテストするための特定の霧条件を強制
+3. **Central Economyツール** -- インフェクテッド、動物、ルート、ダイナミックイベントをオンデマンドでスポーン
+4. **戦闘デバッグ** -- 射撃軌道のトレース、ヒットポイントダメージシステムの検査、爆発貫通のテスト
 
-### AI Development
+### AI開発
 
-1. **Show NavMesh** -- Verify that AI can actually navigate to where you expect
-2. **Debug AI Agent** -- See what an infected or animal is thinking, what alert level it is at
-3. **Debug Path Agent** -- を参照してください actual path an AI is taking and whether pathfinding succeeds
+1. **Show NavMesh** -- AIが期待する場所に実際にナビゲートできることを検証
+2. **Debug AI Agent** -- インフェクテッドや動物が何を考えているか、どの警戒レベルにあるかを確認
+3. **Debug Path Agent** -- AIが実際に通っているパスとパスファインディングが成功しているかを確認
 
 ---
 
-## 使用するタイミング the Diag Menu
+## Diag Menuを使用するタイミング
 
-### During Development
+### 開発中
 
-- **Script Profiler** when optimizing per-frame code (OnUpdate, EOnFrame)
-- **Free Camera** for positioning objects, verifying spawn locations, inspecting model placement
-- **Geometry Diagnostic** immediately after importing a new model to verify LODs and geometry types
-- **FPS counter** as a baseline before and after adding new features
+- **Script Profiler** -- フレームごとのコード（OnUpdate、EOnFrame）を最適化する際
+- **フリーカメラ** -- オブジェクトの配置、スポーン位置の確認、モデル配置の検査
+- **Geometry Diagnostic** -- 新しいモデルのインポート直後にLODとジオメトリタイプを検証
+- **FPSカウンター** -- 新機能追加の前後のベースラインとして
 
-### During Testing
+### テスト中
 
-- **Combat debug** to verify weapon damage, projectile behavior, explosion effects
-- **CE tools** to test loot distribution, spawn points, dynamic events
-- **AI debug** to verify infected/animal behavior responds correctly to player presence
-- **Weather debug** to test your mod under different weather conditions
+- **戦闘デバッグ** -- 武器ダメージ、弾道動作、爆発効果の検証
+- **CEツール** -- ルート分布、スポーンポイント、ダイナミックイベントのテスト
+- **AIデバッグ** -- インフェクテッド/動物の動作がプレイヤーの存在に正しく反応するか検証
+- **天候デバッグ** -- 異なる天候条件下でModをテスト
 
-### During Bug Investigation
+### バグ調査中
 
-- **FPS counter + Script Profiler** when players report performance issues
-- **Free Camera + Spacebar** (object debug) to inspect objects that are not behaving correctly
-- **Render Debug Mode** to diagnose visual artifacts or material issues
-- **Show Bullet** to debug physics collision problems
+- **FPSカウンター + Script Profiler** -- プレイヤーからパフォーマンス問題が報告された場合
+- **フリーカメラ + スペースバー**（オブジェクトデバッグ）-- 正しく動作していないオブジェクトの検査
+- **Render Debug Mode** -- ビジュアルアーティファクトやマテリアル問題の診断
+- **Show Bullet** -- 物理衝突問題のデバッグ
 
 ---
 
 ## よくある間違い
 
-**Using retail executable.** The Diag Menu is only available in `DayZDiag_x64.exe`. If you press Win+Alt and nothing happens, you are running the retail build.
+**製品版実行ファイルの使用。** Diag Menuは `DayZDiag_x64.exe` でのみ利用可能です。Win+Altを押しても何も起きない場合、製品版ビルドを実行しています。
 
-**Forgetting Max. Collider Distance is 0.** The physics visualization (Draw Bullet shape) will show nothing if Max. Collider Distance is still at its default of 0. Set it to at least 10-20 to see colliders around you.
+**Max. Collider Distanceが0のまま。** 物理可視化（Draw Bullet shape）は、Max. Collider Distanceがデフォルトの0のままだと何も表示しません。周囲のコライダーを見るには少なくとも10〜20に設定してください。
 
-**CE tools in multiplayer.** Most Central Economy debug options only work in single-player with CE enabled. Do not expect them to function on a dedicated server.
+**マルチプレイヤーでのCEツール。** ほとんどのCentral Economyデバッグオプションは、CEが有効なシングルプレイヤーでのみ動作します。専用サーバーで機能することを期待しないでください。
 
-**AI debug in multiplayer.** AI debugging currently does not work in a multiplayer environment. Test AI behavior in single-player.
+**マルチプレイヤーでのAIデバッグ。** AIデバッグは現在マルチプレイヤー環境では動作しません。AI動作はシングルプレイヤーでテストしてください。
 
-**Confusing "Bullet" with ammunition.** The "Enfusion World" category's "Bullet" options refer to the Bullet physics engine, not weapon ammunition. Combat-related debugging is under Game > Combat.
+**「Bullet」を弾薬と混同。** 「Enfusion World」カテゴリの「Bullet」オプションはBullet物理エンジンを指し、武器の弾薬ではありません。戦闘関連のデバッグはGame > Combatの下にあります。
 
-**Leaving profiler on.** The Script Profiler has measurable overhead. Turn it off when you are done profiling to get accurate FPS readings.
+**プロファイラーをオンのまま。** Script Profilerは測定可能なオーバーヘッドがあります。プロファイリング完了後はオフにして、正確なFPS読み取り値を取得してください。
 
-**Large collider distance values.** Setting Max. Collider Distance to 200 or 500 will tank your frame rate. Use the smallest value that covers your area of interest.
+**大きなコライダー距離値。** Max. Collider Distanceを200や500に設定すると、フレームレートが大幅に低下します。関心のあるエリアをカバーする最小の値を使用してください。
 
-**Not enabling prerequisites.** Several options depend on others being enabled first:
-- "Draw Char Ctrl" and "Draw Bullet wireframe" depend on "Draw Bullet shape"
-- "Edit Volume" requires free camera
-- "Project Target Loot" requires "Loot Vis" to be enabled
+**前提条件の有効化忘れ。** いくつかのオプションは他のオプションが先に有効化されている必要があります：
+- 「Draw Char Ctrl」と「Draw Bullet wireframe」は「Draw Bullet shape」に依存
+- 「Edit Volume」はフリーカメラが必要
+- 「Project Target Loot」は「Loot Vis」の有効化が必要
 
 ---
 
 ## 次のステップ
 
-- **Chapter 8.6: [Debugging & Testing](06-debugging-testing.md)** -- Script logs, Print debugging, file patching, and Workbench
-- **Chapter 8.7: [Publishing to Workshop](07-publishing-workshop.md)** -- Package and publish your tested mod
+- **Chapter 8.6: [デバッグとテスト](06-debugging-testing.md)** -- スクリプトログ、Printデバッグ、ファイルパッチング、Workbench
+- **Chapter 8.7: [Workshopへの公開](07-publishing-workshop.md)** -- テスト済みModのパッケージングと公開

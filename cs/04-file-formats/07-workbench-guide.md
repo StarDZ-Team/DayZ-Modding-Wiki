@@ -1,77 +1,77 @@
-# Chapter 4.7: Workbench Guide
+# Kapitola 4.7: Průvodce Workbenchem
 
-[Home](../../README.md) | [<< Previous: PBO Packing](06-pbo-packing.md) | **Workbench Guide** | [Next: Building Modeling >>](08-building-modeling.md)
+[Domů](../../README.md) | [<< Předchozí: Balení PBO](06-pbo-packing.md) | **Průvodce Workbenchem** | [Další: Modelování budov >>](08-building-modeling.md)
 
 ---
 
-## Uvod
+## Úvod
 
-Workbench is Bohemia Interactive's integrated development environment for the Enfusion engine. It ships with DayZ Tools and is the only official tool that understands Enforce Script at a language level. While many modders write code in VS Code or other editors, Workbench remains indispensable for tasks no other tool can perform: attaching a debugger to a running DayZ instance, setting breakpoints, stepping through code, inspecting variables at runtime, previewing `.layout` UI files, browsing game resources, and running live script commands through the built-in console.
+Workbench je integrované vývojové prostředí od Bohemia Interactive pro engine Enfusion. Dodává se s DayZ Tools a je jediným oficiálním nástrojem, který rozumí Enforce Scriptu na jazykové úrovni. Zatímco mnoho modderů píše kód ve VS Code nebo jiných editorech, Workbench zůstává nepostradatelný pro úkoly, které žádný jiný nástroj nedokáže: připojení debuggeru k běžící instanci DayZ, nastavení breakpointů, krokování kódem, inspekce proměnných za běhu, náhled `.layout` UI souborů, procházení herních zdrojů a spouštění živých skriptových příkazů přes vestavěnou konzoli.
 
 ---
 
 ## Obsah
 
-- [What is Workbench?](#what-is-workbench)
-- [Instalace a nastaveni](#installation-and-setup)
-- [Projektove soubory (.gproj)](#project-files-gproj)
-- [Rozhrani Workbench](#the-workbench-interface)
-- [Editace skriptu](#script-editing)
-- [Ladeni skriptu](#debugging-scripts)
-- [Script Console -- Live Testing](#script-console----live-testing)
-- [UI / Layout Preview](#ui--layout-preview)
-- [Prohledavac prostredku](#resource-browser)
-- [Profilovani vykonu](#performance-profiling)
-- [Integration with File Patching](#integration-with-file-patching)
-- [Bezne problemy Workbench](#common-workbench-issues)
-- [Tipy a doporucene postupy](#tips-and-best-practices)
+- [Co je Workbench?](#co-je-workbench)
+- [Instalace a nastavení](#instalace-a-nastavení)
+- [Projektové soubory (.gproj)](#projektové-soubory-gproj)
+- [Rozhraní Workbenche](#rozhraní-workbenche)
+- [Editace skriptů](#editace-skriptů)
+- [Ladění skriptů](#ladění-skriptů)
+- [Skriptová konzole --- Živé testování](#skriptová-konzole----živé-testování)
+- [Náhled UI / Layoutu](#náhled-ui--layoutu)
+- [Prohlížeč zdrojů](#prohlížeč-zdrojů)
+- [Profilování výkonu](#profilování-výkonu)
+- [Integrace s File Patchingem](#integrace-s-file-patchingem)
+- [Běžné problémy Workbenche](#běžné-problémy-workbenche)
+- [Tipy a doporučené postupy](#tipy-a-doporučené-postupy)
 
 ---
 
-## What is Workbench?
+## Co je Workbench?
 
-Workbench is Bohemia's IDE for Enfusion engine development. It is the only tool in the DayZ Tools suite that can compile, analyze, and debug Enforce Script. It serves six purposes:
+Workbench je IDE od Bohemia pro vývoj na enginu Enfusion. Je jediným nástrojem v sadě DayZ Tools, který dokáže kompilovat, analyzovat a ladit Enforce Script. Slouží šesti účelům:
 
-| Ucel | Popis |
+| Účel | Popis |
 |---------|-------------|
-| **Script editing** | Syntaxe highlighting, code completion, and error checking for `.c` files |
-| **Script debugging** | Breakpoints, variable inspection, call stack, step-through execution |
-| **Resource browsing** | Navigate and preview game assets -- models, textures, configs, layouts |
-| **UI / layout preview** | Visual preview of `.layout` widget hierarchies with property inspection |
-| **Performance profiling** | Script profiling, frame time analysis, memory monitoring |
-| **Script console** | Execute Enforce Script commands live against a running game instance |
+| **Editace skriptů** | Zvýrazňování syntaxe, doplňování kódu a kontrola chyb pro `.c` soubory |
+| **Ladění skriptů** | Breakpointy, inspekce proměnných, zásobník volání, krokování |
+| **Procházení zdrojů** | Navigace a náhled herních assetů -- modely, textury, konfigurace, layouty |
+| **Náhled UI / layoutu** | Vizuální náhled hierarchií `.layout` widgetů s inspekcí vlastností |
+| **Profilování výkonu** | Profilování skriptů, analýza času snímku, monitorování paměti |
+| **Skriptová konzole** | Spouštění příkazů Enforce Scriptu živě proti běžící instanci hry |
 
-Workbench uses the same Enfusion script compiler as DayZ itself. When Workbench reports a compile error, that error will also occur in-game -- making it a reliable pre-flight check before launching.
+Workbench používá stejný kompilátor skriptů Enfusion jako samotné DayZ. Když Workbench nahlásí chybu kompilace, tato chyba se objeví i ve hře -- díky tomu je spolehlivou předletovou kontrolou před spuštěním.
 
-### Co Workbench NENI
+### Co Workbench NENÍ
 
-- **Not a general-purpose code editor.** It lacks refactoring tools, Git integration, multi-cursor editing, and the extension ecosystem of VS Code.
-- **Not a game launcher.** You still run `DayZDiag_x64.exe` separately; Workbench connects to it.
-- **Not required for building PBOs.** AddonBuilder and build scripts handle PBO packing independently.
+- **Není univerzální editor kódu.** Chybí mu refaktorovací nástroje, integrace s Git, multi-kurzorová editace a ekosystém rozšíření VS Code.
+- **Není spouštěč hry.** Stále spouštíte `DayZDiag_x64.exe` samostatně; Workbench se k němu připojí.
+- **Není nutný pro sestavování PBO.** AddonBuilder a sestavovací skripty řeší balení PBO nezávisle.
 
 ---
 
-## Instalace a nastaveni
+## Instalace a nastavení
 
-### Step 1: Install DayZ Tools
+### Krok 1: Instalace DayZ Tools
 
-Workbench is included with DayZ Tools, distributed free through Steam. Open Steam Library, enable the **Tools** filter, search for **DayZ Tools**, and install (~2 GB).
+Workbench je součástí DayZ Tools, distribuovaných zdarma přes Steam. Otevřete knihovnu Steam, povolte filtr **Nástroje**, vyhledejte **DayZ Tools** a nainstalujte (~2 GB).
 
-### Step 2: Locate Workbench
+### Krok 2: Nalezení Workbenche
 
 ```
 Steam\steamapps\common\DayZ Tools\Bin\Workbench\
-  workbenchApp.exe          <-- The Workbench executable
-  dayz.gproj                <-- Default project file
+  workbenchApp.exe          <-- Spustitelný soubor Workbenche
+  dayz.gproj                <-- Výchozí projektový soubor
 ```
 
-### Step 3: Mount the P: Drive
+### Krok 3: Připojení disku P:
 
-Workbench requires the P: drive (workdrive) to be mounted. Without it, Workbench fails to start or shows an empty resource browser. Mount via DayZ Tools Launcher, your project's `SetupWorkdrive.bat`, or manually: `subst P: "D:\YourWorkDir"`.
+Workbench vyžaduje připojený disk P: (workdrive). Bez něj Workbench selže při spuštění nebo zobrazí prázdný prohlížeč zdrojů. Připojte přes DayZ Tools Launcher, váš projektový `SetupWorkdrive.bat`, nebo ručně: `subst P: "D:\VasAdresarPrace"`.
 
-### Step 4: Extract Vanilla Scripts
+### Krok 4: Extrakce vanilkových skriptů
 
-Workbench needs vanilla DayZ scripts on P: to compile your mod (since your code extends vanilla classes):
+Workbench potřebuje vanilkové DayZ skripty na P: pro kompilaci vašeho modu (protože váš kód rozšiřuje vanilkové třídy):
 
 ```
 P:\scripts\
@@ -82,38 +82,38 @@ P:\scripts\
   5_Mission\
 ```
 
-Extract these via the DayZ Tools Launcher, or create a symbolic link to the extracted scripts directory.
+Extrahujte je přes DayZ Tools Launcher, nebo vytvořte symbolický odkaz na adresář s extrahovanými skripty.
 
-### Step 4b: Link Game Install to Project Drive (for Live Hotloading)
+### Krok 4b: Propojení herní instalace s projektovým diskem (pro živé přenačítání)
 
-To allow DayZDiag to load scripts directly from your Project Drive (enabling live editing without PBO rebuilds), create a symbolic link from the DayZ installation folder to `P:\scripts`:
+Pro umožnění DayZDiag načítat skripty přímo z vašeho projektového disku (což umožňuje živou editaci bez přestavby PBO) vytvořte symbolický odkaz ze složky instalace DayZ na `P:\scripts`:
 
-1. Navigate to your DayZ installation folder (typically `Steam\steamapps\common\DayZ`).
-2. Delete any existing `scripts` folder inside it.
-3. Open a command prompt **as Administrator** and run:
+1. Přejděte do složky instalace DayZ (typicky `Steam\steamapps\common\DayZ`).
+2. Smažte jakoukoliv existující složku `scripts` uvnitř.
+3. Otevřete příkazový řádek **jako správce** a spusťte:
 
 ```batch
 mklink /J "C:\...\steamapps\common\DayZ\scripts" "P:\scripts"
 ```
 
-Replace the first path with your actual DayZ installation path. After this, the DayZ install folder will contain a `scripts` junction that points to `P:\scripts`. Any changes you make on the Project Drive are immediately visible to the game.
+Nahraďte první cestu vaší skutečnou cestou instalace DayZ. Poté bude složka instalace DayZ obsahovat spojení `scripts`, které ukazuje na `P:\scripts`. Jakékoli změny provedené na projektovém disku jsou okamžitě viditelné pro hru.
 
-### Step 5: Configure Source Data Directory
+### Krok 5: Konfigurace adresáře zdrojových dat
 
-1. Launch `workbenchApp.exe`.
-2. Click **Workbench > Options** in the menu bar.
-3. Set **Source data directory** to `P:\`.
-4. Click **OK** and allow Workbench to restart.
+1. Spusťte `workbenchApp.exe`.
+2. Klikněte na **Workbench > Options** v panelu nabídek.
+3. Nastavte **Source data directory** na `P:\`.
+4. Klikněte na **OK** a nechte Workbench restartovat.
 
 ---
 
-## Projektove soubory (.gproj)
+## Projektové soubory (.gproj)
 
-The `.gproj` file is Workbench's project configuration. It tells Workbench where to find scripts, which image sets to load for layout preview, and which widget styles are available.
+Soubor `.gproj` je projektová konfigurace Workbenche. Říká Workbenchi, kde najít skripty, které sady obrázků načíst pro náhled layoutu a které styly widgetů jsou dostupné.
 
-### File Location
+### Umístění souboru
 
-Convention is to place it in a `Workbench/` directory inside your mod:
+Konvencí je umístit ho do adresáře `Workbench/` uvnitř vašeho modu:
 
 ```
 P:\MyMod\
@@ -126,9 +126,9 @@ P:\MyMod\
   config.cpp
 ```
 
-### Structure Prehled
+### Přehled struktury
 
-A `.gproj` uses a proprietary text format (not JSON, not XML):
+Soubor `.gproj` používá proprietární textový formát (ne JSON, ne XML):
 
 ```
 GameProjectClass {
@@ -150,7 +150,7 @@ GameProjectClass {
                 "gui/imagesets/ccgui_enforce.imageset"
                 "gui/imagesets/dayz_gui.imageset"
                 "gui/imagesets/dayz_inventory.imageset"
-                // ... other vanilla image sets ...
+                // ... další vanilkové sady obrázků ...
                 "MyMod/gui/imagesets/my_imageset.imageset"
             }
 
@@ -211,216 +211,216 @@ GameProjectClass {
 }
 ```
 
-### Klicove sekce vysvetleny
+### Vysvětlení klíčových sekcí
 
-**FileSystem** -- Root directories where Workbench searches for files. At minimum, include `P:/`. You can add additional paths (e.g., Steam DayZ install directory) if files live outside the workdrive.
+**FileSystem** -- Kořenové adresáře, kde Workbench hledá soubory. Minimálně zahrňte `P:/`. Můžete přidat další cesty (např. adresář instalace DayZ ve Steamu), pokud soubory žijí mimo workdrive.
 
-**ScriptModules** -- The most important section. Maps each engine layer to script directories:
+**ScriptModules** -- Nejdůležitější sekce. Mapuje každou vrstvu enginu na adresáře skriptů:
 
-| Module | Layer | EntryPoint | Ucel |
+| Modul | Vrstva | EntryPoint | Účel |
 |--------|-------|------------|---------|
-| `core` | `1_Core` | `""` | Engine core, basic types |
-| `gameLib` | `2_GameLib` | `""` | Game library utilities |
-| `game` | `3_Game` | `"CreateGame"` | Enums, constants, game init |
-| `world` | `4_World` | `""` | Entities, managers |
-| `mission` | `5_Mission` | `"CreateMission"` | Mission hooks, UI panels |
-| `workbench` | (tools) | `""` | Workbench plugins |
+| `core` | `1_Core` | `""` | Jádro enginu, základní typy |
+| `gameLib` | `2_GameLib` | `""` | Knihovní utility hry |
+| `game` | `3_Game` | `"CreateGame"` | Enumy, konstanty, inicializace hry |
+| `world` | `4_World` | `""` | Entity, manažeři |
+| `mission` | `5_Mission` | `"CreateMission"` | Mise hooky, UI panely |
+| `workbench` | (nástroje) | `""` | Pluginy Workbenche |
 
-Vanilla paths come first, then your mod paths. If your mod depends on other mods (like Community Framework), add their paths too:
+Vanilkové cesty jsou první, poté cesty vašeho modu. Pokud váš mod závisí na jiných modech (jako Community Framework), přidejte i jejich cesty:
 
 ```
 ScriptModulePathClass {
     Name "game"
     Paths {
-        "scripts/3_Game"              // Vanilla
+        "scripts/3_Game"              // Vanilka
         "JM/CF/Scripts/3_Game"        // Community Framework
-        "MyMod/Scripts/3_Game"        // Your mod
+        "MyMod/Scripts/3_Game"        // Váš mod
     }
     EntryPoint "CreateGame"
 }
 ```
 
-Some frameworks override entry points (CF uses `"CF_CreateGame"`).
+Některé frameworky přepisují entry pointy (CF používá `"CF_CreateGame"`).
 
-**imageSets / widgetStyles** -- Required for layout preview. Without vanilla image sets, layout files show missing images. Always include the standard 14 vanilla image sets listed in the example above.
+**imageSets / widgetStyles** -- Vyžadovány pro náhled layoutu. Bez vanilkových sad obrázků layoutové soubory zobrazují chybějící obrázky. Vždy zahrňte standardních 14 vanilkových sad obrázků uvedených v příkladu výše.
 
-### Path Prefix Resolution
+### Rozlišení prefixu cesty
 
-When Workbench auto-resolves script paths from a mod's `config.cpp`, the FileSystem path is prepended. If your mod is at `P:\OtherMods\MyMod` and config.cpp declares `MyMod/scripts/3_Game`, the FileSystem must include `P:\OtherMods` for correct resolution.
+Když Workbench automaticky rozlišuje cesty skriptů z `config.cpp` modu, cesta FileSystem se předřadí. Pokud je váš mod na `P:\OtherMods\MyMod` a config.cpp deklaruje `MyMod/scripts/3_Game`, FileSystem musí zahrnovat `P:\OtherMods` pro správné rozlišení.
 
-### Vytvoreni a spusteni
+### Vytvoření a spuštění
 
-**Create a .gproj:** Copy the default `dayz.gproj` from `DayZ Tools\Bin\Workbench\`, update `ID`/`TITLE`, and add your mod's script paths to each module.
+**Vytvoření .gproj:** Zkopírujte výchozí `dayz.gproj` z `DayZ Tools\Bin\Workbench\`, aktualizujte `ID`/`TITLE` a přidejte cesty skriptů vašeho modu ke každému modulu.
 
-**Launch with custom project:**
+**Spuštění s vlastním projektem:**
 ```batch
 workbenchApp.exe -project="P:\MyMod\Workbench\dayz.gproj"
 ```
 
-**Launch with -mod (auto-configure from config.cpp):**
+**Spuštění s -mod (automatická konfigurace z config.cpp):**
 ```batch
 workbenchApp.exe -mod=P:\MyMod
 workbenchApp.exe -mod=P:\CommunityFramework;P:\MyMod
 ```
 
-The `-mod` approach is simpler but gives less control. For complex multi-mod setups, a custom `.gproj` is more reliable.
+Přístup `-mod` je jednodušší, ale dává méně kontroly. Pro komplexní multi-mod sestavení je vlastní `.gproj` spolehlivější.
 
 ---
 
-## Rozhrani Workbench
+## Rozhraní Workbenche
 
-### Main Menu Bar
+### Hlavní panel nabídek
 
-| Menu | Klicove polozky |
+| Nabídka | Klíčové položky |
 |------|-----------|
-| **File** | Open project, recent projects, save |
-| **Edit** | Cut, copy, paste, find, replace |
-| **View** | Toggle panels on/off, reset layout |
-| **Workbench** | Options (source data directory, preferences) |
-| **Debug** | Start/stop debugging, client/server toggle, breakpoint management |
-| **Plugins** | Installed Workbench plugins and tool addons |
+| **File** | Otevřít projekt, poslední projekty, uložit |
+| **Edit** | Vyjmout, kopírovat, vložit, najít, nahradit |
+| **View** | Přepínání panelů zap/vyp, reset rozvržení |
+| **Workbench** | Možnosti (adresář zdrojových dat, preference) |
+| **Debug** | Spuštění/zastavení ladění, přepínání klient/server, správa breakpointů |
+| **Plugins** | Nainstalované pluginy a doplňky nástrojů Workbenche |
 
-### Panels
+### Panely
 
-- **Prohledavac prostredku** (left) -- File tree of the P: drive. Double-click `.c` files to edit, `.layout` files to preview, `.p3d` to view models, `.paa` to view textures.
-- **Script Editor** (center) -- Code editing area with syntax highlighting, code completion, error underlines, line numbers, breakpoint markers, and tabbed multi-file editing.
-- **Output** (bottom) -- Compiler errors/warnings, `Print()` output from a connected game, debug messages. When connected to DayZDiag, this window streams all text that the diagnostic executable prints for debug purposes in real time -- the same output you would see in script logs. Double-click errors to navigate to the source line.
-- **Properties** (right) -- Properties of the selected object. Most useful in the Layout Editor for widget inspection.
-- **Console** -- Live Enforce Script command execution.
-- **Debug panels** (when debugging) -- **Locals** (current scope variables), **Watch** (user expressions), **Call Stack** (function chain), **Breakpoints** (list with enable/disable toggles).
+- **Prohlížeč zdrojů** (vlevo) -- Strom souborů disku P:. Dvojklikem `.c` soubory upravíte, `.layout` soubory zobrazíte, `.p3d` prohlédnete modely, `.paa` zobrazíte textury.
+- **Editor skriptů** (uprostřed) -- Oblast editace kódu se zvýrazňováním syntaxe, doplňováním kódu, podtrháváním chyb, čísly řádků, značkami breakpointů a editací více souborů v záložkách.
+- **Výstup** (dole) -- Chyby/varování kompilátoru, výstup `Print()` z připojené hry, ladicí zprávy. Při připojení k DayZDiag toto okno streamuje v reálném čase veškerý text, který diagnostický spustitelný soubor tiskne pro účely ladění -- stejný výstup, který byste viděli v logech skriptů. Dvojklikem na chyby přejdete na zdrojový řádek.
+- **Vlastnosti** (vpravo) -- Vlastnosti vybraného objektu. Nejužitečnější v editoru layoutu pro inspekci widgetů.
+- **Konzole** -- Živé spouštění příkazů Enforce Scriptu.
+- **Ladicí panely** (při ladění) -- **Locals** (proměnné aktuálního rozsahu), **Watch** (uživatelské výrazy), **Call Stack** (řetězec volání), **Breakpoints** (seznam s přepínáním zapnout/vypnout).
 
 ---
 
-## Editace skriptu
+## Editace skriptů
 
-### Opening Files
+### Otevírání souborů
 
-1. **Prohledavac prostredku:** Double-click a `.c` file. This automatically opens the Script Editor module and loads the file.
-2. **Script Editor Prohledavac prostredku:** The Script Editor has its own built-in Prohledavac prostredku panel, separate from the main Workbench Prohledavac prostredku. You can use either to navigate and open script files.
-3. **File > Open:** Standard file dialog.
-4. **Error output:** Double-click a compiler error to jump to the file and line.
+1. **Prohlížeč zdrojů:** Dvojklikněte na `.c` soubor. Tím se automaticky otevře modul editoru skriptů a načte soubor.
+2. **Prohlížeč zdrojů editoru skriptů:** Editor skriptů má vlastní vestavěný panel prohlížeče zdrojů, oddělený od hlavního prohlížeče zdrojů Workbenche. Můžete použít kterýkoli pro navigaci a otevírání souborů skriptů.
+3. **File > Open:** Standardní dialog pro otevření souboru.
+4. **Výstup chyb:** Dvojklikem na chybu kompilátoru přejdete na soubor a řádek.
 
-### Syntaxe Highlighting
+### Zvýrazňování syntaxe
 
-| Prvek | Zvyrazneno |
+| Prvek | Zvýrazněno |
 |---------|-------------|
-| Keywords (`class`, `if`, `while`, `return`, `modded`, `override`) | Bold / keyword color |
-| Typs (`int`, `float`, `string`, `bool`, `vector`, `void`) | Typ color |
-| Strings, comments, preprocessor directives | Distinct colors |
+| Klíčová slova (`class`, `if`, `while`, `return`, `modded`, `override`) | Tučně / barva klíčových slov |
+| Typy (`int`, `float`, `string`, `bool`, `vector`, `void`) | Barva typů |
+| Řetězce, komentáře, direktivy preprocesoru | Odlišné barvy |
 
-### Code Completion
+### Doplňování kódu
 
-Typ a class name followed by `.` to see methods and fields, or press `Ctrl+Space` for suggestions. Completion is based on the compiled script context. It is functional but limited compared to VS Code -- best for quick API lookups.
+Napište název třídy následovaný `.` pro zobrazení metod a polí, nebo stiskněte `Ctrl+Space` pro návrhy. Doplňování je založeno na zkompilovaném kontextu skriptu. Je funkční, ale omezené ve srovnání s VS Code -- nejlepší pro rychlé vyhledávání API.
 
-### Compiler Feedback
+### Zpětná vazba kompilátoru
 
-Workbench compiles on save. Common errors:
+Workbench kompiluje při uložení. Běžné chyby:
 
-| Zprava | Vyznam |
+| Zpráva | Význam |
 |---------|---------|
-| `Undefined variable 'xyz'` | Not declared or typo |
-| `Metoda 'Foo' not found in class 'Bar'` | Wrong method name or class |
-| `Cannot convert 'string' to 'int'` | Typ mismatch |
-| `Typ 'MyClass' not found` | File not in project |
+| `Undefined variable 'xyz'` | Nedeklarováno nebo překlep |
+| `Method 'Foo' not found in class 'Bar'` | Špatný název metody nebo třídy |
+| `Cannot convert 'string' to 'int'` | Neshoda typů |
+| `Type 'MyClass' not found` | Soubor není v projektu |
 
-### Find, Replace, and Go-to-Definition
+### Hledání, nahrazování a přechod na definici
 
-- `Ctrl+F` / `Ctrl+H` -- find/replace in current file.
-- `Ctrl+Shift+F` -- search across all project files.
-- Right-click a symbol and select **Go to Definition** to jump to its declaration, even into vanilla scripts.
+- `Ctrl+F` / `Ctrl+H` -- hledání/nahrazování v aktuálním souboru.
+- `Ctrl+Shift+F` -- hledání napříč všemi soubory projektu.
+- Klikněte pravým tlačítkem na symbol a vyberte **Go to Definition** pro přechod na jeho deklaraci, i do vanilkových skriptů.
 
 ---
 
-## Ladeni skriptu
+## Ladění skriptů
 
-Debugging is Workbench's most powerful feature -- pause a running DayZ instance, inspect every variable, and step through code line by line.
+Ladění je nejsilnější funkcí Workbenche -- pozastavte běžící instanci DayZ, prozkoumejte každou proměnnou a krokujte kódem řádek po řádku.
 
-### Predpoklady
+### Předpoklady
 
-- **DayZDiag_x64.exe** (not retail DayZ) -- only the Diag build supports debugging.
-- **P: drive mounted** with vanilla scripts extracted.
-- **Scripts must match** -- if you edit after game loads, line numbers will not align.
+- **DayZDiag_x64.exe** (ne retailové DayZ) -- ladění podporuje pouze Diag build.
+- **Připojený disk P:** s extrahovanými vanilkovými skripty.
+- **Skripty se musí shodovat** -- pokud editujete po načtení hry, čísla řádků nebudou odpovídat.
 
-### Setting Up a Debug Session
+### Nastavení ladicí relace
 
-1. Open Workbench and load your project.
-2. Open the **Script Editor** module (from the menu bar or by double-clicking any `.c` file in the Prohledavac prostredku -- this automatically opens the Script Editor and loads the file).
-3. Launch DayZDiag separately:
+1. Otevřete Workbench a načtěte svůj projekt.
+2. Otevřete modul **Script Editor** (z panelu nabídek nebo dvojklikem na jakýkoli `.c` soubor v prohlížeči zdrojů -- tím se automaticky otevře editor skriptů a načte soubor).
+3. Spusťte DayZDiag samostatně:
 
 ```batch
 DayZDiag_x64.exe -filePatching -mod=P:\MyMod -connect=127.0.0.1 -port=2302
 ```
 
-4. Workbench auto-detects DayZDiag and connects. A brief popup appears in the lower-right corner of the screen confirming the connection.
+4. Workbench automaticky detekuje DayZDiag a připojí se. V pravém dolním rohu obrazovky se krátce zobrazí vyskakovací okno potvrzující připojení.
 
-> **Tip:** If you only need to see console output (no breakpoints or stepping), you do not need to extract PBOs or load scripts into Workbench. The Script Editor will still connect to DayZDiag and display the Output stream. However, breakpoints and code navigation require the matching script files to be loaded in the project.
+> **Tip:** Pokud potřebujete pouze vidět výstup konzole (žádné breakpointy ani krokování), nemusíte extrahovat PBO ani načítat skripty do Workbenche. Editor skriptů se stále připojí k DayZDiag a zobrazí proud výstupu. Nicméně breakpointy a navigace kódem vyžadují načtení odpovídajících souborů skriptů v projektu.
 
-### Breakpoints
+### Breakpointy
 
-Click the left margin next to a line number. A red dot appears.
+Klikněte na levý okraj vedle čísla řádku. Objeví se červená tečka.
 
-| Znacka | Vyznam |
+| Značka | Význam |
 |--------|---------|
-| Red dot | Active breakpoint -- execution pauses here |
-| Yellow exclamation | Invalid -- this line never executes |
-| Blue dot | Bookmark -- navigation marker only |
+| Červená tečka | Aktivní breakpoint -- provádění se zde pozastaví |
+| Žlutý vykřičník | Neplatný -- tento řádek se nikdy nespustí |
+| Modrá tečka | Záložka -- pouze navigační značka |
 
-Toggle with `F9`. You can also left-click directly in the margin area (where the red dots appear) to add or remove breakpoints. Right-clicking in the margin adds a blue **Bookmark** instead -- bookmarks have no effect on execution but mark places you want to revisit. Right-click a breakpoint to set a **condition** (e.g., `i == 10` or `player.GetIdentity().GetName() == "TestPlayer"`).
+Přepínání pomocí `F9`. Můžete také kliknout levým tlačítkem přímo v oblasti okraje (kde se zobrazují červené tečky) pro přidání nebo odebrání breakpointů. Kliknutí pravým tlačítkem v okraji přidá modrou **záložku** -- záložky nemají žádný vliv na provádění, ale označují místa, ke kterým se chcete vrátit. Klikněte pravým tlačítkem na breakpoint pro nastavení **podmínky** (např. `i == 10` nebo `player.GetIdentity().GetName() == "TestPlayer"`).
 
-### Stepping Through Code
+### Krokování kódem
 
-| Akce | Zkratka | Popis |
+| Akce | Klávesová zkratka | Popis |
 |--------|----------|-------------|
-| Continue | `F5` | Run until next breakpoint |
-| Step Over | `F10` | Execute current line, move to next |
-| Step Into | `F11` | Enter the called function |
-| Step Out | `Shift+F11` | Run until current function returns |
-| Stop | `Shift+F5` | Disconnect and resume game |
+| Pokračovat | `F5` | Spustit do dalšího breakpointu |
+| Krok přes | `F10` | Provést aktuální řádek, přejít na další |
+| Krok dovnitř | `F11` | Vstoupit do volané funkce |
+| Krok ven | `Shift+F11` | Spustit, dokud se aktuální funkce nevrátí |
+| Zastavit | `Shift+F5` | Odpojit a obnovit hru |
 
-### Variable Inspection
+### Inspekce proměnných
 
-The **Locals** panel shows all variables in scope -- primitives with values, objects with class names (expandable), arrays with lengths, and NULL references clearly marked. The **Watch** panel evaluates custom expressions at each pause. The **Call Stack** shows the function chain; click entries to navigate.
+Panel **Locals** zobrazuje všechny proměnné v rozsahu -- primitivy s hodnotami, objekty s názvy tříd (rozbalitelné), pole s délkami a NULL reference jasně označené. Panel **Watch** vyhodnocuje vlastní výrazy při každém pozastavení. **Call Stack** zobrazuje řetězec volání funkcí; klikněte na položky pro navigaci.
 
-### Client vs Server Debugging
+### Ladění klienta vs serveru
 
-`DayZDiag_x64.exe` can act as either a client or a server (by adding the `-server` launch parameter). It accepts all the same parameters as the retail executable. Workbench can connect to either instance.
+`DayZDiag_x64.exe` může fungovat jako klient i server (přidáním parametru spuštění `-server`). Přijímá všechny stejné parametry jako retailový spustitelný soubor. Workbench se může připojit k oběma instancím.
 
-Use **Debug > Debug Client** or **Debug > Debug Server** in the Script Editor menu to choose which side to debug. On a listen server, you can switch freely. The stepping controls, breakpoints, and variable inspection all apply to whichever side is currently selected.
+Použijte **Debug > Debug Client** nebo **Debug > Debug Server** v nabídce editoru skriptů pro výběr, kterou stranu ladit. Na listen serveru můžete volně přepínat. Ovládací prvky krokování, breakpointy a inspekce proměnných se vztahují na tu stranu, která je aktuálně vybrána.
 
-### Omezeni
+### Omezení
 
-- Only `DayZDiag_x64.exe` supports debugging, not retail builds.
-- Engine-internal C++ functions cannot be stepped into.
-- Many breakpoints in high-frequency functions (`OnUpdate`) cause severe lag.
-- Large mod projects may slow Workbench indexing.
+- Ladění podporuje pouze `DayZDiag_x64.exe`, ne retailové buildy.
+- Do interních C++ funkcí enginu nelze vstoupit.
+- Mnoho breakpointů ve vysokofrekvenčních funkcích (`OnUpdate`) způsobuje vážné zpomalení.
+- Velké modové projekty mohou zpomalit indexování Workbenche.
 
 ---
 
-## Script Console -- Live Testing
+## Skriptová konzole --- Živé testování
 
-The Script Console lets you execute Enforce Script commands against a running game instance -- invaluable for API experimentation without editing files.
+Skriptová konzole vám umožňuje spouštět příkazy Enforce Scriptu proti běžící instanci hry -- neocenitelné pro experimentování s API bez editace souborů.
 
-### Opening
+### Otevření
 
-Look for the **Console** tab in the bottom panel, or enable via **View > Console**.
+Hledejte záložku **Console** ve spodním panelu, nebo povolte přes **View > Console**.
 
-### Common Commands
+### Běžné příkazy
 
 ```c
-// Print player position
+// Vypsat pozici hráče
 Print(GetGame().GetPlayer().GetPosition().ToString());
 
-// Spawn an item at player feet
+// Vytvořit předmět u nohou hráče
 GetGame().CreateObject("AKM", GetGame().GetPlayer().GetPosition(), false, false, true);
 
-// Test math
+// Testovat matematiku
 float dist = vector.Distance("0 0 0", "100 0 100");
 Print("Distance: " + dist.ToString());
 
-// Teleport player
+// Teleportovat hráče
 GetGame().GetPlayer().SetPosition("6737 0 2505");
 
-// Spawn zombies nearby
+// Vytvořit zombie v okolí
 vector pos = GetGame().GetPlayer().GetPosition();
 for (int i = 0; i < 5; i++)
 {
@@ -429,212 +429,212 @@ for (int i = 0; i < 5; i++)
 }
 ```
 
-### Omezeni
+### Omezení
 
-- **Client-side only** by default (server-side code needs a listen server).
-- **No persistent state** -- variables do not carry between executions.
-- **Some APIs unavailable** until the game reaches a specific state (player spawned, mission loaded).
-- **No error recovery** -- null pointers simply fail silently.
-
----
-
-## UI / Layout Preview
-
-Workbench can open `.layout` files for visual inspection.
-
-### Co muzete delat
-
-- **View widget hierarchy** -- see parent-child nesting and widget names.
-- **Inspect properties** -- position, size, color, alpha, alignment, image source, text, font.
-- **Find widget names** used by `FindAnyWidget()` in script code.
-- **Check image references** -- which image set entries or textures a widget uses.
-
-### Co nemuzete delat
-
-- **No runtime behavior** -- ScriptClass handlers and dynamic content do not execute.
-- **Rendering differences** -- transparency, layering, and resolution may differ from in-game.
-- **Limited editing** -- Workbench is primarily a viewer, not a visual designer.
-
-**Best practice:** Use the Layout Editor for inspection. Build and edit `.layout` files in a text editor. Test in-game with file patching.
+- **Pouze na straně klienta** ve výchozím nastavení (serverový kód vyžaduje listen server).
+- **Žádný trvalý stav** -- proměnné se nepřenášejí mezi spuštěními.
+- **Některá API nedostupná**, dokud hra nedosáhne určitého stavu (hráč spawnutý, mise načtená).
+- **Žádné zotavení z chyb** -- nulové ukazatele jednoduše tiše selžou.
 
 ---
 
-## Prohledavac prostredku
+## Náhled UI / Layoutu
 
-The Prohledavac prostredku navigates the P: drive with game-aware file previews.
+Workbench může otevírat `.layout` soubory pro vizuální inspekci.
 
-### Capabilities
+### Co můžete dělat
 
-| Typ souboru | Akce on Double-Click |
+- **Zobrazit hierarchii widgetů** -- vidět vnořování rodič-potomek a názvy widgetů.
+- **Inspektovat vlastnosti** -- pozice, velikost, barva, alfa, zarovnání, zdroj obrázku, text, font.
+- **Najít názvy widgetů** používané `FindAnyWidget()` v kódu skriptu.
+- **Kontrolovat reference obrázků** -- které záznamy sady obrázků nebo textury widget používá.
+
+### Co nemůžete dělat
+
+- **Žádné chování za běhu** -- handlery ScriptClass a dynamický obsah se nespouštějí.
+- **Rozdíly v renderování** -- průhlednost, vrstvení a rozlišení se mohou lišit od hry.
+- **Omezená editace** -- Workbench je primárně prohlížeč, ne vizuální návrhář.
+
+**Doporučený postup:** Použijte editor layoutu pro inspekci. Vytvářejte a upravujte `.layout` soubory v textovém editoru. Testujte ve hře s file patchingem.
+
+---
+
+## Prohlížeč zdrojů
+
+Prohlížeč zdrojů naviguje disk P: s náhledy souborů s povědomím o hře.
+
+### Schopnosti
+
+| Typ souboru | Akce při dvojkliku |
 |-----------|----------------------|
-| `.c` | Opens in Script Editor |
-| `.layout` | Opens in Layout Editor |
-| `.p3d` | 3D model preview (rotate, zoom, inspect LODs) |
-| `.paa` / `.edds` | Texture viewer with channel inspection (R, G, B, A) |
-| Config classes | Browse parsed CfgVehicles, CfgWeapons hierarchies |
+| `.c` | Otevře v editoru skriptů |
+| `.layout` | Otevře v editoru layoutu |
+| `.p3d` | Náhled 3D modelu (otáčení, zoom, inspekce LODů) |
+| `.paa` / `.edds` | Prohlížeč textur s inspekcí kanálů (R, G, B, A) |
+| Konfigurační třídy | Procházení parsovaných hierarchií CfgVehicles, CfgWeapons |
 
-### Finding Vanilla Resources
+### Hledání vanilkových zdrojů
 
-One of the most valuable uses -- study how Bohemia structures assets:
+Jedno z nejcennějších použití -- studium toho, jak Bohemia strukturuje assety:
 
 ```
-P:\DZ\weapons\        <-- Vanilla weapon models and textures
-P:\DZ\characters\     <-- Character models and clothing
-P:\scripts\4_World\   <-- Vanilla world scripts
-P:\scripts\5_Mission\  <-- Vanilla mission scripts
+P:\DZ\weapons\        <-- Vanilkové modely zbraní a textury
+P:\DZ\characters\     <-- Modely postav a oblečení
+P:\scripts\4_World\   <-- Vanilkové world skripty
+P:\scripts\5_Mission\  <-- Vanilkové mission skripty
 ```
 
 ---
 
-## Profilovani vykonu
+## Profilování výkonu
 
-When connected to DayZDiag, Workbench can profile script execution.
+Při připojení k DayZDiag může Workbench profilovat provádění skriptů.
 
-### What the Profiler Shows
+### Co profilér zobrazuje
 
-- **Function call counts** -- how often each function runs per frame.
-- **Execution time** -- milliseconds per function.
-- **Call hierarchy** -- which functions call which, with time attribution.
-- **Frame time breakdown** -- script time vs engine time. At 60 FPS, each frame has ~16.6ms budget.
-- **Memory** -- allocation counts by class, detection of ref-cycle leaks.
+- **Počty volání funkcí** -- jak často se každá funkce spouští za snímek.
+- **Doba provádění** -- milisekundy na funkci.
+- **Hierarchie volání** -- které funkce volají které, s přiřazením času.
+- **Rozbor času snímku** -- čas skriptů vs čas enginu. Při 60 FPS má každý snímek ~16,6 ms rozpočet.
+- **Paměť** -- počty alokací podle třídy, detekce úniků ref-cyklů.
 
-### In-Game Script Profiler (Diag Menu)
+### Herní profilér skriptů (Diag Menu)
 
-In addition to Workbench's profiler, `DayZDiag_x64.exe` has a built-in Script Profiler accessible through the Diag Menu (under Statistics). It shows top-20 lists for time per class, time per function, class allocations, count per function, and class instance counts. Use the `-profile` launch parameter to enable profiling from startup. The profiler only measures Enforce Script -- proto (engine) methods are not measured as separate entries, but their execution time is included in the total time of the script method that calls them. See `EnProfiler.c` in vanilla scripts for the programmatic API (`EnProfiler.Enable`, `EnProfiler.SetModule`, flag constants).
+Kromě profiléru Workbenche má `DayZDiag_x64.exe` vestavěný profilér skriptů přístupný přes Diag Menu (pod Statistics). Zobrazuje top-20 seznamy pro čas na třídu, čas na funkci, alokace tříd, počet na funkci a počty instancí tříd. Použijte parametr spuštění `-profile` pro povolení profilování od startu. Profilér měří pouze Enforce Script -- proto (engine) metody se neměří jako samostatné záznamy, ale jejich doba provádění je zahrnuta v celkovém čase skriptové metody, která je volá. Viz `EnProfiler.c` ve vanilkových skriptech pro programové API (`EnProfiler.Enable`, `EnProfiler.SetModule`, konstanty příznaků).
 
-### Bezna uzka mista
+### Běžná úzká místa
 
-| Problem | Symptom profileru | Oprava |
+| Problém | Symptom profiléru | Oprava |
 |---------|-----------------|-----|
-| Expensive per-frame code | High time in `OnUpdate` | Move to timers, reduce frequency |
-| Excessive iteration | Loop with thousands of calls | Cache results, use spatial queries |
-| String concatenation in loops | High allocation count | Reduce logging, batch strings |
+| Náročný kód běžící každý snímek | Vysoký čas v `OnUpdate` | Přesuňte na časovače, snižte frekvenci |
+| Nadměrná iterace | Smyčka s tisíci volání | Cache výsledků, použijte prostorové dotazy |
+| Konkatenace řetězců ve smyčkách | Vysoký počet alokací | Omezte logování, sdružujte řetězce |
 
 ---
 
-## Integration with File Patching
+## Integrace s File Patchingem
 
-The fastest development workflow combines Workbench with file patching, eliminating PBO rebuilds for script changes.
+Nejrychlejší vývojový pracovní postup kombinuje Workbench s file patchingem, čímž se eliminují přestavby PBO pro změny skriptů.
 
-### Setup
+### Nastavení
 
-1. Scripts on P: drive as loose files (not in PBOs).
-2. Symlink DayZ install scripts: `mklink /J "...\DayZ\scripts" "P:\scripts"`
-3. Launch with `-filePatching`: both client and server use `DayZDiag_x64.exe`.
+1. Skripty na disku P: jako volné soubory (ne v PBO).
+2. Symbolický odkaz skriptů instalace DayZ: `mklink /J "...\DayZ\scripts" "P:\scripts"`
+3. Spuštění s `-filePatching`: klient i server používají `DayZDiag_x64.exe`.
 
-### The Rapid Iteration Loop
+### Smyčka rychlé iterace
 
 ```
-1. Edit .c file in your editor
-2. Save (file is already on P: drive)
-3. Restart mission in DayZDiag (no PBO rebuild)
-4. Test in-game
-5. Set breakpoints in Workbench if needed
-6. Repeat
+1. Upravte .c soubor ve vašem editoru
+2. Uložte (soubor je již na disku P:)
+3. Restartujte misi v DayZDiag (bez přestavby PBO)
+4. Testujte ve hře
+5. Nastavte breakpointy ve Workbenchi, pokud je potřeba
+6. Opakujte
 ```
 
-### What Needs Rebuilding?
+### Co vyžaduje přestavbu?
 
-| Zmena | Prestavba? |
+| Změna | Přestavba? |
 |--------|----------|
-| Script logic (`.c`) | No -- restart mission |
-| Layout files (`.layout`) | No -- restart mission |
-| Config.cpp (script-only) | No -- restart mission |
-| Config.cpp (with CfgVehicles) | Yes -- binarized configs require PBO |
-| Textures (`.paa`) | No -- engine reloads from P: |
-| Models (`.p3d`) | Maybe -- unbinarized MLOD only |
+| Logika skriptů (`.c`) | Ne -- restartujte misi |
+| Layoutové soubory (`.layout`) | Ne -- restartujte misi |
+| Config.cpp (pouze skripty) | Ne -- restartujte misi |
+| Config.cpp (s CfgVehicles) | Ano -- binarizované konfigurace vyžadují PBO |
+| Textury (`.paa`) | Ne -- engine přenačítá z P: |
+| Modely (`.p3d`) | Možná -- pouze nebinarizované MLOD |
 
 ---
 
-## Bezne problemy Workbench
+## Běžné problémy Workbenche
 
-### Workbench Crashes on Startup
+### Workbench padá při spuštění
 
-**Pricina:** P: drive not mounted or `.gproj` references nonexistent paths.
-**Oprava:** Mount P: first. Check **Workbench > Options** source directory. Verify `.gproj` FileSystem paths exist.
+**Příčina:** Disk P: není připojen nebo `.gproj` odkazuje na neexistující cesty.
+**Oprava:** Nejprve připojte P:. Zkontrolujte **Workbench > Options** adresář zdrojů. Ověřte, že cesty FileSystem v `.gproj` existují.
 
-### No Code Completion
+### Žádné doplňování kódu
 
-**Pricina:** Project misconfigured -- Workbench cannot compile scripts.
-**Oprava:** Verify `.gproj` ScriptModules include vanilla paths (`scripts/1_Core`, etc.). Check Output for compiler errors. Ensure vanilla scripts are on P:.
+**Příčina:** Projekt je špatně nakonfigurovaný -- Workbench nemůže kompilovat skripty.
+**Oprava:** Ověřte, že ScriptModules v `.gproj` zahrnují vanilkové cesty (`scripts/1_Core` atd.). Zkontrolujte výstup pro chyby kompilátoru. Ujistěte se, že vanilkové skripty jsou na P:.
 
-### Scripts Do Not Compile
+### Skripty se nekompilují
 
-**Oprava:** Check Output panel for exact errors. Verify all dependency mod paths are in ScriptModules. Ensure no cross-layer references (3_Game cannot use 4_World types).
+**Oprava:** Zkontrolujte panel výstupu pro přesné chyby. Ověřte, že všechny cesty závislostních modů jsou ve ScriptModules. Ujistěte se, že nejsou křížové reference vrstev (3_Game nemůže používat typy z 4_World).
 
-### Breakpoints Not Hitting
+### Breakpointy se nespouštějí
 
-**Kontrolni seznam:**
-1. Connected to DayZDiag (not retail)?
-2. Red dot (valid) or yellow exclamation (invalid)?
-3. Scripts match between Workbench and game?
-4. Debugging the right side (client vs server)?
-5. Code path actually reached? (Add `Print()` to verify.)
+**Kontrolní seznam:**
+1. Připojeno k DayZDiag (ne retailovému)?
+2. Červená tečka (platný) nebo žlutý vykřičník (neplatný)?
+3. Shodují se skripty mezi Workbenchem a hrou?
+4. Ladíte správnou stranu (klient vs server)?
+5. Je cesta kódu skutečně dosažena? (Přidejte `Print()` pro ověření.)
 
-### Cannot Find Files in Prohledavac prostredku
+### Nelze najít soubory v prohlížeči zdrojů
 
-**Oprava:** Check `.gproj` FileSystem includes the directory where your files live. Restart Workbench after modifying `.gproj`.
+**Oprava:** Zkontrolujte, že FileSystem v `.gproj` zahrnuje adresář, kde vaše soubory žijí. Restartujte Workbench po úpravě `.gproj`.
 
-### "Plugin Not Found" Errors
+### Chyby "Plugin Not Found"
 
-**Oprava:** Verify DayZ Tools integrity via Steam (right-click > Properties > Installed Files > Verify). Reinstall if needed.
+**Oprava:** Ověřte integritu DayZ Tools přes Steam (pravé tlačítko > Vlastnosti > Nainstalované soubory > Ověřit). V případě potřeby přeinstalujte.
 
-### Connection to DayZDiag Fails
+### Připojení k DayZDiag selhává
 
-**Oprava:** Both processes must be on the same machine. Check firewalls. Ensure Script Editor module is open before launching DayZDiag. Try restarting both.
-
----
-
-## Tipy a doporucene postupy
-
-1. **Use Workbench for debugging, VS Code for writing.** Workbench's editor is basic. Use external editors for daily coding; switch to Workbench for debugging and layout preview.
-
-2. **Keep a .gproj per mod.** Each mod should have its own project file to compile exactly the right script context without indexing unrelated mods.
-
-3. **Use the console for API experimentation.** Test API calls in the console before writing them into files. Faster than edit-restart-test cycles.
-
-4. **Profile before optimizing.** Do not guess bottlenecks. The profiler shows where time is actually spent.
-
-5. **Set breakpoints strategically.** Avoid `OnUpdate()` breakpoints unless conditional. They fire every frame and freeze the game constantly.
-
-6. **Use bookmarks for navigation.** Blue bookmark dots mark interesting vanilla script locations you reference frequently.
-
-7. **Check compiler output before launching.** If Workbench reports errors, the game will fail too. Oprava errors in Workbench first -- faster than waiting for game boot.
-
-8. **Use -mod for simple setups, .gproj for complex.** Single-mod with no dependencies: `-mod=P:\MyMod`. Multi-mod with CF/Dabs: custom `.gproj`.
-
-9. **Keep Workbench updated.** Update DayZ Tools through Steam when DayZ updates. Mismatched versions cause compilation failures.
+**Oprava:** Oba procesy musí být na stejném počítači. Zkontrolujte firewally. Ujistěte se, že modul editoru skriptů je otevřen před spuštěním DayZDiag. Zkuste restartovat oba.
 
 ---
 
-## Rychla reference: Keyboard Zkratkas
+## Tipy a doporučené postupy
+
+1. **Používejte Workbench pro ladění, VS Code pro psaní.** Editor Workbenche je základní. Používejte externí editory pro každodenní kódování; přepněte na Workbench pro ladění a náhled layoutu.
+
+2. **Mějte .gproj pro každý mod.** Každý mod by měl mít svůj vlastní projektový soubor pro kompilaci přesně správného kontextu skriptů bez indexování nesouvisejících modů.
+
+3. **Používejte konzoli pro experimentování s API.** Testujte volání API v konzoli před zápisem do souborů. Rychlejší než cykly editace-restart-test.
+
+4. **Profilujte před optimalizací.** Nehádejte úzká místa. Profilér ukazuje, kde se čas skutečně tráví.
+
+5. **Nastavujte breakpointy strategicky.** Vyhněte se breakpointům v `OnUpdate()`, pokud nejsou podmíněné. Spouštějí se každý snímek a neustále zamrazují hru.
+
+6. **Používejte záložky pro navigaci.** Modré záložkové tečky označují zajímavá místa ve vanilkových skriptech, na která se často odkazujete.
+
+7. **Kontrolujte výstup kompilátoru před spuštěním.** Pokud Workbench hlásí chyby, hra selže také. Opravte chyby ve Workbenchi nejprve -- rychlejší než čekat na boot hry.
+
+8. **Používejte -mod pro jednoduchá nastavení, .gproj pro složitá.** Jeden mod bez závislostí: `-mod=P:\MyMod`. Více modů s CF/Dabs: vlastní `.gproj`.
+
+9. **Udržujte Workbench aktualizovaný.** Aktualizujte DayZ Tools přes Steam při aktualizaci DayZ. Neshodné verze způsobují selhání kompilace.
+
+---
+
+## Rychlá reference: Klávesové zkratky
 
 | Zkratka | Akce |
 |----------|--------|
-| `F5` | Start / Continue debugging |
-| `Shift+F5` | Stop debugging |
-| `F9` | Toggle breakpoint |
-| `F10` | Step Over |
-| `F11` | Step Into |
-| `Shift+F11` | Step Out |
-| `Ctrl+F` | Find in file |
-| `Ctrl+H` | Find and replace |
-| `Ctrl+Shift+F` | Find in project |
-| `Ctrl+S` | Save |
-| `Ctrl+Space` | Code completion |
+| `F5` | Spustit / Pokračovat v ladění |
+| `Shift+F5` | Zastavit ladění |
+| `F9` | Přepnout breakpoint |
+| `F10` | Krok přes |
+| `F11` | Krok dovnitř |
+| `Shift+F11` | Krok ven |
+| `Ctrl+F` | Najít v souboru |
+| `Ctrl+H` | Najít a nahradit |
+| `Ctrl+Shift+F` | Najít v projektu |
+| `Ctrl+S` | Uložit |
+| `Ctrl+Space` | Doplňování kódu |
 
-## Rychla reference: Launch Parametry
+## Rychlá reference: Parametry spuštění
 
 | Parametr | Popis |
 |-----------|-------------|
-| `-project="path/dayz.gproj"` | Load specific project file |
-| `-mod=P:\MyMod` | Auto-configure from mod's config.cpp |
-| `-mod=P:\ModA;P:\ModB` | Multiple mods (semicolon-separated) |
+| `-project="cesta/dayz.gproj"` | Načíst konkrétní projektový soubor |
+| `-mod=P:\MyMod` | Automatická konfigurace z config.cpp modu |
+| `-mod=P:\ModA;P:\ModB` | Více modů (oddělené středníkem) |
 
 ---
 
 ## Navigace
 
-| Predchozi | Up | Dalsi |
+| Předchozí | Nahoru | Další |
 |----------|----|------|
-| [4.6 PBO Packing](06-pbo-packing.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.8 Building Modeling](08-building-modeling.md) |
+| [4.6 Balení PBO](06-pbo-packing.md) | [Část 4: Formáty souborů a DayZ Tools](01-textures.md) | [4.8 Modelování budov](08-building-modeling.md) |

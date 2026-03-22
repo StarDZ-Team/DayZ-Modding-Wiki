@@ -1,38 +1,40 @@
-# Chapter 5.6: Spawning Gear Configuration
+# 第5.6章：出生装备配置
 
-[Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
+[首页](../../README.md) | [<< 上一章：服务器配置文件](05-server-configs.md) | **出生装备配置**
 
 ---
+
+> **摘要：** DayZ 有两个互补的系统控制玩家如何进入世界：**出生点**决定角色在地图上*出现的位置*，**出生装备**决定他们*携带什么装备*。本章深入介绍这两个系统，包括文件结构、字段参考、实用预设和模组集成。
 
 ---
 
 ## 目录
 
-- [Overview](#overview)
-- [The Two Systems](#the-two-systems)
-- [Spawn Gear: cfgPlayerSpawnGear.json](#spawn-gear-cfgplayerspawngearjson)
-  - [Enabling Spawn Gear Presets](#enabling-spawn-gear-presets)
-  - [Preset Structure](#preset-structure)
+- [概述](#overview)
+- [两个系统](#the-two-systems)
+- [出生装备：cfgPlayerSpawnGear.json](#spawn-gear-cfgplayerspawngearjson)
+  - [启用出生装备预设](#enabling-spawn-gear-presets)
+  - [预设结构](#preset-structure)
   - [attachmentSlotItemSets](#attachmentslotitemsets)
   - [DiscreteItemSets](#discreteitemsets)
   - [discreteUnsortedItemSets](#discreteunsorteditemsets)
   - [ComplexChildrenTypes](#complexchildrentypes)
   - [SimpleChildrenTypes](#simplechildrentypes)
   - [Attributes](#attributes)
-- [Spawn Points: cfgplayerspawnpoints.xml](#spawn-points-cfgplayerspawnpointsxml)
-  - [File Structure](#file-structure)
+- [出生点：cfgplayerspawnpoints.xml](#spawn-points-cfgplayerspawnpointsxml)
+  - [文件结构](#file-structure)
   - [spawn_params](#spawn_params)
   - [generator_params](#generator_params)
-  - [Spawning Groups](#spawning-groups)
-  - [Map-Specific Configs](#map-specific-configs)
-- [Practical Examples](#practical-examples)
-  - [Default Survivor Loadout](#default-survivor-loadout)
-  - [Military Spawn Kit](#military-spawn-kit)
-  - [Medical Spawn Kit](#medical-spawn-kit)
-  - [Random Gear Selection](#random-gear-selection)
-- [Integration with Mods](#integration-with-mods)
-- [Best Practices](#best-practices)
-- [Common Mistakes](#common-mistakes)
+  - [出生组](#spawning-groups)
+  - [地图特定配置](#map-specific-configs)
+- [实用示例](#practical-examples)
+  - [默认幸存者装备](#default-survivor-loadout)
+  - [军事出生套件](#military-spawn-kit)
+  - [医疗出生套件](#medical-spawn-kit)
+  - [随机装备选择](#random-gear-selection)
+- [与模组的集成](#integration-with-mods)
+- [最佳实践](#best-practices)
+- [常见错误](#common-mistakes)
 
 ---
 
@@ -52,37 +54,37 @@ flowchart TD
     D --> J
 ```
 
-When a player spawns as a fresh character in DayZ, two questions are answered by the server:
+当玩家在 DayZ 中作为新角色出生时，服务器回答两个问题：
 
-1. **Where does the character appear?** --- Controlled by `cfgplayerspawnpoints.xml`.
-2. **What does the character carry?** --- Controlled by spawn gear preset JSON files, registered through `cfggameplay.json`.
+1. **角色出现在哪里？** --- 由 `cfgplayerspawnpoints.xml` 控制。
+2. **角色携带什么？** --- 由通过 `cfggameplay.json` 注册的出生装备预设 JSON 文件控制。
 
-Both systems are server-side only. Clients never see these configuration files and cannot tamper with them. The spawn gear system was introduced as an alternative to scripting loadouts in `init.c`, allowing server admins to define multiple weighted presets in JSON without writing any Enforce Script code.
+这两个系统都是仅服务器端的。客户端永远看不到这些配置文件，也无法篡改它们。出生装备系统是作为在 `init.c` 中脚本化装备的替代方案而引入的，允许服务器管理员在 JSON 中定义多个加权预设，而无需编写任何 Enforce Script 代码。
 
-> **Important:** The spawn gear preset system **completely overrides** the `StartingEquipSetup()` method in your mission `init.c`. If you enable spawn gear presets in `cfggameplay.json`, your scripted loadout code will be ignored. Similarly, character types defined in the presets override the character model chosen in the main menu.
+> **重要：** 出生装备预设系统**完全覆盖**你任务 `init.c` 中的 `StartingEquipSetup()` 方法。如果你在 `cfggameplay.json` 中启用了出生装备预设，你的脚本化装备代码将被忽略。同样，预设中定义的角色类型会覆盖在主菜单中选择的角色模型。
 
 ---
 
-## The Two Systems
+## 两个系统
 
-| System | 文件 | Format | Controls |
+| 系统 | 文件 | 格式 | 控制 |
 |--------|------|--------|----------|
-| Spawn Points | `cfgplayerspawnpoints.xml` | XML | **Where** --- map positions, distance scoring, spawn groups |
-| Spawn Gear | Custom preset JSON files | JSON | **What** --- character model, clothing, weapons, cargo, quickbar |
+| 出生点 | `cfgplayerspawnpoints.xml` | XML | **在哪里** --- 地图位置、距离评分、出生组 |
+| 出生装备 | 自定义预设 JSON 文件 | JSON | **带什么** --- 角色模型、服装、武器、货物、快捷栏 |
 
-The two systems are independent. You can use custom spawn points with vanilla gear, custom gear with vanilla spawn points, or customize both.
+这两个系统是独立的。你可以使用自定义出生点配合原版装备、自定义装备配合原版出生点，或两者都自定义。
 
 ---
 
-## Spawn Gear: cfgPlayerSpawnGear.json
+## 出生装备：cfgPlayerSpawnGear.json
 
-### Enabling Spawn Gear Presets
+### 启用出生装备预设
 
-Spawn gear presets are **not** enabled 默认情况下. To use them, you must:
+出生装备预设**默认未启用**。要使用它们，你必须：
 
-1. Create one or more JSON preset files in your mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`).
-2. Register them in `cfggameplay.json` under `PlayerData.spawnGearPresetFiles`.
-3. Ensure `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+1. 在你的任务文件夹（例如 `mpmissions/dayzOffline.chernarusplus/`）中创建一个或多个 JSON 预设文件。
+2. 在 `cfggameplay.json` 的 `PlayerData.spawnGearPresetFiles` 中注册它们。
+3. 确保在 `serverDZ.cfg` 中设置了 `enableCfgGameplayFile = 1`。
 
 ```json
 {
@@ -97,7 +99,7 @@ Spawn gear presets are **not** enabled 默认情况下. To use them, you must:
 }
 ```
 
-Preset files can be nested in subdirectories under the mission folder:
+预设文件可以嵌套在任务文件夹下的子目录中：
 
 ```json
 "spawnGearPresetFiles": [
@@ -107,23 +109,23 @@ Preset files can be nested in subdirectories under the mission folder:
 ]
 ```
 
-Each JSON file contains a single preset object. All registered presets are pooled together, and the server selects one based on `spawnWeight` each time a fresh character spawns.
+每个 JSON 文件包含一个预设对象。所有注册的预设会被汇集在一起，每次新角色出生时，服务器根据 `spawnWeight` 选择一个。
 
-### Preset Structure
+### 预设结构
 
-A preset is the top-level JSON object with these fields:
+预设是顶层 JSON 对象，包含以下字段：
 
 | 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `name` | string | Human-readable name for the preset (any string, used for identification only) |
-| `spawnWeight` | integer | Weight for random selection. Minimum is `1`. Higher values make this preset more likely to be chosen |
-| `characterTypes` | array | Array of character type classnames (e.g., `"SurvivorM_Mirek"`). One is picked at random when this preset spawns |
-| `attachmentSlotItemSets` | array | Array of `AttachmentSlots` structures defining what the character wears (clothing, weapons on shoulders, etc.) |
-| `discreteUnsortedItemSets` | array | Array of `DiscreteUnsortedItemSets` structures defining cargo items placed into any available inventory space |
+| `name` | string | 预设的可读名称（任意字符串，仅用于标识） |
+| `spawnWeight` | integer | 随机选择的权重。最小值为 `1`。值越高，此预设被选中的可能性越大 |
+| `characterTypes` | array | 角色类型类名数组（例如 `"SurvivorM_Mirek"`）。此预设出生时随机选取一个 |
+| `attachmentSlotItemSets` | array | `AttachmentSlots` 结构数组，定义角色穿戴什么（服装、肩上的武器等） |
+| `discreteUnsortedItemSets` | array | `DiscreteUnsortedItemSets` 结构数组，定义放入任何可用库存空间的货物物品 |
 
-> **注意：** If `characterTypes` is empty or omitted, the character model last selected in the main menu character creation screen will be used for that preset.
+> **注意：** 如果 `characterTypes` 为空或省略，将使用上次在主菜单角色创建屏幕中选择的角色模型。
 
-Minimal example:
+最小示例：
 
 ```json
 {
@@ -140,16 +142,16 @@ Minimal example:
 
 ### attachmentSlotItemSets
 
-This array defines items that go into specific character attachment slots --- body, legs, feet, head, back, vest, shoulders, eyewear, etc.
+此数组定义进入特定角色附件槽的物品——身体、腿部、脚部、头部、背部、背心、肩膀、眼镜等。
 
-Each entry targets one slot:
+每个条目针对一个槽位：
 
 | 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `slotName` | string | The attachment slot name. Derived from CfgSlots. Common values: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
-| `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `spawnWeight`) |
+| `slotName` | string | 附件槽名称。派生自 CfgSlots。常见值：`"Body"`、`"Legs"`、`"Feet"`、`"Head"`、`"Back"`、`"Vest"`、`"Eyewear"`、`"Gloves"`、`"Hips"`、`"shoulderL"`、`"shoulderR"` |
+| `discreteItemSets` | array | 可以填充此槽的物品变体数组（根据 `spawnWeight` 选择一个） |
 
-> **Shoulder shortcuts:** You can use `"shoulderL"` and `"shoulderR"` as slot names. The engine automatically translates these to the correct internal CfgSlots names.
+> **肩部快捷方式：** 你可以使用 `"shoulderL"` 和 `"shoulderR"` 作为槽位名称。引擎自动将它们转换为正确的内部 CfgSlots 名称。
 
 ```json
 {
@@ -183,19 +185,19 @@ Each entry targets one slot:
 
 ### DiscreteItemSets
 
-Each entry in `discreteItemSets` represents one possible item for that slot. The server picks one entry at random, weighted by `spawnWeight`. This structure is used inside both `attachmentSlotItemSets` (for slot-based items) and is the mechanism for random selection.
+`discreteItemSets` 中的每个条目代表该槽位的一个可能物品。服务器按 `spawnWeight` 加权随机选择一个条目。此结构在 `attachmentSlotItemSets`（用于基于槽位的物品）中使用，是随机选择的机制。
 
 | 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `itemType` | string | Item classname (typename). Use `""` (empty string) to represent "nothing" --- the slot remains empty |
-| `spawnWeight` | integer | Weight for selection. Minimum `1`. Higher = more likely |
-| `attributes` | object | Health and quantity ranges for this item. See [Attributes](#attributes) |
-| `quickBarSlot` | integer | Quick bar slot assignment (0-based). Use `-1` for no quickbar assignment |
-| `complexChildrenTypes` | array | Items to spawn nested inside this item. See [ComplexChildrenTypes](#complexchildrentypes) |
-| `simpleChildrenTypes` | array | Item classnames to spawn inside this item using default or parent attributes |
-| `simpleChildrenUseDefaultAttributes` | bool | If `true`, simple children use the parent's `attributes`. If `false`, they use configuration defaults |
+| `itemType` | string | 物品类名（typename）。使用 `""`（空字符串）表示"无"——槽位保持为空 |
+| `spawnWeight` | integer | 选择权重。最小值 `1`。越高 = 越可能 |
+| `attributes` | object | 此物品的耐久度和数量范围。参见 [Attributes](#attributes) |
+| `quickBarSlot` | integer | 快捷栏槽位分配（从 0 开始）。使用 `-1` 表示不分配快捷栏 |
+| `complexChildrenTypes` | array | 嵌套在此物品内部生成的物品。参见 [ComplexChildrenTypes](#complexchildrentypes) |
+| `simpleChildrenTypes` | array | 使用默认或父级属性在此物品内部生成的物品类名 |
+| `simpleChildrenUseDefaultAttributes` | bool | 如果为 `true`，简单子项使用父级的 `attributes`。如果为 `false`，使用配置默认值 |
 
-**Empty item trick:** To make a slot have a 50/50 chance of being empty or filled, use an empty `itemType`:
+**空物品技巧：** 要让一个槽位有 50/50 的几率为空或被填充，使用空的 `itemType`：
 
 ```json
 {
@@ -220,18 +222,18 @@ Each entry in `discreteItemSets` represents one possible item for that slot. The
 
 ### discreteUnsortedItemSets
 
-This top-level array defines items that go into the character's **cargo** --- any available inventory space across all attached clothing and containers. Unlike `attachmentSlotItemSets`, these items are not placed into a specific slot; 引擎 finds room automatically.
+此顶层数组定义进入角色**货物**的物品——所有已附着服装和容器中的任何可用库存空间。与 `attachmentSlotItemSets` 不同，这些物品不放入特定槽位；引擎自动寻找空间。
 
-Each entry represents one cargo variant, and the server selects one based on `spawnWeight`.
+每个条目代表一个货物变体，服务器根据 `spawnWeight` 选择一个。
 
 | 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `name` | string | Human-readable name (for identification only) |
-| `spawnWeight` | integer | Weight for selection. Minimum `1` |
-| `attributes` | object | 默认值 health/quantity ranges. Used by children when `simpleChildrenUseDefaultAttributes` is `true` |
-| `complexChildrenTypes` | array | Items to spawn into cargo, each with their own attributes and nesting |
-| `simpleChildrenTypes` | array | Item classnames to spawn into cargo |
-| `simpleChildrenUseDefaultAttributes` | bool | If `true`, simple children use this structure's `attributes`. If `false`, they use configuration defaults |
+| `name` | string | 可读名称（仅用于标识） |
+| `spawnWeight` | integer | 选择权重。最小值 `1` |
+| `attributes` | object | 默认耐久度/数量范围。当 `simpleChildrenUseDefaultAttributes` 为 `true` 时供子项使用 |
+| `complexChildrenTypes` | array | 生成到货物中的物品，每个都有自己的属性和嵌套 |
+| `simpleChildrenTypes` | array | 生成到货物中的物品类名 |
+| `simpleChildrenUseDefaultAttributes` | bool | 如果为 `true`，简单子项使用此结构的 `attributes`。如果为 `false`，使用配置默认值 |
 
 ```json
 {
@@ -265,17 +267,17 @@ Each entry represents one cargo variant, and the server selects one based on `sp
 
 ### ComplexChildrenTypes
 
-Complex children are items spawned **inside** a parent item with full control over their attributes, quickbar assignment, and their own nested children. The primary use case is spawning items with contents --- 例如, a weapon with attachments, or a cooking pot with food inside.
+复杂子项是在父物品**内部**生成的物品，可以完全控制其属性、快捷栏分配和自己的嵌套子项。主要用例是生成带内容物的物品——例如，带有配件的武器，或装有食物的烹饪锅。
 
 | 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `itemType` | string | Item classname |
-| `attributes` | object | Health/quantity ranges for this specific item |
-| `quickBarSlot` | integer | Quick bar slot assignment. `-1` = don't assign |
-| `simpleChildrenUseDefaultAttributes` | bool | Whether simple children inherit these attributes |
-| `simpleChildrenTypes` | array | Item classnames to spawn inside this item |
+| `itemType` | string | 物品类名 |
+| `attributes` | object | 此特定物品的耐久度/数量范围 |
+| `quickBarSlot` | integer | 快捷栏槽位分配。`-1` = 不分配 |
+| `simpleChildrenUseDefaultAttributes` | bool | 简单子项是否继承这些属性 |
+| `simpleChildrenTypes` | array | 在此物品内部生成的物品类名 |
 
-Example --- a weapon with attachments and magazine:
+示例——带配件和弹匣的武器：
 
 ```json
 {
@@ -327,31 +329,31 @@ Example --- a weapon with attachments and magazine:
 }
 ```
 
-In this example, the AKM spawns with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseDefaultAttributes` is `false`.
+在此示例中，AKM 生成时带有枪托、瞄准镜（内含电池）和装满的弹匣作为复杂子项，加上护木和刺刀作为简单子项。简单子项使用配置默认值，因为 `simpleChildrenUseDefaultAttributes` 是 `false`。
 
 ### SimpleChildrenTypes
 
-Simple children are a shorthand for spawning items inside a parent without specifying individual attributes. They are an array of item classnames (strings).
+简单子项是在不指定单独属性的情况下在父物品内部生成物品的简写方式。它们是物品类名（字符串）的数组。
 
-Their attributes are determined by the `simpleChildrenUseDefaultAttributes` flag:
+它们的属性由 `simpleChildrenUseDefaultAttributes` 标志决定：
 
-- **`true`** --- Items use the `attributes` defined on the parent structure.
-- **`false`** --- Items use 引擎's configuration defaults (typically full health and quantity).
+- **`true`** --- 物品使用父结构上定义的 `attributes`。
+- **`false`** --- 物品使用引擎的配置默认值（通常为满耐久度和数量）。
 
-Simple children cannot have their own nested children or quickbar assignments. For those capabilities, use `complexChildrenTypes` instead.
+简单子项不能有自己的嵌套子项或快捷栏分配。对于这些功能，请使用 `complexChildrenTypes`。
 
 ### Attributes
 
-Attributes control the condition and quantity of spawned items. All values are floating point between `0.0` and `1.0`:
+属性控制生成物品的状态和数量。所有值都是 `0.0` 到 `1.0` 之间的浮点数：
 
 | 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `healthMin` | float | Minimum health percentage. `1.0` = pristine, `0.0` = ruined |
-| `healthMax` | float | Maximum health percentage. A random value between min and max is applied |
-| `quantityMin` | float | Minimum quantity percentage. For magazines: fill level. For food: remaining bites |
-| `quantityMax` | float | Maximum quantity percentage |
+| `healthMin` | float | 最低耐久度百分比。`1.0` = 崭新，`0.0` = 损坏 |
+| `healthMax` | float | 最高耐久度百分比。在最小值和最大值之间随机取值 |
+| `quantityMin` | float | 最低数量百分比。对于弹匣：填充量。对于食物：剩余口数 |
+| `quantityMax` | float | 最高数量百分比 |
 
-When both min and max are specified, 引擎 picks a random value in that range. This creates natural variation --- 例如, health between `0.45` and `0.65` means items spawn in worn to damaged condition.
+当同时指定最小值和最大值时，引擎在该范围内随机选取一个值。这创造了自然的变化——例如，耐久度在 `0.45` 和 `0.65` 之间意味着物品以磨损到损坏的状态出生。
 
 ```json
 "attributes": {
@@ -364,21 +366,21 @@ When both min and max are specified, 引擎 picks a random value in that range. 
 
 ---
 
-## Spawn Points: cfgplayerspawnpoints.xml
+## 出生点：cfgplayerspawnpoints.xml
 
-This XML file defines where players appear on the map. It is located in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
+此 XML 文件定义玩家在地图上出现的位置。它位于任务文件夹中（例如 `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`）。
 
-### File Structure
+### 文件结构
 
-The root element contains up to three sections:
+根元素最多包含三个部分：
 
-| Section | 用途 |
+| 部分 | 用途 |
 |---------|---------|
-| `<fresh>` | **Required.** Spawn points for newly created characters |
-| `<hop>` | Spawn points for players hopping from another server on the same map (official servers only) |
-| `<travel>` | Spawn points for players traveling from a different map (official servers only) |
+| `<fresh>` | **必需。** 新创建角色的出生点 |
+| `<hop>` | 从同一地图的另一个服务器跳转的玩家的出生点（仅官方服务器） |
+| `<travel>` | 从不同地图旅行的玩家的出生点（仅官方服务器） |
 
-Each section contains the same three sub-elements: `<spawn_params>`, `<generator_params>`, and `<generator_posbubbles>`.
+每个部分包含相同的三个子元素：`<spawn_params>`、`<generator_params>` 和 `<generator_posbubbles>`。
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -403,7 +405,7 @@ Each section contains the same three sub-elements: `<spawn_params>`, `<generator
 
 ### spawn_params
 
-Runtime parameters that score candidate spawn points against nearby entities. Points below `min_dist` are invalidated. Points between `min_dist` and `max_dist` are preferred over points beyond `max_dist`.
+运行时参数，根据附近实体对候选出生点进行评分。低于 `min_dist` 的点被无效化。`min_dist` 和 `max_dist` 之间的点优于超过 `max_dist` 的点。
 
 ```xml
 <spawn_params>
@@ -418,20 +420,20 @@ Runtime parameters that score candidate spawn points against nearby entities. Po
 
 | 参数 | 说明 |
 |-----------|-------------|
-| `min_dist_infected` | Minimum meters from infected. Points closer than this are penalized |
-| `max_dist_infected` | Maximum scoring distance from infected |
-| `min_dist_player` | Minimum meters from other players. Keeps fresh spawns from appearing on top of existing players |
-| `max_dist_player` | Maximum scoring distance from other players |
-| `min_dist_static` | Minimum meters from buildings/objects |
-| `max_dist_static` | Maximum scoring distance from buildings/objects |
+| `min_dist_infected` | 距感染者最小米数。比此更近的点被惩罚 |
+| `max_dist_infected` | 距感染者的最大评分距离 |
+| `min_dist_player` | 距其他玩家最小米数。防止新出生的角色出现在现有玩家身上 |
+| `max_dist_player` | 距其他玩家的最大评分距离 |
+| `min_dist_static` | 距建筑/物体最小米数 |
+| `max_dist_static` | 距建筑/物体的最大评分距离 |
 
-The Sakhal map also adds `min_dist_trigger` and `max_dist_trigger` parameters with a 6x weight multiplier for trigger zone distances.
+Sakhal 地图还添加了 `min_dist_trigger` 和 `max_dist_trigger` 参数，对触发区域距离使用 6 倍权重乘数。
 
-**Scoring logic:** The engine calculates a score for each candidate point. Distance `0` to `min_dist` scores `-1` (nearly invalidated). Distance `min_dist` to midpoint scores up to `1.1`. Distance midpoint to `max_dist` scores down from `1.1` to `0.1`. Beyond `max_dist` scores `0`. Higher total score = more likely spawn location.
+**评分逻辑：** 引擎计算每个候选点的分数。距离 `0` 到 `min_dist` 评分 `-1`（几乎无效化）。距离 `min_dist` 到中点评分最高至 `1.1`。距离中点到 `max_dist` 评分从 `1.1` 降至 `0.1`。超过 `max_dist` 评分 `0`。总分越高 = 越可能的出生位置。
 
 ### generator_params
 
-Controls how the grid of candidate spawn points is generated around each position bubble:
+控制如何在每个位置气泡周围生成候选出生点网格：
 
 ```xml
 <generator_params>
@@ -447,21 +449,21 @@ Controls how the grid of candidate spawn points is generated around each positio
 
 | 参数 | 说明 |
 |-----------|-------------|
-| `grid_density` | Sample frequency. `4` means a 4x4 grid of candidate points. Higher = more candidates, more CPU cost. Must be at least `1`. When `0`, only the center point is used |
-| `grid_width` | Total width of the sampling rectangle in meters |
-| `grid_height` | Total height of the sampling rectangle in meters |
-| `min_dist_static` | Minimum distance from buildings for a valid candidate |
-| `max_dist_static` | Maximum distance from buildings used for scoring |
-| `min_steepness` | Minimum terrain slope in degrees. Points on steeper terrain are discarded |
-| `max_steepness` | Maximum terrain slope in degrees |
+| `grid_density` | 采样频率。`4` 表示 4x4 的候选点网格。越高 = 越多候选点，越多 CPU 开销。必须至少为 `1`。当为 `0` 时，仅使用中心点 |
+| `grid_width` | 采样矩形的总宽度（米） |
+| `grid_height` | 采样矩形的总高度（米） |
+| `min_dist_static` | 有效候选点距建筑的最小距离 |
+| `max_dist_static` | 用于评分的距建筑的最大距离 |
+| `min_steepness` | 最小地形坡度（度）。更陡地形上的点被丢弃 |
+| `max_steepness` | 最大地形坡度（度） |
 
-Around every `<pos>` defined in `generator_posbubbles`, 引擎 creates a rectangle of `grid_width` x `grid_height` meters, samples it at `grid_density` frequency, and discards points that overlap with objects, water, or exceed slope limits.
+在 `generator_posbubbles` 中定义的每个 `<pos>` 周围，引擎创建一个 `grid_width` x `grid_height` 米的矩形，以 `grid_density` 频率采样，并丢弃与物体、水体重叠或超过坡度限制的点。
 
-### Spawning Groups
+### 出生组
 
-Groups allow you to cluster spawn points and rotate through them over time. This prevents all players from always spawning at the same locations.
+组允许你聚集出生点并随时间轮换。这防止所有玩家总是在相同位置出生。
 
-Groups are enabled through `<group_params>` inside each section:
+组通过每个部分内的 `<group_params>` 启用：
 
 ```xml
 <group_params>
@@ -474,12 +476,12 @@ Groups are enabled through `<group_params>` inside each section:
 
 | 参数 | 说明 |
 |-----------|-------------|
-| `enablegroups` | `true` to enable group rotation, `false` for a flat list of points |
-| `groups_as_regular` | When `enablegroups` is `false`, treat group points as regular spawn points instead of ignoring them. 默认： `true` |
-| `lifetime` | Seconds a group stays active before rotating to another. Use `-1` to disable the timer |
-| `counter` | Number of spawns that reset the lifetime. Each player spawning in the group resets the timer. Use `-1` to disable the counter |
+| `enablegroups` | `true` 启用组轮换，`false` 使用扁平的点列表 |
+| `groups_as_regular` | 当 `enablegroups` 为 `false` 时，将组点作为常规出生点处理而非忽略它们。默认：`true` |
+| `lifetime` | 一个组在轮换到另一个之前保持活动的秒数。使用 `-1` 禁用计时器 |
+| `counter` | 重置生存时间的出生次数。每个在组中出生的玩家重置计时器。使用 `-1` 禁用计数器 |
 
-Positions are organized into named groups within `<generator_posbubbles>`:
+位置被组织在 `<generator_posbubbles>` 内的命名组中：
 
 ```xml
 <generator_posbubbles>
@@ -495,7 +497,7 @@ Positions are organized into named groups within `<generator_posbubbles>`:
 </generator_posbubbles>
 ```
 
-Individual groups can override global lifetime and counter values:
+单个组可以覆盖全局的 lifetime 和 counter 值：
 
 ```xml
 <group name="Tents" lifetime="300" counter="25">
@@ -503,7 +505,7 @@ Individual groups can override global lifetime and counter values:
 </group>
 ```
 
-**Without groups**, positions are listed directly under `<generator_posbubbles>`:
+**不使用组时**，位置直接列在 `<generator_posbubbles>` 下：
 
 ```xml
 <generator_posbubbles>
@@ -513,27 +515,27 @@ Individual groups can override global lifetime and counter values:
 </generator_posbubbles>
 ```
 
-> **Position format:** The `x` and `z` attributes use DayZ world coordinates. `x` is east-west, `z` is north-south. The `y` (height) coordinate is not specified --- 引擎 places the point on the terrain surface. You can find coordinates using the in-game debug monitor or the DayZ Editor mod.
+> **位置格式：** `x` 和 `z` 属性使用 DayZ 世界坐标。`x` 是东西方向，`z` 是南北方向。`y`（高度）坐标未指定——引擎将点放置在地形表面上。你可以使用游戏内调试监视器或 DayZ Editor 模组查找坐标。
 
-### Map-Specific Configs
+### 地图特定配置
 
-Each map has its own `cfgplayerspawnpoints.xml` in its mission folder:
+每个地图在其任务文件夹中都有自己的 `cfgplayerspawnpoints.xml`：
 
-| Map | Mission Folder | 备注 |
+| 地图 | 任务文件夹 | 备注 |
 |-----|----------------|-------|
-| Chernarus | `dayzOffline.chernarusplus/` | Coastal spawns: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
-| Livonia | `dayzOffline.enoch/` | Spread across map with different group names |
-| Sakhal | `dayzOffline.sakhal/` | Added `min_dist_trigger`/`max_dist_trigger` params, more detailed comments |
+| Chernarus | `dayzOffline.chernarusplus/` | 海岸出生点：Cherno、Elektro、Kamyshovo、Berezino、Svetlojarsk |
+| Livonia | `dayzOffline.enoch/` | 分布在地图各处，使用不同的组名 |
+| Sakhal | `dayzOffline.sakhal/` | 添加了 `min_dist_trigger`/`max_dist_trigger` 参数，更详细的注释 |
 
-When creating a custom map or modifying spawn locations, always work from the vanilla file as a starting point and adjust positions to match your map's geography.
+创建自定义地图或修改出生位置时，始终从原版文件开始并调整位置以匹配你地图的地理。
 
 ---
 
-## Practical Examples
+## 实用示例
 
-### Default Survivor Loadout
+### 默认幸存者装备
 
-The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic shoes, plus cargo containing a bandage, chemlight (random color), and a fruit (random between pear, plum, or apple). All items spawn in worn-to-damaged condition.
+原版预设给新出生角色一件随机 T 恤、帆布裤、运动鞋，加上包含绷带、荧光棒（随机颜色）和水果（随机梨、李子或苹果）的货物。所有物品以磨损到损坏的状态出生。
 
 ```json
 {
@@ -655,9 +657,9 @@ The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic s
 }
 ```
 
-### Military Spawn Kit
+### 军事出生套件
 
-A heavily equipped preset with an AKM (with attachments), plate carrier, gorka uniform, backpack with extra magazines, and unsorted cargo including a sidearm and food. This uses multiple `spawnWeight` values to create rarity tiers for weapon variants.
+一个装备齐全的预设，带有 AKM（含配件）、板甲背心、Gorka 制服、装有额外弹匣的背包，以及包含副武器和食物的未分类货物。这使用多个 `spawnWeight` 值来创建武器变体的稀有度层级。
 
 ```json
 {
@@ -843,15 +845,15 @@ A heavily equipped preset with an AKM (with attachments), plate carrier, gorka u
 }
 ```
 
-Key points about this example:
+此示例的要点：
 
-- **Two weapon variants** for the same shoulder slot: the `spawnWeight: 3` variant (plastic furniture, PSO1 optic) spawns 3x more often than the `spawnWeight: 1` variant (wood furniture, no optic).
-- **Nested children**: the PSO1Optic has `simpleChildrenTypes: ["Battery9V"]` so the optic spawns with a battery inside.
-- **Backpack contents**: the blue backpack gets a drum magazine while the orange one gets two standard magazines.
+- **同一肩部槽位有两个武器变体**：`spawnWeight: 3` 的变体（塑料护木，PSO1 瞄准镜）出现频率是 `spawnWeight: 1` 变体（木质护木，无瞄准镜）的 3 倍。
+- **嵌套子项**：PSO1Optic 有 `simpleChildrenTypes: ["Battery9V"]`，所以瞄准镜生成时内含电池。
+- **背包内容**：蓝色背包获得弹鼓，橙色的获得两个标准弹匣。
 
-### Medical Spawn Kit
+### 医疗出生套件
 
-A medic-themed preset with scrubs, first aid kit containing medical supplies, and a melee weapon for defense.
+医疗主题预设，包含手术服、装有医疗用品的急救包和一把近战武器用于防卫。
 
 ```json
 {
@@ -994,13 +996,13 @@ A medic-themed preset with scrubs, first aid kit containing medical supplies, an
 }
 ```
 
-Note how `characterTypes` is omitted --- this preset uses whatever character the player selected in the main menu. Two cargo variants offer different first aid kit contents (blood bag vs. antibiotics), selected by `spawnWeight`.
+注意 `characterTypes` 被省略了——此预设使用玩家在主菜单中选择的任何角色。两个货物变体提供不同的急救包内容（血袋 vs. 抗生素），通过 `spawnWeight` 选择。
 
-### Random Gear Selection
+### 随机装备选择
 
-You can create randomized loadouts by using multiple presets with different weights, and within each preset using multiple `discreteItemSets` per slot:
+你可以通过使用不同权重的多个预设，以及在每个预设中每个槽位使用多个 `discreteItemSets` 来创建随机化装备：
 
-**File: `cfggameplay.json`**
+**文件：`cfggameplay.json`**
 
 ```json
 "spawnGearPresetFiles": [
@@ -1010,31 +1012,31 @@ You can create randomized loadouts by using multiple presets with different weig
 ]
 ```
 
-**Probability calculation example:**
+**概率计算示例：**
 
-| Preset File | spawnWeight | Chance |
+| 预设文件 | spawnWeight | 概率 |
 |-------------|------------|--------|
 | `common_survivor.json` | 5 | 5/8 = 62.5% |
 | `uncommon_hunter.json` | 2 | 2/8 = 25.0% |
 | `rare_military.json` | 1 | 1/8 = 12.5% |
 
-Within each preset, each slot also has its own randomization. If the Body slot has three t-shirt options with `spawnWeight: 1` each, each has a 33% chance. A shirt with `spawnWeight: 3` in a pool with two `spawnWeight: 1` items would have a 60% chance (3/5).
+在每个预设中，每个槽位也有自己的随机化。如果 Body 槽位有三个 T 恤选项，每个 `spawnWeight: 1`，则每个有 33% 的几率。一件 `spawnWeight: 3` 的衬衫在有两个 `spawnWeight: 1` 物品的池中有 60%（3/5）的几率。
 
 ---
 
-## Integration with Mods
+## 与模组的集成
 
-### Using the JSON Preset System from Mods
+### 从模组使用 JSON 预设系统
 
-The spawn gear preset system is designed for mission-level configuration. Mods that want to provide custom loadouts should:
+出生装备预设系统设计用于任务级别的配置。想要提供自定义装备的模组应该：
 
-1. **Ship a template JSON** file with the mod's documentation, not embedded in the PBO.
-2. **Document the classnames** so server admins can add mod items to their own preset files.
-3. Let server admins register the preset file through their `cfggameplay.json`.
+1. **随模组文档提供模板 JSON** 文件，不嵌入 PBO 中。
+2. **记录类名** 以便服务器管理员可以将模组物品添加到他们自己的预设文件中。
+3. 让服务器管理员通过他们的 `cfggameplay.json` 注册预设文件。
 
-### Overriding with init.c
+### 使用 init.c 覆盖
 
-If you need programmatic control over spawning (e.g., role selection, database-driven loadouts, or conditional gear based on player state), override `StartingEquipSetup()` in `init.c` instead:
+如果你需要对出生进行程序化控制（例如角色选择、数据库驱动的装备或基于玩家状态的条件装备），请在 `init.c` 中覆盖 `StartingEquipSetup()`：
 
 ```c
 override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
@@ -1061,11 +1063,11 @@ override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 }
 ```
 
-> **Remember:** If `spawnGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
+> **记住：** 如果在 `cfggameplay.json` 中配置了 `spawnGearPresetFiles`，JSON 预设优先，`StartingEquipSetup()` 将不会被调用。
 
-### Mod Items in Presets
+### 预设中的模组物品
 
-Modded items work identically to vanilla items in preset files. Use the item's classname as defined in the mod's `config.cpp`:
+模组物品在预设文件中与原版物品的工作方式完全相同。使用模组 `config.cpp` 中定义的物品类名：
 
 ```json
 {
@@ -1084,76 +1086,76 @@ Modded items work identically to vanilla items in preset files. Use the item's c
 }
 ```
 
-If the mod is not loaded on the server, items with unknown classnames will silently fail to spawn. The rest of the preset still applies.
+如果模组未在服务器上加载，具有未知类名的物品将静默失败。预设的其余部分仍然适用。
 
 ---
 
 ## 最佳实践
 
-1. **Start from vanilla.** Copy the vanilla preset from the official documentation as your base and modify it, rather than writing from scratch.
+1. **从原版开始。** 从官方文档复制原版预设作为基础并修改它，而不是从头编写。
 
-2. **Use multiple preset files.** Separate presets by theme (survivor, military, medic) in individual JSON files. This makes maintenance easier than a single monolithic file.
+2. **使用多个预设文件。** 按主题（幸存者、军事、医疗）将预设分开到单独的 JSON 文件中。这比单个庞大的文件更易于维护。
 
-3. **Test incrementally.** Add one preset at a time and verify in-game. A JSON syntax error in any preset file will cause all presets to fail silently.
+3. **逐步测试。** 一次添加一个预设并在游戏中验证。任何预设文件中的 JSON 语法错误都会导致所有预设静默失败。
 
-4. **Use weighted probabilities deliberately.** Plan your spawn weight distribution on paper. With 5 presets, a `spawnWeight: 10` on one will dominate all others.
+4. **有意识地使用加权概率。** 在纸上规划你的出生权重分配。有 5 个预设时，其中一个 `spawnWeight: 10` 将压倒所有其他预设。
 
-5. **Validate JSON syntax.** Use a JSON validator before deploying. The DayZ engine does not provide helpful error messages for malformed JSON --- it simply ignores the file.
+5. **验证 JSON 语法。** 部署前使用 JSON 验证器。DayZ 引擎不会为格式错误的 JSON 提供有用的错误消息——它只是忽略该文件。
 
-6. **Assign quickbar slots intentionally.** Quickbar slots are 0-indexed. Assigning multiple items to the same slot will overwrite. Use `-1` for items that should not be on the quickbar.
+6. **有意识地分配快捷栏槽位。** 快捷栏槽位从 0 开始索引。将多个物品分配到同一槽位会覆盖。对不应在快捷栏上的物品使用 `-1`。
 
-7. **Keep spawn points away from water.** The generator discards points in water, but points very close to the shoreline can place players in awkward positions. Move position bubbles a few meters inland.
+7. **保持出生点远离水域。** 生成器会丢弃水中的点，但非常接近海岸线的点可能将玩家放在尴尬的位置。将位置气泡向内陆移动几米。
 
-8. **Use groups for coastal maps.** Spawning groups on Chernarus spread fresh spawns across the coast, preventing overcrowding at popular locations like Elektro.
+8. **在海岸地图上使用组。** Chernarus 上的出生组将新出生的角色分散在海岸各处，防止在 Elektro 等热门位置过度拥挤。
 
-9. **Match clothing and cargo capacity.** Unsorted cargo items can only spawn if the player has inventory space. If you define too many cargo items but only give the player a t-shirt (small inventory), excess items will not spawn.
+9. **匹配服装和货物容量。** 未分类的货物物品只有在玩家有库存空间时才能出生。如果你定义了太多货物物品但只给玩家一件 T 恤（小库存），多余的物品将不会出生。
 
 ---
 
 ## 常见错误
 
-| 错误 | Consequence | 修复方法 |
+| 错误 | 后果 | 修复方法 |
 |---------|-------------|-----|
-| Forgetting `enableCfgGameplayFile = 1` in `serverDZ.cfg` | `cfggameplay.json` is not loaded, presets are ignored | Add the flag and restart the server |
-| Invalid JSON syntax (trailing comma, missing bracket) | All presets in that file silently fail | Validate JSON with an external tool before deploying |
-| Using `spawnGearPresetFiles` without removing `StartingEquipSetup()` code | The scripted loadout is silently overridden by the JSON preset. The init.c code runs but its items are replaced | This is expected behavior, not a bug. Remove or comment out the init.c loadout code to avoid confusion |
-| Setting `spawnWeight: 0` | 值 below minimum. Behavior is undefined | Always use `spawnWeight: 1` or higher |
-| Referencing a classname that does not exist | That specific item silently fails to spawn, but the rest of the preset works | Double-check classnames against the mod's `config.cpp` or types.xml |
-| Assigning an item to a slot it cannot occupy | Item does not spawn. No error logged | Verify the item's `inventorySlot[]` in config.cpp matches the `slotName` |
-| Spawning too many cargo items for available inventory space | Excess items are silently dropped (not spawned) | Ensure clothing has enough capacity, or reduce the number of cargo items |
-| Using `characterTypes` classnames that do not exist | Character creation fails, player may spawn as default model | Use only valid survivor classnames from CfgVehicles |
-| Placing spawn points in water or on steep cliffs | Points are discarded, reducing available spawns. If too many are invalid, players may fail to spawn | Test coordinates in-game with the debug monitor |
-| Mixing up `x`/`z` coordinates in spawn points | Players spawn at wrong map locations | `x` = east-west, `z` = north-south. There is no `y` (vertical) in spawn point definitions |
+| 忘记在 `serverDZ.cfg` 中设置 `enableCfgGameplayFile = 1` | `cfggameplay.json` 未加载，预设被忽略 | 添加该标志并重启服务器 |
+| 无效的 JSON 语法（尾随逗号、缺少括号） | 该文件中的所有预设静默失败 | 部署前使用外部工具验证 JSON |
+| 使用 `spawnGearPresetFiles` 而未删除 `StartingEquipSetup()` 代码 | 脚本化装备被 JSON 预设静默覆盖。init.c 代码运行但其物品被替换 | 这是预期行为，不是 bug。删除或注释掉 init.c 装备代码以避免混淆 |
+| 设置 `spawnWeight: 0` | 低于最小值。行为未定义 | 始终使用 `spawnWeight: 1` 或更高 |
+| 引用不存在的类名 | 该特定物品静默失败，但预设的其余部分正常工作 | 对照模组的 `config.cpp` 或 types.xml 仔细检查类名 |
+| 将物品分配到它不能占用的槽位 | 物品不出生。没有错误日志 | 验证物品 config.cpp 中的 `inventorySlot[]` 是否与 `slotName` 匹配 |
+| 货物物品超出可用库存空间 | 多余的物品被静默丢弃（不出生） | 确保服装有足够的容量，或减少货物物品数量 |
+| 使用不存在的 `characterTypes` 类名 | 角色创建失败，玩家可能以默认模型出生 | 仅使用 CfgVehicles 中的有效幸存者类名 |
+| 将出生点放在水中或陡峭悬崖上 | 点被丢弃，减少可用出生点。如果太多无效，玩家可能无法出生 | 使用游戏内调试监视器测试坐标 |
+| 混淆出生点中的 `x`/`z` 坐标 | 玩家出生在错误的地图位置 | `x` = 东西方向，`z` = 南北方向。出生点定义中没有 `y`（垂直） |
 
 ---
 
-## Data Flow Summary
+## 数据流摘要
 
 ```
 serverDZ.cfg
   └─ enableCfgGameplayFile = 1
        └─ cfggameplay.json
             └─ PlayerData.spawnGearPresetFiles: ["preset1.json", "preset2.json"]
-                 ├─ preset1.json  (spawnWeight: 3)  ── 75% chance
-                 └─ preset2.json  (spawnWeight: 1)  ── 25% chance
-                      ├─ characterTypes[]         → random character model
-                      ├─ attachmentSlotItemSets[] → slot-based equipment
-                      │    └─ discreteItemSets[]  → weighted random per slot
-                      │         ├─ complexChildrenTypes[] → nested items with attributes
-                      │         └─ simpleChildrenTypes[]  → nested items, simple
-                      └─ discreteUnsortedItemSets[] → cargo items
+                 ├─ preset1.json  (spawnWeight: 3)  ── 75% 概率
+                 └─ preset2.json  (spawnWeight: 1)  ── 25% 概率
+                      ├─ characterTypes[]         → 随机角色模型
+                      ├─ attachmentSlotItemSets[] → 基于槽位的装备
+                      │    └─ discreteItemSets[]  → 每槽位加权随机
+                      │         ├─ complexChildrenTypes[] → 带属性的嵌套物品
+                      │         └─ simpleChildrenTypes[]  → 简单嵌套物品
+                      └─ discreteUnsortedItemSets[] → 货物物品
                            ├─ complexChildrenTypes[]
                            └─ simpleChildrenTypes[]
 
 cfgplayerspawnpoints.xml
-  ├─ <fresh>   → new characters (required)
-  ├─ <hop>     → server hoppers (official only)
-  └─ <travel>  → map travelers (official only)
-       ├─ spawn_params   → scoring vs infected/players/buildings
-       ├─ generator_params → grid density, size, slope limits
-       └─ generator_posbubbles → positions (optionally in named groups)
+  ├─ <fresh>   → 新角色（必需）
+  ├─ <hop>     → 服务器跳转者（仅官方）
+  └─ <travel>  → 地图旅行者（仅官方）
+       ├─ spawn_params   → 距感染者/玩家/建筑的评分
+       ├─ generator_params → 网格密度、大小、坡度限制
+       └─ generator_posbubbles → 位置（可选在命名组中）
 ```
 
 ---
 
-[Home](../../README.md) | [<< 上一章: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
+[首页](../../README.md) | [<< 上一章：服务器配置文件](05-server-configs.md) | **出生装备配置**
