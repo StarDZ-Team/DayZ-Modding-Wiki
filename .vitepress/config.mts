@@ -255,6 +255,20 @@ export default withMermaid(
     vite: {
       build: {
         chunkSizeWarningLimit: 1500,
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              if (id.includes('node_modules')) {
+                return 'vendor'
+              }
+              const langMatch = id.match(/\/(?:en|pt|de|ru|es|fr|ja|zh-hans|cs|pl|hu|it)\//)
+              if (langMatch) {
+                const lang = langMatch[0].replace(/\//g, '')
+                return `lang-${lang}`
+              }
+            }
+          }
+        }
       },
     },
 
