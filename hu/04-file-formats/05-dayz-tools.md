@@ -1,216 +1,216 @@
-# Chapter 4.5: DayZ Tools Workflow
+# 4.5. fejezet: DayZ Tools munkafolyamat
 
-[Home](../../README.md) | [<< Previous: Audio](04-audio.md) | **DayZ Tools** | [Next: PBO Packing >>](06-pbo-packing.md)
-
----
-
-## Bevezetes
-
-DayZ eszkozok is a free suite of development applications distributed through Steam, provided by Bohemia Interactive for modders. It contains everything needed to create, convert, and package game assets: a 3D model editor, texture viewer, terrain editor, script debugger, and the binarization pipeline that transforms human-readable source files into optimized game-ready formats. No DayZ mod can be built without at least some interaction with these tools.
-
-This chapter provides an overview of each tool in the suite, explains the P: drive (workdrive) system that underpins the entire workflow, covers file patching for rapid development iteration, and walks through the complete asset pipeline from source files to playable mod.
+[Főoldal](../../README.md) | [<< Előző: Hang](04-audio.md) | **DayZ Tools** | [Következő: PBO csomagolás >>](06-pbo-packing.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [DayZ eszkozok Suite Overview](#dayz-tools-suite-overview)
-- [Installation and Setup](#installation-and-setup)
-- [P: Drive (Workdrive)](#p-drive-workdrive)
+A DayZ Tools a Bohemia Interactive által a modderek számára biztosított, Steamen keresztül terjesztett, ingyenes fejlesztői alkalmazáscsomag. Mindent tartalmaz, ami a játék assetek létrehozásához, konvertálásához és csomagolásához szükséges: 3D modellszerkesztő, textúra megjelenítő, terep szerkesztő, szkript hibakereső, és a binarizálási pipeline, amely az ember által olvasható forrásfájlokat optimalizált, játékra kész formátumokká alakítja. Egyetlen DayZ mod sem készíthető el ezen eszközök legalább némelyikének használata nélkül.
+
+Ez a fejezet áttekintést nyújt a csomag minden eszközéről, elmagyarázza a P: meghajtó (workdrive) rendszert, amely az egész munkafolyamat alapját képezi, kitér a fájl javítás (file patching) módra a gyors fejlesztési iterációhoz, és végigvezeti a teljes asset pipeline-t a forrásfájloktól a játszható modig.
+
+---
+
+## Tartalomjegyzék
+
+- [DayZ Tools csomag áttekintés](#dayz-tools-suite-overview)
+- [Telepítés és beállítás](#installation-and-setup)
+- [P: meghajtó (Workdrive)](#p-drive-workdrive)
 - [Object Builder](#object-builder)
 - [TexView2](#texview2)
 - [Terrain Builder](#terrain-builder)
 - [Binarize](#binarize)
 - [AddonBuilder](#addonbuilder)
 - [Workbench](#workbench)
-- [File Patching Mode](#file-patching-mode)
-- [Complete Workflow: Source to Game](#complete-workflow-source-to-game)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [File Patching mód](#file-patching-mode)
+- [Teljes munkafolyamat: forrástól a játékig](#complete-workflow-source-to-game)
+- [Gyakori hibák](#common-mistakes)
+- [Bevált gyakorlatok](#best-practices)
 
 ---
 
-## DayZ eszkozok Suite Overview
+## DayZ Tools csomag áttekintés
 
-DayZ eszkozok is available as a free download on Steam under the **Tools** category. It installs a collection of applications, each serving a specific role in the modding pipeline.
+A DayZ Tools ingyenesen letölthető a Steamen az **Eszközök** kategóriában. Alkalmazások gyűjteményét telepíti, amelyek mindegyike meghatározott szerepet tölt be a modding pipeline-ban.
 
-| Eszkoz | Cel | Primary Users |
-|------|---------|---------------|
-| **Object Builder** | 3D model creation and editing (.p3d) | 3D artists, modelers |
-| **TexView2** | Texture viewing and conversion (.paa, .tga, .png) | Texture artists, all modders |
-| **Terrain Builder** | Terrain/map creation and editing | Map makers |
-| **Binarize** | Source-to-game format conversion | Build pipeline (usually automated) |
-| **AddonBuilder** | PBO packing with optional binarization | All modders |
-| **Workbench** | Script debugging, testing, profiling | Scripters |
-| **DayZ eszkozok Launcher** | Central hub for launching tools and configuring P: drive | All modders |
+| Eszköz | Cél | Elsődleges felhasználók |
+|--------|-----|------------------------|
+| **Object Builder** | 3D modell készítés és szerkesztés (.p3d) | 3D művészek, modellezők |
+| **TexView2** | Textúra megjelenítés és konvertálás (.paa, .tga, .png) | Textúra művészek, minden modder |
+| **Terrain Builder** | Terep/térkép készítés és szerkesztés | Térkép készítők |
+| **Binarize** | Forrásból játékformátumba konvertálás | Build pipeline (általában automatizált) |
+| **AddonBuilder** | PBO csomagolás opcionális binarizálással | Minden modder |
+| **Workbench** | Szkript hibakeresés, tesztelés, profilozás | Szkriptelők |
+| **DayZ Tools Launcher** | Központi hub az eszközök indításához és a P: meghajtó konfigurálásához | Minden modder |
 
-### Where They Live on Disk
+### Hol találhatók a lemezen
 
-After Steam installation, the tools are typically located at:
+A Steam telepítés után az eszközök jellemzően itt találhatók:
 
 ```
 C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools\
   Bin\
     AddonBuilder\
-      AddonBuilder.exe          <-- PBO packer
+      AddonBuilder.exe          <-- PBO csomagoló
     Binarize\
-      Binarize.exe              <-- Asset converter
+      Binarize.exe              <-- Asset konvertáló
     TexView2\
-      TexView2.exe              <-- Texture tool
+      TexView2.exe              <-- Textúra eszköz
     ObjectBuilder\
-      ObjectBuilder.exe         <-- 3D model editor
+      ObjectBuilder.exe         <-- 3D modell szerkesztő
     Workbench\
-      workbenchApp.exe          <-- Script debugger
+      workbenchApp.exe          <-- Szkript hibakereső
   TerrainBuilder\
-    TerrainBuilder.exe          <-- Terrain editor
+    TerrainBuilder.exe          <-- Terep szerkesztő
 ```
 
 ---
 
-## Installation and Setup
+## Telepítés és beállítás
 
-### Step 1: Install DayZ eszkozok from Steam
+### 1. lépés: DayZ Tools telepítése a Steamről
 
-1. Open Steam Library.
-2. Enable **Tools** filter in the dropdown.
-3. Search for "DayZ eszkozok".
-4. Install (free, approximately 2 GB).
+1. Nyisd meg a Steam Könyvtárat.
+2. Engedélyezd az **Eszközök** szűrőt a legördülőben.
+3. Keress rá: "DayZ Tools".
+4. Telepítsd (ingyenes, körülbelül 2 GB).
 
-### Step 2: Launch DayZ eszkozok
+### 2. lépés: DayZ Tools indítása
 
-1. Launch "DayZ eszkozok" from Steam.
-2. The DayZ eszkozok Launcher opens -- a central hub application.
-3. From here you can launch any individual tool and configure settings.
+1. Indítsd el a "DayZ Tools"-t a Steamről.
+2. Megnyílik a DayZ Tools Launcher -- egy központi hub alkalmazás.
+3. Innen bármely egyedi eszközt elindíthatod és beállításokat konfigurálhatsz.
 
-### Step 3: Configure P: Drive
+### 3. lépés: P: meghajtó beállítása
 
-The launcher provides a button to create and mount the P: drive (workdrive). This is the virtual drive that all DayZ tools use as their root path.
+Az indító biztosít egy gombot a P: meghajtó (workdrive) létrehozásához és csatolásához. Ez az a virtuális meghajtó, amelyet az összes DayZ eszköz gyökér elérési útként használ.
 
-1. Click **Setup Workdrive** (or the P: drive configuration button).
-2. The tool creates a subst-mapped P: drive pointing to a directory on your real disk.
-3. Extract or symlink vanilla DayZ data to P: so the tools can reference game assets.
+1. Kattints a **Setup Workdrive** (vagy a P: meghajtó konfigurációs gomb) gombra.
+2. Az eszköz létrehoz egy subst-leképezett P: meghajtót, amely a valódi lemezeden lévő könyvtárra mutat.
+3. Másold ki vagy hozz létre szimbolikus linket a vanilla DayZ adatokhoz a P:-n, hogy az eszközök hivatkozhassanak a játék assetekre.
 
 ---
 
-## P: Drive (Workdrive)
+## P: meghajtó (Workdrive)
 
-The **P: drive** is a Windows virtual drive (created via `subst` or junction) that serves as the unified root path for all DayZ modding. Every path in P3D models, RVMAT materials, config.cpp references, and build scripts is relative to P:.
+A **P: meghajtó** egy Windows virtuális meghajtó (amelyet `subst` vagy junction segítségével hoznak létre), amely egységes gyökér elérési útként szolgál az összes DayZ modding tevékenységhez. A P3D modellekben, RVMAT anyagokban, config.cpp hivatkozásokban és build szkriptekben minden elérési út P:-hoz képest relatív.
 
-### Why P: Drive Exists
+### Miért létezik a P: meghajtó
 
-DayZ's asset pipeline was designed around a fixed root path. When a material references `MyMod\data\texture_co.paa`, the engine looks for `P:\MyMod\data\texture_co.paa`. This convention ensures:
+A DayZ asset pipeline-ját egy rögzített gyökér elérési út köré tervezték. Amikor egy anyag hivatkozik a `MyMod\data\texture_co.paa` fájlra, a motor a `P:\MyMod\data\texture_co.paa` helyen keresi. Ez a konvenció biztosítja:
 
-- All tools agree on where files are.
-- Paths in packed PBOs match paths during development.
-- Multiple mods can coexist under one root.
+- Minden eszköz egyetért abban, hol vannak a fájlok.
+- A csomagolt PBO-kban lévő elérési utak megegyeznek a fejlesztés alatti elérési utakkal.
+- Több mod egymás mellett létezhet egyetlen gyökér alatt.
 
-### Structure
+### Struktúra
 
 ```
 P:\
-  DZ\                          <-- Vanilla DayZ extracted data
+  DZ\                          <-- Vanilla DayZ kicsomagolt adatok
     characters\
     weapons\
     data\
     ...
-  DayZ Tools\                  <-- Tools installation (or symlink)
-  MyMod\                       <-- Your mod source
+  DayZ Tools\                  <-- Eszközök telepítése (vagy symlink)
+  MyMod\                       <-- A mod forráskódja
     config.cpp
     Scripts\
     data\
-  AnotherMod\                  <-- Another mod's source
+  AnotherMod\                  <-- Egy másik mod forrása
     ...
 ```
 
 ### SetupWorkdrive.bat
 
-Many mod projects include a `SetupWorkdrive.bat` script that automates P: drive creation and junction setup. A typical script:
+Sok mod projekt tartalmaz egy `SetupWorkdrive.bat` szkriptet, amely automatizálja a P: meghajtó létrehozását és a junction beállítást. Egy tipikus szkript:
 
 ```batch
 @echo off
-REM Create P: drive pointing to the workspace
+REM P: meghajtó létrehozása a munkaterületre mutatva
 subst P: "D:\DayZModding"
 
-REM Create junctions for vanilla game data
+REM Junction-ök létrehozása a vanilla játék adatokhoz
 mklink /J "P:\DZ" "C:\Program Files (x86)\Steam\steamapps\common\DayZ\dta"
 
-REM Create junction for tools
+REM Junction létrehozása az eszközökhöz
 mklink /J "P:\DayZ Tools" "C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools"
 
-echo Workdrive P: configured.
+echo Workdrive P: konfigurálva.
 pause
 ```
 
-> **Tipp:** The workdrive must be mounted before launching any DayZ tool. If Object Builder or Binarize cannot find files, the first thing to check is whether P: is mounted.
+> **Tipp:** A workdrive-ot csatolni kell bármely DayZ eszköz indítása előtt. Ha az Object Builder vagy a Binarize nem talál fájlokat, az első ellenőrizendő dolog, hogy a P: csatolva van-e.
 
 ---
 
 ## Object Builder
 
-Object Builder is the 3D model editor for P3D files. It is covered in detail in [Chapter 4.2: 3D modellek](02-models.md). Here is a summary of its role in the toolchain.
+Az Object Builder a P3D fájlok 3D modell szerkesztője. Részletesen a [4.2. fejezet: 3D modellek](02-models.md) tárgyalja. Itt összefoglaljuk a szerepét az eszközláncban.
 
-### Key Capabilities
+### Fő képességek
 
-- Create and edit P3D model files.
-- Define LODs (Level of Detail) for visual, collision, and shadow meshes.
-- Assign materials (RVMAT) and textures (PAA) to model faces.
-- Create named selections for animations and texture swaps.
-- Place memory points and proxy objects.
-- Import geometry from FBX, OBJ, and 3DS formats.
-- Validate models for engine compatibility.
+- P3D modell fájlok készítése és szerkesztése.
+- LOD-ok (részletességi szintek) definiálása vizuális, ütközési és árnyék hálókhoz.
+- Anyagok (RVMAT) és textúrák (PAA) hozzárendelése a modell felületekhez.
+- Elnevezett szelekciók létrehozása animációkhoz és textúra cserékhez.
+- Memória pontok és proxy objektumok elhelyezése.
+- Geometria importálása FBX, OBJ és 3DS formátumokból.
+- Modellek validálása motor kompatibilitásra.
 
-### Launching
+### Indítás
 
 ```
 DayZ Tools Launcher --> Object Builder
 ```
 
-Or directly: `P:\DayZ eszkozok\Bin\ObjectBuilder\ObjectBuilder.exe`
+Vagy közvetlenül: `P:\DayZ Tools\Bin\ObjectBuilder\ObjectBuilder.exe`
 
-### Integration with Other Tools
+### Integráció más eszközökkel
 
-- **References TexView2** for texture previews (double-click a texture in face properties).
-- **Outputs P3D files** consumed by Binarize and AddonBuilder.
-- **Reads P3D files** from vanilla data on P: drive for reference.
+- **A TexView2-t használja** textúra előnézetekhez (dupla kattintás egy textúrára a felület tulajdonságokban).
+- **P3D fájlokat állít elő**, amelyeket a Binarize és az AddonBuilder használ.
+- **P3D fájlokat olvas** a P: meghajtón lévő vanilla adatokból referenciaként.
 
 ---
 
 ## TexView2
 
-TexView2 is the texture viewing and conversion utility. It handles all texture format conversions needed for DayZ modding.
+A TexView2 a textúra megjelenítő és konvertáló segédprogram. Kezeli az összes textúra formátum konverziót, amely a DayZ moddinghoz szükséges.
 
-### Key Capabilities
+### Fő képességek
 
-- Open and preview PAA, TGA, PNG, EDDS, and DDS files.
-- Convert between formats (TGA/PNG to PAA, PAA to TGA, etc.).
-- View individual channels (R, G, B, A) separately.
-- Display mipmap levels.
-- Show texture dimensions and compression type.
-- Batch conversion via command line.
+- PAA, TGA, PNG, EDDS és DDS fájlok megnyitása és előnézete.
+- Formátumok közötti konvertálás (TGA/PNG-ről PAA-ra, PAA-ról TGA-ra, stb.).
+- Egyedi csatornák (R, G, B, A) külön megtekintése.
+- Mipmap szintek megjelenítése.
+- Textúra méretek és tömörítési típus megjelenítése.
+- Kötegelt konvertálás parancssorból.
 
-### Launching
+### Indítás
 
 ```
 DayZ Tools Launcher --> TexView2
 ```
 
-Or directly: `P:\DayZ eszkozok\Bin\TexView2\TexView2.exe`
+Vagy közvetlenül: `P:\DayZ Tools\Bin\TexView2\TexView2.exe`
 
-### Common Operations
+### Gyakori műveletek
 
-**Convert TGA to PAA:**
-1. File --> Open --> select your TGA file.
-2. Verify the image looks correct.
-3. File --> Save As --> choose PAA format.
-4. Select compression (DXT1 for opaque, DXT5 for alpha).
-5. Save.
+**TGA konvertálása PAA-ra:**
+1. File --> Open --> válaszd ki a TGA fájlodat.
+2. Ellenőrizd, hogy a kép helyesen néz ki.
+3. File --> Save As --> válaszd a PAA formátumot.
+4. Válaszd ki a tömörítést (DXT1 átlátszatlanhoz, DXT5 alfa csatornáshoz).
+5. Mentés.
 
-**Inspect a vanilla PAA texture:**
-1. File --> Open --> browse to `P:\DZ\...` and select a PAA file.
-2. View the image. Click channel buttons (R, G, B, A) to inspect individual channels.
-3. Note the dimensions and compression type shown in the status bar.
+**Vanilla PAA textúra vizsgálata:**
+1. File --> Open --> navigálj a `P:\DZ\...`-hez és válassz ki egy PAA fájlt.
+2. Nézd meg a képet. Kattints a csatorna gombokra (R, G, B, A) az egyedi csatornák vizsgálatához.
+3. Jegyezd meg a méreteket és tömörítési típust az állapotsávban.
 
-**Command-line conversion:**
+**Parancssori konvertálás:**
 ```bash
 TexView2.exe -i "P:\MyMod\data\texture_co.tga" -o "P:\MyMod\data\texture_co.paa"
 ```
@@ -219,322 +219,382 @@ TexView2.exe -i "P:\MyMod\data\texture_co.tga" -o "P:\MyMod\data\texture_co.paa"
 
 ## Terrain Builder
 
-Terrain Builder is a specialized tool for creating custom maps (terrains). Map making is one of the most complex modding tasks in DayZ, involving satellite imagery, height maps, surface masks, and object placement.
+A Terrain Builder egy speciális eszköz egyéni térképek (terepek) készítéséhez. A térkép készítés a DayZ modding egyik legösszetettebb feladata, amely műholdképeket, magassági térképeket, felszín maszkokat és objektum elhelyezést foglal magában.
 
-### Key Capabilities
+### Fő képességek
 
-- Import satellite imagery and height maps.
-- Define terrain layers (grass, dirt, rock, sand, etc.).
-- Place objects (buildings, trees, rocks) on the map.
-- Configure surface textures and materials.
-- Export terrain data for Binarize.
+- Műholdképek és magassági térképek importálása.
+- Tereprétek definiálása (fű, föld, szikla, homok, stb.).
+- Objektumok (épületek, fák, sziklák) elhelyezése a térképen.
+- Felszíni textúrák és anyagok konfigurálása.
+- Terep adatok exportálása a Binarize számára.
 
-### When You Need Terrain Builder
+### Mikor van szükség a Terrain Builderre
 
-- Creating a new map from scratch.
-- Modifying an existing terrain (adding/removing objects, changing terrain shape).
-- Terrain Builder is NOT needed for item mods, weapon mods, UI mods, or script-only mods.
+- Új térkép készítése a semmiből.
+- Meglévő terep módosítása (objektumok hozzáadása/eltávolítása, terep alakjának megváltoztatása).
+- A Terrain Builder NEM szükséges tárgy modokhoz, fegyver modokhoz, UI modokhoz vagy csak szkript modokhoz.
 
-### Launching
+### Indítás
 
 ```
 DayZ Tools Launcher --> Terrain Builder
 ```
 
-> **Megjegyzes:** Terrain creation is an advanced topic that warrants its own dedicated guide. This chapter covers Terrain Builder only as part of the tools overview.
+> **Megjegyzés:** A terep készítés egy haladó téma, amely saját dedikált útmutatót igényel. Ez a fejezet a Terrain Buildert csak az eszközök áttekintésének részeként tárgyalja.
 
 ---
 
 ## Binarize
 
-Binarize is the core conversion engine that transforms human-readable source files into optimized, game-ready binary formats. It runs behind the scenes during PBO packing (via AddonBuilder) but can also be invoked directly.
+A Binarize az a központi konverziós motor, amely az ember által olvasható forrásfájlokat optimalizált, játékra kész bináris formátumokká alakítja. A PBO csomagolás során (az AddonBuilderen keresztül) a háttérben fut, de közvetlenül is meghívható.
 
-### What Binarize Converts
+### Mit konvertál a Binarize
 
-| Source Format | Output Format | Leiras |
-|---------------|---------------|-------------|
-| MLOD `.p3d` | ODOL `.p3d` | Optimized 3D model |
-| `.tga` / `.png` / `.edds` | `.paa` | Compressed texture |
-| `.cpp` (config) | `.bin` | Binarized config (faster parsing) |
-| `.rvmat` | `.rvmat` (processed) | Material with resolved paths |
-| `.wrp` | `.wrp` (optimized) | Terrain world |
+| Forrás formátum | Kimeneti formátum | Leírás |
+|-----------------|-------------------|--------|
+| MLOD `.p3d` | ODOL `.p3d` | Optimalizált 3D modell |
+| `.tga` / `.png` / `.edds` | `.paa` | Tömörített textúra |
+| `.cpp` (config) | `.bin` | Binarizált konfiguráció (gyorsabb elemzés) |
+| `.rvmat` | `.rvmat` (feldolgozott) | Anyag feloldott elérési utakkal |
+| `.wrp` | `.wrp` (optimalizált) | Terep világ |
 
-### When Binarization is Needed
+### Mikor szükséges a binarizálás
 
-| Content Type | Binarize? | Ok |
-|-------------|-----------|--------|
-| Config.cpp with CfgJarmuvek | **Yes** | Engine requires binarized configs for item definitions |
-| Config.cpp (scripts only) | Optional | Script-only configs work unbinarized |
-| P3D models | **Yes** | ODOL is faster to load, smaller, engine-optimized |
-| Texturak (TGA/PNG) | **Yes** | PAA is required at runtime |
-| Scripts (.c files) | **No** | Scripts are loaded as-is (text) |
-| Hang (.ogg) | **No** | OGG is already game-ready |
-| Layouts (.layout) | **No** | Loaded as-is |
+| Tartalom típus | Binarizálni? | Ok |
+|----------------|-------------|-----|
+| Config.cpp CfgVehicles-szel | **Igen** | A motor binarizált konfigot igényel tárgy definíciókhoz |
+| Config.cpp (csak szkriptek) | Opcionális | Csak szkript konfigok binarizálatlanul is működnek |
+| P3D modellek | **Igen** | Az ODOL gyorsabban töltődik, kisebb, motor-optimalizált |
+| Textúrák (TGA/PNG) | **Igen** | A PAA futásidőben szükséges |
+| Szkriptek (.c fájlok) | **Nem** | A szkriptek változatlanul (szövegként) töltődnek be |
+| Hang (.ogg) | **Nem** | Az OGG már játékra kész |
+| Layout-ok (.layout) | **Nem** | Változatlanul töltődnek be |
 
-### Direct Invocation
+### Közvetlen meghívás
 
 ```bash
 Binarize.exe -targetPath="P:\build\MyMod" -sourcePath="P:\MyMod" -noLogs
 ```
 
-In practice, you rarely call Binarize directly -- AddonBuilder wraps it as part of the PBO packing process.
+A gyakorlatban ritkán hívod meg közvetlenül a Binarize-t -- az AddonBuilder becsomagolja a PBO csomagolási folyamat részeként.
 
 ---
 
 ## AddonBuilder
 
-AddonBuilder is the PBO packing tool. It takes a source directory and creates a `.pbo` archive, optionally running Binarize on the content first. This is covered in detail in [Chapter 4.6: PBO csomagolas](06-pbo-packing.md).
+Az AddonBuilder a PBO csomagoló eszköz. Egy forrás könyvtárat vesz és létrehoz egy `.pbo` archívumot, opcionálisan előbb lefuttatva a Binarize-t a tartalmon. Részletesen a [4.6. fejezet: PBO csomagolás](06-pbo-packing.md) tárgyalja.
 
 ### Gyors referencia
 
 ```bash
-# Pack with binarization (for item/weapon mods with configs, models, textures)
+# Csomagolás binarizálással (tárgy/fegyver modokhoz konfiggal, modellekkel, textúrákkal)
 AddonBuilder.exe "P:\MyMod" "P:\output" -prefix="MyMod" -sign="MyKey"
 
-# Pack without binarization (for script-only mods)
+# Csomagolás binarizálás nélkül (csak szkript modokhoz)
 AddonBuilder.exe "P:\MyMod" "P:\output" -prefix="MyMod" -packonly
 ```
 
-### Launching
+### Indítás
 
-From the DayZ eszkozok Launcher, or directly:
+A DayZ Tools Launcherből, vagy közvetlenül:
 ```
 P:\DayZ Tools\Bin\AddonBuilder\AddonBuilder.exe
 ```
 
-AddonBuilder has both a GUI mode and a command-line mode. The GUI provides a visual file browser and option checkboxes. The command-line mode is used by automated build scripts.
+Az AddonBuilder GUI módban és parancssori módban is működik. A GUI vizuális fájlböngészőt és opció jelölőnégyzeteket biztosít. A parancssori módot automatizált build szkriptek használják.
 
 ---
 
 ## Workbench
 
-Workbench is a script development environment included with DayZ eszkozok. It provides script editing, debugging, and profiling capabilities.
+A Workbench a DayZ Tools-szal kapott szkript fejlesztői környezet. Szkript szerkesztési, hibakeresési és profilozási képességeket biztosít.
 
-### Key Capabilities
+### Fő képességek
 
-- **Script editing** with syntax highlighting for Enforce Script.
-- **Debugging** with breakpoints, step execution, and variable inspection.
-- **Profiling** to identify performance bottlenecks in scripts.
-- **Console** for evaluating expressions and testing snippets.
-- **Resource browser** for inspecting game data.
+- **Szkript szerkesztés** szintaxis kiemeléssel Enforce Scripthez.
+- **Hibakeresés** töréspontokkal, lépésenkénti végrehajtással és változó vizsgálattal.
+- **Profilozás** a szkriptek teljesítmény szűk keresztmetszeteinek azonosítására.
+- **Konzol** kifejezések kiértékeléséhez és kódrészletek teszteléséhez.
+- **Erőforrás böngésző** a játék adatok vizsgálatához.
 
-### Launching
+### Indítás
 
 ```
 DayZ Tools Launcher --> Workbench
 ```
 
-Or directly: `P:\DayZ eszkozok\Bin\Workbench\workbenchApp.exe`
+Vagy közvetlenül: `P:\DayZ Tools\Bin\Workbench\workbenchApp.exe`
 
-### Debugging Workflow
+### Hibakeresési munkafolyamat
 
-1. Open Workbench.
-2. Configure the project to point at your mod's scripts.
-3. Set breakpoints in your `.c` files.
-4. Launch the game through Workbench (it starts DayZ in debug mode).
-5. When execution hits a breakpoint, Workbench pauses the game and shows the call stack, local variables, and allows step-through.
+1. Nyisd meg a Workbench-et.
+2. Állítsd be a projektet, hogy a modod szkriptjeire mutasson.
+3. Állíts be töréspontokat a `.c` fájljaidban.
+4. Indítsd el a játékot a Workbenchen keresztül (hibakeresési módban indítja a DayZ-t).
+5. Amikor a végrehajtás eléri a töréspontot, a Workbench megállítja a játékot és megjeleníti a hívási vermet, a helyi változókat, és lehetővé teszi a lépésenkénti végrehajtást.
 
-### Limitations
+### Korlátozások
 
-- Workbench's Enforce Script support has some gaps -- not all engine APIs are fully documented in its autocomplete.
-- Some modders prefer external editors (VS Code with community Enforce Script extensions) for writing code and use Workbench only for debugging.
-- Workbench can be unstable with large mods or complex breakpoint configurations.
+- A Workbench Enforce Script támogatásában vannak hiányosságok -- nem minden motor API van teljesen dokumentálva az automatikus kiegészítésében.
+- Egyes modderek külső szerkesztőket (VS Code közösségi Enforce Script bővítményekkel) preferálnak a kódíráshoz, és a Workbench-et csak hibakereséshez használják.
+- A Workbench instabil lehet nagy modokkal vagy összetett töréspont konfigurációkkal.
 
 ---
 
-## File Patching Mode
+## File Patching mód
 
-**File patching** is a development shortcut that allows the game to load loose files from disk instead of requiring them to be packed into PBOs. This dramatically speeds up iteration during development.
+A **file patching** egy fejlesztési gyorsítás, amely lehetővé teszi a játék számára, hogy PBO-kba csomagolás helyett közvetlenül a lemezről töltsön be különálló fájlokat. Ez drámaian felgyorsítja az iterációt a fejlesztés során.
 
-### How File Patching Works
+### Hogyan működik a File Patching
 
-When DayZ is launched with the `-filePatching` parameter, the engine checks the P: drive for files before looking in PBOs. If a file exists on P:, the loose version is loaded instead of the PBO version.
+Amikor a DayZ-t a `-filePatching` paraméterrel indítják, a motor a PBO-k előtt a P: meghajtón keresi a fájlokat. Ha egy fájl létezik a P:-n, a különálló verzió töltődik be a PBO verzió helyett.
 
 ```
-Normal mode:   Game loads --> PBO --> files
-File patching: Game loads --> P: drive (if file exists) --> PBO (fallback)
+Normál mód:      Játék betölt --> PBO --> fájlok
+File patching:   Játék betölt --> P: meghajtó (ha létezik a fájl) --> PBO (tartalék)
 ```
 
-### Enabling File Patching
+### File Patching engedélyezése
 
-Add the `-filePatching` launch parameter to DayZ:
+Add hozzá a `-filePatching` indítási paramétert a DayZ-hez:
 
 ```bash
-# Client
+# Kliens
 DayZDiag_x64.exe -filePatching -mod="MyMod" -connect=127.0.0.1
 
-# Server
+# Szerver
 DayZDiag_x64.exe -filePatching -server -mod="MyMod" -config=serverDZ.cfg
 ```
 
-> **Fontos:** File patching requires the **Diag** (diagnostic) executable (`DayZDiag_x64.exe`), not the retail executable. The retail build ignores `-filePatching` for security.
+> **Fontos:** A file patching a **Diag** (diagnosztikai) futtatható fájlt (`DayZDiag_x64.exe`) igényli, nem a kereskedelmi változatot. A kereskedelmi build biztonsági okokból figyelmen kívül hagyja a `-filePatching`-et.
 
-### What File Patching Can Do
+### Mire képes a File Patching
 
-| Asset Type | File Patching Works? | Megjegyzesek |
-|------------|---------------------|-------|
-| Scripts (.c) | **Yes** | Fastest iteration -- edit, restart, test |
-| Layouts (.layout) | **Yes** | UI changes without rebuild |
-| Texturak (.paa) | **Yes** | Swap textures without rebuild |
-| Config.cpp | **Partial** | Unbinarized configs only |
-| Models (.p3d) | **Yes** | Unbinarized MLOD P3D only |
-| Hang (.ogg) | **Yes** | Swap sounds without rebuild |
+| Asset típus | File Patching működik? | Megjegyzések |
+|-------------|----------------------|--------------|
+| Szkriptek (.c) | **Igen** | Leggyorsabb iteráció -- szerkesztés, újraindítás, tesztelés |
+| Layout-ok (.layout) | **Igen** | UI módosítások újraépítés nélkül |
+| Textúrák (.paa) | **Igen** | Textúrák cseréje újraépítés nélkül |
+| Config.cpp | **Részben** | Csak binarizálatlan konfigok |
+| Modellek (.p3d) | **Igen** | Csak binarizálatlan MLOD P3D |
+| Hang (.ogg) | **Igen** | Hangok cseréje újraépítés nélkül |
 
-### Workflow with File Patching
+### Munkafolyamat File Patching-gel
 
-1. Set up P: drive with your mod's source files.
-2. Launch server and client with `-filePatching`.
-3. Edit a script file in your editor.
-4. Restart the game (or reconnect) to pick up the changes.
-5. No PBO rebuild needed.
+1. Állítsd be a P: meghajtót a mod forrásfájljaiddal.
+2. Indítsd el a szervert és klienst `-filePatching`-gel.
+3. Szerkessz egy szkript fájlt a szerkesztődben.
+4. Indítsd újra a játékot (vagy csatlakozz újra) a változások átvételéhez.
+5. Nincs szükség PBO újraépítésre.
 
-> **Tipp:** For script-only changes, file patching eliminates the build step entirely. You edit `.c` files, restart, and test. This is the fastest development loop available.
+> **Tipp:** Csak szkript módosításoknál a file patching teljesen kiküszöböli az építési lépést. Szerkeszted a `.c` fájlokat, újraindítod és tesztelsz. Ez a leggyorsabb elérhető fejlesztési ciklus.
 
-### Limitations
+### Korlátozások
 
-- **No binarized content.** Config.cpp with `CfgJarmuvek` entries may not work correctly without binarization. Script-only configs work fine.
-- **No key signing.** File-patched content is not signed, so it only works in development (not on public servers).
-- **Diag build only.** The retail executable ignores file patching.
-- **P: drive must be mounted.** If the workdrive is not mounted, file patching has nothing to read from.
+- **Nincs binarizált tartalom.** A `CfgVehicles` bejegyzéseket tartalmazó config.cpp nem feltétlenül működik helyesen binarizálás nélkül. A csak szkript konfigok rendben működnek.
+- **Nincs kulcs aláírás.** A file patching-elt tartalom nincs aláírva, ezért csak fejlesztés közben működik (nem nyilvános szervereken).
+- **Csak Diag build.** A kereskedelmi futtatható fájl figyelmen kívül hagyja a file patching-et.
+- **A P: meghajtónak csatolva kell lennie.** Ha a workdrive nincs csatolva, a file patching-nek nincs honnan olvasnia.
 
 ---
 
-## Complete Workflow: Source to Game
+## Teljes munkafolyamat: forrástól a játékig
 
-Here is the end-to-end pipeline for turning source assets into a playable mod:
+Íme a teljes pipeline a forrás assetek játszható moddá alakításához:
 
-### Phase 1: Create Source Assets
+### Teljes asset pipeline
+
+```mermaid
+graph LR
+    subgraph "Forrás assetek"
+        TGA[".tga textúrák"]
+        FBX[".fbx/.obj modellek"]
+        OGG[".ogg hang"]
+        CPP["config.cpp"]
+        ES[".c szkriptek"]
+    end
+
+    subgraph "DayZ Tools"
+        TV["TexView2"]
+        OB["Object Builder"]
+        BIN["Binarize"]
+        AB["AddonBuilder"]
+    end
+
+    subgraph "Játékra kész"
+        PAA[".paa textúrák"]
+        P3D[".p3d modellek"]
+        CBIN["config.bin"]
+        PBO[".pbo archívum"]
+    end
+
+    TGA --> TV --> PAA
+    FBX --> OB --> P3D
+    CPP --> BIN --> CBIN
+    PAA --> AB
+    P3D --> AB
+    CBIN --> AB
+    OGG --> AB
+    ES --> AB
+    AB --> PBO
+
+    PBO --> GAME["DayZ játék<br/>@MyMod mappa"]
+
+    style PBO fill:#2D8A4E,color:#fff
+    style GAME fill:#4A90D9,color:#fff
+```
+
+### 1. fázis: Forrás assetek készítése
 
 ```
-3D Software (Blender/3dsMax)  -->  FBX export
-Image Editor (Photoshop/GIMP) -->  TGA/PNG export
-Audio Editor (Audacity)       -->  OGG export
-Text Editor (VS Code)         -->  .c scripts, config.cpp, .layout files
+3D szoftver (Blender/3dsMax)     -->  FBX export
+Képszerkesztő (Photoshop/GIMP)   -->  TGA/PNG export
+Hangszerkesztő (Audacity)        -->  OGG export
+Szövegszerkesztő (VS Code)       -->  .c szkriptek, config.cpp, .layout fájlok
 ```
 
-### Phase 2: Import and Convert
+### 2. fázis: Importálás és konvertálás
 
 ```
-FBX  -->  Object Builder  -->  P3D (with LODs, selections, materials)
-TGA  -->  TexView2         -->  PAA (compressed texture)
-PNG  -->  TexView2         -->  PAA (compressed texture)
-OGG  -->  (no conversion needed, game-ready)
+FBX  -->  Object Builder  -->  P3D (LOD-okkal, szelekciókkal, anyagokkal)
+TGA  -->  TexView2         -->  PAA (tömörített textúra)
+PNG  -->  TexView2         -->  PAA (tömörített textúra)
+OGG  -->  (nincs szükség konvertálásra, játékra kész)
 ```
 
-### Phase 3: Organize on P: Drive
+### 3. fázis: Szervezés a P: meghajtón
 
 ```
 P:\MyMod\
-  config.cpp                    <-- Mod configuration
+  config.cpp                    <-- Mod konfiguráció
   Scripts\
-    3_Game\                     <-- Early-load scripts
-    4_World\                    <-- Entity/manager scripts
-    5_Mission\                  <-- UI/mission scripts
+    3_Game\                     <-- Korai betöltésű szkriptek
+    4_World\                    <-- Entitás/menedzser szkriptek
+    5_Mission\                  <-- UI/küldetés szkriptek
   data\
     models\
-      my_item.p3d               <-- 3D model
+      my_item.p3d               <-- 3D modell
     textures\
-      my_item_co.paa            <-- Diffuse texture
-      my_item_nohq.paa          <-- Normal map
-      my_item_smdi.paa          <-- Specular map
+      my_item_co.paa            <-- Diffúz textúra
+      my_item_nohq.paa          <-- Normál térkép
+      my_item_smdi.paa          <-- Spekuláris térkép
     materials\
-      my_item.rvmat             <-- Material definition
+      my_item.rvmat             <-- Anyag definíció
   sound\
-    my_sound.ogg                <-- Audio file
+    my_sound.ogg                <-- Hangfájl
   GUI\
     layouts\
       my_panel.layout           <-- UI layout
 ```
 
-### Phase 4: Test with File Patching (Development)
+### 4. fázis: Tesztelés File Patching-gel (fejlesztés)
 
 ```
-Launch DayZDiag with -filePatching
+DayZDiag indítása -filePatching-gel
   |
-  |--> Engine reads loose files from P:\MyMod\
-  |--> Test in-game
-  |--> Edit files directly on P:
-  |--> Restart to pick up changes
-  |--> Iterate rapidly
+  |--> A motor különálló fájlokat olvas a P:\MyMod\-ból
+  |--> Tesztelés játékon belül
+  |--> Fájlok szerkesztése közvetlenül a P:-n
+  |--> Újraindítás a változások átvételéhez
+  |--> Gyors iteráció
 ```
 
-### Phase 5: Pack PBO (Release)
+### 5. fázis: PBO csomagolás (kiadás)
 
 ```
-AddonBuilder / build script
+AddonBuilder / build szkript
   |
-  |--> Reads source from P:\MyMod\
-  |--> Binarize converts: P3D-->ODOL, TGA-->PAA, config.cpp-->.bin
-  |--> Packs everything into MyMod.pbo
-  |--> Signs with key: MyMod.pbo.MyKey.bisign
-  |--> Output: @MyMod\addons\MyMod.pbo
+  |--> Forrás olvasása a P:\MyMod\-ból
+  |--> Binarize konvertál: P3D-->ODOL, TGA-->PAA, config.cpp-->.bin
+  |--> Mindent a MyMod.pbo-ba csomagol
+  |--> Aláírás kulccsal: MyMod.pbo.MyKey.bisign
+  |--> Kimenet: @MyMod\addons\MyMod.pbo
 ```
 
-### Phase 6: Distribute
+### 6. fázis: Terjesztés
 
 ```
 @MyMod\
   addons\
-    MyMod.pbo                   <-- The packed mod
-    MyMod.pbo.MyKey.bisign      <-- Signature for server verification
+    MyMod.pbo                   <-- A csomagolt mod
+    MyMod.pbo.MyKey.bisign      <-- Aláírás szerver ellenőrzéshez
   keys\
-    MyKey.bikey                 <-- Public key for server admins
-  mod.cpp                       <-- Mod metadata (name, author, etc.)
+    MyKey.bikey                 <-- Nyilvános kulcs szerver adminoknak
+  mod.cpp                       <-- Mod metaadatok (név, szerző, stb.)
 ```
 
-Players subscribe to the mod on Steam Workshop, or server admins install it manually.
+A játékosok feliratkoznak a modra a Steam Workshopon, vagy a szerver adminok kézzel telepítik.
 
 ---
 
-## Gyakori hibak
+## Gyakori hibák
 
-### 1. P: Drive Not Mounted
+### 1. P: meghajtó nincs csatolva
 
-**Tunet:** All tools report "file not found" errors. Object Builder shows blank textures.
-**Javitas:** Run your `SetupWorkdrive.bat` or mount P: via DayZ eszkozok Launcher before launching any tool.
+**Tünet:** Minden eszköz "fájl nem található" hibákat jelez. Az Object Builder üres textúrákat mutat.
+**Javítás:** Futtasd a `SetupWorkdrive.bat`-odat, vagy csatold a P:-t a DayZ Tools Launcher-en keresztül bármely eszköz indítása előtt.
 
-### 2. Wrong Tool for the Job
+### 2. Rossz eszköz a feladathoz
 
-**Tunet:** Trying to edit a PAA file in a text editor, or opening a P3D in Notepad.
-**Javitas:** PAA is binary -- use TexView2. P3D is binary -- use Object Builder. Config.cpp is text -- use any text editor.
+**Tünet:** PAA fájl szerkesztésének kísérlete szövegszerkesztőben, vagy P3D megnyitása Notepadben.
+**Javítás:** A PAA bináris -- használd a TexView2-t. A P3D bináris -- használd az Object Buildert. A config.cpp szöveges -- használj bármilyen szövegszerkesztőt.
 
-### 3. Forgetting to Extract Vanilla Data
+### 3. Vanilla adatok kicsomagolásának elfelejtése
 
-**Tunet:** Object Builder cannot display vanilla textures on referenced models. Anyagok show pink/magenta.
-**Javitas:** Extract vanilla DayZ data to `P:\DZ\` so tools can resolve cross-references to game content.
+**Tünet:** Az Object Builder nem tudja megjeleníteni a vanilla textúrákat hivatkozott modelleken. Az anyagok rózsaszín/magenta színnel jelennek meg.
+**Javítás:** Csomagold ki a vanilla DayZ adatokat a `P:\DZ\`-be, hogy az eszközök fel tudják oldani a játék tartalomra való kereszthivatkozásokat.
 
-### 4. File Patching with Retail Executable
+### 4. File Patching kereskedelmi futtatható fájllal
 
-**Tunet:** Changes to files on P: drive are not reflected in-game.
-**Javitas:** Use `DayZDiag_x64.exe`, not `DayZ_x64.exe`. Only the Diag build supports `-filePatching`.
+**Tünet:** A P: meghajtón lévő fájlok módosításai nem tükröződnek a játékban.
+**Javítás:** Használd a `DayZDiag_x64.exe`-t, ne a `DayZ_x64.exe`-t. Csak a Diag build támogatja a `-filePatching`-et.
 
-### 5. Building Without P: Drive
+### 5. Építés P: meghajtó nélkül
 
-**Tunet:** AddonBuilder or Binarize fails with path resolution errors.
-**Javitas:** Mount P: drive before running any build tool. All paths in models and materials are P:-relative.
-
----
-
-## Bevalt gyakorlatok
-
-1. **Always use the P: drive.** Resist the temptation to use absolute paths. P: is the standard and all tools expect it.
-
-2. **Use file patching during development.** It cuts iteration time from minutes (PBO rebuild) to seconds (game restart). Only build PBOs for release testing and distribution.
-
-3. **Automate your build pipeline.** Use scripts (`build_pbos.bat`, `dev.py`) to automate the AddonBuilder invocation. Manual GUI packing is error-prone and slow for multi-PBO mods.
-
-4. **Keep source and output separate.** Source files live on P:. Built PBOs go to a separate output directory. Never mix them.
-
-5. **Learn keyboard shortcuts.** Object Builder and TexView2 have extensive keyboard shortcuts that dramatically speed up work. Invest time learning them.
-
-6. **Extract and study vanilla data.** The best way to learn how DayZ assets are structured is to examine existing ones. Extract vanilla PBOs and open models, materials, and textures in the appropriate tools.
-
-7. **Use Workbench for debugging, external editors for writing.** VS Code with Enforce Script extensions provides better editing. Workbench provides better debugging. Use both.
+**Tünet:** Az AddonBuilder vagy a Binarize elérési út feloldási hibákkal leáll.
+**Javítás:** Csatold a P: meghajtót bármely build eszköz futtatása előtt. A modellekben és anyagokban lévő összes elérési út P:-relatív.
 
 ---
 
-## Navigacio
+## Bevált gyakorlatok
 
-| Elozo | Fel | Kovetkezo |
-|----------|----|------|
-| [4.4 Hang](04-audio.md) | [Part 4: File Formats & DayZ eszkozok](01-textures.md) | [4.6 PBO csomagolas](06-pbo-packing.md) |
+1. **Mindig használd a P: meghajtót.** Állj ellen a kísértésnek, hogy abszolút elérési utakat használj. A P: a szabvány és minden eszköz ezt várja el.
+
+2. **Használj file patching-et fejlesztés közben.** Percekről (PBO újraépítés) másodpercekre (játék újraindítás) csökkenti az iterációs időt. Csak kiadási teszteléshez és terjesztéshez készíts PBO-kat.
+
+3. **Automatizáld a build pipeline-t.** Használj szkripteket (`build_pbos.bat`, `dev.py`) az AddonBuilder meghívásának automatizálásához. A kézi GUI csomagolás hibalehetőségeket rejt és lassú a több-PBO-s modokhoz.
+
+4. **Tartsd külön a forrást és a kimenetet.** A forrásfájlok a P:-n élnek. Az elkészült PBO-k külön kimeneti könyvtárba kerülnek. Soha ne keverd őket.
+
+5. **Tanuld meg a billentyűparancsokat.** Az Object Builder és a TexView2 kiterjedt billentyűparancsokkal rendelkezik, amelyek drámaian felgyorsítják a munkát. Fektess időt a megtanulásukba.
+
+6. **Csomagold ki és tanulmányozd a vanilla adatokat.** A legjobb módja annak, hogy megtanuld, hogyan épülnek fel a DayZ assetek, a meglévők vizsgálata. Csomagold ki a vanilla PBO-kat és nyisd meg a modelleket, anyagokat és textúrákat a megfelelő eszközökben.
+
+7. **Használd a Workbench-et hibakereséshez, külső szerkesztőket íráshoz.** A VS Code Enforce Script bővítményekkel jobb szerkesztést nyújt. A Workbench jobb hibakeresést biztosít. Használd mindkettőt.
+
+---
+
+## Valós modokban megfigyelt minták
+
+| Minta | Mod | Részlet |
+|-------|-----|---------|
+| P: meghajtó junction-ök `SetupWorkdrive.bat`-tal | COT / Community Online Tools | Batch szkriptet szállít, amely junction linkeket hoz létre a mod forrástól a P: meghajtóra az egységes elérési út feloldáshoz |
+| `.gproj` Workbench projekt fájlok | Dabs Framework | Workbench projekt fájlokat tartalmaz az Enforce Script töréspontokkal és változó vizsgálattal történő hibakereséséhez |
+| Automatizált `dev.py` build orkesztrátor | StarDZ (minden mod) | Python szkript, amely becsomagolja az AddonBuilder hívásokat, több-PBO buildeket kezel, szervert/klienst indít, és naplókat figyel |
+
+---
+
+## Kompatibilitás és hatás
+
+- **Több mod:** Minden DayZ eszköz megosztja a P: meghajtót. Több mod projekt egymás mellett létezhet a `P:\` alatt konfliktus nélkül, amíg a mappa nevek különböznek. Junction ütközések akkor keletkeznek, ha két mod ugyanazt a P: elérési utat használja.
+- **Teljesítmény:** A Binarize CPU-igényes és fájlonként egyszálú. A sok P3D modellt és textúrát tartalmazó nagy modok binarizálása 5-10 percet vehet igénybe. A több PBO-ra bontás és a `-packonly` használata szkriptekhez jelentősen csökkenti az építési időt.
+- **Verzió:** A DayZ Tools a nagyobb DayZ frissítésekkel együtt frissül. Az Object Builder és a Binarize alkalmanként kap javításokat, de az általános munkafolyamat stabil a DayZ 1.0 óta. Mindig tartsd frissítve a DayZ Tools-t a Steamen keresztül.
+
+---
+
+## Navigáció
+
+| Előző | Fel | Következő |
+|-------|-----|-----------|
+| [4.4 Hang](04-audio.md) | [4. rész: Fájlformátumok és DayZ Tools](01-textures.md) | [4.6 PBO csomagolás](06-pbo-packing.md) |

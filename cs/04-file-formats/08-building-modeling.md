@@ -1,80 +1,80 @@
-# Chapter 4.8: Building Modeling -- Doors & Ladders
+# Kapitola 4.8: Modelování budov -- Dveře a žebříky
 
-[Home](../../README.md) | [<< Previous: Workbench Guide](07-workbench-guide.md) | **Building Modeling**
+[Domů](../../README.md) | [<< Předchozí: Průvodce Workbench](07-workbench-guide.md) | **Modelování budov**
 
 ---
 
-## Uvod
+## Úvod
 
-Buildings in DayZ are more than static scenery. Players interact with them constantly -- opening doors, climbing ladders, taking cover behind walls. Creating a custom building that supports these interactions requires careful model setup: doors need rotation axes and named selections across multiple LODs, ladders need precisely placed climbing paths defined entirely through Memory LOD vertices.
+Budovy v DayZ jsou víc než statická kulisa. Hráči s nimi neustále interagují -- otevírají dveře, lezou po žebřících, kryjí se za zdmi. Vytvoření vlastní budovy, která tyto interakce podporuje, vyžaduje pečlivé nastavení modelu: dveře potřebují osy rotace a pojmenované selekce napříč více LODy, žebříky potřebují přesně umístěné cesty pro lezení definované výhradně prostřednictvím vertexů v Memory LOD.
 
-This chapter covers the complete workflow for adding interactive doors and climbable ladders to custom building models, based on official Bohemia Interactive documentation.
+Tato kapitola pokrývá kompletní pracovní postup pro přidání interaktivních dveří a žebříků k vlastním modelům budov, na základě oficiální dokumentace Bohemia Interactive.
 
-### Predpoklady
+### Předpoklady
 
-- A working **Work-drive** with your custom mod folder structure.
-- **Object Builder** (from the DayZ Tools package) with **Buldozer** (model preview) configured.
-- The ability to binarize and pack custom mod files into PBOs.
-- Familiarity with the LOD system and named selections (covered in [Chapter 4.2: 3D Models](02-models.md)).
+- Fungující **Workdrive** s vlastní strukturou složek modu.
+- **Object Builder** (z balíčku DayZ Tools) s nakonfigurovaným **Buldozerem** (náhled modelu).
+- Schopnost binarizovat a zabalit vlastní soubory modu do PBO.
+- Znalost systému LODů a pojmenovaných selekcí (popsáno v [Kapitole 4.2: 3D modely](02-models.md)).
 
 ---
 
 ## Obsah
 
-- [Prehled](#introduction)
-- [Konfigurace dveri](#door-configuration)
-  - [Model Setup](#model-setup-for-doors)
-  - [model.cfg -- Skeletons and Animations](#modelcfg----skeletons-and-animations)
-  - [Herní konfigurace (config.cpp)](#game-config-configcpp)
-  - [Dvoukridle dvere](#double-doors)
-  - [Posuvne dvere](#shifting-doors)
-  - [Problemy s obalovou kouli](#bounding-sphere-issues)
-- [Konfigurace zebrika](#ladder-configuration)
-  - [Podporovane typy zebriku](#supported-ladder-types)
-  - [Pojmenovane selekce Memory LOD](#memory-lod-named-selections)
-  - [Pozadavky na View Geometry](#view-geometry-requirements)
-  - [Rozmery zebriku](#ladder-dimensions)
-  - [Kolizni prostor](#collision-space)
-  - [Konfiguracni pozadavky pro zebriky](#config-requirements-for-ladders)
-- [Shrnuti pozadavku na model](#model-requirements-summary)
-- [Doporucene postupy](#best-practices)
-- [Caste chyby](#common-mistakes)
-- [Reference](#references)
+- [Přehled](#úvod)
+- [Konfigurace dveří](#konfigurace-dveří)
+  - [Nastavení modelu](#nastavení-modelu-pro-dveře)
+  - [model.cfg -- Kostry a animace](#modelcfg----kostry-a-animace)
+  - [Herní konfigurace (config.cpp)](#herní-konfigurace-configcpp)
+  - [Dvoukřídlé dveře](#dvoukřídlé-dveře)
+  - [Posuvné dveře](#posuvné-dveře)
+  - [Problémy s obalovou koulí](#problémy-s-obalovou-koulí)
+- [Konfigurace žebříku](#konfigurace-žebříku)
+  - [Podporované typy žebříků](#podporované-typy-žebříků)
+  - [Pojmenované selekce Memory LOD](#pojmenované-selekce-memory-lod)
+  - [Požadavky na View Geometry](#požadavky-na-view-geometry)
+  - [Rozměry žebříku](#rozměry-žebříku)
+  - [Kolizní prostor](#kolizní-prostor)
+  - [Konfigurační požadavky pro žebříky](#konfigurační-požadavky-pro-žebříky)
+- [Shrnutí požadavků na model](#shrnutí-požadavků-na-model)
+- [Osvědčené postupy](#osvědčené-postupy)
+- [Časté chyby](#časté-chyby)
+- [Reference](#reference)
 
 ---
 
-## Konfigurace dveri
+## Konfigurace dveří
 
-Interactive doors require three things to come together: the P3D model with correctly named selections and memory points, a `model.cfg` that defines the animation skeleton and rotation parameters, and a `config.cpp` game config that links the door to sounds, damage zones, and game logic.
+Interaktivní dveře vyžadují spojení tří věcí: P3D model se správně pojmenovanými selekcemi a paměťovými body, `model.cfg` definující animační kostru a parametry rotace, a `config.cpp` herní konfigurace, která propojí dveře se zvuky, zónami poškození a herní logikou.
 
-### Nastaveni modelu pro dvere
+### Nastavení modelu pro dveře
 
-A door in the P3D model must include the following:
+Dveře v P3D modelu musí obsahovat následující:
 
-1. **Named selections across all relevant LODs.** The geometry that represents the door must be assigned to a named selection (e.g., `door1`) in each of these LODs:
-   - **Resolution LOD** -- the visual mesh the player sees.
-   - **Geometry LOD** -- the physical collision shape. Must also contain a named property `class` with the value `house`.
-   - **View Geometry LOD** -- used for visibility checks and action ray-casting. The selection name here corresponds to the `component` parameter in the game config.
-   - **Fire Geometry LOD** -- used for ballistic hit detection.
+1. **Pojmenované selekce napříč všemi relevantními LODy.** Geometrie reprezentující dveře musí být přiřazena k pojmenované selekci (např. `door1`) v každém z těchto LODů:
+   - **Resolution LOD** -- vizuální mesh, který hráč vidí.
+   - **Geometry LOD** -- fyzický kolizní tvar. Musí také obsahovat pojmenovanou vlastnost `class` s hodnotou `house`.
+   - **View Geometry LOD** -- používá se pro kontroly viditelnosti a ray-casting akcí. Název selekce zde odpovídá parametru `component` v herní konfiguraci.
+   - **Fire Geometry LOD** -- používá se pro balistickou detekci zásahů.
 
-2. **Memory LOD vertices** that define:
-   - **Rotation axis** -- Two vertices forming the axis of rotation, assigned to a named selection like `door1_axis`. This axis defines the hinge line around which the door pivots.
-   - **Sound position** -- A vertex assigned to a named selection like `door1_action`, marking where door sounds originate.
-   - **Akce widget position** -- Where the interaction widget is displayed to the player.
+2. **Vertexy Memory LOD**, které definují:
+   - **Osu rotace** -- Dva vertexy tvořící osu rotace, přiřazené k pojmenované selekci jako `door1_axis`. Tato osa definuje linii závěsu, kolem které se dveře otáčejí.
+   - **Pozici zvuku** -- Vertex přiřazený k pojmenované selekci jako `door1_action`, označující místo, odkud zvuky dveří pochází.
+   - **Pozici widgetu akce** -- Kde se hráči zobrazí interakční widget.
 
-#### Doporucene rozmery dveri
+#### Doporučené rozměry dveří
 
-Almost all doors in vanilla DayZ are **120 x 220 cm** (width x height). Using these standard dimensions ensures animations look correct and characters fit through openings naturally. Model your doors **closed by default** and animate them to the open position -- Bohemia plans to support doors opening in both directions in the future.
+Téměř všechny dveře ve vanilkovém DayZ jsou **120 x 220 cm** (šířka x výška). Použití těchto standardních rozměrů zajišťuje, že animace vypadají správně a postavy přirozeně projdou otvorem. Modelujte dveře **výchozí zavřené** a animujte je do otevřené pozice -- Bohemia plánuje v budoucnu podporovat otevírání dveří oběma směry.
 
-### model.cfg -- Skeletons and Animations
+### model.cfg -- Kostry a animace
 
-Any animated door requires a `model.cfg` file. This config defines the bone structure (skeleton) and the animation parameters. Place `model.cfg` near your model file, or higher in the folder structure -- the exact location is flexible as long as the binarizer can find it.
+Každé animované dveře vyžadují soubor `model.cfg`. Tento config definuje strukturu kostí (kostru) a parametry animace. Umístěte `model.cfg` blízko souboru modelu, nebo výše ve struktuře složek -- přesné umístění je flexibilní, pokud ho binarizér najde.
 
-The `model.cfg` has two sections:
+`model.cfg` má dvě sekce:
 
 #### CfgSkeletons
 
-Defines the animated bones. Each door gets a bone entry. Bones are listed as pairs: the bone name followed by its parent (empty string `""` for root-level bones).
+Definuje animované kosti. Každé dveře dostanou záznam kosti. Kosti jsou uvedeny jako páry: název kosti následovaný jeho rodičem (prázdný řetězec `""` pro kosti kořenové úrovně).
 
 ```cpp
 class CfgSkeletons
@@ -99,7 +99,7 @@ class CfgSkeletons
 
 #### CfgModels
 
-Defines the animations for each bone. The class name under `CfgModels` **must match your model's filename** (without extension) for the link to work.
+Definuje animace pro každou kost. Název třídy pod `CfgModels` **musí odpovídat názvu souboru vašeho modelu** (bez přípony), aby propojení fungovalo.
 
 ```cpp
 class CfgModels
@@ -144,25 +144,25 @@ class CfgModels
 };
 ```
 
-**Key parameters explained:**
+**Vysvětlení klíčových parametrů:**
 
 | Parametr | Popis |
-|-----------|-------------|
-| `type` | Animation type. Use `"rotation"` for swinging doors, `"translation"` for sliding doors. |
-| `selection` | The named selection in the model that should be animated. |
-| `source` | Links to the game config's `Doors` class. Must match the class name in `config.cpp`. |
-| `axis` | Named selection in the Memory LOD defining the rotation axis (two vertices). |
-| `memory` | Set to `1` to indicate the axis is defined in the Memory LOD. |
-| `minHodnota` / `maxHodnota` | Animation phase range. Typically `0` to `1`. |
-| `angle0` / `angle1` | Rotation angles in **radians**. `angle1` defines how far the door opens. Use negative values to reverse direction. A value of `1.4` radians is approximately 80 degrees. |
+|----------|-------|
+| `type` | Typ animace. Použijte `"rotation"` pro otočné dveře, `"translation"` pro posuvné dveře. |
+| `selection` | Pojmenovaná selekce v modelu, která má být animována. |
+| `source` | Propojení s třídou `Doors` v herní konfiguraci. Musí odpovídat názvu třídy v `config.cpp`. |
+| `axis` | Pojmenovaná selekce v Memory LOD definující osu rotace (dva vertexy). |
+| `memory` | Nastavte na `1` pro indikaci, že osa je definována v Memory LOD. |
+| `minValue` / `maxValue` | Rozsah fáze animace. Typicky `0` až `1`. |
+| `angle0` / `angle1` | Úhly rotace v **radiánech**. `angle1` definuje, jak daleko se dveře otevřou. Použijte záporné hodnoty pro obrácení směru. Hodnota `1.4` radiánů je přibližně 80 stupňů. |
 
-#### Overeni v Buldozeru
+#### Ověření v Buldozeru
 
-After writing the `model.cfg`, open your model in Object Builder with Buldozer running. Use the `[` and `]` keys to cycle through available animation sources, and `;` / `'` (or mouse wheel up/down) to advance or recede the animation. This lets you verify that the door pivots correctly on its axis.
+Po napsání `model.cfg` otevřete model v Object Builderu s běžícím Buldozerem. Použijte klávesy `[` a `]` pro procházení dostupných zdrojů animací a `;` / `'` (nebo kolečko myši nahoru/dolů) pro posunutí animace vpřed nebo vzad. Toto umožňuje ověřit, že se dveře správně otáčejí kolem své osy.
 
 ### Herní konfigurace (config.cpp)
 
-The game config connects the animated model to game systems -- sounds, damage, and door state logic. The config class name **must** follow the pattern `land_modelname` to link correctly with the model.
+Herní konfigurace propojuje animovaný model s herními systémy -- zvuky, poškozením a logikou stavu dveří. Název třídy konfigurace **musí** dodržovat vzor `land_modelname` pro správné propojení s modelem.
 
 ```cpp
 class CfgPatches
@@ -296,214 +296,214 @@ class CfgVehicles
 };
 ```
 
-**Door config parameters explained:**
+**Vysvětlení parametrů konfigurace dveří:**
 
 | Parametr | Popis |
-|-----------|-------------|
-| `component` | Named selection in the **View Geometry LOD** used for this door. |
-| `soundPos` | Named selection in the **Memory LOD** where door sounds are played. |
-| `animPeriod` | Speed of the door animation (in seconds). |
-| `initPhase` | Initial animation phase (`0` = closed, `1` = fully open). Test in Buldozer to verify which value corresponds to which state. |
-| `initOpened` | Probability that the door spawns open in the world. `0.5` means a 50% chance. |
-| `soundOpen` | Sound class from `CfgAkceSounds` played when the door opens. See `DZ\sounds\hpp\config.cpp` for available sound sets. |
-| `soundClose` | Sound class played when the door closes. |
-| `soundLocked` | Sound class played when a player tries to open a locked door. |
-| `soundOpenABit` | Sound class played when a player breaks open a locked door. |
+|----------|-------|
+| `component` | Pojmenovaná selekce ve **View Geometry LOD** použitá pro tyto dveře. |
+| `soundPos` | Pojmenovaná selekce v **Memory LOD**, kde se přehrávají zvuky dveří. |
+| `animPeriod` | Rychlost animace dveří (v sekundách). |
+| `initPhase` | Počáteční fáze animace (`0` = zavřeno, `1` = plně otevřeno). Otestujte v Buldozeru, abyste ověřili, která hodnota odpovídá kterému stavu. |
+| `initOpened` | Pravděpodobnost, že se dveře ve světě spawnou otevřené. `0.5` znamená 50% šanci. |
+| `soundOpen` | Třída zvuku z `CfgActionSounds` přehrávaná při otevření dveří. Viz `DZ\sounds\hpp\config.cpp` pro dostupné sady zvuků. |
+| `soundClose` | Třída zvuku přehrávaná při zavření dveří. |
+| `soundLocked` | Třída zvuku přehrávaná, když se hráč pokusí otevřít zamčené dveře. |
+| `soundOpenABit` | Třída zvuku přehrávaná, když hráč vyrazí zamčené dveře. |
 
-**Important notes on the config:**
+**Důležité poznámky ke konfiguraci:**
 
-- All buildings in DayZ inherit from `HouseNoDestruct`.
-- Each class name under `class Doors` must correspond to the `source` parameter defined in `model.cfg`.
-- The `DamageSystem` section must include a `DamageZones` subclass for each door. The `componentNames[]` array references the named selection from the model's Fire Geometry LOD.
-- Adding the `class=house` named property and a game config class requires your terrain to be re-binarized (model paths in `.wrp` files get replaced with game config class references).
+- Všechny budovy v DayZ dědí z `HouseNoDestruct`.
+- Každý název třídy pod `class Doors` musí odpovídat parametru `source` definovanému v `model.cfg`.
+- Sekce `DamageSystem` musí obsahovat podtřídu `DamageZones` pro každé dveře. Pole `componentNames[]` odkazuje na pojmenovanou selekci z Fire Geometry LOD modelu.
+- Přidání pojmenované vlastnosti `class=house` a třídy herní konfigurace vyžaduje, aby byl váš terén znovu binarizován (cesty modelů v souborech `.wrp` jsou nahrazeny referencemi na třídy herní konfigurace).
 
-### Dvoukridle dvere
+### Dvoukřídlé dveře
 
-Double doors (two wings that open together from a single interaction) are common in DayZ. They require special setup:
+Dvoukřídlé dveře (dvě křídla, která se otevírají společně jednou interakcí) jsou v DayZ běžné. Vyžadují speciální nastavení:
 
-**In the model:**
-- Configure each wing as an individual door with its own named selection (e.g., `door3_1` and `door3_2`).
-- In the **Memory LOD**, the action point must be **shared** between the two wings -- use one named selection and one vertex for the action position.
-- The no-suffix named selection (e.g., `door3` without wing suffix) must cover **both** door handles.
-- **View Geometry** and **Fire Geometry** require an additional named selection that covers both wings together.
+**V modelu:**
+- Nakonfigurujte každé křídlo jako individuální dveře s vlastní pojmenovanou selekcí (např. `door3_1` a `door3_2`).
+- V **Memory LOD** musí být akční bod **sdílený** mezi oběma křídly -- použijte jednu pojmenovanou selekci a jeden vertex pro pozici akce.
+- Pojmenovaná selekce bez přípony (např. `door3` bez přípony křídla) musí pokrývat **obě** kliky dveří.
+- **View Geometry** a **Fire Geometry** vyžadují další pojmenovanou selekci, která pokrývá obě křídla dohromady.
 
-**In model.cfg:**
-- Define each wing as a separate animation class, but set the **same `source` parameter** for both wings (e.g., `"doors34"` for both).
-- Set `angle1` to a **positive** value for one wing and **negative** for the other, so they swing in opposite directions.
+**V model.cfg:**
+- Definujte každé křídlo jako samostatnou třídu animace, ale nastavte **stejný parametr `source`** pro obě křídla (např. `"doors34"` pro obě).
+- Nastavte `angle1` na **kladnou** hodnotu pro jedno křídlo a **zápornou** pro druhé, aby se otáčela v opačných směrech.
 
-**In config.cpp:**
-- Define only **one** class under `class Doors`, with its name matching the shared `source` parameter.
-- Similarly, define only **one** entry in `DamageZones` for the double door pair.
+**V config.cpp:**
+- Definujte pouze **jednu** třídu pod `class Doors` s názvem odpovídajícím sdílenému parametru `source`.
+- Obdobně definujte pouze **jednu** položku v `DamageZones` pro pár dvoukřídlých dveří.
 
-### Posuvne dvere
+### Posuvné dveře
 
-For doors that slide along a track rather than swinging (such as barn doors or sliding panels), change the animation `type` in `model.cfg` from `"rotation"` to `"translation"`. The axis vertices in the Memory LOD then define the direction of travel instead of the pivot line.
+Pro dveře, které se posouvají po kolejnici místo otáčení (jako stodolní dveře nebo posuvné panely), změňte `type` animace v `model.cfg` z `"rotation"` na `"translation"`. Vertexy osy v Memory LOD pak definují směr pohybu místo otočné linie.
 
-### Problemy s obalovou kouli
+### Problémy s obalovou koulí
 
-By default, a model's bounding sphere is sized to contain the entire object. When doors are modeled in the closed position, the open position may extend **outside** this bounding sphere. This causes problems:
+Ve výchozím nastavení je obalová koule modelu dimenzována tak, aby obsahovala celý objekt. Když jsou dveře modelovány v zavřené pozici, otevřená pozice může přesahovat **mimo** tuto obalovou kouli. To způsobuje problémy:
 
-- **Akces stop working** -- ray-casting for door interactions fails from certain angles.
-- **Ballistics ignore the door** -- bullets pass through geometry that lies outside the bounding sphere.
+- **Akce přestanou fungovat** -- ray-casting pro interakce s dveřmi selže z určitých úhlů.
+- **Balistika ignoruje dveře** -- kulky projdou geometrií, která leží mimo obalovou kouli.
 
-**Solution:** Create a named selection in the Memory LOD that covers the larger area the building occupies when doors are fully open. Then add a `bounding` parameter to your game config class:
+**Řešení:** Vytvořte pojmenovanou selekci v Memory LOD, která pokrývá větší oblast, kterou budova zabírá, když jsou dveře plně otevřené. Pak přidejte parametr `bounding` do vaší třídy herní konfigurace:
 
 ```cpp
 class land_modelname: HouseNoDestruct
 {
     bounding = "selection_name";
-    // ... rest of config
+    // ... zbytek konfigurace
 };
 ```
 
-This overrides the automatic bounding sphere calculation with one that encompasses all door positions.
+Toto přepíše automatický výpočet obalové koule jedním, který zahrnuje všechny pozice dveří.
 
 ---
 
-## Konfigurace zebrika
+## Konfigurace žebříku
 
-Unlike doors, ladders in DayZ require **no animation config** and **no special game config entries** beyond the base building class. The entire ladder setup is done through Memory LOD vertex placement and one View Geometry selection. This makes ladders simpler to set up than doors, but the vertex placement must be precise.
+Na rozdíl od dveří žebříky v DayZ nevyžadují **žádnou konfiguraci animací** a **žádné speciální položky herní konfigurace** kromě základní třídy budovy. Celé nastavení žebříku se provádí prostřednictvím umístění vertexů v Memory LOD a jedné selekce View Geometry. To činí žebříky jednodušší na nastavení než dveře, ale umístění vertexů musí být přesné.
 
-### Podporovane typy zebriku
+### Podporované typy žebříků
 
-DayZ supports two types of ladders:
+DayZ podporuje dva typy žebříků:
 
-1. **Front bottom enter with side-way top exit** -- The player approaches from the front at the bottom and exits to the side at the top (against a wall).
-2. **Front bottom enter with front top exit** -- The player approaches from the front at the bottom and exits forward at the top (onto a roof or platform).
+1. **Vstup zespodu zepředu s výstupem do strany nahoře** -- Hráč přistupuje zepředu dole a vystupuje do strany nahoře (u zdi).
+2. **Vstup zespodu zepředu s výstupem vpřed nahoře** -- Hráč přistupuje zepředu dole a vystupuje vpřed nahoře (na střechu nebo plošinu).
 
-Both types also support **middle side-way enter and exit points**, allowing players to get on and off the ladder at intermediate floors. Ladders can also be placed **at an angle** rather than strictly vertical.
+Oba typy také podporují **boční vstupní a výstupní body uprostřed**, umožňující hráčům nastoupit a sestoupit ze žebříku v mezilehlých patrech. Žebříky mohou být také umístěny **pod úhlem** místo striktně vertikálně.
 
-### Pojmenovane selekce Memory LOD
+### Pojmenované selekce Memory LOD
 
-The ladder is defined entirely by named vertices in the Memory LOD. Every selection name begins with `ladderN_` where **N** is the ladder ID, starting from `1`. A building can have multiple ladders (`ladder1_`, `ladder2_`, `ladder3_`, etc.).
+Žebřík je definován výhradně pojmenovanými vertexy v Memory LOD. Každý název selekce začíná `ladderN_`, kde **N** je ID žebříku, počínaje od `1`. Budova může mít více žebříků (`ladder1_`, `ladder2_`, `ladder3_` atd.).
 
-Here is the complete set of named selections for a ladder:
+Zde je kompletní sada pojmenovaných selekcí pro žebřík:
 
-| Named Selection | Popis |
-|----------------|-------------|
-| `ladderN_bottom_front` | Defines the bottom entry step -- where the player begins climbing. |
-| `ladderN_middle_left` | Defines a middle entry/exit point (left side). Can contain multiple vertices if the ladder passes multiple floors. |
-| `ladderN_middle_right` | Defines a middle entry/exit point (right side). Can contain multiple vertices for multi-floor ladders. |
-| `ladderN_top_front` | Defines the upper exit step -- where the player finishes climbing (front exit type). |
-| `ladderN_top_left` | Defines the upper exit direction for wall-mounted ladders (left side). Must be at least **5 ladder steps higher** than the floor (approximately the height of a standing player on a ladder). |
-| `ladderN_top_right` | Defines the upper exit direction for wall-mounted ladders (right side). Same height requirement as `top_left`. |
-| `ladderN` | Defines where the "Enter Ladder" action widget appears to the player. |
-| `ladderN_dir` | Defines the direction from which the ladder can be climbed (approach direction). |
-| `ladderN_con` | The measurement point for the enter action. **Must be placed at floor level.** |
-| `ladderN_con_dir` | Defines the direction of a 180-degree cone (originating from `ladderN_con`) within which the action to enter the ladder is available. |
+| Pojmenovaná selekce | Popis |
+|---------------------|-------|
+| `ladderN_bottom_front` | Definuje spodní vstupní stupeň -- kde hráč začíná lézt. |
+| `ladderN_middle_left` | Definuje střední vstupní/výstupní bod (levá strana). Může obsahovat více vertexů, pokud žebřík prochází více patry. |
+| `ladderN_middle_right` | Definuje střední vstupní/výstupní bod (pravá strana). Může obsahovat více vertexů pro vícepatrové žebříky. |
+| `ladderN_top_front` | Definuje horní výstupní stupeň -- kde hráč dokončí lezení (typ předního výstupu). |
+| `ladderN_top_left` | Definuje horní směr výstupu pro žebříky na zdi (levá strana). Musí být alespoň **5 stupňů žebříku výše** než podlaha (přibližně výška stojícího hráče na žebříku). |
+| `ladderN_top_right` | Definuje horní směr výstupu pro žebříky na zdi (pravá strana). Stejný požadavek na výšku jako `top_left`. |
+| `ladderN` | Definuje, kde se hráči zobrazí widget akce "Nastoupit na žebřík". |
+| `ladderN_dir` | Definuje směr, ze kterého lze na žebřík lézt (směr přístupu). |
+| `ladderN_con` | Měřicí bod pro akci vstupu. **Musí být umístěn na úrovni podlahy.** |
+| `ladderN_con_dir` | Definuje směr 180stupňového kužele (vycházejícího z `ladderN_con`), ve kterém je dostupná akce vstupu na žebřík. |
 
-Each of these is a vertex (or set of vertices for middle points) that you place manually in Object Builder's Memory LOD.
+Každý z nich je vertex (nebo sada vertexů pro střední body), který ručně umístíte v Memory LOD Object Builderu.
 
-### Pozadavky na View Geometry
+### Požadavky na View Geometry
 
-In addition to the Memory LOD setup, you must create a **View Geometry** component with a named selection called `ladderN`. This selection must cover the **entire volume** of the ladder -- the full height and width of the climbable area. Without this View Geometry selection, the ladder will not function correctly.
+Kromě nastavení Memory LOD musíte vytvořit komponentu **View Geometry** s pojmenovanou selekcí nazvanou `ladderN`. Tato selekce musí pokrývat **celý objem** žebříku -- celou výšku a šířku lezecké oblasti. Bez této selekce View Geometry žebřík nebude správně fungovat.
 
-### Rozmery zebriku
+### Rozměry žebříku
 
-Ladder climbing animations are designed for **fixed dimensions**. Your ladder rungs and spacing should match the vanilla ladder proportions to ensure animations align correctly. Refer to the official DayZ Samples repository for exact measurements -- the sample ladder parts are the same ones used on most vanilla buildings.
+Animace lezení jsou navrženy pro **pevné rozměry**. Příčle a rozestupy vašeho žebříku by měly odpovídat vanilkovým proporcím žebříku, aby se animace správně zarovnaly. Prostudujte oficiální repozitář DayZ Samples pro přesná měření -- vzorové díly žebříku jsou stejné, jaké se používají na většině vanilkových budov.
 
-### Kolizni prostor
+### Kolizní prostor
 
-Characters **collide with geometry while climbing a ladder**. This means you must ensure there is enough clear space around the ladder for the climbing character in both:
+Postavy **kolidují s geometrií při lezení po žebříku**. To znamená, že musíte zajistit dostatečný volný prostor kolem žebříku pro lezoucí postavu v obou:
 
-- **Geometry LOD** -- physical collision.
-- **Roadway LOD** -- surface interaction.
+- **Geometry LOD** -- fyzická kolize.
+- **Roadway LOD** -- interakce s povrchem.
 
-If the space is too tight, the character will clip into walls or get stuck during the climbing animation.
+Pokud je prostor příliš těsný, postava se bude proklipovat zdmi nebo se zasekne během animace lezení.
 
-### Konfiguracni pozadavky pro zebriky
+### Konfigurační požadavky pro žebříky
 
-Unlike the Arma series, DayZ does **not** require a `ladders[]` array in the game config class. However, two things are still necessary:
+Na rozdíl od série Arma, DayZ **nevyžaduje** pole `ladders[]` ve třídě herní konfigurace. Dvě věci jsou však stále nutné:
 
-1. Your model must have a **config representation** -- a `config.cpp` with a `CfgVehicles` class (the same base class used for doors; see the door config section above).
-2. The **Geometry LOD** must contain the named property `class` with the value `house`.
+1. Váš model musí mít **reprezentaci v konfiguraci** -- `config.cpp` s třídou `CfgVehicles` (stejná základní třída použitá pro dveře; viz sekce konfigurace dveří výše).
+2. **Geometry LOD** musí obsahovat pojmenovanou vlastnost `class` s hodnotou `house`.
 
-Beyond these two requirements, the ladder is fully defined by the Memory LOD vertices and the View Geometry selection. No `model.cfg` animation entries are needed.
-
----
-
-## Shrnuti pozadavku na model
-
-Buildings with doors and ladders must include several LODs, each serving a distinct purpose. The table below summarizes what each LOD must contain:
-
-| LOD | Ucel | Door Requirements | Ladder Requirements |
-|-----|---------|-------------------|---------------------|
-| **Resolution LOD** | Visual mesh displayed to the player. | Named selection for the door geometry (e.g., `door1`). | No specific requirements. |
-| **Geometry LOD** | Physical collision detection. | Named selection for the door geometry. Named property `class = "house"`. | Named property `class = "house"`. Sufficient clearance around the ladder for climbing characters. |
-| **Fire Geometry LOD** | Ballistic hit detection (bullets, projectiles). | Named selection matching `componentNames[]` in the damage zone config. | No specific requirements. |
-| **View Geometry LOD** | Visibility checks, action ray-casting. | Named selection matching the `component` parameter in the door config. | Named selection `ladderN` covering the full volume of the ladder. |
-| **Memory LOD** | Axis definitions, action points, sound positions. | Axis vertices (`door1_axis`), sound position (`door1_action`), action widget position. | Full set of ladder vertices (`ladderN_bottom_front`, `ladderN_top_left`, `ladderN_dir`, `ladderN_con`, etc.). |
-| **Roadway LOD** | Surface interaction for characters. | Not typically required. | Sufficient clearance around the ladder for climbing characters. |
-
-### Konzistence pojmenovanych selekci
-
-A critical requirement is that **named selections must be consistent across all LODs** that reference them. If a selection is called `door1` in the Resolution LOD, it must also be `door1` in the Geometry, Fire Geometry, and View Geometry LODs. Mismatched names between LODs will cause the door or ladder to fail silently.
+Mimo tyto dva požadavky je žebřík plně definován vertexy Memory LOD a selekcí View Geometry. Žádné položky animací v `model.cfg` nejsou potřeba.
 
 ---
 
-## Doporucene postupy
+## Shrnutí požadavků na model
 
-1. **Model doors closed by default.** Animate from closed to open. Bohemia plans to support opening doors in both directions, so starting from closed is future-proof.
+Budovy s dveřmi a žebříky musí obsahovat několik LODů, z nichž každý slouží odlišnému účelu. Tabulka níže shrnuje, co musí každý LOD obsahovat:
 
-2. **Use standard door dimensions.** Stick to 120 x 220 cm for door openings unless you have a specific design reason not to. This matches vanilla buildings and ensures character animations look correct.
+| LOD | Účel | Požadavky pro dveře | Požadavky pro žebříky |
+|-----|------|---------------------|----------------------|
+| **Resolution LOD** | Vizuální mesh zobrazený hráči. | Pojmenovaná selekce pro geometrii dveří (např. `door1`). | Žádné specifické požadavky. |
+| **Geometry LOD** | Fyzická detekce kolizí. | Pojmenovaná selekce pro geometrii dveří. Pojmenovaná vlastnost `class = "house"`. | Pojmenovaná vlastnost `class = "house"`. Dostatečný prostor kolem žebříku pro lezoucí postavy. |
+| **Fire Geometry LOD** | Balistická detekce zásahů (kulky, projektily). | Pojmenovaná selekce odpovídající `componentNames[]` v konfiguraci zóny poškození. | Žádné specifické požadavky. |
+| **View Geometry LOD** | Kontroly viditelnosti, ray-casting akcí. | Pojmenovaná selekce odpovídající parametru `component` v konfiguraci dveří. | Pojmenovaná selekce `ladderN` pokrývající celý objem žebříku. |
+| **Memory LOD** | Definice os, akční body, pozice zvuků. | Vertexy os (`door1_axis`), pozice zvuku (`door1_action`), pozice widgetu akce. | Kompletní sada vertexů žebříku (`ladderN_bottom_front`, `ladderN_top_left`, `ladderN_dir`, `ladderN_con` atd.). |
+| **Roadway LOD** | Interakce povrchu pro postavy. | Typicky není vyžadováno. | Dostatečný prostor kolem žebříku pro lezoucí postavy. |
 
-3. **Test animations in Buldozer before packing.** Use `[` / `]` to cycle sources and `;` / `'` or mouse wheel to scrub the animation. Catching axis or angle errors here saves significant time.
+### Konzistence pojmenovaných selekcí
 
-4. **Override bounding spheres for large buildings.** If your building has doors that swing outward significantly, create a Memory LOD selection covering the full animated extent and link it with the `bounding` config parameter.
-
-5. **Place ladder vertices precisely.** Climbing animations are fixed to specific dimensions. Vertices that are too far apart or misaligned will cause the character to float, clip, or get stuck.
-
-6. **Ensure clearance around ladders.** Leave enough space in the Geometry and Roadway LODs for the character model while climbing.
-
-7. **Keep one `model.cfg` per model or folder.** The `model.cfg` does not need to sit next to the `.p3d` file, but keeping them close makes organization easier. It can also be placed higher in the folder structure to cover multiple models.
-
-8. **Use the DayZ Samples repository.** Bohemia provides working samples for both doors (`Test_Building`) and ladders (`Test_Ladders`) at `https://github.com/BohemiaInteractive/DayZ-Samples`. Study these before building your own.
-
-9. **Re-binarize terrain after adding building configs.** Adding `class=house` and a game config class means model paths in `.wrp` files are replaced with class references. Your terrain must be re-binarized for this to take effect.
-
-10. **Update the navmesh after placing buildings.** Rebuilt terrain without an updated navmesh can cause AI to walk through doors instead of using them properly.
+Kritickým požadavkem je, že **pojmenované selekce musí být konzistentní napříč všemi LODy**, které na ně odkazují. Pokud se selekce nazývá `door1` v Resolution LOD, musí se také nazývat `door1` v Geometry, Fire Geometry a View Geometry LOD. Neshodné názvy mezi LODy způsobí tiché selhání dveří nebo žebříku.
 
 ---
 
-## Caste chyby
+## Osvědčené postupy
 
-### Doors
+1. **Modelujte dveře výchozí zavřené.** Animujte od zavřených k otevřeným. Bohemia plánuje podporovat otevírání dveří oběma směry, takže začínání od zavřených je připravené do budoucna.
 
-| Chyba | Symptom | Oprava |
-|---------|---------|-----|
-| `CfgModels` class name does not match model filename. | Door animation does not play. | Rename the class to match the `.p3d` filename exactly (without extension). |
-| Missing named selection in one or more LODs. | Door is visible but not interactive, or bullets pass through. | Ensure the selection exists in Resolution, Geometry, View Geometry, and Fire Geometry LODs. |
-| Axis vertices missing or only one vertex defined. | Door pivots from the wrong point or does not rotate at all. | Place exactly two vertices in the Memory LOD for the axis selection (e.g., `door1_axis`). |
-| `source` in `model.cfg` does not match class name in `config.cpp` Doors. | Door is not linked to game logic -- no sounds, no state changes. | Ensure the `source` parameter and the Doors class name are identical. |
-| Forgetting `class = "house"` named property in Geometry LOD. | Building is not recognized as an interactive structure. | Add the named property in Object Builder's Geometry LOD. |
-| Bounding sphere too small. | Door actions or ballistics fail from certain angles. | Add a `bounding` selection in Memory LOD and reference it in the config. |
-| Negative vs. positive `angle1` confusion for double doors. | Both wings swing the same direction and clip through each other. | One wing needs positive `angle1`, the other negative. |
+2. **Používejte standardní rozměry dveří.** Držte se 120 x 220 cm pro otvory dveří, pokud nemáte specifický designový důvod. To odpovídá vanilkovým budovám a zajišťuje, že animace postav vypadají správně.
 
-### Ladders
+3. **Testujte animace v Buldozeru před balením.** Použijte `[` / `]` pro procházení zdrojů a `;` / `'` nebo kolečko myši pro posouvání animace. Zachycení chyb os nebo úhlů zde šetří značný čas.
 
-| Chyba | Symptom | Oprava |
-|---------|---------|-----|
-| `ladderN_con` not placed at floor level. | "Enter Ladder" action does not appear or appears at the wrong height. | Move the vertex to ground/floor level. |
-| Missing View Geometry selection `ladderN`. | Ladder cannot be interacted with. | Create a View Geometry component with a named selection covering the full ladder volume. |
-| `ladderN_top_left` / `ladderN_top_right` too low. | Character clips through the wall or floor at the top exit. | These must be at least 5 ladder steps higher than the floor level. |
-| Insufficient clearance in Geometry LOD. | Character gets stuck or clips into walls while climbing. | Widen the gap around the ladder in the Geometry and Roadway LODs. |
-| Ladder numbering starts at 0. | Ladder does not function. | Numbering starts at `1` (`ladder1_`, not `ladder0_`). |
-| Specifying `ladders[]` in game config. | Wasted effort (harmless but unnecessary). | DayZ does not use the `ladders[]` array. Remove it and rely on Memory LOD vertex placement. |
+4. **Přepište obalové koule pro velké budovy.** Pokud má vaše budova dveře, které se významně otáčejí ven, vytvořte selekci Memory LOD pokrývající plný animovaný rozsah a propojte ji s konfiguračním parametrem `bounding`.
+
+5. **Umísťujte vertexy žebříku přesně.** Animace lezení jsou fixovány na konkrétní rozměry. Vertexy, které jsou příliš daleko od sebe nebo špatně zarovnané, způsobí, že postava bude levitat, proklipovat nebo se zasekne.
+
+6. **Zajistěte prostor kolem žebříků.** Ponechte dostatečný prostor v Geometry a Roadway LODech pro model postavy během lezení.
+
+7. **Udržujte jeden `model.cfg` na model nebo složku.** `model.cfg` nemusí být vedle souboru `.p3d`, ale udržování blízko usnadňuje organizaci. Může být také umístěn výše ve struktuře složek pro pokrytí více modelů.
+
+8. **Používejte repozitář DayZ Samples.** Bohemia poskytuje funkční vzorky pro dveře (`Test_Building`) i žebříky (`Test_Ladders`) na `https://github.com/BohemiaInteractive/DayZ-Samples`. Prostudujte je před vytvářením vlastních.
+
+9. **Znovu binarizujte terén po přidání konfigurací budov.** Přidání `class=house` a třídy herní konfigurace znamená, že cesty modelů v souborech `.wrp` jsou nahrazeny referencemi tříd. Váš terén musí být znovu binarizován, aby se to projevilo.
+
+10. **Aktualizujte navmesh po umístění budov.** Přestavěný terén bez aktualizovaného navmeshe může způsobit, že AI bude procházet dveřmi místo jejich správného používání.
+
+---
+
+## Časté chyby
+
+### Dveře
+
+| Chyba | Příznak | Řešení |
+|-------|---------|--------|
+| Název třídy `CfgModels` neodpovídá názvu souboru modelu. | Animace dveří se nepřehraje. | Přejmenujte třídu tak, aby přesně odpovídala názvu souboru `.p3d` (bez přípony). |
+| Chybějící pojmenovaná selekce v jednom nebo více LODech. | Dveře jsou viditelné, ale ne interaktivní, nebo kulky procházejí. | Zajistěte, aby selekce existovala v Resolution, Geometry, View Geometry a Fire Geometry LOD. |
+| Chybějící vertexy osy nebo definován pouze jeden vertex. | Dveře se otáčejí ze špatného bodu nebo se vůbec neotáčejí. | Umístěte přesně dva vertexy v Memory LOD pro selekci osy (např. `door1_axis`). |
+| `source` v `model.cfg` neodpovídá názvu třídy v `config.cpp` Doors. | Dveře nejsou propojeny s herní logikou -- žádné zvuky, žádné změny stavu. | Zajistěte, aby parametr `source` a název třídy Doors byly identické. |
+| Zapomenutí pojmenované vlastnosti `class = "house"` v Geometry LOD. | Budova není rozpoznána jako interaktivní struktura. | Přidejte pojmenovanou vlastnost v Geometry LOD Object Builderu. |
+| Příliš malá obalová koule. | Akce dveří nebo balistika selhávají z určitých úhlů. | Přidejte selekci `bounding` v Memory LOD a odkazujte na ni v konfiguraci. |
+| Záměna záporného vs. kladného `angle1` u dvoukřídlých dveří. | Obě křídla se otáčejí stejným směrem a proklipují se navzájem. | Jedno křídlo potřebuje kladný `angle1`, druhé záporný. |
+
+### Žebříky
+
+| Chyba | Příznak | Řešení |
+|-------|---------|--------|
+| `ladderN_con` není umístěn na úrovni podlahy. | Akce "Nastoupit na žebřík" se nezobrazí nebo se zobrazí ve špatné výšce. | Přesuňte vertex na úroveň země/podlahy. |
+| Chybějící selekce View Geometry `ladderN`. | Žebřík nelze použít. | Vytvořte komponentu View Geometry s pojmenovanou selekcí pokrývající celý objem žebříku. |
+| `ladderN_top_left` / `ladderN_top_right` příliš nízko. | Postava proklipuje zdí nebo podlahou na horním výstupu. | Tyto musí být alespoň 5 stupňů žebříku výše než úroveň podlahy. |
+| Nedostatečný prostor v Geometry LOD. | Postava se zasekne nebo proklipuje zdmi při lezení. | Rozšiřte mezeru kolem žebříku v Geometry a Roadway LODech. |
+| Číslování žebříků začíná na 0. | Žebřík nefunguje. | Číslování začíná od `1` (`ladder1_`, nikoli `ladder0_`). |
+| Specifikace `ladders[]` v herní konfiguraci. | Zbytečná práce (neškodná, ale zbytečná). | DayZ nepoužívá pole `ladders[]`. Odstraňte ho a spoléhejte na umístění vertexů v Memory LOD. |
 
 ---
 
 ## Reference
 
-- [Bohemia Interactive -- Doors on buildings](https://community.bistudio.com/wiki/DayZ:Doors_on_buildings) (official BI documentation)
-- [Bohemia Interactive -- Ladders on buildings](https://community.bistudio.com/wiki/DayZ:Ladders_on_buildings) (official BI documentation)
-- [DayZ Samples -- Test_Building](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Building) (working door sample)
-- [DayZ Samples -- Test_Ladders](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Ladders) (working ladder sample)
-- [Chapter 4.2: 3D Models](02-models.md) -- LOD system, named selections, `model.cfg` fundamentals
+- [Bohemia Interactive -- Doors on buildings](https://community.bistudio.com/wiki/DayZ:Doors_on_buildings) (oficiální dokumentace BI)
+- [Bohemia Interactive -- Ladders on buildings](https://community.bistudio.com/wiki/DayZ:Ladders_on_buildings) (oficiální dokumentace BI)
+- [DayZ Samples -- Test_Building](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Building) (funkční vzor dveří)
+- [DayZ Samples -- Test_Ladders](https://github.com/BohemiaInteractive/DayZ-Samples/tree/master/Test_Ladders) (funkční vzor žebříku)
+- [Kapitola 4.2: 3D modely](02-models.md) -- Systém LOD, pojmenované selekce, základy `model.cfg`
 
 ---
 
 ## Navigace
 
-| Predchozi | Up | Dalsi |
-|----------|----|------|
-| [4.7 Workbench Guide](07-workbench-guide.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | -- |
+| Předchozí | Nahoru | Další |
+|-----------|--------|-------|
+| [4.7 Průvodce Workbench](07-workbench-guide.md) | [Část 4: Formáty souborů a DayZ Tools](01-textures.md) | -- |

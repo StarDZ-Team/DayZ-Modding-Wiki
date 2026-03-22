@@ -1,64 +1,64 @@
-# Chapter 4.6: PBO Packing
+# 4.6. fejezet: PBO csomagolás
 
-[Home](../../README.md) | [<< Previous: DayZ Tools Workflow](05-dayz-tools.md) | **PBO Packing** | [Next: Workbench Guide >>](07-workbench-guide.md)
-
----
-
-## Bevezetes
-
-A **PBO** (Packed Bank of Objects) is DayZ's archive format -- the equivalent of a `.zip` file for game content. Every mod the game loads is delivered as one or more PBO files. When a player subscribes to a mod on Steam Workshop, they download PBOs. When a server loads mods, it reads PBOs. The PBO is the final deliverable of the entire modding pipeline.
-
-Understanding how to create PBOs correctly -- when to binarize, how to set prefixes, how to structure the output, and how to automate the process -- is the last step between your source files and a working mod. This chapter covers everything from the basic concept through advanced automated build workflows.
+[Főoldal](../../README.md) | [<< Előző: DayZ Tools munkafolyamat](05-dayz-tools.md) | **PBO csomagolás** | [Következő: Workbench útmutató >>](07-workbench-guide.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [What is a PBO?](#what-is-a-pbo)
-- [PBO Internal Structure](#pbo-internal-structure)
-- [AddonBuilder: The Packing Tool](#addonbuilder-the-packing-tool)
-- [The -packonly Flag](#the--packonly-flag)
-- [The -prefix Flag](#the--prefix-flag)
-- [Binarization: When Needed vs. Not](#binarization-when-needed-vs-not)
-- [Key Signing](#key-signing)
-- [@mod Folder Structure](#mod-folder-structure)
-- [Automated Build Scripts](#automated-build-scripts)
-- [Multi-PBO Mod Builds](#multi-pbo-mod-builds)
-- [Common Build Errors and Solutions](#common-build-errors-and-solutions)
-- [Testing: File Patching vs. PBO Loading](#testing-file-patching-vs-pbo-loading)
-- [Best Practices](#best-practices)
+A **PBO** (Packed Bank of Objects) a DayZ archívum formátuma -- a játéktartalom `.zip` fájljának megfelelője. Minden mod, amelyet a játék betölt, egy vagy több PBO fájlként kerül átadásra. Amikor egy játékos feliratkozik egy modra a Steam Workshopon, PBO-kat tölt le. Amikor egy szerver modokat tölt be, PBO-kat olvas. A PBO a teljes modding pipeline végső terméke.
+
+Annak megértése, hogyan kell helyesen PBO-kat létrehozni -- mikor kell binarizálni, hogyan kell a prefixeket beállítani, hogyan kell strukturálni a kimenetet, és hogyan kell automatizálni a folyamatot -- az utolsó lépés a forrásfájlaid és egy működő mod között. Ez a fejezet mindent lefed az alapfogalomtól a haladó automatizált build munkafolyamatokig.
 
 ---
 
-## What is a PBO?
+## Tartalomjegyzék
 
-A PBO is a flat archive file that contains a directory tree of game assets. It has no compression (unlike ZIP) -- files inside are stored at their original size. The "packing" is purely organizational: many files become one file with an internal path structure.
-
-### Key Characteristics
-
-- **No compression:** Files are stored verbatim. The PBO's size equals the sum of its contents plus a small header.
-- **Flat header:** A list of file entries with paths, sizes, and offsets.
-- **Prefix metadata:** Each PBO declares an internal path prefix that maps its contents into the engine's virtual filesystem.
-- **Read-only at runtime:** The engine reads from PBOs but never writes to them.
-- **Signed for multiplayer:** PBOs can be signed with a Bohemia-style key pair for server signature verification.
-
-### Why PBOs Instead of Loose Files
-
-- **Distribution:** One file per mod component is simpler than thousands of loose files.
-- **Integrity:** Key signing ensures the mod has not been tampered with.
-- **Teljesitmeny:** The engine's file I/O is optimized for reading from PBOs.
-- **Organization:** The prefix system ensures no path collisions between mods.
+- [Mi az a PBO?](#what-is-a-pbo)
+- [PBO belső struktúra](#pbo-internal-structure)
+- [AddonBuilder: a csomagoló eszköz](#addonbuilder-the-packing-tool)
+- [A -packonly jelző](#the--packonly-flag)
+- [A -prefix jelző](#the--prefix-flag)
+- [Binarizálás: mikor szükséges és mikor nem](#binarization-when-needed-vs-not)
+- [Kulcs aláírás](#key-signing)
+- [@mod mappa struktúra](#mod-folder-structure)
+- [Automatizált build szkriptek](#automated-build-scripts)
+- [Több-PBO-s mod buildek](#multi-pbo-mod-builds)
+- [Gyakori fordítási hibák és megoldások](#common-build-errors-and-solutions)
+- [Tesztelés: File Patching vs. PBO betöltés](#testing-file-patching-vs-pbo-loading)
+- [Bevált gyakorlatok](#best-practices)
 
 ---
 
-## PBO Internal Structure
+## Mi az a PBO?
 
-When you open a PBO (using a tool like PBO Manager or MikeroTools), you see a directory tree:
+A PBO egy lapos archívum fájl, amely játék assetek könyvtárfáját tartalmazza. Nincs tömörítése (a ZIP-pel ellentétben) -- a benne lévő fájlok eredeti méretükben vannak tárolva. A "csomagolás" tisztán szervezési célú: sok fájl egyetlen fájllá válik belső elérési út struktúrával.
+
+### Fő jellemzők
+
+- **Nincs tömörítés:** A fájlok változatlanul vannak tárolva. A PBO mérete egyenlő tartalmainak összegével plusz egy kis fejléc.
+- **Lapos fejléc:** Fájl bejegyzések listája elérési utakkal, méretekkel és eltolásokkal.
+- **Prefix metaadat:** Minden PBO deklarál egy belső elérési út prefixet, amely tartalmait a motor virtuális fájlrendszerébe térképezi.
+- **Csak olvasható futásidőben:** A motor PBO-kból olvas, de soha nem ír beléjük.
+- **Aláírt többjátékos módhoz:** A PBO-k Bohemia-stílusú kulcspárral aláírhatók szerver aláírás ellenőrzéshez.
+
+### Miért PBO-k különálló fájlok helyett
+
+- **Terjesztés:** Mod komponensenként egy fájl egyszerűbb, mint több ezer különálló fájl.
+- **Integritás:** A kulcs aláírás biztosítja, hogy a mod nem lett módosítva.
+- **Teljesítmény:** A motor fájl I/O-ja PBO-kból való olvasásra van optimalizálva.
+- **Szervezés:** A prefix rendszer biztosítja, hogy ne legyenek elérési út ütközések a modok között.
+
+---
+
+## PBO belső struktúra
+
+Amikor megnyitsz egy PBO-t (olyan eszközzel, mint a PBO Manager vagy MikeroTools), egy könyvtárfát látsz:
 
 ```
 MyMod.pbo
-  $PBOPREFIX$                    <-- Text file containing the prefix path
-  config.bin                      <-- Binarized config.cpp (or config.cpp if -packonly)
+  $PBOPREFIX$                    <-- A prefix elérési utat tartalmazó szövegfájl
+  config.bin                      <-- Binarizált config.cpp (vagy config.cpp, ha -packonly)
   Scripts/
     3_Game/
       MyConstants.c
@@ -68,7 +68,7 @@ MyMod.pbo
       MyUI.c
   data/
     models/
-      my_item.p3d                 <-- Binarized ODOL (or MLOD if -packonly)
+      my_item.p3d                 <-- Binarizált ODOL (vagy MLOD, ha -packonly)
     textures/
       my_item_co.paa
       my_item_nohq.paa
@@ -84,47 +84,47 @@ MyMod.pbo
 
 ### $PBOPREFIX$
 
-The `$PBOPREFIX$` file is a tiny text file at the root of the PBO that declares the mod's path prefix. For example:
+A `$PBOPREFIX$` fájl egy apró szövegfájl a PBO gyökerében, amely deklarálja a mod elérési út prefixét. Például:
 
 ```
 MyMod
 ```
 
-This tells the engine: "When something references `MyMod\data\textures\my_item_co.paa`, look inside this PBO at `data\textures\my_item_co.paa`."
+Ez azt mondja a motornak: "Amikor valami hivatkozik a `MyMod\data\textures\my_item_co.paa`-ra, keresd ebben a PBO-ban a `data\textures\my_item_co.paa`-t."
 
 ### config.bin vs. config.cpp
 
-- **config.bin:** Binarized (binary) version of config.cpp, created by Binarize. Faster to parse at load time.
-- **config.cpp:** The original text-format configuration. Works in the engine but is slightly slower to parse.
+- **config.bin:** A config.cpp binarizált (bináris) verziója, amelyet a Binarize hoz létre. Gyorsabb az elemzése betöltéskor.
+- **config.cpp:** Az eredeti szöveges formátumú konfiguráció. Működik a motorban, de valamivel lassabb az elemzése.
 
-When you build with binarization, config.cpp becomes config.bin. When you use `-packonly`, config.cpp is included as-is.
+Amikor binarizálással építesz, a config.cpp config.bin-né válik. Amikor `-packonly`-t használsz, a config.cpp változatlanul kerül bele.
 
 ---
 
-## AddonBuilder: The Packing Tool
+## AddonBuilder: a csomagoló eszköz
 
-**AddonBuilder** is Bohemia's official PBO packing tool, included with DayZ eszkozok. It can operate in GUI mode or command-line mode.
+Az **AddonBuilder** a Bohemia hivatalos PBO csomagoló eszköze, amely a DayZ Tools-szal érkezik. GUI módban és parancssori módban is működhet.
 
-### GUI Mode
+### GUI mód
 
-1. Launch AddonBuilder from DayZ eszkozok Launcher.
-2. **Source directory:** Browse to your mod folder on P: (e.g., `P:\MyMod`).
-3. **Output directory:** Browse to your output folder (e.g., `P:\output`).
-4. **Options:**
-   - **Binarize:** Check to run Binarize on content (converts P3D, textures, configs).
-   - **Sign:** Check and select a key to sign the PBO.
-   - **Prefix:** Enter the mod prefix (e.g., `MyMod`).
-5. Click **Pack**.
+1. Indítsd el az AddonBuildert a DayZ Tools Launcherből.
+2. **Forrás könyvtár:** Tallózz a mod mappádhoz a P:-n (pl. `P:\MyMod`).
+3. **Kimeneti könyvtár:** Tallózz a kimeneti mappádhoz (pl. `P:\output`).
+4. **Opciók:**
+   - **Binarize:** Jelöld be a Binarize futtatásához a tartalmon (P3D-ket, textúrákat, konfigokat konvertál).
+   - **Sign:** Jelöld be és válassz kulcsot a PBO aláírásához.
+   - **Prefix:** Add meg a mod prefixet (pl. `MyMod`).
+5. Kattints a **Pack** gombra.
 
-### Command-Line Mode
+### Parancssori mód
 
-Command-line mode is preferred for automated builds:
+A parancssori mód preferált az automatizált buildekhez:
 
 ```bash
-AddonBuilder.exe [source_path] [output_path] [options]
+AddonBuilder.exe [forrás_elérési_út] [kimenet_elérési_út] [opciók]
 ```
 
-**Full example:**
+**Teljes példa:**
 ```bash
 "P:\DayZ Tools\Bin\AddonBuilder\AddonBuilder.exe" ^
     "P:\MyMod" ^
@@ -133,166 +133,166 @@ AddonBuilder.exe [source_path] [output_path] [options]
     -sign="P:\keys\MyKey"
 ```
 
-### Command-Line Options
+### Parancssori opciók
 
-| Flag | Leiras |
-|------|-------------|
-| `-prefix=<path>` | Set the PBO internal prefix (critical for path resolution) |
-| `-packonly` | Skip binarization, pack files as-is |
-| `-sign=<key_path>` | Sign the PBO with the specified BI key (private key path, no extension) |
-| `-include=<path>` | Include file list -- only pack files matching this filter |
-| `-exclude=<path>` | Exclude file list -- skip files matching this filter |
-| `-binarize=<path>` | Path to Binarize.exe (if not in default location) |
-| `-temp=<path>` | Temporary directory for Binarize output |
-| `-clear` | Clear output directory before packing |
-| `-project=<path>` | Project drive path (usually `P:\`) |
+| Jelző | Leírás |
+|-------|--------|
+| `-prefix=<elérési_út>` | A PBO belső prefixének beállítása (kritikus az elérési út feloldáshoz) |
+| `-packonly` | Binarizálás kihagyása, fájlok csomagolása változatlanul |
+| `-sign=<kulcs_elérési_út>` | A PBO aláírása a megadott BI kulccsal (privát kulcs elérési útja, kiterjesztés nélkül) |
+| `-include=<elérési_út>` | Fájl befoglalási lista -- csak a szűrőnek megfelelő fájlok csomagolása |
+| `-exclude=<elérési_út>` | Fájl kizárási lista -- a szűrőnek megfelelő fájlok kihagyása |
+| `-binarize=<elérési_út>` | A Binarize.exe elérési útja (ha nem az alapértelmezett helyen van) |
+| `-temp=<elérési_út>` | Ideiglenes könyvtár a Binarize kimenetéhez |
+| `-clear` | Kimeneti könyvtár törlése csomagolás előtt |
+| `-project=<elérési_út>` | Projekt meghajtó elérési útja (általában `P:\`) |
 
 ---
 
-## The -packonly Flag
+## A -packonly jelző
 
-The `-packonly` flag is one of the most important options in AddonBuilder. It tells the tool to skip all binarization and pack the source files exactly as they are.
+A `-packonly` jelző az AddonBuilder egyik legfontosabb opciója. Azt utasítja az eszközt, hogy hagyja ki az összes binarizálást és csomagolja a forrásfájlokat pontosan úgy, ahogy vannak.
 
-### Mikor hasznaljuk -packonly
+### Mikor használjuk a -packonly-t
 
-| Mod Content | Use -packonly? | Ok |
-|-------------|---------------|--------|
-| Scripts only (.c files) | **Yes** | Scripts are never binarized |
-| UI layouts (.layout) | **Yes** | Layouts are never binarized |
-| Hang only (.ogg) | **Yes** | OGG is already game-ready |
-| Pre-converted textures (.paa) | **Yes** | Already in final format |
-| Config.cpp (no CfgJarmuvek) | **Yes** | Simple configs work unbinarized |
-| Config.cpp (with CfgJarmuvek) | **No** | Item definitions require binarized config |
-| P3D models (MLOD) | **No** | Should be binarized to ODOL for performance |
-| TGA/PNG textures (need conversion) | **No** | Must be converted to PAA |
+| Mod tartalom | -packonly használata? | Ok |
+|--------------|----------------------|-----|
+| Csak szkriptek (.c fájlok) | **Igen** | A szkriptek soha nem binarizálódnak |
+| UI layout-ok (.layout) | **Igen** | A layout-ok soha nem binarizálódnak |
+| Csak hang (.ogg) | **Igen** | Az OGG már játékra kész |
+| Előre konvertált textúrák (.paa) | **Igen** | Már végleges formátumban vannak |
+| Config.cpp (CfgVehicles nélkül) | **Igen** | Az egyszerű konfigok binarizálatlanul is működnek |
+| Config.cpp (CfgVehicles-szel) | **Nem** | A tárgy definíciók binarizált konfigot igényelnek |
+| P3D modellek (MLOD) | **Nem** | ODOL-ra kell binarizálni a teljesítmény érdekében |
+| TGA/PNG textúrák (konverzió szükséges) | **Nem** | PAA-ra kell konvertálni |
 
-### Practical Guidance
+### Gyakorlati útmutató
 
-For a **script-only mod** (like a framework or utility mod with no custom items):
+Egy **csak szkript mod** esetén (mint egy keretrendszer vagy segédprogram mod egyéni tárgyak nélkül):
 ```bash
 AddonBuilder.exe "P:\MyScriptMod" "P:\output" -prefix="MyScriptMod" -packonly
 ```
 
-For an **item mod** (weapons, clothing, vehicles with models and textures):
+Egy **tárgy mod** esetén (fegyverek, ruházat, járművek modellekkel és textúrákkal):
 ```bash
 AddonBuilder.exe "P:\MyItemMod" "P:\output" -prefix="MyItemMod" -sign="P:\keys\MyKey"
 ```
 
-> **Tipp:** Many mods split into multiple PBOs precisely to optimize the build process. Script PBOs use `-packonly` (fast), while data PBOs with models and textures get full binarization (slower but necessary).
+> **Tipp:** Sok mod pontosan azért válik szét több PBO-ra, hogy optimalizálja a build folyamatot. A szkript PBO-k `-packonly`-t használnak (gyors), míg az adatot tartalmazó PBO-k modellekkel és textúrákkal teljes binarizálást kapnak (lassabb, de szükséges).
 
 ---
 
-## The -prefix Flag
+## A -prefix jelző
 
-The `-prefix` flag sets the PBO's internal path prefix, which is written to the `$PBOPREFIX$` file inside the PBO. This prefix is critical -- it determines how the engine resolves paths to content inside the PBO.
+A `-prefix` jelző beállítja a PBO belső elérési út prefixét, amelyet a PBO-n belüli `$PBOPREFIX$` fájlba ír. Ez a prefix kritikus -- meghatározza, hogyan oldja fel a motor az elérési utakat a PBO tartalmához.
 
-### How Prefix Works
+### Hogyan működik a prefix
 
 ```
-Source: P:\MyMod\data\textures\item_co.paa
+Forrás: P:\MyMod\data\textures\item_co.paa
 Prefix: MyMod
-PBO internal path: data\textures\item_co.paa
+PBO belső elérési út: data\textures\item_co.paa
 
-Engine resolution: MyMod\data\textures\item_co.paa
-  --> Looks in MyMod.pbo for: data\textures\item_co.paa
-  --> Found!
+Motor feloldás: MyMod\data\textures\item_co.paa
+  --> Keres a MyMod.pbo-ban: data\textures\item_co.paa
+  --> Megtalálva!
 ```
 
-### Multi-Level Prefixes
+### Többszintű prefixek
 
-For mods that use a subfolder structure, the prefix can include multiple levels:
+A mappa alstruktúrát használó modok esetén a prefix több szintet is tartalmazhat:
 
 ```bash
-# Source on P: drive
+# Forrás a P: meghajtón
 P:\MyMod\MyMod\Scripts\3_Game\MyClass.c
 
-# If prefix is "MyMod\MyMod\Scripts"
-# PBO internal: 3_Game\MyClass.c
-# Engine path: MyMod\MyMod\Scripts\3_Game\MyClass.c
+# Ha a prefix "MyMod\MyMod\Scripts"
+# PBO belső: 3_Game\MyClass.c
+# Motor elérési út: MyMod\MyMod\Scripts\3_Game\MyClass.c
 ```
 
-### Prefix Must Match References
+### A prefixnek egyeznie kell a hivatkozásokkal
 
-If your config.cpp references `MyMod\data\texture_co.paa`, then the PBO containing that texture must have prefix `MyMod` and the file must be at `data\texture_co.paa` inside the PBO. A mismatch causes the engine to fail to find the file.
+Ha a config.cpp hivatkozik a `MyMod\data\texture_co.paa`-ra, akkor az adott textúrát tartalmazó PBO-nak `MyMod` prefixűnek kell lennie, és a fájlnak a `data\texture_co.paa` helyen kell lennie a PBO-n belül. Eltérés esetén a motor nem találja meg a fájlt.
 
-### Common Prefix Patterns
+### Gyakori prefix minták
 
-| Mod Structure | Source Path | Prefix | Config Reference |
-|---------------|-------------|--------|-----------------|
-| Simple mod | `P:\MyMod\` | `MyMod` | `MyMod\data\item.p3d` |
-| Namespaced mod | `P:\MyWeapons\` | `MyWeapons` | `MyWeapons\data\rifle.p3d` |
-| Script sub-package | `P:\MyFramework\MyMod\Scripts\` | `MyFramework\MyMod\Scripts` | (referenced via config.cpp `CfgMods`) |
-
----
-
-## Binarization: When Needed vs. Not
-
-Binarization is the conversion of human-readable source formats into engine-optimized binary formats. It is the most time-consuming step in the build process and the most common source of build errors.
-
-### What Gets Binarized
-
-| File Type | Binarized To | Required? |
-|-----------|-------------|-----------|
-| `config.cpp` | `config.bin` | Required for mods defining items (CfgJarmuvek, CfgWeapons) |
-| `.p3d` (MLOD) | `.p3d` (ODOL) | Recommended -- ODOL loads faster and is smaller |
-| `.tga` / `.png` | `.paa` | Required -- engine needs PAA at runtime |
-| `.edds` | `.paa` | Required -- same as above |
-| `.rvmat` | `.rvmat` (processed) | Paths resolved, minor optimization |
-| `.wrp` | `.wrp` (optimized) | Required for terrain/map mods |
-
-### What is NOT Binarized
-
-| File Type | Ok |
-|-----------|--------|
-| `.c` scripts | Scripts are loaded as text by the engine |
-| `.ogg` audio | Already in game-ready format |
-| `.layout` files | Already in game-ready format |
-| `.paa` textures | Already in final format (pre-converted) |
-| `.json` data | Read as text by script code |
-
-### Config.cpp Binarization Details
-
-Config.cpp binarization is the step most modders encounter issues with. The binarizer parses the config.cpp text, validates its structure, resolves inheritance chains, and outputs a binary config.bin.
-
-**When binarization is required for config.cpp:**
-- The config defines `CfgJarmuvek` entries (items, weapons, vehicles, buildings).
-- The config defines `CfgWeapons` entries.
-- The config defines entries that reference models or textures.
-
-**When binarization is NOT required:**
-- The config only defines `CfgPatches` and `CfgMods` (mod registration).
-- The config only defines sound configurations.
-- Script-only mods with minimal config.
-
-> **Okoszabaly:** If your config.cpp adds physical items to the game world, you need binarization. If it only registers scripts and defines non-item data, `-packonly` works fine.
+| Mod struktúra | Forrás elérési út | Prefix | Config hivatkozás |
+|---------------|-------------------|--------|-------------------|
+| Egyszerű mod | `P:\MyMod\` | `MyMod` | `MyMod\data\item.p3d` |
+| Névteres mod | `P:\MyMod_Weapons\` | `MyMod_Weapons` | `MyMod_Weapons\data\rifle.p3d` |
+| Szkript alcsomag | `P:\MyFramework\MyMod\Scripts\` | `MyFramework\MyMod\Scripts` | (a config.cpp `CfgMods`-on keresztül hivatkozott) |
 
 ---
 
-## Key Signing
+## Binarizálás: mikor szükséges és mikor nem
 
-PBOs can be signed with a cryptographic key pair. Servers use signature verification to ensure all connected clients have the same (unmodified) mod files.
+A binarizálás az ember által olvasható forrás formátumok motor-optimalizált bináris formátumokká történő konvertálása. Ez a build folyamat legidőigényesebb lépése és a build hibák leggyakoribb forrása.
 
-### Key Pair Components
+### Mi kerül binarizálásra
 
-| File | Kiterjesztes | Cel | Who Has It |
-|------|-----------|---------|------------|
-| Private key | `.biprivatekey` | Signs PBOs during build | Mod author only (KEEP SECRET) |
-| Public key | `.bikey` | Verifies signatures | Server admins, distributed with mod |
+| Fájl típus | Binarizálva erre | Szükséges? |
+|-----------|-----------------|------------|
+| `config.cpp` | `config.bin` | Szükséges a tárgyakat definiáló modokhoz (CfgVehicles, CfgWeapons) |
+| `.p3d` (MLOD) | `.p3d` (ODOL) | Ajánlott -- az ODOL gyorsabban töltődik és kisebb |
+| `.tga` / `.png` | `.paa` | Szükséges -- a motor futásidőben PAA-t igényel |
+| `.edds` | `.paa` | Szükséges -- ugyanaz, mint fent |
+| `.rvmat` | `.rvmat` (feldolgozott) | Elérési utak feloldva, kisebb optimalizálás |
+| `.wrp` | `.wrp` (optimalizált) | Szükséges terep/térkép modokhoz |
 
-### Generating Keys
+### Mi NEM kerül binarizálásra
 
-Use DayZ eszkozok' **DSSignFile** or **DSCreateKey** utilities:
+| Fájl típus | Ok |
+|-----------|-----|
+| `.c` szkriptek | A motor szövegként tölti be a szkripteket |
+| `.ogg` hang | Már játékra kész formátumban |
+| `.layout` fájlok | Már játékra kész formátumban |
+| `.paa` textúrák | Már végleges formátumban (előre konvertálva) |
+| `.json` adatok | A szkript kód szövegként olvassa |
+
+### Config.cpp binarizálás részletei
+
+A config.cpp binarizálás az a lépés, amellyel a legtöbb modder problémákat tapasztal. A binarizáló elemzi a config.cpp szöveget, érvényesíti a struktúráját, feloldja az öröklési láncokat, és bináris config.bin-t hoz létre kimenetként.
+
+**Mikor szükséges a config.cpp binarizálása:**
+- A konfig `CfgVehicles` bejegyzéseket definiál (tárgyak, fegyverek, járművek, épületek).
+- A konfig `CfgWeapons` bejegyzéseket definiál.
+- A konfig modellekre vagy textúrákra hivatkozó bejegyzéseket definiál.
+
+**Mikor NEM szükséges a binarizálás:**
+- A konfig csak `CfgPatches`-t és `CfgMods`-ot definiál (mod regisztráció).
+- A konfig csak hang konfigurációkat definiál.
+- Csak szkript modok minimális konfiggal.
+
+> **Ökölszabály:** Ha a config.cpp fizikai tárgyakat ad a játékvilághoz, binarizálásra van szükséged. Ha csak szkripteket regisztrál és nem-tárgy adatokat definiál, a `-packonly` tökéletesen működik.
+
+---
+
+## Kulcs aláírás
+
+A PBO-k kriptográfiai kulcspárral aláírhatók. A szerverek aláírás ellenőrzést használnak annak biztosítására, hogy minden csatlakozott kliens ugyanazokkal a (nem módosított) mod fájlokkal rendelkezik.
+
+### Kulcspár összetevők
+
+| Fájl | Kiterjesztés | Cél | Ki birtokolja |
+|------|-------------|-----|--------------|
+| Privát kulcs | `.biprivatekey` | PBO-k aláírása a build során | Csak a mod szerző (TARTSD TITOKBAN) |
+| Nyilvános kulcs | `.bikey` | Aláírások ellenőrzése | Szerver adminok, a moddal terjesztve |
+
+### Kulcsok generálása
+
+Használd a DayZ Tools **DSSignFile** vagy **DSCreateKey** segédprogramjait:
 
 ```bash
-# Generate a key pair
+# Kulcspár generálása
 DSCreateKey.exe MyModKey
 
-# This creates:
-#   MyModKey.biprivatekey   (keep secret, do not distribute)
-#   MyModKey.bikey          (distribute to server admins)
+# Ez létrehozza:
+#   MyModKey.biprivatekey   (tartsd titokban, ne terjeszd)
+#   MyModKey.bikey          (terjeszd a szerver adminoknak)
 ```
 
-### Signing During Build
+### Aláírás a build során
 
 ```bash
 AddonBuilder.exe "P:\MyMod" "P:\output" ^
@@ -300,42 +300,42 @@ AddonBuilder.exe "P:\MyMod" "P:\output" ^
     -sign="P:\keys\MyModKey"
 ```
 
-This produces:
+Ez a következőt hozza létre:
 ```
 P:\output\
   MyMod.pbo
-  MyMod.pbo.MyModKey.bisign    <-- Signature file
+  MyMod.pbo.MyModKey.bisign    <-- Aláírás fájl
 ```
 
-### Server-Side Key Installation
+### Szerver oldali kulcs telepítés
 
-Server admins place the public key (`.bikey`) in the server's `keys/` directory:
+A szerver adminok a nyilvános kulcsot (`.bikey`) a szerver `keys/` könyvtárába helyezik:
 
 ```
 DayZServer/
   keys/
-    MyModKey.bikey             <-- Allows clients with this mod to connect
+    MyModKey.bikey             <-- Lehetővé teszi az ezzel a moddal rendelkező kliensek csatlakozását
 ```
 
 ---
 
-## @mod Folder Structure
+## @mod mappa struktúra
 
-DayZ expects mods to be organized in a specific directory structure using the `@` prefix convention:
+A DayZ elvárja, hogy a modok egy meghatározott könyvtárstruktúrában legyenek szervezve az `@` prefix konvencióval:
 
 ```
 @MyMod/
   addons/
-    MyMod.pbo                  <-- Packed mod content
-    MyMod.pbo.MyKey.bisign     <-- PBO signature (optional)
+    MyMod.pbo                  <-- Csomagolt mod tartalom
+    MyMod.pbo.MyKey.bisign     <-- PBO aláírás (opcionális)
   keys/
-    MyKey.bikey                <-- Public key for servers (optional)
-  mod.cpp                      <-- Mod metadata
+    MyKey.bikey                <-- Nyilvános kulcs szervereknek (opcionális)
+  mod.cpp                      <-- Mod metaadatok
 ```
 
 ### mod.cpp
 
-The `mod.cpp` file provides metadata displayed in the DayZ launcher:
+A `mod.cpp` fájl metaadatokat biztosít, amelyek a DayZ indítóban jelennek meg:
 
 ```cpp
 name = "My Awesome Mod";
@@ -344,44 +344,44 @@ version = "1.0.0";
 url = "https://steamcommunity.com/sharedfiles/filedetails/?id=XXXXXXXXX";
 ```
 
-### Multi-PBO Mods
+### Több-PBO-s modok
 
-Large mods often split into multiple PBOs within a single `@mod` folder:
+A nagy modok gyakran több PBO-ra oszlanak egyetlen `@mod` mappán belül:
 
 ```
 @MyFramework/
   addons/
-    MyCore_Scripts.pbo        <-- Script layer
-    MyCore_Data.pbo           <-- Textures, models, materials
-    MyCore_GUI.pbo            <-- Layout files, imagesets
+    MyMod_Core_Scripts.pbo        <-- Szkript réteg
+    MyMod_Core_Data.pbo           <-- Textúrák, modellek, anyagok
+    MyMod_Core_GUI.pbo            <-- Layout fájlok, imageset-ek
   keys/
     MyMod.bikey
   mod.cpp
 ```
 
-### Loading Mods
+### Modok betöltése
 
-Mods are loaded via the `-mod` parameter:
+A modok a `-mod` paraméteren keresztül töltődnek be:
 
 ```bash
-# Single mod
+# Egyetlen mod
 DayZDiag_x64.exe -mod="@MyMod"
 
-# Multiple mods (semicolon-separated)
-DayZDiag_x64.exe -mod="@MyFramework;@MyWeapons;@MyMissions"
+# Több mod (pontosvesszővel elválasztva)
+DayZDiag_x64.exe -mod="@MyFramework;@MyMod_Weapons;@MyMod_Missions"
 ```
 
-The `@` folder must be in the game's root directory, or an absolute path must be provided.
+Az `@` mappának a játék gyökérkönyvtárában kell lennie, vagy abszolút elérési utat kell megadni.
 
 ---
 
-## Automated Build Scripts
+## Automatizált build szkriptek
 
-Manual PBO packing through AddonBuilder's GUI is acceptable for small, simple mods. For larger projects with multiple PBOs, automated build scripts are essential.
+A kézi PBO csomagolás az AddonBuilder GUI-ján keresztül elfogadható kis, egyszerű modokhoz. Nagyobb projekteknél több PBO-val az automatizált build szkriptek elengedhetetlenek.
 
-### Batch Script Pattern
+### Batch szkript minta
 
-A typical `build_pbos.bat`:
+Egy tipikus `build_pbos.bat`:
 
 ```batch
 @echo off
@@ -391,19 +391,19 @@ set TOOLS="P:\DayZ Tools\Bin\AddonBuilder\AddonBuilder.exe"
 set OUTPUT="P:\@MyMod\addons"
 set KEY="P:\keys\MyKey"
 
-echo === Building Scripts PBO ===
+echo === Szkript PBO építése ===
 %TOOLS% "P:\MyMod\Scripts" %OUTPUT% -prefix="MyMod\Scripts" -packonly -clear
 
-echo === Building Data PBO ===
+echo === Adat PBO építése ===
 %TOOLS% "P:\MyMod\Data" %OUTPUT% -prefix="MyMod\Data" -sign=%KEY% -clear
 
-echo === Build Complete ===
+echo === Építés kész ===
 pause
 ```
 
-### Python Build Script Pattern (dev.py)
+### Python build szkript minta (dev.py)
 
-For more sophisticated builds, a Python script provides better error handling, logging, and conditional logic:
+Kifinomultabb buildekhez egy Python szkript jobb hibakezelést, naplózást és feltételes logikát biztosít:
 
 ```python
 import subprocess
@@ -430,7 +430,7 @@ PBOS = [
 ]
 
 def build_pbo(pbo_config):
-    """Build a single PBO."""
+    """Egyetlen PBO építése."""
     cmd = [
         ADDON_BUILDER,
         pbo_config["source"],
@@ -472,171 +472,190 @@ if __name__ == "__main__":
     main()
 ```
 
-### Integration with dev.py
+### Integráció a dev.py-vel
 
-The MyMod project uses `dev.py` as the central build orchestrator:
+A MyMod projekt a `dev.py`-t használja központi build orkesztrátorként:
 
 ```bash
-python dev.py build          # Build all PBOs
-python dev.py server         # Build + launch server + monitor logs
-python dev.py full           # Build + server + client
+python dev.py build          # Minden PBO építése
+python dev.py server         # Építés + szerver indítás + napló figyelés
+python dev.py full           # Építés + szerver + kliens
 ```
 
-This pattern is recommended for any multi-mod workspace. A single command builds everything, launches the server, and starts monitoring -- eliminating manual steps and reducing human error.
+Ez a minta ajánlott bármely több-moddal dolgozó munkaterülethez. Egyetlen parancs mindent megépít, elindítja a szervert, és elkezdi a figyelést -- kiküszöbölve a kézi lépéseket és csökkentve az emberi hibákat.
 
 ---
 
-## Multi-PBO Mod Builds
+## Több-PBO-s mod buildek
 
-Large mods benefit from splitting into multiple PBOs. This has several advantages:
+A nagy modok profitálnak a több PBO-ra való felosztásból. Ennek több előnye van:
 
-### Why Split into Multiple PBOs
+### Miért érdemes több PBO-ra bontani
 
-1. **Faster rebuilds.** If you change only a script, rebuild only the script PBO (with `-packonly`, which takes seconds). The data PBO (with binarization) takes minutes and does not need rebuilding.
-2. **Modular loading.** Server-only PBOs can be excluded from client downloads.
-3. **Cleaner organization.** Scripts, data, and GUI are clearly separated.
-4. **Parallel builds.** Independent PBOs can be built simultaneously.
+1. **Gyorsabb újraépítések.** Ha csak egy szkriptet változtatsz, csak a szkript PBO-t kell újraépíteni (a `-packonly`-val, ami másodperceket vesz igénybe). Az adat PBO (binarizálással) percekig tart és nem kell újraépíteni.
+2. **Moduláris betöltés.** A csak szerver oldali PBO-k kizárhatók a kliens letöltésekből.
+3. **Tisztább szervezés.** A szkriptek, adatok és GUI világosan elkülönülnek.
+4. **Párhuzamos buildek.** A független PBO-k egyidejűleg építhetők.
 
-### Typical Split Pattern
+### Tipikus felosztási minta
 
 ```
 @MyMod/
   addons/
-    MyMod_Core.pbo           <-- config.cpp, CfgPatches (binarized)
-    MyMod_Scripts.pbo         <-- All .c script files (-packonly)
-    MyMod_Data.pbo            <-- Models, textures, materials (binarized)
-    MyMod_GUI.pbo             <-- Layouts, imagesets (-packonly)
-    MyMod_Sounds.pbo          <-- OGG audio files (-packonly)
+    MyMod_Core.pbo           <-- config.cpp, CfgPatches (binarizált)
+    MyMod_Scripts.pbo         <-- Minden .c szkript fájl (-packonly)
+    MyMod_Data.pbo            <-- Modellek, textúrák, anyagok (binarizált)
+    MyMod_GUI.pbo             <-- Layout-ok, imageset-ek (-packonly)
+    MyMod_Sounds.pbo          <-- OGG hangfájlok (-packonly)
 ```
 
-### Dependency Between PBOs
+### PBO-k közötti függőségek
 
-When one PBO depends on another (e.g., scripts reference items defined in the config PBO), the `requiredAddons[]` in `CfgPatches` ensures correct load order:
+Amikor egy PBO függ egy másiktól (pl. a szkriptek hivatkoznak a konfig PBO-ban definiált tárgyakra), a `CfgPatches`-ben lévő `requiredAddons[]` biztosítja a helyes betöltési sorrendet:
 
 ```cpp
-// In MyMod_Scripts config.cpp
+// A MyMod_Scripts config.cpp-ben
 class CfgPatches
 {
     class MyMod_Scripts
     {
-        requiredAddons[] = {"MyMod_Core"};   // Load after the core PBO
+        requiredAddons[] = {"MyMod_Core"};   // Betöltés a core PBO után
     };
 };
 ```
 
 ---
 
-## Gyakori forditasi hibak es megoldasok
+## Gyakori fordítási hibák és megoldások
 
-### Error: "Include file not found"
+### Hiba: "Include file not found"
 
-**Ok:** Config.cpp references a file (model, texture) that does not exist at the expected path.
-**Megoldas:** Verify the file exists on P: at the exact path referenced. Check spelling and capitalization.
+**Ok:** A config.cpp hivatkozik egy fájlra (modell, textúra), amely nem létezik a várt elérési úton.
+**Megoldás:** Ellenőrizd, hogy a fájl létezik a P:-n a pontosan hivatkozott elérési úton. Ellenőrizd a helyesírást és a kis-/nagybetűket.
 
-### Error: "Binarize failed" with no details
+### Hiba: "Binarize failed" részletek nélkül
 
-**Ok:** Binarize crashed on a corrupted or invalid source file.
-**Megoldas:**
-1. Check which file Binarize was processing (look at its log output).
-2. Open the problematic file in the appropriate tool (Object Builder for P3D, TexView2 for textures).
-3. Validate the file.
-4. Common culprits: non-power-of-2 textures, corrupted P3D files, invalid config.cpp syntax.
+**Ok:** A Binarize összeomlott egy sérült vagy érvénytelen forrásfájlon.
+**Megoldás:**
+1. Ellenőrizd, melyik fájlt dolgozta fel a Binarize (nézd meg a napló kimenetét).
+2. Nyisd meg a problémás fájlt a megfelelő eszközben (Object Builder a P3D-hez, TexView2 a textúrákhoz).
+3. Validáld a fájlt.
+4. Gyakori okok: nem kettő hatványának megfelelő méretű textúrák, sérült P3D fájlok, érvénytelen config.cpp szintaxis.
 
-### Error: "Addon requires addon X"
+### Hiba: "Addon requires addon X"
 
-**Ok:** CfgPatches `requiredAddons[]` lists an addon that is not present.
-**Megoldas:** Either install the required addon, add it to the build, or remove the requirement if it is not actually needed.
+**Ok:** A CfgPatches `requiredAddons[]` olyan addont sorol fel, amely nincs jelen.
+**Megoldás:** Vagy telepítsd a szükséges addont, add hozzá a buildhez, vagy távolítsd el a követelményt, ha valójában nem szükséges.
 
-### Error: Config.cpp parse error (line X)
+### Hiba: Config.cpp elemzési hiba (X. sor)
 
-**Ok:** Syntax error in config.cpp.
-**Megoldas:** Open config.cpp in a text editor and check line X. Common issues:
-- Missing semicolons after class definitions.
-- Unclosed braces `{}`.
-- Missing quotes around string values.
-- Backslash at end of line (line continuation is not supported).
+**Ok:** Szintaxis hiba a config.cpp-ben.
+**Megoldás:** Nyisd meg a config.cpp-t egy szövegszerkesztőben és ellenőrizd az X. sort. Gyakori problémák:
+- Hiányzó pontosvesszők az osztály definíciók után.
+- Le nem zárt kapcsos zárójelek `{}`.
+- Hiányzó idézőjelek a sztring értékek körül.
+- Visszaper jel a sor végén (a sor folytatás nem támogatott).
 
-### Error: PBO prefix mismatch
+### Hiba: PBO prefix eltérés
 
-**Ok:** The prefix in the PBO does not match the paths used in config.cpp or materials.
-**Megoldas:** Ensure `-prefix` matches the path structure expected by all references. If config.cpp references `MyMod\data\item.p3d`, the PBO prefix must be `MyMod` and the file must be at `data\item.p3d` inside the PBO.
+**Ok:** A PBO-ban lévő prefix nem egyezik a config.cpp-ben vagy anyagokban használt elérési utakkal.
+**Megoldás:** Győződj meg, hogy a `-prefix` egyezik az összes hivatkozás által várt elérési út struktúrával. Ha a config.cpp hivatkozik a `MyMod\data\item.p3d`-re, a PBO prefixnek `MyMod`-nak kell lennie, és a fájlnak a `data\item.p3d` helyen kell lennie a PBO-n belül.
 
-### Error: "Signature check failed" on server
+### Hiba: "Signature check failed" a szerveren
 
-**Ok:** Client's PBO does not match the server's expected signature.
-**Megoldas:**
-1. Ensure both server and client have the same PBO version.
-2. Re-sign the PBO with a fresh key if needed.
-3. Update the `.bikey` on the server.
+**Ok:** A kliens PBO-ja nem egyezik a szerver várt aláírásával.
+**Megoldás:**
+1. Győződj meg, hogy a szerver és a kliens is ugyanazt a PBO verziót használja.
+2. Ha szükséges, írd alá újra a PBO-t friss kulccsal.
+3. Frissítsd a `.bikey`-t a szerveren.
 
-### Error: "Cannot open file" during Binarize
+### Hiba: "Cannot open file" a Binarize során
 
-**Ok:** P: drive is not mounted or the file path is incorrect.
-**Megoldas:** Mount P: drive and verify the source path exists.
-
----
-
-## Testing: File Patching vs. PBO Loading
-
-Development involves two testing modes. Choosing the right one for each situation saves significant time.
-
-### File Patching (Development)
-
-| Szempont | Reszlet |
-|--------|--------|
-| **Speed** | Instant -- edit file, restart game |
-| **Setup** | Mount P: drive, launch with `-filePatching` flag |
-| **Executable** | `DayZDiag_x64.exe` (Diag build required) |
-| **Signing** | Not applicable (no PBOs to sign) |
-| **Limitations** | No binarized configs, Diag build only |
-| **Best for** | Script development, UI iteration, rapid prototyping |
-
-### PBO Loading (Release Testing)
-
-| Szempont | Reszlet |
-|--------|--------|
-| **Speed** | Slower -- must rebuild PBO for each change |
-| **Setup** | Build PBO, place in `@mod/addons/` |
-| **Executable** | `DayZDiag_x64.exe` or retail `DayZ_x64.exe` |
-| **Signing** | Supported (required for multiplayer) |
-| **Limitations** | Rebuild required for every change |
-| **Best for** | Final testing, multiplayer testing, release validation |
-
-### Recommended Workflow
-
-1. **Develop with file patching:** Write scripts, adjust layouts, iterate on textures. Restart the game to test. No build step.
-2. **Build PBOs periodically:** Test the binarized build to catch binarization-specific issues (config parse errors, texture conversion problems).
-3. **Final test with PBO only:** Before release, test exclusively from PBOs to ensure the packed mod works identically to the file-patched version.
-4. **Sign and distribute PBOs:** Generate signatures for multiplayer compatibility.
+**Ok:** A P: meghajtó nincs csatolva vagy a fájl elérési útja helytelen.
+**Megoldás:** Csatold a P: meghajtót és ellenőrizd, hogy a forrás elérési út létezik.
 
 ---
 
-## Bevalt gyakorlatok
+## Tesztelés: File Patching vs. PBO betöltés
 
-1. **Use `-packonly` for script PBOs.** Scripts are never binarized, so `-packonly` is always correct and much faster.
+A fejlesztés két tesztelési módot foglal magában. A megfelelő kiválasztása minden helyzetben jelentős időt takarít meg.
 
-2. **Always set a prefix.** Without a prefix, the engine cannot resolve paths to your mod's content. Every PBO must have a correct `-prefix`.
+### File Patching (fejlesztés)
 
-3. **Automate your builds.** Create a build script (batch or Python) from day one. Manual packing does not scale and is error-prone.
+| Szempont | Részlet |
+|----------|---------|
+| **Sebesség** | Azonnali -- fájl szerkesztése, játék újraindítása |
+| **Beállítás** | P: meghajtó csatolása, indítás `-filePatching` jelzővel |
+| **Futtatható fájl** | `DayZDiag_x64.exe` (Diag build szükséges) |
+| **Aláírás** | Nem alkalmazható (nincsenek PBO-k aláírásra) |
+| **Korlátozások** | Nincs binarizált konfig, csak Diag build |
+| **Legjobb ehhez** | Szkript fejlesztés, UI iteráció, gyors prototípus készítés |
 
-4. **Keep source and output separate.** Source on P:, built PBOs in a separate output directory or `@mod/addons/`. Never pack from the output directory.
+### PBO betöltés (kiadási tesztelés)
 
-5. **Sign your PBOs for any multiplayer testing.** Unsigned PBOs are rejected by servers with signature verification enabled. Sign during development even if it seems unnecessary -- it prevents "works for me" issues when others test.
+| Szempont | Részlet |
+|----------|---------|
+| **Sebesség** | Lassabb -- minden változtatáshoz újra kell építeni a PBO-t |
+| **Beállítás** | PBO építése, elhelyezés a `@mod/addons/`-ban |
+| **Futtatható fájl** | `DayZDiag_x64.exe` vagy kereskedelmi `DayZ_x64.exe` |
+| **Aláírás** | Támogatott (többjátékos módhoz szükséges) |
+| **Korlátozások** | Minden változtatáshoz újraépítés szükséges |
+| **Legjobb ehhez** | Végső tesztelés, többjátékos tesztelés, kiadás validálás |
 
-6. **Version your keys.** When you make breaking changes, generate a new key pair. This forces all clients and servers to update together.
+### Ajánlott munkafolyamat
 
-7. **Test both file patching and PBO modes.** Some bugs only appear in one mode. Binarized configs behave differently from text configs in edge cases.
-
-8. **Clean your output directory regularly.** Stale PBOs from previous builds can cause confusing behavior. Use the `-clear` flag or manually clean before building.
-
-9. **Split large mods into multiple PBOs.** The time saved on incremental rebuilds pays for itself within the first day of development.
-
-10. **Read the build logs.** Binarize and AddonBuilder produce log files. When something goes wrong, the answer is almost always in the logs. Check `%TEMP%\AddonBuilder\` and `%TEMP%\Binarize\` for detailed output.
+1. **Fejlessz file patching-gel:** Írj szkripteket, igazítsd a layout-okat, iterálj a textúrákon. Indítsd újra a játékot a teszteléshez. Nincs build lépés.
+2. **Építs PBO-kat rendszeresen:** Teszteld a binarizált buildet a binarizálás-specifikus problémák felderítéséhez (konfig elemzési hibák, textúra konverziós problémák).
+3. **Végső teszt csak PBO-val:** Kiadás előtt tesztelj kizárólag PBO-kból, hogy biztosítsd, a csomagolt mod azonosan működik a file-patching-elt verzióval.
+4. **Írd alá és terjeszd a PBO-kat:** Generálj aláírásokat a többjátékos kompatibilitáshoz.
 
 ---
 
-## Navigacio
+## Bevált gyakorlatok
 
-| Elozo | Fel | Kovetkezo |
-|----------|----|------|
-| [4.5 DayZ eszkozok munkamenet](05-dayz-tools.md) | [Part 4: File Formats & DayZ eszkozok](01-textures.md) | [Part 5: Config Files](07-workbench-guide.md) |
+1. **Használj `-packonly`-t a szkript PBO-khoz.** A szkriptek soha nem binarizálódnak, tehát a `-packonly` mindig helyes és sokkal gyorsabb.
+
+2. **Mindig állíts be prefixet.** Prefix nélkül a motor nem tudja feloldani az elérési utakat a mod tartalmához. Minden PBO-nak helyes `-prefix`-szel kell rendelkeznie.
+
+3. **Automatizáld a buildeket.** Hozz létre build szkriptet (batch vagy Python) az első naptól. A kézi csomagolás nem skálázódik és hibalehetőségeket rejt.
+
+4. **Tartsd külön a forrást és a kimenetet.** Forrás a P:-n, elkészült PBO-k külön kimeneti könyvtárban vagy `@mod/addons/`-ban. Soha ne csomagolj a kimeneti könyvtárból.
+
+5. **Írd alá a PBO-idat bármely többjátékos teszteléshez.** Az aláíratlan PBO-kat az aláírás-ellenőrzéses szerverek elutasítják. Írd alá fejlesztés közben is, még ha feleslegesnek tűnik -- megelőzi a "nálam működik" problémákat, amikor mások tesztelnek.
+
+6. **Verziózd a kulcsaidat.** Amikor törő változtatásokat végzel, generálj új kulcspárt. Ez arra kényszeríti az összes klienst és szervert, hogy együtt frissítsenek.
+
+7. **Tesztelj mind file patching, mind PBO módban.** Egyes hibák csak az egyik módban jelennek meg. A binarizált konfigok szélsőséges esetekben eltérően viselkednek a szöveges konfigoktól.
+
+8. **Tisztítsd rendszeresen a kimeneti könyvtárat.** A korábbi buildekből származó elavult PBO-k zavaró viselkedést okozhatnak. Használd a `-clear` jelzőt vagy tisztítsd kézzel az építés előtt.
+
+9. **Bontsd több PBO-ra a nagy modokat.** Az inkrementális újraépítéseknél megtakarított idő az első fejlesztési napon belül megtérül.
+
+10. **Olvasd a build naplókat.** A Binarize és az AddonBuilder naplófájlokat állít elő. Amikor valami rosszul megy, a válasz szinte mindig a naplókban van. Ellenőrizd a `%TEMP%\AddonBuilder\` és `%TEMP%\Binarize\` mappákat a részletes kimenetért.
+
+---
+
+## Valós modokban megfigyelt minták
+
+| Minta | Mod | Részlet |
+|-------|-----|---------|
+| 20+ PBO modonként finom felosztással | Expansion (minden modul) | Külön PBO-kra bontja a Scripts, Data, GUI, Vehicles, Book, Market stb. elemeket, lehetővé téve a független újraépítést és az opcionális kliens/szerver szétválasztást |
+| Scripts/Data/GUI hármas felosztás | StarDZ (Core, Missions, AI) | Minden mod 2-3 PBO-t hoz létre: `_Scripts.pbo` (packonly), `_Data.pbo` (binarizált modellek/textúrák), `_GUI.pbo` (packonly layout-ok) |
+| Egyetlen monolitikus PBO | Egyszerű retextúra modok | A kis modok, amelyek csak egy config.cpp-t és néhány PAA textúrát tartalmaznak, mindent egyetlen PBO-ba csomagolnak binarizálással |
+| Kulcs verziózás főbb kiadásonként | Expansion | Új kulcspárokat generál a törő frissítésekhez, arra kényszerítve az összes klienst és szervert, hogy szinkronban frissítsenek |
+
+---
+
+## Kompatibilitás és hatás
+
+- **Több mod:** A PBO prefix ütközések azt okozzák, hogy a motor az egyik mod fájljait tölti be a másik helyett. Minden modnak egyedi prefixet kell használnia. Ellenőrizd gondosan a `$PBOPREFIX$`-et, amikor "file not found" hibákat debugolsz több-moddal rendelkező környezetekben.
+- **Teljesítmény:** A PBO betöltés gyors (szekvenciális fájl olvasások), de a sok nagy PBO-val rendelkező modok növelik a szerver indítási idejét. A binarizált tartalom gyorsabban töltődik be, mint a binarizálatlan. Használj ODOL modelleket és PAA textúrákat a kiadási buildekhez.
+- **Verzió:** Maga a PBO formátum nem változott. Az AddonBuilder rendszeres javításokat kap a DayZ Tools frissítéseken keresztül, de a parancssori jelzők és a csomagolási viselkedés stabil a DayZ 1.0 óta.
+
+---
+
+## Navigáció
+
+| Előző | Fel | Következő |
+|-------|-----|-----------|
+| [4.5 DayZ Tools munkafolyamat](05-dayz-tools.md) | [4. rész: Fájlformátumok és DayZ Tools](01-textures.md) | [Következő: Workbench útmutató](07-workbench-guide.md) |

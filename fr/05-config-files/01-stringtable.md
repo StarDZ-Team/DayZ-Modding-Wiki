@@ -1,155 +1,155 @@
-# Chapitre 5.1: stringtable.csv --- Localization
+# Chapitre 5.1 : stringtable.csv --- Localisation
 
 [Accueil](../../README.md) | **stringtable.csv** | [Suivant : inputs.xml >>](02-inputs-xml.md)
 
 ---
 
-> **Résumé :** The `stringtable.csv` file provides localized text for your DayZ mod. Le moteur reads this CSV at startup and resolves translation keys based on le joueur's language setting. Every user-facing string --- UI labels, input binding names, item descriptions, notification text --- should live in a stringtable rather than being hardcoded.
+> **Résumé :** Le fichier `stringtable.csv` fournit du texte localisé pour votre mod DayZ. Le moteur lit ce CSV au démarrage et résout les clés de traduction en fonction du paramètre de langue du joueur. Chaque chaîne visible par l'utilisateur --- labels d'interface, noms de raccourcis clavier, descriptions d'objets, textes de notification --- devrait se trouver dans une stringtable plutôt qu'être codée en dur.
 
 ---
 
 ## Table des matières
 
-- [Overview](#overview)
-- [CSV Format](#csv-format)
-- [Column Reference](#column-reference)
-- [Key Naming Convention](#key-naming-convention)
-- [Referencing Strings](#referencing-strings)
-- [Creating a New Stringtable](#creating-a-new-stringtable)
-- [Empty Cell Handling and Fallback Behavior](#empty-cell-handling-and-fallback-behavior)
-- [Multi-Language Workflow](#multi-language-workflow)
-- [Modular Stringtable Approach (DayZ Expansion)](#modular-stringtable-approach-dayz-expansion)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+- [Vue d'ensemble](#vue-densemble)
+- [Format CSV](#format-csv)
+- [Référence des colonnes](#référence-des-colonnes)
+- [Convention de nommage des clés](#convention-de-nommage-des-clés)
+- [Référencer les chaînes](#référencer-les-chaînes)
+- [Créer une nouvelle stringtable](#créer-une-nouvelle-stringtable)
+- [Gestion des cellules vides et comportement de repli](#gestion-des-cellules-vides-et-comportement-de-repli)
+- [Flux de travail multi-langues](#flux-de-travail-multi-langues)
+- [Approche modulaire de stringtable (DayZ Expansion)](#approche-modulaire-de-stringtable-dayz-expansion)
+- [Exemples réels](#exemples-réels)
+- [Erreurs courantes](#erreurs-courantes)
 
 ---
 
 ## Vue d'ensemble
 
-DayZ uses a CSV-based localization system. When le moteur encounters a string key prefixed with `#` (par exemple, `#STR_MYMOD_HELLO`), it looks up that key in all loaded stringtable files and returns the translation matching le joueur's current language. If no match is found for the active language, le moteur falls back through a defined chain.
+DayZ utilise un système de localisation basé sur le CSV. Quand le moteur rencontre une clé de chaîne préfixée par `#` (par exemple, `#STR_MYMOD_HELLO`), il recherche cette clé dans tous les fichiers stringtable chargés et retourne la traduction correspondant à la langue actuelle du joueur. Si aucune correspondance n'est trouvée pour la langue active, le moteur passe à une chaîne de repli définie.
 
-The stringtable file must be named exactly `stringtable.csv` and placed inside your mod's PBO structure. Le moteur discovers it automatically --- no config.cpp registration is required.
+Le fichier stringtable doit s'appeler exactement `stringtable.csv` et être placé dans la structure PBO de votre mod. Le moteur le découvre automatiquement --- aucun enregistrement dans config.cpp n'est requis.
 
 ---
 
 ## Format CSV
 
-The file is a standard comma-separated values file with quoted fields. The first row is the header, and every subsequent row defines one translation key.
+Le fichier est un fichier standard de valeurs séparées par des virgules avec des champs entre guillemets. La première ligne est l'en-tête, et chaque ligne suivante définit une clé de traduction.
 
-### Header Row
+### Ligne d'en-tête
 
-The header row defines the columns. DayZ recognizes up to 15 columns:
+La ligne d'en-tête définit les colonnes. DayZ reconnaît jusqu'à 15 colonnes :
 
 ```csv
 "Language","original","english","czech","german","russian","polish","hungarian","italian","spanish","french","chinese","japanese","portuguese","chinesesimp",
 ```
 
-### Data Rows
+### Lignes de données
 
-Each row starts with the string key (no `#` prefix in the CSV), followed by the translation for each language:
+Chaque ligne commence par la clé de chaîne (sans préfixe `#` dans le CSV), suivie de la traduction pour chaque langue :
 
 ```csv
 "STR_MYMOD_HELLO","Hello World","Hello World","Ahoj světe","Hallo Welt","Привет мир","Witaj świecie","Helló világ","Ciao mondo","Hola mundo","Bonjour le monde","你好世界","ハローワールド","Olá mundo","你好世界",
 ```
 
-### Trailing Comma
+### Virgule finale
 
-Many stringtable files include a trailing comma after the last column. This is conventional and safe --- le moteur tolerates it.
+De nombreux fichiers stringtable incluent une virgule finale après la dernière colonne. C'est conventionnel et sans risque --- le moteur le tolère.
 
-### Quoting Rules
+### Règles de guillemets
 
-- Fields **must** be quoted with double quotes if they contain commas, newlines, or double quotes.
-- En pratique, most mods quote every field for consistency.
-- Some mods (like MyMod Missions) omit quotes entirely; le moteur handles both styles as long as the field content does not contain commas.
+- Les champs **doivent** être entre guillemets doubles s'ils contiennent des virgules, des sauts de ligne ou des guillemets doubles.
+- En pratique, la plupart des mods mettent chaque champ entre guillemets par cohérence.
+- Certains mods (comme MyMod Missions) omettent entièrement les guillemets ; le moteur gère les deux styles tant que le contenu du champ ne contient pas de virgules.
 
 ---
 
 ## Référence des colonnes
 
-DayZ supports 13 player-selectable languages. The CSV has 15 columns because the first column is the key name and the second is the `original` column (the mod author's native language or default text).
+DayZ supporte 13 langues sélectionnables par le joueur. Le CSV a 15 colonnes car la première colonne est le nom de la clé et la seconde est la colonne `original` (la langue natale de l'auteur du mod ou le texte par défaut).
 
-| # | Nom de colonne | Langue | Notes |
-|---|-------------|----------|-------|
-| 1 | `Language` | --- | The string key identifier (e.g. `STR_MYMOD_HELLO`) |
-| 2 | `original` | Author's native | Fallback of last resort; used if no other column matches |
-| 3 | `english` | English | Most common primary language for international mods |
-| 4 | `czech` | Czech | |
-| 5 | `german` | German | |
-| 6 | `russian` | Russian | |
-| 7 | `polish` | Polish | |
-| 8 | `hungarian` | Hungarian | |
-| 9 | `italian` | Italian | |
-| 10 | `spanish` | Spanish | |
-| 11 | `french` | French | |
-| 12 | `chinese` | Chinese (Traditional) | Traditional Chinese characters |
-| 13 | `japanese` | Japanese | |
-| 14 | `portuguese` | Portuguese | |
-| 15 | `chinesesimp` | Chinese (Simplified) | Simplified Chinese characters |
+| # | Nom de la colonne | Langue | Notes |
+|---|-------------------|--------|-------|
+| 1 | `Language` | --- | L'identifiant de la clé de chaîne (ex. `STR_MYMOD_HELLO`) |
+| 2 | `original` | Langue natale de l'auteur | Repli de dernier recours ; utilisé si aucune autre colonne ne correspond |
+| 3 | `english` | Anglais | Langue principale la plus courante pour les mods internationaux |
+| 4 | `czech` | Tchèque | |
+| 5 | `german` | Allemand | |
+| 6 | `russian` | Russe | |
+| 7 | `polish` | Polonais | |
+| 8 | `hungarian` | Hongrois | |
+| 9 | `italian` | Italien | |
+| 10 | `spanish` | Espagnol | |
+| 11 | `french` | Français | |
+| 12 | `chinese` | Chinois (traditionnel) | Caractères chinois traditionnels |
+| 13 | `japanese` | Japonais | |
+| 14 | `portuguese` | Portugais | |
+| 15 | `chinesesimp` | Chinois (simplifié) | Caractères chinois simplifiés |
 
-### Column Order Matters
+### L'ordre des colonnes compte
 
-Le moteur identifies columns by their **header name**, not by position. Cependant, following the standard order shown above is strongly recommended for compatibility and readability.
+Le moteur identifie les colonnes par leur **nom d'en-tête**, pas par leur position. Cependant, suivre l'ordre standard montré ci-dessus est fortement recommandé pour la compatibilité et la lisibilité.
 
-### Optional Columns
+### Colonnes optionnelles
 
-You do not need to include all 15 columns. If your mod only supports English, you can use a minimal header:
+Vous n'avez pas besoin d'inclure les 15 colonnes. Si votre mod ne supporte que l'anglais, vous pouvez utiliser un en-tête minimal :
 
 ```csv
 "Language","english"
 "STR_MYMOD_HELLO","Hello World"
 ```
 
-Some mods add non-standard columns like `korean` (MyMod Missions does this). Le moteur ignores columns it does not recognize as a supported language, but those columns can serve as documentation or preparation for future language support.
+Certains mods ajoutent des colonnes non standard comme `korean` (MyMod Missions le fait). Le moteur ignore les colonnes qu'il ne reconnaît pas comme une langue supportée, mais ces colonnes peuvent servir de documentation ou de préparation pour un futur support linguistique.
 
 ---
 
-## Key Naming Convention
+## Convention de nommage des clés
 
-String keys follow a hierarchical naming pattern:
+Les clés de chaîne suivent un patron de nommage hiérarchique :
 
 ```
 STR_MODNAME_CATEGORY_ELEMENT
 ```
 
-### Rules
+### Règles
 
-1. **Always start with `STR_`** --- this is a universal DayZ convention
-2. **Mod prefix** --- uniquely identifies your mod (e.g., `MYMOD`, `COT`, `EXPANSION`, `VPP`)
-3. **Category** --- groups related strings (e.g., `INPUT`, `TAB`, `CONFIG`, `DIR`)
-4. **Element** --- the specific string (e.g., `ADMIN_PANEL`, `NORTH`, `SAVE`)
-5. **Use UPPERCASE** --- the convention across all major mods
-6. **Use underscores** as separators, never spaces or hyphens
+1. **Toujours commencer par `STR_`** --- c'est une convention universelle de DayZ
+2. **Préfixe du mod** --- identifie uniquement votre mod (ex. `MYMOD`, `COT`, `EXPANSION`, `VPP`)
+3. **Catégorie** --- regroupe les chaînes liées (ex. `INPUT`, `TAB`, `CONFIG`, `DIR`)
+4. **Élément** --- la chaîne spécifique (ex. `ADMIN_PANEL`, `NORTH`, `SAVE`)
+5. **Utilisez les MAJUSCULES** --- la convention à travers tous les mods majeurs
+6. **Utilisez les underscores** comme séparateurs, jamais d'espaces ou de tirets
 
-### Examples from Real Mods
-
-```
-STR_MYMOD_INPUT_ADMIN_PANEL       -- MyMod: keybinding label
-STR_MYMOD_CLOSE                   -- MyMod: generic "Close" button
-STR_MYMOD_DIR_NORTH                  -- MyMod: compass direction
-STR_MYMOD_TAB_ONLINE                 -- MyMod: admin panel tab name
-STR_COT_ESP_MODULE_NAME            -- COT: module display name
-STR_COT_CAMERA_MODULE_BLUR         -- COT: camera tool label
-STR_EXPANSION_ATM                  -- Expansion: feature name
-STR_EXPANSION_AI_COMMAND_MENU      -- Expansion: input label
-```
-
-### Anti-Patterns
+### Exemples de mods réels
 
 ```
-STR_hello_world          -- Bad: lowercase, no mod prefix
-MY_STRING                -- Bad: missing STR_ prefix
-STR_MYMOD Hello World    -- Bad: spaces in key
+STR_MYMOD_INPUT_ADMIN_PANEL       -- MyMod : label de raccourci clavier
+STR_MYMOD_CLOSE                   -- MyMod : bouton générique "Fermer"
+STR_MYMOD_DIR_NORTH                  -- MyMod : direction de la boussole
+STR_MYMOD_TAB_ONLINE                 -- MyMod : nom d'onglet du panneau admin
+STR_COT_ESP_MODULE_NAME            -- COT : nom d'affichage du module
+STR_COT_CAMERA_MODULE_BLUR         -- COT : label de l'outil caméra
+STR_EXPANSION_ATM                  -- Expansion : nom de fonctionnalité
+STR_EXPANSION_AI_COMMAND_MENU      -- Expansion : label d'entrée
+```
+
+### Anti-patrons
+
+```
+STR_hello_world          -- Mauvais : minuscules, pas de préfixe de mod
+MY_STRING                -- Mauvais : préfixe STR_ manquant
+STR_MYMOD Hello World    -- Mauvais : espaces dans la clé
 ```
 
 ---
 
-## Referencing Strings
+## Référencer les chaînes
 
-There are three distinct contexts where you reference localized strings, and each uses a slightly different syntax.
+Il y a trois contextes distincts où vous référencez des chaînes localisées, et chacun utilise une syntaxe légèrement différente.
 
-### In Layout Files (.layout)
+### Dans les fichiers de layout (.layout)
 
-Use the `#` prefix before the key name. Le moteur resolves it at widget creation time.
+Utilisez le préfixe `#` avant le nom de la clé. Le moteur le résout au moment de la création du widget.
 
 ```
 TextWidgetClass MyLabel {
@@ -158,83 +158,83 @@ TextWidgetClass MyLabel {
 }
 ```
 
-The `#` prefix tells the layout parser "this is a localization key, not literal text."
+Le préfixe `#` indique au parseur de layout « ceci est une clé de localisation, pas du texte littéral ».
 
-### In Enforce Script (.c files)
+### Dans le script Enforce (fichiers .c)
 
-Use `Widget.TranslateString()` to resolve the key à l'exécution. The `#` prefix is required in the argument.
+Utilisez `Widget.TranslateString()` pour résoudre la clé à l'exécution. Le préfixe `#` est requis dans l'argument.
 
 ```c
 string translated = Widget.TranslateString("#STR_MYMOD_CLOSE");
-// translated == "Close" (if player language is English)
-// translated == "Fechar" (if player language is Portuguese)
+// translated == "Close" (si la langue du joueur est l'anglais)
+// translated == "Fermer" (si la langue du joueur est le français)
 ```
 
-You can also set widget text directly:
+Vous pouvez aussi définir le texte du widget directement :
 
 ```c
 TextWidget label = TextWidget.Cast(layoutRoot.FindAnyWidget("MyLabel"));
 label.SetText(Widget.TranslateString("#STR_MYMOD_ADMIN_PANEL"));
 ```
 
-Or use string keys directly in widget text properties, and le moteur resolves them:
+Ou utiliser les clés de chaîne directement dans les propriétés de texte du widget, et le moteur les résout :
 
 ```c
-label.SetText("#STR_MYMOD_ADMIN_PANEL");  // Also works -- engine auto-resolves
+label.SetText("#STR_MYMOD_ADMIN_PANEL");  // Fonctionne aussi -- le moteur résout automatiquement
 ```
 
-### In inputs.xml
+### Dans inputs.xml
 
-Use the `loc` attribute **without** the `#` prefix.
+Utilisez l'attribut `loc` **sans** le préfixe `#`.
 
 ```xml
 <input name="UAMyAction" loc="STR_MYMOD_INPUT_MY_ACTION" />
 ```
 
-This is the one place where you omit the `#`. The input system adds it internally.
+C'est le seul endroit où vous omettez le `#`. Le système d'entrées l'ajoute en interne.
 
-### Summary Table
+### Tableau récapitulatif
 
 | Contexte | Syntaxe | Exemple |
-|---------|--------|---------|
-| Layout file `text` attribute | `#STR_KEY` | `text "#STR_MYMOD_CLOSE"` |
+|----------|---------|---------|
+| Attribut `text` du layout | `#STR_KEY` | `text "#STR_MYMOD_CLOSE"` |
 | Script `TranslateString()` | `"#STR_KEY"` | `Widget.TranslateString("#STR_MYMOD_CLOSE")` |
-| Script widget text | `"#STR_KEY"` | `label.SetText("#STR_MYMOD_CLOSE")` |
-| inputs.xml `loc` attribute | `STR_KEY` (no #) | `loc="STR_MYMOD_INPUT_ADMIN_PANEL"` |
+| Texte de widget en script | `"#STR_KEY"` | `label.SetText("#STR_MYMOD_CLOSE")` |
+| Attribut `loc` de inputs.xml | `STR_KEY` (sans #) | `loc="STR_MYMOD_INPUT_ADMIN_PANEL"` |
 
 ---
 
-## Creating a New Stringtable
+## Créer une nouvelle stringtable
 
-### Step 1: Create the File
+### Étape 1 : créer le fichier
 
-Create `stringtable.csv` at the root of your mod's PBO content directory. Le moteur scans all loaded PBOs for files named exactly `stringtable.csv`.
+Créez `stringtable.csv` à la racine du répertoire de contenu PBO de votre mod. Le moteur scanne tous les PBO chargés à la recherche de fichiers nommés exactement `stringtable.csv`.
 
-Typical placement:
+Emplacement typique :
 
 ```
 @MyMod/
   Addons/
     MyMod_Scripts.pbo
       config.cpp
-      stringtable.csv        <-- Here
+      stringtable.csv        <-- Ici
       Scripts/
         3_Game/
         4_World/
         5_Mission/
 ```
 
-### Step 2: Write the Header
+### Étape 2 : écrire l'en-tête
 
-Start with the full 15-column header:
+Commencez avec l'en-tête complet à 15 colonnes :
 
 ```csv
 "Language","original","english","czech","german","russian","polish","hungarian","italian","spanish","french","chinese","japanese","portuguese","chinesesimp",
 ```
 
-### Step 3: Add Your Strings
+### Étape 3 : ajouter vos chaînes
 
-Add one row per translatable string. Start with English, fill in other languages as translations become available:
+Ajoutez une ligne par chaîne traduisible. Commencez par l'anglais, remplissez les autres langues au fur et à mesure que les traductions deviennent disponibles :
 
 ```csv
 "Language","original","english","czech","german","russian","polish","hungarian","italian","spanish","french","chinese","japanese","portuguese","chinesesimp",
@@ -242,65 +242,65 @@ Add one row per translatable string. Start with English, fill in other languages
 "STR_MYMOD_OPEN","Open","Open","Otevřít","Öffnen","Открыть","Otwórz","Megnyitás","Apri","Abrir","Ouvrir","打开","開く","Abrir","打开",
 ```
 
-### Step 4: Pack and Test
+### Étape 4 : empaqueter et tester
 
-Build your PBO. Launch le jeu. Verify that `Widget.TranslateString("#STR_MYMOD_TITLE")` returns "My Cool Mod" in your script logs. Change le jeu language in settings to verify fallback behavior.
+Compilez votre PBO. Lancez le jeu. Vérifiez que `Widget.TranslateString("#STR_MYMOD_TITLE")` retourne « My Cool Mod » dans vos logs de script. Changez la langue du jeu dans les paramètres pour vérifier le comportement de repli.
 
 ---
 
-## Empty Cell Handling and Fallback Behavior
+## Gestion des cellules vides et comportement de repli
 
-When le moteur looks up a string key for le joueur's current language and finds an empty cell, it follows a fallback chain:
+Quand le moteur recherche une clé de chaîne pour la langue actuelle du joueur et trouve une cellule vide, il suit une chaîne de repli :
 
-1. **Player's selected language column** --- checked first
-2. **`english` column** --- if le joueur's language cell is empty
-3. **`original` column** --- if `english` is also empty
-4. **Raw key name** --- if all columns are empty, le moteur displays the key itself (e.g., `STR_MYMOD_TITLE`)
+1. **Colonne de la langue sélectionnée par le joueur** --- vérifiée en premier
+2. **Colonne `english`** --- si la cellule de la langue du joueur est vide
+3. **Colonne `original`** --- si `english` est aussi vide
+4. **Nom brut de la clé** --- si toutes les colonnes sont vides, le moteur affiche la clé elle-même (ex. `STR_MYMOD_TITLE`)
 
-This means you can safely leave non-English columns empty during development. English-speaking players see the `english` column, and other players see the English fallback until a proper translation is added.
+Cela signifie que vous pouvez en toute sécurité laisser les colonnes non-anglaises vides pendant le développement. Les joueurs anglophones voient la colonne `english`, et les autres joueurs voient le repli anglais jusqu'à ce qu'une traduction appropriée soit ajoutée.
 
-### Practical Implication
+### Implication pratique
 
-You do not need to copy the English text into every column as a placeholder. Leave untranslated cells empty:
+Vous n'avez pas besoin de copier le texte anglais dans chaque colonne comme placeholder. Laissez les cellules non traduites vides :
 
 ```csv
 "STR_MYMOD_HELLO","Hello","Hello","","","","","","","","","","","","",
 ```
 
-Players whose language is German will see "Hello" (the English fallback) until a German translation is provided.
+Les joueurs dont la langue est l'allemand verront « Hello » (le repli anglais) jusqu'à ce qu'une traduction allemande soit fournie.
 
 ---
 
-## Multi-Language Workflow
+## Flux de travail multi-langues
 
-### For Solo Developers
+### Pour les développeurs solo
 
-1. Write all strings in English (both `original` and `english` columns).
-2. Release the mod. English serves as the universal fallback.
-3. As community members volunteer translations, fill in additional columns.
-4. Rebuild and release updates.
+1. Écrivez toutes les chaînes en anglais (colonnes `original` et `english`).
+2. Publiez le mod. L'anglais sert de repli universel.
+3. Au fur et à mesure que des membres de la communauté proposent des traductions, remplissez les colonnes supplémentaires.
+4. Recompilez et publiez les mises à jour.
 
-### For Teams with Translators
+### Pour les équipes avec des traducteurs
 
-1. Maintain the CSV in a shared repository or spreadsheet.
-2. Assign one translator per language.
-3. Use the `original` column for the author's native language (e.g., Portuguese for Brazilian developers).
-4. The `english` column is always filled --- it is the international baseline.
-5. Use a diff tool to track which keys have been added since the last translation pass.
+1. Maintenez le CSV dans un dépôt partagé ou un tableur.
+2. Assignez un traducteur par langue.
+3. Utilisez la colonne `original` pour la langue natale de l'auteur (ex. le portugais pour les développeurs brésiliens).
+4. La colonne `english` est toujours remplie --- c'est la base internationale.
+5. Utilisez un outil de diff pour suivre quelles clés ont été ajoutées depuis la dernière passe de traduction.
 
-### Using Spreadsheet Software
+### Utilisation de logiciels de tableur
 
-CSV files open naturally in Excel, Google Sheets, or LibreOffice Calc. Be aware of these pitfalls:
+Les fichiers CSV s'ouvrent naturellement dans Excel, Google Sheets ou LibreOffice Calc. Soyez conscient de ces pièges :
 
-- **Excel may add BOM (Byte Order Mark)** to UTF-8 files. DayZ handles BOM, but it can cause issues with some tools. Save as "CSV UTF-8" to be safe.
-- **Excel auto-formatting** can mangle fields that look like dates or numbers.
-- **Line endings**: DayZ accepts both `\r\n` (Windows) and `\n` (Unix).
+- **Excel peut ajouter un BOM (Byte Order Mark)** aux fichiers UTF-8. DayZ gère le BOM, mais cela peut causer des problèmes avec certains outils. Sauvegardez en « CSV UTF-8 » pour être sûr.
+- **Le formatage automatique d'Excel** peut altérer les champs qui ressemblent à des dates ou des nombres.
+- **Fins de ligne** : DayZ accepte à la fois `\r\n` (Windows) et `\n` (Unix).
 
 ---
 
-## Modular Stringtable Approach (DayZ Expansion)
+## Approche modulaire de stringtable (DayZ Expansion)
 
-DayZ Expansion demonstrates a best practice for large mods: splitting translations across multiple stringtable files organized by feature module. Their structure uses 20 separate stringtable files inside a `languagecore` directory:
+DayZ Expansion démontre une bonne pratique pour les gros mods : diviser les traductions en plusieurs fichiers stringtable organisés par module fonctionnel. Leur structure utilise 20 fichiers stringtable séparés à l'intérieur d'un répertoire `languagecore` :
 
 ```
 DayZExpansion/
@@ -327,17 +327,17 @@ DayZExpansion/
     Weapons/stringtable.csv
 ```
 
-### Why Split?
+### Pourquoi diviser ?
 
-- **Manageability**: A single stringtable for a large mod can grow to thousands of lines. Splitting by feature module makes each file manageable.
-- **Independent updates**: Translators can work on one module at a time without merge conflicts.
-- **Conditional inclusion**: Each sub-mod's PBO only includes the stringtable for its own feature, keeping PBO sizes smaller.
+- **Gérabilité** : une seule stringtable pour un gros mod peut atteindre des milliers de lignes. Diviser par module fonctionnel rend chaque fichier gérable.
+- **Mises à jour indépendantes** : les traducteurs peuvent travailler sur un module à la fois sans conflits de fusion.
+- **Inclusion conditionnelle** : le PBO de chaque sous-mod n'inclut que la stringtable de sa propre fonctionnalité, gardant les tailles de PBO plus petites.
 
-### How It Works
+### Fonctionnement
 
-Le moteur scans every loaded PBO for `stringtable.csv`. Since each Expansion sub-module is packed into its own PBO, each one naturally includes only its own stringtable. No special configuration is needed --- just name the file `stringtable.csv` and place it inside the PBO.
+Le moteur scanne chaque PBO chargé à la recherche de `stringtable.csv`. Comme chaque sous-module Expansion est empaqueté dans son propre PBO, chacun inclut naturellement seulement sa propre stringtable. Aucune configuration spéciale n'est nécessaire --- nommez simplement le fichier `stringtable.csv` et placez-le dans le PBO.
 
-Key names still use a global prefix (`STR_EXPANSION_`) to avoid collisions.
+Les noms de clés utilisent toujours un préfixe global (`STR_EXPANSION_`) pour éviter les collisions.
 
 ---
 
@@ -345,7 +345,7 @@ Key names still use a global prefix (`STR_EXPANSION_`) to avoid collisions.
 
 ### MyMod Core
 
-MyMod Core uses the full 15-column format with Portuguese as the `original` language (the development team's native language) and comprehensive translations for all 13 supported languages:
+MyMod Core utilise le format complet à 15 colonnes avec le portugais comme langue `original` (la langue natale de l'équipe de développement) et des traductions complètes pour les 13 langues supportées :
 
 ```csv
 "Language","original","english","czech","german","russian","polish","hungarian","italian","spanish","french","chinese","japanese","portuguese","chinesesimp",
@@ -355,14 +355,14 @@ MyMod Core uses the full 15-column format with Portuguese as the `original` lang
 "STR_MYMOD_SAVE","Salvar","Save","Uložit","Speichern","Сохранить","Zapisz","Mentés","Salva","Guardar","Sauvegarder","保存","保存","Salvar","保存",
 ```
 
-Notable patterns:
-- `original` contains Portuguese text (the team's native language)
-- `english` is always filled as the international baseline
-- All 13 language columns are populated
+Patrons notables :
+- `original` contient du texte portugais (la langue natale de l'équipe)
+- `english` est toujours rempli comme base internationale
+- Les 13 colonnes de langues sont peuplées
 
 ### COT (Community Online Tools)
 
-COT uses the same 15-column format. Its keys follow the `STR_COT_MODULE_CATEGORY_ELEMENT` pattern:
+COT utilise le même format à 15 colonnes. Ses clés suivent le patron `STR_COT_MODULE_CATEGORY_ELEMENT` :
 
 ```csv
 Language,original,english,czech,german,russian,polish,hungarian,italian,spanish,french,chinese,japanese,portuguese,chinesesimp,
@@ -372,73 +372,73 @@ STR_COT_ESP_MODULE_NAME,Camera Tools,Camera Tools,Nástroje kamery,Kamera-Werkze
 
 ### VPP Admin Tools
 
-VPP uses a reduced column set (13 columns, no `hungarian` column) and does not prefix keys with `STR_`:
+VPP utilise un jeu de colonnes réduit (13 colonnes, pas de colonne `hungarian`) et ne préfixe pas les clés avec `STR_` :
 
 ```csv
 "Language","original","english","czech","german","russian","polish","italian","spanish","french","chinese","japanese","portuguese","chinesesimp"
 "vpp_focus_on_game","[Hold/2xTap] Focus On Game","[Hold/2xTap] Focus On Game","...","...","...","...","...","...","...","...","...","...","..."
 ```
 
-This demonstrates that the `STR_` prefix is a convention, not a requirement. Cependant, omitting it means you cannot use the `#` prefix resolution in layout files. VPP references these keys only through script code. The `STR_` prefix is strongly recommended for all new mods.
+Cela démontre que le préfixe `STR_` est une convention, pas une exigence. Cependant, l'omettre signifie que vous ne pouvez pas utiliser la résolution par préfixe `#` dans les fichiers de layout. VPP référence ces clés uniquement via le code de script. Le préfixe `STR_` est fortement recommandé pour tous les nouveaux mods.
 
 ### MyMod Missions
 
-MyMod Missions uses an unquoted, headerless-style CSV (no quotes around fields) with an extra `Korean` column:
+MyMod Missions utilise un CSV de style sans guillemets, sans en-tête (pas de guillemets autour des champs) avec une colonne `Korean` supplémentaire :
 
 ```csv
 Language,English,Czech,German,Russian,Polish,Hungarian,Italian,Spanish,French,Chinese,Japanese,Portuguese,Korean
 STR_MYMOD_MISSION_AVAILABLE,MISSION AVAILABLE,MISE K DISPOZICI,MISSION VERFÜGBAR,МИССИЯ ДОСТУПНА,...
 ```
 
-Notable: the `original` column is absent, and `Korean` is added as an extra language. Le moteur ignores unrecognized column names, so `Korean` serves as documentation until official Korean support is added.
+Notable : la colonne `original` est absente, et `Korean` est ajouté comme langue supplémentaire. Le moteur ignore les noms de colonnes non reconnus, donc `Korean` sert de documentation jusqu'à ce que le support officiel du coréen soit ajouté.
 
 ---
 
 ## Erreurs courantes
 
-### Forgetting the `#` Prefix in Scripts
+### Oublier le préfixe `#` dans les scripts
 
 ```c
-// INCORRECT -- displays the raw key, not the translation
+// FAUX -- affiche la clé brute, pas la traduction
 label.SetText("STR_MYMOD_HELLO");
 
 // CORRECT
 label.SetText("#STR_MYMOD_HELLO");
 ```
 
-### Using `#` in inputs.xml
+### Utiliser `#` dans inputs.xml
 
 ```xml
-<!-- WRONG -- the input system adds # internally -->
+<!-- FAUX -- le système d'entrées ajoute # en interne -->
 <input name="UAMyAction" loc="#STR_MYMOD_MY_ACTION" />
 
 <!-- CORRECT -->
 <input name="UAMyAction" loc="STR_MYMOD_MY_ACTION" />
 ```
 
-### Duplicate Keys Across Mods
+### Clés dupliquées entre mods
 
-If two mods define `STR_CLOSE`, le moteur uses whichever PBO loads last. Always use your mod prefix:
+Si deux mods définissent `STR_CLOSE`, le moteur utilise celui dont le PBO est chargé en dernier. Utilisez toujours votre préfixe de mod :
 
 ```csv
 "STR_MYMOD_CLOSE","Close","Close",...
 ```
 
-### Mismatched Column Count
+### Nombre de colonnes incohérent
 
-If a row has fewer columns than the header, le moteur may silently skip it or assign empty strings to the missing columns. Always ensure every row has the same number of fields as the header.
+Si une ligne a moins de colonnes que l'en-tête, le moteur peut silencieusement l'ignorer ou assigner des chaînes vides aux colonnes manquantes. Assurez-vous toujours que chaque ligne a le même nombre de champs que l'en-tête.
 
-### BOM Issues
+### Problèmes de BOM
 
-Some text editors insert a UTF-8 BOM (byte order mark) at the start of the file. This can cause the first key in the CSV to be silently broken. If your first string key never resolves, check for and remove the BOM.
+Certains éditeurs de texte insèrent un BOM UTF-8 (byte order mark) au début du fichier. Cela peut causer la rupture silencieuse de la première clé du CSV. Si votre première clé de chaîne ne se résout jamais, vérifiez et supprimez le BOM.
 
-### Using Commas Inside Unquoted Fields
+### Utiliser des virgules dans des champs non entre guillemets
 
 ```csv
 STR_MYMOD_MSG,Hello, World,Hello, World,...
 ```
 
-This breaks parsing because `Hello` and ` World` are read as separate columns. Either quote the field or avoid commas in values:
+Cela casse l'analyse car `Hello` et ` World` sont lus comme des colonnes séparées. Soit mettez le champ entre guillemets, soit évitez les virgules dans les valeurs :
 
 ```csv
 "STR_MYMOD_MSG","Hello, World","Hello, World",...
@@ -448,30 +448,30 @@ This breaks parsing because `Hello` and ` World` are read as separate columns. E
 
 ## Bonnes pratiques
 
-- Always use the `STR_MODNAME_` prefix for every key. This prevents collisions when multiple mods are loaded together.
-- Quote every field in the CSV, even if the content has no commas. This prevents subtle parsing errors when translations in other languages contain commas or special characters.
-- Fill the `english` column for every key, even if your native language is different. English is the universal fallback and the baseline for community translators.
-- Keep one stringtable per PBO for small mods. For large mods with 500+ keys, split into per-feature stringtable files in separate PBOs (following the Expansion pattern).
-- Save files as UTF-8 without BOM. If using Excel, explicitly choose "CSV UTF-8" format on export.
+- Utilisez toujours le préfixe `STR_MODNAME_` pour chaque clé. Cela empêche les collisions quand plusieurs mods sont chargés ensemble.
+- Mettez chaque champ du CSV entre guillemets, même si le contenu n'a pas de virgules. Cela empêche les erreurs d'analyse subtiles quand les traductions dans d'autres langues contiennent des virgules ou des caractères spéciaux.
+- Remplissez la colonne `english` pour chaque clé, même si votre langue natale est différente. L'anglais est le repli universel et la base pour les traducteurs communautaires.
+- Gardez une stringtable par PBO pour les petits mods. Pour les gros mods avec 500+ clés, divisez en fichiers stringtable par fonctionnalité dans des PBO séparés (en suivant le patron Expansion).
+- Sauvegardez les fichiers en UTF-8 sans BOM. Si vous utilisez Excel, choisissez explicitement le format « CSV UTF-8 » à l'export.
 
 ---
 
-## Théorie vs Pratique
+## Théorie vs pratique
 
-> Ce que la documentation dit par rapport à ce qui se passe réellement à l'exécution.
+> Ce que dit la documentation versus comment les choses fonctionnent réellement à l'exécution.
 
 | Concept | Théorie | Réalité |
-|---------|--------|---------|
-| Column order does not matter | Engine identifies columns by header name | True, but some community tools and spreadsheet exports reorder columns. Keeping the standard order prevents confusion |
-| Fallback chain: language > english > original > raw key | Documented cascade | If both `english` and `original` are empty, le moteur displays the raw key with the `#` prefix stripped -- useful for spotting missing translations in-game |
-| `Widget.TranslateString()` | Resolves at call time | The result is cached per session. Changing le jeu language requires a restart for stringtable lookups to update |
-| Multiple mods with same key | Last-loaded PBO wins | PBO load order is not guaranteed between mods. If two mods define `STR_CLOSE`, the displayed text depends on which mod loads last -- always use a mod prefix |
-| `#` prefix in `SetText()` | Engine auto-resolves localization keys | Works, but only on the first call. If you call `SetText("#STR_KEY")` and later call `SetText("literal text")`, switching back to `SetText("#STR_KEY")` works fine -- no caching issue at the widget level |
+|---------|---------|---------|
+| L'ordre des colonnes n'a pas d'importance | Le moteur identifie les colonnes par nom d'en-tête | Vrai, mais certains outils communautaires et exports de tableurs réordonnent les colonnes. Garder l'ordre standard évite la confusion |
+| Chaîne de repli : langue > english > original > clé brute | Cascade documentée | Si `english` et `original` sont tous deux vides, le moteur affiche la clé brute avec le préfixe `#` retiré -- utile pour repérer les traductions manquantes en jeu |
+| `Widget.TranslateString()` | Résout au moment de l'appel | Le résultat est mis en cache par session. Changer la langue du jeu nécessite un redémarrage pour que les recherches de stringtable se mettent à jour |
+| Plusieurs mods avec la même clé | Le dernier PBO chargé l'emporte | L'ordre de chargement des PBO n'est pas garanti entre les mods. Si deux mods définissent `STR_CLOSE`, le texte affiché dépend de quel mod se charge en dernier -- utilisez toujours un préfixe de mod |
+| Préfixe `#` dans `SetText()` | Le moteur résout automatiquement les clés de localisation | Fonctionne, mais uniquement au premier appel. Si vous appelez `SetText("#STR_KEY")` puis plus tard `SetText("texte littéral")`, revenir à `SetText("#STR_KEY")` fonctionne bien -- pas de problème de cache au niveau du widget |
 
 ---
 
 ## Compatibilité et impact
 
-- **Multi-Mod :** String key collisions are the primary risk. Two mods defining `STR_ADMIN_PANEL` will conflict silently. Always prefix keys with your mod name (`STR_MYMOD_ADMIN_PANEL`).
-- **Performance :** Stringtable lookup is fast (hash-based). Having thousands of keys across multiple mods has no measurable performance impact. The entire stringtable is loaded into memory at startup.
-- **Version :** The CSV-based stringtable format has been unchanged since DayZ Standalone alpha. The 15-column layout and fallback behavior have remained stable across all versions.
+- **Multi-Mod :** Les collisions de clés de chaîne sont le risque principal. Deux mods définissant `STR_ADMIN_PANEL` entreront en conflit silencieusement. Préfixez toujours les clés avec le nom de votre mod (`STR_MYMOD_ADMIN_PANEL`).
+- **Performance :** La recherche de stringtable est rapide (basée sur le hash). Avoir des milliers de clés à travers plusieurs mods n'a pas d'impact mesurable sur les performances. La stringtable entière est chargée en mémoire au démarrage.
+- **Version :** Le format de stringtable basé sur le CSV n'a pas changé depuis DayZ Standalone alpha. La disposition à 15 colonnes et le comportement de repli sont restés stables à travers toutes les versions.
