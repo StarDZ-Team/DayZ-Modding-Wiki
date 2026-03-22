@@ -1,62 +1,62 @@
-# Chapter 6.17: Construction System
+# Capítulo 6.17: Sistema de Construção
 
-[Home](../../README.md) | [<< Previous: Crafting System](16-crafting-system.md) | **Construction System** | [Next: Animation System >>](18-animation-system.md)
+[Início](../../README.md) | [<< Anterior: Sistema de Crafting](16-crafting-system.md) | **Sistema de Construção** | [Próximo: Sistema de Animação >>](18-animation-system.md)
 
 ---
 
 ## Introdução
 
-DayZ's base building system allows players to construct fortifications --- fences, watchtowers, and shelters --- by assembling individual parts using tools and materials. Each structure is divided into named construction parts (walls, platforms, roofs, gates) that are built, dismantled, or destroyed independently.
+O sistema de construção de bases do DayZ permite que os jogadores construam fortificações --- cercas, torres de vigia e abrigos --- montando peças individuais usando ferramentas e materiais. Cada estrutura é dividida em partes de construção nomeadas (paredes, plataformas, telhados, portões) que são construídas, desmontadas ou destruídas independentemente.
 
-The system lives primarily in three files:
+O sistema reside principalmente em três arquivos:
 
-- `4_World/entities/itembase/basebuildingbase.c` --- the entity base class
-- `4_World/classes/basebuilding/construction.c` --- the construction manager
-- `4_World/classes/basebuilding/constructionpart.c` --- individual part representation
+- `4_World/entities/itembase/basebuildingbase.c` --- a classe base da entidade
+- `4_World/classes/basebuilding/construction.c` --- o gerenciador de construção
+- `4_World/classes/basebuilding/constructionpart.c` --- representação de parte individual
 
-Construction actions are in `4_World/classes/useractionscomponent/actions/continuous/` and construction data management is handled by `constructionactiondata.c`.
+As ações de construção estão em `4_World/classes/useractionscomponent/actions/continuous/` e o gerenciamento de dados de construção é feito por `constructionactiondata.c`.
 
 ---
 
-## Class Hierarchy
+## Hierarquia de Classes
 
 ```
 ItemBase
 └── BaseBuildingBase                    // 4_World/entities/itembase/basebuildingbase.c
-    ├── Fence                           // fence.c — gates, combo locks, barbed wire
-    ├── Watchtower                      // watchtower.c — multi-floor tower (3 levels)
-    └── ShelterSite                     // sheltersite.c — transforms into finished shelter
+    ├── Fence                           // fence.c — portões, cadeados de combinação, arame farpado
+    ├── Watchtower                      // watchtower.c — torre de múltiplos andares (3 níveis)
+    └── ShelterSite                     // sheltersite.c — transforma-se em abrigo finalizado
 
 TentBase
-└── ShelterBase                         // shelter.c — finished shelters (leather/fabric/stick)
+└── ShelterBase                         // shelter.c — abrigos finalizados (couro/tecido/galhos)
 ```
 
-Supporting classes:
+Classes de suporte:
 
 ```
-Construction                            // Manager: parts registry, build/dismantle/destroy logic
-ConstructionPart                        // Single buildable section with state and dependencies
-ConstructionActionData                  // Client-side data bridge between actions and parts
-ConstructionBoxTrigger                  // Collision detection during building
-StaticConstructionMethods               // Utility: spawning material piles on dismantle
+Construction                            // Gerenciador: registro de partes, lógica de construir/desmontar/destruir
+ConstructionPart                        // Seção construível individual com estado e dependências
+ConstructionActionData                  // Ponte de dados do lado do cliente entre ações e partes
+ConstructionBoxTrigger                  // Detecção de colisão durante a construção
+StaticConstructionMethods               // Utilitário: gerar pilhas de material ao desmontar
 ```
 
-`ShelterSite` extends `BaseBuildingBase` (the buildable site), while finished shelters extend `TentBase` and replace the site on completion.
+`ShelterSite` estende `BaseBuildingBase` (o local de construção), enquanto abrigos finalizados estendem `TentBase` e substituem o local ao serem concluídos.
 
-### BaseBuildingBase Key Members
+### Membros Principais de BaseBuildingBase
 
 ```
-ref Construction    m_Construction;         // the construction manager
-bool                m_HasBase;              // whether the foundation part is built
-int                 m_SyncParts01;          // bitmask for parts 1-31
-int                 m_SyncParts02;          // bitmask for parts 32-62
-int                 m_SyncParts03;          // bitmask for parts 63-93
-int                 m_InteractedPartId;     // last part an action was performed on
-int                 m_PerformedActionId;    // last action type (build/dismantle/destroy)
-float               m_ConstructionKitHealth;// stored health for the originating kit
+ref Construction    m_Construction;         // o gerenciador de construção
+bool                m_HasBase;              // se a parte de fundação está construída
+int                 m_SyncParts01;          // bitmask para partes 1-31
+int                 m_SyncParts02;          // bitmask para partes 32-62
+int                 m_SyncParts03;          // bitmask para partes 63-93
+int                 m_InteractedPartId;     // última parte em que uma ação foi realizada
+int                 m_PerformedActionId;    // último tipo de ação (construir/desmontar/destruir)
+float               m_ConstructionKitHealth;// vida armazenada do kit de origem
 ```
 
-All sync variables are registered in the constructor. `ConstructionInit()` creates the `Construction` manager:
+Todas as variáveis de sincronização são registradas no construtor. `ConstructionInit()` cria o gerenciador `Construction`:
 
 ```
 void ConstructionInit()
@@ -74,128 +74,128 @@ Construction GetConstruction()
 
 ---
 
-## Construction Parts
+## Partes de Construção
 
-Each buildable section is a `ConstructionPart` with these fields:
+Cada seção construível é uma `ConstructionPart` com os seguintes campos:
 
-| Campo | Type | Descrição |
-|-------|------|-------------|
-| `m_Name` | `string` | Localized display name |
-| `m_Id` | `int` | Unique ID for bitmask sync (1-93) |
-| `m_PartName` | `string` | Config class name (e.g., `"wall_base_down"`) |
-| `m_MainPartName` | `string` | Parent section (e.g., `"wall"`) |
-| `m_IsBuilt` | `bool` | Current built state |
-| `m_IsBase` | `bool` | True = foundation part (destroying it deletes the whole structure) |
-| `m_IsGate` | `bool` | True = functions as openable gate |
-| `m_RequiredParts` | `array<string>` | Parts that must be built first |
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `m_Name` | `string` | Nome de exibição localizado |
+| `m_Id` | `int` | ID único para sincronização por bitmask (1-93) |
+| `m_PartName` | `string` | Nome de classe da config (ex.: `"wall_base_down"`) |
+| `m_MainPartName` | `string` | Seção pai (ex.: `"wall"`) |
+| `m_IsBuilt` | `bool` | Estado atual de construção |
+| `m_IsBase` | `bool` | True = parte de fundação (destruí-la deleta a estrutura inteira) |
+| `m_IsGate` | `bool` | True = funciona como portão abrível |
+| `m_RequiredParts` | `array<string>` | Partes que devem ser construídas primeiro |
 
-Parts are registered from `config.cpp` during `Construction.Init()` via `UpdateConstructionParts()`, which reads `cfgVehicles <TypeName> Construction`. The system supports up to **93 parts** (3 x 31-bit sync integers).
+As partes são registradas a partir do `config.cpp` durante `Construction.Init()` via `UpdateConstructionParts()`, que lê `cfgVehicles <TypeName> Construction`. O sistema suporta até **93 partes** (3 inteiros de sincronização de 31 bits).
 
-### Config Structure Per Part
+### Estrutura de Config Por Parte
 
 ```
 Construction
-  <main_part_name>               // e.g., "wall"
-    <part_name>                  // e.g., "wall_base_down"
-      name = "#str_...";        // localized name
-      id = 1;                   // unique sync ID (1-93)
-      is_base = 1;              // foundation flag
-      is_gate = 0;              // gate flag
-      show_on_init = 0;         // initial visibility
-      required_parts[] = {};    // prerequisite parts
-      conflicted_parts[] = {};  // mutually exclusive parts
-      build_action_type = 4;    // tool bitmask for building
-      dismantle_action_type = 4;// tool bitmask for dismantling
-      material_type = 2;        // ConstructionMaterialType (determines sound)
-      Materials { ... };        // required materials
-      collision_data[] = { "part_min", "part_max" };  // memory point pair
+  <main_part_name>               // ex.: "wall"
+    <part_name>                  // ex.: "wall_base_down"
+      name = "#str_...";        // nome localizado
+      id = 1;                   // ID de sincronização único (1-93)
+      is_base = 1;              // flag de fundação
+      is_gate = 0;              // flag de portão
+      show_on_init = 0;         // visibilidade inicial
+      required_parts[] = {};    // partes pré-requisito
+      conflicted_parts[] = {};  // partes mutuamente exclusivas
+      build_action_type = 4;    // bitmask de ferramenta para construir
+      dismantle_action_type = 4;// bitmask de ferramenta para desmontar
+      material_type = 2;        // ConstructionMaterialType (determina o som)
+      Materials { ... };        // materiais necessários
+      collision_data[] = { "part_min", "part_max" };  // par de pontos de memória
 ```
 
-Material type enum: `MATERIAL_NONE(0)`, `MATERIAL_LOG(1)`, `MATERIAL_WOOD(2)`, `MATERIAL_STAIRS(3)`, `MATERIAL_METAL(4)`, `MATERIAL_WIRE(5)`.
+Enum de tipo de material: `MATERIAL_NONE(0)`, `MATERIAL_LOG(1)`, `MATERIAL_WOOD(2)`, `MATERIAL_STAIRS(3)`, `MATERIAL_METAL(4)`, `MATERIAL_WIRE(5)`.
 
 ---
 
-## Building Process
+## Processo de Construção
 
-### Process Flow
+### Fluxo do Processo
 
 ```mermaid
 flowchart TD
-    A[Player initiates build] --> B{CanBuildPart?}
-    B -->|No| C[Show error / blocked]
-    B -->|Yes| D[ActionBuildPart starts]
-    D --> E[Progress bar animation]
-    E --> F[BuildPartServer executes]
+    A[Jogador inicia construção] --> B{CanBuildPart?}
+    B -->|Não| C[Mostrar erro / bloqueado]
+    B -->|Sim| D[ActionBuildPart inicia]
+    D --> E[Animação de barra de progresso]
+    E --> F[BuildPartServer executa]
     F --> G[TakeMaterialsServer]
-    G --> H[SetPartBuilt - update bitmask]
+    G --> H[SetPartBuilt - atualizar bitmask]
     H --> I[SynchronizeBaseState]
-    I --> J[OnPartBuiltServer event]
-    J --> K[OnStoreSave - persist]
+    I --> J[Evento OnPartBuiltServer]
+    J --> K[OnStoreSave - persistir]
 ```
 
-### Checking Eligibility
+### Verificação de Elegibilidade
 
-`Construction.CanBuildPart(string part_name, ItemBase tool, bool use_tool)` returns true only when ALL conditions pass:
+`Construction.CanBuildPart(string part_name, ItemBase tool, bool use_tool)` retorna verdadeiro somente quando TODAS as condições são atendidas:
 
-1. Part is not already built (`!IsPartConstructed`)
-2. All prerequisite parts are built (`HasRequiredPart`)
-3. No conflicting parts are built (`!HasConflictPart`)
-4. Required materials are attached with sufficient quantity (`HasMaterials`)
-5. Tool's `build_action_type` matches part's via bitwise AND (`CanUseToolToBuildPart`), skipped if `use_tool` is false
-6. No attached materials are ruined (`!MaterialIsRuined`)
+1. A parte ainda não está construída (`!IsPartConstructed`)
+2. Todas as partes pré-requisito estão construídas (`HasRequiredPart`)
+3. Nenhuma parte conflitante está construída (`!HasConflictPart`)
+4. Os materiais necessários estão anexados com quantidade suficiente (`HasMaterials`)
+5. O `build_action_type` da ferramenta corresponde ao da parte via AND bit a bit (`CanUseToolToBuildPart`), ignorado se `use_tool` for falso
+6. Nenhum material anexado está arruinado (`!MaterialIsRuined`)
 
-Tool matching uses bitmask AND: a tool with `build_action_type = 6` (110) can build parts requiring type 2 (010) or 4 (100).
+A correspondência de ferramentas usa AND de bitmask: uma ferramenta com `build_action_type = 6` (110) pode construir partes que requerem tipo 2 (010) ou 4 (100).
 
-### Material Checking
+### Verificação de Materiais
 
-Each material entry in config specifies `type`, `slot_name`, `quantity`, and `lockable`. `HasMaterials()` checks that each slot has an attachment with at least the required quantity. For repairs, quantity is reduced to 15% (`REPAIR_MATERIAL_PERCENTAGE = 0.15`), minimum 1.
+Cada entrada de material na config especifica `type`, `slot_name`, `quantity` e `lockable`. `HasMaterials()` verifica que cada slot possui um anexo com pelo menos a quantidade necessária. Para reparos, a quantidade é reduzida para 15% (`REPAIR_MATERIAL_PERCENTAGE = 0.15`), mínimo 1.
 
-### Executing the Build
+### Executando a Construção
 
 ```
 void BuildPartServer(notnull Man player, string part_name, int action_id)
 {
-    // Reset damage zone health to max
+    // Resetar vida da zona de dano para o máximo
     GetParent().SetHealthMax(damage_zone);
-    // Consume/lock materials
+    // Consumir/bloquear materiais
     TakeMaterialsServer(part_name);
-    // Destroy collision check trigger
+    // Destruir trigger de verificação de colisão
     DestroyCollisionTrigger();
-    // Notify parent entity
+    // Notificar a entidade pai
     GetParent().OnPartBuiltServer(player, part_name, action_id);
 }
 ```
 
-`TakeMaterialsServer()` handles three material types:
-- **Lockable** (e.g., barbed wire): slot is locked, item stays attached but cannot be removed
-- **Quantity-based**: quantity subtracted from attachment stack
-- **Delete** (quantity = -1): entire attachment is deleted
+`TakeMaterialsServer()` lida com três tipos de materiais:
+- **Bloqueável** (ex.: arame farpado): o slot é bloqueado, o item permanece anexado mas não pode ser removido
+- **Baseado em quantidade**: quantidade subtraída da pilha do anexo
+- **Deletar** (quantidade = -1): o anexo inteiro é deletado
 
-`OnPartBuiltServer()` then: registers the part bit, syncs to clients, updates visuals/physics/navmesh, and if the part `IsBase()`, marks the base state and spawns a construction kit.
+`OnPartBuiltServer()` então: registra o bit da parte, sincroniza com os clientes, atualiza visuais/física/navmesh e, se a parte `IsBase()`, marca o estado da base e gera um kit de construção.
 
-### Synchronization
+### Sincronização
 
-Part states sync via three `int` bitmask variables (`m_SyncParts01/02/03`). The server manages these with:
+Os estados das partes sincronizam via três variáveis `int` de bitmask (`m_SyncParts01/02/03`). O servidor gerencia estas com:
 
 ```
-void RegisterPartForSync(int part_id)    // sets bit in appropriate sync variable
-void UnregisterPartForSync(int part_id)  // clears bit
-bool IsPartBuildInSyncData(int part_id)  // reads bit state
+void RegisterPartForSync(int part_id)    // define bit na variável de sync apropriada
+void UnregisterPartForSync(int part_id)  // limpa bit
+bool IsPartBuildInSyncData(int part_id)  // lê estado do bit
 ```
 
-After changing bits, the server calls `SynchronizeBaseState()` which triggers `SetSynchDirty()`. On the client, `OnVariávelsSynchronized()` fires `SetPartsFromSyncData()`, iterating all parts and updating built states, visuals, and physics.
+Após alterar bits, o servidor chama `SynchronizeBaseState()` que aciona `SetSynchDirty()`. No cliente, `OnVariablesSynchronized()` dispara `SetPartsFromSyncData()`, iterando todas as partes e atualizando estados de construção, visuais e física.
 
-Ação type constants (defined in `_constants.c`):
+Constantes de tipo de ação (definidas em `_constants.c`):
 
 | Constante | Valor | Propósito |
-|----------|-------|---------|
-| `AT_BUILD_PART` | 193 | Build action identifier |
-| `AT_DISMANTLE_PART` | 195 | Dismantle action identifier |
-| `AT_DESTROY_PART` | 209 | Destroy action identifier |
+|-----------|-------|-----------|
+| `AT_BUILD_PART` | 193 | Identificador de ação de construir |
+| `AT_DISMANTLE_PART` | 195 | Identificador de ação de desmontar |
+| `AT_DESTROY_PART` | 209 | Identificador de ação de destruir |
 
-### Persistence
+### Persistência
 
-`BaseBuildingBase` saves state through the standard storage API:
+`BaseBuildingBase` salva o estado através da API de armazenamento padrão:
 
 ```
 override void OnStoreSave(ParamsWriteContext ctx)
@@ -208,67 +208,67 @@ override void OnStoreSave(ParamsWriteContext ctx)
 }
 ```
 
-On load, `AfterStoreLoad()` calls `SetPartsAfterStoreLoad()` which reconstructs all part states from the bitmask, restores the base state flag, and synchronizes.
+No carregamento, `AfterStoreLoad()` chama `SetPartsAfterStoreLoad()` que reconstrói todos os estados das partes a partir do bitmask, restaura a flag de estado da base e sincroniza.
 
 ---
 
-## Dismantling and Destroying
+## Desmontagem e Destruição
 
-### Dismantling (returns materials)
+### Desmontagem (retorna materiais)
 
 ```
 bool CanDismantlePart(string part_name, ItemBase tool)
-    // Part must be built, have no dependent parts, and tool must match dismantle_action_type
+    // A parte deve estar construída, não ter partes dependentes, e a ferramenta deve corresponder ao dismantle_action_type
 ```
 
-`DismantlePartServer()` calls `ReceiveMaterialsServer()` which spawns material piles. Material return is reduced by damage level: `qty_coef = 1 - (healthLevel * 0.2) - 0.2`. A fully healthy part returns 80%; each damage level costs 20% more.
+`DismantlePartServer()` chama `ReceiveMaterialsServer()` que gera pilhas de materiais. O retorno de material é reduzido pelo nível de dano: `qty_coef = 1 - (healthLevel * 0.2) - 0.2`. Uma parte com saúde total retorna 80%; cada nível de dano custa mais 20%.
 
-Dismantling the base part triggers `DestroyConstruction()` (deletes the entire entity) after a 200ms delay.
+Desmontar a parte de base aciona `DestroyConstruction()` (deleta a entidade inteira) após um atraso de 200ms.
 
-### Destroying (no material return)
+### Destruição (sem retorno de material)
 
 ```
 bool CanDestroyPart(string part_name)
-    // Part must be built and have no dependent parts (no tool check)
+    // A parte deve estar construída e não ter partes dependentes (sem verificação de ferramenta)
 ```
 
-`DestroyPartServer()` destroys lockable materials (deletes them), drops remaining attachments, sets the damage zone health to zero, and calls `DestroyConnectedParts()` which recursively destroys any built parts that depend on the destroyed one.
+`DestroyPartServer()` destrói materiais bloqueáveis (os deleta), solta anexos restantes, define a vida da zona de dano para zero e chama `DestroyConnectedParts()` que recursivamente destrói quaisquer partes construídas que dependem da parte destruída.
 
-Exception: gate parts are not cascade-destroyed if either `wall_base_down` or `wall_base_up` is still built.
+Exceção: partes de portão não são destruídas em cascata se `wall_base_down` ou `wall_base_up` ainda estiverem construídas.
 
 ---
 
-## Construction Açãos
+## Ações de Construção
 
-### AçãoBuildPart
+### ActionBuildPart
 
-Full-body continuous action. Duration: `UATimeSpent.BASEBUILDING_CONSTRUCT_MEDIUM`. Requires non-ruined tool in hand. Uses the **variant system** --- `ConstructionAçãoData.OnUpdateAçãos()` populates a list of buildable parts for the targeted component, and `m_VariantID` selects which part to build.
+Ação contínua de corpo inteiro. Duração: `UATimeSpent.BASEBUILDING_CONSTRUCT_MEDIUM`. Requer ferramenta não arruinada na mão. Usa o **sistema de variantes** --- `ConstructionActionData.OnUpdateActions()` popula uma lista de partes construíveis para o componente alvo, e `m_VariantID` seleciona qual parte construir.
 
-Animation varies by tool type:
+A animação varia por tipo de ferramenta:
 
-| Tool | Animation Command |
-|------|-------------------|
-| Pickaxe, Shovel, FarmingHoe, CampoShovel | `CMD_ACTIONFB_DIG` |
+| Ferramenta | Comando de Animação |
+|------------|---------------------|
+| Pickaxe, Shovel, FarmingHoe, FieldShovel | `CMD_ACTIONFB_DIG` |
 | Pliers | `CMD_ACTIONFB_INTERACT` |
 | SledgeHammer | `CMD_ACTIONFB_MINEROCK` |
-| All others | `CMD_ACTIONFB_ASSEMBLE` |
+| Todas as outras | `CMD_ACTIONFB_ASSEMBLE` |
 
-On completion, calls `BuildPartServer()` and damages the tool (`UADamageApplied.BUILD`). Both `AçãoConditionContinue()` and `OnFinishProgressServer()` perform collision checks via `IsCollidingEx()` to prevent building through players or geometry.
+Ao completar, chama `BuildPartServer()` e danifica a ferramenta (`UADamageApplied.BUILD`). Tanto `ActionConditionContinue()` quanto `OnFinishProgressServer()` realizam verificações de colisão via `IsCollidingEx()` para prevenir construção através de jogadores ou geometria.
 
-### AçãoDismantlePart
+### ActionDismantlePart
 
-Full-body continuous action. Duration: `UATimeSpent.BASEBUILDING_DECONSTRUCT_SLOW`. Additional conditions beyond `CanDismantlePart()`:
+Ação contínua de corpo inteiro. Duração: `UATimeSpent.BASEBUILDING_DECONSTRUCT_SLOW`. Condições adicionais além de `CanDismantlePart()`:
 
-- Part cannot be on a locked gate (combination lock or flag attached)
-- Gate parts cannot be dismantled while the gate is opened
-- Camera direction and player position checks prevent dismantling from the wrong side
-- Player cannot be prone
+- A parte não pode estar em um portão trancado (cadeado de combinação ou bandeira anexada)
+- Partes de portão não podem ser desmontadas enquanto o portão está aberto
+- Verificações de direção da câmera e posição do jogador previnem desmontagem do lado errado
+- O jogador não pode estar deitado
 
-On completion, calls `DismantlePartServer()` and damages the tool (`UADamageApplied.DISMANTLE`).
+Ao completar, chama `DismantlePartServer()` e danifica a ferramenta (`UADamageApplied.DISMANTLE`).
 
-### AçãoDestroyPart
+### ActionDestroyPart
 
-Full-body continuous action using `CAContinuousRepeat` with **4 cycles** (`static int CYCLES = 4`). Each cycle removes 25% of the part's max health via `AddHealth()`:
+Ação contínua de corpo inteiro usando `CAContinuousRepeat` com **4 ciclos** (`static int CYCLES = 4`). Cada ciclo remove 25% da vida máxima da parte via `AddHealth()`:
 
 ```
 base_building.AddHealth(zone_name, "Health", -(base_building.GetMaxHealth(zone_name, "") / CYCLES));
@@ -276,29 +276,29 @@ if (base_building.GetHealth(zone_name, "Health") < 1)
     construction.DestroyPartServer(player, part_name, AT_DESTROY_PART);
 ```
 
-Only when health drops below 1 does `DestroyPartServer()` execute. Tool is damaged each cycle (`UADamageApplied.DESTROY`). Parts without a damage zone are destroyed immediately on the first cycle.
+Somente quando a vida cai abaixo de 1 é que `DestroyPartServer()` é executado. A ferramenta é danificada a cada ciclo (`UADamageApplied.DESTROY`). Partes sem zona de dano são destruídas imediatamente no primeiro ciclo.
 
-### AçãoBuildShelter
+### ActionBuildShelter
 
-No-tool continuous interact action (`ContinuousInteractAçãoInput`) for `ShelterSite`. Three variants: leather, fabric, stick. When building completes, `ShelterSite.OnPartBuiltServer()` spawns the corresponding finished shelter object (`ShelterLeather`, `ShelterFabric`, or `ShelterStick`) and deletes the site. Player hands are hidden during the action.
+Ação contínua de interação sem ferramenta (`ContinuousInteractActionInput`) para `ShelterSite`. Três variantes: couro, tecido, galhos. Quando a construção é concluída, `ShelterSite.OnPartBuiltServer()` gera o objeto de abrigo finalizado correspondente (`ShelterLeather`, `ShelterFabric` ou `ShelterStick`) e deleta o local. As mãos do jogador ficam ocultas durante a ação.
 
-### ConstructionAçãoData
+### ConstructionActionData
 
-Stored per-player, this class bridges client UI and server execution:
+Armazenado por jogador, esta classe faz a ponte entre a UI do cliente e a execução no servidor:
 
 ```
-ref array<ConstructionPart>  m_BuildParts;          // parts buildable with tool
-ref array<ConstructionPart>  m_BuildPartsNoTool;     // parts buildable without tool (shelters)
-ref ConstructionPart         m_TargetPart;           // target for dismantle/destroy
+ref array<ConstructionPart>  m_BuildParts;          // partes construíveis com ferramenta
+ref array<ConstructionPart>  m_BuildPartsNoTool;     // partes construíveis sem ferramenta (abrigos)
+ref ConstructionPart         m_TargetPart;           // alvo para desmontar/destruir
 ```
 
-The `OnUpdateAçãos()` callback is registered with `AçãoVariantManager` and fires when the player looks at a construction object, populating the build part list for the action variant system.
+O callback `OnUpdateActions()` é registrado com `ActionVariantManager` e dispara quando o jogador olha para um objeto de construção, populando a lista de partes construíveis para o sistema de variantes de ação.
 
 ---
 
-## Creating Custom Buildable Objects
+## Criando Objetos Construíveis Personalizados
 
-### 1. Entity Class
+### 1. Classe da Entidade
 
 ```
 class MyWall extends BaseBuildingBase
@@ -316,7 +316,7 @@ class MyWall extends BaseBuildingBase
 
 ### 2. config.cpp
 
-Define `Construction` with parts and materials, `GUIInventoryAttachmentsProps` for material attachment slots, and `DamageSystem` with zones matching part names:
+Defina `Construction` com partes e materiais, `GUIInventoryAttachmentsProps` para slots de anexo de material e `DamageSystem` com zonas correspondentes aos nomes das partes:
 
 ```cpp
 class CfgVehicles
@@ -375,7 +375,7 @@ class CfgVehicles
             class GlobalHealth { class Health { hitpoints = 1000; }; };
             class DamageZones
             {
-                class wall_base  // must match part_name
+                class wall_base  // deve corresponder ao part_name
                 {
                     class Health { hitpoints = 500; transferToGlobalCoef = 0; };
                     componentNames[] = { "wall_base" };
@@ -387,65 +387,65 @@ class CfgVehicles
 };
 ```
 
-### 3. Model Requirements
+### 3. Requisitos do Modelo
 
-The p3d model must have:
-- **Named selections** matching each `part_name` (toggled via `SetAnimationPhase`: 0=visible, 1=hidden)
-- **Animation sources** for each selection (type `user`, range 0-1)
-- **Proxy physics** geometry per part (separate named physics components)
-- **Memory points** `<part_name>_min` / `<part_name>_max` for collision boxes
-- **`kit_spawn_position`** memory point
-- **Component names** in geometry LOD matching part names (for `GetAçãoComponentName()`)
-- **`Deployed`** selection for the unbuilt state
+O modelo p3d deve ter:
+- **Seleções nomeadas** correspondentes a cada `part_name` (alternadas via `SetAnimationPhase`: 0=visível, 1=oculto)
+- **Fontes de animação** para cada seleção (tipo `user`, intervalo 0-1)
+- **Geometria de física por proxy** por parte (componentes de física nomeados separados)
+- **Pontos de memória** `<part_name>_min` / `<part_name>_max` para caixas de colisão
+- **Ponto de memória `kit_spawn_position`**
+- **Nomes de componentes** no LOD de geometria correspondentes aos nomes das partes (para `GetActionComponentName()`)
+- **Seleção `Deployed`** para o estado não construído
 
-### 4. Construction Kit
+### 4. Kit de Construção
 
-Create a kit item extending `KitBase` that players place to spawn the construction site.
+Crie um item de kit estendendo `KitBase` que os jogadores posicionam para gerar o local de construção.
 
 ---
 
-## Visuals and Physics
+## Visuais e Física
 
-Construction visibility is controlled through **animation phases** on the 3D model. Each construction part name corresponds to a named selection:
+A visibilidade da construção é controlada através de **fases de animação** no modelo 3D. Cada nome de parte de construção corresponde a uma seleção nomeada:
 
 ```
-// Show a part (phase 0 = visible)
+// Mostrar uma parte (fase 0 = visível)
 GetParent().SetAnimationPhase(part_name, 0);
 
-// Hide a part (phase 1 = hidden)
+// Ocultar uma parte (fase 1 = oculto)
 GetParent().SetAnimationPhase(part_name, 1);
 ```
 
-Physics (collision geometry) uses proxy physics:
+A física (geometria de colisão) usa física por proxy:
 
 ```
-GetParent().AddProxyPhysics(part_name);     // enable collision
-GetParent().RemoveProxyPhysics(part_name);  // disable collision
+GetParent().AddProxyPhysics(part_name);     // habilitar colisão
+GetParent().RemoveProxyPhysics(part_name);  // desabilitar colisão
 ```
 
-The Watchtower overrides `UpdateVisuals()` to handle its multi-floor system: upper floor view geometry (`level_2`, `level_3`) is only shown when the roof below is built. Wall naming follows the pattern `level_N_wall_M` (3 walls per floor, 3 floors max).
+A Watchtower sobrescreve `UpdateVisuals()` para lidar com seu sistema de múltiplos andares: a geometria de visualização do andar superior (`level_2`, `level_3`) só é mostrada quando o telhado abaixo está construído. A nomenclatura de paredes segue o padrão `level_N_wall_M` (3 paredes por andar, máximo de 3 andares).
 
 ---
 
-## Vanilla Buildable Objects
+## Objetos Construíveis Vanilla
 
-### Fence
+### Fence (Cerca)
 
-The most common structure. Kit: `FenceKit`. Recursos a gate system with three states (`GATE_STATE_NONE`, `GATE_STATE_PARTIAL`, `GATE_STATE_FULL`). A fully constructed gate can accept a `CombinationLock` attachment. Supports barbed wire (2 slots creating area damage when mounted) and camo net. Gate opening rotates 100 degrees over ~2 seconds.
+A estrutura mais comum. Kit: `FenceKit`. Possui um sistema de portão com três estados (`GATE_STATE_NONE`, `GATE_STATE_PARTIAL`, `GATE_STATE_FULL`). Um portão totalmente construído pode aceitar um anexo `CombinationLock`. Suporta arame farpado (2 slots criando dano de área quando montado) e rede de camuflagem. A abertura do portão rotaciona 100 graus em ~2 segundos.
 
-### Watchtower
+### Watchtower (Torre de Vigia)
 
-Multi-level tower. Kit: `WatchtowerKit`. Up to 3 floors with walls and roofs per level. Constantes: `MAX_WATCHTOWER_FLOORS = 3`, `MAX_WATCHTOWER_WALLS = 3`. Has a `MAX_FLOOR_VERTICAL_DISTANCE = 0.5` check preventing attachment of items from too far below the target floor.
+Torre de múltiplos níveis. Kit: `WatchtowerKit`. Até 3 andares com paredes e telhados por nível. Constantes: `MAX_WATCHTOWER_FLOORS = 3`, `MAX_WATCHTOWER_WALLS = 3`. Possui uma verificação `MAX_FLOOR_VERTICAL_DISTANCE = 0.5` que previne anexo de itens de muito abaixo do andar alvo.
 
-### ShelterSite
+### ShelterSite (Local de Abrigo)
 
-Temporary construction site. Kit: `ShelterKit`. Three mutually exclusive build options (leather, fabric, stick) that each spawn a different finished `ShelterBase` subclass and delete the site. Built without tools via `AçãoBuildShelter`.
+Local de construção temporário. Kit: `ShelterKit`. Três opções de construção mutuamente exclusivas (couro, tecido, galhos) que cada uma gera uma subclasse diferente de `ShelterBase` finalizado e deleta o local. Construído sem ferramentas via `ActionBuildShelter`.
 
 ---
 
-## Damage and Raiding
+## Dano e Raiding
 
-Each construction part maps to a **damage zone** whose name matches the part name (case-insensitive). When a part is built, its health is set to maximum. When a damage zone reaches `STATE_RUINED`, `EEHealthLevelChanged()` triggers automatic destruction:
+Cada parte de construção mapeia para uma **zona de dano** cujo nome corresponde ao nome da parte (sem distinção de maiúsculas/minúsculas). Quando uma parte é construída, sua vida é definida para o máximo. Quando uma zona de dano atinge `STATE_RUINED`, `EEHealthLevelChanged()` aciona destruição automática:
 
 ```
 if (newLevel == GameConstants.STATE_RUINED)
@@ -455,54 +455,54 @@ if (newLevel == GameConstants.STATE_RUINED)
 }
 ```
 
-This is the raiding mechanism: explosives and weapons deal damage to damage zones until they reach ruined state. Barbed wire attachments have special handling --- when their zone is ruined, the wire's mounted state is cleared.
+Este é o mecanismo de raiding: explosivos e armas causam dano às zonas de dano até que atinjam o estado arruinado. Anexos de arame farpado têm tratamento especial --- quando sua zona está arruinada, o estado montado do arame é limpo.
 
-Server admins can make bases indestructible via the `"disableBaseDamage"` invulnerability type in `cfgGameplay.json`.
+Administradores do servidor podem tornar bases indestrutíveis via o tipo de invulnerabilidade `"disableBaseDamage"` no `cfgGameplay.json`.
 
-Repair uses `TakeMaterialsServer(part_name, true)`, requiring only 15% of original materials.
+O reparo usa `TakeMaterialsServer(part_name, true)`, exigindo apenas 15% dos materiais originais.
 
 ---
 
 ## Boas Práticas
 
-1. **Part IDs must be unique** within an object (1-93 range). Gaps are allowed but waste capacity.
-2. **Always define `collision_data` memory points** to prevent building through geometry.
-3. **Use `required_parts`** to enforce build order (foundation before walls).
-4. **Use `conflicted_parts`** for mutually exclusive options (wall vs gate on same section).
-5. **Match damage zone names to part names** exactly (case-insensitive) or health/damage will not work.
-6. **Enable debug logging** via `LogManager.IsBaseBuildingLogEnable()` for diagnostics --- the vanilla code has extensive `[bsb]` prefixed debug output.
-7. **Stay under 93 parts** per object. Complex structures should be split into multiple placeable objects.
+1. **IDs de partes devem ser únicos** dentro de um objeto (intervalo 1-93). Lacunas são permitidas mas desperdiçam capacidade.
+2. **Sempre defina pontos de memória `collision_data`** para prevenir construção através de geometria.
+3. **Use `required_parts`** para impor ordem de construção (fundação antes das paredes).
+4. **Use `conflicted_parts`** para opções mutuamente exclusivas (parede vs portão na mesma seção).
+5. **Combine nomes de zonas de dano com nomes de partes** exatamente (sem distinção de maiúsculas/minúsculas) ou vida/dano não funcionarão.
+6. **Habilite logging de debug** via `LogManager.IsBaseBuildingLogEnable()` para diagnóstico --- o código vanilla tem extenso output de debug com prefixo `[bsb]`.
+7. **Mantenha-se abaixo de 93 partes** por objeto. Estruturas complexas devem ser divididas em múltiplos objetos posicionáveis.
 
 ---
 
-## Observed in Real Mods
+## Observado em Mods Reais
 
-- **DayZ Expansion** extends `BaseBuildingBase` with custom floors, walls, and ramps using dozens of parts per object.
-- **Raid mods** override `EEHealthLevelChanged()` or adjust `DamageZones` hitpoints to tune raid difficulty.
-- **BuildAnywhere** mods override `IsCollidingEx()` to return `false`, disabling placement collision.
-- **Advanced BB mods** use `modded BaseBuildingBase` to inject custom persistence, logging, or anti-grief checks into build/dismantle events.
+- **DayZ Expansion** estende `BaseBuildingBase` com pisos, paredes e rampas personalizados usando dezenas de partes por objeto.
+- **Mods de raid** sobrescrevem `EEHealthLevelChanged()` ou ajustam hitpoints de `DamageZones` para calibrar a dificuldade de raid.
+- **Mods BuildAnywhere** sobrescrevem `IsCollidingEx()` para retornar `false`, desabilitando colisão de posicionamento.
+- **Mods avançados de BB** usam `modded BaseBuildingBase` para injetar persistência personalizada, logging ou verificações anti-grief em eventos de construção/desmontagem.
 
 ---
 
 ## Erros Comuns
 
-| Erro | Consequence | Correção |
-|---------|-------------|-----|
-| Part ID exceeds 93 | State never syncs/persists | Keep IDs in 1-93 range |
-| Missing model selection | Part builds but is invisible | Add named selection matching `part_name` |
-| Damage zone name mismatch | Health never set, part undamageable | Use identical names |
-| No `required_parts` | Walls buildable without foundation | Define dependencies |
-| Missing `GetConstructionKitType()` | Empty string causes errors | Override and return kit class |
-| Missing collision memory points | Build checks fail silently | Add `_min` / `_max` points |
+| Erro | Consequência | Correção |
+|------|-------------|----------|
+| ID da parte excede 93 | Estado nunca sincroniza/persiste | Mantenha IDs no intervalo 1-93 |
+| Seleção de modelo ausente | Parte constrói mas fica invisível | Adicione seleção nomeada correspondendo ao `part_name` |
+| Nome da zona de dano não corresponde | Vida nunca é definida, parte indanificável | Use nomes idênticos |
+| Sem `required_parts` | Paredes construíveis sem fundação | Defina dependências |
+| `GetConstructionKitType()` ausente | String vazia causa erros | Sobrescreva e retorne a classe do kit |
+| Pontos de memória de colisão ausentes | Verificações de construção falham silenciosamente | Adicione pontos `_min` / `_max` |
 
 ---
 
-## Compatibility and Impact
+## Compatibilidade e Impacto
 
-The construction system integrates deeply with: **inventory** (materials as attachments), **damage** (per-part zones), **actions** (continuous + variant system), **navmesh** (updated after every change), **persistence** (bitmask storage), and **network sync** (`RegisterNetSyncVariável`).
+O sistema de construção integra-se profundamente com: **inventário** (materiais como anexos), **dano** (zonas por parte), **ações** (contínuas + sistema de variantes), **navmesh** (atualizado após cada mudança), **persistência** (armazenamento por bitmask) e **sincronização de rede** (`RegisterNetSyncVariable`).
 
-Mods should use `modded` keyword on `BaseBuildingBase` / `Construction` rather than full replacement. Be especially careful with the sync flow --- modifying bitmask variables or `RegisterPartForSync` without understanding the full chain causes server-client desynchronization.
+Mods devem usar a palavra-chave `modded` em `BaseBuildingBase` / `Construction` em vez de substituição completa. Tenha especial cuidado com o fluxo de sincronização --- modificar variáveis de bitmask ou `RegisterPartForSync` sem entender a cadeia completa causa dessincronização entre servidor e cliente.
 
 ---
 
-*Key source files: `basebuildingbase.c`, `construction.c`, `constructionpart.c`, `constructionactiondata.c`, `actionbuildpart.c`, `actiondismantlepart.c`, `actiondestroypart.c`, `actionbuildshelter.c`, `fence.c`, `watchtower.c`, `sheltersite.c`, `_constants.c`*
+*Arquivos-fonte principais: `basebuildingbase.c`, `construction.c`, `constructionpart.c`, `constructionactiondata.c`, `actionbuildpart.c`, `actiondismantlepart.c`, `actiondestroypart.c`, `actionbuildshelter.c`, `fence.c`, `watchtower.c`, `sheltersite.c`, `_constants.c`*
