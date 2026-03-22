@@ -1,27 +1,27 @@
-# Chapitre 6.7: Timers & CallQueue
+# Chapitre 6.7 : Timers et CallQueue
 
-[Accueil](../../README.md) | [<< Précédent : Notifications](06-notifications.md) | **Timers & CallQueue** | [Suivant : File I/O & JSON >>](08-file-io.md)
+[Accueil](../../README.md) | [<< Precedent : Notifications](06-notifications.md) | **Timers & CallQueue** | [Suivant : E/S fichiers & JSON >>](08-file-io.md)
 
 ---
 
 ## Introduction
 
-DayZ provides several mechanisms for deferred and repeating function calls: `ScriptCallQueue` (the primary system), `Timer`, `ScriptInvoker`, and `WidgetFadeTimer`. These are essential for scheduling delayed logic, creating update loops, and managing timed events without blocking the main thread. Ce chapitre couvre each mechanism with full API signatures and usage patterns.
+DayZ fournit plusieurs mecanismes pour les appels de fonctions differes et repetitifs : `ScriptCallQueue` (le systeme principal), `Timer`, `ScriptInvoker` et `WidgetFadeTimer`. Ceux-ci sont essentiels pour planifier une logique differee, creer des boucles de mise a jour et gerer des evenements temporises sans bloquer le thread principal. Ce chapitre couvre chaque mecanisme avec les signatures API completes et les patrons d'utilisation.
 
 ---
 
-## Catégories d'appel
+## Categories d'appel
 
-All timer and call queue systems require a **call category** that determines when the deferred call executes within the frame:
+Tous les systemes de timer et de file d'appel necessitent une **categorie d'appel** qui determine quand l'appel differe s'execute dans la trame :
 
 ```c
-const int CALL_CATEGORY_SYSTEM   = 0;   // System-level operations
-const int CALL_CATEGORY_GUI      = 1;   // UI updates
-const int CALL_CATEGORY_GAMEPLAY = 2;   // Gameplay logic
-const int CALL_CATEGORY_COUNT    = 3;   // Total number of categories
+const int CALL_CATEGORY_SYSTEM   = 0;   // Operations au niveau systeme
+const int CALL_CATEGORY_GUI      = 1;   // Mises a jour de l'interface
+const int CALL_CATEGORY_GAMEPLAY = 2;   // Logique de gameplay
+const int CALL_CATEGORY_COUNT    = 3;   // Nombre total de categories
 ```
 
-Access the queue for a category:
+Acces a la file pour une categorie :
 
 ```c
 ScriptCallQueue  queue   = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY);
@@ -35,7 +35,7 @@ TimerQueue       timers  = GetGame().GetTimerQueue(CALL_CATEGORY_GAMEPLAY);
 
 **Fichier :** `3_Game/tools/utilityclasses.c`
 
-The primary mechanism for deferred function calls. Supports one-shot delays, repeating calls, and immediate next-frame execution.
+Le mecanisme principal pour les appels de fonctions differes. Supporte les delais uniques, les appels repetitifs et l'execution immediate a la trame suivante.
 
 ### CallLater
 
@@ -45,28 +45,28 @@ void CallLater(func fn, int delay = 0, bool repeat = false,
                void param3 = NULL, void param4 = NULL);
 ```
 
-| Paramètre | Description |
+| Parametre | Description |
 |-----------|-------------|
-| `fn` | The function to call (method reference: `this.MyMethod`) |
-| `delay` | Delay in milliseconds (0 = next frame) |
-| `repeat` | `true` = call repeatedly at `delay` intervals; `false` = call once |
-| `param1..4` | Optional parameters passed to the function |
+| `fn` | La fonction a appeler (reference de methode : `this.MaMethode`) |
+| `delay` | Delai en millisecondes (0 = trame suivante) |
+| `repeat` | `true` = appeler de maniere repetee a intervalles de `delay` ; `false` = appeler une fois |
+| `param1..4` | Parametres optionnels passes a la fonction |
 
-**Exemple --- one-shot delay:**
-
-```c
-// Appeler MyFunction une fois after 5 seconds
-GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunction, 5000, false);
-```
-
-**Exemple --- repeating call:**
+**Exemple -- delai unique :**
 
 ```c
-// Appeler UpdateLoop toutes les 1 second, repeating
-GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.UpdateLoop, 1000, true);
+// Appeler MaFonction une fois apres 5 secondes
+GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MaFonction, 5000, false);
 ```
 
-**Exemple --- with parameters:**
+**Exemple -- appel repetitif :**
+
+```c
+// Appeler BoucleDeMiseAJour toutes les 1 seconde, en repetition
+GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.BoucleDeMiseAJour, 1000, true);
+```
+
+**Exemple -- avec parametres :**
 
 ```c
 void ShowMessage(string text, int color)
@@ -74,9 +74,9 @@ void ShowMessage(string text, int color)
     Print(text);
 }
 
-// Appeler avec des paramètres after 2 seconds
+// Appeler avec des parametres apres 2 secondes
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(
-    this.ShowMessage, 2000, false, "Hello!", ARGB(255, 255, 0, 0)
+    this.ShowMessage, 2000, false, "Bonjour !", ARGB(255, 255, 0, 0)
 );
 ```
 
@@ -87,12 +87,12 @@ void Call(func fn, void param1 = NULL, void param2 = NULL,
           void param3 = NULL, void param4 = NULL);
 ```
 
-Executes the function on the next frame (delay = 0, no repeat). Shorthand for `CallLater(fn, 0, false)`.
+Execute la fonction a la trame suivante (delai = 0, pas de repetition). Raccourci pour `CallLater(fn, 0, false)`.
 
-**Exemple:**
+**Exemple :**
 
 ```c
-// Exécuter à la prochaine frame
+// Executer a la trame suivante
 GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this.Initialize);
 ```
 
@@ -103,13 +103,13 @@ void CallByName(Class obj, string fnName, int delay = 0, bool repeat = false,
                 Param par = null);
 ```
 
-Call a method by its string name. Useful when the method reference is not directly available.
+Appeler une methode par son nom en chaine. Utile lorsque la reference de methode n'est pas directement disponible.
 
-**Exemple:**
+**Exemple :**
 
 ```c
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallByName(
-    myObject, "OnTimerExpired", 3000, false
+    monObjet, "OnTimerExpired", 3000, false
 );
 ```
 
@@ -119,13 +119,13 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallByName(
 void Remove(func fn);
 ```
 
-Removes a scheduled call. Essential for stopping repeating calls and preventing calls on destroyed objects.
+Supprime un appel planifie. Essentiel pour arreter les appels repetitifs et empecher les appels sur des objets detruits.
 
-**Exemple:**
+**Exemple :**
 
 ```c
-// Arrêter un appel répétitif
-GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateLoop);
+// Arreter un appel repetitif
+GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.BoucleDeMiseAJour);
 ```
 
 ### RemoveByName
@@ -134,7 +134,7 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateLoop);
 void RemoveByName(Class obj, string fnName);
 ```
 
-Remove a call scheduled via `CallByName`.
+Supprime un appel planifie via `CallByName`.
 
 ### Tick
 
@@ -142,7 +142,7 @@ Remove a call scheduled via `CallByName`.
 void Tick(float timeslice);
 ```
 
-Called internally by le moteur each frame. You should never need to call this manually.
+Appele en interne par le moteur a chaque trame. Vous ne devriez jamais avoir besoin de l'appeler manuellement.
 
 ---
 
@@ -150,9 +150,9 @@ Called internally by le moteur each frame. You should never need to call this ma
 
 **Fichier :** `3_Game/tools/utilityclasses.c`
 
-A class-based timer with explicit start/stop lifecycle. Cleaner for long-lived timers that need to be paused or restarted.
+Un timer base sur une classe avec un cycle de vie explicite demarrage/arret. Plus propre pour les timers de longue duree qui doivent etre mis en pause ou redemarres.
 
-### Constructor
+### Constructeur
 
 ```c
 void Timer(int category = CALL_CATEGORY_SYSTEM);
@@ -164,15 +164,15 @@ void Timer(int category = CALL_CATEGORY_SYSTEM);
 void Run(float duration, Class obj, string fn_name, Param params = null, bool loop = false);
 ```
 
-| Paramètre | Description |
+| Parametre | Description |
 |-----------|-------------|
-| `duration` | Time in seconds (not milliseconds!) |
-| `obj` | The object whose method will be called |
-| `fn_name` | Method name as string |
-| `params` | Optional `Param` object with parameters |
-| `loop` | `true` = repeat after each duration |
+| `duration` | Temps en secondes (pas en millisecondes !) |
+| `obj` | L'objet dont la methode sera appelee |
+| `fn_name` | Nom de la methode en chaine |
+| `params` | Objet `Param` optionnel avec les parametres |
+| `loop` | `true` = repeter apres chaque duree |
 
-**Exemple --- one-shot timer:**
+**Exemple -- timer unique :**
 
 ```c
 ref Timer m_Timer;
@@ -185,11 +185,11 @@ void StartTimer()
 
 void OnTimerComplete()
 {
-    Print("Timer finished!");
+    Print("Timer termine !");
 }
 ```
 
-**Exemple --- repeating timer:**
+**Exemple -- timer repetitif :**
 
 ```c
 ref Timer m_UpdateTimer;
@@ -197,7 +197,7 @@ ref Timer m_UpdateTimer;
 void StartUpdateLoop()
 {
     m_UpdateTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
-    m_UpdateTimer.Run(1.0, this, "OnUpdate", null, true);  // Every 1 second
+    m_UpdateTimer.Run(1.0, this, "OnUpdate", null, true);  // Toutes les 1 seconde
 }
 
 void StopUpdateLoop()
@@ -213,7 +213,7 @@ void StopUpdateLoop()
 void Stop();
 ```
 
-Stops the timer. Can be restarted with another `Run()` call.
+Arrete le timer. Peut etre redemarre avec un autre appel `Run()`.
 
 ### IsRunning
 
@@ -221,7 +221,7 @@ Stops the timer. Can be restarted with another `Run()` call.
 bool IsRunning();
 ```
 
-Returns `true` if the timer is currently active.
+Retourne `true` si le timer est actuellement actif.
 
 ### Pause
 
@@ -229,7 +229,7 @@ Returns `true` if the timer is currently active.
 void Pause();
 ```
 
-Pauses a running timer, preserving the remaining time. The timer can be resumed with `Continue()`.
+Met en pause un timer en cours, preservant le temps restant. Le timer peut etre repris avec `Continue()`.
 
 ### Continue
 
@@ -237,7 +237,7 @@ Pauses a running timer, preserving the remaining time. The timer can be resumed 
 void Continue();
 ```
 
-Resumes a paused timer from where it left off.
+Reprend un timer mis en pause la ou il s'est arrete.
 
 ### IsPaused
 
@@ -245,9 +245,9 @@ Resumes a paused timer from where it left off.
 bool IsPaused();
 ```
 
-Returns `true` if the timer is currently paused.
+Retourne `true` si le timer est actuellement en pause.
 
-**Exemple --- pause and resume:**
+**Exemple -- pause et reprise :**
 
 ```c
 ref Timer m_Timer;
@@ -273,7 +273,7 @@ void TogglePause()
 float GetRemaining();
 ```
 
-Returns the remaining time in seconds.
+Retourne le temps restant en secondes.
 
 ### GetDuration
 
@@ -281,7 +281,7 @@ Returns the remaining time in seconds.
 float GetDuration();
 ```
 
-Returns the total duration set by `Run()`.
+Retourne la duree totale definie par `Run()`.
 
 ---
 
@@ -289,7 +289,7 @@ Returns the total duration set by `Run()`.
 
 **Fichier :** `3_Game/tools/utilityclasses.c`
 
-An event/delegate system. `ScriptInvoker` holds a list of callback functions and invokes all of them when `Invoke()` is called. This is DayZ's equivalent of C# events or the observer pattern.
+Un systeme d'evenements/delegues. `ScriptInvoker` contient une liste de fonctions callback et les invoque toutes quand `Invoke()` est appele. C'est l'equivalent DayZ des evenements C# ou du patron observateur.
 
 ### Insert
 
@@ -297,7 +297,7 @@ An event/delegate system. `ScriptInvoker` holds a list of callback functions and
 void Insert(func fn);
 ```
 
-Register a callback function.
+Enregistrer une fonction callback.
 
 ### Remove
 
@@ -305,7 +305,7 @@ Register a callback function.
 void Remove(func fn);
 ```
 
-Unregister a callback function.
+Desenregistrer une fonction callback.
 
 ### Invoke
 
@@ -314,7 +314,7 @@ void Invoke(void param1 = NULL, void param2 = NULL,
             void param3 = NULL, void param4 = NULL);
 ```
 
-Call all registered functions with the provided parameters.
+Appeler toutes les fonctions enregistrees avec les parametres fournis.
 
 ### Count
 
@@ -322,7 +322,7 @@ Call all registered functions with the provided parameters.
 int Count();
 ```
 
-Number of registered callbacks.
+Nombre de callbacks enregistres.
 
 ### Clear
 
@@ -330,9 +330,9 @@ Number of registered callbacks.
 void Clear();
 ```
 
-Remove all registered callbacks.
+Supprimer tous les callbacks enregistres.
 
-**Exemple --- custom event system:**
+**Exemple -- systeme d'evenements personnalise :**
 
 ```c
 class MyModule
@@ -341,9 +341,9 @@ class MyModule
 
     void CompleteMission()
     {
-        // Do completion logic...
+        // Logique de completion...
 
-        // Notifier tous les écouteurs
+        // Notifier tous les ecouteurs
         m_OnMissionComplete.Invoke("MissionAlpha", 1500);
     }
 }
@@ -352,36 +352,36 @@ class MyUI
 {
     void Init(MyModule module)
     {
-        // S'abonner à l'événement
+        // S'abonner a l'evenement
         module.m_OnMissionComplete.Insert(this.OnMissionComplete);
     }
 
     void OnMissionComplete(string name, int reward)
     {
-        Print(string.Format("Mission %1 complete! Reward: %2", name, reward));
+        Print(string.Format("Mission %1 terminee ! Recompense : %2", name, reward));
     }
 
     void Cleanup(MyModule module)
     {
-        // Toujours se désabonner to prevent dangling references
+        // Toujours se desabonner pour eviter les references pendantes
         module.m_OnMissionComplete.Remove(this.OnMissionComplete);
     }
 }
 ```
 
-### Update Queue
+### File de mise a jour
 
-Le moteur provides per-frame `ScriptInvoker` queues:
+Le moteur fournit des files `ScriptInvoker` par trame :
 
 ```c
 ScriptInvoker updater = GetGame().GetUpdateQueue(CALL_CATEGORY_GAMEPLAY);
 updater.Insert(this.OnFrame);
 
-// Remove when done
+// Supprimer quand termine
 updater.Remove(this.OnFrame);
 ```
 
-Functions registered on the update queue are called every frame with no parameters. This is useful for per-frame logic without using `EntityEvent.FRAME`.
+Les fonctions enregistrees dans la file de mise a jour sont appelees a chaque trame sans parametres. C'est utile pour la logique par trame sans utiliser `EntityEvent.FRAME`.
 
 ---
 
@@ -389,7 +389,7 @@ Functions registered on the update queue are called every frame with no paramete
 
 **Fichier :** `3_Game/tools/utilityclasses.c`
 
-A specialized timer for fading widgets in and out.
+Un timer specialise pour le fondu entrant et sortant des widgets.
 
 ```c
 class WidgetFadeTimer
@@ -401,13 +401,13 @@ class WidgetFadeTimer
 }
 ```
 
-| Paramètre | Description |
+| Parametre | Description |
 |-----------|-------------|
-| `w` | The widget to fade |
-| `time` | Duration of the fade in seconds |
-| `continue_from_current` | If `true`, start from current alpha; otherwise start from 0 (fade in) or 1 (fade out) |
+| `w` | Le widget a faire fondre |
+| `time` | Duree du fondu en secondes |
+| `continue_from_current` | Si `true`, demarrer depuis l'alpha actuel ; sinon demarrer depuis 0 (fondu entrant) ou 1 (fondu sortant) |
 
-**Exemple:**
+**Exemple :**
 
 ```c
 ref WidgetFadeTimer m_FadeTimer;
@@ -419,7 +419,7 @@ void ShowNotification()
     m_FadeTimer = new WidgetFadeTimer;
     m_FadeTimer.FadeIn(m_NotificationPanel, 0.3);
 
-    // Masquer automatiquement après 5 seconds
+    // Masquer automatiquement apres 5 secondes
     GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(this.HideNotification, 5000, false);
 }
 
@@ -433,34 +433,34 @@ void HideNotification()
 
 ## GetRemainingTime (CallQueue)
 
-The `ScriptCallQueue` also provides a way to query how much time is left on a scheduled `CallLater`:
+Le `ScriptCallQueue` fournit egalement un moyen de consulter le temps restant sur un `CallLater` planifie :
 
 ```c
 float GetRemainingTime(Class obj, string fnName);
 ```
 
-**Exemple:**
+**Exemple :**
 
 ```c
-// Get how much time is left on a CallLater
-float remaining = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).GetRemainingTime(this, "MyCallback");
+// Obtenir le temps restant sur un CallLater
+float remaining = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).GetRemainingTime(this, "MonCallback");
 if (remaining > 0)
-    Print(string.Format("Callback fires in %1 ms", remaining));
+    Print(string.Format("Le callback se declenche dans %1 ms", remaining));
 ```
 
 ---
 
 ## Patrons courants
 
-### Timer Accumulator (Throttled OnUpdate)
+### Accumulateur de timer (OnUpdate ralenti)
 
-When you have a per-frame callback but want to run logic at a slower rate:
+Quand vous avez un callback par trame mais souhaitez executer la logique a un rythme plus lent :
 
 ```c
 class MyModule
 {
     protected float m_UpdateAccumulator;
-    protected const float UPDATE_INTERVAL = 2.0;  // Every 2 seconds
+    protected const float UPDATE_INTERVAL = 2.0;  // Toutes les 2 secondes
 
     void OnUpdate(float timeslice)
     {
@@ -469,15 +469,15 @@ class MyModule
             return;
         m_UpdateAccumulator = 0;
 
-        // Logique limitée ici
+        // Logique ralentie ici
         DoPeriodicWork();
     }
 }
 ```
 
-### Cleanup Pattern
+### Patron de nettoyage
 
-Always remove scheduled calls when your object is destroyed to prevent crashes:
+Supprimez toujours les appels planifies quand votre objet est detruit pour eviter les crashs :
 
 ```c
 class MyManager
@@ -494,82 +494,82 @@ class MyManager
 
     void Tick()
     {
-        // Travail périodique
+        // Travail periodique
     }
 }
 ```
 
-### One-Shot Delayed Init
+### Initialisation differee unique
 
-A common pattern for initializing systems after le monde is fully loaded:
+Un patron courant pour initialiser les systemes apres le chargement complet du monde :
 
 ```c
 void OnMissionStart()
 {
-    // Retarder l'init de 1 second to ensure everything is loaded
+    // Retarder l'init d'1 seconde pour s'assurer que tout est charge
     GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this.DelayedInit, 1000, false);
 }
 
 void DelayedInit()
 {
-    // Sûr d'accéder aux world objects now
+    // Sur d'acceder aux objets du monde maintenant
 }
 ```
 
 ---
 
-## Résumé
+## Resume
 
-| Mécanisme | Cas d'utilisation | Unité de temps |
-|-----------|----------|-----------|
-| `CallLater` | One-shot or repeating deferred calls | Milliseconds |
-| `Call` | Execute next frame | N/A (immediate) |
-| `Timer` | Class-based timer with start/stop/remaining | Seconds |
-| `ScriptInvoker` | Event/delegate (observer pattern) | N/A (manual invoke) |
-| `WidgetFadeTimer` | Widget fade-in/fade-out | Seconds |
-| `GetUpdateQueue()` | Per-frame callback registration | N/A (every frame) |
+| Mecanisme | Cas d'utilisation | Unite de temps |
+|-----------|-------------------|----------------|
+| `CallLater` | Appels differes uniques ou repetitifs | Millisecondes |
+| `Call` | Executer a la trame suivante | N/A (immediat) |
+| `Timer` | Timer base sur une classe avec demarrage/arret/restant | Secondes |
+| `ScriptInvoker` | Evenement/delegue (patron observateur) | N/A (invocation manuelle) |
+| `WidgetFadeTimer` | Fondu entrant/sortant de widget | Secondes |
+| `GetUpdateQueue()` | Enregistrement de callback par trame | N/A (chaque trame) |
 
-| Concept | Point clé |
+| Concept | Point cle |
 |---------|-----------|
 | Categories | `CALL_CATEGORY_SYSTEM` (0), `GUI` (1), `GAMEPLAY` (2) |
-| Remove calls | Always `Remove()` in destructor to prevent dangling references |
-| Timer vs CallLater | Timer is seconds + class-based; CallLater is milliseconds + functional |
-| ScriptInvoker | Insert/Remove callbacks, Invoke to fire all |
+| Supprimer les appels | Toujours `Remove()` dans le destructeur pour eviter les references pendantes |
+| Timer vs CallLater | Timer en secondes + base sur une classe ; CallLater en millisecondes + fonctionnel |
+| ScriptInvoker | Insert/Remove les callbacks, Invoke pour tous les declencher |
 
 ---
 
 ## Bonnes pratiques
 
-- **Always `Remove()` scheduled `CallLater` calls in your destructor.** If the owning object is destroyed while a `CallLater` is still pending, le moteur will call a method on a deleted object and crash. Every `CallLater` must have a matching `Remove()` in the destructor.
-- **Use `Timer` (seconds) for long-lived timers with pause/resume, `CallLater` (milliseconds) for fire-and-forget delays.** Mixing them up leads to off-by-1000x timing bugs since `Timer.Run()` uses seconds but `CallLater` uses milliseconds.
-- **Throttle `OnUpdate` with a timer accumulator instead of registering a repeating `CallLater`.** A `CallLater` with repeat creates a separate tracked entry in the queue, while an accumulator pattern (`m_Acc += timeslice; if (m_Acc >= INTERVAL)`) has zero overhead and is easier to tune.
-- **Unsubscribe `ScriptInvoker` callbacks before the listener is destroyed.** Forgetting to call `Remove()` on a `ScriptInvoker` leaves a dangling function reference that crashes when `Invoke()` fires.
-- **Never call `Tick()` manually on `ScriptCallQueue`.** Le moteur calls it automatically each frame. Manual calls double-fire all pending callbacks.
+- **Supprimez toujours les appels `CallLater` planifies dans votre destructeur.** Si l'objet proprietaire est detruit pendant qu'un `CallLater` est encore en attente, le moteur appellera une methode sur un objet supprime et plantera. Chaque `CallLater` doit avoir un `Remove()` correspondant dans le destructeur.
+- **Utilisez `Timer` (secondes) pour les timers de longue duree avec pause/reprise, `CallLater` (millisecondes) pour les delais a usage unique.** Les melanger conduit a des bugs de timing x1000 puisque `Timer.Run()` utilise des secondes mais `CallLater` des millisecondes.
+- **Ralentissez `OnUpdate` avec un accumulateur de timer au lieu d'enregistrer un `CallLater` repetitif.** Un `CallLater` avec repetition cree une entree suivie separee dans la file, tandis qu'un patron accumulateur (`m_Acc += timeslice; if (m_Acc >= INTERVAL)`) n'a aucun surcout et est plus facile a ajuster.
+- **Desabonnez les callbacks `ScriptInvoker` avant la destruction de l'ecouteur.** Oublier d'appeler `Remove()` sur un `ScriptInvoker` laisse une reference de fonction pendante qui plante quand `Invoke()` se declenche.
+- **N'appelez jamais `Tick()` manuellement sur `ScriptCallQueue`.** Le moteur l'appelle automatiquement a chaque trame. Les appels manuels declenchent doublement tous les callbacks en attente.
 
 ---
 
-## Compatibilité et impact
+## Compatibilite et impact
 
-> **Compatibilité des mods :** Timer systems are per-instance, so mods rarely conflict on timers directly. The risk is in shared `ScriptInvoker` events where multiple mods register callbacks.
+> **Compatibilite des mods :** Les systemes de timer sont par instance, donc les mods entrent rarement en conflit sur les timers directement. Le risque est dans les evenements `ScriptInvoker` partages ou plusieurs mods enregistrent des callbacks.
 
-- **Ordre de chargement :** Timer and CallQueue systems are load-order independent. Each mod manages its own timers.
-- **Conflits de classes moddées :** No direct conflicts, but if two mods both override `OnUpdate()` on the same class (e.g., `MissionServer`) and one forgets `super`, the other's accumulator-based timers stop working.
-- **Impact sur la performance :** Each active `CallLater` with `repeat = true` is checked every frame. Hundreds of repeating calls degrade server tick rate. Prefer fewer timers with longer intervals, or use the accumulator pattern in `OnUpdate`.
-- **Serveur/Client :** `CallLater` and `Timer` work on both sides. Use `CALL_CATEGORY_GAMEPLAY` for game logic, `CALL_CATEGORY_GUI` for UI updates (client only), and `CALL_CATEGORY_SYSTEM` for low-level operations.
+- **Ordre de chargement :** Les systemes Timer et CallQueue sont independants de l'ordre de chargement. Chaque mod gere ses propres timers.
+- **Conflits de classes moddees :** Pas de conflits directs, mais si deux mods redefinissent `OnUpdate()` sur la meme classe (par ex. `MissionServer`) et que l'un oublie `super`, les timers a base d'accumulateur de l'autre cessent de fonctionner.
+- **Impact sur les performances :** Chaque `CallLater` actif avec `repeat = true` est verifie a chaque trame. Des centaines d'appels repetitifs degradent le taux de tick du serveur. Preferez moins de timers avec des intervalles plus longs, ou utilisez le patron accumulateur dans `OnUpdate`.
+- **Serveur/Client :** `CallLater` et `Timer` fonctionnent des deux cotes. Utilisez `CALL_CATEGORY_GAMEPLAY` pour la logique de jeu, `CALL_CATEGORY_GUI` pour les mises a jour d'interface (client uniquement), et `CALL_CATEGORY_SYSTEM` pour les operations bas niveau.
 
 ---
 
-## Observé dans les mods réels
+## Observe dans les mods reels
 
-> Ces patrons ont été confirmés par l'étude du code source de mods DayZ professionnels.
+> Ces patrons ont ete confirmes en etudiant le code source de mods DayZ professionnels.
 
 | Patron | Mod | Fichier/Emplacement |
-|---------|-----|---------------|
-| Destructor `Remove()` cleanup for every `CallLater` registration | COT | Module manager lifecycle |
-| `ScriptInvoker` event bus for cross-module notifications | Expansion | `ExpansionEventBus` |
-| `Timer` with `Pause()`/`Continue()` for logout countdown | Vanilla | `MissionServer` logout system |
-| Accumulator pattern in `OnUpdate` for 5-second periodic checks | Dabs Framework | Module tick scheduling |
+|--------|-----|---------------------|
+| Nettoyage `Remove()` dans le destructeur pour chaque enregistrement `CallLater` | COT | Cycle de vie du gestionnaire de modules |
+| Bus d'evenements `ScriptInvoker` pour les notifications inter-modules | Expansion | `ExpansionEventBus` |
+| `Timer` avec `Pause()`/`Continue()` pour le compte a rebours de deconnexion | Vanilla | Systeme de deconnexion `MissionServer` |
+| Patron accumulateur dans `OnUpdate` pour des verifications periodiques de 5 secondes | Dabs Framework | Planification des ticks de modules |
 
 ---
 
-[<< Précédent : Notifications](06-notifications.md) | **Timers & CallQueue** | [Suivant : File I/O & JSON >>](08-file-io.md)
+[<< Precedent : Notifications](06-notifications.md) | **Timers & CallQueue** | [Suivant : E/S fichiers & JSON >>](08-file-io.md)
