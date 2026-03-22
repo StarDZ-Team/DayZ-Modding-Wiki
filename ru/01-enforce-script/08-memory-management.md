@@ -1,46 +1,41 @@
-# Chapter 1.8: Memory Management
+# Глава 1.8: Управление памятью
 
-[Home](../../README.md) | [<< Previous: Math & Vectors](07-math-vectors.md) | **Memory Management** | [Next: Casting & Reflection >>](09-casting-reflection.md)
+[Главная](../../README.md) | [<< Назад: Математика и векторы](07-math-vectors.md) | **Управление памятью** | [Далее: Приведение типов и рефлексия >>](09-casting-reflection.md)
 
----
 ---
 
 ## Введение
 
-
-Enforce Script uses **automatic reference counting (ARC)** for memory management --- нетt garbage collection in the traditional sense. Understanding how `ref`, `autoptr`, and raw pointers work is essential for writing stable DayZ mods. Get it wrong and you will either leak memory (your server gradually consumes more RAM until it crashes) or access deleted objects (instant crash with no useful error message). Эта глава объясняет every pointer type, when to use each, and how to avoid the most dangerous pitfall: reference cycles.
+Enforce Script использует **автоматический подсчёт ссылок (ARC)** для управления памятью -- а не сборку мусора в традиционном понимании. Понимание того, как работают `ref`, `autoptr` и сырые указатели, необходимо для написания стабильных модов DayZ. Ошибки приведут либо к утечке памяти (ваш сервер постепенно потребляет всё больше RAM до тех пор, пока не упадёт), либо к обращению к удалённым объектам (мгновенный крэш без полезного сообщения об ошибке). Эта глава объясняет каждый тип указателя, когда использовать каждый из них, и как избежать самой опасной ловушки: циклических ссылок.
 
 ---
 
 ## Три типа указателей
 
+Enforce Script предоставляет три способа хранения ссылки на объект:
 
-Enforce Script has three ways to hold a reference to an object:
-
-| Pointer Type | Keyword | Keeps Object Alive? | Zeroed on Delete? | Primary Use |
+| Тип указателя | Ключевое слово | Поддерживает объект живым? | Обнуляется при удалении? | Основное использование |
 |-------------|---------|---------------------|-------------------|-------------|
-| **Raw pointer** | *(none)* | No (weak reference) | Only if class extends `Managed` | Back-references, observers, caches |
-| **Strong reference** | `ref` | Yes | Yes | Owned members, collections |
-| **Auto pointer** | `autoptr` | Yes, deleted at end of scope | Yes | Local variables |
+| **Сырой указатель** | *(нет)* | Нет (слабая ссылка) | Только если класс наследует `Managed` | Обратные ссылки, наблюдатели, кэши |
+| **Сильная ссылка** | `ref` | Да | Да | Собственные члены, коллекции |
+| **Авто-указатель** | `autoptr` | Да, удаляется при выходе из области видимости | Да | Локальные переменные |
 
 ### Как работает ARC
 
+Каждый объект имеет **счётчик ссылок** -- количество сильных ссылок (`ref`, `autoptr`, локальные переменные, аргументы функций), указывающих на него. Когда счётчик падает до нуля, объект автоматически уничтожается и вызывается его деструктор.
 
-Every object has a **reference count** ---  number of strong references (`ref`, `autoptr`, local variables, function arguments) pointing to it. When the count drops to zero, the object is automatically destroyed and its destructor is called.
-
-**Weak references** (raw pointers) do NOT increase the reference count. They observe the object without keeping it alive.
+**Слабые ссылки** (сырые указатели) НЕ увеличивают счётчик ссылок. Они наблюдают за объектом, не удерживая его.
 
 ---
 
 ## Сырые указатели (слабые ссылки)
 
-
-A raw pointer is any variable declared without `ref` or `autoptr`. For class members, this creates a **weak reference**: it points to the object but does NOT keep it alive.
+Сырой указатель -- это любая переменная, объявленная без `ref` или `autoptr`. Для членов класса это создаёт **слабую ссылку**: она указывает на объект, но НЕ удерживает его.
 
 ```c
 class Observer
 {
-    PlayerBase m_WatchedPlayer;  // Weak reference -- does NOT keep player alive
+    PlayerBase m_WatchedPlayer;  // Слабая ссылка -- НЕ удерживает игрока
 
     void Watch(PlayerBase player)
     {
@@ -49,7 +44,7 @@ class Observer
 
     void Report()
     {
-        if (m_WatchedPlayer) // ALWAYS null-check weak references
+        if (m_WatchedPlayer) // ВСЕГДА проверяйте слабые ссылки на null
         {
             Print("Watching: " + m_WatchedPlayer.GetIdentity().GetName());
         }
@@ -61,16 +56,15 @@ class Observer
 }
 ```
 
-### Managed vs Non-Managed классы
+### Managed и Non-Managed классы
 
+Безопасность слабых ссылок зависит от того, наследует ли класс объекта `Managed`:
 
-The safety of weak references depends on whether the object's class extends `Managed`:
-
-- **Managed classes** (most DayZ gameplay classes): When the object is deleted, all weak references are automatically set to `null`. This is safe.
-- **Non-Managed classes** (plain `class` without inheriting `Managed`): When the object is deleted, weak references become **dangling pointers** --- y still hold the old memory address. Accessing them causes a crash.
+- **Managed-классы** (большинство игровых классов DayZ): при удалении объекта все слабые ссылки автоматически устанавливаются в `null`. Это безопасно.
+- **Non-Managed-классы** (простой `class` без наследования `Managed`): при удалении объекта слабые ссылки становятся **висячими указателями** -- они всё ещё хранят старый адрес памяти. Обращение к ним вызывает крэш.
 
 ```c
-// SAFE -- Managed class, weak refs are zeroed
+// БЕЗОПАСНО -- Managed-класс, слабые ссылки обнуляются
 class SafeData : Managed
 {
     int m_Value;
@@ -82,15 +76,15 @@ void TestManaged()
     SafeData weakRef = data;
     delete data;
 
-    if (weakRef) // false -- weakRef was automatically set to null
+    if (weakRef) // false -- weakRef автоматически установлен в null
     {
-        Print(weakRef.m_Value); // Never reached
+        Print(weakRef.m_Value); // Никогда не выполнится
     }
 }
 ```
 
 ```c
-// DANGEROUS -- Non-Managed class, weak refs become dangling
+// ОПАСНО -- Non-Managed-класс, слабые ссылки становятся висячими
 class UnsafeData
 {
     int m_Value;
@@ -102,26 +96,24 @@ void TestNonManaged()
     UnsafeData weakRef = data;
     delete data;
 
-    if (weakRef) // TRUE -- weakRef still holds old address!
+    if (weakRef) // TRUE -- weakRef всё ещё хранит старый адрес!
     {
-        Print(weakRef.m_Value); // CRASH! Accessing deleted memory
+        Print(weakRef.m_Value); // КРЭШ! Обращение к удалённой памяти
     }
 }
 ```
 
-> **Правило:** If you are writing your own classes, always extend `Managed` for safety. Most DayZ engine classes (EntityAI, ItemBase, PlayerBase, etc.) already inherit from `Managed`.
+> **Правило:** если вы пишете собственные классы, всегда наследуйте от `Managed` для безопасности. Большинство классов движка DayZ (EntityAI, ItemBase, PlayerBase и др.) уже наследуют от `Managed`.
 
 ---
 
 ## ref (сильная ссылка)
 
-
-The `ref` keyword marks a variable as a **strong reference**. The object stays alive as long as at least one strong reference exists. When the last strong reference is destroyed or overwritten, the object is deleted.
+Ключевое слово `ref` помечает переменную как **сильную ссылку**. Объект остаётся живым, пока существует хотя бы одна сильная ссылка. Когда последняя сильная ссылка уничтожается или перезаписывается, объект удаляется.
 
 ### Члены класса
 
-
-Use `ref` for objects that your class **owns** and is responsible for creating and destroying.
+Используйте `ref` для объектов, которые ваш класс **владеет** и отвечает за создание и уничтожение.
 
 ```c
 class MissionManager
@@ -137,22 +129,21 @@ class MissionManager
         m_Logger = new MyLog;
     }
 
-    // No destructor needed! When MissionManager is deleted:
-    // 1. m_Logger ref is released -> MyLog is deleted
-    // 2. m_Configs ref is released -> map is deleted -> each MissionConfig is deleted
-    // 3. m_ActiveMissions ref is released -> array is deleted -> each MissionBase is deleted
+    // Деструктор не нужен! При удалении MissionManager:
+    // 1. Ссылка m_Logger освобождается -> MyLog удаляется
+    // 2. Ссылка m_Configs освобождается -> map удаляется -> каждый MissionConfig удаляется
+    // 3. Ссылка m_ActiveMissions освобождается -> array удаляется -> каждый MissionBase удаляется
 }
 ```
 
 ### Коллекции принадлежащих объектов
 
-
-When you store objects in an array or map and want the collection to own them, use `ref` on both the collection AND the elements:
+Когда вы храните объекты в массиве или словаре и хотите, чтобы коллекция владела ими, используйте `ref` как для коллекции, ТАК И для элементов:
 
 ```c
 class ZoneManager
 {
-    // The array is owned (ref), and each zone inside is owned (ref)
+    // Массив принадлежит (ref), и каждая зона внутри принадлежит (ref)
     protected ref array<ref SafeZone> m_Zones;
 
     void ZoneManager()
@@ -168,65 +159,62 @@ class ZoneManager
 }
 ```
 
-**Critical distinction:** An `array<SafeZone>` holds **weak** references. An `array<ref SafeZone>` holds **strong** references. If you use the weak version, objects inserted into the array may be immediately deleted because no strong reference keeps them alive.
+**Критическое различие:** `array<SafeZone>` хранит **слабые** ссылки. `array<ref SafeZone>` хранит **сильные** ссылки. Если вы используете слабый вариант, объекты, вставленные в массив, могут быть немедленно удалены, потому что ни одна сильная ссылка не удерживает их.
 
 ```c
-// WRONG -- Objects are deleted immediately after insertion!
+// НЕПРАВИЛЬНО -- Объекты удаляются сразу после вставки!
 ref array<MyClass> weakArray = new array<MyClass>;
-weakArray.Insert(new MyClass()); // Object created, inserted as weak ref,
-                                  // no strong ref exists -> IMMEDIATELY deleted
+weakArray.Insert(new MyClass()); // Объект создан, вставлен как слабая ссылка,
+                                  // сильной ссылки нет -> НЕМЕДЛЕННО удалён
 
-// CORRECT -- Objects are kept alive by the array
+// ПРАВИЛЬНО -- Объекты удерживаются массивом
 ref array<ref MyClass> strongArray = new array<ref MyClass>;
-strongArray.Insert(new MyClass()); // Object lives as long as it's in the array
+strongArray.Insert(new MyClass()); // Объект живёт, пока находится в массиве
 ```
 
 ---
 
 ## autoptr (сильная ссылка с областью видимости)
 
-
-`autoptr` is identical to `ref` but is intended for **local variables**. The object is automatically deleted when the variable goes out of scope (when the function returns).
+`autoptr` идентичен `ref`, но предназначен для **локальных переменных**. Объект автоматически удаляется, когда переменная выходит из области видимости (когда функция возвращает управление).
 
 ```c
 void ProcessData()
 {
     autoptr JsonSerializer serializer = new JsonSerializer;
-    // Use serializer...
+    // Используем serializer...
 
-    // serializer is automatically deleted here when the function exits
+    // serializer автоматически удаляется здесь при выходе из функции
 }
 ```
 
 ### Когда использовать autoptr
 
-
-На практике **local variables are already strong references by default** in Enforce Script. The `autoptr` keyword makes this explicit and self-documenting. You can use either:
+На практике **локальные переменные уже являются сильными ссылками по умолчанию** в Enforce Script. Ключевое слово `autoptr` делает это явным и самодокументируемым. Можно использовать любой вариант:
 
 ```c
 void Example()
 {
-    // These are functionally equivalent:
-    MyClass a = new MyClass();       // Local var = strong ref (implicit)
-    autoptr MyClass b = new MyClass(); // Local var = strong ref (explicit)
+    // Функционально эквивалентны:
+    MyClass a = new MyClass();       // Локальная переменная = сильная ссылка (неявно)
+    autoptr MyClass b = new MyClass(); // Локальная переменная = сильная ссылка (явно)
 
-    // Both a and b are deleted when this function exits
+    // Оба, a и b, удаляются при выходе из этой функции
 }
 ```
 
-> **Соглашение в моддинге DayZ:** Most codebases use `ref` for class members and omit `autoptr` for locals (relying on the implicit strong reference behavior). The CLAUDE.md for this project notes: "**`autoptr` is NOT used** -- use explicit `ref`." Follow whichever convention your project establishes.
+> **Соглашение в моддинге DayZ:** большинство кодовых баз используют `ref` для членов класса и опускают `autoptr` для локальных переменных (полагаясь на неявное поведение сильных ссылок). В CLAUDE.md этого проекта указано: "**`autoptr` НЕ используется** -- используйте явный `ref`." Следуйте соглашению, установленному в вашем проекте.
 
 ---
 
 ## Модификатор параметра notnull
 
-
-The `notnull` modifier on a function parameter tells the compiler that null is not a valid argument. The compiler enforces this at call sites.
+Модификатор `notnull` для параметра функции сообщает компилятору, что null не является допустимым аргументом. Компилятор принудительно проверяет это в местах вызова.
 
 ```c
 void ProcessPlayer(notnull PlayerBase player)
 {
-    // No need to check for null -- the compiler guarantees it
+    // Не нужно проверять на null -- компилятор это гарантирует
     string name = player.GetIdentity().GetName();
     Print("Processing: " + name);
 }
@@ -235,34 +223,32 @@ void CallExample(PlayerBase maybeNull)
 {
     if (maybeNull)
     {
-        ProcessPlayer(maybeNull); // OK -- we checked first
+        ProcessPlayer(maybeNull); // OK -- мы проверили
     }
 
-    // ProcessPlayer(null); // COMPILE ERROR: cannot pass null to notnull parameter
+    // ProcessPlayer(null); // ОШИБКА КОМПИЛЯЦИИ: нельзя передать null в notnull-параметр
 }
 ```
 
-Use `notnull` on parameters where null would always be a programming error. It catches bugs at compile time rather than causing crashes at runtime.
+Используйте `notnull` для параметров, где null всегда является ошибкой программиста. Это ловит баги на этапе компиляции, а не вызывает крэши во время выполнения.
 
 ---
 
 ## Циклические ссылки (ВНИМАНИЕ: УТЕЧКА ПАМЯТИ)
 
-
-A reference cycle occurs when two objects hold strong references (`ref`) to each other. Neither object can ever be deleted because each one keeps the other alive. Это most common source of memory leaks in DayZ mods.
+Циклическая ссылка возникает, когда два объекта держат сильные ссылки (`ref`) друг на друга. Ни один из объектов никогда не может быть удалён, потому что каждый удерживает другой. Это самый распространённый источник утечек памяти в модах DayZ.
 
 ### Проблема
-
 
 ```c
 class Parent
 {
-    ref Child m_Child; // Strong reference to Child
+    ref Child m_Child; // Сильная ссылка на Child
 }
 
 class Child
 {
-    ref Parent m_Parent; // Strong reference to Parent -- CYCLE!
+    ref Parent m_Parent; // Сильная ссылка на Parent -- ЦИКЛ!
 }
 
 void CreateCycle()
@@ -273,27 +259,26 @@ void CreateCycle()
     parent.m_Child = child;
     child.m_Parent = parent;
 
-    // When this function exits:
-    // - The local 'parent' ref is released, but child.m_Parent still holds parent alive
-    // - The local 'child' ref is released, but parent.m_Child still holds child alive
-    // NEITHER object is ever deleted! This is a permanent memory leak.
+    // При выходе из функции:
+    // - Локальная ссылка 'parent' освобождается, но child.m_Parent всё ещё удерживает parent
+    // - Локальная ссылка 'child' освобождается, но parent.m_Child всё ещё удерживает child
+    // НИ ОДИН объект никогда не будет удалён! Это постоянная утечка памяти.
 }
 ```
 
 ### Решение: одна сторона должна быть сырой (слабой) ссылкой
 
-
-Break the cycle by making one side a weak reference. The "child" should hold a weak reference to its "parent":
+Разорвите цикл, сделав одну сторону слабой ссылкой. "Потомок" должен держать слабую ссылку на "родителя":
 
 ```c
 class Parent
 {
-    ref Child m_Child; // Strong -- parent OWNS the child
+    ref Child m_Child; // Сильная -- родитель ВЛАДЕЕТ потомком
 }
 
 class Child
 {
-    Parent m_Parent; // Weak (raw) -- child OBSERVES the parent
+    Parent m_Parent; // Слабая (сырая) -- потомок НАБЛЮДАЕТ за родителем
 }
 
 void NoCycle()
@@ -304,21 +289,21 @@ void NoCycle()
     parent.m_Child = child;
     child.m_Parent = parent;
 
-    // When this function exits:
-    // - Local 'parent' ref is released -> parent's ref count = 0 -> DELETED
-    // - Parent destructor releases m_Child -> child's ref count = 0 -> DELETED
-    // Both objects are properly cleaned up!
+    // При выходе из функции:
+    // - Локальная ссылка 'parent' освобождается -> счётчик ссылок parent = 0 -> УДАЛЁН
+    // - Деструктор Parent освобождает m_Child -> счётчик ссылок child = 0 -> УДАЛЁН
+    // Оба объекта корректно очищены!
 }
 ```
 
-### Real-world example: UI panels
+### Пример из практики: UI-панели
 
-A common pattern in DayZ UI code is a panel that holds widgets, where widgets need a reference back to the panel. The panel owns the widgets (strong ref), and widgets observe the panel (weak ref).
+Распространённый паттерн в UI-коде DayZ -- панель, которая содержит виджеты, где виджетам нужна обратная ссылка на панель. Панель владеет виджетами (сильная ссылка), а виджеты наблюдают за панелью (слабая ссылка).
 
 ```c
 class AdminPanel
 {
-    protected ref array<ref AdminPanelTab> m_Tabs; // Owns the tabs
+    protected ref array<ref AdminPanelTab> m_Tabs; // Владеет вкладками
 
     void AdminPanel()
     {
@@ -335,27 +320,65 @@ class AdminPanel
 class AdminPanelTab
 {
     protected string m_Name;
-    protected AdminPanel m_Owner; // WEAK -- avoids cycle
+    protected AdminPanel m_Owner; // СЛАБАЯ -- избегает цикла
 
     void AdminPanelTab(string name, AdminPanel owner)
     {
         m_Name = name;
-        m_Owner = owner; // Weak reference back to parent
+        m_Owner = owner; // Слабая ссылка на родителя
     }
 
     AdminPanel GetOwner()
     {
-        return m_Owner; // May be null if panel was deleted
+        return m_Owner; // Может быть null, если панель была удалена
     }
 }
+```
+
+### Жизненный цикл подсчёта ссылок
+
+```mermaid
+sequenceDiagram
+    participant Code as Ваш код
+    participant Obj as MyObject
+    participant GC as Сборщик мусора
+
+    Code->>Obj: ref MyObject obj = new MyObject()
+    Note over Obj: refcount = 1
+
+    Code->>Obj: ref MyObject copy = obj
+    Note over Obj: refcount = 2
+
+    Code->>Obj: copy = null
+    Note over Obj: refcount = 1
+
+    Code->>Obj: obj = null
+    Note over Obj: refcount = 0
+
+    Obj->>GC: ~MyObject() вызван деструктор
+    GC->>GC: Память освобождена
+```
+
+### Циклическая ссылка (утечка памяти)
+
+```mermaid
+graph LR
+    A[Объект A<br/>ref m_B] -->|"сильная ссылка"| B[Объект B<br/>ref m_A]
+    B -->|"сильная ссылка"| A
+
+    style A fill:#D94A4A,color:#fff
+    style B fill:#D94A4A,color:#fff
+
+    C["Ни один не может быть освобождён!<br/>Оба refcount = 1 навсегда"]
+
+    style C fill:#FFD700,color:#000
 ```
 
 ---
 
 ## Ключевое слово delete
 
-
-You can manually delete an object at any time using `delete`. This destroys the object **immediately**, regardless of its reference count. All references (both strong and weak, on Managed classes) are set to null.
+Вы можете вручную удалить объект в любой момент с помощью `delete`. Это уничтожает объект **немедленно**, независимо от его счётчика ссылок. Все ссылки (как сильные, так и слабые, для Managed-классов) устанавливаются в null.
 
 ```c
 void ManualDelete()
@@ -369,60 +392,56 @@ void ManualDelete()
     delete obj;
 
     Print(obj != null);        // false
-    Print(anotherRef != null); // false (also nulled, on Managed classes)
+    Print(anotherRef != null); // false (тоже обнулён, для Managed-классов)
 }
 ```
 
 ### Когда использовать delete
 
-
-- When you need to release a resource **immediately** (not waiting for ARC)
-- When cleaning up in a shutdown/destroy method
-- When removing objects from the game world (`GetGame().ObjectDelete(obj)` for game entities)
+- Когда нужно освободить ресурс **немедленно** (не дожидаясь ARC)
+- При очистке в методе завершения/уничтожения
+- При удалении объектов из игрового мира (`GetGame().ObjectDelete(obj)` для игровых сущностей)
 
 ### Когда НЕ использовать delete
 
-
-- On objects owned by someone else (the owner's `ref` will become null unexpectedly)
-- On objects still in use by other systems (timers, callbacks, UI)
-- On engine-managed entities without going through proper channels
+- Для объектов, принадлежащих другому владельцу (`ref` владельца неожиданно станет null)
+- Для объектов, всё ещё используемых другими системами (таймеры, обратные вызовы, UI)
+- Для сущностей, управляемых движком, без использования надлежащих каналов
 
 ---
 
 ## Поведение сборки мусора
 
+Enforce Script НЕ имеет традиционного сборщика мусора, который периодически сканирует недостижимые объекты. Вместо этого он использует **детерминированный подсчёт ссылок:**
 
-Enforce Script does NOT have a traditional garbage collector that periodically scans for unreachable objects. Instead, it uses **deterministic reference counting:**
-
-1. When a strong reference is created (assignment to `ref`, local variable, function argument), the object's reference count increases.
-2. When a strong reference goes out of scope or is overwritten, the reference count decreases.
-3. When the reference count reaches zero, the object is **immediately** destroyed (destructor is called, memory is freed).
-4. `delete` bypasses the reference count and destroys the object immediately.
+1. Когда создаётся сильная ссылка (присвоение `ref`, локальная переменная, аргумент функции), счётчик ссылок объекта увеличивается.
+2. Когда сильная ссылка выходит из области видимости или перезаписывается, счётчик ссылок уменьшается.
+3. Когда счётчик ссылок достигает нуля, объект **немедленно** уничтожается (вызывается деструктор, память освобождается).
+4. `delete` обходит счётчик ссылок и уничтожает объект немедленно.
 
 Это означает:
-- Object lifetimes are predictable and deterministic
-- There are no "GC pauses" or unpredictable delays
-- Reference cycles are NEVER collected --- y are permanent leaks
-- Order of destruction is well-defined: objects are destroyed in reverse order of their last reference being released
+- Время жизни объектов предсказуемо и детерминировано
+- Нет "пауз GC" или непредсказуемых задержек
+- Циклические ссылки НИКОГДА не собираются -- они являются постоянными утечками
+- Порядок уничтожения чётко определён: объекты уничтожаются в обратном порядке освобождения их последней ссылки
 
 ---
 
-## Пример из практики: Proper Manager Class
+## Пример из практики: правильный класс менеджера
 
-
-Here is a complete example showing proper memory management patterns for a typical DayZ mod manager:
+Вот полный пример, показывающий правильные паттерны управления памятью для типичного менеджера мода DayZ:
 
 ```c
 class MyZoneManager
 {
-    // Singleton instance -- the only strong ref keeping this alive
+    // Экземпляр-синглтон -- единственная сильная ссылка, удерживающая его
     private static ref MyZoneManager s_Instance;
 
-    // Owned collections -- manager is responsible for these
+    // Принадлежащие коллекции -- менеджер отвечает за них
     protected ref array<ref MyZone> m_Zones;
     protected ref map<string, ref MyZoneConfig> m_Configs;
 
-    // Weak reference to external system -- we don't own this
+    // Слабая ссылка на внешнюю систему -- мы не владеем этим
     protected PlayerBase m_LastEditor;
 
     void MyZoneManager()
@@ -433,7 +452,7 @@ class MyZoneManager
 
     void ~MyZoneManager()
     {
-        // Explicit cleanup (optional -- ARC handles it, but good practice)
+        // Явная очистка (необязательно -- ARC обработает, но хорошая практика)
         m_Zones.Clear();
         m_Configs.Clear();
         m_LastEditor = null;
@@ -452,7 +471,7 @@ class MyZoneManager
 
     static void DestroyInstance()
     {
-        s_Instance = null; // Releases the strong ref, triggers destructor
+        s_Instance = null; // Освобождает сильную ссылку, вызывает деструктор
     }
 
     void CreateZone(string name, vector center, float radius, PlayerBase editor)
@@ -463,7 +482,7 @@ class MyZoneManager
         ref MyZone zone = new MyZone(config);
         m_Zones.Insert(zone);
 
-        m_LastEditor = editor; // Weak reference -- we don't own the player
+        m_LastEditor = editor; // Слабая ссылка -- мы не владеем игроком
     }
 
     void RemoveZone(int index)
@@ -474,8 +493,8 @@ class MyZoneManager
         MyZone zone = m_Zones.Get(index);
         string name = zone.GetName();
 
-        m_Zones.RemoveOrdered(index); // Strong ref released, zone may be deleted
-        m_Configs.Remove(name);       // Config ref released, config deleted
+        m_Zones.RemoveOrdered(index); // Сильная ссылка освобождена, зона может быть удалена
+        m_Configs.Remove(name);       // Ссылка на конфиг освобождена, конфиг удалён
     }
 
     MyZone FindZoneAtPosition(vector pos)
@@ -483,7 +502,7 @@ class MyZoneManager
         foreach (MyZone zone : m_Zones)
         {
             if (zone.ContainsPosition(pos))
-                return zone; // Return weak reference to caller
+                return zone; // Возвращает слабую ссылку вызывающему
         }
         return null;
     }
@@ -494,11 +513,11 @@ class MyZone
     protected string m_Name;
     protected vector m_Center;
     protected float m_Radius;
-    protected MyZoneConfig m_Config; // Weak -- config is owned by manager
+    protected MyZoneConfig m_Config; // Слабая -- конфиг принадлежит менеджеру
 
     void MyZone(MyZoneConfig config)
     {
-        m_Config = config; // Weak reference
+        m_Config = config; // Слабая ссылка
         m_Name = config.GetName();
         m_Center = config.GetCenter();
         m_Radius = config.GetRadius();
@@ -531,97 +550,127 @@ class MyZoneConfig
 }
 ```
 
-### Memory ownership diagram for this example
+### Диаграмма владения памятью для этого примера
 
 ```
-MyZoneManager (singleton, owned by static s_Instance)
+MyZoneManager (синглтон, принадлежит статическому s_Instance)
   |
-  |-- ref array<ref MyZone>   m_Zones     [STRONG -> STRONG elements]
+  |-- ref array<ref MyZone>   m_Zones     [СИЛЬНАЯ -> СИЛЬНЫЕ элементы]
   |     |
   |     +-- MyZone
-  |           |-- MyZoneConfig m_Config    [WEAK -- owned by m_Configs]
+  |           |-- MyZoneConfig m_Config    [СЛАБАЯ -- принадлежит m_Configs]
   |
-  |-- ref map<string, ref MyZoneConfig> m_Configs  [STRONG -> STRONG elements]
+  |-- ref map<string, ref MyZoneConfig> m_Configs  [СИЛЬНАЯ -> СИЛЬНЫЕ элементы]
   |     |
-  |     +-- MyZoneConfig                   [OWNED here]
+  |     +-- MyZoneConfig                   [ПРИНАДЛЕЖИТ здесь]
   |
-  +-- PlayerBase m_LastEditor                [WEAK -- owned by engine]
+  +-- PlayerBase m_LastEditor                [СЛАБАЯ -- принадлежит движку]
 ```
 
-When `DestroyInstance()` is called:
-1. `s_Instance` is set to null, releasing the strong reference
-2. `MyZoneManager` destructor runs
-3. `m_Zones` is released -> array is deleted -> each `MyZone` is deleted
-4. `m_Configs` is released -> map is deleted -> each `MyZoneConfig` is deleted
-5. `m_LastEditor` is a weak reference, nothing to clean up
-6. All memory is freed. No leaks.
+При вызове `DestroyInstance()`:
+1. `s_Instance` устанавливается в null, освобождая сильную ссылку
+2. Выполняется деструктор `MyZoneManager`
+3. `m_Zones` освобождается -> массив удаляется -> каждый `MyZone` удаляется
+4. `m_Configs` освобождается -> словарь удаляется -> каждый `MyZoneConfig` удаляется
+5. `m_LastEditor` -- слабая ссылка, ничего не нужно очищать
+6. Вся память освобождена. Утечек нет.
+
+---
+
+## Лучшие практики
+
+- Используйте `ref` для членов класса, которые ваш класс создаёт и которыми владеет; используйте сырые указатели (без ключевого слова) для обратных ссылок и внешних наблюдений.
+- Всегда наследуйте от `Managed` для чисто скриптовых классов -- это гарантирует обнуление слабых ссылок при удалении, предотвращая крэши от висячих указателей.
+- Разрывайте циклические ссылки, делая потомка хранящим сырой указатель на родителя: родитель владеет потомком (`ref`), потомок наблюдает за родителем (сырой).
+- Используйте `array<ref MyClass>`, когда коллекция владеет своими элементами; `array<MyClass>` хранит слабые ссылки, которые не будут удерживать объекты.
+- Предпочитайте очистку через ARC вместо ручного `delete` -- позвольте освобождению последнего `ref` вызвать деструктор естественным образом.
+
+---
+
+## Замечено в реальных модах
+
+> Паттерны, подтверждённые изучением исходного кода профессиональных модов DayZ.
+
+| Паттерн | Мод | Детали |
+|---------|-----|--------|
+| Родитель `ref` + обратный сырой указатель потомка | COT / Expansion UI | Панели владеют вкладками через `ref`, вкладки держат сырой указатель на родительскую панель для избежания циклов |
+| `static ref` синглтон + обнуление через `Destroy()` | Dabs / VPP | Все синглтоны используют `s_Instance = null` в статическом `Destroy()` для запуска очистки |
+| `ref array<ref T>` для управляемых коллекций | Expansion Market | И массив, и его элементы являются `ref` для обеспечения правильного владения |
+| Сырой указатель для сущностей движка (игроки, предметы) | COT Admin | Ссылки на игроков хранятся как сырые указатели, поскольку движок управляет временем жизни сущностей |
+
+---
+
+## Теория и практика
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| `autoptr` для локальных переменных | Должен авто-удалять при выходе из области видимости | Локальные переменные и так являются неявными сильными ссылками; `autoptr` редко используется на практике |
+| ARC обрабатывает всю очистку | Объекты освобождаются при достижении refcount нуля | Циклические ссылки никогда не собираются -- они утекают навсегда до перезагрузки сервера |
+| `delete` для немедленной очистки | Уничтожает объект сразу | Может неожиданно обнулить ссылки, удерживаемые другими системами -- предпочитайте позволить ARC справиться |
 
 ---
 
 ## Распространённые ошибки
 
-
-| Mistake | Problem | Fix |
+| Ошибка | Проблема | Решение |
 |---------|---------|-----|
-| Two objects with `ref` to each other | Reference cycle, permanent memory leak | One side must be a raw (weak) reference |
-| `array<MyClass>` instead of `array<ref MyClass>` | Elements are weak references, objects may be deleted immediately | Use `array<ref MyClass>` for owned elements |
-| Accessing a raw pointer after the object was deleted | Crash (dangling pointer on non-Managed classes) | Extend `Managed` and always null-check weak references |
-| Not checking weak references for null | Crash when the referenced object has been deleted | Always: `if (weakRef) { weakRef.DoThing(); }` |
-| Using `delete` on objects owned by another system | The owner's `ref` becomes null unexpectedly | Let the owner release the object through ARC |
-| Storing `ref` to engine entities (players, items) | Can fight with engine lifetime management | Use raw pointers for engine entities |
-| Forgetting `ref` on class member collections | Collection is a weak reference, may be collected | Always: `protected ref array<...> m_List;` |
-| Circular parent-child with `ref` on both sides | Classic cycle; neither parent nor child is ever freed | Parent owns child (`ref`), child observes parent (raw) |
+| Два объекта с `ref` друг на друга | Циклическая ссылка, постоянная утечка памяти | Одна сторона должна быть сырой (слабой) ссылкой |
+| `array<MyClass>` вместо `array<ref MyClass>` | Элементы -- слабые ссылки, объекты могут быть сразу удалены | Используйте `array<ref MyClass>` для принадлежащих элементов |
+| Обращение к сырому указателю после удаления объекта | Крэш (висячий указатель для non-Managed классов) | Наследуйте `Managed` и всегда проверяйте слабые ссылки на null |
+| Отсутствие проверки слабых ссылок на null | Крэш, когда объект по ссылке был удалён | Всегда: `if (weakRef) { weakRef.DoThing(); }` |
+| Использование `delete` для объектов, принадлежащих другой системе | `ref` владельца неожиданно становится null | Позвольте владельцу освободить объект через ARC |
+| Хранение `ref` на сущности движка (игроки, предметы) | Может конфликтовать с управлением временем жизни движка | Используйте сырые указатели для сущностей движка |
+| Забыли `ref` для коллекций -- членов класса | Коллекция -- слабая ссылка, может быть собрана | Всегда: `protected ref array<...> m_List;` |
+| Циклический родитель-потомок с `ref` на обеих сторонах | Классический цикл; ни родитель, ни потомок никогда не будут освобождены | Родитель владеет потомком (`ref`), потомок наблюдает за родителем (сырой) |
 
 ---
 
 ## Руководство по выбору: какой тип указателя?
 
-
 ```
-Is this a class member that this class CREATES and OWNS?
-  -> YES: Use ref
-  -> NO: Is this a back-reference or external observation?
-    -> YES: Use raw pointer (no keyword), always null-check
-    -> NO: Is this a local variable in a function?
-      -> YES: Raw is fine (locals are implicitly strong)
-      -> Explicit autoptr is optional for clarity
+Это член класса, который этот класс СОЗДАЁТ и которым ВЛАДЕЕТ?
+  -> ДА: Используйте ref
+  -> НЕТ: Это обратная ссылка или внешнее наблюдение?
+    -> ДА: Используйте сырой указатель (без ключевого слова), всегда проверяйте на null
+    -> НЕТ: Это локальная переменная в функции?
+      -> ДА: Сырой подходит (локальные переменные неявно сильные)
+      -> Явный autoptr необязателен для ясности
 
-Storing objects in a collection (array/map)?
-  -> Objects OWNED by the collection: array<ref MyClass>
-  -> Objects OBSERVED by the collection: array<MyClass>
+Хранение объектов в коллекции (array/map)?
+  -> Объекты ПРИНАДЛЕЖАТ коллекции: array<ref MyClass>
+  -> Объекты НАБЛЮДАЮТСЯ коллекцией: array<MyClass>
 
-Function parameter that must never be null?
-  -> Use notnull modifier
+Параметр функции, который никогда не должен быть null?
+  -> Используйте модификатор notnull
 ```
 
 ---
 
 ## Краткая справка
 
-
 ```c
-// Raw pointer (weak reference for class members)
-MyClass m_Observer;              // Does NOT keep object alive
-                                 // Set to null on delete (Managed only)
+// Сырой указатель (слабая ссылка для членов класса)
+MyClass m_Observer;              // НЕ удерживает объект
+                                 // Устанавливается в null при удалении (только Managed)
 
-// Strong reference (keeps object alive)
-ref MyClass m_Owned;             // Object lives until ref is released
-ref array<ref MyClass> m_List;   // Array AND elements are strongly held
+// Сильная ссылка (удерживает объект)
+ref MyClass m_Owned;             // Объект живёт, пока ссылка не освобождена
+ref array<ref MyClass> m_List;   // И массив, И элементы удерживаются сильно
 
-// Auto pointer (scoped strong reference)
-autoptr MyClass local;           // Deleted when scope exits
+// Авто-указатель (сильная ссылка с областью видимости)
+autoptr MyClass local;           // Удаляется при выходе из области видимости
 
-// notnull (compile-time null guard)
-void Func(notnull MyClass obj);  // Compiler rejects null arguments
+// notnull (проверка null на этапе компиляции)
+void Func(notnull MyClass obj);  // Компилятор отклоняет null-аргументы
 
-// Manual delete (immediate, bypasses ARC)
-delete obj;                      // Destroys immediately, nulls all refs (Managed)
+// Ручное удаление (немедленное, обходит ARC)
+delete obj;                      // Уничтожает немедленно, обнуляет все ссылки (Managed)
 
-// Break reference cycles: one side must be weak
-class Parent { ref Child m_Child; }      // Strong -- parent owns child
-class Child  { Parent m_Parent; }        // Weak   -- child observes parent
+// Разрыв циклических ссылок: одна сторона должна быть слабой
+class Parent { ref Child m_Child; }      // Сильная -- родитель владеет потомком
+class Child  { Parent m_Parent; }        // Слабая  -- потомок наблюдает за родителем
 ```
 
 ---
 
-[<< 1.7: Math & Vectors](07-math-vectors.md) | [Главная](../../README.md) | [1.9: Casting & Reflection >>](09-casting-reflection.md)
+[<< 1.7: Математика и векторы](07-math-vectors.md) | [Главная](../../README.md) | [1.9: Приведение типов и рефлексия >>](09-casting-reflection.md)

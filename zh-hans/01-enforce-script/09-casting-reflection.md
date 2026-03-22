@@ -1,39 +1,43 @@
-# Chapter 1.9: Casting & Reflection
+# 第 1.9 章：类型转换与反射
 
-[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
+[首页](../../README.md) | [<< 上一章：内存管理](08-memory-management.md) | **类型转换与反射** | [下一章：枚举与预处理器 >>](10-enums-preprocessor.md)
+
+---
+
+> **目标：** 掌握安全的类型转换、运行时类型检查以及 Enforce Script 的反射 API，用于动态属性访问。
 
 ---
 
 ## 目录
 
-- [Why Casting Matters](#why-casting-matters)
-- [Class.CastTo — Safe Downcasting](#classcastto--safe-downcasting)
-- [Type.Cast — Alternative Casting](#typecast--alternative-casting)
-- [CastTo vs Type.Cast — When to Use Which](#castto-vs-typecast--when-to-use-which)
-- [obj.IsInherited — Runtime Type Checking](#obisinherited--runtime-type-checking)
-- [obj.IsKindOf — String-Based Type Checking](#obiskindof--string-based-type-checking)
-- [obj.Type — Get Runtime Type](#objtype--get-runtime-type)
-- [typename — Storing Type References](#typename--storing-type-references)
-- [Reflection API](#reflection-api)
-  - [Inspecting Variables](#inspecting-variables)
+- [为什么类型转换很重要](#为什么类型转换很重要)
+- [Class.CastTo — 安全的向下转换](#classcastto--安全的向下转换)
+- [Type.Cast — 替代转换方式](#typecast--替代转换方式)
+- [CastTo vs Type.Cast — 何时使用哪个](#castto-vs-typecast--何时使用哪个)
+- [obj.IsInherited — 运行时类型检查](#obisinherited--运行时类型检查)
+- [obj.IsKindOf — 基于字符串的类型检查](#obiskindof--基于字符串的类型检查)
+- [obj.Type — 获取运行时类型](#objtype--获取运行时类型)
+- [typename — 存储类型引用](#typename--存储类型引用)
+- [反射 API](#反射-api)
+  - [检查变量](#检查变量)
   - [EnScript.GetClassVar / SetClassVar](#enscriptgetclassvar--setclassvar)
-- [Real-World Examples](#real-world-examples)
-  - [Finding All Vehicles in the World](#finding-all-vehicles-in-the-world)
-  - [Safe Object Helper With Cast](#safe-object-helper-with-cast)
-  - [Reflection-Based Config System](#reflection-based-config-system)
-  - [Type-Safe Event Dispatch](#type-safe-event-dispatch)
-- [Common Mistakes](#common-mistakes)
-- [Summary](#summary)
-- [Navigation](#navigation)
+- [实际示例](#实际示例)
+  - [查找世界中所有车辆](#查找世界中所有车辆)
+  - [带类型转换的安全对象辅助函数](#带类型转换的安全对象辅助函数)
+  - [基于反射的配置系统](#基于反射的配置系统)
+  - [类型安全的事件分发](#类型安全的事件分发)
+- [常见错误](#常见错误)
+- [总结](#总结)
+- [导航](#导航)
 
 ---
 
-## Why Casting Matters
+## 为什么类型转换很重要
 
-DayZ's entity hierarchy is deep. Most engine APIs return a generic base type (`Object`, `Man`, `Class`), but you need a specific type (`PlayerBase`, `ItemBase`, `CarScript`) to access specialized methods. Casting converts a base reference into a derived reference — safely.
+DayZ 的实体层次结构很深。大多数引擎 API 返回通用基类型（`Object`、`Man`、`Class`），但你需要特定类型（`PlayerBase`、`ItemBase`、`CarScript`）才能访问专有方法。类型转换将基类引用安全地转换为派生类引用。
 
 ```
-Class (root)
+Class（根）
   └─ Object
        └─ Entity
             └─ EntityAI
@@ -45,16 +49,16 @@ Class (root)
                       └─ DayZPlayer → PlayerBase
 ```
 
-Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error because Enforce Script resolves virtual calls at runtime.
+调用基类型上不存在的方法会导致**运行时崩溃**——不会有编译器错误，因为 Enforce Script 在运行时解析虚调用。
 
 ---
 
-## Class.CastTo — Safe Downcasting
+## Class.CastTo — 安全的向下转换
 
-`Class.CastTo` is the **preferred** casting method in DayZ. It is a static method that writes the result to an `out` parameter and returns `bool`.
+`Class.CastTo` 是 DayZ 中**首选的**类型转换方法。它是一个静态方法，将结果写入 `out` 参数并返回 `bool`。
 
 ```c
-// Signature:
+// 签名：
 // static bool Class.CastTo(out Class target, Class source)
 
 Object obj = GetSomeObject();
@@ -62,25 +66,25 @@ PlayerBase player;
 
 if (Class.CastTo(player, obj))
 {
-    // Cast succeeded — player is valid
+    // 转换成功——player 有效
     string name = player.GetIdentity().GetName();
     Print("Found player: " + name);
 }
 else
 {
-    // Cast failed — obj is not a PlayerBase
-    // player is null here
+    // 转换失败——obj 不是 PlayerBase
+    // player 在此处为 null
 }
 ```
 
-**Why preferred:**
-- Returns `false` on failure instead of crashing
-- The `out` parameter is set to `null` on failure — safe to check
-- Works across the entire class hierarchy (not just `Object`)
+**为什么首选：**
+- 失败时返回 `false` 而不是崩溃
+- `out` 参数在失败时设为 `null`——安全可检查
+- 适用于整个类层次结构（不仅仅是 `Object`）
 
-### Pattern: Cast-and-Continue
+### 模式：转换并继续
 
-In loops, use cast failure to skip irrelevant objects:
+在循环中，使用转换失败来跳过无关的对象：
 
 ```c
 array<Object> nearObjects = new array<Object>;
@@ -91,9 +95,9 @@ foreach (Object obj : nearObjects)
 {
     EntityAI entity;
     if (!Class.CastTo(entity, obj))
-        continue;  // Skip non-EntityAI objects (buildings, terrain, etc.)
+        continue;  // 跳过非 EntityAI 对象（建筑、地形等）
 
-    // Now safe to call EntityAI methods
+    // 现在可以安全调用 EntityAI 方法
     if (entity.IsAlive())
     {
         Print(entity.GetType() + " is alive at " + entity.GetPosition().ToString());
@@ -103,12 +107,12 @@ foreach (Object obj : nearObjects)
 
 ---
 
-## Type.Cast — Alternative Casting
+## Type.Cast — 替代转换方式
 
-Every class has a static `Cast` method that returns the cast result directly (or `null` on failure).
+每个类都有一个静态 `Cast` 方法，直接返回转换结果（失败时返回 `null`）。
 
 ```c
-// Syntax: TargetType.Cast(source)
+// 语法：TargetType.Cast(source)
 
 Object obj = GetSomeObject();
 PlayerBase player = PlayerBase.Cast(obj);
@@ -119,11 +123,11 @@ if (player)
 }
 ```
 
-This is a one-liner that combines cast and assignment, but you **must** still null-check the result.
+这是一个将转换和赋值结合在一行的写法，但你**必须**仍然对结果进行 null 检查。
 
-### Casting Primitives and Params
+### 转换原语和 Params
 
-`Type.Cast` is also used with `Param` classes (used heavily in RPCs and events):
+`Type.Cast` 也用于 `Param` 类（在 RPC 和事件中大量使用）：
 
 ```c
 override void OnEvent(EventType eventTypeId, Param params)
@@ -142,36 +146,36 @@ override void OnEvent(EventType eventTypeId, Param params)
 
 ---
 
-## CastTo vs Type.Cast — When to Use Which
+## CastTo vs Type.Cast — 何时使用哪个
 
-| Feature | `Class.CastTo` | `Type.Cast` |
+| 特性 | `Class.CastTo` | `Type.Cast` |
 |---------|----------------|-------------|
-| Return type | `bool` | Target type or `null` |
-| Null on failure | Yes (out param set to null) | Yes (returns null) |
-| Best for | if-blocks with branching logic | One-liner assignments |
-| Used in DayZ vanilla | Everywhere | Everywhere |
-| Works with non-Object | Yes (any `Class`) | Yes (any `Class`) |
+| 返回类型 | `bool` | 目标类型或 `null` |
+| 失败时为 null | 是（out 参数设为 null）| 是（返回 null）|
+| 最适合 | 带分支逻辑的 if 块 | 单行赋值 |
+| DayZ 原版中使用 | 到处 | 到处 |
+| 适用于非 Object | 是（任何 `Class`）| 是（任何 `Class`）|
 
-**Rule of thumb:** Use `Class.CastTo` when you branch on success/failure. Use `Type.Cast` when you just need the typed reference and will null-check later.
+**经验法则：** 当你需要根据成功/失败进行分支时使用 `Class.CastTo`。当你只需要类型化引用并稍后进行 null 检查时使用 `Type.Cast`。
 
 ```c
-// CastTo — branch on result
+// CastTo — 根据结果分支
 PlayerBase player;
 if (Class.CastTo(player, obj))
 {
-    // handle player
+    // 处理 player
 }
 
-// Type.Cast — assign and check later
+// Type.Cast — 赋值并稍后检查
 PlayerBase player = PlayerBase.Cast(obj);
 if (!player) return;
 ```
 
 ---
 
-## obj.IsInherited — Runtime Type Checking
+## obj.IsInherited — 运行时类型检查
 
-`IsInherited` checks if an object is an instance of a given type **without** performing a cast. It takes a `typename` argument.
+`IsInherited` 检查对象是否是给定类型的实例，**而不**执行转换。它接受一个 `typename` 参数。
 
 ```c
 Object obj = GetSomeObject();
@@ -192,13 +196,13 @@ if (obj.IsInherited(CarScript))
 }
 ```
 
-`IsInherited` returns `true` for the exact type **and** any parent types in the hierarchy. A `PlayerBase` object returns `true` for `IsInherited(Man)`, `IsInherited(EntityAI)`, `IsInherited(Object)`, etc.
+`IsInherited` 对确切类型**和**层次结构中的任何父类型返回 `true`。一个 `PlayerBase` 对象对 `IsInherited(Man)`、`IsInherited(EntityAI)`、`IsInherited(Object)` 等都返回 `true`。
 
 ---
 
-## obj.IsKindOf — String-Based Type Checking
+## obj.IsKindOf — 基于字符串的类型检查
 
-`IsKindOf` does the same check but with a **string** class name. Useful when you have the type name as data (e.g., from config files).
+`IsKindOf` 执行相同的检查，但使用**字符串**类名。当你将类型名作为数据（例如从配置文件中）使用时很有用。
 
 ```c
 Object obj = GetSomeObject();
@@ -214,30 +218,30 @@ if (obj.IsKindOf("DayZAnimal"))
 }
 ```
 
-**重要：** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
+**重要：** `IsKindOf` 检查完整的继承链，就像 `IsInherited` 一样。一个 `Mag_STANAG_30Rnd` 对 `IsKindOf("Magazine_Base")`、`IsKindOf("InventoryItem")`、`IsKindOf("EntityAI")` 等都返回 `true`。
 
 ### IsInherited vs IsKindOf
 
-| Feature | `IsInherited(typename)` | `IsKindOf(string)` |
+| 特性 | `IsInherited(typename)` | `IsKindOf(string)` |
 |---------|------------------------|---------------------|
-| Argument | Compile-time type | String name |
-| Speed | Faster (type comparison) | Slower (string lookup) |
-| Use when | You know the type at compile time | Type comes from data/config |
+| 参数 | 编译时类型 | 字符串名称 |
+| 速度 | 更快（类型比较）| 更慢（字符串查找）|
+| 使用时机 | 编译时已知类型 | 类型来自数据/配置 |
 
 ---
 
-## obj.Type — Get Runtime Type
+## obj.Type — 获取运行时类型
 
-`Type()` returns the `typename` of an object's actual runtime class — not the declared variable type.
+`Type()` 返回对象实际运行时类的 `typename`——不是声明的变量类型。
 
 ```c
 Object obj = GetSomeObject();
 typename t = obj.Type();
 
-Print(t.ToString());  // e.g., "PlayerBase", "AK101", "LandRover"
+Print(t.ToString());  // 例如 "PlayerBase"、"AK101"、"LandRover"
 ```
 
-Use this for logging, debugging, or comparing types dynamically:
+用于日志记录、调试或动态比较类型：
 
 ```c
 void ProcessEntity(EntityAI entity)
@@ -254,29 +258,29 @@ void ProcessEntity(EntityAI entity)
 
 ---
 
-## typename — Storing Type References
+## typename — 存储类型引用
 
-`typename` is a first-class type in Enforce Script. You can store it in variables, pass it as parameters, and compare it.
+`typename` 是 Enforce Script 中的一等类型。你可以将它存储在变量中、作为参数传递和进行比较。
 
 ```c
-// Declare a typename variable
+// 声明 typename 变量
 typename playerType = PlayerBase;
 typename vehicleType = CarScript;
 
-// Compare
+// 比较
 typename objType = obj.Type();
 if (objType == playerType)
 {
     Print("Match!");
 }
 
-// Use in collections
+// 在集合中使用
 array<typename> allowedTypes = new array<typename>;
 allowedTypes.Insert(PlayerBase);
 allowedTypes.Insert(DayZInfected);
 allowedTypes.Insert(DayZAnimal);
 
-// Check membership
+// 检查成员关系
 foreach (typename t : allowedTypes)
 {
     if (obj.IsInherited(t))
@@ -289,27 +293,27 @@ foreach (typename t : allowedTypes)
 
 ### 从 typename 创建实例
 
-You can create objects from a `typename` at runtime:
+你可以在运行时从 `typename` 创建对象：
 
 ```c
 typename t = PlayerBase;
-Class instance = t.Spawn();  // Creates a new instance
+Class instance = t.Spawn();  // 创建新实例
 
-// Or use the string-based approach:
+// 或使用基于字符串的方式：
 Class instance2 = GetGame().CreateObjectEx("AK101", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-> **注意：** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
+> **注意：** `typename.Spawn()` 仅适用于具有无参构造函数的类。对于 DayZ 实体，使用 `GetGame().CreateObject()` 或 `CreateObjectEx()`。
 
 ---
 
 ## 反射 API
 
-Enforce Script provides basic reflection — the ability to inspect and modify an object's properties at runtime without knowing its type at compile time.
+Enforce Script 提供基本的反射——在运行时不知道对象类型的情况下检查和修改其属性的能力。
 
 ### 检查变量
 
-Every object's `Type()` returns a `typename` that exposes variable metadata:
+每个对象的 `Type()` 返回一个 `typename`，它暴露变量元数据：
 
 ```c
 void InspectObject(Class obj)
@@ -329,24 +333,24 @@ void InspectObject(Class obj)
 }
 ```
 
-**Available reflection methods on `typename`:**
+**`typename` 上可用的反射方法：**
 
-| 方法 | 返回值 | Description |
+| 方法 | 返回值 | 描述 |
 |--------|---------|-------------|
-| `GetVariableCount()` | `int` | Number of member variables |
-| `GetVariableName(int index)` | `string` | Variable name at index |
-| `GetVariableType(int index)` | `typename` | Variable type at index |
-| `ToString()` | `string` | Class name as string |
+| `GetVariableCount()` | `int` | 成员变量数量 |
+| `GetVariableName(int index)` | `string` | 指定索引的变量名 |
+| `GetVariableType(int index)` | `typename` | 指定索引的变量类型 |
+| `ToString()` | `string` | 类名字符串 |
 
 ### EnScript.GetClassVar / SetClassVar
 
-`EnScript.GetClassVar` and `EnScript.SetClassVar` let you read/write member variables by **name** at runtime. This is Enforce Script's equivalent of dynamic property access.
+`EnScript.GetClassVar` 和 `EnScript.SetClassVar` 允许你在运行时按**名称**读写成员变量。这是 Enforce Script 的动态属性访问等价物。
 
 ```c
-// Signature:
+// 签名：
 // static void EnScript.GetClassVar(Class instance, string varName, int index, out T value)
 // static bool EnScript.SetClassVar(Class instance, string varName, int index, T value)
-// 'index' is the array element index — use 0 for non-array fields.
+// 'index' 是数组元素索引——非数组字段使用 0。
 
 class MyConfig
 {
@@ -359,7 +363,7 @@ void DemoReflection()
 {
     MyConfig cfg = new MyConfig();
 
-    // Read values by name
+    // 按名称读取值
     int maxVal;
     EnScript.GetClassVar(cfg, "MaxSpawns", 0, maxVal);
     Print("MaxSpawns = " + maxVal.ToString());  // "MaxSpawns = 10"
@@ -372,20 +376,20 @@ void DemoReflection()
     EnScript.GetClassVar(cfg, "WelcomeMsg", 0, msg);
     Print("WelcomeMsg = " + msg);  // "WelcomeMsg = Hello!"
 
-    // Write values by name
+    // 按名称写入值
     EnScript.SetClassVar(cfg, "MaxSpawns", 0, 50);
     EnScript.SetClassVar(cfg, "SpawnRadius", 0, 250.0);
     EnScript.SetClassVar(cfg, "WelcomeMsg", 0, "Welcome!");
 }
 ```
 
-> **警告：** `GetClassVar`/`SetClassVar` silently fail if the variable name is wrong or the type doesn't match. Always validate variable names before use.
+> **警告：** `GetClassVar`/`SetClassVar` 在变量名错误或类型不匹配时会静默失败。使用前始终验证变量名。
 
 ---
 
 ## 实际示例
 
-### Finding All Vehicles in the World
+### 查找世界中所有车辆
 
 ```c
 static array<CarScript> FindAllVehicles()
@@ -394,7 +398,7 @@ static array<CarScript> FindAllVehicles()
     array<Object> allObjects = new array<Object>;
     array<CargoBase> proxyCargos = new array<CargoBase>;
 
-    // Search a large area (or use mission-specific logic)
+    // 搜索大范围区域（或使用任务特定逻辑）
     vector center = "7500 0 7500";
     GetGame().GetObjectsAtPosition(center, 15000.0, allObjects, proxyCargos);
 
@@ -412,13 +416,13 @@ static array<CarScript> FindAllVehicles()
 }
 ```
 
-### Safe Object Helper With Cast
+### 带类型转换的安全对象辅助函数
 
-This pattern is used throughout DayZ modding — a utility function that safely checks if an `Object` is alive by casting to `EntityAI`:
+这个模式在 DayZ modding 中到处使用——一个实用函数，通过转换到 `EntityAI` 来安全地检查 `Object` 是否存活：
 
 ```c
-// Object.IsAlive() does NOT exist on the base Object class!
-// You must cast to EntityAI first.
+// Object.IsAlive() 在基类 Object 上不存在！
+// 你必须先转换到 EntityAI。
 
 static bool IsObjectAlive(Object obj)
 {
@@ -431,18 +435,18 @@ static bool IsObjectAlive(Object obj)
         return eai.IsAlive();
     }
 
-    return false;  // Non-EntityAI objects (buildings, etc.) — treat as "not alive"
+    return false;  // 非 EntityAI 对象（建筑等）——视为"非存活"
 }
 ```
 
-### Reflection-Based Config System
+### 基于反射的配置系统
 
-This pattern (used in MyFramework) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
+这个模式（在 MyMod Core 中使用）构建了一个通用配置系统，其中字段按名称读写，使管理面板能够在不知道具体类的情况下编辑任何配置：
 
 ```c
 class ConfigBase
 {
-    // Find a member variable index by name
+    // 按名称查找成员变量索引
     protected int FindVarIndex(string fieldName)
     {
         typename t = Type();
@@ -455,7 +459,7 @@ class ConfigBase
         return -1;
     }
 
-    // Get any field value as string
+    // 获取任意字段值为字符串
     string GetFieldValue(string fieldName)
     {
         if (FindVarIndex(fieldName) == -1)
@@ -466,7 +470,7 @@ class ConfigBase
         return iVal.ToString();
     }
 
-    // Set any field value from string
+    // 从字符串设置任意字段值
     void SetFieldValue(string fieldName, string value)
     {
         if (FindVarIndex(fieldName) == -1)
@@ -485,14 +489,14 @@ class MyModConfig : ConfigBase
 
 void AdminPanelSave(ConfigBase config, string fieldName, string newValue)
 {
-    // Works for ANY config subclass — no type-specific code needed
+    // 适用于任何 config 子类——不需要类型特定代码
     config.SetFieldValue(fieldName, newValue);
 }
 ```
 
-### Type-Safe Event Dispatch
+### 类型安全的事件分发
 
-Use `typename` to build a dispatcher that routes events to the correct handler:
+使用 `typename` 构建将事件路由到正确处理程序的分发器：
 
 ```c
 class EventDispatcher
@@ -532,16 +536,49 @@ class EventDispatcher
 
 ---
 
+## 最佳实践
+
+- 每次转换后始终进行 null 检查——`Class.CastTo` 和 `Type.Cast` 在失败时都返回 null，不检查结果就使用会导致崩溃。
+- 当你需要根据成功/失败进行分支时使用 `Class.CastTo`；对简洁的单行赋值后跟 null 检查使用 `Type.Cast`。
+- 当类型在编译时已知时，优先使用 `IsInherited(typename)` 而不是 `IsKindOf(string)`——它更快且能在编译时捕获拼写错误。
+- 调用 `IsAlive()` 之前先转换到 `EntityAI`——基类 `Object` 没有此方法。
+- 使用 `EnScript.GetClassVar` 之前用 `GetVariableCount`/`GetVariableName` 验证变量名——它在名称错误时静默失败。
+
+---
+
+## 在实际 Mod 中的观察
+
+> 通过研究专业 DayZ mod 源代码确认的模式。
+
+| 模式 | Mod | 详情 |
+|---------|-----|--------|
+| `Class.CastTo` + `continue` 在实体循环中 | COT / Expansion | 每个遍历 `Object` 数组的循环都使用转换并继续来跳过不匹配的类型 |
+| `IsKindOf` 用于配置驱动的类型检查 | Expansion Market | 从 JSON 加载的物品类别使用基于字符串的 `IsKindOf`，因为类型是数据 |
+| `EnScript.GetClassVar`/`SetClassVar` 用于管理面板 | Dabs Framework | 通用配置编辑器按名称读写字段，使一个 UI 适用于所有配置类 |
+| `obj.Type().ToString()` 用于日志记录 | VPP Admin | 调试日志始终包含 `entity.Type().ToString()` 来标识处理了什么 |
+
+---
+
+## 理论与实践
+
+| 概念 | 理论 | 现实 |
+|---------|--------|---------|
+| `Object.IsAlive()` | 期望它存在于 `Object` 上 | 仅在 `EntityAI` 及其子类上可用——在 `Object` 上调用会崩溃 |
+| `EnScript.SetClassVar` 返回 `bool` | 应该指示成功/失败 | 在字段名错误时静默返回 `false`，没有错误消息——容易遗漏 |
+| `typename.Spawn()` | 创建任何类的实例 | 仅适用于具有无参构造函数的类；对于游戏实体使用 `CreateObject` |
+
+---
+
 ## 常见错误
 
-### 1. Forgetting to null-check after cast
+### 1. 忘记在转换后进行 null 检查
 
 ```c
-// WRONG — crashes if obj is not a PlayerBase
+// 错误——如果 obj 不是 PlayerBase 则崩溃
 PlayerBase player = PlayerBase.Cast(obj);
-player.GetIdentity();  // CRASH if cast failed!
+player.GetIdentity();  // 如果转换失败则崩溃！
 
-// CORRECT
+// 正确
 PlayerBase player = PlayerBase.Cast(obj);
 if (player)
 {
@@ -549,43 +586,43 @@ if (player)
 }
 ```
 
-### 2. Calling IsAlive() on base Object
+### 2. 在基类 Object 上调用 IsAlive()
 
 ```c
-// WRONG — Object.IsAlive() does not exist
+// 错误——Object.IsAlive() 不存在
 Object obj = GetSomeObject();
-if (obj.IsAlive())  // Compile error or runtime crash!
+if (obj.IsAlive())  // 编译错误或运行时崩溃！
 
-// CORRECT
+// 正确
 EntityAI eai;
 if (Class.CastTo(eai, obj) && eai.IsAlive())
 {
-    // Safe
+    // 安全
 }
 ```
 
-### 3. Using reflection with wrong variable name
+### 3. 使用反射但变量名错误
 
 ```c
-// SILENT FAILURE — no error, just returns zero/empty
+// 静默失败——没有错误，只返回零/空
 int val;
 EnScript.GetClassVar(obj, "NonExistentField", 0, val);
-// val is 0, no error thrown
+// val 为 0，没有抛出错误
 ```
 
-Always validate with `FindVarIndex` or `GetVariableCount`/`GetVariableName` first.
+始终先用 `FindVarIndex` 或 `GetVariableCount`/`GetVariableName` 验证。
 
-### 4. Confusing Type() with typename literal
+### 4. 混淆 Type() 和 typename 字面量
 
 ```c
-// Type() — returns the RUNTIME type of an instance
-typename t = myObj.Type();  // e.g., PlayerBase
+// Type() — 返回实例的运行时类型
+typename t = myObj.Type();  // 例如 PlayerBase
 
-// typename literal — a compile-time type reference
-typename t = PlayerBase;    // Always PlayerBase
+// typename 字面量——编译时类型引用
+typename t = PlayerBase;    // 始终是 PlayerBase
 
-// They are comparable
-if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
+// 它们可以比较
+if (myObj.Type() == PlayerBase)  // 如果 myObj 是 PlayerBase 则为 true
 ```
 
 ---
@@ -594,16 +631,16 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 | 操作 | 语法 | 返回值 |
 |-----------|--------|---------|
-| Safe downcast | `Class.CastTo(out target, source)` | `bool` |
-| Inline cast | `TargetType.Cast(source)` | Target or `null` |
-| Type check (typename) | `obj.IsInherited(typename)` | `bool` |
-| Type check (string) | `obj.IsKindOf("ClassName")` | `bool` |
-| Get runtime type | `obj.Type()` | `typename` |
-| Variable count | `obj.Type().GetVariableCount()` | `int` |
-| Variable name | `obj.Type().GetVariableName(i)` | `string` |
-| Variable type | `obj.Type().GetVariableType(i)` | `typename` |
-| Read property | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
-| Write property | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
+| 安全向下转换 | `Class.CastTo(out target, source)` | `bool` |
+| 内联转换 | `TargetType.Cast(source)` | 目标类型或 `null` |
+| 类型检查（typename）| `obj.IsInherited(typename)` | `bool` |
+| 类型检查（字符串）| `obj.IsKindOf("ClassName")` | `bool` |
+| 获取运行时类型 | `obj.Type()` | `typename` |
+| 变量数量 | `obj.Type().GetVariableCount()` | `int` |
+| 变量名称 | `obj.Type().GetVariableName(i)` | `string` |
+| 变量类型 | `obj.Type().GetVariableType(i)` | `typename` |
+| 读取属性 | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
+| 写入属性 | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
 
 ---
 
@@ -611,4 +648,4 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 | 上一章 | 上级 | 下一章 |
 |----------|----|------|
-| [1.8 Memory Management](08-memory-management.md) | [第一部分：Enforce Script](../README.md) | [1.10 枚举与预处理器](10-enums-preprocessor.md) |
+| [1.8 内存管理](08-memory-management.md) | [第 1 部分：Enforce Script](../README.md) | [1.10 枚举与预处理器](10-enums-preprocessor.md) |

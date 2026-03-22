@@ -1,110 +1,110 @@
-# Chapter 7.3: RPC Communication Patterns
+# 第 7.3 章：RPC 通信模式
 
-[Home](../../README.md) | [<< Previous: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Next: Config Persistence >>](04-config-persistence.md)
+[首页](../../README.md) | [<< 上一章：模块系统](02-module-systems.md) | **RPC 通信模式** | [下一章：配置持久化 >>](04-config-persistence.md)
 
 ---
 
 ## 简介
 
-Remote Procedure Calls (RPCs) are the only way to send data between client and server in DayZ. Every admin panel, every synced UI, every server-to-client notification, and every client-to-server action request flows through RPCs. Understanding how to build them correctly --- with proper serialization order, permission checks, and error handling --- is essential for any mod that does more than add items to CfgVehicles.
+远程过程调用（RPC）是 DayZ 中客户端和服务器之间发送数据的唯一方式。每个管理面板、每个同步的 UI、每个服务器到客户端的通知，以及每个客户端到服务器的操作请求都通过 RPC 进行。理解如何正确构建它们——使用正确的序列化顺序、权限检查和错误处理——对于任何不仅仅是向 CfgVehicles 添加物品的 mod 都至关重要。
 
-This chapter covers the fundamental `ScriptRPC` pattern, the client-server roundtrip lifecycle, error handling, and then compares the three major RPC routing approaches used in the DayZ modding community.
+本章涵盖基本的 `ScriptRPC` 模式、客户端-服务器往返生命周期、错误处理，然后比较 DayZ modding 社区使用的三种主要 RPC 路由方式。
 
 ---
 
 ## 目录
 
-- [ScriptRPC Fundamentals](#scriptrpc-fundamentals)
-- [Client to Server to Client Roundtrip](#client-to-server-to-client-roundtrip)
-- [Permission Checking Before Execution](#permission-checking-before-execution)
-- [Error Handling and Notifications](#error-handling-and-notifications)
-- [Serialization: The Read/Write Contract](#serialization-the-readwrite-contract)
-- [Three RPC Approaches Compared](#three-rpc-approaches-compared)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [ScriptRPC 基础](#scriptrpc-基础)
+- [客户端到服务器到客户端往返](#客户端到服务器到客户端往返)
+- [执行前的权限检查](#执行前的权限检查)
+- [错误处理和通知](#错误处理和通知)
+- [序列化：读写契约](#序列化读写契约)
+- [三种 RPC 方式对比](#三种-rpc-方式对比)
+- [常见错误](#常见错误)
+- [最佳实践](#最佳实践)
 
 ---
 
-## ScriptRPC Fundamentals
+## ScriptRPC 基础
 
-Every RPC in DayZ uses the `ScriptRPC` class. The pattern is always the same: create, write data, send.
+DayZ 中的每个 RPC 都使用 `ScriptRPC` 类。模式始终相同：创建、写入数据、发送。
 
-### Sending Side
+### 发送端
 
 ```c
 void SendDamageReport(PlayerIdentity target, string weaponName, float damage)
 {
     ScriptRPC rpc = new ScriptRPC();
 
-    // Write fields in a specific order
-    rpc.Write(weaponName);    // field 1: string
-    rpc.Write(damage);        // field 2: float
+    // 按特定顺序写入字段
+    rpc.Write(weaponName);    // 字段 1：string
+    rpc.Write(damage);        // 字段 2：float
 
-    // Send through the engine
-    // Parameters: target object, RPC ID, guaranteed delivery, recipient
+    // 通过引擎发送
+    // 参数：目标对象、RPC ID、保证送达、接收者
     rpc.Send(null, MY_RPC_ID, true, target);
 }
 ```
 
-### Receiving Side
+### 接收端
 
-The receiver reads fields in the **exact same order** they were written:
+接收端按**完全相同的顺序**读取写入时的字段：
 
 ```c
 void OnRPC_DamageReport(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     string weaponName;
-    if (!ctx.Read(weaponName)) return;  // field 1: string
+    if (!ctx.Read(weaponName)) return;  // 字段 1：string
 
     float damage;
-    if (!ctx.Read(damage)) return;      // field 2: float
+    if (!ctx.Read(damage)) return;      // 字段 2：float
 
-    // Use the data
+    // 使用数据
     Print("Hit by " + weaponName + " for " + damage.ToString() + " damage");
 }
 ```
 
-### Send Parameters Explained
+### Send 参数说明
 
 ```c
 rpc.Send(object, rpcId, guaranteed, identity);
 ```
 
-| Parameter | Type | Description |
+| 参数 | 类型 | 描述 |
 |-----------|------|-------------|
-| `object` | `Object` | The target entity (e.g., a player or vehicle). Use `null` for global RPCs. |
-| `rpcId` | `int` | Integer identifying this RPC type. Must match on both sides. |
-| `guaranteed` | `bool` | `true` = reliable (TCP-like, retransmits on loss). `false` = unreliable (fire-and-forget). |
-| `identity` | `PlayerIdentity` | Recipient. `null` from client = send to server. `null` from server = broadcast to all clients. Specific identity = send to that client only. |
+| `object` | `Object` | 目标实体（例如玩家或车辆）。全局 RPC 使用 `null`。|
+| `rpcId` | `int` | 标识此 RPC 类型的整数。两端必须匹配。|
+| `guaranteed` | `bool` | `true` = 可靠的（类似 TCP，丢包时重传）。`false` = 不可靠的（发射即忘）。|
+| `identity` | `PlayerIdentity` | 接收者。客户端 `null` = 发送到服务器。服务器 `null` = 广播到所有客户端。指定 identity = 仅发送到该客户端。|
 
-### When to Use `guaranteed`
+### 何时使用 `guaranteed`
 
-- **`true` (reliable):** Config changes, permission grants, teleport commands, ban actions --- anything where a dropped packet would leave client and server out of sync.
-- **`false` (unreliable):** Rapid position updates, visual effects, HUD state that refreshes every few seconds anyway. Lower overhead, no retransmit queue.
+- **`true`（可靠）：** 配置更改、权限授予、传送命令、封禁操作——任何丢包会导致客户端和服务器不同步的内容。
+- **`false`（不可靠）：** 快速位置更新、视觉效果、每几秒刷新一次的 HUD 状态。更低的开销，没有重传队列。
 
 ---
 
-## Client to Server to Client Roundtrip
+## 客户端到服务器到客户端往返
 
-The most common RPC pattern is the roundtrip: client requests an action, server validates and executes, server sends back the result.
+最常见的 RPC 模式是往返：客户端请求操作，服务器验证并执行，服务器发回结果。
 
 ```
-CLIENT                          SERVER
+客户端                          服务器
   │                               │
-  │  1. Request RPC ───────────►  │
-  │     (action + params)         │
-  │                               │  2. Validate permission
-  │                               │  3. Execute action
-  │                               │  4. Prepare response
-  │  ◄─────────── 5. Response RPC │
-  │     (result + data)           │
+  │  1. 请求 RPC ──────────────►  │
+  │     （操作 + 参数）           │
+  │                               │  2. 验证权限
+  │                               │  3. 执行操作
+  │                               │  4. 准备响应
+  │  ◄─────────── 5. 响应 RPC    │
+  │     （结果 + 数据）           │
   │                               │
-  │  6. Update UI                 │
+  │  6. 更新 UI                  │
 ```
 
-### Complete Example: Teleport Request
+### 完整示例：传送请求
 
-**Client sends the request:**
+**客户端发送请求：**
 
 ```c
 class TeleportClient
@@ -113,52 +113,52 @@ class TeleportClient
     {
         ScriptRPC rpc = new ScriptRPC();
         rpc.Write(position);
-        rpc.Send(null, MYMOD_RPC_TELEPORT, true, null);  // null identity = send to server
+        rpc.Send(null, MY_RPC_TELEPORT, true, null);  // null identity = 发送到服务器
     }
 };
 ```
 
-**Server receives, validates, executes, responds:**
+**服务器接收、验证、执行、响应：**
 
 ```c
 class TeleportServer
 {
     void OnRPC_TeleportRequest(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // 1. Read the request data
+        // 1. 读取请求数据
         vector position;
         if (!ctx.Read(position)) return;
 
-        // 2. Validate permission
+        // 2. 验证权限
         if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Teleport"))
         {
             SendError(sender, "No permission to teleport");
             return;
         }
 
-        // 3. Validate the data
+        // 3. 验证数据
         if (position[1] < 0 || position[1] > 1000)
         {
             SendError(sender, "Invalid teleport height");
             return;
         }
 
-        // 4. Execute the action
+        // 4. 执行操作
         PlayerBase player = PlayerBase.Cast(sender.GetPlayer());
         if (!player) return;
 
         player.SetPosition(position);
 
-        // 5. Send success response
+        // 5. 发送成功响应
         ScriptRPC response = new ScriptRPC();
-        response.Write(true);           // success flag
-        response.Write(position);       // echo back the position
-        response.Send(null, MYMOD_RPC_TELEPORT_RESULT, true, sender);
+        response.Write(true);           // 成功标志
+        response.Write(position);       // 回传位置
+        response.Send(null, MY_RPC_TELEPORT_RESULT, true, sender);
     }
 };
 ```
 
-**Client receives the response:**
+**客户端接收响应：**
 
 ```c
 class TeleportClient
@@ -173,7 +173,7 @@ class TeleportClient
 
         if (success)
         {
-            // Update UI: "Teleported to X, Y, Z"
+            // 更新 UI："已传送到 X, Y, Z"
         }
     }
 };
@@ -181,40 +181,40 @@ class TeleportClient
 
 ---
 
-## Permission Checking Before Execution
+## 执行前的权限检查
 
-Every server-side RPC handler that performs a privileged action **must** check permissions before executing. Never trust the client.
+每个执行特权操作的服务器端 RPC 处理程序**必须**在执行前检查权限。永远不要信任客户端。
 
-### The Pattern
+### 模式
 
 ```c
 void OnRPC_AdminAction(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
-    // RULE 1: Always validate the sender exists
+    // 规则 1：始终验证发送者存在
     if (!sender) return;
 
-    // RULE 2: Check permission before reading data
+    // 规则 2：在读取数据之前检查权限
     if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Ban"))
     {
         MyLog.Warning("BanRPC", "Unauthorized ban attempt from " + sender.GetName());
         return;
     }
 
-    // RULE 3: Only now read and execute
+    // 规则 3：现在才读取并执行
     string targetUid;
     if (!ctx.Read(targetUid)) return;
 
-    // ... execute ban
+    // ... 执行封禁
 }
 ```
 
-### Why Check Before Reading?
+### 为什么在读取之前检查？
 
-Reading data from an unauthorized client wastes server cycles. More importantly, malformed data from a malicious client could cause parsing errors. Checking permission first is a cheap guard that rejects bad actors immediately.
+从未授权的客户端读取数据会浪费服务器周期。更重要的是，来自恶意客户端的畸形数据可能导致解析错误。先检查权限是一个低成本的守卫，能立即拒绝恶意参与者。
 
-### Log Unauthorized Attempts
+### 记录未授权的尝试
 
-Always log failed permission checks. This creates an audit trail and helps server owners detect exploit attempts:
+始终记录失败的权限检查。这创建了审计跟踪，帮助服务器所有者检测漏洞利用尝试：
 
 ```c
 if (!HasPermission(sender, "MyMod.Spawn"))
@@ -227,43 +227,43 @@ if (!HasPermission(sender, "MyMod.Spawn"))
 
 ---
 
-## Error Handling and Notifications
+## 错误处理和通知
 
-RPCs can fail in multiple ways: network drops, malformed data, server-side validation failures. Robust mods handle all of these.
+RPC 可能以多种方式失败：网络中断、畸形数据、服务器端验证失败。健壮的 mod 处理所有这些情况。
 
-### Read Failures
+### 读取失败
 
-Every `ctx.Read()` can fail. Always check the return value:
+每个 `ctx.Read()` 都可能失败。始终检查返回值：
 
 ```c
-// BAD: Ignoring read failures
+// 差：忽略读取失败
 string name;
-ctx.Read(name);     // If this fails, name is "" — silent corruption
+ctx.Read(name);     // 如果失败，name 为 "" — 静默损坏
 int count;
-ctx.Read(count);    // This reads the wrong bytes — everything after is garbage
+ctx.Read(count);    // 这读取了错误的字节 — 之后的一切都是垃圾数据
 
-// GOOD: Early return on any read failure
+// 好：任何读取失败时立即返回
 string name;
 if (!ctx.Read(name)) return;
 int count;
 if (!ctx.Read(count)) return;
 ```
 
-### Error Response Pattern
+### 错误响应模式
 
-When the server rejects a request, send a structured error back to the client so the UI can display it:
+当服务器拒绝请求时，发送结构化错误给客户端，以便 UI 可以显示：
 
 ```c
-// Server: send error
+// 服务器：发送错误
 void SendError(PlayerIdentity target, string errorMsg)
 {
     ScriptRPC rpc = new ScriptRPC();
     rpc.Write(false);        // success = false
-    rpc.Write(errorMsg);     // reason
+    rpc.Write(errorMsg);     // 原因
     rpc.Send(null, MY_RPC_RESPONSE_ID, true, target);
 }
 
-// Client: handle error
+// 客户端：处理错误
 void OnRPC_Response(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     bool success;
@@ -274,72 +274,72 @@ void OnRPC_Response(PlayerIdentity sender, Object target, ParamsReadContext ctx)
         string errorMsg;
         if (!ctx.Read(errorMsg)) return;
 
-        // Show error in UI
+        // 在 UI 中显示错误
         MyLog.Warning("MyMod", "Server error: " + errorMsg);
         return;
     }
 
-    // Handle success...
+    // 处理成功...
 }
 ```
 
-### Notification Broadcasts
+### 通知广播
 
-For events that all clients should see (killfeed, announcements, weather changes), the server broadcasts with `identity = null`:
+对于所有客户端都应看到的事件（击杀信息、公告、天气变化），服务器使用 `identity = null` 进行广播：
 
 ```c
-// Server: broadcast to all clients
+// 服务器：广播到所有客户端
 void BroadcastAnnouncement(string message)
 {
     ScriptRPC rpc = new ScriptRPC();
     rpc.Write(message);
-    rpc.Send(null, RPC_ANNOUNCEMENT, true, null);  // null = all clients
+    rpc.Send(null, RPC_ANNOUNCEMENT, true, null);  // null = 所有客户端
 }
 ```
 
 ---
 
-## Serialization: The Read/Write Contract
+## 序列化：读写契约
 
-The single most important rule of DayZ RPCs: **the Read order must exactly match the Write order, type for type.**
+DayZ RPC 的最重要规则：**读取顺序必须与写入顺序完全匹配，类型对类型。**
 
-### The Contract
+### 契约
 
 ```c
-// SENDER writes:
+// 发送端写入：
 rpc.Write("hello");      // 1. string
 rpc.Write(42);           // 2. int
 rpc.Write(3.14);         // 3. float
 rpc.Write(true);         // 4. bool
 
-// RECEIVER reads in the SAME order:
+// 接收端以相同顺序读取：
 string s;   ctx.Read(s);     // 1. string
 int i;      ctx.Read(i);     // 2. int
 float f;    ctx.Read(f);     // 3. float
 bool b;     ctx.Read(b);     // 4. bool
 ```
 
-### What Goes Wrong When Order Mismatches
+### 顺序不匹配时会发生什么
 
-If you swap the read order, the deserializer interprets bytes intended for one type as another. An `int` read where a `string` was written will produce garbage, and every subsequent read will be offset --- corrupting all remaining fields. The engine does not throw an exception; it silently returns wrong data or causes `Read()` to return `false`.
+如果你交换了读取顺序，反序列化器会将用于一种类型的字节解释为另一种类型。在 `string` 位置读取 `int` 会产生垃圾数据，之后的每次读取都会偏移——损坏所有剩余字段。引擎不会抛出异常；它静默返回错误数据或导致 `Read()` 返回 `false`。
 
-### Supported Types
+### 支持的类型
 
-| Type | Notes |
+| 类型 | 说明 |
 |------|-------|
-| `int` | 32-bit signed |
-| `float` | 32-bit IEEE 754 |
-| `bool` | Single byte |
-| `string` | Length-prefixed UTF-8 |
-| `vector` | Three floats (x, y, z) |
-| `Object` (as target parameter) | Entity reference, resolved by engine |
+| `int` | 32 位有符号 |
+| `float` | 32 位 IEEE 754 |
+| `bool` | 单字节 |
+| `string` | 长度前缀 UTF-8 |
+| `vector` | 三个 float（x, y, z）|
+| `Object`（作为 target 参数）| 实体引用，由引擎解析 |
 
-### Serializing Collections
+### 序列化集合
 
-There is no built-in array serialization. Write the count first, then each element:
+没有内置的数组序列化。先写入计数，然后写入每个元素：
 
 ```c
-// SENDER
+// 发送端
 array<string> names = {"Alice", "Bob", "Charlie"};
 rpc.Write(names.Count());
 for (int i = 0; i < names.Count(); i++)
@@ -347,7 +347,7 @@ for (int i = 0; i < names.Count(); i++)
     rpc.Write(names[i]);
 }
 
-// RECEIVER
+// 接收端
 int count;
 if (!ctx.Read(count)) return;
 
@@ -360,17 +360,17 @@ for (int i = 0; i < count; i++)
 }
 ```
 
-### Serializing Complex Objects
+### 序列化复杂对象
 
-For complex data, serialize field by field. Do not try to pass objects directly through `Write()`:
+对于复杂数据，逐字段序列化。不要试图通过 `Write()` 直接传递对象：
 
 ```c
-// SENDER: flatten the object into primitives
+// 发送端：将对象展平为原语
 rpc.Write(player.GetName());
 rpc.Write(player.GetHealth());
 rpc.Write(player.GetPosition());
 
-// RECEIVER: reconstruct
+// 接收端：重建
 string name;    ctx.Read(name);
 float health;   ctx.Read(health);
 vector pos;     ctx.Read(pos);
@@ -378,22 +378,50 @@ vector pos;     ctx.Read(pos);
 
 ---
 
-## Three RPC Approaches Compared
+## 三种 RPC 方式对比
 
-The DayZ modding community uses three fundamentally different approaches to RPC routing. Each has trade-offs.
+DayZ modding 社区使用三种根本不同的 RPC 路由方式。每种都有其权衡。
 
-### 1. CF Named RPCs
+### 三种 RPC 方式对比
 
-Community Framework provides `GetRPCManager()` which routes RPCs by string names grouped by mod namespace.
+```mermaid
+graph TB
+    subgraph "方式 1：单 ID + 字符串路由"
+        S1["所有 RPC 共享<br/>一个引擎 ID"]
+        S1 --> S1D["分发器从载荷中<br/>读取路由字符串"]
+        S1D --> S1H1["处理程序 A"]
+        S1D --> S1H2["处理程序 B"]
+        S1D --> S1H3["处理程序 C"]
+    end
+
+    subgraph "方式 2：每模块整数范围"
+        S2M1["模块 A<br/>ID 10100-10119"]
+        S2M2["模块 B<br/>ID 10200-10219"]
+        S2M3["模块 C<br/>ID 10300-10319"]
+    end
+
+    subgraph "方式 3：基于哈希的 ID"
+        S3["ClassName::Method<br/>.Hash() → 唯一 ID"]
+        S3 --> S3C["注册时<br/>碰撞检测"]
+    end
+
+    style S1 fill:#4A90D9,color:#fff
+    style S2M1 fill:#2D8A4E,color:#fff
+    style S3 fill:#D97A4A,color:#fff
+```
+
+### 1. CF 命名 RPC
+
+Community Framework 提供 `GetRPCManager()`，按 mod 命名空间分组的字符串名称路由 RPC。
 
 ```c
-// Registration (in OnInit):
+// 注册（在 OnInit 中）：
 GetRPCManager().AddRPC("MyMod", "RPC_SpawnItem", this, SingleplayerExecutionType.Server);
 
-// Sending from client:
+// 从客户端发送：
 GetRPCManager().SendRPC("MyMod", "RPC_SpawnItem", new Param1<string>("AK74"), true);
 
-// Handler receives:
+// 处理程序接收：
 void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
 {
     if (type != CallType.Server) return;
@@ -402,36 +430,36 @@ void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, 
     if (!ctx.Read(data)) return;
 
     string className = data.param1;
-    // ... spawn the item
+    // ... 生成物品
 }
 ```
 
-**Pros:**
-- String-based routing is human-readable and collision-free
-- Namespace grouping (`"MyMod"`) prevents name clashes between mods
-- Widely used --- if you integrate with COT/Expansion, you use this
+**优点：**
+- 基于字符串的路由可读性强且无碰撞
+- 命名空间分组（`"MyMod"`）防止 mod 间名称冲突
+- 广泛使用——如果你与 COT/Expansion 集成，你就用这个
 
-**Cons:**
-- Requires CF as a dependency
-- Uses `Param` wrappers which are verbose for complex payloads
-- String comparison on every dispatch (minor overhead)
+**缺点：**
+- 需要 CF 作为依赖
+- 使用 `Param` 包装器，对复杂载荷来说很冗长
+- 每次分发都进行字符串比较（微小开销）
 
-### 2. COT / Vanilla Integer-Range RPCs
+### 2. COT / 原版整数范围 RPC
 
-Vanilla DayZ and some parts of COT use raw integer RPC IDs. Each mod claims a range of integers and dispatches in a modded `OnRPC` override.
+原版 DayZ 和 COT 的某些部分使用原始整数 RPC ID。每个 mod 占用一个整数范围，在 modded `OnRPC` 覆盖中分发。
 
 ```c
-// Define your RPC IDs (pick a unique range to avoid collisions)
+// 定义你的 RPC ID（选择唯一范围以避免碰撞）
 const int MY_RPC_SPAWN_ITEM     = 90001;
 const int MY_RPC_DELETE_ITEM    = 90002;
 const int MY_RPC_TELEPORT       = 90003;
 
-// Sending:
+// 发送：
 ScriptRPC rpc = new ScriptRPC();
 rpc.Write("AK74");
 rpc.Send(null, MY_RPC_SPAWN_ITEM, true, null);
 
-// Receiving (in modded DayZGame or entity):
+// 接收（在 modded DayZGame 或实体中）：
 modded class DayZGame
 {
     override void OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)
@@ -451,35 +479,35 @@ modded class DayZGame
 };
 ```
 
-**Pros:**
-- No dependencies --- works with vanilla DayZ
-- Integer comparison is fast
-- Full control over the RPC pipeline
+**优点：**
+- 无依赖——与原版 DayZ 配合使用
+- 整数比较速度快
+- 完全控制 RPC 管道
 
-**Cons:**
-- **ID collision risk**: two mods picking the same integer range will silently intercept each other's RPCs
-- Manual dispatch logic (switch/case) gets unwieldy with many RPCs
-- No namespace isolation
-- No built-in registry or discoverability
+**缺点：**
+- **ID 碰撞风险**：两个 mod 选择相同的整数范围会静默截获彼此的 RPC
+- 手动分发逻辑（switch/case）在 RPC 多时变得难以管理
+- 没有命名空间隔离
+- 没有内置注册表或可发现性
 
-### 3. MyMod String-Routed RPCs
+### 3. 自定义字符串路由 RPC
 
-MyMod uses a single engine RPC ID (83722) and multiplexes by writing a mod name + function name as a string header in every RPC. All routing happens inside `MyRPC`.
+自定义字符串路由系统使用单个引擎 RPC ID，通过在每个 RPC 中写入 mod 名称 + 函数名称作为字符串头来进行多路复用。所有路由都在静态管理器类（此例中为 `MyRPC`）内部进行。
 
 ```c
-// Registration:
+// 注册：
 MyRPC.Register("MyMod", "RPC_SpawnItem", this, MyRPCSide.SERVER);
 
-// Sending (header-only, no payload):
+// 发送（仅头部，无载荷）：
 MyRPC.Send("MyMod", "RPC_SpawnItem", null, true, null);
 
-// Sending (with payload):
+// 发送（带载荷）：
 ScriptRPC rpc = MyRPC.CreateRPC("MyMod", "RPC_SpawnItem");
 rpc.Write("AK74");
-rpc.Write(5);    // quantity
-rpc.Send(null, MyRPC.MyFRAMEWORK_RPC_ID, true, null);
+rpc.Write(5);    // 数量
+rpc.Send(null, MyRPC.FRAMEWORK_RPC_ID, true, null);
 
-// Handler:
+// 处理程序：
 void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     string className;
@@ -488,57 +516,57 @@ void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     int quantity;
     if (!ctx.Read(quantity)) return;
 
-    // ... spawn items
+    // ... 生成物品
 }
 ```
 
-**Pros:**
-- Zero collision risk --- string namespace + function name is globally unique
-- Zero dependency on CF (but optionally bridges to CF's `GetRPCManager()` when CF is present)
-- Single engine ID means minimal hook footprint
-- `CreateRPC()` helper pre-writes the routing header so you only write payload
-- Clean handler signature: `(PlayerIdentity, Object, ParamsReadContext)`
+**优点：**
+- 零碰撞风险——字符串命名空间 + 函数名称全局唯一
+- 不依赖 CF（但当 CF 存在时可选地桥接到 CF 的 `GetRPCManager()`）
+- 单个引擎 ID 意味着最小的钩子足迹
+- `CreateRPC()` 辅助函数预写路由头，你只需写载荷
+- 干净的处理程序签名：`(PlayerIdentity, Object, ParamsReadContext)`
 
-**Cons:**
-- Two extra string reads per RPC (the routing header) --- minimal overhead in practice
-- Custom system means other mods cannot discover your RPCs through CF's registry
-- Only dispatches via `CallFunctionParams` reflection, which is slightly slower than a direct method call
+**缺点：**
+- 每个 RPC 多两次字符串读取（路由头）——实际开销极小
+- 自定义系统意味着其他 mod 无法通过 CF 的注册表发现你的 RPC
+- 仅通过 `CallFunctionParams` 反射分发，比直接方法调用略慢
 
-### Comparison Table
+### 对比表
 
-| Feature | CF Named | Integer-Range | MyMod String-Routed |
+| 功能 | CF 命名 | 整数范围 | 自定义字符串路由 |
 |---------|----------|---------------|---------------------|
-| **Collision risk** | None (namespaced) | High | None (namespaced) |
-| **Dependencies** | Requires CF | None | None |
-| **Handler signature** | `(CallType, ctx, sender, target)` | Custom | `(sender, target, ctx)` |
-| **Discoverability** | CF registry | None | `MyRPC.s_Handlers` |
-| **Dispatch overhead** | String lookup | Integer switch | String lookup |
-| **Payload style** | Param wrappers | Raw Write/Read | Raw Write/Read |
-| **CF bridge** | Native | Manual | Automatic (`#ifdef`) |
+| **碰撞风险** | 无（有命名空间）| 高 | 无（有命名空间）|
+| **依赖** | 需要 CF | 无 | 无 |
+| **处理程序签名** | `(CallType, ctx, sender, target)` | 自定义 | `(sender, target, ctx)` |
+| **可发现性** | CF 注册表 | 无 | `MyRPC.s_Handlers` |
+| **分发开销** | 字符串查找 | 整数 switch | 字符串查找 |
+| **载荷风格** | Param 包装器 | 原始 Write/Read | 原始 Write/Read |
+| **CF 桥接** | 原生 | 手动 | 自动（`#ifdef`）|
 
-### Which Should You Use?
+### 你应该使用哪种？
 
-- **Your mod depends on CF anyway** (COT/Expansion integration): use CF Named RPCs
-- **Standalone mod, minimal dependencies**: use integer-range or build a string-routed system
-- **MyMod ecosystem mod**: use `MyRPC.Register()` / `MyRPC.CreateRPC()`
-- **Learning / prototyping**: integer-range is the simplest to understand
+- **你的 mod 已经依赖 CF**（COT/Expansion 集成）：使用 CF 命名 RPC
+- **独立 mod，最小依赖**：使用整数范围或构建字符串路由系统
+- **构建框架**：考虑像上面自定义 `MyRPC` 模式的字符串路由系统
+- **学习/原型设计**：整数范围最容易理解
 
 ---
 
 ## 常见错误
 
-### 1. Forgetting to Register the Handler
+### 1. 忘记注册处理程序
 
-You send an RPC but nothing happens on the other side. The handler was never registered.
+你发送了 RPC 但对面什么都没发生。处理程序从未注册。
 
 ```c
-// WRONG: No registration — the server never knows about this handler
+// 错误：没有注册——服务器永远不知道这个处理程序
 class MyModule
 {
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx) { ... }
 };
 
-// RIGHT: Register in OnInit
+// 正确：在 OnInit 中注册
 class MyModule
 {
     void OnInit()
@@ -550,35 +578,35 @@ class MyModule
 };
 ```
 
-### 2. Read/Write Order Mismatch
+### 2. 读/写顺序不匹配
 
-The most common RPC bug. The sender writes `(string, int, float)` but the receiver reads `(string, float, int)`. No error message --- just garbage data.
+最常见的 RPC bug。发送端写入 `(string, int, float)` 但接收端读取 `(string, float, int)`。没有错误消息——只有垃圾数据。
 
-**修复：** Write a comment block documenting the field order at both the send and receive sites:
+**修复：** 在发送端和接收端都写注释块记录字段顺序：
 
 ```c
-// Wire format: [string weaponName] [int damage] [float distance]
+// 线路格式：[string weaponName] [int damage] [float distance]
 ```
 
-### 3. Sending Client-Only Data to the Server
+### 3. 向服务器发送仅客户端数据
 
-The server cannot read client-side widget state, input state, or local variables. If you need to send a UI selection to the server, serialize the relevant value (a string, an index, an ID) --- not the widget object itself.
+服务器无法读取客户端的 widget 状态、输入状态或本地变量。如果你需要向服务器发送 UI 选择，序列化相关值（字符串、索引、ID）——而不是 widget 对象本身。
 
-### 4. Broadcasting When You Meant Unicast
+### 4. 想单播时却广播了
 
 ```c
-// WRONG: Sends to ALL clients when you meant to send to one
+// 错误：发送到所有客户端，而你只想发给一个
 rpc.Send(null, MY_RPC_ID, true, null);
 
-// RIGHT: Send to the specific client
+// 正确：发送到特定客户端
 rpc.Send(null, MY_RPC_ID, true, targetIdentity);
 ```
 
-### 5. Not Handling Stale Handlers Across Mission Restarts
+### 5. 在任务重启时未处理过期处理程序
 
-If a module registers an RPC handler and is then destroyed on mission end, the handler still points to the dead object. The next RPC dispatch will crash.
+如果模块注册了 RPC 处理程序然后在任务结束时被销毁，处理程序仍然指向已销毁的对象。下次 RPC 分发将崩溃。
 
-**修复：** Always unregister or clean up handlers on mission finish:
+**修复：** 始终在任务结束时注销或清理处理程序：
 
 ```c
 override void OnMissionFinish()
@@ -587,28 +615,48 @@ override void OnMissionFinish()
 }
 ```
 
-Or use a centralized `Cleanup()` that clears the entire handler map (as `MyRPC.Cleanup()` does).
+或使用集中的 `Cleanup()` 来清除整个处理程序映射（如 `MyRPC.Cleanup()` 所做的）。
 
 ---
 
-## Best Practices
+## 最佳实践
 
-1. **Always check `ctx.Read()` return values.** Every read can fail. Return immediately on failure.
+1. **始终检查 `ctx.Read()` 返回值。** 每次读取都可能失败。失败时立即返回。
 
-2. **Always validate the sender on the server.** Check that `sender` is non-null and has the required permission before doing anything.
+2. **始终在服务器上验证发送者。** 在做任何事情之前，检查 `sender` 非空且具有所需权限。
 
-3. **Document the wire format.** At both the send and receive sites, write a comment listing the fields in order with their types.
+3. **记录线路格式。** 在发送端和接收端都写注释，列出按顺序排列的字段及其类型。
 
-4. **Use reliable delivery for state changes.** Unreliable delivery is only appropriate for rapid, ephemeral updates (position, effects).
+4. **对状态变更使用可靠传输。** 不可靠传输仅适用于快速的、短暂的更新（位置、效果）。
 
-5. **Keep payloads small.** DayZ has a practical per-RPC size limit. For large data (config sync, player lists), split into multiple RPCs or use pagination.
+5. **保持载荷小。** DayZ 有实际的单 RPC 大小限制。对于大数据（配置同步、玩家列表），拆分为多个 RPC 或使用分页。
 
-6. **Register handlers early.** `OnInit()` is the safest place. Clients can connect before `OnMissionStart()` completes.
+6. **尽早注册处理程序。** `OnInit()` 是最安全的位置。客户端可以在 `OnMissionStart()` 完成之前连接。
 
-7. **Clean up handlers on shutdown.** Either unregister individually or clear the entire registry in `OnMissionFinish()`.
+7. **在关闭时清理处理程序。** 要么逐个注销，要么在 `OnMissionFinish()` 中清除整个注册表。
 
-8. **Use `CreateRPC()` for payloads, `Send()` for signals.** If you have no data to send (just a "do it" signal), use the header-only `Send()`. If you have data, use `CreateRPC()` + manual writes + manual `rpc.Send()`.
+8. **载荷用 `CreateRPC()`，信号用 `Send()`。** 如果没有数据要发送（只是"执行"信号），使用仅头部的 `Send()`。如果有数据，使用 `CreateRPC()` + 手动写入 + 手动 `rpc.Send()`。
 
 ---
 
-[<< 上一章: Module Systems](02-module-systems.md) | [Home](../../README.md) | [下一章: Config Persistence >>](04-config-persistence.md)
+## 兼容性与影响
+
+- **多 Mod：** 整数范围 RPC 容易碰撞——两个 mod 选择相同的 ID 会静默截获彼此的消息。字符串路由或 CF 命名 RPC 通过使用命名空间 + 函数名称作为键来避免这个问题。
+- **加载顺序：** RPC 处理程序注册顺序仅在多个 mod `modded class DayZGame` 并覆盖 `OnRPC` 时才重要。每个都必须为未处理的 ID 调用 `super.OnRPC()`，否则下游 mod 永远不会收到其 RPC。字符串路由系统通过使用单个引擎 ID 避免了这个问题。
+- **Listen 服务器：** 在 listen 服务器上，客户端和服务器在同一进程中运行。从服务器端用 `identity = null` 发送的 RPC 也会在本地接收。用 `if (type != CallType.Server) return;` 守卫处理程序，或适当检查 `GetGame().IsServer()` / `GetGame().IsClient()`。
+- **性能：** RPC 分发开销很小（字符串查找或整数 switch）。瓶颈是载荷大小——DayZ 有约 64 KB 的实际单 RPC 限制。对于大数据（配置同步），跨多个 RPC 分页。
+- **迁移：** RPC ID 是 mod 内部细节，不受 DayZ 版本更新影响。如果你更改了 RPC 线路格式（添加/删除字段），旧客户端与新服务器通信会静默不同步。对 RPC 载荷进行版本控制或强制客户端更新。
+
+---
+
+## 理论与实践
+
+| 教科书说 | DayZ 现实 |
+|---------------|-------------|
+| 使用 protocol buffers 或基于 schema 的序列化 | Enforce Script 没有 protobuf 支持；你需要手动按匹配顺序 `Write`/`Read` 原语 |
+| 使用 schema 强制验证所有输入 | 不存在 schema 验证；每个 `ctx.Read()` 返回值必须逐个检查 |
+| RPC 应该是幂等的 | 在 DayZ 中仅对查询 RPC 实用；变更 RPC（生成、删除、传送）本质上不是幂等的——用权限检查代替 |
+
+---
+
+[首页](../../README.md) | [<< 上一章：模块系统](02-module-systems.md) | **RPC 通信模式** | [下一章：配置持久化 >>](04-config-persistence.md)

@@ -1,41 +1,41 @@
-# Chapitre 2.5: File Organization Best Practices
+# Chapitre 2.5 : Bonnes pratiques d'organisation des fichiers
 
-[Accueil](../../README.md) | [<< Précédent : Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Suivant : Server vs Client Architecture >>](06-server-client-split.md)
+[Accueil](../../README.md) | [<< Précédent : Mod Minimum Viable](04-minimum-viable-mod.md) | **Organisation des fichiers** | [Suivant : Architecture Serveur vs Client >>](06-server-client-split.md)
 
 ---
 
-> **Résumé :** How you organize files determines whether your mod is maintainable at 10 files or 1,000. Ce chapitre couvre the canonical directory structure, naming conventions, content vs script vs framework mods, client-server splits, and lessons from professional DayZ mods.
+> **Résumé :** La façon dont vous organisez vos fichiers détermine si votre mod est maintenable à 10 fichiers ou à 1 000. Ce chapitre couvre la structure de répertoires canonique, les conventions de nommage, les mods de contenu vs script vs framework, les séparations client-serveur et les leçons tirées des mods DayZ professionnels.
 
 ---
 
 ## Table des matières
 
-- [The Canonical Directory Structure](#the-canonical-directory-structure)
-- [Naming Conventions](#naming-conventions)
-- [Three Types of Mods](#three-types-of-mods)
-- [Client-Server Split Mods](#client-server-split-mods)
-- [What Goes Where](#what-goes-where)
-- [PBO Naming and @mod Folder Naming](#pbo-naming-and-mod-folder-naming)
-- [Real Examples from Professional Mods](#real-examples-from-professional-mods)
-- [Anti-Patterns](#anti-patterns)
+- [La structure de répertoires canonique](#la-structure-de-répertoires-canonique)
+- [Conventions de nommage](#conventions-de-nommage)
+- [Trois types de mods](#trois-types-de-mods)
+- [Mods avec séparation client-serveur](#mods-avec-séparation-client-serveur)
+- [Quoi mettre où](#quoi-mettre-où)
+- [Nommage des PBO et dossiers @mod](#nommage-des-pbo-et-dossiers-mod)
+- [Exemples réels de mods professionnels](#exemples-réels-de-mods-professionnels)
+- [Anti-patterns](#anti-patterns)
 
 ---
 
-## The Canonical Directory Structure
+## La structure de répertoires canonique
 
-This est le standard layout used by professional DayZ mods. Not every folder is required -- only create what you need.
+Voici la disposition standard utilisée par les mods DayZ professionnels. Tous les dossiers ne sont pas requis -- créez uniquement ce dont vous avez besoin.
 
 ```
-MyMod/                                    <-- Project root (development)
-  mod.cpp                                 <-- Launcher metadata
-  stringtable.csv                         <-- Localization (at mod root, NOT in Scripts/)
+MyMod/                                    <-- Racine du projet (développement)
+  mod.cpp                                 <-- Métadonnées du lanceur
+  stringtable.csv                         <-- Localisation (à la racine du mod, PAS dans Scripts/)
 
-  Scripts/                                <-- Script PBO root
-    config.cpp                            <-- CfgPatches + CfgMods + script module defs
-    Inputs.xml                            <-- Custom keybindings (optional)
+  Scripts/                                <-- Racine du PBO de scripts
+    config.cpp                            <-- CfgPatches + CfgMods + defs de modules de script
+    Inputs.xml                            <-- Raccourcis clavier personnalisés (optionnel)
     Data/
-      Credits.json                        <-- Author credits
-      Version.hpp                         <-- Version string (optional)
+      Credits.json                        <-- Crédits d'auteur
+      Version.hpp                         <-- Chaîne de version (optionnel)
 
     1_Core/                               <-- engineScriptModule (rare)
       MyMod/
@@ -43,122 +43,122 @@ MyMod/                                    <-- Project root (development)
 
     3_Game/                               <-- gameScriptModule
       MyMod/
-        MyModConfig.c                     <-- Configuration class
-        MyModRPCs.c                       <-- RPC identifiers / registration
+        MyModConfig.c                     <-- Classe de configuration
+        MyModRPCs.c                       <-- Identifiants / enregistrement RPC
         Data/
-          SomeDataClass.c                 <-- Pure data structures
+          SomeDataClass.c                 <-- Structures de données pures
 
     4_World/                              <-- worldScriptModule
       MyMod/
         Entities/
-          MyCustomItem.c                  <-- Custom items
+          MyCustomItem.c                  <-- Objets personnalisés
           MyCustomVehicle.c
         Managers/
-          MyModManager.c                  <-- World-aware managers
+          MyModManager.c                  <-- Gestionnaires conscients du monde
         Actions/
-          ActionMyCustom.c                <-- Custom player actions
+          ActionMyCustom.c                <-- Actions joueur personnalisées
 
     5_Mission/                            <-- missionScriptModule
       MyMod/
-        MyModRegister.c                   <-- Mod registration (startup hook)
+        MyModRegister.c                   <-- Enregistrement du mod (hook de démarrage)
         GUI/
-          MyModPanel.c                    <-- UI panel scripts
-          MyModHUD.c                      <-- HUD overlay scripts
+          MyModPanel.c                    <-- Scripts de panneau UI
+          MyModHUD.c                      <-- Scripts de superposition HUD
 
-  GUI/                                    <-- GUI PBO root (separate from Scripts)
-    config.cpp                            <-- GUI-specific config (imageSets, styles)
-    layouts/                              <-- .layout files
+  GUI/                                    <-- Racine du PBO GUI (séparé de Scripts)
+    config.cpp                            <-- Config spécifique GUI (imageSets, styles)
+    layouts/                              <-- Fichiers .layout
       mymod_panel.layout
       mymod_hud.layout
-    imagesets/                            <-- .imageset files + texture atlases
+    imagesets/                            <-- Fichiers .imageset + atlas de textures
       mymod_icons.imageset
       mymod_icons.edds
-    looknfeel/                            <-- .styles files
+    looknfeel/                            <-- Fichiers .styles
       mymod.styles
 
-  Data/                                   <-- Data PBO root (models, textures, items)
+  Data/                                   <-- Racine du PBO Data (modèles, textures, objets)
     config.cpp                            <-- CfgVehicles, CfgWeapons, etc.
     Models/
-      my_item.p3d                         <-- 3D models
+      my_item.p3d                         <-- Modèles 3D
     Textures/
-      my_item_co.paa                      <-- Color textures
+      my_item_co.paa                      <-- Textures de couleur
       my_item_nohq.paa                    <-- Normal maps
     Materials/
-      my_item.rvmat                       <-- Material definitions
+      my_item.rvmat                       <-- Définitions de matériaux
 
-  Sounds/                                 <-- Sound files
-    alert.ogg                             <-- Audio files (always .ogg)
+  Sounds/                                 <-- Fichiers son
+    alert.ogg                             <-- Fichiers audio (toujours .ogg)
     ambient.ogg
 
-  ServerFiles/                            <-- Files for server admins to copy
-    types.xml                             <-- Central Economy spawn definitions
-    cfgspawnabletypes.xml                 <-- Attachment presets
-    README.md                             <-- Installation guide
+  ServerFiles/                            <-- Fichiers à copier par les admins serveur
+    types.xml                             <-- Définitions de spawn Central Economy
+    cfgspawnabletypes.xml                 <-- Préréglages d'accessoires
+    README.md                             <-- Guide d'installation
 
-  Keys/                                   <-- Signature keys
-    MyMod.bikey                           <-- Public key for server verification
+  Keys/                                   <-- Clés de signature
+    MyMod.bikey                           <-- Clé publique pour vérification serveur
 ```
 
 ---
 
-## Naming Conventions
+## Conventions de nommage
 
-### Mod/Project Names
+### Noms de mod/projet
 
-Use PascalCase with a clear prefix:
+Utilisez le PascalCase avec un préfixe clair :
 
 ```
-MyFramework          <-- Framework, prefix: MyFW_
-MyMod_Missions      <-- Feature mod
-MyMod_Weapons       <-- Content mod
-VPPAdminTools        <-- Some mods skip underscores
-DabsFramework        <-- PascalCase without separator
+MyFramework          <-- Framework, préfixe : MyFW_
+MyMod_Missions      <-- Mod de fonctionnalité
+MyMod_Weapons       <-- Mod de contenu
+VPPAdminTools        <-- Certains mods sautent les underscores
+DabsFramework        <-- PascalCase sans séparateur
 ```
 
-### Class Names
+### Noms de classes
 
-Use a short prefix unique to your mod, followed by an underscore and the class purpose:
+Utilisez un préfixe court unique à votre mod, suivi d'un underscore et de l'objectif de la classe :
 
 ```c
-// MyMod pattern: MyMod_[Subsystem]_[Name]
-class MyLog             // Core logging
-class MyRPC             // Core RPC
-class MyW_Config        // Weapons config
-class MyM_MissionBase   // Missions base
+// Pattern MyMod : MyMod_[SousSystème]_[Nom]
+class MyLog             // Logging central
+class MyRPC             // RPC central
+class MyW_Config        // Config armes
+class MyM_MissionBase   // Base de missions
 
-// CF pattern: CF_[Name]
+// Pattern CF : CF_[Nom]
 class CF_ModuleWorld
 class CF_EventArgs
 
-// COT pattern: JM_COT_[Name]
+// Pattern COT : JM_COT_[Nom]
 class JM_COT_Menu
 
-// VPP pattern: [Name] (no prefix)
+// Pattern VPP : [Nom] (pas de préfixe)
 class ChatCommandBase
 class WebhookManager
 ```
 
-**Rules:**
-- Prefix prevents collisions with other mods
-- Keep it short (2-4 characters)
-- Be consistent within your mod
+**Règles :**
+- Le préfixe empêche les collisions avec d'autres mods
+- Gardez-le court (2-4 caractères)
+- Soyez cohérent au sein de votre mod
 
-### File Names
+### Noms de fichiers
 
-Name each file after the primary class it contains:
+Nommez chaque fichier d'après la classe principale qu'il contient :
 
 ```
-MyLog.c            <-- Contains class MyLog
-MyRPC.c            <-- Contains class MyRPC
-MyModConfig.c        <-- Contains class MyModConfig
-ActionMyCustom.c     <-- Contains class ActionMyCustom
+MyLog.c            <-- Contient class MyLog
+MyRPC.c            <-- Contient class MyRPC
+MyModConfig.c        <-- Contient class MyModConfig
+ActionMyCustom.c     <-- Contient class ActionMyCustom
 ```
 
-One class per file is the ideal. Multiple small helper classes in one file is acceptable when they are tightly coupled.
+Une classe par fichier est l'idéal. Plusieurs petites classes utilitaires dans un seul fichier est acceptable quand elles sont étroitement couplées.
 
-### Layout Files
+### Fichiers de mise en page
 
-Use lowercase with your mod prefix:
+Utilisez des minuscules avec le préfixe de votre mod :
 
 ```
 my_admin_panel.layout
@@ -166,41 +166,41 @@ my_killfeed_overlay.layout
 mymod_settings_dialog.layout
 ```
 
-### Variable Names
+### Noms de variables
 
 ```c
-// Member variables: m_ prefix
+// Variables membres : préfixe m_
 protected int m_Count;
 protected ref array<string> m_Items;
 protected ref MyConfig m_Config;
 
-// Static variables: s_ prefix
+// Variables statiques : préfixe s_
 static int s_InstanceCount;
 static ref MyLog s_Logger;
 
-// Constants: ALL_CAPS
+// Constantes : TOUT_EN_MAJUSCULES
 const int MAX_PLAYERS = 60;
 const float UPDATE_INTERVAL = 0.5;
 const string MOD_NAME = "MyMod";
 
-// Variable localeiables: camelCase (no prefix)
+// Variables locales : camelCase (pas de préfixe)
 int count = 0;
 string playerName = identity.GetName();
 float deltaTime = timeArgs.DeltaTime;
 
-// Parameters: camelCase (no prefix)
+// Paramètres : camelCase (pas de préfixe)
 void SetConfig(MyConfig config, bool forceReload)
 ```
 
 ---
 
-## Three Types of Mods
+## Trois types de mods
 
-DayZ mods fall into three categories. Each has a different structure emphasis.
+Les mods DayZ se répartissent en trois catégories. Chacune a un accent structurel différent.
 
-### 1. Content Mod
+### 1. Mod de contenu
 
-Adds items, weapons, vehicles, buildings -- primarily 3D assets with minimal scripting.
+Ajoute des objets, armes, véhicules, bâtiments -- principalement des assets 3D avec un scripting minimal.
 
 ```
 MyWeaponPack/
@@ -216,24 +216,24 @@ MyWeaponPack/
     Ammo/
       MyAmmo/
         MyAmmo.p3d
-  Scripts/                    <-- Minimal (may not even exist)
+  Scripts/                    <-- Minimal (peut même ne pas exister)
     config.cpp
     4_World/
       MyWeaponPack/
-        MyRifle.c             <-- Only if the weapon needs custom behavior
+        MyRifle.c             <-- Seulement si l'arme a besoin d'un comportement personnalisé
   ServerFiles/
     types.xml
 ```
 
-**Characteristics:**
-- Heavy on `Data/` (models, textures, materials)
-- Heavy on `Data/config.cpp` (CfgVehicles, CfgWeapons definitions)
-- Minimal or no scripting
-- Scripts only when items need custom behavior beyond what config defines
+**Caractéristiques :**
+- Beaucoup de `Data/` (modèles, textures, matériaux)
+- Beaucoup de `Data/config.cpp` (définitions CfgVehicles, CfgWeapons)
+- Scripting minimal ou inexistant
+- Scripts seulement quand les objets ont besoin d'un comportement personnalisé au-delà de ce que la config définit
 
-### 2. Script Mod
+### 2. Mod de script
 
-Adds gameplay features, admin tools, systems -- primarily code with minimal assets.
+Ajoute des fonctionnalités de gameplay, des outils d'administration, des systèmes -- principalement du code avec un minimum d'assets.
 
 ```
 MyAdminTools/
@@ -262,15 +262,15 @@ MyAdminTools/
       admin_icons.imageset
 ```
 
-**Characteristics:**
-- Heavy on `Scripts/` (most code in 3_Game, 4_World, 5_Mission)
-- GUI layouts and imagesets for UI
-- Little or no `Data/` (no 3D models)
-- Usually depends on a framework (CF, DabsFramework, or a custom framework)
+**Caractéristiques :**
+- Beaucoup de `Scripts/` (la plupart du code dans 3_Game, 4_World, 5_Mission)
+- Mises en page GUI et imagesets pour l'UI
+- Peu ou pas de `Data/` (pas de modèles 3D)
+- Dépend généralement d'un framework (CF, DabsFramework ou un framework personnalisé)
 
-### 3. Framework Mod
+### 3. Mod framework
 
-Provides shared infrastructure for other mods -- logging, RPC, configuration, UI systems.
+Fournit une infrastructure partagée pour d'autres mods -- logging, RPC, configuration, systèmes UI.
 
 ```
 MyFramework/
@@ -280,7 +280,7 @@ MyFramework/
     config.cpp
     Data/
       Credits.json
-    1_Core/                     <-- Frameworks often use 1_Core
+    1_Core/                     <-- Les frameworks utilisent souvent 1_Core
       MyFramework/
         Constants.c
         LogLevel.c
@@ -319,254 +319,179 @@ MyFramework/
     looknfeel/
 ```
 
-**Characteristics:**
-- Uses all script layers (1_Core through 5_Mission)
-- Deep subdirectory hierarchy in each layer
-- Defines `defines[]` for feature detection
-- Other mods depend on it via `requiredAddons`
-- Provides base classes that other mods extend
+**Caractéristiques :**
+- Utilise toutes les couches de script (1_Core à 5_Mission)
+- Hiérarchie de sous-répertoires profonde dans chaque couche
+- Définit `defines[]` pour la détection de fonctionnalités
+- Les autres mods en dépendent via `requiredAddons`
+- Fournit des classes de base que d'autres mods étendent
 
 ---
 
-## Client-Server Split Mods
+## Mods avec séparation client-serveur
 
-When a mod has both client-visible behavior (UI, entity rendering) and server-only logic (apparition, AI brains, secure state), it should split into two packages.
+Quand un mod a à la fois un comportement visible côté client (UI, rendu d'entités) et une logique serveur uniquement (spawn, cerveaux IA, état sécurisé), il devrait se diviser en deux packages.
 
-### Directory Structure
+### Structure de répertoires
 
 ```
-MyMod/                                    <-- Project root (development repo)
-  MyMod_Sub/                           <-- Client package (loaded via -mod=)
+MyMod/                                    <-- Racine du projet (dépôt de développement)
+  MyMod_Sub/                           <-- Package client (chargé via -mod=)
     mod.cpp
     stringtable.csv
     Scripts/
       config.cpp                          <-- type = "mod"
-      3_Game/MyMod/                       <-- Shared data classes, RPCs
-      4_World/MyMod/                      <-- Client-side entity rendering
-      5_Mission/MyMod/                    <-- Client UI, HUD
+      3_Game/MyMod/                       <-- Classes de données partagées, RPCs
+      4_World/MyMod/                      <-- Rendu d'entités côté client
+      5_Mission/MyMod/                    <-- UI client, HUD
     GUI/
       layouts/
     Sounds/
 
-  MyMod_SubServer/                     <-- Server package (loaded via -servermod=)
+  MyMod_SubServer/                     <-- Package serveur (chargé via -servermod=)
     mod.cpp
     Scripts/
       config.cpp                          <-- type = "servermod"
-      3_Game/MyModServer/                 <-- Server-side data classes
-      4_World/MyModServer/                <-- Spawning, AI logic, state management
-      5_Mission/MyModServer/              <-- Server startup/shutdown hooks
+      3_Game/MyModServer/                 <-- Classes de données côté serveur
+      4_World/MyModServer/                <-- Spawn, logique IA, gestion d'état
+      5_Mission/MyModServer/              <-- Hooks de démarrage/arrêt serveur
 ```
 
-### Key Rules for Split Mods
+### Règles clés pour les mods divisés
 
-1. **Le client package is loaded by everyone** (server and all clients via `-mod=`)
-2. **Le serveur package is loaded only by le serveur** (via `-servermod=`)
-3. **Le serveur package depends on le client package** (via `requiredAddons`)
-4. **Never put UI code in le serveur package** -- clients will not receive it
-5. **Keep secure/private logic in le serveur package** -- it is never sent to clients
-
-### Dependency Chain
-
-```cpp
-// Client package config.cpp
-class CfgPatches
-{
-    class MyMod_Sub_Scripts
-    {
-        requiredAddons[] = { "DZ_Scripts", "MyMod_Core_Scripts" };
-    };
-};
-
-// Server package config.cpp
-class CfgPatches
-{
-    class MyMod_SubServer_Scripts
-    {
-        requiredAddons[] = { "DZ_Scripts", "MyMod_Sub_Scripts", "MyMod_Core_Scripts" };
-        //                                  ^^^ depends on client package
-    };
-};
-```
-
-### Real Example: Missions Client-Server Split
-
-```
-MyMod_Missions/
-  MyMod_Missions/                        <-- Client (-mod=)
-    mod.cpp                               type = "mod"
-    Scripts/
-      config.cpp                          requiredAddons: MyMod_Core_Scripts
-      3_Game/MyMod_Missions/             Shared enums, config, RPC IDs
-      4_World/MyMod_Missions/            Mission markers (client rendering)
-      5_Mission/MyMod_Missions/          Mission UI, radio HUD
-    GUI/layouts/                          Mission panel layouts
-    Sounds/                               Radio beep sounds
-
-  MyMod_MissionsServer/                 <-- Server (-servermod=)
-    mod.cpp                               type = "servermod"
-    Scripts/
-      config.cpp                          requiredAddons: MyMod_Scripts, MyMod_Core_Scripts
-      3_Game/MyMod_MissionsServer/       Server config extensions
-      4_World/MyMod_MissionsServer/      Mission spawner, loot manager
-      5_Mission/MyMod_MissionsServer/    Server mission lifecycle
-```
+1. **Le package client est chargé par tout le monde** (serveur et tous les clients via `-mod=`)
+2. **Le package serveur est chargé uniquement par le serveur** (via `-servermod=`)
+3. **Le package serveur dépend du package client** (via `requiredAddons`)
+4. **Ne jamais mettre de code UI dans le package serveur** -- les clients ne le recevront pas
+5. **Garder la logique sécurisée/privée dans le package serveur** -- elle n'est jamais envoyée aux clients
 
 ---
 
-## What Goes Where
+## Quoi mettre où
 
-### Data/ Directory
+### Répertoire Data/
 
-Physical assets and item definitions:
+Assets physiques et définitions d'objets :
 
 ```
 Data/
   config.cpp          <-- CfgVehicles, CfgWeapons, CfgMagazines, CfgAmmo
-  Models/             <-- .p3d 3D model files
-  Textures/           <-- .paa, .edds texture files
-  Materials/          <-- .rvmat material definitions
-  Animations/         <-- .anim animation files (rare)
+  Models/             <-- Fichiers de modèles 3D .p3d
+  Textures/           <-- Fichiers de textures .paa, .edds
+  Materials/          <-- Définitions de matériaux .rvmat
+  Animations/         <-- Fichiers d'animation .anim (rare)
 ```
 
-### Scripts/ Directory
+### Répertoire Scripts/
 
-All Enforce Script code:
+Tout le code Enforce Script :
 
 ```
 Scripts/
-  config.cpp          <-- CfgPatches, CfgMods, script module definitions
-  Inputs.xml          <-- Keybinding definitions
+  config.cpp          <-- CfgPatches, CfgMods, définitions de modules de script
+  Inputs.xml          <-- Définitions de raccourcis clavier
   Data/
-    Credits.json      <-- Author credits
-    Version.hpp       <-- Version string
-  1_Core/             <-- Fundamental constants and utilities
-  3_Game/             <-- Configs, RPCs, data classes
-  4_World/            <-- Entities, managers, gameplay logic
-  5_Mission/          <-- UI, HUD, mission lifecycle
+    Credits.json      <-- Crédits d'auteur
+    Version.hpp       <-- Chaîne de version
+  1_Core/             <-- Constantes et utilitaires fondamentaux
+  3_Game/             <-- Configs, RPCs, classes de données
+  4_World/            <-- Entités, gestionnaires, logique de gameplay
+  5_Mission/          <-- UI, HUD, cycle de vie de la mission
 ```
 
-### GUI/ Directory
+### Répertoire GUI/
 
-User interface resources:
+Ressources d'interface utilisateur :
 
 ```
 GUI/
-  config.cpp          <-- GUI-specific CfgPatches (for imageset/style registration)
-  layouts/            <-- .layout files (widget trees)
-  imagesets/          <-- .imageset XML + .edds texture atlases
-  icons/              <-- Icon imagesets (may be separate from general imagesets)
-  looknfeel/          <-- .styles files (widget visual properties)
-  fonts/              <-- Custom font files (rare)
-  sounds/             <-- UI sound files (click, hover, etc.)
+  config.cpp          <-- CfgPatches spécifique GUI (pour l'enregistrement d'imageset/style)
+  layouts/            <-- Fichiers .layout (arbres de widgets)
+  imagesets/          <-- XML .imageset + atlas de textures .edds
+  icons/              <-- Imagesets d'icônes (peuvent être séparés des imagesets généraux)
+  looknfeel/          <-- Fichiers .styles (propriétés visuelles des widgets)
+  fonts/              <-- Fichiers de polices personnalisées (rare)
+  sounds/             <-- Fichiers son UI (clic, survol, etc.)
 ```
 
-### Sounds/ Directory
+### Répertoire Sounds/
 
-Audio files:
+Fichiers audio :
 
 ```
 Sounds/
-  alert.ogg           <-- Always .ogg format
+  alert.ogg           <-- Toujours au format .ogg
   ambient.ogg
   click.ogg
 ```
 
-Sound config (CfgSoundSets, CfgSoundShaders) goes in `Scripts/config.cpp`, not in a separate Sounds config.
+La configuration sonore (CfgSoundSets, CfgSoundShaders) va dans `Scripts/config.cpp`, pas dans une config Sounds séparée.
 
-### ServerFiles/ Directory
+### Répertoire ServerFiles/
 
-Files that server administrators copy to their server's mission folder:
+Fichiers que les administrateurs de serveur copient dans le dossier de mission de leur serveur :
 
 ```
 ServerFiles/
-  types.xml                   <-- Item spawn definitions for Central Economy
-  cfgspawnabletypes.xml       <-- Attachment/cargo presets
-  cfgeventspawns.xml          <-- Event spawn positions (rare)
-  README.md                   <-- Installation instructions
+  types.xml                   <-- Définitions de spawn d'objets pour Central Economy
+  cfgspawnabletypes.xml       <-- Préréglages d'accessoires/cargo
+  cfgeventspawns.xml          <-- Positions de spawn d'événements (rare)
+  README.md                   <-- Instructions d'installation
 ```
 
 ---
 
-## PBO Naming and @mod Folder Naming
+## Nommage des PBO et dossiers @mod
 
-### PBO Names
+### Noms de PBO
 
-Each PBO gets a descriptive name with the mod prefix:
+Chaque PBO reçoit un nom descriptif avec le préfixe du mod :
 
 ```
 @MyMod/
   Addons/
-    MyMod_Scripts.pbo         <-- Script code
-    MyMod_Data.pbo            <-- Models, textures, items
-    MyMod_GUI.pbo             <-- Layouts, imagesets, styles
-    MyMod_Sounds.pbo          <-- Audio (sometimes bundled with Data)
+    MyMod_Scripts.pbo         <-- Code script
+    MyMod_Data.pbo            <-- Modèles, textures, objets
+    MyMod_GUI.pbo             <-- Mises en page, imagesets, styles
+    MyMod_Sounds.pbo          <-- Audio (parfois regroupé avec Data)
 ```
 
-The PBO name does not need to match the CfgPatches class name, but keeping them aligned prevents confusion.
+Le nom du PBO n'a pas besoin de correspondre au nom de la classe CfgPatches, mais les garder alignés évite la confusion.
 
-### @mod Folder Name
+### Nom du dossier @mod
 
-The `@` prefix is a Steam Workshop convention. During development, you may omit it:
-
-```
-Development:    MyMod/           <-- No @ prefix
-Workshop:       @MyMod/          <-- With @ prefix
-```
-
-The `@` has no technical meaning to le moteur. It is purely organizational convention.
-
-### Multiple PBOs Per Mod
-
-Large mods split into multiple PBOs for several reasons:
-
-1. **Separate update cycles** -- update scripts without re-downloading 3D models
-2. **Optional components** -- GUI PBO is optional if mod works headless
-3. **Build pipeline** -- different PBOs built by different tools
+Le préfixe `@` est une convention Steam Workshop. Pendant le développement, vous pouvez l'omettre :
 
 ```
-@MyMod_Weapons/
-  Addons/
-    MyMod_Weapons_Scripts.pbo    <-- Script behavior
-    MyMod_Weapons_Data.pbo       <-- 268 weapon models, textures, configs
+Développement :    MyMod/           <-- Pas de préfixe @
+Workshop :         @MyMod/          <-- Avec préfixe @
 ```
 
-Each PBO has its own `config.cpp` with its own `CfgPatches` entry. The `requiredAddons` between them controls the load order:
+Le `@` n'a aucune signification technique pour le moteur. C'est purement une convention organisationnelle.
 
-```cpp
-// Scripts/config.cpp
-class CfgPatches
-{
-    class MyMod_Weapons_Scripts
-    {
-        requiredAddons[] = { "DZ_Scripts", "DZ_Weapons_Firearms" };
-    };
-};
+### PBOs multiples par mod
 
-// Data/config.cpp
-class CfgPatches
-{
-    class MyMod_Weapons_Data
-    {
-        requiredAddons[] = { "DZ_Data", "DZ_Weapons_Firearms" };
-    };
-};
-```
+Les grands mods se divisent en plusieurs PBOs pour plusieurs raisons :
+
+1. **Cycles de mise à jour séparés** -- mettre à jour les scripts sans re-télécharger les modèles 3D
+2. **Composants optionnels** -- le PBO GUI est optionnel si le mod fonctionne headless
+3. **Pipeline de build** -- différents PBOs construits par différents outils
 
 ---
 
-## Real Examples from Professional Mods
+## Exemples réels de mods professionnels
 
-### Framework Mod Example
+### Exemple de mod framework
 
 ```
 MyFramework/
-  MyFramework/                            <-- Client package
+  MyFramework/                            <-- Package client
     mod.cpp
     stringtable.csv
     GUI/
       config.cpp
       fonts/
-      icons/                              <-- 5 icon weight imagesets
+      icons/                              <-- 5 imagesets d'icônes par poids
       imagesets/
       layouts/
         dialogs/
@@ -584,9 +509,9 @@ MyFramework/
     Scripts/
       config.cpp
       Inputs.xml
-      1_Core/MyMod/                      <-- Log levels, constants
-      2_GameLib/MyMod/UI/                <-- MVC attribute system
-      3_Game/MyMod/                      <-- 15+ subsystem folders
+      1_Core/MyMod/                      <-- Niveaux de log, constantes
+      2_GameLib/MyMod/UI/                <-- Système d'attributs MVC
+      3_Game/MyMod/                      <-- 15+ dossiers de sous-systèmes
         Animation/
         Branding/
         Chat/
@@ -607,17 +532,11 @@ MyFramework/
         Theme/
         Timer/
         UI/
-      4_World/MyMod/                     <-- Player data, world managers
-      5_Mission/MyMod/                   <-- Admin panel, mod registration
-
-  MyFramework_Server/                     <-- Server package
-    mod.cpp
-    Scripts/
-      config.cpp
-      ...
+      4_World/MyMod/                     <-- Données joueur, gestionnaires du monde
+      5_Mission/MyMod/                   <-- Panneau admin, enregistrement du mod
 ```
 
-### Community Online Tools (COT) -- Admin Tool
+### Community Online Tools (COT) -- Outil d'administration
 
 ```
 JM/COT/
@@ -630,116 +549,88 @@ JM/COT/
       vehicles/
     textures/
   Objects/Debug/
-    config.cpp                            <-- Debug entity definitions
+    config.cpp                            <-- Définitions d'entités de debug
   Scripts/
     config.cpp
     Data/
       Credits.json
       Version.hpp
       Inputs.xml
-    Common/                               <-- Shared across all layers
+    Common/                               <-- Partagé entre toutes les couches
     1_Core/
     3_Game/
     4_World/
     5_Mission/
   languagecore/
-    config.cpp                            <-- String table config
+    config.cpp                            <-- Config de table de chaînes
 ```
 
-Note the `Common/` folder pattern: included in every script module via `files[]`, allowing shared types across all layers.
+Notez le pattern du dossier `Common/` : inclus dans chaque module de script via `files[]`, permettant des types partagés entre toutes les couches.
 
-### Content Mod Example
+### Exemple de mod de contenu
 
 ```
 MyMod_Weapons/
   MyMod_Weapons/
     mod.cpp
     Data/
-      config.cpp                          <-- Merged config: 268 weapon definitions
-      Ammo/                               <-- Organized by source/caliber
+      config.cpp                          <-- Config fusionnée : 268 définitions d'armes
+      Ammo/                               <-- Organisé par source/calibre
         BC/12.7x55/
         BC/338/
         BC/50Cal/
         GCGN/3006/
         GCGN/300AAC/
-      Attachments/                        <-- Scopes, suppressors, grips
+      Attachments/                        <-- Lunettes, suppresseurs, grips
       Magazines/
-      Weapons/                            <-- Weapon models organized by source
+      Weapons/                            <-- Modèles d'armes organisés par source
     Scripts/
-      config.cpp                          <-- Script module definitions
-      3_Game/                             <-- Weapon config, stat system
-      4_World/                            <-- Weapon behavior overrides
-      5_Mission/                          <-- Registration, UI
+      config.cpp                          <-- Définitions de modules de script
+      3_Game/                             <-- Config d'armes, système de stats
+      4_World/                            <-- Overrides de comportement d'armes
+      5_Mission/                          <-- Enregistrement, UI
 ```
 
-Content mods have a massive `Data/` directory and relatively small `Scripts/`.
-
-### DabsFramework -- UI Framework
-
-```
-DabsFramework/
-  mod.cpp
-  gui/
-    config.cpp
-    imagesets/
-    icons/
-      brands.imageset
-      light.imageset
-      regular.imageset
-      solid.imageset
-      thin.imageset
-    looknfeel/
-  scripts/
-    config.cpp
-    Credits.json
-    Version.hpp
-    1_core/
-    2_GameLib/                            <-- One of few mods using layer 2
-    3_Game/
-    4_World/
-    5_Mission/
-```
-
-Note: DabsFramework uses lowercase folder names (`scripts/`, `gui/`). This works because Windows is case-insensitive, but may cause issues on Linux. The convention is to use the canonical casing (`Scripts/`, `GUI/`).
+Les mods de contenu ont un répertoire `Data/` massif et un `Scripts/` relativement petit.
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### 1. Flat Script Dump
+### 1. Dump de scripts à plat
 
 ```
 Scripts/
   3_Game/
-    AllMyStuff.c            <-- 2000 lines, 15 classes
-    MoreStuff.c             <-- 1500 lines, 12 classes
+    AllMyStuff.c            <-- 2000 lignes, 15 classes
+    MoreStuff.c             <-- 1500 lignes, 12 classes
 ```
 
-**Fix:** One file per class, organized in subdirectories by subsystem.
+**Solution :** Un fichier par classe, organisé en sous-répertoires par sous-système.
 
-### 2. Wrong Layer Placement
+### 2. Mauvais placement de couche
 
 ```
 Scripts/
   3_Game/
     MyMod/
-      PlayerManager.c       <-- References PlayerBase (defined in 4_World)
-      MyPanel.c             <-- UI code (belongs in 5_Mission)
-      MyItem.c              <-- Extends ItemBase (belongs in 4_World)
+      PlayerManager.c       <-- Référence PlayerBase (défini dans 4_World)
+      MyPanel.c             <-- Code UI (appartient à 5_Mission)
+      MyItem.c              <-- Étend ItemBase (appartient à 4_World)
 ```
 
-**Fix:** Follow the layer rules from Chapter 2.1. Move entity code to `4_World` and UI code to `5_Mission`.
+**Solution :** Suivez les règles de couche du Chapitre 2.1. Déplacez le code d'entité vers `4_World` et le code UI vers `5_Mission`.
 
-### 3. No Mod Subdirectory in Script Layers
+### 3. Pas de sous-répertoire de mod dans les couches de script
 
 ```
 Scripts/
   3_Game/
-    Config.c                <-- Name collision risk with other mods!
+    Config.c                <-- Risque de collision de nom avec d'autres mods !
     RPCs.c
 ```
 
-**Fix:** Always namespace with a subdirectory:
+**Solution :** Toujours namespaser avec un sous-répertoire :
 
 ```
 Scripts/
@@ -749,15 +640,15 @@ Scripts/
       RPCs.c
 ```
 
-### 4. stringtable.csv Inside Scripts/
+### 4. stringtable.csv à l'intérieur de Scripts/
 
 ```
 Scripts/
-  stringtable.csv           <-- WRONG LOCATION
+  stringtable.csv           <-- MAUVAIS EMPLACEMENT
   config.cpp
 ```
 
-**Fix:** `stringtable.csv` goes at the mod root (next to `mod.cpp`):
+**Solution :** `stringtable.csv` va à la racine du mod (à côté de `mod.cpp`) :
 
 ```
 MyMod/
@@ -767,7 +658,7 @@ MyMod/
     config.cpp
 ```
 
-### 5. Mixed Assets and Scripts in One PBO
+### 5. Assets et scripts mélangés dans un seul PBO
 
 ```
 MyMod/
@@ -777,7 +668,7 @@ MyMod/
   Textures/weapon_co.paa
 ```
 
-**Fix:** Separate into multiple PBOs:
+**Solution :** Séparer en plusieurs PBOs :
 
 ```
 MyMod/
@@ -790,19 +681,19 @@ MyMod/
     Textures/weapon_co.paa
 ```
 
-### 6. Deeply Nested Subdirectories
+### 6. Sous-répertoires profondément imbriqués
 
 ```
 Scripts/3_Game/MyMod/Systems/Core/Config/Managers/Settings/PlayerSettings.c
 ```
 
-**Fix:** Keep nesting to 2-3 levels maximum. Flatten when possible:
+**Solution :** Gardez l'imbrication à 2-3 niveaux maximum. Aplatissez quand c'est possible :
 
 ```
 Scripts/3_Game/MyMod/Config/PlayerSettings.c
 ```
 
-### 7. Inconsistent Naming
+### 7. Nommage incohérent
 
 ```
 mymod_Config.c
@@ -811,7 +702,7 @@ MYMOD_Manager.c
 my_mod_panel.c
 ```
 
-**Fix:** Pick one convention and stick with it:
+**Solution :** Choisissez une convention et tenez-vous-y :
 
 ```
 MyModConfig.c
@@ -822,53 +713,53 @@ MyModPanel.c
 
 ---
 
-## Summary Checklist
+## Checklist de résumé
 
-Before publishing your mod, verify:
+Avant de publier votre mod, vérifiez :
 
-- [ ] `mod.cpp` is at the mod root (next to `Addons/` or `Scripts/`)
-- [ ] `stringtable.csv` is at the mod root (NOT inside `Scripts/`)
-- [ ] `config.cpp` exists in every PBO root
-- [ ] `requiredAddons[]` lists ALL dependencies
-- [ ] Script module `files[]` paths match the actual directory structure
-- [ ] Every `.c` file is inside a mod-namespaced subdirectory (e.g., `3_Game/MyMod/`)
-- [ ] Class names have a unique prefix to avoid collisions
-- [ ] Entity classes are in `4_World`, UI classes are in `5_Mission`, data classes are in `3_Game`
-- [ ] No secrets or debug code in the published PBOs
-- [ ] Server-only logic is in a separate `-servermod` package (if applicable)
+- [ ] `mod.cpp` est à la racine du mod (à côté de `Addons/` ou `Scripts/`)
+- [ ] `stringtable.csv` est à la racine du mod (PAS à l'intérieur de `Scripts/`)
+- [ ] `config.cpp` existe dans chaque racine de PBO
+- [ ] `requiredAddons[]` liste TOUTES les dépendances
+- [ ] Les chemins `files[]` des modules de script correspondent à la structure de répertoires réelle
+- [ ] Chaque fichier `.c` est dans un sous-répertoire namespacé par le mod (par exemple, `3_Game/MyMod/`)
+- [ ] Les noms de classes ont un préfixe unique pour éviter les collisions
+- [ ] Les classes d'entité sont dans `4_World`, les classes UI dans `5_Mission`, les classes de données dans `3_Game`
+- [ ] Pas de secrets ou de code debug dans les PBOs publiés
+- [ ] La logique serveur uniquement est dans un package `-servermod` séparé (si applicable)
 
 ---
 
 ## Observé dans les mods réels
 
-| Patron | Mod | Détail |
+| Pattern | Mod | Détail |
 |---------|-----|--------|
-| Deep subsystem folders in `3_Game` | StarDZ Core | 15+ folders under `3_Game/` (Config, RPC, Events, Logging, Permissions, etc.) |
-| `Common/` shared folder | COT | Included in every script module's `files[]` to provide cross-layer utility types |
-| Lowercase folder names | DabsFramework | Uses `scripts/`, `gui/` instead of `Scripts/`, `GUI/` -- works on Windows but risks issues on Linux |
-| Separate GUI PBO | Expansion, COT | GUI resources (layouts, imagesets, styles) packed into a dedicated PBO with its own config.cpp |
-| Minimal Scripts for content mods | Weapon packs | `Data/` directory dominates; `Scripts/` has only a thin config.cpp and optional behavior overrides |
+| Dossiers de sous-systèmes profonds dans `3_Game` | StarDZ Core | 15+ dossiers sous `3_Game/` (Config, RPC, Events, Logging, Permissions, etc.) |
+| Dossier `Common/` partagé | COT | Inclus dans les `files[]` de chaque module de script pour fournir des types utilitaires inter-couches |
+| Noms de dossiers en minuscules | DabsFramework | Utilise `scripts/`, `gui/` au lieu de `Scripts/`, `GUI/` -- fonctionne sous Windows mais risque des problèmes sous Linux |
+| PBO GUI séparé | Expansion, COT | Les ressources GUI (layouts, imagesets, styles) empaquetées dans un PBO dédié avec son propre config.cpp |
+| Scripts minimaux pour les mods de contenu | Packs d'armes | Le répertoire `Data/` domine ; `Scripts/` n'a qu'un mince config.cpp et des overrides de comportement optionnels |
 
 ---
 
 ## Théorie vs Pratique
 
 | Concept | Théorie | Réalité |
-|---------|--------|---------|
-| One class per file | Each `.c` file contains one class | Small helper classes and enums are often co-located with their parent class for convenience |
-| Separate PBOs for Scripts/Data/GUI | Clean separation by concern | Small mods often merge everything into a single PBO to simplify distribution |
-| Mod subfolder prevents collisions | `3_Game/MyMod/` namespaces files | True, but class names still collide globally -- the subfolder only prevents file-level conflicts |
-| `stringtable.csv` at mod root | Engine finds it automatically | Must be at the PBO root that gets loaded; placing it inside `Scripts/` causes it to be silently ignored |
-| ServerFiles/ ships with the mod | Server admins copy types.xml | Many mod authors forget to include ServerFiles, forcing admins to create types.xml entries manually |
+|---------|---------|---------|
+| Une classe par fichier | Chaque fichier `.c` contient une classe | Les petites classes utilitaires et enums sont souvent co-localisés avec leur classe parente par commodité |
+| PBOs séparés pour Scripts/Data/GUI | Séparation propre par préoccupation | Les petits mods fusionnent souvent tout dans un seul PBO pour simplifier la distribution |
+| Le sous-dossier de mod empêche les collisions | `3_Game/MyMod/` namespace les fichiers | Vrai, mais les noms de classes entrent toujours en collision globalement -- le sous-dossier n'empêche que les conflits au niveau fichier |
+| `stringtable.csv` à la racine du mod | Le moteur le trouve automatiquement | Doit être à la racine du PBO qui est chargé ; le placer dans `Scripts/` cause son ignorance silencieuse |
+| ServerFiles/ est livré avec le mod | Les admins serveur copient types.xml | Beaucoup d'auteurs de mods oublient d'inclure ServerFiles, forçant les admins à créer les entrées types.xml manuellement |
 
 ---
 
-## Compatibilité et impact
+## Compatibilité & Impact
 
-- **Multi-Mod :** File organization itself does not cause conflicts. Cependant, two mods placing files with the same path inside their PBOs (e.g., both using `3_Game/Config.c` without a mod subfolder) will collide at le moteur level, causing one to silently override the other.
-- **Performance :** Directory depth and file count have no measurable impact on script compilation time. Le moteur recursively scans all listed `files[]` directories regardless of nesting.
+- **Multi-Mod :** L'organisation des fichiers en elle-même ne cause pas de conflits. Cependant, deux mods plaçant des fichiers avec le même chemin dans leurs PBOs (par exemple, les deux utilisant `3_Game/Config.c` sans sous-dossier de mod) entreront en collision au niveau du moteur, causant l'override silencieux de l'un par l'autre.
+- **Performance :** La profondeur des répertoires et le nombre de fichiers n'ont aucun impact mesurable sur le temps de compilation des scripts. Le moteur scanne récursivement tous les répertoires `files[]` listés indépendamment de l'imbrication.
 
 ---
 
-**Précédent :** [Chapter 2.4: Your First Mod -- Minimum Viable](04-minimum-viable-mod.md)
-**Suivant :** [Chapter 2.6: Server vs Client Architecture](06-server-client-split.md)
+**Précédent :** [Chapitre 2.4 : Votre premier mod -- Minimum Viable](04-minimum-viable-mod.md)
+**Suivant :** [Chapitre 2.6 : Architecture Serveur vs Client](06-server-client-split.md)

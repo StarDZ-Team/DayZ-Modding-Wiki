@@ -1,35 +1,35 @@
-# Chapter 1.7: Math & Vector Operations
+# Kapitel 1.7: Mathematik & Vektor-Operationen
 
-[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
+[Startseite](../../README.md) | [<< Zurück: String-Operationen](06-strings.md) | **Mathematik & Vektor-Operationen** | [Weiter: Speicherverwaltung >>](08-memory-management.md)
 
 ---
 
 ## Einführung
 
-DayZ modding frequently requires mathematical calculations: finding distances between players, randomizing spawn positions, interpolating camera movements, computing angles for AI targeting. Enforce Script provides the `Math` class for scalar operations and the `vector` type with static helpers for 3D math. This chapter is a complete reference for both, organized by category.
+DayZ-Modding erfordert häufig mathematische Berechnungen: Entfernungen zwischen Spielern finden, Spawn-Positionen randomisieren, Kamerabewegungen interpolieren, Winkel für KI-Zielen berechnen. Enforce Script bietet die `Math`-Klasse für skalare Operationen und den `vector`-Typ mit statischen Hilfsfunktionen für 3D-Mathematik. Dieses Kapitel ist eine vollständige Referenz für beides, nach Kategorie geordnet.
 
 ---
 
-## Math Class
+## Math-Klasse
 
-All methods on the `Math` class are **static**. You call them as `Math.MethodName()`.
+Alle Methoden der `Math`-Klasse sind **statisch**. Sie rufen sie als `Math.MethodenName()` auf.
 
 ### Konstanten
 
-| Constant | Value | Description |
+| Konstante | Wert | Beschreibung |
 |----------|-------|-------------|
-| `Math.PI` | 3.14159265... | Pi |
-| `Math.PI2` | 6.28318530... | 2 * Pi (full circle in radians) |
-| `Math.PI_HALF` | 1.57079632... | Pi / 2 (quarter circle) |
-| `Math.EULER` | 2.71828182... | Euler's number |
-| `Math.DEG2RAD` | 0.01745329... | Multiply degrees by this to get radians |
-| `Math.RAD2DEG` | 57.29577951... | Multiply radians by this to get degrees |
+| `Math.PI` | 3,14159265... | Pi |
+| `Math.PI2` | 6,28318530... | 2 * Pi (voller Kreis in Radiant) |
+| `Math.PI_HALF` | 1,57079632... | Pi / 2 (Viertelkreis) |
+| `Math.EULER` | 2,71828182... | Eulersche Zahl |
+| `Math.DEG2RAD` | 0,01745329... | Grad damit multiplizieren, um Radiant zu erhalten |
+| `Math.RAD2DEG` | 57,29577951... | Radiant damit multiplizieren, um Grad zu erhalten |
 
 ```c
-// Convert 90 degrees to radians
+// 90 Grad in Radiant umwandeln
 float rad = 90 * Math.DEG2RAD; // 1.5707...
 
-// Convert PI radians to degrees
+// PI Radiant in Grad umwandeln
 float deg = Math.PI * Math.RAD2DEG; // 180.0
 ```
 
@@ -38,45 +38,45 @@ float deg = Math.PI * Math.RAD2DEG; // 180.0
 ### Zufallszahlen
 
 ```c
-// Random integer in range [min, max) -- max is EXCLUSIVE
-int roll = Math.RandomInt(0, 10);           // 0 through 9
+// Zufällige Ganzzahl im Bereich [min, max) -- max ist EXKLUSIV
+int roll = Math.RandomInt(0, 10);           // 0 bis 9
 
-// Random integer in range [min, max] -- max is INCLUSIVE
-int dice = Math.RandomIntInclusive(1, 6);   // 1 through 6
+// Zufällige Ganzzahl im Bereich [min, max] -- max ist INKLUSIV
+int dice = Math.RandomIntInclusive(1, 6);   // 1 bis 6
 
-// Random float in range [min, max) -- max is EXCLUSIVE
+// Zufällige Gleitkommazahl im Bereich [min, max) -- max ist EXKLUSIV
 float rf = Math.RandomFloat(0.0, 1.0);
 
-// Random float in range [min, max] -- max is INCLUSIVE
+// Zufällige Gleitkommazahl im Bereich [min, max] -- max ist INKLUSIV
 float rf2 = Math.RandomFloatInclusive(0.0, 1.0);
 
-// Random float [0, 1] inclusive (shorthand)
+// Zufällige Gleitkommazahl [0, 1] inklusiv (Kurzform)
 float chance = Math.RandomFloat01();
 
-// Random bool
+// Zufälliger Bool
 bool coinFlip = Math.RandomBool();
 
-// Seed the random number generator (-1 seeds from system time)
+// Zufallszahlengenerator initialisieren (-1 initialisiert mit Systemzeit)
 Math.Randomize(-1);
 ```
 
-#### DayZ example: Random loot chance
+#### DayZ-Beispiel: Zufällige Loot-Chance
 
 ```c
 bool ShouldSpawnRareLoot(float rarity)
 {
-    // rarity: 0.0 = never, 1.0 = always
+    // rarity: 0.0 = nie, 1.0 = immer
     return Math.RandomFloat01() < rarity;
 }
 
-// 15% chance for rare weapon
+// 15% Chance für seltene Waffe
 if (ShouldSpawnRareLoot(0.15))
 {
     GetGame().CreateObject("VSS", position, false, false, true);
 }
 ```
 
-#### DayZ example: Random position within radius
+#### DayZ-Beispiel: Zufällige Position innerhalb eines Radius
 
 ```c
 vector GetRandomPositionInRadius(vector center, float radius)
@@ -104,7 +104,7 @@ float floored = Math.Floor(5.9);   // 5.0
 float ceiled = Math.Ceil(5.1);     // 6.0
 ```
 
-#### DayZ example: Grid-snapped building placement
+#### DayZ-Beispiel: Rasterausgerichtete Gebäudeplatzierung
 
 ```c
 vector SnapToGrid(vector pos, float gridSize)
@@ -118,7 +118,7 @@ vector SnapToGrid(vector pos, float gridSize)
 
 ---
 
-### Absolute Value & Sign
+### Absolutwert & Vorzeichen
 
 ```c
 float af = Math.AbsFloat(-5.5);    // 5.5
@@ -134,7 +134,7 @@ int si2 = Math.SignInt(7);         // 1
 
 ---
 
-### Power, Root & Logarithm
+### Potenz, Wurzel & Logarithmus
 
 ```c
 float pw = Math.Pow(2, 10);        // 1024.0
@@ -146,23 +146,23 @@ float lg = Math.Log2(8);           // 3.0
 
 ### Trigonometrie
 
-All trigonometric functions work in **radians**. Use `Math.DEG2RAD` and `Math.RAD2DEG` to convert.
+Alle trigonometrischen Funktionen arbeiten in **Radiant**. Verwenden Sie `Math.DEG2RAD` und `Math.RAD2DEG` zum Konvertieren.
 
 ```c
-// Basic trig
+// Grundlegende Trigonometrie
 float s = Math.Sin(Math.PI / 4);     // ~0.707
 float c = Math.Cos(Math.PI / 4);     // ~0.707
 float t = Math.Tan(Math.PI / 4);     // ~1.0
 
-// Inverse trig
-float asin = Math.Asin(0.5);         // ~0.5236 rad (30 degrees)
-float acos = Math.Acos(0.5);         // ~1.0472 rad (60 degrees)
+// Inverse Trigonometrie
+float asin = Math.Asin(0.5);         // ~0.5236 rad (30 Grad)
+float acos = Math.Acos(0.5);         // ~1.0472 rad (60 Grad)
 
-// Atan2 -- angle from x-axis to point (y, x)
-float angle = Math.Atan2(1, 1);      // PI/4 (~0.785 rad = 45 degrees)
+// Atan2 -- Winkel von der x-Achse zum Punkt (y, x)
+float angle = Math.Atan2(1, 1);      // PI/4 (~0.785 rad = 45 Grad)
 ```
 
-#### DayZ example: Direction angle between two positions
+#### DayZ-Beispiel: Richtungswinkel zwischen zwei Positionen
 
 ```c
 float GetAngleBetween(vector from, vector to)
@@ -170,11 +170,11 @@ float GetAngleBetween(vector from, vector to)
     float dx = to[0] - from[0];
     float dz = to[2] - from[2];
     float angleRad = Math.Atan2(dx, dz);
-    return angleRad * Math.RAD2DEG; // Return in degrees
+    return angleRad * Math.RAD2DEG; // In Grad zurückgeben
 }
 ```
 
-#### DayZ example: Spawn objects in a circle
+#### DayZ-Beispiel: Objekte im Kreis spawnen
 
 ```c
 void SpawnCircleOfBarrels(vector center, float radius, int count)
@@ -199,21 +199,21 @@ void SpawnCircleOfBarrels(vector center, float radius, int count)
 ### Clamping & Min/Max
 
 ```c
-// Clamp a value to a range
-float clamped = Math.Clamp(15, 0, 10);  // 10 (capped at max)
-float clamped2 = Math.Clamp(-5, 0, 10); // 0  (capped at min)
-float clamped3 = Math.Clamp(5, 0, 10);  // 5  (within range)
+// Wert auf einen Bereich begrenzen
+float clamped = Math.Clamp(15, 0, 10);  // 10 (am Maximum gekappt)
+float clamped2 = Math.Clamp(-5, 0, 10); // 0  (am Minimum gekappt)
+float clamped3 = Math.Clamp(5, 0, 10);  // 5  (innerhalb des Bereichs)
 
-// Min and Max
+// Min und Max
 float mn = Math.Min(3, 7);              // 3
 float mx = Math.Max(3, 7);              // 7
 
-// Check if value is in range
+// Prüfen, ob Wert im Bereich liegt
 bool inRange = Math.IsInRange(5, 0, 10); // true
 bool outRange = Math.IsInRange(15, 0, 10); // false
 ```
 
-#### DayZ example: Clamping player health
+#### DayZ-Beispiel: Spielergesundheit begrenzen
 
 ```c
 void ApplyDamage(PlayerBase player, float damage)
@@ -229,34 +229,34 @@ void ApplyDamage(PlayerBase player, float damage)
 ### Interpolation
 
 ```c
-// Linear interpolation (Lerp)
-// Returns a + (b - a) * t, where t is [0, 1]
+// Lineare Interpolation (Lerp)
+// Gibt a + (b - a) * t zurück, wobei t im Bereich [0, 1] liegt
 float lerped = Math.Lerp(0, 100, 0.5);     // 50
 float lerped2 = Math.Lerp(0, 100, 0.25);   // 25
 
-// Inverse Lerp -- finds the t value
-// Returns (value - a) / (b - a)
+// Inverses Lerp -- findet den t-Wert
+// Gibt (value - a) / (b - a) zurück
 float t = Math.InverseLerp(0, 100, 50);    // 0.5
 float t2 = Math.InverseLerp(0, 100, 75);   // 0.75
 ```
 
-#### SmoothCD (Smooth Critical Damping)
+#### SmoothCD (Sanfte kritische Dämpfung)
 
-`SmoothCD` provides smooth, framerate-independent interpolation. It is the best choice for camera smoothing, UI animations, and any value that should approach a target gradually without oscillation.
+`SmoothCD` bietet sanfte, bildfrequenzunabhängige Interpolation. Es ist die beste Wahl für Kamera-Glättung, UI-Animationen und jeden Wert, der sich einem Ziel schrittweise ohne Oszillation nähern soll.
 
 ```c
-// SmoothCD(current, target, velocity, smoothTime, maxSpeed, dt)
-// velocity is passed by reference and updated each call
+// SmoothCD(aktuell, ziel, geschwindigkeit, glättungszeit, maxGeschwindigkeit, dt)
+// geschwindigkeit wird per Referenz übergeben und bei jedem Aufruf aktualisiert
 float currentVal = 0;
 float velocity = 0;
 float target = 100;
 float smoothTime = 0.3;
 
-// Called each frame:
+// Wird jeden Frame aufgerufen:
 currentVal = Math.SmoothCD(currentVal, target, velocity, smoothTime, 1000, 0.016);
 ```
 
-#### DayZ example: Smooth camera zoom
+#### DayZ-Beispiel: Sanfter Kamera-Zoom
 
 ```c
 class SmoothZoomCamera
@@ -291,31 +291,31 @@ class SmoothZoomCamera
 
 ---
 
-### Winkeloperationen
+### Winkel-Operationen
 
 ```c
-// Normalize angle to [0, 360)
+// Winkel auf [0, 360) normalisieren
 float norm = Math.NormalizeAngle(370);   // 10
 float norm2 = Math.NormalizeAngle(-30);  // 330
 
-// Difference between two angles (shortest path)
+// Differenz zwischen zwei Winkeln (kürzester Weg)
 float diff = Math.DiffAngle(350, 10);   // -20
 float diff2 = Math.DiffAngle(10, 350);  // 20
 ```
 
 ---
 
-### Squared & Modulo
+### Quadrat & Modulo
 
 ```c
-// Square (faster than Pow(x, 2))
+// Quadrat (schneller als Pow(x, 2))
 float sqf = Math.SqrFloat(5);          // 25.0
 int sqi = Math.SqrInt(5);              // 25
 
-// Float modulo
+// Gleitkomma-Modulo
 float mod = Math.ModFloat(5.5, 2.0);   // 1.5
 
-// Wrap an integer into a range
+// Ganzzahl in einen Bereich einwickeln
 int wrapped = Math.WrapInt(12, 0, 10);  // 2
 int wrapped2 = Math.WrapInt(-1, 0, 10); // 9
 ```
@@ -324,94 +324,94 @@ int wrapped2 = Math.WrapInt(-1, 0, 10); // 9
 
 ## Vektor-Typ
 
-The `vector` type is a built-in value type with three float components (x, y, z). It is used everywhere in DayZ for positions, directions, orientations, and scales.
+Der `vector`-Typ ist ein eingebauter Werttyp mit drei Float-Komponenten (x, y, z). Er wird überall in DayZ für Positionen, Richtungen, Orientierungen und Skalierungen verwendet.
 
-### Creating Vectors
+### Vektoren erstellen
 
 ```c
-// String initialization (x y z separated by spaces)
+// String-Initialisierung (x y z durch Leerzeichen getrennt)
 vector pos = "100.5 0 200.3";
 
-// Constructor function
+// Konstruktor-Funktion
 vector pos2 = Vector(100.5, 0, 200.3);
 
-// Default value (zero vector)
+// Standardwert (Nullvektor)
 vector zero;           // "0 0 0"
 ```
 
-### Accessing Components
+### Auf Komponenten zugreifen
 
 ```c
 vector pos = Vector(10, 25, 30);
 
 float x = pos[0]; // 10
-float y = pos[1]; // 25 (height in DayZ)
+float y = pos[1]; // 25 (Höhe in DayZ)
 float z = pos[2]; // 30
 
-pos[1] = 50.0;    // Set y component
+pos[1] = 50.0;    // y-Komponente setzen
 ```
 
-> **DayZ coordinate system:** `[0]` is East-West (X), `[1]` is height (Y), `[2]` is North-South (Z).
+> **DayZ-Koordinatensystem:** `[0]` ist Ost-West (X), `[1]` ist Höhe (Y), `[2]` ist Nord-Süd (Z).
 
-### Vector Konstanten
+### Vektor-Konstanten
 
-| Constant | Value | Description |
+| Konstante | Wert | Beschreibung |
 |----------|-------|-------------|
-| `vector.Zero` | `"0 0 0"` | Zero vector (origin) |
-| `vector.Up` | `"0 1 0"` | Points upward |
-| `vector.Aside` | `"1 0 0"` | Points east (X+) |
-| `vector.Forward` | `"0 0 1"` | Points north (Z+) |
+| `vector.Zero` | `"0 0 0"` | Nullvektor (Ursprung) |
+| `vector.Up` | `"0 1 0"` | Zeigt nach oben |
+| `vector.Aside` | `"1 0 0"` | Zeigt nach Osten (X+) |
+| `vector.Forward` | `"0 0 1"` | Zeigt nach Norden (Z+) |
 
 ---
 
-### Vektor-Operationen (Static Methods)
+### Vektor-Operationen (Statische Methoden)
 
-#### Distance
+#### Entfernung
 
 ```c
 vector a = Vector(0, 0, 0);
 vector b = Vector(100, 0, 100);
 
 float dist = vector.Distance(a, b);     // ~141.42
-float distSq = vector.DistanceSq(a, b); // 20000 (no sqrt, faster)
+float distSq = vector.DistanceSq(a, b); // 20000 (keine Quadratwurzel, schneller)
 ```
 
-> **Performance tip:** Use `DistanceSq` when comparing distances. Comparing squared values avoids the expensive square root calculation.
+> **Leistungstipp:** Verwenden Sie `DistanceSq` beim Vergleichen von Entfernungen. Der Vergleich quadrierter Werte vermeidet die teure Quadratwurzel-Berechnung.
 
 ```c
-// GOOD -- compare squared distances
+// GUT -- quadrierte Entfernungen vergleichen
 float maxDistSq = 100 * 100; // 10000
 if (vector.DistanceSq(playerPos, targetPos) < maxDistSq)
 {
-    Print("Target is within 100m");
+    Print("Ziel ist innerhalb von 100m");
 }
 
-// SLOWER -- computing actual distance
+// LANGSAMER -- tatsächliche Entfernung berechnen
 if (vector.Distance(playerPos, targetPos) < 100)
 {
-    Print("Target is within 100m");
+    Print("Ziel ist innerhalb von 100m");
 }
 ```
 
-#### Direction
+#### Richtung
 
-Returns the direction vector from one point to another (not normalized).
+Gibt den Richtungsvektor von einem Punkt zum anderen zurück (nicht normalisiert).
 
 ```c
 vector dir = vector.Direction(from, to);
-// Equivalent to: to - from
+// Äquivalent zu: to - from
 ```
 
-#### Dot Product
+#### Skalarprodukt
 
 ```c
 float dot = vector.Dot(a, b);
-// dot > 0: vectors point in similar directions
-// dot = 0: vectors are perpendicular
-// dot < 0: vectors point in opposite directions
+// dot > 0: Vektoren zeigen in ähnliche Richtungen
+// dot = 0: Vektoren stehen senkrecht aufeinander
+// dot < 0: Vektoren zeigen in entgegengesetzte Richtungen
 ```
 
-#### DayZ example: Is target in front of player?
+#### DayZ-Beispiel: Ist das Ziel vor dem Spieler?
 
 ```c
 bool IsTargetInFront(PlayerBase player, vector targetPos)
@@ -421,13 +421,13 @@ bool IsTargetInFront(PlayerBase player, vector targetPos)
     toTarget.Normalize();
 
     float dot = vector.Dot(playerDir, toTarget);
-    return dot > 0; // Positive means in front
+    return dot > 0; // Positiv bedeutet vor dem Spieler
 }
 ```
 
-#### Normalize
+#### Normalisieren
 
-Converts a vector to unit length (length of 1).
+Konvertiert einen Vektor auf Einheitslänge (Länge von 1).
 
 ```c
 vector dir = Vector(3, 0, 4);
@@ -436,22 +436,22 @@ float len = dir.Length();      // 5.0
 vector norm = dir.Normalized(); // Vector(0.6, 0, 0.8)
 // norm.Length() == 1.0
 
-// In-place normalization
+// In-Place-Normalisierung
 dir.Normalize();
-// dir is now Vector(0.6, 0, 0.8)
+// dir ist jetzt Vector(0.6, 0, 0.8)
 ```
 
-#### Length
+#### Länge
 
 ```c
 vector v = Vector(3, 4, 0);
 float len = v.Length();        // 5.0
-float lenSq = v.LengthSq();   // 25.0 (faster, no sqrt)
+float lenSq = v.LengthSq();   // 25.0 (schneller, keine Quadratwurzel)
 ```
 
-#### Lerp (static)
+#### Lerp (statisch)
 
-Linear interpolation between two vectors.
+Lineare Interpolation zwischen zwei Vektoren.
 
 ```c
 vector start = Vector(0, 0, 0);
@@ -464,31 +464,31 @@ vector quarter = vector.Lerp(start, end, 0.25);
 // quarter = Vector(25, 12.5, 50)
 ```
 
-#### RotateAroundZeroDeg (static)
+#### RotateAroundZeroDeg (statisch)
 
-Rotates a vector around an axis by a given angle in degrees.
+Rotiert einen Vektor um eine Achse um einen bestimmten Winkel in Grad.
 
 ```c
-vector original = Vector(1, 0, 0); // pointing east
-vector axis = Vector(0, 1, 0);     // rotate around Y axis
-float angle = 90;                  // 90 degrees
+vector original = Vector(1, 0, 0); // zeigt nach Osten
+vector axis = Vector(0, 1, 0);     // um Y-Achse rotieren
+float angle = 90;                  // 90 Grad
 
 vector rotated = vector.RotateAroundZeroDeg(original, axis, angle);
-// rotated is approximately Vector(0, 0, 1) -- now pointing north
+// rotated ist ungefähr Vector(0, 0, 1) -- zeigt jetzt nach Norden
 ```
 
-#### Random Direction
+#### Zufällige Richtung
 
 ```c
-vector rdir = vector.RandomDir();    // Random 3D direction (unit vector)
-vector rdir2d = vector.RandomDir2D(); // Random direction in XZ plane
+vector rdir = vector.RandomDir();    // Zufällige 3D-Richtung (Einheitsvektor)
+vector rdir2d = vector.RandomDir2D(); // Zufällige Richtung in der XZ-Ebene
 ```
 
 ---
 
 ### Vektor-Arithmetik
 
-Vectors support standard arithmetic operators:
+Vektoren unterstützen Standard-Arithmetikoperatoren:
 
 ```c
 vector a = Vector(1, 2, 3);
@@ -498,13 +498,13 @@ vector sum = a + b;         // Vector(5, 7, 9)
 vector diff = a - b;        // Vector(-3, -3, -3)
 vector scaled = a * 2;      // Vector(2, 4, 6)
 
-// Move a position forward
+// Eine Position vorwärts bewegen
 vector pos = player.GetPosition();
 vector dir = player.GetDirection();
-vector ahead = pos + dir * 5; // 5 meters ahead of the player
+vector ahead = pos + dir * 5; // 5 Meter vor dem Spieler
 ```
 
-### Converting Vector to String
+### Vektor in String konvertieren
 
 ```c
 vector pos = Vector(100.5, 25.3, 200.7);
@@ -513,19 +513,19 @@ string s = pos.ToString(); // "<100.5, 25.3, 200.7>"
 
 ---
 
-## Math3D Class
+## Math3D-Klasse
 
-For advanced 3D operations, the `Math3D` class provides matrix and rotation utilities.
+Für erweiterte 3D-Operationen bietet die `Math3D`-Klasse Matrix- und Rotations-Hilfsfunktionen.
 
 ```c
-// Create a rotation matrix from yaw/pitch/roll (degrees)
+// Rotationsmatrix aus Yaw/Pitch/Roll erstellen (Grad)
 vector mat[3];
 Math3D.YawPitchRollMatrix("45 0 0", mat);
 
-// Convert a rotation matrix back to angles
+// Rotationsmatrix zurück in Winkel konvertieren
 vector angles = Math3D.MatrixToAngles(mat);
 
-// Identity matrix (4x4)
+// Einheitsmatrix (4x4)
 vector mat4[4];
 Math3D.MatrixIdentity4(mat4);
 ```
@@ -534,7 +534,7 @@ Math3D.MatrixIdentity4(mat4);
 
 ## Praxisbeispiele
 
-### Calculating distance between two players
+### Entfernung zwischen zwei Spielern berechnen
 
 ```c
 float GetPlayerDistance(PlayerBase player1, PlayerBase player2)
@@ -557,14 +557,14 @@ void WarnProximity(PlayerBase player, array<Man> allPlayers, float warnDistance)
 
         if (vector.DistanceSq(myPos, man.GetPosition()) < warnDistSq)
         {
-            Print(string.Format("Player nearby! Distance: %1m",
+            Print(string.Format("Spieler in der Nähe! Entfernung: %1m",
                 vector.Distance(myPos, man.GetPosition())));
         }
     }
 }
 ```
 
-### Finding the closest object
+### Das nächste Objekt finden
 
 ```c
 Object FindClosest(vector origin, array<Object> objects)
@@ -589,15 +589,15 @@ Object FindClosest(vector origin, array<Object> objects)
 }
 ```
 
-### Moving an object along a path
+### Ein Objekt entlang eines Pfades bewegen
 
 ```c
 class PathMover
 {
     protected ref array<vector> m_Waypoints;
     protected int m_CurrentWaypoint;
-    protected float m_Progress; // 0.0 to 1.0 between waypoints
-    protected float m_Speed;    // meters per second
+    protected float m_Progress; // 0.0 bis 1.0 zwischen Wegpunkten
+    protected float m_Speed;    // Meter pro Sekunde
 
     void PathMover(array<vector> waypoints, float speed)
     {
@@ -625,7 +625,7 @@ class PathMover
         {
             m_Progress = 0;
             m_CurrentWaypoint++;
-            return Update(0); // Recalculate with next segment
+            return Update(0); // Mit dem nächsten Segment neu berechnen
         }
 
         return vector.Lerp(from, to, m_Progress);
@@ -633,7 +633,7 @@ class PathMover
 }
 ```
 
-### Calculating a spawn ring around a point
+### Einen Spawn-Ring um einen Punkt berechnen
 
 ```c
 array<vector> GetSpawnRing(vector center, float radius, int count)
@@ -657,45 +657,78 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 ---
 
-## Häufige Fehler
+## Bewährte Praktiken
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| Passing degrees to `Math.Sin()` / `Math.Cos()` | Trig functions expect radians | Multiply by `Math.DEG2RAD` first |
-| Using `Math.RandomInt(0, 10)` and expecting 10 | Max is exclusive | Use `Math.RandomIntInclusive(0, 10)` for inclusive max |
-| Computing `vector.Distance()` in a tight loop | `Distance` uses `sqrt`, which is slow | Use `vector.DistanceSq()` and compare against squared distance |
-| Normalizing a zero-length vector | Division by zero, produces NaN | Check `v.Length() > 0` before normalizing |
-| Forgetting that DayZ Y is up | `pos[1]` is height, not Z | `[0]` = X (East), `[1]` = Y (Up), `[2]` = Z (North) |
-| Using `Lerp` with t outside [0,1] | Extrapolates beyond the range | Clamp t with `Math.Clamp(t, 0, 1)` |
-| Confusing `SqrFloat` with `Sqrt` | `SqrFloat` squares the value; `Sqrt` takes the square root | `Math.SqrFloat(5)` = 25, `Math.Sqrt(25)` = 5 |
+- Verwenden Sie `vector.DistanceSq()` und vergleichen Sie mit `radius * radius` in engen Schleifen -- es vermeidet die teure `sqrt`-Operation in `Distance()`.
+- Multiplizieren Sie immer mit `Math.DEG2RAD`, bevor Sie Winkel an `Sin()`/`Cos()` übergeben -- alle trigonometrischen Funktionen arbeiten in Radiant.
+- Prüfen Sie `v.Length() > 0`, bevor Sie `Normalize()` aufrufen -- das Normalisieren eines Nulllänge-Vektors erzeugt `NaN`-Werte.
+- Verwenden Sie `Math.Clamp()`, um Gesundheits-, Schadens- und UI-Werte zu begrenzen, anstatt manuelle `if`-Ketten zu schreiben.
+- Bevorzugen Sie `Math.RandomIntInclusive()`, wenn der Maximalwert erreichbar sein soll (z.B. Würfelwürfe) -- bei `RandomInt()` ist das Maximum exklusiv.
 
 ---
 
-## Schnellreferenz
+## In echten Mods beobachtet
+
+> Muster bestätigt durch die Untersuchung professioneller DayZ-Mod-Quellcodes.
+
+| Muster | Mod | Detail |
+|---------|-----|--------|
+| `DistanceSq` mit vorquadriertem Schwellenwert | Expansion / COT | Näherungsprüfungen speichern `float maxDistSq = range * range` und vergleichen mit `DistanceSq` |
+| `Math.Atan2(dx, dz) * RAD2DEG` für Kurs | Expansion AI | Richtung-zum-Ziel berechnet als Winkel in Grad für Orientierungszuweisung |
+| `Math.RandomFloat(0, Math.PI2)` für Spawn-Ring | Dabs / Expansion | Zufälliger Winkel + `Cos`/`Sin` um kreisförmige Spawn-Positionen zu generieren |
+| `Math.Clamp` bei Gesundheits-/Schadenswerten | VPP / COT | Jede Schadensanwendung begrenzt das Ergebnis auf `[0, maxHealth]`, um negative oder Überlaufwerte zu verhindern |
+
+---
+
+## Theorie vs. Praxis
+
+| Konzept | Theorie | Realität |
+|---------|---------|---------|
+| `Math.RandomInt(0, 10)` | Man könnte 0-10 inklusiv erwarten | Maximum ist exklusiv -- gibt 0-9 zurück; verwenden Sie `RandomIntInclusive` für inklusives Maximum |
+| `vector[1]` ist die Y-Achse | Standard-XYZ-Zuordnung | In DayZ ist Y die vertikale Höhe -- leicht mit Z-nach-oben-Konventionen anderer Engines zu verwechseln |
+| `Math.SqrFloat` vs `Math.Sqrt` | Namen sehen ähnlich aus | `SqrFloat(5)` = 25 (quadriert den Wert), `Sqrt(25)` = 5 (Quadratwurzel) -- entgegengesetzte Operationen |
+
+---
+
+## Häufige Fehler
+
+| Fehler | Problem | Lösung |
+|---------|---------|-----|
+| Grad an `Math.Sin()` / `Math.Cos()` übergeben | Trigonometrische Funktionen erwarten Radiant | Zuerst mit `Math.DEG2RAD` multiplizieren |
+| `Math.RandomInt(0, 10)` verwenden und 10 erwarten | Maximum ist exklusiv | Verwenden Sie `Math.RandomIntInclusive(0, 10)` für inklusives Maximum |
+| `vector.Distance()` in einer engen Schleife berechnen | `Distance` verwendet `sqrt`, was langsam ist | Verwenden Sie `vector.DistanceSq()` und vergleichen Sie mit quadrierter Entfernung |
+| Einen Nulllänge-Vektor normalisieren | Division durch null, erzeugt NaN | Prüfen Sie `v.Length() > 0` vor dem Normalisieren |
+| Vergessen, dass DayZ Y nach oben ist | `pos[1]` ist Höhe, nicht Z | `[0]` = X (Osten), `[1]` = Y (Oben), `[2]` = Z (Norden) |
+| `Lerp` mit t außerhalb von [0,1] verwenden | Extrapoliert über den Bereich hinaus | Begrenzen Sie t mit `Math.Clamp(t, 0, 1)` |
+| `SqrFloat` mit `Sqrt` verwechseln | `SqrFloat` quadriert den Wert; `Sqrt` zieht die Quadratwurzel | `Math.SqrFloat(5)` = 25, `Math.Sqrt(25)` = 5 |
+
+---
+
+## Kurzreferenz
 
 ```c
-// Constants
+// Konstanten
 Math.PI  Math.PI2  Math.PI_HALF  Math.EULER  Math.DEG2RAD  Math.RAD2DEG
 
-// Random
+// Zufall
 Math.RandomInt(min, max)              // [min, max)
 Math.RandomIntInclusive(min, max)     // [min, max]
 Math.RandomFloat(min, max)            // [min, max)
 Math.RandomFloatInclusive(min, max)   // [min, max]
 Math.RandomFloat01()                  // [0, 1]
 Math.RandomBool()
-Math.Randomize(-1)                    // Seed from time
+Math.Randomize(-1)                    // Von der Zeit initialisieren
 
-// Rounding
+// Runden
 Math.Round(f)  Math.Floor(f)  Math.Ceil(f)
 
-// Absolute & Sign
+// Absolutwert & Vorzeichen
 Math.AbsFloat(f)  Math.AbsInt(i)  Math.SignFloat(f)  Math.SignInt(i)
 
-// Power & Root
+// Potenz & Wurzel
 Math.Pow(base, exp)  Math.Sqrt(f)  Math.Log2(f)  Math.SqrFloat(f)
 
-// Trig (radians)
+// Trigonometrie (Radiant)
 Math.Sin(r) Math.Cos(r) Math.Tan(r) Math.Asin(f) Math.Acos(f) Math.Atan2(y, x)
 
 // Clamp & Interpolation
@@ -704,10 +737,10 @@ Math.Lerp(a, b, t)  Math.InverseLerp(a, b, val)
 Math.SmoothCD(cur, target, vel, smoothTime, maxSpeed, dt)
 Math.IsInRange(val, min, max)
 
-// Angle
+// Winkel
 Math.NormalizeAngle(deg)  Math.DiffAngle(a, b)
 
-// Vector
+// Vektor
 vector.Distance(a, b)    vector.DistanceSq(a, b)
 vector.Direction(from, to)
 vector.Dot(a, b)          vector.Lerp(a, b, t)
@@ -715,10 +748,10 @@ vector.RotateAroundZeroDeg(vec, axis, angleDeg)
 vector.RandomDir()        vector.RandomDir2D()
 v.Length()  v.LengthSq()  v.Normalized()  v.Normalize()
 
-// Vector constants
+// Vektor-Konstanten
 vector.Zero  vector.Up  vector.Aside  vector.Forward
 ```
 
 ---
 
-[<< 1.6: String Operations](06-strings.md) | [Startseite](../../README.md) | [1.8: Memory Management >>](08-memory-management.md)
+[<< 1.6: String-Operationen](06-strings.md) | [Startseite](../../README.md) | [1.8: Speicherverwaltung >>](08-memory-management.md)

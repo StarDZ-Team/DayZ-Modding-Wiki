@@ -1,30 +1,30 @@
-# Chapter 6.16: Crafting System
+# Capítulo 6.16: Sistema de Crafting
 
-[Home](../../README.md) | [<< Previous: Sound System](15-sound-system.md) | **Crafting System** | [Next: Construction System >>](17-construction-system.md)
+[Início](../../README.md) | [<< Anterior: Sistema de Som](15-sound-system.md) | **Sistema de Crafting** | [Próximo: Sistema de Construção >>](17-construction-system.md)
 
 ---
 
 ## Introdução
 
-The Sistema de Crafting is how DayZ handles combining items to produce new items --- sharpening sticks with knives, tying rags into rope, sawing off shotgun barrels, assembling splints. It is a data-driven pipeline that sits on top of the Sistema de Ações (Capítulo 6.12) and uses a central recipe registry to discover, validate, and execute item transformations.
+O Sistema de Crafting é como o DayZ lida com a combinação de itens para produzir novos itens --- afiar gravetos com facas, amarrar trapos em corda, serrar canos de espingardas, montar talas. É um pipeline orientado a dados que funciona sobre o Sistema de Ações (Capítulo 6.12) e usa um registro central de receitas para descobrir, validar e executar transformações de itens.
 
-There are two fundamental approaches to crafting in DayZ:
+Existem duas abordagens fundamentais para o crafting no DayZ:
 
-1. **Recipe-based crafting** --- Items are combined through `PluginRecipesManager`, which maintains a registry of `RecipeBase` subclasses. Each recipe declares its ingredients, results, conditions, and modifications. The engine automatically discovers valid recipes when two items are combined and presents them to the player via the `AçãoWorldCraft` action.
+1. **Crafting baseado em receitas** --- Itens são combinados através do `PluginRecipesManager`, que mantém um registro de subclasses de `RecipeBase`. Cada receita declara seus ingredientes, resultados, condições e modificações. O motor descobre automaticamente receitas válidas quando dois itens são combinados e as apresenta ao jogador através da ação `ActionWorldCraft`.
 
-2. **Ação-based crafting** --- Custom `AçãoContinuousBase` subclasses handle crafting directly without the recipe system. This approach is used for specialized transformations like basebuilding construction, cooking, and gardening where the recipe abstraction does not fit.
+2. **Crafting baseado em ações** --- Subclasses personalizadas de `ActionContinuousBase` lidam com o crafting diretamente sem o sistema de receitas. Esta abordagem é usada para transformações especializadas como construção de bases, cozinhar e jardinagem, onde a abstração de receita não se encaixa.
 
-This chapter focuses primarily on the recipe system, which handles the vast majority of item crafting in vanilla DayZ (over 150 registered recipes).
+Este capítulo foca principalmente no sistema de receitas, que lida com a grande maioria do crafting de itens no DayZ vanilla (mais de 150 receitas registradas).
 
 ---
 
-## System Architecture
+## Arquitetura do Sistema
 
-### High-Level Flow
+### Fluxo de Alto Nível
 
 ```
-Player drags Item A onto Item B (inventory)
-  or aims at Item B while holding Item A (world)
+Jogador arrasta Item A sobre Item B (inventário)
+  ou mira no Item B enquanto segura o Item A (mundo)
         |
         v
 CraftingManager.OnUpdate() / SetInventoryCraft()
@@ -33,13 +33,13 @@ CraftingManager.OnUpdate() / SetInventoryCraft()
 PluginRecipesManager.GetValidRecipes(itemA, itemB)
         |
         v
-Recipe cache lookup --> ingredient matching --> CheckRecipe() per candidate
+Busca no cache de receitas --> correspondência de ingredientes --> CheckRecipe() por candidato
         |
         v
-Valid recipe IDs returned --> ActionWorldCraft created with recipe ID
+IDs de receitas válidas retornados --> ActionWorldCraft criada com ID da receita
         |
         v
-Player initiates crafting --> CAContinuousCraft progress bar
+Jogador inicia o crafting --> barra de progresso CAContinuousCraft
         |
         v
 OnFinishProgressServer() --> PluginRecipesManager.PerformRecipeServer()
@@ -70,184 +70,184 @@ sequenceDiagram
     R-->>P: Result items created
 ```
 
-### Core Classes
+### Classes Principais
 
-| Class | File | Propósito |
-|-------|------|---------|
-| `RecipeBase` | `4_World/classes/recipes/recipebase.c` | Base class for all recipes. Declares ingredients, results, conditions. |
-| `PluginRecipesManagerBase` | `4_World/classes/recipes/recipes/pluginrecipesmanagerbase.c` | Registers all vanilla recipes via `RegisterRecipies()`. |
-| `PluginRecipesManager` | `4_World/plugins/pluginbase/pluginrecipesmanager.c` | Runtime manager: cache generation, recipe lookup, validation, execution. |
-| `CraftingManager` | `4_World/classes/craftingmanager.c` | Client-side crafting state machine (world vs inventory mode). |
-| `CacheObject` | `4_World/classes/recipes/cacheobject.c` | Per-item recipe cache entry with bitmask ingredient positions. |
-| `AçãoWorldCraft` | `4_World/classes/useractionscomponent/actions/continuous/actionworldcraft.c` | The action that drives all recipe-based crafting. |
-| `CAContinuousCraft` | `4_World/classes/useractionscomponent/actioncomponents/cacontinuouscraft.c` | Progress component that reads recipe duration. |
+| Classe | Arquivo | Propósito |
+|--------|---------|-----------|
+| `RecipeBase` | `4_World/classes/recipes/recipebase.c` | Classe base para todas as receitas. Declara ingredientes, resultados, condições. |
+| `PluginRecipesManagerBase` | `4_World/classes/recipes/recipes/pluginrecipesmanagerbase.c` | Registra todas as receitas vanilla via `RegisterRecipies()`. |
+| `PluginRecipesManager` | `4_World/plugins/pluginbase/pluginrecipesmanager.c` | Gerenciador em tempo de execução: geração de cache, busca de receitas, validação, execução. |
+| `CraftingManager` | `4_World/classes/craftingmanager.c` | Máquina de estados de crafting do lado do cliente (modo mundo vs inventário). |
+| `CacheObject` | `4_World/classes/recipes/cacheobject.c` | Entrada de cache de receita por item com posições de ingredientes em bitmask. |
+| `ActionWorldCraft` | `4_World/classes/useractionscomponent/actions/continuous/actionworldcraft.c` | A ação que conduz todo o crafting baseado em receitas. |
+| `CAContinuousCraft` | `4_World/classes/useractionscomponent/actioncomponents/cacontinuouscraft.c` | Componente de progresso que lê a duração da receita. |
 
 ### Constantes
 
 ```c
 // recipebase.c
-const int MAX_NUMBER_OF_INGREDIENTS = 2;    // recipes always have exactly 2 ingredient slots
-const int MAXIMUM_RESULTS = 10;             // maximum output items per recipe
-const float DEFAULT_SPAWN_DISTANCE = 0.6;   // ground spawn offset from player
+const int MAX_NUMBER_OF_INGREDIENTS = 2;    // receitas sempre têm exatamente 2 slots de ingredientes
+const int MAXIMUM_RESULTS = 10;             // máximo de itens de saída por receita
+const float DEFAULT_SPAWN_DISTANCE = 0.6;   // deslocamento de spawn no chão a partir do jogador
 
 // constants.c (3_Game)
-const float CRAFTING_TIME_UNIT_SIZE = 4.0;  // multiplied by m_AnimationLength to get seconds
+const float CRAFTING_TIME_UNIT_SIZE = 4.0;  // multiplicado por m_AnimationLength para obter segundos
 
 // pluginrecipesmanager.c
-const int MAX_NUMBER_OF_RECIPES = 2048;     // hard limit on registered recipes
-const int MAX_CONCURENT_RECIPES = 128;      // max recipes resolved in a single query
+const int MAX_NUMBER_OF_RECIPES = 2048;     // limite máximo de receitas registradas
+const int MAX_CONCURENT_RECIPES = 128;      // máximo de receitas resolvidas em uma única consulta
 ```
 
-> **Key insight:** Every recipe has exactly two ingredient "slots" (index 0 and index 1). Each slot can accept multiple item types (e.g., slot 0 accepts `Rag` OR `BandageDressing` OR `DuctTape`), but the player always combines exactly two items.
+> **Insight chave:** Cada receita tem exatamente dois "slots" de ingredientes (índice 0 e índice 1). Cada slot pode aceitar múltiplos tipos de itens (ex.: slot 0 aceita `Rag` OU `BandageDressing` OU `DuctTape`), mas o jogador sempre combina exatamente dois itens.
 
 ---
 
-## RecipeBase --- The Recipe Definition
+## RecipeBase --- A Definição da Receita
 
-Every crafting recipe is a class that extends `RecipeBase`. The constructor calls `Init()` automatically, where you configure everything about the recipe.
+Cada receita de crafting é uma classe que estende `RecipeBase`. O construtor chama `Init()` automaticamente, onde você configura tudo sobre a receita.
 
-### Class Campos Reference
+### Referência de Campos da Classe
 
-#### Recipe Metadata
+#### Metadados da Receita
 
-| Campo | Type | Padrão | Descrição |
-|-------|------|---------|-------------|
-| `m_Name` | `string` | `"RecipeBase default name"` | Display name (stringtable key like `"#STR_CraftTorch0"`). |
-| `m_IsInstaRecipe` | `bool` | `false` | If `true`, recipe completes instantly without animation. |
-| `m_AnimationLength` | `float` | `1.0` | Duration in relative time units. Actual seconds = `m_AnimationLength * 4.0`. |
-| `m_Specialty` | `float` | `0.0` | Soft skills: positive = roughness, negative = precision. |
-| `m_AnywhereInInventory` | `bool` | `false` | If `true`, neither item needs to be in the player's hands. |
+| Campo | Tipo | Padrão | Descrição |
+|-------|------|--------|-----------|
+| `m_Name` | `string` | `"RecipeBase default name"` | Nome de exibição (chave de stringtable como `"#STR_CraftTorch0"`). |
+| `m_IsInstaRecipe` | `bool` | `false` | Se `true`, a receita completa instantaneamente sem animação. |
+| `m_AnimationLength` | `float` | `1.0` | Duração em unidades de tempo relativas. Segundos reais = `m_AnimationLength * 4.0`. |
+| `m_Specialty` | `float` | `0.0` | Habilidades suaves: positivo = rudeza, negativo = precisão. |
+| `m_AnywhereInInventory` | `bool` | `false` | Se `true`, nenhum dos itens precisa estar nas mãos do jogador. |
 
-#### Ingredient Conditions (per slot, indexed 0 or 1)
-
-| Campo | Padrão | Descrição |
-|-------|---------|-------------|
-| `m_MinDamageIngredient[i]` | `0` | Minimum damage level required. `-1` = disable check. |
-| `m_MaxDamageIngredient[i]` | `0` | Maximum damage level allowed. `-1` = disable check. |
-| `m_MinQuantityIngredient[i]` | `0` | Minimum quantity required. `-1` = disable check. |
-| `m_MaxQuantityIngredient[i]` | `0` | Maximum quantity allowed. `-1` = disable check. |
-
-#### Ingredient Modifications (per slot, applied after crafting)
+#### Condições de Ingredientes (por slot, indexado 0 ou 1)
 
 | Campo | Padrão | Descrição |
-|-------|---------|-------------|
-| `m_IngredientAddHealth[i]` | `0` | Health delta applied. `0` = do nothing. |
-| `m_IngredientSetHealth[i]` | `0` | Set health to this value. `-1` = do nothing. |
-| `m_IngredientAddQuantity[i]` | `0` | Quantity delta applied. `0` = do nothing. Negative values consume. |
-| `m_IngredientDestroy[i]` | `false` | If `true`, ingredient is deleted after crafting. |
-| `m_IngredientUseSoftSkills[i]` | `false` | Allow soft skills to modify ingredient changes. |
+|-------|--------|-----------|
+| `m_MinDamageIngredient[i]` | `0` | Nível mínimo de dano necessário. `-1` = desabilitar verificação. |
+| `m_MaxDamageIngredient[i]` | `0` | Nível máximo de dano permitido. `-1` = desabilitar verificação. |
+| `m_MinQuantityIngredient[i]` | `0` | Quantidade mínima necessária. `-1` = desabilitar verificação. |
+| `m_MaxQuantityIngredient[i]` | `0` | Quantidade máxima permitida. `-1` = desabilitar verificação. |
 
-#### Result Configuration (per result, indexed 0 to `MAXIMUM_RESULTS - 1`)
+#### Modificações de Ingredientes (por slot, aplicadas após o crafting)
 
 | Campo | Padrão | Descrição |
-|-------|---------|-------------|
-| `m_ResultSetFullQuantity[i]` | `false` | If `true`, result spawns at max quantity. |
-| `m_ResultSetQuantity[i]` | `0` | Set result quantity to this value. `-1` = do nothing. |
-| `m_ResultSetHealth[i]` | `0` | Set result health. `-1` = do nothing. |
-| `m_ResultInheritsHealth[i]` | `0` | `-1` = do nothing. `>= 0` = inherit from ingredient N. `-2` = average of all ingredients. |
-| `m_ResultInheritsColor[i]` | `0` | `-1` = do nothing. `>= 0` = append ingredient N's `color` config value to classname. |
-| `m_ResultToInventory[i]` | `0` | `-2` = spawn on ground. `-1` = player inventory. `>= 0` = swap position with ingredient N. |
-| `m_ResultReplacesIngredient[i]` | `0` | `-1` = do nothing. `>= 0` = transfer properties/attachments from ingredient N. |
-| `m_ResultUseSoftSkills[i]` | `false` | Allow soft skills to modify result values. |
-| `m_ResultSpawnDistance[i]` | `0.6` | Ground spawn offset distance from player. |
+|-------|--------|-----------|
+| `m_IngredientAddHealth[i]` | `0` | Delta de saúde aplicado. `0` = não fazer nada. |
+| `m_IngredientSetHealth[i]` | `0` | Definir saúde para este valor. `-1` = não fazer nada. |
+| `m_IngredientAddQuantity[i]` | `0` | Delta de quantidade aplicado. `0` = não fazer nada. Valores negativos consomem. |
+| `m_IngredientDestroy[i]` | `false` | Se `true`, o ingrediente é deletado após o crafting. |
+| `m_IngredientUseSoftSkills[i]` | `false` | Permite que habilidades suaves modifiquem as alterações no ingrediente. |
+
+#### Configuração de Resultado (por resultado, indexado de 0 a `MAXIMUM_RESULTS - 1`)
+
+| Campo | Padrão | Descrição |
+|-------|--------|-----------|
+| `m_ResultSetFullQuantity[i]` | `false` | Se `true`, o resultado aparece com quantidade máxima. |
+| `m_ResultSetQuantity[i]` | `0` | Define a quantidade do resultado para este valor. `-1` = não fazer nada. |
+| `m_ResultSetHealth[i]` | `0` | Define a saúde do resultado. `-1` = não fazer nada. |
+| `m_ResultInheritsHealth[i]` | `0` | `-1` = não fazer nada. `>= 0` = herdar do ingrediente N. `-2` = média de todos os ingredientes. |
+| `m_ResultInheritsColor[i]` | `0` | `-1` = não fazer nada. `>= 0` = anexar o valor de `color` da config do ingrediente N ao nome da classe. |
+| `m_ResultToInventory[i]` | `0` | `-2` = spawnar no chão. `-1` = inventário do jogador. `>= 0` = trocar posição com o ingrediente N. |
+| `m_ResultReplacesIngredient[i]` | `0` | `-1` = não fazer nada. `>= 0` = transferir propriedades/anexos do ingrediente N. |
+| `m_ResultUseSoftSkills[i]` | `false` | Permite que habilidades suaves modifiquem os valores do resultado. |
+| `m_ResultSpawnDistance[i]` | `0.6` | Distância de deslocamento do spawn no chão a partir do jogador. |
 
 ---
 
-## Creating a Custom Recipe
+## Criando uma Receita Personalizada
 
-### Step 1: Define the Recipe Class
+### Passo 1: Definir a Classe da Receita
 
-Create a new `.c` file in `4_World/` (recipes are loaded from this layer). Extend `RecipeBase` and override `Init()`:
+Crie um novo arquivo `.c` em `4_World/` (receitas são carregadas desta camada). Estenda `RecipeBase` e sobrescreva `Init()`:
 
 ```c
-// File: 4_World/recipes/CraftMyItem.c
+// Arquivo: 4_World/recipes/CraftMyItem.c
 
 class CraftMyItem extends RecipeBase
 {
     override void Init()
     {
-        m_Name = "#STR_craft_my_item";   // stringtable display name
+        m_Name = "#STR_craft_my_item";   // nome de exibição da stringtable
         m_IsInstaRecipe = false;
-        m_AnimationLength = 1.5;         // 1.5 * 4.0 = 6.0 seconds
-        m_Specialty = 0.02;              // roughness
+        m_AnimationLength = 1.5;         // 1.5 * 4.0 = 6.0 segundos
+        m_Specialty = 0.02;              // rudeza
 
-        // --- Ingredient conditions ---
-        m_MinDamageIngredient[0] = -1;   // no damage check
-        m_MaxDamageIngredient[0] = 3;    // not ruined (level 4)
+        // --- Condições dos ingredientes ---
+        m_MinDamageIngredient[0] = -1;   // sem verificação de dano
+        m_MaxDamageIngredient[0] = 3;    // não arruinado (nível 4)
         m_MinQuantityIngredient[0] = 1;
         m_MaxQuantityIngredient[0] = -1;
 
         m_MinDamageIngredient[1] = -1;
         m_MaxDamageIngredient[1] = 3;
-        m_MinQuantityIngredient[1] = 2;  // need at least 2 of ingredient 2
+        m_MinQuantityIngredient[1] = 2;  // precisa de pelo menos 2 do ingrediente 2
         m_MaxQuantityIngredient[1] = -1;
 
-        // --- Ingredient 1: a knife (tool, not consumed) ---
+        // --- Ingrediente 1: uma faca (ferramenta, não consumida) ---
         InsertIngredient(0, "KitchenKnife");
         InsertIngredient(0, "HuntingKnife");
         InsertIngredient(0, "SteakKnife");
 
-        m_IngredientAddHealth[0] = -5;       // knife loses 5 health
+        m_IngredientAddHealth[0] = -5;       // faca perde 5 de saúde
         m_IngredientSetHealth[0] = -1;
         m_IngredientAddQuantity[0] = 0;
-        m_IngredientDestroy[0] = false;      // knife survives
+        m_IngredientDestroy[0] = false;      // faca sobrevive
         m_IngredientUseSoftSkills[0] = true;
 
-        // --- Ingredient 2: material (partially consumed) ---
+        // --- Ingrediente 2: material (parcialmente consumido) ---
         InsertIngredient(1, "WoodenStick");
 
         m_IngredientAddHealth[1] = 0;
         m_IngredientSetHealth[1] = -1;
-        m_IngredientAddQuantity[1] = -2;     // consume 2 quantity
+        m_IngredientAddQuantity[1] = -2;     // consome 2 de quantidade
         m_IngredientDestroy[1] = false;
         m_IngredientUseSoftSkills[1] = false;
 
-        // --- Result ---
+        // --- Resultado ---
         AddResult("MyCustomItem");
 
         m_ResultSetFullQuantity[0] = false;
         m_ResultSetQuantity[0] = -1;
         m_ResultSetHealth[0] = -1;
-        m_ResultInheritsHealth[0] = -2;      // average health of both ingredients
+        m_ResultInheritsHealth[0] = -2;      // saúde média de ambos os ingredientes
         m_ResultInheritsColor[0] = -1;
-        m_ResultToInventory[0] = -2;         // spawn on ground
+        m_ResultToInventory[0] = -2;         // spawnar no chão
         m_ResultUseSoftSkills[0] = false;
         m_ResultReplacesIngredient[0] = -1;
     }
 
     override bool CanDo(ItemBase ingredients[], PlayerBase player)
     {
-        // Custom validation beyond the built-in condition checks
+        // Validação personalizada além das verificações de condição embutidas
         return true;
     }
 
     override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)
     {
-        // Custom logic after spawning/modifications
-        // ingredients[0] = knife (sorted), ingredients[1] = sticks (sorted)
-        // results.Get(0) = the spawned MyCustomItem
+        // Lógica personalizada após spawning/modificações
+        // ingredients[0] = faca (ordenada), ingredients[1] = gravetos (ordenados)
+        // results.Get(0) = o MyCustomItem spawnado
     }
 }
 ```
 
-### Step 2: Register the Recipe
+### Passo 2: Registrar a Receita
 
-Override `RegisterRecipies()` in a modded `PluginRecipesManagerBase`:
+Sobrescreva `RegisterRecipies()` em uma `PluginRecipesManagerBase` modded:
 
 ```c
-// File: 4_World/plugins/PluginRecipesManagerBase.c
+// Arquivo: 4_World/plugins/PluginRecipesManagerBase.c
 
 modded class PluginRecipesManagerBase extends PluginBase
 {
     override void RegisterRecipies()
     {
-        super.RegisterRecipies();               // keep all vanilla recipes
-        RegisterRecipe(new CraftMyItem);        // add yours
+        super.RegisterRecipies();               // manter todas as receitas vanilla
+        RegisterRecipe(new CraftMyItem);        // adicionar a sua
     }
 }
 ```
 
-To remove an existing vanilla recipe:
+Para remover uma receita vanilla existente:
 
 ```c
 modded class PluginRecipesManagerBase extends PluginBase
@@ -255,45 +255,45 @@ modded class PluginRecipesManagerBase extends PluginBase
     override void RegisterRecipies()
     {
         super.RegisterRecipies();
-        UnregisterRecipe("CraftStoneKnife");    // remove by class name string
+        UnregisterRecipe("CraftStoneKnife");    // remover pelo nome da classe em string
     }
 }
 ```
 
-> **Official sample:** `DayZ-Samples/Test_Crafting/` demonstrates this exact pattern --- an `ExemploRecipe` that turns any item into stones using a custom `MagicHammer`, registered via a modded `PluginRecipesManagerBase`.
+> **Exemplo oficial:** `DayZ-Samples/Test_Crafting/` demonstra exatamente este padrão --- uma `ExampleRecipe` que transforma qualquer item em pedras usando um `MagicHammer` personalizado, registrada através de uma `PluginRecipesManagerBase` modded.
 
-### Step 3: No Further Wiring Needed
+### Passo 3: Nenhuma Ligação Adicional Necessária
 
-Unlike actions (which must be registered on items via `SetAçãos()`), recipes are automatically discovered. The `PluginRecipesManager` builds a cache on startup by walking all registered recipes and matching them against all config-defined items. When any two items are combined, the cache is queried for matching recipes.
+Diferente das ações (que devem ser registradas em itens via `SetActions()`), receitas são descobertas automaticamente. O `PluginRecipesManager` constrói um cache na inicialização percorrendo todas as receitas registradas e combinando-as com todos os itens definidos na config. Quando quaisquer dois itens são combinados, o cache é consultado para receitas correspondentes.
 
 ---
 
-## Recipe Métodos Reference
+## Referência de Métodos da Receita
 
 ### Init()
 
-Called from the `RecipeBase` constructor. Set all field values here. Do not call `super.Init()` --- it is an empty declaration in the base class.
+Chamado a partir do construtor de `RecipeBase`. Defina todos os valores dos campos aqui. Não chame `super.Init()` --- é uma declaração vazia na classe base.
 
 ```c
 override void Init()
 {
     m_Name = "#STR_MyRecipe";
-    m_AnimationLength = 1.0;        // 4.0 seconds real time
+    m_AnimationLength = 1.0;        // 4.0 segundos em tempo real
     m_IsInstaRecipe = false;
-    m_Specialty = -0.01;            // precision craft
+    m_Specialty = -0.01;            // crafting de precisão
 
-    // ... ingredient and result configuration ...
+    // ... configuração de ingredientes e resultados ...
 }
 ```
 
 ### CanDo(ItemBase ingredients[], PlayerBase player)
 
-Called during `CheckRecipe()` after the built-in condition checks (`CheckConditions()`) pass. Use this for custom validation logic that cannot be expressed through the field-based conditions. The `ingredients[]` array is **sorted** --- index 0 maps to your ingredient slot 0 definition, index 1 to slot 1.
+Chamado durante `CheckRecipe()` após as verificações de condição embutidas (`CheckConditions()`) passarem. Use isso para lógica de validação personalizada que não pode ser expressa através das condições baseadas em campos. O array `ingredients[]` é **ordenado** --- índice 0 mapeia para sua definição de slot de ingrediente 0, índice 1 para o slot 1.
 
-The base implementation checks whether any ingredient has attachments and returns `false` if so:
+A implementação base verifica se algum ingrediente tem anexos e retorna `false` se tiver:
 
 ```c
-// Base RecipeBase.CanDo --- ingredients with attachments cannot be crafted
+// RecipeBase.CanDo base --- ingredientes com anexos não podem ser craftados
 bool CanDo(ItemBase ingredients[], PlayerBase player)
 {
     for (int i = 0; i < MAX_NUMBER_OF_INGREDIENTS; i++)
@@ -305,10 +305,10 @@ bool CanDo(ItemBase ingredients[], PlayerBase player)
 }
 ```
 
-Common patterns in vanilla overrides:
+Padrões comuns em sobrescritas vanilla:
 
 ```c
-// CraftSplint: different quantity requirements per ingredient type
+// CraftSplint: requisitos de quantidade diferentes por tipo de ingrediente
 override bool CanDo(ItemBase ingredients[], PlayerBase player)
 {
     ItemBase ingredient1 = ingredients[0];
@@ -330,19 +330,19 @@ override bool CanDo(ItemBase ingredients[], PlayerBase player)
     return true;
 }
 
-// CraftImprovisedExplosive: container must be empty
+// CraftImprovisedExplosive: contêiner deve estar vazio
 override bool CanDo(ItemBase ingredients[], PlayerBase player)
 {
     return ingredients[0].IsEmpty();
 }
 
-// PurifyWater: liquid must not be frozen
+// PurifyWater: líquido não deve estar congelado
 override bool CanDo(ItemBase ingredients[], PlayerBase player)
 {
     return ingredients[1].GetQuantity() > 0 && !ingredients[1].GetIsFrozen();
 }
 
-// DisinfectItem: check liquid type bitmask
+// DisinfectItem: verificar bitmask do tipo de líquido
 override bool CanDo(ItemBase ingredients[], PlayerBase player)
 {
     if (!ingredients[1].CanBeDisinfected())
@@ -356,10 +356,10 @@ override bool CanDo(ItemBase ingredients[], PlayerBase player)
 
 ### Do(ItemBase ingredients[], PlayerBase player, array\<ItemBase\> results, float specialty_weight)
 
-Called after `SpawnItems()` and `ApplyModifications*()` have run. This is where you implement custom post-craft logic --- transferring properties, modifying state, triggering effects. The built-in field system handles most modifications automatically; `Do()` is for anything beyond that.
+Chamado após `SpawnItems()` e `ApplyModifications*()` terem sido executados. É aqui que você implementa lógica personalizada pós-crafting --- transferindo propriedades, modificando estado, disparando efeitos. O sistema de campos embutido lida com a maioria das modificações automaticamente; `Do()` é para qualquer coisa além disso.
 
 ```c
-// CraftTorch: attach rag to torch, set up torch state
+// CraftTorch: anexar trapo à tocha, configurar estado da tocha
 override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)
 {
     ItemBase rag = ingredients[0];
@@ -379,7 +379,7 @@ override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> resu
     }
 }
 
-// SawoffShotgunIzh43: transform weapon class using TurnItemIntoItemLambda
+// SawoffShotgunIzh43: transformar classe da arma usando TurnItemIntoItemLambda
 override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)
 {
     MiscGameplayFunctions.TurnItemIntoItemEx(player,
@@ -389,41 +389,41 @@ override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> resu
 
 ### IsRepeatable()
 
-Override to return `true` if the recipe should continue repeating after completion (like repair recipes where you keep repairing until the item is fixed or the tool runs out):
+Sobrescreva para retornar `true` se a receita deve continuar repetindo após a conclusão (como receitas de reparo onde você continua reparando até o item ser consertado ou a ferramenta acabar):
 
 ```c
 override bool IsRepeatable()
 {
-    return true;    // crafting loops until CanDo returns false
+    return true;    // crafting repete até CanDo retornar false
 }
 ```
 
-When repeatable, `CAContinuousCraft` returns `UA_PROCESSING` after each cycle instead of `UA_FINISHED`, causing the progress bar to reset and run again.
+Quando repetível, `CAContinuousCraft` retorna `UA_PROCESSING` após cada ciclo em vez de `UA_FINISHED`, fazendo a barra de progresso reiniciar e executar novamente.
 
 ### OnSelected(ItemBase item1, ItemBase item2, PlayerBase player)
 
-Called when the player selects this recipe from the recipe list. Rarely overridden --- can be used for preview effects or UI feedback.
+Chamado quando o jogador seleciona esta receita da lista de receitas. Raramente sobrescrito --- pode ser usado para efeitos de pré-visualização ou feedback de UI.
 
 ---
 
-## Ingredient Configuration
+## Configuração de Ingredientes
 
 ### InsertIngredient(int index, string className, ...)
 
-Adds an accepted item type to an ingredient slot. Call multiple times on the same index to accept multiple item types:
+Adiciona um tipo de item aceito a um slot de ingrediente. Chame múltiplas vezes no mesmo índice para aceitar múltiplos tipos de itens:
 
 ```c
-// Slot 0 accepts three different knife types
+// Slot 0 aceita três tipos diferentes de faca
 InsertIngredient(0, "KitchenKnife");
 InsertIngredient(0, "HuntingKnife");
 InsertIngredient(0, "StoneKnife");
 
-// Slot 1 accepts sticks
+// Slot 1 aceita gravetos
 InsertIngredient(1, "WoodenStick");
 InsertIngredient(1, "Ammo_SharpStick");
 ```
 
-The full signature supports animation overrides:
+A assinatura completa suporta sobrescritas de animação:
 
 ```c
 void InsertIngredient(int index, string ingredient,
@@ -431,37 +431,37 @@ void InsertIngredient(int index, string ingredient,
     bool showItem = false)
 ```
 
-- `uid` --- Override the crafting animation when this specific ingredient is used. For example, `CleanWeapon` uses `CMD_ACTIONFB_CLEANING_WEAPON` when the ingredient is a `PadrãoWeapon`.
-- `showItem` --- If `true`, the item remains visible in the player's hands during the animation. If `false` (default), the item is hidden.
+- `uid` --- Sobrescreve a animação de crafting quando este ingrediente específico é usado. Por exemplo, `CleanWeapon` usa `CMD_ACTIONFB_CLEANING_WEAPON` quando o ingrediente é uma `DefaultWeapon`.
+- `showItem` --- Se `true`, o item permanece visível nas mãos do jogador durante a animação. Se `false` (padrão), o item é escondido.
 
 ### InsertIngredientEx(int index, string ingredient, string soundCategory, ...)
 
-Extended version that also sets a sound category string for the ingredient:
+Versão estendida que também define uma string de categoria de som para o ingrediente:
 
 ```c
 InsertIngredientEx(0, "SmallProtectorCase", "ImprovisedExplosive");
 ```
 
-### Inheritance-Based Matching
+### Correspondência Baseada em Herança
 
-When you insert a parent class name like `"Inventory_Base"` or `"PadrãoWeapon"`, the recipe matches **all subclasses**. The engine uses `g_Game.IsKindOf()` for matching, which walks the config hierarchy:
+Quando você insere um nome de classe pai como `"Inventory_Base"` ou `"DefaultWeapon"`, a receita corresponde a **todas as subclasses**. O motor usa `g_Game.IsKindOf()` para a correspondência, que percorre a hierarquia de config:
 
 ```c
-// This matches ANY inventory item as ingredient 2
+// Isto corresponde a QUALQUER item de inventário como ingrediente 2
 InsertIngredient(1, "Inventory_Base");
 
-// This matches any weapon
+// Isto corresponde a qualquer arma
 InsertIngredient(1, "DefaultWeapon");
 
-// This matches any color variant of Shemag
+// Isto corresponde a qualquer variante de cor de Shemag
 InsertIngredient(0, "Shemag_ColorBase");
 ```
 
-This is how the `RepairWithTape` recipe can repair almost any item --- its ingredient 2 accepts `Inventory_Base`, `PadrãoWeapon`, and `PadrãoMagazine`.
+É assim que a receita `RepairWithTape` pode reparar quase qualquer item --- seu ingrediente 2 aceita `Inventory_Base`, `DefaultWeapon` e `DefaultMagazine`.
 
 ### RemoveIngredient(int index, string ingredient)
 
-Removes a previously inserted ingredient type from a slot. Useful in modded subclasses:
+Remove um tipo de ingrediente previamente inserido de um slot. Útil em subclasses modded:
 
 ```c
 RemoveIngredient(1, "WoodenStick");
@@ -469,18 +469,18 @@ RemoveIngredient(1, "WoodenStick");
 
 ### AddResult(string className)
 
-Adds a result item to the recipe. Call multiple times for recipes that produce multiple outputs:
+Adiciona um item de resultado à receita. Chame múltiplas vezes para receitas que produzem múltiplas saídas:
 
 ```c
-AddResult("MyItem");           // result index 0
-AddResult("MyByproduct");      // result index 1
+AddResult("MyItem");           // índice de resultado 0
+AddResult("MyByproduct");      // índice de resultado 1
 ```
 
-The internal `m_NumberOfResults` counter increments with each call. Configure result fields using the corresponding index.
+O contador interno `m_NumberOfResults` incrementa a cada chamada. Configure os campos de resultado usando o índice correspondente.
 
-### SetAnimation(DayZPlayerConstantes uid)
+### SetAnimation(DayZPlayerConstants uid)
 
-Sets the base crafting animation for the entire recipe (different from per-ingredient animation overrides):
+Define a animação base de crafting para a receita inteira (diferente das sobrescritas de animação por ingrediente):
 
 ```c
 SetAnimation(DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD);
@@ -488,21 +488,21 @@ SetAnimation(DayZPlayerConstants.CMD_ACTIONFB_SPLITTING_FIREWOOD);
 
 ---
 
-## Crafting Açãos
+## Ações de Crafting
 
-### AçãoWorldCraft
+### ActionWorldCraft
 
-This is the action that drives all recipe-based crafting. Players do not interact with it directly --- the `CraftingManager` creates it automatically when valid recipes exist between two items.
+Esta é a ação que conduz todo o crafting baseado em receitas. Os jogadores não interagem com ela diretamente --- o `CraftingManager` a cria automaticamente quando existem receitas válidas entre dois itens.
 
-**How it works:**
+**Como funciona:**
 
-1. `CraftingManager.OnUpdate()` runs each frame, passing the held item and the look-at target to `PluginRecipesManager.GetValidRecipes()`.
-2. If recipes are found, `CraftingManager` sets up `AçãoWorldCraft` as a variant action, with one variant per valid recipe.
-3. The player sees recipe names in the action prompt and can cycle through them.
-4. On start, `CAContinuousCraft` reads the recipe's duration from `PluginRecipesManager.GetRecipeLengthInSecs()`.
-5. On completion (`OnFinishProgressServer`), the action calls `PluginRecipesManager.PerformRecipeServer()`.
+1. `CraftingManager.OnUpdate()` executa a cada frame, passando o item segurado e o alvo olhado para `PluginRecipesManager.GetValidRecipes()`.
+2. Se receitas são encontradas, `CraftingManager` configura `ActionWorldCraft` como uma ação variante, com uma variante por receita válida.
+3. O jogador vê os nomes das receitas no prompt de ação e pode alternar entre elas.
+4. Ao iniciar, `CAContinuousCraft` lê a duração da receita de `PluginRecipesManager.GetRecipeLengthInSecs()`.
+5. Ao completar (`OnFinishProgressServer`), a ação chama `PluginRecipesManager.PerformRecipeServer()`.
 
-**Key implementation details:**
+**Detalhes de implementação chave:**
 
 ```c
 class ActionWorldCraft : ActionContinuousBase
@@ -538,159 +538,159 @@ class ActionWorldCraft : ActionContinuousBase
 }
 ```
 
-### CraftingManager (Client)
+### CraftingManager (Cliente)
 
-The `CraftingManager` is a client-only class that manages crafting state. It operates in three modes:
+O `CraftingManager` é uma classe apenas do cliente que gerencia o estado do crafting. Ele opera em três modos:
 
-| Mode | Constante | Trigger |
-|------|----------|---------|
-| None | `CM_MODE_NONE` | No crafting active |
-| World | `CM_MODE_WORLD` | Player looks at an item while holding another |
-| Inventory | `CM_MODE_INVENTORY` | Player drags items together in the inventory screen |
+| Modo | Constante | Gatilho |
+|------|-----------|---------|
+| Nenhum | `CM_MODE_NONE` | Nenhum crafting ativo |
+| Mundo | `CM_MODE_WORLD` | Jogador olha para um item enquanto segura outro |
+| Inventário | `CM_MODE_INVENTORY` | Jogador arrasta itens juntos na tela de inventário |
 
 ```c
-// Inventory crafting is initiated by the UI
+// Crafting de inventário é iniciado pela UI
 bool SetInventoryCraft(int recipeID, ItemBase item1, ItemBase item2)
 {
     int recipeCount = m_recipesManager.GetValidRecipes(item1, item2, m_recipes, m_player);
-    // ... validates, then either:
-    //   - Sends RPC for instant recipes
-    //   - Sets up ActionWorldCraft for timed recipes
+    // ... valida, então:
+    //   - Envia RPC para receitas instantâneas
+    //   - Configura ActionWorldCraft para receitas com tempo
 }
 ```
 
-### Instant Recipes
+### Receitas Instantâneas
 
-When `m_IsInstaRecipe = true`, the crafting skips the animation entirely. The `CraftingManager` sends an RPC (`ERPCs.RPC_CRAFTING_INVENTORY_INSTANT`) directly to the server, which performs the recipe immediately.
+Quando `m_IsInstaRecipe = true`, o crafting pula a animação inteiramente. O `CraftingManager` envia um RPC (`ERPCs.RPC_CRAFTING_INVENTORY_INSTANT`) diretamente para o servidor, que executa a receita imediatamente.
 
-### Supporting Açãos
+### Ações de Suporte
 
 | Ação | Propósito |
-|--------|---------|
-| `AçãoWorldCraftCancel` | Cancels inventory-initiated crafting. Only appears when `IsInventoryCraft()` is true. |
-| `AçãoWorldCraftSwitch` | (Deprecated) Cycles to next recipe variant. Replaced by the variant manager system. |
+|------|-----------|
+| `ActionWorldCraftCancel` | Cancela o crafting iniciado pelo inventário. Aparece apenas quando `IsInventoryCraft()` é true. |
+| `ActionWorldCraftSwitch` | (Obsoleto) Alterna para a próxima variante de receita. Substituído pelo sistema de gerenciador de variantes. |
 
 ---
 
-## Recipe Execution Pipeline
+## Pipeline de Execução da Receita
 
-When `PerformRecipeServer()` is called, the following sequence executes:
+Quando `PerformRecipeServer()` é chamado, a seguinte sequência é executada:
 
-### 1. Validation: CheckRecipe()
+### 1. Validação: CheckRecipe()
 
 ```c
 bool CheckRecipe(ItemBase item1, ItemBase item2, PlayerBase player)
 {
-    // Verify neither item is null
-    // Check: is at least one item in the player's hands? (unless m_AnywhereInInventory)
-    // Sort items into m_IngredientsSorted[] to match slot definitions
-    // Run CanDo(m_IngredientsSorted, player)
-    // Run CheckConditions(m_IngredientsSorted) -- quantity/damage range checks
-    return true;  // if all pass
+    // Verificar que nenhum item é null
+    // Verificar: pelo menos um item está nas mãos do jogador? (a menos que m_AnywhereInInventory)
+    // Ordenar itens em m_IngredientsSorted[] para corresponder às definições dos slots
+    // Executar CanDo(m_IngredientsSorted, player)
+    // Executar CheckConditions(m_IngredientsSorted) -- verificações de faixa de quantidade/dano
+    return true;  // se tudo passar
 }
 ```
 
-### 2. Spawn Results: SpawnItems()
+### 2. Spawnar Resultados: SpawnItems()
 
-For each result defined by `AddResult()`:
+Para cada resultado definido por `AddResult()`:
 
-- If `m_ResultToInventory[i] == -1`: Try to place in player inventory via `CreateInInventory()`
-- If `m_ResultToInventory[i] == -2`: Spawn on ground near player
-- If inventory placement fails, fall back to ground spawn via `SpawnEntityOnGroundRaycastDispersed()`
-- Color inheritance: if `m_ResultInheritsColor[i] >= 0`, the result classname is composed as `ResultName + ingredient.ConfigGetString("color")`
+- Se `m_ResultToInventory[i] == -1`: Tenta colocar no inventário do jogador via `CreateInInventory()`
+- Se `m_ResultToInventory[i] == -2`: Spawna no chão perto do jogador
+- Se a colocação no inventário falhar, recai para spawn no chão via `SpawnEntityOnGroundRaycastDispersed()`
+- Herança de cor: se `m_ResultInheritsColor[i] >= 0`, o nome de classe do resultado é composto como `ResultName + ingredient.ConfigGetString("color")`
 
-### 3. Apply Result Modifications: ApplyModificationsResults()
+### 3. Aplicar Modificações nos Resultados: ApplyModificationsResults()
 
-For each result:
+Para cada resultado:
 
-- **Quantity:** `m_ResultSetFullQuantity` sets max, `m_ResultSetQuantity` sets a specific value
-- **Health:** `m_ResultSetHealth` sets absolute health. `m_ResultInheritsHealth` copies from a specific ingredient (`>= 0`), or averages all ingredients (`-2`)
-- **Propriedade transfer:** `m_ResultReplacesIngredient` transfers item properties and inventory contents from an ingredient using `MiscGameplayFunctions.TransferItemProperties()` and `TransferInventory()`
+- **Quantidade:** `m_ResultSetFullQuantity` define o máximo, `m_ResultSetQuantity` define um valor específico
+- **Saúde:** `m_ResultSetHealth` define saúde absoluta. `m_ResultInheritsHealth` copia de um ingrediente específico (`>= 0`), ou faz a média de todos os ingredientes (`-2`)
+- **Transferência de propriedades:** `m_ResultReplacesIngredient` transfere propriedades do item e conteúdo do inventário de um ingrediente usando `MiscGameplayFunctions.TransferItemProperties()` e `TransferInventory()`
 
-### 4. Apply Ingredient Modifications: ApplyModificationsIngredients()
+### 4. Aplicar Modificações nos Ingredientes: ApplyModificationsIngredients()
 
-For each ingredient:
+Para cada ingrediente:
 
-- If `m_IngredientDestroy[i]` is true, queue for deletion
-- Otherwise apply `m_IngredientAddHealth`, `m_IngredientSetHealth`, and `m_IngredientAddQuantity`
-- Quantity reduction that brings an item to zero automatically destroys it
-- Magazine items use `ServerSetAmmoCount()` instead of `AddQuantity()`
+- Se `m_IngredientDestroy[i]` for true, enfileirar para deleção
+- Caso contrário, aplicar `m_IngredientAddHealth`, `m_IngredientSetHealth` e `m_IngredientAddQuantity`
+- Redução de quantidade que leva um item a zero automaticamente o destrói
+- Itens de carregador usam `ServerSetAmmoCount()` em vez de `AddQuantity()`
 
-### 5. Custom Logic: Do()
+### 5. Lógica Personalizada: Do()
 
-Your override runs here with sorted ingredients, results array, and specialty weight.
+Sua sobrescrita executa aqui com ingredientes ordenados, array de resultados e peso de especialidade.
 
-### 6. Cleanup: DeleteIngredientsPass()
+### 6. Limpeza: DeleteIngredientsPass()
 
-All ingredients queued for deletion are destroyed.
-
----
-
-## The Recipe Cache
-
-The recipe cache is a performance-critical system that avoids checking every recipe against every item combination at runtime.
-
-### How It Works
-
-On startup, `PluginRecipesManager` builds a `map<string, CacheObject>` keyed by item class name:
-
-1. **WalkRecipes()** --- iterates all registered recipes and maps each ingredient class name to recipe IDs with bitmask positions (`Ingredient.FIRST = 1`, `Ingredient.SECOND = 2`, `Ingredient.BOTH = 3`).
-
-2. **GenerateRecipeCache()** --- walks all items in `CfgVehicles`, `CfgWeapons`, and `CfgMagazines`. For each item, resolves its full config hierarchy and inherits recipe cache entries from parent classes.
-
-This means if you register `"Inventory_Base"` as an ingredient, every item that inherits from `Inventory_Base` gets that recipe in its cache automatically.
-
-### Cache Lookup
-
-When two items are combined:
-
-1. `GetRecipeIntersection()` finds the item with fewer cached recipes
-2. Iterates those recipes, checking if the other item also has them
-3. `SortIngredients()` determines which item maps to which ingredient slot using bitmask resolution
+Todos os ingredientes enfileirados para deleção são destruídos.
 
 ---
 
-## Advanced Topics
+## O Cache de Receitas
 
-### Tool Recipes (Non-Consuming Ingredients)
+O cache de receitas é um sistema de desempenho crítico que evita verificar cada receita contra cada combinação de itens em tempo de execução.
 
-Many recipes use one ingredient as a "tool" that is not consumed. Set the tool ingredient to not be destroyed and optionally lose health:
+### Como Funciona
+
+Na inicialização, `PluginRecipesManager` constrói um `map<string, CacheObject>` indexado pelo nome de classe do item:
+
+1. **WalkRecipes()** --- itera todas as receitas registradas e mapeia cada nome de classe de ingrediente para IDs de receita com posições em bitmask (`Ingredient.FIRST = 1`, `Ingredient.SECOND = 2`, `Ingredient.BOTH = 3`).
+
+2. **GenerateRecipeCache()** --- percorre todos os itens em `CfgVehicles`, `CfgWeapons` e `CfgMagazines`. Para cada item, resolve sua hierarquia completa de config e herda entradas de cache de receita das classes pai.
+
+Isso significa que se você registrar `"Inventory_Base"` como um ingrediente, cada item que herda de `Inventory_Base` recebe essa receita em seu cache automaticamente.
+
+### Busca no Cache
+
+Quando dois itens são combinados:
+
+1. `GetRecipeIntersection()` encontra o item com menos receitas em cache
+2. Itera essas receitas, verificando se o outro item também as possui
+3. `SortIngredients()` determina qual item mapeia para qual slot de ingrediente usando resolução de bitmask
+
+---
+
+## Tópicos Avançados
+
+### Receitas de Ferramentas (Ingredientes Não Consumidos)
+
+Muitas receitas usam um ingrediente como "ferramenta" que não é consumida. Defina o ingrediente de ferramenta para não ser destruído e opcionalmente perder saúde:
 
 ```c
-// Knife is a tool --- it loses health but is not consumed
+// Faca é uma ferramenta --- ela perde saúde mas não é consumida
 InsertIngredient(0, "HuntingKnife");
-m_IngredientAddHealth[0] = -10;      // lose 10 health per craft
+m_IngredientAddHealth[0] = -10;      // perde 10 de saúde por crafting
 m_IngredientSetHealth[0] = -1;
 m_IngredientAddQuantity[0] = 0;
-m_IngredientDestroy[0] = false;      // survives crafting
-m_IngredientUseSoftSkills[0] = true; // soft skills modify health loss
+m_IngredientDestroy[0] = false;      // sobrevive ao crafting
+m_IngredientUseSoftSkills[0] = true; // habilidades suaves modificam a perda de saúde
 ```
 
-Vanilla examples: `CleanWeapon` (WeaponCleaningKit), `SawoffShotgunIzh43` (Hacksaw), `SharpenMelee` (WhetStone).
+Exemplos vanilla: `CleanWeapon` (WeaponCleaningKit), `SawoffShotgunIzh43` (Hacksaw), `SharpenMelee` (WhetStone).
 
-### Partial Quantity Consumption
+### Consumo Parcial de Quantidade
 
-Consume only part of an ingredient's stack:
+Consome apenas parte da pilha de um ingrediente:
 
 ```c
-// Require at least 6 rags, consume 6
+// Requer pelo menos 6 trapos, consome 6
 m_MinQuantityIngredient[0] = 6;
-m_IngredientAddQuantity[0] = -6;    // negative = consume
-m_IngredientDestroy[0] = false;     // leftover rags survive
+m_IngredientAddQuantity[0] = -6;    // negativo = consumir
+m_IngredientDestroy[0] = false;     // trapos restantes sobrevivem
 ```
 
-If the quantity reduction brings the item to zero or below, the engine destroys it automatically (via `AddQuantity()` return value).
+Se a redução de quantidade levar o item a zero ou abaixo, o motor o destrói automaticamente (via valor de retorno de `AddQuantity()`).
 
-### Item Transformation (No Spawned Result)
+### Transformação de Item (Sem Resultado Spawnado)
 
-Some recipes transform an ingredient directly instead of spawning a new item. The saw-off recipes use `MiscGameplayFunctions.TurnItemIntoItemEx()` in `Do()` without calling `AddResult()`:
+Algumas receitas transformam um ingrediente diretamente em vez de spawnar um novo item. As receitas de serrar usam `MiscGameplayFunctions.TurnItemIntoItemEx()` em `Do()` sem chamar `AddResult()`:
 
 ```c
 class SawoffShotgunIzh43 extends RecipeBase
 {
     override void Init()
     {
-        // ... ingredients configured, NO AddResult() call ...
+        // ... ingredientes configurados, SEM chamada AddResult() ...
     }
 
     override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)
@@ -701,14 +701,14 @@ class SawoffShotgunIzh43 extends RecipeBase
 }
 ```
 
-This preserves the item's attachments, damage state, and inventory slot.
+Isso preserva os anexos do item, estado de dano e slot de inventário.
 
-### No-Result Recipes (In-Place Modification)
+### Receitas Sem Resultado (Modificação no Local)
 
-Recipes like `DisinfectItem` and `PurifyWater` modify an ingredient in place without producing a new item. They define no `AddResult()` and use `Do()` to alter the ingredient:
+Receitas como `DisinfectItem` e `PurifyWater` modificam um ingrediente no local sem produzir um novo item. Elas não definem `AddResult()` e usam `Do()` para alterar o ingrediente:
 
 ```c
-// PurifyWater: removes agents from the water container
+// PurifyWater: remove agentes do recipiente de água
 override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> results, float specialty_weight)
 {
     ItemBase ingredient2 = ingredients[1];
@@ -716,30 +716,30 @@ override void Do(ItemBase ingredients[], PlayerBase player, array<ItemBase> resu
 }
 ```
 
-### Color-Based Result Variants
+### Variantes de Resultado Baseadas em Cor
 
-The `m_ResultInheritsColor` system creates variant items based on an ingredient's config `color` value. The result classname becomes `AddResult_name + color_string`:
+O sistema `m_ResultInheritsColor` cria itens variantes baseados no valor de `color` da config de um ingrediente. O nome de classe do resultado se torna `AddResult_name + color_string`:
 
 ```c
-AddResult("GhillieHood_");              // base name ending with underscore
-m_ResultInheritsColor[0] = 0;           // inherit color from ingredient 0
+AddResult("GhillieHood_");              // nome base terminando com sublinhado
+m_ResultInheritsColor[0] = 0;           // herdar cor do ingrediente 0
 
-// If ingredient 0 has color "Green" in its config, the result becomes "GhillieHood_Green"
+// Se o ingrediente 0 tem cor "Green" em sua config, o resultado se torna "GhillieHood_Green"
 ```
 
-This was used extensively for the paint recipe system (now mostly commented out in vanilla).
+Isso era usado extensivamente para o sistema de receitas de pintura (agora majoritariamente comentado no vanilla).
 
-### Crafting Duration
+### Duração do Crafting
 
-The actual crafting time in seconds is:
+O tempo real de crafting em segundos é:
 
 ```
-seconds = m_AnimationLength * CRAFTING_TIME_UNIT_SIZE
-seconds = m_AnimationLength * 4.0
+segundos = m_AnimationLength * CRAFTING_TIME_UNIT_SIZE
+segundos = m_AnimationLength * 4.0
 ```
 
-| `m_AnimationLength` | Real seconds |
-|---------------------|-------------|
+| `m_AnimationLength` | Segundos reais |
+|---------------------|---------------|
 | 0.5 | 2.0 |
 | 1.0 | 4.0 |
 | 1.5 | 6.0 |
@@ -749,100 +749,100 @@ seconds = m_AnimationLength * 4.0
 
 ## Boas Práticas
 
-1. **Always call `super.RegisterRecipies()`** when modding `PluginRecipesManagerBase`. Forgetting this removes all vanilla recipes.
+1. **Sempre chame `super.RegisterRecipies()`** ao moddar `PluginRecipesManagerBase`. Esquecer isso remove todas as receitas vanilla.
 
-2. **Use inheritance-based ingredients wisely.** Inserting `"Inventory_Base"` matches every item in the game. This is powerful but can create unexpected recipe conflicts. Prefer specific class names or intermediate base classes.
+2. **Use ingredientes baseados em herança com sabedoria.** Inserir `"Inventory_Base"` corresponde a todos os itens do jogo. Isso é poderoso, mas pode criar conflitos de receita inesperados. Prefira nomes de classe específicos ou classes base intermediárias.
 
-3. **Set condition checks to `-1` to disable, not `0`.** A value of `0` is a valid condition (e.g., min quantity of 0), while `-1` explicitly disables the check.
+3. **Defina verificações de condição como `-1` para desabilitar, não `0`.** Um valor de `0` é uma condição válida (ex.: quantidade mínima de 0), enquanto `-1` explicitamente desabilita a verificação.
 
-4. **Handle quantity consumption in `Do()` when the built-in fields are insufficient.** The `CraftSplint` recipe demonstrates this --- different ingredient types require different quantities, so it uses `CanDo()` for validation and `Do()` for consumption rather than `m_IngredientAddQuantity`.
+4. **Lide com consumo de quantidade em `Do()` quando os campos embutidos forem insuficientes.** A receita `CraftSplint` demonstra isso --- diferentes tipos de ingredientes requerem diferentes quantidades, então usa `CanDo()` para validação e `Do()` para consumo em vez de `m_IngredientAddQuantity`.
 
-5. **Keep `CanDo()` lightweight.** It runs frequently during recipe validation (every frame the player looks at a craftable combination). Avoid heavy operations like config lookups or iteration.
+5. **Mantenha `CanDo()` leve.** Ele executa frequentemente durante a validação de receitas (a cada frame que o jogador olha para uma combinação craftável). Evite operações pesadas como buscas de config ou iterações.
 
-6. **Use `m_ResultInheritsHealth = -2` for most recipes.** Averaging ingredient health produces intuitive results --- crafting with damaged ingredients gives a damaged result.
+6. **Use `m_ResultInheritsHealth = -2` para a maioria das receitas.** Fazer a média da saúde dos ingredientes produz resultados intuitivos --- craftar com ingredientes danificados dá um resultado danificado.
 
-7. **Prefer `m_IngredientAddHealth` over `m_IngredientSetHealth`.** Adding negative health is relative and works across different item types with different max health values. Setting absolute health can produce unexpected results.
+7. **Prefira `m_IngredientAddHealth` ao invés de `m_IngredientSetHealth`.** Adicionar saúde negativa é relativo e funciona entre diferentes tipos de itens com diferentes valores máximos de saúde. Definir saúde absoluta pode produzir resultados inesperados.
 
-8. **Name your recipe class after its primary action.** Vanilla uses conventions like `CraftX`, `DeCraftX`, `SawoffX`, `RepairWithX`, `SplitX`, `PrepareX`.
+8. **Nomeie sua classe de receita após sua ação primária.** O vanilla usa convenções como `CraftX`, `DeCraftX`, `SawoffX`, `RepairWithX`, `SplitX`, `PrepareX`.
 
 ---
 
-## Observed in Real Mods
+## Observado em Mods Reais
 
 ### DayZ-Samples Test_Crafting
 
-The official Bohemia sample demonstrates the simplest possible recipe mod:
+O exemplo oficial da Bohemia demonstra o mod de receita mais simples possível:
 
-- `ExemploRecipe` extends `RecipeBase` --- a "MagicHammer" that turns any item into 4 small stones
-- Registration via `modded class PluginRecipesManagerBase` calling `RegisterRecipe(new ExemploRecipe)` and `UnregisterRecipe("CraftStoneKnife")`
-- Two files total: the recipe class and the manager override
+- `ExampleRecipe` estende `RecipeBase` --- um "MagicHammer" que transforma qualquer item em 4 pedras pequenas
+- Registro via `modded class PluginRecipesManagerBase` chamando `RegisterRecipe(new ExampleRecipe)` e `UnregisterRecipe("CraftStoneKnife")`
+- Dois arquivos no total: a classe da receita e a sobrescrita do gerenciador
 
-### Vanilla Recipe Categories
+### Categorias de Receitas Vanilla
 
-Examining the ~150 registered vanilla recipes reveals these patterns:
+Examinando as ~150 receitas vanilla registradas revela estes padrões:
 
-| Category | Count | Padrão | Exemplo |
-|----------|-------|---------|---------|
-| Craft | ~50 | Two ingredients -> new item | `CraftTorch`, `CraftSplint` |
-| DeCraft | ~15 | Reverse crafting, disassemble | `DeCraftSplint`, `DeCraftHandDrillKit` |
-| Repair | ~8 | Tool + damaged item -> improved item | `RepairWithTape`, `CleanWeapon` |
-| SawOff | ~7 | Hacksaw + weapon -> shorter variant | `SawoffMosin`, `SawOffIzh18` |
-| Prepare | ~6 | Knife + animal/fish -> meat/pelts | `PrepareChicken`, `PrepareCarp` |
-| Split | ~4 | Tool + stackable -> smaller pieces | `SplitStones`, `SplitFirewood` |
-| CutOut | ~4 | Knife + vegetable -> seeds | `CutOutTomatoSeeds` |
-| Utility | ~10 | Purify, disinfect, fuel, fill, test | `PurifyWater`, `FuelChainsaw` |
+| Categoria | Quantidade | Padrão | Exemplo |
+|-----------|-----------|--------|---------|
+| Craft | ~50 | Dois ingredientes -> novo item | `CraftTorch`, `CraftSplint` |
+| DeCraft | ~15 | Crafting reverso, desmontagem | `DeCraftSplint`, `DeCraftHandDrillKit` |
+| Repair | ~8 | Ferramenta + item danificado -> item melhorado | `RepairWithTape`, `CleanWeapon` |
+| SawOff | ~7 | Serra + arma -> variante mais curta | `SawoffMosin`, `SawOffIzh18` |
+| Prepare | ~6 | Faca + animal/peixe -> carne/peles | `PrepareChicken`, `PrepareCarp` |
+| Split | ~4 | Ferramenta + empilhável -> pedaços menores | `SplitStones`, `SplitFirewood` |
+| CutOut | ~4 | Faca + vegetal -> sementes | `CutOutTomatoSeeds` |
+| Utility | ~10 | Purificar, desinfetar, abastecer, encher, testar | `PurifyWater`, `FuelChainsaw` |
 
 ---
 
 ## Teoria vs Prática
 
-### What the API Suggests
+### O Que a API Sugere
 
-The `RecipeBase` fields suggest a highly flexible system: up to 10 results per recipe, soft skills modifiers, color inheritance, quantity-based results. The `MAX_NUMBER_OF_RECIPES = 2048` constant implies massive scalability.
+Os campos de `RecipeBase` sugerem um sistema altamente flexível: até 10 resultados por receita, modificadores de habilidades suaves, herança de cor, resultados baseados em quantidade. A constante `MAX_NUMBER_OF_RECIPES = 2048` implica escalabilidade massiva.
 
-### What Actually Works
+### O Que Realmente Funciona
 
-- **Two-ingredient limit is absolute.** The system is hard-coded for exactly two ingredient slots. Multi-step crafting (3+ materials) must be split into sequential recipes.
-- **Most recipes produce one result.** Despite `MAXIMUM_RESULTS = 10`, vanilla recipes rarely produce more than one item. The multi-result path is less tested.
-- **Soft skills modifiers are effectively disabled.** The `CAContinuousCraft` component has a comment `//removed softskills` next to the time calculation. The specialty weight is still passed to `Do()` but rarely used.
-- **The `m_ResultToInventory >= 0` swap path is commented out.** The code for swapping result position with an ingredient exists in `SpawnItems()` but the swap logic is inside a commented block. Only `-2` (ground) and `-1` (inventory) work.
-- **`m_AnywhereInInventory` is rarely used.** Most recipes require at least one item in hands. This field exists but is not widely exercised.
+- **O limite de dois ingredientes é absoluto.** O sistema é hard-coded para exatamente dois slots de ingredientes. Crafting em múltiplas etapas (3+ materiais) deve ser dividido em receitas sequenciais.
+- **A maioria das receitas produz um resultado.** Apesar de `MAXIMUM_RESULTS = 10`, receitas vanilla raramente produzem mais de um item. O caminho de múltiplos resultados é menos testado.
+- **Modificadores de habilidades suaves estão efetivamente desabilitados.** O componente `CAContinuousCraft` tem um comentário `//removed softskills` ao lado do cálculo de tempo. O peso de especialidade ainda é passado para `Do()` mas raramente é usado.
+- **O caminho de troca `m_ResultToInventory >= 0` está comentado.** O código para trocar a posição do resultado com um ingrediente existe em `SpawnItems()`, mas a lógica de troca está dentro de um bloco comentado. Apenas `-2` (chão) e `-1` (inventário) funcionam.
+- **`m_AnywhereInInventory` é raramente usado.** A maioria das receitas requer pelo menos um item nas mãos. Este campo existe mas não é amplamente exercitado.
 
 ---
 
 ## Erros Comuns
 
-### 1. Forgetting to Call super.RegisterRecipies()
+### 1. Esquecer de Chamar super.RegisterRecipies()
 
 ```c
-// WRONG: all vanilla recipes disappear
+// ERRADO: todas as receitas vanilla desaparecem
 modded class PluginRecipesManagerBase extends PluginBase
 {
     override void RegisterRecipies()
     {
-        RegisterRecipe(new MyRecipe);  // only your recipe exists
+        RegisterRecipe(new MyRecipe);  // apenas sua receita existe
     }
 }
 ```
 
 ```c
-// CORRECT: vanilla recipes preserved
+// CORRETO: receitas vanilla preservadas
 modded class PluginRecipesManagerBase extends PluginBase
 {
     override void RegisterRecipies()
     {
-        super.RegisterRecipies();      // keep vanilla
+        super.RegisterRecipies();      // manter vanilla
         RegisterRecipe(new MyRecipe);
     }
 }
 ```
 
-### 2. Using Wrong Sentinel Valors
+### 2. Usar Valores Sentinela Errados
 
-Each field uses different "do nothing" values:
+Cada campo usa valores "não fazer nada" diferentes:
 
-| Campo | "Do nothing" value |
-|-------|--------------------|
+| Campo | Valor "não fazer nada" |
+|-------|-----------------------|
 | `m_IngredientAddHealth` | `0` |
 | `m_IngredientSetHealth` | `-1` |
 | `m_IngredientAddQuantity` | `0` |
@@ -851,42 +851,42 @@ Each field uses different "do nothing" values:
 | `m_ResultSetQuantity` | `-1` |
 | `m_ResultInheritsHealth` | `-1` |
 | `m_ResultInheritsColor` | `-1` |
-| `m_ResultToInventory` | `-2` (ground) or `-1` (inventory) |
+| `m_ResultToInventory` | `-2` (chão) ou `-1` (inventário) |
 | `m_ResultReplacesIngredient` | `-1` |
 
-Mixing these up (e.g., using `0` instead of `-1` for `m_ResultSetHealth`) will set the result health to 0, ruining it immediately.
+Misturar esses valores (ex.: usar `0` em vez de `-1` para `m_ResultSetHealth`) vai definir a saúde do resultado como 0, arruinando-o imediatamente.
 
-### 3. Incorrect Ingredient Sorting Assumptions
+### 3. Suposições Incorretas de Ordenação de Ingredientes
 
-The `ingredients[]` array in `CanDo()` and `Do()` is sorted to match your slot definitions, not the order the player combined items. If you defined `InsertIngredient(0, "Knife")` and `InsertIngredient(1, "Stick")`, then `ingredients[0]` is always the knife and `ingredients[1]` is always the stick, regardless of which item the player held.
+O array `ingredients[]` em `CanDo()` e `Do()` é ordenado para corresponder às suas definições de slot, não à ordem em que o jogador combinou os itens. Se você definiu `InsertIngredient(0, "Knife")` e `InsertIngredient(1, "Stick")`, então `ingredients[0]` é sempre a faca e `ingredients[1]` é sempre o graveto, independentemente de qual item o jogador segurava.
 
-### 4. Consuming Items Without Quantity Checks
+### 4. Consumir Itens Sem Verificações de Quantidade
 
-If you set `m_IngredientAddQuantity[0] = -6` but `m_MinQuantityIngredient[0] = 1`, players can craft with only 1 unit and the quantity goes negative (or the item is destroyed). Always ensure min quantity is at least the consumption amount:
+Se você definir `m_IngredientAddQuantity[0] = -6` mas `m_MinQuantityIngredient[0] = 1`, jogadores podem craftar com apenas 1 unidade e a quantidade fica negativa (ou o item é destruído). Sempre garanta que a quantidade mínima é pelo menos a quantidade de consumo:
 
 ```c
-m_MinQuantityIngredient[0] = 6;     // require at least 6
-m_IngredientAddQuantity[0] = -6;    // consume 6
+m_MinQuantityIngredient[0] = 6;     // requer pelo menos 6
+m_IngredientAddQuantity[0] = -6;    // consome 6
 ```
 
-### 5. Recipe Not Appearing (Cache Issues)
+### 5. Receita Não Aparecendo (Problemas de Cache)
 
-If your recipe does not appear in game:
+Se sua receita não aparece no jogo:
 
-- Verify both ingredient class names are spelled correctly and match config entries exactly
-- Verify items have `scope = 2` in their config (the cache only indexes scope-2 items)
-- Verify neither ingredient has attachments (base `CanDo()` blocks this)
-- Verify at least one item is in the player's hands (unless `m_AnywhereInInventory = true`)
-- Verify damage level conditions are not excluding valid items (many vanilla recipes set `m_MaxDamageIngredient = 3`, blocking ruined items)
+- Verifique se ambos os nomes de classe dos ingredientes estão escritos corretamente e correspondem exatamente às entradas de config
+- Verifique se os itens têm `scope = 2` em sua config (o cache indexa apenas itens com scope 2)
+- Verifique se nenhum ingrediente tem anexos (`CanDo()` base bloqueia isso)
+- Verifique se pelo menos um item está nas mãos do jogador (a menos que `m_AnywhereInInventory = true`)
+- Verifique se as condições de nível de dano não estão excluindo itens válidos (muitas receitas vanilla definem `m_MaxDamageIngredient = 3`, bloqueando itens arruinados)
 
-### 6. Trying to Use CanDo for Complex Multi-Type Logic
+### 6. Tentar Usar CanDo para Lógica Complexa de Múltiplos Tipos
 
-When a single slot accepts multiple types with different requirements, use `Type()` or `IsInherited()` checks in `CanDo()`:
+Quando um único slot aceita múltiplos tipos com requisitos diferentes, use verificações de `Type()` ou `IsInherited()` em `CanDo()`:
 
 ```c
-// WRONG: m_MinQuantityIngredient applies the same threshold to all types in the slot
+// ERRADO: m_MinQuantityIngredient aplica o mesmo limite a todos os tipos no slot
 
-// CORRECT: check per-type in CanDo
+// CORRETO: verificar por tipo em CanDo
 override bool CanDo(ItemBase ingredients[], PlayerBase player)
 {
     ItemBase ing = ingredients[0];
@@ -906,45 +906,45 @@ override bool CanDo(ItemBase ingredients[], PlayerBase player)
 
 ---
 
-## Compatibility and Impact
+## Compatibilidade e Impacto
 
-### Mod Conflicts
+### Conflitos de Mods
 
-- Multiple mods can register recipes via modded `PluginRecipesManagerBase` without conflict, as long as each calls `super.RegisterRecipies()`.
-- Recipe IDs are assigned sequentially at registration. Do not hardcode recipe IDs --- they change when the load order changes.
-- Two mods registering recipes for the same ingredient combination will both work --- the player sees all valid recipes and can cycle through them.
-- `UnregisterRecipe()` uses class name strings, which is fragile. If a mod renames or removes the class you are trying to unregister, it silently fails.
+- Múltiplos mods podem registrar receitas via `PluginRecipesManagerBase` modded sem conflito, desde que cada um chame `super.RegisterRecipies()`.
+- IDs de receita são atribuídos sequencialmente no registro. Não faça hardcode de IDs de receita --- eles mudam quando a ordem de carregamento muda.
+- Dois mods registrando receitas para a mesma combinação de ingredientes vão ambos funcionar --- o jogador vê todas as receitas válidas e pode alternar entre elas.
+- `UnregisterRecipe()` usa strings de nomes de classe, o que é frágil. Se um mod renomear ou remover a classe que você está tentando cancelar o registro, falha silenciosamente.
 
-### Performance
+### Desempenho
 
-- The recipe cache is built once at startup. Adding many recipes increases startup time but has no runtime cost.
-- `GetValidRecipes()` runs every frame on the client when the player holds an item and looks at another item. The cache makes this fast (O(1) lookup per item pair, then O(n) for matched recipes where n is small).
-- Recipes with `"Inventory_Base"` as an ingredient bloat the cache for every item in the game. Use sparingly.
+- O cache de receitas é construído uma vez na inicialização. Adicionar muitas receitas aumenta o tempo de inicialização mas não tem custo em tempo de execução.
+- `GetValidRecipes()` executa a cada frame no cliente quando o jogador segura um item e olha para outro item. O cache torna isso rápido (busca O(1) por par de itens, depois O(n) para receitas correspondentes onde n é pequeno).
+- Receitas com `"Inventory_Base"` como ingrediente inflam o cache para cada item do jogo. Use com moderação.
 
-### Server Authority
+### Autoridade do Servidor
 
-- All recipe execution happens server-side via `PerformRecipeServer()`.
-- Client validates recipes locally for UI display but the server re-validates before executing.
-- The `RecipeSanityCheck()` on the server verifies items are within acceptable distance (5 meters) and not owned by another live player.
+- Toda execução de receita acontece do lado do servidor via `PerformRecipeServer()`.
+- O cliente valida receitas localmente para exibição na UI, mas o servidor revalida antes de executar.
+- O `RecipeSanityCheck()` no servidor verifica se os itens estão a uma distância aceitável (5 metros) e não são possuídos por outro jogador vivo.
 
 ---
 
-## File Locations Referência Rápida
+## Referência Rápida de Localização de Arquivos
 
-| File | Propósito |
-|------|---------|
-| `4_World/classes/recipes/recipebase.c` | `RecipeBase` --- base class, field definitions, execution pipeline |
-| `4_World/classes/recipes/cacheobject.c` | `CacheObject`, `RecipeCacheData` --- bitmask cache entries |
-| `4_World/classes/recipes/recipes/pluginrecipesmanagerbase.c` | `PluginRecipesManagerBase` --- vanilla recipe registration |
-| `4_World/classes/recipes/recipes/*.c` | All vanilla recipe implementations (~100+ files) |
-| `4_World/plugins/pluginbase/pluginrecipesmanager.c` | `PluginRecipesManager` --- runtime manager, cache, execution |
-| `4_World/classes/craftingmanager.c` | `CraftingManager` --- client crafting state machine |
-| `4_World/classes/useractionscomponent/actions/continuous/actionworldcraft.c` | `AçãoWorldCraft` --- the crafting action |
-| `4_World/classes/useractionscomponent/actioncomponents/cacontinuouscraft.c` | `CAContinuousCraft` --- progress component |
-| `3_Game/constants.c` | `CRAFTING_TIME_UNIT_SIZE` constant |
+| Arquivo | Propósito |
+|---------|-----------|
+| `4_World/classes/recipes/recipebase.c` | `RecipeBase` --- classe base, definições de campos, pipeline de execução |
+| `4_World/classes/recipes/cacheobject.c` | `CacheObject`, `RecipeCacheData` --- entradas de cache em bitmask |
+| `4_World/classes/recipes/recipes/pluginrecipesmanagerbase.c` | `PluginRecipesManagerBase` --- registro de receitas vanilla |
+| `4_World/classes/recipes/recipes/*.c` | Todas as implementações de receitas vanilla (~100+ arquivos) |
+| `4_World/plugins/pluginbase/pluginrecipesmanager.c` | `PluginRecipesManager` --- gerenciador em tempo de execução, cache, execução |
+| `4_World/classes/craftingmanager.c` | `CraftingManager` --- máquina de estados de crafting do cliente |
+| `4_World/classes/useractionscomponent/actions/continuous/actionworldcraft.c` | `ActionWorldCraft` --- a ação de crafting |
+| `4_World/classes/useractionscomponent/actioncomponents/cacontinuouscraft.c` | `CAContinuousCraft` --- componente de progresso |
+| `3_Game/constants.c` | Constante `CRAFTING_TIME_UNIT_SIZE` |
 
 ---
 
 ## Resumo
 
-The DayZ crafting system is built on a recipe registry pattern where `RecipeBase` subclasses declare ingredients, conditions, and results through a set of indexed field arrays. `PluginRecipesManager` caches the ingredient-to-recipe mapping at startup, and `AçãoWorldCraft` provides the player-facing crafting action with progress bar and animation support. Custom recipes require only two files: a `RecipeBase` subclass with `Init()`, `CanDo()`, and optionally `Do()` overrides, plus a modded `PluginRecipesManagerBase` to register it. The system is constrained to exactly two ingredients per recipe, but each slot can accept multiple item types via inheritance matching, and recipes can produce up to 10 output items with configurable health, quantity, and property inheritance.
+O sistema de crafting do DayZ é construído sobre um padrão de registro de receitas onde subclasses de `RecipeBase` declaram ingredientes, condições e resultados através de um conjunto de arrays de campos indexados. O `PluginRecipesManager` faz cache do mapeamento ingrediente-para-receita na inicialização, e o `ActionWorldCraft` fornece a ação de crafting voltada ao jogador com suporte a barra de progresso e animação. Receitas personalizadas requerem apenas dois arquivos: uma subclasse de `RecipeBase` com sobrescritas de `Init()`, `CanDo()` e opcionalmente `Do()`, além de uma `PluginRecipesManagerBase` modded para registrá-la. O sistema é restrito a exatamente dois ingredientes por receita, mas cada slot pode aceitar múltiplos tipos de itens via correspondência por herança, e receitas podem produzir até 10 itens de saída com saúde, quantidade e herança de propriedades configuráveis.

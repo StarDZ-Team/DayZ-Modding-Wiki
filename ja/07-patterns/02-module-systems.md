@@ -1,36 +1,36 @@
-# Chapter 7.2: Module / Plugin Systems
+# 第7.2章: モジュール / プラグインシステム
 
-[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
+[ホーム](../../README.md) | [<< 前へ: シングルトンパターン](01-singletons.md) | **モジュール / プラグインシステム** | [次へ: RPCパターン >>](03-rpc-patterns.md)
 
 ---
 
 ## はじめに
 
-Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle events --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- to each module in a predictable order.
+すべての本格的なDayZ MODフレームワークは、定義されたライフサイクルフックを持つ自己完結型ユニットにコードを整理するために、モジュールまたはプラグインシステムを使用します。modded ミッションクラス全体に初期化ロジックを散らばらせるのではなく、モジュールは中央マネージャーに自身を登録し、そのマネージャーがライフサイクルイベント --- `OnInit`、`OnMissionStart`、`OnUpdate`、`OnMissionFinish` --- を予測可能な順序で各モジュールにディスパッチします。
 
-This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and MyMod's `MyModuleManager`. Each solves the same problem differently; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
+この章では、4つの実際のアプローチを検討します: Community Frameworkの `CF_ModuleCore`、VPPの `PluginBase` / `ConfigurablePlugin`、Dabs Frameworkの属性ベースの登録、およびカスタム静的モジュールマネージャーです。それぞれが同じ問題を異なる方法で解決します。4つすべてを理解することで、独自のMODに適切なパターンを選択したり、既存のフレームワークにスムーズに統合したりできるようになります。
 
 ---
 
 ## 目次
 
-- [Why Modules?](#why-modules)
+- [なぜモジュールが必要か?](#なぜモジュールが必要か)
 - [CF_ModuleCore (COT / Expansion)](#cf_modulecore-cot--expansion)
 - [VPP PluginBase / ConfigurablePlugin](#vpp-pluginbase--configurableplugin)
-- [Dabs Attribute-Based Registration](#dabs-attribute-based-registration)
-- [MyMod MyModuleManager](#custom-static-module-manager)
-- [Module Lifecycle: The Universal Contract](#module-lifecycle-the-universal-contract)
-- [Best Practices for Module Design](#best-practices-for-module-design)
-- [Comparison Table](#comparison-table)
+- [Dabs 属性ベースの登録](#dabs-属性ベースの登録)
+- [カスタム静的モジュールマネージャー](#カスタム静的モジュールマネージャー)
+- [モジュールライフサイクル: ユニバーサルな契約](#モジュールライフサイクル-ユニバーサルな契約)
+- [モジュール設計のベストプラクティス](#モジュール設計のベストプラクティス)
+- [比較表](#比較表)
 
 ---
 
-## Why Modules?
+## なぜモジュールが必要か?
 
-Without a module system, a DayZ mod typically ends up with a monolithic modded `MissionServer` or `MissionGameplay` class that grows until it becomes unmanageable:
+モジュールシステムがなければ、DayZ MODは通常、管理不能になるまで肥大化するモノリシックな modded `MissionServer` または `MissionGameplay` クラスになってしまいます:
 
 ```c
-// BAD: Everything crammed into one modded class
+// 悪い例: すべてを1つのmoddedクラスに詰め込む
 modded class MissionServer
 {
     override void OnInit()
@@ -42,7 +42,7 @@ modded class MissionServer
         InitWeatherController();
         InitAdminPanel();
         InitKillfeedHUD();
-        // ... 20 more systems
+        // ... さらに20以上のシステム
     }
 
     override void OnUpdate(float timeslice)
@@ -51,12 +51,12 @@ modded class MissionServer
         TickLootSystem(timeslice);
         TickVehicleTracker(timeslice);
         TickWeatherController(timeslice);
-        // ... 20 more ticks
+        // ... さらに20以上のティック
     }
 };
 ```
 
-A module system replaces this with a single, stable hook point:
+モジュールシステムはこれを単一の安定したフックポイントに置き換えます:
 
 ```c
 modded class MissionServer
@@ -72,81 +72,81 @@ modded class MissionServer
     override void OnMissionStart()
     {
         super.OnMissionStart();
-        MyModuleManager.OnMissionStart();  // Dispatches to all modules
+        MyModuleManager.OnMissionStart();  // すべてのモジュールにディスパッチ
     }
 
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
-        MyModuleManager.OnServerUpdate(timeslice);  // Dispatches to all modules
+        MyModuleManager.OnServerUpdate(timeslice);  // すべてのモジュールにディスパッチ
     }
 };
 ```
 
-Each module is an independent class with its own file, its own state, and its own lifecycle hooks. Adding a new feature means adding a new module --- not editing a 3000-line mission class.
+各モジュールは独自のファイル、独自の状態、独自のライフサイクルフックを持つ独立したクラスです。新しい機能を追加するには、新しいモジュールを追加するだけで済みます --- 3000行のミッションクラスを編集する必要はありません。
 
 ---
 
 ## CF_ModuleCore (COT / Expansion)
 
-Community Framework (CF) provides the most widely-used module system in the DayZ modding ecosystem. Both COT and Expansion build on it.
+Community Framework (CF) は、DayZ MODエコシステムで最も広く使用されているモジュールシステムを提供します。COTとExpansionの両方がこれをベースに構築されています。
 
-### How It Works
+### 仕組み
 
-1. You declare a module class that extends one of CF's module base classes
-2. You register it in `config.cpp` under `CfgPatches` / `CfgMods`
-3. CF's `CF_ModuleCoreManager` auto-discovers and instantiates all registered module classes at startup
-4. Lifecycle events are dispatched automatically
+1. CFのモジュール基底クラスの1つを拡張するモジュールクラスを宣言します
+2. `config.cpp` の `CfgPatches` / `CfgMods` に登録します
+3. CFの `CF_ModuleCoreManager` が起動時にすべての登録されたモジュールクラスを自動検出してインスタンス化します
+4. ライフサイクルイベントが自動的にディスパッチされます
 
-### Module Base Classes
+### モジュール基底クラス
 
-CF provides three base classes corresponding to DayZ's script layers:
+CFはDayZのスクリプトレイヤーに対応する3つの基底クラスを提供します:
 
-| Base Class | Layer | Typical Use |
+| 基底クラス | レイヤー | 一般的な用途 |
 |-----------|-------|-------------|
-| `CF_ModuleGame` | 3_Game | Early init, RPC registration, data classes |
-| `CF_ModuleWorld` | 4_World | Entity interaction, gameplay systems |
-| `CF_ModuleMission` | 5_Mission | UI, HUD, mission-level hooks |
+| `CF_ModuleGame` | 3_Game | 早期初期化、RPC登録、データクラス |
+| `CF_ModuleWorld` | 4_World | エンティティ操作、ゲームプレイシステム |
+| `CF_ModuleMission` | 5_Mission | UI、HUD、ミッションレベルのフック |
 
-### Example: A CF Module
+### 例: CFモジュール
 
 ```c
 class MyLootModule : CF_ModuleWorld
 {
-    // CF calls this once during module initialization
+    // CFはモジュールの初期化中にこれを1回呼び出します
     override void OnInit()
     {
         super.OnInit();
-        // Register RPC handlers, allocate data structures
+        // RPCハンドラを登録、データ構造を割り当て
     }
 
-    // CF calls this when the mission starts
+    // CFはミッション開始時にこれを呼び出します
     override void OnMissionStart(Class sender, CF_EventArgs args)
     {
         super.OnMissionStart(sender, args);
-        // Load configs, spawn initial loot
+        // 設定を読み込み、初期ルートをスポーン
     }
 
-    // CF calls this every frame on the server
+    // CFはサーバー上でフレームごとにこれを呼び出します
     override void OnUpdate(Class sender, CF_EventArgs args)
     {
         super.OnUpdate(sender, args);
-        // Tick loot respawn timers
+        // ルートリスポーンタイマーをティック
     }
 
-    // CF calls this when the mission ends
+    // CFはミッション終了時にこれを呼び出します
     override void OnMissionFinish(Class sender, CF_EventArgs args)
     {
         super.OnMissionFinish(sender, args);
-        // Save state, release resources
+        // 状態を保存、リソースを解放
     }
 };
 ```
 
-### Accessing a CF Module
+### CFモジュールへのアクセス
 
 ```c
-// Get a reference to a running module by type
+// 型による実行中のモジュールへの参照を取得
 MyLootModule lootMod;
 CF_Modules<MyLootModule>.Get(lootMod);
 if (lootMod)
@@ -155,30 +155,30 @@ if (lootMod)
 }
 ```
 
-### Key Characteristics
+### 主な特徴
 
-- **Auto-discovery**: modules are instantiated by CF based on `config.cpp` declarations --- no manual `new` calls
-- **Event args**: lifecycle hooks receive `CF_EventArgs` with context data
-- **Dependency on CF**: your mod requires Community Framework as a dependency
-- **Widely supported**: if your mod targets servers that already run COT or Expansion, CF is already present
+- **自動検出**: モジュールは `config.cpp` 宣言に基づいてCFによってインスタンス化されます --- 手動の `new` 呼び出しは不要
+- **イベント引数**: ライフサイクルフックはコンテキストデータを含む `CF_EventArgs` を受け取ります
+- **CFへの依存**: MODにはCommunity Frameworkが依存として必要
+- **広くサポート**: MODの対象サーバーが既にCOTまたはExpansionを実行している場合、CFは既に存在します
 
 ---
 
 ## VPP PluginBase / ConfigurablePlugin
 
-VPP Admin Tools uses a plugin architecture where each admin tool is a plugin class registered with a central manager.
+VPP Admin Toolsは、各管理ツールが中央マネージャーに登録されるプラグインクラスであるプラグインアーキテクチャを使用します。
 
 ### Plugin Base
 
 ```c
-// VPP pattern (simplified)
+// VPPパターン（簡略化）
 class PluginBase : Managed
 {
     void OnInit();
     void OnUpdate(float dt);
     void OnDestroy();
 
-    // Plugin identity
+    // プラグインのアイデンティティ
     string GetPluginName();
     bool IsServerOnly();
 };
@@ -186,12 +186,12 @@ class PluginBase : Managed
 
 ### ConfigurablePlugin
 
-VPP extends the base with a config-aware variant that automatically loads/saves settings:
+VPPは設定を自動的に読み込み/保存する設定対応のバリアントでベースを拡張します:
 
 ```c
 class ConfigurablePlugin : PluginBase
 {
-    // VPP auto-loads this from JSON on init
+    // VPPは初期化時にこれをJSONから自動読み込み
     ref PluginConfigBase m_Config;
 
     override void OnInit()
@@ -217,36 +217,36 @@ class ConfigurablePlugin : PluginBase
 };
 ```
 
-### Registration
+### 登録
 
-VPP registers plugins in the modded `MissionServer.OnInit()`:
+VPPは modded `MissionServer.OnInit()` でプラグインを登録します:
 
 ```c
-// VPP pattern
+// VPPパターン
 GetPluginManager().RegisterPlugin(new VPPESPPlugin());
 GetPluginManager().RegisterPlugin(new VPPTeleportPlugin());
 GetPluginManager().RegisterPlugin(new VPPWeatherPlugin());
 ```
 
-### Key Characteristics
+### 主な特徴
 
-- **Manual registration**: each plugin is explicitly `new`-ed and registered
-- **Config integration**: `ConfigurablePlugin` merges config management with the module lifecycle
-- **Self-contained**: no dependency on CF; VPP's plugin manager is its own system
-- **Clear ownership**: the plugin manager holds `ref` to all plugins, controlling their lifetime
+- **手動登録**: 各プラグインは明示的に `new` され、登録されます
+- **設定の統合**: `ConfigurablePlugin` は設定管理とモジュールライフサイクルを統合します
+- **自己完結型**: CFへの依存なし。VPPのプラグインマネージャーは独自のシステムです
+- **明確な所有権**: プラグインマネージャーがすべてのプラグインへの `ref` を保持し、ライフタイムを制御します
 
 ---
 
-## Dabs Attribute-Based Registration
+## Dabs 属性ベースの登録
 
-The Dabs Framework (used in Dabs Framework Admin Tools) uses a more modern approach: C#-style attributes for auto-registration.
+Dabs Framework (Dabs Framework Admin Toolsで使用) は、より現代的なアプローチを使用します: 自動登録のためのC#スタイルの属性です。
 
-### The Concept
+### コンセプト
 
-Instead of manually registering modules, you annotate a class with an attribute, and the framework discovers it at startup using reflection:
+モジュールを手動で登録する代わりに、クラスに属性を付与すると、フレームワークがリフレクションを使用して起動時にそれを検出します:
 
 ```c
-// Dabs pattern (conceptual)
+// Dabsパターン（概念的）
 [CF_RegisterModule(DabsAdminESP)]
 class DabsAdminESP : CF_ModuleWorld
 {
@@ -258,40 +258,40 @@ class DabsAdminESP : CF_ModuleWorld
 };
 ```
 
-The `CF_RegisterModule` attribute tells CF's module manager to instantiate this class automatically. No manual `Register()` call needed.
+`CF_RegisterModule` 属性は、CFのモジュールマネージャーにこのクラスを自動的にインスタンス化するよう指示します。手動の `Register()` 呼び出しは不要です。
 
-### How Discovery Works
+### 検出の仕組み
 
-At startup, CF scans all loaded script classes for the registration attribute. For each match, it creates an instance and adds it to the module manager. This happens before `OnInit()` is called on any module.
+起動時に、CFはすべての読み込まれたスクリプトクラスを登録属性でスキャンします。一致するものごとにインスタンスを作成し、モジュールマネージャーに追加します。これはどのモジュールでも `OnInit()` が呼び出される前に行われます。
 
-### Key Characteristics
+### 主な特徴
 
-- **Zero boilerplate**: no registration code in mission classes
-- **Declarative**: the class itself declares that it is a module
-- **Relies on CF**: only works with Community Framework's attribute processing
-- **Discoverability**: you can find all modules by searching for the attribute in the codebase
+- **ボイラープレートゼロ**: ミッションクラスに登録コードは不要
+- **宣言的**: クラス自体がモジュールであることを宣言
+- **CFに依存**: Community Frameworkの属性処理でのみ機能
+- **発見しやすさ**: コードベースで属性を検索することですべてのモジュールを見つけることができます
 
 ---
 
-## MyMod MyModuleManager
+## カスタム静的モジュールマネージャー
 
-MyFramework uses an explicit registration pattern with a static manager class. There is no instance of the manager --- it is entirely static methods and static storage.
+このアプローチは、静的マネージャークラスによる明示的な登録パターンを使用します。マネージャーのインスタンスはありません --- 完全に静的メソッドと静的ストレージです。外部フレームワークへの依存をゼロにしたい場合に便利です。
 
-### Module Base Classes
+### モジュール基底クラス
 
 ```c
-// Base: lifecycle hooks
+// ベース: ライフサイクルフック
 class MyModuleBase : Managed
 {
-    bool IsServer();       // Override in subclass
-    bool IsClient();       // Override in subclass
+    bool IsServer();       // サブクラスでオーバーライド
+    bool IsClient();       // サブクラスでオーバーライド
     string GetModuleName();
     void OnInit();
     void OnMissionStart();
     void OnMissionFinish();
 };
 
-// Server-side module: adds OnUpdate + player events
+// サーバーサイドモジュール: OnUpdate + プレイヤーイベントを追加
 class MyServerModule : MyModuleBase
 {
     void OnUpdate(float dt);
@@ -299,26 +299,26 @@ class MyServerModule : MyModuleBase
     void OnPlayerDisconnect(PlayerIdentity identity, string uid);
 };
 
-// Client-side module: adds OnUpdate
+// クライアントサイドモジュール: OnUpdateを追加
 class MyClientModule : MyModuleBase
 {
     void OnUpdate(float dt);
 };
 ```
 
-### Registration
+### 登録
 
-Modules register themselves explicitly, typically from modded mission classes:
+モジュールは明示的に自身を登録します。通常は modded ミッションクラスから:
 
 ```c
-// In modded MissionServer.OnInit():
+// modded MissionServer.OnInit()内:
 MyModuleManager.Register(new MyMissionServerModule());
 MyModuleManager.Register(new MyAIServerModule());
 ```
 
-### Lifecycle Dispatch
+### ライフサイクルディスパッチ
 
-The modded mission classes call into `MyModuleManager` at each lifecycle point:
+modded ミッションクラスが各ライフサイクルポイントで `MyModuleManager` を呼び出します:
 
 ```c
 modded class MissionServer
@@ -344,95 +344,95 @@ modded class MissionServer
 };
 ```
 
-### Listen-Server Safety
+### リッスンサーバーの安全性
 
-MyMod's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle events twice on listen servers (where both `MissionServer` and `MissionGameplay` run in the same process).
+カスタムモジュールシステムのモジュール基底クラスは重要な不変条件を強制します: `MyServerModule` は `IsServer()` から `true` を返し、`IsClient()` から `false` を返します。`MyClientModule` はその逆です。マネージャーはこれらのフラグを使用して、リッスンサーバー（`MissionServer` と `MissionGameplay` が同じプロセスで実行される）でのライフサイクルイベントの二重ディスパッチを回避します。
 
-The base `MyModuleBase` returns `true` from both --- which is why the codebase warns against subclassing it directly.
+ベースの `MyModuleBase` は両方から `true` を返します --- これが、コードベースでそれを直接サブクラス化しないよう警告している理由です。
 
-### Key Characteristics
+### 主な特徴
 
-- **Zero dependencies**: no CF, no external frameworks
-- **Static manager**: no `GetInstance()` needed; purely static API
-- **Explicit registration**: full control over what gets registered and when
-- **Listen-server safe**: typed subclasses prevent double-dispatch
-- **Centralized cleanup**: `MyModuleManager.Cleanup()` tears down all modules and core timers
+- **依存ゼロ**: CF不要、外部フレームワーク不要
+- **静的マネージャー**: `GetInstance()` は不要。純粋な静的API
+- **明示的な登録**: 何がいつ登録されるかを完全に制御
+- **リッスンサーバー安全**: 型付きサブクラスが二重ディスパッチを防止
+- **一元化されたクリーンアップ**: `MyModuleManager.Cleanup()` がすべてのモジュールとコアタイマーを破棄
 
 ---
 
-## Module Lifecycle: The Universal Contract
+## モジュールライフサイクル: ユニバーサルな契約
 
-Despite implementation differences, all four frameworks follow the same lifecycle contract:
+実装の違いにもかかわらず、4つのフレームワークすべてが同じライフサイクル契約に従います:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Registration / Discovery                            │
-│  Module instance is created and registered            │
+│  登録 / 検出                                         │
+│  モジュールインスタンスが作成され、登録される             │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnInit()                                            │
-│  One-time setup: allocate collections, register RPCs │
-│  Called once per module after registration            │
+│  1回限りのセットアップ: コレクション割り当て、RPC登録      │
+│  登録後にモジュールごとに1回呼び出される                  │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionStart()                                    │
-│  Mission is live: load configs, start timers,        │
-│  subscribe to events, spawn initial entities         │
+│  ミッションが開始: 設定読み込み、タイマー開始、           │
+│  イベントへのサブスクライブ、初期エンティティのスポーン     │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
-│  OnUpdate(float dt)         [repeating every frame]  │
-│  Per-frame tick: process queues, update timers,      │
-│  check conditions, advance state machines            │
+│  OnUpdate(float dt)         [フレームごとに繰り返し]     │
+│  フレームごとのティック: キュー処理、タイマー更新、        │
+│  条件チェック、ステートマシンの進行                       │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionFinish()                                   │
-│  Teardown: save state, unsubscribe events,           │
-│  clear collections, null out references              │
+│  破棄: 状態保存、イベントのサブスクライブ解除、           │
+│  コレクションのクリア、参照のnull化                      │
 └─────────────────────────────────────────────────────┘
 ```
 
-### Rules
+### ルール
 
-1. **OnInit comes before OnMissionStart.** Never load configs or spawn entities in `OnInit()` --- the world may not be ready yet.
-2. **OnUpdate receives delta time.** Always use `dt` for time-based logic, never assume a fixed frame rate.
-3. **OnMissionFinish must clean up everything.** Every `ref` collection must be cleared. Every event subscription must be removed. Every singleton must be destroyed. This is the only reliable teardown point.
-4. **Modules should not depend on each other's initialization order.** If Module A needs Module B, use lazy access (`GetModule()`) rather than assuming B was registered first.
+1. **OnInitはOnMissionStartの前に来ます。** `OnInit()` で設定を読み込んだりエンティティをスポーンしたりしないでください --- ワールドがまだ準備できていない可能性があります。
+2. **OnUpdateはデルタタイムを受け取ります。** 固定フレームレートを仮定せず、時間ベースのロジックには常に `dt` を使用してください。
+3. **OnMissionFinishですべてをクリーンアップする必要があります。** すべての `ref` コレクションをクリアする必要があります。すべてのイベントサブスクリプションを削除する必要があります。すべてのシングルトンを破棄する必要があります。これが唯一の信頼できる破棄ポイントです。
+4. **モジュールは互いの初期化順序に依存すべきではありません。** モジュールAがモジュールBを必要とする場合、Bが先に登録されたと仮定するのではなく、遅延アクセス（`GetModule()`）を使用してください。
 
 ---
 
-## Best Practices for Module Design
+## モジュール設計のベストプラクティス
 
-### 1. One Module, One Responsibility
+### 1. 1モジュール、1つの責任
 
-A module should own exactly one domain. If you find yourself writing `VehicleAndWeatherAndLootModule`, split it.
+モジュールは正確に1つのドメインを所有すべきです。`VehicleAndWeatherAndLootModule` と書いていることに気づいたら、分割してください。
 
 ```c
-// GOOD: Focused modules
+// 良い例: 焦点を絞ったモジュール
 class MyLootModule : MyServerModule { ... }
 class MyVehicleModule : MyServerModule { ... }
 class MyWeatherModule : MyServerModule { ... }
 
-// BAD: God module
+// 悪い例: 神モジュール
 class MyEverythingModule : MyServerModule { ... }
 ```
 
-### 2. Keep OnUpdate Cheap
+### 2. OnUpdateを軽量に保つ
 
-`OnUpdate` runs every frame. If your module does expensive work (file I/O, world scans, pathfinding), do it on a timer or batch it across frames:
+`OnUpdate` はフレームごとに実行されます。モジュールが重い処理（ファイルI/O、ワールドスキャン、パスファインディング）を行う場合、タイマーで実行するか、フレーム間でバッチ処理してください:
 
 ```c
 class MyCleanupModule : MyServerModule
 {
     protected float m_CleanupTimer;
-    protected const float CLEANUP_INTERVAL = 300.0;  // Every 5 minutes
+    protected const float CLEANUP_INTERVAL = 300.0;  // 5分ごと
 
     override void OnUpdate(float dt)
     {
@@ -446,9 +446,9 @@ class MyCleanupModule : MyServerModule
 };
 ```
 
-### 3. Register RPCs in OnInit, Not OnMissionStart
+### 3. RPCはOnInitで登録し、OnMissionStartでは登録しない
 
-RPC handlers must be in place before any client can send a message. `OnInit()` runs during module registration, which happens early in the mission setup. `OnMissionStart()` may be too late if clients connect fast.
+RPCハンドラはクライアントがメッセージを送信する前に配置されている必要があります。`OnInit()` はモジュール登録中に実行され、ミッションセットアップの早い段階で発生します。`OnMissionStart()` はクライアントが素早く接続した場合に遅すぎる可能性があります。
 
 ```c
 class MyModule : MyServerModule
@@ -461,17 +461,17 @@ class MyModule : MyServerModule
 
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // Handle RPC
+        // RPCを処理
     }
 };
 ```
 
-### 4. Use the Module Manager for Cross-Module Access
+### 4. クロスモジュールアクセスにはモジュールマネージャーを使用する
 
-Do not hold direct references to other modules. Use the manager's lookup:
+他のモジュールへの直接参照を保持しないでください。マネージャーのルックアップを使用してください:
 
 ```c
-// GOOD: Loose coupling through the manager
+// 良い例: マネージャーを介した疎結合
 MyModuleBase mod = MyModuleManager.GetModule("MyAIServerModule");
 MyAIServerModule aiMod;
 if (Class.CastTo(aiMod, mod))
@@ -479,28 +479,28 @@ if (Class.CastTo(aiMod, mod))
     aiMod.PauseSpawning();
 }
 
-// BAD: Direct static reference creates hard coupling
+// 悪い例: 直接の静的参照は密結合を作る
 MyAIServerModule.s_Instance.PauseSpawning();
 ```
 
-### 5. Guard Against Missing Dependencies
+### 5. 依存関係の欠落に対するガード
 
-Not every server runs every mod. If your module optionally integrates with another mod, use preprocessor checks:
+すべてのサーバーがすべてのMODを実行するわけではありません。モジュールが別のMODとオプションで統合する場合、プリプロセッサチェックを使用してください:
 
 ```c
 override void OnMissionStart()
 {
     super.OnMissionStart();
 
-    #ifdef MyAI
+    #ifdef MYMOD_AI
     MyEventBus.OnMissionStarted.Insert(OnAIMissionStarted);
     #endif
 }
 ```
 
-### 6. Log Module Lifecycle Events
+### 6. モジュールライフサイクルイベントをログに記録する
 
-Logging makes debugging straightforward. Every module should log when it initializes and shuts down:
+ログはデバッグを簡単にします。すべてのモジュールは初期化時とシャットダウン時にログを記録すべきです:
 
 ```c
 override void OnInit()
@@ -512,27 +512,60 @@ override void OnInit()
 override void OnMissionFinish()
 {
     MyLog.Info("MyModule", "Shutting down");
-    // Cleanup...
+    // クリーンアップ...
 }
 ```
 
 ---
 
-## Comparison Table
+## 比較表
 
-| Feature | CF_ModuleCore | VPP Plugin | Dabs Attribute | MyMod Module |
+| 機能 | CF_ModuleCore | VPP Plugin | Dabs Attribute | カスタムモジュール |
 |---------|--------------|------------|----------------|---------------|
-| **Discovery** | config.cpp + auto | Manual `Register()` | Attribute scan | Manual `Register()` |
-| **Base classes** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribute | ServerModule / ClientModule |
-| **Dependencies** | Requires CF | Self-contained | Requires CF | Self-contained |
-| **Listen-server safe** | CF handles it | Manual check | CF handles it | Typed subclasses |
-| **Config integration** | Separate | Built into ConfigurablePlugin | Separate | Via MyConfigManager |
-| **Update dispatch** | Automatic | Manager calls `OnUpdate` | Automatic | Manager calls `OnUpdate` |
-| **Cleanup** | CF handles it | Manual `OnDestroy` | CF handles it | `MyModuleManager.Cleanup()` |
-| **Cross-mod access** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
+| **検出** | config.cpp + 自動 | 手動 `Register()` | 属性スキャン | 手動 `Register()` |
+| **基底クラス** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + 属性 | ServerModule / ClientModule |
+| **依存関係** | CF必須 | 自己完結型 | CF必須 | 自己完結型 |
+| **リッスンサーバー安全** | CFが処理 | 手動チェック | CFが処理 | 型付きサブクラス |
+| **設定統合** | 別途 | ConfigurablePluginに組み込み | 別途 | MyConfigManager経由 |
+| **更新ディスパッチ** | 自動 | マネージャーが `OnUpdate` を呼び出す | 自動 | マネージャーが `OnUpdate` を呼び出す |
+| **クリーンアップ** | CFが処理 | 手動 `OnDestroy` | CFが処理 | `MyModuleManager.Cleanup()` |
+| **クロスMODアクセス** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
 
-Choose the approach that matches your mod's dependency profile. If you already depend on CF, use `CF_ModuleCore`. If you want zero external dependencies, build your own system following the MyMod or VPP pattern.
+MODの依存プロファイルに合ったアプローチを選択してください。既にCFに依存している場合は `CF_ModuleCore` を使用します。外部依存ゼロを望む場合は、カスタムマネージャーまたはVPPパターンに従って独自のシステムを構築してください。
 
 ---
 
-[<< 前： Singleton Pattern](01-singletons.md) | [ホーム](../../README.md) | [次： RPC Patterns >>](03-rpc-patterns.md)
+## 互換性と影響
+
+- **マルチMOD:** 複数のMODがそれぞれ同じマネージャー（CF、VPP、またはカスタム）に独自のモジュールを登録できます。名前の衝突は、2つのMODが同じクラス型を登録した場合にのみ発生します --- MODタグをプレフィックスとした一意のクラス名を使用してください。
+- **読み込み順序:** CFは `config.cpp` からモジュールを自動検出するため、読み込み順序は `requiredAddons` に従います。カスタムマネージャーは `OnInit()` でモジュールを登録し、`modded class` チェーンが順序を決定します。モジュールは登録順序に依存すべきではありません --- 遅延アクセスパターンを使用してください。
+- **リッスンサーバー:** リッスンサーバーでは、`MissionServer` と `MissionGameplay` が同じプロセスで実行されます。モジュールマネージャーが両方から `OnUpdate` をディスパッチすると、モジュールは二重ティックを受け取ります。`IsServer()` または `IsClient()` を返す型付きサブクラス（`ServerModule` / `ClientModule`）を使用してこれを防いでください。
+- **パフォーマンス:** モジュールディスパッチは、ライフサイクル呼び出しごとに登録されたモジュール1つあたり1回のループ反復を追加します。10〜20モジュールでは無視できます。個々のモジュールの `OnUpdate` メソッドが軽量であることを確認してください（第7.7章参照）。
+- **移行:** DayZバージョンをアップグレードする際、基底クラスAPI（`CF_ModuleWorld`、`PluginBase` など）が変更されない限り、モジュールシステムは安定しています。破損を避けるためにCF依存バージョンをピン留めしてください。
+
+---
+
+## よくある間違い
+
+| 間違い | 影響 | 修正 |
+|---------|--------|-----|
+| モジュールに `OnMissionFinish` クリーンアップがない | コレクション、タイマー、イベントサブスクリプションがミッション再起動を跨いで残り、古いデータやクラッシュを引き起こす | `OnMissionFinish` をオーバーライドし、すべての `ref` コレクションをクリアし、すべてのイベントをサブスクライブ解除 |
+| リッスンサーバーでライフサイクルイベントを2回ディスパッチ | サーバーモジュールがクライアントロジックを実行し、その逆も。重複スポーン、二重RPC送信 | `IsServer()` / `IsClient()` ガードまたは分割を強制する型付きモジュールサブクラスを使用 |
+| `OnInit` ではなく `OnMissionStart` でRPCを登録 | ミッションセットアップ中に接続するクライアントがハンドラの準備前にRPCを送信できる --- メッセージが静かにドロップされる | 常に `OnInit()` でRPCハンドラを登録（クライアント接続前のモジュール登録中に実行される） |
+| すべてを処理する「神モジュール」が1つ | デバッグ、テスト、拡張が不可能。複数の開発者が作業する際のマージ競合 | 単一の責任を持つ焦点を絞ったモジュールに分割 |
+| 別のモジュールインスタンスへの直接 `ref` を保持 | 密結合とrefサイクルメモリリークの可能性を作る | クロスモジュールアクセスにはモジュールマネージャーのルックアップ（`GetModule()`、`CF_Modules<T>.Get()`）を使用 |
+
+---
+
+## 理論と実践
+
+| 教科書の記述 | DayZの現実 |
+|---------------|-------------|
+| モジュール検出はリフレクションによって自動化されるべき | Enforce Scriptのリフレクションは限定的。`config.cpp` ベースの検出（CF）または明示的な `Register()` 呼び出しが唯一の信頼できるアプローチ |
+| モジュールは実行時にホットスワップ可能であるべき | DayZはスクリプトのホットリロードをサポートしていない。モジュールはミッションライフサイクル全体にわたって存在 |
+| モジュール契約にはインターフェースを使用 | Enforce Scriptには `interface` キーワードがない。代わりに基底クラスの仮想メソッド（`override`）を使用 |
+| 依存性注入がモジュールを分離する | DIフレームワークは存在しない。オプションのクロスMOD依存にはマネージャールックアップと `#ifdef` ガードを使用 |
+
+---
+
+[ホーム](../../README.md) | [<< 前へ: シングルトンパターン](01-singletons.md) | **モジュール / プラグインシステム** | [次へ: RPCパターン >>](03-rpc-patterns.md)

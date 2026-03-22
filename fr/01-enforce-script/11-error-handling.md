@@ -1,64 +1,64 @@
-# Chapitre 1.11: Error Handling
+# Chapitre 1.11 : Gestion des erreurs
 
-[Accueil](../../README.md) | [<< Précédent : Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Suivant : Gotchas >>](12-gotchas.md)
+[Accueil](../../README.md) | [<< Précédent : Enums & Préprocesseur](10-enums-preprocessor.md) | **Gestion des erreurs** | [Suivant : Pièges >>](12-gotchas.md)
 
 ---
 
-> **Objectif :** Learn how to handle errors in a language with no try/catch. Master guard clauses, defensive coding, and structured logging patterns that keep your mod stable.
+> **Objectif :** Apprendre à gérer les erreurs dans un langage sans try/catch. Maîtriser les clauses de garde, la programmation défensive et les patterns de logging structuré qui gardent votre mod stable.
 
 ---
 
 ## Table des matières
 
-- [The Fundamental Rule: No try/catch](#the-fundamental-rule-no-trycatch)
-- [Guard Clause Pattern](#guard-clause-pattern)
-  - [Single Guard](#single-guard)
-  - [Multiple Guards (Stacked)](#multiple-guards-stacked)
-  - [Guard With Logging](#guard-with-logging)
-- [Null Checking](#null-checking)
-  - [Before Every Operation](#before-every-operation)
-  - [Chained Null Checks](#chained-null-checks)
-  - [The notnull Keyword](#the-notnull-keyword)
-- [ErrorEx — Engine Error Reporting](#errorex--engine-error-reporting)
-  - [Severity Levels](#severity-levels)
-  - [Quand utiliser Each Level](#when-to-use-each-level)
-- [DumpStackString — Stack Traces](#dumpstackstring--stack-traces)
-- [Debug Printing](#debug-printing)
-  - [Basic Print](#basic-print)
-  - [Conditional Debug with #ifdef](#conditional-debug-with-ifdef)
-- [Structured Logging Patterns](#structured-logging-patterns)
-  - [Simple Prefix Pattern](#simple-prefix-pattern)
-  - [Level-Based Logger Class](#level-based-logger-class)
-  - [MyLog Style (Production Pattern)](#mylog-style-production-pattern)
-- [Real-World Examples](#real-world-examples)
-  - [Safe Function With Multiple Guards](#safe-function-with-multiple-guards)
-  - [Safe Config Loading](#safe-config-loading)
-  - [Safe RPC Handler](#safe-rpc-handler)
-  - [Safe Inventory Operation](#safe-inventory-operation)
-- [Defensive Patterns Summary](#defensive-patterns-summary)
-- [Common Mistakes](#common-mistakes)
-- [Summary](#summary)
+- [La règle fondamentale : Pas de try/catch](#la-règle-fondamentale--pas-de-trycatch)
+- [Pattern de clause de garde](#pattern-de-clause-de-garde)
+  - [Garde simple](#garde-simple)
+  - [Gardes multiples (empilées)](#gardes-multiples-empilées)
+  - [Garde avec logging](#garde-avec-logging)
+- [Vérification null](#vérification-null)
+  - [Avant chaque opération](#avant-chaque-opération)
+  - [Vérifications null enchaînées](#vérifications-null-enchaînées)
+  - [Le mot-clé notnull](#le-mot-clé-notnull)
+- [ErrorEx — Rapport d'erreur du moteur](#errorex--rapport-derreur-du-moteur)
+  - [Niveaux de sévérité](#niveaux-de-sévérité)
+  - [Quand utiliser chaque niveau](#quand-utiliser-chaque-niveau)
+- [DumpStackString — Traces de pile](#dumpstackstring--traces-de-pile)
+- [Impression de debug](#impression-de-debug)
+  - [Print basique](#print-basique)
+  - [Debug conditionnel avec #ifdef](#debug-conditionnel-avec-ifdef)
+- [Patterns de logging structuré](#patterns-de-logging-structuré)
+  - [Pattern de préfixe simple](#pattern-de-préfixe-simple)
+  - [Classe de logger avec niveaux](#classe-de-logger-avec-niveaux)
+  - [Style MyLog (Pattern de production)](#style-mylog-pattern-de-production)
+- [Exemples du monde réel](#exemples-du-monde-réel)
+  - [Fonction sûre avec gardes multiples](#fonction-sûre-avec-gardes-multiples)
+  - [Chargement de config sûr](#chargement-de-config-sûr)
+  - [Handler RPC sûr](#handler-rpc-sûr)
+  - [Opération d'inventaire sûre](#opération-dinventaire-sûre)
+- [Résumé des patterns défensifs](#résumé-des-patterns-défensifs)
+- [Erreurs courantes](#erreurs-courantes)
+- [Résumé](#résumé)
 - [Navigation](#navigation)
 
 ---
 
-## The Fundamental Rule: No try/catch
+## La règle fondamentale : Pas de try/catch
 
-Enforce Script has **no exception handling**. There is no `try`, no `catch`, no `throw`, no `finally`. If something goes wrong à l'exécution (null dereference, invalid cast, array out of bounds), le moteur either:
+Enforce Script n'a **aucune gestion d'exceptions**. Il n'y a pas de `try`, pas de `catch`, pas de `throw`, pas de `finally`. Si quelque chose se passe mal à l'exécution (déréférencement null, cast invalide, index de tableau hors limites), le moteur :
 
-1. **Crashes silently** — the function stops executing, no error message
-2. **Logs a script error** — visible in the `.RPT` log file
-3. **Crashes le serveur/client** — in severe cases
+1. **Crashe silencieusement** — la fonction arrête de s'exécuter, pas de message d'erreur
+2. **Logge une erreur de script** — visible dans le fichier log `.RPT`
+3. **Crashe le serveur/client** — dans les cas sévères
 
-This means **every potential failure point must be guarded manually**. The primary defense is the **guard clause pattern**.
+Cela signifie que **chaque point de défaillance potentiel doit être gardé manuellement**. La défense principale est le **pattern de clause de garde**.
 
 ---
 
-## Guard Clause Pattern
+## Pattern de clause de garde
 
-A guard clause checks a precondition at the top of a function and returns early if it fails. This keeps the "happy path" un-nested and readable.
+Une clause de garde vérifie une précondition en haut d'une fonction et retourne tôt si elle échoue. Cela garde le « chemin heureux » non imbriqué et lisible.
 
-### Single Guard
+### Garde simple
 
 ```c
 void TeleportPlayer(PlayerBase player, vector destination)
@@ -70,30 +70,30 @@ void TeleportPlayer(PlayerBase player, vector destination)
 }
 ```
 
-### Multiple Guards (Stacked)
+### Gardes multiples (empilées)
 
-Stack guards at the top of the function — each checks one precondition:
+Empilez les gardes en haut de la fonction — chacune vérifie une précondition :
 
 ```c
 void GiveItemToPlayer(PlayerBase player, string className, int quantity)
 {
-    // Guard 1: player exists
+    // Garde 1 : le joueur existe
     if (!player)
         return;
 
-    // Guard 2: player is alive
+    // Garde 2 : le joueur est vivant
     if (!player.IsAlive())
         return;
 
-    // Guard 3: valid class name
+    // Garde 3 : nom de classe valide
     if (className == "")
         return;
 
-    // Guard 4: valid quantity
+    // Garde 4 : quantité valide
     if (quantity <= 0)
         return;
 
-    // All preconditions met — safe to proceed
+    // Toutes les préconditions remplies — on peut procéder en toute sécurité
     for (int i = 0; i < quantity; i++)
     {
         player.GetInventory().CreateInInventory(className);
@@ -101,9 +101,9 @@ void GiveItemToPlayer(PlayerBase player, string className, int quantity)
 }
 ```
 
-### Guard With Logging
+### Garde avec logging
 
-In production code, always log why a guard triggered — silent failures are hard to debug:
+En code de production, loggez toujours pourquoi une garde s'est déclenchée — les échecs silencieux sont difficiles à déboguer :
 
 ```c
 void StartMission(PlayerBase initiator, string missionId)
@@ -126,7 +126,7 @@ void StartMission(PlayerBase initiator, string missionId)
         return;
     }
 
-    // Proceed with mission start
+    // Procéder au démarrage de la mission
     Print("[Missions] Starting mission " + missionId);
     // ...
 }
@@ -134,17 +134,17 @@ void StartMission(PlayerBase initiator, string missionId)
 
 ---
 
-## Null Checking
+## Vérification null
 
-Null references are the most common crash source in DayZ modding. Every reference type can be `null`.
+Les références null sont la source de crash la plus courante dans le modding DayZ. Chaque type référence peut être `null`.
 
-### Before Every Operation
+### Avant chaque opération
 
 ```c
-// INCORRECT — crashes if player, identity, or name is null at any point
+// FAUX — crashe si player, identity ou name est null à un moment quelconque
 string name = player.GetIdentity().GetName();
 
-// CORRECT — check at each step
+// CORRECT — vérifier à chaque étape
 if (!player)
     return;
 
@@ -155,9 +155,9 @@ if (!identity)
 string name = identity.GetName();
 ```
 
-### Chained Null Checks
+### Vérifications null enchaînées
 
-When you need to traverse a chain of references, check each link:
+Quand vous devez traverser une chaîne de références, vérifiez chaque maillon :
 
 ```c
 void PrintHandItemName(PlayerBase player)
@@ -177,69 +177,69 @@ void PrintHandItemName(PlayerBase player)
 }
 ```
 
-### The notnull Keyword
+### Le mot-clé notnull
 
-`notnull` is a parameter modifier that makes the compiler reject `null` arguments at the call site:
+`notnull` est un modificateur de paramètre qui fait rejeter par le compilateur les arguments `null` au site d'appel :
 
 ```c
 void ProcessItem(notnull EntityAI item)
 {
-    // Compiler guarantees item is not null
-    // No null check needed inside the function
+    // Le compilateur garantit que item n'est pas null
+    // Pas de vérification null nécessaire dans la fonction
     Print(item.GetType());
 }
 
-// Usage:
+// Utilisation :
 EntityAI item = GetSomeItem();
 if (item)
 {
-    ProcessItem(item);  // OK — compiler knows item is not null here
+    ProcessItem(item);  // OK — le compilateur sait que item n'est pas null ici
 }
 ProcessItem(null);      // Erreur de compilation !
 ```
 
-> **Limitation:** `notnull` only catches literal `null` and obviously-null variables at the call site. It does not prevent a variable that was non-null at check time from becoming null due to engine deletion.
+> **Limitation :** `notnull` n'attrape que les `null` littéraux et les variables évidemment nulles au site d'appel. Il n'empêche pas qu'une variable qui était non-null au moment de la vérification devienne null suite à une suppression par le moteur.
 
 ---
 
-## ErrorEx — Engine Error Reporting
+## ErrorEx — Rapport d'erreur du moteur
 
-`ErrorEx` writes an error message to the script log (`.RPT` file). It does **not** stop execution or throw an exception.
+`ErrorEx` écrit un message d'erreur dans le log de script (fichier `.RPT`). Il n'arrête **pas** l'exécution et ne lève pas d'exception.
 
 ```c
 ErrorEx("Something went wrong");
 ```
 
-### Severity Levels
+### Niveaux de sévérité
 
-`ErrorEx` accepts an optional second parameter of type `ErrorExSeverity`:
+`ErrorEx` accepte un second paramètre optionnel de type `ErrorExSeverity` :
 
 ```c
-// INFO — informational, not an error
+// INFO — informatif, pas une erreur
 ErrorEx("Config loaded successfully", ErrorExSeverity.INFO);
 
-// WARNING — potential problem, execution continues
+// WARNING — problème potentiel, l'exécution continue
 ErrorEx("Config file not found, using defaults", ErrorExSeverity.WARNING);
 
-// ERROR — definite problem (default severity if omitted)
+// ERROR — problème certain (sévérité par défaut si omise)
 ErrorEx("Failed to create object: class not found");
 ErrorEx("Critical failure in RPC handler", ErrorExSeverity.ERROR);
 ```
 
-| Severity | Quand utiliser |
-|----------|-------------|
-| `ErrorExSeverity.INFO` | Informational messages you want in the error log |
-| `ErrorExSeverity.WARNING` | Recoverable problems (missing config, fallback used) |
-| `ErrorExSeverity.ERROR` | Definite bugs or unrecoverable states |
+| Sévérité | Quand utiliser |
+|----------|---------------|
+| `ErrorExSeverity.INFO` | Messages informatifs que vous voulez dans le log d'erreur |
+| `ErrorExSeverity.WARNING` | Problèmes récupérables (config manquante, fallback utilisé) |
+| `ErrorExSeverity.ERROR` | Bugs certains ou états irrécupérables |
 
-### Quand utiliser Each Level
+### Quand utiliser chaque niveau
 
 ```c
 void LoadConfig(string path)
 {
     if (!FileExist(path))
     {
-        // WARNING — recoverable, we'll use defaults
+        // WARNING — récupérable, nous utiliserons les valeurs par défaut
         ErrorEx("Config not found at " + path + ", using defaults", ErrorExSeverity.WARNING);
         UseDefaultConfig();
         return;
@@ -250,13 +250,13 @@ void LoadConfig(string path)
 
     if (cfg.Version < EXPECTED_VERSION)
     {
-        // INFO — not a problem, just noteworthy
+        // INFO — pas un problème, juste notable
         ErrorEx("Config version " + cfg.Version.ToString() + " is older than expected", ErrorExSeverity.INFO);
     }
 
     if (!cfg.Validate())
     {
-        // ERROR — bad data that will cause problems
+        // ERROR — mauvaises données qui vont causer des problèmes
         ErrorEx("Config validation failed for " + path);
         UseDefaultConfig();
         return;
@@ -266,9 +266,9 @@ void LoadConfig(string path)
 
 ---
 
-## DumpStackString — Stack Traces
+## DumpStackString — Traces de pile
 
-`DumpStackString` captures the current call stack as a string. This is crucial for diagnosing where an unexpected state occurred:
+`DumpStackString` capture la pile d'appels courante sous forme de chaîne. C'est crucial pour diagnostiquer où un état inattendu s'est produit :
 
 ```c
 void OnUnexpectedState(string context)
@@ -280,7 +280,7 @@ void OnUnexpectedState(string context)
 }
 ```
 
-Use it in guard clauses to trace the caller:
+Utilisez-le dans les clauses de garde pour tracer l'appelant :
 
 ```c
 void CriticalFunction(PlayerBase player)
@@ -298,11 +298,11 @@ void CriticalFunction(PlayerBase player)
 
 ---
 
-## Debug Printing
+## Impression de debug
 
-### Basic Print
+### Print basique
 
-`Print()` writes to the script log file. It accepts any type:
+`Print()` écrit dans le fichier log de script. Il accepte n'importe quel type :
 
 ```c
 Print("Hello World");                    // string
@@ -310,7 +310,7 @@ Print(42);                               // int
 Print(3.14);                             // float
 Print(player.GetPosition());             // vector
 
-// Formatted print
+// Print formaté
 Print(string.Format("Player %1 at position %2 with %3 HP",
     player.GetIdentity().GetName(),
     player.GetPosition().ToString(),
@@ -318,9 +318,9 @@ Print(string.Format("Player %1 at position %2 with %3 HP",
 ));
 ```
 
-### Conditional Debug with #ifdef
+### Debug conditionnel avec #ifdef
 
-Wrap debug prints in preprocessor guards so they compile out of release builds:
+Enveloppez les prints de debug dans des gardes de préprocesseur pour qu'ils ne soient pas compilés dans les builds de release :
 
 ```c
 void ProcessAI(DayZInfected zombie)
@@ -332,14 +332,14 @@ void ProcessAI(DayZInfected zombie)
         ));
     #endif
 
-    // Actual logic...
+    // Logique réelle...
 }
 ```
 
-For mod-specific debug flags, define your own symbol:
+Pour des drapeaux de debug spécifiques au mod, définissez votre propre symbole :
 
 ```c
-// In your config.cpp:
+// Dans votre config.cpp :
 // defines[] = { "MYMOD_DEBUG" };
 
 #ifdef MYMOD_DEBUG
@@ -349,11 +349,11 @@ For mod-specific debug flags, define your own symbol:
 
 ---
 
-## Structured Logging Patterns
+## Patterns de logging structuré
 
-### Simple Prefix Pattern
+### Pattern de préfixe simple
 
-The simplest approach — prepend a tag to every Print call:
+L'approche la plus simple — ajouter un tag au début de chaque appel Print :
 
 ```c
 class MissionManager
@@ -372,9 +372,9 @@ class MissionManager
 }
 ```
 
-### Level-Based Logger Class
+### Classe de logger avec niveaux
 
-A reusable logger with severity levels:
+Un logger réutilisable avec niveaux de sévérité :
 
 ```c
 class ModLogger
@@ -411,18 +411,18 @@ class ModLogger
     }
 }
 
-// Usage:
+// Utilisation :
 ref ModLogger g_MissionLog = new ModLogger("Missions");
 g_MissionLog.Info("System started");
 g_MissionLog.Error("Failed to load mission data");
 ```
 
-### Production Logger Pattern
+### Style MyLog (Pattern de production)
 
-For production mods, a static logging class with file output, daily rotation, and multiple output targets:
+Pour les mods de production, une classe de logging statique avec sortie fichier, rotation quotidienne et cibles de sortie multiples :
 
 ```c
-// Enum for log levels
+// Enum pour les niveaux de log
 enum MyLogLevel
 {
     TRACE   = 0,
@@ -438,7 +438,7 @@ class MyLog
     private static MyLogLevel s_FileMinLevel = MyLogLevel.DEBUG;
     private static MyLogLevel s_ConsoleMinLevel = MyLogLevel.INFO;
 
-    // Usage: MyLog.Info("ModuleName", "Something happened");
+    // Utilisation : MyLog.Info("NomDuModule", "Quelque chose s'est passé");
     static void Info(string source, string message)
     {
         Log(MyLogLevel.INFO, source, message);
@@ -463,7 +463,7 @@ class MyLog
         string line = string.Format("[MyMod] [%1] [%2] %3", levelName, source, message);
         Print(line);
 
-        // Also write to file if level meets file threshold
+        // Aussi écrire dans le fichier si le niveau atteint le seuil fichier
         if (level >= s_FileMinLevel)
         {
             WriteToFile(line);
@@ -472,12 +472,12 @@ class MyLog
 
     private static void WriteToFile(string line)
     {
-        // File I/O implementation...
+        // Implémentation de l'I/O fichier...
     }
 }
 ```
 
-Usage across multiple modules:
+Utilisation à travers plusieurs modules :
 
 ```c
 MyLog.Info("MissionServer", "MyMod Core initialized (server)");
@@ -487,35 +487,35 @@ MyLog.Error("ConfigManager", "Failed to load config: " + path);
 
 ---
 
-## Exemples concrets
+## Exemples du monde réel
 
-### Safe Function With Multiple Guards
+### Fonction sûre avec gardes multiples
 
 ```c
 void HealPlayer(PlayerBase player, float amount, string healerName)
 {
-    // Guard: null player
+    // Garde : joueur null
     if (!player)
     {
         MyLog.Error("HealSystem", "HealPlayer called with null player");
         return;
     }
 
-    // Guard: player alive
+    // Garde : joueur vivant
     if (!player.IsAlive())
     {
         MyLog.Warning("HealSystem", "Cannot heal dead player: " + player.GetIdentity().GetName());
         return;
     }
 
-    // Guard: valid amount
+    // Garde : montant valide
     if (amount <= 0)
     {
         MyLog.Warning("HealSystem", "Invalid heal amount: " + amount.ToString());
         return;
     }
 
-    // Guard: not already at full health
+    // Garde : pas déjà à pleine santé
     float currentHP = player.GetHealth("", "Health");
     float maxHP = player.GetMaxHealth("", "Health");
     if (currentHP >= maxHP)
@@ -524,7 +524,7 @@ void HealPlayer(PlayerBase player, float amount, string healerName)
         return;
     }
 
-    // All guards passed — perform the heal
+    // Toutes les gardes passées — effectuer le soin
     float newHP = Math.Min(currentHP + amount, maxHP);
     player.SetHealth("", "Health", newHP);
 
@@ -538,7 +538,7 @@ void HealPlayer(PlayerBase player, float amount, string healerName)
 }
 ```
 
-### Safe Config Loading
+### Chargement de config sûr
 
 ```c
 class MyConfig
@@ -550,7 +550,7 @@ class MyConfig
 
 static MyConfig LoadConfigSafe(string path)
 {
-    // Guard: file exists
+    // Garde : le fichier existe
     if (!FileExist(path))
     {
         Print("[Config] File not found: " + path + " — creating defaults");
@@ -559,18 +559,18 @@ static MyConfig LoadConfigSafe(string path)
         return defaults;
     }
 
-    // Attempt load (no try/catch, so we validate after)
+    // Tentative de chargement (pas de try/catch, donc on valide après)
     MyConfig cfg = new MyConfig();
     JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);
 
-    // Guard: loaded object is valid
+    // Garde : l'objet chargé est valide
     if (!cfg)
     {
         Print("[Config] ERROR: Failed to parse " + path + " — using defaults");
         return new MyConfig();
     }
 
-    // Guard: validate values
+    // Garde : valider les valeurs
     if (cfg.MaxPlayers < 1 || cfg.MaxPlayers > 128)
     {
         Print("[Config] WARN: MaxPlayers out of range (" + cfg.MaxPlayers.ToString() + "), clamping");
@@ -587,23 +587,23 @@ static MyConfig LoadConfigSafe(string path)
 }
 ```
 
-### Safe RPC Handler
+### Handler RPC sûr
 
 ```c
 void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
 {
-    // Guard: server only
+    // Garde : serveur uniquement
     if (type != CallType.Server)
         return;
 
-    // Guard: valid sender
+    // Garde : expéditeur valide
     if (!sender)
     {
         Print("[RPC] SpawnItem: null sender identity");
         return;
     }
 
-    // Guard: read params
+    // Garde : lecture des paramètres
     Param2<string, vector> data;
     if (!ctx.Read(data))
     {
@@ -614,21 +614,21 @@ void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, 
     string className = data.param1;
     vector position = data.param2;
 
-    // Guard: valid class name
+    // Garde : nom de classe valide
     if (className == "")
     {
         Print("[RPC] SpawnItem: empty className from " + sender.GetName());
         return;
     }
 
-    // Guard: permission check
+    // Garde : vérification de permission
     if (!HasPermission(sender.GetPlainId(), "SpawnItem"))
     {
         Print("[RPC] SpawnItem: unauthorized by " + sender.GetName());
         return;
     }
 
-    // All guards passed — execute
+    // Toutes les gardes passées — exécuter
     Object obj = GetGame().CreateObjectEx(className, position, ECE_PLACE_ON_SURFACE);
     if (!obj)
     {
@@ -640,31 +640,31 @@ void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, 
 }
 ```
 
-### Safe Inventory Operation
+### Opération d'inventaire sûre
 
 ```c
 bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
 {
-    // Guard: all references valid
+    // Garde : toutes les références valides
     if (!fromPlayer || !toPlayer || !item)
     {
         Print("[Inventory] TransferItem: null reference");
         return false;
     }
 
-    // Guard: both players alive
+    // Garde : les deux joueurs vivants
     if (!fromPlayer.IsAlive() || !toPlayer.IsAlive())
     {
         Print("[Inventory] TransferItem: one or both players are dead");
         return false;
     }
 
-    // Guard: source actually has the item
+    // Garde : la source a bien l'objet
     EntityAI checkItem = fromPlayer.GetInventory().FindAttachment(
         fromPlayer.GetInventory().FindUserReservedLocationIndex(item)
     );
 
-    // Guard: target has space
+    // Garde : la cible a de la place
     InventoryLocation il = new InventoryLocation();
     if (!toPlayer.GetInventory().FindFreeLocationFor(item, FindInventoryLocationType.ANY, il))
     {
@@ -672,72 +672,72 @@ bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
         return false;
     }
 
-    // Execute transfer
+    // Exécuter le transfert
     return toPlayer.GetInventory().TakeEntityToInventory(InventoryMode.SERVER, FindInventoryLocationType.ANY, item);
 }
 ```
 
 ---
 
-## Defensive Patterns Summary
+## Résumé des patterns défensifs
 
-| Pattern | Purpose | Example |
-|---------|---------|---------|
-| Guard clause | Early return on invalid input | `if (!player) return;` |
-| Null check | Prevent null dereference | `if (obj) obj.DoThing();` |
-| Cast + check | Safe downcast | `if (Class.CastTo(p, obj))` |
-| Validate after load | Check data after JSON load | `if (cfg.Value < 0) cfg.Value = default;` |
-| Validate before use | Range/bounds check | `if (arr.IsValidIndex(i))` |
-| Log on failure | Trace where things went wrong | `Print("[Tag] Error: " + context);` |
-| ErrorEx for engine | Write to .RPT file | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
-| DumpStackString | Capture call stack | `Print(DumpStackString());` |
+| Pattern | Objectif | Exemple |
+|---------|----------|---------|
+| Clause de garde | Retour anticipé sur entrée invalide | `if (!player) return;` |
+| Vérification null | Empêcher le déréférencement null | `if (obj) obj.DoThing();` |
+| Cast + vérification | Downcast sûr | `if (Class.CastTo(p, obj))` |
+| Valider après chargement | Vérifier les données après chargement JSON | `if (cfg.Value < 0) cfg.Value = default;` |
+| Valider avant utilisation | Vérification d'intervalle/limites | `if (arr.IsValidIndex(i))` |
+| Logger en cas d'échec | Tracer où ça a mal tourné | `Print("[Tag] Error: " + context);` |
+| ErrorEx pour le moteur | Écrire dans le fichier .RPT | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
+| DumpStackString | Capturer la pile d'appels | `Print(DumpStackString());` |
 
 ---
 
 ## Bonnes pratiques
 
-- Use flat guard clauses (`if (!x) return;`) at the top of every function instead of deeply nested `if` blocks -- it keeps code readable and the happy path un-nested.
-- Always log a message inside guard clauses -- silent `return` makes failures invisible and extremely hard to debug.
-- Use `ErrorEx` with appropriate severity levels (`INFO`, `WARNING`, `ERROR`) for messages that should appear in `.RPT` logs; use `Print` for script-log output.
-- Wrap heavy debug logging in `#ifdef DIAG_DEVELOPER` or a custom define so it compiles out of release builds and does not hurt performance.
-- Validate config data after loading with `JsonFileLoader` -- it returns `void` and silently leaves default values on parse failure.
+- Utilisez des clauses de garde plates (`if (!x) return;`) en haut de chaque fonction au lieu de blocs `if` profondément imbriqués -- cela garde le code lisible et le chemin heureux non imbriqué.
+- Loggez toujours un message dans les clauses de garde -- un `return` silencieux rend les échecs invisibles et extrêmement difficiles à déboguer.
+- Utilisez `ErrorEx` avec les niveaux de sévérité appropriés (`INFO`, `WARNING`, `ERROR`) pour les messages qui doivent apparaître dans les logs `.RPT` ; utilisez `Print` pour la sortie log de script.
+- Enveloppez le logging de debug lourd dans `#ifdef DIAG_DEVELOPER` ou un define personnalisé pour qu'il soit exclu des builds de release et ne nuise pas aux performances.
+- Validez les données de config après le chargement avec `JsonFileLoader` -- il retourne `void` et laisse silencieusement les valeurs par défaut en cas d'échec de parsing.
 
 ---
 
 ## Observé dans les mods réels
 
-> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+> Patterns confirmés par l'étude du code source de mods DayZ professionnels.
 
-| Patron | Mod | Détail |
+| Pattern | Mod | Détail |
 |---------|-----|--------|
-| Stacked guard clauses with log messages | COT / VPP | Every RPC handler checks sender, params, permissions, and logs on each failure |
-| Static logger class with level filtering | Expansion / Dabs | A single `Log` class routes `Info`/`Warning`/`Error` to console, file, and optionally Discord |
-| `DumpStackString()` in critical guards | COT Admin | Captures call stack on unexpected null to trace which caller passed bad data |
-| `#ifdef DIAG_DEVELOPER` around debug prints | Vanilla DayZ / Expansion | All per-frame debug output is wrapped so it never runs in release builds |
+| Clauses de garde empilées avec messages de log | COT / VPP | Chaque handler RPC vérifie l'expéditeur, les paramètres, les permissions et logge à chaque échec |
+| Classe de logger statique avec filtrage de niveau | Expansion / Dabs | Une seule classe `Log` route `Info`/`Warning`/`Error` vers la console, le fichier et optionnellement Discord |
+| `DumpStackString()` dans les gardes critiques | COT Admin | Capture la pile d'appels sur un null inattendu pour tracer quel appelant a passé de mauvaises données |
+| `#ifdef DIAG_DEVELOPER` autour des prints de debug | Vanilla DayZ / Expansion | Toute sortie de debug par frame est enveloppée pour qu'elle ne s'exécute jamais dans les builds de release |
 
 ---
 
 ## Théorie vs Pratique
 
 | Concept | Théorie | Réalité |
-|---------|--------|---------|
-| `try`/`catch` | Standard in most languages | Does not exist in Enforce Script -- every failure point must be guarded manually |
-| `JsonFileLoader.JsonLoadFile` | Expected to return success/failure | Returns `void`; on bad JSON the object keeps its default values with no error |
-| `ErrorEx` | Sounds like it throws an error | It only writes to the `.RPT` log -- execution continues normally |
+|---------|---------|---------|
+| `try`/`catch` | Standard dans la plupart des langages | N'existe pas en Enforce Script -- chaque point de défaillance doit être gardé manuellement |
+| `JsonFileLoader.JsonLoadFile` | Devrait retourner un indicateur de succès/échec | Retourne `void` ; sur du mauvais JSON, l'objet garde ses valeurs par défaut sans erreur |
+| `ErrorEx` | On dirait que ça lève une erreur | Il écrit uniquement dans le log `.RPT` -- l'exécution continue normalement |
 
 ---
 
 ## Erreurs courantes
 
-### 1. Assuming a function ran successfully
+### 1. Supposer qu'une fonction s'est exécutée avec succès
 
 ```c
-// INCORRECT — JsonLoadFile returns void, not a success indicator
+// FAUX — JsonLoadFile retourne void, pas un indicateur de succès
 MyConfig cfg = new MyConfig();
 JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);
-// If the file has bad JSON, cfg still has default values — no error
+// Si le fichier a du mauvais JSON, cfg a toujours les valeurs par défaut — pas d'erreur
 
-// CORRECT — validate after loading
+// CORRECT — valider après le chargement
 JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);
 if (cfg.SomeCriticalField == 0)
 {
@@ -745,10 +745,10 @@ if (cfg.SomeCriticalField == 0)
 }
 ```
 
-### 2. Deeply nested null checks instead of guards
+### 2. Vérifications null profondément imbriquées au lieu de gardes
 
 ```c
-// INCORRECT — pyramid of doom
+// FAUX — pyramide de la mort
 void Process(PlayerBase player)
 {
     if (player)
@@ -757,30 +757,30 @@ void Process(PlayerBase player)
         {
             if (player.IsAlive())
             {
-                // Finally do something
+                // Enfin faire quelque chose
             }
         }
     }
 }
 
-// CORRECT — flat guard clauses
+// CORRECT — clauses de garde plates
 void Process(PlayerBase player)
 {
     if (!player) return;
     if (!player.GetIdentity()) return;
     if (!player.IsAlive()) return;
 
-    // Do something
+    // Faire quelque chose
 }
 ```
 
-### 3. Forgetting to log in guard clauses
+### 3. Oublier de logger dans les clauses de garde
 
 ```c
-// INCORRECT — silent failure, impossible to debug
+// FAUX — échec silencieux, impossible à déboguer
 if (!player) return;
 
-// CORRECT — leaves a trail
+// CORRECT — laisse une trace
 if (!player)
 {
     Print("[MyMod] Process: null player");
@@ -788,16 +788,16 @@ if (!player)
 }
 ```
 
-### 4. Using Print in hot paths
+### 4. Utiliser Print dans les chemins chauds
 
 ```c
-// INCORRECT — Print every frame kills performance
+// FAUX — Print à chaque frame tue les performances
 override void OnUpdate(float timeslice)
 {
-    Print("Updating...");  // Called every frame!
+    Print("Updating...");  // Appelé à chaque frame !
 }
 
-// CORRECT — use debug guards or rate-limit
+// CORRECT — utiliser des gardes de debug ou limiter le débit
 override void OnUpdate(float timeslice)
 {
     #ifdef DIAG_DEVELOPER
@@ -815,23 +815,23 @@ override void OnUpdate(float timeslice)
 
 ## Résumé
 
-| Tool | Purpose | Syntax |
-|------|---------|--------|
-| Guard clause | Early return on failure | `if (!x) return;` |
-| Null check | Prevent crash | `if (obj) obj.Method();` |
-| ErrorEx | Write to .RPT log | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
-| DumpStackString | Get call stack | `string s = DumpStackString();` |
-| Print | Write to script log | `Print("message");` |
-| string.Format | Formatted logging | `string.Format("P %1 at %2", a, b)` |
-| #ifdef guard | Compile-time debug switch | `#ifdef DIAG_DEVELOPER` |
-| notnull | Compiler null check | `void Fn(notnull Class obj)` |
+| Outil | Objectif | Syntaxe |
+|-------|----------|---------|
+| Clause de garde | Retour anticipé en cas d'échec | `if (!x) return;` |
+| Vérification null | Empêcher le crash | `if (obj) obj.Method();` |
+| ErrorEx | Écrire dans le log .RPT | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
+| DumpStackString | Obtenir la pile d'appels | `string s = DumpStackString();` |
+| Print | Écrire dans le log de script | `Print("message");` |
+| string.Format | Logging formaté | `string.Format("P %1 at %2", a, b)` |
+| Garde #ifdef | Commutateur de debug à la compilation | `#ifdef DIAG_DEVELOPER` |
+| notnull | Vérification null du compilateur | `void Fn(notnull Class obj)` |
 
-**The golden rule:** In Enforce Script, assume everything can be null and every operation can fail. Check first, act second, log always.
+**La règle d'or :** En Enforce Script, supposez que tout peut être null et que chaque opération peut échouer. Vérifiez d'abord, agissez ensuite, loggez toujours.
 
 ---
 
 ## Navigation
 
-| Previous | Up | Next |
-|----------|----|------|
-| [1.10 Enums & Preprocessor](10-enums-preprocessor.md) | [Part 1: Enforce Script](../README.md) | [1.12 What Does NOT Exist](12-gotchas.md) |
+| Précédent | Haut | Suivant |
+|-----------|------|---------|
+| [1.10 Enums & Préprocesseur](10-enums-preprocessor.md) | [Partie 1 : Enforce Script](../README.md) | [1.12 Ce qui n'existe PAS](12-gotchas.md) |
