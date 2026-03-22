@@ -471,61 +471,61 @@ modded class MissionServer
 
 ---
 
-## Common Hooks by Ucel
+## Časté hooky podle účelu
 
-| I want to... | Hook this method | On which class |
-|--------------|------------------|----------------|
-| Initialize my mod on server | `OnInit()` | `MissionServer` |
-| Initialize my mod on client | `OnInit()` | `MissionGameplay` |
-| Run code every frame (server) | `OnUpdate(float timeslice)` | `MissionServer` |
-| Run code every frame (client) | `OnUpdate(float timeslice)` | `MissionGameplay` |
-| React to player join | `InvokeOnConnect(player, identity)` | `MissionServer` |
-| React to player leave | `InvokeOnDisconnect(player)` | `MissionServer` |
-| Send initial data to new client | `OnClientReadyEvent(identity, player)` | `MissionServer` |
-| React to new character spawn | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
-| Give starter equipment | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
-| React to player respawn | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
-| React to player reconnect | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
-| Handle disconnect/logout logic | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
-| Intercept server events (connect, chat) | `OnEvent(eventTypId, params)` | `MissionServer` |
-| Intercept client events (chat, VON) | `OnEvent(eventTypId, params)` | `MissionGameplay` |
-| Handle keyboard input | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
-| Create HUD elements | `OnInit()` | `MissionGameplay` |
-| Clean up on server shutdown | `OnMissionFinish()` | `MissionServer` |
-| Clean up on client disconnect | `OnMissionFinish()` | `MissionGameplay` |
-| Run code once after all systems loaded | `OnMissionLoaded()` | Either |
-| Disable/enable player input | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
+| Chci... | Hookovat tuto metodu | Na které třídě |
+|---------|---------------------|----------------|
+| Inicializovat mod na serveru | `OnInit()` | `MissionServer` |
+| Inicializovat mod na klientovi | `OnInit()` | `MissionGameplay` |
+| Spustit kód každý snímek (server) | `OnUpdate(float timeslice)` | `MissionServer` |
+| Spustit kód každý snímek (klient) | `OnUpdate(float timeslice)` | `MissionGameplay` |
+| Reagovat na připojení hráče | `InvokeOnConnect(player, identity)` | `MissionServer` |
+| Reagovat na odchod hráče | `InvokeOnDisconnect(player)` | `MissionServer` |
+| Odeslat počáteční data novému klientovi | `OnClientReadyEvent(identity, player)` | `MissionServer` |
+| Reagovat na spawn nové postavy | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
+| Dát startovní vybavení | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
+| Reagovat na respawn hráče | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
+| Reagovat na opětovné připojení hráče | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
+| Zpracovat logiku odpojení/odhlášení | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
+| Zachytit serverové události (připojení, chat) | `OnEvent(eventTypeId, params)` | `MissionServer` |
+| Zachytit klientské události (chat, VON) | `OnEvent(eventTypeId, params)` | `MissionGameplay` |
+| Zpracovat klávesový vstup | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
+| Vytvořit prvky HUD | `OnInit()` | `MissionGameplay` |
+| Uklidit při vypnutí serveru | `OnMissionFinish()` | `MissionServer` |
+| Uklidit při odpojení klienta | `OnMissionFinish()` | `MissionGameplay` |
+| Spustit kód jednou po načtení všech systémů | `OnMissionLoaded()` | Obě |
+| Zakázat/povolit vstup hráče | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
 
 ---
 
-## Server vs Client: Which Hooks Fire Where
+## Server vs klient: Které hooky se spouštějí kde
 
-| Hook | Server | Client | Poznamky |
-|------|--------|--------|-------|
-| Constructor | Yes | Yes | Different class on each side |
-| `OnInit()` | Yes | Yes | |
-| `OnMissionStart()` | Yes | Yes | |
-| `OnMissionLoaded()` | Yes | Yes | |
-| `OnGameplayDataHandlerLoad()` | Yes | No | cfggameplay.json loaded |
-| `OnUpdate(timeslice)` | Yes | Yes | Both run their own frame loop |
-| `OnMissionFinish()` | Yes | Yes | |
-| `OnEvent()` | Yes | Yes | Different event types on each side |
-| `InvokeOnConnect()` | Yes | No | Server only |
-| `InvokeOnDisconnect()` | Yes | No | Server only |
-| `OnClientReadyEvent()` | Yes | No | Server only |
-| `OnClientNewEvent()` | Yes | No | Server only |
-| `OnClientRespawnEvent()` | Yes | No | Server only |
-| `OnClientReconnectEvent()` | Yes | No | Server only |
-| `OnClientDisconnectedEvent()` | Yes | No | Server only |
-| `PlayerDisconnected()` | Yes | No | Server only |
-| `StartingEquipSetup()` | Yes | No | Server only |
-| `EquipCharacter()` | Yes | No | Server only |
-| `OnKeyPress()` | No | Yes | Client only |
-| `OnKeyRelease()` | No | Yes | Client only |
-| `OnMouseButtonPress()` | No | Yes | Client only |
-| `OnMouseButtonRelease()` | No | Yes | Client only |
-| `PlayerControlDisable()` | No | Yes | Client only |
-| `PlayerControlEnable()` | No | Yes | Client only |
+| Hook | Server | Klient | Poznámky |
+|------|--------|--------|----------|
+| Konstruktor | Ano | Ano | Jiná třída na každé straně |
+| `OnInit()` | Ano | Ano | |
+| `OnMissionStart()` | Ano | Ano | |
+| `OnMissionLoaded()` | Ano | Ano | |
+| `OnGameplayDataHandlerLoad()` | Ano | Ne | cfggameplay.json načten |
+| `OnUpdate(timeslice)` | Ano | Ano | Obě strany mají vlastní smyčku snímků |
+| `OnMissionFinish()` | Ano | Ano | |
+| `OnEvent()` | Ano | Ano | Různé typy událostí na každé straně |
+| `InvokeOnConnect()` | Ano | Ne | Pouze server |
+| `InvokeOnDisconnect()` | Ano | Ne | Pouze server |
+| `OnClientReadyEvent()` | Ano | Ne | Pouze server |
+| `OnClientNewEvent()` | Ano | Ne | Pouze server |
+| `OnClientRespawnEvent()` | Ano | Ne | Pouze server |
+| `OnClientReconnectEvent()` | Ano | Ne | Pouze server |
+| `OnClientDisconnectedEvent()` | Ano | Ne | Pouze server |
+| `PlayerDisconnected()` | Ano | Ne | Pouze server |
+| `StartingEquipSetup()` | Ano | Ne | Pouze server |
+| `EquipCharacter()` | Ano | Ne | Pouze server |
+| `OnKeyPress()` | Ne | Ano | Pouze klient |
+| `OnKeyRelease()` | Ne | Ano | Pouze klient |
+| `OnMouseButtonPress()` | Ne | Ano | Pouze klient |
+| `OnMouseButtonRelease()` | Ne | Ano | Pouze klient |
+| `PlayerControlDisable()` | Ne | Ano | Pouze klient |
+| `PlayerControlEnable()` | Ne | Ano | Pouze klient |
 
 ---
 
