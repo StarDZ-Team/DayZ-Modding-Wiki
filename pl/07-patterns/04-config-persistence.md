@@ -1,62 +1,62 @@
-# Chapter 7.4: Config Persistence
+# Rozdział 7.4: Trwałość konfiguracji
 
-[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
+[Strona główna](../../README.md) | [<< Poprzedni: Wzorce RPC](03-rpc-patterns.md) | **Trwałość konfiguracji** | [Dalej: Systemy uprawnień >>](05-permissions.md)
 
 ---
 
 ## Wprowadzenie
 
-Almost every DayZ mod needs to save and load configuration data: server settings, spawn tables, ban lists, player data, teleport locations. The engine provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for everything else. Professional mods layer config versioning and auto-migration on top.
+Prawie każdy mod DayZ musi zapisywać i ładować dane konfiguracyjne: ustawienia serwera, tabele spawnu, listy banów, dane graczy, lokalizacje teleportów. Silnik dostarcza `JsonFileLoader` do prostej serializacji JSON oraz surowe I/O plików (`FileHandle`, `FPrintln`) do wszystkiego innego. Profesjonalne mody nakładają na to wersjonowanie konfiguracji i automatyczną migrację.
 
-This chapter covers the standard patterns for config persistence, from basic JSON load/save through versioned migration systems, directory management, and auto-save timers.
-
----
-
-## Spis tresci
-
-- [JsonFileLoader Pattern](#jsonfileloader-pattern)
-- [Manual JSON Writing (FPrintln)](#manual-json-writing-fprintln)
-- [The $profile Path](#the-profile-path)
-- [Directory Creation](#directory-creation)
-- [Config Data Classes](#config-data-classes)
-- [Config Versioning and Migration](#config-versioning-and-migration)
-- [Auto-Save Timers](#auto-save-timers)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+Ten rozdział obejmuje standardowe wzorce trwałości konfiguracji, od podstawowego ładowania/zapisu JSON przez systemy migracji wersjonowanej, zarządzanie katalogami i timery automatycznego zapisu.
 
 ---
 
-## JsonFileLoader Pattern
+## Spis treści
 
-`JsonFileLoader` is the engine's built-in serializer. It converts between Enforce Script objects and JSON files using reflection --- it reads the public fields of your class and maps them to JSON keys automatically.
+- [Wzorzec JsonFileLoader](#wzorzec-jsonfileloader)
+- [Ręczne zapisywanie JSON (FPrintln)](#ręczne-zapisywanie-json-fprintln)
+- [Ścieżka $profile](#ścieżka-profile)
+- [Tworzenie katalogów](#tworzenie-katalogów)
+- [Klasy danych konfiguracji](#klasy-danych-konfiguracji)
+- [Wersjonowanie i migracja konfiguracji](#wersjonowanie-i-migracja-konfiguracji)
+- [Timery automatycznego zapisu](#timery-automatycznego-zapisu)
+- [Częste błędy](#częste-błędy)
+- [Dobre praktyki](#dobre-praktyki)
 
-### Critical Gotcha
+---
 
-**`JsonFileLoader<T>.JsonLoadFile()` and `JsonFileLoader<T>.JsonSaveFile()` return `void`.** You cannot check their return value. You cannot assign them to a `bool`. You cannot use them in an `if` condition. This is one of the most common mistakes in DayZ modding.
+## Wzorzec JsonFileLoader
+
+`JsonFileLoader` to wbudowany serializator silnika. Konwertuje między obiektami Enforce Script a plikami JSON używając refleksji --- czyta publiczne pola twojej klasy i automatycznie mapuje je na klucze JSON.
+
+### Krytyczna pułapka
+
+**`JsonFileLoader<T>.JsonLoadFile()` i `JsonFileLoader<T>.JsonSaveFile()` zwracają `void`.** Nie możesz sprawdzić ich wartości zwrotnej. Nie możesz przypisać ich do `bool`. Nie możesz użyć ich w warunku `if`. To jeden z najczęstszych błędów w moddingu DayZ.
 
 ```c
-// WRONG — will not compile
+// ŹŁLE — nie skompiluje się
 bool success = JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
 
-// WRONG — will not compile
+// ŹŁLE — nie skompiluje się
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config))
 {
     // ...
 }
 
-// RIGHT — call and then check the object state
+// DOBRZE — wywołaj i potem sprawdź stan obiektu
 JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
-// Check if the data was actually populated
+// Sprawdź czy dane zostały faktycznie wypełnione
 if (config.m_ServerName != "")
 {
-    // Data loaded successfully
+    // Dane załadowane pomyślnie
 }
 ```
 
-### Basic Load/Save
+### Podstawowe ładowanie/zapis
 
 ```c
-// Data class — public fields are serialized to/from JSON
+// Klasa danych — publiczne pola są serializowane do/z JSON
 class ServerSettings
 {
     string ServerName = "My DayZ Server";
@@ -80,7 +80,7 @@ class SettingsManager
         }
         else
         {
-            // First run: save defaults
+            // Pierwsze uruchomienie: zapisz domyślne wartości
             Save();
         }
     }
@@ -92,15 +92,15 @@ class SettingsManager
 };
 ```
 
-### What Gets Serialized
+### Co jest serializowane
 
-`JsonFileLoader` serializes **all public fields** of the object. It does not serialize:
-- Private or protected fields
-- Methods
-- Static fields
-- Transient/runtime-only fields (there is no `[NonSerialized]` attribute --- use access modifiers)
+`JsonFileLoader` serializuje **wszystkie publiczne pola** obiektu. Nie serializuje:
+- Pól prywatnych lub chronionych
+- Metod
+- Pól statycznych
+- Pól przejściowych/tylko do runtime (nie ma atrybutu `[NonSerialized]` --- użyj modyfikatorów dostępu)
 
-The resulting JSON looks like:
+Wynikowy JSON wygląda tak:
 
 ```json
 {
@@ -111,20 +111,20 @@ The resulting JSON looks like:
 }
 ```
 
-### Supported Field Types
+### Obsługiwane typy pól
 
-| Type | JSON Representation |
+| Typ | Reprezentacja JSON |
 |------|-------------------|
-| `int` | Number |
-| `float` | Number |
+| `int` | Liczba |
+| `float` | Liczba |
 | `bool` | `true` / `false` |
 | `string` | String |
-| `vector` | Array of 3 numbers |
-| `array<T>` | JSON array |
-| `map<string, T>` | JSON object (string keys only) |
-| Nested class | Nested JSON object |
+| `vector` | Tablica 3 liczb |
+| `array<T>` | Tablica JSON |
+| `map<string, T>` | Obiekt JSON (tylko klucze stringowe) |
+| Zagnieżdżona klasa | Zagnieżdżony obiekt JSON |
 
-### Nested Objects
+### Zagnieżdżone obiekty
 
 ```c
 class SpawnPoint
@@ -140,7 +140,7 @@ class SpawnConfig
 };
 ```
 
-Produces:
+Produkuje:
 
 ```json
 {
@@ -161,9 +161,9 @@ Produces:
 
 ---
 
-## Manual JSON Writing (FPrintln)
+## Ręczne zapisywanie JSON (FPrintln)
 
-Sometimes `JsonFileLoader` is not flexible enough: it cannot handle arrays of mixed types, custom formatting, or non-class data structures. In those cases, use raw file I/O.
+Czasami `JsonFileLoader` nie jest wystarczająco elastyczny: nie obsługuje tablic typów mieszanych, niestandardowego formatowania ani struktur danych nie będących klasami. W takich przypadkach użyj surowego I/O plików.
 
 ### Podstawowy wzorzec
 
@@ -190,7 +190,7 @@ void WriteCustomData(string path, array<string> lines)
 }
 ```
 
-### Reading Raw Files
+### Odczyt surowych plików
 
 ```c
 void ReadCustomData(string path)
@@ -203,60 +203,60 @@ void ReadCustomData(string path)
     {
         line = line.Trim();
         if (line == "") continue;
-        // Process line...
+        // Przetwarzaj linię...
     }
 
     CloseFile(file);
 }
 ```
 
-### When to Use Manual I/O
+### Kiedy używać ręcznego I/O
 
-- Writing log files (append mode)
-- Writing CSV or plain-text exports
-- Custom JSON formatting that `JsonFileLoader` cannot produce
-- Parsing non-JSON file formats (e.g., DayZ's `.map` or `.xml` files)
+- Pisanie plików logów (tryb dopisywania)
+- Pisanie eksportów CSV lub zwykłego tekstu
+- Niestandardowe formatowanie JSON, którego `JsonFileLoader` nie może wyprodukować
+- Parsowanie formatów plików nie-JSON (np. pliki `.map` lub `.xml` DayZ)
 
-For standard config files, prefer `JsonFileLoader`. It is faster to implement, less error-prone, and automatically handles nested objects.
+Dla standardowych plików konfiguracji preferuj `JsonFileLoader`. Jest szybszy w implementacji, mniej podatny na błędy i automatycznie obsługuje zagnieżdżone obiekty.
 
 ---
 
-## The $profile Path
+## Ścieżka $profile
 
-DayZ provides the `$profile:` path prefix, which resolves to the server's profile directory (typically the folder containing `DayZServer_x64.exe`, or the profile path specified with `-profiles=`).
+DayZ dostarcza prefiks ścieżki `$profile:`, który rozwiązuje się do katalogu profilu serwera (zazwyczaj folder zawierający `DayZServer_x64.exe`, lub ścieżka profilu podana z `-profiles=`).
 
 ```c
-// These resolve to the profile directory:
+// Te rozwiązują się do katalogu profilu:
 "$profile:MyMod/config.json"       // → C:/DayZServer/MyMod/config.json
 "$profile:MyMod/Players/data.json" // → C:/DayZServer/MyMod/Players/data.json
 ```
 
-### Always Use $profile
+### Zawsze używaj $profile
 
-Never use absolute paths. Never use relative paths. Always use `$profile:` for any file your mod creates or reads at runtime:
+Nigdy nie używaj ścieżek absolutnych. Nigdy nie używaj ścieżek względnych. Zawsze używaj `$profile:` dla każdego pliku, który twój mod tworzy lub czyta w runtime:
 
 ```c
-// BAD: Absolute path — breaks on any other machine
+// ŹLE: Ścieżka absolutna — nie działa na innej maszynie
 const string CONFIG_PATH = "C:/DayZServer/MyMod/config.json";
 
-// BAD: Relative path — depends on working directory, which varies
+// ŹLE: Ścieżka względna — zależy od katalogu roboczego, który się zmienia
 const string CONFIG_PATH = "MyMod/config.json";
 
-// GOOD: $profile resolves correctly everywhere
+// DOBRZE: $profile rozwiązuje się poprawnie wszędzie
 const string CONFIG_PATH = "$profile:MyMod/config.json";
 ```
 
-### Conventional Directory Structure
+### Konwencjonalna struktura katalogów
 
-Most mods follow this convention:
+Większość modów stosuje tę konwencję:
 
 ```
 $profile:
   └── YourModName/
-      ├── Config.json          (main server config)
-      ├── Permissions.json     (admin permissions)
+      ├── Config.json          (główna konfiguracja serwera)
+      ├── Permissions.json     (uprawnienia adminów)
       ├── Logs/
-      │   └── 2025-01-15.log   (daily log files)
+      │   └── 2025-01-15.log   (dzienne pliki logów)
       └── Players/
           ├── 76561198xxxxx.json
           └── 76561198yyyyy.json
@@ -264,9 +264,9 @@ $profile:
 
 ---
 
-## Directory Creation
+## Tworzenie katalogów
 
-Before writing a file, you must ensure its parent directory exists. DayZ does not auto-create directories.
+Przed zapisem pliku musisz upewnić się, że katalog nadrzędny istnieje. DayZ nie tworzy katalogów automatycznie.
 
 ### MakeDirectory
 
@@ -293,23 +293,23 @@ void EnsureDirectories()
 }
 ```
 
-### Important: MakeDirectory Is Not Recursive
+### Ważne: MakeDirectory nie jest rekursywne
 
-`MakeDirectory` creates only the final directory in the path. If the parent does not exist, it fails silently. You must create each level:
+`MakeDirectory` tworzy tylko ostatni katalog w ścieżce. Jeśli katalog nadrzędny nie istnieje, zawodzi cicho. Musisz tworzyć każdy poziom:
 
 ```c
-// WRONG: Parent "MyMod" doesn't exist yet
-MakeDirectory("$profile:MyMod/Data/Players");  // Fails silently
+// ŹŁLE: Nadrzędny "MyMod" jeszcze nie istnieje
+MakeDirectory("$profile:MyMod/Data/Players");  // Zawodzi cicho
 
-// RIGHT: Create each level
+// DOBRZE: Twórz każdy poziom
 MakeDirectory("$profile:MyMod");
 MakeDirectory("$profile:MyMod/Data");
 MakeDirectory("$profile:MyMod/Data/Players");
 ```
 
-### MyMod Pattern: Constants for Paths
+### Wzorzec stałych dla ścieżek
 
-MyMod defines all paths as constants in a dedicated class:
+Mod frameworkowy definiuje wszystkie ścieżki jako stałe w dedykowanej klasie:
 
 ```c
 class MyModConst
@@ -322,35 +322,35 @@ class MyModConst
 };
 ```
 
-This avoids path string duplication across the codebase and makes it easy to find every file your mod touches.
+To eliminuje duplikację stringów ścieżek w bazie kodu i ułatwia znalezienie każdego pliku, którego dotyka twój mod.
 
 ---
 
-## Config Data Classes
+## Klasy danych konfiguracji
 
-A well-designed config data class provides default values, version tracking, and clear documentation of each field.
+Dobrze zaprojektowana klasa danych konfiguracji zapewnia domyślne wartości, śledzenie wersji i jasną dokumentację każdego pola.
 
 ### Podstawowy wzorzec
 
 ```c
 class MyModConfig
 {
-    // Version tracking for migrations
+    // Śledzenie wersji do migracji
     int ConfigVersion = 3;
 
-    // Gameplay settings with sensible defaults
+    // Ustawienia rozgrywki z sensownymi domyślnymi wartościami
     bool EnableFeatureX = true;
     int MaxEntities = 50;
     float SpawnRadius = 500.0;
     string WelcomeMessage = "Welcome to the server!";
 
-    // Complex settings
+    // Złożone ustawienia
     ref array<string> AllowedWeapons = new array<string>();
     ref map<string, float> ZoneRadii = new map<string, float>();
 
     void MyModConfig()
     {
-        // Initialize collections with defaults
+        // Inicjalizuj kolekcje domyślnymi wartościami
         AllowedWeapons.Insert("AK74");
         AllowedWeapons.Insert("M4A1");
 
@@ -360,43 +360,43 @@ class MyModConfig
 };
 ```
 
-### MyMod ConfigBase Pattern
+### Wzorzec refleksyjny ConfigBase
 
-MyMod uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
+Ten wzorzec używa refleksyjnego systemu konfiguracji, gdzie każda klasa konfiguracji deklaruje swoje pola jako deskryptory. Pozwala to panelowi administracyjnemu na automatyczne generowanie UI dla dowolnej konfiguracji bez zakodowanych na stałe nazw pól:
 
 ```c
-// Conceptual pattern (simplified from MyMod):
+// Wzorzec koncepcyjny (refleksyjna konfiguracja):
 class MyConfigBase
 {
-    // Each config declares its version
+    // Każda konfiguracja deklaruje swoją wersję
     int ConfigVersion;
     string ModId;
 
-    // Subclasses override to declare their fields
+    // Podklasy nadpisują aby zadeklarować swoje pola
     void Init(string modId)
     {
         ModId = modId;
     }
 
-    // Reflection: get all configurable fields
-    array<ref MyModConfigField> GetFields();
+    // Refleksja: pobierz wszystkie konfigurowalne pola
+    array<ref MyConfigField> GetFields();
 
-    // Dynamic get/set by field name (for admin panel sync)
+    // Dynamiczne get/set po nazwie pola (do synchronizacji panelu admina)
     string GetFieldValue(string fieldName);
     void SetFieldValue(string fieldName, string value);
 
-    // Hooks for custom logic on load/save
+    // Hooki dla niestandardowej logiki przy ładowaniu/zapisie
     void OnAfterLoad() {}
     void OnBeforeSave() {}
 };
 ```
 
-### VPP ConfigurablePlugin Pattern
+### Wzorzec VPP ConfigurablePlugin
 
-VPP merges config management directly into the plugin lifecycle:
+VPP łączy zarządzanie konfiguracją bezpośrednio z cyklem życia wtyczki:
 
 ```c
-// VPP pattern (simplified):
+// Wzorzec VPP (uproszczony):
 class VPPESPConfig
 {
     bool EnableESP = true;
@@ -411,7 +411,7 @@ class VPPESPPlugin : ConfigurablePlugin
     override void OnInit()
     {
         m_ESPConfig = new VPPESPConfig();
-        // ConfigurablePlugin.LoadConfig() handles the JSON load
+        // ConfigurablePlugin.LoadConfig() obsługuje ładowanie JSON
         super.OnInit();
     }
 };
@@ -419,30 +419,30 @@ class VPPESPPlugin : ConfigurablePlugin
 
 ---
 
-## Config Versioning and Migration
+## Wersjonowanie i migracja konfiguracji
 
-As your mod evolves, config structures change. You add fields, remove fields, rename fields, change defaults. Without versioning, users with old config files will silently get wrong values or crash.
+W miarę ewolucji twojego moda, struktury konfiguracji się zmieniają. Dodajesz pola, usuwasz pola, zmieniasz nazwy pól, zmieniasz domyślne wartości. Bez wersjonowania, użytkownicy ze starymi plikami konfiguracji cicho otrzymają złe wartości lub crashe.
 
-### The Version Field
+### Pole wersji
 
-Every config class should have an integer version field:
+Każda klasa konfiguracji powinna mieć integerowe pole wersji:
 
 ```c
 class MyModConfig
 {
-    int ConfigVersion = 5;  // Increment when the structure changes
+    int ConfigVersion = 5;  // Zwiększ gdy struktura się zmieni
     // ...
 };
 ```
 
-### Migration on Load
+### Migracja przy ładowaniu
 
-When loading a config, compare the on-disk version with the current code version. If they differ, run migrations:
+Przy ładowaniu konfiguracji, porównaj wersję na dysku z aktualną wersją kodu. Jeśli się różnią, uruchom migracje:
 
 ```c
 void LoadConfig()
 {
-    MyModConfig config = new MyModConfig();  // Has current defaults
+    MyModConfig config = new MyModConfig();  // Ma aktualne domyślne wartości
 
     if (FileExist(CONFIG_PATH))
     {
@@ -452,52 +452,52 @@ void LoadConfig()
         {
             MigrateConfig(config);
             config.ConfigVersion = CURRENT_VERSION;
-            SaveConfig(config);  // Re-save with updated version
+            SaveConfig(config);  // Zapisz ponownie z zaktualizowaną wersją
         }
     }
     else
     {
-        SaveConfig(config);  // First run: write defaults
+        SaveConfig(config);  // Pierwsze uruchomienie: zapisz domyślne
     }
 
     m_Config = config;
 }
 ```
 
-### Migration Functions
+### Funkcje migracji
 
 ```c
 static const int CURRENT_VERSION = 5;
 
 void MigrateConfig(MyModConfig config)
 {
-    // Run each migration step sequentially
+    // Uruchom każdy krok migracji sekwencyjnie
     if (config.ConfigVersion < 2)
     {
-        // v1 → v2: "SpawnDelay" was renamed to "RespawnInterval"
-        // Old field is lost on load; set new default
+        // v1 → v2: "SpawnDelay" zostało zmienione na "RespawnInterval"
+        // Stare pole jest utracone przy ładowaniu; ustaw nową domyślną
         config.RespawnInterval = 300.0;
     }
 
     if (config.ConfigVersion < 3)
     {
-        // v2 → v3: Added "EnableNotifications" field
+        // v2 → v3: Dodano pole "EnableNotifications"
         config.EnableNotifications = true;
     }
 
     if (config.ConfigVersion < 4)
     {
-        // v3 → v4: "MaxZombies" default changed from 100 to 200
+        // v3 → v4: Domyślna "MaxZombies" zmieniona ze 100 na 200
         if (config.MaxZombies == 100)
         {
-            config.MaxZombies = 200;  // Only update if user hadn't changed it
+            config.MaxZombies = 200;  // Aktualizuj tylko jeśli użytkownik nie zmienił
         }
     }
 
     if (config.ConfigVersion < 5)
     {
-        // v4 → v5: "DifficultyMode" changed from int to string
-        // config.DifficultyMode = "Normal"; // Set new default
+        // v4 → v5: "DifficultyMode" zmieniono z int na string
+        // config.DifficultyMode = "Normal"; // Ustaw nową domyślną
     }
 
     MyLog.Info("Config", "Migrated config from v"
@@ -505,30 +505,30 @@ void MigrateConfig(MyModConfig config)
 }
 ```
 
-### Expansion's Migration Example
+### Przykład migracji Expansion
 
-Expansion is known for aggressive config evolution. Some Expansion configs have gone through 17+ versions. Their pattern:
-1. Each version bump has a dedicated migration function
-2. Migrations run in order (1 to 2, then 2 to 3, then 3 to 4, etc.)
-3. Each migration only changes what is necessary for that version step
-4. The final version number is written to disk after all migrations complete
+Expansion jest znany z agresywnej ewolucji konfiguracji. Niektóre konfiguracje Expansion przeszły przez 17+ wersji. Ich wzorzec:
+1. Każdy bump wersji ma dedykowaną funkcję migracji
+2. Migracje uruchamiane są w kolejności (1 do 2, potem 2 do 3, potem 3 do 4, itd.)
+3. Każda migracja zmienia tylko to co konieczne dla tego kroku wersji
+4. Końcowy numer wersji jest zapisywany na dysk po zakończeniu wszystkich migracji
 
-This is the gold standard for config versioning in DayZ mods.
+To jest złoty standard wersjonowania konfiguracji w modach DayZ.
 
 ---
 
-## Auto-Save Timers
+## Timery automatycznego zapisu
 
-For configs that change at runtime (admin edits, player data accumulation), implement an auto-save timer to prevent data loss on crashes.
+Dla konfiguracji zmieniających się w runtime (edycje admina, akumulacja danych graczy), zaimplementuj timer automatycznego zapisu, aby zapobiec utracie danych przy crashach.
 
-### Timer-Based Auto-Save
+### Automatyczny zapis oparty na timerze
 
 ```c
 class MyDataManager
 {
-    protected const float AUTOSAVE_INTERVAL = 300.0;  // 5 minutes
+    protected const float AUTOSAVE_INTERVAL = 300.0;  // 5 minut
     protected float m_AutosaveTimer;
-    protected bool m_Dirty;  // Has data changed since last save?
+    protected bool m_Dirty;  // Czy dane zmieniły się od ostatniego zapisu?
 
     void MarkDirty()
     {
@@ -552,7 +552,7 @@ class MyDataManager
 
     void OnMissionFinish()
     {
-        // Always save on shutdown, even if timer hasn't fired
+        // Zawsze zapisz przy zamykaniu, nawet jeśli timer nie zdążył
         if (m_Dirty)
         {
             Save();
@@ -562,52 +562,52 @@ class MyDataManager
 };
 ```
 
-### Dirty Flag Optimization
+### Optymalizacja flagi dirty
 
-Only write to disk when data has actually changed. File I/O is expensive. If nothing changed, skip the save:
+Zapisuj na dysk tylko gdy dane faktycznie się zmieniły. I/O plików jest kosztowne. Jeśli nic się nie zmieniło, pomiń zapis:
 
 ```c
 void UpdateSetting(string key, string value)
 {
-    if (m_Settings.Get(key) == value) return;  // No change, no save
+    if (m_Settings.Get(key) == value) return;  // Brak zmiany, brak zapisu
 
     m_Settings.Set(key, value);
     MarkDirty();
 }
 ```
 
-### Save on Critical Events
+### Zapis przy krytycznych zdarzeniach
 
-In addition to timed saves, save immediately after critical operations:
+Oprócz okresowych zapisów, zapisuj natychmiast po krytycznych operacjach:
 
 ```c
 void BanPlayer(string uid, string reason)
 {
     m_BanList.Insert(uid);
-    Save();  // Immediate save — bans must survive crashes
+    Save();  // Natychmiastowy zapis — bany muszą przetrwać crashe
 }
 ```
 
 ---
 
-## Najczestsze bledy
+## Częste błędy
 
-### 1. Treating JsonLoadFile as if It Returns a Value
+### 1. Traktowanie JsonLoadFile jakby zwracał wartość
 
 ```c
-// WRONG — does not compile
+// ŹŁLE — nie skompiluje się
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config)) { ... }
 ```
 
-`JsonLoadFile` returns `void`. Call it, then check the object's state.
+`JsonLoadFile` zwraca `void`. Wywołaj go, potem sprawdź stan obiektu.
 
-### 2. Not Checking FileExist Before Loading
+### 2. Brak sprawdzenia FileExist przed ładowaniem
 
 ```c
-// WRONG — crashes or produces empty object with no diagnostic
+// ŹŁLE — crash lub pusty obiekt bez diagnostyki
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 
-// RIGHT — check first, create defaults if missing
+// DOBRZE — sprawdź najpierw, stwórz domyślne jeśli brak
 if (!FileExist("$profile:MyMod/Config.json"))
 {
     SaveDefaults();
@@ -616,36 +616,36 @@ if (!FileExist("$profile:MyMod/Config.json"))
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 ```
 
-### 3. Forgetting to Create Directories
+### 3. Zapomnienie o tworzeniu katalogów
 
-`JsonSaveFile` fails silently if the directory does not exist. Always ensure directories before saving.
+`JsonSaveFile` zawodzi cicho jeśli katalog nie istnieje. Zawsze upewnij się o katalogach przed zapisem.
 
-### 4. Public Fields You Did Not Intend to Serialize
+### 4. Publiczne pola, których nie zamierzałeś serializować
 
-Every `public` field on a config class ends up in the JSON. If you have runtime-only fields, make them `protected` or `private`:
+Każde `public` pole na klasie konfiguracji trafia do JSON. Jeśli masz pola tylko do runtime, zrób je `protected` lub `private`:
 
 ```c
 class MyConfig
 {
-    // These go to JSON:
+    // Te idą do JSON:
     int MaxPlayers = 60;
     string ServerName = "My Server";
 
-    // This does NOT go to JSON (protected):
+    // To NIE idzie do JSON (protected):
     protected bool m_Loaded;
     protected float m_LastSaveTime;
 };
 ```
 
-### 5. Backslash and Quote Characters in JSON Values
+### 5. Znaki backslash i cudzysłowu w wartościach JSON
 
-Enforce Script's CParser has trouble with `\\` and `\"` in string literals. Avoid storing file paths with backslashes in configs. Use forward slashes:
+CParser Enforce Script ma problemy z `\\` i `\"` w literałach stringowych. Unikaj przechowywania ścieżek z backslashami w konfiguracji. Używaj ukośników:
 
 ```c
-// BAD — backslashes may break parsing
+// ŹLE — backslashe mogą złamać parsowanie
 string LogPath = "C:\\DayZ\\Logs\\server.log";
 
-// GOOD — forward slashes work everywhere
+// DOBRZE — ukośniki działają wszędzie
 string LogPath = "$profile:MyMod/Logs/server.log";
 ```
 
@@ -653,26 +653,46 @@ string LogPath = "$profile:MyMod/Logs/server.log";
 
 ## Dobre praktyki
 
-1. **Use `$profile:` for all file paths.** Never hardcode absolute paths.
+1. **Używaj `$profile:` dla wszystkich ścieżek plików.** Nigdy nie koduj na stałe ścieżek absolutnych.
 
-2. **Create directories before writing files.** Check with `FileExist()`, create with `MakeDirectory()`, one level at a time.
+2. **Twórz katalogi przed zapisem plików.** Sprawdź z `FileExist()`, twórz z `MakeDirectory()`, jeden poziom naraz.
 
-3. **Always provide default values in your config class constructor or field initializers.** This ensures first-run configs are sensible.
+3. **Zawsze zapewniaj domyślne wartości w konstruktorze klasy konfiguracji lub inicjalizatorach pól.** Zapewnia to sensowne konfiguracje przy pierwszym uruchomieniu.
 
-4. **Version your configs from day one.** Adding a `ConfigVersion` field costs nothing and saves hours of debugging later.
+4. **Wersjonuj swoje konfiguracje od pierwszego dnia.** Dodanie pola `ConfigVersion` nic nie kosztuje, a oszczędza godziny debugowania później.
 
-5. **Separate config data classes from manager classes.** The data class is a dumb container; the manager handles load/save/sync logic.
+5. **Oddzielaj klasy danych konfiguracji od klas managerów.** Klasa danych to głupi kontener; manager obsługuje logikę ładowania/zapisu/synchronizacji.
 
-6. **Use auto-save with a dirty flag.** Do not write to disk every time a value changes --- batch writes on a timer.
+6. **Używaj automatycznego zapisu z flagą dirty.** Nie zapisuj na dysk za każdym razem gdy zmienia się wartość --- grupuj zapisy na timerze.
 
-7. **Save on mission finish.** The auto-save timer is a safety net, not the primary save. Always save during `OnMissionFinish()`.
+7. **Zapisuj przy zakończeniu misji.** Timer automatycznego zapisu to siatka bezpieczeństwa, nie główny zapis. Zawsze zapisuj podczas `OnMissionFinish()`.
 
-8. **Define path constants in one place.** A `MyModConst` class with all paths prevents string duplication and makes path changes trivial.
+8. **Definiuj stałe ścieżek w jednym miejscu.** Klasa `MyModConst` ze wszystkimi ścieżkami zapobiega duplikacji stringów i czyni zmiany ścieżek trywialnymi.
 
-9. **Log load/save operations.** When debugging config issues, a log line saying "Loaded config v3 from $profile:MyMod/Config.json" is invaluable.
+9. **Loguj operacje ładowania/zapisu.** Przy debugowaniu problemów z konfiguracją, linia logu mówiąca "Loaded config v3 from $profile:MyMod/Config.json" jest bezcenna.
 
-10. **Test with a deleted config file.** Your mod should handle first-run gracefully: create directories, write defaults, log what it did.
+10. **Testuj z usuniętym plikiem konfiguracji.** Twój mod powinien obsługiwać pierwsze uruchomienie elegancko: twórz katalogi, zapisz domyślne, loguj co zrobił.
 
 ---
 
-[<< Previous: RPC Patterns](03-rpc-patterns.md) | [Home](../../README.md) | [Next: Permission Systems >>](05-permissions.md)
+## Kompatybilność i wpływ
+
+- **Wielomodowość:** Każdy mod zapisuje do własnego katalogu `$profile:ModName/`. Konflikty zdarzają się tylko gdy dwa mody używają tej samej nazwy katalogu. Używaj unikalnego, rozpoznawalnego prefiksu dla folderu twojego moda.
+- **Kolejność ładowania:** Ładowanie konfiguracji odbywa się w `OnInit` lub `OnMissionStart`, oba kontrolowane przez własny cykl życia moda. Brak problemów z kolejnością ładowania między modami, chyba że dwa mody próbują czytać/pisać ten sam plik (czego nigdy nie powinny robić).
+- **Listen Server:** Pliki konfiguracji są tylko po stronie serwera (`$profile:` rozwiązuje się na serwerze). Na listen serwerach kod kliencki technicznie może uzyskać dostęp do `$profile:`, ale konfiguracje powinny być ładowane tylko przez moduły serwerowe, aby uniknąć niejednoznaczności.
+- **Wydajność:** `JsonFileLoader` jest synchroniczny i blokuje główny wątek. Dla dużych konfiguracji (100+ KB), ładuj podczas `OnInit` (przed rozpoczęciem rozgrywki). Timery automatycznego zapisu zapobiegają powtórnym zapisom; wzorzec flagi dirty zapewnia, że I/O dysku zachodzi tylko gdy dane faktycznie się zmieniły.
+- **Migracja:** Dodawanie nowych pól do klasy konfiguracji jest bezpieczne --- `JsonFileLoader` ignoruje brakujące klucze JSON i zostawia domyślną wartość klasy. Usuwanie lub zmiana nazw pól wymaga kroku migracji wersjonowanej, aby uniknąć cichej utraty danych.
+
+---
+
+## Teoria vs praktyka
+
+| Podręcznik mówi | Rzeczywistość DayZ |
+|---------------|-------------|
+| Używaj asynchronicznego I/O plików aby uniknąć blokowania | Enforce Script nie ma asynchronicznego I/O plików; wszystkie odczyty/zapisy są synchroniczne. Ładuj przy starcie, zapisuj na timerach. |
+| Waliduj JSON schematem | Nie istnieje walidacja schematu JSON; waliduj pola w `OnAfterLoad()` lub z klauzulami zabezpieczającymi po ładowaniu. |
+| Używaj bazy danych do danych strukturalnych | Brak dostępu do bazy danych z Enforce Script; pliki JSON w `$profile:` to jedyny mechanizm trwałości. |
+
+---
+
+[Strona główna](../../README.md) | [<< Poprzedni: Wzorce RPC](03-rpc-patterns.md) | **Trwałość konfiguracji** | [Dalej: Systemy uprawnień >>](05-permissions.md)
