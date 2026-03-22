@@ -5,8 +5,7 @@ node_modules/
 .vitepress/cache/
 .vitepress/dist/
 
-# Lock files (regenerated on install)
-package-lock.json
+# Lock files are committed for CI reproducibility
 
 # OS files
 .DS_Store
