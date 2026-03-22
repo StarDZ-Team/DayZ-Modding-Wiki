@@ -233,15 +233,9 @@ export default withMermaid(
         text: 'Edit this page on GitHub'
       },
 
-      search: {
-        provider: 'local',
-        options: {
-          translations: {
-            button: { buttonText: 'Search', buttonAriaLabel: 'Search' },
-            modal: { noResultsText: 'No results for', resetButtonTitle: 'Clear' }
-          }
-        }
-      },
+      // Search disabled — 1107 files causes OOM/timeout on GitHub Actions runner (7GB RAM)
+      // TODO: Re-enable with Algolia DocSearch when traffic justifies it
+      // search: { provider: 'local' },
 
       footer: {
         message: 'Released under CC BY-SA 4.0 | Code examples under MIT License',
