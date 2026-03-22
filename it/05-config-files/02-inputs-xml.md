@@ -1,40 +1,44 @@
-# Chapter 5.2: inputs.xml --- Custom Keybindings
+# Capitolo 5.2: inputs.xml --- Associazioni di Tasti Personalizzate
 
-[Home](../../README.md) | [<< Previous: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Next: Credits.json >>](03-credits-json.md)
+[Home](../../README.md) | [<< Precedente: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Successivo: Credits.json >>](03-credits-json.md)
 
 ---
 
-## Indice dei Contenuti
+> **Sommario:** Il file `inputs.xml` consente alla tua mod di registrare associazioni di tasti personalizzate che appaiono nel menù Impostazioni > Controlli del giocatore. I giocatori possono visualizzare, riassegnare e attivare/disattivare questi input proprio come le azioni vanilla. Questo è il meccanismo standard per aggiungere tasti rapidi alle mod DayZ.
 
-- [Overview](#overview)
-- [File Location](#file-location)
-- [Complete XML Structure](#complete-xml-structure)
-- [Actions Block](#actions-block)
-- [Sorting Block](#sorting-block)
-- [Preset Block (Default Keybindings)](#preset-block-default-keybindings)
-- [Modifier Combos](#modifier-combos)
-- [Hidden Inputs](#hidden-inputs)
-- [Multiple Default Keys](#multiple-default-keys)
-- [Accessing Inputs in Script](#accessing-inputs-in-script)
-- [Input Methods Reference](#input-methods-reference)
-- [Suppressing and Disabling Inputs](#suppressing-and-disabling-inputs)
-- [Key Names Reference](#key-names-reference)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+---
+
+## Indice
+
+- [Panoramica](#panoramica)
+- [Posizione del File](#posizione-del-file)
+- [Struttura XML Completa](#struttura-xml-completa)
+- [Blocco Actions](#blocco-actions)
+- [Blocco Sorting](#blocco-sorting)
+- [Blocco Preset (Tasti Predefiniti)](#blocco-preset-tasti-predefiniti)
+- [Combinazioni con Modificatori](#combinazioni-con-modificatori)
+- [Input Nascosti](#input-nascosti)
+- [Tasti Predefiniti Multipli](#tasti-predefiniti-multipli)
+- [Accedere agli Input negli Script](#accedere-agli-input-negli-script)
+- [Riferimento dei Metodi di Input](#riferimento-dei-metodi-di-input)
+- [Sopprimere e Disabilitare gli Input](#sopprimere-e-disabilitare-gli-input)
+- [Riferimento dei Nomi dei Tasti](#riferimento-dei-nomi-dei-tasti)
+- [Esempi Reali](#esempi-reali)
+- [Errori Comuni](#errori-comuni)
 
 ---
 
 ## Panoramica
 
-When your mod needs the player to press a key --- opening a menu, toggling a feature, commanding an AI unit --- you register a custom input action in `inputs.xml`. The engine reads this file at startup and integrates your actions into the universal input system. Players vedi your keybindings in the game's Settings > Controls menu, grouped under a heading you define.
+Quando la tua mod ha bisogno che il giocatore prema un tasto --- aprire un menù, attivare una funzionalità, comandare un'unità IA --- registri un'azione di input personalizzata in `inputs.xml`. Il motore legge questo file all'avvio e integra le tue azioni nel sistema di input universale. I giocatori vedono le tue associazioni di tasti nel menù Impostazioni > Controlli del gioco, raggruppate sotto un'intestazione che definisci tu.
 
-Custom inputs are identified by a unique action name (conventionally prefixed with `UA` for "User Action") and can have default keybindings that players can rebind at will.
+Gli input personalizzati sono identificati da un nome di azione unico (convenzionalmente con prefisso `UA` per "User Action") e possono avere associazioni di tasti predefinite che i giocatori possono riassegnare a piacimento.
 
 ---
 
 ## Posizione del File
 
-Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
+Posiziona `inputs.xml` dentro una sottocartella `data` della tua directory Scripts:
 
 ```
 @MyMod/
@@ -42,45 +46,45 @@ Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
     MyMod_Scripts.pbo
       Scripts/
         data/
-          inputs.xml        <-- Here
+          inputs.xml        <-- Qui
         3_Game/
         4_World/
         5_Mission/
 ```
 
-Some mods place it directly in the `Scripts/` folder. Entrambi locations work. The engine discovers the file automatically --- no config.cpp registration is needed.
+Alcune mod lo posizionano direttamente nella cartella `Scripts/`. Entrambe le posizioni funzionano. Il motore individua il file automaticamente --- non è necessaria alcuna registrazione in config.cpp.
 
 ---
 
-## Complete XML Structure
+## Struttura XML Completa
 
-An `inputs.xml` file has three sections, all wrapped in a `<modded_inputs>` root element:
+Un file `inputs.xml` ha tre sezioni, tutte racchiuse in un elemento radice `<modded_inputs>`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <modded_inputs>
     <inputs>
         <actions>
-            <!-- Action definitions go here -->
+            <!-- Le definizioni delle azioni vanno qui -->
         </actions>
 
         <sorting name="mymod" loc="STR_MYMOD_INPUT_GROUP">
-            <!-- Sort order for the settings menu -->
+            <!-- Ordine di visualizzazione per il menù impostazioni -->
         </sorting>
     </inputs>
     <preset>
-        <!-- Default keybinding assignments go here -->
+        <!-- Le assegnazioni predefinite dei tasti vanno qui -->
     </preset>
 </modded_inputs>
 ```
 
-All three sections --- `<actions>`, `<sorting>`, and `<preset>` --- work together but serve different purposes.
+Tutte e tre le sezioni --- `<actions>`, `<sorting>` e `<preset>` --- lavorano insieme ma servono scopi diversi.
 
 ---
 
 ## Blocco Actions
 
-The `<actions>` block declares every input action your mod provides. Each action is a single `<input>` element.
+Il blocco `<actions>` dichiara ogni azione di input fornita dalla tua mod. Ogni azione è un singolo elemento `<input>`.
 
 ### Sintassi
 
@@ -91,17 +95,17 @@ The `<actions>` block declares every input action your mod provides. Each action
 </actions>
 ```
 
-### Attributes
+### Attributi
 
-| Attribute | Obbligatorio | Descrizione |
-|-----------|----------|-------------|
-| `name` | Yes | Unique action identifier. Convention: prefix with `UA` (User Action). Used in scripts to poll this input. |
-| `loc` | No | Stringtable key for the display name in the Controls menu. **No `#` prefix** --- the system adds it. |
-| `visible` | No | Set to `"false"` to hide from the Controls menu. Defaults to `true`. |
+| Attributo | Obbligatorio | Descrizione |
+|-----------|--------------|-------------|
+| `name` | Sì | Identificatore unico dell'azione. Convenzione: prefisso con `UA` (User Action). Usato negli script per interrogare questo input. |
+| `loc` | No | Chiave stringtable per il nome visualizzato nel menù Controlli. **Senza prefisso `#`** --- il sistema lo aggiunge. |
+| `visible` | No | Imposta a `"false"` per nascondere dal menù Controlli. Predefinito: `true`. |
 
-### Naming Convention
+### Convenzione di Denominazione
 
-Action names must be globally unique across all loaded mods. Use your mod prefix:
+I nomi delle azioni devono essere globalmente unici tra tutte le mod caricate. Usa il prefisso della tua mod:
 
 ```xml
 <input name="UAMyModAdminPanel" loc="STR_MYMOD_INPUT_ADMIN_PANEL" />
@@ -109,13 +113,13 @@ Action names must be globally unique across all loaded mods. Use your mod prefix
 <input name="eAICommandMenu" loc="STR_EXPANSION_AI_COMMAND_MENU" />
 ```
 
-The `UA` prefix is conventional but not enforced. Expansion AI uses `eAI` as its prefix, which also works.
+Il prefisso `UA` è convenzionale ma non obbligatorio. Expansion AI usa `eAI` come prefisso, che funziona altrettanto bene.
 
 ---
 
 ## Blocco Sorting
 
-The `<sorting>` block controls how your inputs appear in the player's Controls settings. It defines a named group (which becomes a section header) and lists the inputs in display order.
+Il blocco `<sorting>` controlla come i tuoi input appaiono nelle impostazioni Controlli del giocatore. Definisce un gruppo con nome (che diventa un'intestazione di sezione) e elenca gli input in ordine di visualizzazione.
 
 ### Sintassi
 
@@ -127,32 +131,32 @@ The `<sorting>` block controls how your inputs appear in the player's Controls s
 </sorting>
 ```
 
-### Attributes
+### Attributi
 
-| Attribute | Obbligatorio | Descrizione |
-|-----------|----------|-------------|
-| `name` | Yes | Internal identifier for this sorting group |
-| `loc` | Yes | Stringtable key for the group header displayed in Settings > Controls |
+| Attributo | Obbligatorio | Descrizione |
+|-----------|--------------|-------------|
+| `name` | Sì | Identificatore interno per questo gruppo di ordinamento |
+| `loc` | Sì | Chiave stringtable per l'intestazione del gruppo visualizzata in Impostazioni > Controlli |
 
-### How It Appears
+### Come Appare
 
-In the Controls settings, the player sees:
+Nelle impostazioni Controlli, il giocatore vede:
 
 ```
-[MyMod]                          <-- from the sorting loc
-  Open Menu .............. [Y]   <-- from the input loc + preset
-  Toggle HUD ............. [H]   <-- from the input loc + preset
+[MyMod]                          <-- dal loc del sorting
+  Open Menu .............. [Y]   <-- dal loc dell'input + preset
+  Toggle HUD ............. [H]   <-- dal loc dell'input + preset
 ```
 
-Only inputs listed in the `<sorting>` block appear in the settings menu. Inputs defined in `<actions>` but not listed in `<sorting>` are silently registered but invisible to the player (even if `visible` is not explicitly set to `false`).
+Solo gli input elencati nel blocco `<sorting>` appaiono nel menù impostazioni. Gli input definiti in `<actions>` ma non elencati in `<sorting>` vengono registrati silenziosamente ma sono invisibili al giocatore (anche se `visible` non è esplicitamente impostato a `false`).
 
 ---
 
 ## Blocco Preset (Tasti Predefiniti)
 
-The `<preset>` block assigns default keys to your actions. These are the keys the player starts with before any customization.
+Il blocco `<preset>` assegna tasti predefiniti alle tue azioni. Questi sono i tasti con cui il giocatore inizia prima di qualsiasi personalizzazione.
 
-### Simple Key Binding
+### Associazione Semplice di Tasto
 
 ```xml
 <preset>
@@ -162,19 +166,19 @@ The `<preset>` block assigns default keys to your actions. These are the keys th
 </preset>
 ```
 
-This binds the `Y` key as the default for `UAMyModOpenMenu`.
+Questo associa il tasto `Y` come predefinito per `UAMyModOpenMenu`.
 
-### No Predefinito Key
+### Nessun Tasto Predefinito
 
-Se omit an action from the `<preset>` block, it has no default binding. The player must manually assign a key in Settings > Controls. Questo e' appropriate for opzionale or advanced bindings.
+Se ometti un'azione dal blocco `<preset>`, non ha alcuna associazione predefinita. Il giocatore deve assegnare manualmente un tasto in Impostazioni > Controlli. Questo è appropriato per associazioni opzionali o avanzate.
 
 ---
 
 ## Combinazioni con Modificatori
 
-To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
+Per richiedere un tasto modificatore (Ctrl, Shift, Alt), annida gli elementi `<btn>`:
 
-### Ctrl + Left Mouse Button
+### Ctrl + Tasto Sinistro del Mouse
 
 ```xml
 <input name="eAISetWaypoint">
@@ -184,9 +188,9 @@ To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
 </input>
 ```
 
-The outer `<btn>` is the modifier; the inner `<btn>` is the principale key. The player must hold the modifier and then press the principale key.
+Il `<btn>` esterno è il modificatore; il `<btn>` interno è il tasto principale. Il giocatore deve tenere premuto il modificatore e poi premere il tasto principale.
 
-### Shift + Key
+### Shift + Tasto
 
 ```xml
 <input name="UAMyModQuickAction">
@@ -198,15 +202,15 @@ The outer `<btn>` is the modifier; the inner `<btn>` is the principale key. The 
 
 ### Regole di Annidamento
 
-- The **outer** `<btn>` is always the modifier (held down)
-- The **inner** `<btn>` is the trigger (pressed while modifier is held)
-- Only one level of nesting is typical; deeper nesting is untested and not consigliato
+- Il `<btn>` **esterno** è sempre il modificatore (tenuto premuto)
+- Il `<btn>` **interno** è il trigger (premuto mentre il modificatore è tenuto)
+- Solo un livello di annidamento è tipico; un annidamento più profondo non è testato e non è consigliato
 
 ---
 
 ## Input Nascosti
 
-Use `visible="false"` to register an input that the player cannot vedi or rebind in the Controls menu. Questo e' useful for internal inputs used by your mod's code that should not be player-configurable.
+Usa `visible="false"` per registrare un input che il giocatore non può vedere o riassegnare nel menù Controlli. Questo è utile per input interni usati dal codice della tua mod che non dovrebbero essere configurabili dal giocatore.
 
 ```xml
 <actions>
@@ -215,7 +219,7 @@ Use `visible="false"` to register an input that the player cannot vedi or rebind
 </actions>
 ```
 
-Hidden inputs can still have default key assignments in the `<preset>` block:
+Gli input nascosti possono comunque avere assegnazioni di tasti predefinite nel blocco `<preset>`:
 
 ```xml
 <preset>
@@ -229,7 +233,7 @@ Hidden inputs can still have default key assignments in the `<preset>` block:
 
 ## Tasti Predefiniti Multipli
 
-An action can have multiple default keys. List multiple `<btn>` elements as siblings:
+Un'azione può avere più tasti predefiniti. Elenca più elementi `<btn>` come fratelli:
 
 ```xml
 <input name="UAExpansionConfirm">
@@ -238,23 +242,23 @@ An action can have multiple default keys. List multiple `<btn>` elements as sibl
 </input>
 ```
 
-Entrambi `Enter` and `Numpad Enter` will trigger `UAExpansionConfirm`. Questo e' useful for actions where multiple physical keys should map to the same logical action.
+Sia `Enter` che `Numpad Enter` attiveranno `UAExpansionConfirm`. Questo è utile per azioni in cui più tasti fisici dovrebbero corrispondere alla stessa azione logica.
 
 ---
 
 ## Accedere agli Input negli Script
 
-### Getting the Input API
+### Ottenere l'API di Input
 
-All input accesso goes through `GetUApi()`, which returns the global User Action API:
+Tutto l'accesso agli input passa tramite `GetUApi()`, che restituisce l'API globale User Action:
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyModOpenMenu");
 ```
 
-### Polling in OnUpdate
+### Interrogazione in OnUpdate
 
-Custom inputs are typically polled in `MissionGameplay.OnUpdate()` or similar per-frame callbacks:
+Gli input personalizzati vengono tipicamente interrogati in `MissionGameplay.OnUpdate()` o callback simili per-frame:
 
 ```c
 modded class MissionGameplay
@@ -267,16 +271,16 @@ modded class MissionGameplay
 
         if (input.LocalPress())
         {
-            // Key was just pressed this frame
+            // Il tasto è stato appena premuto in questo frame
             OpenMyModMenu();
         }
     }
 }
 ```
 
-### Alternative: Using the Input Name Directly
+### Alternativa: Usare il Nome dell'Input Direttamente
 
-Many mods check inputs inline using the `UAInputAPI` methods with string names:
+Molte mod controllano gli input inline usando i metodi `UAInputAPI` con nomi stringa:
 
 ```c
 override void OnUpdate(float timeslice)
@@ -292,26 +296,26 @@ override void OnUpdate(float timeslice)
 }
 ```
 
-The `false` parameter in `LocalPress("name", false)` indicates that the check should not consume the input event.
+Il parametro `false` in `LocalPress("name", false)` indica che il controllo non dovrebbe consumare l'evento di input.
 
 ---
 
 ## Riferimento dei Metodi di Input
 
-Once you have a `UAInput` reference (from `GetUApi().GetInputByName()`), or are using the `Input` class directly, these methods detect different input states:
+Una volta ottenuto un riferimento `UAInput` (da `GetUApi().GetInputByName()`), o usando direttamente la classe `Input`, questi metodi rilevano diversi stati di input:
 
-| Metodo | Restituisce | Quando Vero |
-|--------|---------|-----------|
-| `LocalPress()` | `bool` | The key was pressed **this frame** (single trigger on key-down) |
-| `LocalRelease()` | `bool` | The key was released **this frame** (single trigger on key-up) |
-| `LocalClick()` | `bool` | The key was pressed and released quickly (tap) |
-| `LocalHold()` | `bool` | The key has been held down for a threshold duration |
-| `LocalDoubleClick()` | `bool` | The key was tapped twice quickly |
-| `LocalValue()` | `float` | Current analog value (0.0 or 1.0 for digital keys; variable for analog axes) |
+| Metodo | Restituisce | Quando è Vero |
+|--------|-------------|---------------|
+| `LocalPress()` | `bool` | Il tasto è stato premuto **in questo frame** (trigger singolo alla pressione) |
+| `LocalRelease()` | `bool` | Il tasto è stato rilasciato **in questo frame** (trigger singolo al rilascio) |
+| `LocalClick()` | `bool` | Il tasto è stato premuto e rilasciato rapidamente (tap) |
+| `LocalHold()` | `bool` | Il tasto è stato tenuto premuto per una durata soglia |
+| `LocalDoubleClick()` | `bool` | Il tasto è stato premuto due volte rapidamente |
+| `LocalValue()` | `float` | Valore analogico corrente (0.0 o 1.0 per tasti digitali; variabile per assi analogici) |
 
-### Usage Patterns
+### Pattern di Utilizzo
 
-**Toggle on press:**
+**Toggle alla pressione:**
 ```c
 if (input.LocalPress("UAMyModToggle", false))
 {
@@ -319,7 +323,7 @@ if (input.LocalPress("UAMyModToggle", false))
 }
 ```
 
-**Hold to activate, release to deactivate:**
+**Tieni per attivare, rilascia per disattivare:**
 ```c
 if (input.LocalPress("eAICommandMenu", false))
 {
@@ -332,7 +336,7 @@ if (input.LocalRelease("eAICommandMenu", false) || input.LocalValue("eAICommandM
 }
 ```
 
-**Double-tap action:**
+**Azione con doppio tap:**
 ```c
 if (input.LocalDoubleClick("UAMyModSpecial", false))
 {
@@ -340,7 +344,7 @@ if (input.LocalDoubleClick("UAMyModSpecial", false))
 }
 ```
 
-**Hold for extended action:**
+**Tenere premuto per azione estesa:**
 ```c
 if (input.LocalHold("UAExpansionGPSToggle"))
 {
@@ -354,19 +358,19 @@ if (input.LocalHold("UAExpansionGPSToggle"))
 
 ### ForceDisable
 
-Temporarily disables a specific input. Commonly used when opening menus to prevent game actions from firing while a UI is active:
+Disabilita temporaneamente un input specifico. Usato comunemente quando si aprono menù per impedire che le azioni di gioco si attivino mentre un'UI è attiva:
 
 ```c
-// Disable the input while menu is open
+// Disabilita l'input mentre il menù è aperto
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(true);
 
-// Re-enable when menu closes
+// Riabilita quando il menù si chiude
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(false);
 ```
 
 ### SupressNextFrame
 
-Suppresses all input processing for the next frame. Used during input context transitions (e.g., closing menus) to prevent one-frame input bleed:
+Sopprime tutta l'elaborazione degli input per il frame successivo. Usato durante le transizioni di contesto degli input (es. chiusura di menù) per prevenire la perdita di input di un frame:
 
 ```c
 GetUApi().SupressNextFrame(true);
@@ -374,22 +378,22 @@ GetUApi().SupressNextFrame(true);
 
 ### UpdateControls
 
-After modifying input states, call `UpdateControls()` to apply changes immediately:
+Dopo aver modificato gli stati degli input, chiama `UpdateControls()` per applicare le modifiche immediatamente:
 
 ```c
 GetUApi().GetInputByName("UAExpansionBookToggle").ForceDisable(false);
 GetUApi().UpdateControls();
 ```
 
-### Input Excludes
+### Esclusioni degli Input
 
-The vanilla mission system provides exclude groups. When a menu is active, you can exclude categories of inputs:
+Il sistema di missione vanilla fornisce gruppi di esclusione. Quando un menù è attivo, puoi escludere categorie di input:
 
 ```c
-// Suppress gameplay inputs while inventory is open
+// Sopprimi gli input di gameplay mentre l'inventario è aperto
 AddActiveInputExcludes({"inventory"});
 
-// Restore when closing
+// Ripristina alla chiusura
 RemoveActiveInputExcludes({"inventory"});
 ```
 
@@ -397,46 +401,46 @@ RemoveActiveInputExcludes({"inventory"});
 
 ## Riferimento dei Nomi dei Tasti
 
-Key names used in the `<btn name="">` attribute follow a specific naming convention. Ecco il complete reference.
+I nomi dei tasti usati nell'attributo `<btn name="">` seguono una convenzione di denominazione specifica. Ecco il riferimento completo.
 
-### Keyboard Keys
+### Tasti della Tastiera
 
-| Category | Key Names |
-|----------|-----------|
-| Letters | `kA`, `kB`, `kC`, `kD`, `kE`, `kF`, `kG`, `kH`, `kI`, `kJ`, `kK`, `kL`, `kM`, `kN`, `kO`, `kP`, `kQ`, `kR`, `kS`, `kT`, `kU`, `kV`, `kW`, `kX`, `kY`, `kZ` |
-| Numbers (top row) | `k0`, `k1`, `k2`, `k3`, `k4`, `k5`, `k6`, `k7`, `k8`, `k9` |
-| Function keys | `kF1`, `kF2`, `kF3`, `kF4`, `kF5`, `kF6`, `kF7`, `kF8`, `kF9`, `kF10`, `kF11`, `kF12` |
-| Modifiers | `kLControl`, `kRControl`, `kLShift`, `kRShift`, `kLAlt`, `kRAlt` |
-| Navigation | `kUp`, `kDown`, `kLeft`, `kRight`, `kHome`, `kEnd`, `kPageUp`, `kPageDown` |
+| Categoria | Nomi dei Tasti |
+|-----------|---------------|
+| Lettere | `kA`, `kB`, `kC`, `kD`, `kE`, `kF`, `kG`, `kH`, `kI`, `kJ`, `kK`, `kL`, `kM`, `kN`, `kO`, `kP`, `kQ`, `kR`, `kS`, `kT`, `kU`, `kV`, `kW`, `kX`, `kY`, `kZ` |
+| Numeri (riga superiore) | `k0`, `k1`, `k2`, `k3`, `k4`, `k5`, `k6`, `k7`, `k8`, `k9` |
+| Tasti funzione | `kF1`, `kF2`, `kF3`, `kF4`, `kF5`, `kF6`, `kF7`, `kF8`, `kF9`, `kF10`, `kF11`, `kF12` |
+| Modificatori | `kLControl`, `kRControl`, `kLShift`, `kRShift`, `kLAlt`, `kRAlt` |
+| Navigazione | `kUp`, `kDown`, `kLeft`, `kRight`, `kHome`, `kEnd`, `kPageUp`, `kPageDown` |
 | Editing | `kReturn`, `kBackspace`, `kDelete`, `kInsert`, `kSpace`, `kTab`, `kEscape` |
-| Numpad | `kNumpad0` ... `kNumpad9`, `kNumpadEnter`, `kNumpadPlus`, `kNumpadMinus`, `kNumpadMultiply`, `kNumpadDivide`, `kNumpadDecimal` |
-| Punctuation | `kMinus`, `kEquals`, `kLBracket`, `kRBracket`, `kBackslash`, `kSemicolon`, `kApostrophe`, `kComma`, `kPeriod`, `kSlash`, `kGrave` |
-| Locks | `kCapsLock`, `kNumLock`, `kScrollLock` |
+| Tastierino numerico | `kNumpad0` ... `kNumpad9`, `kNumpadEnter`, `kNumpadPlus`, `kNumpadMinus`, `kNumpadMultiply`, `kNumpadDivide`, `kNumpadDecimal` |
+| Punteggiatura | `kMinus`, `kEquals`, `kLBracket`, `kRBracket`, `kBackslash`, `kSemicolon`, `kApostrophe`, `kComma`, `kPeriod`, `kSlash`, `kGrave` |
+| Blocchi | `kCapsLock`, `kNumLock`, `kScrollLock` |
 
-### Mouse Buttons
+### Pulsanti del Mouse
 
-| Name | Button |
-|------|--------|
-| `mBLeft` | Left mouse button |
-| `mBRight` | Right mouse button |
-| `mBMiddle` | Middle mouse button (scroll wheel click) |
-| `mBExtra1` | Mouse button 4 (side button back) |
-| `mBExtra2` | Mouse button 5 (side button forward) |
+| Nome | Pulsante |
+|------|----------|
+| `mBLeft` | Pulsante sinistro del mouse |
+| `mBRight` | Pulsante destro del mouse |
+| `mBMiddle` | Pulsante centrale del mouse (clic della rotella) |
+| `mBExtra1` | Pulsante mouse 4 (pulsante laterale indietro) |
+| `mBExtra2` | Pulsante mouse 5 (pulsante laterale avanti) |
 
-### Mouse Axes
+### Assi del Mouse
 
-| Name | Axis |
+| Nome | Asse |
 |------|------|
-| `mAxisX` | Mouse horizontal movement |
-| `mAxisY` | Mouse vertical movement |
-| `mWheelUp` | Scroll wheel up |
-| `mWheelDown` | Scroll wheel down |
+| `mAxisX` | Movimento orizzontale del mouse |
+| `mAxisY` | Movimento verticale del mouse |
+| `mWheelUp` | Rotella di scorrimento su |
+| `mWheelDown` | Rotella di scorrimento giù |
 
-### Naming Pattern
+### Pattern di Denominazione
 
-- **Keyboard**: `k` prefix + key name (e.g., `kT`, `kF5`, `kLControl`)
-- **Mouse buttons**: `mB` prefix + button name (e.g., `mBLeft`, `mBRight`)
-- **Mouse axes**: `m` prefix + axis name (e.g., `mAxisX`, `mWheelUp`)
+- **Tastiera**: prefisso `k` + nome del tasto (es. `kT`, `kF5`, `kLControl`)
+- **Pulsanti mouse**: prefisso `mB` + nome del pulsante (es. `mBLeft`, `mBRight`)
+- **Assi mouse**: prefisso `m` + nome dell'asse (es. `mAxisX`, `mWheelUp`)
 
 ---
 
@@ -444,7 +448,7 @@ Key names used in the `<btn name="">` attribute follow a specific naming convent
 
 ### DayZ Expansion AI
 
-A well-structured inputs.xml with visible keybindings, hidden debug inputs, and modifier combos:
+Un inputs.xml ben strutturato con associazioni visibili, input di debug nascosti e combinazioni con modificatori:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -498,14 +502,14 @@ A well-structured inputs.xml with visible keybindings, hidden debug inputs, and 
 </modded_inputs>
 ```
 
-Key observations:
-- `eAICommandMenu` bound to `T` --- visible in settings, player can rebind
-- `eAISetWaypoint` uses a **Ctrl + Left Click** modifier combo
-- Test inputs are `visible="false"` --- hidden from players but accessible in code
+Osservazioni chiave:
+- `eAICommandMenu` associato a `T` --- visibile nelle impostazioni, il giocatore può riassegnarlo
+- `eAISetWaypoint` usa una combinazione modificatore **Ctrl + Clic Sinistro**
+- Gli input di test sono `visible="false"` --- nascosti ai giocatori ma accessibili nel codice
 
 ### DayZ Expansion Market
 
-A minimal inputs.xml for a hidden utility input with multiple default keys:
+Un inputs.xml minimale per un input di utilità nascosto con più tasti predefiniti:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -524,14 +528,14 @@ A minimal inputs.xml for a hidden utility input with multiple default keys:
 </modded_inputs>
 ```
 
-Key observations:
-- Hidden input (`visible="false"`) with empty `loc` --- never shown in settings
-- Two default keys: both Enter and Numpad Enter trigger the same action
-- No `<sorting>` block --- not needed since the input is hidden
+Osservazioni chiave:
+- Input nascosto (`visible="false"`) con `loc` vuoto --- mai mostrato nelle impostazioni
+- Due tasti predefiniti: sia Enter che Numpad Enter attivano la stessa azione
+- Nessun blocco `<sorting>` --- non necessario dato che l'input è nascosto
 
-### Complete Starter Template
+### Template Iniziale Completo
 
-A minimal but complete template for a new mod:
+Un template minimale ma completo per una nuova mod:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -551,12 +555,12 @@ A minimal but complete template for a new mod:
         <input name="UAMyModOpenMenu">
             <btn name="kF6"/>
         </input>
-        <!-- UAMyModQuickAction has no default key; player must bind it -->
+        <!-- UAMyModQuickAction non ha tasto predefinito; il giocatore deve assegnarlo -->
     </preset>
 </modded_inputs>
 ```
 
-With a corresponding stringtable.csv:
+Con un corrispondente stringtable.csv:
 
 ```csv
 "Language","original","english"
@@ -569,35 +573,78 @@ With a corresponding stringtable.csv:
 
 ## Errori Comuni
 
-### Using `#` in the loc Attribute
+### Usare `#` nell'Attributo loc
 
 ```xml
-<!-- WRONG -->
+<!-- SBAGLIATO -->
 <input name="UAMyAction" loc="#STR_MYMOD_ACTION" />
 
-<!-- CORRECT -->
+<!-- CORRETTO -->
 <input name="UAMyAction" loc="STR_MYMOD_ACTION" />
 ```
 
-The input system prepends `#` internally. Adding it yourself causes a double-prefix and the lookup fails.
+Il sistema di input antepone `#` internamente. Aggiungerlo tu stesso causa un doppio prefisso e la ricerca fallisce.
 
-### Action Name Collisions
+### Collisioni di Nomi delle Azioni
 
-If two mods define `UAOpenMenu`, only one will work. Sempre use your mod prefix:
+Se due mod definiscono `UAOpenMenu`, solo una funzionerà. Usa sempre il prefisso della tua mod:
 
 ```xml
-<input name="UAMyModOpenMenu" />     <!-- Good -->
-<input name="UAOpenMenu" />          <!-- Risky -->
+<input name="UAMyModOpenMenu" />     <!-- Bene -->
+<input name="UAOpenMenu" />          <!-- Rischioso -->
 ```
 
-### Missing Sorting Entry
+### Voce di Sorting Mancante
 
-Se define an action in `<actions>` but forget to list it in `<sorting>`, the action works in code but is invisible in the Controls menu. The player has no way to rebind it.
+Se definisci un'azione in `<actions>` ma dimentichi di elencarla in `<sorting>`, l'azione funziona nel codice ma è invisibile nel menù Controlli. Il giocatore non ha modo di riassegnarla.
 
-### Forgetting to Define in Actions
+### Dimenticare di Definire nelle Actions
 
-Se list an input in `<sorting>` or `<preset>` but never define it in `<actions>`, the engine silently ignores it.
+Se elenchi un input in `<sorting>` o `<preset>` ma non lo definisci mai in `<actions>`, il motore lo ignora silenziosamente.
 
-### Binding Conflicting Keys
+### Assegnare Tasti in Conflitto
 
-Choosing keys that conflict with vanilla bindings (like `W`, `A`, `S`, `D`, `Tab`, `I`) causes both your action and the vanilla action to fire simultaneously. Use less common keys (F5-F12, numpad keys) or modifier combos for safety.
+Scegliere tasti che entrano in conflitto con le associazioni vanilla (come `W`, `A`, `S`, `D`, `Tab`, `I`) causa l'attivazione simultanea sia della tua azione che di quella vanilla. Usa tasti meno comuni (F5-F12, tasti del tastierino numerico) o combinazioni con modificatori per sicurezza.
+
+---
+
+## Buone Pratiche
+
+- Aggiungi sempre il prefisso `UA` + nome della tua mod ai nomi delle azioni (es. `UAMyModOpenMenu`). Nomi generici come `UAOpenMenu` entreranno in collisione con altre mod.
+- Fornisci un attributo `loc` per ogni input visibile e definisci la chiave stringtable corrispondente. Senza di esso, il menù Controlli mostra il nome grezzo dell'azione.
+- Scegli tasti predefiniti poco comuni (F5-F12, tastierino numerico) o combinazioni con modificatori (Ctrl+tasto) per minimizzare i conflitti con le associazioni vanilla e delle mod popolari.
+- Elenca sempre gli input visibili nel blocco `<sorting>`. Un input definito in `<actions>` ma mancante da `<sorting>` è invisibile al giocatore e non può essere riassegnato.
+- Memorizza nella cache il riferimento `UAInput` da `GetUApi().GetInputByName()` in una variabile membro anziché chiamarlo ogni frame in `OnUpdate`. La ricerca per stringa ha un costo.
+
+---
+
+## Teoria vs Pratica
+
+> Cosa dice la documentazione rispetto a come funzionano effettivamente le cose a runtime.
+
+| Concetto | Teoria | Realtà |
+|----------|--------|--------|
+| `visible="false"` nasconde dal menù Controlli | L'input è registrato ma invisibile | Gli input nascosti appaiono comunque nell'elenco del blocco `<sorting>` in alcune versioni di DayZ. Ometterlo dal `<sorting>` è il modo affidabile per nascondere gli input |
+| `LocalPress()` si attiva una volta alla pressione | Trigger singolo nel frame in cui il tasto viene premuto | Se il gioco ha un singhiozzo (FPS bassi), `LocalPress()` può essere completamente mancato. Per azioni critiche, controlla anche `LocalValue() > 0` come fallback |
+| Combinazioni con modificatori tramite `<btn>` annidati | L'esterno è il modificatore, l'interno è il trigger | Il tasto modificatore da solo registra anche una pressione sul suo input (es. `kLControl` è anche l'accovacciamento vanilla). I giocatori che tengono Ctrl+Clic si accovacceranno anche |
+| `ForceDisable(true)` sopprime l'input | L'input è completamente ignorato | `ForceDisable` persiste fino a quando non viene esplicitamente riabilitato. Se la tua mod va in crash o l'UI si chiude senza chiamare `ForceDisable(false)`, l'input resta disabilitato fino al riavvio del gioco |
+| Più `<btn>` fratelli | Entrambi i tasti attivano la stessa azione | Funziona correttamente, ma il menù Controlli mostra solo il primo tasto. Il giocatore può vedere e riassegnare il primo tasto ma potrebbe non rendersi conto che il secondo predefinito esiste |
+
+---
+
+## Compatibilità e Impatto
+
+- **Multi-Mod:** Le collisioni dei nomi delle azioni sono il rischio principale. Se due mod definiscono `UAOpenMenu`, solo una funziona e il conflitto è silenzioso. Non c'è alcun avvertimento del motore per nomi di azioni duplicati tra mod.
+- **Prestazioni:** L'interrogazione degli input tramite `GetUApi().GetInputByName()` comporta una ricerca hash per stringa. Interrogare 5-10 input per frame è trascurabile, ma memorizzare nella cache il riferimento `UAInput` è comunque consigliato per mod con molti input.
+- **Versione:** Il formato `inputs.xml` e la struttura `<modded_inputs>` sono stabili da DayZ 1.0. L'attributo `visible` è stato aggiunto successivamente (intorno alla 1.08) -- nelle versioni precedenti, tutti gli input sono sempre visibili nel menù Controlli.
+
+---
+
+## Osservato nelle Mod Reali
+
+| Pattern | Mod | Dettaglio |
+|---------|-----|-----------|
+| Combinazione modificatore `Ctrl+Clic` | Expansion AI | `eAISetWaypoint` usa `<btn name="kLControl"><btn name="mBLeft"/>` annidati per Ctrl+Clic Sinistro per piazzare waypoint IA |
+| Input di utilità nascosti | Expansion Market | `UAExpansionConfirm` è `visible="false"` con doppio tasto (Enter + Numpad Enter) per logica di conferma interna |
+| `ForceDisable` all'apertura del menù | COT, VPP | I pannelli admin chiamano `ForceDisable(true)` sugli input di gameplay quando il pannello si apre, e `ForceDisable(false)` alla chiusura per prevenire il movimento del personaggio durante la digitazione |
+| `UAInput` memorizzato in variabile membro | DabsFramework | Memorizza il risultato di `GetUApi().GetInputByName()` in un campo della classe durante l'inizializzazione, interroga il riferimento memorizzato in `OnUpdate` per evitare la ricerca per stringa ad ogni frame |

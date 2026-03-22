@@ -1,47 +1,49 @@
-# Chapter 5.5: Server Configuration Files
+# Глава 5.5: Конфигурационные файлы сервера
 
-[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
+[Главная](../../README.md) | [<< Назад: Формат ImageSet](04-imagesets.md) | **Конфигурационные файлы сервера** | [Далее: Конфигурация спавна и экипировки >>](06-spawning-gear.md)
 
 ---
+
+> **Краткое содержание:** Серверы DayZ настраиваются через файлы XML, JSON и скрипты в папке миссии (например, `mpmissions/dayzOffline.chernarusplus/`). Эти файлы управляют спавном предметов, поведением экономики, правилами геймплея и идентификацией сервера. Их понимание необходимо для добавления пользовательских предметов в экономику лута, настройки параметров сервера или создания пользовательской миссии.
 
 ---
 
 ## Содержание
 
-- [Overview](#overview)
-- [init.c --- Mission Entry Point](#initc--mission-entry-point)
-- [types.xml --- Item Spawn Definitions](#typesxml--item-spawn-definitions)
-- [cfgspawnabletypes.xml --- Attachments and Cargo](#cfgspawnabletypesxml--attachments-and-cargo)
-- [cfgrandompresets.xml --- Reusable Loot Pools](#cfgrandompresetsxml--reusable-loot-pools)
-- [globals.xml --- Economy Parameters](#globalsxml--economy-parameters)
-- [cfggameplay.json --- Gameplay Settings](#cfggameplayjson--gameplay-settings)
-- [serverDZ.cfg --- Server Settings](#serverdzcfg--server-settings)
-- [How Mods Interact with the Economy](#how-mods-interact-with-the-economy)
-- [Common Mistakes](#common-mistakes)
+- [Обзор](#обзор)
+- [init.c --- Точка входа миссии](#initc----точка-входа-миссии)
+- [types.xml --- Определения спавна предметов](#typesxml----определения-спавна-предметов)
+- [cfgspawnabletypes.xml --- Вложения и груз](#cfgspawnabletypesxml----вложения-и-груз)
+- [cfgrandompresets.xml --- Повторно используемые пулы лута](#cfgrandompresetsxml----повторно-используемые-пулы-лута)
+- [globals.xml --- Параметры экономики](#globalsxml----параметры-экономики)
+- [cfggameplay.json --- Настройки геймплея](#cfggameplayjson----настройки-геймплея)
+- [serverDZ.cfg --- Настройки сервера](#serverdzcfg----настройки-сервера)
+- [Как моды взаимодействуют с экономикой](#как-моды-взаимодействуют-с-экономикой)
+- [Распространённые ошибки](#распространённые-ошибки)
 
 ---
 
 ## Обзор
 
-Каждый сервер DayZ загружает конфигурацию из **папки миссии**. Файлы Центральной экономики (CE) определяют, какие предметы спавнятся, где и на какое время. Сам исполняемый файл сервера настраивается через `serverDZ.cfg`, который находится рядом с исполняемым файлом.
+Каждый сервер DayZ загружает свою конфигурацию из **папки миссии**. Файлы Центральной экономики (CE) определяют, какие предметы спавнятся, где и как долго. Сам исполняемый файл сервера настраивается через `serverDZ.cfg`, который находится рядом с исполняемым файлом.
 
 | Файл | Назначение |
-|------|---------|
-| `init.c` | Mission entry point --- Hive init, date/time, spawn loadout |
-| `db/types.xml` | Item spawn definitions: quantities, lifetimes, locations |
-| `cfgspawnabletypes.xml` | Pre-attached items and cargo on spawned entities |
-| `cfgrandompresets.xml` | Reusable item pools for cfgspawnabletypes |
-| `db/globals.xml` | Global economy parameters: max counts, cleanup timers |
-| `cfggameplay.json` | Gameplay tuning: stamina, base building, UI |
-| `cfgeconomycore.xml` | Root class registration and CE logging |
-| `cfglimitsdefinition.xml` | Valid category, usage, and value tag definitions |
-| `serverDZ.cfg` | Server name, password, max players, mod loading |
+|------|------------|
+| `init.c` | Точка входа миссии --- инициализация Hive, дата/время, экипировка спавна |
+| `db/types.xml` | Определения спавна предметов: количества, времена жизни, локации |
+| `cfgspawnabletypes.xml` | Предустановленные вложения и груз на заспавненных сущностях |
+| `cfgrandompresets.xml` | Повторно используемые пулы предметов для cfgspawnabletypes |
+| `db/globals.xml` | Глобальные параметры экономики: максимальные количества, таймеры очистки |
+| `cfggameplay.json` | Настройка геймплея: выносливость, строительство баз, UI |
+| `cfgeconomycore.xml` | Регистрация корневых классов и логирование CE |
+| `cfglimitsdefinition.xml` | Определения допустимых тегов категорий, использования и значений |
+| `serverDZ.cfg` | Имя сервера, пароль, максимум игроков, загрузка модов |
 
 ---
 
 ## init.c --- Точка входа миссии
 
-The `init.c` script is the first thing the server executes. It initializes the Central Economy and creates the mission instance.
+Скрипт `init.c` --- первое, что сервер выполняет. Он инициализирует Центральную экономику и создаёт экземпляр миссии.
 
 ```c
 void main()
@@ -82,13 +84,13 @@ Mission CreateCustomMission(string path)
 }
 ```
 
-The `Hive` manages the CE database. Without `CreateHive()`, no items spawn and persistence is disabled. `CreateCharacter` creates the player entity at spawn, and `StartingEquipSetup` defines the items a fresh character receives. Other useful `MissionServer` overrides include `OnInit()`, `OnUpdate()`, `InvokeOnConnect()`, and `InvokeOnDisconnect()`.
+`Hive` управляет базой данных CE. Без `CreateHive()` предметы не спавнятся и персистентность отключена. `CreateCharacter` создаёт сущность игрока при спавне, а `StartingEquipSetup` определяет предметы, которые получает свежий персонаж. Другие полезные переопределения `MissionServer` включают `OnInit()`, `OnUpdate()`, `InvokeOnConnect()` и `InvokeOnDisconnect()`.
 
 ---
 
 ## types.xml --- Определения спавна предметов
 
-Расположенный в `db/types.xml`, этот файл --- сердце CE. Каждый предмет, который может появиться, должен иметь здесь запись.
+Находится в `db/types.xml` --- это сердце CE. Каждый предмет, который может спавниться, должен иметь запись здесь.
 
 ### Полная запись
 
@@ -110,51 +112,51 @@ The `Hive` manages the CE database. Without `CreateHive()`, no items spawn and p
 </type>
 ```
 
-### Справка по полям
+### Справочник полей
 
 | Поле | Описание |
-|-------|-------------|
-| `nominal` | Целевое количество на карте. CE spawns items until this is reached |
-| `min` | Минимальное количество до пополнения CE |
-| `lifetime` | Секунды нахождения предмета на земле до исчезновения |
-| `restock` | Минимальные секунды между попытками пополнения (0 = immediate) |
-| `quantmin/quantmax` | Fill percentage for items with quantity (magazines, bottles). Use `-1` for items without quantity |
-| `cost` | Приоритетный вес CE (higher = prioritized). Most items use `100` |
+|------|----------|
+| `nominal` | Целевое количество на карте. CE спавнит предметы, пока не достигнет этого числа |
+| `min` | Минимальное количество, после которого CE запускает пополнение |
+| `lifetime` | Секунды существования предмета на земле до исчезновения |
+| `restock` | Минимальное количество секунд между попытками пополнения (0 = немедленно) |
+| `quantmin/quantmax` | Процент заполнения для предметов с количеством (магазины, бутылки). Используйте `-1` для предметов без количества |
+| `cost` | Весовой приоритет CE (выше = приоритетнее). Большинство предметов используют `100` |
 
 ### Флаги
 
 | Флаг | Назначение |
-|------|---------|
-| `count_in_cargo` | Считать предметы в контейнерах к номиналу |
-| `count_in_hoarder` | Считать предметы в тайниках/палатках/бочках к номиналу |
-| `count_in_map` | Считать предметы на земле к номиналу |
-| `count_in_player` | Считать предметы в инвентаре игрока к номиналу |
+|------|------------|
+| `count_in_cargo` | Считать предметы внутри контейнеров для nominal |
+| `count_in_hoarder` | Считать предметы в тайниках/палатках/бочках для nominal |
+| `count_in_map` | Считать предметы на земле для nominal |
+| `count_in_player` | Считать предметы в инвентаре игроков для nominal |
 | `crafted` | Предмет только крафтится, не спавнится естественным образом |
-| `deloot` | Лут динамических событий (heli crashes, etc.) |
+| `deloot` | Лут динамических событий (крушения вертолётов и т.д.) |
 
-### Теги категорий, использования и значений
+### Теги Category, Usage и Value
 
-These tags control **where** items spawn:
+Эти теги управляют тем, **где** спавнятся предметы:
 
-- **`category`** --- Item type. Vanilla: `tools`, `containers`, `clothes`, `food`, `weapons`, `books`, `explosives`, `lootdispatch`.
-- **`usage`** --- Building types. Vanilla: `Military`, `Police`, `Medic`, `Firefighter`, `Industrial`, `Farm`, `Coast`, `Town`, `Village`, `Hunting`, `Office`, `School`, `Prison`, `ContaminatedArea`, `Historical`.
-- **`value`** --- Map tier zones. Vanilla: `Tier1` (coast), `Tier2` (inland), `Tier3` (military), `Tier4` (deep military), `Unique`.
+- **`category`** --- Тип предмета. Ванильные: `tools`, `containers`, `clothes`, `food`, `weapons`, `books`, `explosives`, `lootdispatch`.
+- **`usage`** --- Типы зданий. Ванильные: `Military`, `Police`, `Medic`, `Firefighter`, `Industrial`, `Farm`, `Coast`, `Town`, `Village`, `Hunting`, `Office`, `School`, `Prison`, `ContaminatedArea`, `Historical`.
+- **`value`** --- Тировые зоны карты. Ванильные: `Tier1` (побережье), `Tier2` (внутренние районы), `Tier3` (военные), `Tier4` (глубокие военные), `Unique`.
 
-Multiple tags can be combined. No `usage` tags = item will not spawn. No `value` tags = spawns in all tiers.
+Можно комбинировать несколько тегов. Отсутствие тегов `usage` = предмет не заспавнится. Отсутствие тегов `value` = спавнится во всех тирах.
 
 ### Отключение предмета
 
-Set `nominal=0` and `min=0`. The item never spawns but can still exist through scripts or crafting.
+Установите `nominal=0` и `min=0`. Предмет никогда не спавнится, но может существовать через скрипты или крафт.
 
 ---
 
 ## cfgspawnabletypes.xml --- Вложения и груз
 
-Controls what spawns **already attached to or inside** other items.
+Управляет тем, что спавнится **уже прикреплённым или внутри** других предметов.
 
 ### Маркировка хранилищ
 
-Storage containers are tagged so the CE knows they hold player items:
+Контейнеры для хранения помечаются, чтобы CE знала, что они содержат предметы игроков:
 
 ```xml
 <type name="SeaChest">
@@ -170,7 +172,7 @@ Storage containers are tagged so the CE knows they hold player items:
 </type>
 ```
 
-Values range from `0.0` (pristine) to `1.0` (ruined).
+Значения варьируются от `0.0` (отличное) до `1.0` (разрушено).
 
 ### Вложения
 
@@ -186,7 +188,7 @@ Values range from `0.0` (pristine) to `1.0` (ruined).
 </type>
 ```
 
-The outer `chance` determines if the attachment group is evaluated. The inner `chance` selects the specific item when multiple items are listed in one group.
+Внешний `chance` определяет, будет ли группа вложений обработана. Внутренний `chance` выбирает конкретный предмет, когда в одной группе перечислено несколько предметов.
 
 ### Пресеты груза
 
@@ -198,13 +200,13 @@ The outer `chance` determines if the attachment group is evaluated. The inner `c
 </type>
 ```
 
-Each line rolls the preset independently --- three lines means three separate chances.
+Каждая строка разыгрывает пресет независимо --- три строки означают три отдельных шанса.
 
 ---
 
-## cfgrandompresets.xml --- Переиспользуемые пулы лута
+## cfgrandompresets.xml --- Повторно используемые пулы лута
 
-Defines named item pools referenced by `cfgspawnabletypes.xml`:
+Определяет именованные пулы предметов, на которые ссылается `cfgspawnabletypes.xml`:
 
 ```xml
 <randompresets>
@@ -224,13 +226,13 @@ Defines named item pools referenced by `cfgspawnabletypes.xml`:
 </randompresets>
 ```
 
-The preset's `chance` is the overall probability anything spawns. If the roll succeeds, one item is selected from the pool based on individual item chances. To add modded items, create a new `cargo` block and reference it in `cfgspawnabletypes.xml`.
+`chance` пресета --- это общая вероятность того, что что-то заспавнится. Если розыгрыш успешен, один предмет выбирается из пула на основе индивидуальных шансов предметов. Чтобы добавить моддированные предметы, создайте новый блок `cargo` и сошлитесь на него в `cfgspawnabletypes.xml`.
 
 ---
 
 ## globals.xml --- Параметры экономики
 
-Located at `db/globals.xml`, this file sets global CE parameters:
+Находится в `db/globals.xml`, этот файл устанавливает глобальные параметры CE:
 
 ```xml
 <variables>
@@ -258,27 +260,27 @@ Located at `db/globals.xml`, this file sets global CE parameters:
 ### Ключевые переменные
 
 | Переменная | По умолчанию | Описание |
-|----------|---------|-------------|
+|------------|-------------|----------|
 | `AnimalMaxCount` | 200 | Максимум животных на карте |
-| `ZombieMaxCount` | 1000 | Максимум зараженных на карте |
-| `CleanupLifetimeDeadPlayer` | 3600 | Время удаления мертвых тел (секунды) |
-| `CleanupLifetimeRuined` | 330 | Время удаления разрушенных предметов |
-| `FlagRefreshFrequency` | 432000 | Интервал обновления флага территории (5 days) |
-| `FlagRefreshMaxDuration` | 3456000 | Максимальное время жизни флага (40 days) |
-| `FoodDecay` | 1 | Переключатель порчи еды (0=off, 1=on) |
-| `InitialSpawn` | 100 | Процент номинала при спавне на запуске |
-| `LootDamageMax` | 0.82 | Максимальный урон на спавненном луте |
-| `TimeLogin` / `TimeLogout` | 15 | Таймер входа/выхода (анти-комбат-лог) |
-| `TimePenalty` | 20 | Таймер штрафа за комбат-лог |
-| `ZoneSpawnDist` | 300 | Дистанция игрока для триггера спавна зомби/животных |
+| `ZombieMaxCount` | 1000 | Максимум заражённых на карте |
+| `CleanupLifetimeDeadPlayer` | 3600 | Время удаления мёртвого тела (секунды) |
+| `CleanupLifetimeRuined` | 330 | Время удаления разрушенного предмета |
+| `FlagRefreshFrequency` | 432000 | Интервал обновления флага территории (5 дней) |
+| `FlagRefreshMaxDuration` | 3456000 | Максимальное время жизни флага (40 дней) |
+| `FoodDecay` | 1 | Переключатель порчи еды (0=выкл, 1=вкл) |
+| `InitialSpawn` | 100 | Процент от nominal, спавнящийся при запуске |
+| `LootDamageMax` | 0.82 | Максимальный урон на заспавненном луте |
+| `TimeLogin` / `TimeLogout` | 15 | Таймер входа/выхода (анти-боевой-выход) |
+| `TimePenalty` | 20 | Штрафной таймер за боевой выход |
+| `ZoneSpawnDist` | 300 | Расстояние игрока, запускающее спавн зомби/животных |
 
-The `type` attribute is `0` for integer, `1` for float. Using the wrong type truncates the value.
+Атрибут `type` --- это `0` для целого числа, `1` для числа с плавающей точкой. Использование неверного типа обрезает значение.
 
 ---
 
 ## cfggameplay.json --- Настройки геймплея
 
-Загружается только при `enableCfgGameplayFile = 1` в `serverDZ.cfg`. Без этого движок использует жестко заданные значения по умолчанию.
+Загружается только когда `enableCfgGameplayFile = 1` установлен в `serverDZ.cfg`. Без этого движок использует жёстко заданные значения по умолчанию.
 
 ### Структура
 
@@ -325,7 +327,7 @@ The `type` attribute is `0` for integer, `1` for float. Using the wrong type tru
 }
 ```
 
-Key settings: `disableBaseDamage` prevents base damage, `disablePersonalLight` removes the fresh-spawn light, `staminaWeightLimitThreshold` is in grams (6000 = 6kg), temperature arrays have 12 values (January--December), `lightingConfig` accepts `0` (default) or `1` (darker nights), and `displayPlayerPosition` shows the player dot on the map.
+Ключевые настройки: `disableBaseDamage` предотвращает урон базам, `disablePersonalLight` убирает свет свежего спавна, `staminaWeightLimitThreshold` указывается в граммах (6000 = 6 кг), массивы температур имеют 12 значений (январь---декабрь), `lightingConfig` принимает `0` (по умолчанию) или `1` (более тёмные ночи), а `displayPlayerPosition` показывает точку игрока на карте.
 
 ---
 
@@ -349,14 +351,14 @@ storageAutoFix = 1;
 ```
 
 | Параметр | Описание |
-|-----------|-------------|
+|----------|----------|
 | `hostname` | Имя сервера в браузере |
 | `password` | Пароль для входа (пустой = открытый) |
-| `passwordAdmin` | Пароль администратора RCON |
+| `passwordAdmin` | Пароль RCON-администратора |
 | `maxPlayers` | Максимум одновременных игроков |
 | `template` | Имя папки миссии |
-| `verifySignatures` | Уровень проверки подписи (2 = strict) |
-| `enableCfgGameplayFile` | Load cfggameplay.json (0/1) |
+| `verifySignatures` | Уровень проверки подписей (2 = строгий) |
+| `enableCfgGameplayFile` | Загружать cfggameplay.json (0/1) |
 
 ### Загрузка модов
 
@@ -366,15 +368,15 @@ storageAutoFix = 1;
 DayZServer_x64.exe -config=serverDZ.cfg -mod=@CF;@MyMod -servermod=@MyServerMod -port=2302
 ```
 
-`-mod=` mods must be installed by clients. `-servermod=` mods run server-side only.
+Моды в `-mod=` должны быть установлены клиентами. Моды в `-servermod=` работают только на стороне сервера.
 
 ---
 
 ## Как моды взаимодействуют с экономикой
 
-### cfgeconomycore.xml --- Root Class Registration
+### cfgeconomycore.xml --- Регистрация корневых классов
 
-Every item class hierarchy must trace back to a registered root class:
+Иерархия каждого класса предметов должна восходить к зарегистрированному корневому классу:
 
 ```xml
 <economycore>
@@ -389,11 +391,11 @@ Every item class hierarchy must trace back to a registered root class:
 </economycore>
 ```
 
-If your mod introduces a new base class not inheriting from `Inventory_Base`, `DefaultWeapon`, or `DefaultMagazine`, add it as a `rootclass`. The `act` attribute specifies entity type: `character` for AI, `car` for vehicles.
+Если ваш мод вводит новый базовый класс, не наследующий от `Inventory_Base`, `DefaultWeapon` или `DefaultMagazine`, добавьте его как `rootclass`. Атрибут `act` указывает тип сущности: `character` для ИИ, `car` для транспорта.
 
-### cfglimitsdefinition.xml --- Custom Tags
+### cfglimitsdefinition.xml --- Пользовательские теги
 
-Any `category`, `usage`, or `value` used in `types.xml` must be defined here:
+Любой `category`, `usage` или `value`, используемый в `types.xml`, должен быть определён здесь:
 
 ```xml
 <lists>
@@ -409,11 +411,11 @@ Any `category`, `usage`, or `value` used in `types.xml` must be defined here:
 </lists>
 ```
 
-Use `cfglimitsdefinitionuser.xml` for additions that should not overwrite the vanilla file.
+Используйте `cfglimitsdefinitionuser.xml` для дополнений, которые не должны перезаписывать ванильный файл.
 
-### economy.xml --- Subsystem Control
+### economy.xml --- Управление подсистемами
 
-Controls which CE subsystems are active:
+Управляет тем, какие подсистемы CE активны:
 
 ```xml
 <economy>
@@ -424,11 +426,11 @@ Controls which CE subsystems are active:
 </economy>
 ```
 
-Flags: `init` (spawn on startup), `load` (load persistence), `respawn` (respawn after cleanup), `save` (persist to database).
+Флаги: `init` (спавн при запуске), `load` (загрузка персистентности), `respawn` (респавн после очистки), `save` (сохранение в базу данных).
 
-### Взаимодействие с экономикой на стороне скриптов
+### Взаимодействие с экономикой через скрипты
 
-Items created via `CreateInInventory()` are automatically CE-managed. For world spawns, use ECE flags:
+Предметы, созданные через `CreateInInventory()`, автоматически управляются CE. Для мировых спавнов используйте флаги ECE:
 
 ```c
 EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE);
@@ -436,65 +438,65 @@ EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE)
 
 ---
 
-## Типичные ошибки
+## Распространённые ошибки
 
-### Ошибки синтаксиса XML
+### Синтаксические ошибки XML
 
-Один незакрытый тег ломает весь файл. Всегда проверяйте XML перед развертыванием.
+Один незакрытый тег ломает весь файл. Всегда проверяйте XML перед развёртыванием.
 
-### Missing Tags in cfglimitsdefinition.xml
+### Отсутствующие теги в cfglimitsdefinition.xml
 
-Using a `usage` or `value` in types.xml that is not defined in cfglimitsdefinition.xml causes the item to silently fail to spawn. Check RPT logs for warnings.
+Использование `usage` или `value` в types.xml, которые не определены в cfglimitsdefinition.xml, приводит к тому, что предмет молча не спавнится. Проверяйте RPT-логи на предупреждения.
 
-### Nominal Too High
+### Слишком высокий nominal
 
-Total nominal across all items should stay below 10,000--15,000. Excessive values degrade server performance.
+Общий nominal по всем предметам должен оставаться ниже 10 000--15 000. Чрезмерные значения снижают производительность сервера.
 
-### Lifetime Too Short
+### Слишком короткий lifetime
 
-Items with very short lifetimes disappear before players find them. Use at least `3600` (1 hour) for common items, `28800` (8 hours) for weapons.
+Предметы с очень коротким временем жизни исчезают до того, как игроки их найдут. Используйте минимум `3600` (1 час) для обычных предметов, `28800` (8 часов) для оружия.
 
-### Missing Root Class
+### Отсутствующий корневой класс
 
-Items whose class hierarchy does not trace to a registered root class in `cfgeconomycore.xml` will never spawn, even with correct types.xml entries.
+Предметы, чья иерархия классов не восходит к зарегистрированному корневому классу в `cfgeconomycore.xml`, никогда не заспавнятся, даже с правильными записями в types.xml.
 
-### cfggameplay.json Not Enabled
+### cfggameplay.json не включён
 
-The file is ignored unless `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+Файл игнорируется, если `enableCfgGameplayFile = 1` не установлен в `serverDZ.cfg`.
 
-### Wrong type in globals.xml
+### Неверный type в globals.xml
 
-Using `type="0"` (integer) for a float value like `0.82` truncates it to `0`. Use `type="1"` for floats.
+Использование `type="0"` (целое число) для значения с плавающей точкой, такого как `0.82`, обрезает его до `0`. Используйте `type="1"` для чисел с плавающей точкой.
 
-### Editing Vanilla Files Directly
+### Прямое редактирование ванильных файлов
 
-Modifying vanilla types.xml works but breaks on game updates. Prefer shipping separate type files and registering them through cfgeconomycore, or use cfglimitsdefinitionuser.xml for custom tags.
+Модификация ванильного types.xml работает, но ломается при обновлениях игры. Предпочтительнее поставлять отдельные файлы типов и регистрировать их через cfgeconomycore, или использовать cfglimitsdefinitionuser.xml для пользовательских тегов.
 
 ---
 
 ## Лучшие практики
 
-- Ship a `ServerFiles/` folder with your mod containing pre-configured `types.xml` entries so server admins can copy-paste rather than write from scratch.
-- Use `cfglimitsdefinitionuser.xml` instead of editing the vanilla `cfglimitsdefinition.xml` --- выr additions survive game updates.
-- Set `count_in_hoarder="0"` for common items (food, ammo) to prevent hoarding from blocking CE respawns.
-- Always set `enableCfgGameplayFile = 1` in `serverDZ.cfg` before expecting `cfggameplay.json` changes to take effect.
-- Keep total `nominal` across all types.xml entries below 12,000 to avoid CE performance degradation on populated servers.
+- Поставляйте папку `ServerFiles/` с вашим модом, содержащую предварительно настроенные записи `types.xml`, чтобы администраторы серверов могли копировать их, а не писать с нуля.
+- Используйте `cfglimitsdefinitionuser.xml` вместо редактирования ванильного `cfglimitsdefinition.xml` --- ваши дополнения переживут обновления игры.
+- Устанавливайте `count_in_hoarder="0"` для обычных предметов (еда, боеприпасы), чтобы накопление не блокировало респавны CE.
+- Всегда устанавливайте `enableCfgGameplayFile = 1` в `serverDZ.cfg`, прежде чем ожидать, что изменения в `cfggameplay.json` вступят в силу.
+- Держите общий `nominal` по всем записям types.xml ниже 12 000, чтобы избежать деградации производительности CE на заполненных серверах.
 
 ---
 
 ## Теория и практика
 
 | Концепция | Теория | Реальность |
-|---------|--------|---------|
-| `nominal` is a hard target | CE spawns exactly this many items | CE approaches nominal over time but fluctuates based on player interaction, cleanup cycles, and zone distance |
-| `restock=0` means instant respawn | Items reappear immediately after despawn | The CE batch processes restocking in cycles (typically every 30-60 seconds), so there is always a delay regardless of the restock value |
-| `cfggameplay.json` controls all gameplay | All tuning goes here | Many gameplay values are hardcoded in script or config.cpp and cannot be overridden by cfggameplay.json |
-| `init.c` runs only on server start | One-time initialization | `init.c` runs every time the mission loads, including after server restarts. Persistent state is managed by the Hive, not init.c |
-| Multiple types.xml files merge cleanly | CE reads all registered files | Files must be registered in cfgeconomycore.xml via `<ce folder="custom">` directives. Simply placing extra XML files in `db/` does nothing |
+|-----------|--------|------------|
+| `nominal` --- жёсткая цель | CE спавнит ровно столько предметов | CE приближается к nominal со временем, но колеблется в зависимости от взаимодействия игроков, циклов очистки и расстояния до зон |
+| `restock=0` означает мгновенный респавн | Предметы появляются сразу после исчезновения | CE обрабатывает пополнение пакетами в циклах (обычно каждые 30--60 секунд), поэтому задержка присутствует всегда, независимо от значения restock |
+| `cfggameplay.json` управляет всем геймплеем | Вся настройка здесь | Многие значения геймплея жёстко заданы в скриптах или config.cpp и не могут быть переопределены через cfggameplay.json |
+| `init.c` выполняется только при запуске сервера | Одноразовая инициализация | `init.c` выполняется каждый раз при загрузке миссии, включая перезапуски сервера. Персистентным состоянием управляет Hive, а не init.c |
+| Множество файлов types.xml чисто объединяются | CE читает все зарегистрированные файлы | Файлы должны быть зарегистрированы в cfgeconomycore.xml через директивы `<ce folder="custom">`. Простое размещение дополнительных XML-файлов в `db/` ничего не даёт |
 
 ---
 
 ## Совместимость и влияние
 
-- **Multi-Mod:** Multiple mods can add entries to types.xml without conflict as long as classnames are unique. If two mods define the same classname with different nominal/lifetime values, the last-loaded entry wins.
-- **Performance:** Excessive nominal counts (15,000+) cause CE tick spikes visible as server FPS drops. Each CE cycle iterates all registered types to check spawn conditions.
+- **Мультимод:** Несколько модов могут добавлять записи в types.xml без конфликтов, если имена классов уникальны. Если два мода определяют одно имя класса с разными значениями nominal/lifetime, побеждает последняя загруженная запись.
+- **Производительность:** Чрезмерные значения nominal (15 000+) вызывают скачки тиков CE, видимые как падение FPS сервера. Каждый цикл CE перебирает все зарегистрированные типы для проверки условий спавна.

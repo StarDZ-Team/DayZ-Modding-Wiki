@@ -2,7 +2,7 @@
 
 [Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
 
----
+> **概要：** DayZには、プレイヤーがワールドに入る方法を制御する2つの補完的なシステムがあります：**スポーンポイント**はキャラクターがマップ上のどこに出現するかを決定し、**スポーンギア**はどの装備を持っているかを決定します。この章では、ファイル構造、フィールドリファレンス、実用的なプリセット、Modとの統合を含め、両方のシステムを詳しく扱います。
 
 ---
 
@@ -52,14 +52,14 @@ flowchart TD
     D --> J
 ```
 
-When a player spawns as a fresh character in DayZ, two questions are answered by the server:
+DayZでプレイヤーが新規キャラクターとしてスポーンすると、サーバーが2つの質問に回答します：
 
-1. **Where does the character appear?** --- Controlled by `cfgplayerspawnpoints.xml`.
-2. **What does the character carry?** --- Controlled by spawn gear preset JSON files, registered through `cfggameplay.json`.
+1. **キャラクターはどこに出現するか？** --- `cfgplayerspawnpoints.xml`で制御されます。
+2. **キャラクターは何を持っているか？** --- `cfggameplay.json`で登録されたスポーンギアプリセットJSONファイルで制御されます。
 
-Both systems are server-side only. Clients never see these configuration files and cannot tamper with them. The spawn gear system was introduced as an alternative to scripting loadouts in `init.c`, allowing server admins to define multiple weighted presets in JSON without writing any Enforce Script code.
+両方のシステムはサーバー側のみです。クライアントはこれらの設定ファイルを見ることができず、改ざんすることもできません。スポーンギアシステムは`init.c`でのロードアウトのスクリプティングの代替として導入されました。これにより、サーバー管理者はEnforce Scriptコードを書くことなく、JSONで複数の重み付きプリセットを定義できます。
 
-> **Important:** The spawn gear preset system **completely overrides** the `StartingEquipSetup()` method in your mission `init.c`. If you enable spawn gear presets in `cfggameplay.json`, your scripted loadout code will be ignored. Similarly, character types defined in the presets override the character model chosen in the main menu.
+> **重要：** スポーンギアプリセットシステムは、ミッションの`init.c`内の`StartingEquipSetup()`メソッドを**完全にオーバーライド**します。`cfggameplay.json`でスポーンギアプリセットを有効にすると、スクリプトによるロードアウトコードは無視されます。同様に、プリセットで定義されたキャラクタータイプは、メインメニューで選択されたキャラクターモデルをオーバーライドします。
 
 ---
 
@@ -70,7 +70,7 @@ Both systems are server-side only. Clients never see these configuration files a
 | Spawn Points | `cfgplayerspawnpoints.xml` | XML | **Where** --- map positions, distance scoring, spawn groups |
 | Spawn Gear | Custom preset JSON files | JSON | **What** --- character model, clothing, weapons, cargo, quickbar |
 
-The two systems are independent. You can use custom spawn points with vanilla gear, custom gear with vanilla spawn points, or customize both.
+2つのシステムは独立しています。バニラギアでカスタムスポーンポイントを使用したり、バニラスポーンポイントでカスタムギアを使用したり、両方をカスタマイズしたりできます。
 
 ---
 
@@ -78,11 +78,11 @@ The two systems are independent. You can use custom spawn points with vanilla ge
 
 ### Enabling Spawn Gear Presets
 
-Spawn gear presets are **not** enabled デフォルトでは. To use them, you must:
+スポーンギアプリセットはデフォルトでは**有効ではありません**。使用するには、以下を行う必要があります：
 
-1. Create one or more JSON preset files in your mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`).
-2. Register them in `cfggameplay.json` under `PlayerData.spawnGearPresetFiles`.
-3. Ensure `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+1. ミッションフォルダ（例：`mpmissions/dayzOffline.chernarusplus/`）に1つ以上のJSONプリセットファイルを作成します。
+2. `cfggameplay.json`の`PlayerData.spawnGearPresetFiles`にそれらを登録します。
+3. `serverDZ.cfg`で`enableCfgGameplayFile = 1`が設定されていることを確認します。
 
 ```json
 {
