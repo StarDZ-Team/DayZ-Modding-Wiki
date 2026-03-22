@@ -1,63 +1,67 @@
-# Chapter 8.12: Building a Trading System
+# 第 8.12 章：构建交易系统
 
-[Home](../../README.md) | [<< Previous: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Next: The Diagnostic Menu >>](13-diag-menu.md)
+[首页](../../README.md) | [<< 上一章：创建自定义服装](11-clothing-mod.md) | **构建交易系统** | [下一章：诊断菜单 >>](13-diag-menu.md)
+
+---
+
+> **摘要：** 构建一个完整的无 NPC 商店系统：JSON 配置、服务器验证的买卖、分类 UI、基于货币的交易。这是本维基中最复杂的教程 —— 涵盖数据建模、RPC 往返、物品栏操作和反作弊原则。
 
 ---
 
 ## 目录
 
-- [What We Are Building](#what-we-are-building)
-- [Step 1: Data Model (3_Game)](#step-1-data-model-3_game)
-- [Step 2: RPC Constants (3_Game)](#step-2-rpc-constants-3_game)
-- [Step 3: Server-Side Shop Manager (4_World)](#step-3-server-side-shop-manager-4_world)
-- [Step 4: Client-Side Shop UI (5_Mission)](#step-4-client-side-shop-ui-5_mission)
-- [Step 5: Layout File](#step-5-layout-file)
-- [Step 6: Mission Hook and Keybind](#step-6-mission-hook-and-keybind)
-- [Step 7: Currency Item](#step-7-currency-item)
-- [Step 8: Shop Config JSON](#step-8-shop-config-json)
-- [Step 9: Build and Test](#step-9-build-and-test)
-- [Security Considerations](#security-considerations)
-- [Complete Code Reference](#complete-code-reference)
-- [Best Practices / Common Mistakes / What You Learned](#best-practices)
+- [我们要构建什么](#what-we-are-building)
+- [步骤 1：数据模型（3_Game）](#step-1-data-model-3_game)
+- [步骤 2：RPC 常量（3_Game）](#step-2-rpc-constants-3_game)
+- [步骤 3：服务端商店管理器（4_World）](#step-3-server-side-shop-manager-4_world)
+- [步骤 4：客户端商店 UI（5_Mission）](#step-4-client-side-shop-ui-5_mission)
+- [步骤 5：布局文件](#step-5-layout-file)
+- [步骤 6：Mission 挂钩和按键绑定](#step-6-mission-hook-and-keybind)
+- [步骤 7：货币物品](#step-7-currency-item)
+- [步骤 8：商店配置 JSON](#step-8-shop-config-json)
+- [步骤 9：构建和测试](#step-9-build-and-test)
+- [安全注意事项](#security-considerations)
+- [完整代码参考](#complete-code-reference)
+- [最佳实践 / 常见错误 / 学到了什么](#best-practices)
 
 ---
 
-## What We Are Building
+## 我们要构建什么
 
-Players press F6 to open a shop menu, browse items by category (Weapons, Food, Medical), and buy/sell using a currency item. The server validates every transaction -- the client never decides prices or spawns items.
+玩家按 F6 打开商店菜单，按类别（武器、食物、医疗）浏览物品，并使用货币物品进行买卖。服务器验证每笔交易 —— 客户端永远不会决定价格或生成物品。
 
 ```mermaid
 sequenceDiagram
-    participant P as Player (Client)
+    participant P as 玩家（客户端）
     participant UI as ShopMenu
-    participant S as ShopManager (Server)
+    participant S as ShopManager（服务器）
 
-    P->>UI: Opens shop (keybind)
+    P->>UI: 打开商店（按键绑定）
     UI->>S: RPC: RequestShopData
     S-->>UI: RPC: ShopDataResponse(categories, items)
-    UI->>UI: Populate UI with items
-    P->>UI: Clicks "Buy AKM"
+    UI->>UI: 用物品填充 UI
+    P->>UI: 点击"购买 AKM"
     UI->>S: RPC: BuyItem("AKM")
-    S->>S: Validate currency count
-    S->>S: Delete currency items
-    S->>S: Spawn purchased item
+    S->>S: 验证货币数量
+    S->>S: 删除货币物品
+    S->>S: 生成已购物品
     S-->>UI: RPC: TransactionResult(success)
-    UI->>UI: Update balance display
+    UI->>UI: 更新余额显示
 ```
 
 ```
-CLIENT                                SERVER
-1. Press F6 --> REQUEST_SHOP_DATA ->  2. Load config, count currency
+客户端                                 服务器
+1. 按 F6 --> REQUEST_SHOP_DATA ->     2. 加载配置，统计货币
                                          SHOP_DATA_RESPONSE ->
-3. Show categories + items
-   Click Buy --> BUY_ITEM (cls,qty) -> 4. Validate, remove currency, spawn
+3. 显示类别和物品
+   点击购买 --> BUY_ITEM (cls,qty) -> 4. 验证、移除货币、生成物品
                                          TRANSACTION_RESULT ->
-5. Show result, update balance
+5. 显示结果，更新余额
 ```
 
-**Key rule:** Client sends `(className, quantity)` only. Server looks up the price.
+**关键规则：** 客户端仅发送 `(className, quantity)`。服务器查找价格。
 
-### Mod Structure
+### Mod 结构
 
 ```
 ShopDemo/
@@ -71,7 +75,7 @@ ShopDemo/
 
 ---
 
-## Step 1: Data Model (3_Game)
+## 步骤 1：数据模型（3_Game）
 
 ### `Scripts/3_Game/ShopDemo/ShopDemoData.c`
 
@@ -100,28 +104,28 @@ class ShopConfig
 };
 ```
 
-Keep `SellPrice < BuyPrice` always to prevent infinite money loops.
+始终保持 `SellPrice < BuyPrice` 以防止无限刷钱循环。
 
 ---
 
-## Step 2: RPC Constants (3_Game)
+## 步骤 2：RPC 常量（3_Game）
 
 ### `Scripts/3_Game/ShopDemo/ShopDemoRPC.c`
 
 ```c
 class ShopDemoRPC
 {
-    static const int REQUEST_SHOP_DATA   = 79101;  // Client -> Server
+    static const int REQUEST_SHOP_DATA   = 79101;  // 客户端 -> 服务器
     static const int BUY_ITEM            = 79102;
     static const int SELL_ITEM           = 79103;
-    static const int SHOP_DATA_RESPONSE  = 79201;  // Server -> Client
+    static const int SHOP_DATA_RESPONSE  = 79201;  // 服务器 -> 客户端
     static const int TRANSACTION_RESULT  = 79202;
 };
 ```
 
 ---
 
-## Step 3: Server-Side Shop Manager (4_World)
+## 步骤 3：服务端商店管理器（4_World）
 
 ### `Scripts/4_World/ShopDemo/ShopDemoManager.c`
 
@@ -316,7 +320,7 @@ modded class PlayerBase
         if (!player) return;
         ShopDemoManager mgr = ShopDemoManager.Get();
         ShopConfig cfg = mgr.GetConfig();
-        // Serialize: "CatName|cls,name,buy,sell;cls2,...\nCat2|..."
+        // 序列化："CatName|cls,name,buy,sell;cls2,...\nCat2|..."
         string payload = "";
         for (int c = 0; c < cfg.Categories.Count(); c++)
         {
@@ -357,11 +361,11 @@ modded class MissionServer
 };
 ```
 
-**Key decisions:** Currency removed *before* spawning items (prevents duplication). Always `DeleteSafe()` for networked items. Quantity clamped to 1-10 to prevent abuse.
+**关键决策：** 在生成物品*之前*先移除货币（防止复制）。对网络物品始终使用 `DeleteSafe()`。数量限制在 1-10 之间以防止滥用。
 
 ---
 
-## Step 4: Client-Side Shop UI (5_Mission)
+## 步骤 4：客户端商店 UI（5_Mission）
 
 ### `Scripts/5_Mission/ShopDemo/ShopDemoMenu.c`
 
@@ -454,7 +458,7 @@ class ShopDemoMenu extends ScriptedWidgetEventHandler
             }
             m_CatItems.Insert(ci);
         }
-        // Build category buttons
+        // 构建类别按钮
         if (m_CategoryPanel)
         {
             for (int b = 0; b < m_CatNames.Count(); b++)
@@ -531,11 +535,11 @@ class ShopDemoMenu extends ScriptedWidgetEventHandler
 
 ---
 
-## Step 5: Layout File
+## 步骤 5：布局文件
 
 ### `GUI/layouts/shop_menu.layout`
 
-Three columns: Categories (left 20%), Items (center 46%), Details (right 26%).
+三列布局：类别（左侧 20%）、物品（中间 46%）、详情（右侧 26%）。
 
 ```
 FrameWidgetClass ShopMenuRoot {
@@ -568,7 +572,7 @@ FrameWidgetClass ShopMenuRoot {
 
 ---
 
-## Step 6: Mission Hook and Keybind
+## 步骤 6：Mission 挂钩和按键绑定
 
 ### `Scripts/5_Mission/ShopDemo/ShopDemoMission.c`
 
@@ -608,7 +612,7 @@ modded class MissionGameplay
 };
 ```
 
-For released mods, use `inputs.xml` so players can remap the key:
+对于正式发布的 mod，请使用 `inputs.xml` 以便玩家可以重新映射按键：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -621,95 +625,95 @@ For released mods, use `inputs.xml` so players can remap the key:
 
 ---
 
-## Step 7: Currency Item
+## 步骤 7：货币物品
 
-You can use any existing item -- set `CurrencyClassName` to `"Rag"` in the JSON and rags become money. For a custom coin, see [Chapter 8.2: Custom Item](02-custom-item.md).
-
----
-
-## Step 8: Shop Config JSON
-
-Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edit prices, add categories/items, restart server. Always keep `SellPrice < BuyPrice`.
+你可以使用任何现有物品 —— 在 JSON 中将 `CurrencyClassName` 设置为 `"Rag"`，抹布就变成了货币。若要创建自定义金币，请参见[第 8.2 章：自定义物品](02-custom-item.md)。
 
 ---
 
-## Step 9: Build and Test
+## 步骤 8：商店配置 JSON
 
-1. Pack `ShopDemo/` into PBO, add to server+client `@ShopDemo/addons/`, add `-mod=@ShopDemo`
-2. Spawn currency, press F6, browse, buy/sell
-3. Check server log for `[ShopDemo]` lines
+首次服务器启动时自动生成在 `$profile:ShopDemo/ShopConfig.json`。编辑价格、添加类别/物品，重启服务器即可。始终保持 `SellPrice < BuyPrice`。
 
-| Test Case | Expected |
+---
+
+## 步骤 9：构建和测试
+
+1. 将 `ShopDemo/` 打包为 PBO，添加到服务器+客户端的 `@ShopDemo/addons/`，添加 `-mod=@ShopDemo`
+2. 生成货币，按 F6，浏览、买卖
+3. 检查服务器日志中的 `[ShopDemo]` 行
+
+| 测试用例 | 预期结果 |
 |-----------|----------|
-| Buy with no currency | "Need X, have 0" |
-| Buy unknown class (hacked) | "Item not in shop" |
-| Sell item not owned | "You don't have that item" |
-| Inventory full on buy | Item drops on ground |
+| 无货币时购买 | "Need X, have 0" |
+| 购买未知类名（被黑） | "Item not in shop" |
+| 出售未拥有的物品 | "You don't have that item" |
+| 物品栏已满时购买 | 物品掉落在地上 |
 
 ---
 
-## Security Considerations
+## 安全注意事项
 
-1. **NEVER trust client-sent prices.** Client sends `(className, qty)` only. Server looks up price.
-2. **Delete before spawn.** Remove currency first, then create items. Prevents duplication.
-3. **Validate existence.** Confirm item is in inventory before giving sell currency.
-4. **Log everything.** Print player name, item, amount for every transaction.
-5. **Quantity bounds.** Reject `qty <= 0` or `qty > 10`.
-6. **Rate limit** in production: 500ms cooldown per player per transaction.
+1. **永远不要信任客户端发送的价格。** 客户端仅发送 `(className, qty)`。服务器决定价格。
+2. **先删除再生成。** 先移除货币，然后再创建物品。防止复制。
+3. **验证物品存在。** 在给予出售货币之前确认物品在物品栏中。
+4. **记录一切。** 为每笔交易打印玩家名称、物品和数量。
+5. **数量限制。** 拒绝 `qty <= 0` 或 `qty > 10`。
+6. **频率限制** —— 在生产环境中：每个玩家每次交易 500 毫秒冷却。
 
 ---
 
-## Complete Code Reference
+## 完整代码参考
 
 | 文件 | 层级 | 用途 |
 |------|-------|---------|
-| `ShopDemoRPC.c` | 3_Game | RPC ID constants |
-| `ShopDemoData.c` | 3_Game | Data classes: ShopItem, ShopCategory, ShopConfig |
-| `ShopDemoManager.c` | 4_World | Server: config, buy/sell logic, inventory, RPC handlers |
-| `ShopDemoMenu.c` | 5_Mission | Client: UI, dynamic widgets, RPC send/receive |
-| `ShopDemoMission.c` | 5_Mission | Mission hook: init, keybind, RPC routing |
-| `shop_menu.layout` | GUI | 3-panel layout |
+| `ShopDemoRPC.c` | 3_Game | RPC ID 常量 |
+| `ShopDemoData.c` | 3_Game | 数据类：ShopItem、ShopCategory、ShopConfig |
+| `ShopDemoManager.c` | 4_World | 服务器：配置、买卖逻辑、物品栏操作、RPC 处理 |
+| `ShopDemoMenu.c` | 5_Mission | 客户端：UI、动态控件、RPC 收发 |
+| `ShopDemoMission.c` | 5_Mission | Mission 挂钩：初始化、按键绑定、RPC 路由 |
+| `shop_menu.layout` | GUI | 三栏布局 |
 
 ---
 
 ## 最佳实践
 
-- **Server is the single source of truth.** Client is a display terminal.
-- **Use `DeleteSafe()` not `Delete()`.** Handles network sync and locked slots.
-- **Data classes in 3_Game.** Visible to both 4_World and 5_Mission.
-- **Always call `super` in overrides.** Breaking the chain breaks other mods.
-- **Clean up dynamic widgets.** Every `CreateWidget` needs `Unlink` on close.
+- **服务器是唯一的真相来源。** 客户端只是一个显示终端。
+- **使用 `DeleteSafe()` 而不是 `Delete()`。** 处理网络同步和锁定栏位。
+- **数据类放在 3_Game。** 对 4_World 和 5_Mission 都可见。
+- **重写方法中始终调用 `super`。** 中断调用链会破坏其他 mod。
+- **清理动态控件。** 每个 `CreateWidget` 在关闭时都需要 `Unlink`。
 
 ## 理论与实践
 
 | 概念 | 理论 | 现实 |
 |---------|--------|---------|
-| `JsonFileLoader.LoadFile()` | Loads cleanly | Trailing commas cause silent failures. Validate JSON externally. |
-| String RPC serialization | Simple | 500+ items may hit size limits. Paginate for large shops. |
-| `CreateInInventory()` | Always works | Returns null if inventory full. Always check. |
-| Listen server testing | Fast iteration | Hides network bugs. Test on dedicated server. |
+| `JsonFileLoader.LoadFile()` | 干净地加载 | 尾部逗号会导致静默失败。在外部验证 JSON。 |
+| 字符串 RPC 序列化 | 简单 | 500+ 物品可能达到大小限制。大型商店请分页。 |
+| `CreateInInventory()` | 总是成功 | 物品栏已满时返回 null。始终检查。 |
+| 监听服务器测试 | 快速迭代 | 隐藏网络 bug。在专用服务器上测试。 |
 
-## What You Learned
+## 学到了什么
 
-- JSON config loading with `JsonFileLoader<T>` and auto-generation of defaults
-- Singleton pattern for server-side game managers
-- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning
-- String serialization of complex data over RPC (categories, items, prices)
-- Dynamic widget creation for data-driven UI
-- Full buy/sell transaction flow with server-only authority
-- Security principles for multiplayer economy systems
+- 使用 `JsonFileLoader<T>` 加载 JSON 配置并自动生成默认值
+- 服务端游戏管理器的单例模式
+- 物品栏枚举、计数、删除（`DeleteSafe`）和生成
+- 通过 RPC 对复杂数据（类别、物品、价格）进行字符串序列化
+- 数据驱动 UI 的动态控件创建
+- 服务器权威的完整买卖交易流程
+- 多人游戏经济系统的安全原则
 
 ## 常见错误
 
 | 错误 | 修复方法 |
 |---------|-----|
-| Client sends price | Send `(className, qty)` only. Server decides price. |
-| Spawn before paying | Remove currency first, then create items. |
-| Skip `super.OnRPC()` | Always call super -- other mods need the chain. |
-| `Delete()` on networked items | Use `DeleteSafe()`. |
-| Ignore `CreateInInventory` return | Check for null, fall back to ground spawn. |
-| Redeclare vars in else-if | Declare once before the if-chain (Enforce Script rule). |
+| 客户端发送价格 | 仅发送 `(className, qty)`。服务器决定价格。 |
+| 先生成再扣款 | 先移除货币，再创建物品。 |
+| 跳过 `super.OnRPC()` | 始终调用 super —— 其他 mod 需要调用链。 |
+| 对网络物品使用 `Delete()` | 使用 `DeleteSafe()`。 |
+| 忽略 `CreateInInventory` 返回值 | 检查是否为 null，回退到地面生成。 |
+| 在 else-if 中重新声明变量 | 在 if 链之前声明一次（Enforce Script 规则）。 |
 
 ---
 
-**Previous:** [Chapter 8.11: Clothing Mod](11-clothing-mod.md)
+**上一章：** [第 8.11 章：服装 Mod](11-clothing-mod.md)

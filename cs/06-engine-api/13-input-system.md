@@ -1,105 +1,105 @@
-# Chapter 6.13: Input System
+# Kapitola 6.13: Vstupní systém
 
-[Home](../../README.md) | [<< Previous: Action System](12-action-system.md) | **Input System** | [Next: Player System >>](14-player-system.md)
-
----
-
-## Uvod
-
-The DayZ input system connects hardware inputs --- keyboard, mouse, and gamepad --- to named actions that scripts can query. It operates in two layers:
-
-1. **inputs.xml** (config layer) --- declares named actions, assigns default keybindings, and organizes them into groups for the player's Controls settings menu. See [Chapter 5.2: inputs.xml](../05-config-files/02-inputs-xml.md) for full coverage.
-
-2. **UAInput API** (script layer) --- queries input state at runtime. This is what your scripts call every frame to detect presses, releases, holds, and analog values.
-
-This chapter covers the script layer: the classes, methods, and patterns you use to read and control inputs from Enforce Script.
+[Domů](../../README.md) | [<< Předchozí: Systém akcí](12-action-system.md) | **Vstupní systém** | [Další: Systém hráčů >>](14-player-system.md)
 
 ---
 
-## Core Classes
+## Úvod
 
-The input system is built on three main classes:
+Vstupní systém DayZ propojuje hardwarové vstupy --- klávesnici, myš a gamepad --- s pojmenovanými akcemi, na které se mohou skripty dotazovat. Pracuje ve dvou vrstvách:
+
+1. **inputs.xml** (konfigurační vrstva) --- deklaruje pojmenované akce, přiřazuje výchozí klávesové zkratky a organizuje je do skupin pro nabídku ovládání v nastavení hráče. Viz [Kapitola 5.2: inputs.xml](../05-config-files/02-inputs-xml.md) pro úplné pokrytí.
+
+2. **UAInput API** (skriptová vrstva) --- dotazuje stav vstupů za běhu. Toto volají vaše skripty každý snímek pro detekci stisknutí, uvolnění, držení a analogových hodnot.
+
+Tato kapitola pokrývá skriptovou vrstvu: třídy, metody a vzory, které používáte pro čtení a ovládání vstupů z Enforce Scriptu.
+
+---
+
+## Základní třídy
+
+Vstupní systém je postaven na třech hlavních třídách:
 
 ```
-UAInputAPI         Global singleton (accessed via GetUApi())
-├── UAInput        Represents a single named input action
-└── Input          Lower-level input access (accessed via GetGame().GetInput())
+UAInputAPI         Globální singleton (přístupný přes GetUApi())
+├── UAInput        Reprezentuje jednu pojmenovanou vstupní akci
+└── Input          Nižší úroveň přístupu ke vstupům (přístupná přes GetGame().GetInput())
 ```
 
-| Class | Source File | Ucel |
+| Třída | Zdrojový soubor | Účel |
 |-------|-----------|---------|
-| `UAInputAPI` | `3_Game/inputapi/uainput.c` | Global input manager. Retrieves inputs by name/ID, manages excludes, presets, and backlit. |
-| `UAInput` | `3_Game/inputapi/uainput.c` | Single input action. Provides state queries (press, hold, release) and control (disable, suppress, lock). |
-| `Input` | `3_Game/tools/input.c` | Engine-level input class. String-based state queries, device management, game focus control. |
-| `InputUtils` | `3_Game/tools/inpututils.c` | Static helper class. Button name/icon resolution for UI display. |
+| `UAInputAPI` | `3_Game/inputapi/uainput.c` | Globální manažer vstupů. Získává vstupy podle jména/ID, spravuje vyloučení, presety a podsvícení. |
+| `UAInput` | `3_Game/inputapi/uainput.c` | Jednotlivá vstupní akce. Poskytuje dotazy na stav (stisknutí, držení, uvolnění) a ovládání (deaktivace, potlačení, uzamčení). |
+| `Input` | `3_Game/tools/input.c` | Vstupní třída na úrovni enginu. Dotazy na stav pomocí řetězců, správa zařízení, ovládání herního fokusu. |
+| `InputUtils` | `3_Game/tools/inpututils.c` | Statická pomocná třída. Rozlišení názvů/ikon tlačítek pro zobrazení v UI. |
 
 ---
 
-## Accessing the Input API
+## Přístup ke vstupnímu API
 
-### UAInputAPI (Recommended)
+### UAInputAPI (doporučeno)
 
-The primary way to access inputs. `GetUApi()` is a global function that returns the `UAInputAPI` singleton:
+Primární způsob přístupu ke vstupům. `GetUApi()` je globální funkce, která vrací singleton `UAInputAPI`:
 
 ```c
-// Get the global input API
+// Získání globálního vstupního API
 UAInputAPI inputAPI = GetUApi();
 
-// Get a specific input action by its name (as defined in inputs.xml)
+// Získání konkrétní vstupní akce podle jména (jak je definováno v inputs.xml)
 UAInput input = inputAPI.GetInputByName("UAMyAction");
 
-// Get a specific input action by its numeric ID
+// Získání konkrétní vstupní akce podle číselného ID
 UAInput input = inputAPI.GetInputByID(someID);
 ```
 
-### Input Class (Alternative)
+### Třída Input (alternativa)
 
-The `Input` class provides string-based state queries directly, without needing a `UAInput` reference first:
+Třída `Input` poskytuje dotazy na stav přímo pomocí řetězců, bez nutnosti nejprve získat referenci `UAInput`:
 
 ```c
-// Get the Input instance
+// Získání instance Input
 Input input = GetGame().GetInput();
 
-// Query by action name string
+// Dotaz podle řetězce jména akce
 if (input.LocalPress("UAMyAction", false))
 {
-    // Key was just pressed
+    // Klávesa byla právě stisknuta
 }
 ```
 
-The `bool check_focus` parameter (second argument) controls whether the check respects game focus. Pass `true` (default) to return false when the game window is unfocused. Pass `false` to always return the raw input state.
+Parametr `bool check_focus` (druhý argument) ovládá, zda kontrola respektuje herní fokus. Předejte `true` (výchozí), aby se vrátilo false, když okno hry nemá fokus. Předejte `false` pro vždy vrácení surového stavu vstupu.
 
-### Kdy pouzit ktery
+### Kdy použít který
 
-- **`GetUApi().GetInputByName()`** --- Use when you need to query the same input multiple times, suppress/disable it, or inspect its bindings. You get a `UAInput` object you can reuse.
-- **`GetGame().GetInput().LocalPress()`** --- Use for one-off checks where you do not need to manipulate the input itself. Simpler syntax but slightly less efficient for repeated queries.
+- **`GetUApi().GetInputByName()`** --- Použijte, když potřebujete dotazovat stejný vstup vícekrát, potlačit/deaktivovat ho, nebo prozkoumat jeho vazby. Získáte objekt `UAInput`, který můžete znovu použít.
+- **`GetGame().GetInput().LocalPress()`** --- Použijte pro jednorázové kontroly, kde nepotřebujete manipulovat se samotným vstupem. Jednodušší syntaxe, ale mírně méně efektivní pro opakované dotazy.
 
 ---
 
-## Reading Input State --- UAInput Metodas
+## Čtení stavu vstupu --- Metody UAInput
 
-Once you have a `UAInput` reference, these methods query its current state:
+Jakmile máte referenci `UAInput`, tyto metody dotazují jeho aktuální stav:
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyAction");
 
-// Frame-precise checks
-bool justPressed   = input.LocalPress();        // True on the FIRST frame the key goes down
-bool justReleased  = input.LocalRelease();       // True on the FIRST frame the key comes up
-bool holdStarted   = input.LocalHoldBegin();     // True on the first frame hold threshold is met
-bool isHeld        = input.LocalHold();          // True EVERY frame while key is held past threshold
-bool clicked       = input.LocalClick();         // True on press-and-release before hold threshold
-bool doubleClicked = input.LocalDoubleClick();   // True when a double-tap is detected
+// Kontroly přesné na snímek
+bool justPressed   = input.LocalPress();        // True v PRVNÍM snímku, kdy klávesa jde dolů
+bool justReleased  = input.LocalRelease();       // True v PRVNÍM snímku, kdy klávesa přijde nahoru
+bool holdStarted   = input.LocalHoldBegin();     // True v prvním snímku, kdy je dosažen práh držení
+bool isHeld        = input.LocalHold();          // True KAŽDÝ snímek, kdy je klávesa držena za prahem
+bool clicked       = input.LocalClick();         // True při stisknutí a uvolnění před prahem držení
+bool doubleClicked = input.LocalDoubleClick();   // True při detekci dvojitého klepnutí
 
-// Analog value
-float value = input.LocalValue();                // 0.0 or 1.0 for digital; 0.0-1.0 for analog axes
+// Analogová hodnota
+float value = input.LocalValue();                // 0.0 nebo 1.0 pro digitální; 0.0-1.0 pro analogové osy
 ```
 
 ---
 
-## Reading Input State --- Input Class Metodas
+## Čtení stavu vstupu --- Metody třídy Input
 
-The `Input` class (from `GetGame().GetInput()`) offers equivalent string-based methods:
+Třída `Input` (z `GetGame().GetInput()`) nabízí ekvivalentní metody založené na řetězcích:
 
 ```c
 Input input = GetGame().GetInput();
@@ -111,48 +111,48 @@ bool dblClick = input.LocalDbl("UAMyAction", false);
 float value   = input.LocalValue("UAMyAction", false);
 ```
 
-Note the slight naming difference: `LocalDoubleClick()` on `UAInput` vs `LocalDbl()` on `Input`.
+Všimněte si mírného rozdílu v pojmenování: `LocalDoubleClick()` na `UAInput` vs `LocalDbl()` na `Input`.
 
-Both classes also provide `_ID` variants that accept integer action IDs instead of strings (e.g., `LocalPress_ID(int action)`).
+Obě třídy také poskytují varianty `_ID`, které přijímají celočíselná ID akcí místo řetězců (např. `LocalPress_ID(int action)`).
 
 ---
 
-## Input Query Metodas Reference
+## Reference metod dotazování vstupů
 
-### UAInput Metodas
+### Metody UAInput
 
-| Metoda | Vraci | Kdy je true | Pripad pouziti |
+| Metoda | Vrací | Kdy True | Případ použití |
 |--------|---------|-----------|----------|
-| `LocalPress()` | `bool` | First frame the key goes down | Toggle actions, one-shot triggers |
-| `LocalRelease()` | `bool` | First frame the key comes up | End continuous actions |
-| `LocalClick()` | `bool` | Key pressed and released before hold timer | Quick tap detection |
-| `LocalHoldBegin()` | `bool` | First frame hold threshold is reached | Start hold-based actions |
-| `LocalHold()` | `bool` | Every frame while held past threshold | Continuous hold actions |
-| `LocalDoubleClick()` | `bool` | Double-tap detected | Special/alternate actions |
-| `LocalHodnota()` | `float` | Always (returns current value) | Mouse axes, gamepad triggers, analog input |
+| `LocalPress()` | `bool` | První snímek, kdy klávesa jde dolů | Přepínací akce, jednorázové spouštěče |
+| `LocalRelease()` | `bool` | První snímek, kdy klávesa přijde nahoru | Ukončení průběžných akcí |
+| `LocalClick()` | `bool` | Klávesa stisknuta a uvolněna před časovačem držení | Detekce rychlého klepnutí |
+| `LocalHoldBegin()` | `bool` | První snímek, kdy je dosažen práh držení | Zahájení akcí založených na držení |
+| `LocalHold()` | `bool` | Každý snímek při držení za prahem | Průběžné akce držení |
+| `LocalDoubleClick()` | `bool` | Detekováno dvojité klepnutí | Speciální/alternativní akce |
+| `LocalValue()` | `float` | Vždy (vrací aktuální hodnotu) | Osy myši, triggery gamepadu, analogový vstup |
 
-### Input Class Metodas
+### Metody třídy Input
 
-| Metoda | Vraci | Signature | Equivalent UAInput Metoda |
+| Metoda | Vrací | Signatura | Ekvivalentní metoda UAInput |
 |--------|---------|-----------|--------------------------|
 | `LocalPress()` | `bool` | `LocalPress(string action, bool check_focus = true)` | `UAInput.LocalPress()` |
 | `LocalRelease()` | `bool` | `LocalRelease(string action, bool check_focus = true)` | `UAInput.LocalRelease()` |
 | `LocalHold()` | `bool` | `LocalHold(string action, bool check_focus = true)` | `UAInput.LocalHold()` |
 | `LocalDbl()` | `bool` | `LocalDbl(string action, bool check_focus = true)` | `UAInput.LocalDoubleClick()` |
-| `LocalHodnota()` | `float` | `LocalHodnota(string action, bool check_focus = true)` | `UAInput.LocalHodnota()` |
+| `LocalValue()` | `float` | `LocalValue(string action, bool check_focus = true)` | `UAInput.LocalValue()` |
 
-### Important Timing Poznamky
+### Důležité poznámky k časování
 
-- **`LocalPress()`** fires on exactly **one frame** --- the frame the key transitions from up to down. If you check it on any other frame, it returns false.
-- **`LocalClick()`** fires when the key is pressed and released quickly (before the hold timer kicks in). It is NOT the same as `LocalPress()`. Use `LocalPress()` for immediate key-down detection.
-- **`LocalHold()`** does NOT fire immediately. It waits for the engine's hold threshold to be met first. Use `LocalPress()` if you need instant response.
-- **`LocalHoldBegin()`** fires once when the hold threshold is first met. `LocalHold()` then fires every subsequent frame.
+- **`LocalPress()`** se spustí přesně na **jednom snímku** --- snímku, kdy klávesa přejde z uvolněné na stisknutou. Pokud ji zkontrolujete na jakémkoli jiném snímku, vrátí false.
+- **`LocalClick()`** se spustí, když je klávesa stisknuta a rychle uvolněna (před tím, než nastoupí časovač držení). NENÍ totéž jako `LocalPress()`. Použijte `LocalPress()` pro okamžitou detekci stisknutí klávesy.
+- **`LocalHold()`** se NEspustí okamžitě. Čeká, dokud není splněn práh držení enginu. Použijte `LocalPress()`, pokud potřebujete okamžitou odezvu.
+- **`LocalHoldBegin()`** se spustí jednou, když je práh držení poprvé splněn. `LocalHold()` se pak spustí každý následující snímek.
 
 ---
 
-## Checking Inputs in OnUpdate
+## Kontrola vstupů v OnUpdate
 
-The standard pattern for polling custom inputs is inside `MissionGameplay.OnUpdate()`:
+Standardní vzor pro dotazování vlastních vstupů je uvnitř `MissionGameplay.OnUpdate()`:
 
 ```c
 modded class MissionGameplay
@@ -161,12 +161,12 @@ modded class MissionGameplay
     {
         super.OnUpdate(timeslice);
 
-        // Guard: need a live player
+        // Ochrana: potřebujeme živého hráče
         PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
         if (!player)
             return;
 
-        // Guard: no input while a menu is open
+        // Ochrana: žádný vstup, když je otevřena nabídka
         if (GetGame().GetUIManager().GetMenu())
             return;
 
@@ -179,7 +179,7 @@ modded class MissionGameplay
 }
 ```
 
-### Using the Input Class Instead
+### Použití třídy Input jako alternativy
 
 ```c
 modded class MissionGameplay
@@ -198,21 +198,21 @@ modded class MissionGameplay
 }
 ```
 
-### Where Else Can You Check Inputs?
+### Kde jinde můžete kontrolovat vstupy?
 
-Inputs can technically be checked in any per-frame callback, but `MissionGameplay.OnUpdate()` is the canonical location. Other valid places include:
+Vstupy lze technicky kontrolovat v jakémkoli callbacku per-snímek, ale `MissionGameplay.OnUpdate()` je kanonické umístění. Další platná místa zahrnují:
 
-- `PlayerBase.CommandHandler()` --- runs every frame for the local player
-- `ScriptedWidgetEventHandler.Update()` --- for UI-specific input (but prefer widget event handlers)
-- `PluginBase.OnUpdate()` --- for plugin-scoped input
+- `PlayerBase.CommandHandler()` --- běží každý snímek pro lokálního hráče
+- `ScriptedWidgetEventHandler.Update()` --- pro vstup specifický pro UI (ale preferujte handlery událostí widgetů)
+- `PluginBase.OnUpdate()` --- pro vstup v rozsahu pluginu
 
-Avoid checking inputs in server-side code, entity constructors, or one-off event handlers where frame timing is not guaranteed.
+Vyhněte se kontrole vstupů v serverovém kódu, konstruktorech entit nebo jednorázových handlerech událostí, kde není zaručeno časování snímků.
 
 ---
 
-## Alternative: OnKeyPress and OnKeyRelease
+## Alternativa: OnKeyPress a OnKeyRelease
 
-For simple hardcoded key detection, `MissionBase` provides `OnKeyPress()` and `OnKeyRelease()` callbacks:
+Pro jednoduchou detekci natvrdo zakódovaných kláves `MissionBase` poskytuje callbacky `OnKeyPress()` a `OnKeyRelease()`:
 
 ```c
 modded class MissionGameplay
@@ -223,7 +223,7 @@ modded class MissionGameplay
 
         if (key == KeyCode.KC_F5)
         {
-            // F5 was pressed --- not rebindable!
+            // F5 byla stisknuta --- nepřemapovatelné!
             ToggleDebugOverlay();
         }
     }
@@ -234,51 +234,51 @@ modded class MissionGameplay
 
         if (key == KeyCode.KC_F5)
         {
-            // F5 was released
+            // F5 byla uvolněna
         }
     }
 }
 ```
 
-### UAInput vs OnKeyPress: Kdy pouzit ktery
+### UAInput vs OnKeyPress: Kdy použít které
 
-| Funkce | UAInput (GetUApi) | OnKeyPress |
+| Vlastnost | UAInput (GetUApi) | OnKeyPress |
 |---------|-------------------|------------|
-| Player can rebind | Yes | No |
-| Supports modifiers | Yes (Ctrl+Key combos via inputs.xml) | Manual checking required |
-| Gamepad support | Yes | No |
-| Appears in Controls menu | Yes | No |
-| Analog values | Yes | No |
-| Simplicity | Requires inputs.xml setup | Just check KeyCode |
-| Best for | All player-facing actions | Debug tools, hardcoded dev shortcuts |
+| Hráč může přemapovat | Ano | Ne |
+| Podpora modifikátorů | Ano (Ctrl+klávesa komba přes inputs.xml) | Vyžaduje manuální kontrolu |
+| Podpora gamepadu | Ano | Ne |
+| Zobrazuje se v nabídce ovládání | Ano | Ne |
+| Analogové hodnoty | Ano | Ne |
+| Jednoduchost | Vyžaduje nastavení inputs.xml | Stačí kontrolovat KeyCode |
+| Nejlepší pro | Všechny akce pro hráče | Ladicí nástroje, natvrdo zakódované dev zkratky |
 
-**Rule of thumb:** If a player will ever press this key, use UAInput with inputs.xml. Only use OnKeyPress for internal debug tools or prototype testing.
+**Pravidlo:** Pokud hráč někdy stiskne tuto klávesu, použijte UAInput s inputs.xml. Pouze použijte OnKeyPress pro interní ladicí nástroje nebo prototypové testování.
 
 ---
 
-## KeyCode Reference
+## Reference KeyCode
 
-The `KeyCode` enum is defined in `1_Core/proto/ensystem.c`. These constants are used with `OnKeyPress()`, `OnKeyRelease()`, `KeyState()`, and `DisableKey()`.
+Enum `KeyCode` je definován v `1_Core/proto/ensystem.c`. Tyto konstanty se používají s `OnKeyPress()`, `OnKeyRelease()`, `KeyState()` a `DisableKey()`.
 
-### Commonly Used Keys
+### Běžně používané klávesy
 
 | Kategorie | Konstanty |
 |----------|-----------|
 | Escape | `KC_ESCAPE` |
-| Function keys | `KC_F1` through `KC_F12` |
-| Number row | `KC_1`, `KC_2`, `KC_3`, `KC_4`, `KC_5`, `KC_6`, `KC_7`, `KC_8`, `KC_9`, `KC_0` |
-| Letters | `KC_A` through `KC_Z` (e.g., `KC_Q`, `KC_W`, `KC_E`, `KC_R`, `KC_T`) |
-| Modifikators | `KC_LSHIFT`, `KC_RSHIFT`, `KC_LCONTROL`, `KC_RCONTROL`, `KC_LMENU` (left Alt), `KC_RMENU` (right Alt) |
+| Funkční klávesy | `KC_F1` až `KC_F12` |
+| Řádek čísel | `KC_1`, `KC_2`, `KC_3`, `KC_4`, `KC_5`, `KC_6`, `KC_7`, `KC_8`, `KC_9`, `KC_0` |
+| Písmena | `KC_A` až `KC_Z` (např. `KC_Q`, `KC_W`, `KC_E`, `KC_R`, `KC_T`) |
+| Modifikátory | `KC_LSHIFT`, `KC_RSHIFT`, `KC_LCONTROL`, `KC_RCONTROL`, `KC_LMENU` (levý Alt), `KC_RMENU` (pravý Alt) |
 | Navigace | `KC_UP`, `KC_DOWN`, `KC_LEFT`, `KC_RIGHT` |
-| Editing | `KC_SPACE`, `KC_RETURN`, `KC_TAB`, `KC_BACK` (Backspace), `KC_DELETE`, `KC_INSERT` |
-| Page control | `KC_HOME`, `KC_END`, `KC_PRIOR` (Page Up), `KC_NEXT` (Page Down) |
-| Numpad | `KC_NUMPAD0` through `KC_NUMPAD9`, `KC_NUMPADENTER`, `KC_ADD`, `KC_SUBTRACT`, `KC_MULTIPLY`, `KC_DIVIDE`, `KC_DECIMAL` |
-| Locks | `KC_CAPITAL` (Caps Lock), `KC_NUMLOCK`, `KC_SCROLL` (Scroll Lock) |
-| Punctuation | `KC_MINUS`, `KC_EQUALS`, `KC_LBRACKET`, `KC_RBRACKET`, `KC_SEMICOLON`, `KC_APOSTROPHE`, `KC_GRAVE`, `KC_BACKSLASH`, `KC_COMMA`, `KC_PERIOD`, `KC_SLASH` |
+| Editace | `KC_SPACE`, `KC_RETURN`, `KC_TAB`, `KC_BACK` (Backspace), `KC_DELETE`, `KC_INSERT` |
+| Ovládání stránek | `KC_HOME`, `KC_END`, `KC_PRIOR` (Page Up), `KC_NEXT` (Page Down) |
+| Numerická klávesnice | `KC_NUMPAD0` až `KC_NUMPAD9`, `KC_NUMPADENTER`, `KC_ADD`, `KC_SUBTRACT`, `KC_MULTIPLY`, `KC_DIVIDE`, `KC_DECIMAL` |
+| Zámky | `KC_CAPITAL` (Caps Lock), `KC_NUMLOCK`, `KC_SCROLL` (Scroll Lock) |
+| Interpunkce | `KC_MINUS`, `KC_EQUALS`, `KC_LBRACKET`, `KC_RBRACKET`, `KC_SEMICOLON`, `KC_APOSTROPHE`, `KC_GRAVE`, `KC_BACKSLASH`, `KC_COMMA`, `KC_PERIOD`, `KC_SLASH` |
 
-### MouseState Enum
+### Enum MouseState
 
-For raw mouse button state checking (not through the UAInput system):
+Pro kontrolu surového stavu tlačítek myši (ne přes systém UAInput):
 
 ```c
 enum MouseState
@@ -286,81 +286,81 @@ enum MouseState
     LEFT,
     RIGHT,
     MIDDLE,
-    X,        // Horizontal axis
-    Y,        // Vertical axis
-    WHEEL     // Scroll wheel
+    X,        // Horizontální osa
+    Y,        // Vertikální osa
+    WHEEL     // Kolečko myši
 };
 
-// Usage:
+// Použití:
 int state = GetMouseState(MouseState.LEFT);
-// Bit 15 (MB_PRESSED_MASK) is set when pressed
+// Bit 15 (MB_PRESSED_MASK) je nastaven při stisknutí
 ```
 
-### Low-Level Key State
+### Nízkoúrovňový stav kláves
 
 ```c
-// Check raw key state (returns bitmask, bit 15 = currently pressed)
+// Kontrola surového stavu klávesy (vrací bitovou masku, bit 15 = aktuálně stisknuto)
 int state = KeyState(KeyCode.KC_LSHIFT);
 
-// Clear the key state (prevents auto-repeat until next physical press)
+// Vyčistění stavu klávesy (zabraňuje auto-opakování do dalšího fyzického stisknutí)
 ClearKey(KeyCode.KC_RETURN);
 
-// Disable a key for the rest of this frame
+// Deaktivace klávesy pro zbytek tohoto snímku
 GetGame().GetInput().DisableKey(KeyCode.KC_RETURN);
 ```
 
 ---
 
-## Suppressing and Disabling Inputs
+## Potlačení a deaktivace vstupů
 
-### Suppress (Per-Input, One Frame)
+### Potlačení (na jeden vstup, jeden snímek)
 
-Prevents the input from firing on the next frame. Useful during transitions (closing a menu) to prevent one-frame input bleed:
+Zabraňuje spuštění vstupu na dalším snímku. Užitečné při přechodech (zavírání nabídky) pro zabránění jednorámcovému prosakování vstupu:
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyAction");
-input.Supress();  // Note: single 's' in the method name
+input.Supress();  // Poznámka: jedno 's' v názvu metody
 ```
 
-### Suppress All Inputs (Global, One Frame)
+### Potlačení všech vstupů (globální, jeden snímek)
 
-Suppresses ALL inputs for the next frame. Call this when leaving menus or transitioning between input contexts:
+Potlačí VŠECHNY vstupy na další snímek. Zavolejte toto při opouštění nabídek nebo přechodu mezi vstupními kontexty:
 
 ```c
 GetUApi().SupressNextFrame(true);
 ```
 
-This is commonly used by vanilla when closing the main menu to prevent the escape key from immediately re-opening something.
+Toto se běžně používá vanilkou při zavírání hlavní nabídky, aby se zabránilo klávese escape v okamžitém znovuotevření něčeho.
 
-### ForceDisable (Per-Input, Persistent)
+### ForceDisable (na jeden vstup, trvalé)
 
-Completely disables a specific input until re-enabled. The input will not fire any events while disabled:
+Kompletně deaktivuje konkrétní vstup, dokud není znovu povolen. Vstup nebude vyvolávat žádné události, dokud je deaktivován:
 
 ```c
-// Disable while menu is open
+// Deaktivace, dokud je nabídka otevřena
 GetUApi().GetInputByName("UAMyAction").ForceDisable(true);
 
-// Re-enable when menu closes
+// Reaktivace po zavření nabídky
 GetUApi().GetInputByName("UAMyAction").ForceDisable(false);
 ```
 
-### Lock / Unlock (Per-Input, Persistent)
+### Lock / Unlock (na jeden vstup, trvalé)
 
-Similar to ForceDisable but uses a different mechanism. Be cautious --- if multiple systems lock/unlock the same input, they can interfere with each other:
+Podobné jako ForceDisable, ale používá jiný mechanismus. Buďte opatrní --- pokud více systémů zamyká/odemyká stejný vstup, mohou se navzájem rušit:
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyAction");
-input.Lock();    // Disable until Unlock() is called
-input.Unlock();  // Re-enable
+input.Lock();    // Deaktivovat, dokud se nezavolá Unlock()
+input.Unlock();  // Reaktivovat
 
-bool locked = input.IsLocked();  // Check state
+bool locked = input.IsLocked();  // Kontrola stavu
 ```
 
-The engine documentation recommends using exclude groups instead of Lock/Unlock for most cases.
+Dokumentace enginu doporučuje pro většinu případů použít exclude skupiny místo Lock/Unlock.
 
-### ForceDisable All Inputs (Bulk)
+### ForceDisable všech vstupů (hromadně)
 
-When opening a full-screen UI, disable all game inputs except the ones your UI needs. This is the pattern used by COT and Expansion:
+Při otevírání celoobrazovkového UI deaktivujte všechny herní vstupy kromě těch, které vaše UI potřebuje. Toto je vzor používaný COT a Expansion:
 
 ```c
 void DisableAllInputs(bool state)
@@ -368,7 +368,7 @@ void DisableAllInputs(bool state)
     TIntArray inputIDs = new TIntArray;
     GetUApi().GetActiveInputs(inputIDs);
 
-    // Inputs to keep active even while UI is open
+    // Vstupy, které ponechat aktivní, i když je UI otevřeno
     TIntArray skipIDs = new TIntArray;
     skipIDs.Insert(GetUApi().GetInputByName("UAUIBack").ID());
 
@@ -384,21 +384,21 @@ void DisableAllInputs(bool state)
 }
 ```
 
-**Dulezite:** Always call `GetUApi().UpdateControls()` after modifying input states in bulk.
+**Důležité:** Vždy zavolejte `GetUApi().UpdateControls()` po hromadné úpravě stavů vstupů.
 
-### Input Exclude Groups
+### Exclude skupiny vstupů
 
-The mission system provides named exclude groups defined in the engine's `specific.xml`. When activated, they disable categories of inputs:
+Systém misí poskytuje pojmenované exclude skupiny definované v `specific.xml` enginu. Po aktivaci deaktivují kategorie vstupů:
 
 ```c
-// Suppress gameplay inputs while a menu is open
+// Potlačení herních vstupů, když je nabídka otevřena
 GetGame().GetMission().AddActiveInputExcludes({"menu"});
 
-// Restore inputs when closing
+// Obnovení vstupů při zavření
 GetGame().GetMission().RemoveActiveInputExcludes({"menu"}, true);
 ```
 
-Metoda signatures on the `Mission` class:
+Signatury metod na třídě `Mission`:
 
 ```c
 void AddActiveInputExcludes(array<string> excludes);
@@ -407,9 +407,9 @@ void EnableAllInputs(bool bForceSupress = false);
 bool IsInputExcludeActive(string exclude);
 ```
 
-The `bForceSupress` parameter on `RemoveActiveInputExcludes` calls `SupressDalsiFrame` internally to prevent input bleed when re-enabling.
+Parametr `bForceSupress` na `RemoveActiveInputExcludes` interně volá `SupressNextFrame` pro zabránění prosakování vstupu při reaktivaci.
 
-Expansion uses its own custom exclude group registered with the engine:
+Expansion používá vlastní exclude skupinu registrovanou u enginu:
 
 ```c
 GetUApi().ActivateExclude("menuexpansion");
@@ -418,69 +418,69 @@ GetUApi().UpdateControls();
 
 ---
 
-## Linking inputs.xml to Script
+## Propojení inputs.xml se skriptem
 
-The connection between the XML config layer and the script layer is the **action name string**.
+Spojovacím prvkem mezi XML konfigurační vrstvou a skriptovou vrstvou je **řetězec jména akce**.
 
 ```mermaid
 flowchart LR
-    A[Key Press] --> B[Engine Input Layer]
-    B --> C[inputs.xml mapping]
-    C --> D[UAInput object]
-    D --> E{Query in OnUpdate}
-    E -->|LocalPress| F[Single frame trigger]
-    E -->|LocalHold| G[Continuous while held]
-    E -->|LocalRelease| H[Single frame on release]
-    E -->|LocalValue| I[Analog 0.0-1.0]
+    A[Stisk klávesy] --> B[Vstupní vrstva enginu]
+    B --> C[Mapování inputs.xml]
+    C --> D[Objekt UAInput]
+    D --> E{Dotaz v OnUpdate}
+    E -->|LocalPress| F[Spouštěč na jeden snímek]
+    E -->|LocalHold| G[Průběžné při držení]
+    E -->|LocalRelease| H[Jeden snímek při uvolnění]
+    E -->|LocalValue| I[Analogová 0.0-1.0]
 ```
 
-### The Flow
+### Průběh
 
 ```
-inputs.xml                              Script
+inputs.xml                              Skript
 ──────────────                          ──────────────────────────────
 <input name="UAMyModOpenMenu" />   -->  GetUApi().GetInputByName("UAMyModOpenMenu")
        │                                         │
-       │  Engine loads at startup                │  Returns UAInput object
-       │  Registers in UAInputAPI                │  with bound keys from XML
+       │  Engine načte při startu                │  Vrací objekt UAInput
+       │  Registruje v UAInputAPI                │  s navázanými klávesami z XML
        ▼                                         ▼
-Player sees in Settings > Controls       input.LocalPress() returns true
-and can rebind the key                   when player hits the bound key
+Hráč vidí v Nastavení > Ovládání         input.LocalPress() vrátí true
+a může přemapovat klávesu               když hráč stiskne navázanou klávesu
 ```
 
-1. At startup, the engine reads all `inputs.xml` files from loaded mods
-2. Each `<input name="...">` is registered as a `UAInput` in the global `UAInputAPI`
-3. Vychozi key bindings from `<preset>` are applied (unless the player has customized them)
-4. In script, `GetUApi().GetInputByName("UAMyModOpenMenu")` retrieves the registered input
-5. Calling `LocalPress()` etc. checks against whatever key the player has bound
+1. Při startu engine čte všechny soubory `inputs.xml` z načtených modů
+2. Každý `<input name="...">` je registrován jako `UAInput` v globálním `UAInputAPI`
+3. Výchozí vazby kláves z `<preset>` jsou aplikovány (pokud je hráč nepřizpůsobil)
+4. Ve skriptu `GetUApi().GetInputByName("UAMyModOpenMenu")` získá registrovaný vstup
+5. Volání `LocalPress()` atd. kontroluje proti jakékoli klávese, kterou má hráč navázanou
 
-The name string must match **exactly** (case-sensitive) between the XML and the script call.
+Řetězec jména se musí shodovat **přesně** (rozlišuje velká a malá písmena) mezi XML a voláním skriptu.
 
-For complete inputs.xml syntax, see [Chapter 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).
+Pro kompletní syntaxi inputs.xml viz [Kapitola 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).
 
-### Runtime Registration (Advanced)
+### Registrace za běhu (pokročilé)
 
-Inputs can also be registered at runtime from script, without an inputs.xml file:
+Vstupy lze také registrovat za běhu ze skriptu, bez souboru inputs.xml:
 
 ```c
-// Register a new group
+// Registrace nové skupiny
 GetUApi().RegisterGroup("mymod", "My Mod");
 
-// Register a new input in that group
+// Registrace nového vstupu v té skupině
 UAInput input = GetUApi().RegisterInput("UAMyModAction", "STR_MYMOD_ACTION", "mymod");
 
-// Later, if needed:
+// Později, pokud je potřeba:
 GetUApi().DeRegisterInput("UAMyModAction");
 GetUApi().DeRegisterGroup("mymod");
 ```
 
-This is rarely used. The inputs.xml approach is preferred because it integrates properly with the Controls settings menu and preset system.
+Toto se používá zřídka. Přístup inputs.xml je preferován, protože se správně integruje s nabídkou nastavení ovládání a systémem presetů.
 
 ---
 
-## Bezne vzory
+## Běžné vzory
 
-### Toggle Panel Open/Close
+### Přepínání panelu otevřít/zavřít
 
 ```c
 modded class MissionGameplay
@@ -507,24 +507,24 @@ modded class MissionGameplay
     void OpenMyPanel()
     {
         m_MyPanelOpen = true;
-        // Show UI...
+        // Zobrazit UI...
 
-        // Disable gameplay inputs while panel is open
+        // Deaktivovat herní vstupy, dokud je panel otevřen
         GetGame().GetMission().AddActiveInputExcludes({"menu"});
     }
 
     void CloseMyPanel()
     {
         m_MyPanelOpen = false;
-        // Hide UI...
+        // Skrýt UI...
 
-        // Restore gameplay inputs
+        // Obnovit herní vstupy
         GetGame().GetMission().RemoveActiveInputExcludes({"menu"}, true);
     }
 }
 ```
 
-### Hold-to-Activate, Release-to-Deactivate
+### Držet pro aktivaci, uvolnit pro deaktivaci
 
 ```c
 override void OnUpdate(float timeslice)
@@ -545,9 +545,9 @@ override void OnUpdate(float timeslice)
 }
 ```
 
-### Modifikator + Key Combo Check
+### Kontrola kombinace modifikátor + klávesa
 
-If you defined a Ctrl+Key combo in inputs.xml, the UAInput system handles it automatically. But if you need to check modifier state manually alongside a UAInput:
+Pokud jste definovali kombinaci Ctrl+klávesa v inputs.xml, systém UAInput to zpracuje automaticky. Ale pokud potřebujete kontrolovat stav modifikátoru manuálně vedle UAInput:
 
 ```c
 override void OnUpdate(float timeslice)
@@ -557,7 +557,7 @@ override void OnUpdate(float timeslice)
     UAInput input = GetUApi().GetInputByName("UAMyModAction");
     if (input && input.LocalPress())
     {
-        // Check if Shift is held via raw KeyState
+        // Kontrola, zda je držen Shift přes surový KeyState
         bool shiftHeld = (KeyState(KeyCode.KC_LSHIFT) != 0);
 
         if (shiftHeld)
@@ -568,9 +568,9 @@ override void OnUpdate(float timeslice)
 }
 ```
 
-### Suppress Input When UI Consumes It
+### Potlačení vstupu, když ho UI spotřebuje
 
-When your UI handles a key press, suppress the underlying game action to prevent both from firing:
+Když vaše UI zpracuje stisk klávesy, potlačte základní herní akci, aby se nespustily obě:
 
 ```c
 class MyMenuHandler extends ScriptedWidgetEventHandler
@@ -581,7 +581,7 @@ class MyMenuHandler extends ScriptedWidgetEventHandler
         {
             DoConfirm();
 
-            // Suppress the game input that might share this key
+            // Potlačit herní vstup, který může sdílet tuto klávesu
             GetUApi().GetInputByName("UAFire").Supress();
             return true;
         }
@@ -590,76 +590,76 @@ class MyMenuHandler extends ScriptedWidgetEventHandler
 }
 ```
 
-### Getting the Display Name of a Bound Key
+### Získání zobrazovaného názvu navázané klávesy
 
-To show the player what key is bound to an action (for UI prompts):
+Pro zobrazení hráči, jaká klávesa je navázána na akci (pro výzvy v UI):
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyModAction");
 string keyName = InputUtils.GetButtonNameFromInput("UAMyModAction", EUAINPUT_DEVICE_KEYBOARDMOUSE);
-// Returns localized key name like "F5", "Left Ctrl", etc.
+// Vrátí lokalizovaný název klávesy jako "F5", "Left Ctrl" atd.
 ```
 
-For controller icons and rich-text formatting:
+Pro ikony ovladačů a formátování rich-textu:
 
 ```c
 string richText = InputUtils.GetRichtextButtonIconFromInputAction(
     "UAMyModAction",
-    "Open Menu",
+    "Otevřít nabídku",
     EUAINPUT_DEVICE_CONTROLLER
 );
-// Returns image tag + label for UI display
+// Vrátí tag obrázku + popisek pro zobrazení v UI
 ```
 
 ---
 
-## Game Focus
+## Herní fokus
 
-The `Input` class provides game focus management, which controls whether inputs are processed when the game window is not focused:
+Třída `Input` poskytuje správu herního fokusu, která ovládá, zda se vstupy zpracovávají, když okno hry nemá fokus:
 
 ```c
 Input input = GetGame().GetInput();
 
-// Add to focus counter (positive = unfocused, inputs suppressed)
+// Přidání k počítadlu fokusu (kladné = bez fokusu, vstupy potlačeny)
 input.ChangeGameFocus(1);
 
-// Remove from focus counter
+// Odebrání z počítadla fokusu
 input.ChangeGameFocus(-1);
 
-// Reset focus counter to 0 (fully focused)
+// Reset počítadla fokusu na 0 (plný fokus)
 input.ResetGameFocus();
 
-// Check if game currently has focus (counter == 0)
+// Kontrola, zda hra aktuálně má fokus (počítadlo == 0)
 bool hasFocus = input.HasGameFocus();
 ```
 
-This is a reference-counted system. Multiple systems can request focus changes, and inputs resume only when all of them release.
+Toto je systém s počítanou referencí. Více systémů může požadovat změny fokusu a vstupy se obnoví pouze tehdy, když je všechny uvolní.
 
 ---
 
-## Caste chyby
+## Časté chyby
 
-### Polling Input on the Server
+### Dotazování vstupu na serveru
 
-Inputs are **client-only**. The server has no concept of keyboard, mouse, or gamepad state. If you call `GetUApi().GetInputByName()` on the server, the result is meaningless.
+Vstupy jsou **pouze na straně klienta**. Server nemá žádný koncept klávesnice, myši ani gamepadu. Pokud zavoláte `GetUApi().GetInputByName()` na serveru, výsledek je bezvýznamný.
 
 ```c
-// WRONG --- this runs on the server, inputs do not exist here
+// ŠPATNĚ --- toto běží na serveru, vstupy zde neexistují
 modded class MissionServer
 {
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
         UAInput input = GetUApi().GetInputByName("UAMyAction");
-        if (input.LocalPress())  // Always false on server!
+        if (input.LocalPress())  // Vždy false na serveru!
         {
             DoSomething();
         }
     }
 }
 
-// CORRECT --- check input on client, send RPC to server
-modded class MissionGameplay  // Client-side mission class
+// SPRÁVNĚ --- kontrola vstupu na klientu, odeslání RPC na server
+modded class MissionGameplay  // Třída mise na straně klienta
 {
     override void OnUpdate(float timeslice)
     {
@@ -667,17 +667,17 @@ modded class MissionGameplay  // Client-side mission class
         UAInput input = GetUApi().GetInputByName("UAMyAction");
         if (input && input.LocalPress())
         {
-            // Send RPC to server to perform the action
+            // Odeslání RPC na server pro provedení akce
             GetGame().RPCSingleParam(null, MY_RPC_ID, null, true);
         }
     }
 }
 ```
 
-### Using OnKeyPress for Player-Facing Akces
+### Použití OnKeyPress pro akce určené hráčům
 
 ```c
-// WRONG --- hardcoded key, player cannot rebind
+// ŠPATNĚ --- natvrdo zakódovaná klávesa, hráč nemůže přemapovat
 override void OnKeyPress(int key)
 {
     super.OnKeyPress(key);
@@ -685,7 +685,7 @@ override void OnKeyPress(int key)
         OpenMyMenu();
 }
 
-// CORRECT --- uses inputs.xml, player can rebind in Settings
+// SPRÁVNĚ --- používá inputs.xml, hráč může přemapovat v Nastavení
 override void OnUpdate(float timeslice)
 {
     super.OnUpdate(timeslice);
@@ -695,18 +695,18 @@ override void OnUpdate(float timeslice)
 }
 ```
 
-### Not Suppressing Input When UI Is Open
+### Nepotlačení vstupu, když je UI otevřeno
 
-When your mod opens a UI panel, the player's WASD keys will still move the character, the mouse will still aim, and clicking will fire the weapon --- unless you disable game inputs:
+Když váš mod otevře UI panel, hráčovy klávesy WASD budou stále pohybovat postavou, myš bude stále mířit a kliknutí vystřelí zbraň --- pokud nedeaktivujete herní vstupy:
 
 ```c
-// WRONG --- character walks around behind the menu
+// ŠPATNĚ --- postava se prochází za nabídkou
 void OpenMenu()
 {
     m_MenuWidget.Show(true);
 }
 
-// CORRECT --- disable movement while menu is open
+// SPRÁVNĚ --- deaktivace pohybu, dokud je nabídka otevřena
 void OpenMenu()
 {
     m_MenuWidget.Show(true);
@@ -722,21 +722,21 @@ void CloseMenu()
 }
 ```
 
-### Forgetting That LocalPress Fires Only ONE Frame
+### Zapomenutí, že LocalPress se spustí pouze JEDEN snímek
 
-`LocalPress()` returns `true` for exactly one frame --- the frame the key transitions from released to pressed. If your code path does not execute on that exact frame, you miss the event.
+`LocalPress()` vrací `true` přesně jeden snímek --- snímek, kdy klávesa přejde z uvolněné na stisknutou. Pokud vaše cesta kódu neběží přesně na tom snímku, událost zmeškáte.
 
 ```c
-// WRONG --- if DoExpensiveCheck() takes time or skips frames, you miss the press
+// ŠPATNĚ --- pokud DoExpensiveCheck() zabere čas nebo přeskočí snímky, zmeškáte stisk
 void SomeCallback()
 {
     if (GetUApi().GetInputByName("UAMyAction").LocalPress())
     {
-        // This might never fire if SomeCallback is not called every frame
+        // Toto se nemusí nikdy spustit, pokud SomeCallback není volán každý snímek
     }
 }
 
-// CORRECT --- always check in a per-frame callback
+// SPRÁVNĚ --- vždy kontrolujte v callbacku per-snímek
 override void OnUpdate(float timeslice)
 {
     super.OnUpdate(timeslice);
@@ -747,114 +747,114 @@ override void OnUpdate(float timeslice)
 }
 ```
 
-### Confusing LocalClick and LocalPress
+### Záměna LocalClick a LocalPress
 
-`LocalClick()` is NOT the same as `LocalPress()`. `LocalClick()` fires when a key is pressed AND released quickly (before the hold threshold). `LocalPress()` fires immediately on key-down. Most mods want `LocalPress()`.
+`LocalClick()` NENÍ totéž jako `LocalPress()`. `LocalClick()` se spustí, když je klávesa stisknuta A uvolněna rychle (před prahem držení). `LocalPress()` se spustí okamžitě při stisknutí klávesy. Většina modů chce `LocalPress()`.
 
 ```c
-// Might not fire if player holds the key too long
-if (input.LocalClick())  // Requires quick tap
+// Nemusí se spustit, pokud hráč drží klávesu příliš dlouho
+if (input.LocalClick())  // Vyžaduje rychlé klepnutí
 
-// Fires immediately on key-down, regardless of hold duration
-if (input.LocalPress())  // Usually what you want
+// Spustí se okamžitě při stisknutí klávesy, bez ohledu na délku držení
+if (input.LocalPress())  // Obvykle to, co chcete
 ```
 
-### Forgetting UpdateControls After Bulk Zmenas
+### Zapomenutí UpdateControls po hromadných změnách
 
-When you `ForceDisable()` multiple inputs, you must call `UpdateControls()` for the changes to take effect:
+Když `ForceDisable()` více vstupů, musíte zavolat `UpdateControls()`, aby se změny projevily:
 
 ```c
-// WRONG --- changes may not apply immediately
+// ŠPATNĚ --- změny se nemusí okamžitě projevit
 GetUApi().GetInputByName("UAFire").ForceDisable(true);
 GetUApi().GetInputByName("UAMoveForward").ForceDisable(true);
 
-// CORRECT --- flush the changes
+// SPRÁVNĚ --- propláchnout změny
 GetUApi().GetInputByName("UAFire").ForceDisable(true);
 GetUApi().GetInputByName("UAMoveForward").ForceDisable(true);
 GetUApi().UpdateControls();
 ```
 
-### Misspelling Supress
+### Překlep v Supress
 
-The engine method is `Supress()` with a single 's' (not `Suppress`). The global method `SupressDalsiFrame()` also uses a single 's'. This is a quirk of the engine API:
+Metoda enginu je `Supress()` s jedním 's' (ne `Suppress`). Globální metoda `SupressNextFrame()` také používá jedno 's'. Toto je zvláštnost API enginu:
 
 ```c
-// WRONG --- will not compile
+// ŠPATNĚ --- nezkompiluje se
 input.Suppress();
 
-// CORRECT --- single 's'
+// SPRÁVNĚ --- jedno 's'
 input.Supress();
 GetUApi().SupressNextFrame(true);
 ```
 
 ---
 
-## Rychla reference
+## Rychlá reference
 
 ```c
-// === Getting inputs ===
+// === Získání vstupů ===
 UAInputAPI api = GetUApi();
 UAInput input = api.GetInputByName("UAMyAction");
 Input rawInput = GetGame().GetInput();
 
-// === State queries (UAInput) ===
-input.LocalPress()        // Key just went down (one frame)
-input.LocalRelease()      // Key just came up (one frame)
-input.LocalClick()        // Quick tap detected
-input.LocalHoldBegin()    // Hold threshold just reached (one frame)
-input.LocalHold()         // Held past threshold (every frame)
-input.LocalDoubleClick()  // Double-tap detected
-input.LocalValue()        // Analog value (float)
+// === Dotazy na stav (UAInput) ===
+input.LocalPress()        // Klávesa právě stisknuta (jeden snímek)
+input.LocalRelease()      // Klávesa právě uvolněna (jeden snímek)
+input.LocalClick()        // Detekováno rychlé klepnutí
+input.LocalHoldBegin()    // Práh držení právě dosažen (jeden snímek)
+input.LocalHold()         // Drženo za prahem (každý snímek)
+input.LocalDoubleClick()  // Detekováno dvojité klepnutí
+input.LocalValue()        // Analogová hodnota (float)
 
-// === State queries (Input, string-based) ===
+// === Dotazy na stav (Input, založené na řetězcích) ===
 rawInput.LocalPress("UAMyAction", false)
 rawInput.LocalRelease("UAMyAction", false)
 rawInput.LocalHold("UAMyAction", false)
 rawInput.LocalDbl("UAMyAction", false)
 rawInput.LocalValue("UAMyAction", false)
 
-// === Suppressing ===
-input.Supress()                    // This input, next frame
-api.SupressNextFrame(true)         // All inputs, next frame
+// === Potlačení ===
+input.Supress()                    // Tento vstup, další snímek
+api.SupressNextFrame(true)         // Všechny vstupy, další snímek
 
-// === Disabling ===
-input.ForceDisable(true)           // Disable persistently
-input.ForceDisable(false)          // Re-enable
-input.Lock()                       // Lock (use excludes instead)
-input.Unlock()                     // Unlock
-api.UpdateControls()               // Flush changes
+// === Deaktivace ===
+input.ForceDisable(true)           // Deaktivovat trvale
+input.ForceDisable(false)          // Reaktivovat
+input.Lock()                       // Uzamknout (raději použijte excludes)
+input.Unlock()                     // Odemknout
+api.UpdateControls()               // Propláchnout změny
 
-// === Exclude groups ===
+// === Exclude skupiny ===
 GetGame().GetMission().AddActiveInputExcludes({"menu"});
 GetGame().GetMission().RemoveActiveInputExcludes({"menu"}, true);
 GetGame().GetMission().EnableAllInputs(true);
 
-// === Raw key state ===
+// === Surový stav kláves ===
 int state = KeyState(KeyCode.KC_LSHIFT);
 GetGame().GetInput().DisableKey(KeyCode.KC_RETURN);
 
-// === Display helpers ===
+// === Pomocníci pro zobrazení ===
 string name = InputUtils.GetButtonNameFromInput("UAMyAction", EUAINPUT_DEVICE_KEYBOARDMOUSE);
 ```
 
 ---
 
-*This chapter covers the script-side Input System API. For the XML configuration that registers keybindings, see [Chapter 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).*
+*Tato kapitola pokrývá skriptovou stranu API vstupního systému. Pro XML konfiguraci, která registruje vazby kláves, viz [Kapitola 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).*
 
 ---
 
-## Doporucene postupy
+## Doporučené postupy
 
-- **Always use `UAInput` via inputs.xml for player-facing keybindings.** This allows players to rebind keys, shows actions in the Controls menu, and supports gamepad input. Reserve `OnKeyPress` for debug shortcuts only.
-- **Call `AddActiveInputExcludes({"menu"})` when opening full-screen UI.** Without this, player movement keys (WASD), mouse aiming, and weapon firing remain active behind your menu, causing accidental actions.
-- **Check inputs only in per-frame callbacks like `OnUpdate()`.** `LocalPress()` returns true for exactly one frame. Checking it in event handlers or callbacks that do not run every frame will miss key presses.
-- **Call `GetUApi().UpdateControls()` after bulk `ForceDisable()` changes.** Without this flush call, disable/enable state changes may not take effect until the next frame, causing one-frame input bleed.
-- **Remember that `Supress()` uses a single "s".** The engine API spells it `Supress()` and `SupressDalsiFrame()`. Using the correct English spelling `Suppress` will not compile.
+- **Vždy používejte `UAInput` přes inputs.xml pro vazby kláves určené hráčům.** To umožňuje hráčům přemapovat klávesy, zobrazuje akce v nabídce ovládání a podporuje vstup z gamepadu. Vyhraďte `OnKeyPress` pouze pro ladicí zkratky.
+- **Volejte `AddActiveInputExcludes({"menu"})` při otevírání celoobrazovkového UI.** Bez toho klávesy pohybu hráče (WASD), míření myší a střelba ze zbraně zůstávají aktivní za vaší nabídkou, což způsobuje nechtěné akce.
+- **Kontrolujte vstupy pouze v callbackech per-snímek jako `OnUpdate()`.** `LocalPress()` vrací true přesně jeden snímek. Kontrola v handlerech událostí nebo callbackech, které neběží každý snímek, zmeší stisknutí kláves.
+- **Volejte `GetUApi().UpdateControls()` po hromadných změnách `ForceDisable()`.** Bez tohoto volání pro propláchnutí nemusí změny stavu deaktivace/aktivace nabýt účinnosti do dalšího snímku, což způsobí jednorámcové prosakování vstupu.
+- **Pamatujte, že `Supress()` používá jedno "s".** API enginu to píše `Supress()` a `SupressNextFrame()`. Použití správného anglického pravopisu `Suppress` se nezkompiluje.
 
 ---
 
 ## Kompatibilita a dopad
 
-- **Multi-Mod:** Input action names are global. Two mods registering the same `UAInput` name (e.g., `"UAOpenMenu"`) will collide. Always prefix with your mod name: `"UAMyModOpenMenu"`. Input exclude groups are shared -- one mod activating `"menu"` excludes affects all mods.
-- **Performance:** Input polling is lightweight. `GetUApi().GetInputByName()` performs a hash lookup. Caching the `UAInput` reference in a member variable avoids repeated lookups but is not strictly necessary for performance.
-- **Server/Client:** Inputs exist only on the client. The server has no keyboard, mouse, or gamepad state. Always detect input on the client and send RPCs to the server for authoritative actions.
+- **Více modů:** Jména vstupních akcí jsou globální. Dva mody registrující stejné jméno `UAInput` (např. `"UAOpenMenu"`) se střetnou. Vždy prefixujte jménem vašeho modu: `"UAMyModOpenMenu"`. Exclude skupiny vstupů jsou sdílené --- jeden mod aktivující `"menu"` excludes ovlivňuje všechny mody.
+- **Výkon:** Dotazování vstupů je lehké. `GetUApi().GetInputByName()` provádí hash lookup. Cachování reference `UAInput` v členské proměnné zabraňuje opakovaným lookupům, ale není to nutné z hlediska výkonu.
+- **Server/Klient:** Vstupy existují pouze na klientu. Server nemá žádný stav klávesnice, myši ani gamepadu. Vždy detekujte vstup na klientu a odesílejte RPC na server pro autoritativní akce.

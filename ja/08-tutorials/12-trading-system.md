@@ -1,30 +1,34 @@
-# Chapter 8.12: Building a Trading System
+# Chapter 8.12: トレーディングシステムの構築
 
-[Home](../../README.md) | [<< Previous: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Next: The Diagnostic Menu >>](13-diag-menu.md)
+[Home](../../README.md) | [<< 前へ: カスタム衣類の作成](11-clothing-mod.md) | **トレーディングシステムの構築** | [次へ: 診断メニュー >>](13-diag-menu.md)
+
+---
+
+> **概要:** 完全なNPC不要のショップシステムを構築します：JSON config、サーバー検証付きの売買、カテゴリ分けされたUI、通貨ベースの取引。このWiki内で最も複雑なチュートリアルで、データモデリング、RPCラウンドトリップ、インベントリ操作、アンチチート原則をカバーします。
 
 ---
 
 ## 目次
 
-- [What We Are Building](#what-we-are-building)
-- [Step 1: Data Model (3_Game)](#step-1-data-model-3_game)
-- [Step 2: RPC Constants (3_Game)](#step-2-rpc-constants-3_game)
-- [Step 3: Server-Side Shop Manager (4_World)](#step-3-server-side-shop-manager-4_world)
-- [Step 4: Client-Side Shop UI (5_Mission)](#step-4-client-side-shop-ui-5_mission)
-- [Step 5: Layout File](#step-5-layout-file)
-- [Step 6: Mission Hook and Keybind](#step-6-mission-hook-and-keybind)
-- [Step 7: Currency Item](#step-7-currency-item)
-- [Step 8: Shop Config JSON](#step-8-shop-config-json)
-- [Step 9: Build and Test](#step-9-build-and-test)
-- [Security Considerations](#security-considerations)
-- [Complete Code Reference](#complete-code-reference)
-- [Best Practices / Common Mistakes / What You Learned](#best-practices)
+- [作るもの](#what-we-are-building)
+- [Step 1: データモデル（3_Game）](#step-1-data-model-3_game)
+- [Step 2: RPC定数（3_Game）](#step-2-rpc-constants-3_game)
+- [Step 3: サーバーサイドショップマネージャー（4_World）](#step-3-server-side-shop-manager-4_world)
+- [Step 4: クライアントサイドショップUI（5_Mission）](#step-4-client-side-shop-ui-5_mission)
+- [Step 5: レイアウトファイル](#step-5-layout-file)
+- [Step 6: ミッションフックとキーバインド](#step-6-mission-hook-and-keybind)
+- [Step 7: 通貨アイテム](#step-7-currency-item)
+- [Step 8: ショップ設定JSON](#step-8-shop-config-json)
+- [Step 9: ビルドとテスト](#step-9-build-and-test)
+- [セキュリティの考慮事項](#security-considerations)
+- [完全なコードリファレンス](#complete-code-reference)
+- [ベストプラクティス / よくある間違い / 学んだこと](#best-practices)
 
 ---
 
-## What We Are Building
+## 作るもの
 
-Players press F6 to open a shop menu, browse items by category (Weapons, Food, Medical), and buy/sell using a currency item. The server validates every transaction -- the client never decides prices or spawns items.
+プレイヤーはF6を押してショップメニューを開き、カテゴリ（Weapons、Food、Medical）でアイテムを閲覧し、通貨アイテムを使って売買します。サーバーがすべての取引を検証します -- クライアントは価格を決定したりアイテムをスポーンしたりしません。
 
 ```mermaid
 sequenceDiagram
@@ -32,32 +36,32 @@ sequenceDiagram
     participant UI as ShopMenu
     participant S as ShopManager (Server)
 
-    P->>UI: Opens shop (keybind)
+    P->>UI: ショップを開く（キーバインド）
     UI->>S: RPC: RequestShopData
     S-->>UI: RPC: ShopDataResponse(categories, items)
-    UI->>UI: Populate UI with items
-    P->>UI: Clicks "Buy AKM"
+    UI->>UI: UIにアイテムを表示
+    P->>UI: 「Buy AKM」をクリック
     UI->>S: RPC: BuyItem("AKM")
-    S->>S: Validate currency count
-    S->>S: Delete currency items
-    S->>S: Spawn purchased item
+    S->>S: 通貨数を検証
+    S->>S: 通貨アイテムを削除
+    S->>S: 購入アイテムをスポーン
     S-->>UI: RPC: TransactionResult(success)
-    UI->>UI: Update balance display
+    UI->>UI: 残高表示を更新
 ```
 
 ```
 CLIENT                                SERVER
-1. Press F6 --> REQUEST_SHOP_DATA ->  2. Load config, count currency
+1. F6を押す --> REQUEST_SHOP_DATA ->  2. config読み込み、通貨カウント
                                          SHOP_DATA_RESPONSE ->
-3. Show categories + items
-   Click Buy --> BUY_ITEM (cls,qty) -> 4. Validate, remove currency, spawn
+3. カテゴリ + アイテムを表示
+   Buyをクリック --> BUY_ITEM (cls,qty) -> 4. 検証、通貨削除、スポーン
                                          TRANSACTION_RESULT ->
-5. Show result, update balance
+5. 結果表示、残高更新
 ```
 
-**Key rule:** Client sends `(className, quantity)` only. Server looks up the price.
+**重要なルール：** クライアントは `(className, quantity)` のみを送信します。サーバーが価格を参照します。
 
-### Mod Structure
+### Mod構成
 
 ```
 ShopDemo/
@@ -71,7 +75,7 @@ ShopDemo/
 
 ---
 
-## Step 1: Data Model (3_Game)
+## Step 1: データモデル（3_Game）
 
 ### `Scripts/3_Game/ShopDemo/ShopDemoData.c`
 
@@ -100,11 +104,11 @@ class ShopConfig
 };
 ```
 
-Keep `SellPrice < BuyPrice` always to prevent infinite money loops.
+無限のマネーループを防ぐため、常に `SellPrice < BuyPrice` を維持してください。
 
 ---
 
-## Step 2: RPC Constants (3_Game)
+## Step 2: RPC定数（3_Game）
 
 ### `Scripts/3_Game/ShopDemo/ShopDemoRPC.c`
 
@@ -121,7 +125,7 @@ class ShopDemoRPC
 
 ---
 
-## Step 3: Server-Side Shop Manager (4_World)
+## Step 3: サーバーサイドショップマネージャー（4_World）
 
 ### `Scripts/4_World/ShopDemo/ShopDemoManager.c`
 
@@ -316,7 +320,7 @@ modded class PlayerBase
         if (!player) return;
         ShopDemoManager mgr = ShopDemoManager.Get();
         ShopConfig cfg = mgr.GetConfig();
-        // Serialize: "CatName|cls,name,buy,sell;cls2,...\nCat2|..."
+        // シリアライズ: "CatName|cls,name,buy,sell;cls2,...\nCat2|..."
         string payload = "";
         for (int c = 0; c < cfg.Categories.Count(); c++)
         {
@@ -357,11 +361,11 @@ modded class MissionServer
 };
 ```
 
-**Key decisions:** Currency removed *before* spawning items (prevents duplication). Always `DeleteSafe()` for networked items. Quantity clamped to 1-10 to prevent abuse.
+**重要な設計判断：** 通貨はアイテムスポーン*前に*削除されます（複製を防止）。ネットワーク同期されたアイテムには常に `DeleteSafe()` を使用。数量は不正防止のため1〜10にクランプ。
 
 ---
 
-## Step 4: Client-Side Shop UI (5_Mission)
+## Step 4: クライアントサイドショップUI（5_Mission）
 
 ### `Scripts/5_Mission/ShopDemo/ShopDemoMenu.c`
 
@@ -454,7 +458,7 @@ class ShopDemoMenu extends ScriptedWidgetEventHandler
             }
             m_CatItems.Insert(ci);
         }
-        // Build category buttons
+        // カテゴリボタンの構築
         if (m_CategoryPanel)
         {
             for (int b = 0; b < m_CatNames.Count(); b++)
@@ -531,11 +535,11 @@ class ShopDemoMenu extends ScriptedWidgetEventHandler
 
 ---
 
-## Step 5: Layout File
+## Step 5: レイアウトファイル
 
 ### `GUI/layouts/shop_menu.layout`
 
-Three columns: Categories (left 20%), Items (center 46%), Details (right 26%).
+3カラム構成：Categories（左20%）、Items（中央46%）、Details（右26%）。
 
 ```
 FrameWidgetClass ShopMenuRoot {
@@ -568,7 +572,7 @@ FrameWidgetClass ShopMenuRoot {
 
 ---
 
-## Step 6: Mission Hook and Keybind
+## Step 6: ミッションフックとキーバインド
 
 ### `Scripts/5_Mission/ShopDemo/ShopDemoMission.c`
 
@@ -608,7 +612,7 @@ modded class MissionGameplay
 };
 ```
 
-For released mods, use `inputs.xml` so players can remap the key:
+リリース版Modでは `inputs.xml` を使用して、プレイヤーがキーを再割り当てできるようにします：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -621,95 +625,95 @@ For released mods, use `inputs.xml` so players can remap the key:
 
 ---
 
-## Step 7: Currency Item
+## Step 7: 通貨アイテム
 
-You can use any existing item -- set `CurrencyClassName` to `"Rag"` in the JSON and rags become money. For a custom coin, see [Chapter 8.2: Custom Item](02-custom-item.md).
-
----
-
-## Step 8: Shop Config JSON
-
-Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edit prices, add categories/items, restart server. Always keep `SellPrice < BuyPrice`.
+任意の既存アイテムを使用できます -- JSONで `CurrencyClassName` を `"Rag"` に設定すると、ラグがお金になります。カスタムコインについては [Chapter 8.2: カスタムアイテム](02-custom-item.md) を参照してください。
 
 ---
 
-## Step 9: Build and Test
+## Step 8: ショップ設定JSON
 
-1. Pack `ShopDemo/` into PBO, add to server+client `@ShopDemo/addons/`, add `-mod=@ShopDemo`
-2. Spawn currency, press F6, browse, buy/sell
-3. Check server log for `[ShopDemo]` lines
+最初のサーバー起動時に `$profile:ShopDemo/ShopConfig.json` に自動生成されます。価格を編集し、カテゴリ/アイテムを追加し、サーバーを再起動してください。常に `SellPrice < BuyPrice` を維持してください。
 
-| Test Case | Expected |
+---
+
+## Step 9: ビルドとテスト
+
+1. `ShopDemo/` をPBOにパックし、サーバー+クライアントの `@ShopDemo/addons/` に追加、`-mod=@ShopDemo` を追加
+2. 通貨をスポーン、F6を押す、閲覧、売買
+3. サーバーログで `[ShopDemo]` の行を確認
+
+| テストケース | 期待される結果 |
 |-----------|----------|
-| Buy with no currency | "Need X, have 0" |
-| Buy unknown class (hacked) | "Item not in shop" |
-| Sell item not owned | "You don't have that item" |
-| Inventory full on buy | Item drops on ground |
+| 通貨なしで購入 | 「Need X, have 0」 |
+| 不明なクラスで購入（ハック） | 「Item not in shop」 |
+| 所有していないアイテムを販売 | 「You don't have that item」 |
+| インベントリが満杯の状態で購入 | アイテムが地面にドロップ |
 
 ---
 
-## Security Considerations
+## セキュリティの考慮事項
 
-1. **NEVER trust client-sent prices.** Client sends `(className, qty)` only. Server looks up price.
-2. **Delete before spawn.** Remove currency first, then create items. Prevents duplication.
-3. **Validate existence.** Confirm item is in inventory before giving sell currency.
-4. **Log everything.** Print player name, item, amount for every transaction.
-5. **Quantity bounds.** Reject `qty <= 0` or `qty > 10`.
-6. **Rate limit** in production: 500ms cooldown per player per transaction.
+1. **クライアントが送信した価格を決して信頼しないでください。** クライアントは `(className, qty)` のみを送信します。サーバーが価格を参照します。
+2. **スポーン前に削除。** 通貨を先に削除し、次にアイテムを作成します。複製を防止します。
+3. **存在の検証。** 売却通貨を付与する前にアイテムがインベントリにあることを確認します。
+4. **すべてをログに記録。** すべての取引でプレイヤー名、アイテム、金額をPrintします。
+5. **数量の範囲制限。** `qty <= 0` または `qty > 10` を拒否します。
+6. 本番環境では **レート制限** を設けます：プレイヤーあたり取引ごとに500msのクールダウン。
 
 ---
 
-## Complete Code Reference
+## 完全なコードリファレンス
 
 | ファイル | レイヤー | 目的 |
 |------|-------|---------|
-| `ShopDemoRPC.c` | 3_Game | RPC ID constants |
-| `ShopDemoData.c` | 3_Game | Data classes: ShopItem, ShopCategory, ShopConfig |
-| `ShopDemoManager.c` | 4_World | Server: config, buy/sell logic, inventory, RPC handlers |
-| `ShopDemoMenu.c` | 5_Mission | Client: UI, dynamic widgets, RPC send/receive |
-| `ShopDemoMission.c` | 5_Mission | Mission hook: init, keybind, RPC routing |
-| `shop_menu.layout` | GUI | 3-panel layout |
+| `ShopDemoRPC.c` | 3_Game | RPC ID定数 |
+| `ShopDemoData.c` | 3_Game | データクラス：ShopItem、ShopCategory、ShopConfig |
+| `ShopDemoManager.c` | 4_World | サーバー：config、売買ロジック、インベントリ、RPCハンドラー |
+| `ShopDemoMenu.c` | 5_Mission | クライアント：UI、動的ウィジェット、RPC送受信 |
+| `ShopDemoMission.c` | 5_Mission | ミッションフック：初期化、キーバインド、RPCルーティング |
+| `shop_menu.layout` | GUI | 3パネルレイアウト |
 
 ---
 
 ## ベストプラクティス
 
-- **Server is the single source of truth.** Client is a display terminal.
-- **Use `DeleteSafe()` not `Delete()`.** Handles network sync and locked slots.
-- **Data classes in 3_Game.** Visible to both 4_World and 5_Mission.
-- **Always call `super` in overrides.** Breaking the chain breaks other mods.
-- **Clean up dynamic widgets.** Every `CreateWidget` needs `Unlink` on close.
+- **サーバーが唯一の信頼できるソースです。** クライアントは表示端末です。
+- **`Delete()` ではなく `DeleteSafe()` を使用してください。** ネットワーク同期とロックされたスロットを処理します。
+- **データクラスは3_Gameに配置。** 4_Worldと5_Missionの両方から参照可能です。
+- **オーバーライドでは常に `super` を呼び出してください。** チェーンを壊すと他のModも壊れます。
+- **動的ウィジェットをクリーンアップしてください。** すべての `CreateWidget` にはクローズ時の `Unlink` が必要です。
 
 ## 理論と実践
 
 | 概念 | 理論 | 現実 |
 |---------|--------|---------|
-| `JsonFileLoader.LoadFile()` | Loads cleanly | Trailing commas cause silent failures. Validate JSON externally. |
-| String RPC serialization | Simple | 500+ items may hit size limits. Paginate for large shops. |
-| `CreateInInventory()` | Always works | Returns null if inventory full. Always check. |
-| Listen server testing | Fast iteration | Hides network bugs. Test on dedicated server. |
+| `JsonFileLoader.LoadFile()` | きれいに読み込まれる | 末尾カンマはサイレントエラーを引き起こします。外部でJSONを検証してください。 |
+| 文字列RPCシリアライゼーション | シンプル | 500+アイテムはサイズ制限に達する可能性があります。大規模ショップではページネーションを行ってください。 |
+| `CreateInInventory()` | 常に機能する | インベントリが満杯の場合nullを返します。常にチェックしてください。 |
+| Listenサーバーでのテスト | 素早い反復 | ネットワークバグを隠します。専用サーバーでテストしてください。 |
 
-## What You Learned
+## 学んだこと
 
-- JSON config loading with `JsonFileLoader<T>` and auto-generation of defaults
-- Singleton pattern for server-side game managers
-- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning
-- String serialization of complex data over RPC (categories, items, prices)
-- Dynamic widget creation for data-driven UI
-- Full buy/sell transaction flow with server-only authority
-- Security principles for multiplayer economy systems
+- `JsonFileLoader<T>` を使用したJSON config読み込みとデフォルト値の自動生成
+- サーバーサイドゲームマネージャーのシングルトンパターン
+- インベントリの列挙、カウント、削除（`DeleteSafe`）、スポーン
+- RPC経由の複雑なデータの文字列シリアライゼーション（カテゴリ、アイテム、価格）
+- データ駆動UIのための動的ウィジェット作成
+- サーバー専用権限による完全な売買取引フロー
+- マルチプレイヤー経済システムのセキュリティ原則
 
 ## よくある間違い
 
 | 間違い | 修正方法 |
 |---------|-----|
-| Client sends price | Send `(className, qty)` only. Server decides price. |
-| Spawn before paying | Remove currency first, then create items. |
-| Skip `super.OnRPC()` | Always call super -- other mods need the chain. |
-| `Delete()` on networked items | Use `DeleteSafe()`. |
-| Ignore `CreateInInventory` return | Check for null, fall back to ground spawn. |
-| Redeclare vars in else-if | Declare once before the if-chain (Enforce Script rule). |
+| クライアントが価格を送信 | `(className, qty)` のみを送信。サーバーが価格を決定。 |
+| 支払い前にスポーン | 通貨を先に削除し、次にアイテムを作成。 |
+| `super.OnRPC()` をスキップ | 常にsuperを呼び出す -- 他のModがチェーンを必要とします。 |
+| ネットワークアイテムに `Delete()` | `DeleteSafe()` を使用。 |
+| `CreateInInventory` の戻り値を無視 | nullチェックし、地面スポーンにフォールバック。 |
+| else-ifで変数を再宣言 | ifチェーンの前に一度宣言（Enforce Scriptのルール）。 |
 
 ---
 
-**Previous:** [Chapter 8.11: Clothing Mod](11-clothing-mod.md)
+**前へ：** [Chapter 8.11: 衣類Mod](11-clothing-mod.md)
