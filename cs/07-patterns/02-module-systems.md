@@ -1,24 +1,24 @@
 # Chapter 7.2: Module / Plugin Systems
 
-[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
+[Domů](../../README.md) | [<< Předchozí: Vzor Singleton](01-singletons.md) | **Module / Plugin Systems** | [Další: Vzory RPC >>](03-rpc-patterns.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle events --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- to each module in a predictable order.
+Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle dokoncets --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- to každý module in a predictable order.
 
-This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and MyMod's `MyModuleManager`. Each solves the same problem differently; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
+This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and a vlastní statická module manager. Each solves the stejný problem odlišnýly; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
 
 ---
 
-## Table of Contents
+## Obsah
 
 - [Why Modules?](#why-modules)
 - [CF_ModuleCore (COT / Expansion)](#cf_modulecore-cot--expansion)
 - [VPP PluginBase / ConfigurablePlugin](#vpp-pluginbase--configurableplugin)
 - [Dabs Attribute-Based Registration](#dabs-attribute-based-registration)
-- [MyMod MyModuleManager](#custom-static-module-manager)
+- [Custom Static Module Manager](#vlastní-statická-module-manager)
 - [Module Lifecycle: The Universal Contract](#module-lifecycle-the-universal-contract)
 - [Best Practices for Module Design](#best-practices-for-module-design)
 - [Comparison Table](#comparison-table)
@@ -27,7 +27,7 @@ This chapter examines four real-world approaches: Community Framework's `CF_Modu
 
 ## Why Modules?
 
-Without a module system, a DayZ mod typically ends up with a monolithic modded `MissionServer` or `MissionGameplay` class that grows until it becomes unmanageable:
+Bez a module system, a DayZ mod typicky ends up with a monolithic modded `MissionServer` or `MissionGameplay` class that grows until it becomes unmanageable:
 
 ```c
 // BAD: Everything crammed into one modded class
@@ -56,7 +56,7 @@ modded class MissionServer
 };
 ```
 
-A module system replaces this with a single, stable hook point:
+A module system replaces this with a jeden, stable hook point:
 
 ```c
 modded class MissionServer
@@ -83,20 +83,20 @@ modded class MissionServer
 };
 ```
 
-Each module is an independent class with its own file, its own state, and its own lifecycle hooks. Adding a new feature means adding a new module --- not editing a 3000-line mission class.
+Each module is an nezávislý class with its own file, its own state, and its own lifecycle hooks. Adding a nový feature means adding a nový module --- not editing a 3000-line mission class.
 
 ---
 
 ## CF_ModuleCore (COT / Expansion)
 
-Community Framework (CF) provides the most widely-used module system in the DayZ modding ecosystem. Both COT and Expansion build on it.
+Community Framework (CF) provides the většina widely-used module system in the DayZ modding ecosystem. Oba COT and Expansion build on it.
 
 ### Jak to funguje
 
 1. You declare a module class that extends one of CF's module base classes
 2. You register it in `config.cpp` under `CfgPatches` / `CfgMods`
-3. CF's `CF_ModuleCoreManager` auto-discovers and instantiates all registered module classes at startup
-4. Lifecycle events are dispatched automatically
+3. CF's `CF_ModuleCoreManager` auto-discovers and instantiates all registered module classes při startu
+4. Lifecycle dokoncets are dispatched automatickýally
 
 ### Module Base Classes
 
@@ -160,13 +160,13 @@ if (lootMod)
 - **Auto-discovery**: modules are instantiated by CF based on `config.cpp` declarations --- no manual `new` calls
 - **Event args**: lifecycle hooks receive `CF_EventArgs` with context data
 - **Dependency on CF**: your mod requires Community Framework as a dependency
-- **Widely supported**: if your mod targets servers that already run COT or Expansion, CF is already present
+- **Widely podporovaný**: if your mod targets servers that již run COT or Expansion, CF is již present
 
 ---
 
 ## VPP PluginBase / ConfigurablePlugin
 
-VPP Admin Tools uses a plugin architecture where each admin tool is a plugin class registered with a central manager.
+VPP Admin Tools uses a plugin architecture where každý admin přílišl is a plugin class registered with a central manager.
 
 ### Plugin Base
 
@@ -186,7 +186,7 @@ class PluginBase : Managed
 
 ### ConfigurablePlugin
 
-VPP extends the base with a config-aware variant that automatically loads/saves settings:
+VPP extends the base with a config-aware variant that automatickýally loads/saves settings:
 
 ```c
 class ConfigurablePlugin : PluginBase
@@ -230,7 +230,7 @@ GetPluginManager().RegisterPlugin(new VPPWeatherPlugin());
 
 ### Key Characteristics
 
-- **Manual registration**: each plugin is explicitly `new`-ed and registered
+- **Manual registration**: každý plugin is explicitly `new`-ed and registered
 - **Config integration**: `ConfigurablePlugin` merges config management with the module lifecycle
 - **Self-contained**: no dependency on CF; VPP's plugin manager is its own system
 - **Clear ownership**: the plugin manager holds `ref` to all plugins, controlling their lifetime
@@ -243,7 +243,7 @@ The Dabs Framework (used in Dabs Framework Admin Tools) uses a more modern appro
 
 ### The Concept
 
-Instead of manually registering modules, you annotate a class with an attribute, and the framework discovers it at startup using reflection:
+Instead of ručně registering modules, you annotate a class with an attribute, and the framework discovers it při startu using reflection:
 
 ```c
 // Dabs pattern (conceptual)
@@ -258,24 +258,24 @@ class DabsAdminESP : CF_ModuleWorld
 };
 ```
 
-The `CF_RegisterModule` attribute tells CF's module manager to instantiate this class automatically. No manual `Register()` call needed.
+The `CF_RegisterModule` attribute tells CF's module manager to instantiate tato třída automatickýally. No manual `Register()` call needed.
 
 ### How Discovery Works
 
-At startup, CF scans all loaded script classes for the registration attribute. For each match, it creates an instance and adds it to the module manager. This happens before `OnInit()` is called on any module.
+At startup, CF scans all loaded script classes for the registration attribute. For každý match, it creates an instance and adds it to the module manager. This happens before `OnInit()` is called on jakýkoli module.
 
 ### Key Characteristics
 
 - **Zero boilerplate**: no registration code in mission classes
-- **Declarative**: the class itself declares that it is a module
-- **Relies on CF**: only works with Community Framework's attribute processing
-- **Discoverability**: you can find all modules by searching for the attribute in the codebase
+- **Declarative**: třída itself declares that it is a module
+- **Relies on CF**: pouze works with Community Framework's attribute processing
+- **Discoverability**: můžete find all modules by searching for the attribute in the codebase
 
 ---
 
-## MyMod MyModuleManager
+## Custom Static Module Manager
 
-MyFramework uses an explicit registration pattern with a static manager class. There is no instance of the manager --- it is entirely static methods and static storage.
+This approach uses an explicit registration pattern with a statická manager class. There is no instance of the manager --- it is celýly statická methods and statická storage. This is užitečný when chcete zero dependencies on externí frameworks.
 
 ### Module Base Classes
 
@@ -308,7 +308,7 @@ class MyClientModule : MyModuleBase
 
 ### Registration
 
-Modules register themselves explicitly, typically from modded mission classes:
+Modules register themselves explicitly, typicky from modded mission classes:
 
 ```c
 // In modded MissionServer.OnInit():
@@ -318,7 +318,7 @@ MyModuleManager.Register(new MyAIServerModule());
 
 ### Lifecycle Dispatch
 
-The modded mission classes call into `MyModuleManager` at each lifecycle point:
+The modded mission classes call into `MyModuleManager` at každý lifecycle point:
 
 ```c
 modded class MissionServer
@@ -346,15 +346,15 @@ modded class MissionServer
 
 ### Listen-Server Safety
 
-MyMod's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle events twice on listen servers (where both `MissionServer` and `MissionGameplay` run in the same process).
+The vlastní module system's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle dokoncets twice on listen servers (where oba `MissionServer` and `MissionGameplay` run in the stejný process).
 
-The base `MyModuleBase` returns `true` from both --- which is why the codebase warns against subclassing it directly.
+The base `MyModuleBase` returns `true` from oba --- which is why the codebase warns against subclassing it přímo.
 
 ### Key Characteristics
 
-- **Zero dependencies**: no CF, no external frameworks
-- **Static manager**: no `GetInstance()` needed; purely static API
-- **Explicit registration**: full control over what gets registered and when
+- **Zero dependencies**: no CF, no externí frameworks
+- **Static manager**: no `GetInstance()` needed; purely statická API
+- **Explicit registration**: plný control over what gets registered and when
 - **Listen-server safe**: typed subclasses prevent double-dispatch
 - **Centralized cleanup**: `MyModuleManager.Cleanup()` tears down all modules and core timers
 
@@ -362,7 +362,7 @@ The base `MyModuleBase` returns `true` from both --- which is why the codebase w
 
 ## Module Lifecycle: The Universal Contract
 
-Despite implementation differences, all four frameworks follow the same lifecycle contract:
+Despite implementation differences, all four frameworks follow the stejný lifecycle contract:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -399,20 +399,20 @@ Despite implementation differences, all four frameworks follow the same lifecycl
 └─────────────────────────────────────────────────────┘
 ```
 
-### Rules
+### Pravidla
 
-1. **OnInit comes before OnMissionStart.** Never load configs or spawn entities in `OnInit()` --- the world may not be ready yet.
-2. **OnUpdate receives delta time.** Always use `dt` for time-based logic, never assume a fixed frame rate.
-3. **OnMissionFinish must clean up everything.** Every `ref` collection must be cleared. Every event subscription must be removed. Every singleton must be destroyed. This is the only reliable teardown point.
-4. **Modules should not depend on each other's initialization order.** If Module A needs Module B, use lazy access (`GetModule()`) rather than assuming B was registered first.
+1. **OnInit comes before OnMissionStart.** Nikdy load configs or spawn entities in `OnInit()` --- the world may not be ready yet.
+2. **OnAktualizujte receives delta time.** Vždy use `dt` for time-based logic, nikdy assume a fixed snímková frekvence.
+3. **OnMissionFinish must clean up každýthing.** Every `ref` collection must be cleared. Every dokoncet subscription must be removed. Every jedenton must be destroyed. Toto je pouze reliable teardown point.
+4. **Modules should not depend on každý jiný's initialization order.** If Module A needs Module B, use lazy access (`GetModule()`) spíše než assuming B was registered first.
 
 ---
 
-## Best Practices for Module Design
+## Osvědčené postupy for Module Design
 
 ### 1. One Module, One Responsibility
 
-A module should own exactly one domain. If you find yourself writing `VehicleAndWeatherAndLootModule`, split it.
+A module should own exactly one domain. Pokud find yourself writing `VehicleAndWeatherAndLootModule`, split it.
 
 ```c
 // GOOD: Focused modules
@@ -424,9 +424,9 @@ class MyWeatherModule : MyServerModule { ... }
 class MyEverythingModule : MyServerModule { ... }
 ```
 
-### 2. Keep OnUpdate Cheap
+### 2. Udržujte OnAktualizujte Cheap
 
-`OnUpdate` runs every frame. If your module does expensive work (file I/O, world scans, pathfinding), do it on a timer or batch it across frames:
+`OnUpdate` runs každý frame. Pokud váš module does expensive work (file I/O, world scans, pathfinding), do it on a timer or batch it across frames:
 
 ```c
 class MyCleanupModule : MyServerModule
@@ -448,7 +448,7 @@ class MyCleanupModule : MyServerModule
 
 ### 3. Register RPCs in OnInit, Not OnMissionStart
 
-RPC handlers must be in place before any client can send a message. `OnInit()` runs during module registration, which happens early in the mission setup. `OnMissionStart()` may be too late if clients connect fast.
+RPC handlers must be in place before jakýkoli client can send a message. `OnInit()` runs during module registration, which happens early in the mission setup. `OnMissionStart()` may be příliš late if clients connect fast.
 
 ```c
 class MyModule : MyServerModule
@@ -468,7 +468,7 @@ class MyModule : MyServerModule
 
 ### 4. Use the Module Manager for Cross-Module Access
 
-Do not hold direct references to other modules. Use the manager's lookup:
+Do not hold direct references to jiný modules. Use the manager's lookup:
 
 ```c
 // GOOD: Loose coupling through the manager
@@ -485,14 +485,14 @@ MyAIServerModule.s_Instance.PauseSpawning();
 
 ### 5. Guard Against Missing Dependencies
 
-Not every server runs every mod. If your module optionally integrates with another mod, use preprocessor checks:
+Not každý server runs každý mod. Pokud váš module volitelnýly integrates with další mod, use preprocessor checks:
 
 ```c
 override void OnMissionStart()
 {
     super.OnMissionStart();
 
-    #ifdef MyAI
+    #ifdef MYMOD_AI
     MyEventBus.OnMissionStarted.Insert(OnAIMissionStarted);
     #endif
 }
@@ -520,19 +520,52 @@ override void OnMissionFinish()
 
 ## Comparison Table
 
-| Feature | CF_ModuleCore | VPP Plugin | Dabs Attribute | MyMod Module |
+| Feature | CF_ModuleCore | VPP Plugin | Dabs Attribute | Custom Module |
 |---------|--------------|------------|----------------|---------------|
 | **Discovery** | config.cpp + auto | Manual `Register()` | Attribute scan | Manual `Register()` |
 | **Base classes** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribute | ServerModule / ClientModule |
 | **Dependencies** | Requires CF | Self-contained | Requires CF | Self-contained |
 | **Listen-server safe** | CF handles it | Manual check | CF handles it | Typed subclasses |
 | **Config integration** | Separate | Built into ConfigurablePlugin | Separate | Via MyConfigManager |
-| **Update dispatch** | Automatic | Manager calls `OnUpdate` | Automatic | Manager calls `OnUpdate` |
+| **Aktualizujte dispatch** | Automatic | Manager calls `OnUpdate` | Automatic | Manager calls `OnUpdate` |
 | **Cleanup** | CF handles it | Manual `OnDestroy` | CF handles it | `MyModuleManager.Cleanup()` |
 | **Cross-mod access** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
 
-Choose the approach that matches your mod's dependency profile. If you already depend on CF, use `CF_ModuleCore`. If you want zero external dependencies, build your own system following the MyMod or VPP pattern.
+Choose the approach that matches your mod's dependency profile. Pokud již depend on CF, use `CF_ModuleCore`. If chcete zero externí dependencies, build your own system following the vlastní manager or VPP pattern.
 
 ---
 
-[<< Předchozí: Singleton Pattern](01-singletons.md) | [Domů](../README.md) | [Další: RPC Patterns >>](03-rpc-patterns.md)
+## Kompatibilita a dopad
+
+- **Více modů:** Multiple mods can každý register their own modules with the stejný manager (CF, VPP, or vlastní). Name collisions pouze happen if two mods register the stejný class type --- use unique class names prefixed with your mod tag.
+- **Pořadí načítání:** CF auto-discovers modules from `config.cpp`, so load order follows `requiredAddons`. Custom managers register modules in `OnInit()`, where the `modded class` chain determines order. Modules should not depend on registration order --- use lazy access patterns.
+- **Listen Server:** On listen servers, oba `MissionServer` and `MissionGameplay` run in the stejný process. Pokud váš module manager dispatches `OnUpdate` from oba, modules receive double ticks. Use typed subclasses (`ServerModule` / `ClientModule`) that return `IsServer()` or `IsClient()` to prevent this.
+- **Výkon:** Module dispatch adds one loop iteration per registered module per lifecycle call. With 10--20 modules this is negligible. Zajistěte individual module `OnUpdate` methods are cheap (viz Chapter 7.7).
+- **Migration:** When upgrading DayZ versions, module systems are stable as long as the base class API (`CF_ModuleWorld`, `PluginBase`, etc.) ne change. Pin your CF dependency version to avoid breakage.
+
+---
+
+## Časté chyby
+
+| Mistake | Impact | Fix |
+|---------|--------|-----|
+| Missing `OnMissionFinish` cleanup in a module | Collections, timers, and dokoncet subscriptions survive across mission restarts, causing stale data or crashes | Override `OnMissionFinish`, clear all `ref` collections, unsubscribe all dokoncets |
+| Dispatching lifecycle dokoncets twice on listen servers | Server modules run client logic and vice versa; duplicate spawns, double RPC sends | Use `IsServer()` / `IsClient()` guards or typed module subclasses that enforce the split |
+| Registering RPCs in `OnMissionStart` místo `OnInit` | Clients that connect during mission setup can send RPCs before handlers are ready --- messages are tiše dropped | Vždy register RPC handlers in `OnInit()`, which runs during module registration before jakýkoli client connects |
+| One "God module" handling každýthing | Impossible to debug, test, or extend; merge conflicts when více developers work on it | Split into focused modules with a jeden responsibility každý |
+| Holding direct `ref` to další module instance | Creates hard coupling and potential ref-cycle memory leaks | Use the module manager's lookup (`GetModule()`, `CF_Modules<T>.Get()`) for cross-module access |
+
+---
+
+## Teorie vs praxe
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Module discovery should be automatický via reflection | Enforce Script reflection is limited; `config.cpp`-based discovery (CF) or explicit `Register()` calls are the pouze reliable approaches |
+| Modules should be hot-swappable za běhu | DayZ ne support hot-reloading scripts; modules live for the celý mission lifecycle |
+| Use interfaces for module contracts | Enforce Script has no `interface` keyword; use base class virtual methods (`override`) místo toho |
+| Dependency injection decouples modules | No DI framework exists; use manager lookups and `#ifdef` guards for volitelný cross-mod dependencies |
+
+---
+
+[Domů](../../README.md) | [<< Předchozí: Vzor Singleton](01-singletons.md) | **Module / Plugin Systems** | [Další: Vzory RPC >>](03-rpc-patterns.md)

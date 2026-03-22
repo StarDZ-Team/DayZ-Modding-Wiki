@@ -1,14 +1,14 @@
-# Chapter 6.23: World Configuration Systems
+# Capítulo 6.23: World Configuration Systems
 
-[Home](../../README.md) | [<< Previous: Admin & Server Management](22-admin-server.md) | **World Systems**
+[Inicio](../../README.md) | [<< Anterior: Admin & Server Management](22-admin-server.md) | **World Systems**
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ provides several JSON and XML configuration files that control world-level systems without requiring script modifications. These files live in the **mission folder** and are loaded at server start, allowing server owners to customize contaminated areas, underground darkness, weather behavior, gameplay rules, and object placement with no code changes and no wipe required.
 
-Este capitulo cubre five mission-folder configuration systems:
+This chapter covers five mission-folder configuration systems:
 
 1. **Contaminated Areas** (`cfgEffectArea.json`) --- toxic gas zones with particles, PPE, and player damage
 2. **Underground Areas** (`cfgundergroundtriggers.json`) --- eye accommodation (darkness simulation) for caves and bunkers
@@ -42,7 +42,7 @@ Contaminated areas are toxic gas zones that damage players without protective eq
 - **Dynamic areas** are spawned through the Central Economy as dynamic events (configured separately through CE files, not covered here).
 - To **disable all effect areas**, place an empty JSON file (`{}`) in the mission folder.
 
-### Estructura del Archivo (v1.28+)
+### File Structure (v1.28+)
 
 As of version 1.28, the particle configuration uses a circle-packing algorithm via `FillWithParticles()`. This is the current recommended format:
 
@@ -75,7 +75,7 @@ As of version 1.28, the particle configuration uses a circle-packing algorithm v
 
 ### Area Fields
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `AreaName` | string | Human-readable identifier for the zone (also used in debug) |
 | `Type` | string | Class name of the EffectArea subclass to spawn (`ContaminatedArea_Static`) |
@@ -89,7 +89,7 @@ As of version 1.28, the particle configuration uses a circle-packing algorithm v
 
 The new system uses `FillWithParticles(pos, areaRadius, outwardsBleed, partSize, partId)`:
 
-| Field | Maps To | Descripcion |
+| Campo | Maps To | Descripción |
 |-------|---------|-------------|
 | `InnerPartDist` | `partSize` | Perceived particle size in meters. Controls spacing between emitters |
 | `OuterOffset` | `outwardsBleed` | Distance beyond the radius where particles remain visible (meters) |
@@ -103,7 +103,7 @@ The algorithm uses a naive circle-packing approach: given the area circle of rad
 
 The legacy system uses explicit ring configuration. It is backward-compatible but not recommended for new setups:
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `InnerRingCount` | int | Number of concentric rings inside the area (excludes outer ring) |
 | `InnerPartDist` | int | Distance between emitters on inner rings (straight-line meters) |
@@ -124,7 +124,7 @@ For inner rings, the ring radius is calculated as: `area_radius / (inner_ring_co
 
 ### Player Data (PPE & Particles)
 
-| Field | Descripcion |
+| Campo | Descripción |
 |-------|-------------|
 | `AroundPartName` | Particle effect spawned around the player when inside the trigger zone |
 | `TinyPartName` | Smaller particle effect spawned near the player inside the trigger |
@@ -190,7 +190,7 @@ The file defines two types of objects:
 
 There are three trigger types, determined automatically by their configuration:
 
-| Type | Breadcrumbs? | EyeAccommodation | Proposito |
+| Tipo | Breadcrumbs? | EyeAccommodation | Propósito |
 |------|-------------|-------------------|---------|
 | **Outer** | Empty array | `1.0` | Switches night-only lights (chemlights) to work during daytime. Placed just outside the entrance |
 | **Transitional** | Has entries | Any | Gradual eye accommodation change via breadcrumbs. Placed between outer and inner triggers |
@@ -211,7 +211,7 @@ Any trigger with an empty `Breadcrumbs` array and `EyeAccommodation` set to `1` 
 }
 ```
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `Position` | float[3] | World position of the trigger center |
 | `Orientation` | float[3] | Rotation as Yaw, Pitch, Roll (degrees) |
@@ -276,7 +276,7 @@ Breadcrumbs are positioned along the player's expected path through the transiti
 }
 ```
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `Position` | float[3] | World position of the breadcrumb |
 | `EyeAccommodation` | float | The accommodation weight this breadcrumb contributes (0.0 - 1.0) |
@@ -305,7 +305,7 @@ The `InterpolationSpeed` field on outer and inner triggers controls how quickly 
 
 Using `DayZDiag_x64`, the following diag menu options are available:
 
-| Diag Menu Path | Function |
+| Diag Menu Path | Función |
 |----------------|----------|
 | Script > Triggers > Show Triggers | Display active triggers and their coverage areas |
 | Script > Underground Areas > Show Breadcrumbs | Display all active breadcrumbs |
@@ -317,7 +317,7 @@ Using `DayZDiag_x64`, the following diag menu options are available:
 
 While Chapter 6.3 covers the Weather script API in detail, this section documents the `cfgweather.xml` mission-folder file for declarative weather configuration without scripting.
 
-### Vista General
+### Overview
 
 There are three ways to adjust weather behavior in DayZ:
 
@@ -376,7 +376,7 @@ By default, all vanilla server missions use the scripted weather state machine. 
 
 ### Root Element Attributes
 
-| Attribute | Type | Por defecto | Descripcion |
+| Atributo | Tipo | Predeterminado | Descripción |
 |-----------|------|---------|-------------|
 | `reset` | bool | `false` | Whether to discard stored weather state on server start |
 | `enable` | bool | `true` | Whether this file is active |
@@ -387,7 +387,7 @@ Supports `0`/`1`, `true`/`false`, or `yes`/`no`.
 
 Each phenomenon (`overcast`, `fog`, `rain`, `snowfall`, `windMagnitude`, `windDirection`) supports these child elements:
 
-| Element | Attributes | Descripcion |
+| Elemento | Attributes | Descripción |
 |---------|------------|-------------|
 | `current` | `actual`, `time`, `duration` | Initial value, seconds to reach it, seconds it holds |
 | `limits` | `min`, `max` | Range of the phenomenon value |
@@ -403,7 +403,7 @@ Each phenomenon (`overcast`, `fog`, `rain`, `snowfall`, `windMagnitude`, `windDi
 <storm density="1.0" threshold="0.7" timeout="25"/>
 ```
 
-| Attribute | Descripcion |
+| Atributo | Descripción |
 |-----------|-------------|
 | `density` | Lightning frequency (0.0 - 1.0) |
 | `threshold` | Minimum overcast level for lightning to appear (0.0 - 1.0) |
@@ -480,7 +480,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 ### General Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | int | `version` | Current | Internal version tracker |
 | string[] | `spawnGearPresetFiles` | `[]` | Player spawn gear JSON config files to load |
@@ -495,7 +495,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 ### Stamina Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | float | `sprintStaminaModifierErc` | `1.0` | Stamina consumption rate during standing sprint |
 | float | `sprintStaminaModifierCro` | `1.0` | Stamina consumption rate during crouched sprint |
@@ -511,7 +511,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 ### Shock Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | float | `shockRefillSpeedConscious` | `5.0` | Shock recovery per second while conscious |
 | float | `shockRefillSpeedUnconscious` | `1.0` | Shock recovery per second while unconscious |
@@ -519,7 +519,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 ### Inertia Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | float | `timeToStrafeJog` | `0.1` | Time to blend strafing while jogging (min 0.01) |
 | float | `rotationSpeedJog` | `0.15` | Character rotation speed while jogging (min 0.01) |
@@ -532,7 +532,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 These booleans disable specific placement/construction validation checks:
 
-| Parametro | Por defecto | What It Disables |
+| Parámetro | Predeterminado | What It Disables |
 |-----------|---------|------------------|
 | `disableBaseDamage` | `false` | Damage from base-building structures |
 | `disableContainerDamage` | `false` | Damage from tents, barrels, etc. |
@@ -552,9 +552,9 @@ These booleans disable specific placement/construction validation checks:
 | `disableDistanceCheck` | `false` | Construction minimum distance |
 | `disallowedTypesInUnderground` | `["FenceKit", "TerritoryFlagKit", "WatchtowerKit"]` | Item types prohibited underground (includes inherited) |
 
-### Navegacion Settings
+### Navigation Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | bool | `use3DMap` | `false` | Use 3D map only (disables 2D overlay) |
 | bool | `ignoreMapOwnership` | `false` | Open map with "M" key without having one in inventory |
@@ -564,7 +564,7 @@ These booleans disable specific placement/construction validation checks:
 
 ### Hit Indicator Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | bool | `hitDirectionOverrideEnabled` | `false` | Enable custom hit indicator settings |
 | int | `hitDirectionBehaviour` | `1` | 0 = Disabled, 1 = Static, 2 = Dynamic |
@@ -577,7 +577,7 @@ These booleans disable specific placement/construction validation checks:
 
 ### Drowning Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | float | `staminaDepletionSpeed` | `10.0` | Stamina lost per second while drowning |
 | float | `healthDepletionSpeed` | `10.0` | Health lost per second while drowning |
@@ -585,14 +585,14 @@ These booleans disable specific placement/construction validation checks:
 
 ### Environment Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | float[12] | `environmentMinTemps` | `[-3, -2, 0, 4, 9, 14, 18, 17, 12, 7, 4, 0]` | Minimum temperature per month (Jan-Dec) |
 | float[12] | `environmentMaxTemps` | `[3, 5, 7, 14, 19, 24, 26, 25, 21, 16, 10, 5]` | Maximum temperature per month (Jan-Dec) |
 
 ### Weapon Obstruction Settings
 
-| Type | Parametro | Por defecto | Descripcion |
+| Tipo | Parámetro | Predeterminado | Descripción |
 |------|-----------|---------|-------------|
 | int | `staticMode` | `1` | Static entity obstruction (0 = Off, 1 = On, 2 = Always) |
 | int | `dynamicMode` | `1` | Dynamic entity obstruction (0 = Off, 1 = On, 2 = Always) |
@@ -634,7 +634,7 @@ Multiple files are supported:
 "objectSpawnersArr": ["mySpawnData1.json", "mySpawnData2.json", "mySpawnData3.json"]
 ```
 
-### Estructura del Archivo
+### File Structure
 
 ```json
 {
@@ -664,7 +664,7 @@ Multiple files are supported:
 
 ### Object Parameters
 
-| Type | Field | Descripcion |
+| Tipo | Campo | Descripción |
 |------|-------|-------------|
 | string | `name` | Class name (e.g., `"Land_Wall_Gate_FenR"`) or p3d model path (e.g., `"DZ/plants/tree/t_BetulaPendula_1fb.p3d"`) |
 | float[3] | `pos` | World position `[X, Y, Z]` |
@@ -688,7 +688,7 @@ To process `customString`, override `OnSpawnByObjectSpawner()` on the spawned it
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 ### Contaminated Areas
 
@@ -728,7 +728,7 @@ To process `customString`, override `OnSpawnByObjectSpawner()` on the spawned it
 
 ## Errores Comunes
 
-| Error | Consecuencia | Solucion |
+| Error | Consequence | Solución |
 |---------|-------------|-----|
 | JSON comments (`//` or `/* */`) in config files | File fails to parse; features silently disabled | Remove all comments from production JSON files |
 | Invalid number format (`0150` instead of `150`) | JSON parse error | Use standard integer/float notation |
@@ -778,7 +778,7 @@ To process `customString`, override `OnSpawnByObjectSpawner()` on the spawned it
 
 ## Resumen
 
-| System | File | Ubicacion | Proposito |
+| System | File | Ubicación | Propósito |
 |--------|------|----------|---------|
 | Contaminated Areas | `cfgEffectArea.json` | Mission folder | Toxic gas zones with particles, PPE, and damage |
 | Underground Areas | `cfgundergroundtriggers.json` | Mission folder | Eye accommodation (darkness) for caves/bunkers |
@@ -794,4 +794,4 @@ All five systems share these characteristics:
 
 ---
 
-[<< Previous: Admin & Server Management](22-admin-server.md) | **World Systems**
+[Inicio](../../README.md) | [<< Anterior: Admin & Server Management](22-admin-server.md) | **World Systems**

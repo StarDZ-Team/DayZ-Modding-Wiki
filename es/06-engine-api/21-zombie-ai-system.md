@@ -1,18 +1,18 @@
-# Chapter 6.21: Zombie & AI System
+# Capítulo 6.21: Sistema de Zombis e IA
 
-[Home](../../README.md) | [<< Previous: Particle & Effect System](20-particle-effects.md) | **Zombie & AI System** | [Next: Admin & Server Management >>](22-admin-server.md)
+[Inicio](../../README.md) | [<< Anterior: Particle & Effect System](20-particle-effects.md) | **Zombie & AI System** | [Siguiente: Admin & Server Management >>](22-admin-server.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Zombies (officially called "Infected") are the primary hostile AI entity in DayZ. They patrol, detect players through sight, sound, and proximity, transition through behavioral states, attack, vault, crawl, and die --- all driven by a C++ AI engine with script-level hooks for customization. Understanding how the infected system works is essential for any mod that spawns, modifies, or interacts with zombies.
 
-Este capitulo cubre the full class hierarchy, the mind state machine, movement and attack commands, the perception/targeting system, spawning patterns, and modding hooks. All method signatures and constants are taken directly from the vanilla script source. Where behavior is driven by the C++ engine with no script-visible API, that is noted explicitly.
+This chapter covers the full class hierarchy, the mind state machine, movement and attack commands, the perception/targeting system, spawning patterns, and modding hooks. All method signatures and constants are taken directly from the vanilla script source. Where behavior is driven by the C++ engine with no script-visible API, that is noted explicitly.
 
 ---
 
-## Jerarquia de Clases
+## Class Hierarchy
 
 The infected entity inherits from a deep chain shared with animals. Each level adds capabilities:
 
@@ -42,7 +42,7 @@ Class (root of all Enforce Script classes)
 
 ### Key Classes at Each Level
 
-| Class | Script File | Role |
+| Clase | Script File | Role |
 |-------|------------|------|
 | `DayZCreature` | `3_Game/entities/dayzanimal.c` | Animation instance, bone queries, `StartDeath()` / `ResetDeath()` |
 | `DayZCreatureAI` | `3_Game/entities/dayzanimal.c` | `GetAIAgent()`, `InitAIAgent()`, `DestroyAIAgent()`, `AddDamageSphere()` |
@@ -151,7 +151,7 @@ enum DayZInfectedDeathAnims
 
 From `3_Game/constants.c`:
 
-| Constante | Valor | Proposito |
+| Constante | Valor | Propósito |
 |----------|-------|---------|
 | `AI_ATTACKSPEED` | `1.5` | Multiplier for attack cooldown reduction rate |
 | `AI_MAX_BLOCKABLE_ANGLE` | `60` | Max angle (degrees) where player block stance works against infected |
@@ -167,7 +167,7 @@ The infected AI uses five mind states, managed entirely by the C++ AI engine. Sc
 
 ### State Descriptions
 
-| State | Enum Value | Comportamiento |
+| State | Enum Value | Behavior |
 |-------|-----------|----------|
 | **CALM** | `MINDSTATE_CALM` | Idle or wandering. No threat detected. Idle animation state 0. |
 | **DISTURBED** | `MINDSTATE_DISTURBED` | Noise or brief visual stimulus. Alert posture, looking around. Idle animation state 1. |
@@ -228,7 +228,7 @@ On clients, `OnVariablesSynchronized()` triggers sound event updates based on th
 
 The primary movement command, started with `StartCommand_Move()`. Methods:
 
-| Metodo | Firma | Descripcion |
+| Método | Firma | Descripción |
 |--------|-----------|-------------|
 | `SetStanceVariation` | `void SetStanceVariation(int pStanceVariation)` | Sets animation stance variant (0-3, randomized on init) |
 | `SetIdleState` | `void SetIdleState(int pIdleState)` | Sets idle animation (0=calm, 1=disturbed, 2=chase) |
@@ -247,7 +247,7 @@ The `HandleMove` method updates `m_MovementSpeed` from `ic.GetMovementSpeed()` a
 
 The base input controller (shared with animals) provides override methods:
 
-| Metodo | Firma | Descripcion |
+| Método | Firma | Descripción |
 |--------|-----------|-------------|
 | `OverrideMovementSpeed` | `void OverrideMovementSpeed(bool state, float movementSpeed)` | Force a specific movement speed |
 | `GetMovementSpeed` | `float GetMovementSpeed()` | Current movement speed |
@@ -260,7 +260,7 @@ The base input controller (shared with animals) provides override methods:
 
 Extends the base controller with infected-specific queries:
 
-| Metodo | Firma | Descripcion |
+| Método | Firma | Descripción |
 |--------|-----------|-------------|
 | `IsVault` | `bool IsVault()` | AI wants to vault |
 | `GetVaultHeight` | `float GetVaultHeight()` | Height of the vault obstacle |
@@ -377,7 +377,7 @@ Before attacking, the zombie verifies target alignment using `DayZPlayerUtils.Ge
 
 ## Perception System
 
-Zombie perception is primarily handled by the C++ engine. Script exposes the result (mind state, target entity) but not the internal perception logic. Sin embargo, the script side defines the **target callbacks** and **noise system** that feed into the engine.
+Zombie perception is primarily handled by the C++ engine. Script exposes the result (mind state, target entity) but not the internal perception logic. However, the script side defines the **target callbacks** and **noise system** that feed into the engine.
 
 ### Vision (Visibility Modifiers)
 
@@ -409,7 +409,7 @@ The noise system feeds into AI perception via `g_Game.GetNoiseSystem().AddNoise(
 
 **Speed noise** (from `PlayerConstants`):
 
-| Accion | Multiplier |
+| Acción | Multiplier |
 |--------|-----------|
 | Rolling (prone) | `AI_NOISE_ROLL = 2.0` |
 | Sprinting | `AI_NOISE_SPRINT = 1.0` |
@@ -420,7 +420,7 @@ The noise system feeds into AI perception via `g_Game.GetNoiseSystem().AddNoise(
 
 **Footwear noise**:
 
-| Type | Multiplier |
+| Tipo | Multiplier |
 |------|-----------|
 | Boots | `AI_NOISE_SHOES_BOOTS = 0.85` |
 | Sneakers | `AI_NOISE_SHOES_SNEAKERS = 0.6` |
@@ -560,7 +560,7 @@ DayZInfected zombie = DayZInfected.Cast(
 
 **ECE Flags** (from `3_Game/ce/centraleconomy.c`):
 
-| Flag | Valor | Proposito |
+| Bandera | Valor | Propósito |
 |------|-------|---------|
 | `ECE_INITAI` | `2048` | Initialize the AI agent (required for zombies to function) |
 | `ECE_EQUIP_ATTACHMENTS` | `8192` | Equip configured attachments from config |
@@ -658,7 +658,7 @@ behaviour.SetWaypoints(waypoints, 0, true, true);   // start at 0, forward, loop
 
 ### PGPolyFlags (Navmesh Filter)
 
-| Flag | Proposito |
+| Bandera | Propósito |
 |------|---------|
 | `WALK` | Ground, grass, road |
 | `DOOR` | Can move through doors |
@@ -675,7 +675,7 @@ behaviour.SetWaypoints(waypoints, 0, true, true);   // start at 0, forward, loop
 
 `DayZInfectedType.RegisterHitComponentsForAI()` defines which body parts zombies target and with what probability:
 
-| Component | Weight | Notas |
+| Componente | Weight | Notas |
 |-----------|--------|-------|
 | Head | 2 | Rare target selection |
 | LeftArm | 50 | Common |
@@ -818,7 +818,7 @@ class MyZombieCommand extends DayZInfectedCommandScript
 zombie.StartCommand_ScriptInst(MyZombieCommand);
 ```
 
-> **Warning:** `DayZInfectedCommandScript` is NON-MANAGED. Once sent to the CommandHandler via `StartCommand_Script` or `StartCommand_ScriptInst`, the engine takes ownership. Do not delete it manually while active --- this will cause a crash.
+> **Advertencia:** `DayZInfectedCommandScript` is NON-MANAGED. Once sent to the CommandHandler via `StartCommand_Script` or `StartCommand_ScriptInst`, the engine takes ownership. Do not delete it manually while active --- this will cause a crash.
 
 ### Modding via modded class
 
@@ -869,7 +869,7 @@ Animation-driven voice events (`OnSoundVoiceEvent`) interrupt state-based sounds
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Always use `ECE_INITAI` when spawning** --- without it, the zombie has no AI brain and will be motionless.
 2. **Server-side spawning only** --- `CreateObjectEx` for zombies should only run on the server; the network handles client replication.
@@ -899,9 +899,9 @@ This plugin is an excellent reference for testing any infected-related mod.
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
-| Teoria | Practice |
+| Teoría | Practice |
 |--------|---------|
 | Mind states can be set from script | The C++ engine controls transitions; script can only read state and override input controller values |
 | Zombies use pathfinding for navigation | Yes, via `AIWorld.FindPath()` and navmesh, but the path planning is internal to the engine |
@@ -937,7 +937,7 @@ This plugin is an excellent reference for testing any infected-related mod.
 
 ---
 
-## Referencia Rapida
+## Referencia Rápida
 
 ```csharp
 // Spawn a zombie (server only)

@@ -1,6 +1,10 @@
-# Chapter 3.6: Event Handling
+# Capítulo 3.6: Manejo de Eventos
 
-[Home](../../README.md) | [<< Previous: Programmatic Widget Creation](05-programmatic-widgets.md) | **Event Handling** | [Next: Styles, Fonts & Images >>](07-styles-fonts.md)
+[Inicio](../../README.md) | [<< Anterior: Programmatic Widget Creation](05-programmatic-widgets.md) | **Event Handling** | [Siguiente: Styles, Fonts & Images >>](07-styles-fonts.md)
+
+---
+
+Widgets generate events when the user interacts with them -- clicking buttons, typing in edit boxes, moving the mouse, dragging elements. This chapter covers how to receive and handle those events.
 
 ---
 
@@ -73,6 +77,26 @@ Every event handler returns a `bool`:
 
 This is critical for building layered UIs. For example, a button click handler should return `true` to prevent the click from also triggering a panel behind it.
 
+### Event Flow
+
+```mermaid
+sequenceDiagram
+    participant User as User Input
+    participant Widget as ButtonWidget
+    participant Handler as ScriptedWidgetEventHandler
+    participant Logic as Your Module
+
+    User->>Widget: Mouse Click
+    Widget->>Handler: OnClick(widget, x, y, button)
+    Handler->>Logic: Process button action
+
+    alt Return true
+        Logic-->>Handler: Event consumed (stops propagation)
+    else Return false
+        Handler-->>Widget: Event passed to parent widget
+    end
+```
+
 ---
 
 ## Registering Handlers with SetHandler()
@@ -122,7 +146,7 @@ A single handler instance can be registered on multiple widgets. Inside the even
 
 ---
 
-## Common Eventos in Detail
+## Common Events in Detail
 
 ### OnClick
 
@@ -363,9 +387,9 @@ void OnHoverEnd(Widget w, Widget enterW, int x, int y)
 
 ### SetHandler() vs. WidgetEventHandler
 
-| Aspecto | SetHandler() | WidgetEventHandler |
+| Aspect | SetHandler() | WidgetEventHandler |
 |---|---|---|
-| Patron | Override virtual methods | Register named callbacks |
+| Patrón | Override virtual methods | Register named callbacks |
 | Handler per widget | One handler per widget | Multiple callbacks per event |
 | Used by | DabsFramework, Expansion, custom mods | Vanilla DayZ menus |
 | Flexibility | Must handle all events in one class | Can register different targets for different events |
@@ -375,7 +399,7 @@ For new mods, `SetHandler()` with `ScriptedWidgetEventHandler` is the recommende
 
 ---
 
-## Ejemplo Completo: Interactive Button Panel
+## Complete Example: Interactive Button Panel
 
 A panel with three buttons that change color on hover and perform actions on click:
 
@@ -471,7 +495,7 @@ class InteractivePanel : ScriptedWidgetEventHandler
 
 ---
 
-## Manejo de Eventos Mejores Practicas
+## Event Handling Best Practices
 
 1. **Always return `true` when you handle an event** -- Otherwise the event propagates to parent widgets and may trigger unintended behavior.
 
@@ -501,7 +525,40 @@ override bool OnClick(Widget w, int x, int y, int button)
 
 ---
 
-## Siguientes Pasos
+## Teoría vs Práctica
+
+> What the documentation says versus how things actually work at runtime.
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `OnClick` fires on any widget | Any widget can receive click events | Only `ButtonWidget` reliably fires `OnClick`. For other widget types, use `OnMouseButtonDown` / `OnMouseButtonUp` instead |
+| `SetHandler()` replaces the handler | Setting a new handler replaces the old one | Correct, but the old handler is not notified. If it held resources, they leak. Always clean up before replacing handlers |
+| `OnChange` `finished` parameter | `true` when user finishes interaction | For `EditBoxWidget`, `finished` is `true` on Enter key only -- tabbing away or clicking elsewhere does NOT set `finished` to `true` |
+| Event return value propagation | `return false` passes event to parent | Events propagate up the widget tree, not to sibling widgets. A `return false` from a child goes to its parent, never to an adjacent widget |
+| `WidgetEventHandler` callback names | Any function name works | The function must exist on the target object at registration time. If the function name is misspelled, registration silently succeeds but the callback never fires |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** `SetHandler()` allows only one handler per widget. If mod A and mod B both call `SetHandler()` on the same vanilla widget (via `modded class`), the last one wins and the other silently stops receiving events. Use `WidgetEventHandler.RegisterOnClick()` for additive multi-mod compatibility.
+- **Performance:** Event handlers fire on the game's main thread. A slow `OnClick` handler (e.g., file I/O or complex calculations) causes visible frame hitching. Defer heavy work with `GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater()`.
+- **Version:** The `ScriptedWidgetEventHandler` API has been stable since DayZ 1.0. `WidgetEventHandler` singleton callbacks are vanilla patterns present since early Enforce Script versions and remain unchanged.
+
+---
+
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Single handler for entire panel | COT, VPP Admin Tools | One `ScriptedWidgetEventHandler` subclass handles all buttons in a panel, dispatching by comparing `w` against cached widget references |
+| `WidgetEventHandler.RegisterOnClick` for modular buttons | Expansion Market | Each dynamically created buy/sell button registers its own callback, allowing per-item handler functions |
+| `OnMouseEnter` / `OnMouseLeave` for hover tooltips | DayZ Editor | Hover events trigger tooltip widgets that follow cursor position via `GetMousePos()` |
+| `CallLater` deferral in `OnClick` | DabsFramework | Heavy operations (config save, RPC send) are deferred by 0ms via `CallLater` to avoid blocking the UI thread during the event |
+
+---
+
+## Next Steps
 
 - [3.7 Styles, Fonts & Images](07-styles-fonts.md) -- Visual styling with styles, fonts, and imageset references
 - [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Creating widgets that generate events

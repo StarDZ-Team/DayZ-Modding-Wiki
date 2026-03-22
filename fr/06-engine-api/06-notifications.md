@@ -1,18 +1,18 @@
-# Chapter 6.6: Notification System
+# Chapitre 6.6: Notification System
 
-[Home](../../README.md) | [<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
+[Accueil](../../README.md) | [<< Précédent : Post-Process Effects](05-ppe.md) | **Notifications** | [Suivant : Timers & CallQueue >>](07-timers.md)
 
 ---
 
 ## Introduction
 
-DayZ includes a built-in notification system for displaying toast-style popup messages to players. The `NotificationSystem` class provides static methods for sending notifications both locally (client-side) and from server to client via RPC. Ce chapitre couvre the full API for sending, customizing, and managing notifications.
+DayZ includes a built-in notification system for displaying toast-style popup messages to players. The `NotificationSystem` class provides static methods for sending notifications both locally (côté client) and from server to client via RPC. Ce chapitre couvre the full API for sending, customizing, and managing notifications.
 
 ---
 
 ## NotificationSystem
 
-**File:** `3_Game/client/notifications/notificationsystem.c` (320 lines)
+**Fichier :** `3_Game/client/notifications/notificationsystem.c` (320 lines)
 
 A static class that manages the notification queue. Notifications appear as small popup cards at the top of the screen, stacked vertically, and fade out after their display time expires.
 
@@ -26,9 +26,9 @@ static const int MAX_NOTIFICATIONS = 5;     // Maximum visible notifications
 
 ---
 
-## Server-to-Client Notifications
+## Notifications serveur vers client
 
-These methods are called on the server. They send an RPC to the target player's client, which displays the notification locally.
+These methods are called on le serveur. They send an RPC to the target player's client, which displays the notification locally.
 
 ### SendNotificationToPlayerExtended
 
@@ -42,7 +42,7 @@ static void SendNotificationToPlayerExtended(
 );
 ```
 
-**Example --- notify a specific player:**
+**Exemple --- notify a specific player:**
 
 ```c
 void NotifyPlayer(PlayerBase player, string message)
@@ -52,10 +52,10 @@ void NotifyPlayer(PlayerBase player, string message)
 
     NotificationSystem.SendNotificationToPlayerExtended(
         player,
-        8.0,                   // Show for 8 seconds
-        "Server Notice",       // Title
-        message,               // Body
-        ""                     // Default icon
+        8.0,                   // Afficher pendant 8 seconds
+        "Server Notice",       // Titre
+        message,               // Corps
+        ""                     // Icône par défaut
     );
 }
 ```
@@ -72,7 +72,7 @@ static void SendNotificationToPlayerIdentityExtended(
 );
 ```
 
-**Example --- broadcast to all players:**
+**Exemple --- broadcast to all players:**
 
 ```c
 void BroadcastNotification(string title, string message)
@@ -81,8 +81,8 @@ void BroadcastNotification(string title, string message)
         return;
 
     NotificationSystem.SendNotificationToPlayerIdentityExtended(
-        null,                  // null = all connected players
-        10.0,                  // Show for 10 seconds
+        null,                  // null = tous les joueurs connectés
+        10.0,                  // Afficher pendant 10 seconds
         title,
         message,
         ""
@@ -105,7 +105,7 @@ This variant uses predefined `NotificationType` enum values that map to built-in
 
 ---
 
-## Client-Side (Local) Notifications
+## Notifications côté client (locales)
 
 These methods display notifications only on the local client. They do not involve any networking.
 
@@ -120,7 +120,7 @@ static void AddNotificationExtended(
 );
 ```
 
-**Example --- local notification on client:**
+**Exemple --- local notification on client:**
 
 ```c
 void ShowLocalNotification(string title, string body)
@@ -163,11 +163,11 @@ The vanilla game defines notification types with associated titles and icons. Co
 | `NotificationType.LEAVE` | Player leave |
 | `NotificationType.STATUS` | Status update |
 
-> **Remarque :** The available types depend on the game version. For maximum flexibility, use the `Extended` variants which accept custom title and icon strings.
+> **Note :** The available types depend on le jeu version. For maximum flexibility, use the `Extended` variants which accept custom title and icon strings.
 
 ---
 
-## Icon Paths
+## Chemins des icônes
 
 Icons use the DayZ image set syntax:
 
@@ -177,7 +177,7 @@ Icons use the DayZ image set syntax:
 
 Common icon names:
 
-| Icon | Set Path |
+| Icône | Chemin du set |
 |------|----------|
 | Info | `"set:dayz_gui image:icon_info"` |
 | Warning | `"set:dayz_gui image:icon_warning"` |
@@ -193,7 +193,7 @@ Or pass an empty string `""` for no icon.
 
 ---
 
-## Events
+## Événements
 
 The `NotificationSystem` exposes script invokers for reacting to notification lifecycle:
 
@@ -202,7 +202,7 @@ ref ScriptInvoker m_OnNotificationAdded;
 ref ScriptInvoker m_OnNotificationRemoved;
 ```
 
-**Example --- react to notifications:**
+**Exemple --- react to notifications:**
 
 ```c
 void Init()
@@ -228,7 +228,7 @@ void OnNotifRemoved()
 
 ---
 
-## Update Loop
+## Boucle de mise à jour
 
 The notification system must be ticked each frame to handle fade-in/fade-out animations and removal of expired notifications:
 
@@ -236,11 +236,11 @@ The notification system must be ticked each frame to handle fade-in/fade-out ani
 static void Update(float timeslice);
 ```
 
-This is called automatically by the vanilla mission's `OnUpdate` method. If you are writing a completely custom mission, make sure to call it.
+This is called automatically by le vanilla mission's `OnUpdate` method. If you are writing a completely custom mission, make sure to call it.
 
 ---
 
-## Complete Server-to-Client Example
+## Exemple complet serveur vers client
 
 A typical mod pattern for sending notifications from server code:
 
@@ -285,7 +285,7 @@ class MyServerModule
 
 ---
 
-## CommunityFramework (CF) Alternative
+## Alternative CommunityFramework (CF)
 
 If you use CommunityFramework, it provides its own notification API:
 
@@ -305,9 +305,9 @@ The CF API adds color and localization support. Use whichever system your mod st
 
 ---
 
-## Resume
+## Résumé
 
-| Concept | Key Point |
+| Concept | Point clé |
 |---------|-----------|
 | Server to player | `SendNotificationToPlayerExtended(player, time, title, text, icon)` |
 | Server to all | `SendNotificationToPlayerIdentityExtended(null, time, title, text, icon)` |
@@ -320,4 +320,22 @@ The CF API adds color and localization support. Use whichever system your mod st
 
 ---
 
-[<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
+## Bonnes pratiques
+
+- **Use the `Extended` variants for custom notifications.** `SendNotificationToPlayerExtended` gives you full control over title, body, and icon. The typed `NotificationType` variants are limited to vanilla presets.
+- **Respect the 5-notification stack limit.** Sending many notifications in rapid succession pushes older ones off screen before players can read them. Batch related messages or use longer display times.
+- **Always guard server notifications with `GetGame().IsServer()`.** Calling `SendNotificationToPlayerExtended` on le client has no effect and wastes a method call.
+- **Pass `null` as the identity for true broadcasts.** `SendNotificationToPlayerIdentityExtended(null, ...)` delivers to all connected players. Do not loop through players manually to send the same message.
+- **Keep notification text concise.** The toast popup has limited display width. Long titles or bodies will be clipped. Aim for titles under 30 characters and body text under 80 characters.
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** The vanilla `NotificationSystem` is shared by all mods. Multiple mods sending notifications simultaneously can overflow the 5-notification stack. CF provides a separate notification channel that does not conflict with vanilla notifications.
+- **Performance :** Notifications are lightweight (a single RPC per notification). Cependant, broadcasting to all players every few seconds generates measurable network traffic on servers with 60+ players.
+- **Serveur/Client :** `SendNotificationToPlayer*` methods are server-to-client RPCs. `AddNotificationExtended` is client-only (local). The `Update()` tick runs on le client mission loop.
+
+---
+
+[<< Précédent : Post-Process Effects](05-ppe.md) | **Notifications** | [Suivant : Timers & CallQueue >>](07-timers.md)

@@ -1,10 +1,10 @@
-# Chapter 4.2: 3D Models (.p3d)
+# Capítulo 4.2: 3D Models (.p3d)
 
-[Home](../../README.md) | [<< Previous: Textures](01-textures.md) | **3D Models** | [Next: Materials >>](03-materials.md)
+[Inicio](../../README.md) | [<< Anterior: Textures](01-textures.md) | **3D Models** | [Siguiente: Materials >>](03-materials.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Every physical object in DayZ -- weapons, clothing, buildings, vehicles, trees, rocks -- is a 3D model stored in Bohemia's proprietary **P3D** format. The P3D format is far more than a mesh container: it encodes multiple levels of detail, collision geometry, animation selections, memory points for attachments and effects, and proxy positions for mountable items. Understanding how P3D files work and how to create them with **Object Builder** is essential for any mod that adds physical items to the game world.
 
@@ -28,7 +28,7 @@ This chapter covers the P3D format structure, the LOD system, named selections, 
 
 ---
 
-## P3D Format Vision General
+## P3D Format Overview
 
 **P3D** (Point 3D) is Bohemia Interactive's binary 3D model format, inherited from the Real Virtuality engine and carried forward into Enfusion. It is a compiled, engine-ready format -- you do not write P3D files by hand.
 
@@ -41,7 +41,7 @@ This chapter covers the P3D format structure, the LOD system, named selections, 
 
 ### File Types You Will Encounter
 
-| Extension | Descripcion |
+| Extensión | Descripción |
 |-----------|-------------|
 | `.p3d` | 3D model (both MLOD source and ODOL binarized) |
 | `.rtm` | Runtime Motion -- animation keyframe data |
@@ -58,7 +58,7 @@ This chapter covers the P3D format structure, the LOD system, named selections, 
 | Used during | Development | Release |
 | Contains | Full edit data, named selections | Optimized mesh data |
 
-> **Important:** When you pack a PBO with binarization enabled, your MLOD P3D files are automatically converted to ODOL. If you pack with `-packonly`, the MLOD files are included as-is. Both work in-game, but ODOL is preferred for release builds.
+> **Importante:** When you pack a PBO with binarization enabled, your MLOD P3D files are automatically converted to ODOL. If you pack with `-packonly`, the MLOD files are included as-is. Both work in-game, but ODOL is preferred for release builds.
 
 ---
 
@@ -115,7 +115,7 @@ A P3D file contains multiple **LODs** (Levels of Detail), each serving a specifi
 
 ### LOD Types
 
-| LOD | Resolution Value | Proposito |
+| LOD | Resolution Value | Propósito |
 |-----|-----------------|---------|
 | **Resolution 0** | 1.000 | Highest detail visual mesh. Rendered when the object is close to the camera. |
 | **Resolution 1** | 1.100 | Medium detail. Rendered at moderate distance. |
@@ -129,6 +129,25 @@ A P3D file contains multiple **LODs** (Levels of Detail), each serving a specifi
 | **Memory** | Special | Contains only named points (no visible geometry). Used for attachment positions, sound origins, etc. |
 | **Roadway** | Special | Defines walkable surfaces on objects (vehicles, buildings with enterable interiors). |
 | **Paths** | Special | AI pathfinding hints for buildings. |
+
+### LOD Hierarchy
+
+```mermaid
+graph TB
+    P3D["weapon.p3d"]
+
+    P3D --> RES["Resolution LODs<br/>1.0, 2.0, 4.0, 8.0, 16.0<br/>Visible 3D meshes"]
+    P3D --> GEO["Geometry LOD<br/>Collision detection<br/>Convex hull"]
+    P3D --> FIRE["Fire Geometry LOD<br/>Bullet collision<br/>Simplified shape"]
+    P3D --> VIEW["View Geometry LOD<br/>Camera collision"]
+    P3D --> SHADOW["Shadow LODs<br/>0.0, 10.0, 1000.0<br/>Shadow casting"]
+    P3D --> MEM["Memory LOD<br/>Named points<br/>Attachment positions"]
+
+    style RES fill:#4A90D9,color:#fff
+    style GEO fill:#D94A4A,color:#fff
+    style FIRE fill:#D97A4A,color:#fff
+    style MEM fill:#2D8A4E,color:#fff
+```
 
 ### LOD Resolution Values (Visual LODs)
 
@@ -174,7 +193,7 @@ Named selections are groups of vertices, edges, or faces within a LOD that are t
 
 ### What Named Selections Do
 
-| Proposito | Example Selection Name | Used By |
+| Propósito | Example Selection Name | Used By |
 |---------|----------------------|---------|
 | **Animation** | `bolt`, `trigger`, `magazine` | `model.cfg` animation sources |
 | **Texture swaps** | `camo`, `camo1`, `body` | `hiddenSelections[]` in config.cpp |
@@ -210,7 +229,7 @@ In Object Builder:
 3. Click **New**, enter the selection name.
 4. Click **Assign** to tag the selected geometry with that name.
 
-> **Tip:** Selection names are case-sensitive. `Camo` and `camo` are different selections. Convention is lowercase.
+> **Consejo:** Selection names are case-sensitive. `Camo` and `camo` are different selections. Convention is lowercase.
 
 ### Selections Across LODs
 
@@ -227,7 +246,7 @@ Memory points are named positions defined in the **Memory LOD**. They have no vi
 
 ### Common Memory Points
 
-| Point Name | Proposito |
+| Point Name | Propósito |
 |------------|---------|
 | `usti hlavne` | Muzzle position (where bullets originate, muzzle flash appears) |
 | `konec hlavne` | End of barrel (used with `usti hlavne` to define barrel direction) |
@@ -262,7 +281,7 @@ The direction vector is: konec hlavne - usti hlavne
 2. Create a vertex at the desired position.
 3. Name it via **Structure --> Named Selections**: create a selection with the point name and assign the single vertex to it.
 
-> **Note:** The Memory LOD should contain ONLY named points (individual vertices). Do not create faces or edges in the Memory LOD.
+> **Nota:** The Memory LOD should contain ONLY named points (individual vertices). Do not create faces or edges in the Memory LOD.
 
 ---
 
@@ -321,7 +340,7 @@ class MyWeapon: Rifle_Base
 
 The `model.cfg` file defines animations for P3D models. It maps animation sources (driven by game logic) to transformations on named selections.
 
-### Estructura Basica
+### Basic Structure
 
 ```cpp
 class CfgModels
@@ -392,7 +411,7 @@ class CfgSkeletons
 
 ### Animation Types
 
-| Tipo | Palabra Clave | Movimiento | Controlado Por |
+| Tipo | Keyword | Movement | Controlled By |
 |------|---------|----------|---------------|
 | **Translation** | `translation` | Linear movement along an axis | `offset0` / `offset1` (meters) |
 | **Rotation** | `rotation` | Rotation around an axis | `angle0` / `angle1` (radians) |
@@ -403,7 +422,7 @@ class CfgSkeletons
 
 Animation sources are engine-provided values that drive animations:
 
-| Source | Rango | Descripcion |
+| Source | Range | Descripción |
 |--------|-------|-------------|
 | `reload` | 0-1 | Weapon reload phase |
 | `trigger` | 0-1 | Trigger pull |
@@ -423,7 +442,7 @@ Most modders create 3D models in external tools (Blender, 3ds Max, Maya) and imp
 
 ### Supported Import Formats
 
-| Formato | Extension | Notas |
+| Formato | Extensión | Notas |
 |--------|-----------|-------|
 | **FBX** | `.fbx` | Best compatibility. Export as FBX 2013 or later (binary). |
 | **OBJ** | `.obj` | Wavefront OBJ. Simple mesh data only (no animations). |
@@ -463,7 +482,7 @@ Most modders create 3D models in external tools (Blender, 3ds Max, Maya) and imp
 
 ---
 
-## Tipos Comunes de Modelos
+## Common Model Types
 
 ### Weapons
 
@@ -539,7 +558,7 @@ Vehicles combine many systems:
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Start with the Geometry LOD.** Block out your collision shape first, then build the visual detail on top. This prevents the common mistake of creating a beautiful model that cannot collide properly.
 
@@ -557,7 +576,25 @@ Vehicles combine many systems:
 
 ---
 
-## Navegacion
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Full LOD chain with 5+ resolution levels | DayZ-Samples (Test_Weapon) | Shows complete LOD hierarchy: Resolution 1.0 through 16.0, plus Geometry, Fire Geometry, Memory, Shadow |
+| Complex skeletons with 20+ bones | Expansion Vehicles | Helicopter and boat models use extensive bone hierarchies for doors, rotors, rudders, and turrets |
+| Proxy stacking for modular weapons | Dabs Framework (RFCP weapons) | Weapons use multiple proxy slots for rail attachments, allowing optic + laser + grip combos |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Two mods can safely reference different P3D models without conflict. Conflicts arise only when both mods try to `modded class` the same entity and change its `model` path in config.cpp.
+- **Performance:** Each visible P3D adds draw calls proportional to its material count. Models with 10+ materials per LOD can be expensive in scenes with many instances. Keep material count under 4 per visual LOD when possible.
+- **Version:** The P3D format (MLOD/ODOL) has remained stable across DayZ updates. Object Builder occasionally receives minor updates via DayZ Tools, but the format itself has not changed since DayZ 1.0.
+
+---
+
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|

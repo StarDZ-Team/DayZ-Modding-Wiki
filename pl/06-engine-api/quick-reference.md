@@ -1,89 +1,93 @@
-# Engine API Quick Reference
+# Szybka referencja API silnika
 
-[Home](../../README.md) | **Engine API Quick Reference**
+[Strona główna](../../README.md) | **Szybka referencja API silnika**
 
 ---
 
-## Spis tresci
+> Skondensowana jednostronicowa referencja najczęściej używanych metod silnika DayZ. Szczegółowe wyjaśnienia i przykłady znajdziesz w pełnych rozdziałach linkowanych w nagłówkach każdej sekcji.
+
+---
+
+## Spis treści
 
 - [Metody encji](#metody-encji)
-- [Zdrowie i obrazenia](#zdrowie-i-obrazenia)
-- [Sprawdzanie typow](#sprawdzanie-typow)
+- [Zdrowie i obrażenia](#zdrowie-i-obrażenia)
+- [Sprawdzanie typów](#sprawdzanie-typów)
 - [Ekwipunek](#ekwipunek)
 - [Tworzenie i usuwanie encji](#tworzenie-i-usuwanie-encji)
 - [Metody gracza](#metody-gracza)
-- [Metody pojazdow](#metody-pojazdow)
+- [Metody pojazdów](#metody-pojazdów)
 - [Metody pogody](#metody-pogody)
-- [Metody plikowego I/O](#metody-plikowego-io)
-- [Metody Timer i CallQueue](#metody-timer-i-callqueue)
-- [Metody tworzenia widgetow](#metody-tworzenia-widgetow)
-- [Metody RPC / sieciowe](#metody-rpc--sieciowe)
-- [Stale i metody matematyczne](#stale-i-metody-matematyczne)
-- [Metody wektorow](#metody-wektorow)
+- [Metody I/O plików](#metody-io-plików)
+- [Metody timerów i CallQueue](#metody-timerów-i-callqueue)
+- [Metody tworzenia widgetów](#metody-tworzenia-widgetów)
+- [Metody RPC / sieci](#metody-rpc--sieci)
+- [Stałe i metody matematyczne](#stałe-i-metody-matematyczne)
+- [Metody wektorów](#metody-wektorów)
 - [Funkcje globalne](#funkcje-globalne)
-- [Hooki misji](#hooki-misji)
+- [Haki misji](#haki-misji)
 - [System akcji](#system-akcji)
 
 ---
 
 ## Metody encji
 
-*Pelna referencja: [Rozdzial 6.1: System encji](01-entity-system.md)*
+*Pełna referencja: [Rozdział 6.1: System encji](01-entity-system.md)*
 
 ### Pozycja i orientacja (Object)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetPosition` | `vector GetPosition()` | Pozycja w swiecie |
-| `SetPosition` | `void SetPosition(vector pos)` | Ustaw pozycje w swiecie |
+| `GetPosition` | `vector GetPosition()` | Pozycja w świecie |
+| `SetPosition` | `void SetPosition(vector pos)` | Ustaw pozycję w świecie |
 | `GetOrientation` | `vector GetOrientation()` | Odchylenie, pochylenie, przechylenie w stopniach |
 | `SetOrientation` | `void SetOrientation(vector ori)` | Ustaw odchylenie, pochylenie, przechylenie |
 | `GetDirection` | `vector GetDirection()` | Wektor kierunku do przodu |
 | `SetDirection` | `void SetDirection(vector dir)` | Ustaw kierunek do przodu |
 | `GetScale` | `float GetScale()` | Aktualna skala |
-| `SetScale` | `void SetScale(float scale)` | Ustaw skale |
+| `SetScale` | `void SetScale(float scale)` | Ustaw skalę |
 
-### Transformacja (IEntity)
+### Transformacje (IEntity)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetOrigin` | `vector GetOrigin()` | Pozycja w swiecie (poziom silnika) |
-| `SetOrigin` | `void SetOrigin(vector orig)` | Ustaw pozycje w swiecie (poziom silnika) |
-| `GetYawPitchRoll` | `vector GetYawPitchRoll()` | Rotacja jako yaw/pitch/roll |
-| `GetTransform` | `void GetTransform(out vector mat[4])` | Pelna macierz transformacji 4x3 |
-| `SetTransform` | `void SetTransform(vector mat[4])` | Ustaw pelna transformacje |
-| `VectorToParent` | `vector VectorToParent(vector vec)` | Kierunek lokalny do swiata |
-| `CoordToParent` | `vector CoordToParent(vector coord)` | Punkt lokalny do swiata |
-| `VectorToLocal` | `vector VectorToLocal(vector vec)` | Kierunek swiatowy do lokalnego |
-| `CoordToLocal` | `vector CoordToLocal(vector coord)` | Punkt swiatowy do lokalnego |
+| `GetOrigin` | `vector GetOrigin()` | Pozycja w świecie (poziom silnika) |
+| `SetOrigin` | `void SetOrigin(vector orig)` | Ustaw pozycję w świecie (poziom silnika) |
+| `GetYawPitchRoll` | `vector GetYawPitchRoll()` | Rotacja jako odchylenie/pochylenie/przechylenie |
+| `GetTransform` | `void GetTransform(out vector mat[4])` | Pełna macierz transformacji 4x3 |
+| `SetTransform` | `void SetTransform(vector mat[4])` | Ustaw pełną transformację |
+| `VectorToParent` | `vector VectorToParent(vector vec)` | Kierunek lokalny na światowy |
+| `CoordToParent` | `vector CoordToParent(vector coord)` | Punkt lokalny na światowy |
+| `VectorToLocal` | `vector VectorToLocal(vector vec)` | Kierunek światowy na lokalny |
+| `CoordToLocal` | `vector CoordToLocal(vector coord)` | Punkt światowy na lokalny |
 
 ### Hierarchia (IEntity)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `AddChild` | `void AddChild(IEntity child, int pivot, bool posOnly = false)` | Dolacz potomka do kosci |
-| `RemoveChild` | `void RemoveChild(IEntity child, bool keepTransform = false)` | Odlacz potomka |
+| `AddChild` | `void AddChild(IEntity child, int pivot, bool posOnly = false)` | Dołącz dziecko do kości |
+| `RemoveChild` | `void RemoveChild(IEntity child, bool keepTransform = false)` | Odłącz dziecko |
 | `GetParent` | `IEntity GetParent()` | Encja rodzica lub null |
-| `GetChildren` | `IEntity GetChildren()` | Pierwsza encja potomna |
-| `GetSibling` | `IEntity GetSibling()` | Nastepna encja na tym samym poziomie |
+| `GetChildren` | `IEntity GetChildren()` | Pierwsza encja dziecka |
+| `GetSibling` | `IEntity GetSibling()` | Następna encja rodzeństwa |
 
-### Informacje wyswietlane (Object)
-
-| Metoda | Sygnatura | Opis |
-|--------|-----------|------|
-| `GetType` | `string GetType()` | Nazwa klasy konfiguracyjnej (np. `"AKM"`) |
-| `GetDisplayName` | `string GetDisplayName()` | Zlokalizowana nazwa wyswietlana |
-| `IsKindOf` | `bool IsKindOf(string type)` | Sprawdz dziedziczenie konfiguracji |
-
-### Pozycje kosci (Object)
+### Informacje wyświetlania (Object)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetBonePositionLS` | `vector GetBonePositionLS(int pivot)` | Pozycja kosci w przestrzeni lokalnej |
-| `GetBonePositionMS` | `vector GetBonePositionMS(int pivot)` | Pozycja kosci w przestrzeni modelu |
-| `GetBonePositionWS` | `vector GetBonePositionWS(int pivot)` | Pozycja kosci w przestrzeni swiata |
+| `GetType` | `string GetType()` | Nazwa klasy z konfiguracji (np. `"AKM"`) |
+| `GetDisplayName` | `string GetDisplayName()` | Zlokalizowana nazwa wyświetlana |
+| `IsKindOf` | `bool IsKindOf(string type)` | Sprawdzenie dziedziczenia konfiguracji |
 
-### Dostep do konfiguracji (Object)
+### Pozycje kości (Object)
+
+| Metoda | Sygnatura | Opis |
+|--------|-----------|------|
+| `GetBonePositionLS` | `vector GetBonePositionLS(int pivot)` | Pozycja kości w przestrzeni lokalnej |
+| `GetBonePositionMS` | `vector GetBonePositionMS(int pivot)` | Pozycja kości w przestrzeni modelu |
+| `GetBonePositionWS` | `vector GetBonePositionWS(int pivot)` | Pozycja kości w przestrzeni świata |
+
+### Dostęp do konfiguracji (Object)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
@@ -91,153 +95,153 @@
 | `ConfigGetInt` | `int ConfigGetInt(string entry)` | Odczytaj int z konfiguracji |
 | `ConfigGetFloat` | `float ConfigGetFloat(string entry)` | Odczytaj float z konfiguracji |
 | `ConfigGetString` | `string ConfigGetString(string entry)` | Odczytaj string z konfiguracji |
-| `ConfigGetTextArray` | `void ConfigGetTextArray(string entry, out TStringArray values)` | Odczytaj tablice stringow |
-| `ConfigIsExisting` | `bool ConfigIsExisting(string entry)` | Sprawdz czy wpis konfiguracji istnieje |
+| `ConfigGetTextArray` | `void ConfigGetTextArray(string entry, out TStringArray values)` | Odczytaj tablicę stringów |
+| `ConfigIsExisting` | `bool ConfigIsExisting(string entry)` | Sprawdź czy wpis konfiguracji istnieje |
 
 ---
 
-## Zdrowie i obrazenia
+## Zdrowie i obrażenia
 
-*Pelna referencja: [Rozdzial 6.1: System encji](01-entity-system.md)*
+*Pełna referencja: [Rozdział 6.1: System encji](01-entity-system.md)*
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetHealth` | `float GetHealth(string zone, string type)` | Pobierz wartosc zdrowia |
+| `GetHealth` | `float GetHealth(string zone, string type)` | Pobierz wartość zdrowia |
 | `GetMaxHealth` | `float GetMaxHealth(string zone, string type)` | Pobierz maksymalne zdrowie |
 | `SetHealth` | `void SetHealth(string zone, string type, float value)` | Ustaw zdrowie |
 | `SetHealthMax` | `void SetHealthMax(string zone, string type)` | Ustaw na maksimum |
 | `AddHealth` | `void AddHealth(string zone, string type, float value)` | Dodaj zdrowie |
 | `DecreaseHealth` | `void DecreaseHealth(string zone, string type, float value, bool auto_delete = false)` | Zmniejsz zdrowie |
-| `SetAllowDamage` | `void SetAllowDamage(bool val)` | Wlacz/wylacz obrazenia |
-| `GetAllowDamage` | `bool GetAllowDamage()` | Sprawdz czy obrazenia sa dozwolone |
-| `IsAlive` | `bool IsAlive()` | Sprawdzenie zycia (uzywaj na EntityAI) |
-| `ProcessDirectDamage` | `void ProcessDirectDamage(int dmgType, EntityAI source, string component, string ammoType, vector modelPos, float coef = 1.0, int flags = 0)` | Zastosuj obrazenia (EntityAI) |
+| `SetAllowDamage` | `void SetAllowDamage(bool val)` | Włącz/wyłącz obrażenia |
+| `GetAllowDamage` | `bool GetAllowDamage()` | Sprawdź czy obrażenia dozwolone |
+| `IsAlive` | `bool IsAlive()` | Sprawdzenie życia (użyj na EntityAI) |
+| `ProcessDirectDamage` | `void ProcessDirectDamage(int dmgType, EntityAI source, string component, string ammoType, vector modelPos, float coef = 1.0, int flags = 0)` | Zadaj obrażenia (EntityAI) |
 
 **Typowe pary strefa/typ:** `("", "Health")` globalne, `("", "Blood")` krew gracza, `("", "Shock")` szok gracza, `("Engine", "Health")` silnik pojazdu.
 
 ---
 
-## Sprawdzanie typow
+## Sprawdzanie typów
 
 | Metoda | Klasa | Opis |
 |--------|-------|------|
 | `IsMan()` | Object | Czy to gracz? |
 | `IsBuilding()` | Object | Czy to budynek? |
 | `IsTransport()` | Object | Czy to pojazd? |
-| `IsDayZCreature()` | Object | Czy to stworzenie (zombie/zwierze)? |
+| `IsDayZCreature()` | Object | Czy to stworzenie (zombie/zwierzę)? |
 | `IsKindOf(string)` | Object | Sprawdzenie dziedziczenia konfiguracji |
 | `IsItemBase()` | EntityAI | Czy to przedmiot ekwipunku? |
-| `IsWeapon()` | EntityAI | Czy to bron? |
+| `IsWeapon()` | EntityAI | Czy to broń? |
 | `IsMagazine()` | EntityAI | Czy to magazynek? |
 | `IsClothing()` | EntityAI | Czy to ubranie? |
 | `IsFood()` | EntityAI | Czy to jedzenie? |
-| `Class.CastTo(out, obj)` | Class | Bezpieczne rzutowanie w dol (zwraca bool) |
+| `Class.CastTo(out, obj)` | Class | Bezpieczne rzutowanie w dół (zwraca bool) |
 | `ClassName.Cast(obj)` | Class | Rzutowanie inline (zwraca null przy niepowodzeniu) |
 
 ---
 
 ## Ekwipunek
 
-*Pelna referencja: [Rozdzial 6.1: System encji](01-entity-system.md)*
+*Pełna referencja: [Rozdział 6.1: System encji](01-entity-system.md)*
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
 | `GetInventory` | `GameInventory GetInventory()` | Pobierz komponent ekwipunku (EntityAI) |
-| `CreateInInventory` | `EntityAI CreateInInventory(string type)` | Stworz przedmiot w cargo |
-| `CreateEntityInCargo` | `EntityAI CreateEntityInCargo(string type)` | Stworz przedmiot w cargo |
-| `CreateAttachment` | `EntityAI CreateAttachment(string type)` | Stworz przedmiot jako zalacznik |
+| `CreateInInventory` | `EntityAI CreateInInventory(string type)` | Utwórz przedmiot w ładunku |
+| `CreateEntityInCargo` | `EntityAI CreateEntityInCargo(string type)` | Utwórz przedmiot w ładunku |
+| `CreateAttachment` | `EntityAI CreateAttachment(string type)` | Utwórz przedmiot jako załącznik |
 | `EnumerateInventory` | `void EnumerateInventory(int traversal, out array<EntityAI> items)` | Wylistuj wszystkie przedmioty |
 | `CountInventory` | `int CountInventory()` | Policz przedmioty |
-| `HasEntityInInventory` | `bool HasEntityInInventory(EntityAI item)` | Sprawdz czy jest przedmiot |
-| `AttachmentCount` | `int AttachmentCount()` | Liczba zalacznikow |
-| `GetAttachmentFromIndex` | `EntityAI GetAttachmentFromIndex(int idx)` | Pobierz zalacznik po indeksie |
-| `FindAttachmentByName` | `EntityAI FindAttachmentByName(string slot)` | Pobierz zalacznik po slocie |
+| `HasEntityInInventory` | `bool HasEntityInInventory(EntityAI item)` | Sprawdź przedmiot |
+| `AttachmentCount` | `int AttachmentCount()` | Liczba załączników |
+| `GetAttachmentFromIndex` | `EntityAI GetAttachmentFromIndex(int idx)` | Pobierz załącznik po indeksie |
+| `FindAttachmentByName` | `EntityAI FindAttachmentByName(string slot)` | Pobierz załącznik po slocie |
 
 ---
 
 ## Tworzenie i usuwanie encji
 
-*Pelna referencja: [Rozdzial 6.1: System encji](01-entity-system.md)*
+*Pełna referencja: [Rozdział 6.1: System encji](01-entity-system.md)*
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `CreateObject` | `Object GetGame().CreateObject(string type, vector pos, bool local = false, bool ai = false, bool physics = true)` | Stworz encje |
-| `CreateObjectEx` | `Object GetGame().CreateObjectEx(string type, vector pos, int flags, int rotation = RF_DEFAULT)` | Stworz z flagami ECE |
-| `ObjectDelete` | `void GetGame().ObjectDelete(Object obj)` | Natychmiastowe usuniecie na serwerze |
-| `ObjectDeleteOnClient` | `void GetGame().ObjectDeleteOnClient(Object obj)` | Usuniecie tylko po stronie klienta |
-| `Delete` | `void obj.Delete()` | Odlozone usuniecie (nastepna klatka) |
+| `CreateObject` | `Object GetGame().CreateObject(string type, vector pos, bool local = false, bool ai = false, bool physics = true)` | Utwórz encję |
+| `CreateObjectEx` | `Object GetGame().CreateObjectEx(string type, vector pos, int flags, int rotation = RF_DEFAULT)` | Utwórz z flagami ECE |
+| `ObjectDelete` | `void GetGame().ObjectDelete(Object obj)` | Natychmiastowe usunięcie na serwerze |
+| `ObjectDeleteOnClient` | `void GetGame().ObjectDeleteOnClient(Object obj)` | Usunięcie tylko po stronie klienta |
+| `Delete` | `void obj.Delete()` | Odroczone usunięcie (następna klatka) |
 
 ### Typowe flagi ECE
 
-| Flaga | Wartosc | Opis |
+| Flaga | Wartość | Opis |
 |-------|---------|------|
-| `ECE_NONE` | `0` | Brak specjalnego zachowania |
-| `ECE_CREATEPHYSICS` | `1024` | Stworz kolizje |
+| `ECE_NONE` | `0` | Bez specjalnego zachowania |
+| `ECE_CREATEPHYSICS` | `1024` | Utwórz kolizję |
 | `ECE_INITAI` | `2048` | Zainicjalizuj AI |
-| `ECE_EQUIP` | `24576` | Stworz z zalacznikami + cargo |
-| `ECE_PLACE_ON_SURFACE` | polaczony | Fizyka + sciezka + sledzenie |
-| `ECE_LOCAL` | `1073741824` | Tylko klient (niereplikowany) |
+| `ECE_EQUIP` | `24576` | Spawnuj z załącznikami + ładunkiem |
+| `ECE_PLACE_ON_SURFACE` | łączone | Fizyka + ścieżka + ślad |
+| `ECE_LOCAL` | `1073741824` | Tylko klient (niereplikowane) |
 | `ECE_NOLIFETIME` | `4194304` | Nie zniknie |
-| `ECE_KEEPHEIGHT` | `524288` | Zachowaj pozycje Y |
+| `ECE_KEEPHEIGHT` | `524288` | Zachowaj pozycję Y |
 
 ---
 
 ## Metody gracza
 
-*Pelna referencja: [Rozdzial 6.1: System encji](01-entity-system.md)*
+*Pełna referencja: [Rozdział 6.1: System encji](01-entity-system.md)*
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetIdentity` | `PlayerIdentity GetIdentity()` | Obiekt tozsamosci gracza |
-| `GetIdentity().GetName()` | `string GetName()` | Nazwa wyswietlana Steam/platformy |
-| `GetIdentity().GetId()` | `string GetId()` | Unikalny identyfikator BI |
+| `GetIdentity` | `PlayerIdentity GetIdentity()` | Obiekt tożsamości gracza |
+| `GetIdentity().GetName()` | `string GetName()` | Nazwa wyświetlana Steam/platformy |
+| `GetIdentity().GetId()` | `string GetId()` | Unikalne ID BI |
 | `GetIdentity().GetPlainId()` | `string GetPlainId()` | Steam64 ID |
-| `GetIdentity().GetPlayerId()` | `int GetPlayerId()` | ID gracza w sesji |
-| `GetHumanInventory().GetEntityInHands()` | `EntityAI GetEntityInHands()` | Przedmiot w rekach |
+| `GetIdentity().GetPlayerId()` | `int GetPlayerId()` | Sesyjne ID gracza |
+| `GetHumanInventory().GetEntityInHands()` | `EntityAI GetEntityInHands()` | Przedmiot w rękach |
 | `GetDrivingVehicle` | `EntityAI GetDrivingVehicle()` | Prowadzony pojazd |
-| `IsAlive` | `bool IsAlive()` | Sprawdzenie zycia |
-| `IsUnconscious` | `bool IsUnconscious()` | Sprawdzenie nieprzytomnosci |
-| `IsRestrained` | `bool IsRestrained()` | Sprawdzenie skrepowania |
-| `IsInVehicle` | `bool IsInVehicle()` | Sprawdzenie czy w pojezdzie |
-| `SpawnEntityOnGroundOnCursorDir` | `EntityAI SpawnEntityOnGroundOnCursorDir(string type, float dist)` | Stworz przed graczem |
+| `IsAlive` | `bool IsAlive()` | Sprawdzenie życia |
+| `IsUnconscious` | `bool IsUnconscious()` | Sprawdzenie nieprzytomności |
+| `IsRestrained` | `bool IsRestrained()` | Sprawdzenie skrępowania |
+| `IsInVehicle` | `bool IsInVehicle()` | Sprawdzenie czy w pojeździe |
+| `SpawnEntityOnGroundOnCursorDir` | `EntityAI SpawnEntityOnGroundOnCursorDir(string type, float dist)` | Spawnuj przed graczem |
 
 ---
 
-## Metody pojazdow
+## Metody pojazdów
 
-*Pelna referencja: [Rozdzial 6.2: System pojazdow](02-vehicles.md)*
+*Pełna referencja: [Rozdział 6.2: System pojazdów](02-vehicles.md)*
 
-### Zaloga (Transport)
+### Załoga (Transport)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `CrewSize` | `int CrewSize()` | Calkowita liczba miejsc |
-| `CrewMember` | `Human CrewMember(int idx)` | Pobierz czlowieka na miejscu |
-| `CrewMemberIndex` | `int CrewMemberIndex(Human member)` | Pobierz miejsce czlowieka |
-| `CrewGetOut` | `void CrewGetOut(int idx)` | Wymus wyjscie z miejsca |
-| `CrewDeath` | `void CrewDeath(int idx)` | Zabij czlonka zalogi |
+| `CrewSize` | `int CrewSize()` | Łączna liczba siedzeń |
+| `CrewMember` | `Human CrewMember(int idx)` | Pobierz człowieka na siedzeniu |
+| `CrewMemberIndex` | `int CrewMemberIndex(Human member)` | Pobierz siedzenie człowieka |
+| `CrewGetOut` | `void CrewGetOut(int idx)` | Wymuś wyrzucenie z siedzenia |
+| `CrewDeath` | `void CrewDeath(int idx)` | Zabij członka załogi |
 
 ### Silnik (Car)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `EngineIsOn` | `bool EngineIsOn()` | Czy silnik pracuje? |
+| `EngineIsOn` | `bool EngineIsOn()` | Czy silnik działa? |
 | `EngineStart` | `void EngineStart()` | Uruchom silnik |
 | `EngineStop` | `void EngineStop()` | Zatrzymaj silnik |
 | `EngineGetRPM` | `float EngineGetRPM()` | Aktualne obroty |
 | `EngineGetRPMRedline` | `float EngineGetRPMRedline()` | Obroty czerwonej strefy |
 | `GetGear` | `int GetGear()` | Aktualny bieg |
-| `GetSpeedometer` | `float GetSpeedometer()` | Predkosc w km/h |
+| `GetSpeedometer` | `float GetSpeedometer()` | Prędkość w km/h |
 
-### Plyny (Car)
+### Płyny (Car)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetFluidCapacity` | `float GetFluidCapacity(CarFluid fluid)` | Maksymalna pojemnosc |
-| `GetFluidFraction` | `float GetFluidFraction(CarFluid fluid)` | Poziom napelnienia 0.0-1.0 |
-| `Fill` | `void Fill(CarFluid fluid, float amount)` | Dodaj plyn |
-| `Leak` | `void Leak(CarFluid fluid, float amount)` | Usun plyn |
-| `LeakAll` | `void LeakAll(CarFluid fluid)` | Oprozniij caly plyn |
+| `GetFluidCapacity` | `float GetFluidCapacity(CarFluid fluid)` | Maksymalna pojemność |
+| `GetFluidFraction` | `float GetFluidFraction(CarFluid fluid)` | Poziom napełnienia 0.0-1.0 |
+| `Fill` | `void Fill(CarFluid fluid, float amount)` | Dodaj płyn |
+| `Leak` | `void Leak(CarFluid fluid, float amount)` | Usuń płyn |
+| `LeakAll` | `void LeakAll(CarFluid fluid)` | Opróżnij cały płyn |
 
 **Enum CarFluid:** `FUEL`, `OIL`, `BRAKE`, `COOLANT`
 
@@ -247,16 +251,16 @@
 |--------|-----------|------|
 | `SetBrake` | `void SetBrake(float value, int wheel = -1)` | 0.0-1.0, -1 = wszystkie |
 | `SetHandbrake` | `void SetHandbrake(float value)` | 0.0-1.0 |
-| `SetSteering` | `void SetSteering(float value, bool analog = true)` | Wejscie kierownicy |
-| `SetThrust` | `void SetThrust(float value, int wheel = -1)` | 0.0-1.0 gaz |
+| `SetSteering` | `void SetSteering(float value, bool analog = true)` | Wejście kierownicy |
+| `SetThrust` | `void SetThrust(float value, int wheel = -1)` | 0.0-1.0 przepustnica |
 
 ---
 
 ## Metody pogody
 
-*Pelna referencja: [Rozdzial 6.3: System pogody](03-weather.md)*
+*Pełna referencja: [Rozdział 6.3: System pogody](03-weather.md)*
 
-### Dostep
+### Dostęp
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
@@ -268,96 +272,96 @@
 |--------|-----------|------|
 | `GetOvercast` | `WeatherPhenomenon GetOvercast()` | Zachmurzenie |
 | `GetRain` | `WeatherPhenomenon GetRain()` | Deszcz |
-| `GetFog` | `WeatherPhenomenon GetFog()` | Mgla |
-| `GetSnowfall` | `WeatherPhenomenon GetSnowfall()` | Snieg |
-| `GetWindMagnitude` | `WeatherPhenomenon GetWindMagnitude()` | Predkosc wiatru |
+| `GetFog` | `WeatherPhenomenon GetFog()` | Mgła |
+| `GetSnowfall` | `WeatherPhenomenon GetSnowfall()` | Śnieg |
+| `GetWindMagnitude` | `WeatherPhenomenon GetWindMagnitude()` | Prędkość wiatru |
 | `GetWindDirection` | `WeatherPhenomenon GetWindDirection()` | Kierunek wiatru |
 | `GetWind` | `vector GetWind()` | Wektor kierunku wiatru |
-| `GetWindSpeed` | `float GetWindSpeed()` | Predkosc wiatru m/s |
-| `SetStorm` | `void SetStorm(float density, float threshold, float timeout)` | Konfiguracja blyskawic |
+| `GetWindSpeed` | `float GetWindSpeed()` | Prędkość wiatru m/s |
+| `SetStorm` | `void SetStorm(float density, float threshold, float timeout)` | Konfiguracja błyskawic |
 
 ### WeatherPhenomenon
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetActual` | `float GetActual()` | Aktualna interpolowana wartosc |
-| `GetForecast` | `float GetForecast()` | Wartosc docelowa |
-| `GetDuration` | `float GetDuration()` | Pozostaly czas (sekundy) |
+| `GetActual` | `float GetActual()` | Aktualna interpolowana wartość |
+| `GetForecast` | `float GetForecast()` | Wartość docelowa |
+| `GetDuration` | `float GetDuration()` | Pozostały czas trwania (sekundy) |
 | `Set` | `void Set(float forecast, float time = 0, float minDuration = 0)` | Ustaw cel (tylko serwer) |
-| `SetLimits` | `void SetLimits(float min, float max)` | Limity zakresu wartosci |
-| `SetTimeLimits` | `void SetTimeLimits(float min, float max)` | Limity predkosci zmiany |
-| `SetChangeLimits` | `void SetChangeLimits(float min, float max)` | Limity wielkosci zmiany |
+| `SetLimits` | `void SetLimits(float min, float max)` | Limity zakresu wartości |
+| `SetTimeLimits` | `void SetTimeLimits(float min, float max)` | Limity prędkości zmian |
+| `SetChangeLimits` | `void SetChangeLimits(float min, float max)` | Limity wielkości zmian |
 
 ---
 
-## Metody plikowego I/O
+## Metody I/O plików
 
-*Pelna referencja: [Rozdzial 6.8: Plikowe I/O i JSON](08-file-io.md)*
+*Pełna referencja: [Rozdział 6.8: I/O plików i JSON](08-file-io.md)*
 
-### Prefiksy sciezek
+### Prefiksy ścieżek
 
 | Prefiks | Lokalizacja | Zapisywalny |
 |---------|-------------|-------------|
 | `$profile:` | Katalog profilu serwera/klienta | Tak |
-| `$saves:` | Katalog zapisow | Tak |
+| `$saves:` | Katalog zapisów | Tak |
 | `$mission:` | Folder aktualnej misji | Zazwyczaj odczyt |
-| `$CurrentDir:` | Katalog roboczy | Zalezy |
+| `$CurrentDir:` | Katalog roboczy | Zależy |
 
-### Operacje plikowe
+### Operacje na plikach
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `FileExist` | `bool FileExist(string path)` | Sprawdz czy plik istnieje |
-| `MakeDirectory` | `bool MakeDirectory(string path)` | Stworz katalog |
-| `OpenFile` | `FileHandle OpenFile(string path, FileMode mode)` | Otworz plik (0 = niepowodzenie) |
+| `FileExist` | `bool FileExist(string path)` | Sprawdź czy plik istnieje |
+| `MakeDirectory` | `bool MakeDirectory(string path)` | Utwórz katalog |
+| `OpenFile` | `FileHandle OpenFile(string path, FileMode mode)` | Otwórz plik (0 = niepowodzenie) |
 | `CloseFile` | `void CloseFile(FileHandle fh)` | Zamknij plik |
 | `FPrint` | `void FPrint(FileHandle fh, string text)` | Zapisz tekst (bez nowej linii) |
 | `FPrintln` | `void FPrintln(FileHandle fh, string text)` | Zapisz tekst + nowa linia |
-| `FGets` | `int FGets(FileHandle fh, string line)` | Odczytaj jedna linie |
-| `ReadFile` | `string ReadFile(FileHandle fh)` | Odczytaj caly plik |
-| `DeleteFile` | `bool DeleteFile(string path)` | Usun plik |
-| `CopyFile` | `bool CopyFile(string src, string dst)` | Skopiuj plik |
+| `FGets` | `int FGets(FileHandle fh, string line)` | Odczytaj jedną linię |
+| `ReadFile` | `string ReadFile(FileHandle fh)` | Odczytaj cały plik |
+| `DeleteFile` | `bool DeleteFile(string path)` | Usuń plik |
+| `CopyFile` | `bool CopyFile(string src, string dst)` | Kopiuj plik |
 
 ### JSON (JsonFileLoader)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `JsonLoadFile` | `void JsonFileLoader<T>.JsonLoadFile(string path, T obj)` | Zaladuj JSON do obiektu (**zwraca void**) |
+| `JsonLoadFile` | `void JsonFileLoader<T>.JsonLoadFile(string path, T obj)` | Załaduj JSON do obiektu (**zwraca void**) |
 | `JsonSaveFile` | `void JsonFileLoader<T>.JsonSaveFile(string path, T obj)` | Zapisz obiekt jako JSON |
 
 ### Enum FileMode
 
-| Wartosc | Opis |
+| Wartość | Opis |
 |---------|------|
-| `FileMode.READ` | Otworz do odczytu |
-| `FileMode.WRITE` | Otworz do zapisu (tworzy/nadpisuje) |
-| `FileMode.APPEND` | Otworz do dopisywania |
+| `FileMode.READ` | Otwórz do odczytu |
+| `FileMode.WRITE` | Otwórz do zapisu (tworzy/nadpisuje) |
+| `FileMode.APPEND` | Otwórz do dopisywania |
 
 ---
 
-## Metody Timer i CallQueue
+## Metody timerów i CallQueue
 
-*Pelna referencja: [Rozdzial 6.7: Timery i CallQueue](07-timers.md)*
+*Pełna referencja: [Rozdział 6.7: Timery i CallQueue](07-timers.md)*
 
-### Dostep
+### Dostęp
 
-| Wyrazenie | Zwraca | Opis |
+| Wyrażenie | Zwraca | Opis |
 |-----------|--------|------|
-| `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY)` | `ScriptCallQueue` | Kolejka wywolan rozgrywki |
-| `GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM)` | `ScriptCallQueue` | Kolejka wywolan systemowych |
-| `GetGame().GetCallQueue(CALL_CATEGORY_GUI)` | `ScriptCallQueue` | Kolejka wywolan GUI |
-| `GetGame().GetUpdateQueue(CALL_CATEGORY_GAMEPLAY)` | `ScriptInvoker` | Kolejka aktualizacji co klatke |
+| `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY)` | `ScriptCallQueue` | Kolejka wywołań rozgrywki |
+| `GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM)` | `ScriptCallQueue` | Kolejka wywołań systemowych |
+| `GetGame().GetCallQueue(CALL_CATEGORY_GUI)` | `ScriptCallQueue` | Kolejka wywołań GUI |
+| `GetGame().GetUpdateQueue(CALL_CATEGORY_GAMEPLAY)` | `ScriptInvoker` | Kolejka aktualizacji per-klatka |
 
 ### ScriptCallQueue
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `CallLater` | `void CallLater(func fn, int delay = 0, bool repeat = false, param1..4)` | Zaplanuj opoznione/powtarzane wywolanie |
-| `Call` | `void Call(func fn, param1..4)` | Wykonaj nastepna klatke |
-| `CallByName` | `void CallByName(Class obj, string fnName, int delay = 0, bool repeat = false, Param par = null)` | Wywolaj metode po nazwie |
-| `Remove` | `void Remove(func fn)` | Anuluj zaplanowane wywolanie |
-| `RemoveByName` | `void RemoveByName(Class obj, string fnName)` | Anuluj po nazwie |
-| `GetRemainingTime` | `float GetRemainingTime(Class obj, string fnName)` | Pobierz pozostaly czas CallLater |
+| `CallLater` | `void CallLater(func fn, int delay = 0, bool repeat = false, param1..4)` | Zaplanuj opóźnione/powtarzające wywołanie |
+| `Call` | `void Call(func fn, param1..4)` | Wykonaj następną klatkę |
+| `CallByName` | `void CallByName(Class obj, string fnName, int delay = 0, bool repeat = false, Param par = null)` | Wywołaj metodę po nazwie string |
+| `Remove` | `void Remove(func fn)` | Anuluj zaplanowane wywołanie |
+| `RemoveByName` | `void RemoveByName(Class obj, string fnName)` | Anuluj po nazwie string |
+| `GetRemainingTime` | `float GetRemainingTime(Class obj, string fnName)` | Pobierz pozostały czas CallLater |
 
 ### Klasa Timer
 
@@ -367,10 +371,10 @@
 | `Run` | `void Run(float duration, Class obj, string fnName, Param params = null, bool loop = false)` | Uruchom timer |
 | `Stop` | `void Stop()` | Zatrzymaj timer |
 | `Pause` | `void Pause()` | Wstrzymaj timer |
-| `Continue` | `void Continue()` | Wznow timer |
+| `Continue` | `void Continue()` | Wznów timer |
 | `IsPaused` | `bool IsPaused()` | Czy timer wstrzymany? |
 | `IsRunning` | `bool IsRunning()` | Czy timer aktywny? |
-| `GetRemaining` | `float GetRemaining()` | Pozostale sekundy |
+| `GetRemaining` | `float GetRemaining()` | Pozostałe sekundy |
 
 ### ScriptInvoker
 
@@ -378,104 +382,104 @@
 |--------|-----------|------|
 | `Insert` | `void Insert(func fn)` | Zarejestruj callback |
 | `Remove` | `void Remove(func fn)` | Wyrejestruj callback |
-| `Invoke` | `void Invoke(params...)` | Wywolaj wszystkie callbacki |
-| `Count` | `int Count()` | Liczba zarejestrowanych callbackow |
-| `Clear` | `void Clear()` | Usun wszystkie callbacki |
+| `Invoke` | `void Invoke(params...)` | Uruchom wszystkie callbacki |
+| `Count` | `int Count()` | Liczba zarejestrowanych callbacków |
+| `Clear` | `void Clear()` | Usuń wszystkie callbacki |
 
 ---
 
-## Metody tworzenia widgetow
+## Metody tworzenia widgetów
 
-*Pelna referencja: [Rozdzial 3.5: Tworzenie programowe](../03-gui-system/05-programmatic-widgets.md)*
+*Pełna referencja: [Rozdział 3.5: Programowe tworzenie](../03-gui-system/05-programmatic-widgets.md)*
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetGame().GetWorkspace()` | `WorkspaceWidget GetWorkspace()` | Pobierz przestrzen robocza UI |
-| `CreateWidgets` | `Widget CreateWidgets(string layout, Widget parent = null)` | Zaladuj plik .layout |
-| `FindAnyWidget` | `Widget FindAnyWidget(string name)` | Znajdz potomka po nazwie (rekurencyjnie) |
-| `Show` | `void Show(bool show)` | Pokaz/ukryj widget |
-| `SetText` | `void TextWidget.SetText(string text)` | Ustaw zawartosc tekstowa |
+| `GetGame().GetWorkspace()` | `WorkspaceWidget GetWorkspace()` | Pobierz przestrzeń roboczą UI |
+| `CreateWidgets` | `Widget CreateWidgets(string layout, Widget parent = null)` | Załaduj plik .layout |
+| `FindAnyWidget` | `Widget FindAnyWidget(string name)` | Znajdź dziecko po nazwie (rekurencyjnie) |
+| `Show` | `void Show(bool show)` | Pokaż/ukryj widget |
+| `SetText` | `void TextWidget.SetText(string text)` | Ustaw zawartość tekstową |
 | `SetImage` | `void ImageWidget.SetImage(int index)` | Ustaw indeks obrazu |
 | `SetColor` | `void SetColor(int color)` | Ustaw kolor widgetu (ARGB) |
-| `SetAlpha` | `void SetAlpha(float alpha)` | Ustaw przezroczystosc 0.0-1.0 |
+| `SetAlpha` | `void SetAlpha(float alpha)` | Ustaw przezroczystość 0.0-1.0 |
 | `SetSize` | `void SetSize(float x, float y, bool relative = false)` | Ustaw rozmiar widgetu |
-| `SetPos` | `void SetPos(float x, float y, bool relative = false)` | Ustaw pozycje widgetu |
-| `GetScreenSize` | `void GetScreenSize(out float x, out float y)` | Rozdzielczosc ekranu |
-| `Destroy` | `void Widget.Destroy()` | Usun i zniszcz widget |
+| `SetPos` | `void SetPos(float x, float y, bool relative = false)` | Ustaw pozycję widgetu |
+| `GetScreenSize` | `void GetScreenSize(out float x, out float y)` | Rozdzielczość ekranu |
+| `Destroy` | `void Widget.Destroy()` | Usuń i zniszcz widget |
 
-### Pomocnik kolorow ARGB
+### Pomocnik kolorów ARGB
 
 | Funkcja | Sygnatura | Opis |
 |---------|-----------|------|
-| `ARGB` | `int ARGB(int a, int r, int g, int b)` | Stworz kolor (0-255 kazdy) |
-| `ARGBF` | `int ARGBF(float a, float r, float g, float b)` | Stworz kolor (0.0-1.0 kazdy) |
+| `ARGB` | `int ARGB(int a, int r, int g, int b)` | Utwórz int koloru (0-255 każdy) |
+| `ARGBF` | `int ARGBF(float a, float r, float g, float b)` | Utwórz int koloru (0.0-1.0 każdy) |
 
 ---
 
-## Metody RPC / sieciowe
+## Metody RPC / sieci
 
-*Pelna referencja: [Rozdzial 6.9: Siec i RPC](09-networking.md)*
+*Pełna referencja: [Rozdział 6.9: Sieć i RPC](09-networking.md)*
 
-### Sprawdzanie srodowiska
+### Sprawdzanie środowiska
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `GetGame().IsServer()` | `bool IsServer()` | True na serwerze / hoscie listen-servera |
+| `GetGame().IsServer()` | `bool IsServer()` | True na serwerze / hoście listen-server |
 | `GetGame().IsClient()` | `bool IsClient()` | True na kliencie |
-| `GetGame().IsMultiplayer()` | `bool IsMultiplayer()` | True w trybie wieloosobowym |
-| `GetGame().IsDedicatedServer()` | `bool IsDedicatedServer()` | True tylko na dedykowanym serwerze |
+| `GetGame().IsMultiplayer()` | `bool IsMultiplayer()` | True w multiplayerze |
+| `GetGame().IsDedicatedServer()` | `bool IsDedicatedServer()` | True tylko na serwerze dedykowanym |
 
 ### ScriptRPC
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
 | `ScriptRPC()` | `void ScriptRPC()` | Konstruktor |
-| `Write` | `bool Write(void value)` | Serializuj wartosc (int, float, bool, string, vector, array) |
-| `Send` | `void Send(Object target, int rpc_type, bool guaranteed, PlayerIdentity recipient = null)` | Wyslij RPC |
-| `Reset` | `void Reset()` | Wyczysc zapisane dane |
+| `Write` | `bool Write(void value)` | Serializuj wartość (int, float, bool, string, vector, array) |
+| `Send` | `void Send(Object target, int rpc_type, bool guaranteed, PlayerIdentity recipient = null)` | Wyślij RPC |
+| `Reset` | `void Reset()` | Wyczyść zapisane dane |
 
-### Odbieranie (Override na Object)
+### Odbieranie (nadpisanie na Object)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `OnRPC` | `void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx)` | Handler odbioru RPC |
+| `OnRPC` | `void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx)` | Handler odbierania RPC |
 
 ### ParamsReadContext
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `Read` | `bool Read(out void value)` | Deserializuj wartosc (te same typy co Write) |
+| `Read` | `bool Read(out void value)` | Deserializuj wartość (te same typy co Write) |
 
 ### Starsze RPC (CGame)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `RPCSingleParam` | `void GetGame().RPCSingleParam(Object target, int rpc, Param param, bool guaranteed, PlayerIdentity recipient = null)` | Wyslij pojedynczy obiekt Param |
-| `RPC` | `void GetGame().RPC(Object target, int rpc, array<Param> params, bool guaranteed, PlayerIdentity recipient = null)` | Wyslij wiele obiektow Param |
+| `RPCSingleParam` | `void GetGame().RPCSingleParam(Object target, int rpc, Param param, bool guaranteed, PlayerIdentity recipient = null)` | Wyślij pojedynczy obiekt Param |
+| `RPC` | `void GetGame().RPC(Object target, int rpc, array<Param> params, bool guaranteed, PlayerIdentity recipient = null)` | Wyślij wiele Paramów |
 
-### ScriptInputUserData (weryfikowane wejscie)
+### ScriptInputUserData (weryfikowane wejście)
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `CanStoreInputUserData` | `bool ScriptInputUserData.CanStoreInputUserData()` | Sprawdz czy kolejka ma miejsce |
-| `Write` | `bool Write(void value)` | Serializuj wartosc |
-| `Send` | `void Send()` | Wyslij do serwera (tylko klient) |
+| `CanStoreInputUserData` | `bool ScriptInputUserData.CanStoreInputUserData()` | Sprawdź czy kolejka ma miejsce |
+| `Write` | `bool Write(void value)` | Serializuj wartość |
+| `Send` | `void Send()` | Wyślij do serwera (tylko klient) |
 
 ---
 
-## Stale i metody matematyczne
+## Stałe i metody matematyczne
 
-*Pelna referencja: [Rozdzial 1.7: Matematyka i wektory](../01-enforce-script/07-math-vectors.md)*
+*Pełna referencja: [Rozdział 1.7: Matematyka i wektory](../01-enforce-script/07-math-vectors.md)*
 
-### Stale
+### Stałe
 
-| Stala | Wartosc | Opis |
+| Stała | Wartość | Opis |
 |-------|---------|------|
 | `Math.PI` | `3.14159...` | Pi |
 | `Math.PI2` | `6.28318...` | 2 * Pi |
 | `Math.PI_HALF` | `1.57079...` | Pi / 2 |
-| `Math.DEG2RAD` | `0.01745...` | Mnoznik stopni na radiany |
-| `Math.RAD2DEG` | `57.2957...` | Mnoznik radianow na stopnie |
+| `Math.DEG2RAD` | `0.01745...` | Mnożnik stopni na radiany |
+| `Math.RAD2DEG` | `57.2957...` | Mnożnik radianów na stopnie |
 | `int.MAX` | `2147483647` | Maksymalny int |
 | `int.MIN` | `-2147483648` | Minimalny int |
 | `float.MAX` | `3.4028e+38` | Maksymalny float |
@@ -488,33 +492,33 @@
 | `Math.RandomInt` | `int RandomInt(int min, int max)` | Losowy int [min, max) |
 | `Math.RandomIntInclusive` | `int RandomIntInclusive(int min, int max)` | Losowy int [min, max] |
 | `Math.RandomFloat01` | `float RandomFloat01()` | Losowy float [0, 1] |
-| `Math.RandomBool` | `bool RandomBool()` | Losowe true/false |
+| `Math.RandomBool` | `bool RandomBool()` | Losowy true/false |
 
-### Zaokraglanie
+### Zaokrąglanie
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `Math.Round` | `float Round(float f)` | Zaokraglij do najblizszego |
-| `Math.Floor` | `float Floor(float f)` | Zaokraglij w dol |
-| `Math.Ceil` | `float Ceil(float f)` | Zaokraglij w gore |
+| `Math.Round` | `float Round(float f)` | Zaokrąglij do najbliższego |
+| `Math.Floor` | `float Floor(float f)` | Zaokrąglij w dół |
+| `Math.Ceil` | `float Ceil(float f)` | Zaokrąglij w górę |
 
 ### Ograniczanie i interpolacja
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
 | `Math.Clamp` | `float Clamp(float val, float min, float max)` | Ogranicz do zakresu |
-| `Math.Min` | `float Min(float a, float b)` | Minimum z dwoch |
-| `Math.Max` | `float Max(float a, float b)` | Maksimum z dwoch |
+| `Math.Min` | `float Min(float a, float b)` | Minimum z dwóch |
+| `Math.Max` | `float Max(float a, float b)` | Maksimum z dwóch |
 | `Math.Lerp` | `float Lerp(float a, float b, float t)` | Interpolacja liniowa |
-| `Math.InverseLerp` | `float InverseLerp(float a, float b, float val)` | Odwrotny lerp |
+| `Math.InverseLerp` | `float InverseLerp(float a, float b, float val)` | Odwrotna interpolacja |
 
-### Wartosc bezwzgledna i potegi
+### Wartość bezwzględna i potęga
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `Math.AbsFloat` | `float AbsFloat(float f)` | Wartosc bezwzgledna (float) |
-| `Math.AbsInt` | `int AbsInt(int i)` | Wartosc bezwzgledna (int) |
-| `Math.Pow` | `float Pow(float base, float exp)` | Potega |
+| `Math.AbsFloat` | `float AbsFloat(float f)` | Wartość bezwzględna (float) |
+| `Math.AbsInt` | `int AbsInt(int i)` | Wartość bezwzględna (int) |
+| `Math.Pow` | `float Pow(float base, float exp)` | Potęga |
 | `Math.Sqrt` | `float Sqrt(float f)` | Pierwiastek kwadratowy |
 | `Math.SqrFloat` | `float SqrFloat(float f)` | Kwadrat (f * f) |
 
@@ -523,51 +527,51 @@
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
 | `Math.Sin` | `float Sin(float rad)` | Sinus |
-| `Math.Cos` | `float Cos(float rad)` | Cosinus |
+| `Math.Cos` | `float Cos(float rad)` | Kosinus |
 | `Math.Tan` | `float Tan(float rad)` | Tangens |
 | `Math.Asin` | `float Asin(float val)` | Arcus sinus |
-| `Math.Acos` | `float Acos(float val)` | Arcus cosinus |
-| `Math.Atan2` | `float Atan2(float y, float x)` | Kat ze skladowych |
+| `Math.Acos` | `float Acos(float val)` | Arcus kosinus |
+| `Math.Atan2` | `float Atan2(float y, float x)` | Kąt ze składowych |
 
-### Gladkie tlumienie
+### Płynne tłumienie
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `Math.SmoothCD` | `float SmoothCD(float val, float target, inout float velocity, float smoothTime, float maxSpeed, float dt)` | Gladko tlum do celu (jak Unity SmoothDamp) |
+| `Math.SmoothCD` | `float SmoothCD(float val, float target, inout float velocity, float smoothTime, float maxSpeed, float dt)` | Płynne tłumienie w kierunku celu (jak SmoothDamp w Unity) |
 
 ```c
-// Uzycie gladkiego tlumienia
-// val: aktualna wartosc, target: wartosc docelowa, velocity: ref predkosc (zachowywana miedzy wywolaniami)
-// smoothTime: czas wygladzania, maxSpeed: limit predkosci, dt: delta czasu
+// Użycie płynnego tłumienia
+// val: aktualna wartość, target: wartość docelowa, velocity: ref prędkość (persystowana między wywołaniami)
+// smoothTime: czas wygładzania, maxSpeed: limit prędkości, dt: delta czasu
 float m_Velocity = 0;
 float result = Math.SmoothCD(current, target, m_Velocity, 0.3, 1000.0, dt);
 ```
 
-### Kat
+### Kąt
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `Math.NormalizeAngle` | `float NormalizeAngle(float deg)` | Normalizuj do 0-360 |
+| `Math.NormalizeAngle` | `float NormalizeAngle(float deg)` | Zawiń do 0-360 |
 
 ---
 
-## Metody wektorow
+## Metody wektorów
 
 | Metoda | Sygnatura | Opis |
 |--------|-----------|------|
-| `vector.Distance` | `float Distance(vector a, vector b)` | Odleglosc miedzy punktami |
-| `vector.DistanceSq` | `float DistanceSq(vector a, vector b)` | Kwadrat odleglosci (szybsze) |
+| `vector.Distance` | `float Distance(vector a, vector b)` | Odległość między punktami |
+| `vector.DistanceSq` | `float DistanceSq(vector a, vector b)` | Kwadrat odległości (szybszy) |
 | `vector.Direction` | `vector Direction(vector from, vector to)` | Wektor kierunku |
 | `vector.Dot` | `float Dot(vector a, vector b)` | Iloczyn skalarny |
 | `vector.Lerp` | `vector Lerp(vector a, vector b, float t)` | Interpolacja pozycji |
-| `v.Length()` | `float Length()` | Dlugosc wektora |
-| `v.LengthSq()` | `float LengthSq()` | Kwadrat dlugosci (szybsze) |
+| `v.Length()` | `float Length()` | Długość wektora |
+| `v.LengthSq()` | `float LengthSq()` | Kwadrat długości (szybszy) |
 | `v.Normalized()` | `vector Normalized()` | Wektor jednostkowy |
-| `v.VectorToAngles()` | `vector VectorToAngles()` | Kierunek na yaw/pitch |
-| `v.AnglesToVector()` | `vector AnglesToVector()` | Yaw/pitch na kierunek |
-| `v.Multiply3` | `vector Multiply3(vector mat[3])` | Mnozenie macierzowe |
-| `v.InvMultiply3` | `vector InvMultiply3(vector mat[3])` | Odwrotne mnozenie macierzowe |
-| `Vector(x, y, z)` | `vector Vector(float x, float y, float z)` | Stworz wektor |
+| `v.VectorToAngles()` | `vector VectorToAngles()` | Kierunek na odchylenie/pochylenie |
+| `v.AnglesToVector()` | `vector AnglesToVector()` | Odchylenie/pochylenie na kierunek |
+| `v.Multiply3` | `vector Multiply3(vector mat[3])` | Mnożenie macierzowe |
+| `v.InvMultiply3` | `vector InvMultiply3(vector mat[3])` | Odwrotne mnożenie macierzowe |
+| `Vector(x, y, z)` | `vector Vector(float x, float y, float z)` | Utwórz wektor |
 
 ---
 
@@ -578,56 +582,56 @@ float result = Math.SmoothCD(current, target, m_Velocity, 0.3, 1000.0, dt);
 | `GetGame()` | `CGame GetGame()` | Instancja gry |
 | `GetGame().GetPlayer()` | `Man GetPlayer()` | Lokalny gracz (tylko KLIENT) |
 | `GetGame().GetPlayers(out arr)` | `void GetPlayers(out array<Man> arr)` | Wszyscy gracze (serwer) |
-| `GetGame().GetWorld()` | `World GetWorld()` | Instancja swiata |
+| `GetGame().GetWorld()` | `World GetWorld()` | Instancja świata |
 | `GetGame().GetTickTime()` | `float GetTickTime()` | Czas serwera (sekundy) |
-| `GetGame().GetWorkspace()` | `WorkspaceWidget GetWorkspace()` | Przestrzen robocza UI |
-| `GetGame().SurfaceY(x, z)` | `float SurfaceY(float x, float z)` | Wysokosc terenu na pozycji |
-| `GetGame().SurfaceGetType(x, z)` | `string SurfaceGetType(float x, float z)` | Typ materialu powierzchni |
-| `GetGame().GetObjectsAtPosition(pos, radius, objects, proxyCargo)` | `void GetObjectsAtPosition(vector pos, float radius, out array<Object> objects, out array<CargoBase> proxyCargo)` | Znajdz obiekty w poblizu pozycji |
-| `GetScreenSize(w, h)` | `void GetScreenSize(out int w, out int h)` | Pobierz rozdzielczosc ekranu |
+| `GetGame().GetWorkspace()` | `WorkspaceWidget GetWorkspace()` | Przestrzeń robocza UI |
+| `GetGame().SurfaceY(x, z)` | `float SurfaceY(float x, float z)` | Wysokość terenu na pozycji |
+| `GetGame().SurfaceGetType(x, z)` | `string SurfaceGetType(float x, float z)` | Typ materiału powierzchni |
+| `GetGame().GetObjectsAtPosition(pos, radius, objects, proxyCargo)` | `void GetObjectsAtPosition(vector pos, float radius, out array<Object> objects, out array<CargoBase> proxyCargo)` | Znajdź obiekty w pobliżu pozycji |
+| `GetScreenSize(w, h)` | `void GetScreenSize(out int w, out int h)` | Pobierz rozdzielczość ekranu |
 | `GetGame().IsServer()` | `bool IsServer()` | Sprawdzenie serwera |
 | `GetGame().IsClient()` | `bool IsClient()` | Sprawdzenie klienta |
-| `GetGame().IsMultiplayer()` | `bool IsMultiplayer()` | Sprawdzenie trybu wieloosobowego |
-| `Print(string)` | `void Print(string msg)` | Zapisz do script logu |
-| `ErrorEx(string)` | `void ErrorEx(string msg, ErrorExSeverity sev = ERROR)` | Zaloguj blad z poziomem waznosci |
-| `DumpStackString()` | `string DumpStackString()` | Pobierz stos wywolan jako string |
+| `GetGame().IsMultiplayer()` | `bool IsMultiplayer()` | Sprawdzenie multiplayera |
+| `Print(string)` | `void Print(string msg)` | Zapisz do logu skryptu |
+| `ErrorEx(string)` | `void ErrorEx(string msg, ErrorExSeverity sev = ERROR)` | Zapisz błąd z ważnością |
+| `DumpStackString()` | `string DumpStackString()` | Pobierz stos wywołań jako string |
 | `string.Format(fmt, ...)` | `string Format(string fmt, ...)` | Formatuj string (`%1`..`%9`) |
 
 ---
 
-## Hooki misji
+## Haki misji
 
-*Pelna referencja: [Rozdzial 6.11: Hooki misji](11-mission-hooks.md)*
+*Pełna referencja: [Rozdział 6.11: Haki misji](11-mission-hooks.md)*
 
 ### Strona serwera (modded MissionServer)
 
 | Metoda | Opis |
 |--------|------|
-| `override void OnInit()` | Inicjalizacja menedzerow, rejestracja RPC |
-| `override void OnMissionStart()` | Po zaladowaniu wszystkich modow |
-| `override void OnUpdate(float timeslice)` | Co klatke (uzyj akumulatora!) |
-| `override void OnMissionFinish()` | Czyszczenie singletonow, wyrejestrowanie zdarzen |
-| `override void OnEvent(EventType eventTypeId, Param params)` | Zdarzenia czatu, glosu |
-| `override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Gracz dolaczyl |
-| `override void InvokeOnDisconnect(PlayerBase player)` | Gracz wyszedl |
+| `override void OnInit()` | Inicjalizuj managery, rejestruj RPC |
+| `override void OnMissionStart()` | Po załadowaniu wszystkich modów |
+| `override void OnUpdate(float timeslice)` | Per-klatka (użyj akumulatora!) |
+| `override void OnMissionFinish()` | Czyszczenie singletonów, wypisanie z zdarzeń |
+| `override void OnEvent(EventType eventTypeId, Param params)` | Zdarzenia czatu, głosu |
+| `override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Gracz dołączył |
+| `override void InvokeOnDisconnect(PlayerBase player)` | Gracz wyszedł |
 | `override void OnClientReadyEvent(int peerId, PlayerIdentity identity)` | Klient gotowy na dane |
-| `override void PlayerRegistered(int peerId)` | Tozsamosc zarejestrowana |
+| `override void PlayerRegistered(int peerId)` | Tożsamość zarejestrowana |
 
 ### Strona klienta (modded MissionGameplay)
 
 | Metoda | Opis |
 |--------|------|
-| `override void OnInit()` | Inicjalizacja menedzerow klienta, tworzenie HUD |
-| `override void OnUpdate(float timeslice)` | Aktualizacja klienta co klatke |
+| `override void OnInit()` | Inicjalizuj managery klienta, utwórz HUD |
+| `override void OnUpdate(float timeslice)` | Aktualizacja klienta per-klatka |
 | `override void OnMissionFinish()` | Czyszczenie |
-| `override void OnKeyPress(int key)` | Klawisz wcisniety |
+| `override void OnKeyPress(int key)` | Klawisz naciśnięty |
 | `override void OnKeyRelease(int key)` | Klawisz zwolniony |
 
 ---
 
 ## System akcji
 
-*Pelna referencja: [Rozdzial 6.12: System akcji](12-action-system.md)*
+*Pełna referencja: [Rozdział 6.12: System akcji](12-action-system.md)*
 
 ### Rejestracja akcji na przedmiocie
 
@@ -635,8 +639,8 @@ float result = Math.SmoothCD(current, target, m_Velocity, 0.3, 1000.0, dt);
 override void SetActions()
 {
     super.SetActions();
-    AddAction(MyAction);           // Dodaj wlasna akcje
-    RemoveAction(ActionEat);       // Usun waniliowa akcje
+    AddAction(MyAction);           // Dodaj niestandardową akcję
+    RemoveAction(ActionEat);       // Usuń waniliową akcję
 }
 ```
 
@@ -644,12 +648,12 @@ override void SetActions()
 
 | Metoda | Opis |
 |--------|------|
-| `override void CreateConditionComponents()` | Ustaw warunki odleglosci CCINone/CCTNone |
-| `override bool ActionCondition(...)` | Wlasna logika walidacji |
+| `override void CreateConditionComponents()` | Ustaw warunki dystansu CCINone/CCTNone |
+| `override bool ActionCondition(...)` | Niestandardowa logika walidacji |
 | `override void OnExecuteServer(ActionData action_data)` | Wykonanie po stronie serwera |
 | `override void OnExecuteClient(ActionData action_data)` | Efekty po stronie klienta |
-| `override string GetText()` | Nazwa wyswietlana (obsluguje klucze `#STR_`) |
+| `override string GetText()` | Wyświetlana nazwa (obsługuje klucze `#STR_`) |
 
 ---
 
-*Pelna dokumentacja: [Strona glowna](../../README.md) | [Sciaga](../cheatsheet.md) | [System encji](01-entity-system.md) | [Pojazdy](02-vehicles.md) | [Pogoda](03-weather.md) | [Timery](07-timers.md) | [Plikowe I/O](08-file-io.md) | [Siec](09-networking.md) | [Hooki misji](11-mission-hooks.md) | [System akcji](12-action-system.md)*
+*Pełna dokumentacja: [Strona główna](../../README.md) | [Ściągawka](../cheatsheet.md) | [System encji](01-entity-system.md) | [Pojazdy](02-vehicles.md) | [Pogoda](03-weather.md) | [Timery](07-timers.md) | [I/O plików](08-file-io.md) | [Sieć](09-networking.md) | [Haki misji](11-mission-hooks.md) | [System akcji](12-action-system.md)*

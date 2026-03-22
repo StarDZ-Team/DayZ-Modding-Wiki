@@ -1,6 +1,10 @@
-# Chapter 8.4: Adding Chat Commands
+# Capítulo 8.4: Adding Chat Commands
 
-[Home](../../README.md) | [<< Previous: Building an Admin Panel](03-admin-panel.md) | **Adding Chat Commands** | [Next: Using the DayZ Mod Template >>](05-mod-template.md)
+[Inicio](../../README.md) | [<< Anterior: Building an Admin Panel](03-admin-panel.md) | **Adding Chat Commands** | [Siguiente: Using the DayZ Mod Template >>](05-mod-template.md)
+
+---
+
+> **Resumen:** This tutorial walks you through creating a chat command system for DayZ. You will hook into the chat input, parse command prefixes and arguments, check admin permissions, execute a server-side action, and send feedback to the player. By the end, you will have a working `/heal` command that fully heals the admin's character, along with a framework for adding more commands.
 
 ---
 
@@ -35,7 +39,7 @@ A chat command system with:
 
 ---
 
-## Prerequisites
+## Requisitos Previos
 
 - A working mod structure (complete [Chapter 8.1](01-first-mod.md) first)
 - Understanding of the [client-server RPC pattern](03-admin-panel.md) from Chapter 8.3
@@ -64,7 +68,7 @@ ChatCommands/
 
 ---
 
-## Architecture Vision General
+## Descripción General de la Arquitectura
 
 Chat commands follow this flow:
 
@@ -416,7 +420,7 @@ The command name is converted to lowercase so `/Heal`, `/HEAL`, and `/heal` all 
 
 ---
 
-## Step 3: Check Admin Permisos
+## Step 3: Check Admin Permissions
 
 Admin permission checking prevents regular players from executing admin commands. DayZ does not have a built-in admin permission system in scripts, so we check against a simple admin list.
 
@@ -449,14 +453,14 @@ static bool IsAdmin(PlayerIdentity identity)
 - The URL contains your Steam64 ID: `https://steamcommunity.com/profiles/76561198XXXXXXXXX`
 - Or use a tool like https://steamid.io to look up any player
 
-### Production-Grade Permisos
+### Production-Grade Permissions
 
 In a real mod, you would:
 
 1. Store admin IDs in a JSON file (`$profile:ChatCommands/admins.json`)
 2. Load the file on server startup
 3. Support permission levels (moderator, admin, superadmin)
-4. Use a framework like MyFramework's `MyPermissions` system for hierarchical permissions
+4. Use a framework like MyMod Core's `MyPermissions` system for hierarchical permissions
 
 ---
 
@@ -638,7 +642,7 @@ if (rpc_type == CCmdRPC.COMMAND_FEEDBACK)
 
 `GetGame().Chat()` displays a message in the player's chat window. The second parameter is the color channel:
 
-| Canal | Color | Uso Tipico |
+| Channel | Color | Typical Use |
 |---------|-------|-------------|
 | `"colorStatusChannel"` | Yellow/orange | System messages |
 | `"colorAction"` | White | Action feedback |
@@ -1490,7 +1494,7 @@ CCmdRegistry.Register(new CCmdTime());
 
 ---
 
-## Solucion de Problemas
+## Solución de Problemas
 
 ### Command Is Not Recognized ("Unknown command")
 
@@ -1539,15 +1543,49 @@ The exact implementation depends on the DayZ version and how `ChatInputMenu` exp
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 1. **Load admins from a config file** -- Use `JsonFileLoader` to load admin IDs from a JSON file instead of hardcoding them.
 2. **Add a /help command** -- List all available commands with their descriptions and usage.
 3. **Add logging** -- Write command usage to a log file for audit purposes.
-4. **Integrate with a framework** -- MyFramework provides `MyPermissions` for hierarchical permissions and `MyRPC` for string-routed RPCs that avoid integer ID collisions.
+4. **Integrate with a framework** -- MyMod Core provides `MyPermissions` for hierarchical permissions and `MyRPC` for string-routed RPCs that avoid integer ID collisions.
 5. **Add cooldowns** -- Prevent command spam by tracking the last execution time per player.
 6. **Build a command palette UI** -- Create an admin panel that lists all commands with clickable buttons (combining this tutorial with [Chapter 8.3](03-admin-panel.md)).
 
 ---
 
-**Previous:** [Chapter 8.3: Building an Admin Panel Module](03-admin-panel.md)
+## Mejores Prácticas
+
+- **Always check permissions before executing admin commands.** A missing permission check means any player can `/heal` or `/kill` anyone. Validate the caller's Steam64 ID (via `GetPlainId()`) on the server before processing.
+- **Send feedback to the admin even for failed commands.** Silent failures make debugging impossible. Always send a chat message explaining what went wrong ("Player not found", "Permission denied").
+- **Use `GetPlainId()` for admin checks, not `GetId()`.** `GetId()` returns a session-specific DayZ ID that changes every reconnect. `GetPlainId()` returns the permanent Steam64 ID.
+- **Store admin IDs in a JSON config file, not in code.** Hardcoded IDs require a PBO rebuild to change. A `$profile:` JSON file can be edited by server admins without modding knowledge.
+- **Convert command names to lowercase before matching.** Players may type `/Heal`, `/HEAL`, or `/heal`. Normalizing to lowercase prevents frustrating "unknown command" errors.
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| Chat hook via `OnEvent` | Intercept the message and handle it as a command | The message still appears in chat for all players. Suppressing it requires modding `ChatInputMenu`, which varies by DayZ version. |
+| `GetGame().Chat()` | Displays a message in the player's chat window | Only works when the chat UI is active. On the loading screen or in certain menu states, the message is silently dropped. |
+| Command registry pattern | Clean architecture with one class per command | Each command class file must go in the correct script layer. `CCmdBase` in `3_Game`, concrete commands referencing `PlayerBase` in `4_World`. Wrong layer placement causes "Undefined type" at load time. |
+| Player lookup by name | `FindPlayerByName` matches partial names | Partial matching can target the wrong player on a server with similar names. In production, prefer Steam64 ID targeting or add a confirmation step. |
+
+---
+
+## What You Learned
+
+In this tutorial you learned:
+- How to hook into chat input using `MissionGameplay.OnEvent` with `ChatMessageEventTypeID`
+- How to parse command prefixes and arguments from chat text
+- How to check admin permissions on the server using Steam64 IDs
+- How to send command feedback back to the player via RPC and `GetGame().Chat()`
+- How to build a reusable command registry pattern for adding new commands
+
+**Siguiente:** [Chapter 8.6: Debugging & Testing Your Mod](06-debugging-testing.md)
+
+---
+
+**Anterior:** [Chapter 8.3: Building an Admin Panel Module](03-admin-panel.md)

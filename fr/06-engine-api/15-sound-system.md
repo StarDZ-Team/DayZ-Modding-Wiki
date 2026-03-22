@@ -1,20 +1,20 @@
-# Chapter 6.15: Sound System
+# Chapitre 6.15: Sound System
 
-[Home](../../README.md) | [<< Previous: Player System](14-player-system.md) | **Sound System** | [Next: Crafting System >>](16-crafting-system.md)
+[Accueil](../../README.md) | [<< Précédent : Player System](14-player-system.md) | **Sound System** | [Suivant : Crafting System >>](16-crafting-system.md)
 
 ---
 
 ## Introduction
 
-DayZ fournit deux approches principales pour jouer des sons depuis les scripts: a **high-level API** built around `EffectSound` and `SEffectManager`, and a **config-driven shortcut** via `PlaySoundSet` / `StopSoundSet` on entities. Both ultimately rely on engine-level `CfgSoundSets` and `CfgSoundShaders` definitions in `config.cpp`.
+DayZ provides two main approaches for playing sounds from scripts: a **high-level API** built around `EffectSound` and `SEffectManager`, and a **config-driven shortcut** via `PlaySoundSet` / `StopSoundSet` on entities. Both ultimately rely on engine-level `CfgSoundSets` and `CfgSoundShaders` definitions in `config.cpp`.
 
-Toute lecture de son scriptee est **cote client uniquement**. Dedicated servers have no audio output device --- calling sound methods on a headless server wastes resources and can trigger warnings. Always guard sound calls behind `!GetGame().IsDedicatedServer()` or use the built-in guards provided by the API.
+All scripted sound playback is **côté client only**. Dedicated servers have no audio output device --- calling sound methods on a headless server wastes resources and can trigger warnings. Always guard sound calls behind `!GetGame().IsDedicatedServer()` or use the built-in guards provided by the API.
 
-This chapter covers the complete sound pipeline: config definitions, the `SEffectManager` API, the entity convenience methods, the `EffectSound` class, spatial vs UI sounds, looping, and common patterns found in vanilla and community mods.
+Ce chapitre couvre the complete sound pipeline: config definitions, the `SEffectManager` API, the entity convenience methods, the `EffectSound` class, spatial vs UI sounds, looping, and common patterns found in vanilla and community mods.
 
 ---
 
-## Vue d'ensemble de l'Architecture Sonore
+## Sound Architecture Overview
 
 ```
 config.cpp                         Script
@@ -37,16 +37,16 @@ CfgSoundSets                      EffectSound
                                                                   (the live sound handle)
 ```
 
-**Resume du flux :**
+**Flow summary:**
 
 1. You define audio samples in `CfgSoundShaders` (which `.ogg` files, volume, range).
 2. You group shaders into `CfgSoundSets` (spatial mode, looping, doppler, attenuation curve).
 3. From script, you reference the **SoundSet name** (e.g. `"MyMod_Alert_SoundSet"`).
-4. The engine loads the config, builds a `SoundObject`, and plays it through the `AbstractSoundScene`.
+4. Le moteur loads the config, builds a `SoundObject`, and plays it through the `AbstractSoundScene`.
 
 ---
 
-## Configuration
+## Config Setup
 
 Before any sound can be played from script, it must be defined in `config.cpp`. Two config classes are required: `CfgSoundShaders` and `CfgSoundSets`.
 
@@ -76,9 +76,9 @@ class CfgSoundShaders
 };
 ```
 
-**Proprietes cles :**
+**Key properties:**
 
-| Propriete | Type | Description |
+| Property | Type | Description |
 |----------|------|-------------|
 | `samples[]` | array | Pairs of `{path, probability}`. Multiple entries for random variation. |
 | `volume` | float | Base volume multiplier, 0.0 to 1.0. |
@@ -116,9 +116,9 @@ class CfgSoundSets
 };
 ```
 
-**Proprietes cles :**
+**Key properties:**
 
-| Propriete | Type | Description |
+| Property | Type | Description |
 |----------|------|-------------|
 | `soundShaders[]` | array | List of `CfgSoundShaders` class names to use. |
 | `spatial` | int | `1` for 3D positional audio, `0` for 2D (flat, no position). |
@@ -130,7 +130,7 @@ class CfgSoundSets
 
 ### CfgPatches Dependency
 
-Your sound config must declare a dependency on `DZ_Sounds_Effects` (or another appropriate base) so the engine's base sound shaders and processing types are available:
+Your sound config must declare a dependency on `DZ_Sounds_Effects` (or another appropriate base) so le moteur's base sound shaders and processing types are available:
 
 ```cpp
 class CfgPatches
@@ -310,7 +310,7 @@ class MyItem : ItemBase
 
 ```c
 bool PlaySoundSet(
-    out EffectSound sound,    // Output: the created EffectSound
+    out EffectSound sound,    // Sortie : the created EffectSound
     string sound_set,         // CfgSoundSets class name
     float fade_in,            // Fade-in duration (seconds)
     float fade_out,           // Fade-out duration (seconds)
@@ -372,7 +372,7 @@ The "Safe" variant is useful when a sound set might change dynamically (e.g. swi
 
 ### Key Methods
 
-| Methode | Description |
+| Méthode | Description |
 |--------|-------------|
 | `SoundPlay()` | Start playback. Returns `bool` (success). |
 | `SoundStop()` | Stop playback. Respects fade-out duration if set. |
@@ -629,7 +629,7 @@ class MyVehicleSound
 
 ## Lower-Level API: AbstractSoundScene
 
-For advanced use cases, you can bypass `SEffectManager` and use the engine's `AbstractSoundScene` directly. This is rarely needed but is how `EffectSound` works internally.
+For advanced use cases, you can bypass `SEffectManager` and use le moteur's `AbstractSoundScene` directly. This is rarely needed but is how `EffectSound` works internally.
 
 ```c
 // Build sound params from a sound set name
@@ -662,7 +662,7 @@ wave.Loop(false);
 
 The `AbstractWave` is the live handle to a playing sound:
 
-| Methode | Description |
+| Méthode | Description |
 |--------|-------------|
 | `Play()` | Start playback. |
 | `Stop()` | Stop playback. |
@@ -706,7 +706,7 @@ soundObj.SetPosition("0 1 0");        // Local offset: 1m above entity origin
 
 ---
 
-## Patrons Courants
+## Patrons courants
 
 ### 1. Button Click Sound (UI)
 
@@ -884,18 +884,18 @@ class MyExplosiveBarrel : BuildingSuper
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 ### 1. Using Stereo Files for 3D Sounds
 
-Audio files used with `spatial = 1` **must be mono** (single channel). Stereo files will not be spatialized correctly by the engine --- the sound will appear to come from everywhere or only one side. Always convert your audio to mono `.ogg` for any 3D positional sound.
+Audio files used with `spatial = 1` **must be mono** (single channel). Stereo files will not be spatialized correctly by le moteur --- the sound will appear to come from everywhere or only one side. Always convert your audio to mono `.ogg` for any 3D positional sound.
 
 ### 2. Not Stopping Sounds in Destructor
 
 If you store an `EffectSound` reference and the owning object is destroyed without stopping the sound, the sound may continue playing orphaned, or worse, cause a memory leak in `SEffectManager`'s internal map.
 
 ```c
-// WRONG: no cleanup
+// INCORRECT: no cleanup
 class MyObject : ItemBase
 {
     ref EffectSound m_Loop;
@@ -929,7 +929,7 @@ class MyObject : ItemBase
 Dedicated servers have no audio device. Sound calls on server waste CPU and can log warnings. Always guard:
 
 ```c
-// WRONG
+// INCORRECT
 void OnActivated()
 {
     SEffectManager.PlaySound("MyMod_Activate_SoundSet", GetPosition());
@@ -950,7 +950,7 @@ Note: `PlaySoundSet` / `StopSoundSet` on `Object` already include this guard int
 
 ### 4. Missing CfgSoundSets Definition
 
-If the sound set name passed to `SEffectManager.PlaySound()` does not match any class in `CfgSoundSets`, the engine will fail to create a valid `SoundParams` and the sound will not play. You will see errors like `"Invalid sound set"` in the script log.
+If the sound set name passed to `SEffectManager.PlaySound()` does not match any class in `CfgSoundSets`, le moteur will fail to create a valid `SoundParams` and the sound will not play. You will see errors like `"Invalid sound set"` in the script log.
 
 Always verify:
 - The sound set name in script matches the class name in config **exactly** (case-sensitive).
@@ -962,7 +962,7 @@ Always verify:
 One-shot sounds created via `SEffectManager.PlaySound()` remain registered in the effects map even after they finish playing. Without `SetAutodestroy(true)`, they accumulate and are only cleaned up when `SEffectManager.Cleanup()` runs (on mission end).
 
 ```c
-// WRONG: sound stays registered forever
+// INCORRECT: sound stays registered forever
 SEffectManager.PlaySound("MyMod_Beep_SoundSet", pos);
 
 // CORRECT: auto-cleanup when sound finishes
@@ -975,7 +975,7 @@ snd.SetAutodestroy(true);
 `AbstractWave.GetLength()` is a blocking call that waits for the audio header to load. If called immediately after playback starts, it can stall the main thread. Check `IsHeaderLoaded()` first or use the header-loaded event:
 
 ```c
-// WRONG: potentially blocking
+// INCORRECT: potentially blocking
 float len = wave.GetLength();
 
 // CORRECT: wait for header
@@ -993,7 +993,7 @@ else
 
 ## Sound Controller Overrides
 
-The engine exposes global sound controllers for environmental audio. You can override these from script:
+Le moteur exposes global sound controllers for environmental audio. You can override these from script:
 
 ```c
 // Override a controller value
@@ -1013,9 +1013,9 @@ Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`,
 
 ---
 
-## Reference Rapide
+## Référence rapide
 
-| Task | Methode |
+| Task | Method |
 |------|--------|
 | Play one-shot at position | `SEffectManager.PlaySound(soundSet, pos)` |
 | Play attached to entity | `SEffectManager.PlaySoundOnObject(soundSet, obj)` |
@@ -1034,7 +1034,7 @@ Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`,
 
 ## Source Files
 
-| Fichier | Description |
+| File | Description |
 |------|-------------|
 | `scripts/3_game/effects/effectsound.c` | `EffectSound` class --- the main sound wrapper |
 | `scripts/3_game/effectmanager.c` | `SEffectManager` --- static manager for all effects |
@@ -1045,22 +1045,22 @@ Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`,
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 - **Always call `SetAutodestroy(true)` on one-shot sounds.** Without it, `EffectSound` instances accumulate in `SEffectManager`'s internal registry and are only cleaned on mission end, causing a memory leak over long play sessions.
-- **Guard all sound playback with `!GetGame().IsDedicatedServer()`.** Dedicated servers have no audio device. Calling sound methods on the server wastes CPU cycles and may log warnings. The `PlaySoundSet` convenience methods include this guard internally, but `SEffectManager.PlaySound()` does not.
-- **Use mono OGG files for all 3D positional sounds.** Stereo files will not spatialize correctly -- the engine cannot determine left/right panning from a stereo source. Reserve stereo for UI sounds with `spatial = 0`.
+- **Guard all sound playback with `!GetGame().IsDedicatedServer()`.** Dedicated servers have no audio device. Calling sound methods on le serveur wastes CPU cycles and may log warnings. The `PlaySoundSet` convenience methods include this guard internally, but `SEffectManager.PlaySound()` does not.
+- **Use mono OGG files for all 3D positional sounds.** Stereo files will not spatialize correctly -- le moteur cannot determine left/right panning from a stereo source. Reserve stereo for UI sounds with `spatial = 0`.
 - **Stop looping sounds in your object's destructor.** If the owning entity is deleted without stopping the loop, the sound plays indefinitely as an orphaned effect with no way to stop it.
 - **Prefix CfgSoundShaders and CfgSoundSets class names with your mod identifier.** Sound config classes are global. Two mods using the same class name (e.g., `Alert_SoundSet`) will collide silently, with the last-loaded mod's definition winning.
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
-- **Multi-Mod:** CfgSoundShaders and CfgSoundSets class names share a global namespace across all loaded mods. Name collisions cause one mod's sounds to silently replace another's. Always use a unique mod prefix.
-- **Performance:** Each active `EffectSound` consumes an audio channel. The engine has a limited channel pool -- excessive simultaneous sounds (50+) can cause newer sounds to fail silently. Use `limitation` in CfgSoundShaders to cap concurrent instances of frequent sounds.
-- **Server/Client:** All sound playback is client-side only. The server has no audio output. Entity convenience methods (`PlaySoundSet`, `StopSoundSet`) include server guards internally, but direct `SEffectManager` calls do not.
+- **Multi-Mod :** CfgSoundShaders and CfgSoundSets class names share a global namespace across all loaded mods. Name collisions cause one mod's sounds to silently replace another's. Always use a unique mod prefix.
+- **Performance :** Each active `EffectSound` consumes an audio channel. Le moteur has a limited channel pool -- excessive simultaneous sounds (50+) can cause newer sounds to fail silently. Use `limitation` in CfgSoundShaders to cap concurrent instances of frequent sounds.
+- **Serveur/Client :** All sound playback is côté client only. Le serveur has no audio output. Entity convenience methods (`PlaySoundSet`, `StopSoundSet`) include server guards internally, but direct `SEffectManager` calls do not.
 
 ---
 
-[Accueil](../../README.md) | [<< Precedent : Player System](14-player-system.md) | **Systeme Sonore**
+[Accueil](../../README.md) | [<< Précédent : Player System](14-player-system.md) | **Sound System** | [Suivant : Crafting System >>](16-crafting-system.md)

@@ -1,60 +1,59 @@
-# Chapter 6.2: Vehicle System
+# Глава 6.2: Система транспорта
 
-[Home](../../README.md) | [<< Previous: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
+[Главная](../../README.md) | [<< Предыдущая: Система сущностей](01-entity-system.md) | **Транспорт** | [Следующая: Погода >>](03-weather.md)
 
 ---
 
 ## Введение
 
-
-DayZ vehicles are entities that extend the transport system. Cars extend `CarScript`, boats extend `BoatScript`, and both inherit from `Transport`. Vehicles have fluid systems, parts with independent health, gear simulation, and physics managed by the engine. Эта глава охватывает the API methods you need to interact with vehicles in scripts.
+Транспорт в DayZ --- это сущности, расширяющие транспортную систему. Автомобили наследуют от `CarScript`, лодки от `BoatScript`, и оба типа наследуют от `Transport`. Транспорт имеет систему жидкостей, детали с независимым здоровьем, симуляцию передач и физику, управляемую движком. В этой главе описаны методы API, необходимые для взаимодействия с транспортом в скриптах.
 
 ---
 
-## Class Hierarchy
+## Иерархия классов
 
 ```
 EntityAI
-└── Transport                    // 3_Game - base for all vehicles
-    ├── Car                      // 3_Game - engine-native car physics
-    │   └── CarScript            // 4_World - scriptable car base
+└── Transport                    // 3_Game - базовый для всего транспорта
+    ├── Car                      // 3_Game - нативная физика автомобиля
+    │   └── CarScript            // 4_World - скриптуемый базовый класс
     │       ├── CivilianSedan
     │       ├── OffroadHatchback
     │       ├── Hatchback_02
     │       ├── Sedan_02
     │       ├── Truck_01_Base
     │       └── ...
-    └── Boat                     // 3_Game - engine-native boat physics
-        └── BoatScript           // 4_World - scriptable boat base
+    └── Boat                     // 3_Game - нативная физика лодки
+        └── BoatScript           // 4_World - скриптуемый базовый класс
 ```
 
 ---
 
-## Transport (Base)
+## Transport (базовый)
 
-**File:** `3_Game/entities/transport.c`
+**Файл:** `3_Game/entities/transport.c`
 
-The abstract base for all vehicles. Provides seat management and crew access.
+Абстрактный базовый класс для всего транспорта. Предоставляет управление местами и доступ к экипажу.
 
-### Crew Management
+### Управление экипажем
 
 ```c
-proto native int   CrewSize();                          // Total number of seats
-proto native int   CrewMemberIndex(Human crew_member);  // Get seat index of a human
-proto native Human CrewMember(int posIdx);              // Get human at seat index
-proto native void  CrewGetOut(int posIdx);              // Force crew member out of seat
-proto native void  CrewDeath(int posIdx);               // Kill crew member in seat
+proto native int   CrewSize();                          // Общее количество мест
+proto native int   CrewMemberIndex(Human crew_member);  // Получить индекс места пассажира
+proto native Human CrewMember(int posIdx);              // Получить пассажира по индексу места
+proto native void  CrewGetOut(int posIdx);              // Принудительно высадить из места
+proto native void  CrewDeath(int posIdx);               // Убить пассажира на месте
 ```
 
-### Crew Entry
+### Посадка экипажа
 
 ```c
 proto native int  GetAnimInstance();
-proto native int  CrewPositionIndex(int componentIdx);  // Component to seat index
-proto native vector CrewEntryPoint(int posIdx);         // World entry position for seat
+proto native int  CrewPositionIndex(int componentIdx);  // Компонент в индекс места
+proto native vector CrewEntryPoint(int posIdx);         // Мировая точка посадки для места
 ```
 
-**Example --- eject all passengers:**
+**Пример --- высадка всех пассажиров:**
 
 ```c
 void EjectAllCrew(Transport vehicle)
@@ -72,13 +71,13 @@ void EjectAllCrew(Transport vehicle)
 
 ---
 
-## Car (Engine Native)
+## Car (нативный движок)
 
-**File:** `3_Game/entities/car.c`
+**Файл:** `3_Game/entities/car.c`
 
-Engine-level car physics. All `proto native` methods that drive the vehicle simulation.
+Физика автомобиля на уровне движка. Все `proto native` методы, управляющие симуляцией транспорта.
 
-### Engine
+### Двигатель
 
 ```c
 proto native bool  EngineIsOn();
@@ -90,9 +89,9 @@ proto native float EngineGetRPMMax();
 proto native int   GetGear();
 ```
 
-### Fluids
+### Жидкости
 
-DayZ vehicles have four fluid types defined in the `CarFluid` enum:
+Транспорт в DayZ имеет четыре типа жидкостей, определённых в перечислении `CarFluid`:
 
 ```c
 enum CarFluid
@@ -112,7 +111,7 @@ proto native void  Leak(CarFluid fluid, float amount);
 proto native void  LeakAll(CarFluid fluid);
 ```
 
-**Example --- refuel a vehicle:**
+**Пример --- заправка транспорта:**
 
 ```c
 void RefuelVehicle(Car car)
@@ -124,23 +123,23 @@ void RefuelVehicle(Car car)
 }
 ```
 
-### Speed
+### Скорость
 
 ```c
-proto native float GetSpeedometer();    // Speed in km/h (absolute value)
+proto native float GetSpeedometer();    // Скорость в км/ч (абсолютное значение)
 ```
 
-### Controls (Simulation)
+### Управление (симуляция)
 
 ```c
-proto native void  SetBrake(float value, int wheel = -1);    // 0.0 - 1.0, -1 = all wheels
+proto native void  SetBrake(float value, int wheel = -1);    // 0.0 - 1.0, -1 = все колёса
 proto native void  SetHandbrake(float value);                 // 0.0 - 1.0
 proto native void  SetSteering(float value, bool analog = true);
 proto native void  SetThrust(float value, int wheel = -1);    // 0.0 - 1.0
 proto native void  SetClutchState(bool engaged);
 ```
 
-### Wheels
+### Колёса
 
 ```c
 proto native int   WheelCount();
@@ -148,7 +147,7 @@ proto native bool  WheelIsAnyLocked();
 proto native float WheelGetSurface(int wheelIdx);
 ```
 
-### Callbacks (Override in CarScript)
+### Обратные вызовы (переопределяйте в CarScript)
 
 ```c
 void OnEngineStart();
@@ -163,48 +162,69 @@ void OnSound(CarSoundCtrl ctrl, float oldValue);
 
 ## CarScript
 
+**Файл:** `4_World/entities/vehicles/carscript.c`
 
-**File:** `4_World/entities/vehicles/carscript.c`
+Скриптуемый класс автомобиля, от которого наследует большинство модов транспорта. Добавляет управление деталями, дверьми, фарами и звуком.
 
-The scriptable car class that most vehicle mods extend. Adds parts, doors, lights, and sound management.
+### Здоровье деталей
 
-### Part Health
-
-CarScript uses damage zones to represent vehicle parts. Each part can be independently damaged:
+CarScript использует зоны урона для представления деталей транспорта. Каждая деталь может повреждаться независимо:
 
 ```c
-// Check part health via the standard EntityAI API
+// Проверка здоровья детали через стандартный API EntityAI
 float engineHP = car.GetHealth("Engine", "Health");
 float fuelTankHP = car.GetHealth("FuelTank", "Health");
 
-// Set part health
-car.SetHealth("Engine", "Health", 0);       // Destroy the engine
-car.SetHealth("FuelTank", "Health", 100);   // Repair the fuel tank
+// Установка здоровья детали
+car.SetHealth("Engine", "Health", 0);       // Уничтожить двигатель
+car.SetHealth("FuelTank", "Health", 100);   // Починить топливный бак
 ```
 
-Common damage zones for vehicles:
+### Диаграмма зон урона
 
-| Zone | Description |
-|------|-------------|
-| `""` (global) | Overall vehicle health |
-| `"Engine"` | Engine part |
-| `"FuelTank"` | Fuel tank |
-| `"Radiator"` | Radiator (coolant) |
-| `"Battery"` | Battery |
-| `"SparkPlug"` | Spark plug |
-| `"FrontLeft"` / `"FrontRight"` | Front wheels |
-| `"RearLeft"` / `"RearRight"` | Rear wheels |
-| `"DriverDoor"` / `"CoDriverDoor"` | Front doors |
-| `"Hood"` / `"Trunk"` | Hood and trunk |
+```mermaid
+graph TD
+    V[Транспорт] --> E[Engine]
+    V --> FT[FuelTank]
+    V --> R[Radiator]
+    V --> B[Battery]
+    V --> W1[Wheel_1_1]
+    V --> W2[Wheel_1_2]
+    V --> W3[Wheel_2_1]
+    V --> W4[Wheel_2_2]
+    V --> D1[Door_1_1]
+    V --> D2[Door_2_1]
+    V --> H[Hood]
+    V --> T[Trunk]
 
-### Lights
+    style E fill:#ff6b6b,color:#fff
+    style FT fill:#ffa07a,color:#fff
+    style R fill:#87ceeb,color:#fff
+```
+
+Распространённые зоны урона транспорта:
+
+| Зона | Описание |
+|------|----------|
+| `""` (глобальная) | Общее здоровье транспорта |
+| `"Engine"` | Двигатель |
+| `"FuelTank"` | Топливный бак |
+| `"Radiator"` | Радиатор (охлаждающая жидкость) |
+| `"Battery"` | Аккумулятор |
+| `"SparkPlug"` | Свеча зажигания |
+| `"FrontLeft"` / `"FrontRight"` | Передние колёса |
+| `"RearLeft"` / `"RearRight"` | Задние колёса |
+| `"DriverDoor"` / `"CoDriverDoor"` | Передние двери |
+| `"Hood"` / `"Trunk"` | Капот и багажник |
+
+### Фары
 
 ```c
-void SetLightsState(int state);   // 0 = off, 1 = on
+void SetLightsState(int state);   // 0 = выключены, 1 = включены
 int  GetLightsState();
 ```
 
-### Door Control
+### Управление дверьми
 
 ```c
 bool IsDoorOpen(string doorSource);
@@ -212,17 +232,17 @@ void OpenDoor(string doorSource);
 void CloseDoor(string doorSource);
 ```
 
-### Key Overrides for Custom Vehicles
+### Ключевые переопределения для пользовательского транспорта
 
 ```c
-override void EEInit();                    // Initialize vehicle parts, fluids
-override void OnEngineStart();             // Custom engine start behavior
-override void OnEngineStop();              // Custom engine stop behavior
-override void EOnSimulate(IEntity other, float dt);  // Per-tick simulation
+override void EEInit();                    // Инициализация деталей, жидкостей
+override void OnEngineStart();             // Пользовательское поведение при запуске
+override void OnEngineStop();              // Пользовательское поведение при остановке
+override void EOnSimulate(IEntity other, float dt);  // Потиковая симуляция
 override bool CanObjectAttachWeapon(string slot_name);
 ```
 
-**Example --- create a vehicle with full fluids:**
+**Пример --- создание транспорта с полными жидкостями:**
 
 ```c
 void SpawnReadyVehicle(vector pos)
@@ -232,13 +252,13 @@ void SpawnReadyVehicle(vector pos)
     if (!car)
         return;
 
-    // Fill all fluids
+    // Заполнить все жидкости
     car.Fill(CarFluid.FUEL, car.GetFluidCapacity(CarFluid.FUEL));
     car.Fill(CarFluid.OIL, car.GetFluidCapacity(CarFluid.OIL));
     car.Fill(CarFluid.BRAKE, car.GetFluidCapacity(CarFluid.BRAKE));
     car.Fill(CarFluid.COOLANT, car.GetFluidCapacity(CarFluid.COOLANT));
 
-    // Spawn required parts
+    // Заспавнить необходимые детали
     EntityAI carEntity = EntityAI.Cast(car);
     carEntity.GetInventory().CreateAttachment("CarBattery");
     carEntity.GetInventory().CreateAttachment("SparkPlug");
@@ -251,11 +271,11 @@ void SpawnReadyVehicle(vector pos)
 
 ## BoatScript
 
-**File:** `4_World/entities/vehicles/boatscript.c`
+**Файл:** `4_World/entities/vehicles/boatscript.c`
 
-Scriptable base for boat entities. Similar API to CarScript but with propeller-based physics.
+Скриптуемый базовый класс для лодок. API аналогичен CarScript, но с физикой на основе гребного винта.
 
-### Engine & Propulsion
+### Двигатель и движение
 
 ```c
 proto native bool  EngineIsOn();
@@ -264,22 +284,22 @@ proto native void  EngineStop();
 proto native float EngineGetRPM();
 ```
 
-### Fluids
+### Жидкости
 
-Boats use the same `CarFluid` enum but typically only use `FUEL`:
+Лодки используют то же перечисление `CarFluid`, но обычно только `FUEL`:
 
 ```c
 float fuel = boat.GetFluidFraction(CarFluid.FUEL);
 boat.Fill(CarFluid.FUEL, boat.GetFluidCapacity(CarFluid.FUEL));
 ```
 
-### Speed
+### Скорость
 
 ```c
-proto native float GetSpeedometer();   // Speed in km/h
+proto native float GetSpeedometer();   // Скорость в км/ч
 ```
 
-**Example --- spawn a boat:**
+**Пример --- спавн лодки:**
 
 ```c
 void SpawnBoat(vector waterPos)
@@ -297,9 +317,9 @@ void SpawnBoat(vector waterPos)
 
 ---
 
-## Vehicle Interaction Checks
+## Проверки взаимодействия с транспортом
 
-### Checking if a Player is in a Vehicle
+### Проверка, находится ли игрок в транспорте
 
 ```c
 PlayerBase player;
@@ -310,13 +330,12 @@ if (player.IsInVehicle())
     if (Class.CastTo(car, vehicle))
     {
         float speed = car.GetSpeedometer();
-        Print(string.Format("Driving at %1 km/h", speed));
+        Print(string.Format("Едет со скоростью %1 км/ч", speed));
     }
 }
 ```
 
-### Поиск всех транспортных средств в мире
-
+### Поиск всего транспорта в мире
 
 ```c
 void FindAllVehicles(out array<Transport> vehicles)
@@ -325,7 +344,7 @@ void FindAllVehicles(out array<Transport> vehicles)
     array<Object> objects = new array<Object>;
     array<CargoBase> proxyCargos = new array<CargoBase>;
 
-    // Use a large radius from center of map
+    // Использовать большой радиус от центра карты
     GetGame().GetObjectsAtPosition(Vector(7500, 0, 7500), 15000, objects, proxyCargos);
 
     foreach (Object obj : objects)
@@ -343,18 +362,50 @@ void FindAllVehicles(out array<Transport> vehicles)
 
 ## Итоги
 
-
-| Concept | Key Point |
-|---------|-----------|
-| Hierarchy | `Transport` > `Car`/`Boat` > `CarScript`/`BoatScript` |
-| Engine | `EngineStart()`, `EngineОстановить()`, `EngineIsOn()`, `EngineGetRPM()` |
-| Fluids | `CarFluid` enum: `FUEL`, `OIL`, `BRAKE`, `COOLANT` |
-| Fill/Leak | `Fill(fluid, amount)`, `Leak(fluid, amount)`, `GetFluidFraction(fluid)` |
-| Speed | `GetSpeedometer()` returns km/h |
-| Crew | `CrewSize()`, `CrewMember(idx)`, `CrewGetOut(idx)` |
-| Parts | Standard damage zones: `"Engine"`, `"FuelTank"`, `"Radiator"`, etc. |
-| Creation | `CreateObjectEx` with `ECE_PLACE_ON_SURFACE \| ECE_INITAI \| ECE_CREATEPHYSICS` |
+| Концепция | Ключевой момент |
+|-----------|----------------|
+| Иерархия | `Transport` > `Car`/`Boat` > `CarScript`/`BoatScript` |
+| Двигатель | `EngineStart()`, `EngineStop()`, `EngineIsOn()`, `EngineGetRPM()` |
+| Жидкости | Перечисление `CarFluid`: `FUEL`, `OIL`, `BRAKE`, `COOLANT` |
+| Заполнение/Утечка | `Fill(fluid, amount)`, `Leak(fluid, amount)`, `GetFluidFraction(fluid)` |
+| Скорость | `GetSpeedometer()` возвращает км/ч |
+| Экипаж | `CrewSize()`, `CrewMember(idx)`, `CrewGetOut(idx)` |
+| Детали | Стандартные зоны урона: `"Engine"`, `"FuelTank"`, `"Radiator"` и т.д. |
+| Создание | `CreateObjectEx` с `ECE_PLACE_ON_SURFACE \| ECE_INITAI \| ECE_CREATEPHYSICS` |
 
 ---
 
-[<< Предыдущая: Entity System](01-entity-system.md) | **Vehicles** | [Следующая: Weather >>](03-weather.md)
+## Лучшие практики
+
+- **Всегда включайте `ECE_CREATEPHYSICS | ECE_INITAI` при спавне транспорта.** Без физики транспорт провалится сквозь землю. Без инициализации AI симуляция двигателя не запустится и транспорт нельзя будет водить.
+- **Заполняйте все четыре жидкости после спавна.** Транспорт без масла, тормозной жидкости или охлаждающей жидкости повредит себя сразу при запуске двигателя. Используйте `GetFluidCapacity()` для получения правильных максимальных значений по типу транспорта.
+- **Проверяйте `CrewMember()` на null перед операциями с экипажем.** Пустые места возвращают `null`. Итерация по `CrewSize()` без проверки каждого индекса вызывает вылеты, когда места незаняты.
+- **Используйте `GetSpeedometer()` вместо ручного вычисления скорости.** Спидометр движка учитывает контакт колёс, состояние трансмиссии и физику корректно. Ручные вычисления скорости по дельтам позиции ненадёжны.
+
+---
+
+## Совместимость и влияние
+
+> **Совместимость модов:** Моды транспорта обычно расширяют `CarScript` через modded-классы. Конфликты возникают, когда несколько модов переопределяют одни и те же обратные вызовы вроде `OnEngineStart()` или `EOnSimulate()`.
+
+- **Порядок загрузки:** Если два мода оба `modded class CarScript` и переопределяют `OnEngineStart()`, только последний загруженный мод выполнится, если оба не вызывают `super`. Моды, переработывающие транспорт, должны всегда вызывать `super` в каждом обратном вызове.
+- **Конфликты modded-классов:** Expansion Vehicles и ванильные моды транспорта часто конфликтуют в `EEInit()` и инициализации жидкостей. Тестируйте с обоими загруженными.
+- **Влияние на производительность:** `EOnSimulate()` выполняется каждый физический тик для каждого активного транспорта. Логика в этом обратном вызове должна быть минимальной; используйте аккумуляторы таймеров для затратных операций.
+- **Сервер/Клиент:** `EngineStart()`, `EngineStop()`, `Fill()`, `Leak()` и `CrewGetOut()` авторитетны на сервере. `GetSpeedometer()`, `EngineIsOn()` и `GetFluidFraction()` безопасно читаются на обеих сторонах.
+
+---
+
+## Примеры из реальных модов
+
+> Эти паттерны подтверждены изучением исходного кода профессиональных модов DayZ.
+
+| Паттерн | Мод | Файл/Расположение |
+|---------|-----|-------------------|
+| Переопределение `EEInit()` для установки пользовательских ёмкостей жидкостей и спавна деталей | Expansion Vehicles | Подклассы `CarScript` |
+| Аккумулятор в `EOnSimulate` для периодических проверок расхода топлива | Моды Vanilla+ транспорта | Переопределения `CarScript` |
+| Цикл `CrewGetOut()` в команде администратора «высадить всех» | VPP Admin Tools | Модуль управления транспортом |
+| Пользовательское переопределение `OnContact()` для настройки урона от столкновений | Expansion | `ExpansionCarScript` |
+
+---
+
+[Главная](../../README.md) | [<< Предыдущая: Система сущностей](01-entity-system.md) | **Транспорт** | [Следующая: Погода >>](03-weather.md)

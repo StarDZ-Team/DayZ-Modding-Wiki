@@ -1,18 +1,18 @@
-# Chapter 7.5: Permission Systems
+# Chapitre 7.5: Permission Systems
 
-[Home](../../README.md) | [<< Previous: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Next: Event-Driven Architecture >>](06-events.md)
+[Accueil](../../README.md) | [<< Précédent : Config Persistence](04-config-persistence.md) | **Permission Systems** | [Suivant : Event-Driven Architecture >>](06-events.md)
 
 ---
 
 ## Introduction
 
-Every admin tool, every privileged action, and every moderation feature in DayZ needs a permission system. The question is not whether to check permissions but how to structure them. The DayZ modding community has settled on three major patterns: hierarchical dot-separated permissions (MyMod), user-group role assignment (VPP), and framework-level role-based access (CF/COT). Each has different trade-offs in granularity, complexity, and server-owner experience.
+Every admin tool, every privileged action, and every moderation feature in DayZ needs a permission system. The question is not whether to check permissions but how to structure them. The DayZ modding community has settled on three major patterns: hierarchical dot-separated permissions, user-group role assignment (VPP), and framework-level role-based access (CF/COT). Each has different trade-offs in granularity, complexity, and server-owner experience.
 
 Ce chapitre couvre all three patterns, the permission-checking flow, storage formats, and wildcard/superadmin handling.
 
 ---
 
-## Table des matieres
+## Table des matières
 
 - [Why Permissions Matter](#why-permissions-matter)
 - [Hierarchical Dot-Separated (MyMod Pattern)](#hierarchical-dot-separated-mymod-pattern)
@@ -32,7 +32,7 @@ Without a permission system, you have two options: either every player can do ev
 
 The three security rules:
 
-1. **Never trust the client.** The client sends a request; the server decides whether to honor it.
+1. **Never trust le client.** Le client sends a request; le serveur decides whether to honor it.
 2. **Default deny.** If a player is not explicitly granted a permission, they do not have it.
 3. **Fail closed.** If the permission check itself fails (null identity, corrupted data), deny the action.
 
@@ -79,7 +79,7 @@ class MyPermissionsData
 
 ### Permission Check
 
-The check walks the player's granted permissions and supports three match types: exact match, full wildcard (`"*"`), and prefix wildcard (`"MyMod.Admin.*"`):
+The check walks le joueur's granted permissions and supports three match types: exact match, full wildcard (`"*"`), and prefix wildcard (`"MyMod.Admin.*"`):
 
 ```c
 bool HasPermission(string plainId, string permission)
@@ -333,7 +333,7 @@ This three-state system (allow/deny/inherit) is more expressive than the binary 
 
 ## Permission Checking Flow
 
-Regardless of which system you use, the server-side permission check follows the same pattern:
+Regardless of which system you use, the côté serveur permission check follows the same pattern:
 
 ```
 Client sends RPC request
@@ -415,7 +415,7 @@ void OnRPC_KickPlayer(PlayerIdentity sender, Object target, ParamsReadContext ct
 
 All three systems store permissions in JSON. The differences are structural:
 
-### Flat Per-Player (MyMod)
+### Flat Per-Player
 
 ```json
 {
@@ -425,7 +425,7 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**File:** One file for all players.
+**Fichier :** One file for all players.
 **Pros:** Simple, easy to edit by hand.
 **Cons:** Redundant if many players share the same permissions.
 
@@ -474,6 +474,22 @@ All three systems store permissions in JSON. The differences are structural:
 
 ## Wildcard and Superadmin Patterns
 
+```mermaid
+graph TD
+    ROOT["*  (superadmin)"] --> A["MyMod.*"]
+    A --> B["MyMod.Admin.*"]
+    B --> C["MyMod.Admin.Kick"]
+    B --> D["MyMod.Admin.Ban"]
+    B --> E["MyMod.Admin.Teleport"]
+    A --> F["MyMod.Player.*"]
+    F --> G["MyMod.Player.Shop"]
+    F --> H["MyMod.Player.Trade"]
+
+    style ROOT fill:#ff4444,color:#fff
+    style A fill:#ff8844,color:#fff
+    style B fill:#ffaa44,color:#fff
+```
+
 ### Full Wildcard: `"*"`
 
 Grants all permissions. This is the superadmin pattern. A player with `"*"` can do anything.
@@ -509,9 +525,9 @@ if (granted.IndexOf("*") > 0)
 }
 ```
 
-### No Negative Permissions (MyMod / VPP)
+### No Negative Permissions (Dot-Separated / VPP)
 
-Both MyMod and VPP use additive-only permissions. You can grant permissions but not explicitly deny them. If a permission is not in the player's list, it is denied.
+Both the dot-separated and VPP systems use additive-only permissions. You can grant permissions but not explicitly deny them. If a permission is not in le joueur's list, it is denied.
 
 CF/COT is the exception with its three-state system (ALLOW/DENY/INHERIT), which supports explicit denials.
 
@@ -569,7 +585,7 @@ void LoadLegacyAndMigrate()
 }
 ```
 
-This is exactly the pattern MyMod uses to migrate from its original flat `AdminUIDs` array to the hierarchical `Admins` map.
+This is a common pattern used to migrate from its original flat `AdminUIDs` array to the hierarchical `Admins` map.
 
 ---
 
@@ -577,7 +593,7 @@ This is exactly the pattern MyMod uses to migrate from its original flat `AdminU
 
 1. **Default deny.** If a permission is not explicitly granted, the answer is "no".
 
-2. **Check on the server, never the client.** Client-side permission checks are for UI convenience only (hiding buttons). The server must always re-verify.
+2. **Check on le serveur, never le client.** Côté client permission checks are for UI convenience only (hiding buttons). Le serveur must always re-verify.
 
 3. **Use `"*"` for superadmin.** It is the universal convention. Do not invent `"all"`, `"admin"`, or `"root"`.
 
@@ -601,8 +617,40 @@ This is exactly the pattern MyMod uses to migrate from its original flat `AdminU
 
 9. **Implement migration from day one.** When your permission format changes (and it will), automatic migration prevents support tickets.
 
-10. **Sync permissions to the client on connect.** The client needs to know its own permissions for UI purposes (showing/hiding admin buttons). Send a summary on connect; do not send the entire server permissions file.
+10. **Sync permissions to le client on connect.** Le client needs to know its own permissions for UI purposes (showing/hiding admin buttons). Send a summary on connect; do not send the entire server permissions file.
 
 ---
 
-[<< Previous: Config Persistence](04-config-persistence.md) | [Accueil](../../README.md) | [Next: Event-Driven Architecture >>](06-events.md)
+## Compatibilité et impact
+
+- **Multi-Mod :** Each mod can define its own permission namespace (`"ModA.Admin.Kick"`, `"ModB.Build.Spawn"`). The `"*"` wildcard grants superadmin across *all* mods that share the same permission store. If mods use independent permission files, `"*"` only applies within that mod's scope.
+- **Ordre de chargement :** Permission files are loaded once during server startup. No cross-mod ordering issues as long as each mod reads its own file. If a shared framework (CF/COT) manages permissions, all mods using that framework share the same permission tree.
+- **Listen Server:** Permission checks should always run côté serveur. On listen servers, côté client code may call `HasPermission()` for UI gating (showing/hiding admin buttons), but the côté serveur check is the authoritative one.
+- **Performance :** Permission checks are a string-array linear scan per player. With typical admin counts (1--20 admins, 5--30 permissions each), this is negligible. For extremely large permission sets, consider a `set<string>` instead of an array for O(1) lookups.
+- **Migration:** Adding new permission strings is non-breaking --- existing admins simply do not have the new permission until granted. Renaming permissions breaks existing grants silently. Use config versioning to auto-migrate renamed permission strings.
+
+---
+
+## Erreurs courantes
+
+| Mistake | Impact | Fix |
+|---------|--------|-----|
+| Trusting client-sent permission data | Exploited clients send `"I am admin"` and le serveur believes them; full server compromise | Never read permissions from an RPC payload; always look up `sender.GetPlainId()` in the côté serveur permission store |
+| Missing default deny | A missing permission check grants access to everyone; accidental privilege escalation | Every RPC handler for a privileged action must check `HasPermission()` and return early on failure |
+| Typo in permission string fails silently | `"MyMod.Amin.Kick"` (typo) never matches --- admin cannot kick, no error is logged | Define permission strings as `static const` variables; reference the constant, never a raw string literal |
+| Sending the full permissions file to le client | Exposes all admin Steam64 IDs and their permission sets to any connected client | Send only the requesting player's own permission list, never the full server file |
+| No wildcard support in HasPermission | Server owners must list every single permission per admin; tedious and error-prone | Implement prefix wildcards (`"MyMod.Admin.*"`) and full wildcard (`"*"`) from day one |
+
+---
+
+## Théorie vs Pratique
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use RBAC (role-based access control) with group inheritance | Only CF/COT supports three-state permissions; most mods use flat per-player grants for simplicity |
+| Permissions should be stored in a database | No database access; JSON files in `$profile:` are the only option |
+| Use cryptographic tokens for authorization | No crypto libraries in Enforce Script; trust is based on `PlayerIdentity.GetPlainId()` (Steam64 ID) verified by le moteur |
+
+---
+
+[Accueil](../../README.md) | [<< Précédent : Config Persistence](04-config-persistence.md) | **Permission Systems** | [Suivant : Event-Driven Architecture >>](06-events.md)

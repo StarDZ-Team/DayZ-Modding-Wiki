@@ -1,10 +1,12 @@
-# Chapter 3.9: Real Mod UI Patterns
+# Chapitre 3.9: Real Mod UI Patterns
 
-[Home](../../README.md) | [<< Previous: Dialogs & Modals](08-dialogs-modals.md) | **Real Mod UI Patterns** | [Next: Advanced Widgets >>](10-advanced-widgets.md)
+[Accueil](../../README.md) | [<< Précédent : Dialogs & Modals](08-dialogs-modals.md) | **Real Mod UI Patterns** | [Suivant : Advanced Widgets >>](10-advanced-widgets.md)
 
 ---
 
-Tout le code montre est extrait du code source reel des mods. Les chemins de fichiers referencent les depots originaux.
+This chapter surveys UI patterns found in six professional DayZ mods: COT (Community Online Tools), VPP Admin Tools, DabsFramework, Colorful UI, Expansion, and DayZ Editor. Each mod solves different problems. Studying their approaches gives you a library of proven patterns beyond what official documentation covers.
+
+All code shown is extracted from actual mod source. File paths reference the original repositories.
 
 ---
 
@@ -125,11 +127,11 @@ class JMExampleForm: JMFormBase
 }
 ```
 
-**Point cle :** Each tool is entirely self-contained. Adding a new admin tool means creating one Module class, one Form class, one layout file, and inserting one line in the constructor. No existing code changes.
+**Key takeaway:** Each tool is entirely self-contained. Adding a new admin tool means creating one Module class, one Form class, one layout file, and inserting one line in the constructor. No existing code changes.
 
 ### Programmatic UI with UIActionManager
 
-COT does not build complex forms in layout files. Instead, it uses a factory class (`UIActionManager`) that creates standardized UI action widgets at runtime:
+COT does not build complex forms in layout files. Instead, it uses a factory class (`UIActionManager`) that creates standardized UI action widgets à l'exécution:
 
 ```c
 override void OnInit()
@@ -332,7 +334,7 @@ class AdminHudSubMenu: ScriptedWidgetEventHandler
 }
 ```
 
-**Point cle :** VPP builds a mini window manager inside DayZ. Each sub-menu is a draggable, resizable window with focus management. The `SetWindowPriorty()` call adjusts z-order so the clicked window comes to front.
+**Key takeaway:** VPP builds a mini window manager inside DayZ. Each sub-menu is a draggable, resizable window with focus management. The `SetWindowPriorty()` call adjusts z-order so the clicked window comes to front.
 
 ### VPPDialogBox -- Callback-based Dialog
 
@@ -383,7 +385,7 @@ class VPPDialogBox extends ScriptedWidgetEventHandler
 }
 ```
 
-The `ConfirmationEventHandler` wraps a button widget so clicking it spawns a dialog. The dialog result is forwarded to any class via a named callback:
+The `ConfirmationEventHandler` wraps a button widget so clicking it apparitions a dialog. The dialog result is forwarded to any class via a named callback:
 
 ```c
 class ConfirmationEventHandler extends ScriptedWidgetEventHandler
@@ -468,7 +470,7 @@ class PopUpCreatePreset extends ScriptedWidgetEventHandler
 }
 ```
 
-**Point cle :** `delete this` on close is the common popup disposal pattern. The destructor calls `m_root.Unlink()` to remove the widget tree. This is clean but requires care -- if anything holds a reference to the popup after deletion, you get a null access.
+**Key takeaway:** `delete this` on close is the common popup disposal pattern. The destructor calls `m_root.Unlink()` to remove the widget tree. This is clean but requires care -- if anything holds a reference to the popup after deletion, you get a null access.
 
 ---
 
@@ -621,13 +623,13 @@ class EditorCommand: RelayCommand
 }
 ```
 
-**Point cle :** DabsFramework eliminates boilerplate. You declare data, bind it by name, and the framework handles synchronization. The cost is the learning curve and the framework dependency.
+**Key takeaway:** DabsFramework eliminates boilerplate. You declare data, bind it by name, and the framework handles synchronization. The cost is the learning curve and the framework dependency.
 
 ---
 
 ## Colorful UI Patterns
 
-Colorful UI replaces vanilla DayZ menus with themed versions without modifying vanilla script files. Its approach is entirely based on `modded class` overrides and a centralized color/branding system.
+Colorful UI replaces le DayZ vanilla menus with themed versions without modifying vanilla script files. Its approach is entirely based on `modded class` overrides and a centralized color/branding system.
 
 ### 3-Layer Theme System
 
@@ -731,7 +733,7 @@ GUI/layouts/inventory/medium/   -- standard 1080p
 GUI/layouts/inventory/wide/     -- ultrawide
 ```
 
-Each directory contains the same file names (`cargo_container.layout`, `left_area.layout`, etc.) with adjusted sizing. The correct variant is selected at runtime based on screen resolution.
+Each directory contains the same file names (`cargo_container.layout`, `left_area.layout`, etc.) with adjusted sizing. The correct variant is selected à l'exécution based on screen resolution.
 
 ### Configuration via Static Variables
 
@@ -747,7 +749,7 @@ static bool CuiDebug         = true;
 
 This is the simplest possible config system: edit the script, rebuild PBO. No JSON loading, no config manager. For a client-only visual mod, this is appropriate.
 
-**Point cle :** Colorful UI demonstrates that you can retheme the entire DayZ client without server-side code, using only `modded class` overrides, custom layout files, and a centralized color system.
+**Key takeaway:** Colorful UI demonstrates that you can retheme the entire DayZ client without côté serveur code, using only `modded class` overrides, custom layout files, and a centralized color system.
 
 ---
 
@@ -855,7 +857,7 @@ class ExpansionMarketMenu: ExpansionScriptViewMenu
 }
 ```
 
-**Point cle :** For complex interactive UIs, Expansion combines DabsFramework's MVC with traditional widget references. The controller handles data binding for lists and text, while direct widget references handle specialized widgets like `ItemPreviewWidget` and `PlayerPreviewWidget` that need imperative control.
+**Key takeaway:** For complex interactive UIs, Expansion combines DabsFramework's MVC with traditional widget references. The controller handles data binding for lists and text, while direct widget references handle specialized widgets like `ItemPreviewWidget` and `PlayerPreviewWidget` that need imperative control.
 
 ### ExpansionScriptViewMenu -- Menu Lifecycle
 
@@ -956,7 +958,7 @@ class EditorCommandManager
 }
 ```
 
-Commands integrate with DabsFramework's `RelayCommand` so toolbar buttons automatically grey out when `CanExecute()` returns false.
+Commands integrate with DabsFramework's `RelayCommand` so toolbar buttons automatically grey out when `CanExecute()` retourne false.
 
 ### Menu Bar System
 
@@ -1152,7 +1154,7 @@ void OnWidgetScriptInit(Widget w)
 }
 ```
 
-This is set via the `scriptclass` property in the layout file. The engine calls `OnWidgetScriptInit` automatically when `CreateWidgets()` processes a widget with a script class.
+This is set via the `scriptclass` property in the layout file. Le moteur calls `OnWidgetScriptInit` automatically when `CreateWidgets()` processes a widget with a script class.
 
 ---
 
@@ -1163,7 +1165,7 @@ These mistakes appear in real mod code and cause performance issues or crashes.
 ### Creating Widgets Every Frame
 
 ```c
-// BAD: Creates new widgets on every Update call
+// MAUVAIS : Creates new widgets on every Update call
 override void Update(float dt)
 {
     Widget label = GetGame().GetWorkspace().CreateWidgets("label.layout", m_Parent);
@@ -1176,7 +1178,7 @@ Widget creation allocates memory and triggers layout recalculation. At 60 FPS th
 ### Not Cleaning Up Event Handlers
 
 ```c
-// BAD: Insert without corresponding Remove
+// MAUVAIS : Insert without corresponding Remove
 void OnInit()
 {
     GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
@@ -1193,7 +1195,7 @@ Every `Insert` on a `ScriptInvoker` or update queue needs a matching `Remove` in
 ### Hardcoding Pixel Positions
 
 ```c
-// BAD: Breaks on different resolutions
+// MAUVAIS : Breaks on different resolutions
 m_Panel.SetPos(540, 320);
 m_Panel.SetSize(400, 300);
 ```
@@ -1211,7 +1213,7 @@ Every nesting level adds layout calculation overhead. If an intermediate widget 
 ### Ignoring Focus Management
 
 ```c
-// BAD: Opens dialog but does not set focus
+// MAUVAIS : Opens dialog but does not set focus
 void ShowDialog()
 {
     m_Dialog.Show(true);
@@ -1231,7 +1233,7 @@ override void OnShow()
 ### Forgetting Widget Cleanup on Destruction
 
 ```c
-// BAD: Widget tree leaks when script object is destroyed
+// MAUVAIS : Widget tree leaks when script object is destroyed
 void ~MyPanel()
 {
     // m_root.Unlink() is missing!

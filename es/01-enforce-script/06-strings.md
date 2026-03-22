@@ -1,10 +1,10 @@
-# Chapter 1.6: String Operations
+# Capítulo 1.6: Operaciones con Strings
 
-[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
+[Inicio](../../README.md) | [<< Anterior: Control Flow](05-control-flow.md) | **String Operations** | [Siguiente: Math & Vectors >>](07-math-vectors.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Strings in Enforce Script are a **value type**, like `int` or `float`. They are passed by value and compared by value. The `string` type has a rich set of built-in methods for searching, slicing, converting, and formatting text. This chapter is a complete reference for every string operation available in DayZ scripting, with real-world examples from mod development.
 
@@ -156,7 +156,7 @@ string log = string.Format("[%1] %2 :: %3", "MyMod", "INFO", "Server started");
 // log = "[MyMod] INFO :: Server started"
 ```
 
-> **Note:** There is no `printf`-style formatting (`%d`, `%f`, `%s`). Only `%1` through `%9`.
+> **Nota:** There is no `printf`-style formatting (`%d`, `%f`, `%s`). Only `%1` through `%9`.
 
 ### ToLower
 
@@ -305,7 +305,7 @@ string msg2 = "Player " + name + " has " + health + " HP at " + distance + "m";
 
 ---
 
-## Ejemplos Practicos
+## Real-World Examples
 
 ### Parsing chat commands
 
@@ -436,9 +436,42 @@ string GetFileName(string path)
 
 ---
 
+## Mejores Prácticas
+
+- Use `string.Format()` with `%1`..`%9` placeholders for all formatted output -- it is more readable and avoids type-conversion pitfalls of `+` concatenation.
+- Remember that `ToLower()`, `ToUpper()`, and `Replace()` modify the string in place -- copy the string first if you need to preserve the original.
+- Always allocate the target array with `new TStringArray` before calling `Split()` -- passing a null array causes a crash.
+- Use `Contains()` for simple substring checks and `IndexOf()` only when you need the position.
+- For case-insensitive comparisons, copy both strings and call `ToLower()` on each before comparing -- there is no built-in case-insensitive compare.
+
+---
+
+## Observado en Mods Reales
+
+> Patrones confirmados estudiando código fuente de mods profesionales de DayZ.
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| `Split(" ", parts)` for chat command parsing | VPP / COT | All chat command systems split by space, then switch on `parts.Get(0)` |
+| `string.Format` with `[TAG]` prefix | Expansion / Dabs | Log messages always use `string.Format("[%1] %2", tag, msg)` rather than concatenation |
+| `"$profile:ModName/"` path convention | COT / Expansion | File paths built with `+` use forward slashes and `$profile:` prefix to avoid backslash issues |
+| `ToLower()` before command matching | VPP Admin | User input is lowered before `switch`/comparison to handle mixed-case input |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `ToLower()` / `Replace()` return value | Expected to return a new string (like C#) | They modify in place and return `void` or count -- a constant source of bugs |
+| `string.Format` placeholders | `%d`, `%f`, `%s` like C printf | Only `%1` through `%9` work; C-style specifiers are silently ignored |
+| Backslash `\\` in strings | Standard escape character | Can break DayZ's CParser in JSON contexts -- prefer forward slashes for paths |
+
+---
+
 ## Errores Comunes
 
-| Error | Problema | Solucion |
+| Error | Problema | Solución |
 |---------|---------|-----|
 | Expecting `ToLower()` to return a new string | `ToLower()` modifies in place, returns `void` | Copy the string first, then call `ToLower()` on the copy |
 | Expecting `ToUpper()` to return a new string | Same as above -- modifies in place | Copy first, then call `ToUpper()` on the copy |
@@ -451,7 +484,7 @@ string GetFileName(string path)
 
 ---
 
-## Referencia Rapida
+## Referencia Rápida
 
 ```c
 // Length

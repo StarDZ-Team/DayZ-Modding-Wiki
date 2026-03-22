@@ -1,10 +1,14 @@
-# Chapter 5.3: Credits.json
+# Chapitre 5.3: Credits.json
 
-[Home](../../README.md) | [<< Previous: inputs.xml](02-inputs-xml.md) | **Credits.json** | [Next: ImageSet Format >>](04-imagesets.md)
+[Accueil](../../README.md) | [<< Précédent : inputs.xml](02-inputs-xml.md) | **Credits.json** | [Suivant : ImageSet Format >>](04-imagesets.md)
 
 ---
 
-## Table des matieres
+> **Résumé :** The `Credits.json` file defines the credits that DayZ displays for your mod in le jeu's mod menu. It lists team members, contributors, and acknowledgments organized by departments and sections. While purely cosmetic, it est le standard way to give credit to your development team.
+
+---
+
+## Table des matières
 
 - [Overview](#overview)
 - [File Location](#file-location)
@@ -19,13 +23,13 @@
 
 ## Vue d'ensemble
 
-When a player selects your mod in the DayZ launcher or in-game mod menu, the engine looks for a `Credits.json` file inside your mod's PBO. If found, the credits are displayed in a scrolling view organized into departments and sections --- similar to movie credits.
+When a player selects your mod in the DayZ launcher or in-game mod menu, le moteur looks for a `Credits.json` file inside your mod's PBO. If found, the credits are displayed in a scrolling view organized into departments and sections --- similar to movie credits.
 
 The file is optional. If absent, no credits section appears for your mod. But including one is good practice: it acknowledges your team's work and gives your mod a professional appearance.
 
 ---
 
-## File Location
+## Emplacement du fichier
 
 Place `Credits.json` inside a `Data` subfolder of your Scripts directory, or directly in the Scripts root:
 
@@ -39,7 +43,7 @@ Place `Credits.json` inside a `Data` subfolder of your Scripts directory, or dir
         Credits.json         <-- Also valid (DabsFramework, Colorful-UI)
 ```
 
-Both locations work. The engine scans the PBO contents for a file named `Credits.json` (case-sensitive on some platforms).
+Both locations work. Le moteur scans the PBO contents for a file named `Credits.json` (case-sensitive on some platforms).
 
 ---
 
@@ -66,41 +70,41 @@ The file uses a straightforward JSON structure with three levels of hierarchy:
 
 ### Top-Level Fields
 
-| Field | Type | Required | Description |
+| Champ | Type | Requis | Description |
 |-------|------|----------|-------------|
 | `Header` | string | No | Main title displayed at the top of the credits. If omitted, no header is shown. |
 | `Departments` | array | Yes | Array of department objects |
 
 ### Department Object
 
-| Field | Type | Required | Description |
+| Champ | Type | Requis | Description |
 |-------|------|----------|-------------|
 | `DepartmentName` | string | Yes | Section header text. Can be empty `""` for visual grouping without a header. |
 | `Sections` | array | Yes | Array of section objects within this department |
 
 ### Section Object
 
-Two variants exist in the wild for listing names. The engine supports both.
+Two variants exist in the wild for listing names. Le moteur supports both.
 
-**Variant 1: `Names` array** (used by MyFramework)
+**Variant 1: `Names` array** (used by MyMod Core)
 
-| Field | Type | Required | Description |
+| Champ | Type | Requis | Description |
 |-------|------|----------|-------------|
 | `SectionName` | string | Yes | Sub-header within the department |
 | `Names` | array of strings | Yes | List of contributor names |
 
 **Variant 2: `SectionLines` array** (used by COT, Expansion, DabsFramework)
 
-| Field | Type | Required | Description |
+| Champ | Type | Requis | Description |
 |-------|------|----------|-------------|
 | `SectionName` | string | Yes | Sub-header within the department |
 | `SectionLines` | array of strings | Yes | List of contributor names or text lines |
 
-Both `Names` and `SectionLines` serve the same purpose. Use whichever you prefer --- the engine renders them identically.
+Both `Names` and `SectionLines` serve the same purpose. Use whichever you prefer --- le moteur renders them identically.
 
 ---
 
-## Comment DayZ affiche les credits
+## Comment DayZ affiche les crédits
 
 The credits display follows this visual hierarchy:
 
@@ -143,11 +147,11 @@ Expansion uses empty `DepartmentName` and `SectionName` strings, plus whitespace
 }
 ```
 
-C'est un probleme courant trick for controlling visual layout in the credits scroll.
+This is a common trick for controlling visual layout in the credits scroll.
 
 ---
 
-## Utiliser des noms de section localises
+## Utilisation des noms de section localisés
 
 Section names can reference stringtable keys using the `#` prefix, just like UI text:
 
@@ -158,7 +162,7 @@ Section names can reference stringtable keys using the `#` prefix, just like UI 
 }
 ```
 
-When the engine renders this, it resolves `#STR_EXPANSION_CREDITS_SCRIPTERS` to the localized text matching the player's language. This is useful if your mod supports multiple languages and you want the credits section headers to be translated.
+When le moteur renders this, it resolves `#STR_EXPANSION_CREDITS_SCRIPTERS` to the localized text matching le joueur's language. This is useful if your mod supports multiple languages and you want the credits section headers to be translated.
 
 Department names can also use stringtable references:
 
@@ -171,7 +175,7 @@ Department names can also use stringtable references:
 
 ---
 
-## Templates
+## Modèles
 
 ### Solo Developer
 
@@ -285,22 +289,22 @@ Department names can also use stringtable references:
 
 ---
 
-## Exemples concrets
+## Exemples réels
 
-### MyFramework
+### MyMod Core
 
 A minimal but complete credits file using the `Names` variant:
 
 ```json
 {
-    "Header": "MyFramework",
+    "Header": "MyMod Core",
     "Departments": [
         {
             "DepartmentName": "Development",
             "Sections": [
                 {
                     "SectionName": "Framework",
-                    "Names": ["MyMod Team"]
+                    "Names": ["Documentation Team"]
                 }
             ]
         }
@@ -398,7 +402,7 @@ Expansion demonstrates the most sophisticated use of Credits.json, including:
 
 ### Invalid JSON Syntax
 
-Le plus courant issue. JSON is strict about:
+The most common issue. JSON is strict about:
 - **Trailing commas**: `["a", "b",]` is invalid JSON (the trailing comma after `"b"`)
 - **Single quotes**: Use `"double quotes"`, not `'single quotes'`
 - **Unquoted keys**: `DepartmentName` must be `"DepartmentName"`
@@ -426,3 +430,20 @@ This is ambiguous. Pick one format and use it consistently throughout the file.
 ### Encoding Issues
 
 Save the file as UTF-8. Non-ASCII characters (accented names, CJK characters) require UTF-8 encoding to display correctly in-game.
+
+---
+
+## Bonnes pratiques
+
+- Validate your JSON with an external tool before packing into a PBO -- le moteur gives no useful error message for malformed JSON.
+- Use the `SectionLines` variant for consistency, since it is the format used by COT, Expansion, and DabsFramework.
+- Include a "Legal Notices" department if your mod bundles third-party assets (fonts, icons, sounds) with attribution requirements.
+- Keep the `Header` field matching your mod's `name` in `mod.cpp` and `config.cpp` for a consistent identity.
+- Use empty `DepartmentName` and `SectionName` strings sparingly for visual spacing -- overuse makes credits look fragmented.
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** Each mod has its own independent `Credits.json`. There is no risk of collision -- le moteur reads the file from within each mod's PBO separately.
+- **Performance :** Credits are loaded only when le joueur opens the mod details screen. File size has no impact on gameplay performance.

@@ -1,10 +1,10 @@
-# Chapter 4.1: Textures (.paa, .edds, .tga)
+# Capítulo 4.1: Textures (.paa, .edds, .tga)
 
-[Home](../../README.md) | **Textures** | [Next: 3D Models >>](02-models.md)
+[Inicio](../../README.md) | **Textures** | [Siguiente: 3D Models >>](02-models.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Every surface you see in DayZ -- weapon skins, clothing, terrain, UI icons -- is defined by texture files. The engine uses a proprietary compressed format called **PAA** at runtime, but during development you work with several source formats that are converted during the build process. Understanding these formats, the naming conventions that bind them to materials, and the resolution rules the engine enforces is fundamental to creating visual content for DayZ mods.
 
@@ -30,11 +30,11 @@ This chapter covers every texture format you will encounter, the suffix naming s
 
 ---
 
-## Vision General de Formatos de Textura
+## Texture Formats Overview
 
 DayZ uses four texture formats at different stages of the development pipeline:
 
-| Formato | Extension | Rol | Soporte Alpha | Usado En |
+| Formato | Extensión | Role | Alpha Support | Used At |
 |--------|-----------|------|---------------|---------|
 | **PAA** | `.paa` | Runtime game format (compressed) | Yes | Final build, shipped in PBOs |
 | **EDDS** | `.edds` | Editor/intermediate DDS variant | Yes | Object Builder preview, auto-converts |
@@ -58,7 +58,7 @@ The general workflow is: **Source (TGA/PNG) --> DayZ Tools conversion --> PAA (g
 
 ### Internal Compression Types
 
-| Tipo | Alpha | Quality | Caso de Uso |
+| Tipo | Alpha | Quality | Use Case |
 |------|-------|---------|----------|
 | **DXT1** | No (1-bit) | Good, 6:1 ratio | Opaque textures, terrain |
 | **DXT5** | Full 8-bit | Good, 4:1 ratio | Textures with smooth alpha (glass, foliage) |
@@ -95,7 +95,7 @@ Artist creates TGA/PNG source
             --> Binarize converts EDDS to PAA for PBO
 ```
 
-> **Tip:** You can skip EDDS entirely if you prefer. Convert your source textures directly to PAA using TexView2 and reference the PAA paths in your materials. EDDS is a convenience, not a requirement.
+> **Consejo:** You can skip EDDS entirely if you prefer. Convert your source textures directly to PAA using TexView2 and reference the PAA paths in your materials. EDDS is a convenience, not a requirement.
 
 ---
 
@@ -110,7 +110,7 @@ Artist creates TGA/PNG source
 - **Alpha in dedicated channel:** TGA supports a proper 8-bit alpha channel (32-bit TGA), which maps directly to transparency in PAA.
 - **TexView2 compatible:** TexView2 can open TGA files directly and convert them to PAA.
 
-### Cuando Usar TGA
+### When to Use TGA
 
 - As your master source file for textures you author from scratch.
 - When exporting from Substance Painter or Photoshop for DayZ.
@@ -138,23 +138,23 @@ When exporting TGA for DayZ conversion:
 - **TexView2 compatible:** TexView2 can open and convert PNG to PAA.
 - **UI-friendly:** Many UI imagesets and icons in mods use PNG as their source format.
 
-### Cuando Usar PNG
+### When to Use PNG
 
 - **UI textures and icons:** PNG is the practical choice for imagesets and HUD elements.
 - **Simple retextures:** When you only need a color/diffuse map with no complex alpha.
 - **Cross-tool workflows:** PNG is universally supported across image editors, web tools, and scripts.
 
-> **Note:** PNG is not an official Bohemia source format -- they prefer TGA. However, the conversion tools handle PNG without issues and many modders use it successfully.
+> **Nota:** PNG is not an official Bohemia source format -- they prefer TGA. However, the conversion tools handle PNG without issues and many modders use it successfully.
 
 ---
 
-## Convenciones de Nombres de Texturas
+## Texture Naming Conventions
 
 DayZ uses a strict suffix system to identify the role of each texture. The engine and materials reference textures by filename, and the suffix tells both the engine and other modders what type of data the texture contains.
 
 ### Required Suffixes
 
-| Sufijo | Nombre Completo | Proposito | Formato Tipico |
+| Suffix | Full Name | Propósito | Typical Format |
 |--------|-----------|---------|----------------|
 | `_co` | **Color / Diffuse** | The base color (albedo) of a surface | RGB, optional alpha |
 | `_nohq` | **Normal Map (High Quality)** | Surface detail normals, defines bumps and grooves | RGB (tangent-space normal) |
@@ -184,7 +184,7 @@ data/
 
 The specular/metallic/detail texture packs three data streams into one RGB image:
 
-| Canal | Datos | Rango | Efecto |
+| Channel | Data | Range | Effect |
 |---------|------|-------|--------|
 | **R** | Metallic | 0-255 | 0 = non-metal, 255 = full metal |
 | **G** | Roughness (inverted specular) | 0-255 | 0 = rough/matte, 255 = smooth/glossy |
@@ -194,7 +194,7 @@ The specular/metallic/detail texture packs three data streams into one RGB image
 
 Normal maps in DayZ use tangent-space encoding:
 
-| Canal | Datos |
+| Channel | Data |
 |---------|------|
 | **R** | X-axis normal (left-right) |
 | **G** | Y-axis normal (up-down) |
@@ -203,13 +203,13 @@ Normal maps in DayZ use tangent-space encoding:
 
 ---
 
-## Requisitos de Resolucion
+## Resolution Requirements
 
 The Enfusion engine requires all textures to have **power-of-two dimensions**. Both width and height must independently be a power of 2, but they do not have to be equal (non-square textures are valid).
 
 ### Valid Dimensions
 
-| Tamano | Uso Tipico |
+| Size | Typical Use |
 |------|-------------|
 | **64x64** | Tiny icons, UI elements |
 | **128x128** | Small icons, inventory thumbnails |
@@ -219,7 +219,7 @@ The Enfusion engine requires all textures to have **power-of-two dimensions**. B
 | **2048x2048** | High-detail weapons, character models |
 | **4096x4096** | Terrain textures, large vehicle textures |
 
-### Non-Square Texturas
+### Non-Square Textures
 
 Non-square power-of-two textures are valid:
 
@@ -239,17 +239,17 @@ Non-square power-of-two textures are valid:
 - **Normal maps:** Same resolution as the corresponding color texture.
 - **SMDI maps:** Same resolution as the corresponding color texture.
 
-> **Warning:** If a texture has non-power-of-two dimensions, the engine will either refuse to load it or display a magenta error texture. TexView2 will show a warning during conversion.
+> **Advertencia:** If a texture has non-power-of-two dimensions, the engine will either refuse to load it or display a magenta error texture. TexView2 will show a warning during conversion.
 
 ---
 
-## Soporte de Canal Alpha
+## Alpha Channel Support
 
 The alpha channel in a texture carries additional data beyond color. How it is interpreted depends on the texture suffix and the material shader.
 
 ### Alpha Channel Roles
 
-| Sufijo | Alpha Interpretation |
+| Suffix | Alpha Interpretation |
 |--------|---------------------|
 | `_co` | Usually unused; if present, may define transparency for simple materials |
 | `_ca` | Transparency mask (0 = fully transparent, 255 = fully opaque) |
@@ -257,7 +257,7 @@ The alpha channel in a texture carries additional data beyond color. How it is i
 | `_smdi` | Usually unused |
 | `_li` | Emissive intensity mask |
 
-### Creating Texturas with Alpha
+### Creating Textures with Alpha
 
 In your image editor (Photoshop, GIMP, Krita):
 
@@ -277,7 +277,7 @@ Open the PAA in TexView2 and use the channel display buttons:
 
 ---
 
-## Conversion entre Formatos
+## Converting Between Formats
 
 ### TexView2 (Primary Tool)
 
@@ -332,11 +332,11 @@ source/mod_name/data/texture_co.tga
 
 ---
 
-## Calidad de Textura y Compresion
+## Texture Quality and Compression
 
 ### Compression Type Selection
 
-| Scenario | Compresion Recomendada | Razon |
+| Scenario | Recommended Compression | Reason |
 |----------|------------------------|--------|
 | Opaque diffuse (`_co`) | DXT1 | Best ratio, no alpha needed |
 | Transparent diffuse (`_ca`) | DXT5 | Full alpha support |
@@ -362,14 +362,14 @@ Players can adjust texture quality in DayZ's video settings. The engine selects 
 
 ---
 
-## Ejemplos Practicos
+## Real-World Examples
 
 ### Weapon Texture Set
 
 A typical weapon mod contains these texture files:
 
 ```
-MyWeapons/data/weapons/m4a1/
+MyMod_Weapons/data/weapons/m4a1/
   my_weapon_co.paa           <-- 2048x2048, DXT1, base color
   my_weapon_nohq.paa         <-- 2048x2048, DXT5, normal map
   my_weapon_smdi.paa          <-- 2048x2048, DXT1, specular/metallic
@@ -387,7 +387,7 @@ MyFramework/data/gui/icons/
 
 UI textures are often packed into a single atlas (imageset) and referenced by name in layout files. ARGB4444 compression is common for UI because it preserves clean edges while keeping file sizes small.
 
-### Terrain Texturas
+### Terrain Textures
 
 ```
 terrain/
@@ -436,7 +436,7 @@ Terrain textures tile across the landscape. The `_mc` macro texture adds large-s
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Keep source files in version control.** Store TGA/PNG masters alongside your mod. The PAA files are generated output -- the sources are what matter.
 
@@ -454,7 +454,26 @@ Terrain textures tile across the landscape. The `_mc` macro texture adds large-s
 
 ---
 
-## Navegacion
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Atlas `_co` textures for icon grids | Colorful UI | Packs multiple UI icons into a single 512x512 `_co.paa` atlas referenced by imagesets |
+| Market icon sprite sheets | Expansion Market | Uses large atlas PAA textures with dozens of item thumbnails for the trader UI |
+| hiddenSelections retexture without new P3D | DayZ-Samples (Test_ClothingRetexture) | Swaps `_co.paa` via `hiddenSelectionsTextures[]` to create color variants from one model |
+| ARGB4444 for small HUD elements | VPP Admin Tools | Uses ARGB4444-compressed 64x64 PAA files for toolbar and panel icons to minimize file size |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Texture path collisions are rare because each mod uses its own PBO prefix, but two mods retexturing the same vanilla item via `hiddenSelectionsTextures[]` will conflict -- last loaded wins.
+- **Performance:** A single 4096x4096 DXT5 texture uses ~21 MB of GPU memory with mipmaps. Overuse of large textures across many mod items can exhaust VRAM on lower-end hardware. Prefer 1024 or 2048 for most items.
+- **Version:** The PAA format and TexView2 pipeline have been stable since DayZ 1.0. No breaking changes have occurred between DayZ versions.
+
+---
+
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|

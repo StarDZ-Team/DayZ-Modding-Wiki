@@ -1,10 +1,10 @@
-# Chapter 6.19: Terrain & World Queries
+# Capítulo 6.19: Terrain & World Queries
 
-[Home](../../README.md) | [<< Previous: Animation System](18-animation-system.md) | **Terrain & World Queries** | [Next: Particle & Effect System >>](20-particle-effects.md)
+[Inicio](../../README.md) | [<< Anterior: Animation System](18-animation-system.md) | **Terrain & World Queries** | [Siguiente: Particle & Effect System >>](20-particle-effects.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Every spatial operation in DayZ --- spawning objects on the ground, checking line of sight, detecting nearby entities, determining surface type for footstep sounds --- depends on querying the world. The engine exposes three categories of spatial API: **terrain queries** (height, surface type, normals), **object queries** (finding entities near a position), and **raycasting** (tracing a line through the world to detect collisions). This chapter documents every available method, its exact signature, and the practical patterns found in vanilla code.
 
@@ -344,7 +344,7 @@ enum ObjIntersect
 }
 ```
 
-| Mode | Caso de Uso |
+| Mode | Use Case |
 |------|----------|
 | `ObjIntersectFire` | Bullet collision, damage traces |
 | `ObjIntersectView` | Visual obstruction checks, action targeting |
@@ -444,7 +444,7 @@ proto static bool RaycastRV(
 
 **Parameters:**
 
-| Parametro | Type | Descripcion |
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
 | `begPos` | `vector` | Start position of the ray |
 | `endPos` | `vector` | End position of the ray |
@@ -1035,7 +1035,7 @@ const static PhxInteractionLayers MELEE_TARGET_OBSTRUCTION_LAYERS =
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Use `DistanceSq` instead of `Distance` for comparisons.** The square root in `Distance` is expensive. Pre-compute `maxRange * maxRange` and compare against `DistanceSq`. The vanilla codebase does this extensively in action targeting and vicinity checks.
 - **Keep `GetObjectsAtPosition` radius as small as possible.** Every meter of radius dramatically increases the number of objects returned. A 100m radius in a city can return thousands of objects. Cache results and reuse them within the same frame.
@@ -1050,14 +1050,14 @@ const static PhxInteractionLayers MELEE_TARGET_OBSTRUCTION_LAYERS =
 
 > **Mod Compatibility:** Terrain and raycast queries are read-only operations that do not modify world state. Multiple mods can safely call these functions simultaneously without conflicts.
 
-- **Servidor/Cliente:** All terrain queries (`SurfaceY`, `SurfaceGetType`, `SurfaceGetNormal`, `SurfaceIsSea`, `SurfaceIsPond`) are safe to call on both server and client. World modification methods like `SetDate()` are server-authoritative.
+- **Server/Client:** All terrain queries (`SurfaceY`, `SurfaceGetType`, `SurfaceGetNormal`, `SurfaceIsSea`, `SurfaceIsPond`) are safe to call on both server and client. World modification methods like `SetDate()` are server-authoritative.
 - **Performance Impact:** `GetObjectsAtPosition` with large radii is the most common performance mistake. A mod that calls it every frame with a 50m+ radius will cause noticeable server lag. Raycast operations are cheaper but still should not run every frame on many entities.
 - **Map Dependency:** `SurfaceGetType` returns different surface names depending on the map. Chernarus and Livonia share most surface type names (`cp_gravel`, `cp_concrete`, etc.), but custom maps may define their own. Always handle unknown surface types gracefully.
 - **WorldData Subclassing:** If your mod needs to read or override temperature or weather data, note that `WorldData` is subclassed per map. Modding the base class affects all maps; modding `ChernarusPlusData` only affects Chernarus.
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
 | Documentation/Expectation | Actual Behavior |
 |--------------------------|-----------------|
@@ -1072,7 +1072,7 @@ const static PhxInteractionLayers MELEE_TARGET_OBSTRUCTION_LAYERS =
 
 ## Errores Comunes
 
-| Error | Solucion |
+| Error | Solución |
 |---------|-----|
 | Calling `GetObjectsAtPosition` every frame with a large radius | Use a timer (0.25--1.0 second interval). Cache the results array. |
 | Using `vector.Distance` in a loop comparing many objects | Use `vector.DistanceSq` and compare against `maxRange * maxRange`. |
@@ -1089,7 +1089,7 @@ const static PhxInteractionLayers MELEE_TARGET_OBSTRUCTION_LAYERS =
 
 > These patterns were confirmed by studying the source code of professional DayZ mods and vanilla game scripts.
 
-| Patron | Source | File/Location |
+| Patrón | Source | File/Location |
 |---------|--------|---------------|
 | `SurfaceY` snap for ground-level particle placement | Vanilla | `4_World/classes/contaminatedarea/effectarea.c` |
 | `SurfaceGetType` for vehicle wheel surface detection | Vanilla | `4_World/entities/vehicles/carscript.c` |
@@ -1104,4 +1104,4 @@ const static PhxInteractionLayers MELEE_TARGET_OBSTRUCTION_LAYERS =
 
 ---
 
-[Home](../../README.md) | [<< Previous: Animation System](18-animation-system.md) | **Terrain & World Queries**
+[Inicio](../../README.md) | [<< Anterior: Animation System](18-animation-system.md) | **Terrain & World Queries** | [Siguiente: Particle & Effect System >>](20-particle-effects.md)

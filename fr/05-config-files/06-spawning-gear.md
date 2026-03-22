@@ -1,17 +1,19 @@
-# Chapter 5.6: Spawning Gear Configuration
+# Chapitre 5.6: Apparition Gear Configuration
 
-[Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
-
----
+[Accueil](../../README.md) | [<< Précédent : Server Configuration Files](05-server-configs.md) | **Apparition Gear Configuration**
 
 ---
 
-## Table des Matieres
+> **Résumé :** DayZ has two complementary systems that control how players enter le monde: **apparition points** determine *where* a character appears on the map, and **apparition gear** determines *what equipment* they carry. Ce chapitre couvre both systems in depth, including file structure, field reference, practical presets, and mod integration.
+
+---
+
+## Table des matières
 
 - [Overview](#overview)
 - [The Two Systems](#the-two-systems)
-- [Spawn Gear: cfgPlayerSpawnGear.json](#spawn-gear-cfgplayerspawngearjson)
-  - [Enabling Spawn Gear Presets](#enabling-spawn-gear-presets)
+- [Spawn Gear: cfgPlayerSpawnGear.json](#apparition-gear-cfgplayerapparitiongearjson)
+  - [Enabling Spawn Gear Presets](#enabling-apparition-gear-presets)
   - [Preset Structure](#preset-structure)
   - [attachmentSlotItemSets](#attachmentslotitemsets)
   - [DiscreteItemSets](#discreteitemsets)
@@ -19,16 +21,16 @@
   - [ComplexChildrenTypes](#complexchildrentypes)
   - [SimpleChildrenTypes](#simplechildrentypes)
   - [Attributes](#attributes)
-- [Spawn Points: cfgplayerspawnpoints.xml](#spawn-points-cfgplayerspawnpointsxml)
+- [Spawn Points: cfgplayerapparitionpoints.xml](#apparition-points-cfgplayerapparitionpointsxml)
   - [File Structure](#file-structure)
-  - [spawn_params](#spawn_params)
+  - [apparition_params](#apparition_params)
   - [generator_params](#generator_params)
-  - [Spawning Groups](#spawning-groups)
+  - [Apparition Groups](#apparition-groups)
   - [Map-Specific Configs](#map-specific-configs)
 - [Practical Examples](#practical-examples)
   - [Default Survivor Loadout](#default-survivor-loadout)
-  - [Military Spawn Kit](#military-spawn-kit)
-  - [Medical Spawn Kit](#medical-spawn-kit)
+  - [Military Spawn Kit](#military-apparition-kit)
+  - [Medical Spawn Kit](#medical-apparition-kit)
   - [Random Gear Selection](#random-gear-selection)
 - [Integration with Mods](#integration-with-mods)
 - [Best Practices](#best-practices)
@@ -52,36 +54,36 @@ flowchart TD
     D --> J
 ```
 
-Quand un joueur apparait comme un nouveau personnage dans DayZ, deux questions sont repondues par le serveur :
+When a player apparitions as a fresh character in DayZ, two questions are answered by le serveur:
 
-1. **Where does the character appear?** --- Controlled by `cfgplayerspawnpoints.xml`.
-2. **What does the character carry?** --- Controlled by spawn gear preset JSON files, registered through `cfggameplay.json`.
+1. **Where does the character appear?** --- Controlled by `cfgplayerapparitionpoints.xml`.
+2. **What does the character carry?** --- Controlled by apparition gear preset JSON files, registered through `cfggameplay.json`.
 
-Both systems are server-side only. Clients never see these configuration files and cannot tamper with them. The spawn gear system was introduced as an alternative to scripting loadouts in `init.c`, allowing server admins to define multiple weighted presets in JSON without writing any Enforce Script code.
+Both systems are côté serveur only. Clients never see these configuration files and cannot tamper with them. The apparition gear system was introduced as an alternative to scripting loadouts in `init.c`, allowing server admins to define multiple weighted presets in JSON without writing any Enforce Script code.
 
-> **Important :** The spawn gear preset system **completely overrides** the `StartingEquipSetup()` method in your mission `init.c`. If you enable spawn gear presets in `cfggameplay.json`, your scripted loadout code will be ignored. Similarly, character types defined in the presets override the character model chosen in the main menu.
+> **Important :** The apparition gear preset system **completely overrides** the `StartingEquipSetup()` method in your mission `init.c`. If you enable apparition gear presets in `cfggameplay.json`, your scripted loadout code will be ignored. Similarly, character types defined in the presets override the character model chosen in the main menu.
 
 ---
 
 ## The Two Systems
 
-| System | Fichier | Format | Controls |
+| System | File | Format | Controls |
 |--------|------|--------|----------|
-| Spawn Points | `cfgplayerspawnpoints.xml` | XML | **Where** --- map positions, distance scoring, spawn groups |
+| Spawn Points | `cfgplayerapparitionpoints.xml` | XML | **Where** --- map positions, distance scoring, apparition groups |
 | Spawn Gear | Custom preset JSON files | JSON | **What** --- character model, clothing, weapons, cargo, quickbar |
 
-The two systems are independent. You can use custom spawn points with vanilla gear, custom gear with vanilla spawn points, or customize both.
+The two systems are independent. You can use custom apparition points with vanilla gear, custom gear with vanilla apparition points, or customize both.
 
 ---
 
-## Equipement d'Apparition : cfgPlayerSpawnGear.json
+## Spawn Gear: cfgPlayerSpawnGear.json
 
 ### Enabling Spawn Gear Presets
 
 Spawn gear presets are **not** enabled by default. To use them, you must:
 
 1. Create one or more JSON preset files in your mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`).
-2. Register them in `cfggameplay.json` under `PlayerData.spawnGearPresetFiles`.
+2. Register them in `cfggameplay.json` under `PlayerData.apparitionGearPresetFiles`.
 3. Ensure `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
 
 ```json
@@ -107,17 +109,17 @@ Preset files can be nested in subdirectories under the mission folder:
 ]
 ```
 
-Each JSON file contains a single preset object. All registered presets are pooled together, and the server selects one based on `spawnWeight` each time a fresh character spawns.
+Each JSON file contains a single preset object. All registered presets are pooled together, and le serveur selects one based on `apparitionWeight` each time a fresh character apparitions.
 
 ### Preset Structure
 
 A preset is the top-level JSON object with these fields:
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `name` | string | Human-readable name for the preset (any string, used for identification only) |
-| `spawnWeight` | integer | Weight for random selection. Minimum is `1`. Higher values make this preset more likely to be chosen |
-| `characterTypes` | array | Array of character type classnames (e.g., `"SurvivorM_Mirek"`). One is picked at random when this preset spawns |
+| `apparitionWeight` | integer | Weight for random selection. Minimum is `1`. Higher values make this preset more likely to be chosen |
+| `characterTypes` | array | Array of character type classnames (e.g., `"SurvivorM_Mirek"`). One is picked at random when this preset apparitions |
 | `attachmentSlotItemSets` | array | Array of `AttachmentSlots` structures defining what the character wears (clothing, weapons on shoulders, etc.) |
 | `discreteUnsortedItemSets` | array | Array of `DiscreteUnsortedItemSets` structures defining cargo items placed into any available inventory space |
 
@@ -144,12 +146,12 @@ This array defines items that go into specific character attachment slots --- bo
 
 Each entry targets one slot:
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `slotName` | string | The attachment slot name. Derived from CfgSlots. Common values: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
-| `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `spawnWeight`) |
+| `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `apparitionWeight`) |
 
-> **Shoulder shortcuts:** You can use `"shoulderL"` and `"shoulderR"` as slot names. The engine automatically translates these to the correct internal CfgSlots names.
+> **Shoulder shortcuts:** You can use `"shoulderL"` and `"shoulderR"` as slot names. Le moteur automatically translates these to the correct internal CfgSlots names.
 
 ```json
 {
@@ -183,16 +185,16 @@ Each entry targets one slot:
 
 ### DiscreteItemSets
 
-Each entry in `discreteItemSets` represents one possible item for that slot. The server picks one entry at random, weighted by `spawnWeight`. This structure is used inside both `attachmentSlotItemSets` (for slot-based items) and is the mechanism for random selection.
+Each entry in `discreteItemSets` represents one possible item for that slot. Le serveur picks one entry at random, weighted by `apparitionWeight`. This structure is used inside both `attachmentSlotItemSets` (for slot-based items) and is the mechanism for random selection.
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `itemType` | string | Item classname (typename). Use `""` (empty string) to represent "nothing" --- the slot remains empty |
-| `spawnWeight` | integer | Weight for selection. Minimum `1`. Higher = more likely |
+| `apparitionWeight` | integer | Weight for selection. Minimum `1`. Higher = more likely |
 | `attributes` | object | Health and quantity ranges for this item. See [Attributes](#attributes) |
 | `quickBarSlot` | integer | Quick bar slot assignment (0-based). Use `-1` for no quickbar assignment |
-| `complexChildrenTypes` | array | Items to spawn nested inside this item. See [ComplexChildrenTypes](#complexchildrentypes) |
-| `simpleChildrenTypes` | array | Item classnames to spawn inside this item using default or parent attributes |
+| `complexChildrenTypes` | array | Items to apparition nested inside this item. See [ComplexChildrenTypes](#complexchildrentypes) |
+| `simpleChildrenTypes` | array | Item classnames to apparition inside this item using default or parent attributes |
 | `simpleChildrenUseDefaultAttributes` | bool | If `true`, simple children use the parent's `attributes`. If `false`, they use configuration defaults |
 
 **Empty item trick:** To make a slot have a 50/50 chance of being empty or filled, use an empty `itemType`:
@@ -220,17 +222,17 @@ Each entry in `discreteItemSets` represents one possible item for that slot. The
 
 ### discreteUnsortedItemSets
 
-This top-level array defines items that go into the character's **cargo** --- any available inventory space across all attached clothing and containers. Unlike `attachmentSlotItemSets`, these items are not placed into a specific slot; the engine finds room automatically.
+This top-level array defines items that go into the character's **cargo** --- any available inventory space across all attached clothing and containers. Unlike `attachmentSlotItemSets`, these items are not placed into a specific slot; le moteur finds room automatically.
 
-Each entry represents one cargo variant, and the server selects one based on `spawnWeight`.
+Each entry represents one cargo variant, and le serveur selects one based on `apparitionWeight`.
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `name` | string | Human-readable name (for identification only) |
-| `spawnWeight` | integer | Weight for selection. Minimum `1` |
+| `apparitionWeight` | integer | Weight for selection. Minimum `1` |
 | `attributes` | object | Default health/quantity ranges. Used by children when `simpleChildrenUseDefaultAttributes` is `true` |
-| `complexChildrenTypes` | array | Items to spawn into cargo, each with their own attributes and nesting |
-| `simpleChildrenTypes` | array | Item classnames to spawn into cargo |
+| `complexChildrenTypes` | array | Items to apparition into cargo, each with their own attributes and nesting |
+| `simpleChildrenTypes` | array | Item classnames to apparition into cargo |
 | `simpleChildrenUseDefaultAttributes` | bool | If `true`, simple children use this structure's `attributes`. If `false`, they use configuration defaults |
 
 ```json
@@ -265,15 +267,15 @@ Each entry represents one cargo variant, and the server selects one based on `sp
 
 ### ComplexChildrenTypes
 
-Complex children are items spawned **inside** a parent item with full control over their attributes, quickbar assignment, and their own nested children. The primary use case is spawning items with contents --- for example, a weapon with attachments, or a cooking pot with food inside.
+Complex children are items apparitioned **inside** a parent item with full control over their attributes, quickbar assignment, and their own nested children. The primary use case is apparition items with contents --- par exemple, a weapon with attachments, or a cooking pot with food inside.
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `itemType` | string | Item classname |
 | `attributes` | object | Health/quantity ranges for this specific item |
 | `quickBarSlot` | integer | Quick bar slot assignment. `-1` = don't assign |
 | `simpleChildrenUseDefaultAttributes` | bool | Whether simple children inherit these attributes |
-| `simpleChildrenTypes` | array | Item classnames to spawn inside this item |
+| `simpleChildrenTypes` | array | Item classnames to apparition inside this item |
 
 Example --- a weapon with attachments and magazine:
 
@@ -327,31 +329,31 @@ Example --- a weapon with attachments and magazine:
 }
 ```
 
-In this example, the AKM spawns with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseDefaultAttributes` is `false`.
+In this example, the AKM apparitions with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseDefaultAttributes` is `false`.
 
 ### SimpleChildrenTypes
 
-Simple children are a shorthand for spawning items inside a parent without specifying individual attributes. They are an array of item classnames (strings).
+Simple children are a shorthand for apparition items inside a parent without specifying individual attributes. They are an array of item classnames (strings).
 
 Their attributes are determined by the `simpleChildrenUseDefaultAttributes` flag:
 
 - **`true`** --- Items use the `attributes` defined on the parent structure.
-- **`false`** --- Items use the engine's configuration defaults (typically full health and quantity).
+- **`false`** --- Items use le moteur's configuration defaults (typically full health and quantity).
 
 Simple children cannot have their own nested children or quickbar assignments. For those capabilities, use `complexChildrenTypes` instead.
 
 ### Attributes
 
-Attributes control the condition and quantity of spawned items. All values are floating point between `0.0` and `1.0`:
+Attributes control the condition and quantity of apparitioned items. All values are floating point between `0.0` and `1.0`:
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `healthMin` | float | Minimum health percentage. `1.0` = pristine, `0.0` = ruined |
 | `healthMax` | float | Maximum health percentage. A random value between min and max is applied |
 | `quantityMin` | float | Minimum quantity percentage. For magazines: fill level. For food: remaining bites |
 | `quantityMax` | float | Maximum quantity percentage |
 
-When both min and max are specified, the engine picks a random value in that range. This creates natural variation --- for example, health between `0.45` and `0.65` means items spawn in worn to damaged condition.
+When both min and max are specified, le moteur picks a random value in that range. This creates natural variation --- par exemple, health between `0.45` and `0.65` means items apparition in worn to damaged condition.
 
 ```json
 "attributes": {
@@ -364,21 +366,21 @@ When both min and max are specified, the engine picks a random value in that ran
 
 ---
 
-## Points d'Apparition : cfgplayerspawnpoints.xml
+## Spawn Points: cfgplayerapparitionpoints.xml
 
-This XML file defines where players appear on the map. It is located in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
+This XML file defines where players appear on the map. It is located in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/cfgplayerapparitionpoints.xml`).
 
 ### File Structure
 
 The root element contains up to three sections:
 
-| Section | But |
+| Section | Purpose |
 |---------|---------|
 | `<fresh>` | **Required.** Spawn points for newly created characters |
 | `<hop>` | Spawn points for players hopping from another server on the same map (official servers only) |
 | `<travel>` | Spawn points for players traveling from a different map (official servers only) |
 
-Each section contains the same three sub-elements: `<spawn_params>`, `<generator_params>`, and `<generator_posbubbles>`.
+Each section contains the same three sub-elements: `<apparition_params>`, `<generator_params>`, and `<generator_posbubbles>`.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -401,9 +403,9 @@ Each section contains the same three sub-elements: `<spawn_params>`, `<generator
 </playerspawnpoints>
 ```
 
-### spawn_params
+### apparition_params
 
-Runtime parameters that score candidate spawn points against nearby entities. Points below `min_dist` are invalidated. Points between `min_dist` and `max_dist` are preferred over points beyond `max_dist`.
+Runtime parameters that score candidate apparition points against nearby entities. Points below `min_dist` are invalidated. Points between `min_dist` and `max_dist` are preferred over points beyond `max_dist`.
 
 ```xml
 <spawn_params>
@@ -416,22 +418,22 @@ Runtime parameters that score candidate spawn points against nearby entities. Po
 </spawn_params>
 ```
 
-| Parametre | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `min_dist_infected` | Minimum meters from infected. Points closer than this are penalized |
 | `max_dist_infected` | Maximum scoring distance from infected |
-| `min_dist_player` | Minimum meters from other players. Keeps fresh spawns from appearing on top of existing players |
+| `min_dist_player` | Minimum meters from other players. Keeps fresh apparitions from appearing on top of existing players |
 | `max_dist_player` | Maximum scoring distance from other players |
 | `min_dist_static` | Minimum meters from buildings/objects |
 | `max_dist_static` | Maximum scoring distance from buildings/objects |
 
 The Sakhal map also adds `min_dist_trigger` and `max_dist_trigger` parameters with a 6x weight multiplier for trigger zone distances.
 
-**Scoring logic:** The engine calculates a score for each candidate point. Distance `0` to `min_dist` scores `-1` (nearly invalidated). Distance `min_dist` to midpoint scores up to `1.1`. Distance midpoint to `max_dist` scores down from `1.1` to `0.1`. Beyond `max_dist` scores `0`. Higher total score = more likely spawn location.
+**Scoring logic:** Le moteur calculates a score for each candidate point. Distance `0` to `min_dist` scores `-1` (nearly invalidated). Distance `min_dist` to midpoint scores up to `1.1`. Distance midpoint to `max_dist` scores down from `1.1` to `0.1`. Beyond `max_dist` scores `0`. Higher total score = more likely apparition location.
 
 ### generator_params
 
-Controls how the grid of candidate spawn points is generated around each position bubble:
+Controls how the grid of candidate apparition points is generated around each position bubble:
 
 ```xml
 <generator_params>
@@ -445,7 +447,7 @@ Controls how the grid of candidate spawn points is generated around each positio
 </generator_params>
 ```
 
-| Parametre | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `grid_density` | Sample frequency. `4` means a 4x4 grid of candidate points. Higher = more candidates, more CPU cost. Must be at least `1`. When `0`, only the center point is used |
 | `grid_width` | Total width of the sampling rectangle in meters |
@@ -455,11 +457,11 @@ Controls how the grid of candidate spawn points is generated around each positio
 | `min_steepness` | Minimum terrain slope in degrees. Points on steeper terrain are discarded |
 | `max_steepness` | Maximum terrain slope in degrees |
 
-Around every `<pos>` defined in `generator_posbubbles`, the engine creates a rectangle of `grid_width` x `grid_height` meters, samples it at `grid_density` frequency, and discards points that overlap with objects, water, or exceed slope limits.
+Around every `<pos>` defined in `generator_posbubbles`, le moteur creates a rectangle of `grid_width` x `grid_height` meters, samples it at `grid_density` frequency, and discards points that overlap with objects, water, or exceed slope limits.
 
-### Spawning Groups
+### Apparition Groups
 
-Groups allow you to cluster spawn points and rotate through them over time. This prevents all players from always spawning at the same locations.
+Groups allow you to cluster apparition points and rotate through them over time. This prevents all players from always apparition at the same locations.
 
 Groups are enabled through `<group_params>` inside each section:
 
@@ -472,12 +474,12 @@ Groups are enabled through `<group_params>` inside each section:
 </group_params>
 ```
 
-| Parametre | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `enablegroups` | `true` to enable group rotation, `false` for a flat list of points |
-| `groups_as_regular` | When `enablegroups` is `false`, treat group points as regular spawn points instead of ignoring them. Default: `true` |
+| `groups_as_regular` | When `enablegroups` is `false`, treat group points as regular apparition points instead of ignoring them. Default: `true` |
 | `lifetime` | Seconds a group stays active before rotating to another. Use `-1` to disable the timer |
-| `counter` | Number of spawns that reset the lifetime. Each player spawning in the group resets the timer. Use `-1` to disable the counter |
+| `counter` | Number of apparitions that reset the lifetime. Each player apparition in the group resets the timer. Use `-1` to disable the counter |
 
 Positions are organized into named groups within `<generator_posbubbles>`:
 
@@ -513,27 +515,27 @@ Individual groups can override global lifetime and counter values:
 </generator_posbubbles>
 ```
 
-> **Position format:** The `x` and `z` attributes use DayZ world coordinates. `x` is east-west, `z` is north-south. The `y` (height) coordinate is not specified --- the engine places the point on the terrain surface. You can find coordinates using the in-game debug monitor or the DayZ Editor mod.
+> **Position format:** The `x` and `z` attributes use DayZ world coordinates. `x` is east-west, `z` is north-south. The `y` (height) coordinate is not specified --- le moteur places the point on the terrain surface. You can find coordinates using the in-game debug monitor or the DayZ Editor mod.
 
 ### Map-Specific Configs
 
-Each map has its own `cfgplayerspawnpoints.xml` in its mission folder:
+Each map has its own `cfgplayerapparitionpoints.xml` in its mission folder:
 
 | Map | Mission Folder | Notes |
 |-----|----------------|-------|
-| Chernarus | `dayzOffline.chernarusplus/` | Coastal spawns: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
+| Chernarus | `dayzOffline.chernarusplus/` | Coastal apparitions: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
 | Livonia | `dayzOffline.enoch/` | Spread across map with different group names |
 | Sakhal | `dayzOffline.sakhal/` | Added `min_dist_trigger`/`max_dist_trigger` params, more detailed comments |
 
-When creating a custom map or modifying spawn locations, always work from the vanilla file as a starting point and adjust positions to match your map's geography.
+When creating a custom map or modifying apparition locations, always work from le vanilla file as a starting point and adjust positions to match your map's geography.
 
 ---
 
-## Exemples Pratiques
+## Practical Examples
 
 ### Default Survivor Loadout
 
-The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic shoes, plus cargo containing a bandage, chemlight (random color), and a fruit (random between pear, plum, or apple). All items spawn in worn-to-damaged condition.
+The vanilla preset gives fresh apparitions a random t-shirt, canvas pants, athletic shoes, plus cargo containing a bandage, chemlight (random color), and a fruit (random between pear, plum, or apple). All items apparition in worn-to-damaged condition.
 
 ```json
 {
@@ -657,7 +659,7 @@ The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic s
 
 ### Military Spawn Kit
 
-A heavily equipped preset with an AKM (with attachments), plate carrier, gorka uniform, backpack with extra magazines, and unsorted cargo including a sidearm and food. This uses multiple `spawnWeight` values to create rarity tiers for weapon variants.
+A heavily equipped preset with an AKM (with attachments), plate carrier, gorka uniform, backpack with extra magazines, and unsorted cargo including a sidearm and food. This uses multiple `apparitionWeight` values to create rarity tiers for weapon variants.
 
 ```json
 {
@@ -845,8 +847,8 @@ A heavily equipped preset with an AKM (with attachments), plate carrier, gorka u
 
 Key points about this example:
 
-- **Two weapon variants** for the same shoulder slot: the `spawnWeight: 3` variant (plastic furniture, PSO1 optic) spawns 3x more often than the `spawnWeight: 1` variant (wood furniture, no optic).
-- **Nested children**: the PSO1Optic has `simpleChildrenTypes: ["Battery9V"]` so the optic spawns with a battery inside.
+- **Two weapon variants** for the same shoulder slot: the `apparitionWeight: 3` variant (plastic furniture, PSO1 optic) apparitions 3x more often than the `apparitionWeight: 1` variant (wood furniture, no optic).
+- **Nested children**: the PSO1Optic has `simpleChildrenTypes: ["Battery9V"]` so the optic apparitions with a battery inside.
 - **Backpack contents**: the blue backpack gets a drum magazine while the orange one gets two standard magazines.
 
 ### Medical Spawn Kit
@@ -994,7 +996,7 @@ A medic-themed preset with scrubs, first aid kit containing medical supplies, an
 }
 ```
 
-Note how `characterTypes` is omitted --- this preset uses whatever character the player selected in the main menu. Two cargo variants offer different first aid kit contents (blood bag vs. antibiotics), selected by `spawnWeight`.
+Note how `characterTypes` is omitted --- this preset uses whatever character le joueur selected in the main menu. Two cargo variants offer different first aid kit contents (blood bag vs. antibiotics), selected by `apparitionWeight`.
 
 ### Random Gear Selection
 
@@ -1012,21 +1014,21 @@ You can create randomized loadouts by using multiple presets with different weig
 
 **Probability calculation example:**
 
-| Preset File | spawnWeight | Chance |
+| Preset File | apparitionWeight | Chance |
 |-------------|------------|--------|
 | `common_survivor.json` | 5 | 5/8 = 62.5% |
 | `uncommon_hunter.json` | 2 | 2/8 = 25.0% |
 | `rare_military.json` | 1 | 1/8 = 12.5% |
 
-Within each preset, each slot also has its own randomization. If the Body slot has three t-shirt options with `spawnWeight: 1` each, each has a 33% chance. A shirt with `spawnWeight: 3` in a pool with two `spawnWeight: 1` items would have a 60% chance (3/5).
+Within each preset, each slot also has its own randomization. If the Body slot has three t-shirt options with `apparitionWeight: 1` each, each has a 33% chance. A shirt with `apparitionWeight: 3` in a pool with two `apparitionWeight: 1` items would have a 60% chance (3/5).
 
 ---
 
-## Integration avec Mods
+## Integration with Mods
 
 ### Using the JSON Preset System from Mods
 
-The spawn gear preset system is designed for mission-level configuration. Mods that want to provide custom loadouts should:
+The apparition gear preset system is designed for mission-level configuration. Mods that want to provide custom loadouts should:
 
 1. **Ship a template JSON** file with the mod's documentation, not embedded in the PBO.
 2. **Document the classnames** so server admins can add mod items to their own preset files.
@@ -1034,7 +1036,7 @@ The spawn gear preset system is designed for mission-level configuration. Mods t
 
 ### Overriding with init.c
 
-If you need programmatic control over spawning (e.g., role selection, database-driven loadouts, or conditional gear based on player state), override `StartingEquipSetup()` in `init.c` instead:
+If you need programmatic control over apparition (e.g., role selection, database-driven loadouts, or conditional gear based on player state), override `StartingEquipSetup()` in `init.c` instead:
 
 ```c
 override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
@@ -1061,7 +1063,7 @@ override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 }
 ```
 
-> **Remember:** If `spawnGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
+> **Rappel :** If `apparitionGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
 
 ### Mod Items in Presets
 
@@ -1084,46 +1086,46 @@ Modded items work identically to vanilla items in preset files. Use the item's c
 }
 ```
 
-If the mod is not loaded on the server, items with unknown classnames will silently fail to spawn. The rest of the preset still applies.
+If the mod is not loaded on le serveur, items with unknown classnames will silently fail to apparition. The rest of the preset still applies.
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
-1. **Start from vanilla.** Copy the vanilla preset from the official documentation as your base and modify it, rather than writing from scratch.
+1. **Start from vanilla.** Copy le vanilla preset from the official documentation as your base and modify it, rather than writing from scratch.
 
 2. **Use multiple preset files.** Separate presets by theme (survivor, military, medic) in individual JSON files. This makes maintenance easier than a single monolithic file.
 
 3. **Test incrementally.** Add one preset at a time and verify in-game. A JSON syntax error in any preset file will cause all presets to fail silently.
 
-4. **Use weighted probabilities deliberately.** Plan your spawn weight distribution on paper. With 5 presets, a `spawnWeight: 10` on one will dominate all others.
+4. **Use weighted probabilities deliberately.** Plan your apparition weight distribution on paper. With 5 presets, a `apparitionWeight: 10` on one will dominate all others.
 
 5. **Validate JSON syntax.** Use a JSON validator before deploying. The DayZ engine does not provide helpful error messages for malformed JSON --- it simply ignores the file.
 
 6. **Assign quickbar slots intentionally.** Quickbar slots are 0-indexed. Assigning multiple items to the same slot will overwrite. Use `-1` for items that should not be on the quickbar.
 
-7. **Keep spawn points away from water.** The generator discards points in water, but points very close to the shoreline can place players in awkward positions. Move position bubbles a few meters inland.
+7. **Keep apparition points away from water.** The generator discards points in water, but points very close to the shoreline can place players in awkward positions. Move position bubbles a few meters inland.
 
-8. **Use groups for coastal maps.** Spawning groups on Chernarus spread fresh spawns across the coast, preventing overcrowding at popular locations like Elektro.
+8. **Use groups for coastal maps.** Apparition groups on Chernarus spread fresh apparitions across the coast, preventing overcrowding at popular locations like Elektro.
 
-9. **Match clothing and cargo capacity.** Unsorted cargo items can only spawn if the player has inventory space. If you define too many cargo items but only give the player a t-shirt (small inventory), excess items will not spawn.
+9. **Match clothing and cargo capacity.** Unsorted cargo items can only apparition if le joueur has inventory space. If you define too many cargo items but only give le joueur a t-shirt (small inventory), excess items will not apparition.
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
-| Erreur | Consequence | Correction |
+| Mistake | Consequence | Fix |
 |---------|-------------|-----|
-| Forgetting `enableCfgGameplayFile = 1` in `serverDZ.cfg` | `cfggameplay.json` is not loaded, presets are ignored | Add the flag and restart the server |
+| Forgetting `enableCfgGameplayFile = 1` in `serverDZ.cfg` | `cfggameplay.json` is not loaded, presets are ignored | Add the flag and restart le serveur |
 | Invalid JSON syntax (trailing comma, missing bracket) | All presets in that file silently fail | Validate JSON with an external tool before deploying |
-| Using `spawnGearPresetFiles` without removing `StartingEquipSetup()` code | The scripted loadout is silently overridden by the JSON preset. The init.c code runs but its items are replaced | This is expected behavior, not a bug. Remove or comment out the init.c loadout code to avoid confusion |
-| Setting `spawnWeight: 0` | Value below minimum. Behavior is undefined | Always use `spawnWeight: 1` or higher |
-| Referencing a classname that does not exist | That specific item silently fails to spawn, but the rest of the preset works | Double-check classnames against the mod's `config.cpp` or types.xml |
-| Assigning an item to a slot it cannot occupy | Item does not spawn. No error logged | Verify the item's `inventorySlot[]` in config.cpp matches the `slotName` |
-| Spawning too many cargo items for available inventory space | Excess items are silently dropped (not spawned) | Ensure clothing has enough capacity, or reduce the number of cargo items |
-| Using `characterTypes` classnames that do not exist | Character creation fails, player may spawn as default model | Use only valid survivor classnames from CfgVehicles |
-| Placing spawn points in water or on steep cliffs | Points are discarded, reducing available spawns. If too many are invalid, players may fail to spawn | Test coordinates in-game with the debug monitor |
-| Mixing up `x`/`z` coordinates in spawn points | Players spawn at wrong map locations | `x` = east-west, `z` = north-south. There is no `y` (vertical) in spawn point definitions |
+| Using `apparitionGearPresetFiles` without removing `StartingEquipSetup()` code | The scripted loadout is silently overridden by the JSON preset. The init.c code runs but its items are replaced | This is expected behavior, not a bug. Remove or comment out the init.c loadout code to avoid confusion |
+| Setting `apparitionWeight: 0` | Value below minimum. Behavior is undefined | Always use `apparitionWeight: 1` or higher |
+| Referencing a classname that does not exist | That specific item silently fails to apparition, but the rest of the preset works | Double-check classnames against the mod's `config.cpp` or types.xml |
+| Assigning an item to a slot it cannot occupy | Item does not apparition. No error logged | Verify the item's `inventorySlot[]` in config.cpp matches the `slotName` |
+| Apparition too many cargo items for available inventory space | Excess items are silently dropped (not apparitioned) | Ensure clothing has enough capacity, or reduce the number of cargo items |
+| Using `characterTypes` classnames that do not exist | Character creation fails, player may apparition as default model | Use only valid survivor classnames from CfgVehicles |
+| Placing apparition points in water or on steep cliffs | Points are discarded, reducing available apparitions. If too many are invalid, players may fail to apparition | Test coordinates in-game with the debug monitor |
+| Mixing up `x`/`z` coordinates in apparition points | Players apparition at wrong map locations | `x` = east-west, `z` = north-south. There is no `y` (vertical) in apparition point definitions |
 
 ---
 
@@ -1156,4 +1158,4 @@ cfgplayerspawnpoints.xml
 
 ---
 
-[Accueil](../../README.md) | [<< Precedent : Server Configuration Files](05-server-configs.md) | **Configuration de l'Equipement d'Apparition**
+[Accueil](../../README.md) | [<< Précédent : Server Configuration Files](05-server-configs.md) | **Apparition Gear Configuration**

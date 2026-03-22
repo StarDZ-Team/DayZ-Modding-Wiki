@@ -1,31 +1,30 @@
-# Chapter 6.3: Weather System
+# Глава 6.3: Система погоды
 
-[Home](../../README.md) | [<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
+[Главная](../../README.md) | [<< Предыдущая: Транспорт](02-vehicles.md) | **Погода** | [Следующая: Камеры >>](04-cameras.md)
 
 ---
 
 ## Введение
 
-
-DayZ has a fully dynamic weather system controlled through the `Weather` class. The system manages overcast, rain, snowfall, fog, wind, and thunderstorms. Weather can be configured through script (the Weather API), through `cfgweather.xml` in the mission folder, or through a scripted weather state machine. Эта глава охватывает the script API for reading and controlling weather programmatically.
+DayZ имеет полностью динамическую систему погоды, управляемую через класс `Weather`. Система управляет облачностью, дождём, снегопадом, туманом, ветром и грозами. Погоду можно настраивать через скрипт (API Weather), через `cfgweather.xml` в папке миссии или через скриптовую машину состояний погоды. В этой главе описан скриптовый API для чтения и программного управления погодой.
 
 ---
 
-## Accessing the Weather Object
+## Доступ к объекту Weather
 
 ```c
 Weather weather = GetGame().GetWeather();
 ```
 
-The `Weather` object is a singleton managed by the engine. It is always available after the game world initializes.
+Объект `Weather` --- это синглтон, управляемый движком. Он всегда доступен после инициализации игрового мира.
 
 ---
 
-## Weather Phenomena
+## Погодные явления
 
-Each weather phenomenon (overcast, fog, rain, snowfall, wind magnitude, wind direction) is represented by a `WeatherPhenomenon` object. You access them through getter methods on `Weather`.
+Каждое погодное явление (облачность, туман, дождь, снегопад, сила ветра, направление ветра) представлено объектом `WeatherPhenomenon`. Доступ к ним осуществляется через методы-геттеры объекта `Weather`.
 
-### Getting Phenomenon Objects
+### Получение объектов явлений
 
 ```c
 proto native WeatherPhenomenon GetOvercast();
@@ -36,38 +35,38 @@ proto native WeatherPhenomenon GetWindMagnitude();
 proto native WeatherPhenomenon GetWindDirection();
 ```
 
-### WeatherPhenomenon API
+### API WeatherPhenomenon
 
-Each phenomenon shares the same interface:
+Каждое явление имеет одинаковый интерфейс:
 
 ```c
 class WeatherPhenomenon
 {
-    // Current state
-    proto native float GetActual();          // Current interpolated value (0.0 - 1.0 for most)
-    proto native float GetForecast();        // Target value being interpolated toward
-    proto native float GetDuration();        // How long the current forecast persists (seconds)
+    // Текущее состояние
+    proto native float GetActual();          // Текущее интерполированное значение (0.0 - 1.0 для большинства)
+    proto native float GetForecast();        // Целевое значение, к которому идёт интерполяция
+    proto native float GetDuration();        // Длительность текущего прогноза (секунды)
 
-    // Set the forecast (server only)
+    // Установка прогноза (только сервер)
     proto native void Set(float forecast, float time = 0, float minDuration = 0);
-    // forecast: target value
-    // time:     seconds to interpolate to that value (0 = instant)
-    // minDuration: minimum time the value holds before auto-change
+    // forecast: целевое значение
+    // time:     секунды интерполяции к этому значению (0 = мгновенно)
+    // minDuration: минимальное время удержания значения перед автоматическим изменением
 
-    // Limits
+    // Пределы
     proto native void  SetLimits(float fnMin, float fnMax);
     proto native float GetMin();
     proto native float GetMax();
 
-    // Change speed limits (how fast the phenomenon can change)
+    // Пределы скорости изменения (насколько быстро явление может меняться)
     proto native void SetTimeLimits(float fnMin, float fnMax);
 
-    // Change magnitude limits
+    // Пределы величины изменения
     proto native void SetChangeLimits(float fnMin, float fnMax);
 }
 ```
 
-**Example --- read current weather state:**
+**Пример --- чтение текущего состояния погоды:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -78,40 +77,40 @@ float snow      = w.GetSnowfall().GetActual();
 float windSpeed = w.GetWindMagnitude().GetActual();
 float windDir   = w.GetWindDirection().GetActual();
 
-Print(string.Format("Overcast: %1, Rain: %2, Fog: %3", overcast, rain, fog));
+Print(string.Format("Облачность: %1, Дождь: %2, Туман: %3", overcast, rain, fog));
 ```
 
-**Example --- force clear weather (server):**
+**Пример --- принудительная ясная погода (сервер):**
 
 ```c
 void ForceClearWeather()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(0.0, 30, 600);    // Clear sky, 30s transition, hold 10 min
-    w.GetRain().Set(0.0, 10, 600);        // No rain
-    w.GetFog().Set(0.0, 30, 600);         // No fog
-    w.GetSnowfall().Set(0.0, 10, 600);    // No snow
+    w.GetOvercast().Set(0.0, 30, 600);    // Ясное небо, переход 30 сек, удержание 10 мин
+    w.GetRain().Set(0.0, 10, 600);        // Без дождя
+    w.GetFog().Set(0.0, 30, 600);         // Без тумана
+    w.GetSnowfall().Set(0.0, 10, 600);    // Без снега
 }
 ```
 
-**Example --- create a storm:**
+**Пример --- создание шторма:**
 
 ```c
 void ForceStorm()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(1.0, 60, 1800);   // Full overcast, 60s ramp, hold 30 min
-    w.GetRain().Set(0.8, 120, 1800);      // Heavy rain
-    w.GetFog().Set(0.3, 120, 1800);       // Light fog
-    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Strong wind (m/s)
+    w.GetOvercast().Set(1.0, 60, 1800);   // Полная облачность, нарастание 60 сек, удержание 30 мин
+    w.GetRain().Set(0.8, 120, 1800);      // Сильный дождь
+    w.GetFog().Set(0.3, 120, 1800);       // Лёгкий туман
+    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Сильный ветер (м/с)
 }
 ```
 
 ---
 
-## Rain Thresholds
+## Пороги дождя
 
-Rain is tied to overcast levels. The engine only renders rain when overcast exceeds a threshold. You can configure this via `cfgweather.xml`:
+Дождь привязан к уровню облачности. Движок рендерит дождь только когда облачность превышает порог. Это можно настроить через `cfgweather.xml`:
 
 ```xml
 <rain>
@@ -119,75 +118,75 @@ Rain is tied to overcast levels. The engine only renders rain when overcast exce
 </rain>
 ```
 
-- `min` / `max`: overcast range where rain is allowed
-- `end`: seconds for rain to stop if overcast falls below threshold
+- `min` / `max`: диапазон облачности, при котором дождь разрешён
+- `end`: секунды до прекращения дождя, если облачность падает ниже порога
 
-In script, rain will not visually appear if overcast is too low, even if `GetRain().GetActual()` returns a non-zero value.
+В скрипте дождь визуально не появится, если облачность слишком низкая, даже если `GetRain().GetActual()` возвращает ненулевое значение.
 
 ---
 
-## Wind
+## Ветер
 
-Wind uses two phenomena: magnitude (speed in m/s) and direction (angle in radians).
+Ветер использует два явления: величина (скорость в м/с) и направление (угол в радианах).
 
-### Wind Vector
+### Вектор ветра
 
 ```c
-proto native vector GetWind();           // Wind direction vector (world space)
-proto native float  GetWindSpeed();      // Wind speed in m/s
+proto native vector GetWind();           // Вектор направления ветра (мировые координаты)
+proto native float  GetWindSpeed();      // Скорость ветра в м/с
 ```
 
-**Example --- get wind info:**
+**Пример --- получение информации о ветре:**
 
 ```c
 Weather w = GetGame().GetWeather();
 vector windVec = w.GetWind();
 float windSpd = w.GetWindSpeed();
-Print(string.Format("Wind: %1 m/s, direction: %2", windSpd, windVec));
+Print(string.Format("Ветер: %1 м/с, направление: %2", windSpd, windVec));
 ```
 
 ---
 
-## Thunderstorms (Lightning)
+## Грозы (молнии)
 
 ```c
 proto native void SetStorm(float density, float threshold, float timeout);
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `density` | Lightning density (0.0 - 1.0) |
-| `threshold` | Minimum overcast level for lightning to appear (0.0 - 1.0) |
-| `timeout` | Seconds between lightning strikes |
+| Параметр | Описание |
+|----------|----------|
+| `density` | Плотность молний (0.0 - 1.0) |
+| `threshold` | Минимальный уровень облачности для появления молний (0.0 - 1.0) |
+| `timeout` | Секунды между ударами молний |
 
-**Example --- enable frequent lightning:**
+**Пример --- включение частых молний:**
 
 ```c
 GetGame().GetWeather().SetStorm(1.0, 0.6, 10);
-// Full density, triggers at 60% overcast, strikes every 10 seconds
+// Полная плотность, срабатывает при 60% облачности, удары каждые 10 секунд
 ```
 
 ---
 
-## MissionWeather Control
+## Управление MissionWeather
 
-To take manual control of weather (disabling the automatic weather state machine), call:
+Для ручного управления погодой (отключения автоматической машины состояний погоды) вызовите:
 
 ```c
 proto native void MissionWeather(bool use);
 ```
 
-When `MissionWeather(true)` is called, the engine stops the automatic weather transitions and only your script-driven `Set()` calls control the weather.
+Когда вызван `MissionWeather(true)`, движок прекращает автоматические переходы погоды и только ваши скриптовые вызовы `Set()` управляют погодой.
 
-**Example --- full manual control in init.c:**
+**Пример --- полное ручное управление в init.c:**
 
 ```c
 void main()
 {
-    // Take manual control of weather
+    // Взять ручное управление погодой
     GetGame().GetWeather().MissionWeather(true);
 
-    // Set desired weather
+    // Установить нужную погоду
     GetGame().GetWeather().GetOvercast().Set(0.3, 0, 0);
     GetGame().GetWeather().GetRain().Set(0.0, 0, 0);
     GetGame().GetWeather().GetFog().Set(0.1, 0, 0);
@@ -196,24 +195,24 @@ void main()
 
 ---
 
-## Date & Time
+## Дата и время
 
-The game date and time affect lighting, sun position, and the day/night cycle. These are controlled through the `World` object, not `Weather`, but they are closely related.
+Дата и время в игре влияют на освещение, положение солнца и цикл дня/ночи. Они управляются через объект `World`, а не `Weather`, но тесно связаны.
 
-### Getting Current Date/Time
+### Получение текущей даты/времени
 
 ```c
 int year, month, day, hour, minute;
 GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 ```
 
-### Setting Date/Time (Server Only)
+### Установка даты/времени (только сервер)
 
 ```c
 proto native void SetDate(int year, int month, int day, int hour, int minute);
 ```
 
-**Example --- set time to noon:**
+**Пример --- установка полудня:**
 
 ```c
 int year, month, day, hour, minute;
@@ -221,22 +220,22 @@ GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 GetGame().GetWorld().SetDate(year, month, day, 12, 0);
 ```
 
-### Time Acceleration
+### Ускорение времени
 
-Time acceleration is configured in `serverDZ.cfg` via:
+Ускорение времени настраивается в `serverDZ.cfg` через:
 
 ```
-serverTimeAcceleration = 12;      // 12x real time
-serverNightTimeAcceleration = 4;  // 4x acceleration during night
+serverTimeAcceleration = 12;      // 12x реальное время
+serverNightTimeAcceleration = 4;  // 4x ускорение ночью
 ```
 
-In script, you can read the current time multiplier but typically cannot change it at runtime.
+В скрипте можно прочитать текущий множитель времени, но обычно его нельзя изменить во время выполнения.
 
 ---
 
-## WorldData Weather State Machine
+## Машина состояний погоды WorldData
 
-Vanilla DayZ uses a scripted weather state machine in `WorldData` classes (e.g., `ChernarusPlusData`, `EnochData`, `SakhalData`). The key override point is:
+Ванильный DayZ использует скриптовую машину состояний погоды в классах `WorldData` (напр., `ChernarusPlusData`, `EnochData`, `SakhalData`). Ключевая точка переопределения:
 
 ```c
 class WorldData
@@ -246,7 +245,7 @@ class WorldData
 }
 ```
 
-Override this method in a `modded` WorldData class to intercept and modify weather transitions:
+Переопределите этот метод в `modded`-классе WorldData для перехвата и изменения переходов погоды:
 
 ```c
 modded class ChernarusPlusData
@@ -256,7 +255,7 @@ modded class ChernarusPlusData
     {
         super.WeatherOnBeforeChange(type, actual, change, time);
 
-        // Prevent rain from ever going above 0.5
+        // Не допускать дождь выше 0.5
         if (type == EWeatherPhenomenon.RAIN && change > 0.5)
         {
             GetGame().GetWeather().GetRain().Set(0.5, time, 300);
@@ -269,9 +268,9 @@ modded class ChernarusPlusData
 
 ## cfgweather.xml
 
-The `cfgweather.xml` file in the mission folder provides a declarative way to configure weather without scripting. When present, it overrides the default weather state machine parameters.
+Файл `cfgweather.xml` в папке миссии предоставляет декларативный способ настройки погоды без скриптинга. При наличии он переопределяет параметры машины состояний погоды по умолчанию.
 
-Key structure:
+Основная структура:
 
 ```xml
 <weather reset="0" enable="1">
@@ -293,33 +292,66 @@ Key structure:
 </weather>
 ```
 
-| Attribute | Description |
-|-----------|-------------|
-| `reset` | Whether to reset weather from storage on server start |
-| `enable` | Whether this file is active |
-| `actual` | Initial value |
-| `time` | Seconds to reach the initial value |
-| `duration` | Seconds the initial value holds |
-| `limits min/max` | Range for the phenomenon value |
-| `timelimits min/max` | Range for transition duration (seconds) |
-| `changelimits min/max` | Range for change magnitude per transition |
+| Атрибут | Описание |
+|---------|----------|
+| `reset` | Сбрасывать ли погоду из хранилища при старте сервера |
+| `enable` | Активен ли этот файл |
+| `actual` | Начальное значение |
+| `time` | Секунды для достижения начального значения |
+| `duration` | Секунды удержания начального значения |
+| `limits min/max` | Диапазон значения явления |
+| `timelimits min/max` | Диапазон длительности перехода (секунды) |
+| `changelimits min/max` | Диапазон величины изменения за переход |
 
 ---
 
 ## Итоги
 
-
-| Concept | Key Point |
-|---------|-----------|
-| Access | `GetGame().GetWeather()` returns the `Weather` singleton |
-| Phenomena | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
-| Read | `phenomenon.GetActual()` for current value (0.0 - 1.0) |
-| Write | `phenomenon.Set(forecast, transitionTime, holdDuration)` (server only) |
-| Storms | `SetStorm(density, threshold, timeout)` |
-| Ручное mode | `MissionWeather(true)` disables automatic weather changes |
-| Date/Time | `GetGame().GetWorld().GetDate()` / `SetDate()` |
-| Config file | `cfgweather.xml` in mission folder for declarative setup |
+| Концепция | Ключевой момент |
+|-----------|----------------|
+| Доступ | `GetGame().GetWeather()` возвращает синглтон `Weather` |
+| Явления | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
+| Чтение | `phenomenon.GetActual()` для текущего значения (0.0 - 1.0) |
+| Запись | `phenomenon.Set(прогноз, времяПерехода, длительностьУдержания)` (только сервер) |
+| Грозы | `SetStorm(плотность, порог, интервал)` |
+| Ручной режим | `MissionWeather(true)` отключает автоматические изменения погоды |
+| Дата/Время | `GetGame().GetWorld().GetDate()` / `SetDate()` |
+| Конфиг-файл | `cfgweather.xml` в папке миссии для декларативной настройки |
 
 ---
 
-[<< Предыдущая: Vehicles](02-vehicles.md) | **Weather** | [Следующая: Cameras >>](04-cameras.md)
+## Лучшие практики
+
+- **Вызывайте `MissionWeather(true)` перед установкой погоды в `init.c`.** Без этого автоматическая машина состояний погоды переопределит ваши вызовы `Set()` в течение секунд. Всегда берите ручное управление, если хотите детерминированную погоду.
+- **Всегда указывайте параметр `minDuration` в `Set()`.** Установка `minDuration` в 0 означает, что система погоды может мгновенно перейти от вашего значения. Используйте минимум 300-600 секунд для удержания желаемого состояния.
+- **Устанавливайте облачность перед дождём.** Дождь визуально привязан к порогам облачности. Если облачность ниже порога, настроенного в `cfgweather.xml`, дождь не будет рендериться, даже если `GetRain().GetActual()` возвращает ненулевое значение.
+- **Используйте `WeatherOnBeforeChange()` для серверной политики погоды.** Переопределите его в `modded class ChernarusPlusData` (или соответствующем подклассе WorldData) для ограничения или перенаправления переходов погоды без борьбы с машиной состояний.
+- **Читайте погоду на обеих сторонах, записывайте только на сервере.** `GetActual()` и `GetForecast()` работают на клиенте и сервере, но `Set()` действует только на сервере.
+
+---
+
+## Совместимость и влияние
+
+> **Совместимость модов:** Моды погоды часто переопределяют `WeatherOnBeforeChange()` в подклассах WorldData. Только одна цепочка переопределений запускается для каждого класса WorldData карты.
+
+- **Порядок загрузки:** Если несколько модов переопределяют `WeatherOnBeforeChange` для одного и того же подкласса WorldData (напр., `ChernarusPlusData`), все должны вызывать `super`, иначе предыдущие моды потеряют свою логику погоды.
+- **Конфликты modded-классов:** Если один мод вызывает `MissionWeather(true)`, а другой ожидает автоматическую погоду, они принципиально несовместимы. Документируйте, берёт ли ваш мод ручное управление погодой.
+- **Влияние на производительность:** Вызовы API погоды легковесны. Интерполяция явлений выполняется в движке, а не в скрипте. Частые вызовы `Set()` (каждый кадр) расточительны, но не вредны.
+- **Сервер/Клиент:** Все вызовы `Set()` работают только на сервере. Клиенты получают состояние погоды через автоматическую синхронизацию движка. Клиентские вызовы `Set()` молча игнорируются.
+
+---
+
+## Примеры из реальных модов
+
+> Эти паттерны подтверждены изучением исходного кода профессиональных модов DayZ.
+
+| Паттерн | Мод | Файл/Расположение |
+|---------|-----|-------------------|
+| `MissionWeather(true)` + скриптовый цикл погоды с `CallLater` | Expansion | Контроллер погоды в инициализации миссии |
+| Переопределение `WeatherOnBeforeChange` для предотвращения дождя в определённых зонах | COT Weather Module | Modded `ChernarusPlusData` |
+| Команда администратора для принудительной ясной/штормовой погоды через `Set()` с длительным удержанием | VPP Admin Tools | Панель администратора погоды |
+| `cfgweather.xml` с пользовательскими порогами для карт только со снегом | Namalsk | Конфиг в папке миссии |
+
+---
+
+[<< Предыдущая: Транспорт](02-vehicles.md) | **Погода** | [Следующая: Камеры >>](04-cameras.md)

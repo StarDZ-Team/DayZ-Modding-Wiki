@@ -1,6 +1,10 @@
-# Chapter 8.12: Building a Trading System
+# Capítulo 8.12: Building a Trading System
 
-[Home](../../README.md) | [<< Previous: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Next: The Diagnostic Menu >>](13-diag-menu.md)
+[Inicio](../../README.md) | [<< Anterior: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Siguiente: The Diagnostic Menu >>](13-diag-menu.md)
+
+---
+
+> **Resumen:** Build a complete NPC-less shop system: JSON config, server-validated buy/sell, categorized UI, currency-based transactions. The most complex tutorial in this wiki -- covers data modeling, RPC roundtrips, inventory manipulation, and anti-cheat principles.
 
 ---
 
@@ -623,7 +627,7 @@ For released mods, use `inputs.xml` so players can remap the key:
 
 ## Step 7: Currency Item
 
-You can use any existing item -- set `CurrencyClassName` to `"Rag"` in the JSON and rags become money. For a custom coin, ver [Capitulo 8.2: Custom Item](02-custom-item.md).
+You can use any existing item -- set `CurrencyClassName` to `"Rag"` in the JSON and rags become money. For a custom coin, see [Chapter 8.2: Custom Item](02-custom-item.md).
 
 ---
 
@@ -661,7 +665,7 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 
 ## Complete Code Reference
 
-| File | Layer | Proposito |
+| File | Capa | Propósito |
 |------|-------|---------|
 | `ShopDemoRPC.c` | 3_Game | RPC ID constants |
 | `ShopDemoData.c` | 3_Game | Data classes: ShopItem, ShopCategory, ShopConfig |
@@ -672,7 +676,7 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Server is the single source of truth.** Client is a display terminal.
 - **Use `DeleteSafe()` not `Delete()`.** Handles network sync and locked slots.
@@ -680,9 +684,9 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 - **Always call `super` in overrides.** Breaking the chain breaks other mods.
 - **Clean up dynamic widgets.** Every `CreateWidget` needs `Unlink` on close.
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
-| Concepto | Teoria | Realidad |
+| Concepto | Teoría | Realidad |
 |---------|--------|---------|
 | `JsonFileLoader.LoadFile()` | Loads cleanly | Trailing commas cause silent failures. Validate JSON externally. |
 | String RPC serialization | Simple | 500+ items may hit size limits. Paginate for large shops. |
@@ -701,7 +705,7 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 
 ## Errores Comunes
 
-| Error | Solucion |
+| Error | Solución |
 |---------|-----|
 | Client sends price | Send `(className, qty)` only. Server decides price. |
 | Spawn before paying | Remove currency first, then create items. |
@@ -712,4 +716,4 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 
 ---
 
-**Previous:** [Chapter 8.11: Clothing Mod](11-clothing-mod.md)
+**Anterior:** [Chapter 8.11: Clothing Mod](11-clothing-mod.md)

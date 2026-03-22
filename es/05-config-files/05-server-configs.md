@@ -1,8 +1,10 @@
-# Chapter 5.5: Server Configuration Files
+# Capítulo 5.5: Archivos de Configuración del Servidor
 
-[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
+[Inicio](../../README.md) | [<< Anterior: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Siguiente: Spawning Gear Configuration >>](06-spawning-gear.md)
 
 ---
+
+> **Resumen:** DayZ servers are configured through XML, JSON, and script files in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`). These files control item spawns, economy behavior, gameplay rules, and server identity. Understanding them is essential for adding custom items to the loot economy, tuning server parameters, or building a custom mission.
 
 ---
 
@@ -21,11 +23,11 @@
 
 ---
 
-## Vista General
+## Descripción General
 
-Todo servidor de DayZ carga su configuracion desde una **carpeta de mision**. Los archivos de la Central Economy (CE) definen que items spawnean, donde y por cuanto tiempo. El ejecutable del servidor mismo se configura a traves de `serverDZ.cfg`, que se ubica junto al ejecutable.
+Every DayZ server loads its configuration from a **mission folder**. The Central Economy (CE) files define what items spawn, where, and for how long. The server executable itself is configured through `serverDZ.cfg`, which lives alongside the executable.
 
-| File | Proposito |
+| File | Propósito |
 |------|---------|
 | `init.c` | Mission entry point --- Hive init, date/time, spawn loadout |
 | `db/types.xml` | Item spawn definitions: quantities, lifetimes, locations |
@@ -88,7 +90,7 @@ The `Hive` manages the CE database. Without `CreateHive()`, no items spawn and p
 
 ## types.xml --- Item Spawn Definitions
 
-Located at `db/types.xml`, this file es el corazon del CE. Todo item que pueda spawnear debe tener una entrada aqui.
+Located at `db/types.xml`, this file is the heart of the CE. Every item that can spawn must have an entry here.
 
 ### Complete Entry
 
@@ -112,7 +114,7 @@ Located at `db/types.xml`, this file es el corazon del CE. Todo item que pueda s
 
 ### Field Reference
 
-| Field | Descripcion |
+| Campo | Descripción |
 |-------|-------------|
 | `nominal` | Target count on the map. CE spawns items until this is reached |
 | `min` | Minimum count before CE triggers restocking |
@@ -123,7 +125,7 @@ Located at `db/types.xml`, this file es el corazon del CE. Todo item que pueda s
 
 ### Flags
 
-| Flag | Proposito |
+| Bandera | Propósito |
 |------|---------|
 | `count_in_cargo` | Count items inside containers toward nominal |
 | `count_in_hoarder` | Count items in stashes/tents/barrels toward nominal |
@@ -132,7 +134,7 @@ Located at `db/types.xml`, this file es el corazon del CE. Todo item que pueda s
 | `crafted` | Item is crafted only, not naturally spawned |
 | `deloot` | Dynamic Event loot (heli crashes, etc.) |
 
-### Etiquetas de Category, Usage y Value
+### Category, Usage, and Value Tags
 
 These tags control **where** items spawn:
 
@@ -257,7 +259,7 @@ Located at `db/globals.xml`, this file sets global CE parameters:
 
 ### Key Variables
 
-| Variable | Por defecto | Descripcion |
+| Variable | Predeterminado | Descripción |
 |----------|---------|-------------|
 | `AnimalMaxCount` | 200 | Maximum animals on the map |
 | `ZombieMaxCount` | 1000 | Maximum infected on the map |
@@ -280,7 +282,7 @@ The `type` attribute is `0` for integer, `1` for float. Using the wrong type tru
 
 Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, the engine uses hardcoded defaults.
 
-### Estructura
+### Structure
 
 ```json
 {
@@ -331,7 +333,7 @@ Key settings: `disableBaseDamage` prevents base damage, `disablePersonalLight` r
 
 ## serverDZ.cfg --- Server Settings
 
-Este archivo se ubica junto al ejecutable del servidor, no en la carpeta de mision.
+This file sits next to the server executable, not in the mission folder.
 
 ### Key Settings
 
@@ -348,7 +350,7 @@ storeHouseStateDisabled = false;
 storageAutoFix = 1;
 ```
 
-| Parametro | Descripcion |
+| Parámetro | Descripción |
 |-----------|-------------|
 | `hostname` | Server name in the browser |
 | `password` | Join password (empty = open) |
@@ -360,7 +362,7 @@ storageAutoFix = 1;
 
 ### Mod Loading
 
-Los mods se especifican via parametros de lanzamiento, no en el archivo de config:
+Mods are specified via launch parameters, not in the config file:
 
 ```
 DayZServer_x64.exe -config=serverDZ.cfg -mod=@CF;@MyMod -servermod=@MyServerMod -port=2302
@@ -370,7 +372,7 @@ DayZServer_x64.exe -config=serverDZ.cfg -mod=@CF;@MyMod -servermod=@MyServerMod 
 
 ---
 
-## Como Interactuan los Mods con la Economia
+## How Mods Interact with the Economy
 
 ### cfgeconomycore.xml --- Root Class Registration
 
@@ -426,7 +428,7 @@ Controls which CE subsystems are active:
 
 Flags: `init` (spawn on startup), `load` (load persistence), `respawn` (respawn after cleanup), `save` (persist to database).
 
-### Interaccion de la Economia por Script
+### Script-Side Economy Interaction
 
 Items created via `CreateInInventory()` are automatically CE-managed. For world spawns, use ECE flags:
 
@@ -440,7 +442,7 @@ EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE)
 
 ### XML Syntax Errors
 
-Una sola etiqueta sin cerrar rompe todo el archivo. Siempre valida el XML antes de desplegar.
+A single unclosed tag breaks the entire file. Always validate XML before deploying.
 
 ### Missing Tags in cfglimitsdefinition.xml
 
@@ -472,7 +474,7 @@ Modifying vanilla types.xml works but breaks on game updates. Prefer shipping se
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - Ship a `ServerFiles/` folder with your mod containing pre-configured `types.xml` entries so server admins can copy-paste rather than write from scratch.
 - Use `cfglimitsdefinitionuser.xml` instead of editing the vanilla `cfglimitsdefinition.xml` -- your additions survive game updates.
@@ -482,9 +484,9 @@ Modifying vanilla types.xml works but breaks on game updates. Prefer shipping se
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
-| Concepto | Teoria | Realidad |
+| Concepto | Teoría | Realidad |
 |---------|--------|---------|
 | `nominal` is a hard target | CE spawns exactly this many items | CE approaches nominal over time but fluctuates based on player interaction, cleanup cycles, and zone distance |
 | `restock=0` means instant respawn | Items reappear immediately after despawn | The CE batch processes restocking in cycles (typically every 30-60 seconds), so there is always a delay regardless of the restock value |
@@ -497,4 +499,4 @@ Modifying vanilla types.xml works but breaks on game updates. Prefer shipping se
 ## Compatibilidad e Impacto
 
 - **Multi-Mod:** Multiple mods can add entries to types.xml without conflict as long as classnames are unique. If two mods define the same classname with different nominal/lifetime values, the last-loaded entry wins.
-- **Rendimiento:** Excessive nominal counts (15,000+) cause CE tick spikes visible as server FPS drops. Each CE cycle iterates all registered types to check spawn conditions.
+- **Performance:** Excessive nominal counts (15,000+) cause CE tick spikes visible as server FPS drops. Each CE cycle iterates all registered types to check spawn conditions.

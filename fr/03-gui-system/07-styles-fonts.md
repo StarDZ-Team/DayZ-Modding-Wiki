@@ -1,6 +1,10 @@
-# Chapter 3.7: Styles, Fonts & Images
+# Chapitre 3.7: Styles, Fonts & Images
 
-[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
+[Accueil](../../README.md) | [<< Précédent : Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Suivant : Dialogs & Modals >>](08-dialogs-modals.md)
+
+---
+
+Ce chapitre couvre the visual building blocks of DayZ UI: predefined styles, font usage, text sizing, image widgets with imageset references, and how to create custom imagesets for your mod.
 
 ---
 
@@ -79,7 +83,7 @@ Colorful UI uses `rover_sim_colorable` extensively for themed panels where the c
 
 ---
 
-## Polices
+## Fonts
 
 DayZ includes several built-in fonts. Font paths are specified in the `font` attribute.
 
@@ -177,7 +181,7 @@ The `"size to text"` attributes are useful for labels and tags where the widget 
 
 ---
 
-## Alignement du texte
+## Text Alignment
 
 Control where text appears within its widget using alignment attributes:
 
@@ -196,7 +200,7 @@ TextWidgetClass CenteredLabel {
 
 ---
 
-## Contour du texte
+## Text Outline
 
 Add outlines to text for readability on busy backgrounds:
 
@@ -216,7 +220,7 @@ int color = tw.GetOutlineColor();         // Read outline color (ARGB)
 
 ### Imageset References
 
-Le plus courant way to display images. An imageset is a sprite atlas -- a single texture file with multiple named sub-images.
+The most common way to display images. An imageset is a sprite atlas -- a single texture file with multiple named sub-images.
 
 In a layout file:
 
@@ -263,7 +267,7 @@ icon.SetImage(1);    // Show image1 (health icon)
 
 ### Loading Images from Files
 
-Load images dynamically at runtime:
+Load images dynamically à l'exécution:
 
 ```c
 ImageWidget img;
@@ -297,13 +301,13 @@ This is useful for loading bars, health displays, and reveal animations.
 
 ---
 
-## Format ImageSet
+## ImageSet Format
 
 An imageset file (`.imageset`) defines named regions within a sprite atlas texture. DayZ supports two imageset formats.
 
 ### DayZ Native Format
 
-Used by vanilla DayZ and most mods. This is **not** XML -- it uses the same brace-delimited format as layout files.
+Used by le DayZ vanilla and most mods. This is **not** XML -- it uses the same brace-delimited format as layout files.
 
 ```
 ImageSetClass {
@@ -358,11 +362,11 @@ Some mods (including some DayZ Expansion modules) use an XML-based imageset form
 </imageset>
 ```
 
-Both formats accomplish the same thing. The native format is used by vanilla DayZ; the XML format is sometimes easier to read and edit by hand.
+Both formats accomplish the same thing. The native format is used by le DayZ vanilla; the XML format is sometimes easier to read and edit by hand.
 
 ---
 
-## Creer des imagesets personnalises
+## Creating Custom Imagesets
 
 To create your own imageset for a mod:
 
@@ -449,7 +453,7 @@ ImageWidget icon;
 
 ## Color Theme Pattern
 
-Professional mods centralize their color definitions in a theme class, then apply colors at runtime. This makes it easy to restyle the entire UI by changing one file.
+Professional mods centralize their color definitions in a theme class, then apply colors à l'exécution. This makes it easy to restyle the entire UI by changing one file.
 
 ```c
 class UIColor
@@ -493,7 +497,7 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ## Bonnes pratiques
 
-1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by the engine.
+1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by le moteur.
 
 2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at any scale.
 
@@ -509,7 +513,27 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ---
 
-## Prochaines etapes
+## Prochaines étapes
 
+- [3.8 Dialogs & Modals](08-dialogs-modals.md) -- Popup windows, confirmation prompts, and overlay panels
 - [3.1 Widget Types](01-widget-types.md) -- Review the full widget catalog
 - [3.6 Event Handling](06-event-handling.md) -- Make your styled widgets interactive
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| SDF fonts scale to any size | `sdf_MetronBook24` is crisp at all sizes | True for sizes above ~10px. Below that, SDF fonts can appear blurry compared to bitmap fonts at their native size |
+| `"exact text" 1` gives pixel-perfect sizing | Font renders at the exact pixel size specified | DayZ applies internal scaling, so `"exact text size" 16` may render slightly differently across resolutions. Test on 1080p and 1440p |
+| Built-in styles cover all needs | `Default`, `blank`, `Colorable` are sufficient | Most professional mods define their own `.styles` files because built-in styles have limited visual variety |
+| Imageset XML and native formats are equivalent | Both define sprite regions | The native brace format is what le moteur processes fastest. XML format works but adds a parsing step; use native format for production |
+| `SetColor()` overrides layout color | Runtime color replaces the layout value | `SetColor()` tints the widget's existing visual. On styled widgets, the tint multiplies with the style's base color, producing unexpected results |
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** Style names are global. If two mods register a `.styles` file defining the same style name, the last-loaded mod wins. Prefix custom style names with your mod identifier (e.g., `MyMod_PanelDark`).
+- **Performance :** Imagesets are loaded once into GPU memory at startup. Adding large sprite atlases (2048x2048+) increases VRAM usage. Keep atlases at 512x512 or 1024x1024 and split across multiple imagesets if needed.

@@ -1,10 +1,10 @@
-# Chapter 6.10: Central Economy
+# Capítulo 6.10: Economía Central
 
-[Home](../../README.md) | [<< Previous: Networking & RPC](09-networking.md) | **Central Economy** | [Next: Mission Hooks >>](11-mission-hooks.md)
+[Inicio](../../README.md) | [<< Anterior: Networking & RPC](09-networking.md) | **Central Economy** | [Siguiente: Mission Hooks >>](11-mission-hooks.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 The Central Economy (CE) is DayZ's server-side system for managing all spawnable entities in the world: loot, vehicles, infected, animals, and dynamic events. It is configured entirely through XML files in the mission folder. While the CE itself is an engine system (not directly scriptable), understanding its configuration files is essential for any server mod. This chapter covers all CE configuration files, their structure, key parameters, and how they interact.
 
@@ -21,11 +21,11 @@ The Central Economy (CE) is DayZ's server-side system for managing all spawnable
 
 ---
 
-## File Vision General
+## File Overview
 
 All CE files live in the mission folder (e.g., `dayzOffline.chernarusplus/`).
 
-| File | Proposito |
+| File | Propósito |
 |------|---------|
 | `db/types.xml` | Every spawnable item's parameters |
 | `db/events.xml` | Dynamic event definitions (vehicles, crashes, infected) |
@@ -37,6 +37,27 @@ All CE files live in the mission folder (e.g., `dayzOffline.chernarusplus/`).
 | `cfgeventspawns.xml` | World coordinates for event spawn positions |
 | `cfglimitsdefinition.xml` | All valid category, usage, and value flag names |
 | `cfgplayerspawnpoints.xml` | Fresh spawn locations |
+
+---
+
+## Spawn Cycle
+
+```mermaid
+flowchart TD
+    A[CE Startup] --> B[Load types.xml]
+    B --> C[For each item type]
+    C --> D{Current count < nominal?}
+    D -->|Yes| E{Restock timer elapsed?}
+    E -->|Yes| F[Spawn item at valid position]
+    E -->|No| G[Wait for restock interval]
+    D -->|No| H{Current count > nominal?}
+    H -->|Yes| I[Mark excess for cleanup]
+    H -->|No| J[Item count balanced]
+    F --> K{Lifetime expired?}
+    K -->|Yes| L[Delete item]
+    K -->|No| M[Item persists]
+    L --> C
+```
 
 ---
 
@@ -68,7 +89,7 @@ The most critical CE file. Every item that can exist in the world must have an e
 
 ### Parameters
 
-| Parameter | Descripcion | Typical Values |
+| Parámetro | Descripción | Typical Values |
 |-----------|-------------|----------------|
 | `nominal` | Target count on the entire map | 1 - 200 |
 | `lifetime` | Seconds before untouched items despawn | 3600 (1h) - 14400 (4h) |
@@ -80,7 +101,7 @@ The most critical CE file. Every item that can exist in the world must have an e
 
 ### Flags
 
-| Flag | Descripcion |
+| Bandera | Descripción |
 |------|-------------|
 | `count_in_cargo` | Count items inside player/container cargo toward nominal |
 | `count_in_hoarder` | Count items in storage (tents, barrels, buried stashes) |
@@ -97,7 +118,7 @@ The most critical CE file. Every item that can exist in the world must have an e
 
 An item can have multiple `<usage>` and `<value>` tags to spawn in multiple locations and tiers.
 
-**Example --- add a custom item to the economy:**
+**Ejemplo --- add a custom item to the economy:**
 
 ```xml
 <type name="MyCustomRifle">
@@ -156,7 +177,7 @@ Global CE parameters that affect all items.
 
 ### Key Parameters
 
-| Variable | Descripcion |
+| Variable | Descripción |
 |----------|-------------|
 | `AnimalMaxCount` | Maximum animals alive simultaneously |
 | `ZombieMaxCount` | Maximum infected alive simultaneously |
@@ -202,7 +223,7 @@ Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes
 
 ### Event Parameters
 
-| Parameter | Descripcion |
+| Parámetro | Descripción |
 |-----------|-------------|
 | `nominal` | Target number of active events |
 | `min` / `max` | Minimum and maximum active at once |
@@ -217,7 +238,7 @@ Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes
 
 Each event can spawn one or more child objects:
 
-| Atributo | Descripcion |
+| Atributo | Descripción |
 |-----------|-------------|
 | `type` | Class name of the object to spawn |
 | `min` / `max` | Count range for this child |
@@ -360,21 +381,21 @@ Custom mods can add new flags here and reference them in their `types.xml` entri
 
 When spawning entities from script, the ECE flags (covered in [Chapter 6.1](01-entity-system.md)) determine how the entity interacts with the CE:
 
-| Flag | CE Behavior |
+| Bandera | CE Behavior |
 |------|-------------|
 | `ECE_NOLIFETIME` | Entity will never despawn (not tracked by CE lifetime) |
 | `ECE_DYNAMIC_PERSISTENCY` | Entity becomes persistent only after player interaction |
 | `ECE_EQUIP_ATTACHMENTS` | CE spawns configured attachments from `cfgspawnabletypes.xml` |
 | `ECE_EQUIP_CARGO` | CE spawns configured cargo from `cfgspawnabletypes.xml` |
 
-**Example --- spawn an item that persists forever:**
+**Ejemplo --- spawn an item that persists forever:**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_NOLIFETIME;
 Object obj = GetGame().CreateObjectEx("Barrel_Green", pos, flags);
 ```
 
-**Example --- spawn with CE-configured attachments:**
+**Ejemplo --- spawn with CE-configured attachments:**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_EQUIP_ATTACHMENTS | ECE_EQUIP_CARGO;
@@ -423,7 +444,7 @@ GetGame().SurfaceGetType(x, z, surfaceType);
 
 ---
 
-## Modding the Economia Central
+## Modding the Central Economy
 
 ### Adding Custom Items
 
@@ -448,7 +469,7 @@ Set `nominal` and `min` to `0`:
 </type>
 ```
 
-### Adding Custom Eventos
+### Adding Custom Events
 
 Add a new `<event>` block in `events.xml` and corresponding spawn positions in `cfgeventspawns.xml`:
 
@@ -487,7 +508,7 @@ Add a new `<event>` block in `events.xml` and corresponding spawn positions in `
 
 ## Resumen
 
-| File | Proposito | Key Parameters |
+| File | Propósito | Key Parameters |
 |------|---------|----------------|
 | `types.xml` | Item spawn definitions | `nominal`, `min`, `lifetime`, `usage`, `value` |
 | `globals.xml` | Global CE variables | `ZombieMaxCount`, `AnimalMaxCount`, cleanup timers |
@@ -509,4 +530,22 @@ Add a new `<event>` block in `events.xml` and corresponding spawn positions in `
 
 ---
 
-[<< Anterior: Networking & RPC](09-networking.md) | **Economia Central** | [Inicio](../../README.md)
+## Mejores Prácticas
+
+- **Set `count_in_hoarder="1"` for high-value items.** Without this flag, players can hoard rare weapons in stashes without reducing the world spawn count, leading to item duplication in practice.
+- **Keep `restock` at 0 for most items.** Non-zero restock values delay respawning after an item is picked up. Use it only for items that should not immediately reappear (e.g., rare military gear).
+- **Test nominal/min ratios on a live server with players.** Static testing does not reveal real CE behavior. Items interact with player movement patterns, container storage, and cleanup timers in ways that are only visible under real load.
+- **Always define new items in both `config.cpp` and `types.xml`.** A config entry without a types.xml entry means the item will never spawn naturally. A types.xml entry without a config class causes CE errors.
+- **Use `cfgspawnabletypes.xml` to create weapon variety.** Instead of spawning naked weapons, define attachment presets so players find weapons with random stocks, handguards, and magazines -- this dramatically improves loot quality perception.
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Multiple mods can add entries to `types.xml`. If two mods define the same `<type name="">`, the last loaded file wins. Use unique class names to avoid collisions. Merge types.xml entries carefully on community servers.
+- **Performance:** High `nominal` values (200+) for many item types strain the CE's spawn loop. The CE runs periodic scans that scale with total tracked entity count. Keep nominals realistic -- 5-20 for weapons, 20-100 for common items.
+- **Server/Client:** The CE runs entirely on the server. Clients have no visibility into CE state. All XML files are server-side only and are not distributed to clients.
+
+---
+
+[Inicio](../../README.md) | [<< Anterior: Networking & RPC](09-networking.md) | **Central Economy** | [Siguiente: Mission Hooks >>](11-mission-hooks.md)

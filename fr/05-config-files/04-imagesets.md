@@ -1,10 +1,14 @@
-# Chapter 5.4: ImageSet Format
+# Chapitre 5.4: ImageSet Format
 
-[Home](../../README.md) | [<< Previous: Credits.json](03-credits-json.md) | **ImageSet Format** | [Next: Server Configuration Files >>](05-server-configs.md)
+[Accueil](../../README.md) | [<< Précédent : Credits.json](03-credits-json.md) | **ImageSet Format** | [Suivant : Server Configuration Files >>](05-server-configs.md)
 
 ---
 
-## Table des matieres
+> **Résumé :** ImageSets define named sprite regions within a texture atlas. They are DayZ's primary mechanism for referencing icons, UI graphics, and sprite sheets from layout files and scripts. Instead of loading hundreds of individual image files, you pack all icons into a single texture and describe each icon's position and size in an imageset definition file.
+
+---
+
+## Table des matières
 
 - [Overview](#overview)
 - [How ImageSets Work](#how-imagesets-work)
@@ -26,28 +30,28 @@
 
 A texture atlas is a single large image (typically in `.edds` format) containing many smaller icons arranged in a grid or freeform layout. An imageset file maps human-readable names to rectangular regions within that atlas.
 
-For example, a 1024x1024 texture might contain 64 icons at 64x64 pixels each. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and the engine extracts the correct sub-rectangle from the atlas at render time.
+Par exemple, a 1024x1024 texture might contain 64 icons at 64x64 pixels each. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and le moteur extracts the correct sub-rectangle from the atlas at render time.
 
 This approach is efficient: one GPU texture load serves all icons, reducing draw calls and memory overhead.
 
 ---
 
-## Comment fonctionnent les ImageSets
+## How ImageSets Work
 
 The data flow:
 
 1. **Texture atlas** (`.edds` file) --- a single image containing all icons
 2. **ImageSet definition** (`.imageset` file) --- maps names to regions in the atlas
-3. **config.cpp registration** --- tells the engine to load the imageset at startup
+3. **config.cpp registration** --- tells le moteur to load the imageset at startup
 4. **Layout/script reference** --- uses `set:name image:iconName` syntax to render a specific icon
 
 Once registered, any widget in any layout file can reference any image from the set by name.
 
 ---
 
-## Format ImageSet natif DayZ
+## DayZ Native ImageSet Format
 
-The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). This is the format used by the vanilla game and most established mods.
+The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). This is the format used by le vanilla game and most established mods.
 
 ### Structure
 
@@ -134,7 +138,7 @@ ImageSetClass {
 
 ---
 
-## Format ImageSet XML
+## XML ImageSet Format
 
 An alternative XML-based format exists and is used by some mods. It is simpler but offers fewer features (no multi-resolution support).
 
@@ -153,20 +157,20 @@ An alternative XML-based format exists and is used by some mods. It is simpler b
 
 **`<imageset>` element:**
 
-| Attribute | Description |
+| Attribut | Description |
 |-----------|-------------|
 | `name` | The set name (equivalent to native `Name`) |
 | `file` | Path to the texture file (equivalent to native `path`) |
 
 **`<image>` element:**
 
-| Attribute | Description |
+| Attribut | Description |
 |-----------|-------------|
 | `name` | Image identifier |
 | `pos` | Top-left position as `"x y"` |
 | `size` | Dimensions as `"width height"` |
 
-### When to Use Which Format
+### Quand utiliser Which Format
 
 | Feature | Native Format | XML Format |
 |---------|---------------|------------|
@@ -174,16 +178,16 @@ An alternative XML-based format exists and is used by some mods. It is simpler b
 | Tiling flags | Yes | No |
 | Enfusion GUID paths | Yes | Yes |
 | Simplicity | Lower | Higher |
-| Used by vanilla DayZ | Yes | No |
+| Used by le DayZ vanilla | Yes | No |
 | Used by Expansion, MyMod, VPP | Yes | Occasionally |
 
-**Recommendation:** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that do not need tiling or multi-resolution support.
+**Recommandation :** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that do not need tiling or multi-resolution support.
 
 ---
 
-## Enregistrer les ImageSets dans config.cpp
+## Registering ImageSets in config.cpp
 
-ImageSet files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Without this registration, the engine never loads the imageset and your image references fail silently.
+ImageSet files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Without this registration, le moteur never loads the imageset and your image references fail silently.
 
 ### Syntax
 
@@ -208,9 +212,9 @@ class CfgMods
 };
 ```
 
-### Real Example: MyFramework
+### Real Example: MyMod Core
 
-MyFramework registers seven imagesets including Font Awesome icon sets:
+MyMod Core registers seven imagesets including Font Awesome icon sets:
 
 ```cpp
 class defs
@@ -263,7 +267,7 @@ class defs
 
 ---
 
-## Referencer des images dans les layouts
+## Referencing Images in Layouts
 
 In `.layout` files, use the `image0` property with the `set:name image:imageName` syntax:
 
@@ -311,7 +315,7 @@ image0 "set:dayz_editor_gui image:eye_open"           -- DayZ Editor: custom ico
 
 ---
 
-## Referencer des images dans les scripts
+## Referencing Images in Scripts
 
 In Enforce Script, use `ImageWidget.LoadImageFile()` or set image properties on widgets:
 
@@ -351,7 +355,7 @@ searchBarIcon.LoadImageFile(0, "set:dayz_gui image:icon_x");
 
 ---
 
-## Drapeaux d'image
+## Image Flags
 
 The `Flags` field in native-format imageset entries controls tiling behavior when the image is stretched beyond its natural size.
 
@@ -379,9 +383,9 @@ Most icons use `Flags 0` (no tiling). Tiling flags are primarily for UI elements
 
 ---
 
-## Textures multi-resolution
+## Multi-Resolution Textures
 
-The native format supports multiple resolution textures for the same imageset. This allows the engine to use higher-resolution artwork on high-DPI displays.
+The native format supports multiple resolution textures for the same imageset. This allows le moteur to use higher-resolution artwork on high-DPI displays.
 
 ```
 Textures {
@@ -403,7 +407,7 @@ The `@2x` naming convention is borrowed from Apple's Retina display system but i
 
 ### In Practice
 
-Most mods only include `mpix 1` (a single resolution). Multi-resolution support is primarily used by the vanilla game:
+Most mods only include `mpix 1` (a single resolution). Multi-resolution support is primarily used by le vanilla game:
 
 ```
 Textures {
@@ -416,7 +420,7 @@ Textures {
 
 ---
 
-## Creer des jeux d'icones personnalises
+## Creating Custom Icon Sets
 
 ### Step-by-Step Workflow
 
@@ -499,9 +503,9 @@ ImageWidgetClass SettingsIcon {
 
 ---
 
-## Pattern d'integration Font Awesome
+## Font Awesome Integration Pattern
 
-MyFramework (inherited from DabsFramework) demonstrates a powerful pattern: converting Font Awesome icon fonts into DayZ imagesets. This gives mods access to thousands of professional-quality icons without creating custom artwork.
+MyMod Core (inherited from DabsFramework) demonstrates a powerful pattern: converting Font Awesome icon fonts into DayZ imagesets. This gives mods access to thousands of professional-quality icons without creating custom artwork.
 
 ### How It Works
 
@@ -510,7 +514,7 @@ MyFramework (inherited from DabsFramework) demonstrates a powerful pattern: conv
 3. Icon names in the imageset match Font Awesome icon names (e.g., `circle`, `arrow_down`, `discord`)
 4. The imagesets are registered in config.cpp and available to any layout or script
 
-### MyFramework / DabsFramework Icon Sets
+### MyMod Core / DabsFramework Icon Sets
 
 ```
 MyFramework/GUI/icons/
@@ -549,7 +553,7 @@ CollapseIcon.LoadImageFile(0, "set:regular image:square_plus");
 
 ### The Atlas Structure
 
-The solid imageset, for example, has a `RefSize` of 3648x3712 with icons arranged at 64-pixel intervals:
+The solid imageset, par exemple, has a `RefSize` of 3648x3712 with icons arranged at 64-pixel intervals:
 
 ```
 ImageSetClass {
@@ -581,7 +585,7 @@ ImageSetClass {
 
 ---
 
-## Exemples concrets
+## Exemples réels
 
 ### VPP Admin Tools
 
@@ -619,7 +623,7 @@ Referenced in layouts as:
 image0 "set:dayz_gui_vpp image:vpp_icon_cloud"
 ```
 
-### MyWeapons Mod
+### MyMod Weapons
 
 Weapon and attachment icons packed into large atlases with varied icon sizes:
 
@@ -652,7 +656,7 @@ ImageSetClass {
 
 This shows that icons do not need to be uniform size --- inventory icons for weapons use 300x300 while UI icons typically use 64x64.
 
-### MyFramework Prefabs
+### MyMod Core Prefabs
 
 UI primitives (rounded corners, alpha gradients) packed into a small 256x256 atlas:
 
@@ -683,7 +687,7 @@ ImageSetClass {
 }
 ```
 
-Notable: image names can contain spaces when quoted (e.g., `"Alpha 10"`). However, referencing these in layouts requires the exact name including the space.
+Notable: image names can contain spaces when quoted (e.g., `"Alpha 10"`). Cependant, referencing these in layouts requires the exact name including the space.
 
 ### MyMod Market Hub (XML Format)
 
@@ -713,7 +717,7 @@ image0 "set:mh_icons image:icon_store"
 
 ### Forgetting config.cpp Registration
 
-Le plus courant issue. If your imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, the engine never loads it. All image references will fail silently (widgets appear blank).
+The most common issue. If your imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, le moteur never loads it. All image references will fail silently (widgets appear blank).
 
 ### Set Name Collisions
 
@@ -744,8 +748,51 @@ The `RefSize` must match the actual pixel dimensions of your texture. If you spe
 
 ### Using .png or .tga Directly
 
-The engine requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Always convert to `.edds` using DayZ Workbench or Mikero's tools.
+Le moteur requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Always convert to `.edds` using DayZ Workbench or Mikero's tools.
 
 ### Spaces in Image Names
 
-While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in some parsing contexts. Prefer underscores: `Alpha_10`.
+While le moteur supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in some parsing contexts. Prefer underscores: `Alpha_10`.
+
+---
+
+## Bonnes pratiques
+
+- Always use a unique, mod-prefixed set name (e.g., `"mymod_icons"` instead of `"icons"`). Set name collisions between mods cause one set to silently overwrite the other.
+- Use power-of-two texture dimensions (256x256, 512x512, 1024x1024). Non-power-of-two textures work but may have reduced rendering performance on some GPUs.
+- Add 1-2 pixels of padding between icons in the atlas to prevent texture bleeding at the edges, especially when the texture is displayed at non-native sizes.
+- Prefer the native `.imageset` format over XML for production mods. It supports multi-resolution textures and tiling flags that XML format lacks.
+- Verify `RefSize` matches the actual texture dimensions exactly. A mismatch causes all icon coordinates to be wrong by a proportional factor.
+
+---
+
+## Théorie vs Pratique
+
+> Ce que la documentation dit par rapport à ce qui se passe réellement à l'exécution.
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| config.cpp registration is required | ImageSets must be listed in `class imageSets` | Correct, and this est le plus courant source of "blank icon" bugs. Le moteur gives no error if the registration is missing -- widgets simply render empty |
+| `RefSize` maps coordinates | Coordinates are in `RefSize` space | `RefSize` must match actual texture pixel dimensions. If your texture is 1024x1024 but `RefSize` says 512x512, all `Pos` values are interpreted at double scale |
+| XML format is simpler | Fewer features but works the same | XML imagesets cannot specify tiling flags or multi-resolution mip levels. For icons this is fine, but for repeating UI elements (borders, gradients) you need the native format |
+| Multiple `mpix` entries | Engine selects by quality setting | En pratique, most mods ship only `mpix 1`. Le moteur falls back gracefully if only one mip level is provided -- no visual glitch, just no high-DPI optimization |
+| Image names are case-sensitive | `"MyIcon"` and `"myicon"` are different | True in the imageset definition, but `LoadImageFile()` in script performs case-insensitive lookup on some engine builds. Always match case exactly to be safe |
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** Set name collisions are the main risk. If two mods both define an imageset named `"icons"`, only one is loaded (last PBO wins). All references to `set:icons` in the losing mod break silently. Always use a mod-specific prefix.
+- **Performance :** Each unique imageset texture is one GPU texture load. Consolidating icons into fewer, larger atlases reduces draw calls. A mod with 10 separate 64x64 textures performs worse than one 512x512 atlas with 10 icons.
+- **Version :** The native `.imageset` format and `set:name image:name` reference syntax have been stable since DayZ 1.0. The XML format has been available as an alternative since early versions but is not officially documented by Bohemia.
+
+---
+
+## Observé dans les mods réels
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| Font Awesome icon atlases | DabsFramework / StarDZ Core | Renders Font Awesome icons to large atlases (3648x3712), providing thousands of professional icons via `set:solid`, `set:regular`, `set:brands` |
+| Freeform atlas layout | VPP Admin Tools | Icons arranged non-uniformly on a 1920x1080 atlas with varying sizes, maximizing texture space usage |
+| Per-feature small atlases | Expansion | Each Expansion sub-module has its own small imageset rather than one massive atlas, keeping PBO sizes minimal |
+| 300x300 inventory icons | SNAFU Weapons | Large icon sizes for weapon/attachment inventory slots where detail matters, unlike 64x64 UI icons |

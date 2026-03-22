@@ -1,41 +1,41 @@
-# Chapter 6.5: Post-Process Effects (PPE)
+# Kapitola 6.5: Post-processingové efekty (PPE)
 
-[Home](../../README.md) | [<< Previous: Cameras](04-cameras.md) | **Post-Process Effects** | [Next: Notifications >>](06-notifications.md)
-
----
-
-## Introduction
-
-DayZ's Post-Process Effects (PPE) system controls visual effects applied after scene rendering: blur, color grading, vignette, chromatic aberration, night vision, and more. The system is built around `PPERequester` classes that can request specific visual effects. Multiple requesters can be active simultaneously, and the engine blends their contributions. This chapter covers how to use the PPE system in mods.
+[Domů](../../README.md) | [<< Předchozí: Kamery](04-cameras.md) | **Post-processingové efekty** | [Další: Notifikace >>](06-notifications.md)
 
 ---
 
-## Architecture Overview
+## Úvod
+
+Systém post-processingových efektů (PPE) v DayZ řídí vizuální efekty aplikované po vykreslení scény: rozmazání, barevné korekce, vinětu, chromatickou aberaci, noční vidění a další. Systém je postaven na třídách `PPERequester`, které mohou požadovat specifické vizuální efekty. Více requesterů může být aktivních současně a engine prolíná jejich příspěvky. Tato kapitola pokrývá použití systému PPE v modech.
+
+---
+
+## Přehled architektury
 
 ```
 PPEManager
-├── PPERequesterBank              // Static registry of all available requesters
-│   ├── REQ_INVENTORYBLUR         // Inventory blur
-│   ├── REQ_MENUEFFECTS           // Menu effects
-│   ├── REQ_CONTROLLERDISCONNECT  // Controller disconnect overlay
-│   ├── REQ_UNCONSCIOUS           // Unconsciousness effect
-│   ├── REQ_FEVEREFFECTS          // Fever visual effects
-│   ├── REQ_FLASHBANGEFFECTS      // Flashbang
-│   ├── REQ_BURLAPSACK            // Burlap sack on head
-│   ├── REQ_DEATHEFFECTS          // Death screen
-│   ├── REQ_BLOODLOSS             // Blood loss desaturation
-│   └── ... (many more)
-└── PPERequester_*                // Individual requester implementations
+├── PPERequesterBank              // Statický registr všech dostupných requesterů
+│   ├── REQ_INVENTORYBLUR         // Rozmazání inventáře
+│   ├── REQ_MENUEFFECTS           // Efekty menu
+│   ├── REQ_CONTROLLERDISCONNECT  // Překrytí při odpojení ovladače
+│   ├── REQ_UNCONSCIOUS           // Efekt bezvědomí
+│   ├── REQ_FEVEREFFECTS          // Vizuální efekty horečky
+│   ├── REQ_FLASHBANGEFFECTS      // Zábleskový granát
+│   ├── REQ_BURLAPSACK            // Pytel na hlavě
+│   ├── REQ_DEATHEFFECTS          // Obrazovka smrti
+│   ├── REQ_BLOODLOSS             // Desaturace při ztrátě krve
+│   └── ... (a mnoho dalších)
+└── PPERequester_*                // Jednotlivé implementace requesterů
 ```
 
 ---
 
 ## PPEManager
 
-The `PPEManager` is a singleton that coordinates all active PPE requests. You rarely interact with it directly --- instead, you work through `PPERequester` subclasses.
+`PPEManager` je singleton, který koordinuje všechny aktivní PPE požadavky. Zřídka s ním interagujete přímo --- místo toho pracujete prostřednictvím podtříd `PPERequester`.
 
 ```c
-// Get the manager instance
+// Získat instanci manažera
 PPEManager GetPPEManager();
 ```
 
@@ -43,55 +43,55 @@ PPEManager GetPPEManager();
 
 ## PPERequesterBank
 
-**File:** `3_Game/PPE/pperequesterbank.c`
+**Soubor:** `3_Game/PPE/pperequesterbank.c`
 
-A static registry that holds instances of all PPE requesters. Access specific requesters by their constant index.
+Statický registr, který obsahuje instance všech PPE requesterů. Přistupujte ke konkrétním requesterům pomocí jejich konstantního indexu.
 
-### Getting a Requester
+### Získání requesteru
 
 ```c
-// Get a requester by its bank constant
+// Získat requester podle jeho bankovní konstanty
 PPERequester req = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 ```
 
-### Common Requester Constants
+### Běžné konstanty requesterů
 
-| Constant | Effect |
-|----------|--------|
-| `REQ_INVENTORYBLUR` | Gaussian blur when inventory is open |
-| `REQ_MENUEFFECTS` | Menu background blur |
-| `REQ_UNCONSCIOUS` | Unconsciousness visual (blur + desaturation) |
-| `REQ_DEATHEFFECTS` | Death screen (grayscale + vignette) |
-| `REQ_BLOODLOSS` | Blood loss desaturation |
-| `REQ_FEVEREFFECTS` | Fever chromatic aberration |
-| `REQ_FLASHBANGEFFECTS` | Flashbang whiteout |
-| `REQ_BURLAPSACK` | Burlap sack blindfold |
-| `REQ_PAINBLUR` | Pain blur effect |
-| `REQ_CONTROLLERDISCONNECT` | Controller disconnect overlay |
-| `REQ_CAMERANV` | Night vision |
-| `REQ_FILMGRAINEFFECTS` | Film grain overlay |
-| `REQ_RAINEFFECTS` | Rain screen effects |
-| `REQ_COLORSETTING` | Color correction settings |
+| Konstanta | Efekt |
+|-----------|-------|
+| `REQ_INVENTORYBLUR` | Gaussovské rozmazání při otevřeném inventáři |
+| `REQ_MENUEFFECTS` | Rozmazání pozadí menu |
+| `REQ_UNCONSCIOUS` | Vizuál bezvědomí (rozmazání + desaturace) |
+| `REQ_DEATHEFFECTS` | Obrazovka smrti (stupně šedi + viněta) |
+| `REQ_BLOODLOSS` | Desaturace při ztrátě krve |
+| `REQ_FEVEREFFECTS` | Chromatická aberace horečky |
+| `REQ_FLASHBANGEFFECTS` | Oslnění zábleskového granátu |
+| `REQ_BURLAPSACK` | Oslepení pytlem |
+| `REQ_PAINBLUR` | Efekt rozmazání bolestí |
+| `REQ_CONTROLLERDISCONNECT` | Překrytí při odpojení ovladače |
+| `REQ_CAMERANV` | Noční vidění |
+| `REQ_FILMGRAINEFFECTS` | Překrytí filmovým zrnem |
+| `REQ_RAINEFFECTS` | Efekty deště na obrazovce |
+| `REQ_COLORSETTING` | Nastavení barevné korekce |
 
 ---
 
-## PPERequester Base
+## Základ PPERequester
 
-All PPE requesters extend `PPERequester`:
+Všechny PPE requestery rozšiřují `PPERequester`:
 
 ```c
 class PPERequester : Managed
 {
-    // Start the effect
+    // Spustit efekt
     void Start(Param par = null);
 
-    // Stop the effect
+    // Zastavit efekt
     void Stop(Param par = null);
 
-    // Check if active
+    // Zkontrolovat zda je aktivní
     bool IsActiveRequester();
 
-    // Set values on material parameters
+    // Nastavit hodnoty parametrů materiálu
     void SetTargetValueFloat(int mat_id, int param_idx, bool relative,
                               float val, int priority_layer, int operator = PPOperators.SET);
     void SetTargetValueColor(int mat_id, int param_idx, bool relative,
@@ -109,61 +109,61 @@ class PPERequester : Managed
 ```c
 class PPOperators
 {
-    static const int SET          = 0;  // Directly set the value
-    static const int ADD          = 1;  // Add to current value
-    static const int ADD_RELATIVE = 2;  // Add relative to current
-    static const int HIGHEST      = 3;  // Use the highest of current and new
-    static const int LOWEST       = 4;  // Use the lowest of current and new
-    static const int MULTIPLY     = 5;  // Multiply current value
-    static const int OVERRIDE     = 6;  // Force override
+    static const int SET          = 0;  // Přímo nastavit hodnotu
+    static const int ADD          = 1;  // Přičíst k aktuální hodnotě
+    static const int ADD_RELATIVE = 2;  // Přičíst relativně k aktuální
+    static const int HIGHEST      = 3;  // Použít vyšší z aktuální a nové
+    static const int LOWEST       = 4;  // Použít nižší z aktuální a nové
+    static const int MULTIPLY     = 5;  // Vynásobit aktuální hodnotu
+    static const int OVERRIDE     = 6;  // Vynutit přepsání
 }
 ```
 
 ---
 
-## Common PPE Material IDs
+## Běžné ID PPE materiálů
 
-Effects target specific post-processing materials. Common material IDs:
+Efekty cílí na specifické post-processingové materiály. Běžná ID materiálů:
 
-| Constant | Material |
-|----------|----------|
-| `PostProcessEffectType.Glow` | Bloom / glow |
-| `PostProcessEffectType.FilmGrain` | Film grain |
-| `PostProcessEffectType.RadialBlur` | Radial blur |
-| `PostProcessEffectType.ChromAber` | Chromatic aberration |
-| `PostProcessEffectType.WetEffect` | Wet lens effect |
-| `PostProcessEffectType.ColorGrading` | Color grading / LUT |
-| `PostProcessEffectType.DepthOfField` | Depth of field |
-| `PostProcessEffectType.SSAO` | Screen-space ambient occlusion |
-| `PostProcessEffectType.GodRays` | Volumetric light |
-| `PostProcessEffectType.Rain` | Rain on screen |
-| `PostProcessEffectType.Vignette` | Vignette overlay |
-| `PostProcessEffectType.HBAO` | Horizon-based ambient occlusion |
+| Konstanta | Materiál |
+|-----------|----------|
+| `PostProcessEffectType.Glow` | Bloom / záře |
+| `PostProcessEffectType.FilmGrain` | Filmové zrno |
+| `PostProcessEffectType.RadialBlur` | Radiální rozmazání |
+| `PostProcessEffectType.ChromAber` | Chromatická aberace |
+| `PostProcessEffectType.WetEffect` | Efekt mokrého objektivu |
+| `PostProcessEffectType.ColorGrading` | Barevné korekce / LUT |
+| `PostProcessEffectType.DepthOfField` | Hloubka ostrosti |
+| `PostProcessEffectType.SSAO` | Ambientní okluze v prostoru obrazovky |
+| `PostProcessEffectType.GodRays` | Objemové světlo |
+| `PostProcessEffectType.Rain` | Déšť na obrazovce |
+| `PostProcessEffectType.Vignette` | Překrytí viněty |
+| `PostProcessEffectType.HBAO` | Ambientní okluze na základě horizontu |
 
 ---
 
-## Using Built-in Requesters
+## Použití vestavěných requesterů
 
-### Inventory Blur
+### Rozmazání inventáře
 
-The simplest example --- the blur that appears when the inventory opens:
+Nejjednodušší příklad --- rozmazání, které se objeví při otevření inventáře:
 
 ```c
-// Start blur
+// Spustit rozmazání
 PPERequester blurReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 blurReq.Start();
 
-// Stop blur
+// Zastavit rozmazání
 blurReq.Stop();
 ```
 
-### Flashbang Effect
+### Efekt zábleskového granátu
 
 ```c
 PPERequester flashReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_FLASHBANGEFFECTS);
 flashReq.Start();
 
-// Stop after a delay
+// Zastavit po zpoždění
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(StopFlashbang, 3000, false);
 
 void StopFlashbang()
@@ -175,11 +175,11 @@ void StopFlashbang()
 
 ---
 
-## Creating a Custom PPE Requester
+## Vytvoření vlastního PPE requesteru
 
-To create custom post-process effects, extend `PPERequester` and register it.
+Pro vytvoření vlastních post-processingových efektů rozšiřte `PPERequester` a zaregistrujte jej.
 
-### Step 1: Define the Requester
+### Krok 1: Definujte requester
 
 ```c
 class MyCustomPPERequester extends PPERequester
@@ -188,11 +188,11 @@ class MyCustomPPERequester extends PPERequester
     {
         super.OnStart(par);
 
-        // Apply a strong vignette
+        // Aplikovat silnou vinětu
         SetTargetValueFloat(PostProcessEffectType.Glow, PPEGlow.PARAM_VIGNETTE,
                             false, 0.8, PPEManager.L_0_STATIC, PPOperators.SET);
 
-        // Desaturate colors
+        // Desaturovat barvy
         SetTargetValueFloat(PostProcessEffectType.ColorGrading, PPEColorGrading.PARAM_SATURATION,
                             false, 0.3, PPEManager.L_0_STATIC, PPOperators.SET);
     }
@@ -201,7 +201,7 @@ class MyCustomPPERequester extends PPERequester
     {
         super.OnStop(par);
 
-        // Reset to defaults
+        // Resetovat na výchozí
         SetTargetValueFloat(PostProcessEffectType.Glow, PPEGlow.PARAM_VIGNETTE,
                             false, 0.0, PPEManager.L_0_STATIC, PPOperators.SET);
         SetTargetValueFloat(PostProcessEffectType.ColorGrading, PPEColorGrading.PARAM_SATURATION,
@@ -210,38 +210,38 @@ class MyCustomPPERequester extends PPERequester
 }
 ```
 
-### Step 2: Register and Use
+### Krok 2: Registrace a použití
 
-Registration is handled by adding the requester to the bank. In practice, most modders use the built-in requesters and modify their parameters rather than creating fully custom ones.
+Registrace se provádí přidáním requesteru do banky. V praxi většina modderů používá vestavěné requestery a upravuje jejich parametry místo vytváření plně vlastních.
 
 ---
 
-## Night Vision (NVG)
+## Noční vidění (NVG)
 
-Night vision is implemented as a PPE effect. The relevant requester is `REQ_CAMERANV`:
+Noční vidění je implementováno jako PPE efekt. Příslušný requester je `REQ_CAMERANV`:
 
 ```c
-// Enable NVG effect
+// Povolit efekt NVG
 PPERequester nvgReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV);
 nvgReq.Start();
 
-// Disable NVG effect
+// Zakázat efekt NVG
 nvgReq.Stop();
 ```
 
-The actual NVG in-game is triggered by the NVGoggles item through its `ComponentEnergyManager` and the `NVGoggles.ToggleNVG()` method, which internally drives the PPE system.
+Skutečné NVG ve hře je spouštěno předmětem NVGoggles prostřednictvím jeho `ComponentEnergyManager` a metody `NVGoggles.ToggleNVG()`, která interně ovládá systém PPE.
 
 ---
 
-## Color Grading
+## Barevné korekce
 
-Color grading modifies the overall color appearance of the scene:
+Barevné korekce mění celkový barevný vzhled scény:
 
 ```c
 PPERequester colorReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_COLORSETTING);
 colorReq.Start();
 
-// Adjust saturation (1.0 = normal, 0.0 = grayscale, >1.0 = oversaturated)
+// Upravit saturaci (1.0 = normální, 0.0 = stupně šedi, >1.0 = přesycené)
 colorReq.SetTargetValueFloat(PostProcessEffectType.ColorGrading,
                               PPEColorGrading.PARAM_SATURATION,
                               false, 0.5, PPEManager.L_0_STATIC,
@@ -250,22 +250,22 @@ colorReq.SetTargetValueFloat(PostProcessEffectType.ColorGrading,
 
 ---
 
-## Blur Effects
+## Efekty rozmazání
 
-### Gaussian Blur
+### Gaussovské rozmazání
 
 ```c
 PPERequester blurReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 blurReq.Start();
 
-// Adjust blur intensity (0.0 = none, higher = more blur)
+// Upravit intenzitu rozmazání (0.0 = žádné, vyšší = větší rozmazání)
 blurReq.SetTargetValueFloat(PostProcessEffectType.GaussFilter,
                              PPEGaussFilter.PARAM_INTENSITY,
                              false, 0.5, PPEManager.L_0_STATIC,
                              PPOperators.SET);
 ```
 
-### Radial Blur
+### Radiální rozmazání
 
 ```c
 PPERequester req = PPERequesterBank.GetRequester(PPERequesterBank.REQ_PAINBLUR);
@@ -279,39 +279,57 @@ req.SetTargetValueFloat(PostProcessEffectType.RadialBlur,
 
 ---
 
-## Priority Layers
+## Prioritní vrstvy
 
-When multiple requesters modify the same parameter, the priority layer determines which one wins:
+Když více requesterů modifikuje stejný parametr, prioritní vrstva určuje, který vyhraje:
 
 ```c
 class PPEManager
 {
-    static const int L_0_STATIC   = 0;   // Lowest priority (static effects)
-    static const int L_1_VALUES   = 1;   // Dynamic value changes
-    static const int L_2_SCRIPTS  = 2;   // Script-driven effects
-    static const int L_3_EFFECTS  = 3;   // Gameplay effects
-    static const int L_4_OVERLAY  = 4;   // Overlay effects
-    static const int L_LAST       = 100;  // Highest priority (override all)
+    static const int L_0_STATIC   = 0;   // Nejnižší priorita (statické efekty)
+    static const int L_1_VALUES   = 1;   // Dynamické změny hodnot
+    static const int L_2_SCRIPTS  = 2;   // Efekty řízené skriptem
+    static const int L_3_EFFECTS  = 3;   // Herní efekty
+    static const int L_4_OVERLAY  = 4;   // Překryvné efekty
+    static const int L_LAST       = 100;  // Nejvyšší priorita (přepsat vše)
 }
 ```
 
-Higher numbers take priority. Use `PPEManager.L_LAST` to force your effect to override all others.
+Vyšší čísla mají přednost. Použijte `PPEManager.L_LAST` pro vynucení přepsání všech ostatních efektů.
 
 ---
 
-## Summary
+## Shrnutí
 
 | Koncept | Klíčový bod |
-|---------|-----------|
-| Access | `PPERequesterBank.GetRequester(CONSTANT)` |
-| Start/Stop | `requester.Start()` / `requester.Stop()` |
-| Parameters | `SetTargetValueFloat(material, param, relative, value, layer, operator)` |
-| Operators | `PPOperators.SET`, `ADD`, `MULTIPLY`, `HIGHEST`, `LOWEST`, `OVERRIDE` |
-| Common effects | Blur, vignette, saturation, NVG, flashbang, grain, chromatic aberration |
-| NVG | `REQ_CAMERANV` requester |
-| Priority | Layers 0-100; higher number wins conflicts |
-| Custom | Extend `PPERequester`, override `OnStart()` / `OnStop()` |
+|---------|-------------|
+| Přístup | `PPERequesterBank.GetRequester(KONSTANTA)` |
+| Spuštění/Zastavení | `requester.Start()` / `requester.Stop()` |
+| Parametry | `SetTargetValueFloat(materiál, parametr, relativní, hodnota, vrstva, operátor)` |
+| Operátory | `PPOperators.SET`, `ADD`, `MULTIPLY`, `HIGHEST`, `LOWEST`, `OVERRIDE` |
+| Běžné efekty | Rozmazání, viněta, saturace, NVG, zábleskový granát, zrno, chromatická aberace |
+| NVG | Requester `REQ_CAMERANV` |
+| Priorita | Vrstvy 0-100; vyšší číslo vyhrává konflikty |
+| Vlastní | Rozšířit `PPERequester`, přepsat `OnStart()` / `OnStop()` |
 
 ---
 
-[<< Předchozí: Cameras](04-cameras.md) | **Post-Process Effects** | [Další: Notifications >>](06-notifications.md)
+## Osvědčené postupy
+
+- **Vždy volejte `Stop()` pro úklid vašeho requesteru.** Nezastavení PPE requesteru ponechá jeho vizuální efekt trvale aktivní, i po skončení spouštěcí podmínky.
+- **Používejte vhodné prioritní vrstvy.** Herní efekty by měly používat `L_3_EFFECTS` nebo vyšší. Použití `L_LAST` (100) přepíše vše včetně vanilla efektů bezvědomí a smrti, což může narušit zážitek hráče.
+- **Upřednostňujte vestavěné requestery před vlastními.** `PPERequesterBank` již obsahuje requestery pro rozmazání, desaturaci, vinětu a zrno. Znovu je použijte s upravenými parametry před vytvořením vlastní třídy requesteru.
+- **Testujte PPE efekty za různých světelných podmínek.** Viněta a desaturace vypadají drasticky odlišně v noci oproti dni. Ověřte, že váš efekt je čitelný v obou extrémech.
+- **Vyhněte se vrstvení více vysoce intenzivních efektů rozmazání.** Více aktivních requesterů rozmazání se kumuluje, což může učinit obrazovku nečitelnou. Kontrolujte `IsActiveRequester()` před spuštěním dalších efektů.
+
+---
+
+## Kompatibilita a dopad
+
+- **Multi-Mod:** Více modů může aktivovat PPE requestery současně. Engine je prolíná pomocí prioritních vrstev a operátorů. Konflikty nastávají, když dva mody používají stejnou prioritní úroveň s `PPOperators.SET` na stejném parametru -- poslední zápis vyhrává.
+- **Výkon:** PPE efekty jsou GPU-vázané post-processingové průchody. Povolení mnoha současných efektů (rozmazání + zrno + chromatická aberace + viněta) může snížit snímkovou frekvenci na slabších GPU. Udržujte aktivní efekty na minimu.
+- **Server/Klient:** PPE je zcela na straně klientského renderingu. Server nemá žádné znalosti o post-processingových efektech. Nikdy nepodmiňujte serverovou logiku stavem PPE.
+
+---
+
+[<< Předchozí: Kamery](04-cameras.md) | **Post-processingové efekty** | [Další: Notifikace >>](06-notifications.md)

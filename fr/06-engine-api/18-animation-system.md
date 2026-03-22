@@ -1,14 +1,14 @@
-# Chapter 6.18: Animation System
+# Chapitre 6.18: Animation System
 
-[Home](../../README.md) | [<< Previous: Construction System](17-construction-system.md) | **Animation System** | [Next: Terrain & World Queries >>](19-terrain-queries.md)
+[Accueil](../../README.md) | [<< Précédent : Construction System](17-construction-system.md) | **Animation System** | [Suivant : Terrain & World Queries >>](19-terrain-queries.md)
 
 ---
 
 ## Introduction
 
-DayZ utilise un systeme d'animation pilot par une machine a etats built into the Enfusion engine. Player animations are controlled by a hierarchy of `HumanCommand` classes -- movement, actions, climbing, swimming, vehicles, falling, death, and unconsciousness each have their own dedicated command. Object animations (doors, lids, deployables) are driven through `model.cfg` AnimationSources and controlled from script via `SetAnimationPhase()`.
+DayZ uses a state-machine-driven animation system built into the Enfusion engine. Player animations are controlled by a hierarchy of `HumanCommand` classes -- movement, actions, climbing, swimming, vehicles, falling, death, and unconsciousness each have their own dedicated command. Object animations (doors, lids, deployables) are driven through `model.cfg` AnimationSources and controlled from script via `SetAnimationPhase()`.
 
-This chapter covers the full animation API: the player movement state machine, the human command system, the gesture/emote pipeline, object animation sources, action callbacks with animation events, and the key constants from `DayZPlayerConstants` that modders interact with daily. All method signatures and constants are taken directly from the vanilla script source.
+Ce chapitre couvre the full animation API: le joueur movement state machine, the human command system, the gesture/emote pipeline, object animation sources, action callbacks with animation events, and the key constants from `DayZPlayerConstants` that modders interact with daily. All method signatures and constants are taken directly from le vanilla script source.
 
 ---
 
@@ -33,7 +33,7 @@ stateDiagram-v2
 
 ### HumanMovementState
 
-The engine exposes the player's current animation state through `HumanMovementState`. Retrieve it by calling `GetMovementState()` on any `Human` (or subclass):
+Le moteur exposes le joueur's current animation state through `HumanMovementState`. Retrieve it by calling `GetMovementState()` on any `Human` (or subclass):
 
 ```csharp
 // Source: scripts/3_game/human.c
@@ -71,9 +71,9 @@ if (state.m_iMovement >= 2)
 
 ### Stance Indices
 
-These constants identify the player's current body posture. Defined in `DayZPlayerConstants` (scripts/3_game/dayzplayer.c):
+These constants identify le joueur's current body posture. Defined in `DayZPlayerConstants` (scripts/3_game/dayzplayer.c):
 
-| Constante | Valeur | Description |
+| Constant | Value | Description |
 |----------|-------|-------------|
 | `STANCEIDX_ERECT` | 0 | Standing upright |
 | `STANCEIDX_CROUCH` | 1 | Crouching |
@@ -114,7 +114,7 @@ if (player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerCon
 
 ### Movement Indices
 
-| Constante | Valeur | Description |
+| Constant | Value | Description |
 |----------|-------|-------------|
 | `MOVEMENTIDX_SLIDE` | -2 | Sliding |
 | `MOVEMENTIDX_IDLE` | 0 | Stationary |
@@ -129,7 +129,7 @@ The `m_iMovement` field in `HumanMovementState` uses these values.
 
 ## Human Command System
 
-At any given moment, exactly one **main command** controls the player's animation state. The engine provides getter methods that return `null` when that command is not the active one. Only the currently active command returns a valid object.
+At any given moment, exactly one **main command** controls le joueur's animation state. Le moteur provides getter methods that return `null` when that command is not the active one. Only the currently active command returns a valid object.
 
 ### Command Hierarchy
 
@@ -281,7 +281,7 @@ DayZ's gesture system lets players perform social animations (wave, point, sit, 
 
 All emote IDs are defined in `EmoteConstants` (scripts/3_game/constants.c):
 
-| Constante | ID | Notes |
+| Constant | ID | Notes |
 |----------|----|-------|
 | `ID_EMOTE_GREETING` | 1 | Wave/greeting |
 | `ID_EMOTE_SOS` | 2 | Full-body SOS signal |
@@ -336,7 +336,7 @@ class EmoteBase
     protected int    m_FullbodyCallbackUID;   // CMD_GESTUREFB_* constant
     protected bool   m_HideItemInHands;       // hide held item during emote
 
-    bool EmoteCondition(int stancemask);      // override for custom preconditions
+    bool EmoteCondition(int stancemask);      // redéfinition for custom preconditions
     bool CanBeCanceledNormally(notnull EmoteCB callback);
     bool EmoteFBStanceCheck(int stancemask);  // validates full-body stance
     bool DetermineOverride(out int callback_ID, out int stancemask, out bool is_fullbody);
@@ -392,14 +392,14 @@ class EmoteDance extends EmoteBase
 
 Emotes have two playback modes, selected automatically by `EmoteManager.DetermineEmoteData()`:
 
-- **Additive (modifier):** Overlaid on top of locomotion. Player can still move. Uses `AddCommandModifier_Action()`. Triggered when the player is in a stance matching `m_StanceMaskAdditive`.
-- **Full-body:** Takes over the entire animation state. Player cannot move. Uses `StartCommand_Action()`. Triggered when the player is in a stance matching `m_StanceMaskFullbody`.
+- **Additive (modifier):** Overlaid on top of locomotion. Player can still move. Uses `AddCommandModifier_Action()`. Triggered when le joueur is in a stance matching `m_StanceMaskAdditive`.
+- **Full-body:** Takes over the entire animation state. Player cannot move. Uses `StartCommand_Action()`. Triggered when le joueur is in a stance matching `m_StanceMaskFullbody`.
 
 The `CMD_GESTUREMOD_*` constants map to additive versions; `CMD_GESTUREFB_*` constants map to full-body versions.
 
 ### EmoteManager
 
-`EmoteManager` (scripts/4_world/classes/emotemanager.c) orchestrates emote playback. It is created per-player and ticked each frame from the player's `CommandHandler`:
+`EmoteManager` (scripts/4_world/classes/emotemanager.c) orchestrates emote playback. It is created per-player and ticked each frame from le joueur's `CommandHandler`:
 
 Key responsibilities:
 - Registers all emotes via `EmoteConstructor.ConstructEmotes()`
@@ -411,7 +411,7 @@ Key responsibilities:
 
 ### EmoteLauncher
 
-`EmoteLauncher` is a request object used to queue emotes from script (e.g., from the gesture menu or forced server-side):
+`EmoteLauncher` is a request object used to queue emotes from script (e.g., from the gesture menu or forced côté serveur):
 
 ```csharp
 class EmoteLauncher
@@ -478,7 +478,7 @@ Objects like doors, barrels, tents, and deployables use a separate animation sys
 
 ### Animation API on Entity
 
-These methods are defined on `Entity` (scripts/3_game/entities/entity.c) and available on every entity in the game:
+These methods are defined on `Entity` (scripts/3_game/entities/entity.c) and available on every entity in le jeu:
 
 ```csharp
 class Entity extends ObjectTyped
@@ -548,7 +548,7 @@ class CfgModels
 | `door` | Driven by door opening system |
 | `reload` | Weapon reload cycle |
 
-For modding, `user` is the most common. You control it from Enforce Script.
+For modding, `user` est le plus courant. You control it from Enforce Script.
 
 ### Animation Types in model.cfg
 
@@ -622,7 +622,7 @@ class HumanCommandActionCallback
 
 Actions go through defined states accessible via `GetState()`:
 
-| Constante | Valeur | Description |
+| Constant | Value | Description |
 |----------|-------|-------------|
 | `STATE_NONE` | 0 | Not running |
 | `STATE_LOOP_IN` | 1 | Entering loop |
@@ -637,7 +637,7 @@ Actions go through defined states accessible via `GetState()`:
 
 Use `InternalCommand()` to control action flow:
 
-| Constante | Valeur | Description |
+| Constant | Value | Description |
 |----------|-------|-------------|
 | `CMD_ACTIONINT_INTERRUPT` | -2 | Hard cancel, no exit animation |
 | `CMD_ACTIONINT_FINISH` | -1 | Secondary ending (e.g., ran out of water) |
@@ -677,9 +677,9 @@ class EmoteCB extends HumanCommandActionCallback
 
 Custom animation event constants for emotes:
 
-| Constante | Valeur | Description |
+| Constant | Value | Description |
 |----------|-------|-------------|
-| `EMOTE_SUICIDE_DEATH` | 1 | Player dies (server-side) |
+| `EMOTE_SUICIDE_DEATH` | 1 | Player dies (côté serveur) |
 | `EMOTE_SUICIDE_BLEED` | 2 | Bleeding effect starts |
 | `EMOTE_SUICIDE_SIMULATION_END` | 3 | Simulation ends, physics takeover |
 | `UA_ANIM_EVENT` | 11 | Generic user action animation event |
@@ -809,7 +809,7 @@ Access via `player.GetCommandModifier_Additives()`. These are always active and 
 
 **Additive (CMD_ACTIONMOD_*)** -- played while standing/crouching:
 
-| Constante | ID | Description |
+| Constant | ID | Description |
 |----------|----|-------------|
 | `CMD_ACTIONMOD_DRINK` | 0 | Drinking |
 | `CMD_ACTIONMOD_EAT` | 1 | Eating |
@@ -822,7 +822,7 @@ Access via `player.GetCommandModifier_Additives()`. These are always active and 
 
 **Full-body (CMD_ACTIONFB_*)** -- played in prone or special stances:
 
-| Constante | ID | Description |
+| Constant | ID | Description |
 |----------|----|-------------|
 | `CMD_ACTIONFB_DRINK` | 0 | Drinking (prone) |
 | `CMD_ACTIONFB_BANDAGE` | 58 | Bandaging |
@@ -836,7 +836,7 @@ Access via `player.GetCommandModifier_Additives()`. These are always active and 
 
 **Additive gestures (CMD_GESTUREMOD_*)** -- used in erect/crouch:
 
-| Constante | ID |
+| Constant | ID |
 |----------|----|
 | `CMD_GESTUREMOD_GREETING` | 1000 |
 | `CMD_GESTUREMOD_POINT` | 1001 |
@@ -849,7 +849,7 @@ Access via `player.GetCommandModifier_Additives()`. These are always active and 
 
 **Full-body gestures (CMD_GESTUREFB_*)** -- used in prone or exclusive stances:
 
-| Constante | ID | Stance |
+| Constant | ID | Stance |
 |----------|----|--------|
 | `CMD_GESTUREFB_SOS` | 1053 | erect |
 | `CMD_GESTUREFB_SALUTE` | 1050 | erect |
@@ -862,12 +862,12 @@ Access via `player.GetCommandModifier_Additives()`. These are always active and 
 
 ---
 
-## Exemples Pratiques
+## Practical Examples
 
 ### Checking Player Stance
 
 ```csharp
-// Method 1: Via movement state
+// Méthode 1 : Via movement state
 HumanMovementState hms = new HumanMovementState();
 player.GetMovementState(hms);
 
@@ -877,11 +877,11 @@ if (hms.m_iStanceIdx == DayZPlayerConstants.STANCEIDX_CROUCH)
 if (hms.IsRaised())
     Print("Weapon is raised");
 
-// Method 2: Via stance mask (preferred for multi-stance checks)
+// Méthode 2 : Via stance mask (preferred for multi-stance checks)
 if (player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_PRONE | DayZPlayerConstants.STANCEMASK_RAISEDPRONE))
     Print("Player is in some prone stance");
 
-// Method 3: Check current command
+// Méthode 3 : Check current command
 int cmdID = player.GetCurrentCommandID();
 if (cmdID == DayZPlayerConstants.COMMANDID_SWIM)
     Print("Player is swimming");
@@ -896,7 +896,7 @@ if (cmdMove)
     // Force player to stand up
     cmdMove.ForceStance(DayZPlayerConstants.STANCEIDX_ERECT);
 
-    // Release the force (let player control stance again)
+    // Libérer the force (let player control stance again)
     // cmdMove.ForceStance(-1);
 }
 ```
@@ -989,15 +989,15 @@ else if (player.GetCommand_Action())
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
-1. **Always null-check command getters.** `GetCommand_Move()` returns `null` when the player is not in the move command. Every command getter can return null.
+1. **Always null-check command getters.** `GetCommand_Move()` returns `null` when le joueur is not in the move command. Every command getter can return null.
 
 2. **Use stance masks, not stance indices, for multi-stance checks.** `IsPlayerInStance()` with bitmask flags is cleaner than comparing `m_iStanceIdx` against multiple values.
 
 3. **Prefer `SetAnimationPhase()` over `SetAnimationPhaseNow()`.** The interpolated version looks smoother. Use `SetAnimationPhaseNow()` only when you need instant state changes (loading from persistence, initialization).
 
-4. **Keep animation phase values between 0.0 and 1.0.** The engine interpolates between `minValue` and `maxValue` defined in `model.cfg`. The phase is always normalized.
+4. **Keep animation phase values between 0.0 and 1.0.** Le moteur interpolates between `minValue` and `maxValue` defined in `model.cfg`. The phase is always normalized.
 
 5. **Do not call `StartCommand_*()` from arbitrary code.** Commands should be started from `CommandHandler` or in response to validated conditions. Starting commands at wrong times can cause animation state corruption.
 
@@ -1005,7 +1005,7 @@ else if (player.GetCommand_Action())
 
 ---
 
-## Observe dans les Mods Reels
+## Observé dans les mods réels
 
 - **Expansion mod** uses `HumanCommandScript` for custom vehicle entry/exit animations and party member position syncing.
 - **COT (Community Online Tools)** uses `StartCommand_Action()` directly in its camera/cinematic tools to force gesture animations on players for screenshots.
@@ -1014,7 +1014,7 @@ else if (player.GetCommand_Action())
 
 ---
 
-## Theorie vs Pratique
+## Théorie vs Pratique
 
 **Theory:** `HumanCommandScript` lets you create entirely custom animation commands with full physics control.
 **Practice:** Most modders never need it. The action system (`StartCommand_Action` / `AddCommandModifier_Action`) with pre-existing animation IDs covers 95% of use cases. `HumanCommandScript` is reserved for edge cases like custom vehicle types or entirely new movement modes.
@@ -1023,15 +1023,15 @@ else if (player.GetCommand_Action())
 **Practice:** Custom animation events require custom animation files (`.rtm` / animation graph changes), which need Workbench and the DayZ animation toolchain. Most modders reuse existing animation IDs and rely on state change callbacks (`OnStateChange`, `OnFinish`) rather than custom events.
 
 **Theory:** Any emote can play in any stance.
-**Practice:** The stance mask system is strict. If your emote class declares `m_StanceMaskFullbody = STANCEMASK_ERECT` but the player is crouching, the emote will not play. The `DetermineEmoteData()` method checks additive first, then full-body, and fails silently if neither matches.
+**Practice:** The stance mask system is strict. If your emote class declares `m_StanceMaskFullbody = STANCEMASK_ERECT` but le joueur is crouching, the emote will not play. The `DetermineEmoteData()` method checks additive first, then full-body, and fails silently if neither matches.
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
-1. **Checking the wrong command.** Calling `GetCommand_Move()` while the player is in a vehicle returns `null`. Always check `GetCurrentCommandID()` first or null-check the result.
+1. **Checking the wrong command.** Calling `GetCommand_Move()` while le joueur is in a vehicle returns `null`. Always check `GetCurrentCommandID()` first or null-check the result.
 
-2. **Forgetting that action commands replace movement.** `StartCommand_Action()` is full-body -- the player stops moving. If you want an overlay animation, use `AddCommandModifier_Action()` instead.
+2. **Forgetting that action commands replace movement.** `StartCommand_Action()` is full-body -- le joueur stops moving. If you want an overlay animation, use `AddCommandModifier_Action()` instead.
 
 3. **Using `SetAnimationPhase()` with wrong source names.** The string must match the `AnimationSources` class name in `model.cfg` exactly. There is no error if the name is wrong -- nothing happens.
 
@@ -1039,23 +1039,23 @@ else if (player.GetCommand_Action())
 
 5. **Not checking `EmoteCondition()`.** Trying to play an emote that requires empty hands while holding an item will fail. The emote system checks conditions before playback but does not log a warning.
 
-6. **Calling `StartCommand_*()` on the wrong machine.** Most commands should only be started on the machine that owns the player (server for AI, client for controlled player). Starting commands on the wrong side causes desync.
+6. **Calling `StartCommand_*()` on the wrong machine.** Most commands should only be started on the machine that owns le joueur (server for AI, client for controlled player). Starting commands on the wrong side causes desync.
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
 - The animation command system is **engine-level** and has remained stable across DayZ versions. `HumanCommandMove`, `HumanCommandActionCallback`, and `DayZPlayerConstants` have not changed their API in years.
 - `EmoteManager` and `EmoteBase` are **moddable via `modded class`**. You can add new emotes by extending `EmoteBase` and modding `EmoteConstructor`.
 - Object animations via `SetAnimationPhase()` are the **standard pattern** used by all vanilla items and most mods. The API is stable and well-tested.
 - `HumanCommandScript` is a **power-user API**. It works but is sparsely documented by Bohemia. The best learning resource is reading vanilla implementations in `dayzplayerimplement.c`.
-- Adding new animation IDs (CMD_ACTIONFB/MOD values) requires corresponding animation graph entries in the game's animation system, which is only possible with Workbench access and p3d model editing tools.
+- Adding new animation IDs (CMD_ACTIONFB/MOD values) requires corresponding animation graph entries in le jeu's animation system, which is only possible with Workbench access and p3d model editing tools.
 
 ---
 
 **Source files referenced in this chapter:**
 
-| Fichier | Content |
+| File | Content |
 |------|---------|
 | `scripts/3_game/human.c` | HumanInputController, HumanCommandActionCallback, HumanCommandMove, HumanCommandFall, HumanCommandClimb, HumanCommandSwim, HumanCommandVehicle, HumanCommandScript, HumanMovementState, HumanAnimInterface, Human class |
 | `scripts/3_game/dayzplayer.c` | DayZPlayerConstants (stances, commands, action/gesture IDs) |

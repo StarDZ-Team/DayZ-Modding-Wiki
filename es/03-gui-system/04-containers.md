@@ -1,6 +1,35 @@
-# Chapter 3.4: Container Widgets
+# Capítulo 3.4: Container Widgets
 
-[Home](../../README.md) | [<< Previous: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Next: Programmatic Widgets >>](05-programmatic-widgets.md)
+[Inicio](../../README.md) | [<< Anterior: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Siguiente: Programmatic Widgets >>](05-programmatic-widgets.md)
+
+---
+
+Container widgets organize child widgets within them. While `FrameWidget` is the simplest (invisible box, manual positioning), DayZ provides three specialized containers that handle layout automatically: `WrapSpacerWidget`, `GridSpacerWidget`, and `ScrollWidget`.
+
+### Container Comparison
+
+```mermaid
+graph LR
+    subgraph "FrameWidget (Absolute)"
+        FA["Child A<br/>pos: 10,10"]
+        FB["Child B<br/>pos: 200,10"]
+        FC["Child C<br/>pos: 10,100"]
+    end
+
+    subgraph "WrapSpacer (Flow)"
+        WA["Item 1"] --> WB["Item 2"] --> WC["Item 3"]
+        WC --> WD["Item 4<br/>(wraps to next row)"]
+    end
+
+    subgraph "GridSpacer (Grid)"
+        GA["Cell 0,0"] --- GB["Cell 1,0"] --- GC["Cell 2,0"]
+        GD["Cell 0,1"] --- GE["Cell 1,1"] --- GF["Cell 2,1"]
+    end
+
+    style FA fill:#4A90D9,color:#fff
+    style WA fill:#2D8A4E,color:#fff
+    style GA fill:#D97A4A,color:#fff
+```
 
 ---
 
@@ -58,7 +87,7 @@ FrameWidgetClass MyPanel {
 
 ### Layout Attributes
 
-| Atributo | Valores | Descripcion |
+| Atributo | Values | Descripción |
 |---|---|---|
 | `Padding` | integer (pixels) | Space between the spacer's edge and its children |
 | `Margin` | integer (pixels) | Space between individual children |
@@ -155,7 +184,7 @@ spacer.Update();
 
 ### Layout Attributes
 
-| Atributo | Valores | Descripcion |
+| Atributo | Values | Descripción |
 |---|---|---|
 | `Columns` | integer | Number of grid columns |
 | `Rows` | integer | Number of grid rows |
@@ -223,11 +252,11 @@ GridSpacerWidgetClass SettingsList {
 
 ### GridSpacer vs. WrapSpacer
 
-| Caracteristica | GridSpacer | WrapSpacer |
+| Característica | GridSpacer | WrapSpacer |
 |---|---|---|
 | Cell size | Uniform (equal) | Each child keeps its own size |
 | Layout mode | Fixed grid (columns x rows) | Flow with wrapping |
-| Mejor para | Inventory slots, uniform galleries | Dynamic lists, tag clouds |
+| Best for | Inventory slots, uniform galleries | Dynamic lists, tag clouds |
 | Children sizing | Ignored (grid controls it) | Respected (child size matters) |
 
 ---
@@ -238,7 +267,7 @@ GridSpacerWidgetClass SettingsList {
 
 ### Layout Attributes
 
-| Atributo | Valores | Descripcion |
+| Atributo | Values | Descripción |
 |---|---|---|
 | `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
 | `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
@@ -288,6 +317,27 @@ ScrollWidgetClass ListScroll {
 ---
 
 ## The ScrollWidget + WrapSpacer Pattern
+
+### ScrollWidget + WrapSpacer Pattern
+
+```mermaid
+graph TB
+    SCROLL["ScrollWidget<br/>fixed viewport size<br/>Scrollbar V = 1"]
+    WRAP["WrapSpacerWidget<br/>size: 1 0<br/>Size To Content V = 1"]
+    I1["Item 1"]
+    I2["Item 2"]
+    I3["Item 3"]
+    I4["Item N..."]
+
+    SCROLL --> WRAP
+    WRAP --> I1
+    WRAP --> I2
+    WRAP --> I3
+    WRAP --> I4
+
+    style SCROLL fill:#4A90D9,color:#fff
+    style WRAP fill:#2D8A4E,color:#fff
+```
 
 This is **the** pattern for scrollable dynamic lists in DayZ mods. It combines a fixed-height `ScrollWidget` with a `WrapSpacerWidget` that grows to fit its children.
 
@@ -358,7 +408,7 @@ void ClearAll()
 
 ---
 
-## Reglas de Anidamiento
+## Nesting Rules
 
 Containers can be nested to create complex layouts. Some guidelines:
 
@@ -374,9 +424,9 @@ Containers can be nested to create complex layouts. Some guidelines:
 
 ---
 
-## Cuando Usar Each Container
+## When to Use Each Container
 
-| Scenario | Mejor Contenedor |
+| Scenario | Best Container |
 |---|---|
 | Static panel with manually positioned elements | `FrameWidget` |
 | Dynamic list of varying-size items | `WrapSpacerWidget` |
@@ -388,7 +438,7 @@ Containers can be nested to create complex layouts. Some guidelines:
 
 ---
 
-## Ejemplo Completo: Scrollable Settings Panel
+## Complete Example: Scrollable Settings Panel
 
 A settings panel with a title bar, scrollable content area containing grid-arranged options, and a bottom button bar:
 
@@ -447,7 +497,50 @@ FrameWidgetClass SettingsPanel {
 
 ---
 
-## Siguientes Pasos
+## Mejores Prácticas
+
+- Always call `Update()` on a `WrapSpacerWidget` or `GridSpacerWidget` after adding or removing children programmatically. Without this call, the spacer does not recalculate its layout and children may overlap or be invisible.
+- Use `ScrollWidget` + `WrapSpacerWidget` as the standard pattern for any dynamic list. Set the scroll to a fixed pixel height and the inner spacer to `"Size To Content V" 1`.
+- Prefer `WrapSpacerWidget` with full-width children over `GridSpacerWidget Columns 1` for vertical lists where items have varying heights. GridSpacer forces uniform cell sizes.
+- Always set `clipchildren 1` on the `ScrollWidget`. Without it, overflowing content renders outside the scroll viewport bounds.
+- Avoid nesting more than 4-5 container levels deep. Each level adds layout computation cost and makes debugging significantly harder.
+
+---
+
+## Teoría vs Práctica
+
+> What the documentation says versus how things actually work at runtime.
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `WrapSpacerWidget.Update()` | Layout auto-recalculates when children change | You must call `Update()` manually after `CreateWidgets()` or `Unlink()`. Forgetting this is the most common spacer bug |
+| `"Size To Content V"` | Spacer grows to fit children | Only works if children have explicit sizes (pixel height or known proportional parent). If children are also `Size To Content`, you get zero height |
+| `GridSpacerWidget` cell sizing | Grid controls cell size uniformly | Children's own size attributes are ignored -- the grid overrides them. Setting `size` on a grid child has no effect |
+| `ScrollWidget` scroll position | `VScrollToPos(0)` scrolls to top | After adding children, you may need to defer `VScrollToPos()` by one frame (via `CallLater`) because the content height has not yet been recalculated |
+| Nested spacers | Spacers can nest freely | A `WrapSpacer` inside a `WrapSpacer` works, but `Size To Content` on both levels can cause infinite layout loops that freeze the UI |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Container widgets are per-layout and do not conflict between mods. However, if two mods inject children into the same vanilla `ScrollWidget` (via `modded class`), child ordering is unpredictable.
+- **Performance:** `WrapSpacerWidget.Update()` recalculates all children's positions. For lists with 100+ items, call `Update()` once after batch operations, not after each individual add. GridSpacer is faster for uniform grids because cell positions are computed arithmetically.
+- **Version:** `WrapSpacerWidget` and `GridSpacerWidget` have been available since DayZ 1.0. The `"Size To Content H/V"` attributes were present from the start but their behavior with deeply nested layouts was stabilized around DayZ 1.10.
+
+---
+
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| `ScrollWidget` + `WrapSpacerWidget` for dynamic lists | DabsFramework, Expansion, COT | Fixed-height scroll viewport with auto-growing inner spacer -- the universal scrollable list pattern |
+| `GridSpacerWidget Columns 10` for inventory | Vanilla DayZ | Inventory grid uses GridSpacer with fixed column count matching slot layout |
+| Pooled children in WrapSpacer | VPP Admin Tools | Pre-creates a pool of list-item widgets, shows/hides them instead of creating/destroying to avoid `Update()` overhead |
+| `WrapSpacerWidget` as dialog root | COT, DayZ Editor | Dialog root uses `Size To Content V/H` so the dialog auto-sizes around its content without hardcoded dimensions |
+
+---
+
+## Next Steps
 
 - [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code
 - [3.6 Event Handling](06-event-handling.md) -- Respond to clicks, changes, and other events

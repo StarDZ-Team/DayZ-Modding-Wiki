@@ -1,41 +1,45 @@
-# Chapter 3.3: Sizing & Positioning
+# Capitolo 3.3: Dimensionamento e Posizionamento
 
-[Home](../../README.md) | [<< Previous: Layout File Format](02-layout-files.md) | **Sizing & Positioning** | [Next: Container Widgets >>](04-containers.md)
+[Home](../../README.md) | [<< Precedente: Formato File Layout](02-layout-files.md) | **Dimensionamento e Posizionamento** | [Successivo: Widget Contenitore >>](04-containers.md)
 
 ---
 
-## Il Concetto Fondamentale: Proporzionale vs. Pixel
+Il sistema di layout di DayZ usa una **modalità a doppia coordinata** -- ogni dimensione può essere proporzionale (relativa al genitore) o in pixel (pixel assoluti dello schermo). Incomprendere questo sistema è la causa numero uno dei bug di layout. Questo capitolo lo spiega in modo approfondito.
 
-Every widget has a position (`x, y`) and a size (`width, height`). Each of these four values can independently be either:
+---
 
-- **Proportional** (0.0 to 1.0) -- relative to the parent widget's dimensions
-- **Pixel** (any positive number) -- absolute screen pixels
+## Il Concetto Base: Proporzionale vs. Pixel
 
-The mode for each axis is controlled by four flags:
+Ogni widget ha una posizione (`x, y`) e una dimensione (`larghezza, altezza`). Ognuno di questi quattro valori può essere indipendentemente:
 
-| Flag | Controls | `0` = Proportional | `1` = Pixel |
+- **Proporzionale** (da 0.0 a 1.0) -- relativo alle dimensioni del widget genitore
+- **Pixel** (qualsiasi numero positivo) -- pixel assoluti dello schermo
+
+La modalità per ogni asse è controllata da quattro flag:
+
+| Flag | Controlla | `0` = Proporzionale | `1` = Pixel |
 |---|---|---|---|
-| `hexactpos` | X position | Fraction of parent width | Pixels from left |
-| `vexactpos` | Y position | Fraction of parent height | Pixels from top |
-| `hexactsize` | Width | Fraction of parent width | Pixel width |
-| `vexactsize` | Height | Fraction of parent height | Pixel height |
+| `hexactpos` | Posizione X | Frazione della larghezza del genitore | Pixel da sinistra |
+| `vexactpos` | Posizione Y | Frazione dell'altezza del genitore | Pixel dall'alto |
+| `hexactsize` | Larghezza | Frazione della larghezza del genitore | Larghezza in pixel |
+| `vexactsize` | Altezza | Frazione dell'altezza del genitore | Altezza in pixel |
 
-Questo significa you can mix modes freely. Per esempio, a widget can have proportional width but pixel height -- a very common pattern for rows and bars.
+Questo significa che puoi mescolare le modalità liberamente. Per esempio, un widget può avere larghezza proporzionale ma altezza in pixel -- un pattern molto comune per righe e barre.
 
 ---
 
-## Understanding Proportional Mode
+## Comprendere la Modalità Proporzionale
 
-When a flag is `0` (proportional), the value represents a **fraction of the parent's dimension**:
+Quando un flag è `0` (proporzionale), il valore rappresenta una **frazione della dimensione del genitore**:
 
-- `size 1 1` with `hexactsize 0` and `vexactsize 0` means "100% of parent width, 100% of parent height" -- the child fills the parent.
-- `size 0.5 0.3` means "50% of parent width, 30% of parent height."
-- `position 0.5 0` with `hexactpos 0` means "start at 50% of parent width from the left."
+- `size 1 1` con `hexactsize 0` e `vexactsize 0` significa "100% della larghezza del genitore, 100% dell'altezza del genitore" -- il figlio riempie il genitore.
+- `size 0.5 0.3` significa "50% della larghezza del genitore, 30% dell'altezza del genitore."
+- `position 0.5 0` con `hexactpos 0` significa "inizia al 50% della larghezza del genitore da sinistra."
 
-Proportional mode is resolution-independent. The widget scales automatically when the parent changes size or when the game runs at a different resolution.
+La modalità proporzionale è indipendente dalla risoluzione. Il widget si scala automaticamente quando il genitore cambia dimensione o quando il gioco gira a una risoluzione diversa.
 
 ```
-// A widget that fills the left half of its parent
+// Un widget che riempie la metà sinistra del suo genitore
 FrameWidgetClass LeftHalf {
  position 0 0
  size 0.5 1
@@ -48,17 +52,17 @@ FrameWidgetClass LeftHalf {
 
 ---
 
-## Understanding Pixel Mode
+## Comprendere la Modalità Pixel
 
-When a flag is `1` (pixel/exact), the value is in **screen pixels**:
+Quando un flag è `1` (pixel/esatto), il valore è in **pixel dello schermo**:
 
-- `size 200 40` with `hexactsize 1` and `vexactsize 1` means "200 pixels wide, 40 pixels tall."
-- `position 10 10` with `hexactpos 1` and `vexactpos 1` means "10 pixels from parent's left edge, 10 pixels from parent's top edge."
+- `size 200 40` con `hexactsize 1` e `vexactsize 1` significa "200 pixel di larghezza, 40 pixel di altezza."
+- `position 10 10` con `hexactpos 1` e `vexactpos 1` significa "10 pixel dal bordo sinistro del genitore, 10 pixel dal bordo superiore del genitore."
 
-Pixel mode gives you exact control but does NOT automatically scale with resolution.
+La modalità pixel ti dà un controllo esatto ma NON si scala automaticamente con la risoluzione.
 
 ```
-// A fixed-size button: 120x30 pixels
+// Un pulsante a dimensione fissa: 120x30 pixel
 ButtonWidgetClass MyButton {
  position 10 10
  size 120 30
@@ -72,59 +76,80 @@ ButtonWidgetClass MyButton {
 
 ---
 
-## Combinare le Modalita': Il Pattern Piu' Comune
+## Mescolare le Modalità: Il Pattern Più Comune
 
-The real power comes from mixing proportional and pixel modes. The most common pattern in professional DayZ mods is:
+La vera potenza viene dal mescolare modalità proporzionali e pixel. Il pattern più comune nelle mod DayZ professionali è:
 
-**Proportional width, pixel height** -- for bars, rows, and headers.
+**Larghezza proporzionale, altezza in pixel** -- per barre, righe e intestazioni.
 
 ```
-// Full-width row, exactly 30 pixels tall
+// Riga a larghezza piena, esattamente 30 pixel di altezza
 FrameWidgetClass Row {
  position 0 0
  size 1 30
  hexactpos 0
  vexactpos 0
- hexactsize 0        // Width: proportional (100% of parent)
- vexactsize 1        // Height: pixel (30px)
+ hexactsize 0        // Larghezza: proporzionale (100% del genitore)
+ vexactsize 1        // Altezza: pixel (30px)
 }
 ```
 
-**Proportional width and height, pixel position** -- for centered panels offset by a fixed amount.
+**Larghezza e altezza proporzionali, posizione in pixel** -- per pannelli centrati con offset fisso.
 
 ```
-// 60% x 70% panel, offset 0px from center
+// Pannello 60% x 70%, offset 0px dal centro
 FrameWidgetClass Dialog {
  position 0 0
  size 0.6 0.7
  halign center_ref
  valign center_ref
- hexactpos 1         // Position: pixel (0px offset from center)
+ hexactpos 1         // Posizione: pixel (offset 0px dal centro)
  vexactpos 1
- hexactsize 0        // Size: proportional (60% x 70%)
+ hexactsize 0        // Dimensione: proporzionale (60% x 70%)
  vexactsize 0
 }
 ```
 
 ---
 
-## Alignment References: halign and valign
+## Riferimenti di Allineamento: halign e valign
 
-The `halign` and `valign` attributes change the **reference point** for positioning:
+Gli attributi `halign` e `valign` cambiano il **punto di riferimento** per il posizionamento:
 
-| Value | Effect |
+| Valore | Effetto |
 |---|---|
-| `left_ref` (default) | Position is measured from parent's left edge |
-| `center_ref` | Position is measured from parent's center |
-| `right_ref` | Position is measured from parent's right edge |
-| `top_ref` (default) | Position is measured from parent's top edge |
-| `center_ref` | Position is measured from parent's center |
-| `bottom_ref` | Position is measured from parent's bottom edge |
+| `left_ref` (predefinito) | La posizione è misurata dal bordo sinistro del genitore |
+| `center_ref` | La posizione è misurata dal centro del genitore |
+| `right_ref` | La posizione è misurata dal bordo destro del genitore |
+| `top_ref` (predefinito) | La posizione è misurata dal bordo superiore del genitore |
+| `center_ref` | La posizione è misurata dal centro del genitore |
+| `bottom_ref` | La posizione è misurata dal bordo inferiore del genitore |
 
-When combined with pixel position (`hexactpos 1`), alignment references make centering trivial:
+### Punti di Riferimento dell'Allineamento
+
+```mermaid
+graph TD
+    subgraph "Widget Genitore"
+        TL["halign left_ref<br/>valign top_ref<br/>↘ posizione da qui"]
+        TC["halign center_ref<br/>valign top_ref"]
+        TR["halign right_ref<br/>valign top_ref<br/>↙ posizione da qui"]
+        ML["halign left_ref<br/>valign center_ref"]
+        MC["halign center_ref<br/>valign center_ref<br/>↔ posizione dal centro"]
+        MR["halign right_ref<br/>valign center_ref"]
+        BL["halign left_ref<br/>valign bottom_ref<br/>↗ posizione da qui"]
+        BC["halign center_ref<br/>valign bottom_ref"]
+        BR["halign right_ref<br/>valign bottom_ref<br/>↖ posizione da qui"]
+    end
+
+    style MC fill:#4A90D9,color:#fff
+    style TL fill:#2D8A4E,color:#fff
+    style BR fill:#D94A4A,color:#fff
+```
+
+Quando combinato con la posizione in pixel (`hexactpos 1`), i riferimenti di allineamento rendono il centraggio banale:
 
 ```
-// Centered on screen with no offset
+// Centrato sullo schermo senza offset
 FrameWidgetClass CenteredDialog {
  position 0 0
  size 0.4 0.5
@@ -137,12 +162,12 @@ FrameWidgetClass CenteredDialog {
 }
 ```
 
-With `center_ref`, a position of `0 0` means "centered in parent." A position of `10 0` means "10 pixels right of center."
+Con `center_ref`, una posizione di `0 0` significa "centrato nel genitore." Una posizione di `10 0` significa "10 pixel a destra del centro."
 
-### Right-Aligned Elements
+### Elementi Allineati a Destra
 
 ```
-// Icon pinned to the right edge, 5px from the edge
+// Icona fissata al bordo destro, 5px dal bordo
 ImageWidgetClass StatusIcon {
  position 5 5
  size 24 24
@@ -155,10 +180,10 @@ ImageWidgetClass StatusIcon {
 }
 ```
 
-### Bottom-Aligned Elements
+### Elementi Allineati in Basso
 
 ```
-// Status bar at the bottom of its parent
+// Barra di stato in basso al genitore
 FrameWidgetClass StatusBar {
  position 0 0
  size 1 30
@@ -173,17 +198,17 @@ FrameWidgetClass StatusBar {
 
 ---
 
-## CRITICAL: No Negative Size Values
+## CRITICO: Nessun Valore di Dimensione Negativo
 
-**Mai use negative values for widget size in layout files.** Negative sizes cause undefined comportamento -- widgets may become invisible, render incorrectly, or crash the UI system. Se need a widget to be hidden, use `visible 0` invece.
+**Non usare mai valori negativi per la dimensione dei widget nei file di layout.** Le dimensioni negative causano comportamento indefinito -- i widget possono diventare invisibili, renderizzare in modo errato o crashare il sistema UI. Se hai bisogno che un widget sia nascosto, usa `visible 0` invece.
 
-Questo e' one of the most common layout mistakes. If your widget is not showing up, check that you have not accidentally set a negative size value.
+Questo è uno degli errori di layout più comuni. Se il tuo widget non appare, controlla di non aver accidentalmente impostato un valore di dimensione negativo.
 
 ---
 
 ## Pattern di Dimensionamento Comuni
 
-### Full Screen Overlay
+### Overlay a Schermo Intero
 
 ```
 FrameWidgetClass Overlay {
@@ -196,7 +221,7 @@ FrameWidgetClass Overlay {
 }
 ```
 
-### Centered Dialog (60% x 70%)
+### Dialogo Centrato (60% x 70%)
 
 ```
 FrameWidgetClass Dialog {
@@ -211,7 +236,7 @@ FrameWidgetClass Dialog {
 }
 ```
 
-### Right-Aligned Side Panel (25% Width)
+### Pannello Laterale Allineato a Destra (25% Larghezza)
 
 ```
 FrameWidgetClass SidePanel {
@@ -225,7 +250,7 @@ FrameWidgetClass SidePanel {
 }
 ```
 
-### Top Bar (Full Width, Fixed Height)
+### Barra Superiore (Larghezza Piena, Altezza Fissa)
 
 ```
 FrameWidgetClass TopBar {
@@ -238,7 +263,7 @@ FrameWidgetClass TopBar {
 }
 ```
 
-### Bottom-Right Corner Badge
+### Distintivo Angolo Inferiore-Destro
 
 ```
 FrameWidgetClass Badge {
@@ -253,7 +278,7 @@ FrameWidgetClass Badge {
 }
 ```
 
-### Fixed-Size Centered Icon
+### Icona Centrata a Dimensione Fissa
 
 ```
 ImageWidgetClass Icon {
@@ -270,26 +295,26 @@ ImageWidgetClass Icon {
 
 ---
 
-## Programmatic Position & Size
+## Posizione e Dimensione Programmatica
 
-In code, you can read and set position and size using both proportional and pixel (screen) coordinates:
+Nel codice, puoi leggere e impostare posizione e dimensione usando sia coordinate proporzionali che pixel (schermo):
 
 ```c
-// Proportional coordinates (0-1 range)
+// Coordinate proporzionali (intervallo 0-1)
 float x, y, w, h;
-widget.GetPos(x, y);           // Read proportional position
-widget.SetPos(0.5, 0.1);      // Set proportional position
-widget.GetSize(w, h);          // Read proportional size
-widget.SetSize(0.3, 0.2);     // Set proportional size
+widget.GetPos(x, y);           // Leggi posizione proporzionale
+widget.SetPos(0.5, 0.1);      // Imposta posizione proporzionale
+widget.GetSize(w, h);          // Leggi dimensione proporzionale
+widget.SetSize(0.3, 0.2);     // Imposta dimensione proporzionale
 
-// Pixel/screen coordinates
-widget.GetScreenPos(x, y);     // Read pixel position
-widget.SetScreenPos(100, 50);  // Set pixel position
-widget.GetScreenSize(w, h);    // Read pixel size
-widget.SetScreenSize(400, 300);// Set pixel size
+// Coordinate pixel/schermo
+widget.GetScreenPos(x, y);     // Leggi posizione in pixel
+widget.SetScreenPos(100, 50);  // Imposta posizione in pixel
+widget.GetScreenSize(w, h);    // Leggi dimensione in pixel
+widget.SetScreenSize(400, 300);// Imposta dimensione in pixel
 ```
 
-To center a widget on screen programmatically:
+Per centrare un widget sullo schermo programmaticamente:
 
 ```c
 int screen_w, screen_h;
@@ -302,39 +327,99 @@ widget.SetScreenPos((screen_w - w) / 2, (screen_h - h) / 2);
 
 ---
 
-## The `scaled` Attribute
+## L'Attributo `scaled`
 
-When `scaled 1` is set, the widget respects DayZ's UI scaling setting (Options > Video > HUD Size). Questo e' important for HUD elements that should scale with the user's preference.
+Quando `scaled 1` è impostato, il widget rispetta l'impostazione di scala UI di DayZ (Opzioni > Video > Dimensione HUD). Questo è importante per gli elementi HUD che dovrebbero scalarsi con la preferenza dell'utente.
 
-Without `scaled`, pixel-sized widgets will be the same physical size regardless of the UI scaling option.
+Senza `scaled`, i widget dimensionati in pixel avranno la stessa dimensione fisica indipendentemente dall'opzione di scala UI.
 
 ---
 
-## The `fixaspect` Attribute
+## L'Attributo `fixaspect`
 
-Use `fixaspect` to maintain a widget's aspect ratio:
+Usa `fixaspect` per mantenere il rapporto d'aspetto di un widget:
 
-- `fixaspect fixwidth` -- Height adjusts to maintain aspect ratio based on width
-- `fixaspect fixheight` -- Width adjusts to maintain aspect ratio based on height
+- `fixaspect fixwidth` -- L'altezza si regola per mantenere il rapporto d'aspetto basato sulla larghezza
+- `fixaspect fixheight` -- La larghezza si regola per mantenere il rapporto d'aspetto basato sull'altezza
 
-Questo e' primarily useful for `ImageWidget` to prevent image distortion.
+Questo è principalmente utile per `ImageWidget` per prevenire la distorsione dell'immagine.
+
+---
+
+## Z-Order e Priorità
+
+L'attributo `priority` controlla quali widget vengono renderizzati in cima quando si sovrappongono. Valori più alti vengono renderizzati sopra valori più bassi.
+
+| Intervallo Priorità | Uso Tipico |
+|---------------------|------------|
+| 0-5 | Elementi di sfondo, pannelli decorativi |
+| 10-50 | Elementi UI normali, componenti HUD |
+| 50-100 | Elementi overlay, pannelli fluttuanti |
+| 100-200 | Notifiche, tooltip |
+| 998-999 | Dialoghi modali, overlay bloccanti |
+
+```
+FrameWidget myBackground {
+    priority 1
+    // ...
+}
+
+FrameWidget myDialog {
+    priority 999
+    // ...
+}
+```
+
+**Importante:** La priorità influisce solo sull'ordine di rendering tra fratelli all'interno dello stesso genitore. I figli annidati vengono sempre disegnati sopra il loro genitore indipendentemente dai valori di priorità.
 
 ---
 
 ## Debug dei Problemi di Dimensionamento
 
-When a widget is not appearing where you expect:
+Quando un widget non appare dove ti aspetti:
 
-1. **Controlla exact flags** -- Is `hexactsize` set to `0` when you meant pixels? A value of `200` in proportional mode means 200x the parent width (way off screen).
-2. **Controlla for negative sizes** -- Any negative value in `size` will cause problems.
-3. **Controlla the parent size** -- A proportional child of a zero-size parent is zero-size.
-4. **Controlla `visible`** -- Widgets default to visible, but if a parent is hidden, all children are too.
-5. **Controlla `priority`** -- A widget with lower priority may be hidden behind another.
-6. **Use `clipchildren`** -- If a parent has `clipchildren 1`, children outside its bounds are not visible.
+1. **Controlla i flag esatti** -- `hexactsize` è impostato a `0` quando intendevi pixel? Un valore di `200` in modalità proporzionale significa 200x la larghezza del genitore (fuori dallo schermo).
+2. **Controlla le dimensioni negative** -- Qualsiasi valore negativo in `size` causerà problemi.
+3. **Controlla la dimensione del genitore** -- Un figlio proporzionale di un genitore a dimensione zero ha dimensione zero.
+4. **Controlla `visible`** -- I widget sono visibili per difetto, ma se un genitore è nascosto, lo sono anche tutti i figli.
+5. **Controlla `priority`** -- Un widget con priorità inferiore potrebbe essere nascosto dietro un altro.
+6. **Usa `clipchildren`** -- Se un genitore ha `clipchildren 1`, i figli fuori dai suoi limiti non sono visibili.
+
+---
+
+## Buone Pratiche
+
+- Specifica sempre tutti e quattro i flag esatti esplicitamente (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`). Ometterli porta a comportamento imprevedibile perché i valori predefiniti variano tra i tipi di widget.
+- Usa il pattern larghezza-proporzionale + altezza-pixel per righe e barre. Questa è la combinazione più sicura per la risoluzione e lo standard nelle mod professionali.
+- Centra i dialoghi con `halign center_ref` + `valign center_ref` + posizione pixel `0 0`, non con posizione proporzionale `0.5 0.5`. L'approccio con riferimento di allineamento rimane centrato indipendentemente dalla dimensione del widget.
+- Evita dimensioni in pixel per elementi a schermo intero o quasi. Usa il dimensionamento proporzionale in modo che la UI si adatti a qualsiasi risoluzione (1080p, 1440p, 4K).
+- Quando usi `SetScreenPos()` / `SetScreenSize()` nel codice, chiamali dopo che il widget è collegato al suo genitore. Chiamarli prima del collegamento può produrre coordinate errate.
+
+---
+
+## Teoria vs Pratica
+
+> Cosa dice la documentazione rispetto a come funzionano le cose a runtime.
+
+| Concetto | Teoria | Realtà |
+|----------|--------|--------|
+| Dimensionamento proporzionale | Valori 0.0-1.0 si scalano relativamente al genitore | Se il genitore ha una dimensione in pixel, i valori proporzionali del figlio sono relativi a quel valore in pixel, non allo schermo -- un figlio di un genitore largo 200px con `size 0.5` è 100px |
+| Allineamento `center_ref` | Il widget si centra all'interno del genitore | L'angolo superiore-sinistro del widget viene posizionato al punto centrale -- il widget pende a destra e in basso dal centro a meno che la posizione non sia `0 0` con modalità pixel |
+| Z-order `priority` | Valori più alti vengono renderizzati sopra | La priorità influisce solo sui fratelli all'interno dello stesso genitore. Un figlio viene sempre renderizzato sopra il suo genitore indipendentemente dai valori di priorità |
+| Attributo `scaled` | Il widget rispetta l'impostazione Dimensione HUD | Influisce solo sulle dimensioni in modalità pixel. Le dimensioni proporzionali si scalano già con il genitore e ignorano il flag `scaled` |
+| Valori di posizione negativi | Dovrebbero spostare in direzione inversa | Funziona per la posizione (offset a sinistra/su dal riferimento), ma valori di dimensione negativi causano comportamento di rendering indefinito -- non usarli mai |
+
+---
+
+## Compatibilità e Impatto
+
+- **Multi-Mod:** Dimensionamento e posizionamento sono per-widget e non possono entrare in conflitto tra mod. Tuttavia, le mod che usano overlay a schermo intero (`size 1 1` sulla radice) con `priority 999` possono bloccare gli elementi UI di altre mod dal ricevere input.
+- **Prestazioni:** Il dimensionamento proporzionale richiede ricalcolo relativo al genitore ogni frame per widget animati o dinamici. Per layout statici, non c'è differenza misurabile tra modalità proporzionale e pixel.
+- **Versione:** Il sistema a doppia coordinata (proporzionale vs pixel) è stabile da DayZ 0.63 Experimental. Il comportamento dell'attributo `scaled` è stato raffinato in DayZ 1.14 per rispettare meglio il cursore Dimensione HUD.
 
 ---
 
 ## Prossimi Passi
 
-- [3.4 Container Widgets](04-containers.md) -- How spacers and scroll widgets handle layout automatically
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Setting size and position from code
+- [3.4 Widget Contenitore](04-containers.md) -- Come spaziatori e widget di scorrimento gestiscono il layout automaticamente
+- [3.5 Creazione Programmatica di Widget](05-programmatic-widgets.md) -- Impostare dimensione e posizione dal codice

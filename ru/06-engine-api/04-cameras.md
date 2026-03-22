@@ -1,40 +1,39 @@
-# Chapter 6.4: Camera System
+# Глава 6.4: Система камер
 
-[Home](../../README.md) | [<< Previous: Weather](03-weather.md) | **Cameras** | [Next: Post-Process Effects >>](05-ppe.md)
+[Главная](../../README.md) | [<< Предыдущая: Погода](03-weather.md) | **Камеры** | [Следующая: Постобработка >>](05-ppe.md)
 
 ---
 
 ## Введение
 
-
-DayZ uses a multi-layered camera system. The player camera is managed by the engine through `DayZPlayerCamera` subclasses. For modding and debugging, the `FreeDebugCamera` allows free-flight. The engine also provides global accessors for the current camera state. Эта глава охватывает camera types, how to access camera data, and how to use the scripted camera tools.
+DayZ использует многоуровневую систему камер. Камера игрока управляется движком через подклассы `DayZPlayerCamera`. Для моддинга и отладки доступна `FreeDebugCamera`, позволяющая свободный полёт. Движок также предоставляет глобальные аксессоры для получения текущего состояния камеры. В этой главе рассматриваются типы камер, способы доступа к данным камеры и использование инструментов скриптовых камер.
 
 ---
 
-## Current Camera State (Global Accessors)
+## Текущее состояние камеры (глобальные аксессоры)
 
-These methods are available anywhere and return the active camera's state regardless of camera type:
+Эти методы доступны из любого места и возвращают состояние активной камеры независимо от её типа:
 
 ```c
-// Current camera world position
+// Текущая мировая позиция камеры
 proto native vector GetGame().GetCurrentCameraPosition();
 
-// Current camera forward direction (unit vector)
+// Текущее направление камеры (единичный вектор)
 proto native vector GetGame().GetCurrentCameraDirection();
 
-// Convert world position to screen coordinates
+// Преобразование мировой позиции в экранные координаты
 proto native vector GetGame().GetScreenPos(vector world_pos);
-// Returns: x = screen X (pixels), y = screen Y (pixels), z = depth (distance from camera)
+// Возвращает: x = экранный X (пиксели), y = экранный Y (пиксели), z = глубина (расстояние от камеры)
 ```
 
-**Example --- check if a position is on screen:**
+**Пример --- проверка, находится ли позиция на экране:**
 
 ```c
 bool IsPositionOnScreen(vector worldPos)
 {
     vector screenPos = GetGame().GetScreenPos(worldPos);
 
-    // z < 0 means behind the camera
+    // z < 0 означает, что точка за камерой
     if (screenPos[2] < 0)
         return false;
 
@@ -46,7 +45,7 @@ bool IsPositionOnScreen(vector worldPos)
 }
 ```
 
-**Example --- get distance from camera to a point:**
+**Пример --- получение расстояния от камеры до точки:**
 
 ```c
 float DistanceFromCamera(vector worldPos)
@@ -57,34 +56,34 @@ float DistanceFromCamera(vector worldPos)
 
 ---
 
-## DayZPlayerCamera System
+## Система DayZPlayerCamera
 
-DayZ player cameras are native classes managed by the engine's player controller. They are not directly instantiated from script --- instead, the engine selects the appropriate camera based on the player's state (standing, prone, swimming, vehicle, unconscious, etc.).
+Камеры игрока в DayZ --- это нативные классы, управляемые контроллером игрока в движке. Они не создаются напрямую из скрипта --- вместо этого движок выбирает подходящую камеру на основе состояния игрока (стоя, лёжа, плавание, транспорт, без сознания и т.д.).
 
-### Camera Types (DayZPlayerCameras Constants)
+### Типы камер (константы DayZPlayerCameras)
 
-The camera type IDs are defined as constants:
+Идентификаторы типов камер определены как константы:
 
-| Constant | Description |
-|----------|-------------|
-| `DayZPlayerCameras.DAYZCAMERA_1ST` | First-person camera |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC` | Third-person erect (standing) |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO` | Third-person crouched |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_PRO` | Third-person prone |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_SPR` | Third-person sprint |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_RAISED` | Third-person raised weapon |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO_RAISED` | Third-person crouched raised |
-| `DayZPlayerCameras.DAYZCAMERA_IRONSIGHTS` | Ironsight aiming |
-| `DayZPlayerCameras.DAYZCAMERA_OPTICS` | Optic/scope aiming |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_VEHICLE` | Third-person vehicle |
-| `DayZPlayerCameras.DAYZCAMERA_1ST_VEHICLE` | First-person vehicle |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_SWIM` | Third-person swimming |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_UNCONSCIOUS` | Third-person unconscious |
-| `DayZPlayerCameras.DAYZCAMERA_1ST_UNCONSCIOUS` | First-person unconscious |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_CLIMB` | Third-person climbing |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_JUMP` | Third-person jumping |
+| Константа | Описание |
+|-----------|----------|
+| `DayZPlayerCameras.DAYZCAMERA_1ST` | Камера от первого лица |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC` | Третье лицо стоя |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO` | Третье лицо в приседе |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_PRO` | Третье лицо лёжа |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_SPR` | Третье лицо в спринте |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_RAISED` | Третье лицо с поднятым оружием |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO_RAISED` | Третье лицо в приседе с поднятым оружием |
+| `DayZPlayerCameras.DAYZCAMERA_IRONSIGHTS` | Прицеливание через мушку |
+| `DayZPlayerCameras.DAYZCAMERA_OPTICS` | Прицеливание через оптику |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_VEHICLE` | Третье лицо в транспорте |
+| `DayZPlayerCameras.DAYZCAMERA_1ST_VEHICLE` | Первое лицо в транспорте |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_SWIM` | Третье лицо при плавании |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_UNCONSCIOUS` | Третье лицо без сознания |
+| `DayZPlayerCameras.DAYZCAMERA_1ST_UNCONSCIOUS` | Первое лицо без сознания |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CLIMB` | Третье лицо при подъёме |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_JUMP` | Третье лицо в прыжке |
 
-### Getting the Current Camera Type
+### Получение текущего типа камеры
 
 ```c
 DayZPlayer player = GetGame().GetPlayer();
@@ -93,7 +92,7 @@ if (player)
     int cameraType = player.GetCurrentCameraType();
     if (cameraType == DayZPlayerCameras.DAYZCAMERA_1ST)
     {
-        Print("Player is in first person");
+        Print("Игрок в режиме от первого лица");
     }
 }
 ```
@@ -102,40 +101,40 @@ if (player)
 
 ## FreeDebugCamera
 
-**File:** `5_Mission/gui/scriptconsole/freedebugcamera.c`
+**Файл:** `5_Mission/gui/scriptconsole/freedebugcamera.c`
 
-The free-flight camera used for debugging and cinematic work. Available in diagnostic builds or when enabled by mods.
+Камера свободного полёта, используемая для отладки и создания кинематографических сцен. Доступна в диагностических сборках или при активации модами.
 
-### Accessing the Instance
+### Доступ к экземпляру
 
 ```c
 FreeDebugCamera GetFreeDebugCamera();
 ```
 
-This global function returns the singleton free camera instance (or null if it does not exist).
+Эта глобальная функция возвращает единственный экземпляр свободной камеры (или null, если он не существует).
 
-### Key Methods
+### Основные методы
 
 ```c
-// Enable/disable the free camera
+// Включение/выключение свободной камеры
 static void SetActive(bool active);
 static bool GetActive();
 
-// Position and orientation
+// Позиция и ориентация
 vector GetPosition();
 void   SetPosition(vector pos);
 vector GetOrientation();
-void   SetOrientation(vector ori);   // yaw, pitch, roll
+void   SetOrientation(vector ori);   // рыскание, тангаж, крен
 
-// Speed
+// Скорость
 void SetFlySpeed(float speed);
 float GetFlySpeed();
 
-// Camera direction
+// Направление камеры
 vector GetDirection();
 ```
 
-**Example ---- ctivate free camera and teleport it:**
+**Пример --- активация свободной камеры и телепортация:**
 
 ```c
 void ActivateDebugCamera(vector pos)
@@ -146,7 +145,7 @@ void ActivateDebugCamera(vector pos)
     if (cam)
     {
         cam.SetPosition(pos);
-        cam.SetOrientation(Vector(0, -30, 0));  // Look slightly down
+        cam.SetOrientation(Vector(0, -30, 0));  // Смотреть немного вниз
         cam.SetFlySpeed(10.0);
     }
 }
@@ -154,56 +153,56 @@ void ActivateDebugCamera(vector pos)
 
 ---
 
-## Field of View (FOV)
+## Поле зрения (FOV)
 
-The engine controls FOV natively. You can read and modify it through the player camera system:
+Движок управляет FOV нативно. Вы можете читать и изменять его через систему камер игрока:
 
-### Reading FOV
+### Чтение FOV
 
 ```c
-// Get current camera FOV
+// Получение текущего FOV камеры
 float fov = GetDayZGame().GetFieldOfView();
 ```
 
-### DayZPlayerCamera FOV Override
+### Переопределение FOV в DayZPlayerCamera
 
-In custom camera classes that extend `DayZPlayerCamera`, you can override the FOV:
+В пользовательских классах камер, наследующих `DayZPlayerCamera`, можно переопределить FOV:
 
 ```c
 class MyCustomCamera extends DayZPlayerCamera1stPerson
 {
     override float GetCurrentFOV()
     {
-        return 0.7854;  // ~45 degrees (radians)
+        return 0.7854;  // ~45 градусов (в радианах)
     }
 }
 ```
 
 ---
 
-## Depth of Field (DOF)
+## Глубина резкости (DOF)
 
-Depth of field is controlled through the Post-Process Effects system (см. [Chapter 6.5](05-ppe.md)). However, the camera system works with DOF through these mechanisms:
+Глубина резкости контролируется через систему постобработки (см. [Главу 6.5](05-ppe.md)). Однако система камер работает с DOF через следующие механизмы:
 
-### Setting DOF via World
+### Установка DOF через World
 
 ```c
 World world = GetGame().GetWorld();
 if (world)
 {
-    // SetDOF(focus_distance, focus_length, focus_length_near, blur, focus_depth_offset)
-    // All values in meters
+    // SetDOF(расстояние_фокуса, длина_фокуса, длина_фокуса_ближняя, размытие, смещение_глубины_фокуса)
+    // Все значения в метрах
     world.SetDOF(5.0, 100.0, 0.5, 0.3, 0.0);
 }
 ```
 
-### Disabling DOF
+### Отключение DOF
 
 ```c
 World world = GetGame().GetWorld();
 if (world)
 {
-    world.SetDOF(0, 0, 0, 0, 0);  // All zeros disables DOF
+    world.SetDOF(0, 0, 0, 0, 0);  // Все нули отключают DOF
 }
 ```
 
@@ -211,42 +210,42 @@ if (world)
 
 ## ScriptCamera (GameLib)
 
-**File:** `2_GameLib/entities/scriptcamera.c`
+**Файл:** `2_GameLib/entities/scriptcamera.c`
 
-A lower-level scripted camera entity from the GameLib layer. Это base for custom camera implementations.
+Низкоуровневая скриптовая сущность камеры из слоя GameLib. Это базовый класс для пользовательских реализаций камер.
 
-### Creating a Camera
+### Создание камеры
 
 ```c
 ScriptCamera camera = ScriptCamera.Cast(
-    GetGame().CreateObject("ScriptCamera", pos, true)  // local only
+    GetGame().CreateObject("ScriptCamera", pos, true)  // только локально
 );
 ```
 
-### Key Methods
+### Основные методы
 
 ```c
-proto native void SetFOV(float fov);          // FOV in radians
+proto native void SetFOV(float fov);          // FOV в радианах
 proto native void SetNearPlane(float nearPlane);
 proto native void SetFarPlane(float farPlane);
 proto native void SetFocus(float dist, float len);
 ```
 
-### Activating a Camera
+### Активация камеры
 
 ```c
-// Make this camera the active rendering camera
-GetGame().SelectPlayer(null, null);   // Detach from player
-GetGame().ObjectRelease(camera);      // Release to engine
+// Сделать эту камеру активной камерой рендеринга
+GetGame().SelectPlayer(null, null);   // Отсоединить от игрока
+GetGame().ObjectRelease(camera);      // Передать движку
 ```
 
-> **Примечание:** Switching away from the player camera requires careful handling of input and HUD. Most mods use the free debug camera or PPE overlay effects instead of creating custom cameras.
+> **Примечание:** Переключение с камеры игрока требует аккуратной обработки ввода и HUD. Большинство модов используют свободную отладочную камеру или эффекты постобработки вместо создания пользовательских камер.
 
 ---
 
-## Raycasting from Camera
+## Рейкастинг из камеры
 
-A common pattern is to raycast from the camera position in the camera direction to find what the player is looking at:
+Распространённый паттерн --- выполнение рейкаста из позиции камеры в направлении камеры для определения того, на что смотрит игрок:
 
 ```c
 Object GetObjectInCrosshair(float maxDistance)
@@ -275,17 +274,34 @@ Object GetObjectInCrosshair(float maxDistance)
 
 ## Итоги
 
-
-| Concept | Key Point |
-|---------|-----------|
-| Global accessors | `GetCurrentCameraPosition()`, `GetCurrentCameraDirection()`, `GetScreenPos()` |
-| Camera types | `DayZPlayerCameras` constants (1ST, 3RD_ERC, IRONSIGHTS, OPTICS, VEHICLE, etc.) |
-| Current type | `player.GetCurrentCameraType()` |
-| Free camera | `FreeDebugCamera.SetActive(true)`, then `GetFreeDebugCamera()` |
-| FOV | `GetDayZGame().GetFieldOfView()` to read, override `GetCurrentFOV()` in camera class |
-| DOF | `GetGame().GetWorld().SetDOF(focus, length, near, blur, offset)` |
-| Screen conversion | `GetScreenPos(worldPos)` returns pixel XY + depth Z |
+| Концепция | Ключевой момент |
+|-----------|----------------|
+| Глобальные аксессоры | `GetCurrentCameraPosition()`, `GetCurrentCameraDirection()`, `GetScreenPos()` |
+| Типы камер | Константы `DayZPlayerCameras` (1ST, 3RD_ERC, IRONSIGHTS, OPTICS, VEHICLE и т.д.) |
+| Текущий тип | `player.GetCurrentCameraType()` |
+| Свободная камера | `FreeDebugCamera.SetActive(true)`, затем `GetFreeDebugCamera()` |
+| FOV | `GetDayZGame().GetFieldOfView()` для чтения, переопределение `GetCurrentFOV()` в классе камеры |
+| DOF | `GetGame().GetWorld().SetDOF(фокус, длина, ближняя, размытие, смещение)` |
+| Экранные координаты | `GetScreenPos(worldPos)` возвращает пиксельные XY + глубину Z |
 
 ---
 
-[<< Предыдущая: Weather](03-weather.md) | **Cameras** | [Следующая: Post-Process Effects >>](05-ppe.md)
+## Лучшие практики
+
+- **Кэшируйте позицию камеры при множественных запросах в одном кадре.** `GetGame().GetCurrentCameraPosition()` и `GetCurrentCameraDirection()` --- это вызовы движка. Сохраняйте результат в локальную переменную, если он нужен в нескольких вычислениях в одном кадре.
+- **Используйте проверку глубины `GetScreenPos()` перед размещением UI.** Всегда проверяйте `screenPos[2] > 0` (перед камерой) перед отрисовкой HUD-маркеров в мировых позициях, иначе маркеры будут отображаться зеркально за игроком.
+- **Избегайте создания пользовательских экземпляров ScriptCamera для простых эффектов.** FreeDebugCamera и система PPE покрывают большинство кинематографических и визуальных потребностей. Пользовательские камеры требуют аккуратного управления вводом/HUD, что легко сломать.
+- **Уважайте переходы типов камер в движке.** Не переключайте тип камеры из скрипта принудительно, если вы полностью не обрабатываете состояние контроллера игрока. Неожиданные переключения камеры могут заблокировать движение игрока или вызвать рассинхронизацию.
+- **Защищайте использование свободной камеры проверками администратора/отладки.** FreeDebugCamera предоставляет возможность осмотра мира без ограничений. Включайте её только для авторизованных администраторов или диагностических сборок во избежание злоупотреблений.
+
+---
+
+## Совместимость и влияние
+
+- **Мультимод:** Аксессоры камеры --- это глобальные функции только для чтения, поэтому несколько модов могут безопасно читать состояние камеры одновременно. Конфликты возникают только если два мода пытаются активировать FreeDebugCamera или пользовательские экземпляры ScriptCamera.
+- **Производительность:** `GetScreenPos()` и `GetCurrentCameraPosition()` --- лёгкие вызовы движка. Рейкастинг из камеры (`DayZPhysics.RaycastRV`) более затратен --- ограничивайте его одним разом за кадр, а не за каждую сущность.
+- **Сервер/Клиент:** Состояние камеры существует только на клиенте. Все методы камеры возвращают бессмысленные данные на выделенном сервере. Никогда не используйте запросы камеры в серверной логике.
+
+---
+
+[<< Предыдущая: Погода](03-weather.md) | **Камеры** | [Следующая: Постобработка >>](05-ppe.md)

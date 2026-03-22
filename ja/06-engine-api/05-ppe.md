@@ -1,41 +1,41 @@
-# Chapter 6.5: Post-Process Effects (PPE)
+# 第6.5章: ポストプロセスエフェクト（PPE）
 
-[Home](../../README.md) | [<< Previous: Cameras](04-cameras.md) | **Post-Process Effects** | [Next: Notifications >>](06-notifications.md)
+[ホーム](../../README.md) | [<< 前へ: カメラ](04-cameras.md) | **ポストプロセスエフェクト** | [次へ: 通知 >>](06-notifications.md)
 
 ---
 
 ## はじめに
 
-DayZ's Post-Process Effects (PPE) system controls visual effects applied after scene rendering: blur, color grading, vignette, chromatic aberration, night vision, and more. The system is built around `PPERequester` classes that can request specific visual effects. Multiple requesters can be active simultaneously, and the engine blends their contributions. This chapter covers how to use the PPE system in mods.
+DayZ のポストプロセスエフェクト（PPE）システムは、シーンレンダリング後に適用される視覚効果を制御します。ぼかし、カラーグレーディング、ビネット、色収差、暗視、その他多くのエフェクトがあります。このシステムは `PPERequester` クラスを中心に構築されており、特定の視覚効果を要求できます。複数のリクエスターを同時にアクティブにでき、エンジンがそれらの寄与をブレンドします。この章では、Mod で PPE システムを使用する方法を解説します。
 
 ---
 
-## Architecture Overview
+## アーキテクチャ概要
 
 ```
 PPEManager
-├── PPERequesterBank              // Static registry of all available requesters
-│   ├── REQ_INVENTORYBLUR         // Inventory blur
-│   ├── REQ_MENUEFFECTS           // Menu effects
-│   ├── REQ_CONTROLLERDISCONNECT  // Controller disconnect overlay
-│   ├── REQ_UNCONSCIOUS           // Unconsciousness effect
-│   ├── REQ_FEVEREFFECTS          // Fever visual effects
-│   ├── REQ_FLASHBANGEFFECTS      // Flashbang
-│   ├── REQ_BURLAPSACK            // Burlap sack on head
-│   ├── REQ_DEATHEFFECTS          // Death screen
-│   ├── REQ_BLOODLOSS             // Blood loss desaturation
-│   └── ... (many more)
-└── PPERequester_*                // Individual requester implementations
+├── PPERequesterBank              // 利用可能な全リクエスターの静的レジストリ
+│   ├── REQ_INVENTORYBLUR         // インベントリぼかし
+│   ├── REQ_MENUEFFECTS           // メニューエフェクト
+│   ├── REQ_CONTROLLERDISCONNECT  // コントローラー切断オーバーレイ
+│   ├── REQ_UNCONSCIOUS           // 意識不明エフェクト
+│   ├── REQ_FEVEREFFECTS          // 発熱視覚エフェクト
+│   ├── REQ_FLASHBANGEFFECTS      // フラッシュバン
+│   ├── REQ_BURLAPSACK            // 頭に麻袋
+│   ├── REQ_DEATHEFFECTS          // 死亡画面
+│   ├── REQ_BLOODLOSS             // 出血による彩度低下
+│   └── ... （他にも多数）
+└── PPERequester_*                // 個別のリクエスター実装
 ```
 
 ---
 
 ## PPEManager
 
-The `PPEManager` is a singleton that coordinates all active PPE requests. You rarely interact with it directly --- instead, you work through `PPERequester` subclasses.
+`PPEManager` はすべてのアクティブな PPE リクエストを調整するシングルトンです。直接操作することはほとんどありません --- 代わりに `PPERequester` サブクラスを通じて作業します。
 
 ```c
-// Get the manager instance
+// マネージャーインスタンスの取得
 PPEManager GetPPEManager();
 ```
 
@@ -43,55 +43,55 @@ PPEManager GetPPEManager();
 
 ## PPERequesterBank
 
-**File:** `3_Game/PPE/pperequesterbank.c`
+**ファイル:** `3_Game/PPE/pperequesterbank.c`
 
-A static registry that holds instances of all PPE requesters. Access specific requesters by their constant index.
+すべての PPE リクエスターのインスタンスを保持する静的レジストリです。定数インデックスを使用して特定のリクエスターにアクセスします。
 
-### Getting a Requester
+### リクエスターの取得
 
 ```c
-// Get a requester by its bank constant
+// バンク定数でリクエスターを取得
 PPERequester req = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 ```
 
-### Common Requester Constants
+### 一般的なリクエスター定数
 
-| Constant | Effect |
+| 定数 | エフェクト |
 |----------|--------|
-| `REQ_INVENTORYBLUR` | Gaussian blur when inventory is open |
-| `REQ_MENUEFFECTS` | Menu background blur |
-| `REQ_UNCONSCIOUS` | Unconsciousness visual (blur + desaturation) |
-| `REQ_DEATHEFFECTS` | Death screen (grayscale + vignette) |
-| `REQ_BLOODLOSS` | Blood loss desaturation |
-| `REQ_FEVEREFFECTS` | Fever chromatic aberration |
-| `REQ_FLASHBANGEFFECTS` | Flashbang whiteout |
-| `REQ_BURLAPSACK` | Burlap sack blindfold |
-| `REQ_PAINBLUR` | Pain blur effect |
-| `REQ_CONTROLLERDISCONNECT` | Controller disconnect overlay |
-| `REQ_CAMERANV` | Night vision |
-| `REQ_FILMGRAINEFFECTS` | Film grain overlay |
-| `REQ_RAINEFFECTS` | Rain screen effects |
-| `REQ_COLORSETTING` | Color correction settings |
+| `REQ_INVENTORYBLUR` | インベントリ表示時のガウシアンぼかし |
+| `REQ_MENUEFFECTS` | メニュー背景のぼかし |
+| `REQ_UNCONSCIOUS` | 意識不明のビジュアル（ぼかし + 彩度低下） |
+| `REQ_DEATHEFFECTS` | 死亡画面（グレースケール + ビネット） |
+| `REQ_BLOODLOSS` | 出血による彩度低下 |
+| `REQ_FEVEREFFECTS` | 発熱による色収差 |
+| `REQ_FLASHBANGEFFECTS` | フラッシュバンのホワイトアウト |
+| `REQ_BURLAPSACK` | 麻袋による目隠し |
+| `REQ_PAINBLUR` | 痛みによるぼかしエフェクト |
+| `REQ_CONTROLLERDISCONNECT` | コントローラー切断オーバーレイ |
+| `REQ_CAMERANV` | 暗視 |
+| `REQ_FILMGRAINEFFECTS` | フィルムグレインオーバーレイ |
+| `REQ_RAINEFFECTS` | 雨の画面エフェクト |
+| `REQ_COLORSETTING` | 色補正設定 |
 
 ---
 
-## PPERequester Base
+## PPERequester ベース
 
-All PPE requesters extend `PPERequester`:
+すべての PPE リクエスターは `PPERequester` を拡張します。
 
 ```c
 class PPERequester : Managed
 {
-    // Start the effect
+    // エフェクトの開始
     void Start(Param par = null);
 
-    // Stop the effect
+    // エフェクトの停止
     void Stop(Param par = null);
 
-    // Check if active
+    // アクティブかどうかの確認
     bool IsActiveRequester();
 
-    // Set values on material parameters
+    // マテリアルパラメータに値を設定
     void SetTargetValueFloat(int mat_id, int param_idx, bool relative,
                               float val, int priority_layer, int operator = PPOperators.SET);
     void SetTargetValueColor(int mat_id, int param_idx, bool relative,
@@ -109,61 +109,61 @@ class PPERequester : Managed
 ```c
 class PPOperators
 {
-    static const int SET          = 0;  // Directly set the value
-    static const int ADD          = 1;  // Add to current value
-    static const int ADD_RELATIVE = 2;  // Add relative to current
-    static const int HIGHEST      = 3;  // Use the highest of current and new
-    static const int LOWEST       = 4;  // Use the lowest of current and new
-    static const int MULTIPLY     = 5;  // Multiply current value
-    static const int OVERRIDE     = 6;  // Force override
+    static const int SET          = 0;  // 値を直接設定
+    static const int ADD          = 1;  // 現在の値に加算
+    static const int ADD_RELATIVE = 2;  // 現在の値に相対加算
+    static const int HIGHEST      = 3;  // 現在と新規の高い方を使用
+    static const int LOWEST       = 4;  // 現在と新規の低い方を使用
+    static const int MULTIPLY     = 5;  // 現在の値に乗算
+    static const int OVERRIDE     = 6;  // 強制オーバーライド
 }
 ```
 
 ---
 
-## Common PPE Material IDs
+## 一般的な PPE マテリアル ID
 
-Effects target specific post-processing materials. Common material IDs:
+エフェクトは特定のポストプロセスマテリアルをターゲットにします。一般的なマテリアル ID は以下の通りです。
 
-| Constant | Material |
+| 定数 | マテリアル |
 |----------|----------|
-| `PostProcessEffectType.Glow` | Bloom / glow |
-| `PostProcessEffectType.FilmGrain` | Film grain |
-| `PostProcessEffectType.RadialBlur` | Radial blur |
-| `PostProcessEffectType.ChromAber` | Chromatic aberration |
-| `PostProcessEffectType.WetEffect` | Wet lens effect |
-| `PostProcessEffectType.ColorGrading` | Color grading / LUT |
-| `PostProcessEffectType.DepthOfField` | Depth of field |
-| `PostProcessEffectType.SSAO` | Screen-space ambient occlusion |
-| `PostProcessEffectType.GodRays` | Volumetric light |
-| `PostProcessEffectType.Rain` | Rain on screen |
-| `PostProcessEffectType.Vignette` | Vignette overlay |
-| `PostProcessEffectType.HBAO` | Horizon-based ambient occlusion |
+| `PostProcessEffectType.Glow` | ブルーム / グロー |
+| `PostProcessEffectType.FilmGrain` | フィルムグレイン |
+| `PostProcessEffectType.RadialBlur` | ラジアルブラー |
+| `PostProcessEffectType.ChromAber` | 色収差 |
+| `PostProcessEffectType.WetEffect` | 濡れたレンズエフェクト |
+| `PostProcessEffectType.ColorGrading` | カラーグレーディング / LUT |
+| `PostProcessEffectType.DepthOfField` | 被写界深度 |
+| `PostProcessEffectType.SSAO` | スクリーンスペースアンビエントオクルージョン |
+| `PostProcessEffectType.GodRays` | ボリュメトリックライト |
+| `PostProcessEffectType.Rain` | 画面上の雨 |
+| `PostProcessEffectType.Vignette` | ビネットオーバーレイ |
+| `PostProcessEffectType.HBAO` | ホライゾンベースアンビエントオクルージョン |
 
 ---
 
-## Using Built-in Requesters
+## ビルトインリクエスターの使用
 
-### Inventory Blur
+### インベントリぼかし
 
-The simplest example --- the blur that appears when the inventory opens:
+最もシンプルな例 --- インベントリを開いたときに表示されるぼかしです。
 
 ```c
-// Start blur
+// ぼかしの開始
 PPERequester blurReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 blurReq.Start();
 
-// Stop blur
+// ぼかしの停止
 blurReq.Stop();
 ```
 
-### Flashbang Effect
+### フラッシュバンエフェクト
 
 ```c
 PPERequester flashReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_FLASHBANGEFFECTS);
 flashReq.Start();
 
-// Stop after a delay
+// 遅延後に停止
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(StopFlashbang, 3000, false);
 
 void StopFlashbang()
@@ -175,11 +175,11 @@ void StopFlashbang()
 
 ---
 
-## Creating a Custom PPE Requester
+## カスタム PPE リクエスターの作成
 
-To create custom post-process effects, extend `PPERequester` and register it.
+カスタムポストプロセスエフェクトを作成するには、`PPERequester` を拡張して登録します。
 
-### Step 1: Define the Requester
+### ステップ 1: リクエスターの定義
 
 ```c
 class MyCustomPPERequester extends PPERequester
@@ -188,11 +188,11 @@ class MyCustomPPERequester extends PPERequester
     {
         super.OnStart(par);
 
-        // Apply a strong vignette
+        // 強いビネットを適用
         SetTargetValueFloat(PostProcessEffectType.Glow, PPEGlow.PARAM_VIGNETTE,
                             false, 0.8, PPEManager.L_0_STATIC, PPOperators.SET);
 
-        // Desaturate colors
+        // 彩度を下げる
         SetTargetValueFloat(PostProcessEffectType.ColorGrading, PPEColorGrading.PARAM_SATURATION,
                             false, 0.3, PPEManager.L_0_STATIC, PPOperators.SET);
     }
@@ -201,7 +201,7 @@ class MyCustomPPERequester extends PPERequester
     {
         super.OnStop(par);
 
-        // Reset to defaults
+        // デフォルトにリセット
         SetTargetValueFloat(PostProcessEffectType.Glow, PPEGlow.PARAM_VIGNETTE,
                             false, 0.0, PPEManager.L_0_STATIC, PPOperators.SET);
         SetTargetValueFloat(PostProcessEffectType.ColorGrading, PPEColorGrading.PARAM_SATURATION,
@@ -210,38 +210,38 @@ class MyCustomPPERequester extends PPERequester
 }
 ```
 
-### Step 2: Register and Use
+### ステップ 2: 登録と使用
 
-Registration is handled by adding the requester to the bank. In practice, most modders use the built-in requesters and modify their parameters rather than creating fully custom ones.
+登録はリクエスターをバンクに追加することで行います。実際には、ほとんどのモッダーは完全にカスタムのリクエスターを作成するのではなく、ビルトインリクエスターのパラメータを調整して使用します。
 
 ---
 
-## Night Vision (NVG)
+## 暗視（NVG）
 
-Night vision is implemented as a PPE effect. The relevant requester is `REQ_CAMERANV`:
+暗視は PPE エフェクトとして実装されています。該当するリクエスターは `REQ_CAMERANV` です。
 
 ```c
-// Enable NVG effect
+// NVG エフェクトを有効化
 PPERequester nvgReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV);
 nvgReq.Start();
 
-// Disable NVG effect
+// NVG エフェクトを無効化
 nvgReq.Stop();
 ```
 
-The actual NVG in-game is triggered by the NVGoggles item through its `ComponentEnergyManager` and the `NVGoggles.ToggleNVG()` method, which internally drives the PPE system.
+ゲーム内の実際の NVG は、NVGoggles アイテムの `ComponentEnergyManager` と `NVGoggles.ToggleNVG()` メソッドを通じてトリガーされ、内部的に PPE システムを駆動します。
 
 ---
 
-## Color Grading
+## カラーグレーディング
 
-Color grading modifies the overall color appearance of the scene:
+カラーグレーディングは、シーンの全体的な色の外観を変更します。
 
 ```c
 PPERequester colorReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_COLORSETTING);
 colorReq.Start();
 
-// Adjust saturation (1.0 = normal, 0.0 = grayscale, >1.0 = oversaturated)
+// 彩度の調整（1.0 = 通常、0.0 = グレースケール、>1.0 = 過飽和）
 colorReq.SetTargetValueFloat(PostProcessEffectType.ColorGrading,
                               PPEColorGrading.PARAM_SATURATION,
                               false, 0.5, PPEManager.L_0_STATIC,
@@ -250,22 +250,22 @@ colorReq.SetTargetValueFloat(PostProcessEffectType.ColorGrading,
 
 ---
 
-## Blur Effects
+## ぼかしエフェクト
 
-### Gaussian Blur
+### ガウシアンぼかし
 
 ```c
 PPERequester blurReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 blurReq.Start();
 
-// Adjust blur intensity (0.0 = none, higher = more blur)
+// ぼかし強度の調整（0.0 = なし、高いほどぼかしが強い）
 blurReq.SetTargetValueFloat(PostProcessEffectType.GaussFilter,
                              PPEGaussFilter.PARAM_INTENSITY,
                              false, 0.5, PPEManager.L_0_STATIC,
                              PPOperators.SET);
 ```
 
-### Radial Blur
+### ラジアルブラー
 
 ```c
 PPERequester req = PPERequesterBank.GetRequester(PPERequesterBank.REQ_PAINBLUR);
@@ -279,23 +279,23 @@ req.SetTargetValueFloat(PostProcessEffectType.RadialBlur,
 
 ---
 
-## Priority Layers
+## 優先度レイヤー
 
-When multiple requesters modify the same parameter, the priority layer determines which one wins:
+複数のリクエスターが同じパラメータを変更する場合、優先度レイヤーがどちらが優先されるかを決定します。
 
 ```c
 class PPEManager
 {
-    static const int L_0_STATIC   = 0;   // Lowest priority (static effects)
-    static const int L_1_VALUES   = 1;   // Dynamic value changes
-    static const int L_2_SCRIPTS  = 2;   // Script-driven effects
-    static const int L_3_EFFECTS  = 3;   // Gameplay effects
-    static const int L_4_OVERLAY  = 4;   // Overlay effects
-    static const int L_LAST       = 100;  // Highest priority (override all)
+    static const int L_0_STATIC   = 0;   // 最低優先度（静的エフェクト）
+    static const int L_1_VALUES   = 1;   // 動的な値の変更
+    static const int L_2_SCRIPTS  = 2;   // スクリプト駆動のエフェクト
+    static const int L_3_EFFECTS  = 3;   // ゲームプレイエフェクト
+    static const int L_4_OVERLAY  = 4;   // オーバーレイエフェクト
+    static const int L_LAST       = 100;  // 最高優先度（すべてをオーバーライド）
 }
 ```
 
-Higher numbers take priority. Use `PPEManager.L_LAST` to force your effect to override all others.
+数値が大きいほど優先されます。`PPEManager.L_LAST` を使用すると、エフェクトが他のすべてを強制的にオーバーライドします。
 
 ---
 
@@ -303,15 +303,33 @@ Higher numbers take priority. Use `PPEManager.L_LAST` to force your effect to ov
 
 | 概念 | 要点 |
 |---------|-----------|
-| Access | `PPERequesterBank.GetRequester(CONSTANT)` |
-| Start/Stop | `requester.Start()` / `requester.Stop()` |
-| Parameters | `SetTargetValueFloat(material, param, relative, value, layer, operator)` |
-| Operators | `PPOperators.SET`, `ADD`, `MULTIPLY`, `HIGHEST`, `LOWEST`, `OVERRIDE` |
-| Common effects | Blur, vignette, saturation, NVG, flashbang, grain, chromatic aberration |
-| NVG | `REQ_CAMERANV` requester |
-| Priority | Layers 0-100; higher number wins conflicts |
-| Custom | Extend `PPERequester`, override `OnStart()` / `OnStop()` |
+| アクセス | `PPERequesterBank.GetRequester(CONSTANT)` |
+| 開始/停止 | `requester.Start()` / `requester.Stop()` |
+| パラメータ | `SetTargetValueFloat(material, param, relative, value, layer, operator)` |
+| 演算子 | `PPOperators.SET`, `ADD`, `MULTIPLY`, `HIGHEST`, `LOWEST`, `OVERRIDE` |
+| 一般的なエフェクト | ぼかし、ビネット、彩度、NVG、フラッシュバン、グレイン、色収差 |
+| NVG | `REQ_CAMERANV` リクエスター |
+| 優先度 | レイヤー 0-100; 数値が大きいほど競合に勝つ |
+| カスタム | `PPERequester` を拡張し、`OnStart()` / `OnStop()` をオーバーライド |
 
 ---
 
-[<< 前： Cameras](04-cameras.md) | **Post-Process Effects** | [次： Notifications >>](06-notifications.md)
+## ベストプラクティス
+
+- **リクエスターをクリーンアップするために必ず `Stop()` を呼び出してください。** PPE リクエスターの停止を怠ると、トリガー条件が終了した後も視覚効果が永続的にアクティブなままになります。
+- **適切な優先度レイヤーを使用してください。** ゲームプレイエフェクトは `L_3_EFFECTS` 以上を使用すべきです。`L_LAST`（100）を使用すると、バニラの意識不明や死亡エフェクトを含むすべてをオーバーライドし、プレイヤー体験を損なう可能性があります。
+- **カスタムリクエスターよりビルトインリクエスターを優先してください。** `PPERequesterBank` にはすでにぼかし、彩度低下、ビネット、グレインのリクエスターが含まれています。カスタムリクエスタークラスを作成する前に、パラメータを調整して再利用してください。
+- **異なるライティング条件で PPE エフェクトをテストしてください。** ビネットと彩度低下は昼と夜で大きく見え方が異なります。両方の極端な条件でエフェクトが適切に表示されることを確認してください。
+- **複数の高強度ぼかしエフェクトの重ね合わせを避けてください。** 複数のアクティブなぼかしリクエスターが合成され、画面が読めなくなる可能性があります。追加のエフェクトを開始する前に `IsActiveRequester()` で確認してください。
+
+---
+
+## 互換性と影響
+
+- **マルチ Mod:** 複数の Mod が同時に PPE リクエスターをアクティベートできます。エンジンは優先度レイヤーと演算子を使用してブレンドします。衝突が発生するのは、2つの Mod が同じ優先度レベルで同じパラメータに `PPOperators.SET` を使用した場合です --- 最後に書き込んだものが勝ちます。
+- **パフォーマンス:** PPE エフェクトは GPU バウンドのポストプロセスパスです。多数の同時エフェクト（ぼかし + グレイン + 色収差 + ビネット）を有効にすると、低スペック GPU ではフレームレートが低下する可能性があります。アクティブなエフェクトは最小限に抑えてください。
+- **サーバー/クライアント:** PPE は完全にクライアントサイドのレンダリングです。サーバーはポストプロセスエフェクトについて何も把握していません。PPE の状態に基づいてサーバーロジックを条件付けないでください。
+
+---
+
+[<< 前へ: カメラ](04-cameras.md) | **ポストプロセスエフェクト** | [次へ: 通知 >>](06-notifications.md)

@@ -1,10 +1,12 @@
-# Chapter 3.10: Advanced Widgets
+# Chapitre 3.10: Advanced Widgets
 
-[Home](../../README.md) | [<< Previous: Real Mod UI Patterns](09-real-mod-patterns.md) | **Advanced Widgets**
+[Accueil](../../README.md) | [<< Précédent : Real Mod UI Patterns](09-real-mod-patterns.md) | **Advanced Widgets**
 
 ---
 
-This chapter covers every advanced widget type with confirmed API signatures extracted from vanilla source code and real mod usage.
+Beyond the standard containers, text, and image widgets covered in earlier chapters, DayZ provides specialized widget types for rich text formatting, 2D canvas drawing, map display, 3D item previews, video playback, and render-to-texture. These widgets unlock capabilities that simple layouts cannot achieve.
+
+Ce chapitre couvre every advanced widget type with confirmed API signatures extracted from vanilla source code and real mod usage.
 
 ---
 
@@ -33,7 +35,7 @@ class RichTextWidget extends TextWidget
 
 ### Supported Inline Tags
 
-These tags are confirmed through vanilla DayZ usage in `news_feed.txt`, `InputUtils.c`, and multiple menu scripts.
+These tags are confirmed through le DayZ vanilla usage in `news_feed.txt`, `InputUtils.c`, and multiple menu scripts.
 
 #### Inline Image
 
@@ -60,7 +62,7 @@ string icon = string.Format(
 richTextWidget.SetText(icon + " Press to confirm");
 ```
 
-Common imagesets in vanilla DayZ:
+Common imagesets in le DayZ vanilla:
 - `dayz_gui` -- general UI icons (pin, notifications)
 - `dayz_inventory` -- inventory slot icons (shoulderleft, hands, vest, etc.)
 - `xbox_buttons` -- Xbox controller button images (A, B, X, Y)
@@ -94,7 +96,7 @@ Body text at smaller size goes here.
 </br>
 ```
 
-### Patrons d'Utilisation Pratiques
+### Practical Usage Patterns
 
 #### Getting a RichTextWidget reference
 
@@ -185,7 +187,7 @@ class HtmlWidget extends RichTextWidget
 };
 ```
 
-Used by the vanilla book system to load `.html` text files:
+Used by le vanilla book system to load `.html` text files:
 
 ```c
 // From scripts/5_mission/gui/bookmenu.c
@@ -196,7 +198,7 @@ content.LoadFile(book.ConfigGetString("file"));
 
 ### RichTextWidget vs TextWidget -- Key Differences
 
-| Fonctionnalite | TextWidget | RichTextWidget |
+| Feature | TextWidget | RichTextWidget |
 |---------|-----------|---------------|
 | Inline `<image>` tags | No | Yes |
 | `<h>` heading tags | No | Yes |
@@ -368,7 +370,7 @@ protected void RenderScaleRuler()
 
 COT (Community Online Tools) uses `CanvasWidget` as a full-screen overlay to draw skeleton wireframes on players and objects. This is one of the most sophisticated canvas usage patterns in any DayZ mod.
 
-**Architecture :**
+**Architecture:**
 
 1. A full-screen `CanvasWidget` is created from a layout file
 2. Every frame, `Clear()` is called
@@ -450,7 +452,7 @@ static void DrawSkeleton(Human human, CanvasWidget canvas)
 
 ### Vanilla Debug Canvas
 
-The engine provides a built-in debug canvas through the `Debug` class:
+Le moteur provides a built-in debug canvas through the `Debug` class:
 
 ```c
 // From scripts/3_game/tools/debug.c
@@ -690,7 +692,7 @@ class MapHandler : ScriptedWidgetEventHandler
 
 ### Expansion Map Marker System
 
-The Expansion mod builds a full marker system on top of the vanilla `MapWidget`. Key patterns:
+The Expansion mod builds a full marker system on top of le vanilla `MapWidget`. Key patterns:
 
 - Maintains separate dictionaries for personal, server, party, and player markers
 - Limits per-frame marker updates (`m_MaxMarkerUpdatesPerFrame = 3`) for performance
@@ -973,7 +975,7 @@ Subtitles require a font assigned to the `VideoWidget` in the layout. Subtitle f
 m_Video.DisableSubtitles(false);  // explicitly enable
 ```
 
-### Valeurs de Retour
+### Return Values
 
 The `Load()`, `Play()`, `Pause()`, and `Stop()` methods return `bool`, but this return value is **deprecated**. Use `VideoCallback.ON_ERROR` to detect failures instead.
 
@@ -1062,7 +1064,7 @@ imgWidget.SetImageTexture(0, rtTexture);
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 1. **Use the right widget for the job.** `TextWidget` for simple labels, `RichTextWidget` only when you need inline images or formatted content. `CanvasWidget` for dynamic 2D overlays, not static graphics (use `ImageWidget` for those).
 
@@ -1072,7 +1074,7 @@ imgWidget.SetImageTexture(0, rtTexture);
 
 4. **Map markers: clear-and-rebuild pattern.** There is no `RemoveUserMark()` method. Call `ClearUserMarks()` then re-add all active markers each update. This is the pattern used by every vanilla and mod implementation.
 
-5. **ItemPreviewWidget needs a real EntityAI.** You cannot preview a classname string -- you need a spawned entity reference. For inventory previews, use the actual inventory item.
+5. **ItemPreviewWidget needs a real EntityAI.** You cannot preview a classname string -- you need a apparitioned entity reference. For inventory previews, use the actual inventory item.
 
 6. **PlayerPreviewWidget owns a dummy player.** The widget creates an internal dummy `DayZPlayer`. Access it via `GetDummyPlayer()` to sync animations, but do not destroy it yourself.
 
@@ -1082,7 +1084,7 @@ imgWidget.SetImageTexture(0, rtTexture);
 
 ---
 
-## Observe dans les Mods Reels
+## Observé dans les mods réels
 
 | Mod | Widget | Usage |
 |-----|--------|-------|
@@ -1101,14 +1103,14 @@ imgWidget.SetImageTexture(0, rtTexture);
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 **1. Using RichTextWidget where TextWidget suffices.**
 Rich text parsing has overhead. If you only need plain text, use `TextWidget`.
 
 **2. Forgetting to Clear() the canvas.**
 ```c
-// WRONG - drawings accumulate, filling the screen
+// INCORRECT - drawings accumulate, filling the screen
 void Update(float dt)
 {
     m_Canvas.DrawLine(0, 0, 100, 100, 1, COLOR_RED);
@@ -1124,7 +1126,7 @@ void Update(float dt)
 
 **3. Drawing behind the camera.**
 ```c
-// WRONG - draws lines to objects behind you
+// INCORRECT - draws lines to objects behind you
 vector screenPos = g_Game.GetScreenPosRelative(worldPos);
 // No bounds check!
 
@@ -1148,7 +1150,7 @@ A canvas without `ignorepointer 1` will intercept all mouse events, making the U
 **7. Using backslashes in texture paths without doubling.**
 In Enforce Script strings, backslashes must be doubled:
 ```c
-// WRONG
+// INCORRECT
 "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
 // This is actually CORRECT in Enforce Script -- each \\ produces one \
 ```
@@ -1168,11 +1170,11 @@ In Enforce Script strings, backslashes must be doubled:
 | `RenderTargetWidget` | Yes | High (3D render) | Camera conflicts possible |
 | `RTTextureWidget` | Yes | Low (texture target) | Safe |
 
-All these widgets are client-side only. They have no server-side representation and cannot be created or manipulated from server scripts.
+All these widgets are côté client only. They have no côté serveur representation and cannot be created or manipulated from server scripts.
 
 ---
 
-## Resume
+## Résumé
 
 | Widget | Primary Use | Key Methods |
 |--------|-----------|-------------|
@@ -1188,4 +1190,4 @@ All these widgets are client-side only. They have no server-side representation 
 
 ---
 
-*This chapter completes the GUI system section. All API signatures and patterns are confirmed from vanilla DayZ scripts and real mod source code.*
+*This chapter completes the GUI system section. All API signatures and patterns are confirmed from le DayZ vanilla scripts and real mod source code.*

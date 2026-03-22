@@ -1,10 +1,14 @@
-# Chapter 5.2: inputs.xml --- Custom Keybindings
+# Chapitre 5.2: inputs.xml --- Custom Keybindings
 
-[Home](../../README.md) | [<< Previous: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Next: Credits.json >>](03-credits-json.md)
+[Accueil](../../README.md) | [<< Précédent : stringtable.csv](01-stringtable.md) | **inputs.xml** | [Suivant : Credits.json >>](03-credits-json.md)
 
 ---
 
-## Table des matieres
+> **Résumé :** The `inputs.xml` file lets your mod register custom keybindings that appear in le joueur's Controls settings menu. Players can view, rebind, and toggle these inputs just like vanilla actions. This est le standard mechanism for adding hotkeys to DayZ mods.
+
+---
+
+## Table des matières
 
 - [Overview](#overview)
 - [File Location](#file-location)
@@ -26,13 +30,13 @@
 
 ## Vue d'ensemble
 
-When your mod needs the player to press a key --- opening a menu, toggling a feature, commanding an AI unit --- you register a custom input action in `inputs.xml`. The engine reads this file at startup and integrates your actions into the universal input system. Players see your keybindings in the game's Settings > Controls menu, grouped under a heading you define.
+When your mod needs le joueur to press a key --- opening a menu, toggling a feature, commanding an AI unit --- you register a custom input action in `inputs.xml`. Le moteur reads this file at startup and integrates your actions into the universal input system. Players see your keybindings in le jeu's Settings > Controls menu, grouped under a heading you define.
 
 Custom inputs are identified by a unique action name (conventionally prefixed with `UA` for "User Action") and can have default keybindings that players can rebind at will.
 
 ---
 
-## File Location
+## Emplacement du fichier
 
 Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
 
@@ -48,11 +52,11 @@ Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
         5_Mission/
 ```
 
-Some mods place it directly in the `Scripts/` folder. Both locations work. The engine discovers the file automatically --- no config.cpp registration is needed.
+Some mods place it directly in the `Scripts/` folder. Both locations work. Le moteur discovers the file automatically --- no config.cpp registration is needed.
 
 ---
 
-## Structure XML complete
+## Complete XML Structure
 
 An `inputs.xml` file has three sections, all wrapped in a `<modded_inputs>` root element:
 
@@ -78,7 +82,7 @@ All three sections --- `<actions>`, `<sorting>`, and `<preset>` --- work togethe
 
 ---
 
-## Bloc Actions
+## Actions Block
 
 The `<actions>` block declares every input action your mod provides. Each action is a single `<input>` element.
 
@@ -113,9 +117,9 @@ The `UA` prefix is conventional but not enforced. Expansion AI uses `eAI` as its
 
 ---
 
-## Bloc Sorting
+## Sorting Block
 
-The `<sorting>` block controls how your inputs appear in the player's Controls settings. It defines a named group (which becomes a section header) and lists the inputs in display order.
+The `<sorting>` block controls how your inputs appear in le joueur's Controls settings. It defines a named group (which becomes a section header) and lists the inputs in display order.
 
 ### Syntax
 
@@ -136,7 +140,7 @@ The `<sorting>` block controls how your inputs appear in the player's Controls s
 
 ### How It Appears
 
-In the Controls settings, the player sees:
+In the Controls settings, le joueur sees:
 
 ```
 [MyMod]                          <-- from the sorting loc
@@ -144,13 +148,13 @@ In the Controls settings, the player sees:
   Toggle HUD ............. [H]   <-- from the input loc + preset
 ```
 
-Only inputs listed in the `<sorting>` block appear in the settings menu. Inputs defined in `<actions>` but not listed in `<sorting>` are silently registered but invisible to the player (even if `visible` is not explicitly set to `false`).
+Only inputs listed in the `<sorting>` block appear in the settings menu. Inputs defined in `<actions>` but not listed in `<sorting>` are silently registered but invisible to le joueur (even if `visible` is not explicitly set to `false`).
 
 ---
 
-## Bloc Preset (raccourcis par defaut)
+## Preset Block (Default Keybindings)
 
-The `<preset>` block assigns default keys to your actions. These are the keys the player starts with before any customization.
+The `<preset>` block assigns default keys to your actions. These are the keys le joueur starts with before any customization.
 
 ### Simple Key Binding
 
@@ -166,11 +170,11 @@ This binds the `Y` key as the default for `UAMyModOpenMenu`.
 
 ### No Default Key
 
-If you omit an action from the `<preset>` block, it has no default binding. The player must manually assign a key in Settings > Controls. This is appropriate for optional or advanced bindings.
+If you omit an action from the `<preset>` block, it has no default binding. Le joueur must manually assign a key in Settings > Controls. This is appropriate for optional or advanced bindings.
 
 ---
 
-## Combinaisons de modificateurs
+## Modifier Combos
 
 To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
 
@@ -184,7 +188,7 @@ To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
 </input>
 ```
 
-The outer `<btn>` is the modifier; the inner `<btn>` is the primary key. The player must hold the modifier and then press the primary key.
+The outer `<btn>` is the modifier; the inner `<btn>` is the primary key. Le joueur must hold the modifier and then press the primary key.
 
 ### Shift + Key
 
@@ -204,9 +208,9 @@ The outer `<btn>` is the modifier; the inner `<btn>` is the primary key. The pla
 
 ---
 
-## Entrees cachees
+## Hidden Inputs
 
-Use `visible="false"` to register an input that the player cannot see or rebind in the Controls menu. This is useful for internal inputs used by your mod's code that should not be player-configurable.
+Use `visible="false"` to register an input that le joueur cannot see or rebind in the Controls menu. This is useful for internal inputs used by your mod's code that should not be player-configurable.
 
 ```xml
 <actions>
@@ -227,7 +231,7 @@ Hidden inputs can still have default key assignments in the `<preset>` block:
 
 ---
 
-## Touches par defaut multiples
+## Multiple Default Keys
 
 An action can have multiple default keys. List multiple `<btn>` elements as siblings:
 
@@ -242,7 +246,7 @@ Both `Enter` and `Numpad Enter` will trigger `UAExpansionConfirm`. This is usefu
 
 ---
 
-## Acceder aux entrees dans les scripts
+## Accessing Inputs in Script
 
 ### Getting the Input API
 
@@ -296,11 +300,11 @@ The `false` parameter in `LocalPress("name", false)` indicates that the check sh
 
 ---
 
-## Reference des methodes d'entree
+## Input Methods Reference
 
 Once you have a `UAInput` reference (from `GetUApi().GetInputByName()`), or are using the `Input` class directly, these methods detect different input states:
 
-| Method | Returns | When True |
+| Méthode | Retourne | When True |
 |--------|---------|-----------|
 | `LocalPress()` | `bool` | The key was pressed **this frame** (single trigger on key-down) |
 | `LocalRelease()` | `bool` | The key was released **this frame** (single trigger on key-up) |
@@ -350,7 +354,7 @@ if (input.LocalHold("UAExpansionGPSToggle"))
 
 ---
 
-## Supprimer et desactiver les entrees
+## Suppressing and Disabling Inputs
 
 ### ForceDisable
 
@@ -395,7 +399,7 @@ RemoveActiveInputExcludes({"inventory"});
 
 ---
 
-## Reference des noms de touches
+## Key Names Reference
 
 Key names used in the `<btn name="">` attribute follow a specific naming convention. Here is the complete reference.
 
@@ -440,7 +444,7 @@ Key names used in the `<btn name="">` attribute follow a specific naming convent
 
 ---
 
-## Exemples concrets
+## Exemples réels
 
 ### DayZ Expansion AI
 
@@ -592,12 +596,55 @@ If two mods define `UAOpenMenu`, only one will work. Always use your mod prefix:
 
 ### Missing Sorting Entry
 
-If you define an action in `<actions>` but forget to list it in `<sorting>`, the action works in code but is invisible in the Controls menu. The player has no way to rebind it.
+If you define an action in `<actions>` but forget to list it in `<sorting>`, the action works in code but is invisible in the Controls menu. Le joueur has no way to rebind it.
 
 ### Forgetting to Define in Actions
 
-If you list an input in `<sorting>` or `<preset>` but never define it in `<actions>`, the engine silently ignores it.
+If you list an input in `<sorting>` or `<preset>` but never define it in `<actions>`, le moteur silently ignores it.
 
 ### Binding Conflicting Keys
 
-Choosing keys that conflict with vanilla bindings (like `W`, `A`, `S`, `D`, `Tab`, `I`) causes both your action and the vanilla action to fire simultaneously. Use less common keys (F5-F12, numpad keys) or modifier combos for safety.
+Choosing keys that conflict with vanilla bindings (like `W`, `A`, `S`, `D`, `Tab`, `I`) causes both your action and le vanilla action to fire simultaneously. Use less common keys (F5-F12, numpad keys) or modifier combos for safety.
+
+---
+
+## Bonnes pratiques
+
+- Always prefix action names with `UA` + your mod name (e.g., `UAMyModOpenMenu`). Generic names like `UAOpenMenu` will collide with other mods.
+- Provide a `loc` attribute for every visible input and define the corresponding stringtable key. Without it, the Controls menu shows the raw action name.
+- Choose uncommon default keys (F5-F12, numpad) or modifier combos (Ctrl+key) to minimize conflicts with vanilla and popular mod keybindings.
+- Always list visible inputs in the `<sorting>` block. An input defined in `<actions>` but missing from `<sorting>` is invisible to le joueur and cannot be rebound.
+- Cache the `UAInput` reference from `GetUApi().GetInputByName()` in a member variable rather than calling it every frame in `OnUpdate`. The string lookup has overhead.
+
+---
+
+## Théorie vs Pratique
+
+> Ce que la documentation dit par rapport à ce qui se passe réellement à l'exécution.
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| `visible="false"` hides from Controls menu | Input is registered but invisible | Hidden inputs still appear in the `<sorting>` block listing in some DayZ versions. Omitting from `<sorting>` is the reliable way to hide inputs |
+| `LocalPress()` fires once per key-down | Single trigger on the frame the key is pressed | If le jeu hitches (low FPS), `LocalPress()` can be missed entirely. For critical actions, also check `LocalValue() > 0` as a fallback |
+| Modifier combos via nested `<btn>` | Outer is modifier, inner is trigger | The modifier key alone also registers as a press on its own input (e.g., `kLControl` is also vanilla crouch). Players holding Ctrl+Click will also crouch |
+| `ForceDisable(true)` suppresses input | Input is completely ignored | `ForceDisable` persists until explicitly re-enabled. If your mod crashes or the UI closes without calling `ForceDisable(false)`, the input stays disabled until game restart |
+| Multiple `<btn>` siblings | Both keys trigger the same action | Works correctly, but the Controls menu only displays the first key. Le joueur can see and rebind the first key but may not realize the second default exists |
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** Action name collisions are the primary risk. If two mods define `UAOpenMenu`, only one works and the conflict is silent. There is no engine warning for duplicate action names across mods.
+- **Performance :** Input polling via `GetUApi().GetInputByName()` involves a string hash lookup. Polling 5-10 inputs per frame is negligible, but caching the `UAInput` reference is still recommended for mods with many inputs.
+- **Version :** The `inputs.xml` format and `<modded_inputs>` structure have been stable since DayZ 1.0. The `visible` attribute was added later (around 1.08) -- on older versions, all inputs are always visible in the Controls menu.
+
+---
+
+## Observé dans les mods réels
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| Modifier combo `Ctrl+Click` | Expansion AI | `eAISetWaypoint` uses nested `<btn name="kLControl"><btn name="mBLeft"/>` for Ctrl+Left Click to place AI waypoints |
+| Hidden utility inputs | Expansion Market | `UAExpansionConfirm` is `visible="false"` with dual keys (Enter + Numpad Enter) for internal confirmation logic |
+| `ForceDisable` during menu open | COT, VPP | Admin panels call `ForceDisable(true)` on gameplay inputs when the panel opens, and `ForceDisable(false)` on close to prevent character movement while typing |
+| Cached `UAInput` in member variable | DabsFramework | Stores `GetUApi().GetInputByName()` result in a class field during init, polls the cached reference in `OnUpdate` to avoid per-frame string lookup |

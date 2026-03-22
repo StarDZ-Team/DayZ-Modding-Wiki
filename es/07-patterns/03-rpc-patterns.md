@@ -1,10 +1,10 @@
-# Chapter 7.3: RPC Communication Patterns
+# Capítulo 7.3: RPC Communication Patterns
 
-[Home](../../README.md) | [<< Previous: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Next: Config Persistence >>](04-config-persistence.md)
+[Inicio](../../README.md) | [<< Anterior: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Siguiente: Config Persistence >>](04-config-persistence.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Remote Procedure Calls (RPCs) are the only way to send data between client and server in DayZ. Every admin panel, every synced UI, every server-to-client notification, and every client-to-server action request flows through RPCs. Understanding how to build them correctly --- with proper serialization order, permission checks, and error handling --- is essential for any mod that does more than add items to CfgVehicles.
 
@@ -70,14 +70,14 @@ void OnRPC_DamageReport(PlayerIdentity sender, Object target, ParamsReadContext 
 rpc.Send(object, rpcId, guaranteed, identity);
 ```
 
-| Parameter | Tipo | Descripcion |
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
 | `object` | `Object` | The target entity (e.g., a player or vehicle). Use `null` for global RPCs. |
 | `rpcId` | `int` | Integer identifying this RPC type. Must match on both sides. |
 | `guaranteed` | `bool` | `true` = reliable (TCP-like, retransmits on loss). `false` = unreliable (fire-and-forget). |
 | `identity` | `PlayerIdentity` | Recipient. `null` from client = send to server. `null` from server = broadcast to all clients. Specific identity = send to that client only. |
 
-### Cuando Usar `guaranteed`
+### When to Use `guaranteed`
 
 - **`true` (reliable):** Config changes, permission grants, teleport commands, ban actions --- anything where a dropped packet would leave client and server out of sync.
 - **`false` (unreliable):** Rapid position updates, visual effects, HUD state that refreshes every few seconds anyway. Lower overhead, no retransmit queue.
@@ -102,7 +102,7 @@ CLIENT                          SERVER
   │  6. Update UI                 │
 ```
 
-### Ejemplo Completo: Teleport Request
+### Complete Example: Teleport Request
 
 **Client sends the request:**
 
@@ -113,7 +113,7 @@ class TeleportClient
     {
         ScriptRPC rpc = new ScriptRPC();
         rpc.Write(position);
-        rpc.Send(null, MYMOD_RPC_TELEPORT, true, null);  // null identity = send to server
+        rpc.Send(null, MY_RPC_TELEPORT, true, null);  // null identity = send to server
     }
 };
 ```
@@ -153,7 +153,7 @@ class TeleportServer
         ScriptRPC response = new ScriptRPC();
         response.Write(true);           // success flag
         response.Write(position);       // echo back the position
-        response.Send(null, MYMOD_RPC_TELEPORT_RESULT, true, sender);
+        response.Send(null, MY_RPC_TELEPORT_RESULT, true, sender);
     }
 };
 ```
@@ -227,7 +227,7 @@ if (!HasPermission(sender, "MyMod.Spawn"))
 
 ---
 
-## Manejo de Errores and Notifications
+## Error Handling and Notifications
 
 RPCs can fail in multiple ways: network drops, malformed data, server-side validation failures. Robust mods handle all of these.
 
@@ -382,6 +382,34 @@ vector pos;     ctx.Read(pos);
 
 The DayZ modding community uses three fundamentally different approaches to RPC routing. Each has trade-offs.
 
+### Three RPC Approaches Compared
+
+```mermaid
+graph TB
+    subgraph "Approach 1: Single ID + String Route"
+        S1["All RPCs share<br/>one engine ID"]
+        S1 --> S1D["Dispatcher reads<br/>route string from payload"]
+        S1D --> S1H1["Handler A"]
+        S1D --> S1H2["Handler B"]
+        S1D --> S1H3["Handler C"]
+    end
+
+    subgraph "Approach 2: Integer Range per Module"
+        S2M1["Module A<br/>IDs 10100-10119"]
+        S2M2["Module B<br/>IDs 10200-10219"]
+        S2M3["Module C<br/>IDs 10300-10319"]
+    end
+
+    subgraph "Approach 3: Hash-Based IDs"
+        S3["ClassName::Method<br/>.Hash() → unique ID"]
+        S3 --> S3C["Collision detection<br/>at registration"]
+    end
+
+    style S1 fill:#4A90D9,color:#fff
+    style S2M1 fill:#2D8A4E,color:#fff
+    style S3 fill:#D97A4A,color:#fff
+```
+
 ### 1. CF Named RPCs
 
 Community Framework provides `GetRPCManager()` which routes RPCs by string names grouped by mod namespace.
@@ -462,9 +490,9 @@ modded class DayZGame
 - No namespace isolation
 - No built-in registry or discoverability
 
-### 3. MyMod String-Routed RPCs
+### 3. Custom String-Routed RPCs
 
-MyMod uses a single engine RPC ID (83722) and multiplexes by writing a mod name + function name as a string header in every RPC. All routing happens inside `MyRPC`.
+A custom string-routed system uses a single engine RPC ID and multiplexes by writing a mod name + function name as a string header in every RPC. All routing happens inside a static manager class (`MyRPC` in this example).
 
 ```c
 // Registration:
@@ -477,7 +505,7 @@ MyRPC.Send("MyMod", "RPC_SpawnItem", null, true, null);
 ScriptRPC rpc = MyRPC.CreateRPC("MyMod", "RPC_SpawnItem");
 rpc.Write("AK74");
 rpc.Write(5);    // quantity
-rpc.Send(null, MyRPC.MyFRAMEWORK_RPC_ID, true, null);
+rpc.Send(null, MyRPC.FRAMEWORK_RPC_ID, true, null);
 
 // Handler:
 void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
@@ -506,7 +534,7 @@ void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 
 ### Comparison Table
 
-| Caracteristica | CF Named | Integer-Range | MyMod String-Routed |
+| Característica | CF Named | Integer-Range | Custom String-Routed |
 |---------|----------|---------------|---------------------|
 | **Collision risk** | None (namespaced) | High | None (namespaced) |
 | **Dependencies** | Requires CF | None | None |
@@ -520,7 +548,7 @@ void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 
 - **Your mod depends on CF anyway** (COT/Expansion integration): use CF Named RPCs
 - **Standalone mod, minimal dependencies**: use integer-range or build a string-routed system
-- **MyMod ecosystem mod**: use `MyRPC.Register()` / `MyRPC.CreateRPC()`
+- **Building a framework**: consider a string-routed system like the custom `MyRPC` pattern above
 - **Learning / prototyping**: integer-range is the simplest to understand
 
 ---
@@ -591,7 +619,7 @@ Or use a centralized `Cleanup()` that clears the entire handler map (as `MyRPC.C
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Always check `ctx.Read()` return values.** Every read can fail. Return immediately on failure.
 
@@ -611,4 +639,24 @@ Or use a centralized `Cleanup()` that clears the entire handler map (as `MyRPC.C
 
 ---
 
-[<< Anterior: Module Systems](02-module-systems.md) | [Inicio](../../README.md) | [Siguiente: Config Persistence >>](04-config-persistence.md)
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Integer-range RPCs are collision-prone --- two mods choosing the same ID silently intercept each other's messages. String-routed or CF-named RPCs avoid this by using namespace + function name as the key.
+- **Load Order:** RPC handler registration order matters only when multiple mods `modded class DayZGame` and override `OnRPC`. Each must call `super.OnRPC()` for unhandled IDs, or downstream mods never receive their RPCs. String-routed systems avoid this by using a single engine ID.
+- **Listen Server:** On listen servers, both client and server run in the same process. An RPC sent with `identity = null` from the server side will also be received locally. Guard handlers with `if (type != CallType.Server) return;` or check `GetGame().IsServer()` / `GetGame().IsClient()` as appropriate.
+- **Performance:** RPC dispatch overhead is minimal (string lookup or integer switch). The bottleneck is payload size --- DayZ has a practical per-RPC limit (~64 KB). For large data (config sync), paginate across multiple RPCs.
+- **Migration:** RPC IDs are a mod-internal detail and unaffected by DayZ version updates. If you change your RPC wire format (add/remove fields), old clients talking to a new server will silently desync. Version your RPC payloads or force client updates.
+
+---
+
+## Teoría vs Práctica
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use protocol buffers or schema-based serialization | Enforce Script has no protobuf support; you manually `Write`/`Read` primitives in matched order |
+| Validate all inputs with schema enforcement | No schema validation exists; every `ctx.Read()` return value must be checked individually |
+| RPCs should be idempotent | Practical in DayZ only for query RPCs; mutation RPCs (spawn, delete, teleport) are inherently non-idempotent --- guard with permission checks instead |
+
+---
+
+[Inicio](../../README.md) | [<< Anterior: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Siguiente: Config Persistence >>](04-config-persistence.md)

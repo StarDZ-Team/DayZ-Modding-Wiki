@@ -1,14 +1,16 @@
-# Chapter 3.9: Real Mod UI Patterns
+# Capítulo 3.9: Real Mod UI Patterns
 
-[Home](../../README.md) | [<< Previous: Dialogs & Modals](08-dialogs-modals.md) | **Real Mod UI Patterns** | [Next: Advanced Widgets >>](10-advanced-widgets.md)
-
----
-
-Todo el codigo mostrado es extraido de codigo fuente real de mods. Las rutas de archivos referencian los repositorios originales.
+[Inicio](../../README.md) | [<< Anterior: Dialogs & Modals](08-dialogs-modals.md) | **Real Mod UI Patterns** | [Siguiente: Advanced Widgets >>](10-advanced-widgets.md)
 
 ---
 
-## Por Que Estudiar Mods Reales?
+This chapter surveys UI patterns found in six professional DayZ mods: COT (Community Online Tools), VPP Admin Tools, DabsFramework, Colorful UI, Expansion, and DayZ Editor. Each mod solves different problems. Studying their approaches gives you a library of proven patterns beyond what official documentation covers.
+
+All code shown is extracted from actual mod source. File paths reference the original repositories.
+
+---
+
+## Why Study Real Mods?
 
 DayZ documentation explains individual widgets and event callbacks but says nothing about:
 
@@ -22,11 +24,11 @@ These are architecture problems. Every large mod invents solutions for them. Som
 
 ---
 
-## Patrones de UI de COT (Community Online Tools)
+## COT (Community Online Tools) UI Patterns
 
 COT is the most widely-used DayZ admin tool. Its UI architecture is built around a module-form-window system where each tool (ESP, Player Manager, Teleport, Object Spawner, etc.) is a self-contained module with its own panel.
 
-### Arquitectura Modulo-Formulario-Ventana
+### Module-Form-Window Architecture
 
 COT separates concerns into three layers:
 
@@ -125,9 +127,9 @@ class JMExampleForm: JMFormBase
 }
 ```
 
-**Punto clave:** Each tool is entirely self-contained. Adding a new admin tool means creating one Module class, one Form class, one layout file, and inserting one line in the constructor. No existing code changes.
+**Key takeaway:** Each tool is entirely self-contained. Adding a new admin tool means creating one Module class, one Form class, one layout file, and inserting one line in the constructor. No existing code changes.
 
-### UI Programatica con UIActionManager
+### Programmatic UI with UIActionManager
 
 COT does not build complex forms in layout files. Instead, it uses a factory class (`UIActionManager`) that creates standardized UI action widgets at runtime:
 
@@ -168,7 +170,7 @@ Each `UIAction*` widget type has its own layout file (e.g., `UIActionSlider.layo
 - No layout file duplication
 - New action types can be added once and used everywhere
 
-### Overlay ESP (Dibujar en CanvasWidget)
+### ESP Overlay (Drawing on CanvasWidget)
 
 COT's ESP system draws labels, health bars, and lines directly over the 3D world using `CanvasWidget`. The key pattern is a screen-space `CanvasWidget` that covers the entire viewport, with individual ESP widget handlers positioned at projected world coordinates:
 
@@ -204,7 +206,7 @@ class JMESPWidgetHandler: ScriptedWidgetEventHandler
 
 ESP widgets are created from prefab layouts (`esp_widget.layout`) and positioned each frame by projecting 3D positions to screen coordinates. The canvas itself is a fullscreen overlay loaded at startup.
 
-### Dialogos de Confirmacion
+### Confirmation Dialogs
 
 COT provides a callback-based confirmation system built into `JMFormBase`. Confirmations are created with named callbacks:
 
@@ -239,11 +241,11 @@ This allows chaining confirmations (one confirmation opens another) without hard
 
 ---
 
-## Patrones de UI de VPP Admin Tools
+## VPP Admin Tools UI Patterns
 
 VPP takes a different approach from COT: it uses `UIScriptedMenu` with a toolbar HUD, draggable sub-windows, and a global dialog box system.
 
-### Registro de Botones de la Barra de Herramientas
+### Toolbar Button Registration
 
 `VPPAdminHud` maintains a list of button definitions. Each button maps a permission string to a display name, icon, and tooltip:
 
@@ -275,7 +277,7 @@ class VPPAdminHud extends VPPScriptedMenu
 
 External mods can override `DefineButtons()` to add their own toolbar buttons, making VPP extensible without modifying its source.
 
-### Sistema de Ventanas de Sub-Menu
+### Sub-Menu Window System
 
 Each tool panel extends `AdminHudSubMenu`, which provides draggable window behavior, show/hide toggling, and window priority management:
 
@@ -332,7 +334,7 @@ class AdminHudSubMenu: ScriptedWidgetEventHandler
 }
 ```
 
-**Punto clave:** VPP builds a mini window manager inside DayZ. Each sub-menu is a draggable, resizable window with focus management. The `SetWindowPriorty()` call adjusts z-order so the clicked window comes to front.
+**Key takeaway:** VPP builds a mini window manager inside DayZ. Each sub-menu is a draggable, resizable window with focus management. The `SetWindowPriorty()` call adjusts z-order so the clicked window comes to front.
 
 ### VPPDialogBox -- Callback-based Dialog
 
@@ -420,7 +422,7 @@ class ConfirmationEventHandler extends ScriptedWidgetEventHandler
 }
 ```
 
-### PopUp con OnWidgetScriptInit
+### PopUp with OnWidgetScriptInit
 
 VPP popup forms bind to their layout via `OnWidgetScriptInit` and use `ScriptedWidgetEventHandler`:
 
@@ -468,15 +470,15 @@ class PopUpCreatePreset extends ScriptedWidgetEventHandler
 }
 ```
 
-**Punto clave:** `delete this` on close is the common popup disposal pattern. The destructor calls `m_root.Unlink()` to remove the widget tree. This is clean but requires care -- if anything holds a reference to the popup after deletion, you get a null access.
+**Key takeaway:** `delete this` on close is the common popup disposal pattern. The destructor calls `m_root.Unlink()` to remove the widget tree. This is clean but requires care -- if anything holds a reference to the popup after deletion, you get a null access.
 
 ---
 
-## Patrones de UI de DabsFramework
+## DabsFramework UI Patterns
 
 DabsFramework introduces a full MVC (Model-View-Controller) architecture for DayZ UI. It is used by DayZ Editor and Expansion as their UI foundation.
 
-### ViewController y Data Binding
+### ViewController and Data Binding
 
 The core idea: instead of manually finding widgets and setting their text, you declare properties on a controller class and bind them to widgets by name in the layout editor.
 
@@ -621,7 +623,7 @@ class EditorCommand: RelayCommand
 }
 ```
 
-**Punto clave:** DabsFramework eliminates boilerplate. You declare data, bind it by name, and the framework handles synchronization. The cost is the learning curve and the framework dependency.
+**Key takeaway:** DabsFramework eliminates boilerplate. You declare data, bind it by name, and the framework handles synchronization. The cost is the learning curve and the framework dependency.
 
 ---
 
@@ -747,7 +749,7 @@ static bool CuiDebug         = true;
 
 This is the simplest possible config system: edit the script, rebuild PBO. No JSON loading, no config manager. For a client-only visual mod, this is appropriate.
 
-**Punto clave:** Colorful UI demonstrates that you can retheme the entire DayZ client without server-side code, using only `modded class` overrides, custom layout files, and a centralized color system.
+**Key takeaway:** Colorful UI demonstrates that you can retheme the entire DayZ client without server-side code, using only `modded class` overrides, custom layout files, and a centralized color system.
 
 ---
 
@@ -855,7 +857,7 @@ class ExpansionMarketMenu: ExpansionScriptViewMenu
 }
 ```
 
-**Punto clave:** For complex interactive UIs, Expansion combines DabsFramework's MVC with traditional widget references. The controller handles data binding for lists and text, while direct widget references handle specialized widgets like `ItemPreviewWidget` and `PlayerPreviewWidget` that need imperative control.
+**Key takeaway:** For complex interactive UIs, Expansion combines DabsFramework's MVC with traditional widget references. The controller handles data binding for lists and text, while direct widget references handle specialized widgets like `ItemPreviewWidget` and `PlayerPreviewWidget` that need imperative control.
 
 ### ExpansionScriptViewMenu -- Menu Lifecycle
 
@@ -1242,7 +1244,7 @@ If you create widgets with `CreateWidgets()`, you own them. Call `Unlink()` on t
 
 ---
 
-## Resumen: Which Pattern to Use When
+## Summary: Which Pattern to Use When
 
 | Need | Recommended Pattern | Source Mod |
 |------|-------------------|------------|

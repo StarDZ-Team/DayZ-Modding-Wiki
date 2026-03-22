@@ -1,39 +1,39 @@
-# Chapter 6.4: Camera System
+# 6.4. fejezet: Kamerarendszer
 
-[Home](../../README.md) | [<< Previous: Weather](03-weather.md) | **Cameras** | [Next: Post-Process Effects >>](05-ppe.md)
-
----
-
-## Bevezetes
-
-DayZ uses a multi-layered camera system. The player camera is managed by the engine through `DayZPlayerCamera` subclasses. For modding and debugging, the `FreeDebugCamera` allows free-flight. The engine also provides global accessors for the current camera state. This chapter covers camera types, how to access camera data, and how to use the scripted camera tools.
+[Kezdőlap](../../README.md) | [<< Előző: Időjárás](03-weather.md) | **Kamerák** | [Következő: Utófeldolgozási effektek >>](05-ppe.md)
 
 ---
 
-## Current Camera State (Global Accessors)
+## Bevezetés
 
-These methods are available anywhere and return the active camera's state regardless of camera type:
+A DayZ többrétegű kamerarendszert használ. A játékos kameráját a motor a `DayZPlayerCamera` alosztályokon keresztül kezeli. Modoláshoz és hibakereséshez a `FreeDebugCamera` szabad repülést tesz lehetővé. A motor globális hozzáférőket is biztosít az aktuális kameraállapothoz. Ez a fejezet a kameratípusokat, a kameraadatok elérését és a szkriptelt kameraeszközök használatát tárgyalja.
+
+---
+
+## Aktuális kameraállapot (Globális hozzáférők)
+
+Ezek a metódusok bárhonnan elérhetők, és az aktív kamera állapotát adják vissza a kameratípustól függetlenül:
 
 ```c
-// Current camera world position
+// Aktuális kamera világpozíciója
 proto native vector GetGame().GetCurrentCameraPosition();
 
-// Current camera forward direction (unit vector)
+// Aktuális kamera előre irányuló irányvektora (egységvektor)
 proto native vector GetGame().GetCurrentCameraDirection();
 
-// Convert world position to screen coordinates
+// Világpozíció átváltása képernyőkoordinátákra
 proto native vector GetGame().GetScreenPos(vector world_pos);
-// Returns: x = screen X (pixels), y = screen Y (pixels), z = depth (distance from camera)
+// Visszatérés: x = képernyő X (pixel), y = képernyő Y (pixel), z = mélység (távolság a kamerától)
 ```
 
-**Example --- check if a position is on screen:**
+**Példa --- pozíció ellenőrzése, hogy a képernyőn van-e:**
 
 ```c
 bool IsPositionOnScreen(vector worldPos)
 {
     vector screenPos = GetGame().GetScreenPos(worldPos);
 
-    // z < 0 means behind the camera
+    // z < 0 azt jelenti, hogy a kamera mögött van
     if (screenPos[2] < 0)
         return false;
 
@@ -45,7 +45,7 @@ bool IsPositionOnScreen(vector worldPos)
 }
 ```
 
-**Example --- get distance from camera to a point:**
+**Példa --- távolság lekérése a kamerától egy pontig:**
 
 ```c
 float DistanceFromCamera(vector worldPos)
@@ -56,34 +56,34 @@ float DistanceFromCamera(vector worldPos)
 
 ---
 
-## DayZPlayerCamera System
+## DayZPlayerCamera rendszer
 
-DayZ player cameras are native classes managed by the engine's player controller. They are not directly instantiated from script --- instead, the engine selects the appropriate camera based on the player's state (standing, prone, swimming, vehicle, unconscious, etc.).
+A DayZ játékos kamerái a motor játékosvezérlője által kezelt natív osztályok. Nem közvetlenül példányosíthatók szkriptből --- ehelyett a motor a játékos állapota alapján választja ki a megfelelő kamerát (álló, fekvő, úszó, járműben, eszméletlen stb.).
 
-### Camera Types (DayZPlayerKamerak Constants)
+### Kameratípusok (DayZPlayerCameras konstansok)
 
-The camera type IDs are defined as constants:
+A kameratípus-azonosítók konstansként vannak definiálva:
 
-| Konstans | Leiras |
-|----------|-------------|
-| `DayZPlayerKamerak.DAYZCAMERA_1ST` | First-person camera |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_ERC` | Third-person erect (standing) |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_CRO` | Third-person crouched |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_PRO` | Third-person prone |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_ERC_SPR` | Third-person sprint |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_ERC_RAISED` | Third-person raised weapon |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_CRO_RAISED` | Third-person crouched raised |
-| `DayZPlayerKamerak.DAYZCAMERA_IRONSIGHTS` | Ironsight aiming |
-| `DayZPlayerKamerak.DAYZCAMERA_OPTICS` | Optic/scope aiming |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_VEHICLE` | Third-person vehicle |
-| `DayZPlayerKamerak.DAYZCAMERA_1ST_VEHICLE` | First-person vehicle |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_SWIM` | Third-person swimming |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_UNCONSCIOUS` | Third-person unconscious |
-| `DayZPlayerKamerak.DAYZCAMERA_1ST_UNCONSCIOUS` | First-person unconscious |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_CLIMB` | Third-person climbing |
-| `DayZPlayerKamerak.DAYZCAMERA_3RD_JUMP` | Third-person jumping |
+| Konstans | Leírás |
+|----------|--------|
+| `DayZPlayerCameras.DAYZCAMERA_1ST` | Első személyű kamera |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC` | Harmadik személyű álló |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO` | Harmadik személyű guggolás |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_PRO` | Harmadik személyű fekvés |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_SPR` | Harmadik személyű sprint |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_RAISED` | Harmadik személyű felemelt fegyver |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO_RAISED` | Harmadik személyű guggolás felemelt fegyverrel |
+| `DayZPlayerCameras.DAYZCAMERA_IRONSIGHTS` | Irányzékos célzás |
+| `DayZPlayerCameras.DAYZCAMERA_OPTICS` | Optikai/távcsöves célzás |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_VEHICLE` | Harmadik személyű jármű |
+| `DayZPlayerCameras.DAYZCAMERA_1ST_VEHICLE` | Első személyű jármű |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_SWIM` | Harmadik személyű úszás |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_UNCONSCIOUS` | Harmadik személyű eszméletlen |
+| `DayZPlayerCameras.DAYZCAMERA_1ST_UNCONSCIOUS` | Első személyű eszméletlen |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CLIMB` | Harmadik személyű mászás |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_JUMP` | Harmadik személyű ugrás |
 
-### Getting the Current Camera Type
+### Az aktuális kameratípus lekérése
 
 ```c
 DayZPlayer player = GetGame().GetPlayer();
@@ -101,40 +101,40 @@ if (player)
 
 ## FreeDebugCamera
 
-**File:** `5_Mission/gui/scriptconsole/freedebugcamera.c`
+**Fájl:** `5_Mission/gui/scriptconsole/freedebugcamera.c`
 
-The free-flight camera used for debugging and cinematic work. Available in diagnostic builds or when enabled by mods.
+A hibakereséshez és filmes munkához használt szabadon repülő kamera. Diagnosztikai buildekben vagy modok által engedélyezve érhető el.
 
-### Accessing the Instance
+### A példány elérése
 
 ```c
 FreeDebugCamera GetFreeDebugCamera();
 ```
 
-This global function returns the singleton free camera instance (or null if it does not exist).
+Ez a globális függvény a szabad kamera singleton példányát adja vissza (vagy null-t, ha nem létezik).
 
-### Key Methods
+### Fő metódusok
 
 ```c
-// Enable/disable the free camera
+// Szabad kamera engedélyezése/letiltása
 static void SetActive(bool active);
 static bool GetActive();
 
-// Position and orientation
+// Pozíció és orientáció
 vector GetPosition();
 void   SetPosition(vector pos);
 vector GetOrientation();
-void   SetOrientation(vector ori);   // yaw, pitch, roll
+void   SetOrientation(vector ori);   // fordulás, dőlés, billentés
 
-// Speed
+// Sebesség
 void SetFlySpeed(float speed);
 float GetFlySpeed();
 
-// Camera direction
+// Kamera iránya
 vector GetDirection();
 ```
 
-**Example --- activate free camera and teleport it:**
+**Példa --- szabad kamera aktiválása és teleportálása:**
 
 ```c
 void ActivateDebugCamera(vector pos)
@@ -145,7 +145,7 @@ void ActivateDebugCamera(vector pos)
     if (cam)
     {
         cam.SetPosition(pos);
-        cam.SetOrientation(Vector(0, -30, 0));  // Look slightly down
+        cam.SetOrientation(Vector(0, -30, 0));  // Enyhén lefelé nézés
         cam.SetFlySpeed(10.0);
     }
 }
@@ -153,56 +153,56 @@ void ActivateDebugCamera(vector pos)
 
 ---
 
-## Field of View (FOV)
+## Látómező (FOV)
 
-The engine controls FOV natively. You can read and modify it through the player camera system:
+A motor natívan vezérli a FOV-ot. A játékos kamerarendszeren keresztül olvasható és módosítható:
 
-### Reading FOV
+### FOV olvasása
 
 ```c
-// Get current camera FOV
+// Aktuális kamera FOV lekérése
 float fov = GetDayZGame().GetFieldOfView();
 ```
 
-### DayZPlayerCamera FOV Override
+### DayZPlayerCamera FOV felülírás
 
-In custom camera classes that extend `DayZPlayerCamera`, you can override the FOV:
+A `DayZPlayerCamera`-t kiterjesztő egyéni kameraosztályokban felülírhatod a FOV-ot:
 
 ```c
 class MyCustomCamera extends DayZPlayerCamera1stPerson
 {
     override float GetCurrentFOV()
     {
-        return 0.7854;  // ~45 degrees (radians)
+        return 0.7854;  // ~45 fok (radiánban)
     }
 }
 ```
 
 ---
 
-## Depth of Field (DOF)
+## Mélységélesség (DOF)
 
-Depth of field is controlled through the Post-Process Effects system (see [Chapter 6.5](05-ppe.md)). However, the camera system works with DOF through these mechanisms:
+A mélységélességet az utófeldolgozási effektrendszer vezérli (lásd [6.5. fejezet](05-ppe.md)). A kamerarendszer azonban a DOF-fal az alábbi mechanizmusokon keresztül működik együtt:
 
-### Setting DOF via World
+### DOF beállítása a World-ön keresztül
 
 ```c
 World world = GetGame().GetWorld();
 if (world)
 {
-    // SetDOF(focus_distance, focus_length, focus_length_near, blur, focus_depth_offset)
-    // All values in meters
+    // SetDOF(fókusztávolság, fókuszhossz, fókuszhossz_közeli, elmosódás, fókuszmélység_eltolás)
+    // Minden érték méterben
     world.SetDOF(5.0, 100.0, 0.5, 0.3, 0.0);
 }
 ```
 
-### Disabling DOF
+### DOF letiltása
 
 ```c
 World world = GetGame().GetWorld();
 if (world)
 {
-    world.SetDOF(0, 0, 0, 0, 0);  // All zeros disables DOF
+    world.SetDOF(0, 0, 0, 0, 0);  // Csupa nulla letiltja a DOF-ot
 }
 ```
 
@@ -210,42 +210,42 @@ if (world)
 
 ## ScriptCamera (GameLib)
 
-**File:** `2_GameLib/entities/scriptcamera.c`
+**Fájl:** `2_GameLib/entities/scriptcamera.c`
 
-A lower-level scripted camera entity from the GameLib layer. This is the base for custom camera implementations.
+Egy alacsonyabb szintű szkriptelt kameraentitás a GameLib rétegből. Ez az egyéni kamera-implementációk alapja.
 
-### Creating a Camera
+### Kamera létrehozása
 
 ```c
 ScriptCamera camera = ScriptCamera.Cast(
-    GetGame().CreateObject("ScriptCamera", pos, true)  // local only
+    GetGame().CreateObject("ScriptCamera", pos, true)  // csak helyi
 );
 ```
 
-### Key Methods
+### Fő metódusok
 
 ```c
-proto native void SetFOV(float fov);          // FOV in radians
+proto native void SetFOV(float fov);          // FOV radiánban
 proto native void SetNearPlane(float nearPlane);
 proto native void SetFarPlane(float farPlane);
 proto native void SetFocus(float dist, float len);
 ```
 
-### Activating a Camera
+### Kamera aktiválása
 
 ```c
-// Make this camera the active rendering camera
-GetGame().SelectPlayer(null, null);   // Detach from player
-GetGame().ObjectRelease(camera);      // Release to engine
+// Ennek a kamerának a beállítása aktív renderelő kameraként
+GetGame().SelectPlayer(null, null);   // Lecsatolás a játékosról
+GetGame().ObjectRelease(camera);      // Átadás a motornak
 ```
 
-> **Megjegyzes:** Switching away from the player camera requires careful handling of input and HUD. Most mods use the free debug camera or PPE overlay effects instead of creating custom cameras.
+> **Megjegyzés:** A játékos kamerától való elváltás a bemenet és a HUD gondos kezelését igényli. A legtöbb mod a szabad hibakereső kamerát vagy a PPE felületi effekteket használja egyéni kamerák létrehozása helyett.
 
 ---
 
-## Raycasting from Camera
+## Sugárvetés a kamerából
 
-A common pattern is to raycast from the camera position in the camera direction to find what the player is looking at:
+Gyakori minta a sugárvetés a kamera pozíciójából a kamera irányába, hogy megtaláljuk, mire néz a játékos:
 
 ```c
 Object GetObjectInCrosshair(float maxDistance)
@@ -272,18 +272,36 @@ Object GetObjectInCrosshair(float maxDistance)
 
 ---
 
-## Osszefoglalas
+## Összefoglalás
 
-| Fogalom | Kulcspont |
-|---------|-----------|
-| Global accessors | `GetCurrentCameraPosition()`, `GetCurrentCameraDirection()`, `GetScreenPos()` |
-| Camera types | `DayZPlayerKamerak` constants (1ST, 3RD_ERC, IRONSIGHTS, OPTICS, VEHICLE, etc.) |
-| Current type | `player.GetCurrentCameraType()` |
-| Free camera | `FreeDebugCamera.SetActive(true)`, then `GetFreeDebugCamera()` |
-| FOV | `GetDayZGame().GetFieldOfView()` to read, override `GetCurrentFOV()` in camera class |
-| DOF | `GetGame().GetWorld().SetDOF(focus, length, near, blur, offset)` |
-| Screen conversion | `GetScreenPos(worldPos)` returns pixel XY + depth Z |
+| Fogalom | Lényeg |
+|---------|--------|
+| Globális hozzáférők | `GetCurrentCameraPosition()`, `GetCurrentCameraDirection()`, `GetScreenPos()` |
+| Kameratípusok | `DayZPlayerCameras` konstansok (1ST, 3RD_ERC, IRONSIGHTS, OPTICS, VEHICLE stb.) |
+| Aktuális típus | `player.GetCurrentCameraType()` |
+| Szabad kamera | `FreeDebugCamera.SetActive(true)`, majd `GetFreeDebugCamera()` |
+| FOV | `GetDayZGame().GetFieldOfView()` olvasáshoz, `GetCurrentFOV()` felülírása a kameraosztályban |
+| DOF | `GetGame().GetWorld().SetDOF(fókusz, hossz, közeli, elmosódás, eltolás)` |
+| Képernyő konverzió | `GetScreenPos(worldPos)` pixel XY + mélység Z értéket ad vissza |
 
 ---
 
-[<< Elozo: Idojaras](03-weather.md) | **Kamerak** | [Kovetkezo: Post-Process Effects >>](05-ppe.md)
+## Bevált gyakorlatok
+
+- **Gyorsítótárazd a kamera pozícióját, ha képkockánként többször kérdezed le.** A `GetGame().GetCurrentCameraPosition()` és `GetCurrentCameraDirection()` motorhívások --- tárold az eredményt lokális változóban, ha ugyanazon képkockán belül több számításhoz szükséged van rá.
+- **Használd a `GetScreenPos()` mélységellenőrzést UI elhelyezés előtt.** Mindig ellenőrizd, hogy `screenPos[2] > 0` (a kamera előtt van) mielőtt HUD jelölőket rajzolsz világpozíciókra, különben a jelölők tükrözve jelennek meg a játékos mögött.
+- **Kerüld az egyéni ScriptCamera példányok létrehozását egyszerű effektekhez.** A FreeDebugCamera és a PPE rendszer lefedi a legtöbb filmes és vizuális igényt. Az egyéni kamerák gondos bemenet/HUD kezelést igényelnek, ami könnyen elromolhat.
+- **Tartsd tiszteletben a motor kameratípus-átmeneteit.** Ne kényszeríts kameratípus-váltást szkriptből, hacsak nem kezeled teljesen a játékosvezérlő állapotát. A váratlan kameraváltások blokkolhatják a játékos mozgását vagy deszinkront okozhatnak.
+- **Védd a szabad kamera használatát admin/hibakeresési ellenőrzésekkel.** A FreeDebugCamera isteni világ-átvizsgálást tesz lehetővé. Csak hitelesített adminok vagy diagnosztikai buildek számára engedélyezd a visszaélés megelőzése érdekében.
+
+---
+
+## Kompatibilitás és hatás
+
+- **Több mod együtt:** A kamera hozzáférők csak olvasható globálisak, így több mod is biztonságosan olvashatja a kameraállapotot egyidejűleg. Konfliktus csak akkor merül fel, ha két mod egyszerre próbálja aktiválni a FreeDebugCamera-t vagy egyéni ScriptCamera példányokat.
+- **Teljesítmény:** A `GetScreenPos()` és `GetCurrentCameraPosition()` könnyű motorhívások. A kamerából történő sugárvetés (`DayZPhysics.RaycastRV`) drágább --- korlátozd képkockánként egyre, ne entitásonként.
+- **Szerver/Kliens:** A kameraállapot csak a kliensen létezik. Minden kamera metódus értelmetlen adatot ad vissza dedikált szerveren. Soha ne használj kameralekérdezéseket szerver oldali logikában.
+
+---
+
+[<< Előző: Időjárás](03-weather.md) | **Kamerák** | [Következő: Utófeldolgozási effektek >>](05-ppe.md)

@@ -1,12 +1,12 @@
-# Chapter 6.17: Construction System
+# Capítulo 6.17: Sistema de Construcción
 
-[Home](../../README.md) | [<< Previous: Crafting System](16-crafting-system.md) | **Construction System** | [Next: Animation System >>](18-animation-system.md)
+[Inicio](../../README.md) | [<< Anterior: Crafting System](16-crafting-system.md) | **Construction System** | [Siguiente: Animation System >>](18-animation-system.md)
 
 ---
 
-## Introduccion
+## Introducción
 
-El sistema de construccion de bases de DayZ permite a los jugadores construir fortificaciones --- cercas, torres de vigilancia y refugios --- ensamblando partes individuales usando herramientas y materiales. Cada estructura se divide en partes de construccion nombradas (muros, plataformas, techos, portones) que se construyen, desmantelan o destruyen independientemente.
+DayZ's base building system allows players to construct fortifications --- fences, watchtowers, and shelters --- by assembling individual parts using tools and materials. Each structure is divided into named construction parts (walls, platforms, roofs, gates) that are built, dismantled, or destroyed independently.
 
 The system lives primarily in three files:
 
@@ -18,7 +18,7 @@ Construction actions are in `4_World/classes/useractionscomponent/actions/contin
 
 ---
 
-## Jerarquia de Clases
+## Class Hierarchy
 
 ```
 ItemBase
@@ -74,11 +74,11 @@ Construction GetConstruction()
 
 ---
 
-## Partes de Construccion
+## Construction Parts
 
 Each buildable section is a `ConstructionPart` with these fields:
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `m_Name` | `string` | Localized display name |
 | `m_Id` | `int` | Unique ID for bitmask sync (1-93) |
@@ -115,7 +115,7 @@ Material type enum: `MATERIAL_NONE(0)`, `MATERIAL_LOG(1)`, `MATERIAL_WOOD(2)`, `
 
 ---
 
-## Proceso de Construccion
+## Building Process
 
 ### Process Flow
 
@@ -187,7 +187,7 @@ After changing bits, the server calls `SynchronizeBaseState()` which triggers `S
 
 Action type constants (defined in `_constants.c`):
 
-| Constante | Valor | Proposito |
+| Constante | Valor | Propósito |
 |----------|-------|---------|
 | `AT_BUILD_PART` | 193 | Build action identifier |
 | `AT_DISMANTLE_PART` | 195 | Dismantle action identifier |
@@ -212,7 +212,7 @@ On load, `AfterStoreLoad()` calls `SetPartsAfterStoreLoad()` which reconstructs 
 
 ---
 
-## Desmantelar y Destruir
+## Dismantling and Destroying
 
 ### Dismantling (returns materials)
 
@@ -238,7 +238,7 @@ Exception: gate parts are not cascade-destroyed if either `wall_base_down` or `w
 
 ---
 
-## Acciones de Construccion
+## Construction Actions
 
 ### ActionBuildPart
 
@@ -246,7 +246,7 @@ Full-body continuous action. Duration: `UATimeSpent.BASEBUILDING_CONSTRUCT_MEDIU
 
 Animation varies by tool type:
 
-| Herramienta | Comando de Animacion |
+| Herramienta | Animation Command |
 |------|-------------------|
 | Pickaxe, Shovel, FarmingHoe, FieldShovel | `CMD_ACTIONFB_DIG` |
 | Pliers | `CMD_ACTIONFB_INTERACT` |
@@ -296,7 +296,7 @@ The `OnUpdateActions()` callback is registered with `ActionVariantManager` and f
 
 ---
 
-## Crear Objetos Construibles Personalizados
+## Creating Custom Buildable Objects
 
 ### 1. Entity Class
 
@@ -404,7 +404,7 @@ Create a kit item extending `KitBase` that players place to spawn the constructi
 
 ---
 
-## Visuales y Fisica
+## Visuals and Physics
 
 Construction visibility is controlled through **animation phases** on the 3D model. Each construction part name corresponds to a named selection:
 
@@ -427,13 +427,13 @@ The Watchtower overrides `UpdateVisuals()` to handle its multi-floor system: upp
 
 ---
 
-## Objetos Construibles Vanilla
+## Vanilla Buildable Objects
 
-### Cerca
+### Fence
 
 The most common structure. Kit: `FenceKit`. Features a gate system with three states (`GATE_STATE_NONE`, `GATE_STATE_PARTIAL`, `GATE_STATE_FULL`). A fully constructed gate can accept a `CombinationLock` attachment. Supports barbed wire (2 slots creating area damage when mounted) and camo net. Gate opening rotates 100 degrees over ~2 seconds.
 
-### Torre de Vigilancia
+### Watchtower
 
 Multi-level tower. Kit: `WatchtowerKit`. Up to 3 floors with walls and roofs per level. Constants: `MAX_WATCHTOWER_FLOORS = 3`, `MAX_WATCHTOWER_WALLS = 3`. Has a `MAX_FLOOR_VERTICAL_DISTANCE = 0.5` check preventing attachment of items from too far below the target floor.
 
@@ -443,7 +443,7 @@ Temporary construction site. Kit: `ShelterKit`. Three mutually exclusive build o
 
 ---
 
-## Dano y Raideo
+## Damage and Raiding
 
 Each construction part maps to a **damage zone** whose name matches the part name (case-insensitive). When a part is built, its health is set to maximum. When a damage zone reaches `STATE_RUINED`, `EEHealthLevelChanged()` triggers automatic destruction:
 
@@ -463,7 +463,7 @@ Repair uses `TakeMaterialsServer(part_name, true)`, requiring only 15% of origin
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Part IDs must be unique** within an object (1-93 range). Gaps are allowed but waste capacity.
 2. **Always define `collision_data` memory points** to prevent building through geometry.
@@ -486,7 +486,7 @@ Repair uses `TakeMaterialsServer(part_name, true)`, requiring only 15% of origin
 
 ## Errores Comunes
 
-| Error | Consecuencia | Solucion |
+| Error | Consequence | Solución |
 |---------|-------------|-----|
 | Part ID exceeds 93 | State never syncs/persists | Keep IDs in 1-93 range |
 | Missing model selection | Part builds but is invisible | Add named selection matching `part_name` |
@@ -497,7 +497,7 @@ Repair uses `TakeMaterialsServer(part_name, true)`, requiring only 15% of origin
 
 ---
 
-## Compatibilidad e Impacto
+## Compatibility and Impact
 
 The construction system integrates deeply with: **inventory** (materials as attachments), **damage** (per-part zones), **actions** (continuous + variant system), **navmesh** (updated after every change), **persistence** (bitmask storage), and **network sync** (`RegisterNetSyncVariable`).
 

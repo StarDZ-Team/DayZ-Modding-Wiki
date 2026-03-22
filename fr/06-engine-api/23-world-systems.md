@@ -1,14 +1,14 @@
-# Chapter 6.23: World Configuration Systems
+# Chapitre 6.23: World Configuration Systems
 
-[Home](../../README.md) | [<< Previous: Admin & Server Management](22-admin-server.md) | **World Systems**
+[Accueil](../../README.md) | [<< Précédent : Admin & Server Management](22-admin-server.md) | **World Systems**
 
 ---
 
 ## Introduction
 
-DayZ fournit plusieurs fichiers de configuration JSON et XML qui controlent les systemes au niveau du monde without requiring script modifications. These files live in the **mission folder** and are loaded at server start, allowing server owners to customize contaminated areas, underground darkness, weather behavior, gameplay rules, and object placement with no code changes and no wipe required.
+DayZ provides several JSON and XML configuration files that control world-level systems without requiring script modifications. These files live in the **mission folder** and are loaded at server start, allowing server owners to customize contaminated areas, underground darkness, weather behavior, gameplay rules, and object placement with no code changes and no wipe required.
 
-This chapter covers five mission-folder configuration systems:
+Ce chapitre couvre five mission-folder configuration systems:
 
 1. **Contaminated Areas** (`cfgEffectArea.json`) --- toxic gas zones with particles, PPE, and player damage
 2. **Underground Areas** (`cfgundergroundtriggers.json`) --- eye accommodation (darkness simulation) for caves and bunkers
@@ -39,7 +39,7 @@ Contaminated areas are toxic gas zones that damage players without protective eq
 ### Key Concepts
 
 - **Static areas** are defined in the JSON file and created at mission start. They are **not persistent** --- you can add or remove zones between restarts with no wipe required.
-- **Dynamic areas** are spawned through the Central Economy as dynamic events (configured separately through CE files, not covered here).
+- **Dynamic areas** are apparitioned through the Central Economy as dynamic events (configured separately through CE files, not covered here).
 - To **disable all effect areas**, place an empty JSON file (`{}`) in the mission folder.
 
 ### File Structure (v1.28+)
@@ -75,10 +75,10 @@ As of version 1.28, the particle configuration uses a circle-packing algorithm v
 
 ### Area Fields
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `AreaName` | string | Human-readable identifier for the zone (also used in debug) |
-| `Type` | string | Class name of the EffectArea subclass to spawn (`ContaminatedArea_Static`) |
+| `Type` | string | Class name of the EffectArea subclass to apparition (`ContaminatedArea_Static`) |
 | `TriggerType` | string | Trigger class name (`ContaminatedTrigger`). Leave empty for no trigger |
 | `Pos` | float[3] | World position `[X, Y, Z]`. If Y is 0, the entity snaps to ground |
 | `Radius` | float | Radius of the zone in meters |
@@ -89,7 +89,7 @@ As of version 1.28, the particle configuration uses a circle-packing algorithm v
 
 The new system uses `FillWithParticles(pos, areaRadius, outwardsBleed, partSize, partId)`:
 
-| Champ | Maps To | Description |
+| Field | Maps To | Description |
 |-------|---------|-------------|
 | `InnerPartDist` | `partSize` | Perceived particle size in meters. Controls spacing between emitters |
 | `OuterOffset` | `outwardsBleed` | Distance beyond the radius where particles remain visible (meters) |
@@ -97,13 +97,13 @@ The new system uses `FillWithParticles(pos, areaRadius, outwardsBleed, partSize,
 
 The algorithm uses a naive circle-packing approach: given the area circle of radius `R = Radius + OuterOffset` and particle circles of radius `Rp = InnerPartDist / 2`, emitters are packed with some overlap margin.
 
-> **Avertissement de Performance :** The maximum number of emitters is clamped to 1000 per zone. More emitters means worse performance. Keep `InnerPartDist` large enough to avoid exceeding this limit.
+> **Performance Warning:** The maximum number of emitters is clamped to 1000 per zone. More emitters means worse performance. Keep `InnerPartDist` large enough to avoid exceeding this limit.
 
 ### Particle Fields (Pre-1.28, Legacy)
 
 The legacy system uses explicit ring configuration. It is backward-compatible but not recommended for new setups:
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `InnerRingCount` | int | Number of concentric rings inside the area (excludes outer ring) |
 | `InnerPartDist` | int | Distance between emitters on inner rings (straight-line meters) |
@@ -124,21 +124,21 @@ For inner rings, the ring radius is calculated as: `area_radius / (inner_ring_co
 
 ### Player Data (PPE & Particles)
 
-| Champ | Description |
+| Field | Description |
 |-------|-------------|
-| `AroundPartName` | Particle effect spawned around the player when inside the trigger zone |
-| `TinyPartName` | Smaller particle effect spawned near the player inside the trigger |
-| `PPERequesterType` | Post-process effect class applied to the player's camera (`PPERequester_ContaminatedAreaTint`) |
+| `AroundPartName` | Particle effect apparitioned around le joueur when inside the trigger zone |
+| `TinyPartName` | Smaller particle effect apparitioned near le joueur inside the trigger |
+| `PPERequesterType` | Post-process effect class applied to le joueur's camera (`PPERequester_ContaminatedAreaTint`) |
 
 ### Player Health Impact
 
 When a player is inside a contaminated trigger zone without proper protection:
 
 - The contamination agent is applied, causing progressive health damage
-- The PPE effect tints the player's vision (green/yellow tint by default)
-- Gas particles appear around the player character
+- The PPE effect tints le joueur's vision (green/yellow tint by default)
+- Gas particles appear around le joueur character
 
-**Protection :** Gas masks with intact filters and NBC suits provide protection. The protection logic is handled in script (`ContaminatedAreaAgent` and related classes), not in the JSON configuration.
+**Protection:** Gas masks with intact filters and NBC suits provide protection. The protection logic is handled in script (`ContaminatedAreaAgent` and related classes), not in the JSON configuration.
 
 ### Multiple Zones
 
@@ -170,7 +170,7 @@ Add multiple objects to the `Areas` array. Each zone is independent:
 
 ## Underground Areas (cfgundergroundtriggers.json)
 
-Underground areas use trigger volumes and breadcrumb waypoints to simulate darkness in caves, bunkers, and other enclosed spaces. The system controls **eye accommodation** --- the degree to which the player can see without artificial light sources.
+Underground areas use trigger volumes and breadcrumb waypoints to simulate darkness in caves, bunkers, and other enclosed spaces. The system controls **eye accommodation** --- the degree to which le joueur can see without artificial light sources.
 
 - Eye accommodation `1.0` = normal visibility (surface)
 - Eye accommodation `0.0` = complete darkness (deep underground)
@@ -190,7 +190,7 @@ The file defines two types of objects:
 
 There are three trigger types, determined automatically by their configuration:
 
-| Type | Breadcrumbs? | EyeAccommodation | But |
+| Type | Breadcrumbs? | EyeAccommodation | Purpose |
 |------|-------------|-------------------|---------|
 | **Outer** | Empty array | `1.0` | Switches night-only lights (chemlights) to work during daytime. Placed just outside the entrance |
 | **Transitional** | Has entries | Any | Gradual eye accommodation change via breadcrumbs. Placed between outer and inner triggers |
@@ -211,7 +211,7 @@ Any trigger with an empty `Breadcrumbs` array and `EyeAccommodation` set to `1` 
 }
 ```
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `Position` | float[3] | World position of the trigger center |
 | `Orientation` | float[3] | Rotation as Yaw, Pitch, Roll (degrees) |
@@ -265,7 +265,7 @@ Any trigger with an empty `Breadcrumbs` array and `EyeAccommodation` less than `
 
 ### Breadcrumb Configuration
 
-Breadcrumbs are positioned along the player's expected path through the transitional trigger. Each breadcrumb within reach contributes to the player's current eye accommodation level, weighted by distance --- closer breadcrumbs have more influence.
+Breadcrumbs are positioned along le joueur's expected path through the transitional trigger. Each breadcrumb within reach contributes to le joueur's current eye accommodation level, weighted by distance --- closer breadcrumbs have more influence.
 
 ```json
 {
@@ -276,12 +276,12 @@ Breadcrumbs are positioned along the player's expected path through the transiti
 }
 ```
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `Position` | float[3] | World position of the breadcrumb |
 | `EyeAccommodation` | float | The accommodation weight this breadcrumb contributes (0.0 - 1.0) |
 | `UseRaycast` | int | If `1`, a ray is cast from player to breadcrumb; it only contributes if the trace is unobstructed |
-| `Radius` | float | Influence radius in meters. Set to `-1` for the engine default |
+| `Radius` | float | Influence radius in meters. Set to `-1` for le moteur default |
 
 **Recommended breadcrumb layout for a transitional trigger:**
 
@@ -291,11 +291,11 @@ Breadcrumbs are positioned along the player's expected path through the transiti
 
 The exact number and placement depends on the geometry of the transitional area.
 
-> **Astuce :** When using `UseRaycast: 1`, raise the breadcrumb position slightly off the floor (a few centimeters in the Y axis) to avoid the ray being blocked by the ground surface.
+> **Tip:** When using `UseRaycast: 1`, raise the breadcrumb position slightly off the floor (a few centimeters in the Y axis) to avoid the ray being blocked by the ground surface.
 
 ### Sound Management
 
-Transitional triggers also handle the **underground ambient sound** volume fade. As the player moves deeper, the ambient sound fades in. As they move back toward the surface, it fades out. This is tied to the same trigger system --- no separate configuration is needed.
+Transitional triggers also handle the **underground ambient sound** volume fade. As le joueur moves deeper, the ambient sound fades in. As they move back toward the surface, it fades out. This is tied to the same trigger system --- no separate configuration is needed.
 
 ### Interpolation
 
@@ -317,7 +317,7 @@ Using `DayZDiag_x64`, the following diag menu options are available:
 
 While Chapter 6.3 covers the Weather script API in detail, this section documents the `cfgweather.xml` mission-folder file for declarative weather configuration without scripting.
 
-### Vue d'ensemble
+### Overview
 
 There are three ways to adjust weather behavior in DayZ:
 
@@ -376,7 +376,7 @@ By default, all vanilla server missions use the scripted weather state machine. 
 
 ### Root Element Attributes
 
-| Attribute | Type | Defaut | Description |
+| Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `reset` | bool | `false` | Whether to discard stored weather state on server start |
 | `enable` | bool | `true` | Whether this file is active |
@@ -403,7 +403,7 @@ Each phenomenon (`overcast`, `fog`, `rain`, `snowfall`, `windMagnitude`, `windDi
 <storm density="1.0" threshold="0.7" timeout="25"/>
 ```
 
-| Attribute | Description |
+| Attribut | Description |
 |-----------|-------------|
 | `density` | Lightning frequency (0.0 - 1.0) |
 | `threshold` | Minimum overcast level for lightning to appear (0.0 - 1.0) |
@@ -476,17 +476,17 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 1. Copy `cfgGameplay.json` from `DZ/worlds/chernarusplus/ce/` (or the [DayZ Central Economy GitHub](https://github.com/BohemiaInteractive/DayZ-Central-Economy)) to your mission folder
 2. Add `enableCfgGameplayFile = 1;` to your `serverDZ.cfg`
-3. Modify values as needed and restart the server
+3. Modify values as needed and restart le serveur
 
 ### General Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | int | `version` | Current | Internal version tracker |
-| string[] | `spawnGearPresetFiles` | `[]` | Player spawn gear JSON config files to load |
+| string[] | `apparitionGearPresetFiles` | `[]` | Player apparition gear JSON config files to load |
 | string[] | `objectSpawnersArr` | `[]` | Object Spawner JSON files (see Object Spawner section below) |
-| bool | `disableRespawnDialog` | `false` | Disable the respawn type selection UI |
-| bool | `disableRespawnInUnconsciousness` | `false` | Remove the "Respawn" button when unconscious |
+| bool | `disableReapparitionDialog` | `false` | Disable the reapparition type selection UI |
+| bool | `disableReapparitionInUnconsciousness` | `false` | Remove the "Reapparition" button when unconscious |
 | bool | `disablePersonalLight` | `false` | Disable the subtle personal light during nighttime |
 | int | `lightingConfig` | `1` | Nighttime lighting (0 = bright, 1 = dark) |
 | float[] | `wetnessWeightModifiers` | `[1.0, 1.0, 1.33, 1.66, 2.0]` | Item weight multipliers by wetness level: Dry, Damp, Wet, Soaked, Drenched |
@@ -495,7 +495,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 ### Stamina Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | float | `sprintStaminaModifierErc` | `1.0` | Stamina consumption rate during standing sprint |
 | float | `sprintStaminaModifierCro` | `1.0` | Stamina consumption rate during crouched sprint |
@@ -511,7 +511,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 ### Shock Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | float | `shockRefillSpeedConscious` | `5.0` | Shock recovery per second while conscious |
 | float | `shockRefillSpeedUnconscious` | `1.0` | Shock recovery per second while unconscious |
@@ -519,7 +519,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 ### Inertia Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | float | `timeToStrafeJog` | `0.1` | Time to blend strafing while jogging (min 0.01) |
 | float | `rotationSpeedJog` | `0.15` | Character rotation speed while jogging (min 0.01) |
@@ -532,7 +532,7 @@ The `cfgGameplay.json` file provides server admins with a way to tweak gameplay 
 
 These booleans disable specific placement/construction validation checks:
 
-| Parametre | Defaut | What It Disables |
+| Parameter | Default | What It Disables |
 |-----------|---------|------------------|
 | `disableBaseDamage` | `false` | Damage from base-building structures |
 | `disableContainerDamage` | `false` | Damage from tents, barrels, etc. |
@@ -554,7 +554,7 @@ These booleans disable specific placement/construction validation checks:
 
 ### Navigation Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | bool | `use3DMap` | `false` | Use 3D map only (disables 2D overlay) |
 | bool | `ignoreMapOwnership` | `false` | Open map with "M" key without having one in inventory |
@@ -564,7 +564,7 @@ These booleans disable specific placement/construction validation checks:
 
 ### Hit Indicator Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | bool | `hitDirectionOverrideEnabled` | `false` | Enable custom hit indicator settings |
 | int | `hitDirectionBehaviour` | `1` | 0 = Disabled, 1 = Static, 2 = Dynamic |
@@ -577,7 +577,7 @@ These booleans disable specific placement/construction validation checks:
 
 ### Drowning Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | float | `staminaDepletionSpeed` | `10.0` | Stamina lost per second while drowning |
 | float | `healthDepletionSpeed` | `10.0` | Health lost per second while drowning |
@@ -585,14 +585,14 @@ These booleans disable specific placement/construction validation checks:
 
 ### Environment Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | float[12] | `environmentMinTemps` | `[-3, -2, 0, 4, 9, 14, 18, 17, 12, 7, 4, 0]` | Minimum temperature per month (Jan-Dec) |
 | float[12] | `environmentMaxTemps` | `[3, 5, 7, 14, 19, 24, 26, 25, 21, 16, 10, 5]` | Maximum temperature per month (Jan-Dec) |
 
 ### Weapon Obstruction Settings
 
-| Type | Parametre | Defaut | Description |
+| Type | Parameter | Default | Description |
 |------|-----------|---------|-------------|
 | int | `staticMode` | `1` | Static entity obstruction (0 = Off, 1 = On, 2 = Always) |
 | int | `dynamicMode` | `1` | Dynamic entity obstruction (0 = Off, 1 = On, 2 = Always) |
@@ -621,7 +621,7 @@ The Object Spawner allows server admins to place world objects through JSON file
 ### Setup
 
 1. Enable `cfgGameplay.json` (see above)
-2. Create a JSON file (e.g., `spawnerData.json`) in the mission folder
+2. Create a JSON file (e.g., `apparitionerData.json`) in the mission folder
 3. Reference it in `cfgGameplay.json`:
 
 ```json
@@ -664,36 +664,36 @@ Multiple files are supported:
 
 ### Object Parameters
 
-| Type | Champ | Description |
+| Type | Field | Description |
 |------|-------|-------------|
 | string | `name` | Class name (e.g., `"Land_Wall_Gate_FenR"`) or p3d model path (e.g., `"DZ/plants/tree/t_BetulaPendula_1fb.p3d"`) |
 | float[3] | `pos` | World position `[X, Y, Z]` |
 | float[3] | `ypr` | Orientation as Yaw, Pitch, Roll (degrees) |
 | float | `scale` | Size multiplier (1.0 = original size) |
-| bool | `enableCEPersistency` | When `true`, spawns without persistence; persistence enables once a player interacts with the item |
+| bool | `enableCEPersistency` | When `true`, apparitions without persistence; persistence enables once a player interacts with the item |
 | string | `customString` | Custom user data, handled by overriding `OnSpawnByObjectSpawner()` on the item's script class |
 
 ### P3D Model Path Limitations
 
-Only these paths are supported for direct p3d spawning:
+Only these paths are supported for direct p3d apparition:
 
 - `DZ/plants`, `DZ/plants_bliss`, `DZ/plants_sakhal`
 - `DZ/rocks`, `DZ/rocks_bliss`, `DZ/rocks_sakhal`
 
 ### Custom Data Handling
 
-To process `customString`, override `OnSpawnByObjectSpawner()` on the spawned item's script class. See `StaticFlagPole` in vanilla scripts for an example where the custom string specifies which flag to spawn on the pole.
+To process `customString`, override `OnSpawnByObjectSpawner()` on the apparitioned item's script class. See `StaticFlagPole` in vanilla scripts for an example where the custom string specifies which flag to apparition on the pole.
 
-> **Avertissement de Performance :** Spawning a large number of objects through this system impacts both server and client performance. Use it for detail objects and small additions, not for large-scale world modifications.
+> **Performance Warning:** Apparition a large number of objects through this system impacts both server and client performance. Use it for detail objects and small additions, not for large-scale world modifications.
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 ### Contaminated Areas
 
 - **Start with large `InnerPartDist` values** (80-100) to keep emitter counts low. Decrease only if visual coverage is insufficient.
-- **Test particle performance** with your target player count. Each zone with many emitters has a measurable client-side FPS impact.
+- **Test particle performance** with your target player count. Each zone with many emitters has a measurable côté client FPS impact.
 - **Use the v1.28+ format** for new setups. The legacy ring-based system is maintained for backward compatibility but the circle-packing approach is simpler and produces better visual results.
 - **Leave `TriggerType` empty** if you want a visual-only gas cloud with no player damage.
 
@@ -720,15 +720,15 @@ To process `customString`, override `OnSpawnByObjectSpawner()` on the spawned it
 
 ### Object Spawner
 
-- **Keep object counts reasonable.** Every spawned object consumes server and client resources.
+- **Keep object counts reasonable.** Every apparitioned object consumes server and client resources.
 - **Use class names over p3d paths** when possible --- p3d paths are limited to specific directories.
 - **Each object entry except the last must end with a comma** in the JSON array.
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
-| Erreur | Consequence | Correction |
+| Mistake | Consequence | Fix |
 |---------|-------------|-----|
 | JSON comments (`//` or `/* */`) in config files | File fails to parse; features silently disabled | Remove all comments from production JSON files |
 | Invalid number format (`0150` instead of `150`) | JSON parse error | Use standard integer/float notation |
@@ -739,17 +739,17 @@ To process `customString`, override `OnSpawnByObjectSpawner()` on the spawned it
 | Overlapping inner triggers with different `EyeAccommodation` | Unpredictable darkness flickering | Ensure inner triggers do not overlap |
 | Missing comma between JSON array entries | Parse error; entire file fails to load | Validate JSON before deploying |
 | Setting `staminaMax` to 0 | Undefined behavior, potential crash | Use a positive value (minimum 1.0) |
-| Spawning hundreds of objects via Object Spawner | Server and client performance degradation | Keep spawned object counts minimal |
+| Apparition hundreds of objects via Object Spawner | Server and client performance degradation | Keep apparitioned object counts minimal |
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
 ### Contaminated Areas
 
 - **No wipe required** to add or remove static zones between restarts. The entities are not persistent.
 - **Mod compatibility:** Mods that override `ContaminatedArea_Static` or `ContaminatedTrigger` classes will affect all configured zones. Only one override chain runs per class.
-- **Dynamic zones** (CE-spawned) use script defaults and are configured through the Central Economy, not `cfgEffectArea.json`.
+- **Dynamic zones** (CE-apparitioned) use script defaults and are configured through the Central Economy, not `cfgEffectArea.json`.
 
 ### Underground Areas
 
@@ -764,21 +764,21 @@ To process `customString`, override `OnSpawnByObjectSpawner()` on the spawned it
 
 ### Gameplay Settings
 
-- **One cfgGameplay.json per mission.** Values are global --- they affect all players on the server.
-- **The file version must match the game version.** Outdated files may have missing parameters that default to engine values.
+- **One cfgGameplay.json per mission.** Values are global --- they affect all players on le serveur.
+- **The file version must match le jeu version.** Outdated files may have missing parameters that default to engine values.
 - **Mod interactions:** Mods that override stamina, base building, or navigation systems in script may conflict with or override cfgGameplay.json values.
 
 ### Object Spawner
 
-- **Objects are spawned fresh each restart.** They are not persistent unless the player interacts with items that have `enableCEPersistency: true`.
-- **The spawner runs after CE initialization.** Spawned objects do not interfere with the Central Economy loot tables.
-- **Failed spawns** (invalid class name or p3d path) produce "Object spawner failed to spawn" in the server RPT log.
+- **Objects are apparitioned fresh each restart.** They are not persistent unless le joueur interacts with items that have `enableCEPersistency: true`.
+- **The apparitioner runs after CE initialization.** Spawned objects do not interfere with the Central Economy loot tables.
+- **Failed apparitions** (invalid class name or p3d path) produce "Object apparitioner failed to apparition" in le serveur RPT log.
 
 ---
 
-## Resume
+## Résumé
 
-| System | Fichier | Emplacement | But |
+| System | File | Location | Purpose |
 |--------|------|----------|---------|
 | Contaminated Areas | `cfgEffectArea.json` | Mission folder | Toxic gas zones with particles, PPE, and damage |
 | Underground Areas | `cfgundergroundtriggers.json` | Mission folder | Eye accommodation (darkness) for caves/bunkers |
@@ -794,4 +794,4 @@ All five systems share these characteristics:
 
 ---
 
-[<< Precedent : Admin & Server Management](22-admin-server.md) | **Systemes du Monde**
+[Accueil](../../README.md) | [<< Précédent : Admin & Server Management](22-admin-server.md) | **World Systems**

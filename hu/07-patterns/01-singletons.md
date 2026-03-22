@@ -1,57 +1,57 @@
-# Chapter 7.1: Singleton Pattern
+# 7.1. fejezet: Singleton minta
 
-[Home](../../README.md) | **Singleton Pattern** | [Next: Module Systems >>](02-module-systems.md)
-
----
-
-## Bevezetes
-
-The singleton pattern guarantees that a class has exactly one instance, accessible globally. In DayZ modding it is the most common architectural pattern --- virtually every manager, cache, registry, and subsystem uses it. COT, VPP, Expansion, Dabs Framework, and MyMod all rely on singletons to coordinate state across the engine's script layers.
-
-This chapter covers the canonical implementation, lifecycle management, when the pattern is appropriate, and where it goes wrong.
+[Kezdőlap](../../README.md) | **Singleton minta** | [Következő: Modulrendszerek >>](02-module-systems.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [The Canonical Implementation](#the-canonical-implementation)
-- [Lazy vs Eager Initialization](#lazy-vs-eager-initialization)
-- [Lifecycle Management](#lifecycle-management)
-- [When to Use Singleton-ok](#when-to-use-singletons)
-- [Real-World Examples](#real-world-examples)
-- [Thread Safety Considerations](#thread-safety-considerations)
-- [Anti-Patterns](#anti-patterns)
-- [Alternative: Static-Only Classes](#alternative-static-only-classes)
-- [Checklist](#checklist)
+A singleton minta garantálja, hogy egy osztálynak pontosan egy példánya legyen, amely globálisan elérhető. A DayZ modolásban ez a leggyakoribb architekturális minta --- gyakorlatilag minden kezelő, gyorsítótár, regiszter és alrendszer használja. A COT, VPP, Expansion, Dabs Framework és mások mind singletonokra támaszkodnak az állapot koordinálásához a motor szkriptrétegein keresztül.
+
+Ez a fejezet a kanonikus implementációt, az életciklus-kezelést, a minta megfelelő alkalmazási eseteit és a tipikus hibákat tárgyalja.
 
 ---
 
-## The Canonical Implementation
+## Tartalomjegyzék
 
-The standard DayZ singleton follows a simple formula: a `private static ref` field, a static `GetInstance()` accessor, and a static `DestroyInstance()` for cleanup.
+- [A kanonikus implementáció](#a-kanonikus-implementáció)
+- [Lusta vs mohó inicializálás](#lusta-vs-mohó-inicializálás)
+- [Életciklus-kezelés](#életciklus-kezelés)
+- [Mikor használj singletont](#mikor-használj-singletont)
+- [Valós példák](#valós-példák)
+- [Szálbiztonsági megfontolások](#szálbiztonsági-megfontolások)
+- [Anti-minták](#anti-minták)
+- [Alternatíva: Csak statikus osztályok](#alternatíva-csak-statikus-osztályok)
+- [Ellenőrzőlista](#ellenőrzőlista)
+
+---
+
+## A kanonikus implementáció
+
+A szabványos DayZ singleton egy egyszerű képletet követ: egy `private static ref` mező, egy statikus `GetInstance()` hozzáférő és egy statikus `DestroyInstance()` a takarításhoz.
 
 ```c
 class LootManager
 {
-    // The single instance. 'ref' keeps it alive; 'private' prevents external tampering.
+    // Az egyetlen példány. A 'ref' életben tartja; a 'private' megakadályozza a külső módosítást.
     private static ref LootManager s_Instance;
 
-    // Private data owned by the singleton
+    // A singleton által birtokolt privát adatok
     protected ref map<string, int> m_SpawnCounts;
 
-    // Constructor — called exactly once
+    // Konstruktor — pontosan egyszer hívódik meg
     void LootManager()
     {
         m_SpawnCounts = new map<string, int>();
     }
 
-    // Destructor — called when s_Instance is set to null
+    // Destruktor — akkor hívódik, amikor s_Instance null-ra állítódik
     void ~LootManager()
     {
         m_SpawnCounts = null;
     }
 
-    // Lazy accessor: creates on first call
+    // Lusta hozzáférő: első hívásnál hozza létre
     static LootManager GetInstance()
     {
         if (!s_Instance)
@@ -61,13 +61,13 @@ class LootManager
         return s_Instance;
     }
 
-    // Explicit teardown
+    // Explicit leállítás
     static void DestroyInstance()
     {
         s_Instance = null;
     }
 
-    // --- Public API ---
+    // --- Publikus API ---
 
     void RecordSpawn(string className)
     {
@@ -85,23 +85,23 @@ class LootManager
 };
 ```
 
-### Why `private static ref`?
+### Miért `private static ref`?
 
-| Keyword | Cel |
+| Kulcsszó | Cél |
 |---------|---------|
-| `private` | Prevents other classes from setting `s_Instance` to null or replacing it |
-| `static` | Shared across all code --- no instance needed to access it |
-| `ref` | Strong reference --- keeps the object alive as long as `s_Instance` is non-null |
+| `private` | Megakadályozza, hogy más osztályok `s_Instance`-t null-ra állítsák vagy lecseréljék |
+| `static` | Minden kódban megosztott --- nincs szükség példányra az eléréséhez |
+| `ref` | Erős referencia --- életben tartja az objektumot, amíg `s_Instance` nem null |
 
-Without `ref`, the instance would be a weak reference and could be garbage-collected while still in use.
+`ref` nélkül a példány gyenge referencia lenne, és szemétgyűjtés áldozata lehetne, miközben még használatban van.
 
 ---
 
-## Lazy vs Eager Initialization
+## Lusta vs mohó inicializálás
 
-### Lazy Initialization (Recommended Default)
+### Lusta inicializálás (ajánlott alapértelmezés)
 
-The `GetInstance()` method creates the instance on first access. This is the approach used by most DayZ mods.
+A `GetInstance()` metódus az első hozzáféréskor hozza létre a példányt. Ezt a megközelítést használja a legtöbb DayZ mod.
 
 ```c
 static LootManager GetInstance()
@@ -114,27 +114,27 @@ static LootManager GetInstance()
 }
 ```
 
-**Advantages:**
-- No work done until actually needed
-- No dependency on initialization order between mods
-- Safe if the singleton is optional (some server configurations may never call it)
+**Előnyök:**
+- Nem végez munkát, amíg ténylegesen nem szükséges
+- Nincs függőség a modok közötti inicializálási sorrendtől
+- Biztonságos, ha a singleton opcionális (egyes szerver konfigurációk soha nem hívják)
 
-**Disadvantage:**
-- First caller pays the construction cost (usually negligible)
+**Hátrány:**
+- Az első hívó fizeti az építési költséget (általában elhanyagolható)
 
-### Eager Initialization
+### Mohó inicializálás
 
-Some singletons are created explicitly during mission startup, typically from `MissionServer.OnInit()` or a module's `OnMissionStart()`.
+Egyes singletonok explicit módon a misszió indításakor jönnek létre, jellemzően a `MissionServer.OnInit()` vagy egy modul `OnMissionStart()` metódusából.
 
 ```c
-// In your modded MissionServer.OnInit():
+// A modolt MissionServer.OnInit()-ben:
 void OnInit()
 {
     super.OnInit();
-    LootManager.Create();  // Eager: constructed now, not on first use
+    LootManager.Create();  // Mohó: most épül fel, nem az első használatkor
 }
 
-// In LootManager:
+// A LootManager-ben:
 static void Create()
 {
     if (!s_Instance)
@@ -144,36 +144,36 @@ static void Create()
 }
 ```
 
-**When to prefer eager:**
-- The singleton loads data from disk (configs, JSON files) and you want load errors to surface at startup
-- The singleton registers RPC handlers that must be in place before any client connects
-- Initialization order matters and you need to control it explicitly
+**Mikor előnyösebb a mohó:**
+- A singleton adatokat tölt be lemezről (konfigok, JSON fájlok) és azt szeretnéd, hogy a betöltési hibák indításkor felszínre kerüljenek
+- A singleton RPC kezelőket regisztrál, amelyeknek a helyükön kell lenniük, mielőtt bármely kliens csatlakozna
+- Az inicializálási sorrend számít és explicit módon kell vezérelned
 
 ---
 
-## Lifecycle Management
+## Életciklus-kezelés
 
-The most common source of singleton bugs in DayZ is failing to clean up on mission end. DayZ servers can restart missions without restarting the process, which means static fields survive across mission restarts. If you do not null out `s_Instance` in `OnMissionFinish`, you carry stale references, dead objects, and orphaned callbacks into the next mission.
+A DayZ singleton hibák leggyakoribb forrása a misszió végén történő takarítás elmulasztása. A DayZ szerverek újraindíthatják a missziókat a folyamat újraindítása nélkül, ami azt jelenti, hogy a statikus mezők túlélik a misszió újraindításait. Ha nem null-ozod ki az `s_Instance`-t az `OnMissionFinish`-ben, elavult referenciákat, halott objektumokat és árva visszahívásokat viszol át a következő misszióba.
 
-### The Lifecycle Contract
+### Az életciklus szerződés
 
 ```
-Server Process Start
+Szerver folyamat indítása
   └─ MissionServer.OnInit()
-       └─ Create singletons (eager) or let them self-create (lazy)
+       └─ Singletonok létrehozása (mohó) vagy öninicializálás (lusta)
   └─ MissionServer.OnMissionStart()
-       └─ Singletons begin operation
-  └─ ... server runs ...
+       └─ Singletonok működni kezdenek
+  └─ ... szerver fut ...
   └─ MissionServer.OnMissionFinish()
-       └─ DestroyInstance() on every singleton
-       └─ All static refs set to null
-  └─ (Mission may restart)
-       └─ Fresh singletons created again
+       └─ DestroyInstance() minden singletonon
+       └─ Minden statikus ref null-ra állítva
+  └─ (Misszió újraindulhat)
+       └─ Friss singletonok újra létrejönnek
 ```
 
-### Cleanup Pattern
+### Takarítási minta
 
-Always pair your singleton with a `DestroyInstance()` method and call it during shutdown:
+Mindig párosítsd a singletonodat egy `DestroyInstance()` metódussal, és hívd meg leállítás során:
 
 ```c
 class VehicleRegistry
@@ -189,7 +189,7 @@ class VehicleRegistry
 
     static void DestroyInstance()
     {
-        s_Instance = null;  // Drops the ref, destructor runs
+        s_Instance = null;  // Eldobja a ref-et, a destruktor lefut
     }
 
     void ~VehicleRegistry()
@@ -199,7 +199,7 @@ class VehicleRegistry
     }
 };
 
-// In your modded MissionServer:
+// A modolt MissionServer-ben:
 modded class MissionServer
 {
     override void OnMissionFinish()
@@ -210,12 +210,12 @@ modded class MissionServer
 };
 ```
 
-### MyMod Centralized Shutdown
+### Centralizált leállítási minta
 
-MyFramework consolidates all singleton cleanup into `MyFramework.ShutdownAll()`, which is called from the modded `MissionServer.OnMissionFinish()`. This prevents the common mistake of forgetting one singleton:
+Egy keretrendszer mod összevonhatja az összes singleton takarítását a `MyFramework.ShutdownAll()` metódusba, amelyet a modolt `MissionServer.OnMissionFinish()` hív meg. Ez megelőzi a gyakori hibát, amikor elfelejtünk egy singletont:
 
 ```c
-// Conceptual pattern (simplified from MyFramework):
+// Koncepcionális minta (centralizált leállítás):
 static void ShutdownAll()
 {
     MyRPC.Cleanup();
@@ -228,50 +228,50 @@ static void ShutdownAll()
 
 ---
 
-## Mikor hasznaljuk Singleton-ok
+## Mikor használj singletont
 
-### Good Candidates
+### Jó jelöltek
 
-| Felhasznalasi terrulet | Why Singleton Works |
+| Felhasználási eset | Miért működik a singleton |
 |----------|-------------------|
-| **Manager classes** (LootManager, VehicleManager) | Exactly one coordinator for a domain |
-| **Caches** (CfgJarmuvek cache, icon cache) | Single source of truth avoids redundant computation |
-| **Registries** (RPC handler registry, module registry) | Central lookup must be globally accessible |
-| **Config holders** (server settings, permissions) | One config per mod, loaded once from disk |
-| **RPC dispatchers** | Single entry point for all incoming RPCs |
+| **Kezelő osztályok** (LootManager, VehicleManager) | Pontosan egy koordinátor egy tartományhoz |
+| **Gyorsítótárak** (CfgVehicles cache, ikon cache) | Egyetlen igazságforrás elkerüli a redundáns számítást |
+| **Regiszterek** (RPC kezelő regiszter, modul regiszter) | A központi keresőnek globálisan elérhetőnek kell lennie |
+| **Konfig tárolók** (szerver beállítások, jogosultságok) | Egy konfig modonként, egyszer betöltve lemezről |
+| **RPC diszpécserek** | Egyetlen belépési pont minden bejövő RPC-hez |
 
-### Poor Candidates
+### Gyenge jelöltek
 
-| Felhasznalasi terrulet | Why Not |
+| Felhasználási eset | Miért nem |
 |----------|---------|
-| **Per-player data** | One instance per player, not one global instance |
-| **Temporary computations** | Create, use, discard --- no global state needed |
-| **UI views / dialogs** | Multiple can coexist; use the view stack instead |
-| **Entity components** | Attached to individual objects, not global |
+| **Játékosonkénti adatok** | Egy példány játékosonként, nem egy globális példány |
+| **Ideiglenes számítások** | Létrehozás, használat, eldobás --- nincs szükség globális állapotra |
+| **UI nézetek / dialógusok** | Több is létezhet egyszerre; használd a nézetvermet |
+| **Entitás komponensek** | Egyedi objektumokhoz csatoltak, nem globálisak |
 
 ---
 
-## Valos peldak
+## Valós példák
 
 ### COT (Community Online Tools)
 
-COT uses a module-based singleton pattern through the CF framework. Each tool is a `JMModuleBase` singleton registered at startup:
+A COT modul-alapú singleton mintát használ a CF keretrendszeren keresztül. Minden eszköz egy `JMModuleBase` singleton, amely indításkor regisztrálódik:
 
 ```c
-// COT pattern: CF auto-instantiates modules declared in config.cpp
+// COT minta: a CF automatikusan példányosítja a config.cpp-ben deklarált modulokat
 class JM_COT_ESP : JMModuleBase
 {
-    // CF manages the singleton lifecycle
-    // Access via: JM_COT_ESP.Cast(GetModuleManager().GetModule(JM_COT_ESP));
+    // A CF kezeli a singleton életciklusát
+    // Elérés: JM_COT_ESP.Cast(GetModuleManager().GetModule(JM_COT_ESP));
 }
 ```
 
 ### VPP Admin Tools
 
-VPP uses explicit `GetInstance()` on manager classes:
+A VPP explicit `GetInstance()` metódust használ a kezelő osztályokon:
 
 ```c
-// VPP pattern (simplified)
+// VPP minta (egyszerűsítve)
 class VPPATBanManager
 {
     private static ref VPPATBanManager m_Instance;
@@ -287,38 +287,38 @@ class VPPATBanManager
 
 ### Expansion
 
-Expansion declares singletons for each subsystem and hooks into the mission lifecycle for cleanup:
+Az Expansion singletonokat deklarál minden alrendszerhez és a misszió életciklus hookjába kapcsolódik a takarításhoz:
 
 ```c
-// Expansion pattern (simplified)
+// Expansion minta (egyszerűsítve)
 class ExpansionMarketModule : CF_ModuleWorld
 {
-    // CF_ModuleWorld is itself a singleton managed by the CF module system
+    // A CF_ModuleWorld maga is singleton, amelyet a CF modulrendszer kezel
     // ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
 }
 ```
 
 ---
 
-## Thread Safety Considerations
+## Szálbiztonsági megfontolások
 
-Enforce Script is single-threaded. All script execution happens on the main thread within the Enfusion engine's game loop. This means:
+Az Enforce Script egyszálú. Minden szkriptvégrehajtás a főszálon történik az Enfusion motor játékciklusán belül. Ez azt jelenti:
 
-- There are **no race conditions** between concurrent threads
-- You do **not** need mutexes, locks, or atomic operations
-- `GetInstance()` with lazy initialization is always safe
+- **Nincsenek versenyhelyzetek** párhuzamos szálak között
+- **Nincs szükség** mutexekre, zárakra vagy atomi műveletekre
+- A `GetInstance()` lusta inicializálással mindig biztonságos
 
-However, **re-entrancy** can still cause problems. If `GetInstance()` triggers code that calls `GetInstance()` again during construction, you can get a partially-initialized singleton:
+Azonban az **újrabejárhatóság** még mindig problémákat okozhat. Ha a `GetInstance()` olyan kódot indít el, amely az építés közben újra hívja a `GetInstance()`-t, részlegesen inicializált singletont kaphatsz:
 
 ```c
-// DANGEROUS: re-entrant singleton construction
+// VESZÉLYES: újrabejárható singleton építés
 class BadManager
 {
     private static ref BadManager s_Instance;
 
     void BadManager()
     {
-        // This calls GetInstance() during construction!
+        // Ez meghívja a GetInstance()-t az építés közben!
         OtherSystem.Register(BadManager.GetInstance());
     }
 
@@ -326,7 +326,7 @@ class BadManager
     {
         if (!s_Instance)
         {
-            // s_Instance is still null here during construction
+            // s_Instance még mindig null itt az építés közben
             s_Instance = new BadManager();
         }
         return s_Instance;
@@ -334,48 +334,48 @@ class BadManager
 };
 ```
 
-The fix is to assign `s_Instance` before running any initialization that might re-enter:
+A javítás az `s_Instance` hozzárendelése bármilyen inicializálás futtatása előtt, amely újra bejárhatna:
 
 ```c
 static BadManager GetInstance()
 {
     if (!s_Instance)
     {
-        s_Instance = new BadManager();  // Assign first
-        s_Instance.Initialize();         // Then run initialization that may call GetInstance()
+        s_Instance = new BadManager();  // Először hozzárendelés
+        s_Instance.Initialize();         // Aztán inicializálás, ami hívhatja a GetInstance()-t
     }
     return s_Instance;
 }
 ```
 
-Or better yet, avoid circular initialization entirely.
+Vagy még jobb: teljesen kerüld a körkörös inicializálást.
 
 ---
 
-## Anti-mintak
+## Anti-minták
 
-### 1. Global Mutable State Without Encapsulation
+### 1. Globális módosítható állapot beágyazás nélkül
 
-The singleton pattern gives you global access. That does not mean the data should be globally writable.
+A singleton minta globális hozzáférést ad neked. Ez nem jelenti azt, hogy az adatoknak globálisan írhatónak kellene lenniük.
 
 ```c
-// BAD: Public fields invite uncontrolled mutation
+// ROSSZ: Publikus mezők kontrollálatlan módosításra csábítanak
 class GameState
 {
     private static ref GameState s_Instance;
-    int PlayerCount;         // Anyone can write this
-    bool ServerLocked;       // Anyone can write this
-    string CurrentWeather;   // Anyone can write this
+    int PlayerCount;         // Bárki írhatja
+    bool ServerLocked;       // Bárki írhatja
+    string CurrentWeather;   // Bárki írhatja
 
     static GameState GetInstance() { ... }
 };
 
-// Any code can do:
-GameState.GetInstance().PlayerCount = -999;  // Chaos
+// Bármely kód megteheti:
+GameState.GetInstance().PlayerCount = -999;  // Káosz
 ```
 
 ```c
-// GOOD: Controlled access through methods
+// JÓ: Kontrollált hozzáférés metódusokon keresztül
 class GameState
 {
     private static ref GameState s_Instance;
@@ -393,31 +393,31 @@ class GameState
 };
 ```
 
-### 2. Missing DestroyInstance
+### 2. Hiányzó DestroyInstance
 
-If you forget cleanup, the singleton persists across mission restarts with stale data:
+Ha elfelejtjük a takarítást, a singleton elavult adatokkal megmarad a misszió újraindításokon keresztül:
 
 ```c
-// BAD: No cleanup path
+// ROSSZ: Nincs takarítási útvonal
 class ZombieTracker
 {
     private static ref ZombieTracker s_Instance;
-    ref array<Object> m_TrackedZombies;  // These objects get deleted on mission end!
+    ref array<Object> m_TrackedZombies;  // Ezek az objektumok törlődnek a misszió végén!
 
     static ZombieTracker GetInstance() { ... }
-    // No DestroyInstance() — m_TrackedZombies now holds dead references
+    // Nincs DestroyInstance() — m_TrackedZombies most halott referenciákat tartalmaz
 };
 ```
 
-### 3. Singleton-ok That Own Everything
+### 3. Singletonok, amelyek mindent birtokolnak
 
-When a singleton accumulates too many responsibilities, it becomes a "God object" that is impossible to reason about:
+Amikor egy singleton túl sok felelősséget halmoz fel, "Isten objektummá" válik:
 
 ```c
-// BAD: One singleton doing everything
+// ROSSZ: Egy singleton csinál mindent
 class ServerManager
 {
-    // Manages loot AND vehicles AND weather AND spawns AND bans AND...
+    // Kezeli a zsákmányt ÉS járműveket ÉS időjárást ÉS spawnokat ÉS tiltásokat ÉS...
     ref array<Object> m_Loot;
     ref array<Object> m_Vehicles;
     ref WeatherData m_Weather;
@@ -427,38 +427,38 @@ class ServerManager
     void DespawnVehicle() { ... }
     void SetWeather() { ... }
     void BanPlayer() { ... }
-    // 2000 lines later...
+    // 2000 sorral később...
 };
 ```
 
-Split into focused singletons: `LootManager`, `VehicleManager`, `IdojarasManager`, `BanManager`. Each one is small, testable, and has a clear domain.
+Bontsd fókuszált singletonokra: `LootManager`, `VehicleManager`, `WeatherManager`, `BanManager`. Mindegyik kicsi, tesztelhető és egyértelmű tartománnyal rendelkezik.
 
-### 4. Accessing Singleton-ok in Constructors of Other Singleton-ok
+### 4. Singletonok elérése más singletonok konstruktoraiban
 
-This creates hidden initialization-order dependencies:
+Ez rejtett inicializálási sorrendfüggőségeket hoz létre:
 
 ```c
-// BAD: Constructor depends on another singleton
+// ROSSZ: A konstruktor másik singletontól függ
 class ModuleA
 {
     void ModuleA()
     {
-        // What if ModuleB hasn't been created yet?
+        // Mi van, ha a ModuleB még nem jött létre?
         ModuleB.GetInstance().Register(this);
     }
 };
 ```
 
-Defer cross-singleton registration to `OnInit()` or `OnMissionStart()`, where initialization order is controlled.
+Halaszd a singleton-ok közötti regisztrációt az `OnInit()` vagy `OnMissionStart()` metódusba, ahol az inicializálási sorrend kontrollált.
 
 ---
 
-## Alternative: Static-Only Classes
+## Alternatíva: Csak statikus osztályok
 
-Some "singletons" do not need an instance at all. If the class holds no instance state and only has static methods and static fields, skip the `GetInstance()` ceremony entirely:
+Egyes "singletonoknak" egyáltalán nincs szükségük példányra. Ha az osztály nem tart példányállapotot és csak statikus metódusai és statikus mezői vannak, hagyd el teljesen a `GetInstance()` ceremóniát:
 
 ```c
-// No instance needed — all static
+// Nincs szükség példányra — minden statikus
 class MyLog
 {
     private static FileHandle s_LogFile;
@@ -487,32 +487,64 @@ class MyLog
 };
 ```
 
-This is the approach used by `MyLog`, `MyRPC`, `MyEventBus`, and `MyModuleManager` in MyFramework. It is simpler, avoids the `GetInstance()` null-check overhead, and makes the intent clear: there is no instance, only shared state.
+Ezt a megközelítést használja a `MyLog`, `MyRPC`, `MyEventBus` és `MyModuleManager` egy keretrendszer modban. Egyszerűbb, elkerüli a `GetInstance()` null-ellenőrzés többletterhelését, és egyértelművé teszi a szándékot: nincs példány, csak megosztott állapot.
 
-**Use a static-only class when:**
-- All methods are stateless or operate on static fields
-- There is no meaningful constructor/destructor logic
-- You never need to pass the "instance" as a parameter
+**Használj csak statikus osztályt, amikor:**
+- Minden metódus állapot nélküli vagy statikus mezőkön működik
+- Nincs értelmes konstruktor/destruktor logika
+- Soha nem kell a "példányt" paraméterként átadni
 
-**Use a true singleton when:**
-- The class has instance state that benefits from encapsulation (`protected` fields)
-- You need polymorphism (a base class with overridden methods)
-- The object needs to be passed to other systems by reference
-
----
-
-## Checklist
-
-Before shipping a singleton, verify:
-
-- [ ] `s_Instance` is declared `private static ref`
-- [ ] `GetInstance()` handles the null case (lazy init) or you have an explicit `Create()` call
-- [ ] `DestroyInstance()` exists and sets `s_Instance = null`
-- [ ] `DestroyInstance()` is called from `OnMissionFinish()` or a centralized shutdown method
-- [ ] The destructor cleans up owned collections (`.Clear()`, set to `null`)
-- [ ] No public fields --- all mutation goes through methods
-- [ ] The constructor does not call `GetInstance()` on other singletons (defer to `OnInit()`)
+**Használj valódi singletont, amikor:**
+- Az osztálynak van példányállapota, amelynek előnyére válik a beágyazás (`protected` mezők)
+- Szükséged van polimorfizmusra (bázis osztály felülírt metódusokkal)
+- Az objektumot referencia alapján kell átadni más rendszereknek
 
 ---
 
-[Kezdolap](../../README.md) | **Singleton Pattern** | [Kovetkezo: Modul rendszerek >>](02-module-systems.md)
+## Ellenőrzőlista
+
+Szállítás előtt ellenőrizd a singletonnál:
+
+- [ ] `s_Instance` deklarálva `private static ref`-ként
+- [ ] `GetInstance()` kezeli a null esetet (lusta init) vagy van explicit `Create()` hívásod
+- [ ] `DestroyInstance()` létezik és `s_Instance = null`-ra állít
+- [ ] `DestroyInstance()` meghívódik az `OnMissionFinish()` metódusból vagy centralizált leállítási metódusból
+- [ ] A destruktor takarítja a birtokolt kollekciókat (`.Clear()`, null-ra állítás)
+- [ ] Nincsenek publikus mezők --- minden módosítás metódusokon keresztül történik
+- [ ] A konstruktor nem hívja a `GetInstance()`-t más singletonokon (halaszd az `OnInit()`-re)
+
+---
+
+## Kompatibilitás és hatás
+
+- **Több mod:** Több mod, amelyek mindegyike saját singletonokat definiál, biztonságosan együttélnek --- mindegyiknek saját `s_Instance`-a van. Konfliktusok csak akkor merülnek fel, ha két mod azonos osztálynevet definiál, amit az Enforce Script újradefiniálási hibaként jelez betöltéskor.
+- **Betöltési sorrend:** A lusta singletonokat nem befolyásolja a mod betöltési sorrend. A mohó singletonok, amelyeket az `OnInit()` metódusban hoztak létre, a `modded class` lánc sorrendjétől függenek, amely a `config.cpp` `requiredAddons` értékét követi.
+- **Figyelő szerver:** A statikus mezők megosztottak a kliens és szerver kontextusok között ugyanabban a folyamatban. Egy singleton, amely csak szerver oldalon kellene létezzen, a konstrukciót `GetGame().IsServer()` ellenőrzéssel kell védenie, különben kliens kódból is elérhető (és esetlegesen inicializálható) lesz.
+- **Teljesítmény:** A singleton elérés egy statikus null ellenőrzés + metódushívás --- elhanyagolható többletterhelés. A költség abban rejlik, amit a singleton *csinál*, nem az elérésében.
+- **Migráció:** A singletonok túlélik a DayZ verziófrissítéseket, amíg az általuk hívott API-k (pl. `GetGame()`, `JsonFileLoader`) stabilak maradnak. Nincs szükség speciális migrációra magához a mintához.
+
+---
+
+## Gyakori hibák
+
+| Hiba | Hatás | Javítás |
+|---------|--------|-----|
+| Hiányzó `DestroyInstance()` hívás az `OnMissionFinish`-ben | Elavult adatok és halott entitás referenciák kerülnek át a misszió újraindításokon, összeomlásokat vagy szellemállapotot okozva | Mindig hívd a `DestroyInstance()`-t az `OnMissionFinish`-ből vagy centralizált `ShutdownAll()`-ból |
+| `GetInstance()` hívása másik singleton konstruktorában | Újrabejárható konstrukciót vált ki; `s_Instance` még mindig null, így második példány jön létre | Halaszd a singleton-ok közötti hozzáférést `Initialize()` metódusra, amelyet a konstrukció után hívnak |
+| `public static ref` használata `private static ref` helyett | Bármely kód null-ra állíthatja `s_Instance`-t vagy lecserélheti, megtörve az egypéldányos garanciát | Mindig deklaráld `s_Instance`-t `private static ref`-ként |
+| Mohó init nem védett figyelő szervereken | Singleton kétszer épül fel (egyszer szerver útvonalon, egyszer kliens útvonalon), ha `Create()` nem tartalmaz null ellenőrzést | Mindig ellenőrizd `if (!s_Instance)` a `Create()`-ben |
+| Állapot korlátlan felhalmozása (korlátlan gyorsítótárak) | Memória végtelenül nő hosszan futó szervereken; végső OOM vagy súlyos lag | Korlátozd a kollekciókat maximális mérettel vagy periodikus kiürítéssel az `OnUpdate`-ben |
+
+---
+
+## Elmélet vs gyakorlat
+
+| A tankönyv szerint | DayZ valóság |
+|---------------|-------------|
+| A singletonok anti-minták; használj függőséginjektálást | Az Enforce Scriptnek nincs DI konténere. A singletonok a szabványos megközelítés globális kezelőkhöz az összes nagyobb modban. |
+| A lusta inicializálás mindig elegendő | Az RPC kezelőket regisztrálni kell, mielőtt bármely kliens csatlakozna, ezért a mohó init az `OnInit()`-ben gyakran szükséges. |
+| A singletonokat soha nem szabad megsemmisíteni | A DayZ missziók a szerver folyamat újraindítása nélkül indulnak újra; a singletonokat *meg kell semmisíteni* és újra létre kell hozni minden missziós ciklusban. |
+
+---
+
+[Kezdőlap](../../README.md) | **Singleton minta** | [Következő: Modulrendszerek >>](02-module-systems.md)

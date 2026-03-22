@@ -1,6 +1,10 @@
-# Chapter 8.13: The Diagnostic Menu (Diag Menu)
+# Capítulo 8.13: The Diagnostic Menu (Diag Menu)
 
-[Home](../../README.md) | [<< Previous: Building a Trading System](12-trading-system.md) | **The Diagnostic Menu**
+[Inicio](../../README.md) | [<< Anterior: Building a Trading System](12-trading-system.md) | **The Diagnostic Menu**
+
+---
+
+> **Resumen:** The Diag Menu is DayZ's built-in diagnostic tool, available only through the DayZDiag executable. It provides FPS counters, script profiling, render debugging, free camera, physics visualization, weather control, Central Economy tools, AI navigation debugging, and sound diagnostics. This chapter documents every menu category, option, and keyboard shortcut based on the official Bohemia Interactive documentation.
 
 ---
 
@@ -56,11 +60,11 @@ This key binding is registered through script (`PluginKeyBinding`).
 
 ---
 
-## Navegacion Controls
+## Navigation Controls
 
 Once the Diag Menu is open:
 
-| Key | Accion |
+| Key | Acción |
 |-----|--------|
 | **Up / Down arrow** | Navigate between menu items |
 | **Right arrow** | Enter a sub-menu, or cycle through option values |
@@ -75,7 +79,7 @@ When options show multiple values, they are listed in the order they appear in t
 
 These shortcuts work at any time while running DayZDiag, without needing to open the menu:
 
-| Atajo | Function |
+| Shortcut | Función |
 |----------|----------|
 | **LCtrl + Numpad 1** | Toggle FPS counter |
 | **LCtrl + Numpad 9** | Toggle mouse cursor on screen |
@@ -148,7 +152,7 @@ The profiler shows six data sections:
 
 The Stats and settings panel shows:
 
-| Field | Significado |
+| Campo | Meaning |
 |-------|---------|
 | UI enabled (DIAG) | Whether the script profiler UI is active |
 | Profiling enabled (SCRP) | Whether profiling runs even when UI is not active |
@@ -184,7 +188,7 @@ The Script Profiler UI ignores this setting -- it always forces profiling while 
 
 Controls how data is gathered. Four combinations are available:
 
-| Flag Combination | Scope | Data Lifetime |
+| Flag Combination | Alcance | Data Lifetime |
 |-----------------|-------|---------------|
 | `SPF_RESET \| SPF_RECURSIVE` | Selected module + children | Per frame (reset each frame) |
 | `SPF_RECURSIVE` | Selected module + children | Accumulated across frames |
@@ -394,7 +398,7 @@ Turns on the debug visualization for the Bullet physics engine.
 
 ### Bullet Sub-Menu
 
-| Option | Descripcion |
+| Option | Descripción |
 |--------|-------------|
 | **Draw Char Ctrl** | Visualize the player character controller. Depends on "Draw Bullet shape" |
 | **Draw Simple Char Ctrl** | Visualize the AI character controller. Depends on "Draw Bullet shape" |
@@ -407,7 +411,7 @@ Turns on the debug visualization for the Bullet physics engine.
 | **Force sleep Bullet** | Force all physics bodies to sleep |
 | **Show stats** | Show debug stats (options: disabled, basic, all). Stats remain visible for 10 seconds after disabling |
 
-> **Warning:** Max. Collider Distance is 0 by default because this visualization is expensive. Setting it to a large distance will cause significant performance degradation.
+> **Advertencia:** Max. Collider Distance is 0 by default because this visualization is expensive. Setting it to a large distance will cause significant performance degradation.
 
 ### Show Bodies
 
@@ -563,7 +567,7 @@ Forces the fog height to match the player camera height. Has priority over the H
 
 Enables overriding fog values with manual settings:
 
-| Parametro | Range | Step |
+| Parámetro | Range | Paso |
 |-----------|-------|------|
 | Distance density | 0 -- 1 | 0.01 |
 | Height density | 0 -- 1 | 0.01 |
@@ -576,7 +580,7 @@ The free camera detaches the view from the player character and allows flying th
 
 #### Free Camera Controls
 
-| Key | Origin | Function |
+| Key | Origin | Función |
 |-----|--------|----------|
 | **W / A / S / D** | Inputs (xml) | Move forward / left / backward / right |
 | **Q** | Inputs (xml) | Move up |
@@ -597,7 +601,7 @@ The free camera detaches the view from the player character and allows flying th
 
 #### Free Camera Options
 
-| Option | Descripcion |
+| Option | Descripción |
 |--------|-------------|
 | **FrCam Player Move** | Enable/disable player inputs (WASD) moving the player while in free camera |
 | **FrCam NoClip** | Enable/disable the camera passing through terrain |
@@ -614,7 +618,7 @@ Extended debug functionality for vehicles. These only work while the player is i
 
 Debug tools for combat, shooting, and hitpoints:
 
-| Option | Descripcion |
+| Option | Descripción |
 |--------|-------------|
 | **DECombat** | Shows on-screen text with distances to cars, AI, and players |
 | **DEShots** | Projectile debug sub-menu (see below) |
@@ -623,7 +627,7 @@ Debug tools for combat, shooting, and hitpoints:
 
 **DEShots sub-menu:**
 
-| Option | Descripcion |
+| Option | Descripción |
 |--------|-------------|
 | Clear vis. | Clear any existing shot visualization |
 | Vis. trajectory | Trace the path of a shot, showing exit points and stop point |
@@ -650,7 +654,7 @@ A comprehensive set of debugging tools for the Central Economy (CE) system.
 
 Tools for creating and editing loot spawn points on objects. Free camera must be enabled to use the Edit Volume tool.
 
-| Option | Descripcion | Script Equivalent |
+| Option | Descripción | Script Equivalent |
 |--------|-------------|-------------------|
 | **Spawn Volume Vis** | Visualize loot spawn points. Options: Off, Adaptive, Volume, Occupied | `GetCEApi().LootSetSpawnVolumeVisualisation()` |
 | **Setup Vis** | Show CE setup properties on screen with color-coded containers | `GetCEApi().LootToggleSpawnSetup()` |
@@ -668,7 +672,7 @@ Tools for creating and editing loot spawn points on objects. Free camera must be
 
 **Edit Volume key bindings:**
 
-| Key | Function |
+| Key | Función |
 |-----|----------|
 | **[** | Iterate backwards through containers |
 | **]** | Iterate forwards through containers |
@@ -682,7 +686,7 @@ Tools for creating and editing loot spawn points on objects. Free camera must be
 
 #### Loot Tool
 
-| Option | Descripcion | Script Equivalent |
+| Option | Descripción | Script Equivalent |
 |--------|-------------|-------------------|
 | **Deplete Lifetime** | Depletes lifetime to 3 seconds (scheduled for cleanup) | `GetCEApi().LootDepleteLifetime()` |
 | **Set Damage = 1.0** | Sets health to 0 | `GetCEApi().LootSetDamageToOne()` |
@@ -692,7 +696,7 @@ Tools for creating and editing loot spawn points on objects. Free camera must be
 
 #### Infected
 
-| Option | Descripcion | Script Equivalent |
+| Option | Descripción | Script Equivalent |
 |--------|-------------|-------------------|
 | **Infected Vis** | Visualize zombie zones, locations, alive/dead status | `GetCEApi().InfectedToggleVisualisation()` |
 | **Infected Zone Info** | On-screen debug when camera is inside an infected zone | `GetCEApi().InfectedToggleZoneInfo()` |
@@ -701,7 +705,7 @@ Tools for creating and editing loot spawn points on objects. Free camera must be
 
 #### Animal
 
-| Option | Descripcion | Script Equivalent |
+| Option | Descripción | Script Equivalent |
 |--------|-------------|-------------------|
 | **Animal Vis** | Visualize animal zones, locations, alive/dead status | `GetCEApi().AnimalToggleVisualisation()` |
 | **Animal Spawn** | Spawn animal in selected zone (or "AnimalGoat" at cursor) | `GetCEApi().AnimalSpawn()` |
@@ -718,7 +722,7 @@ Door randomization uses the `initOpened` config value. When `rand < initOpened`,
 
 Common `<building/>` setups in economy.xml:
 
-| Setup | Comportamiento |
+| Setup | Behavior |
 |-------|----------|
 | `init="0" load="0" respawn="0" save="0"` | No persistence, no randomization, default state after restart |
 | `init="1" load="0" respawn="0" save="0"` | No persistence, doors randomized by initOpened |
@@ -727,7 +731,7 @@ Common `<building/>` setups in economy.xml:
 
 #### Other Central Economy Tools
 
-| Option | Descripcion | Script Equivalent |
+| Option | Descripción | Script Equivalent |
 |--------|-------------|-------------------|
 | **Vehicle&Wreck Vis** | Visualize objects registered to "Vehicle" avoidance. Yellow = Car, Pink = Wrecks (Building), Blue = InventoryItem | `GetCEApi().ToggleVehicleAndWreckVisualisation()` |
 | **Loot Vis** | On-screen Economy Data for anything you look at (loot, infected, dynamic events) | `GetCEApi().ToggleLootVisualisation()` |
@@ -743,7 +747,7 @@ Common `<building/>` setups in economy.xml:
 
 **Dynamic Events Vis key bindings:**
 
-| Key | Function |
+| Key | Función |
 |-----|----------|
 | **[** | Iterate backwards through available DE |
 | **]** | Iterate forwards through available DE |
@@ -771,7 +775,7 @@ AI
 
 Draws debug shapes to visualize the navigation mesh. Shows an on-screen debug with stats.
 
-| Key | Function |
+| Key | Función |
 |-----|----------|
 | **Numpad 0** | Register "Test start" at camera position |
 | **Numpad 1** | Regenerate tile at camera position |
@@ -810,7 +814,7 @@ Sounds
 
 Debug visualization for currently playing sounds.
 
-| Option | Descripcion |
+| Option | Descripción |
 |--------|-------------|
 | **none** | Default, no debug |
 | **ImGui** | Separate window (newest iteration). Supports filtering, full category coverage. Settings saved as `playing_sounds_imgui.ini` / `.bin` in profiles |
@@ -901,7 +905,7 @@ While every option has its use, these are the ones modders reach for most freque
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 - **Chapter 8.6: [Debugging & Testing](06-debugging-testing.md)** -- Script logs, Print debugging, file patching, and Workbench
 - **Chapter 8.7: [Publishing to Workshop](07-publishing-workshop.md)** -- Package and publish your tested mod

@@ -1,20 +1,20 @@
-# Chapter 6.14: Player System
+# Chapitre 6.14: Player System
 
-[Home](../../README.md) | [<< Previous: Input System](13-input-system.md) | **Player System** | [Next: Sound System >>](15-sound-system.md)
+[Accueil](../../README.md) | [<< Précédent : Input System](13-input-system.md) | **Player System** | [Suivant : Sound System >>](15-sound-system.md)
 
 ---
 
 ## Introduction
 
-`PlayerBase` est la classe la plus importante du modding DayZ. Every gameplay system --- health, hunger, bleeding, stamina, inventory, restraints, unconsciousness --- lives on the player entity or one of its manager subsystems. Whether you are writing an admin tool, a survival mechanic, or a PvP mod, you will interact with PlayerBase constantly.
+`PlayerBase` is the single most important class in DayZ modding. Every gameplay system --- health, hunger, bleeding, stamina, inventory, restraints, unconsciousness --- lives on le joueur entity or one of its manager subsystems. Whether you are writing an admin tool, a survival mechanic, or a PvP mod, you will interact with PlayerBase constantly.
 
-This chapter is an API reference for the player class hierarchy, its identity system, health pools, state checks, equipment access, and the manager objects that drive status effects. All method signatures are taken directly from the vanilla script source.
+This chapter is an API reference for le joueur class hierarchy, its identity system, health pools, state checks, equipment access, and the manager objects that drive status effects. All method signatures are taken directly from le vanilla script source.
 
 ---
 
-## Hierarchie des Classes
+## Hiérarchie des classes
 
-The player entity sits at the bottom of a deep inheritance chain. Each level adds capabilities:
+Le joueur entity sits at the bottom of a deep inheritance chain. Each level adds capabilities:
 
 ```
 Class (root of all Enforce Script classes)
@@ -79,10 +79,10 @@ classDiagram
 
 ### What Each Level Provides
 
-| Class | Ajouts Cles |
+| Class | Key Additions |
 |-------|---------------|
 | **Object** | `GetPosition()`, `SetPosition()`, `GetHealth()`, `SetHealth()`, `IsAlive()`, `SetAllowDamage()` |
-| **EntityAI** | Inventory, attachments, damage zones, `EEInit()`, `EEKilled()`, `EEHitBy()`, net sync variables |
+| **EntityAI** | Inventory, attachments, zones de dégâts, `EEInit()`, `EEKilled()`, `EEHitBy()`, net sync variables |
 | **Man** | `GetIdentity()`, `GetHumanInventory()`, `GetEntityInHands()`, `IsUnconscious()` |
 | **DayZPlayer** | Instance type, command system, camera system, animation commands |
 | **DayZPlayerImplement** | Movement state checks (`IsInVehicle`, `IsSwimming`, `IsRaised`, `IsFalling`) |
@@ -93,21 +93,21 @@ classDiagram
 
 ## PlayerIdentity --- Who Is the Player?
 
-**File:** `3_Game/gameplay.c`
+**Fichier :** `3_Game/gameplay.c`
 
 `PlayerIdentity` represents the real person behind a player entity. It holds network and platform identifiers. Access it from any `Man`-derived class via `GetIdentity()`.
 
 ### Key Methods
 
-| Methode | Type de Retour | Description |
+| Method | Return Type | Description |
 |--------|-------------|-------------|
 | `GetName()` | `string` | Display name (may contain special characters) |
 | `GetPlainName()` | `string` | Name without any processing |
-| `GetFullName()` | `string` | Full name of the player |
+| `GetFullName()` | `string` | Full name of le joueur |
 | `GetPlainId()` | `string` | Steam64 ID (unique, persistent across sessions) |
 | `GetId()` | `string` | BattlEye GUID (hashed Steam ID --- safe for databases and logs) |
 | `GetPlayerId()` | `int` | Network peer ID (session-only, reused after disconnect) |
-| `GetPlayer()` | `Man` | The player entity this identity belongs to |
+| `GetPlayer()` | `Man` | Le joueur entity this identity belongs to |
 | `GetPingAct()` | `int` | Current ping |
 | `GetPingAvg()` | `int` | Average ping |
 
@@ -133,28 +133,28 @@ void LogPlayerInfo(PlayerBase player)
 
 This is a common source of confusion:
 
-| Methode | Valeur | Cas d'Utilisation |
+| Method | Value | Use Case |
 |--------|-------|----------|
 | `GetPlainId()` | Raw Steam64 ID (`"76561198012345678"`) | Linking to Steam profiles, cross-server identity |
 | `GetId()` | Hashed BattlEye GUID | Database storage, admin logs (Bohemia's recommended ID for persistence) |
 
-> **Rule of thumb:** Use `GetPlainId()` when you need a human-readable identifier or cross-platform lookup. Use `GetId()` when storing data in databases or logs, as Bohemia designed it for that purpose.
+> **Règle générale :** Use `GetPlainId()` when you need a human-readable identifier or cross-platform lookup. Use `GetId()` when storing data in databases or logs, as Bohemia designed it for that purpose.
 
 ---
 
-## Systeme de Sante
+## Health System
 
 Player health uses the same zone-based system as all `Object` entities, but with three separate pools that work together to determine survival.
 
 ### The Three Pools
 
-| Reserve | Zone/Type | Default Max | What Drains It |
+| Pool | Zone/Type | Default Max | What Drains It |
 |------|-----------|-------------|----------------|
 | **Health** | `("", "Health")` | 100 | Starvation, dehydration, falling, melee, explosions |
 | **Blood** | `("", "Blood")` | 5000 | Bullet wounds, bleeding, cuts |
 | **Shock** | `("", "Shock")` | 100 | Bullet impacts, melee hits, flash grenades |
 
-When **Health** reaches 0, the player dies. When **Blood** drops too low, the player loses consciousness and eventually dies. When **Shock** drops to 0, the player goes unconscious.
+When **Health** reaches 0, le joueur dies. When **Blood** drops too low, le joueur loses consciousness and eventually dies. When **Shock** drops to 0, le joueur goes unconscious.
 
 ### Reading Health Values
 
@@ -178,7 +178,7 @@ float hp = player.GetHealth();
 
 ### Modifying Health
 
-All health modification is **server-authoritative**. Only call these on the server.
+All health modification is **server-authoritative**. Only call these on le serveur.
 
 ```c
 // Set absolute value
@@ -196,7 +196,7 @@ player.SetHealth(100.0);
 
 ### Zone Health (Body Parts)
 
-Players have damage zones for individual body parts. Each zone has its own "Health" property:
+Players have zones de dégâts for individual body parts. Each zone has its own "Health" property:
 
 ```c
 float headHp     = player.GetHealth("Head", "Health");
@@ -213,7 +213,7 @@ Broken legs are triggered when leg/foot zone health drops to 1 or below, which a
 
 ### Death and Hit Events
 
-These events fire on the server and can be overridden in modded classes:
+These events fire on le serveur and can be overridden in modded classes:
 
 ```c
 // Called when the player is killed
@@ -281,7 +281,7 @@ player.GetStatEnergy().Set(energyMax);
 
 Default maximums are defined in `PlayerConstants`:
 
-| Stat | Constante | Defaut |
+| Stat | Constant | Default |
 |------|----------|---------|
 | Water max | `PlayerConstants.SL_WATER_MAX` | 5000 |
 | Energy max | `PlayerConstants.SL_ENERGY_MAX` | 20000 |
@@ -344,7 +344,7 @@ bool restrained  = player.IsRestrained();    // Handcuffed
 
 ### Where These Methods Live
 
-| Methode | Defined In | How It Works |
+| Method | Defined In | How It Works |
 |--------|-----------|--------------|
 | `IsAlive()` | `Object` | Returns `!IsDamageDestroyed()` |
 | `IsUnconscious()` | `PlayerBase` | Checks command type or `m_IsUnconscious` flag |
@@ -416,7 +416,7 @@ EntityAI entityInHands = player.GetEntityInHands();
 
 ### Finding Attachments by Slot
 
-Clothing and equipment are attached to named slots on the player entity. Use `FindAttachmentBySlotName()` (defined on `EntityAI`):
+Clothing and equipment are attached to named slots on le joueur entity. Use `FindAttachmentBySlotName()` (defined on `EntityAI`):
 
 ```c
 EntityAI headgear  = player.FindAttachmentBySlotName("Headgear");
@@ -452,7 +452,7 @@ for (int i = 0; i < gi.AttachmentCount(); i++)
 
 ## Player Actions (Server-Side Operations)
 
-These operations must run on the server. Calling them on the client will either have no effect or cause desync.
+These operations must run on le serveur. Calling them on le client will either have no effect or cause desync.
 
 ### God Mode
 
@@ -510,7 +510,7 @@ player.RemoveAllItems();
 
 ```c
 player.SetRestrained(true);    // Handcuff
-player.SetRestrained(false);   // Release
+player.SetRestrained(false);   // Libérer
 ```
 
 ### Disable Status Effects
@@ -526,7 +526,7 @@ player.SetModifiers(true);     // Resume modifiers
 
 ### Instance Type
 
-Every player entity has an instance type that tells you whether the current machine is the server, the controlling client, or a remote observer:
+Every player entity has an instance type that tells you whether the current machine is le serveur, the controlling client, or a remote observer:
 
 ```c
 DayZPlayerInstanceType instType = player.GetInstanceType();
@@ -542,7 +542,7 @@ DayZPlayerInstanceType instType = player.GetInstanceType();
 
 ### What Syncs Automatically
 
-PlayerBase registers numerous variables for automatic network synchronization via `RegisterNetSyncVariable*()`. When the server modifies these variables and calls `SetSynchDirty()`, clients receive updates through `OnVariablesSynchronized()`.
+PlayerBase registers numerous variables for automatic network synchronization via `RegisterNetSyncVariable*()`. When le serveur modifies these variables and calls `SetSynchDirty()`, clients receive updates through `OnVariablesSynchronized()`.
 
 **Automatically synced variables include:**
 
@@ -562,7 +562,7 @@ PlayerBase registers numerous variables for automatic network synchronization vi
 
 ### OnVariablesSynchronized
 
-This is the client-side callback that fires whenever synced variables change:
+This is the côté client callback that fires whenever synced variables change:
 
 ```c
 // Vanilla PlayerBase.OnVariablesSynchronized()
@@ -621,7 +621,7 @@ modded class PlayerBase
 
 ### Identity and PlayerBase Relationship
 
-`PlayerIdentity` and `PlayerBase` are separate objects linked by the engine:
+`PlayerIdentity` and `PlayerBase` are separate objects linked by le moteur:
 
 - `PlayerBase.GetIdentity()` returns the identity (can be null during connect/disconnect)
 - `PlayerIdentity.GetPlayer()` returns the `Man` entity (cast to `PlayerBase`)
@@ -632,7 +632,7 @@ modded class PlayerBase
 
 ## Manager Subsystems
 
-PlayerBase owns several manager objects that handle specific gameplay systems. All are created in the PlayerBase constructor (server-side).
+PlayerBase owns several manager objects that handle specific gameplay systems. All are created in the PlayerBase constructor (côté serveur).
 
 ### ModifiersManager
 
@@ -681,7 +681,7 @@ if (bleedMgr)
 }
 ```
 
-Bleeding sources are tied to model bone selections (e.g., `"RightForeArmRoll"`, `"LeftLeg"`, `"RightFoot"`, `"Head"`). On the client side, `BleedingSourcesManagerRemote` handles particle effects.
+Bleeding sources are tied to model bone selections (e.g., `"RightForeArmRoll"`, `"LeftLeg"`, `"RightFoot"`, `"Head"`). On le client side, `BleedingSourcesManagerRemote` handles particle effects.
 
 ### StaminaHandler
 
@@ -731,7 +731,7 @@ bool locked = emoteMgr.IsControllsLocked();
 
 ### Other Managers
 
-| Manager | Member Variable | But |
+| Manager | Member Variable | Purpose |
 |---------|----------------|---------|
 | `SymptomManager` | `m_SymptomManager` | Visual/audio symptoms (coughing, sneezing) |
 | `SoftSkillsManager` | `m_SoftSkillsManager` | Soft skill progression |
@@ -742,7 +742,7 @@ bool locked = emoteMgr.IsControllsLocked();
 
 ---
 
-## Patrons Courants
+## Patrons courants
 
 ### Finding a Player by Identity
 
@@ -833,14 +833,14 @@ void OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 ### 1. GetGame().GetPlayer() Returns Null on Server
 
 `GetGame().GetPlayer()` returns the **local** player entity. On a dedicated server, there is no local player --- it always returns `null`.
 
 ```c
-// WRONG - will crash on dedicated server
+// INCORRECT - will crash on dedicated server
 PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
 player.SetHealth(100); // null pointer!
 
@@ -860,7 +860,7 @@ if (!GetGame().IsDedicatedServer())
 During the connection handshake, a player entity can exist briefly before its identity is assigned. Always null-check.
 
 ```c
-// WRONG
+// INCORRECT
 string name = player.GetIdentity().GetName(); // crash if identity is null!
 
 // CORRECT
@@ -873,10 +873,10 @@ if (identity)
 
 ### 3. Not Checking IsAlive() Before Operations
 
-Dead player entities still exist in the world as corpses. Many operations are meaningless or harmful on dead players.
+Dead player entities still exist in le monde as corpses. Many operations are meaningless or harmful on dead players.
 
 ```c
-// WRONG
+// INCORRECT
 player.SetHealth("", "Blood", 5000); // Healing a corpse does nothing useful
 
 // CORRECT
@@ -888,10 +888,10 @@ if (player.IsAlive())
 
 ### 4. Modifying Health on Client
 
-Health changes are **server-authoritative**. Setting health on the client will be overwritten by the next server sync, or worse, cause desync.
+Health changes are **server-authoritative**. Setting health on le client will be overwritten by the next server sync, or worse, cause desync.
 
 ```c
-// WRONG - client-side health change will desync
+// INCORRECT - client-side health change will desync
 player.SetHealth("", "Health", 100);
 
 // CORRECT - check that we are on the server
@@ -907,7 +907,7 @@ if (GetGame().IsServer())
 // GetPlainId() = raw Steam64 ID (human-readable, not hashed)
 // GetId()      = BattlEye GUID (hashed, safe for databases)
 
-// WRONG - using GetId() to look up Steam profile
+// INCORRECT - using GetId() to look up Steam profile
 string steamUrl = "https://steamcommunity.com/profiles/" + identity.GetId();
 // This won't work - GetId() is a hash, not a Steam64 ID!
 
@@ -920,7 +920,7 @@ string steamUrl = "https://steamcommunity.com/profiles/" + identity.GetPlainId()
 After modifying a synced variable, you must call `SetSynchDirty()` to trigger network synchronization. Without it, clients will never see the change.
 
 ```c
-// WRONG - clients won't see the restrain state change
+// INCORRECT - clients won't see the restrain state change
 m_IsRestrained = true;
 
 // CORRECT - how SetRestrained() actually works
@@ -953,7 +953,7 @@ if (entity && entity.IsAlive())
 
 ---
 
-## Tableau de Reference Rapide
+## Quick Reference Table
 
 | Task | Code |
 |------|------|
@@ -983,39 +983,39 @@ if (entity && entity.IsAlive())
 
 ---
 
-*This chapter covers the PlayerBase API as of DayZ 1.26. Method signatures are sourced from vanilla script files in `3_Game/` and `4_World/`. For the complete entity hierarchy that PlayerBase inherits from, voir [Chapitre 6.1: Entity System](01-entity-system.md).*
+*Ce chapitre couvre the PlayerBase API as of DayZ 1.26. Method signatures are sourced from vanilla script files in `3_Game/` and `4_World/`. For the complete entity hierarchy that PlayerBase inherits from, see [Chapter 6.1: Entity System](01-entity-system.md).*
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
-- **Always null-check `GetIdentity()` before accessing player identity fields.** During the connection handshake and disconnect teardown, a `PlayerBase` entity can exist without an identity. Calling `GetIdentity().GetName()` without a null check crashes the server.
+- **Always null-check `GetIdentity()` before accessing player identity fields.** During the connection handshake and disconnect teardown, a `PlayerBase` entity can exist without an identity. Calling `GetIdentity().GetName()` without a null check crashes le serveur.
 - **Use `GetPlainId()` for Steam lookups, `GetId()` for database storage.** `GetPlainId()` returns the raw Steam64 ID suitable for profile URLs. `GetId()` returns the BattlEye GUID hash, which Bohemia recommends for persistent data keys.
-- **Guard all health modifications with `GetGame().IsServer()`.** Health, blood, shock, stats, and bleeding are server-authoritative. Client-side changes are overwritten on the next sync and cause desync artifacts.
+- **Guard all health modifications with `GetGame().IsServer()`.** Health, blood, shock, stats, and bleeding are server-authoritative. Côté client changes are overwritten on the next sync and cause desync artifacts.
 - **Check `IsAlive()` before performing operations on player entities.** Dead player entities persist as corpses. Healing, teleporting, or equipping a corpse wastes server resources and can cause unexpected behavior.
 - **Call `SetSynchDirty()` after modifying any `RegisterNetSyncVariable*` field.** Without this call, clients never receive the updated value. This applies to both vanilla synced variables and your custom ones.
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
-> **Mod Compatibility:** `PlayerBase` is the single most modded class in DayZ. Admin tools, survival mods, PvP systems, and UI mods all add `modded class PlayerBase` with custom fields, overrides, and synced variables.
+> **Compatibilité des mods :** `PlayerBase` is the single most modded class in DayZ. Admin tools, survival mods, PvP systems, and UI mods all add `modded class PlayerBase` with custom fields, overrides, and synced variables.
 
-- **Load Order:** Multiple `modded class PlayerBase` declarations coexist as long as each calls `super` in every override. The last-loaded mod's overrides wrap all previous ones.
-- **Modded Class Conflicts:** Common conflict points are `OnVariablesSynchronized()` (forgetting `super` hides other mods' sync logic), `EEHitBy()` (damage modification mods overriding each other), and the constructor (net sync variable registration order must be consistent).
-- **Performance Impact:** Adding many `RegisterNetSyncVariable*` calls to PlayerBase increases per-player network traffic. Each synced variable is checked for changes every time `SetSynchDirty()` is called. Keep custom synced variables under 4-5 per mod.
-- **Server/Client:** `GetGame().GetPlayer()` returns null on dedicated servers. Use `GetGame().GetPlayers(array)` to iterate server-side players. Manager subsystems like `GetBleedingManagerServer()` return null on clients; use `GetBleedingManagerRemote()` for client-side particle effects instead.
+- **Ordre de chargement :** Multiple `modded class PlayerBase` declarations coexist as long as each calls `super` in every override. The last-loaded mod's overrides wrap all previous ones.
+- **Conflits de classes moddées :** Common conflict points are `OnVariablesSynchronized()` (forgetting `super` hides other mods' sync logic), `EEHitBy()` (damage modification mods overriding each other), and the constructor (net sync variable registration order must be consistent).
+- **Impact sur la performance :** Adding many `RegisterNetSyncVariable*` calls to PlayerBase increases per-player network traffic. Each synced variable is checked for changes every time `SetSynchDirty()` is called. Keep custom synced variables under 4-5 per mod.
+- **Serveur/Client :** `GetGame().GetPlayer()` retourne null on dedicated servers. Use `GetGame().GetPlayers(array)` to iterate côté serveur players. Manager subsystems like `GetBleedingManagerServer()` return null on clients; use `GetBleedingManagerRemote()` for côté client particle effects instead.
 
 ---
 
-## Observe dans les Mods Reels
+## Observé dans les mods réels
 
-> These patterns were confirmed by studying the source code of professional DayZ mods.
+> Ces patrons ont été confirmés par l'étude du code source de mods DayZ professionnels.
 
-| Patron | Mod | File/Location |
+| Patron | Mod | Fichier/Emplacement |
 |---------|-----|---------------|
 | `modded class PlayerBase` with custom `RegisterNetSyncVariableBool` for group membership | Expansion | Party system player sync |
 | `EEHitBy` override to track damage source for killfeed display | Dabs Framework | Hit tracking / killfeed |
 | `InvokeOnConnect` player data load from `$profile:` JSON by `GetIdentity().GetId()` | COT | Player permission loading |
 | `GetBleedingManagerServer().RemoveAllSources()` in admin heal command | VPP Admin Tools | Player management module |
-| `OnVariablesSynchronized` override to update client-side HUD from synced stats | Expansion | Notification and status sync |
+| `OnVariablesSynchronized` override to update côté client HUD from synced stats | Expansion | Notification and status sync |

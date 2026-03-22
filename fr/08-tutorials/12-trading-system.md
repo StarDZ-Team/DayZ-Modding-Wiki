@@ -1,16 +1,20 @@
-# Chapter 8.12: Building a Trading System
+# Chapitre 8.12: Building a Trading System
 
-[Home](../../README.md) | [<< Previous: Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Next: The Diagnostic Menu >>](13-diag-menu.md)
+[Accueil](../../README.md) | [<< Précédent : Creating Custom Clothing](11-clothing-mod.md) | **Building a Trading System** | [Suivant : The Diagnostic Menu >>](13-diag-menu.md)
 
 ---
 
-## Table des Matieres
+> **Résumé :** Build a complete NPC-less shop system: JSON config, server-validated buy/sell, categorized UI, currency-based transactions. The most complex tutorial in this wiki -- covers data modeling, RPC roundtrips, inventory manipulation, and anti-cheat principles.
+
+---
+
+## Table des matières
 
 - [What We Are Building](#what-we-are-building)
 - [Step 1: Data Model (3_Game)](#step-1-data-model-3_game)
 - [Step 2: RPC Constants (3_Game)](#step-2-rpc-constants-3_game)
-- [Step 3: Server-Side Shop Manager (4_World)](#step-3-server-side-shop-manager-4_world)
-- [Step 4: Client-Side Shop UI (5_Mission)](#step-4-client-side-shop-ui-5_mission)
+- [Step 3: Server-Side Shop Manager (4_World)](#step-3-côté serveur-shop-manager-4_world)
+- [Step 4: Client-Side Shop UI (5_Mission)](#step-4-côté client-shop-ui-5_mission)
 - [Step 5: Layout File](#step-5-layout-file)
 - [Step 6: Mission Hook and Keybind](#step-6-mission-hook-and-keybind)
 - [Step 7: Currency Item](#step-7-currency-item)
@@ -24,7 +28,7 @@
 
 ## What We Are Building
 
-Players press F6 to open a shop menu, browse items by category (Weapons, Food, Medical), and buy/sell using a currency item. The server validates every transaction -- the client never decides prices or spawns items.
+Players press F6 to open a shop menu, browse items by category (Weapons, Food, Medical), and buy/sell using a currency item. Le serveur validates every transaction -- le client never decides prices or apparitions items.
 
 ```mermaid
 sequenceDiagram
@@ -357,7 +361,7 @@ modded class MissionServer
 };
 ```
 
-**Key decisions:** Currency removed *before* spawning items (prevents duplication). Always `DeleteSafe()` for networked items. Quantity clamped to 1-10 to prevent abuse.
+**Key decisions:** Currency removed *before* apparition items (prevents duplication). Always `DeleteSafe()` for networked items. Quantity clamped to 1-10 to prevent abuse.
 
 ---
 
@@ -623,7 +627,7 @@ For released mods, use `inputs.xml` so players can remap the key:
 
 ## Step 7: Currency Item
 
-You can use any existing item -- set `CurrencyClassName` to `"Rag"` in the JSON and rags become money. For a custom coin, voir [Chapitre 8.2: Custom Item](02-custom-item.md).
+You can use any existing item -- set `CurrencyClassName` to `"Rag"` in the JSON and rags become money. For a custom coin, see [Chapter 8.2: Custom Item](02-custom-item.md).
 
 ---
 
@@ -651,7 +655,7 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 ## Security Considerations
 
 1. **NEVER trust client-sent prices.** Client sends `(className, qty)` only. Server looks up price.
-2. **Delete before spawn.** Remove currency first, then create items. Prevents duplication.
+2. **Delete before apparition.** Remove currency first, then create items. Prevents duplication.
 3. **Validate existence.** Confirm item is in inventory before giving sell currency.
 4. **Log everything.** Print player name, item, amount for every transaction.
 5. **Quantity bounds.** Reject `qty <= 0` or `qty > 10`.
@@ -661,7 +665,7 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 
 ## Complete Code Reference
 
-| Fichier | Layer | But |
+| File | Layer | Purpose |
 |------|-------|---------|
 | `ShopDemoRPC.c` | 3_Game | RPC ID constants |
 | `ShopDemoData.c` | 3_Game | Data classes: ShopItem, ShopCategory, ShopConfig |
@@ -672,7 +676,7 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 - **Server is the single source of truth.** Client is a display terminal.
 - **Use `DeleteSafe()` not `Delete()`.** Handles network sync and locked slots.
@@ -680,36 +684,36 @@ Auto-generated at `$profile:ShopDemo/ShopConfig.json` on first server start. Edi
 - **Always call `super` in overrides.** Breaking the chain breaks other mods.
 - **Clean up dynamic widgets.** Every `CreateWidget` needs `Unlink` on close.
 
-## Theorie vs Pratique
+## Théorie vs Pratique
 
-| Concept | Theorie | Realite |
+| Concept | Théorie | Réalité |
 |---------|--------|---------|
 | `JsonFileLoader.LoadFile()` | Loads cleanly | Trailing commas cause silent failures. Validate JSON externally. |
 | String RPC serialization | Simple | 500+ items may hit size limits. Paginate for large shops. |
-| `CreateInInventory()` | Always works | Returns null if inventory full. Always check. |
+| `CreateInInventory()` | Always works | Retourne null if inventory full. Always check. |
 | Listen server testing | Fast iteration | Hides network bugs. Test on dedicated server. |
 
 ## What You Learned
 
 - JSON config loading with `JsonFileLoader<T>` and auto-generation of defaults
-- Singleton pattern for server-side game managers
-- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning
+- Singleton pattern for côté serveur game managers
+- Inventory enumeration, counting, deletion (`DeleteSafe`), and apparition
 - String serialization of complex data over RPC (categories, items, prices)
 - Dynamic widget creation for data-driven UI
 - Full buy/sell transaction flow with server-only authority
 - Security principles for multiplayer economy systems
 
-## Erreurs Courantes
+## Erreurs courantes
 
-| Erreur | Correction |
+| Mistake | Fix |
 |---------|-----|
 | Client sends price | Send `(className, qty)` only. Server decides price. |
 | Spawn before paying | Remove currency first, then create items. |
 | Skip `super.OnRPC()` | Always call super -- other mods need the chain. |
 | `Delete()` on networked items | Use `DeleteSafe()`. |
-| Ignore `CreateInInventory` return | Check for null, fall back to ground spawn. |
+| Ignore `CreateInInventory` return | Check for null, fall back to ground apparition. |
 | Redeclare vars in else-if | Declare once before the if-chain (Enforce Script rule). |
 
 ---
 
-**Previous:** [Chapter 8.11: Clothing Mod](11-clothing-mod.md)
+**Précédent :** [Chapter 8.11: Clothing Mod](11-clothing-mod.md)

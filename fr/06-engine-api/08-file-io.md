@@ -1,6 +1,6 @@
-# Chapter 6.8: File I/O & JSON
+# Chapitre 6.8: File I/O & JSON
 
-[Home](../../README.md) | [<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
+[Accueil](../../README.md) | [<< Précédent : Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Suivant : Networking & RPC >>](09-networking.md)
 
 ---
 
@@ -32,7 +32,7 @@ proto bool FileExist(string name);
 
 Returns `true` if the file exists at the given path.
 
-**Exemple :**
+**Exemple:**
 
 ```c
 if (FileExist("$profile:MyMod/config.json"))
@@ -67,7 +67,7 @@ enum FileMode
 
 `FileHandle` is an integer handle. A return value of `0` indicates failure.
 
-**Exemple :**
+**Exemple:**
 
 ```c
 FileHandle fh = OpenFile("$profile:MyMod/log.txt", FileMode.WRITE);
@@ -101,7 +101,7 @@ proto void FPrint(FileHandle file, void var);
 
 Writes the value without a trailing newline.
 
-**Example --- write a log file:**
+**Exemple --- write a log file:**
 
 ```c
 void WriteLog(string message)
@@ -131,7 +131,7 @@ proto int FGets(FileHandle file, string var);
 
 Reads one line from the file into `var`. Returns the number of characters read, or `-1` at end of file.
 
-**Example --- read a file line by line:**
+**Exemple --- read a file line by line:**
 
 ```c
 void ReadConfigFile()
@@ -170,7 +170,7 @@ proto native bool MakeDirectory(string name);
 
 Creates a directory. Returns `true` on success. Creates only the final directory --- parent directories must already exist.
 
-**Example --- ensure directory structure:**
+**Exemple --- ensure directory structure:**
 
 ```c
 void EnsureDirectories()
@@ -197,7 +197,7 @@ proto native bool CopyFile(string sourceName, string destName);
 
 Copies a file from source to destination.
 
-**Exemple :**
+**Exemple:**
 
 ```c
 // Backup before overwriting
@@ -244,7 +244,7 @@ enum FindFileFlags
 }
 ```
 
-**Example --- enumerate all JSON files in a directory:**
+**Exemple --- enumerate all JSON files in a directory:**
 
 ```c
 void ListJsonFiles()
@@ -279,7 +279,7 @@ void ListJsonFiles()
 
 > **Important :** `FindFile` returns just the file name, not the full path. You must prepend the directory path yourself when processing the files.
 
-**Example --- count files in a directory:**
+**Exemple --- count files in a directory:**
 
 ```c
 int CountFiles(string pattern)
@@ -307,7 +307,7 @@ int CountFiles(string pattern)
 
 ## JsonFileLoader (Generic JSON)
 
-**File:** `3_Game/tools/jsonfileloader.c` (173 lines)
+**Fichier :** `3_Game/tools/jsonfileloader.c` (173 lines)
 
 The recommended way to load and save JSON data. Works with any class that has public fields.
 
@@ -448,7 +448,7 @@ class MyModConfigManager
 
 ## JsonSerializer (Direct Use)
 
-**File:** `3_Game/gameplay.c`
+**Fichier :** `3_Game/gameplay.c`
 
 For cases where you need to serialize/deserialize JSON strings directly without file operations:
 
@@ -460,7 +460,7 @@ class JsonSerializer : Serializer
 }
 ```
 
-**Exemple :**
+**Exemple:**
 
 ```c
 MyConfig cfg = new MyConfig();
@@ -482,11 +482,11 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 
 ---
 
-## Resume
+## Résumé
 
 | Operation | Function | Notes |
 |-----------|----------|-------|
-| Check exists | `FileExist(path)` | Retourne bool |
+| Check exists | `FileExist(path)` | Returns bool |
 | Open | `OpenFile(path, FileMode)` | Returns handle (0 = fail) |
 | Close | `CloseFile(handle)` | Always call when done |
 | Write line | `FPrintln(handle, data)` | With newline |
@@ -500,7 +500,7 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 | JSON save | `JsonFileLoader<T>.SaveFile(path, data, error)` | Modern API, returns bool |
 | JSON string | `JsonSerializer.WriteToString()` / `ReadFromString()` | Direct string operations |
 
-| Concept | Key Point |
+| Concept | Point clé |
 |---------|-----------|
 | Path prefixes | `$profile:` (writable), `$mission:` (read), `$saves:` (writable) |
 | JsonLoadFile | **Returns void** --- use `LoadFile()` (bool) instead |
@@ -510,4 +510,38 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 
 ---
 
-[<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
+## Bonnes pratiques
+
+- **Always wrap file operations in existence checks and close handles in all code paths.** An unclosed `FileHandle` leaks resources and can prevent the file from being written to disk. Use guard patterns: check `fh != 0`, do work, then `CloseFile(fh)` before every `return`.
+- **Use the modern `JsonFileLoader<T>.LoadFile()` (returns bool) instead of the legacy `JsonLoadFile()` (returns void).** The legacy API cannot report errors, and attempting to use its void return in a condition silently fails.
+- **Create directories with `MakeDirectory()` in order from parent to child.** `MakeDirectory` only creates the final directory segment. `MakeDirectory("$profile:A/B/C")` fails if `A/B` does not exist. Create each level sequentially.
+- **Use `CopyFile()` to create backups before overwriting config files.** JSON parse errors from corrupted saves are unrecoverable. A `.bak` copy lets server owners restore the last good state.
+- **Remember that `FindFile()` returns only filenames, not full paths.** You must concatenate the directory prefix yourself when loading files found via `FindFile`/`FindNextFile`.
+
+---
+
+## Compatibilité et impact
+
+> **Compatibilité des mods :** File I/O is inherently isolated per mod when each mod uses its own `$profile:` subdirectory. Conflicts occur only when two mods read/write the same file path.
+
+- **Ordre de chargement :** File I/O has no load-order dependency. Mods read and write independently.
+- **Conflits de classes moddées :** No class conflicts. The risk is two mods using the same `$profile:` subdirectory name or filename, causing data corruption.
+- **Impact sur la performance :** JSON serialization via `JsonFileLoader` is synchronous and blocks the main thread. Loading large JSON files (>100KB) during gameplay causes frame hitches. Load configs in `OnInit()` or `OnMissionStart()`, never in `OnUpdate()`.
+- **Serveur/Client :** File writes are restricted to `$profile:` and `$saves:`. On clients, `$profile:` points to le client profile directory. On dedicated servers, it points to le serveur profile. `$mission:` is typically read-only on both sides.
+
+---
+
+## Observé dans les mods réels
+
+> Ces patrons ont été confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Fichier/Emplacement |
+|---------|-----|---------------|
+| `MakeDirectory` chain + `FileExist` check + `LoadFile` with fallback to defaults | Expansion | Settings manager (`ExpansionSettings`) |
+| `CopyFile` backup before config save | COT | Permission file management |
+| `FindFile`/`FindNextFile` to enumerate per-player JSON files in `$profile:` | VPP Admin Tools | Player data loader |
+| `JsonSerializer.WriteToString()` for RPC payload serialization (no file) | Dabs Framework | Network config sync |
+
+---
+
+[<< Précédent : Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Suivant : Networking & RPC >>](09-networking.md)

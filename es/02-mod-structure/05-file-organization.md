@@ -1,6 +1,10 @@
-# Chapter 2.5: File Organization Best Practices
+# Capítulo 2.5: File Organization Best Practices
 
-[Home](../../README.md) | [<< Previous: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Next: Server vs Client Architecture >>](06-server-client-split.md)
+[Inicio](../../README.md) | [<< Anterior: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Siguiente: Server vs Client Architecture >>](06-server-client-split.md)
+
+---
+
+> **Resumen:** How you organize files determines whether your mod is maintainable at 10 files or 1,000. This chapter covers the canonical directory structure, naming conventions, content vs script vs framework mods, client-server splits, and lessons from professional DayZ mods.
 
 ---
 
@@ -104,9 +108,9 @@ MyMod/                                    <-- Project root (development)
 Use PascalCase with a clear prefix:
 
 ```
-MyFramework          <-- Framework, prefix: MyMod_
-MyMissions      <-- Feature mod
-MyWeapons       <-- Content mod
+MyFramework          <-- Framework, prefix: MyFW_
+MyMod_Missions      <-- Feature mod
+MyMod_Weapons       <-- Content mod
 VPPAdminTools        <-- Some mods skip underscores
 DabsFramework        <-- PascalCase without separator
 ```
@@ -116,7 +120,7 @@ DabsFramework        <-- PascalCase without separator
 Use a short prefix unique to your mod, followed by an underscore and the class purpose:
 
 ```c
-// MyMod pattern: My[Subsystem]_[Name]
+// MyMod pattern: MyMod_[Subsystem]_[Name]
 class MyLog             // Core logging
 class MyRPC             // Core RPC
 class MyW_Config        // Weapons config
@@ -262,7 +266,7 @@ MyAdminTools/
 - Heavy on `Scripts/` (most code in 3_Game, 4_World, 5_Mission)
 - GUI layouts and imagesets for UI
 - Little or no `Data/` (no 3D models)
-- Usually depends on a framework (CF, DabsFramework, MyFramework)
+- Usually depends on a framework (CF, DabsFramework, or a custom framework)
 
 ### 3. Framework Mod
 
@@ -332,7 +336,7 @@ When a mod has both client-visible behavior (UI, entity rendering) and server-on
 
 ```
 MyMod/                                    <-- Project root (development repo)
-  MyMod_MyMod/                           <-- Client package (loaded via -mod=)
+  MyMod_Sub/                           <-- Client package (loaded via -mod=)
     mod.cpp
     stringtable.csv
     Scripts/
@@ -344,7 +348,7 @@ MyMod/                                    <-- Project root (development repo)
       layouts/
     Sounds/
 
-  MyMod_MyModServer/                     <-- Server package (loaded via -servermod=)
+  MyMod_SubServer/                     <-- Server package (loaded via -servermod=)
     mod.cpp
     Scripts/
       config.cpp                          <-- type = "servermod"
@@ -367,44 +371,44 @@ MyMod/                                    <-- Project root (development repo)
 // Client package config.cpp
 class CfgPatches
 {
-    class MyMyMod_Scripts
+    class MyMod_Sub_Scripts
     {
-        requiredAddons[] = { "DZ_Scripts", "MyCore_Scripts" };
+        requiredAddons[] = { "DZ_Scripts", "MyMod_Core_Scripts" };
     };
 };
 
 // Server package config.cpp
 class CfgPatches
 {
-    class MyMyModServer_Scripts
+    class MyMod_SubServer_Scripts
     {
-        requiredAddons[] = { "DZ_Scripts", "MyMyMod_Scripts", "MyCore_Scripts" };
+        requiredAddons[] = { "DZ_Scripts", "MyMod_Sub_Scripts", "MyMod_Core_Scripts" };
         //                                  ^^^ depends on client package
     };
 };
 ```
 
-### Real Example: MyMissions Mod
+### Real Example: Missions Client-Server Split
 
 ```
-MyMissions/
-  MyMissions/                        <-- Client (-mod=)
+MyMod_Missions/
+  MyMod_Missions/                        <-- Client (-mod=)
     mod.cpp                               type = "mod"
     Scripts/
-      config.cpp                          requiredAddons: MyCore_Scripts
-      3_Game/MyMissions/             Shared enums, config, RPC IDs
-      4_World/MyMissions/            Mission markers (client rendering)
-      5_Mission/MyMissions/          Mission UI, radio HUD
+      config.cpp                          requiredAddons: MyMod_Core_Scripts
+      3_Game/MyMod_Missions/             Shared enums, config, RPC IDs
+      4_World/MyMod_Missions/            Mission markers (client rendering)
+      5_Mission/MyMod_Missions/          Mission UI, radio HUD
     GUI/layouts/                          Mission panel layouts
     Sounds/                               Radio beep sounds
 
-  MyMissions_Server/                 <-- Server (-servermod=)
+  MyMod_MissionsServer/                 <-- Server (-servermod=)
     mod.cpp                               type = "servermod"
     Scripts/
-      config.cpp                          requiredAddons: MyScripts, MyCore_Scripts
-      3_Game/MyMissionsServer/       Server config extensions
-      4_World/MyMissionsServer/      Mission spawner, loot manager
-      5_Mission/MyMissionsServer/    Server mission lifecycle
+      config.cpp                          requiredAddons: MyMod_Scripts, MyMod_Core_Scripts
+      3_Game/MyMod_MissionsServer/       Server config extensions
+      4_World/MyMod_MissionsServer/      Mission spawner, loot manager
+      5_Mission/MyMod_MissionsServer/    Server mission lifecycle
 ```
 
 ---
@@ -520,10 +524,10 @@ Large mods split into multiple PBOs for several reasons:
 3. **Build pipeline** -- different PBOs built by different tools
 
 ```
-@MyWeapons/
+@MyMod_Weapons/
   Addons/
-    MyWeapons_Scripts.pbo    <-- Script behavior
-    MyWeapons_Data.pbo       <-- 268 weapon models, textures, configs
+    MyMod_Weapons_Scripts.pbo    <-- Script behavior
+    MyMod_Weapons_Data.pbo       <-- 268 weapon models, textures, configs
 ```
 
 Each PBO has its own `config.cpp` with its own `CfgPatches` entry. The `requiredAddons` between them controls the load order:
@@ -532,7 +536,7 @@ Each PBO has its own `config.cpp` with its own `CfgPatches` entry. The `required
 // Scripts/config.cpp
 class CfgPatches
 {
-    class MyWeapons_Scripts
+    class MyMod_Weapons_Scripts
     {
         requiredAddons[] = { "DZ_Scripts", "DZ_Weapons_Firearms" };
     };
@@ -541,7 +545,7 @@ class CfgPatches
 // Data/config.cpp
 class CfgPatches
 {
-    class MyWeapons_Data
+    class MyMod_Weapons_Data
     {
         requiredAddons[] = { "DZ_Data", "DZ_Weapons_Firearms" };
     };
@@ -550,9 +554,9 @@ class CfgPatches
 
 ---
 
-## Ejemplos Reales de Mods Profesionales
+## Real Examples from Professional Mods
 
-### MyFramework -- Framework Mod
+### Framework Mod Example
 
 ```
 MyFramework/
@@ -644,11 +648,11 @@ JM/COT/
 
 Note the `Common/` folder pattern: included in every script module via `files[]`, allowing shared types across all layers.
 
-### MyWeapons Mod -- Content Mod
+### Content Mod Example
 
 ```
-MyWeapons/
-  MyWeapons/
+MyMod_Weapons/
+  MyMod_Weapons/
     mod.cpp
     Data/
       config.cpp                          <-- Merged config: 268 weapon definitions
@@ -700,7 +704,7 @@ Note: DabsFramework uses lowercase folder names (`scripts/`, `gui/`). This works
 
 ---
 
-## Anti-Patrones
+## Anti-Patterns
 
 ### 1. Flat Script Dump
 
@@ -818,7 +822,7 @@ MyModPanel.c
 
 ---
 
-## Resumen Checklist
+## Summary Checklist
 
 Before publishing your mod, verify:
 
@@ -835,5 +839,36 @@ Before publishing your mod, verify:
 
 ---
 
-**Previous:** [Chapter 2.4: Your First Mod -- Minimum Viable](04-minimum-viable-mod.md)
-**Next:** [Part 3: GUI & Layout System](../03-gui-system/01-widget-types.md)
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Deep subsystem folders in `3_Game` | StarDZ Core | 15+ folders under `3_Game/` (Config, RPC, Events, Logging, Permissions, etc.) |
+| `Common/` shared folder | COT | Included in every script module's `files[]` to provide cross-layer utility types |
+| Lowercase folder names | DabsFramework | Uses `scripts/`, `gui/` instead of `Scripts/`, `GUI/` -- works on Windows but risks issues on Linux |
+| Separate GUI PBO | Expansion, COT | GUI resources (layouts, imagesets, styles) packed into a dedicated PBO with its own config.cpp |
+| Minimal Scripts for content mods | Weapon packs | `Data/` directory dominates; `Scripts/` has only a thin config.cpp and optional behavior overrides |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| One class per file | Each `.c` file contains one class | Small helper classes and enums are often co-located with their parent class for convenience |
+| Separate PBOs for Scripts/Data/GUI | Clean separation by concern | Small mods often merge everything into a single PBO to simplify distribution |
+| Mod subfolder prevents collisions | `3_Game/MyMod/` namespaces files | True, but class names still collide globally -- the subfolder only prevents file-level conflicts |
+| `stringtable.csv` at mod root | Engine finds it automatically | Must be at the PBO root that gets loaded; placing it inside `Scripts/` causes it to be silently ignored |
+| ServerFiles/ ships with the mod | Server admins copy types.xml | Many mod authors forget to include ServerFiles, forcing admins to create types.xml entries manually |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** File organization itself does not cause conflicts. However, two mods placing files with the same path inside their PBOs (e.g., both using `3_Game/Config.c` without a mod subfolder) will collide at the engine level, causing one to silently override the other.
+- **Performance:** Directory depth and file count have no measurable impact on script compilation time. The engine recursively scans all listed `files[]` directories regardless of nesting.
+
+---
+
+**Anterior:** [Chapter 2.4: Your First Mod -- Minimum Viable](04-minimum-viable-mod.md)
+**Siguiente:** [Chapter 2.6: Server vs Client Architecture](06-server-client-split.md)

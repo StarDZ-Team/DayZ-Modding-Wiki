@@ -1,18 +1,18 @@
-# Chapter 6.21: Zombie & AI System
+# Chapitre 6.21: Zombie & AI System
 
-[Home](../../README.md) | [<< Previous: Particle & Effect System](20-particle-effects.md) | **Zombie & AI System** | [Next: Admin & Server Management >>](22-admin-server.md)
+[Accueil](../../README.md) | [<< Précédent : Particle & Effect System](20-particle-effects.md) | **Zombie & AI System** | [Suivant : Admin & Server Management >>](22-admin-server.md)
 
 ---
 
 ## Introduction
 
-Les zombies (officiellement appeles "Infectes") sont l'entite IA hostile principale dans DayZ. They patrol, detect players through sight, sound, and proximity, transition through behavioral states, attack, vault, crawl, and die --- all driven by a C++ AI engine with script-level hooks for customization. Understanding how the infected system works is essential for any mod that spawns, modifies, or interacts with zombies.
+Zombies (officially called "Infected") are the primary hostile AI entity in DayZ. They patrol, detect players through sight, sound, and proximity, transition through behavioral states, attack, vault, crawl, and die --- all driven by a C++ AI engine with script-level hooks for customization. Understanding how the infected system works is essential for any mod that apparitions, modifies, or interacts with zombies.
 
-This chapter covers the full class hierarchy, the mind state machine, movement and attack commands, the perception/targeting system, spawning patterns, and modding hooks. All method signatures and constants are taken directly from the vanilla script source. Where behavior is driven by the C++ engine with no script-visible API, that is noted explicitly.
+Ce chapitre couvre the full class hierarchy, the mind state machine, movement and attack commands, the perception/targeting system, apparition patterns, and modding hooks. All method signatures and constants are taken directly from le vanilla script source. Where behavior is driven by the C++ engine with no script-visible API, that is noted explicitly.
 
 ---
 
-## Hierarchie des Classes
+## Hiérarchie des classes
 
 The infected entity inherits from a deep chain shared with animals. Each level adds capabilities:
 
@@ -96,7 +96,7 @@ classDiagram
 
 ---
 
-## Enumerations et Constantes
+## Enums and Constants
 
 ### DayZInfectedConstants
 
@@ -151,7 +151,7 @@ enum DayZInfectedDeathAnims
 
 From `3_Game/constants.c`:
 
-| Constante | Valeur | But |
+| Constant | Value | Purpose |
 |----------|-------|---------|
 | `AI_ATTACKSPEED` | `1.5` | Multiplier for attack cooldown reduction rate |
 | `AI_MAX_BLOCKABLE_ANGLE` | `60` | Max angle (degrees) where player block stance works against infected |
@@ -161,13 +161,13 @@ From `3_Game/constants.c`:
 
 ---
 
-## Etats Mentaux
+## Mind States
 
 The infected AI uses five mind states, managed entirely by the C++ AI engine. Script reads the current state via `DayZInfectedInputController.GetMindState()` but cannot directly set it.
 
 ### State Descriptions
 
-| Etat | Valeur d'Enum | Comportement |
+| State | Enum Value | Behavior |
 |-------|-----------|----------|
 | **CALM** | `MINDSTATE_CALM` | Idle or wandering. No threat detected. Idle animation state 0. |
 | **DISTURBED** | `MINDSTATE_DISTURBED` | Noise or brief visual stimulus. Alert posture, looking around. Idle animation state 1. |
@@ -208,7 +208,7 @@ bool HandleMindStateChange(int pCurrentCommandID, DayZInfectedInputController pI
 }
 ```
 
-> **Important :** The actual state transitions (CALM to DISTURBED, DISTURBED to CHASE, etc.) are driven by the C++ perception system. Script cannot force a mind state change --- it only reacts to what the engine decides.
+> **Important :** The actual state transitions (CALM to DISTURBED, DISTURBED to CHASE, etc.) are driven by the C++ perception system. Script cannot force a mind state change --- it only reacts to what le moteur decides.
 
 ### Network Synchronization
 
@@ -228,12 +228,12 @@ On clients, `OnVariablesSynchronized()` triggers sound event updates based on th
 
 The primary movement command, started with `StartCommand_Move()`. Methods:
 
-| Methode | Signature | Description |
+| Method | Signature | Description |
 |--------|-----------|-------------|
 | `SetStanceVariation` | `void SetStanceVariation(int pStanceVariation)` | Sets animation stance variant (0-3, randomized on init) |
 | `SetIdleState` | `void SetIdleState(int pIdleState)` | Sets idle animation (0=calm, 1=disturbed, 2=chase) |
 | `StartTurn` | `void StartTurn(float pDirection, int pSpeedType)` | Initiates a turn animation |
-| `IsTurning` | `bool IsTurning()` | Returns true during turn animation |
+| `IsTurning` | `bool IsTurning()` | Retourne true during turn animation |
 
 Movement speed is read from the input controller and synced:
 
@@ -247,7 +247,7 @@ The `HandleMove` method updates `m_MovementSpeed` from `ic.GetMovementSpeed()` a
 
 The base input controller (shared with animals) provides override methods:
 
-| Methode | Signature | Description |
+| Method | Signature | Description |
 |--------|-----------|-------------|
 | `OverrideMovementSpeed` | `void OverrideMovementSpeed(bool state, float movementSpeed)` | Force a specific movement speed |
 | `GetMovementSpeed` | `float GetMovementSpeed()` | Current movement speed |
@@ -260,7 +260,7 @@ The base input controller (shared with animals) provides override methods:
 
 Extends the base controller with infected-specific queries:
 
-| Methode | Signature | Description |
+| Method | Signature | Description |
 |--------|-----------|-------------|
 | `IsVault` | `bool IsVault()` | AI wants to vault |
 | `GetVaultHeight` | `float GetVaultHeight()` | Height of the vault obstacle |
@@ -278,7 +278,7 @@ Extends the base controller with infected-specific queries:
 | <= 1.6m | 2 (medium vault) |
 | > 1.6m | 3 (high vault) |
 
-After landing (`WasLand()` returns true), a 2-second `m_KnuckleOutTimer` runs before the vault command exits via `StartCommand_Vault(-1)`.
+After landing (`WasLand()` retourne true), a 2-second `m_KnuckleOutTimer` runs before the vault command exits via `StartCommand_Vault(-1)`.
 
 ### Crawling
 
@@ -350,7 +350,7 @@ class DayZInfectedAttackType
 
 ### Damage Application
 
-When `attackCommand.WasHit()` returns true:
+When `attackCommand.WasHit()` retourne true:
 
 - Check if target is within attack distance
 - If player is blocking and facing the zombie (within `AI_MAX_BLOCKABLE_ANGLE` = 60 degrees):
@@ -377,11 +377,11 @@ Before attacking, the zombie verifies target alignment using `DayZPlayerUtils.Ge
 
 ## Perception System
 
-Zombie perception is primarily handled by the C++ engine. Script exposes the result (mind state, target entity) but not the internal perception logic. However, the script side defines the **target callbacks** and **noise system** that feed into the engine.
+Zombie perception is primarily handled by the C++ engine. Script exposes the result (mind state, target entity) but not the internal perception logic. Cependant, the script side defines the **target callbacks** and **noise system** that feed into le moteur.
 
 ### Vision (Visibility Modifiers)
 
-`AITargetCallbacksPlayer` (registered on each `PlayerBase`) provides `GetMaxVisionRangeModifier()`, which tells the engine how visible a player is:
+`AITargetCallbacksPlayer` (registered on each `PlayerBase`) provides `GetMaxVisionRangeModifier()`, which tells le moteur how visible a player is:
 
 **Speed modifiers** (from `PlayerConstants`):
 
@@ -401,7 +401,7 @@ Zombie perception is primarily handled by the C++ engine. Script exposes the res
 
 The final modifier is the average of speed and stance coefficients: `mod = (speedCoef + stanceCoef) / 2`.
 
-**Vision point selection** also depends on mind state: when the infected is ALERTED or higher, it looks at the player's head bone; otherwise, it checks the chest (Spine3 bone).
+**Vision point selection** also depends on mind state: when the infected is ALERTED or higher, it looks at le joueur's head bone; otherwise, it checks the chest (Spine3 bone).
 
 ### Sound (Noise System)
 
@@ -438,13 +438,13 @@ Weather also reduces noise via `Weather.GetNoiseReductionByWeather()` (rain redu
 
 ### Smell / Proximity
 
-There is no script-visible "smell" API. Proximity detection appears to be handled entirely in the C++ engine. Modders should treat the engine perception as a black box that outputs mind state and target entity.
+There is no script-visible "smell" API. Proximity detection appears to be handled entirely in the C++ engine. Modders should treat le moteur perception as a black box that outputs mind state and target entity.
 
 ---
 
 ## The Command Handler
 
-`ZombieBase.CommandHandler()` is called every frame by the engine. It is the central decision point:
+`ZombieBase.CommandHandler()` is called every frame by le moteur. It is the central decision point:
 
 ```
 CommandHandler(dt, currentCommandID, currentCommandFinished)
@@ -543,9 +543,9 @@ m_FinisherInProgress = false;
 
 ---
 
-## Spawning Zombies
+## Apparition Zombies
 
-### Script Spawning with CreateObjectEx
+### Script Apparition with CreateObjectEx
 
 ```csharp
 // Server-side only
@@ -560,13 +560,13 @@ DayZInfected zombie = DayZInfected.Cast(
 
 **ECE Flags** (from `3_Game/ce/centraleconomy.c`):
 
-| Drapeau | Valeur | But |
+| Flag | Value | Purpose |
 |------|-------|---------|
 | `ECE_INITAI` | `2048` | Initialize the AI agent (required for zombies to function) |
 | `ECE_EQUIP_ATTACHMENTS` | `8192` | Equip configured attachments from config |
 | `ECE_PLACE_ON_SURFACE` | `1060` | Composite: create physics + update pathgraph + trace to ground |
 
-> **Critical:** Omitting `ECE_INITAI` creates a zombie with no AI brain --- it will stand motionless. You can later call `zombie.InitAIAgent(group)` manually, but `ECE_INITAI` is the standard approach.
+> **Critical:** Omitting `ECE_INITAI` creates a zombie with no AI brain --- it will stand motionless. You can later call `zombie.InitAIAgent(group)` manually, but `ECE_INITAI` est le standard approach.
 
 ### Manual AI Initialization
 
@@ -591,9 +591,9 @@ zombie.GetAIAgent().SetKeepInIdle(false);
 zombie.DestroyAIAgent();
 ```
 
-### Events.xml Zombie Spawning
+### Events.xml Zombie Apparition
 
-The Central Economy spawns zombies via `events.xml` using zombie class names and group definitions. This is not script --- it is XML configuration processed by the CE engine:
+The Central Economy apparitions zombies via `events.xml` using zombie class names and group definitions. This is not script --- it is XML configuration processed by the CE engine:
 
 ```xml
 <event name="InfectedCity">
@@ -616,7 +616,7 @@ The Central Economy spawns zombies via `events.xml` using zombie class names and
 </event>
 ```
 
-The `type` values must match class names in `cfgVehicles`. The CE handles spawn positions, despawn radius, and population caps.
+The `type` values must match class names in `cfgVehicles`. The CE handles apparition positions, deapparition radius, and population caps.
 
 ---
 
@@ -658,7 +658,7 @@ behaviour.SetWaypoints(waypoints, 0, true, true);   // start at 0, forward, loop
 
 ### PGPolyFlags (Navmesh Filter)
 
-| Drapeau | But |
+| Flag | Purpose |
 |------|---------|
 | `WALK` | Ground, grass, road |
 | `DOOR` | Can move through doors |
@@ -818,7 +818,7 @@ class MyZombieCommand extends DayZInfectedCommandScript
 zombie.StartCommand_ScriptInst(MyZombieCommand);
 ```
 
-> **Avertissement :** `DayZInfectedCommandScript` is NON-MANAGED. Once sent to the CommandHandler via `StartCommand_Script` or `StartCommand_ScriptInst`, the engine takes ownership. Do not delete it manually while active --- this will cause a crash.
+> **Avertissement :** `DayZInfectedCommandScript` is NON-MANAGED. Once sent to the CommandHandler via `StartCommand_Script` or `StartCommand_ScriptInst`, le moteur takes ownership. Do not delete it manually while active --- this will cause a crash.
 
 ### Modding via modded class
 
@@ -869,22 +869,22 @@ Animation-driven voice events (`OnSoundVoiceEvent`) interrupt state-based sounds
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
-1. **Always use `ECE_INITAI` when spawning** --- without it, the zombie has no AI brain and will be motionless.
-2. **Server-side spawning only** --- `CreateObjectEx` for zombies should only run on the server; the network handles client replication.
+1. **Always use `ECE_INITAI` when apparition** --- without it, the zombie has no AI brain and will be motionless.
+2. **Côté serveur apparition only** --- `CreateObjectEx` for zombies should only run on le serveur; the network handles client replication.
 3. **Check `IsAlive()` before any AI manipulation** --- calling `GetAIAgent()` on a dead zombie can produce unexpected results.
 4. **Use `SetKeepInIdle(true)` sparingly** --- it suspends the entire AI, including perception. Remember to restore it.
 5. **Respect the command handler flow** --- use `ModCommandHandlerBefore/Inside/After` instead of overriding `CommandHandler` directly.
-6. **Avoid deleting active `DayZInfectedCommandScript`** --- the engine owns it once started. Let it finish or call `SetFlagFinished(true)`.
+6. **Avoid deleting active `DayZInfectedCommandScript`** --- le moteur owns it once started. Let it finish or call `SetFlagFinished(true)`.
 
 ---
 
-## Observe dans les Mods Reels
+## Observé dans les mods réels
 
 ### DayZ Expansion AI (eAIBase)
 
-The Expansion mod extends the zombie/creature AI system by creating `eAIBase` (extending `DayZPlayer`, not `DayZInfected`) for human-like AI. For infected modifications, Expansion uses `modded class ZombieBase` to add quest-related tracking (e.g., counting kills for objectives). This demonstrates that the `modded class` approach is the standard for infected customization.
+The Expansion mod extends the zombie/creature AI system by creating `eAIBase` (extending `DayZPlayer`, not `DayZInfected`) for human-like AI. For infected modifications, Expansion uses `modded class ZombieBase` to add quest-related tracking (e.g., counting kills for objectives). This demonstrates that the `modded class` approach est le standard for infected customization.
 
 ### Vanilla Debug Plugin
 
@@ -899,12 +899,12 @@ This plugin is an excellent reference for testing any infected-related mod.
 
 ---
 
-## Theorie vs Pratique
+## Théorie vs Pratique
 
-| Theorie | Practice |
+| Theory | Practice |
 |--------|---------|
 | Mind states can be set from script | The C++ engine controls transitions; script can only read state and override input controller values |
-| Zombies use pathfinding for navigation | Yes, via `AIWorld.FindPath()` and navmesh, but the path planning is internal to the engine |
+| Zombies use pathfinding for navigation | Yes, via `AIWorld.FindPath()` and navmesh, but the path planning is internal to le moteur |
 | Attack selection is random | It uses a utility function combining distance, pitch, and weighted probability |
 | All zombie types behave differently | Most share identical behavior; only NBC (contamination resistance) and Military (loot flags) differ in script |
 | `DayZInfectedCommandCrawl` controls crawling | It only handles the transition animation; actual crawling uses `DayZInfectedCommandMove` with `m_IsCrawling = true` |
@@ -912,32 +912,32 @@ This plugin is an excellent reference for testing any infected-related mod.
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
-1. **Forgetting `ECE_INITAI`** --- The most common spawning bug. The zombie appears but does nothing.
+1. **Forgetting `ECE_INITAI`** --- The most common apparition bug. The zombie appears but does nothing.
 2. **Calling `StartCommand_Attack(null, ...)` in production** --- The debug plugin does this for testing, but real attacks need a valid target entity or damage will not apply.
 3. **Overriding `CommandHandler` directly** --- This breaks compatibility with other mods. Use the three `ModCommandHandler*` hooks instead.
 4. **Assuming `COMMANDID_CRAWL` means the zombie is crawling** --- `COMMANDID_CRAWL` is only the transition. Check `IsCrawling()` for the persistent state.
 5. **Reading `m_MindState` on clients without sync** --- Use `GetMindStateSynced()` which reads the network-synced variable.
 6. **Not checking `!IsAlive()` before AI operations** --- Dead zombies still exist as entities but their AI state is undefined.
-7. **Deleting zombie entities without `DestroyAIAgent()` first** --- Can cause orphaned AI agents. The engine usually handles this, but explicit cleanup is safer for mod-spawned zombies.
+7. **Deleting zombie entities without `DestroyAIAgent()` first** --- Can cause orphaned AI agents. Le moteur usually handles this, but explicit cleanup is safer for mod-apparitioned zombies.
 8. **Setting leg health to 0 without triggering `m_CrawlTransition`** --- Direct `SetHealth("LeftLeg", "Health", 0)` does not trigger the crawl transition; the logic flows through `EEHitBy` -> `HandleSpecialZoneDamage` -> `EvaluateCrawlTransitionAnimation`.
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
 | Aspect | Impact |
 |--------|--------|
-| **Performance** | Each zombie runs its `CommandHandler` every frame on the server. Large zombie populations (50+) can cause server lag. |
+| **Performance** | Each zombie runs its `CommandHandler` every frame on le serveur. Large zombie populations (50+) can cause server lag. |
 | **Network** | Three synced variables per zombie (`m_MindState`, `m_MovementSpeed`, `m_IsCrawling`, `m_OrientationSynced`). Changes trigger `SetSynchDirty()`. |
 | **Mod conflicts** | Multiple mods using `ModCommandHandlerBefore` returning `true` will conflict --- only the last-loaded mod's override runs. |
-| **Client/Server** | Command handler, fight logic, and damage run server-side only. Sound events and animation playback are client-side. |
+| **Client/Server** | Command handler, fight logic, and damage run côté serveur only. Sound events and animation playback are côté client. |
 | **AI engine dependency** | Mind state transitions, pathfinding decisions, and target selection are C++ engine features. Script cannot fully replace or bypass the built-in AI. |
 
 ---
 
-## Reference Rapide
+## Référence rapide
 
 ```csharp
 // Spawn a zombie (server only)

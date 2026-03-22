@@ -1,59 +1,59 @@
-# Chapter 6.2: Vehicle System
+# 6.2. fejezet: Járműrendszer
 
-[Home](../../README.md) | [<< Previous: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
-
----
-
-## Bevezetes
-
-DayZ vehicles are entities that extend the transport system. Cars extend `CarScript`, boats extend `BoatScript`, and both inherit from `Transport`. Jarmuvek have fluid systems, parts with independent health, gear simulation, and physics managed by the engine. This chapter covers the API methods you need to interact with vehicles in scripts.
+[Kezdőlap](../../README.md) | [<< Előző: Entitásrendszer](01-entity-system.md) | **Járművek** | [Következő: Időjárás >>](03-weather.md)
 
 ---
 
-## Class Hierarchy
+## Bevezetés
+
+A DayZ járművek a közlekedési rendszert kiterjesztő entitások. Az autók a `CarScript`-et, a hajók a `BoatScript`-et terjesztik ki, és mindkettő a `Transport`-ból örököl. A járművek folyadékrendszerrel, független egészségű alkatrészekkel, sebességváltó-szimulációval és a motor által kezelt fizikával rendelkeznek. Ez a fejezet a járművekkel való interakcióhoz szükséges API metódusokat tárgyalja.
+
+---
+
+## Osztályhierarchia
 
 ```
 EntityAI
-└── Transport                    // 3_Game - base for all vehicles
-    ├── Car                      // 3_Game - engine-native car physics
-    │   └── CarScript            // 4_World - scriptable car base
+└── Transport                    // 3_Game - minden jármű alapja
+    ├── Car                      // 3_Game - motor-natív autó fizika
+    │   └── CarScript            // 4_World - szkriptelhető autó alap
     │       ├── CivilianSedan
     │       ├── OffroadHatchback
     │       ├── Hatchback_02
     │       ├── Sedan_02
     │       ├── Truck_01_Base
     │       └── ...
-    └── Boat                     // 3_Game - engine-native boat physics
-        └── BoatScript           // 4_World - scriptable boat base
+    └── Boat                     // 3_Game - motor-natív hajó fizika
+        └── BoatScript           // 4_World - szkriptelhető hajó alap
 ```
 
 ---
 
-## Transport (Base)
+## Transport (alap)
 
-**File:** `3_Game/entities/transport.c`
+**Fájl:** `3_Game/entities/transport.c`
 
-The abstract base for all vehicles. Provides seat management and crew access.
+Az absztrakt alap minden járműhöz. Üléskezelést és személyzet hozzáférést biztosít.
 
-### Crew Management
+### Személyzetkezelés
 
 ```c
-proto native int   CrewSize();                          // Total number of seats
-proto native int   CrewMemberIndex(Human crew_member);  // Get seat index of a human
-proto native Human CrewMember(int posIdx);              // Get human at seat index
-proto native void  CrewGetOut(int posIdx);              // Force crew member out of seat
-proto native void  CrewDeath(int posIdx);               // Kill crew member in seat
+proto native int   CrewSize();                          // Ülések összes száma
+proto native int   CrewMemberIndex(Human crew_member);  // Személy ülésindexe
+proto native Human CrewMember(int posIdx);              // Személy az adott ülésindexen
+proto native void  CrewGetOut(int posIdx);              // Személyzettag kiszállítása
+proto native void  CrewDeath(int posIdx);               // Személyzettag megölése az ülésben
 ```
 
-### Crew Entry
+### Beszállás
 
 ```c
 proto native int  GetAnimInstance();
-proto native int  CrewPositionIndex(int componentIdx);  // Component to seat index
-proto native vector CrewEntryPoint(int posIdx);         // World entry position for seat
+proto native int  CrewPositionIndex(int componentIdx);  // Komponensből ülésindex
+proto native vector CrewEntryPoint(int posIdx);         // Világ belépési pont az üléshez
 ```
 
-**Example --- eject all passengers:**
+**Példa --- minden utas kiszállítása:**
 
 ```c
 void EjectAllCrew(Transport vehicle)
@@ -71,13 +71,13 @@ void EjectAllCrew(Transport vehicle)
 
 ---
 
-## Car (Engine Native)
+## Car (motor natív)
 
-**File:** `3_Game/entities/car.c`
+**Fájl:** `3_Game/entities/car.c`
 
-Engine-level car physics. All `proto native` methods that drive the vehicle simulation.
+Motor szintű autó fizika. Minden `proto native` metódus, amely a jármű szimulációt vezérli.
 
-### Engine
+### Motor
 
 ```c
 proto native bool  EngineIsOn();
@@ -89,9 +89,9 @@ proto native float EngineGetRPMMax();
 proto native int   GetGear();
 ```
 
-### Fluids
+### Folyadékok
 
-DayZ vehicles have four fluid types defined in the `CarFluid` enum:
+A DayZ járművek négy folyadéktípust használnak, amelyeket a `CarFluid` felsorolás definiál:
 
 ```c
 enum CarFluid
@@ -111,7 +111,7 @@ proto native void  Leak(CarFluid fluid, float amount);
 proto native void  LeakAll(CarFluid fluid);
 ```
 
-**Example --- refuel a vehicle:**
+**Példa --- jármű feltankolása:**
 
 ```c
 void RefuelVehicle(Car car)
@@ -123,23 +123,23 @@ void RefuelVehicle(Car car)
 }
 ```
 
-### Speed
+### Sebesség
 
 ```c
-proto native float GetSpeedometer();    // Speed in km/h (absolute value)
+proto native float GetSpeedometer();    // Sebesség km/h-ban (abszolút érték)
 ```
 
-### Controls (Simulation)
+### Vezérlés (szimuláció)
 
 ```c
-proto native void  SetBrake(float value, int wheel = -1);    // 0.0 - 1.0, -1 = all wheels
+proto native void  SetBrake(float value, int wheel = -1);    // 0.0 - 1.0, -1 = minden kerék
 proto native void  SetHandbrake(float value);                 // 0.0 - 1.0
 proto native void  SetSteering(float value, bool analog = true);
 proto native void  SetThrust(float value, int wheel = -1);    // 0.0 - 1.0
 proto native void  SetClutchState(bool engaged);
 ```
 
-### Wheels
+### Kerekek
 
 ```c
 proto native int   WheelCount();
@@ -147,7 +147,7 @@ proto native bool  WheelIsAnyLocked();
 proto native float WheelGetSurface(int wheelIdx);
 ```
 
-### Callbacks (Override in CarScript)
+### Visszahívások (CarScript-ben felülírandó)
 
 ```c
 void OnEngineStart();
@@ -162,47 +162,69 @@ void OnSound(CarSoundCtrl ctrl, float oldValue);
 
 ## CarScript
 
-**File:** `4_World/entities/vehicles/carscript.c`
+**Fájl:** `4_World/entities/vehicles/carscript.c`
 
-The scriptable car class that most vehicle mods extend. Adds parts, doors, lights, and sound management.
+A szkriptelhető autó osztály, amelyet a legtöbb jármű mod kiterjeszt. Alkatrészeket, ajtókat, lámpákat és hangkezelést ad hozzá.
 
-### Part Health
+### Alkatrész egészség
 
-CarScript uses damage zones to represent vehicle parts. Each part can be independently damaged:
+A CarScript sérülési zónákat használ a jármű alkatrészek ábrázolásához. Minden alkatrész függetlenül sérülhet:
 
 ```c
-// Check part health via the standard EntityAI API
+// Alkatrész egészség ellenőrzése a standard EntityAI API-n keresztül
 float engineHP = car.GetHealth("Engine", "Health");
 float fuelTankHP = car.GetHealth("FuelTank", "Health");
 
-// Set part health
-car.SetHealth("Engine", "Health", 0);       // Destroy the engine
-car.SetHealth("FuelTank", "Health", 100);   // Repair the fuel tank
+// Alkatrész egészség beállítása
+car.SetHealth("Engine", "Health", 0);       // Motor megsemmisítése
+car.SetHealth("FuelTank", "Health", 100);   // Üzemanyagtartály javítása
 ```
 
-Common damage zones for vehicles:
+### Sérülési zóna diagram
 
-| Zone | Leiras |
-|------|-------------|
-| `""` (global) | Overall vehicle health |
-| `"Engine"` | Engine part |
-| `"FuelTank"` | Fuel tank |
-| `"Radiator"` | Radiator (coolant) |
-| `"Battery"` | Battery |
-| `"SparkPlug"` | Spark plug |
-| `"FrontLeft"` / `"FrontRight"` | Front wheels |
-| `"RearLeft"` / `"RearRight"` | Rear wheels |
-| `"DriverDoor"` / `"CoDriverDoor"` | Front doors |
-| `"Hood"` / `"Trunk"` | Hood and trunk |
+```mermaid
+graph TD
+    V[Vehicle] --> E[Engine]
+    V --> FT[FuelTank]
+    V --> R[Radiator]
+    V --> B[Battery]
+    V --> W1[Wheel_1_1]
+    V --> W2[Wheel_1_2]
+    V --> W3[Wheel_2_1]
+    V --> W4[Wheel_2_2]
+    V --> D1[Door_1_1]
+    V --> D2[Door_2_1]
+    V --> H[Hood]
+    V --> T[Trunk]
 
-### Lights
+    style E fill:#ff6b6b,color:#fff
+    style FT fill:#ffa07a,color:#fff
+    style R fill:#87ceeb,color:#fff
+```
+
+Járművek gyakori sérülési zónái:
+
+| Zóna | Leírás |
+|------|--------|
+| `""` (globális) | Jármű összesített egészsége |
+| `"Engine"` | Motor alkatrész |
+| `"FuelTank"` | Üzemanyagtartály |
+| `"Radiator"` | Hűtő (hűtőfolyadék) |
+| `"Battery"` | Akkumulátor |
+| `"SparkPlug"` | Gyújtógyertya |
+| `"FrontLeft"` / `"FrontRight"` | Első kerekek |
+| `"RearLeft"` / `"RearRight"` | Hátsó kerekek |
+| `"DriverDoor"` / `"CoDriverDoor"` | Első ajtók |
+| `"Hood"` / `"Trunk"` | Motorháztető és csomagtartó |
+
+### Lámpák
 
 ```c
-void SetLightsState(int state);   // 0 = off, 1 = on
+void SetLightsState(int state);   // 0 = ki, 1 = be
 int  GetLightsState();
 ```
 
-### Door Control
+### Ajtóvezérlés
 
 ```c
 bool IsDoorOpen(string doorSource);
@@ -210,17 +232,17 @@ void OpenDoor(string doorSource);
 void CloseDoor(string doorSource);
 ```
 
-### Key Overrides for Custom Jarmuvek
+### Főbb felülírások egyéni járművekhez
 
 ```c
-override void EEInit();                    // Initialize vehicle parts, fluids
-override void OnEngineStart();             // Custom engine start behavior
-override void OnEngineStop();              // Custom engine stop behavior
-override void EOnSimulate(IEntity other, float dt);  // Per-tick simulation
+override void EEInit();                    // Jármű alkatrészek, folyadékok inicializálása
+override void OnEngineStart();             // Egyéni motorindítási viselkedés
+override void OnEngineStop();              // Egyéni motorleállítási viselkedés
+override void EOnSimulate(IEntity other, float dt);  // Képkockánkénti szimuláció
 override bool CanObjectAttachWeapon(string slot_name);
 ```
 
-**Example --- create a vehicle with full fluids:**
+**Példa --- jármű létrehozása teljes folyadékkal:**
 
 ```c
 void SpawnReadyVehicle(vector pos)
@@ -230,13 +252,13 @@ void SpawnReadyVehicle(vector pos)
     if (!car)
         return;
 
-    // Fill all fluids
+    // Minden folyadék feltöltése
     car.Fill(CarFluid.FUEL, car.GetFluidCapacity(CarFluid.FUEL));
     car.Fill(CarFluid.OIL, car.GetFluidCapacity(CarFluid.OIL));
     car.Fill(CarFluid.BRAKE, car.GetFluidCapacity(CarFluid.BRAKE));
     car.Fill(CarFluid.COOLANT, car.GetFluidCapacity(CarFluid.COOLANT));
 
-    // Spawn required parts
+    // Szükséges alkatrészek spawnja
     EntityAI carEntity = EntityAI.Cast(car);
     carEntity.GetInventory().CreateAttachment("CarBattery");
     carEntity.GetInventory().CreateAttachment("SparkPlug");
@@ -249,11 +271,11 @@ void SpawnReadyVehicle(vector pos)
 
 ## BoatScript
 
-**File:** `4_World/entities/vehicles/boatscript.c`
+**Fájl:** `4_World/entities/vehicles/boatscript.c`
 
-Scriptable base for boat entities. Similar API to CarScript but with propeller-based physics.
+Szkriptelhető alap hajó entitásokhoz. Hasonló API a CarScript-hez, de propeller-alapú fizikával.
 
-### Engine & Propulsion
+### Motor és meghajtás
 
 ```c
 proto native bool  EngineIsOn();
@@ -262,22 +284,22 @@ proto native void  EngineStop();
 proto native float EngineGetRPM();
 ```
 
-### Fluids
+### Folyadékok
 
-Boats use the same `CarFluid` enum but typically only use `FUEL`:
+A hajók ugyanazt a `CarFluid` felsorolást használják, de jellemzően csak a `FUEL`-t:
 
 ```c
 float fuel = boat.GetFluidFraction(CarFluid.FUEL);
 boat.Fill(CarFluid.FUEL, boat.GetFluidCapacity(CarFluid.FUEL));
 ```
 
-### Speed
+### Sebesség
 
 ```c
-proto native float GetSpeedometer();   // Speed in km/h
+proto native float GetSpeedometer();   // Sebesség km/h-ban
 ```
 
-**Example --- spawn a boat:**
+**Példa --- hajó spawnja:**
 
 ```c
 void SpawnBoat(vector waterPos)
@@ -295,9 +317,9 @@ void SpawnBoat(vector waterPos)
 
 ---
 
-## Vehicle Interaction Checks
+## Jármű interakciós ellenőrzések
 
-### Checking if a Player is in a Vehicle
+### Annak ellenőrzése, hogy egy játékos járműben van-e
 
 ```c
 PlayerBase player;
@@ -313,7 +335,7 @@ if (player.IsInVehicle())
 }
 ```
 
-### Finding All Jarmuvek in the World
+### Minden jármű megtalálása a világban
 
 ```c
 void FindAllVehicles(out array<Transport> vehicles)
@@ -322,7 +344,7 @@ void FindAllVehicles(out array<Transport> vehicles)
     array<Object> objects = new array<Object>;
     array<CargoBase> proxyCargos = new array<CargoBase>;
 
-    // Use a large radius from center of map
+    // Nagy sugár használata a térkép közepétől
     GetGame().GetObjectsAtPosition(Vector(7500, 0, 7500), 15000, objects, proxyCargos);
 
     foreach (Object obj : objects)
@@ -338,19 +360,52 @@ void FindAllVehicles(out array<Transport> vehicles)
 
 ---
 
-## Osszefoglalas
+## Összefoglalás
 
-| Fogalom | Kulcspont |
-|---------|-----------|
-| Hierarchy | `Transport` > `Car`/`Boat` > `CarScript`/`BoatScript` |
-| Engine | `EngineStart()`, `EngineStop()`, `EngineIsOn()`, `EngineGetRPM()` |
-| Fluids | `CarFluid` enum: `FUEL`, `OIL`, `BRAKE`, `COOLANT` |
-| Fill/Leak | `Fill(fluid, amount)`, `Leak(fluid, amount)`, `GetFluidFraction(fluid)` |
-| Speed | `GetSpeedometer()` returns km/h |
-| Crew | `CrewSize()`, `CrewMember(idx)`, `CrewGetOut(idx)` |
-| Parts | Standard damage zones: `"Engine"`, `"FuelTank"`, `"Radiator"`, etc. |
-| Creation | `CreateObjectEx` with `ECE_PLACE_ON_SURFACE \| ECE_INITAI \| ECE_CREATEPHYSICS` |
+| Fogalom | Lényeg |
+|---------|--------|
+| Hierarchia | `Transport` > `Car`/`Boat` > `CarScript`/`BoatScript` |
+| Motor | `EngineStart()`, `EngineStop()`, `EngineIsOn()`, `EngineGetRPM()` |
+| Folyadékok | `CarFluid` felsorolás: `FUEL`, `OIL`, `BRAKE`, `COOLANT` |
+| Töltés/Szivárgás | `Fill(fluid, amount)`, `Leak(fluid, amount)`, `GetFluidFraction(fluid)` |
+| Sebesség | `GetSpeedometer()` km/h-t ad vissza |
+| Személyzet | `CrewSize()`, `CrewMember(idx)`, `CrewGetOut(idx)` |
+| Alkatrészek | Standard sérülési zónák: `"Engine"`, `"FuelTank"`, `"Radiator"` stb. |
+| Létrehozás | `CreateObjectEx` a következővel: `ECE_PLACE_ON_SURFACE \| ECE_INITAI \| ECE_CREATEPHYSICS` |
 
 ---
 
-[<< Elozo: Entitas rendszer](01-entity-system.md) | **Jarmuvek** | [Kovetkezo: Idojaras >>](03-weather.md)
+## Bevált gyakorlatok
+
+- **Mindig tartalmazd az `ECE_CREATEPHYSICS | ECE_INITAI` jelzőbiteket járművek spawnolásakor.** Fizika nélkül a jármű átesik a talajon. AI inicializálás nélkül a motorszimuláció nem indul el, és a jármű nem vezethető.
+- **Töltsd fel mind a négy folyadékot spawn után.** Ha egy járműből hiányzik az olaj, fékfolyadék vagy hűtőfolyadék, azonnal károsítja magát a motor indításakor. Használd a `GetFluidCapacity()` metódust a járműtípusonkénti helyes maximális értékek lekéréséhez.
+- **Ellenőrizd a `CrewMember()` null értékét a személyzetre vonatkozó műveletek előtt.** Az üres ülések `null`-t adnak vissza. A `CrewSize()` iterálása anélkül, hogy minden indexet ellenőriznél, összeomlásokat okoz, amikor az ülések üresek.
+- **Használd a `GetSpeedometer()` metódust a sebesség manuális kiszámítása helyett.** A motor sebességmérője figyelembe veszi a kerék érintkezést, a sebességváltó állapotát és a fizikát. A pozíciókülönbségekből számított manuális sebesség számítások megbízhatatlanok.
+
+---
+
+## Kompatibilitás és hatás
+
+> **Mod kompatibilitás:** A jármű modok általában modded osztályokkal terjesztik ki a `CarScript`-et. Konfliktusok akkor merülnek fel, amikor több mod ugyanazokat a visszahívásokat írja felül, mint az `OnEngineStart()` vagy az `EOnSimulate()`.
+
+- **Betöltési sorrend:** Ha két mod is `modded class CarScript`-et használ és felülírja az `OnEngineStart()` metódust, csak az utolsónak betöltött fut le, hacsak mindkettő nem hívja a `super`-t. A jármű átalakító modoknak mindig meg kell hívniuk a `super`-t minden visszahívásban.
+- **Modded osztály konfliktusok:** Az Expansion Vehicles és a vanilla jármű modok gyakran ütköznek az `EEInit()` és a folyadék inicializálás terén. Tesztelj mindkettő betöltésével.
+- **Teljesítményi hatás:** Az `EOnSimulate()` minden fizikai tickben fut minden aktív járműhöz. Tartsd a logikát minimálisra ebben a visszahívásban; használj időzítő-akkumulátorokat a költséges műveletekhez.
+- **Szerver/Kliens:** Az `EngineStart()`, `EngineStop()`, `Fill()`, `Leak()` és `CrewGetOut()` szerver-autoritatív. A `GetSpeedometer()`, `EngineIsOn()` és `GetFluidFraction()` mindkét oldalon biztonságosan olvasható.
+
+---
+
+## Valós modokban megfigyelt minták
+
+> Ezeket a mintákat professzionális DayZ modok forráskódjának tanulmányozásával erősítettük meg.
+
+| Minta | Mod | Fájl/Helyszín |
+|-------|-----|---------------|
+| `EEInit()` felülírás egyéni folyadékkapacitások beállításához és alkatrészek spawnjához | Expansion Vehicles | `CarScript` alosztályok |
+| `EOnSimulate` akkumulátor időszakos üzemanyag-fogyasztás ellenőrzésekhez | Vanilla+ jármű modok | `CarScript` felülírások |
+| `CrewGetOut()` ciklus admin mindent-kiszállít parancsban | VPP Admin Tools | Járműkezelő modul |
+| Egyéni `OnContact()` felülírás ütközési sérülés hangolásához | Expansion | `ExpansionCarScript` |
+
+---
+
+[Kezdőlap](../../README.md) | [<< Előző: Entitásrendszer](01-entity-system.md) | **Járművek** | [Következő: Időjárás >>](03-weather.md)

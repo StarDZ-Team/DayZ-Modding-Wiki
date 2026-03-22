@@ -1,6 +1,10 @@
-# Chapter 8.9: Professional Mod Template
+# Capítulo 8.9: Plantilla de Mod Profesional
 
-[Home](../../README.md) | [<< Previous: Building a HUD Overlay](08-hud-overlay.md) | **Professional Mod Template** | [Next: Creating a Custom Vehicle >>](10-vehicle-mod.md)
+[Inicio](../../README.md) | [<< Anterior: Building a HUD Overlay](08-hud-overlay.md) | **Professional Mod Template** | [Siguiente: Creating a Custom Vehicle >>](10-vehicle-mod.md)
+
+---
+
+> **Resumen:** This chapter provides a complete, production-ready mod template with every file you need for a professional DayZ mod. Unlike [Chapter 8.5](05-mod-template.md) which introduces InclementDab's starter skeleton, this is a full-featured template with a config system, singleton manager, client-server RPC, UI panel, keybinds, localization, and build automation. Every file is copy-paste ready and heavily commented to explain **why** each line exists.
 
 ---
 
@@ -28,7 +32,7 @@
 
 ---
 
-## Vista General
+## Descripción General
 
 A "Hello World" mod proves the toolchain works. A professional mod needs much more:
 
@@ -1777,7 +1781,7 @@ text "#STR_MYMOD_BOUNTY_PLACED"
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 With this professional template running, you can:
 
@@ -1790,4 +1794,4 @@ With this professional template running, you can:
 
 ---
 
-**Previous:** [Chapter 8.8: Building a HUD Overlay](08-hud-overlay.md) | [Home](../../README.md)
+**Anterior:** [Chapter 8.8: Building a HUD Overlay](08-hud-overlay.md) | [Inicio](../../README.md)

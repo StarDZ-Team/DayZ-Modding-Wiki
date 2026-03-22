@@ -1,23 +1,23 @@
 # Chapter 7.7: Performance Optimization
 
-[Home](../../README.md) | [<< Previous: Event-Driven Architecture](06-events.md) | **Performance Optimization**
+[Domů](../../README.md) | [<< Předchozí: Event-Driven Architecture](06-events.md) | **Performance Optimization**
 
 ---
 
-## Introduction
+## Úvod
 
-DayZ runs at 10--60 server FPS depending on player count, entity load, and mod complexity. Every script cycle that takes too long eats into that frame budget. A single poorly-written `OnUpdate` that scans every vehicle on the map or rebuilds a UI list from scratch can drop server performance noticeably. Professional mods earn their reputation by running fast --- not by having more features, but by implementing the same features with less waste.
+DayZ runs at 10--60 server FPS depending on player count, entity load, and mod complexity. Every script cycle that takes příliš long eats into that frame budget. A jeden poorly-written `OnUpdate` that scans každý vehicle on the map or rebuilds a UI list od nuly can drop server performance noticeably. Professional mods earn their reputation by running fast --- not by having more features, but by implementing the stejný features with less waste.
 
-This chapter covers the battle-tested optimization patterns used by COT, VPP, Expansion, Dabs Framework, and MyMod. These are not premature optimizations --- they are standard engineering practices that every DayZ modder should know from the start.
+This chapter covers the battle-tested optimization patterns used by COT, VPP, Expansion, and Dabs Framework. These are not premature optimizations --- they are standard engineering practices that každý DayZ modder should know from the start.
 
 ---
 
-## Table of Contents
+## Obsah
 
 - [Lazy Loading and Batched Processing](#lazy-loading-and-batched-processing)
 - [Widget Pooling](#widget-pooling)
-- [Search Debouncing](#search-debouncing)
-- [Update Rate Limiting](#update-rate-limiting)
+- [Hledejte Debouncing](#search-debouncing)
+- [Aktualizujte Rate Limiting](#update-rate-limiting)
 - [Caching](#caching)
 - [Vehicle Registry Pattern](#vehicle-registry-pattern)
 - [Sort Algorithm Choice](#sort-algorithm-choice)
@@ -29,11 +29,11 @@ This chapter covers the battle-tested optimization patterns used by COT, VPP, Ex
 
 ## Lazy Loading and Batched Processing
 
-The most impactful optimization in DayZ modding is **not doing work until it is needed** and **spreading work across multiple frames** when it must be done.
+The většina impactful optimization in DayZ modding is **not doing work until it is needed** and **spreading work across více frames** when it must be done.
 
 ### Lazy Loading
 
-Never pre-compute or pre-load data that the user might not need:
+Nikdy pre-compute or pre-load data that the user might not need:
 
 ```c
 class ItemDatabase
@@ -65,7 +65,7 @@ class ItemDatabase
 
 ### Batched Processing (N Items Per Frame)
 
-When you must process a large collection, process a fixed batch per frame instead of the entire collection at once:
+When musíte process a large collection, process a fixed batch per frame místo the celý collection at once:
 
 ```c
 class LootCleanup : MyServerModule
@@ -105,13 +105,13 @@ class LootCleanup : MyServerModule
 
 ### Why 50?
 
-The batch size depends on how expensive each item is to process. For lightweight operations (null checks, position reads), 100--200 per frame is fine. For heavy operations (entity spawning, pathfinding queries, file I/O), 5--10 per frame may be the limit. Start with 50 and adjust based on observed frame time impact.
+The batch size depends on how expensive každý item is to process. For lightweight operations (null checks, position reads), 100--200 per frame is fine. For heavy operations (entity spawning, pathfinding queries, file I/O), 5--10 per frame may be the limit. Spusťte with 50 and adjust based on observed frame time impact.
 
 ---
 
 ## Widget Pooling
 
-Creating and destroying UI widgets is expensive. The engine must allocate memory, build the widget tree, apply styles, and calculate layout. If you have a scrollable list with 500 entries, creating 500 widgets, destroying them, and creating 500 new ones every time the list refreshes is a guaranteed frame drop.
+Creating and destroying UI widgets is expensive. Engine must allocate memory, build the widget tree, apply styles, and calculate layout. Pokud have a scrollable list with 500 entries, creating 500 widgets, destroying them, and creating 500 nový ones každý time the list refreshes is a guaranteed frame drop.
 
 ### The Problem
 
@@ -140,7 +140,7 @@ void RefreshPlayerList(array<string> players)
 
 ### The Pool Pattern
 
-Pre-create a pool of widget rows. When refreshing, reuse existing rows. Show rows that have data; hide rows that do not.
+Pre-create a pool of widget rows. When refreshing, reuse existing rows. Show rows that have data; hide rows that ne.
 
 ```c
 class WidgetPool
@@ -227,9 +227,9 @@ The first `RefreshPlayerList` call creates widgets. Every subsequent call reuses
 
 ---
 
-## Search Debouncing
+## Hledejte Debouncing
 
-When a user types into a search box, the `OnChange` event fires on every keystroke. Rebuilding a filtered list on every keystroke is wasteful --- the user is still typing. Instead, delay the search until the user pauses.
+Když user types into a search box, the `OnChange` dokoncet fires on každý keystroke. Rebuilding a filtered list on každý keystroke is wasteful --- the user is stále typing. Instead, delay the search until the user pauses.
 
 ### The Debounce Pattern
 
@@ -272,13 +272,13 @@ class SearchableList
 
 ### Why 150ms?
 
-150ms is a good default. It is long enough that most keystrokes during continuous typing are batched into a single search, but short enough that the UI feels responsive. Adjust if your search is particularly expensive (longer delay) or your users expect instant feedback (shorter delay).
+150ms is a good výchozí. It is long enough that většina keystrokes during continuous typing are batched into a jeden search, but short enough that the UI feels responsive. Adjust if your search is konkrétníly expensive (longer delay) or your users expect instant feedback (shorter delay).
 
 ---
 
-## Update Rate Limiting
+## Aktualizujte Rate Limiting
 
-Not everything needs to run every frame. Many systems can update at a lower frequency without any noticeable impact.
+Not každýthing needs to run každý frame. Many systems can update at a lower frequency without jakýkoli noticeable impact.
 
 ### Timer-Based Throttling
 
@@ -302,7 +302,7 @@ class EntityScanner : MyServerModule
 
 ### Frame-Count Throttling
 
-For operations that should run every N frames:
+For operations that should run každý N frames:
 
 ```c
 class PositionSync
@@ -322,7 +322,7 @@ class PositionSync
 
 ### Staggered Processing
 
-When multiple systems need periodic updates, stagger their timers so they do not all fire on the same frame:
+When více systems need periodic updates, stagger their timers so they ne all fire on the stejný frame:
 
 ```c
 // BAD: All three fire at t=5.0, t=10.0, t=15.0 — frame spike
@@ -336,7 +336,7 @@ m_VehicleTimer = 5.0 + 1.6;  // Fires ~1.6s after loot
 m_WeatherTimer = 5.0 + 3.3;  // Fires ~3.3s after loot
 ```
 
-Or start the timers at different offsets:
+Or start the timers at odlišný offsets:
 
 ```c
 m_LootTimer    = 0;
@@ -348,11 +348,11 @@ m_WeatherTimer = 3.3;
 
 ## Caching
 
-Repeated lookups of the same data are a common performance drain. Cache the results.
+Repeated lookups of the stejný data are běžný performance drain. Cache výsledeks.
 
 ### CfgVehicles Scan Cache
 
-Scanning `CfgVehicles` (the global config database of all item/vehicle classes) is expensive. It involves iterating thousands of config entries. Never do it more than once:
+Scanning `CfgVehicles` (the globální config database of all item/vehicle classes) is expensive. It involves iterating thousands of config entries. Nikdy do it more than once:
 
 ```c
 class WeaponRegistry
@@ -389,7 +389,7 @@ class WeaponRegistry
 
 ### String Operation Cache
 
-If you compute the same string transformation repeatedly (e.g., lowercasing for case-insensitive search), cache the result:
+Pokud compute the stejný string transformation repeatedly (e.g., lowercasing for case-insensitive search), cache výsledek:
 
 ```c
 class ItemEntry
@@ -408,7 +408,7 @@ class ItemEntry
 
 ### Position Cache
 
-If you frequently check "is player near X?", cache the player's position and update it periodically rather than calling `GetPosition()` every check:
+Pokud frequently check "is player near X?", cache hráč's position and update it periodically spíše než calling `GetPosition()` každý check:
 
 ```c
 class ProximityChecker
@@ -433,7 +433,7 @@ class ProximityChecker
 
 ## Vehicle Registry Pattern
 
-A common need is to track all vehicles (or all entities of a specific type) on the map. The naive approach is to call `GetGame().GetObjectsAtPosition3D()` with a huge radius. This is catastrophically expensive.
+A common need is to track all vehicles (or all entities of a specifický type) on the map. The naive approach is to call `GetGame().GetObjectsAtPosition3D()` with a huge radius. This is catastrophically expensive.
 
 ### Bad: World Scan
 
@@ -509,7 +509,7 @@ modded class CarScript
 };
 ```
 
-Now `VehicleRegistry.GetAll()` returns all vehicles instantly --- no world scan needed.
+Now `VehicleRegistry.GetAll()` vracíll vehicles instantly --- no world scan needed.
 
 ### Expansion's Linked-List Pattern
 
@@ -548,7 +548,7 @@ This gives O(1) insertion and removal with zero memory allocation per operation.
 
 ## Sort Algorithm Choice
 
-Enforce Script arrays have a built-in `.Sort()` method, but it only works for basic types and uses the default comparison. For custom sort orders, you need a comparison function.
+Enforce Script arrays have a vestavěný `.Sort()` method, but it pouze works for basic types and uses the výchozí comparison. For vlastní sort orders, potřebujete a comparison function.
 
 ### Built-in Sort
 
@@ -562,7 +562,7 @@ names.Sort();  // {"Alice", "Bob", "Charlie"} — lexicographic
 
 ### Custom Sort with Comparison
 
-For sorting arrays of objects by a specific field, implement your own sort. Insertion sort is good for small arrays (under ~100 elements); for larger arrays, quicksort performs better.
+For sorting arrays of objects by a specifický field, implement your own sort. Insertion sort is good for small arrays (under ~100 elements); for larger arrays, quicksort performs better.
 
 ```c
 // Simple insertion sort — good for small arrays
@@ -583,9 +583,9 @@ void SortPlayersByScore(array<ref PlayerData> players)
 }
 ```
 
-### Avoid Sorting Per Frame
+### Vyhněte se Sorting Per Frame
 
-If a sorted list is displayed in the UI, sort it once when the data changes, not every frame:
+Pokud sorted list is displayed in the UI, sort it once when the data changes, not každý frame:
 
 ```c
 // BAD: Sort every frame
@@ -609,14 +609,14 @@ void OnPlayerScoreChanged()
 
 ### 1. `GetObjectsAtPosition3D` with Huge Radius
 
-This scans every physical object in the world within the given radius. At `50000` meters (the entire map), it iterates every tree, rock, building, item, zombie, and player. One call can take 50ms+.
+This scans každý physical object in the world within the given radius. At `50000` meters (the celý map), it iterates každý tree, rock, building, item, zombie, and player. One call can take 50ms+.
 
 ```c
 // NEVER DO THIS
 GetGame().GetObjectsAtPosition3D(Vector(7500, 0, 7500), 50000, results);
 ```
 
-Use a registration-based registry instead (see [Vehicle Registry Pattern](#vehicle-registry-pattern)).
+Use a registration-based registry místo toho (viz [Vehicle Registry Pattern](#vehicle-registry-pattern)).
 
 ### 2. Full List Rebuild on Every Keystroke
 
@@ -635,11 +635,11 @@ void OnSearchChanged(string text)
 }
 ```
 
-Use [search debouncing](#search-debouncing) and [widget pooling](#widget-pooling) instead.
+Use [search debouncing](#search-debouncing) and [widget pooling](#widget-pooling) místo toho.
 
 ### 3. Per-Frame String Allocations
 
-String concatenation creates new string objects. In a per-frame function, this generates garbage every frame:
+String concatenation creates nový string objects. In a per-frame function, this generates garbage každý frame:
 
 ```c
 // BAD: Two new string allocations per frame per entity
@@ -653,7 +653,7 @@ void OnUpdate(float dt)
 }
 ```
 
-If you need formatted strings for logging or UI, do it on state change, not per frame.
+If potřebujete formatted strings for logging or UI, do it on state change, not per frame.
 
 ### 4. Redundant FileExist Checks in Loops
 
@@ -680,7 +680,7 @@ for (int i = 0; i < m_Players.Count(); i++)
 
 ### 5. Calling GetGame() Repeatedly
 
-`GetGame()` is a global function call. In tight loops, cache the result:
+`GetGame()` is a globální function call. In tight loops, cache výsledek:
 
 ```c
 // Acceptable for occasional use
@@ -696,7 +696,7 @@ for (int i = 0; i < 1000; i++)
 
 ### 6. Spawning Entities in a Tight Loop
 
-Entity spawning is expensive (physics setup, network replication, etc.). Never spawn dozens of entities in a single frame:
+Entity spawning is expensive (physics setup, network replication, etc.). Nikdy spawn dozens of entities in a jeden frame:
 
 ```c
 // BAD: 100 entity spawns in one frame — massive frame spike
@@ -714,7 +714,7 @@ Use batched processing: spawn 5 per frame across 20 frames.
 
 ### Server FPS Monitoring
 
-The most basic metric is server FPS. If your mod drops server FPS, something is wrong:
+The většina basic metric is server FPS. Pokud váš mod drops server FPS, některéthing is wrong:
 
 ```c
 // In your OnUpdate, measure elapsed time:
@@ -736,30 +736,30 @@ void OnUpdate(float dt)
 
 Watch the DayZ server script log for these performance warnings:
 
-- `SCRIPT (W): Exceeded X ms` --- a script execution exceeded the engine's time budget
-- Long pauses in log timestamps --- something blocked the main thread
+- `SCRIPT (W): Exceeded X ms` --- a script execution exceeded engine's time budget
+- Long pauses in log timestamps --- některéthing blocked the main thread
 
 ### Empirical Testing
 
-The only reliable way to know if an optimization matters is to measure before and after:
+The pouze reliable way to know if an optimization matters is to measure before and after:
 
-1. Add timing around the suspect code
-2. Run a reproducible test (e.g., 50 players, 1000 entities)
+1. Přidejte timing around the suspect code
+2. Run a reproducible test (e.g., 50 hráči, 1000 entities)
 3. Compare frame times
-4. If the change is less than 1ms per frame, it probably does not matter
+4. Pokud change is less than 1ms per frame, it probably ne matter
 
 ---
 
 ## Checklist
 
-Before shipping performance-sensitive code, verify:
+Před shipping performance-sensitive code, verify:
 
 - [ ] No `GetObjectsAtPosition3D` calls with radius > 100m in per-frame code
 - [ ] All expensive scans (CfgVehicles, entity searches) are cached
 - [ ] UI lists use widget pooling, not destroy/recreate
-- [ ] Search inputs use debouncing (150ms+)
-- [ ] OnUpdate operations are throttled by timer or batch size
-- [ ] Large collections are processed in batches (50 items/frame default)
+- [ ] Hledejte inputs use debouncing (150ms+)
+- [ ] OnAktualizujte operations are throttled by timer or batch size
+- [ ] Large collections are processed in batches (50 items/frame výchozí)
 - [ ] Entity spawning is batched across frames, not done in a tight loop
 - [ ] String concatenation is not done per-frame in tight loops
 - [ ] Sort operations run on data change, not per frame
@@ -768,4 +768,36 @@ Before shipping performance-sensitive code, verify:
 
 ---
 
-[<< Předchozí: Event-Driven Architecture](06-events.md) | [Domů](../README.md)
+## Kompatibilita a dopad
+
+- **Více modů:** Performance costs are cumulative. Each mod's `OnUpdate` runs každý frame. Five mods každý taking 2ms means 10ms per frame from scripts alone. Coordinate with jiný mod authors to stagger timers and avoid duplicate world scans.
+- **Pořadí načítání:** Load order does not affect performance directly. Nicméně if multiple mods `modded class` the same entity (e.g., `CarScript.EEInit`), each override adds to the call chain cost. Keep modded overrides minimal.
+- **Listen Server:** Listen servers run oba client and server scripts in the stejný process. Widget pooling, UI updates, and rendering costs compound with server-side ticks. Performance budgets are tighter on listen servers than dedicated servers.
+- **Výkon:** The DayZ server frame budget at 60 FPS is ~16ms. At 20 FPS (common on loaded servers), it is ~50ms. A jeden mod should aim to stay under 2ms per frame. Profile with `GetGame().GetTickTime()` to verify.
+- **Migration:** Performance patterns are engine-agnostic and survive DayZ version updates. Specific API costs (e.g., `GetObjectsAtPosition3D`) may change mezi engine versions, so re-profile after major DayZ updates.
+
+---
+
+## Časté chyby
+
+| Mistake | Impact | Fix |
+|---------|--------|-----|
+| Premature optimization (micro-optimizing code that runs once při startu) | Wasted development time; no measurable improvement; harder-to-read code | Profile first. Only optimize code that runs per-frame or processes large collections. Startup cost is paid once. |
+| Using `GetObjectsAtPosition3D` with map-wide radius in `OnUpdate` | 50--200ms stall per call, scanning každý physical object on the map; server FPS drops to jeden digits | Use a registration-based registry (register in `EEInit`, unregister in `EEDelete`). Nikdy world-scan per frame. |
+| Rebuilding UI widget trees on každý data change | Frame spikes from widget creation/destruction; visible stutter for hráč | Use widget pooling: hide/show existing widgets místo destroying and recreating them |
+| Sorting large arrays každý frame | O(n log n) per frame for data that rarely changes; unnecessary CPU waste | Sort once when data changes (dirty flag), cache the sorted result, re-sort pouze on mutation |
+| Running expensive file I/O (JsonSaveFile) každý `OnUpdate` tick | Disk writes block the main thread; 5--20ms per save depending on velikost souboru | Use auto-save timers (300s výchozí) with a dirty flag. Only write when data has actually changed. |
+
+---
+
+## Teorie vs praxe
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use async processing for expensive operations | Enforce Script is jeden-threaded with no async primitives; batch work across frames using index-based processing místo toho |
+| Object pooling is premature optimization | Widget creation is genuinely expensive in Enfusion; pooling is standard practice in každý major mod (COT, VPP, Expansion) |
+| Profile before optimizing | Correct, but některé patterns (world scans, per-frame string alloc, per-keystroke rebuilds) are *always* wrong in DayZ. Vyhněte se them from the start. |
+
+---
+
+[Domů](../../README.md) | [<< Předchozí: Event-Driven Architecture](06-events.md) | **Performance Optimization**

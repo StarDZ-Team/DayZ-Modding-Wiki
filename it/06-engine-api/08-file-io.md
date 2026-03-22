@@ -1,71 +1,71 @@
-# Chapter 6.8: File I/O & JSON
+# Capitolo 6.8: I/O File e JSON
 
-[Home](../../README.md) | [<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
+[Home](../../README.md) | [<< Precedente: Timer e CallQueue](07-timers.md) | **I/O File e JSON** | [Successivo: Networking e RPC >>](09-networking.md)
 
 ---
 
 ## Introduzione
 
-DayZ provides file I/O operations for reading and writing text files, JSON serialization/deserialization, directory management, and file enumeration. All file operations use special path prefixes (`$profile:`, `$saves:`, `$mission:`) rather than absolute filesystem paths. Questo capitolo copre every file operation available in Enforce Script.
+DayZ fornisce operazioni di I/O file per leggere e scrivere file di testo, serializzazione/deserializzazione JSON, gestione delle directory e enumerazione dei file. Tutte le operazioni sui file usano prefissi di percorso speciali (`$profile:`, `$saves:`, `$mission:`) anziché percorsi assoluti del filesystem. Questo capitolo copre ogni operazione sui file disponibile in Enforce Script.
 
 ---
 
-## Path Prefixes
+## Prefissi di Percorso
 
-| Prefix | Location | Writable |
-|--------|----------|----------|
-| `$profile:` | Server/client profile directory (e.g., `DayZServer/profiles/`) | Yes |
-| `$saves:` | Save directory | Yes |
-| `$mission:` | Current mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`) | Leggi typically |
-| `$CurrentDir:` | Current working directory | Depends |
-| No prefix | Relative to game root | Leggi only |
+| Prefisso | Posizione | Scrivibile |
+|----------|-----------|------------|
+| `$profile:` | Directory del profilo server/client (es. `DayZServer/profiles/`) | Sì |
+| `$saves:` | Directory dei salvataggi | Sì |
+| `$mission:` | Cartella della missione corrente (es. `mpmissions/dayzOffline.chernarusplus/`) | Tipicamente in lettura |
+| `$CurrentDir:` | Directory di lavoro corrente | Dipende |
+| Nessun prefisso | Relativo alla radice del gioco | Solo lettura |
 
-> **Importante:** Most file write operations are restricted to `$profile:` and `$saves:`. Attempting to write elsewhere may silently fail.
+> **Importante:** La maggior parte delle operazioni di scrittura file è limitata a `$profile:` e `$saves:`. Tentare di scrivere altrove potrebbe fallire silenziosamente.
 
 ---
 
-## File Existence Controlla
+## Controllo Esistenza File
 
 ```c
 proto bool FileExist(string name);
 ```
 
-Restituisce `true` if the file exists at the given path.
+Restituisce `true` se il file esiste al percorso dato.
 
 **Esempio:**
 
 ```c
 if (FileExist("$profile:MyMod/config.json"))
 {
-    Print("Config file found");
+    Print("File di configurazione trovato");
 }
 else
 {
-    Print("Config file not found, creating defaults");
+    Print("File di configurazione non trovato, creazione predefiniti");
 }
 ```
 
 ---
 
-## Opening & Closing Files
+## Apertura e Chiusura File
 
 ```c
 proto FileHandle OpenFile(string name, FileMode mode);
 proto void CloseFile(FileHandle file);
 ```
 
-### FileMode Enum
+### Enum FileMode
 
 ```c
 enum FileMode
 {
-    READ,     // Open for reading (file must exist)
-    WRITE,    // Open for writing (creates new / overwrites existing)
-    APPEND    // Open for appending (creates if not exists)
+    READ,     // Apri per lettura (il file deve esistere)
+    WRITE,    // Apri per scrittura (crea nuovo / sovrascrive esistente)
+    APPEND    // Apri per aggiunta (crea se non esiste)
 }
 ```
 
-`FileHandle` is an integer handle. A return value of `0` indicates failure.
+`FileHandle` è un handle intero. Un valore di ritorno di `0` indica fallimento.
 
 **Esempio:**
 
@@ -73,35 +73,35 @@ enum FileMode
 FileHandle fh = OpenFile("$profile:MyMod/log.txt", FileMode.WRITE);
 if (fh != 0)
 {
-    // File opened successfully
-    // ... do work ...
+    // File aperto con successo
+    // ... esegui lavoro ...
     CloseFile(fh);
 }
 ```
 
-> **Critical:** Sempre call `CloseFile()` when done. Failure to close files can cause data loss and resource leaks.
+> **Critico:** Chiama sempre `CloseFile()` quando hai finito. Non chiudere i file può causare perdita di dati e perdite di risorse.
 
 ---
 
-## Writing Files
+## Scrittura File
 
-### FPrintln (Write Line)
+### FPrintln (Scrivi Riga)
 
 ```c
 proto void FPrintln(FileHandle file, void var);
 ```
 
-Writes the value followed by a newline character.
+Scrive il valore seguito da un carattere di nuova riga.
 
-### FPrint (Write Without Newline)
+### FPrint (Scrivi Senza Nuova Riga)
 
 ```c
 proto void FPrint(FileHandle file, void var);
 ```
 
-Writes the value without a trailing newline.
+Scrive il valore senza una nuova riga finale.
 
-**Esempio --- write a log file:**
+**Esempio --- scrivere un file di log:**
 
 ```c
 void WriteLog(string message)
@@ -121,17 +121,17 @@ void WriteLog(string message)
 
 ---
 
-## Reading Files
+## Lettura File
 
-### FGets (Leggi Line)
+### FGets (Leggi Riga)
 
 ```c
 proto int FGets(FileHandle file, string var);
 ```
 
-Reads one line from the file into `var`. Restituisce the number of characters read, or `-1` at end of file.
+Legge una riga dal file in `var`. Restituisce il numero di caratteri letti, o `-1` alla fine del file.
 
-**Esempio --- read a file line by line:**
+**Esempio --- leggere un file riga per riga:**
 
 ```c
 void ReadConfigFile()
@@ -142,7 +142,7 @@ void ReadConfigFile()
         string line;
         while (FGets(fh, line) >= 0)
         {
-            Print("Line: " + line);
+            Print("Riga: " + line);
             ProcessLine(line);
         }
         CloseFile(fh);
@@ -150,17 +150,17 @@ void ReadConfigFile()
 }
 ```
 
-### ReadFile (Raw Binary Leggi)
+### ReadFile (Lettura Binaria Grezza)
 
 ```c
 proto int ReadFile(FileHandle file, void param_array, int length);
 ```
 
-Reads raw bytes into a buffer. Used for binary data.
+Legge byte grezzi in un buffer. Usato per dati binari.
 
 ---
 
-## Directory Operations
+## Operazioni sulle Directory
 
 ### MakeDirectory
 
@@ -168,9 +168,9 @@ Reads raw bytes into a buffer. Used for binary data.
 proto native bool MakeDirectory(string name);
 ```
 
-Creates a directory. Restituisce `true` on success. Creates only the final directory --- parent directories must already exist.
+Crea una directory. Restituisce `true` in caso di successo. Crea solo la directory finale --- le directory genitori devono già esistere.
 
-**Esempio --- ensure directory structure:**
+**Esempio --- assicurare la struttura delle directory:**
 
 ```c
 void EnsureDirectories()
@@ -187,7 +187,7 @@ void EnsureDirectories()
 proto native bool DeleteFile(string name);
 ```
 
-Deletes a file. Only works in `$profile:` and `$saves:` directories.
+Elimina un file. Funziona solo nelle directory `$profile:` e `$saves:`.
 
 ### CopyFile
 
@@ -195,12 +195,12 @@ Deletes a file. Only works in `$profile:` and `$saves:` directories.
 proto native bool CopyFile(string sourceName, string destName);
 ```
 
-Copies a file from source to destination.
+Copia un file dalla sorgente alla destinazione.
 
 **Esempio:**
 
 ```c
-// Backup before overwriting
+// Backup prima di sovrascrivere
 if (FileExist("$profile:MyMod/config.json"))
 {
     CopyFile("$profile:MyMod/config.json", "$profile:MyMod/config.json.bak");
@@ -209,9 +209,9 @@ if (FileExist("$profile:MyMod/config.json"))
 
 ---
 
-## File Enumeration (FindFile / FindNextFile)
+## Enumerazione File (FindFile / FindNextFile)
 
-Enumerate files matching a pattern in a directory.
+Enumera i file corrispondenti a un pattern in una directory.
 
 ```c
 proto FindFileHandle FindFile(string pattern, out string fileName,
@@ -221,30 +221,30 @@ proto bool FindNextFile(FindFileHandle handle, out string fileName,
 proto native void CloseFindFile(FindFileHandle handle);
 ```
 
-### FileAttr Enum
+### Enum FileAttr
 
 ```c
 enum FileAttr
 {
-    DIRECTORY,   // Entry is a directory
-    HIDDEN,      // Entry is hidden
-    READONLY,    // Entry is read-only
-    INVALID      // Invalid entry
+    DIRECTORY,   // La voce è una directory
+    HIDDEN,      // La voce è nascosta
+    READONLY,    // La voce è in sola lettura
+    INVALID      // Voce non valida
 }
 ```
 
-### FindFileFlags Enum
+### Enum FindFileFlags
 
 ```c
 enum FindFileFlags
 {
-    DIRECTORIES,  // Return only directories
-    ARCHIVES,     // Return only files
-    ALL           // Return both
+    DIRECTORIES,  // Restituisce solo directory
+    ARCHIVES,     // Restituisce solo file
+    ALL           // Restituisce entrambi
 }
 ```
 
-**Esempio --- enumerate all JSON files in a directory:**
+**Esempio --- enumerare tutti i file JSON in una directory:**
 
 ```c
 void ListJsonFiles()
@@ -257,18 +257,18 @@ void ListJsonFiles()
 
     if (handle)
     {
-        // Process first result
+        // Elabora il primo risultato
         if (!(fileAttr & FileAttr.DIRECTORY))
         {
-            Print("Found: " + fileName);
+            Print("Trovato: " + fileName);
         }
 
-        // Process remaining results
+        // Elabora i risultati rimanenti
         while (FindNextFile(handle, fileName, fileAttr))
         {
             if (!(fileAttr & FileAttr.DIRECTORY))
             {
-                Print("Found: " + fileName);
+                Print("Trovato: " + fileName);
             }
         }
 
@@ -277,9 +277,9 @@ void ListJsonFiles()
 }
 ```
 
-> **Importante:** `FindFile` returns just the file name, not the full path. Devi prepend the directory path yourself when processing the files.
+> **Importante:** `FindFile` restituisce solo il nome del file, non il percorso completo. Devi preporre il percorso della directory tu stesso quando elabori i file.
 
-**Esempio --- count files in a directory:**
+**Esempio --- contare i file in una directory:**
 
 ```c
 int CountFiles(string pattern)
@@ -305,58 +305,58 @@ int CountFiles(string pattern)
 
 ---
 
-## JsonFileLoader (Generic JSON)
+## JsonFileLoader (JSON Generico)
 
-**File:** `3_Game/tools/jsonfileloader.c` (173 lines)
+**File:** `3_Game/tools/jsonfileloader.c` (173 righe)
 
-The consigliato way to load and save JSON data. Works with any class that has public fields.
+Il modo consigliato per caricare e salvare dati JSON. Funziona con qualsiasi classe che abbia campi pubblici.
 
-### Modern API (Preferred)
+### API Moderna (Preferita)
 
 ```c
 class JsonFileLoader<Class T>
 {
-    // Load JSON file into object
+    // Carica file JSON nell'oggetto
     static bool LoadFile(string filename, out T data, out string errorMessage);
 
-    // Save object to JSON file
+    // Salva oggetto nel file JSON
     static bool SaveFile(string filename, T data, out string errorMessage);
 
-    // Parse JSON string into object
+    // Analizza stringa JSON nell'oggetto
     static bool LoadData(string string_data, out T data, out string errorMessage);
 
-    // Serialize object to JSON string
+    // Serializza oggetto in stringa JSON
     static bool MakeData(T inputData, out string outputData,
                           out string errorMessage, bool prettyPrint = true);
 }
 ```
 
-All methods return `bool` --- `true` on success, `false` on failure with the error in `errorMessage`.
+Tutti i metodi restituiscono `bool` --- `true` in caso di successo, `false` in caso di fallimento con l'errore in `errorMessage`.
 
-### Legacy API (Deprecated)
+### API Legacy (Deprecata)
 
 ```c
 class JsonFileLoader<Class T>
 {
-    static void JsonLoadFile(string filename, out T data);    // Returns void!
+    static void JsonLoadFile(string filename, out T data);    // Restituisce void!
     static void JsonSaveFile(string filename, T data);
     static void JsonLoadData(string string_data, out T data);
     static string JsonMakeData(T data);
 }
 ```
 
-> **Critical Gotcha:** `JsonLoadFile()` returns `void`. You CANNOT use it in an `if` condition:
+> **Insidia Critica:** `JsonLoadFile()` restituisce `void`. NON PUOI usarlo in una condizione `if`:
 > ```c
-> // WRONG - will not compile or will always be false
+> // SBAGLIATO - non compilerà o sarà sempre false
 > if (JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg)) { }
 >
-> // CORRECT - use the modern LoadFile() which returns bool
+> // CORRETTO - usa il moderno LoadFile() che restituisce bool
 > if (JsonFileLoader<MyConfig>.LoadFile(path, cfg, error)) { }
 > ```
 
-### Data Class Requirements
+### Requisiti della Classe Dati
 
-The target class must have **public fields** with default values. The JSON serializer maps field names directly to JSON keys.
+La classe di destinazione deve avere **campi pubblici** con valori predefiniti. Il serializzatore JSON mappa i nomi dei campi direttamente alle chiavi JSON.
 
 ```c
 class MyConfig
@@ -376,7 +376,7 @@ class MyConfig
 }
 ```
 
-This produces JSON:
+Questo produce JSON:
 
 ```json
 {
@@ -389,7 +389,7 @@ This produces JSON:
 }
 ```
 
-### Complete Load/Save Esempio
+### Esempio Completo Caricamento/Salvataggio
 
 ```c
 class MyModConfig
@@ -415,15 +415,15 @@ class MyModConfigManager
     {
         if (!FileExist(CONFIG_PATH))
         {
-            Save();  // Create default config
+            Save();  // Crea config predefinito
             return;
         }
 
         string error;
         if (!JsonFileLoader<MyModConfig>.LoadFile(CONFIG_PATH, m_Config, error))
         {
-            Print("[MyMod] Config load error: " + error);
-            m_Config = new MyModConfig();  // Reset to defaults
+            Print("[MyMod] Errore caricamento config: " + error);
+            m_Config = new MyModConfig();  // Ripristina ai predefiniti
             Save();
         }
     }
@@ -433,7 +433,7 @@ class MyModConfigManager
         string error;
         if (!JsonFileLoader<MyModConfig>.SaveFile(CONFIG_PATH, m_Config, error))
         {
-            Print("[MyMod] Config save error: " + error);
+            Print("[MyMod] Errore salvataggio config: " + error);
         }
     }
 
@@ -446,11 +446,11 @@ class MyModConfigManager
 
 ---
 
-## JsonSerializer (Direct Use)
+## JsonSerializer (Uso Diretto)
 
 **File:** `3_Game/gameplay.c`
 
-For cases where you need to serialize/deserialize JSON strings directly without file operations:
+Per i casi in cui devi serializzare/deserializzare stringhe JSON direttamente senza operazioni sui file:
 
 ```c
 class JsonSerializer : Serializer
@@ -468,12 +468,12 @@ cfg.MaxPlayers = 100;
 
 JsonSerializer js = new JsonSerializer();
 
-// Serialize to string
+// Serializza in stringa
 string jsonOutput;
-js.WriteToString(cfg, true, jsonOutput);  // true = pretty print
+js.WriteToString(cfg, true, jsonOutput);  // true = formattazione leggibile
 Print(jsonOutput);
 
-// Deserialize from string
+// Deserializza da stringa
 MyConfig parsed = new MyConfig();
 string parseError;
 js.ReadFromString(parsed, jsonOutput, parseError);
@@ -484,30 +484,64 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 
 ## Riepilogo
 
-| Operazione | Function | Note |
-|-----------|----------|-------|
-| Controlla exists | `FileExist(path)` | Restituisce bool |
-| Open | `OpenFile(path, FileMode)` | Restituisce handle (0 = fail) |
-| Close | `CloseFile(handle)` | Sempre call when done |
-| Write line | `FPrintln(handle, data)` | With newline |
-| Write | `FPrint(handle, data)` | Without newline |
-| Leggi line | `FGets(handle, out line)` | Restituisce -1 at EOF |
-| Make dir | `MakeDirectory(path)` | Single level only |
-| Delete | `DeleteFile(path)` | Only `$profile:` / `$saves:` |
-| Copy | `CopyFile(src, dst)` | -- |
-| Find files | `FindFile(pattern, ...)` | Restituisce handle, iterate with `FindNextFile` |
-| JSON load | `JsonFileLoader<T>.LoadFile(path, data, error)` | Modern API, returns bool |
-| JSON save | `JsonFileLoader<T>.SaveFile(path, data, error)` | Modern API, returns bool |
-| JSON string | `JsonSerializer.WriteToString()` / `ReadFromString()` | Direct string operations |
+| Operazione | Funzione | Note |
+|------------|----------|------|
+| Controlla esistenza | `FileExist(path)` | Restituisce bool |
+| Apri | `OpenFile(path, FileMode)` | Restituisce handle (0 = fallimento) |
+| Chiudi | `CloseFile(handle)` | Chiama sempre quando finito |
+| Scrivi riga | `FPrintln(handle, data)` | Con nuova riga |
+| Scrivi | `FPrint(handle, data)` | Senza nuova riga |
+| Leggi riga | `FGets(handle, out line)` | Restituisce -1 a EOF |
+| Crea directory | `MakeDirectory(path)` | Solo un livello |
+| Elimina | `DeleteFile(path)` | Solo `$profile:` / `$saves:` |
+| Copia | `CopyFile(src, dst)` | -- |
+| Cerca file | `FindFile(pattern, ...)` | Restituisce handle, itera con `FindNextFile` |
+| Carica JSON | `JsonFileLoader<T>.LoadFile(path, data, error)` | API moderna, restituisce bool |
+| Salva JSON | `JsonFileLoader<T>.SaveFile(path, data, error)` | API moderna, restituisce bool |
+| Stringa JSON | `JsonSerializer.WriteToString()` / `ReadFromString()` | Operazioni dirette su stringhe |
 
 | Concetto | Punto Chiave |
-|---------|-----------|
-| Path prefixes | `$profile:` (writable), `$mission:` (read), `$saves:` (writable) |
-| JsonLoadFile | **Restituisce void** --- use `LoadFile()` (bool) invece |
-| Data classes | Public fields with defaults, `ref` for arrays/maps |
-| Sempre close | Every `OpenFile` must have a matching `CloseFile` |
-| FindFile | Restituisce only filenames, not full paths |
+|----------|-------------|
+| Prefissi di percorso | `$profile:` (scrivibile), `$mission:` (lettura), `$saves:` (scrivibile) |
+| JsonLoadFile | **Restituisce void** --- usa `LoadFile()` (bool) invece |
+| Classi dati | Campi pubblici con predefiniti, `ref` per array/map |
+| Chiudi sempre | Ogni `OpenFile` deve avere un `CloseFile` corrispondente |
+| FindFile | Restituisce solo nomi file, non percorsi completi |
 
 ---
 
-[<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
+## Buone Pratiche
+
+- **Avvolgi sempre le operazioni sui file in controlli di esistenza e chiudi gli handle in tutti i percorsi del codice.** Un `FileHandle` non chiuso perde risorse e può impedire la scrittura del file su disco. Usa pattern di guardia: controlla `fh != 0`, esegui il lavoro, poi `CloseFile(fh)` prima di ogni `return`.
+- **Usa il moderno `JsonFileLoader<T>.LoadFile()` (restituisce bool) invece del legacy `JsonLoadFile()` (restituisce void).** L'API legacy non può riportare errori, e tentare di usare il suo ritorno void in una condizione fallisce silenziosamente.
+- **Crea le directory con `MakeDirectory()` nell'ordine dal genitore al figlio.** `MakeDirectory` crea solo il segmento finale della directory. `MakeDirectory("$profile:A/B/C")` fallisce se `A/B` non esiste. Crea ogni livello sequenzialmente.
+- **Usa `CopyFile()` per creare backup prima di sovrascrivere i file di configurazione.** Gli errori di parsing JSON da salvataggi corrotti sono irrecuperabili. Una copia `.bak` permette ai proprietari del server di ripristinare l'ultimo stato valido.
+- **Ricorda che `FindFile()` restituisce solo nomi file, non percorsi completi.** Devi concatenare il prefisso della directory tu stesso quando carichi file trovati tramite `FindFile`/`FindNextFile`.
+
+---
+
+## Compatibilità e Impatto
+
+> **Compatibilità Mod:** L'I/O file è intrinsecamente isolato per mod quando ogni mod usa la propria sottodirectory `$profile:`. I conflitti si verificano solo quando due mod leggono/scrivono lo stesso percorso file.
+
+- **Ordine di Caricamento:** L'I/O file non ha dipendenze dall'ordine di caricamento. Le mod leggono e scrivono indipendentemente.
+- **Conflitti di Classi Moddate:** Nessun conflitto di classi. Il rischio è che due mod usino lo stesso nome di sottodirectory o filename in `$profile:`, causando corruzione dei dati.
+- **Impatto sulle Prestazioni:** La serializzazione JSON tramite `JsonFileLoader` è sincrona e blocca il thread principale. Caricare file JSON grandi (>100KB) durante il gameplay causa scatti nei frame. Carica le configurazioni in `OnInit()` o `OnMissionStart()`, mai in `OnUpdate()`.
+- **Server/Client:** Le scritture file sono limitate a `$profile:` e `$saves:`. Sui client, `$profile:` punta alla directory del profilo client. Sui server dedicati, punta al profilo server. `$mission:` è tipicamente in sola lettura su entrambi i lati.
+
+---
+
+## Osservato nelle Mod Reali
+
+> Questi pattern sono stati confermati studiando il codice sorgente di mod DayZ professionali.
+
+| Pattern | Mod | File/Posizione |
+|---------|-----|---------------|
+| Catena `MakeDirectory` + controllo `FileExist` + `LoadFile` con fallback ai predefiniti | Expansion | Settings manager (`ExpansionSettings`) |
+| Backup con `CopyFile` prima del salvataggio config | COT | Gestione file permessi |
+| `FindFile`/`FindNextFile` per enumerare file JSON per-giocatore in `$profile:` | VPP Admin Tools | Caricatore dati giocatore |
+| `JsonSerializer.WriteToString()` per serializzazione payload RPC (nessun file) | Dabs Framework | Sincronizzazione config di rete |
+
+---
+
+[<< Precedente: Timer e CallQueue](07-timers.md) | **I/O File e JSON** | [Successivo: Networking e RPC >>](09-networking.md)

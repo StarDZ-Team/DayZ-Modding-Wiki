@@ -1,27 +1,27 @@
-# Chapter 6.7: Timers & CallQueue
+# 第 6.7 章：定时器与 CallQueue
 
-[Home](../../README.md) | [<< Previous: Notifications](06-notifications.md) | **Timers & CallQueue** | [Next: File I/O & JSON >>](08-file-io.md)
+[首页](../../README.md) | [<< 上一章：通知系统](06-notifications.md) | **定时器与 CallQueue** | [下一章：文件 I/O 与 JSON >>](08-file-io.md)
 
 ---
 
 ## 简介
 
-DayZ provides several mechanisms for deferred and repeating function calls: `ScriptCallQueue` (the primary system), `Timer`, `ScriptInvoker`, and `WidgetFadeTimer`. These are essential for scheduling delayed logic, creating update loops, and managing timed events without blocking the main thread. This chapter covers each mechanism with full API signatures and usage patterns.
+DayZ 提供了多种延迟和重复函数调用的机制：`ScriptCallQueue`（主要系统）、`Timer`、`ScriptInvoker` 和 `WidgetFadeTimer`。这些对于调度延迟逻辑、创建更新循环和管理定时事件至关重要，而不会阻塞主线程。本章介绍每种机制的完整 API 签名和使用模式。
 
 ---
 
-## Call Categories
+## 调用类别
 
-All timer and call queue systems require a **call category** that determines when the deferred call executes within the frame:
+所有定时器和调用队列系统都需要一个**调用类别**，它决定了延迟调用在帧内何时执行：
 
 ```c
-const int CALL_CATEGORY_SYSTEM   = 0;   // System-level operations
-const int CALL_CATEGORY_GUI      = 1;   // UI updates
-const int CALL_CATEGORY_GAMEPLAY = 2;   // Gameplay logic
-const int CALL_CATEGORY_COUNT    = 3;   // Total number of categories
+const int CALL_CATEGORY_SYSTEM   = 0;   // 系统级操作
+const int CALL_CATEGORY_GUI      = 1;   // UI 更新
+const int CALL_CATEGORY_GAMEPLAY = 2;   // 游戏玩法逻辑
+const int CALL_CATEGORY_COUNT    = 3;   // 类别总数
 ```
 
-Access the queue for a category:
+访问某个类别的队列：
 
 ```c
 ScriptCallQueue  queue   = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY);
@@ -33,9 +33,9 @@ TimerQueue       timers  = GetGame().GetTimerQueue(CALL_CATEGORY_GAMEPLAY);
 
 ## ScriptCallQueue
 
-**File:** `3_Game/tools/utilityclasses.c`
+**文件：** `3_Game/tools/utilityclasses.c`
 
-The primary mechanism for deferred function calls. Supports one-shot delays, repeating calls, and immediate next-frame execution.
+延迟函数调用的主要机制。支持一次性延迟、重复调用和立即下一帧执行。
 
 ### CallLater
 
@@ -45,28 +45,28 @@ void CallLater(func fn, int delay = 0, bool repeat = false,
                void param3 = NULL, void param4 = NULL);
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `fn` | The function to call (method reference: `this.MyMethod`) |
-| `delay` | Delay in milliseconds (0 = next frame) |
-| `repeat` | `true` = call repeatedly at `delay` intervals; `false` = call once |
-| `param1..4` | Optional parameters passed to the function |
+| 参数 | 描述 |
+|------|------|
+| `fn` | 要调用的函数（方法引用：`this.MyMethod`） |
+| `delay` | 延迟毫秒数（0 = 下一帧） |
+| `repeat` | `true` = 按 `delay` 间隔重复调用；`false` = 只调用一次 |
+| `param1..4` | 传递给函数的可选参数 |
 
-**Example --- one-shot delay:**
+**示例 --- 一次性延迟：**
 
 ```c
-// Call MyFunction once after 5 seconds
+// 5 秒后调用 MyFunction 一次
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunction, 5000, false);
 ```
 
-**Example --- repeating call:**
+**示例 --- 重复调用：**
 
 ```c
-// Call UpdateLoop every 1 second, repeating
+// 每 1 秒调用 UpdateLoop，重复执行
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.UpdateLoop, 1000, true);
 ```
 
-**Example --- with parameters:**
+**示例 --- 带参数：**
 
 ```c
 void ShowMessage(string text, int color)
@@ -74,7 +74,7 @@ void ShowMessage(string text, int color)
     Print(text);
 }
 
-// Call with parameters after 2 seconds
+// 2 秒后带参数调用
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(
     this.ShowMessage, 2000, false, "Hello!", ARGB(255, 255, 0, 0)
 );
@@ -87,12 +87,12 @@ void Call(func fn, void param1 = NULL, void param2 = NULL,
           void param3 = NULL, void param4 = NULL);
 ```
 
-Executes the function on the next frame (delay = 0, no repeat). Shorthand for `CallLater(fn, 0, false)`.
+在下一帧执行函数（delay = 0，不重复）。是 `CallLater(fn, 0, false)` 的简写。
 
-**Example:**
+**示例：**
 
 ```c
-// Execute next frame
+// 下一帧执行
 GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this.Initialize);
 ```
 
@@ -103,9 +103,9 @@ void CallByName(Class obj, string fnName, int delay = 0, bool repeat = false,
                 Param par = null);
 ```
 
-Call a method by its string name. Useful when the method reference is not directly available.
+通过字符串名称调用方法。在方法引用不可直接获取时很有用。
 
-**Example:**
+**示例：**
 
 ```c
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallByName(
@@ -119,12 +119,12 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallByName(
 void Remove(func fn);
 ```
 
-Removes a scheduled call. Essential for stopping repeating calls and preventing calls on destroyed objects.
+移除已调度的调用。对于停止重复调用和防止对已销毁对象的调用至关重要。
 
-**Example:**
+**示例：**
 
 ```c
-// Stop a repeating call
+// 停止重复调用
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateLoop);
 ```
 
@@ -134,7 +134,7 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateLoop);
 void RemoveByName(Class obj, string fnName);
 ```
 
-Remove a call scheduled via `CallByName`.
+移除通过 `CallByName` 调度的调用。
 
 ### Tick
 
@@ -142,15 +142,15 @@ Remove a call scheduled via `CallByName`.
 void Tick(float timeslice);
 ```
 
-Called internally by the engine each frame. You should never need to call this manually.
+由引擎在每帧内部调用。你不应该需要手动调用它。
 
 ---
 
 ## Timer
 
-**File:** `3_Game/tools/utilityclasses.c`
+**文件：** `3_Game/tools/utilityclasses.c`
 
-A class-based timer with explicit start/stop lifecycle. Cleaner for long-lived timers that need to be paused or restarted.
+基于类的定时器，具有显式的启动/停止生命周期。对于需要暂停或重启的长期定时器更清晰。
 
 ### 构造函数
 
@@ -164,15 +164,15 @@ void Timer(int category = CALL_CATEGORY_SYSTEM);
 void Run(float duration, Class obj, string fn_name, Param params = null, bool loop = false);
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `duration` | Time in seconds (not milliseconds!) |
-| `obj` | The object whose method will be called |
-| `fn_name` | Method name as string |
-| `params` | Optional `Param` object with parameters |
-| `loop` | `true` = repeat after each duration |
+| 参数 | 描述 |
+|------|------|
+| `duration` | 以秒为单位的时间（不是毫秒！） |
+| `obj` | 将调用其方法的对象 |
+| `fn_name` | 方法名称字符串 |
+| `params` | 带参数的可选 `Param` 对象 |
+| `loop` | `true` = 每次持续时间后重复 |
 
-**Example --- one-shot timer:**
+**示例 --- 一次性定时器：**
 
 ```c
 ref Timer m_Timer;
@@ -189,7 +189,7 @@ void OnTimerComplete()
 }
 ```
 
-**Example --- repeating timer:**
+**示例 --- 重复定时器：**
 
 ```c
 ref Timer m_UpdateTimer;
@@ -197,7 +197,7 @@ ref Timer m_UpdateTimer;
 void StartUpdateLoop()
 {
     m_UpdateTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
-    m_UpdateTimer.Run(1.0, this, "OnUpdate", null, true);  // Every 1 second
+    m_UpdateTimer.Run(1.0, this, "OnUpdate", null, true);  // 每 1 秒
 }
 
 void StopUpdateLoop()
@@ -213,7 +213,7 @@ void StopUpdateLoop()
 void Stop();
 ```
 
-Stops the timer. Can be restarted with another `Run()` call.
+停止定时器。可以通过另一次 `Run()` 调用重新启动。
 
 ### IsRunning
 
@@ -221,7 +221,51 @@ Stops the timer. Can be restarted with another `Run()` call.
 bool IsRunning();
 ```
 
-Returns `true` if the timer is currently active.
+如果定时器当前处于活动状态则返回 `true`。
+
+### Pause
+
+```c
+void Pause();
+```
+
+暂停正在运行的定时器，保留剩余时间。可以用 `Continue()` 恢复定时器。
+
+### Continue
+
+```c
+void Continue();
+```
+
+从中断处恢复暂停的定时器。
+
+### IsPaused
+
+```c
+bool IsPaused();
+```
+
+如果定时器当前处于暂停状态则返回 `true`。
+
+**示例 --- 暂停和恢复：**
+
+```c
+ref Timer m_Timer;
+
+void StartTimer()
+{
+    m_Timer = new Timer(CALL_CATEGORY_GAMEPLAY);
+    m_Timer.Run(10.0, this, "OnTimerComplete", null, false);
+}
+
+void TogglePause()
+{
+    if (m_Timer.IsPaused())
+        m_Timer.Continue();
+    else
+        m_Timer.Pause();
+}
+```
 
 ### GetRemaining
 
@@ -229,7 +273,7 @@ Returns `true` if the timer is currently active.
 float GetRemaining();
 ```
 
-Returns the remaining time in seconds.
+返回剩余时间（秒）。
 
 ### GetDuration
 
@@ -237,15 +281,15 @@ Returns the remaining time in seconds.
 float GetDuration();
 ```
 
-Returns the total duration set by `Run()`.
+返回 `Run()` 设置的总持续时间。
 
 ---
 
 ## ScriptInvoker
 
-**File:** `3_Game/tools/utilityclasses.c`
+**文件：** `3_Game/tools/utilityclasses.c`
 
-An event/delegate system. `ScriptInvoker` holds a list of callback functions and invokes all of them when `Invoke()` is called. This is DayZ's equivalent of C# events or the observer pattern.
+事件/委托系统。`ScriptInvoker` 持有一组回调函数，当调用 `Invoke()` 时触发所有回调。这是 DayZ 中等同于 C# 事件或观察者模式的实现。
 
 ### Insert
 
@@ -253,7 +297,7 @@ An event/delegate system. `ScriptInvoker` holds a list of callback functions and
 void Insert(func fn);
 ```
 
-Register a callback function.
+注册一个回调函数。
 
 ### Remove
 
@@ -261,7 +305,7 @@ Register a callback function.
 void Remove(func fn);
 ```
 
-Unregister a callback function.
+取消注册一个回调函数。
 
 ### Invoke
 
@@ -270,7 +314,7 @@ void Invoke(void param1 = NULL, void param2 = NULL,
             void param3 = NULL, void param4 = NULL);
 ```
 
-Call all registered functions with the provided parameters.
+使用提供的参数调用所有已注册的函数。
 
 ### Count
 
@@ -278,7 +322,7 @@ Call all registered functions with the provided parameters.
 int Count();
 ```
 
-Number of registered callbacks.
+已注册回调的数量。
 
 ### Clear
 
@@ -286,9 +330,9 @@ Number of registered callbacks.
 void Clear();
 ```
 
-Remove all registered callbacks.
+移除所有已注册的回调。
 
-**Example --- custom event system:**
+**示例 --- 自定义事件系统：**
 
 ```c
 class MyModule
@@ -297,9 +341,9 @@ class MyModule
 
     void CompleteMission()
     {
-        // Do completion logic...
+        // 执行完成逻辑...
 
-        // Notify all listeners
+        // 通知所有监听者
         m_OnMissionComplete.Invoke("MissionAlpha", 1500);
     }
 }
@@ -308,7 +352,7 @@ class MyUI
 {
     void Init(MyModule module)
     {
-        // Subscribe to the event
+        // 订阅事件
         module.m_OnMissionComplete.Insert(this.OnMissionComplete);
     }
 
@@ -319,33 +363,33 @@ class MyUI
 
     void Cleanup(MyModule module)
     {
-        // Always unsubscribe to prevent dangling references
+        // 始终取消订阅以防止悬挂引用
         module.m_OnMissionComplete.Remove(this.OnMissionComplete);
     }
 }
 ```
 
-### 上级date Queue
+### 更新队列
 
-The engine provides per-frame `ScriptInvoker` queues:
+引擎提供每帧 `ScriptInvoker` 队列：
 
 ```c
 ScriptInvoker updater = GetGame().GetUpdateQueue(CALL_CATEGORY_GAMEPLAY);
 updater.Insert(this.OnFrame);
 
-// Remove when done
+// 完成后移除
 updater.Remove(this.OnFrame);
 ```
 
-Functions registered on the update queue are called every frame with no parameters. This is useful for per-frame logic without using `EntityEvent.FRAME`.
+注册在更新队列上的函数每帧调用，不带参数。这对于不使用 `EntityEvent.FRAME` 的每帧逻辑很有用。
 
 ---
 
 ## WidgetFadeTimer
 
-**File:** `3_Game/tools/utilityclasses.c`
+**文件：** `3_Game/tools/utilityclasses.c`
 
-A specialized timer for fading widgets in and out.
+专门用于控件淡入淡出的定时器。
 
 ```c
 class WidgetFadeTimer
@@ -357,13 +401,13 @@ class WidgetFadeTimer
 }
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `w` | The widget to fade |
-| `time` | Duration of the fade in seconds |
-| `continue_from_current` | If `true`, start from current alpha; otherwise start from 0 (fade in) or 1 (fade out) |
+| 参数 | 描述 |
+|------|------|
+| `w` | 要淡化的控件 |
+| `time` | 淡化持续时间（秒） |
+| `continue_from_current` | 如果为 `true`，从当前透明度开始；否则从 0（淡入）或 1（淡出）开始 |
 
-**Example:**
+**示例：**
 
 ```c
 ref WidgetFadeTimer m_FadeTimer;
@@ -375,7 +419,7 @@ void ShowNotification()
     m_FadeTimer = new WidgetFadeTimer;
     m_FadeTimer.FadeIn(m_NotificationPanel, 0.3);
 
-    // Auto-hide after 5 seconds
+    // 5 秒后自动隐藏
     GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(this.HideNotification, 5000, false);
 }
 
@@ -387,17 +431,36 @@ void HideNotification()
 
 ---
 
-## Common Patterns
+## GetRemainingTime（CallQueue）
 
-### Timer Accumulator (Throttled On上级date)
+`ScriptCallQueue` 还提供了查询已调度 `CallLater` 剩余时间的方法：
 
-When you have a per-frame callback but want to run logic at a slower rate:
+```c
+float GetRemainingTime(Class obj, string fnName);
+```
+
+**示例：**
+
+```c
+// 获取 CallLater 的剩余时间
+float remaining = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).GetRemainingTime(this, "MyCallback");
+if (remaining > 0)
+    Print(string.Format("Callback fires in %1 ms", remaining));
+```
+
+---
+
+## 常用模式
+
+### 定时器累加器（节流 OnUpdate）
+
+当你有每帧回调但想以更慢的速率运行逻辑时：
 
 ```c
 class MyModule
 {
     protected float m_UpdateAccumulator;
-    protected const float UPDATE_INTERVAL = 2.0;  // Every 2 seconds
+    protected const float UPDATE_INTERVAL = 2.0;  // 每 2 秒
 
     void OnUpdate(float timeslice)
     {
@@ -406,15 +469,15 @@ class MyModule
             return;
         m_UpdateAccumulator = 0;
 
-        // Throttled logic here
+        // 节流后的逻辑
         DoPeriodicWork();
     }
 }
 ```
 
-### Cleanup Pattern
+### 清理模式
 
-Always remove scheduled calls when your object is destroyed to prevent crashes:
+当对象被销毁时始终移除已调度的调用以防止崩溃：
 
 ```c
 class MyManager
@@ -431,25 +494,25 @@ class MyManager
 
     void Tick()
     {
-        // Periodic work
+        // 周期性工作
     }
 }
 ```
 
-### One-Shot Delayed Init
+### 一次性延迟初始化
 
-A common pattern for initializing systems after the world is fully loaded:
+在世界完全加载后初始化系统的常见模式：
 
 ```c
 void OnMissionStart()
 {
-    // Delay init by 1 second to ensure everything is loaded
+    // 延迟 1 秒初始化以确保一切已加载
     GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this.DelayedInit, 1000, false);
 }
 
 void DelayedInit()
 {
-    // Safe to access world objects now
+    // 现在可以安全访问世界对象
 }
 ```
 
@@ -457,22 +520,56 @@ void DelayedInit()
 
 ## 总结
 
-| Mechanism | Use Case | Time Unit |
-|-----------|----------|-----------|
-| `CallLater` | One-shot or repeating deferred calls | Milliseconds |
-| `Call` | Execute next frame | N/A (immediate) |
-| `Timer` | Class-based timer with start/stop/remaining | Seconds |
-| `ScriptInvoker` | Event/delegate (observer pattern) | N/A (manual invoke) |
-| `WidgetFadeTimer` | Widget fade-in/fade-out | Seconds |
-| `Get上级dateQueue()` | Per-frame callback registration | N/A (every frame) |
+| 机制 | 用例 | 时间单位 |
+|------|------|----------|
+| `CallLater` | 一次性或重复的延迟调用 | 毫秒 |
+| `Call` | 下一帧执行 | 无（立即） |
+| `Timer` | 基于类的定时器，支持启动/停止/剩余时间 | 秒 |
+| `ScriptInvoker` | 事件/委托（观察者模式） | 无（手动调用） |
+| `WidgetFadeTimer` | 控件淡入/淡出 | 秒 |
+| `GetUpdateQueue()` | 每帧回调注册 | 无（每帧） |
 
 | 概念 | 要点 |
-|---------|-----------|
-| Categories | `CALL_CATEGORY_SYSTEM` (0), `GUI` (1), `GAMEPLAY` (2) |
-| Remove calls | Always `Remove()` in destructor to prevent dangling references |
-| Timer vs CallLater | Timer is seconds + class-based; CallLater is milliseconds + functional |
-| ScriptInvoker | Insert/Remove callbacks, Invoke to fire all |
+|------|------|
+| 类别 | `CALL_CATEGORY_SYSTEM` (0)、`GUI` (1)、`GAMEPLAY` (2) |
+| 移除调用 | 始终在析构函数中 `Remove()` 以防止悬挂引用 |
+| Timer vs CallLater | Timer 使用秒 + 基于类；CallLater 使用毫秒 + 函数式 |
+| ScriptInvoker | Insert/Remove 回调，Invoke 触发所有回调 |
 
 ---
 
-[<< 上一章: Notifications](06-notifications.md) | **Timers & CallQueue** | [下一章: File I/O & JSON >>](08-file-io.md)
+## 最佳实践
+
+- **始终在析构函数中 `Remove()` 已调度的 `CallLater` 调用。** 如果拥有对象在 `CallLater` 仍未执行时被销毁，引擎将在已删除的对象上调用方法并崩溃。每个 `CallLater` 必须在析构函数中有匹配的 `Remove()`。
+- **对需要暂停/恢复的长期定时器使用 `Timer`（秒），对一次性延迟使用 `CallLater`（毫秒）。** 混淆它们会导致时间差 1000 倍的 bug，因为 `Timer.Run()` 使用秒而 `CallLater` 使用毫秒。
+- **使用定时器累加器节流 `OnUpdate`，而非注册重复的 `CallLater`。** 重复的 `CallLater` 会在队列中创建单独的跟踪条目，而累加器模式（`m_Acc += timeslice; if (m_Acc >= INTERVAL)`）零开销且更容易调整。
+- **在监听者被销毁前取消订阅 `ScriptInvoker` 回调。** 忘记对 `ScriptInvoker` 调用 `Remove()` 会留下悬挂的函数引用，当 `Invoke()` 触发时会崩溃。
+- **永远不要手动调用 `ScriptCallQueue` 上的 `Tick()`。** 引擎每帧自动调用它。手动调用会双重触发所有待处理的回调。
+
+---
+
+## 兼容性与影响
+
+> **模组兼容性：** 定时器系统是每实例的，因此模组很少在定时器上直接冲突。风险在于共享的 `ScriptInvoker` 事件，多个模组在其上注册回调。
+
+- **加载顺序：** 定时器和 CallQueue 系统与加载顺序无关。每个模组管理自己的定时器。
+- **Modded 类冲突：** 没有直接冲突，但如果两个模组都在同一个类（例如 `MissionServer`）上覆盖 `OnUpdate()` 且其中一个忘记了 `super`，另一个基于累加器的定时器就会停止工作。
+- **性能影响：** 每个 `repeat = true` 的活动 `CallLater` 每帧都会被检查。数百个重复调用会降低服务器帧率。优先使用更少的定时器和更长的间隔，或在 `OnUpdate` 中使用累加器模式。
+- **服务端/客户端：** `CallLater` 和 `Timer` 在两端都有效。游戏逻辑使用 `CALL_CATEGORY_GAMEPLAY`，UI 更新使用 `CALL_CATEGORY_GUI`（仅客户端），底层操作使用 `CALL_CATEGORY_SYSTEM`。
+
+---
+
+## 真实模组中的观察
+
+> 这些模式已通过研究专业 DayZ 模组的源代码得到确认。
+
+| 模式 | 模组 | 文件/位置 |
+|------|------|-----------|
+| 析构函数中对每个 `CallLater` 注册进行 `Remove()` 清理 | COT | 模块管理器生命周期 |
+| 用于跨模块通知的 `ScriptInvoker` 事件总线 | Expansion | `ExpansionEventBus` |
+| 带 `Pause()`/`Continue()` 的 `Timer` 用于登出倒计时 | 原版 | `MissionServer` 登出系统 |
+| `OnUpdate` 中的累加器模式用于 5 秒周期性检查 | Dabs Framework | 模块滴答调度 |
+
+---
+
+[<< 上一章：通知系统](06-notifications.md) | **定时器与 CallQueue** | [下一章：文件 I/O 与 JSON >>](08-file-io.md)

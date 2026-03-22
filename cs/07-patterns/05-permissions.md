@@ -1,18 +1,18 @@
 # Chapter 7.5: Permission Systems
 
-[Home](../../README.md) | [<< Previous: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Next: Event-Driven Architecture >>](06-events.md)
+[Domů](../../README.md) | [<< Předchozí: Perzistence konfigurace](04-config-persistence.md) | **Permission Systems** | [Další: Event-Driven Architecture >>](06-events.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Every admin tool, every privileged action, and every moderation feature in DayZ needs a permission system. The question is not whether to check permissions but how to structure them. The DayZ modding community has settled on three major patterns: hierarchical dot-separated permissions (MyMod), user-group role assignment (VPP), and framework-level role-based access (CF/COT). Each has different trade-offs in granularity, complexity, and server-owner experience.
+Every admin přílišl, každý privileged action, and každý moderation feature in DayZ needs a permission system. The question is not whether to check permissions but how to structure them. The DayZ modding community has settled on three major patterns: hierarchical dot-separated permissions, user-group role assignment (VPP), and framework-level role-based access (CF/COT). Each has odlišný trade-offs in granularity, complexity, and server-owner experience.
 
 This chapter covers all three patterns, the permission-checking flow, storage formats, and wildcard/superadmin handling.
 
 ---
 
-## Table of Contents
+## Obsah
 
 - [Why Permissions Matter](#why-permissions-matter)
 - [Hierarchical Dot-Separated (MyMod Pattern)](#hierarchical-dot-separated-mymod-pattern)
@@ -21,26 +21,26 @@ This chapter covers all three patterns, the permission-checking flow, storage fo
 - [Permission Checking Flow](#permission-checking-flow)
 - [Storage Formats](#storage-formats)
 - [Wildcard and Superadmin Patterns](#wildcard-and-superadmin-patterns)
-- [Migration Between Systems](#migration-between-systems)
+- [Migration Mezi Systems](#migration-between-systems)
 - [Best Practices](#best-practices)
 
 ---
 
 ## Why Permissions Matter
 
-Without a permission system, you have two options: either every player can do everything (chaos), or you hardcode Steam64 IDs in your scripts (unmaintainable). A permission system lets server owners define who can do what, without modifying code.
+Bez a permission system, you have two options: either každý player can do každýthing (chaos), or you hardcode Steam64 IDs in your scripts (unmaintainable). A permission system lets server owners define who can do what, without modifying code.
 
 The three security rules:
 
-1. **Never trust the client.** The client sends a request; the server decides whether to honor it.
-2. **Default deny.** If a player is not explicitly granted a permission, they do not have it.
-3. **Fail closed.** If the permission check itself fails (null identity, corrupted data), deny the action.
+1. **Nikdy trust klient.** The client sends a request; server decides whether to honor it.
+2. **Default deny.** If hráč is not explicitly granted a permission, they ne have it.
+3. **Fail closed.** Pokud permission check itself fails (null identity, corrupted data), deny the action.
 
 ---
 
 ## Hierarchical Dot-Separated (MyMod Pattern)
 
-MyMod uses dot-separated permission strings organized in a tree hierarchy. Each permission is a path like `"MyMod.Admin.Teleport"` or `"MyMod.Missions.Start"`. Wildcards allow granting entire subtrees.
+MyMod uses dot-separated permission strings organized in a tree hierarchy. Each permission is a path like `"MyMod.Admin.Teleport"` or `"MyMod.Missions.Start"`. Wildcards allow granting celý subtrees.
 
 ### Permission Format
 
@@ -62,7 +62,7 @@ MyMod                           (root namespace)
 
 ### Data Model
 
-Each player (identified by Steam64 ID) has an array of granted permission strings:
+Každý player (identified by Steam64 ID) has pole of granted permission strings:
 
 ```c
 class MyPermissionsData
@@ -79,7 +79,7 @@ class MyPermissionsData
 
 ### Permission Check
 
-The check walks the player's granted permissions and supports three match types: exact match, full wildcard (`"*"`), and prefix wildcard (`"MyMod.Admin.*"`):
+The check walks hráč's granted permissions and supports three match types: exact match, plný wildcard (`"*"`), and prefix wildcard (`"MyMod.Admin.*"`):
 
 ```c
 bool HasPermission(string plainId, string permission)
@@ -131,21 +131,21 @@ bool HasPermission(string plainId, string permission)
 
 ### Strengths
 
-- **Fine-grained:** you can grant exactly the permissions each admin needs
-- **Hierarchical:** wildcards grant entire subtrees without listing every permission
+- **Fine-grained:** můžete grant exactly the permissions každý admin needs
+- **Hierarchical:** wildcards grant celý subtrees without listing každý permission
 - **Self-documenting:** the permission string tells you what it controls
-- **Extensible:** new permissions are just new strings --- no schema changes
+- **Extensible:** nový permissions are jen nový strings --- no schema changes
 
 ### Weaknesses
 
-- **No named roles:** if 10 admins need the same set, you list it 10 times
-- **String-based:** typos in permission strings fail silently (they just do not match)
+- **No named roles:** if 10 admins need the stejný set, you list it 10 times
+- **String-based:** typos in permission strings fail tiše (they jen ne match)
 
 ---
 
 ## VPP UserGroup Pattern
 
-VPP Admin Tools uses a group-based system. You define named groups (roles) with sets of permissions, then assign players to groups.
+VPP Admin Tools uses a group-based system. You define named groups (roles) with sets of permissions, then assign hráči to groups.
 
 ### Concept
 
@@ -247,24 +247,24 @@ class VPPPermissionManager
 
 ### Strengths
 
-- **Role-based:** define a role once, assign it to many players
-- **Familiar:** server owners understand group/role systems from other games
+- **Role-based:** define a role once, assign it to mnoho hráči
+- **Familiar:** server owners understand group/role systems from jiný games
 - **Easy bulk changes:** change a group's permissions and all members are updated
 
 ### Weaknesses
 
-- **Less granular without extra work:** giving one specific admin one extra permission means creating a new group or adding per-player overrides
-- **Group inheritance is complex:** VPP does not natively support group hierarchy (e.g., "Admin" inherits all "Moderator" permissions)
+- **Less granular without extra work:** giving one specifický admin one extra permission means creating a nový group or adding per-player overrides
+- **Group inheritance is complex:** VPP ne natively support group hierarchy (e.g., "Admin" inherits all "Moderator" permissions)
 
 ---
 
 ## CF Role-Based Pattern (COT)
 
-Community Framework / COT uses a role and permission system where roles are defined with explicit permission sets, and players are assigned to roles.
+Community Framework / COT uses a role and permission system where roles are defined with explicit permission sets, and hráči are assigned to roles.
 
 ### Concept
 
-CF's permission system is similar to VPP's groups but integrated into the framework layer, making it available to all CF-based mods:
+CF's permission system is similar to VPP's groups but integrated into the framework layer, making it dostupný to all CF-based mods:
 
 ```c
 // COT pattern (simplified)
@@ -282,7 +282,7 @@ class CF_Permission
 
 ### Permission Tree
 
-CF represents permissions as a tree structure, where each node can be explicitly allowed, denied, or inherit from its parent:
+CF represents permissions as a tree structure, where každý node can be explicitly allowed, denied, or inherit from its parent:
 
 ```
 Root
@@ -322,18 +322,18 @@ This three-state system (allow/deny/inherit) is more expressive than the binary 
 
 - **Three-state permissions:** allow, deny, inherit gives maximum flexibility
 - **Tree structure:** mirrors the hierarchical nature of permission paths
-- **Framework-level:** all CF mods share the same permission system
+- **Framework-level:** all CF mods share the stejný permission system
 
 ### Weaknesses
 
 - **Complexity:** three states are harder for server owners to understand than simple "granted"
-- **CF dependency:** only works with Community Framework
+- **CF dependency:** pouze works with Community Framework
 
 ---
 
 ## Permission Checking Flow
 
-Regardless of which system you use, the server-side permission check follows the same pattern:
+Regardless of which system you use, server-side permission check follows the stejný pattern:
 
 ```
 Client sends RPC request
@@ -415,7 +415,7 @@ void OnRPC_KickPlayer(PlayerIdentity sender, Object target, ParamsReadContext ct
 
 All three systems store permissions in JSON. The differences are structural:
 
-### Flat Per-Player (MyMod)
+### Flat Per-Player
 
 ```json
 {
@@ -425,9 +425,9 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**File:** One file for all players.
+**Soubor:** One file for all hráči.
 **Pros:** Simple, easy to edit by hand.
-**Cons:** Redundant if many players share the same permissions.
+**Cons:** Redundant if mnoho hráči share the stejný permissions.
 
 ### Per-Player File (Expansion / Player Data)
 
@@ -440,7 +440,7 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**Pros:** Each player is independent; no locking concerns.
+**Pros:** Each player is nezávislý; no locking concerns.
 **Cons:** Many small files; searching "who has permission X?" requires scanning all files.
 
 ### Group-Based (VPP)
@@ -467,27 +467,43 @@ All three systems store permissions in JSON. The differences are structural:
 | **Small server (1-5 admins)** | Best | Overkill | Overkill |
 | **Medium server (5-20 admins)** | Good | Good | Best |
 | **Large community (20+ roles)** | Redundant | Files multiply | Best |
-| **Per-player customization** | Native | Native | Needs workaround |
+| **Per-player vlastníization** | Native | Native | Needs workaround |
 | **Hand-editing** | Easy | Easy per player | Moderate |
 
 ---
 
 ## Wildcard and Superadmin Patterns
 
+```mermaid
+graph TD
+    ROOT["*  (superadmin)"] --> A["MyMod.*"]
+    A --> B["MyMod.Admin.*"]
+    B --> C["MyMod.Admin.Kick"]
+    B --> D["MyMod.Admin.Ban"]
+    B --> E["MyMod.Admin.Teleport"]
+    A --> F["MyMod.Player.*"]
+    F --> G["MyMod.Player.Shop"]
+    F --> H["MyMod.Player.Trade"]
+
+    style ROOT fill:#ff4444,color:#fff
+    style A fill:#ff8844,color:#fff
+    style B fill:#ffaa44,color:#fff
+```
+
 ### Full Wildcard: `"*"`
 
-Grants all permissions. This is the superadmin pattern. A player with `"*"` can do anything.
+Grants all permissions. Toto je superadmin pattern. A player with `"*"` can do jakýkolithing.
 
 ```c
 if (granted == "*")
     return true;
 ```
 
-**Convention:** Every permission system in the DayZ modding community uses `"*"` for superadmin. Do not invent a different convention.
+**Convention:** Every permission system in the DayZ modding community uses `"*"` for superadmin. Do not invent a odlišný convention.
 
 ### Prefix Wildcard: `"MyMod.Admin.*"`
 
-Grants all permissions that start with `"MyMod.Admin."`. This allows granting an entire subsystem without listing every permission:
+Grants all permissions that start with `"MyMod.Admin."`. This allows granting an celý subsystem without listing každý permission:
 
 ```c
 // "MyMod.Admin.*" matches:
@@ -509,15 +525,15 @@ if (granted.IndexOf("*") > 0)
 }
 ```
 
-### No Negative Permissions (MyMod / VPP)
+### No Negative Permissions (Dot-Separated / VPP)
 
-Both MyMod and VPP use additive-only permissions. You can grant permissions but not explicitly deny them. If a permission is not in the player's list, it is denied.
+Oba the dot-separated and VPP systems use additive-only permissions. You can grant permissions but not explicitly deny them. Pokud permission is not in hráč's list, it is denied.
 
 CF/COT is the exception with its three-state system (ALLOW/DENY/INHERIT), which supports explicit denials.
 
 ### Superadmin Escape Hatch
 
-Provide a way to check if someone is a superadmin without checking a specific permission. This is useful for bypass logic:
+Provide a way to check if některéone is a superadmin without checking a specifický permission. This is užitečný for bypass logic:
 
 ```c
 bool IsSuperAdmin(string plainId)
@@ -528,9 +544,9 @@ bool IsSuperAdmin(string plainId)
 
 ---
 
-## Migration Between Systems
+## Migration Mezi Systems
 
-If your mod needs to support servers migrating from one permission system to another (e.g., from a flat admin UID list to hierarchical permissions), implement automatic migration on load:
+Pokud váš mod needs to support servers migrating from one permission system to další (e.g., from a flat admin UID list to hierarchical permissions), implement automatický migration on load:
 
 ```c
 void Load()
@@ -569,21 +585,21 @@ void LoadLegacyAndMigrate()
 }
 ```
 
-This is exactly the pattern MyMod uses to migrate from its original flat `AdminUIDs` array to the hierarchical `Admins` map.
+This is běžný pattern used to migrate from its original flat `AdminUIDs` array to the hierarchical `Admins` map.
 
 ---
 
-## Best Practices
+## Osvědčené postupy
 
-1. **Default deny.** If a permission is not explicitly granted, the answer is "no".
+1. **Default deny.** Pokud permission is not explicitly granted, the answer is "no".
 
-2. **Check on the server, never the client.** Client-side permission checks are for UI convenience only (hiding buttons). The server must always re-verify.
+2. **Zkontrolujte on server, nikdy klient.** Client-side permission checks are for UI convenience pouze (hiding buttons). The server must vždy re-verify.
 
 3. **Use `"*"` for superadmin.** It is the universal convention. Do not invent `"all"`, `"admin"`, or `"root"`.
 
-4. **Log every denied privileged action.** This is your security audit trail.
+4. **Log každý denied privileged action.** This is your security audit trail.
 
-5. **Provide a default permissions file with a placeholder.** New server owners should see a clear example:
+5. **Provide a výchozí permissions file with a placeholder.** New server owners should viz a clear example:
 
 ```json
 {
@@ -593,16 +609,48 @@ This is exactly the pattern MyMod uses to migrate from its original flat `AdminU
 }
 ```
 
-6. **Namespace your permissions.** Use `"YourMod.Category.Action"` to avoid collisions with other mods.
+6. **Namespace your permissions.** Use `"YourMod.Category.Action"` to avoid collisions with jiný mods.
 
-7. **Support prefix wildcards.** Server owners should be able to grant `"YourMod.Admin.*"` instead of listing every admin permission individually.
+7. **Support prefix wildcards.** Server owners should be able to grant `"YourMod.Admin.*"` místo listing každý admin permission individually.
 
-8. **Keep the permissions file human-editable.** Server owners will edit it by hand. Use clear key names, one permission per line in the JSON, and document the available permissions somewhere in your mod's documentation.
+8. **Udržujte the permissions file human-editable.** Server owners will edit it by hand. Use clear key names, one permission per line in the JSON, and document the dostupný permissions některéwhere in your mod's documentation.
 
-9. **Implement migration from day one.** When your permission format changes (and it will), automatic migration prevents support tickets.
+9. **Implement migration from day one.** When your permission format changes (and it will), automatický migration prevents support tickets.
 
-10. **Sync permissions to the client on connect.** The client needs to know its own permissions for UI purposes (showing/hiding admin buttons). Send a summary on connect; do not send the entire server permissions file.
+10. **Sync permissions to klient on connect.** The client needs to know its own permissions for UI purposes (showing/hiding admin buttons). Send a summary on connect; ne send the celý server permissions file.
 
 ---
 
-[<< Předchozí: Config Persistence](04-config-persistence.md) | [Domů](../README.md) | [Další: Event-Driven Architecture >>](06-events.md)
+## Kompatibilita a dopad
+
+- **Více modů:** Each mod can define its own permission namespace (`"ModA.Admin.Kick"`, `"ModB.Build.Spawn"`). The `"*"` wildcard grants superadmin across *all* mods that share the stejný permission store. If mods use nezávislý permission files, `"*"` pouze applies within that mod's scope.
+- **Pořadí načítání:** Permission files are loaded once during server startup. No cross-mod ordering issues as long as each mod reads its own file. If a shared framework (CF/COT) manages permissions, all mods using that framework share the same permission tree.
+- **Listen Server:** Permission checks should vždy run server-side. On listen servers, client-side code may call `HasPermission()` for UI gating (showing/hiding admin buttons), but server-side check is the authoritative one.
+- **Výkon:** Permission checks are řetězec-array linear scan per player. With typical admin counts (1--20 admins, 5--30 permissions každý), this is negligible. For extremely large permission sets, consider a `set<string>` místo pole for O(1) lookups.
+- **Migration:** Adding nový permission strings is non-breaking --- existing admins simply ne have the nový permission until granted. Renaming permissions breaks existing grants tiše. Use config versioning to auto-migrate renamed permission strings.
+
+---
+
+## Časté chyby
+
+| Mistake | Impact | Fix |
+|---------|--------|-----|
+| Trusting client-sent permission data | Exploited clients send `"I am admin"` and server believes them; plný server compromise | Nikdy read permissions from an RPC payload; vždy look up `sender.GetPlainId()` in server-side permission store |
+| Missing výchozí deny | A chybějící permission check grants access to každýone; accidental privilege escalation | Every RPC handler for a privileged action must check `HasPermission()` and return early on failure |
+| Typo in permission string fails tiše | `"MyMod.Amin.Kick"` (typo) nikdy matches --- admin cannot kick, no error is logged | Define permission strings as `statická const` variables; reference the constant, nikdy a raw string literal |
+| Sending the plný permissions file to klient | Exposes all admin Steam64 IDs and their permission sets to jakýkoli connected client | Send pouze the requesting player's own permission list, nikdy the plný server file |
+| No wildcard support in HasPermission | Server owners must list každý jeden permission per admin; tedious and error-prone | Implement prefix wildcards (`"MyMod.Admin.*"`) and plný wildcard (`"*"`) from day one |
+
+---
+
+## Teorie vs praxe
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use RBAC (role-based access control) with group inheritance | Only CF/COT supports three-state permissions; většina mods use flat per-player grants for simplicity |
+| Permissions should be stored in a database | No database access; JSON files in `$profile:` are the pouze option |
+| Use cryptographic tokens for authorization | No crypto libraries in Enforce Script; trust is based on `PlayerIdentity.GetPlainId()` (Steam64 ID) verified by engine |
+
+---
+
+[Domů](../../README.md) | [<< Předchozí: Perzistence konfigurace](04-config-persistence.md) | **Permission Systems** | [Další: Event-Driven Architecture >>](06-events.md)

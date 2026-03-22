@@ -1,18 +1,18 @@
 # Chapter 7.4: Config Persistence
 
-[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
+[Domů](../../README.md) | [<< Předchozí: Vzory RPC](03-rpc-patterns.md) | **Perzistence konfigurace** | [Další: Permission Systems >>](05-permissions.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Almost every DayZ mod needs to save and load configuration data: server settings, spawn tables, ban lists, player data, teleport locations. The engine provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for everything else. Professional mods layer config versioning and auto-migration on top.
+Almost každý DayZ mod needs to save and load configuration data: server settings, spawn tables, ban lists, player data, teleport locations. Engine provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for každýthing else. Professional mods layer config versioning and auto-migration on top.
 
 This chapter covers the standard patterns for config persistence, from basic JSON load/save through versioned migration systems, directory management, and auto-save timers.
 
 ---
 
-## Table of Contents
+## Obsah
 
 - [JsonFileLoader Pattern](#jsonfileloader-pattern)
 - [Manual JSON Writing (FPrintln)](#manual-json-writing-fprintln)
@@ -20,19 +20,19 @@ This chapter covers the standard patterns for config persistence, from basic JSO
 - [Directory Creation](#directory-creation)
 - [Config Data Classes](#config-data-classes)
 - [Config Versioning and Migration](#config-versioning-and-migration)
-- [Auto-Save Timers](#auto-save-timers)
-- [Common Mistakes](#common-mistakes)
+- [Auto-Uložte Timers](#auto-save-timers)
+- [Běžné Mistakes](#common-mistakes)
 - [Best Practices](#best-practices)
 
 ---
 
 ## JsonFileLoader Pattern
 
-`JsonFileLoader` is the engine's built-in serializer. It converts between Enforce Script objects and JSON files using reflection --- it reads the public fields of your class and maps them to JSON keys automatically.
+`JsonFileLoader` is engine's vestavěný serializer. It converts mezi Enforce Script objects and JSON files using reflection --- it reads the public fields of your class and maps them to JSON keys automatickýally.
 
 ### Critical Gotcha
 
-**`JsonFileLoader<T>.JsonLoadFile()` and `JsonFileLoader<T>.JsonSaveFile()` return `void`.** You cannot check their return value. You cannot assign them to a `bool`. You cannot use them in an `if` condition. This is one of the most common mistakes in DayZ modding.
+**`JsonFileLoader<T>.JsonLoadFile()` and `JsonFileLoader<T>.JsonSaveFile()` return `void`.** You cannot check their return value. You cannot assign them to a `bool`. You cannot use them in an `if` condition. This is one of the většina common mistakes in DayZ modding.
 
 ```c
 // WRONG — will not compile
@@ -94,7 +94,7 @@ class SettingsManager
 
 ### What Gets Serialized
 
-`JsonFileLoader` serializes **all public fields** of the object. It does not serialize:
+`JsonFileLoader` serializes **all public fields** of the object. It ne serialize:
 - Private or protected fields
 - Methods
 - Static fields
@@ -121,7 +121,7 @@ The resulting JSON looks like:
 | `string` | String |
 | `vector` | Array of 3 numbers |
 | `array<T>` | JSON array |
-| `map<string, T>` | JSON object (string keys only) |
+| `map<string, T>` | JSON object (string keys pouze) |
 | Nested class | Nested JSON object |
 
 ### Nested Objects
@@ -163,9 +163,9 @@ Produces:
 
 ## Manual JSON Writing (FPrintln)
 
-Sometimes `JsonFileLoader` is not flexible enough: it cannot handle arrays of mixed types, custom formatting, or non-class data structures. In those cases, use raw file I/O.
+Sometimes `JsonFileLoader` is not flexible enough: it cannot handle arrays of mixed types, vlastní formatting, or non-class data structures. In those cases, use raw file I/O.
 
-### Základní vzor
+### Basic Pattern
 
 ```c
 void WriteCustomData(string path, array<string> lines)
@@ -217,13 +217,13 @@ void ReadCustomData(string path)
 - Custom JSON formatting that `JsonFileLoader` cannot produce
 - Parsing non-JSON file formats (e.g., DayZ's `.map` or `.xml` files)
 
-For standard config files, prefer `JsonFileLoader`. It is faster to implement, less error-prone, and automatically handles nested objects.
+For standard config files, prefer `JsonFileLoader`. It is faster to implement, less error-prone, and automatickýally handles nested objects.
 
 ---
 
 ## The $profile Path
 
-DayZ provides the `$profile:` path prefix, which resolves to the server's profile directory (typically the folder containing `DayZServer_x64.exe`, or the profile path specified with `-profiles=`).
+DayZ provides the `$profile:` path prefix, which resolves to server's profile directory (typicky the folder containing `DayZServer_x64.exe`, or the profile path specified with `-profiles=`).
 
 ```c
 // These resolve to the profile directory:
@@ -231,9 +231,9 @@ DayZ provides the `$profile:` path prefix, which resolves to the server's profil
 "$profile:MyMod/Players/data.json" // → C:/DayZServer/MyMod/Players/data.json
 ```
 
-### Always Use $profile
+### Vždy Use $profile
 
-Never use absolute paths. Never use relative paths. Always use `$profile:` for any file your mod creates or reads at runtime:
+Nikdy use absolute paths. Nikdy use relative paths. Vždy use `$profile:` for jakýkoli file your mod creates or reads za běhu:
 
 ```c
 // BAD: Absolute path — breaks on any other machine
@@ -266,7 +266,7 @@ $profile:
 
 ## Directory Creation
 
-Before writing a file, you must ensure its parent directory exists. DayZ does not auto-create directories.
+Před writing a file, musíte ensure its parent directory exists. DayZ ne auto-create directories.
 
 ### MakeDirectory
 
@@ -295,7 +295,7 @@ void EnsureDirectories()
 
 ### Important: MakeDirectory Is Not Recursive
 
-`MakeDirectory` creates only the final directory in the path. If the parent does not exist, it fails silently. You must create each level:
+`MakeDirectory` creates pouze the final directory in cesta. Pokud parent ne exist, it fails tiše. You must create každý level:
 
 ```c
 // WRONG: Parent "MyMod" doesn't exist yet
@@ -307,9 +307,9 @@ MakeDirectory("$profile:MyMod/Data");
 MakeDirectory("$profile:MyMod/Data/Players");
 ```
 
-### MyMod Pattern: Constants for Paths
+### Konstanty for Paths Pattern
 
-MyMod defines all paths as constants in a dedicated class:
+A framework mod defines all paths as constants in a dedicated class:
 
 ```c
 class MyModConst
@@ -322,15 +322,15 @@ class MyModConst
 };
 ```
 
-This avoids path string duplication across the codebase and makes it easy to find every file your mod touches.
+This avoids path string duplication across the codebase and makes it easy to find každý file your mod touches.
 
 ---
 
 ## Config Data Classes
 
-A well-designed config data class provides default values, version tracking, and clear documentation of each field.
+A well-designed config data class provides výchozí values, version tracking, and clear documentation of každý field.
 
-### Základní vzor
+### Basic Pattern
 
 ```c
 class MyModConfig
@@ -360,12 +360,12 @@ class MyModConfig
 };
 ```
 
-### MyMod ConfigBase Pattern
+### Reflective ConfigBase Pattern
 
-MyMod uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
+This pattern uses a reflective config system where každý config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for jakýkoli config without hardcoded field names:
 
 ```c
-// Conceptual pattern (simplified from MyMod):
+// Conceptual pattern (reflective config):
 class MyConfigBase
 {
     // Each config declares its version
@@ -379,7 +379,7 @@ class MyConfigBase
     }
 
     // Reflection: get all configurable fields
-    array<ref MyModConfigField> GetFields();
+    array<ref MyConfigField> GetFields();
 
     // Dynamic get/set by field name (for admin panel sync)
     string GetFieldValue(string fieldName);
@@ -393,7 +393,7 @@ class MyConfigBase
 
 ### VPP ConfigurablePlugin Pattern
 
-VPP merges config management directly into the plugin lifecycle:
+VPP merges config management přímo into the plugin lifecycle:
 
 ```c
 // VPP pattern (simplified):
@@ -421,7 +421,7 @@ class VPPESPPlugin : ConfigurablePlugin
 
 ## Config Versioning and Migration
 
-As your mod evolves, config structures change. You add fields, remove fields, rename fields, change defaults. Without versioning, users with old config files will silently get wrong values or crash.
+As your mod evolves, config structures change. You add fields, remove fields, rename fields, change výchozís. Bez versioning, users with old config files will tiše get wrong values or crash.
 
 ### The Version Field
 
@@ -508,18 +508,18 @@ void MigrateConfig(MyModConfig config)
 ### Expansion's Migration Example
 
 Expansion is known for aggressive config evolution. Some Expansion configs have gone through 17+ versions. Their pattern:
-1. Each version bump has a dedicated migration function
+1. Každý version bump has a dedicated migration function
 2. Migrations run in order (1 to 2, then 2 to 3, then 3 to 4, etc.)
-3. Each migration only changes what is necessary for that version step
+3. Each migration pouze changes what is nutný for that version step
 4. The final version number is written to disk after all migrations complete
 
-This is the gold standard for config versioning in DayZ mods.
+Toto je gold standard for config versioning in DayZ mods.
 
 ---
 
-## Auto-Save Timers
+## Auto-Uložte Timers
 
-For configs that change at runtime (admin edits, player data accumulation), implement an auto-save timer to prevent data loss on crashes.
+For configs that change za běhu (admin edits, player data accumulation), implement an auto-save timer to prevent data loss on crashes.
 
 ### Timer-Based Auto-Save
 
@@ -576,9 +576,9 @@ void UpdateSetting(string key, string value)
 }
 ```
 
-### Save on Critical Events
+### Uložte on Critical Events
 
-In addition to timed saves, save immediately after critical operations:
+In addition to timed saves, save okamžitě after critical operations:
 
 ```c
 void BanPlayer(string uid, string reason)
@@ -590,7 +590,7 @@ void BanPlayer(string uid, string reason)
 
 ---
 
-## Common Mistakes
+## Časté chyby
 
 ### 1. Treating JsonLoadFile as if It Returns a Value
 
@@ -601,7 +601,7 @@ if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config)) { ... }
 
 `JsonLoadFile` returns `void`. Call it, then check the object's state.
 
-### 2. Not Checking FileExist Before Loading
+### 2. Not Checking FileExist Před Loading
 
 ```c
 // WRONG — crashes or produces empty object with no diagnostic
@@ -616,13 +616,13 @@ if (!FileExist("$profile:MyMod/Config.json"))
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 ```
 
-### 3. Forgetting to Create Directories
+### 3. Forgetting to Vytvořte Directories
 
-`JsonSaveFile` fails silently if the directory does not exist. Always ensure directories before saving.
+`JsonSaveFile` fails tiše if the directory ne exist. Vždy ensure directories before saving.
 
 ### 4. Public Fields You Did Not Intend to Serialize
 
-Every `public` field on a config class ends up in the JSON. If you have runtime-only fields, make them `protected` or `private`:
+Every `public` field on a config class ends up in the JSON. Pokud have runtime-only fields, make them `protected` or `private`:
 
 ```c
 class MyConfig
@@ -639,7 +639,7 @@ class MyConfig
 
 ### 5. Backslash and Quote Characters in JSON Values
 
-Enforce Script's CParser has trouble with `\\` and `\"` in string literals. Avoid storing file paths with backslashes in configs. Use forward slashes:
+Enforce Script's CParser has trouble with `\\` and `\"` in string literals. Vyhněte se storing file paths with backslashes in configs. Use forward slashes:
 
 ```c
 // BAD — backslashes may break parsing
@@ -651,28 +651,48 @@ string LogPath = "$profile:MyMod/Logs/server.log";
 
 ---
 
-## Best Practices
+## Osvědčené postupy
 
-1. **Use `$profile:` for all file paths.** Never hardcode absolute paths.
+1. **Use `$profile:` for all file paths.** Nikdy hardcode absolute paths.
 
-2. **Create directories before writing files.** Check with `FileExist()`, create with `MakeDirectory()`, one level at a time.
+2. **Vytvořte directories before writing files.** Zkontrolujte with `FileExist()`, create with `MakeDirectory()`, one level at a time.
 
-3. **Always provide default values in your config class constructor or field initializers.** This ensures first-run configs are sensible.
+3. **Vždy provide výchozí values in your config class constructor or field initializers.** This ensures first-run configs are sensible.
 
 4. **Version your configs from day one.** Adding a `ConfigVersion` field costs nothing and saves hours of debugging later.
 
 5. **Separate config data classes from manager classes.** The data class is a dumb container; the manager handles load/save/sync logic.
 
-6. **Use auto-save with a dirty flag.** Do not write to disk every time a value changes --- batch writes on a timer.
+6. **Use auto-save with a dirty flag.** Do not write to disk každý time a value changes --- batch writes on a timer.
 
-7. **Save on mission finish.** The auto-save timer is a safety net, not the primary save. Always save during `OnMissionFinish()`.
+7. **Uložte on mission finish.** The auto-save timer is a safety net, not the primary save. Vždy save during `OnMissionFinish()`.
 
 8. **Define path constants in one place.** A `MyModConst` class with all paths prevents string duplication and makes path changes trivial.
 
 9. **Log load/save operations.** When debugging config issues, a log line saying "Loaded config v3 from $profile:MyMod/Config.json" is invaluable.
 
-10. **Test with a deleted config file.** Your mod should handle first-run gracefully: create directories, write defaults, log what it did.
+10. **Testujte with a deleted config file.** Your mod should handle first-run gracefully: create directories, write výchozís, log what it did.
 
 ---
 
-[<< Předchozí: RPC Patterns](03-rpc-patterns.md) | [Domů](../README.md) | [Další: Permission Systems >>](05-permissions.md)
+## Kompatibilita a dopad
+
+- **Více modů:** Each mod writes to its own `$profile:ModName/` directory. Conflicts pouze happen if two mods use the stejný directory name. Use a unique, recognizable prefix for your mod's folder.
+- **Pořadí načítání:** Config loading happens in `OnInit` or `OnMissionStart`, both controlled by the mod's own lifecycle. No cross-mod load-order issues unless two mods try to read/write the same file (which they should never do).
+- **Listen Server:** Config files are server-side pouze (`$profile:` resolves on server). On listen servers, client-side code can technically access `$profile:`, but configs should pouze be loaded by server modules to avoid ambiguity.
+- **Výkon:** `JsonFileLoader` is synchronous and blocks the main thread. For large configs (100+ KB), load during `OnInit` (before gameplay starts). Auto-save timers prevent repeated writes; the dirty-flag pattern ensures disk I/O pouze happens when data has actually changed.
+- **Migration:** Adding nový fields to a config class is safe --- `JsonFileLoader` ignores chybějící JSON keys and leaves třída výchozí value. Removing or renaming fields requires a versioned migration step to avoid silent data loss.
+
+---
+
+## Teorie vs praxe
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use async file I/O to avoid blocking | Enforce Script has no async file I/O; all reads/writes are synchronous. Načtěte při startu, save on timers. |
+| Validate JSON with a schema | No JSON schema platnýation exists; platnýate fields in `OnAfterLoad()` or with guard clauses after loading. |
+| Use a database for structured data | No database access from Enforce Script; JSON files in `$profile:` are the pouze persistence mechanism. |
+
+---
+
+[Domů](../../README.md) | [<< Předchozí: Vzory RPC](03-rpc-patterns.md) | **Perzistence konfigurace** | [Další: Permission Systems >>](05-permissions.md)

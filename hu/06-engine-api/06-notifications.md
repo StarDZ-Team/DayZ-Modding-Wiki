@@ -1,48 +1,48 @@
-# Chapter 6.6: Notification System
+# 6.6. fejezet: Értesítési rendszer
 
-[Home](../../README.md) | [<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
+[Kezdőlap](../../README.md) | [<< Előző: Utófeldolgozási effektek](05-ppe.md) | **Értesítések** | [Következő: Időzítők és CallQueue >>](07-timers.md)
 
 ---
 
-## Bevezetes
+## Bevezetés
 
-DayZ includes a built-in notification system for displaying toast-style popup messages to players. The `NotificationSystem` class provides static methods for sending notifications both locally (client-side) and from server to client via RPC. This chapter covers the full API for sending, customizing, and managing notifications.
+A DayZ beépített értesítési rendszerrel rendelkezik, amely toast-stílusú felugró üzeneteket jelenít meg a játékosoknak. A `NotificationSystem` osztály statikus metódusokat biztosít értesítések küldéséhez helyben (kliens oldalon) és szerverről kliensre RPC-n keresztül. Ez a fejezet az értesítések küldésének, testreszabásának és kezelésének teljes API-ját tárgyalja.
 
 ---
 
 ## NotificationSystem
 
-**File:** `3_Game/client/notifications/notificationsystem.c` (320 lines)
+**Fájl:** `3_Game/client/notifications/notificationsystem.c` (320 sor)
 
-A static class that manages the notification queue. Ertesitesek appear as small popup cards at the top of the screen, stacked vertically, and fade out after their display time expires.
+Statikus osztály, amely az értesítési sort kezeli. Az értesítések kis felugró kártyaként jelennek meg a képernyő tetején, függőlegesen egymásra rakva, és a megjelenítési idő lejárta után elhalványulnak.
 
-### Constants
+### Konstansok
 
 ```c
-const int   DEFAULT_TIME_DISPLAYED = 10;    // Default display time in seconds
-const float NOTIFICATION_FADE_TIME = 3.0;   // Fade-out duration in seconds
-static const int MAX_NOTIFICATIONS = 5;     // Maximum visible notifications
+const int   DEFAULT_TIME_DISPLAYED = 10;    // Alapértelmezett megjelenítési idő másodpercben
+const float NOTIFICATION_FADE_TIME = 3.0;   // Elhalványulási időtartam másodpercben
+static const int MAX_NOTIFICATIONS = 5;     // Maximum látható értesítések száma
 ```
 
 ---
 
-## Server-to-Client Ertesitesek
+## Szerver-kliens értesítések
 
-These methods are called on the server. They send an RPC to the target player's client, which displays the notification locally.
+Ezeket a metódusokat a szerveren hívjuk meg. RPC-t küldenek a céljátékos kliensének, amely helyileg megjeleníti az értesítést.
 
 ### SendNotificationToPlayerExtended
 
 ```c
 static void SendNotificationToPlayerExtended(
-    Man player,            // Target player (Man or PlayerBase)
-    float show_time,       // Display duration in seconds
-    string title_text,     // Notification title
-    string detail_text = "",  // Optional body text
-    string icon = ""       // Optional icon path (e.g., "set:dayz_gui image:icon_info")
+    Man player,            // Céljátékos (Man vagy PlayerBase)
+    float show_time,       // Megjelenítés időtartama másodpercben
+    string title_text,     // Értesítés címe
+    string detail_text = "",  // Opcionális szövegtörzs
+    string icon = ""       // Opcionális ikon útvonal (pl. "set:dayz_gui image:icon_info")
 );
 ```
 
-**Example --- notify a specific player:**
+**Példa --- egy adott játékos értesítése:**
 
 ```c
 void NotifyPlayer(PlayerBase player, string message)
@@ -52,10 +52,10 @@ void NotifyPlayer(PlayerBase player, string message)
 
     NotificationSystem.SendNotificationToPlayerExtended(
         player,
-        8.0,                   // Show for 8 seconds
-        "Server Notice",       // Title
-        message,               // Body
-        ""                     // Default icon
+        8.0,                   // Megjelenítés 8 másodpercig
+        "Server Notice",       // Cím
+        message,               // Szövegtörzs
+        ""                     // Alapértelmezett ikon
     );
 }
 ```
@@ -64,7 +64,7 @@ void NotifyPlayer(PlayerBase player, string message)
 
 ```c
 static void SendNotificationToPlayerIdentityExtended(
-    PlayerIdentity player,   // Target identity (null = broadcast to ALL players)
+    PlayerIdentity player,   // Célidentitás (null = közvetítés MINDEN játékosnak)
     float show_time,
     string title_text,
     string detail_text = "",
@@ -72,7 +72,7 @@ static void SendNotificationToPlayerIdentityExtended(
 );
 ```
 
-**Example --- broadcast to all players:**
+**Példa --- közvetítés minden játékosnak:**
 
 ```c
 void BroadcastNotification(string title, string message)
@@ -81,8 +81,8 @@ void BroadcastNotification(string title, string message)
         return;
 
     NotificationSystem.SendNotificationToPlayerIdentityExtended(
-        null,                  // null = all connected players
-        10.0,                  // Show for 10 seconds
+        null,                  // null = minden csatlakozott játékos
+        10.0,                  // Megjelenítés 10 másodpercig
         title,
         message,
         ""
@@ -90,24 +90,24 @@ void BroadcastNotification(string title, string message)
 }
 ```
 
-### SendNotificationToPlayer (Typed)
+### SendNotificationToPlayer (típusos)
 
 ```c
 static void SendNotificationToPlayer(
     Man player,
-    NotificationType type,    // Predefined notification type
+    NotificationType type,    // Előre definiált értesítés típus
     float show_time,
     string detail_text = ""
 );
 ```
 
-This variant uses predefined `NotificationType` enum values that map to built-in titles and icons. The `detail_text` is appended as the body.
+Ez a változat előre definiált `NotificationType` enum értékeket használ, amelyek beépített címekhez és ikonokhoz rendelődnek. A `detail_text` szövegtörzsként jelenik meg.
 
 ---
 
-## Client-Side (Local) Ertesitesek
+## Kliens oldali (helyi) értesítések
 
-These methods display notifications only on the local client. They do not involve any networking.
+Ezek a metódusok csak a helyi kliensen jelenítenek meg értesítéseket. Nem igényelnek hálózati kommunikációt.
 
 ### AddNotificationExtended
 
@@ -120,7 +120,7 @@ static void AddNotificationExtended(
 );
 ```
 
-**Example --- local notification on client:**
+**Példa --- helyi értesítés a kliensen:**
 
 ```c
 void ShowLocalNotification(string title, string body)
@@ -137,7 +137,7 @@ void ShowLocalNotification(string title, string body)
 }
 ```
 
-### AddNotification (Typed)
+### AddNotification (típusos)
 
 ```c
 static void AddNotification(
@@ -147,62 +147,62 @@ static void AddNotification(
 );
 ```
 
-Uses a predefined `NotificationType` for the title and icon.
+Előre definiált `NotificationType` értéket használ a címhez és ikonhoz.
 
 ---
 
-## NotificationType Enum
+## NotificationType felsorolás
 
-The vanilla game defines notification types with associated titles and icons. Common values:
+A vanilla játék előre definiált értesítés típusokat tartalmaz társított címekkel és ikonokkal. Gyakori értékek:
 
-| Tipus | Leiras |
-|------|-------------|
-| `NotificationType.GENERIC` | Generic notification |
-| `NotificationType.FRIENDLY_FIRE` | Friendly fire warning |
-| `NotificationType.JOIN` | Player join |
-| `NotificationType.LEAVE` | Player leave |
-| `NotificationType.STATUS` | Status update |
+| Típus | Leírás |
+|-------|--------|
+| `NotificationType.GENERIC` | Általános értesítés |
+| `NotificationType.FRIENDLY_FIRE` | Baráti tűz figyelmeztetés |
+| `NotificationType.JOIN` | Játékos csatlakozás |
+| `NotificationType.LEAVE` | Játékos kilépés |
+| `NotificationType.STATUS` | Állapotfrissítés |
 
-> **Megjegyzes:** The available types depend on the game version. For maximum flexibility, use the `Extended` variants which accept custom title and icon strings.
+> **Megjegyzés:** Az elérhető típusok a játék verziójától függenek. A maximális rugalmasság érdekében használd az `Extended` változatokat, amelyek egyéni cím és ikon sztringeket fogadnak.
 
 ---
 
-## Icon Paths
+## Ikon útvonalak
 
-Icons use the DayZ image set syntax:
+Az ikonok a DayZ képkészlet szintaxist használják:
 
 ```
 "set:dayz_gui image:icon_name"
 ```
 
-Common icon names:
+Gyakori ikonnevek:
 
-| Icon | Set Path |
-|------|----------|
-| Info | `"set:dayz_gui image:icon_info"` |
-| Warning | `"set:dayz_gui image:icon_warning"` |
-| Skull | `"set:dayz_gui image:icon_skull"` |
+| Ikon | Készlet útvonal |
+|------|----------------|
+| Információ | `"set:dayz_gui image:icon_info"` |
+| Figyelmeztetés | `"set:dayz_gui image:icon_warning"` |
+| Koponya | `"set:dayz_gui image:icon_skull"` |
 
-You can also pass a direct path to an `.edds` image file:
+Megadhatsz közvetlen útvonalat egy `.edds` képfájlhoz is:
 
 ```c
 "MyMod/GUI/notification_icon.edds"
 ```
 
-Or pass an empty string `""` for no icon.
+Vagy adj át üres sztringet `""` ikon nélkül.
 
 ---
 
-## Esemenyek
+## Események
 
-The `NotificationSystem` exposes script invokers for reacting to notification lifecycle:
+A `NotificationSystem` szkript invokereket tesz elérhetővé az értesítés életciklusára való reagáláshoz:
 
 ```c
 ref ScriptInvoker m_OnNotificationAdded;
 ref ScriptInvoker m_OnNotificationRemoved;
 ```
 
-**Example --- react to notifications:**
+**Példa --- reagálás értesítésekre:**
 
 ```c
 void Init()
@@ -228,24 +228,24 @@ void OnNotifRemoved()
 
 ---
 
-## Update Loop
+## Frissítési ciklus
 
-The notification system must be ticked each frame to handle fade-in/fade-out animations and removal of expired notifications:
+Az értesítési rendszert minden képkockában frissíteni kell a belépési/kilépési animációk kezeléséhez és a lejárt értesítések eltávolításához:
 
 ```c
 static void Update(float timeslice);
 ```
 
-This is called automatically by the vanilla mission's `OnUpdate` method. If you are writing a completely custom mission, make sure to call it.
+Ezt automatikusan a vanilla misszió `OnUpdate` metódusa hívja. Ha teljesen egyéni missziót írsz, győződj meg róla, hogy meghívod.
 
 ---
 
-## Complete Server-to-Client Example
+## Teljes szerver-kliens példa
 
-A typical mod pattern for sending notifications from server code:
+Tipikus mod minta értesítések küldéséhez szerver kódból:
 
 ```c
-// Server-side: in a mission event handler or module
+// Szerver oldali: misszió eseménykezelőben vagy modulban
 class MyServerModule
 {
     void OnMissionStarted(string missionName, vector location)
@@ -253,7 +253,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Broadcast to all players
+        // Közvetítés minden játékosnak
         string title = "Mission Started!";
         string body = string.Format("Go to %1!", missionName);
 
@@ -271,7 +271,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Notify just this player
+        // Csak ennek a játékosnak értesítés
         NotificationSystem.SendNotificationToPlayerExtended(
             player,
             5.0,
@@ -285,12 +285,12 @@ class MyServerModule
 
 ---
 
-## CommunityFramework (CF) Alternative
+## CommunityFramework (CF) alternatíva
 
-If you use CommunityFramework, it provides its own notification API:
+Ha CommunityFramework-öt használsz, az saját értesítési API-t biztosít:
 
 ```c
-// CF notification (different RPC internally)
+// CF értesítés (belsőleg eltérő RPC)
 NotificationSystem.Create(
     new StringLocaliser("Title"),
     new StringLocaliser("Body with param: %1", someValue),
@@ -301,23 +301,41 @@ NotificationSystem.Create(
 );
 ```
 
-The CF API adds color and localization support. Use whichever system your mod stack requires --- they are functionally similar but use different internal RPCs.
+A CF API szín és lokalizáció támogatást ad hozzá. Használd azt a rendszert, amelyet a mod készleted igényel --- funkcionálisan hasonlóak, de eltérő belső RPC-ket használnak.
 
 ---
 
-## Osszefoglalas
+## Összefoglalás
 
-| Fogalom | Kulcspont |
-|---------|-----------|
-| Server to player | `SendNotificationToPlayerExtended(player, time, title, text, icon)` |
-| Server to all | `SendNotificationToPlayerIdentityExtended(null, time, title, text, icon)` |
-| Client local | `AddNotificationExtended(time, title, text, icon)` |
-| Typed | `SendNotificationToPlayer(player, NotificationType, time, text)` |
-| Max visible | 5 notifications stacked |
-| Default time | 10 seconds display, 3 seconds fade |
-| Icons | `"set:dayz_gui image:icon_name"` or direct `.edds` path |
-| Esemenyek | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
+| Fogalom | Lényeg |
+|---------|--------|
+| Szerver játékosnak | `SendNotificationToPlayerExtended(player, idő, cím, szöveg, ikon)` |
+| Szerver mindenkinek | `SendNotificationToPlayerIdentityExtended(null, idő, cím, szöveg, ikon)` |
+| Kliens helyi | `AddNotificationExtended(idő, cím, szöveg, ikon)` |
+| Típusos | `SendNotificationToPlayer(player, NotificationType, idő, szöveg)` |
+| Max látható | 5 értesítés egymásra rakva |
+| Alapértelmezett idő | 10 másodperc megjelenítés, 3 másodperc elhalványulás |
+| Ikonok | `"set:dayz_gui image:ikon_név"` vagy közvetlen `.edds` útvonal |
+| Események | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
 
 ---
 
-[<< Elozo: Post-Process Effects](05-ppe.md) | **Ertesitesek** | [Kovetkezo: Idozitok & CallQueue >>](07-timers.md)
+## Bevált gyakorlatok
+
+- **Használd az `Extended` változatokat egyéni értesítésekhez.** A `SendNotificationToPlayerExtended` teljes kontrollt ad a cím, szövegtörzs és ikon felett. A típusos `NotificationType` változatok a vanilla előbeállításokra korlátozódnak.
+- **Tartsd tiszteletben az 5 értesítéses verem korlátot.** Sok értesítés gyors egymásutánban való küldése kinyomja a régebbieket a képernyőről, mielőtt a játékosok el tudnák olvasni. Csoportosítsd a kapcsolódó üzeneteket vagy használj hosszabb megjelenítési időt.
+- **Mindig védd a szerver értesítéseket `GetGame().IsServer()` ellenőrzéssel.** A `SendNotificationToPlayerExtended` hívása a kliensen nem fejt ki hatást, és felesleges metódushívást jelent.
+- **Adj meg `null`-t identitásként valódi közvetítésekhez.** A `SendNotificationToPlayerIdentityExtended(null, ...)` minden csatlakozott játékosnak kézbesít. Ne iterálj manuálisan a játékosokon, hogy ugyanazt az üzenetet küldd.
+- **Tartsd az értesítési szövegeket tömörnek.** A felugró toast korlátozott megjelenítési szélességgel rendelkezik. A hosszú címek vagy szövegtörzsek levágásra kerülnek. Célozz meg 30 karakternél rövidebb címeket és 80 karakternél rövidebb szövegtörzset.
+
+---
+
+## Kompatibilitás és hatás
+
+- **Több mod együtt:** A vanilla `NotificationSystem`-et minden mod közösen használja. Több mod egyidejű értesítés küldése túlcsordultathatja az 5 értesítéses vermet. A CF külön értesítési csatornát biztosít, amely nem ütközik a vanilla értesítésekkel.
+- **Teljesítmény:** Az értesítések könnyűek (egyetlen RPC értesítésenként). Azonban a néhány másodpercenkénti közvetítés minden játékosnak mérhető hálózati forgalmat generál 60+ játékosos szervereken.
+- **Szerver/Kliens:** A `SendNotificationToPlayer*` metódusok szerver-kliens RPC-k. Az `AddNotificationExtended` csak kliens oldali (helyi). Az `Update()` frissítés a kliens misszió ciklusában fut.
+
+---
+
+[<< Előző: Utófeldolgozási effektek](05-ppe.md) | **Értesítések** | [Következő: Időzítők és CallQueue >>](07-timers.md)

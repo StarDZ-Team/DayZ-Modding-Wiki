@@ -1,10 +1,10 @@
-# Chapter 4.3: Materials (.rvmat)
+# Capítulo 4.3: Materials (.rvmat)
 
-[Home](../../README.md) | [<< Previous: 3D Models](02-models.md) | **Materials** | [Next: Audio >>](04-audio.md)
+[Inicio](../../README.md) | [<< Anterior: 3D Models](02-models.md) | **Materials** | [Siguiente: Audio >>](04-audio.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 A material in DayZ is the bridge between a 3D model and its visual appearance. While textures provide raw image data, the **RVMAT** (Real Virtuality Material) file defines how those textures are combined, which shader interprets them, and what surface properties the engine should simulate -- shininess, transparency, self-illumination, and more. Every face on every P3D model in the game references an RVMAT file, and understanding how to create and configure them is essential for any visual mod.
 
@@ -28,7 +28,7 @@ This chapter covers the RVMAT file format, shader types, texture stage configura
 
 ---
 
-## RVMAT Format Vision General
+## RVMAT Format Overview
 
 An **RVMAT** file is a text-based configuration file (not binary) that defines a material. Despite the custom extension, the format is plain text using Bohemia's config-style syntax with classes and key-value pairs.
 
@@ -56,7 +56,7 @@ MyMod/
 
 ---
 
-## Estructura del Archivo
+## File Structure
 
 An RVMAT file has a consistent structure. Here is a complete, annotated example:
 
@@ -114,7 +114,7 @@ class Stage3                               // Texture stage: Specular/Metallic m
 
 These are declared before the Stage classes and control the material's overall behavior:
 
-| Propiedad | Tipo | Descripcion |
+| Propiedad | Tipo | Descripción |
 |----------|------|-------------|
 | `ambient[]` | float[4] | Ambient light color multiplier. `{1,1,1,1}` = full, `{0,0,0,0}` = no ambient. |
 | `diffuse[]` | float[4] | Diffuse light color multiplier. Usually `{1,1,1,1}`. |
@@ -133,7 +133,7 @@ The `PixelShaderID` and `VertexShaderID` values determine which rendering pipeli
 
 ### Available Shaders
 
-| Shader | Caso de Uso | Texture Stages Required |
+| Shader | Use Case | Texture Stages Required |
 |--------|----------|------------------------|
 | **Super** | Standard opaque surfaces (weapons, clothing, items) | Normal, Diffuse, Specular/Metallic |
 | **Multi** | Multi-layered terrain and complex surfaces | Multiple diffuse/normal pairs |
@@ -190,7 +190,7 @@ Each `Stage` class in the RVMAT assigns a texture to a specific shader input. Th
 
 ### Stage Assignments for the Super Shader
 
-| Stage | Texture Role | Typical Suffix | Descripcion |
+| Stage | Texture Role | Typical Suffix | Descripción |
 |-------|-------------|----------------|-------------|
 | **Stage1** | Normal map | `_nohq` | Surface detail, bumps, grooves |
 | **Stage2** | Diffuse / Color map | `_co` or `_ca` | Base color of the surface |
@@ -317,7 +317,7 @@ A typical damage progression:
 | **Badly Damaged** | 0.3 | Heavy wear, rust, cracks, peeling paint |
 | **Ruined** | 0.0 | Severely degraded, broken appearance |
 
-### Creating Damage Materiales
+### Creating Damage Materials
 
 For each damage level, create a separate RVMAT that references progressively more damaged textures:
 
@@ -330,7 +330,7 @@ data/
   my_item_ruined.rvmat             --> my_item_ruined_co.paa (destroyed)
 ```
 
-> **Tip:** You do not always need unique textures for every damage level. A common optimization is to share the normal and specular maps across all levels and only change the diffuse texture:
+> **Consejo:** You do not always need unique textures for every damage level. A common optimization is to share the normal and specular maps across all levels and only change the diffuse texture:
 >
 > ```
 > my_item.rvmat           --> my_item_co.paa
@@ -339,7 +339,7 @@ data/
 > my_item_ruined.rvmat    --> my_item_ruined_co.paa
 > ```
 
-### Using Vanilla Damage Materiales
+### Using Vanilla Damage Materials
 
 DayZ provides a set of generic damage overlay materials that can be used if you do not want to create custom damage textures:
 
@@ -356,7 +356,7 @@ healthLevels[] =
 
 ---
 
-## How Materiales Reference Texturas
+## How Materials Reference Textures
 
 The connection between models, materials, and textures forms a chain:
 
@@ -389,7 +389,7 @@ Internal path: data\textures\my_item_co.paa
 Full reference: MyMod\data\textures\my_item_co.paa
 ```
 
-### hiddenSelectionsMateriales Override
+### hiddenSelectionsMaterials Override
 
 Config.cpp can override which material is applied to a named selection at runtime:
 
@@ -599,7 +599,7 @@ VertexShaderID = "Super";
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Start from a working example.** Copy an RVMAT from DayZ-Samples or a vanilla item and modify it. Starting from scratch invites typos.
 
@@ -615,7 +615,25 @@ VertexShaderID = "Super";
 
 ---
 
-## Navegacion
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Shared damage RVMAT across all items | Expansion (multiple modules) | Reuses a common set of damage-level RVMATs (`worn`, `damaged`, `ruined`) instead of per-item variants to reduce file count |
+| Emissive materials for screen glow | COT (Admin Tools) | Uses `emmisive[]` values in RVMAT for tablet/device screen effects visible at night |
+| Glass shader for vehicle windows | DayZ-Samples (Test_Vehicle) | Demonstrates `PixelShaderID = "Glass"` with `_ca` textures for transparent windshield panels |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** RVMAT paths are per-PBO and do not collide across mods. However, `hiddenSelectionsMaterials[]` overrides in config.cpp follow last-loaded-wins priority, so two mods overriding the same vanilla item's material will conflict.
+- **Performance:** Each unique RVMAT referenced on a single P3D model creates a separate draw call. Consolidating faces under fewer materials reduces GPU overhead, especially for complex scenes.
+- **Version:** The RVMAT text format and shader names (Super, Glass, AlphaTest) have been stable since DayZ 1.0. No structural changes have been introduced in recent updates.
+
+---
+
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|

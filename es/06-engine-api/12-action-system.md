@@ -1,12 +1,12 @@
-# Chapter 6.12: Action System
+# Capítulo 6.12: Sistema de Acciones
 
-[Home](../../README.md) | [<< Previous: Mission Hooks](11-mission-hooks.md) | **Action System** | [Next: Input System >>](13-input-system.md)
+[Inicio](../../README.md) | [<< Anterior: Mission Hooks](11-mission-hooks.md) | **Action System** | [Siguiente: Input System >>](13-input-system.md)
 
 ---
 
-## Introduccion
+## Introducción
 
-El Sistema de Acciones es como DayZ maneja todas las interacciones del jugador con items y el mundo. Cada vez que un jugador come comida, abre una puerta, venda una herida, repara un muro o enciende una linterna, el motor ejecuta el pipeline de acciones. Understanding this pipeline --- from condition checks to animation callbacks to server execution --- is fundamental to creating any interactive gameplay mod.
+The Action System is how DayZ handles all player interactions with items and the world. Every time a player eats food, opens a door, bandages a wound, repairs a wall, or turns on a flashlight, the engine runs through the action pipeline. Understanding this pipeline --- from condition checks to animation callbacks to server execution --- is fundamental to creating any interactive gameplay mod.
 
 The system lives primarily in `4_World/classes/useractionscomponent/` and is built around three pillars:
 
@@ -14,11 +14,11 @@ The system lives primarily in `4_World/classes/useractionscomponent/` and is bui
 2. **Condition components** that gate when an action can appear (distance, item state, target type)
 3. **Action components** that control how the action progresses (time, quantity, repeating cycles)
 
-Este capitulo cubre the full API, class hierarchy, lifecycle, and practical patterns for creating custom actions.
+This chapter covers the full API, class hierarchy, lifecycle, and practical patterns for creating custom actions.
 
 ---
 
-## Jerarquia de Clases
+## Class Hierarchy
 
 ```
 ActionBase_Basic                         // 3_Game — empty shell, compilation anchor
@@ -83,27 +83,27 @@ classDiagram
     }
 ```
 
-### Diferencias Clave Entre Tipos de Accion
+### Key Differences Between Action Types
 
-| Property | SingleUse | Continuous | Interact |
+| Propiedad | SingleUse | Continuous | Interact |
 |----------|-----------|------------|----------|
 | Category constant | `AC_SINGLE_USE` | `AC_CONTINUOUS` | `AC_INTERACT` |
 | Input type | `DefaultActionInput` | `ContinuousDefaultActionInput` | `InteractActionInput` |
 | Progress bar | No | Yes | No |
 | Uses main item | Yes | Yes | No (default) |
 | Has target | Varies | Varies | Yes (default) |
-| Uso tipico | Eat pill, toggle flashlight | Bandage, repair, eat food | Open door, turn on generator |
+| Typical use | Eat pill, toggle flashlight | Bandage, repair, eat food | Open door, turn on generator |
 | Callback class | `ActionSingleUseBaseCB` | `ActionContinuousBaseCB` | `ActionInteractBaseCB` |
 
 ---
 
-## Ciclo de Vida de la Accion
+## Action Lifecycle
 
-### Constantes de Estado
+### State Constants
 
 The action state machine uses these constants defined in `3_Game/constants.c`:
 
-| Constante | Valor | Significado |
+| Constante | Valor | Meaning |
 |----------|-------|---------|
 | `UA_NONE` | 0 | No action running |
 | `UA_PROCESSING` | 2 | Action in progress |
@@ -116,7 +116,7 @@ The action state machine uses these constants defined in `3_Game/constants.c`:
 | `UA_IN_START` | 17 | Animation loop start event |
 | `UA_IN_END` | 18 | Animation loop end event |
 
-### Flujo de Accion SingleUse
+### SingleUse Action Flow
 
 ```mermaid
 flowchart TD
@@ -134,7 +134,7 @@ flowchart TD
     K --> L
 ```
 
-### Flujo de Accion Continua
+### Continuous Action Flow
 
 ```mermaid
 flowchart TD
@@ -159,7 +159,7 @@ flowchart TD
     R --> O
 ```
 
-### Flujo de Accion de Interaccion
+### Interact Action Flow
 
 ```mermaid
 flowchart TD
@@ -174,11 +174,11 @@ flowchart TD
     I --> J[OnEnd / OnEndServer / OnEndClient]
 ```
 
-### Referencia de Metodos del Ciclo de Vida
+### Lifecycle Methods Reference
 
 These methods are called in order during an action's lifetime. Override them in your custom actions:
 
-| Metodo | Llamado en | Proposito |
+| Método | Called on | Propósito |
 |--------|-----------|---------|
 | `CreateConditionComponents()` | Both | Set `m_ConditionItem` and `m_ConditionTarget` |
 | `ActionCondition()` | Both | Custom validation (distance, state, type checks) |
@@ -250,7 +250,7 @@ class MyCustomAction : ActionContinuousBase
 
 The `ActionTarget` class represents what the player is aiming at:
 
-**File:** `4_World/classes/useractionscomponent/actiontargets.c`
+**Archivo:** `4_World/classes/useractionscomponent/actiontargets.c`
 
 ```c
 class ActionTarget
@@ -264,7 +264,7 @@ class ActionTarget
 }
 ```
 
-### Como se Seleccionan los Objetivos
+### How Targets Are Selected
 
 The `ActionTargets` class runs each frame on the client, gathering potential targets:
 
@@ -276,17 +276,17 @@ The `ActionTargets` class runs each frame on the client, gathering potential tar
 
 ---
 
-## Componentes de Condicion
+## Condition Components
 
 Every action has two condition components set in `CreateConditionComponents()`. These are checked **before** `ActionCondition()` and determine whether the action can appear in the player's HUD at all.
 
-### Condiciones de Item (CCIBase)
+### Item Conditions (CCIBase)
 
 Controls whether the item in the player's hand qualifies for this action.
 
-**File:** `4_World/classes/useractionscomponent/itemconditioncomponents/`
+**Archivo:** `4_World/classes/useractionscomponent/itemconditioncomponents/`
 
-| Class | Comportamiento |
+| Clase | Behavior |
 |-------|----------|
 | `CCINone` | Always passes --- no item requirement |
 | `CCIDummy` | Passes if item is not null (item must exist) |
@@ -318,13 +318,13 @@ class CCINonRuined : CCIBase
 }
 ```
 
-### Condiciones de Objetivo (CCTBase)
+### Target Conditions (CCTBase)
 
 Controls whether the target object (what the player is looking at) qualifies.
 
-**File:** `4_World/classes/useractionscomponent/targetconditionscomponents/`
+**Archivo:** `4_World/classes/useractionscomponent/targetconditionscomponents/`
 
-| Class | Constructor | Comportamiento |
+| Clase | Constructor | Behavior |
 |-------|-------------|----------|
 | `CCTNone` | `CCTNone()` | Always passes --- no target needed |
 | `CCTDummy` | `CCTDummy()` | Passes if target object exists |
@@ -363,11 +363,11 @@ class CCTObject : CCTBase
 }
 ```
 
-### Constantes de Distancia
+### Distance Constants
 
-**File:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
+**Archivo:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
 
-| Constante | Value (meters) | Uso tipico |
+| Constante | Value (meters) | Typical use |
 |----------|---------------|-------------|
 | `UAMaxDistances.SMALL` | 1.3 | Close interactions, ladders |
 | `UAMaxDistances.DEFAULT` | 2.0 | Standard actions |
@@ -378,11 +378,11 @@ class CCTObject : CCTBase
 
 ---
 
-## Registrar Acciones en Items
+## Registering Actions on Items
 
 Actions are registered on entities through the `SetActions()` / `AddAction()` / `RemoveAction()` pattern. The engine calls `GetActions()` on an entity to retrieve its action list; the first time this happens, `InitializeActions()` builds the map via `SetActions()`.
 
-### En ItemBase (Items de Inventario)
+### On ItemBase (Inventory Items)
 
 The most common pattern. Override `SetActions()` in a `modded class`:
 
@@ -411,7 +411,7 @@ modded class Bandage_Basic extends ItemBase
 }
 ```
 
-### En BuildingBase (Edificios del Mundo)
+### On BuildingBase (World Buildings)
 
 Buildings use the same pattern but through `BuildingBase`:
 
@@ -428,7 +428,7 @@ class Well extends BuildingSuper
 }
 ```
 
-### En PlayerBase (Acciones del Jugador)
+### On PlayerBase (Player Actions)
 
 Player-level actions (drinking from ponds, opening doors, etc.) are registered in `PlayerBase.SetActions()`. There are two signatures:
 
@@ -458,7 +458,7 @@ void SetActionsRemoteTarget(out TInputActionMap InputActionMap)
 }
 ```
 
-### Como Funciona Internamente el Sistema de Registro
+### How the Registration System Works Internally
 
 Each entity type maintains a static `TInputActionMap` (a `map<typename, ref array<ActionBase_Basic>>`) keyed by input type. When `AddAction()` is called:
 
@@ -473,7 +473,7 @@ This means actions are shared per **type** (class), not per instance. All items 
 
 ## Creating a Custom Action --- Step by Step
 
-### Ejemplo 1: Accion Simple de Uso Unico
+### Example 1: Simple Single-Use Action
 
 A custom action that instantly heals the player when they use a special item:
 
@@ -757,11 +757,11 @@ class ActionUnlockWithKey : ActionInteractBase
 
 Action components control _how_ the action progresses over time. They are created in the callback's `CreateActionComponent()` method.
 
-**File:** `4_World/classes/useractionscomponent/actioncomponents/`
+**Archivo:** `4_World/classes/useractionscomponent/actioncomponents/`
 
 ### Available Components
 
-| Component | Parameters | Comportamiento |
+| Componente | Parameters | Behavior |
 |-----------|------------|----------|
 | `CASingleUse` | none | Instant execution, no progress |
 | `CAInteract` | none | Instant execution for interact actions |
@@ -802,7 +802,7 @@ class MyRepeatActionCB : ActionContinuousBaseCB
 
 ### Time Constants
 
-**File:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
+**Archivo:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
 
 | Constante | Value (seconds) | Use |
 |----------|----------------|-----|
@@ -822,7 +822,7 @@ class MyRepeatActionCB : ActionContinuousBaseCB
 
 ### ActionOpenDoors (Interact)
 
-**File:** `4_World/classes/useractionscomponent/actions/interact/actionopendoors.c`
+**Archivo:** `4_World/classes/useractionscomponent/actions/interact/actionopendoors.c`
 
 ```c
 class ActionOpenDoors : ActionInteractBase
@@ -880,7 +880,7 @@ Key takeaways:
 
 ### ActionTurnOnPowerGenerator (Interact)
 
-**File:** `4_World/classes/useractionscomponent/actions/interact/actionturnonpowergenerator.c`
+**Archivo:** `4_World/classes/useractionscomponent/actions/interact/actionturnonpowergenerator.c`
 
 ```c
 class ActionTurnOnPowerGenerator : ActionInteractBase
@@ -923,7 +923,7 @@ Key takeaways:
 
 ### ActionEat (Continuous)
 
-**File:** `4_World/classes/useractionscomponent/actions/continuous/actioneat.c`
+**Archivo:** `4_World/classes/useractionscomponent/actions/continuous/actioneat.c`
 
 ```c
 class ActionEatBigCB : ActionContinuousBaseCB
@@ -966,7 +966,7 @@ Key takeaways:
 
 ---
 
-## Temas Avanzados
+## Advanced Topics
 
 ### Action Condition Masks
 
@@ -1083,9 +1083,9 @@ override bool IsLockTargetOnUse()
 
 ## Action Category Constants
 
-**File:** `4_World/classes/useractionscomponent/_constants.c`
+**Archivo:** `4_World/classes/useractionscomponent/_constants.c`
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `AC_UNCATEGORIZED` | 0 | Default --- should not be used |
 | `AC_SINGLE_USE` | 1 | Single-use actions |
@@ -1228,7 +1228,7 @@ Without this, the engine expects a target object and may not show the action, or
 
 ## File Locations Quick Reference
 
-| File | Proposito |
+| File | Propósito |
 |------|---------|
 | `4_World/classes/useractionscomponent/actionbase.c` | `ActionBase` --- core action class |
 | `4_World/classes/useractionscomponent/animatedactionbase.c` | `AnimatedActionBase` + `ActionBaseCB` |
@@ -1260,7 +1260,7 @@ The system is designed to be modular: condition components handle "can this happ
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Always call `super.SetActions()` when modding existing items.** Omitting it removes all vanilla actions (eat, drop, inspect) from the item, breaking core gameplay.
 - **Put all state-changing logic in `OnExecuteServer` or `OnFinishProgressServer`.** Health changes, item deletion, and inventory manipulation must run server-side. `OnExecuteClient` is only for visual feedback.
@@ -1272,6 +1272,6 @@ The system is designed to be modular: condition components handle "can this happ
 
 ## Compatibilidad e Impacto
 
-- **Multi-Mod:** Actions are registered per class type via `SetActions()`. Two mods adding different actions to the same item class both work -- actions accumulate. Sin embargo, if both mods override `SetActions()` without calling `super`, only the last-loaded mod's actions survive.
-- **Rendimiento:** `ActionCondition()` is evaluated every frame for every candidate action on the player's current target. Keep it lightweight -- avoid expensive raycasts, config lookups, or array iterations inside condition checks.
-- **Servidor/Cliente:** The action pipeline is split: condition checks and UI display run on the client, execution callbacks run on the server. The engine handles synchronization via internal RPCs. Never rely on client-side state for authoritative game logic.
+- **Multi-Mod:** Actions are registered per class type via `SetActions()`. Two mods adding different actions to the same item class both work -- actions accumulate. However, if both mods override `SetActions()` without calling `super`, only the last-loaded mod's actions survive.
+- **Performance:** `ActionCondition()` is evaluated every frame for every candidate action on the player's current target. Keep it lightweight -- avoid expensive raycasts, config lookups, or array iterations inside condition checks.
+- **Server/Client:** The action pipeline is split: condition checks and UI display run on the client, execution callbacks run on the server. The engine handles synchronization via internal RPCs. Never rely on client-side state for authoritative game logic.

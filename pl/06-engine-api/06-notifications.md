@@ -1,48 +1,48 @@
-# Chapter 6.6: Notification System
+# Rozdział 6.6: System powiadomień
 
-[Home](../../README.md) | [<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
+[Strona główna](../../README.md) | [<< Poprzedni: Efekty post-processingu](05-ppe.md) | **Powiadomienia** | [Następny: Liczniki czasu i CallQueue >>](07-timers.md)
 
 ---
 
 ## Wprowadzenie
 
-DayZ includes a built-in notification system for displaying toast-style popup messages to players. The `NotificationSystem` class provides static methods for sending notifications both locally (client-side) and from server to client via RPC. This chapter covers the full API for sending, customizing, and managing notifications.
+DayZ zawiera wbudowany system powiadomień do wyświetlania graczom komunikatów w stylu toast. Klasa `NotificationSystem` udostępnia metody statyczne do wysyłania powiadomień zarówno lokalnie (po stronie klienta), jak i z serwera do klienta przez RPC. Ten rozdział obejmuje pełne API do wysyłania, dostosowywania i zarządzania powiadomieniami.
 
 ---
 
 ## NotificationSystem
 
-**File:** `3_Game/client/notifications/notificationsystem.c` (320 lines)
+**Plik:** `3_Game/client/notifications/notificationsystem.c` (320 linii)
 
-A static class that manages the notification queue. Notifications appear as small popup cards at the top of the screen, stacked vertically, and fade out after their display time expires.
+Klasa statyczna zarządzająca kolejką powiadomień. Powiadomienia pojawiają się jako małe karty wyskakujące w górnej części ekranu, ułożone pionowo, i znikają po upływie czasu wyświetlania.
 
-### Stale
+### Stałe
 
 ```c
-const int   DEFAULT_TIME_DISPLAYED = 10;    // Default display time in seconds
-const float NOTIFICATION_FADE_TIME = 3.0;   // Fade-out duration in seconds
-static const int MAX_NOTIFICATIONS = 5;     // Maximum visible notifications
+const int   DEFAULT_TIME_DISPLAYED = 10;    // Domyślny czas wyświetlania w sekundach
+const float NOTIFICATION_FADE_TIME = 3.0;   // Czas zanikania w sekundach
+static const int MAX_NOTIFICATIONS = 5;     // Maksymalna liczba widocznych powiadomień
 ```
 
 ---
 
-## Server-to-Client Notifications
+## Powiadomienia z serwera do klienta
 
-These methods are called on the server. They send an RPC to the target player's client, which displays the notification locally.
+Te metody są wywoływane na serwerze. Wysyłają RPC do klienta docelowego gracza, który wyświetla powiadomienie lokalnie.
 
 ### SendNotificationToPlayerExtended
 
 ```c
 static void SendNotificationToPlayerExtended(
-    Man player,            // Target player (Man or PlayerBase)
-    float show_time,       // Display duration in seconds
-    string title_text,     // Notification title
-    string detail_text = "",  // Optional body text
-    string icon = ""       // Optional icon path (e.g., "set:dayz_gui image:icon_info")
+    Man player,            // Docelowy gracz (Man lub PlayerBase)
+    float show_time,       // Czas wyświetlania w sekundach
+    string title_text,     // Tytuł powiadomienia
+    string detail_text = "",  // Opcjonalny tekst treści
+    string icon = ""       // Opcjonalna ścieżka ikony (np. "set:dayz_gui image:icon_info")
 );
 ```
 
-**Example --- notify a specific player:**
+**Przykład --- powiadomienie konkretnego gracza:**
 
 ```c
 void NotifyPlayer(PlayerBase player, string message)
@@ -52,10 +52,10 @@ void NotifyPlayer(PlayerBase player, string message)
 
     NotificationSystem.SendNotificationToPlayerExtended(
         player,
-        8.0,                   // Show for 8 seconds
-        "Server Notice",       // Title
-        message,               // Body
-        ""                     // Default icon
+        8.0,                   // Pokaż na 8 sekund
+        "Server Notice",       // Tytuł
+        message,               // Treść
+        ""                     // Domyślna ikona
     );
 }
 ```
@@ -64,7 +64,7 @@ void NotifyPlayer(PlayerBase player, string message)
 
 ```c
 static void SendNotificationToPlayerIdentityExtended(
-    PlayerIdentity player,   // Target identity (null = broadcast to ALL players)
+    PlayerIdentity player,   // Docelowa tożsamość (null = broadcast do WSZYSTKICH graczy)
     float show_time,
     string title_text,
     string detail_text = "",
@@ -72,7 +72,7 @@ static void SendNotificationToPlayerIdentityExtended(
 );
 ```
 
-**Example --- broadcast to all players:**
+**Przykład --- broadcast do wszystkich graczy:**
 
 ```c
 void BroadcastNotification(string title, string message)
@@ -81,8 +81,8 @@ void BroadcastNotification(string title, string message)
         return;
 
     NotificationSystem.SendNotificationToPlayerIdentityExtended(
-        null,                  // null = all connected players
-        10.0,                  // Show for 10 seconds
+        null,                  // null = wszyscy połączeni gracze
+        10.0,                  // Pokaż na 10 sekund
         title,
         message,
         ""
@@ -90,24 +90,24 @@ void BroadcastNotification(string title, string message)
 }
 ```
 
-### SendNotificationToPlayer (Typed)
+### SendNotificationToPlayer (z typem)
 
 ```c
 static void SendNotificationToPlayer(
     Man player,
-    NotificationType type,    // Predefined notification type
+    NotificationType type,    // Predefiniowany typ powiadomienia
     float show_time,
     string detail_text = ""
 );
 ```
 
-This variant uses predefined `NotificationType` enum values that map to built-in titles and icons. The `detail_text` is appended as the body.
+Ta wariant używa predefiniowanych wartości wyliczenia `NotificationType`, które mapują na wbudowane tytuły i ikony. `detail_text` jest dodawany jako treść.
 
 ---
 
-## Client-Side (Local) Notifications
+## Powiadomienia po stronie klienta (lokalne)
 
-These methods display notifications only on the local client. They do not involve any networking.
+Te metody wyświetlają powiadomienia tylko na lokalnym kliencie. Nie obejmują żadnej komunikacji sieciowej.
 
 ### AddNotificationExtended
 
@@ -120,7 +120,7 @@ static void AddNotificationExtended(
 );
 ```
 
-**Example --- local notification on client:**
+**Przykład --- lokalne powiadomienie na kliencie:**
 
 ```c
 void ShowLocalNotification(string title, string body)
@@ -137,7 +137,7 @@ void ShowLocalNotification(string title, string body)
 }
 ```
 
-### AddNotification (Typed)
+### AddNotification (z typem)
 
 ```c
 static void AddNotification(
@@ -147,62 +147,62 @@ static void AddNotification(
 );
 ```
 
-Uses a predefined `NotificationType` for the title and icon.
+Używa predefiniowanego `NotificationType` dla tytułu i ikony.
 
 ---
 
-## NotificationType Enum
+## Wyliczenie NotificationType
 
-The vanilla game defines notification types with associated titles and icons. Common values:
+Gra vanilla definiuje typy powiadomień z przypisanymi tytułami i ikonami. Typowe wartości:
 
-| Type | Description |
-|------|-------------|
-| `NotificationType.GENERIC` | Generic notification |
-| `NotificationType.FRIENDLY_FIRE` | Friendly fire warning |
-| `NotificationType.JOIN` | Player join |
-| `NotificationType.LEAVE` | Player leave |
-| `NotificationType.STATUS` | Status update |
+| Typ | Opis |
+|-----|------|
+| `NotificationType.GENERIC` | Ogólne powiadomienie |
+| `NotificationType.FRIENDLY_FIRE` | Ostrzeżenie o ogniu przyjaznym |
+| `NotificationType.JOIN` | Dołączenie gracza |
+| `NotificationType.LEAVE` | Opuszczenie przez gracza |
+| `NotificationType.STATUS` | Aktualizacja statusu |
 
-> **Note:** The available types depend on the game version. For maximum flexibility, use the `Extended` variants which accept custom title and icon strings.
+> **Uwaga:** Dostępne typy zależą od wersji gry. Dla maksymalnej elastyczności używaj wariantów `Extended`, które przyjmują niestandardowe łańcuchy tytułu i ikony.
 
 ---
 
-## Icon Paths
+## Ścieżki ikon
 
-Icons use the DayZ image set syntax:
+Ikony używają składni image set DayZ:
 
 ```
 "set:dayz_gui image:icon_name"
 ```
 
-Common icon names:
+Typowe nazwy ikon:
 
-| Icon | Set Path |
-|------|----------|
+| Ikona | Ścieżka zestawu |
+|-------|-----------------|
 | Info | `"set:dayz_gui image:icon_info"` |
-| Warning | `"set:dayz_gui image:icon_warning"` |
-| Skull | `"set:dayz_gui image:icon_skull"` |
+| Ostrzeżenie | `"set:dayz_gui image:icon_warning"` |
+| Czaszka | `"set:dayz_gui image:icon_skull"` |
 
-You can also pass a direct path to an `.edds` image file:
+Możesz też podać bezpośrednią ścieżkę do pliku `.edds`:
 
 ```c
 "MyMod/GUI/notification_icon.edds"
 ```
 
-Or pass an empty string `""` for no icon.
+Lub pusty łańcuch `""` dla braku ikony.
 
 ---
 
-## Events
+## Zdarzenia
 
-The `NotificationSystem` exposes script invokers for reacting to notification lifecycle:
+`NotificationSystem` udostępnia invokery skryptowe do reagowania na cykl życia powiadomień:
 
 ```c
 ref ScriptInvoker m_OnNotificationAdded;
 ref ScriptInvoker m_OnNotificationRemoved;
 ```
 
-**Example --- react to notifications:**
+**Przykład --- reagowanie na powiadomienia:**
 
 ```c
 void Init()
@@ -228,24 +228,24 @@ void OnNotifRemoved()
 
 ---
 
-## Update Loop
+## Pętla aktualizacji
 
-The notification system must be ticked each frame to handle fade-in/fade-out animations and removal of expired notifications:
+System powiadomień musi być aktualizowany co klatkę, aby obsłużyć animacje pojawiania się/zanikania i usuwanie wygasłych powiadomień:
 
 ```c
 static void Update(float timeslice);
 ```
 
-This is called automatically by the vanilla mission's `OnUpdate` method. If you are writing a completely custom mission, make sure to call it.
+Jest to wywoływane automatycznie przez metodę `OnUpdate` misji vanilla. Jeśli piszesz całkowicie niestandardową misję, upewnij się, że ją wywołujesz.
 
 ---
 
-## Complete Server-to-Client Example
+## Kompletny przykład serwer-klient
 
-A typical mod pattern for sending notifications from server code:
+Typowy wzorzec moda do wysyłania powiadomień z kodu serwerowego:
 
 ```c
-// Server-side: in a mission event handler or module
+// Strona serwerowa: w handlerze zdarzeń misji lub module
 class MyServerModule
 {
     void OnMissionStarted(string missionName, vector location)
@@ -253,7 +253,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Broadcast to all players
+        // Broadcast do wszystkich graczy
         string title = "Mission Started!";
         string body = string.Format("Go to %1!", missionName);
 
@@ -271,7 +271,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Notify just this player
+        // Powiadom tylko tego gracza
         NotificationSystem.SendNotificationToPlayerExtended(
             player,
             5.0,
@@ -285,12 +285,12 @@ class MyServerModule
 
 ---
 
-## CommunityFramework (CF) Alternative
+## Alternatywa CommunityFramework (CF)
 
-If you use CommunityFramework, it provides its own notification API:
+Jeśli używasz CommunityFramework, zapewnia on własne API powiadomień:
 
 ```c
-// CF notification (different RPC internally)
+// Powiadomienie CF (wewnętrznie inne RPC)
 NotificationSystem.Create(
     new StringLocaliser("Title"),
     new StringLocaliser("Body with param: %1", someValue),
@@ -301,23 +301,41 @@ NotificationSystem.Create(
 );
 ```
 
-The CF API adds color and localization support. Use whichever system your mod stack requires --- they are functionally similar but use different internal RPCs.
+API CF dodaje obsługę kolorów i lokalizacji. Używaj tego systemu, którego wymaga twój mod --- są funkcjonalnie podobne, ale używają różnych wewnętrznych RPC.
 
 ---
 
 ## Podsumowanie
 
-| Concept | Key Point |
-|---------|-----------|
-| Server to player | `SendNotificationToPlayerExtended(player, time, title, text, icon)` |
-| Server to all | `SendNotificationToPlayerIdentityExtended(null, time, title, text, icon)` |
-| Client local | `AddNotificationExtended(time, title, text, icon)` |
-| Typed | `SendNotificationToPlayer(player, NotificationType, time, text)` |
-| Max visible | 5 notifications stacked |
-| Default time | 10 seconds display, 3 seconds fade |
-| Icons | `"set:dayz_gui image:icon_name"` or direct `.edds` path |
-| Events | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
+| Koncept | Kluczowy punkt |
+|---------|----------------|
+| Serwer do gracza | `SendNotificationToPlayerExtended(player, czas, tytuł, tekst, ikona)` |
+| Serwer do wszystkich | `SendNotificationToPlayerIdentityExtended(null, czas, tytuł, tekst, ikona)` |
+| Klient lokalnie | `AddNotificationExtended(czas, tytuł, tekst, ikona)` |
+| Z typem | `SendNotificationToPlayer(player, NotificationType, czas, tekst)` |
+| Max widocznych | 5 powiadomień w stosie |
+| Domyślny czas | 10 sekund wyświetlania, 3 sekundy zanikania |
+| Ikony | `"set:dayz_gui image:icon_name"` lub bezpośrednia ścieżka `.edds` |
+| Zdarzenia | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
 
 ---
 
-[<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
+## Dobre praktyki
+
+- **Do niestandardowych powiadomień używaj wariantów `Extended`.** `SendNotificationToPlayerExtended` daje pełną kontrolę nad tytułem, treścią i ikoną. Warianty z `NotificationType` są ograniczone do presetów vanilla.
+- **Respektuj limit 5 powiadomień w stosie.** Wysyłanie wielu powiadomień w szybkim tempie wypycha starsze z ekranu, zanim gracze zdążą je przeczytać. Grupuj powiązane wiadomości lub używaj dłuższych czasów wyświetlania.
+- **Zawsze zabezpieczaj powiadomienia serwerowe sprawdzeniem `GetGame().IsServer()`.** Wywołanie `SendNotificationToPlayerExtended` na kliencie nie ma żadnego efektu i marnuje wywołanie metody.
+- **Dla prawdziwych broadcastów podawaj `null` jako tożsamość.** `SendNotificationToPlayerIdentityExtended(null, ...)` dostarcza do wszystkich połączonych graczy. Nie iteruj ręcznie po graczach, aby wysłać tę samą wiadomość.
+- **Utrzymuj tekst powiadomień zwięzły.** Wyskakujące okno toast ma ograniczoną szerokość wyświetlania. Długie tytuły lub treści będą obcinane. Celuj w tytuły poniżej 30 znaków i tekst treści poniżej 80 znaków.
+
+---
+
+## Kompatybilność i wpływ
+
+- **Multi-Mod:** Vanilla `NotificationSystem` jest współdzielony przez wszystkie mody. Wiele modów wysyłających powiadomienia jednocześnie może przepełnić stos 5 powiadomień. CF zapewnia oddzielny kanał powiadomień, który nie koliduje z powiadomieniami vanilla.
+- **Wydajność:** Powiadomienia są lekkie (jedno RPC na powiadomienie). Jednak broadcastowanie do wszystkich graczy co kilka sekund generuje mierzalny ruch sieciowy na serwerach z 60+ graczami.
+- **Serwer/Klient:** Metody `SendNotificationToPlayer*` to RPC z serwera do klienta. `AddNotificationExtended` jest tylko po stronie klienta (lokalne). Tik `Update()` działa w pętli misji klienta.
+
+---
+
+[<< Poprzedni: Efekty post-processingu](05-ppe.md) | **Powiadomienia** | [Następny: Liczniki czasu i CallQueue >>](07-timers.md)

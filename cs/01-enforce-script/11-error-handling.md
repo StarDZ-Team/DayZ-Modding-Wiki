@@ -1,10 +1,14 @@
 # Chapter 1.11: Error Handling
 
-[Home](../../README.md) | [<< Previous: Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Next: Gotchas >>](12-gotchas.md)
+[Domů](../../README.md) | [<< Předchozí: Výčty a preprocesor](10-enums-preprocessor.md) | **Zpracování chyb** | [Další: Záludnosti >>](12-gotchas.md)
 
 ---
 
-## Table of Contents
+> **Goal:** Learn how to handle errors in a language with no try/catch. Master guard clauses, defensive coding, and structured logging patterns that keep your mod stable.
+
+---
+
+## Obsah
 
 - [The Fundamental Rule: No try/catch](#the-fundamental-rule-no-trycatch)
 - [Guard Clause Pattern](#guard-clause-pattern)
@@ -12,12 +16,12 @@
   - [Multiple Guards (Stacked)](#multiple-guards-stacked)
   - [Guard With Logging](#guard-with-logging)
 - [Null Checking](#null-checking)
-  - [Before Every Operation](#before-every-operation)
+  - [Před Every Operation](#before-every-operation)
   - [Chained Null Checks](#chained-null-checks)
   - [The notnull Keyword](#the-notnull-keyword)
 - [ErrorEx — Engine Error Reporting](#errorex--engine-error-reporting)
   - [Severity Levels](#severity-levels)
-  - [When to Use Each Level](#when-to-use-each-level)
+  - [When to Use Každý Level](#when-to-use-each-level)
 - [DumpStackString — Stack Traces](#dumpstackstring--stack-traces)
 - [Debug Printing](#debug-printing)
   - [Basic Print](#basic-print)
@@ -32,29 +36,29 @@
   - [Safe RPC Handler](#safe-rpc-handler)
   - [Safe Inventory Operation](#safe-inventory-operation)
 - [Defensive Patterns Summary](#defensive-patterns-summary)
-- [Common Mistakes](#common-mistakes)
+- [Běžné Mistakes](#common-mistakes)
 - [Summary](#summary)
 - [Navigation](#navigation)
 
 ---
 
-## Základní pravidlo: Žádné try/catch
+## The Fundamental Rule: No try/catch
 
-Enforce Script has **no exception handling**. There is no `try`, no `catch`, no `throw`, no `finally`. If something goes wrong at runtime (null dereference, invalid cast, array out of bounds), the engine either:
+Enforce Script has **no exception handling**. There is no `try`, no `catch`, no `throw`, no `finally`. If některéthing goes wrong za běhu (null dereference, neplatný cast, array out of bounds), engine either:
 
-1. **Crashes silently** — the function stops executing, no error message
+1. **Crashes tiše** — funkce stops executing, no error message
 2. **Logs a script error** — visible in the `.RPT` log file
-3. **Crashes the server/client** — in severe cases
+3. **Crashes server/client** — in severe cases
 
-This means **every potential failure point must be guarded manually**. The primary defense is the **guard clause pattern**.
+To znamená, **every potential failure point must be guarded ručně**. The primary defense is the **guard clause pattern**.
 
 ---
 
-## Vzor ochranných klauzulí
+## Guard Clause Pattern
 
 A guard clause checks a precondition at the top of a function and returns early if it fails. This keeps the "happy path" un-nested and readable.
 
-### Jednoduchá ochranná klauzule
+### Single Guard
 
 ```c
 void TeleportPlayer(PlayerBase player, vector destination)
@@ -66,9 +70,9 @@ void TeleportPlayer(PlayerBase player, vector destination)
 }
 ```
 
-### Více ochranných klauzulí (vrstvených)
+### Multiple Guards (Stacked)
 
-Stack guards at the top of the function — each checks one precondition:
+Stack guards at the top of funkce — každý checks one precondition:
 
 ```c
 void GiveItemToPlayer(PlayerBase player, string className, int quantity)
@@ -97,9 +101,9 @@ void GiveItemToPlayer(PlayerBase player, string className, int quantity)
 }
 ```
 
-### Ochranná klauzule s logováním
+### Guard With Logging
 
-In production code, always log why a guard triggered — silent failures are hard to debug:
+In production code, vždy log why a guard triggered — silent failures are hard to debug:
 
 ```c
 void StartMission(PlayerBase initiator, string missionId)
@@ -130,11 +134,11 @@ void StartMission(PlayerBase initiator, string missionId)
 
 ---
 
-## Kontrola null
+## Null Checking
 
-Null references are the most common crash source in DayZ modding. Every reference type can be `null`.
+Null references are the většina common crash source in DayZ modding. Every reference type can be `null`.
 
-### Před každou operací
+### Před Every Operation
 
 ```c
 // WRONG — crashes if player, identity, or name is null at any point
@@ -151,9 +155,9 @@ if (!identity)
 string name = identity.GetName();
 ```
 
-### Řetězené kontroly null
+### Chained Null Checks
 
-When you need to traverse a chain of references, check each link:
+When potřebujete to traverse a chain of references, check každý link:
 
 ```c
 void PrintHandItemName(PlayerBase player)
@@ -173,7 +177,7 @@ void PrintHandItemName(PlayerBase player)
 }
 ```
 
-### Klíčové slovo notnull
+### The notnull Keyword
 
 `notnull` is a parameter modifier that makes the compiler reject `null` arguments at the call site:
 
@@ -194,7 +198,7 @@ if (item)
 ProcessItem(null);      // Compile error!
 ```
 
-> **Omezení:** `notnull` only catches literal `null` and obviously-null variables at the call site. It does not prevent a variable that was non-null at check time from becoming null due to engine deletion.
+> **Limitation:** `notnull` pouze catches literal `null` and obviously-null variables at the call site. It ne prevent a variable that was non-null at check time from becoming null due to engine deletion.
 
 ---
 
@@ -206,9 +210,9 @@ ProcessItem(null);      // Compile error!
 ErrorEx("Something went wrong");
 ```
 
-### Úrovně závažnosti
+### Severity Levels
 
-`ErrorEx` accepts an optional second parameter of type `ErrorExSeverity`:
+`ErrorEx` accepts an volitelný second parameter of type `ErrorExSeverity`:
 
 ```c
 // INFO — informational, not an error
@@ -222,13 +226,13 @@ ErrorEx("Failed to create object: class not found");
 ErrorEx("Critical failure in RPC handler", ErrorExSeverity.ERROR);
 ```
 
-| Závažnost | Kdy použít |
+| Severity | When to Use |
 |----------|-------------|
-| `ErrorExSeverity.INFO` | Informational messages you want in the error log |
+| `ErrorExSeverity.INFO` | Informational messages chcete in the error log |
 | `ErrorExSeverity.WARNING` | Recoverable problems (missing config, fallback used) |
 | `ErrorExSeverity.ERROR` | Definite bugs or unrecoverable states |
 
-### When to Use Each Level
+### When to Use Každý Level
 
 ```c
 void LoadConfig(string path)
@@ -264,7 +268,7 @@ void LoadConfig(string path)
 
 ## DumpStackString — Stack Traces
 
-`DumpStackString` captures the current call stack as a string. This is crucial for diagnosing where an unexpected state occurred:
+`DumpStackString` captures the current call stack as řetězec. This is crucial for diagnosing where an unexpected state occurred:
 
 ```c
 void OnUnexpectedState(string context)
@@ -294,11 +298,11 @@ void CriticalFunction(PlayerBase player)
 
 ---
 
-## Ladicí výpisy
+## Debug Printing
 
-### Základní Print
+### Basic Print
 
-`Print()` writes to the script log file. It accepts any type:
+`Print()` writes to the script log file. It accepts jakýkoli type:
 
 ```c
 Print("Hello World");                    // string
@@ -314,7 +318,7 @@ Print(string.Format("Player %1 at position %2 with %3 HP",
 ));
 ```
 
-### Podmíněné ladění s #ifdef
+### Conditional Debug with #ifdef
 
 Wrap debug prints in preprocessor guards so they compile out of release builds:
 
@@ -345,11 +349,11 @@ For mod-specific debug flags, define your own symbol:
 
 ---
 
-## Vzory strukturovaného logování
+## Structured Logging Patterns
 
-### Jednoduchý vzor s prefixem
+### Simple Prefix Pattern
 
-The simplest approach — prepend a tag to every Print call:
+The simplest approach — prepend a tag to každý Print call:
 
 ```c
 class MissionManager
@@ -368,7 +372,7 @@ class MissionManager
 }
 ```
 
-### Třída loggeru s úrovněmi
+### Level-Based Logger Class
 
 A reusable logger with severity levels:
 
@@ -413,9 +417,9 @@ g_MissionLog.Info("System started");
 g_MissionLog.Error("Failed to load mission data");
 ```
 
-### Styl MyLog (produkční vzor)
+### Production Logger Pattern
 
-For production mods, a static logging class with file output, daily rotation, and multiple output targets:
+For production mods, a statická logging class with file output, daily rotation, and více output targets:
 
 ```c
 // Enum for log levels
@@ -473,19 +477,19 @@ class MyLog
 }
 ```
 
-Usage across multiple modules:
+Usage across více modules:
 
 ```c
-MyLog.Info("MissionServer", "MyFramework initialized (server)");
+MyLog.Info("MissionServer", "MyMod Core initialized (server)");
 MyLog.Warning("ServerWebhooksRPC", "Unauthorized request from: " + sender.GetName());
 MyLog.Error("ConfigManager", "Failed to load config: " + path);
 ```
 
 ---
 
-## Real-World Examples
+## Příklady z praxe
 
-### Bezpečná funkce s více ochranami
+### Safe Function With Multiple Guards
 
 ```c
 void HealPlayer(PlayerBase player, float amount, string healerName)
@@ -534,7 +538,7 @@ void HealPlayer(PlayerBase player, float amount, string healerName)
 }
 ```
 
-### Bezpečné načítání konfigurace
+### Safe Config Loading
 
 ```c
 class MyConfig
@@ -583,7 +587,7 @@ static MyConfig LoadConfigSafe(string path)
 }
 ```
 
-### Bezpečný handler RPC
+### Safe RPC Handler
 
 ```c
 void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
@@ -636,7 +640,7 @@ void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, 
 }
 ```
 
-### Bezpečná inventářová operace
+### Safe Inventory Operation
 
 ```c
 bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
@@ -677,22 +681,55 @@ bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
 
 ## Defensive Patterns Summary
 
-| Vzor | Účel | Příklad |
+| Pattern | Purpose | Example |
 |---------|---------|---------|
-| Guard clause | Early return on invalid input | `if (!player) return;` |
+| Guard clause | Early return on neplatný input | `if (!player) return;` |
 | Null check | Prevent null dereference | `if (obj) obj.DoThing();` |
 | Cast + check | Safe downcast | `if (Class.CastTo(p, obj))` |
-| Validate after load | Check data after JSON load | `if (cfg.Value < 0) cfg.Value = default;` |
+| Validate after load | Zkontrolujte data after JSON load | `if (cfg.Value < 0) cfg.Value = výchozí;` |
 | Validate before use | Range/bounds check | `if (arr.IsValidIndex(i))` |
 | Log on failure | Trace where things went wrong | `Print("[Tag] Error: " + context);` |
-| ErrorEx for engine | Write to .RPT file | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
+| ErrorEx for engine | Zapište to .RPT file | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
 | DumpStackString | Capture call stack | `Print(DumpStackString());` |
 
 ---
 
-## Common Mistakes
+## Osvědčené postupy
 
-### 1. Assuming a function ran successfully
+- Use flat guard clauses (`if (!x) return;`) at the top of každý function místo deeply nested `if` blocks -- it keeps code readable and the happy path un-nested.
+- Vždy log a message inside guard clauses -- silent `return` makes failures invisible and extremely hard to debug.
+- Use `ErrorEx` with appropriate severity levels (`INFO`, `WARNING`, `ERROR`) for messages that should appear in `.RPT` logs; use `Print` for script-log output.
+- Wrap heavy debug logging in `#ifdef DIAG_DEVELOPER` or a vlastní define so it compiles out of release builds and ne hurt performance.
+- Validate config data after loading with `JsonFileLoader` -- it returns `void` and tiše leaves výchozí values on parse failure.
+
+---
+
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| Stacked guard clauses with log messages | COT / VPP | Every RPC handler checks sender, params, permissions, and logs on každý failure |
+| Static logger class with level filtering | Expansion / Dabs | A jeden `Log` class routes `Info`/`Warning`/`Error` to console, file, and volitelnýly Discord |
+| `DumpStackString()` in critical guards | COT Admin | Captures call stack on unexpected null to trace which caller passed bad data |
+| `#ifdef DIAG_DEVELOPER` around debug prints | Vanilla DayZ / Expansion | All per-frame debug output is wrapped so it nikdy runs in release builds |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| `try`/`catch` | Standard in většina languages | Does not exist in Enforce Script -- každý failure point must be guarded ručně |
+| `JsonFileLoader.JsonLoadFile` | Expected to return success/failure | Returns `void`; on bad JSON the object keeps its výchozí values with no error |
+| `ErrorEx` | Sounds like it throws an error | It pouze writes to the `.RPT` log -- execution continues normally |
+
+---
+
+## Časté chyby
+
+### 1. Assuming a function ran úspěšně
 
 ```c
 // WRONG — JsonLoadFile returns void, not a success indicator
@@ -708,7 +745,7 @@ if (cfg.SomeCriticalField == 0)
 }
 ```
 
-### 2. Deeply nested null checks instead of guards
+### 2. Deeply nested null checks místo guards
 
 ```c
 // WRONG — pyramid of doom
@@ -776,25 +813,25 @@ override void OnUpdate(float timeslice)
 
 ---
 
-## Summary
+## Shrnutí
 
-| Nástroj | Účel | Syntaxe |
+| Tool | Purpose | Syntax |
 |------|---------|--------|
 | Guard clause | Early return on failure | `if (!x) return;` |
 | Null check | Prevent crash | `if (obj) obj.Method();` |
-| ErrorEx | Write to .RPT log | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
+| ErrorEx | Zapište to .RPT log | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
 | DumpStackString | Get call stack | `string s = DumpStackString();` |
-| Print | Write to script log | `Print("message");` |
+| Print | Zapište to script log | `Print("message");` |
 | string.Format | Formatted logging | `string.Format("P %1 at %2", a, b)` |
 | #ifdef guard | Compile-time debug switch | `#ifdef DIAG_DEVELOPER` |
 | notnull | Compiler null check | `void Fn(notnull Class obj)` |
 
-**The golden rule:** In Enforce Script, assume everything can be null and every operation can fail. Check first, act second, log always.
+**The golden rule:** In Enforce Script, assume každýthing can be null and každý operation can fail. Zkontrolujte first, act second, log vždy.
 
 ---
 
-## Navigation
+## Navigace
 
-| Předchozí | Up | Next |
+| Previous | Up | Next |
 |----------|----|------|
 | [1.10 Enums & Preprocessor](10-enums-preprocessor.md) | [Part 1: Enforce Script](../README.md) | [1.12 What Does NOT Exist](12-gotchas.md) |

@@ -1,16 +1,16 @@
 # Chapter 1.6: String Operations
 
-[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
+[Domů](../../README.md) | [<< Předchozí: Řízení toku](05-control-flow.md) | **String Operations** | [Další: Matematika a vektory >>](07-math-vectors.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Strings in Enforce Script are a **value type**, like `int` or `float`. They are passed by value and compared by value. The `string` type has a rich set of built-in methods for searching, slicing, converting, and formatting text. This chapter is a complete reference for every string operation available in DayZ scripting, with real-world examples from mod development.
+Strings in Enforce Script are a **value type**, like `int` or `float`. They are passed by value and compared by value. The `string` type has a rich set of vestavěný methods for searching, slicing, converting, and formatting text. This chapter is a complete reference for každý string operation dostupný in DayZ scripting, with real-world examples from mod development.
 
 ---
 
-## Základy řetězců
+## String Basics
 
 ```c
 // Declaration and initialization
@@ -27,11 +27,11 @@ Print(original); // Still "DayZ"
 
 ---
 
-## Kompletní reference metod řetězce
+## Complete String Method Reference
 
-### Délka
+### Length
 
-Returns the number of characters in the string.
+Returns the number of characters in řetězec.
 
 ```c
 string s = "Hello";
@@ -41,9 +41,9 @@ string empty = "";
 int emptyLen = empty.Length(); // 0
 ```
 
-### Podřetězec
+### Substring
 
-Extracts a portion of the string. Parameters: `start` (index), `length` (number of characters).
+Extracts a portion of řetězec. Parameters: `start` (index), `length` (number of characters).
 
 ```c
 string s = "Hello World";
@@ -56,7 +56,7 @@ string rest = s.Substring(6, s.Length() - 6); // "World"
 
 ### IndexOf
 
-Finds the first occurrence of a substring. Returns the index, or `-1` if not found.
+Finds the first occurrence of a substring. Returns index, or `-1` if not found.
 
 ```c
 string s = "Hello World";
@@ -85,7 +85,7 @@ int lastSlash = path.LastIndexOf("/"); // 23
 
 ### Contains
 
-Returns `true` if the string contains the given substring.
+Returns `true` if řetězec contains the given substring.
 
 ```c
 string chatMsg = "!teleport 100 0 200";
@@ -97,7 +97,7 @@ if (chatMsg.Contains("!teleport"))
 
 ### Replace
 
-Replaces all occurrences of a substring. **Modifies the string in place** and returns the number of replacements made.
+Replaces all occurrences of a substring. **Modifies řetězec in place** and vrací number of replacements made.
 
 ```c
 string s = "Hello World World";
@@ -108,7 +108,7 @@ int count = s.Replace("World", "DayZ");
 
 ### Split
 
-Splits a string by a delimiter and fills an array. The array should be pre-allocated.
+Splits řetězec by a delimiter and fills pole. The array should be pre-allocated.
 
 ```c
 string csv = "AK101,M4A1,UMP45,Mosin9130";
@@ -128,7 +128,7 @@ int amount = parts.Get(2).ToInt(); // 5
 
 ### Join (statická)
 
-Joins an array of strings with a separator.
+Joins pole of strings with a separator.
 
 ```c
 TStringArray names = {"Alice", "Bob", "Charlie"};
@@ -138,7 +138,7 @@ string result = string.Join(", ", names);
 
 ### Format (statická)
 
-Builds a string using numbered placeholders `%1` through `%9`. This is the primary way to build formatted strings in Enforce Script.
+Builds řetězec using numbered placeholders `%1` through `%9`. Toto je primary way to build formatted strings in Enforce Script.
 
 ```c
 string name = "John";
@@ -160,7 +160,7 @@ string log = string.Format("[%1] %2 :: %3", "MyMod", "INFO", "Server started");
 
 ### ToLower
 
-Converts the string to lowercase. **Modifies in place** -- does NOT return a new string.
+Converts řetězec to lowercase. **Modifies in place** -- does NOT return a nový string.
 
 ```c
 string s = "Hello WORLD";
@@ -170,7 +170,7 @@ Print(s); // "hello world"
 
 ### ToUpper
 
-Converts the string to uppercase. **Modifies in place.**
+Converts řetězec to uppercase. **Modifies in place.**
 
 ```c
 string s = "Hello World";
@@ -188,7 +188,7 @@ s.TrimInPlace();
 Print(s); // "Hello World"
 ```
 
-There is also `Trim()` which returns a new trimmed string (available in some engine versions):
+There is také `Trim()` which vrací nový trimmed string (available in některé engine versions):
 
 ```c
 string raw = "  padded  ";
@@ -198,7 +198,7 @@ string clean = raw.Trim();
 
 ### Get
 
-Gets a single character at an index, returned as a string.
+Gets a jeden character at an index, returned as řetězec.
 
 ```c
 string s = "DayZ";
@@ -208,7 +208,7 @@ string ch2 = s.Get(3); // "Z"
 
 ### Set
 
-Sets a single character at an index.
+Sets a jeden character at an index.
 
 ```c
 string s = "DayZ";
@@ -248,7 +248,7 @@ vector pos = s.ToVector(); // Vector(100.5, 0, 200.3)
 
 ---
 
-## Porovnávání řetězců
+## String Comparison
 
 Strings are compared by value using standard operators. Comparison is **case-sensitive** and follows lexicographic (dictionary) order.
 
@@ -263,9 +263,9 @@ bool less     = (a < b);   // true  ("Apple" < "Banana" lexicographically)
 bool greater  = (b > a);   // true
 ```
 
-### Porovnávání bez ohledu na velikost písmen
+### Case-insensitive comparison
 
-There is no built-in case-insensitive comparison. Convert both strings to lowercase first:
+There is no vestavěný case-insensitive comparison. Convert oba strings to lowercase first:
 
 ```c
 bool EqualsIgnoreCase(string a, string b)
@@ -280,9 +280,9 @@ bool EqualsIgnoreCase(string a, string b)
 
 ---
 
-## Spojování řetězců
+## String Concatenation
 
-Use the `+` operator to concatenate strings. Non-string types are automatically converted.
+Use the `+` operator to concatenate strings. Non-string types are automatickýally converted.
 
 ```c
 string name = "John";
@@ -293,7 +293,7 @@ string msg = "Player " + name + " has " + health + " HP at " + distance + "m";
 // "Player John has 75 HP at 42.5m"
 ```
 
-For complex formatting, prefer `string.Format()` over concatenation -- it is more readable and avoids multiple intermediate allocations.
+For complex formatting, prefer `string.Format()` over concatenation -- it is more readable and avoids více intermediate allocations.
 
 ```c
 // Prefer this:
@@ -305,9 +305,9 @@ string msg2 = "Player " + name + " has " + health + " HP at " + distance + "m";
 
 ---
 
-## Real-World Examples
+## Příklady z praxe
 
-### Parsování chatových příkazů
+### Parsing chat commands
 
 ```c
 void ProcessChatMessage(string sender, string message)
@@ -361,7 +361,7 @@ void ProcessChatMessage(string sender, string message)
 }
 ```
 
-### Formátování jmen hráčů pro zobrazení
+### Formatting player names for display
 
 ```c
 string FormatPlayerTag(string name, string clanTag, bool isAdmin)
@@ -386,7 +386,7 @@ string FormatPlayerTag(string name, string clanTag, bool isAdmin)
 // FormatPlayerTag("Jane", "", false)   => "Jane"
 ```
 
-### Sestavování cest k souborům
+### Building file paths
 
 ```c
 string BuildPlayerFilePath(string steamId)
@@ -395,7 +395,7 @@ string BuildPlayerFilePath(string steamId)
 }
 ```
 
-### Sanitizace logových zpráv
+### Sanitizing log messages
 
 ```c
 string SanitizeForLog(string input)
@@ -415,7 +415,7 @@ string SanitizeForLog(string input)
 }
 ```
 
-### Extrakce názvu souboru z cesty
+### Extracting file name from a path
 
 ```c
 string GetFileName(string path)
@@ -436,18 +436,51 @@ string GetFileName(string path)
 
 ---
 
-## Common Mistakes
+## Osvědčené postupy
 
-| Chyba | Problém | Oprava |
+- Use `string.Format()` with `%1`..`%9` placeholders for all formatted output -- it is more readable and avoids type-conversion pitfalls of `+` concatenation.
+- Remember that `ToLower()`, `ToUpper()`, and `Replace()` modify řetězec in place -- copy řetězec first if potřebujete to preserve the original.
+- Vždy allocate the target array with `new TStringArray` before calling `Split()` -- passing a null array causes a crash.
+- Use `Contains()` for simple substring checks and `IndexOf()` pouze when potřebujete the position.
+- For case-insensitive comparisons, copy oba strings and call `ToLower()` on každý before comparing -- there is no vestavěný case-insensitive compare.
+
+---
+
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| `Split(" ", parts)` for chat command parsing | VPP / COT | All chat command systems split by space, then switch on `parts.Get(0)` |
+| `string.Format` with `[TAG]` prefix | Expansion / Dabs | Log messages vždy use `string.Format("[%1] %2", tag, msg)` spíše než concatenation |
+| `"$profile:ModName/"` path convention | COT / Expansion | File paths built with `+` use forward slashes and `$profile:` prefix to avoid backslash issues |
+| `ToLower()` before command matching | VPP Admin | User input is lowered before `switch`/comparison to handle mixed-case input |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| `ToLower()` / `Replace()` return value | Expected to return a nový string (like C#) | They modify in place and return `void` or count -- a constant source of bugs |
+| `string.Format` placeholders | `%d`, `%f`, `%s` like C printf | Only `%1` through `%9` work; C-style specifiers are tiše ignored |
+| Backslash `\\` in strings | Standard escape character | Can break DayZ's CParser in JSON contexts -- prefer forward slashes for paths |
+
+---
+
+## Časté chyby
+
+| Mistake | Problem | Fix |
 |---------|---------|-----|
-| Expecting `ToLower()` to return a new string | `ToLower()` modifies in place, returns `void` | Copy the string first, then call `ToLower()` on the copy |
-| Expecting `ToUpper()` to return a new string | Same as above -- modifies in place | Copy first, then call `ToUpper()` on the copy |
-| Expecting `Replace()` to return a new string | `Replace()` modifies in place, returns replacement count | Copy the string first if you need the original |
-| Using `%0` in `string.Format()` | Placeholders are 1-indexed (`%1` through `%9`) | Start from `%1` |
-| Using `%d`, `%f`, `%s` format specifiers | C-style format specifiers do not work | Use `%1`, `%2`, etc. |
-| Comparing strings without normalizing case | `"Hello" != "hello"` | Call `ToLower()` on both before comparing |
-| Treating strings as reference types | Strings are value types; assigning creates a copy | This is usually fine -- just be aware that modifying a copy does not affect the original |
-| Forgetting to create the array before `Split()` | Calling `Split()` on a null array causes a crash | Always: `TStringArray parts = new TStringArray;` before `Split()` |
+| Expecting `ToLower()` to return a nový string | `ToLower()` modifies in place, returns `void` | Copy řetězec first, then call `ToLower()` on the copy |
+| Expecting `ToUpper()` to return a nový string | Same as výše -- modifies in place | Copy first, then call `ToUpper()` on the copy |
+| Expecting `Replace()` to return a nový string | `Replace()` modifies in place, returns replacement count | Copy řetězec first if potřebujete the original |
+| Using `%0` in `string.Format()` | Placeholders are 1-indexed (`%1` through `%9`) | Spusťte from `%1` |
+| Using `%d`, `%f`, `%s` format specifiers | C-style format specifiers ne work | Use `%1`, `%2`, etc. |
+| Comparing strings without normalizing case | `"Hello" != "hello"` | Call `ToLower()` on oba before comparing |
+| Treating strings as reference types | Strings are value types; assigning creates a copy | This is obvykle fine -- jen be aware that modifying a copy ne affect the original |
+| Forgetting to create pole before `Split()` | Calling `Split()` on a null array causes a crash | Always: `TStringArray parts = nový TStringArray;` before `Split()` |
 
 ---
 
@@ -494,4 +527,4 @@ bool lt = (a < b);
 
 ---
 
-[<< 1.5: Control Flow](05-control-flow.md) | [Domů](../README.md) | [1.7: Math & Vectors >>](07-math-vectors.md)
+[<< 1.5: Control Flow](05-control-flow.md) | [Domů](../../README.md) | [1.7: Math & Vectors >>](07-math-vectors.md)

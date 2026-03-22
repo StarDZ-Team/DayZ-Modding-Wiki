@@ -1,16 +1,20 @@
-# Chapter 3.7: Styles, Fonts & Images
+# Capítulo 3.7: Styles, Fonts & Images
 
-[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
+[Inicio](../../README.md) | [<< Anterior: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Siguiente: Dialogs & Modals >>](08-dialogs-modals.md)
 
 ---
 
-## Estilos
+This chapter covers the visual building blocks of DayZ UI: predefined styles, font usage, text sizing, image widgets with imageset references, and how to create custom imagesets for your mod.
+
+---
+
+## Styles
 
 Styles are predefined visual appearances that can be applied to widgets via the `style` attribute in layout files. They control background rendering, borders, and overall look without requiring manual color and image configuration.
 
-### Common Built-In Estilos
+### Common Built-In Styles
 
-| Style Name | Descripcion |
+| Style Name | Descripción |
 |---|---|
 | `blank` | No visual -- completely transparent background |
 | `Empty` | No background rendering |
@@ -25,7 +29,7 @@ Styles are predefined visual appearances that can be applied to widgets via the 
 | `DayZNormal` | DayZ normal text/widget style |
 | `MenuDefault` | Standard menu button style |
 
-### Using Estilos in Layouts
+### Using Styles in Layouts
 
 ```
 ButtonWidgetClass MyButton {
@@ -63,7 +67,7 @@ PanelWidget bar = PanelWidget.Cast(root.FindAnyWidget("TitleBar"));
 bar.SetColor(ARGB(240, 107, 165, 255));
 ```
 
-### Estilos in Professional Mods
+### Styles in Professional Mods
 
 DabsFramework dialogs use `Outline_1px_BlackBackground` for dialog containers:
 
@@ -79,13 +83,13 @@ Colorful UI uses `rover_sim_colorable` extensively for themed panels where the c
 
 ---
 
-## Fuentes
+## Fonts
 
 DayZ includes several built-in fonts. Font paths are specified in the `font` attribute.
 
 ### Built-In Font Paths
 
-| Font Path | Descripcion |
+| Font Path | Descripción |
 |---|---|
 | `"gui/fonts/Metron"` | Standard UI font |
 | `"gui/fonts/Metron28"` | Standard font, 28pt variant |
@@ -93,7 +97,7 @@ DayZ includes several built-in fonts. Font paths are specified in the `font` att
 | `"gui/fonts/Metron-Bold58"` | Bold 58pt variant |
 | `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) font -- crisp at any size |
 
-### Using Fuentes in Layouts
+### Using Fonts in Layouts
 
 ```
 TextWidgetClass Title {
@@ -109,7 +113,7 @@ TextWidgetClass Body {
 }
 ```
 
-### Using Fuentes in Code
+### Using Fonts in Code
 
 ```c
 TextWidget tw = TextWidget.Cast(root.FindAnyWidget("MyText"));
@@ -117,13 +121,13 @@ tw.SetText("Hello");
 // Font is set in the layout, not changeable at runtime via script
 ```
 
-### SDF Fuentes
+### SDF Fonts
 
 SDF (Signed Distance Field) fonts render crisply at any zoom level, making them ideal for UI elements that may appear at various sizes. The `sdf_MetronBook24` font is the best choice for text that needs to look sharp across different UI scale settings.
 
 ---
 
-## Tamano de Texto: "exact text" vs. Proportional
+## Text Sizing: "exact text" vs. Proportional
 
 DayZ text widgets support two sizing modes, controlled by the `"exact text"` attribute:
 
@@ -166,7 +170,7 @@ TextWidgetClass FixedText {
 
 ### Text-Related Size Attributes
 
-| Atributo | Efecto |
+| Atributo | Effect |
 |---|---|
 | `"size to text h" 1` | Widget width adjusts to fit the text |
 | `"size to text v" 1` | Widget height adjusts to fit the text |
@@ -177,7 +181,7 @@ The `"size to text"` attributes are useful for labels and tags where the widget 
 
 ---
 
-## Alineacion de Texto
+## Text Alignment
 
 Control where text appears within its widget using alignment attributes:
 
@@ -189,14 +193,14 @@ TextWidgetClass CenteredLabel {
 }
 ```
 
-| Atributo | Valores | Efecto |
+| Atributo | Values | Effect |
 |---|---|---|
 | `"text halign"` | `left`, `center`, `right` | Horizontal text position within widget |
 | `"text valign"` | `top`, `center`, `bottom` | Vertical text position within widget |
 
 ---
 
-## Contorno de Texto
+## Text Outline
 
 Add outlines to text for readability on busy backgrounds:
 
@@ -277,7 +281,7 @@ The path is relative to the mod's root directory. Supported formats include `.ed
 
 The `mode` attribute controls how the image blends with what's behind it:
 
-| Mode | Efecto |
+| Mode | Effect |
 |---|---|
 | `blend` | Standard alpha blending (most common) |
 | `additive` | Colors add together (glow effects) |
@@ -362,7 +366,7 @@ Both formats accomplish the same thing. The native format is used by vanilla Day
 
 ---
 
-## Creando ImageSets Personalizados
+## Creating Custom Imagesets
 
 To create your own imageset for a mod:
 
@@ -447,7 +451,7 @@ ImageWidget icon;
 
 ---
 
-## Patron de Tema de Colores
+## Color Theme Pattern
 
 Professional mods centralize their color definitions in a theme class, then apply colors at runtime. This makes it easy to restyle the entire UI by changing one file.
 
@@ -477,7 +481,7 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ---
 
-## Resumen of Visual Attributes by Widget Type
+## Summary of Visual Attributes by Widget Type
 
 | Widget | Key Visual Attributes |
 |---|---|
@@ -491,7 +495,7 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by the engine.
 
@@ -509,7 +513,27 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
+- [3.8 Dialogs & Modals](08-dialogs-modals.md) -- Popup windows, confirmation prompts, and overlay panels
 - [3.1 Widget Types](01-widget-types.md) -- Review the full widget catalog
 - [3.6 Event Handling](06-event-handling.md) -- Make your styled widgets interactive
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| SDF fonts scale to any size | `sdf_MetronBook24` is crisp at all sizes | True for sizes above ~10px. Below that, SDF fonts can appear blurry compared to bitmap fonts at their native size |
+| `"exact text" 1` gives pixel-perfect sizing | Font renders at the exact pixel size specified | DayZ applies internal scaling, so `"exact text size" 16` may render slightly differently across resolutions. Test on 1080p and 1440p |
+| Built-in styles cover all needs | `Default`, `blank`, `Colorable` are sufficient | Most professional mods define their own `.styles` files because built-in styles have limited visual variety |
+| Imageset XML and native formats are equivalent | Both define sprite regions | The native brace format is what the engine processes fastest. XML format works but adds a parsing step; use native format for production |
+| `SetColor()` overrides layout color | Runtime color replaces the layout value | `SetColor()` tints the widget's existing visual. On styled widgets, the tint multiplies with the style's base color, producing unexpected results |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Style names are global. If two mods register a `.styles` file defining the same style name, the last-loaded mod wins. Prefix custom style names with your mod identifier (e.g., `MyMod_PanelDark`).
+- **Performance:** Imagesets are loaded once into GPU memory at startup. Adding large sprite atlases (2048x2048+) increases VRAM usage. Keep atlases at 512x512 or 1024x1024 and split across multiple imagesets if needed.

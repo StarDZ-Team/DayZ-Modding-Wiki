@@ -1,30 +1,30 @@
-# Chapter 6.3: Weather System
+# 6.3. fejezet: Időjárásrendszer
 
-[Home](../../README.md) | [<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
-
----
-
-## Bevezetes
-
-DayZ has a fully dynamic weather system controlled through the `Idojaras` class. The system manages overcast, rain, snowfall, fog, wind, and thunderstorms. Idojaras can be configured through script (the Idojaras API), through `cfgweather.xml` in the mission folder, or through a scripted weather state machine. This chapter covers the script API for reading and controlling weather programmatically.
+[Kezdőlap](../../README.md) | [<< Előző: Járművek](02-vehicles.md) | **Időjárás** | [Következő: Kamerák >>](04-cameras.md)
 
 ---
 
-## Accessing the Idojaras Object
+## Bevezetés
+
+A DayZ teljesen dinamikus időjárási rendszerrel rendelkezik, amelyet a `Weather` osztályon keresztül vezérel. A rendszer a felhőzetet, esőt, havazást, ködöt, szelet és zivatarokat kezeli. Az időjárás konfigurálható szkripttel (a Weather API-n keresztül), a misszió mappában lévő `cfgweather.xml` fájllal, vagy szkriptelt időjárás állapotgéppel. Ez a fejezet az időjárás programozott olvasásának és vezérlésének szkript API-ját tárgyalja.
+
+---
+
+## A Weather objektum elérése
 
 ```c
 Weather weather = GetGame().GetWeather();
 ```
 
-The `Idojaras` object is a singleton managed by the engine. It is always available after the game world initializes.
+A `Weather` objektum a motor által kezelt singleton. A játékvilág inicializálása után mindig elérhető.
 
 ---
 
-## Idojaras Phenomena
+## Időjárási jelenségek
 
-Each weather phenomenon (overcast, fog, rain, snowfall, wind magnitude, wind direction) is represented by a `IdojarasPhenomenon` object. You access them through getter methods on `Idojaras`.
+Minden időjárási jelenséget (felhőzet, köd, eső, havazás, szél erőssége, szélirány) egy `WeatherPhenomenon` objektum képvisel. Ezeket a `Weather` getter metódusain keresztül éred el.
 
-### Getting Phenomenon Objects
+### Jelenség objektumok lekérése
 
 ```c
 proto native WeatherPhenomenon GetOvercast();
@@ -35,38 +35,38 @@ proto native WeatherPhenomenon GetWindMagnitude();
 proto native WeatherPhenomenon GetWindDirection();
 ```
 
-### IdojarasPhenomenon API
+### WeatherPhenomenon API
 
-Each phenomenon shares the same interface:
+Minden jelenség ugyanazt az interfészt használja:
 
 ```c
 class WeatherPhenomenon
 {
-    // Current state
-    proto native float GetActual();          // Current interpolated value (0.0 - 1.0 for most)
-    proto native float GetForecast();        // Target value being interpolated toward
-    proto native float GetDuration();        // How long the current forecast persists (seconds)
+    // Aktuális állapot
+    proto native float GetActual();          // Aktuális interpolált érték (legtöbbnél 0.0 - 1.0)
+    proto native float GetForecast();        // Célérték, amire interpolál
+    proto native float GetDuration();        // Mennyi ideig tart az aktuális előrejelzés (másodperc)
 
-    // Set the forecast (server only)
+    // Előrejelzés beállítása (csak szerver)
     proto native void Set(float forecast, float time = 0, float minDuration = 0);
-    // forecast: target value
-    // time:     seconds to interpolate to that value (0 = instant)
-    // minDuration: minimum time the value holds before auto-change
+    // forecast: célérték
+    // time:     másodperc az interpolációhoz (0 = azonnali)
+    // minDuration: minimális idő, amíg az érték megmarad automatikus változás előtt
 
-    // Limits
+    // Korlátok
     proto native void  SetLimits(float fnMin, float fnMax);
     proto native float GetMin();
     proto native float GetMax();
 
-    // Change speed limits (how fast the phenomenon can change)
+    // Változási sebesség korlátok (milyen gyorsan változhat a jelenség)
     proto native void SetTimeLimits(float fnMin, float fnMax);
 
-    // Change magnitude limits
+    // Változási mérték korlátok
     proto native void SetChangeLimits(float fnMin, float fnMax);
 }
 ```
 
-**Example --- read current weather state:**
+**Példa --- aktuális időjárási állapot olvasása:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -80,37 +80,37 @@ float windDir   = w.GetWindDirection().GetActual();
 Print(string.Format("Overcast: %1, Rain: %2, Fog: %3", overcast, rain, fog));
 ```
 
-**Example --- force clear weather (server):**
+**Példa --- tiszta időjárás kényszerítése (szerver):**
 
 ```c
 void ForceClearWeather()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(0.0, 30, 600);    // Clear sky, 30s transition, hold 10 min
-    w.GetRain().Set(0.0, 10, 600);        // No rain
-    w.GetFog().Set(0.0, 30, 600);         // No fog
-    w.GetSnowfall().Set(0.0, 10, 600);    // No snow
+    w.GetOvercast().Set(0.0, 30, 600);    // Tiszta ég, 30mp átmenet, 10 perc tartás
+    w.GetRain().Set(0.0, 10, 600);        // Nincs eső
+    w.GetFog().Set(0.0, 30, 600);         // Nincs köd
+    w.GetSnowfall().Set(0.0, 10, 600);    // Nincs hó
 }
 ```
 
-**Example --- create a storm:**
+**Példa --- vihar létrehozása:**
 
 ```c
 void ForceStorm()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(1.0, 60, 1800);   // Full overcast, 60s ramp, hold 30 min
-    w.GetRain().Set(0.8, 120, 1800);      // Heavy rain
-    w.GetFog().Set(0.3, 120, 1800);       // Light fog
-    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Strong wind (m/s)
+    w.GetOvercast().Set(1.0, 60, 1800);   // Teljes felhőzet, 60mp felfutás, 30 perc tartás
+    w.GetRain().Set(0.8, 120, 1800);      // Erős eső
+    w.GetFog().Set(0.3, 120, 1800);       // Enyhe köd
+    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Erős szél (m/s)
 }
 ```
 
 ---
 
-## Rain Thresholds
+## Eső küszöbértékek
 
-Rain is tied to overcast levels. The engine only renders rain when overcast exceeds a threshold. You can configure this via `cfgweather.xml`:
+Az eső a felhőzeti szintekhez van kötve. A motor csak akkor jeleníti meg az esőt, ha a felhőzet meghalad egy küszöbértéket. Ezt a `cfgweather.xml` fájlban konfigurálhatod:
 
 ```xml
 <rain>
@@ -118,25 +118,25 @@ Rain is tied to overcast levels. The engine only renders rain when overcast exce
 </rain>
 ```
 
-- `min` / `max`: overcast range where rain is allowed
-- `end`: seconds for rain to stop if overcast falls below threshold
+- `min` / `max`: felhőzeti tartomány, ahol az eső engedélyezett
+- `end`: másodpercek, amíg az eső leáll, ha a felhőzet a küszöb alá esik
 
-In script, rain will not visually appear if overcast is too low, even if `GetRain().GetActual()` returns a non-zero value.
+Szkriptben az eső vizuálisan nem jelenik meg, ha a felhőzet túl alacsony, még akkor sem, ha a `GetRain().GetActual()` nem nulla értéket ad vissza.
 
 ---
 
-## Wind
+## Szél
 
-Wind uses two phenomena: magnitude (speed in m/s) and direction (angle in radians).
+A szél két jelenséget használ: erősség (sebesség m/s-ban) és irány (szög radiánban).
 
-### Wind Vector
+### Szélvektor
 
 ```c
-proto native vector GetWind();           // Wind direction vector (world space)
-proto native float  GetWindSpeed();      // Wind speed in m/s
+proto native vector GetWind();           // Szélirány vektor (világtér)
+proto native float  GetWindSpeed();      // Szélsebesség m/s-ban
 ```
 
-**Example --- get wind info:**
+**Példa --- szél információ lekérése:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -147,46 +147,46 @@ Print(string.Format("Wind: %1 m/s, direction: %2", windSpd, windVec));
 
 ---
 
-## Thunderstorms (Lightning)
+## Zivatarok (villám)
 
 ```c
 proto native void SetStorm(float density, float threshold, float timeout);
 ```
 
-| Parameter | Leiras |
-|-----------|-------------|
-| `density` | Lightning density (0.0 - 1.0) |
-| `threshold` | Minimum overcast level for lightning to appear (0.0 - 1.0) |
-| `timeout` | Seconds between lightning strikes |
+| Paraméter | Leírás |
+|-----------|--------|
+| `density` | Villám sűrűség (0.0 - 1.0) |
+| `threshold` | Minimális felhőzeti szint a villám megjelenéséhez (0.0 - 1.0) |
+| `timeout` | Másodpercek a villámlások között |
 
-**Example --- enable frequent lightning:**
+**Példa --- gyakori villámlás engedélyezése:**
 
 ```c
 GetGame().GetWeather().SetStorm(1.0, 0.6, 10);
-// Full density, triggers at 60% overcast, strikes every 10 seconds
+// Teljes sűrűség, 60%-os felhőzetnél aktiválódik, 10 másodpercenként csap le
 ```
 
 ---
 
-## MissionIdojaras Control
+## MissionWeather vezérlés
 
-To take manual control of weather (disabling the automatic weather state machine), call:
+Az időjárás kézi vezérléséhez (az automatikus időjárás állapotgép letiltásához) hívd meg:
 
 ```c
 proto native void MissionWeather(bool use);
 ```
 
-When `MissionIdojaras(true)` is called, the engine stops the automatic weather transitions and only your script-driven `Set()` calls control the weather.
+Amikor a `MissionWeather(true)` meghívásra kerül, a motor leállítja az automatikus időjárás-átmeneteket, és csak a szkript-vezérelt `Set()` hívásaid vezérlik az időjárást.
 
-**Example --- full manual control in init.c:**
+**Példa --- teljes kézi vezérlés az init.c-ben:**
 
 ```c
 void main()
 {
-    // Take manual control of weather
+    // Időjárás kézi vezérlésének átvétele
     GetGame().GetWeather().MissionWeather(true);
 
-    // Set desired weather
+    // Kívánt időjárás beállítása
     GetGame().GetWeather().GetOvercast().Set(0.3, 0, 0);
     GetGame().GetWeather().GetRain().Set(0.0, 0, 0);
     GetGame().GetWeather().GetFog().Set(0.1, 0, 0);
@@ -195,24 +195,24 @@ void main()
 
 ---
 
-## Date & Time
+## Dátum és idő
 
-The game date and time affect lighting, sun position, and the day/night cycle. These are controlled through the `World` object, not `Idojaras`, but they are closely related.
+A játék dátuma és ideje befolyásolja a megvilágítást, a nap pozícióját és a nappal/éjjel ciklust. Ezeket a `World` objektumon keresztül vezérlik, nem a `Weather`-en, de szorosan összefüggenek.
 
-### Getting Current Date/Time
+### Aktuális dátum/idő lekérése
 
 ```c
 int year, month, day, hour, minute;
 GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 ```
 
-### Setting Date/Time (Server Only)
+### Dátum/idő beállítása (csak szerver)
 
 ```c
 proto native void SetDate(int year, int month, int day, int hour, int minute);
 ```
 
-**Example --- set time to noon:**
+**Példa --- idő beállítása délre:**
 
 ```c
 int year, month, day, hour, minute;
@@ -220,22 +220,22 @@ GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 GetGame().GetWorld().SetDate(year, month, day, 12, 0);
 ```
 
-### Time Acceleration
+### Időgyorsítás
 
-Time acceleration is configured in `serverDZ.cfg` via:
+Az időgyorsítás a `serverDZ.cfg` fájlban konfigurálható:
 
 ```
-serverTimeAcceleration = 12;      // 12x real time
-serverNightTimeAcceleration = 4;  // 4x acceleration during night
+serverTimeAcceleration = 12;      // 12-szeres valós idő
+serverNightTimeAcceleration = 4;  // 4-szeres gyorsítás éjszaka
 ```
 
-In script, you can read the current time multiplier but typically cannot change it at runtime.
+Szkriptben olvashatod az aktuális időszorzót, de általában nem változtathatod meg futásidőben.
 
 ---
 
-## WorldData Idojaras State Machine
+## WorldData időjárás állapotgép
 
-Vanilla DayZ uses a scripted weather state machine in `WorldData` classes (e.g., `ChernarusPlusData`, `EnochData`, `SakhalData`). The key override point is:
+A vanilla DayZ szkriptelt időjárás állapotgépet használ a `WorldData` osztályokban (pl. `ChernarusPlusData`, `EnochData`, `SakhalData`). A fő felülírási pont:
 
 ```c
 class WorldData
@@ -245,7 +245,7 @@ class WorldData
 }
 ```
 
-Override this method in a `modded` WorldData class to intercept and modify weather transitions:
+Írd felül ezt a metódust egy `modded` WorldData osztályban az időjárás-átmenetek elfogásához és módosításához:
 
 ```c
 modded class ChernarusPlusData
@@ -255,7 +255,7 @@ modded class ChernarusPlusData
     {
         super.WeatherOnBeforeChange(type, actual, change, time);
 
-        // Prevent rain from ever going above 0.5
+        // Eső megakadályozása 0.5 fölött
         if (type == EWeatherPhenomenon.RAIN && change > 0.5)
         {
             GetGame().GetWeather().GetRain().Set(0.5, time, 300);
@@ -268,9 +268,9 @@ modded class ChernarusPlusData
 
 ## cfgweather.xml
 
-The `cfgweather.xml` file in the mission folder provides a declarative way to configure weather without scripting. When present, it overrides the default weather state machine parameters.
+A misszió mappában lévő `cfgweather.xml` fájl deklaratív módot biztosít az időjárás konfigurálására szkriptelés nélkül. Ha jelen van, felülírja az alapértelmezett időjárás állapotgép paramétereit.
 
-Key structure:
+Fő szerkezet:
 
 ```xml
 <weather reset="0" enable="1">
@@ -292,32 +292,66 @@ Key structure:
 </weather>
 ```
 
-| Attributum | Leiras |
-|-----------|-------------|
-| `reset` | Whether to reset weather from storage on server start |
-| `enable` | Whether this file is active |
-| `actual` | Initial value |
-| `time` | Seconds to reach the initial value |
-| `duration` | Seconds the initial value holds |
-| `limits min/max` | Range for the phenomenon value |
-| `timelimits min/max` | Range for transition duration (seconds) |
-| `changelimits min/max` | Range for change magnitude per transition |
+| Attribútum | Leírás |
+|------------|--------|
+| `reset` | Időjárás visszaállítása a tárolóból szerver indításkor |
+| `enable` | Ez a fájl aktív-e |
+| `actual` | Kezdeti érték |
+| `time` | Másodpercek a kezdeti érték eléréséig |
+| `duration` | Másodpercek, amíg a kezdeti érték megmarad |
+| `limits min/max` | A jelenség értékének tartománya |
+| `timelimits min/max` | Az átmenet időtartamának tartománya (másodperc) |
+| `changelimits min/max` | A változás mértékének tartománya átmenetenként |
 
 ---
 
-## Osszefoglalas
+## Összefoglalás
 
-| Fogalom | Kulcspont |
-|---------|-----------|
-| Access | `GetGame().GetIdojaras()` returns the `Idojaras` singleton |
-| Phenomena | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
-| Read | `phenomenon.GetActual()` for current value (0.0 - 1.0) |
-| Write | `phenomenon.Set(forecast, transitionTime, holdDuration)` (server only) |
-| Storms | `SetStorm(density, threshold, timeout)` |
-| Manual mode | `MissionIdojaras(true)` disables automatic weather changes |
-| Date/Time | `GetGame().GetWorld().GetDate()` / `SetDate()` |
-| Config file | `cfgweather.xml` in mission folder for declarative setup |
+| Fogalom | Lényeg |
+|---------|--------|
+| Hozzáférés | `GetGame().GetWeather()` a `Weather` singletont adja vissza |
+| Jelenségek | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
+| Olvasás | `phenomenon.GetActual()` az aktuális értékhez (0.0 - 1.0) |
+| Írás | `phenomenon.Set(előrejelzés, átmenetiIdő, tartásIdő)` (csak szerver) |
+| Zivatarok | `SetStorm(sűrűség, küszöb, időköz)` |
+| Kézi mód | `MissionWeather(true)` letiltja az automatikus időjárás-változásokat |
+| Dátum/Idő | `GetGame().GetWorld().GetDate()` / `SetDate()` |
+| Konfigurációs fájl | `cfgweather.xml` a misszió mappában deklaratív beállításhoz |
 
 ---
 
-[<< Elozo: Jarmuvek](02-vehicles.md) | **Idojaras** | [Kovetkezo: Kamerak >>](04-cameras.md)
+## Bevált gyakorlatok
+
+- **Hívd meg a `MissionWeather(true)` metódust az időjárás beállítása előtt az `init.c`-ben.** Enélkül az automatikus időjárás állapotgép másodperceken belül felülírja a `Set()` hívásaidat. Mindig vedd át a kézi vezérlést, ha determinisztikus időjárást szeretnél.
+- **Mindig adj meg `minDuration` paramétert a `Set()` hívásban.** Ha a `minDuration` értéke 0, az időjárási rendszer azonnal eltérhet az értékedtől. Használj legalább 300-600 másodpercet a kívánt állapot tartásához.
+- **Állítsd be a felhőzetet az eső előtt.** Az eső vizuálisan a felhőzeti küszöbértékekhez van kötve. Ha a felhőzet a `cfgweather.xml`-ben konfigurált küszöb alatt van, az eső nem jelenik meg, még ha a `GetRain().GetActual()` nem nulla értéket is ad vissza.
+- **Használd a `WeatherOnBeforeChange()` metódust szerver szintű időjárási irányelvekhez.** Írd felül egy `modded class ChernarusPlusData`-ban (vagy a megfelelő WorldData alosztályban) az időjárás-átmenetek korlátozásához vagy átirányításához anélkül, hogy az állapotgéppel harcolnál.
+- **Olvass mindkét oldalon, írj csak szerveren.** A `GetActual()` és `GetForecast()` kliensen és szerveren is működik, de a `Set()` csak a szerveren fejt ki hatást.
+
+---
+
+## Kompatibilitás és hatás
+
+> **Mod kompatibilitás:** Az időjárás modok általában felülírják a `WeatherOnBeforeChange()` metódust a WorldData alosztályokban. Térképenként csak egy mod felülírási lánca fut le a WorldData osztályon.
+
+- **Betöltési sorrend:** Több mod, amely felülírja a `WeatherOnBeforeChange` metódust ugyanazon a WorldData alosztályon (pl. `ChernarusPlusData`), mindegyiknek meg kell hívnia a `super`-t, különben a korábbi modok elveszítik az időjárási logikájukat.
+- **Modded osztály konfliktusok:** Ha az egyik mod `MissionWeather(true)`-t hív, a másik pedig automatikus időjárást vár, alapvetően inkompatibilisek. Dokumentáld, ha a modod átveszi a kézi időjárás-vezérlést.
+- **Teljesítményi hatás:** Az időjárás API hívások könnyűek. A jelenségek interpolációja a motorban fut, nem szkriptben. A gyakori `Set()` hívások (minden képkockában) pazarlóak, de nem károsak.
+- **Szerver/Kliens:** Minden `Set()` hívás csak szerveren érvényes. A kliensek automatikusan megkapják az időjárási állapotot a motor szinkronizálásán keresztül. A kliens oldali `Set()` hívásokat csendben figyelmen kívül hagyja.
+
+---
+
+## Valós modokban megfigyelt minták
+
+> Ezeket a mintákat professzionális DayZ modok forráskódjának tanulmányozásával erősítettük meg.
+
+| Minta | Mod | Fájl/Helyszín |
+|-------|-----|---------------|
+| `MissionWeather(true)` + szkriptelt időjárási ciklus `CallLater`-rel | Expansion | Időjárás vezérlő a misszió inicializálásban |
+| `WeatherOnBeforeChange` felülírás eső megakadályozásához bizonyos területeken | COT Weather Module | Modded `ChernarusPlusData` |
+| Admin parancs tiszta/vihar kényszerítéséhez `Set()`-tel hosszú tartási idővel | VPP Admin Tools | Időjárás admin panel |
+| `cfgweather.xml` egyéni küszöbértékekkel csak havazós térképekhez | Namalsk | Misszió mappa konfig |
+
+---
+
+[<< Előző: Járművek](02-vehicles.md) | **Időjárás** | [Következő: Kamerák >>](04-cameras.md)

@@ -1,10 +1,14 @@
 # Chapter 2.5: File Organization Best Practices
 
-[Home](../../README.md) | [<< Previous: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Next: Server vs Client Architecture >>](06-server-client-split.md)
+[Domů](../../README.md) | [<< Předchozí: Minimální funkční mod](04-minimum-viable-mod.md) | **Organizace souborů** | [Další: Server vs Client Architecture >>](06-server-client-split.md)
 
 ---
 
-## Table of Contents
+> **Shrnutí:** How you organize files determines whether your mod is maintainable at 10 files or 1,000. This chapter covers the canonical directory structure, naming conventions, content vs script vs framework mods, client-server splits, and lessons from professional DayZ mods.
+
+---
+
+## Obsah
 
 - [The Canonical Directory Structure](#the-canonical-directory-structure)
 - [Naming Conventions](#naming-conventions)
@@ -19,7 +23,7 @@
 
 ## The Canonical Directory Structure
 
-This is the standard layout used by professional DayZ mods. Not every folder is required -- only create what you need.
+Toto je standard layout used by professional DayZ mods. Not každý folder je povinný -- pouze create what potřebujete.
 
 ```
 MyMod/                                    <-- Project root (development)
@@ -99,24 +103,24 @@ MyMod/                                    <-- Project root (development)
 
 ## Naming Conventions
 
-### Názvy modů/projektů
+### Mod/Project Names
 
 Use PascalCase with a clear prefix:
 
 ```
-MyFramework          <-- Framework, prefix: MyMod_
-MyMissions      <-- Feature mod
-MyWeapons       <-- Content mod
+MyFramework          <-- Framework, prefix: MyFW_
+MyMod_Missions      <-- Feature mod
+MyMod_Weapons       <-- Content mod
 VPPAdminTools        <-- Some mods skip underscores
 DabsFramework        <-- PascalCase without separator
 ```
 
-### Názvy tříd
+### Class Names
 
-Use a short prefix unique to your mod, followed by an underscore and the class purpose:
+Use a short prefix unique to your mod, followed by an underscore and třída purpose:
 
 ```c
-// MyMod pattern: My[Subsystem]_[Name]
+// MyMod pattern: MyMod_[Subsystem]_[Name]
 class MyLog             // Core logging
 class MyRPC             // Core RPC
 class MyW_Config        // Weapons config
@@ -134,14 +138,14 @@ class ChatCommandBase
 class WebhookManager
 ```
 
-**Pravidla:**
-- Prefix prevents collisions with other mods
-- Keep it short (2-4 characters)
+**Rules:**
+- Prefix prevents collisions with jiný mods
+- Udržujte it short (2-4 characters)
 - Be consistent within your mod
 
-### Názvy souborů
+### File Names
 
-Name each file after the primary class it contains:
+Name každý file after the primary class it contains:
 
 ```
 MyLog.c            <-- Contains class MyLog
@@ -152,7 +156,7 @@ ActionMyCustom.c     <-- Contains class ActionMyCustom
 
 One class per file is the ideal. Multiple small helper classes in one file is acceptable when they are tightly coupled.
 
-### Soubory layoutu
+### Layout Files
 
 Use lowercase with your mod prefix:
 
@@ -162,7 +166,7 @@ my_killfeed_overlay.layout
 mymod_settings_dialog.layout
 ```
 
-### Názvy proměnných
+### Variable Names
 
 ```c
 // Member variables: m_ prefix
@@ -192,9 +196,9 @@ void SetConfig(MyConfig config, bool forceReload)
 
 ## Three Types of Mods
 
-DayZ mods fall into three categories. Each has a different structure emphasis.
+DayZ mods fall into three categories. Each has a odlišný structure emphasis.
 
-### 1. Obsahový mod
+### 1. Content Mod
 
 Adds items, weapons, vehicles, buildings -- primarily 3D assets with minimal scripting.
 
@@ -221,15 +225,15 @@ MyWeaponPack/
     types.xml
 ```
 
-**Charakteristiky:**
+**Characteristics:**
 - Heavy on `Data/` (models, textures, materials)
 - Heavy on `Data/config.cpp` (CfgVehicles, CfgWeapons definitions)
 - Minimal or no scripting
-- Scripts only when items need custom behavior beyond what config defines
+- Scripts pouze when items need vlastní behavior beyond what config defines
 
-### 2. Skriptový mod
+### 2. Script Mod
 
-Adds gameplay features, admin tools, systems -- primarily code with minimal assets.
+Adds gameplay features, admin přílišls, systems -- primarily code with minimal assets.
 
 ```
 MyAdminTools/
@@ -258,15 +262,15 @@ MyAdminTools/
       admin_icons.imageset
 ```
 
-**Charakteristiky:**
+**Characteristics:**
 - Heavy on `Scripts/` (most code in 3_Game, 4_World, 5_Mission)
 - GUI layouts and imagesets for UI
 - Little or no `Data/` (no 3D models)
-- Usually depends on a framework (CF, DabsFramework, MyFramework)
+- Usually depends on a framework (CF, DabsFramework, or a vlastní framework)
 
-### 3. Frameworkový mod
+### 3. Framework Mod
 
-Provides shared infrastructure for other mods -- logging, RPC, configuration, UI systems.
+Provides shared infrastructure for jiný mods -- logging, RPC, configuration, UI systems.
 
 ```
 MyFramework/
@@ -315,24 +319,24 @@ MyFramework/
     looknfeel/
 ```
 
-**Charakteristiky:**
+**Characteristics:**
 - Uses all script layers (1_Core through 5_Mission)
-- Deep subdirectory hierarchy in each layer
+- Deep subdirectory hierarchy in každý layer
 - Defines `defines[]` for feature detection
-- Other mods depend on it via `requiredAddons`
-- Provides base classes that other mods extend
+- Other mods depend on it via `povinnýAddons`
+- Provides base classes that jiný mods extend
 
 ---
 
 ## Client-Server Split Mods
 
-When a mod has both client-visible behavior (UI, entity rendering) and server-only logic (spawning, AI brains, secure state), it should split into two packages.
+Když mod has oba client-visible behavior (UI, entity rendering) and server-only logic (spawning, AI brains, secure state), it should split into two packages.
 
-### Adresářová struktura
+### Directory Structure
 
 ```
 MyMod/                                    <-- Project root (development repo)
-  MyMod_MyMod/                           <-- Client package (loaded via -mod=)
+  MyMod_Sub/                           <-- Client package (loaded via -mod=)
     mod.cpp
     stringtable.csv
     Scripts/
@@ -344,7 +348,7 @@ MyMod/                                    <-- Project root (development repo)
       layouts/
     Sounds/
 
-  MyMod_MyModServer/                     <-- Server package (loaded via -servermod=)
+  MyMod_SubServer/                     <-- Server package (loaded via -servermod=)
     mod.cpp
     Scripts/
       config.cpp                          <-- type = "servermod"
@@ -355,11 +359,11 @@ MyMod/                                    <-- Project root (development repo)
 
 ### Key Rules for Split Mods
 
-1. **The client package is loaded by everyone** (server and all clients via `-mod=`)
-2. **The server package is loaded only by the server** (via `-servermod=`)
-3. **The server package depends on the client package** (via `requiredAddons`)
-4. **Never put UI code in the server package** -- clients will not receive it
-5. **Keep secure/private logic in the server package** -- it is never sent to clients
+1. **The client package is loaded by každýone** (server and all clients via `-mod=`)
+2. **The server package is loaded pouze by server** (via `-servermod=`)
+3. **The server package depends on klient package** (via `povinnýAddons`)
+4. **Nikdy put UI code in server package** -- clients will not receive it
+5. **Udržujte secure/private logic in server package** -- it is nikdy sent to clients
 
 ### Dependency Chain
 
@@ -367,51 +371,51 @@ MyMod/                                    <-- Project root (development repo)
 // Client package config.cpp
 class CfgPatches
 {
-    class MyMyMod_Scripts
+    class MyMod_Sub_Scripts
     {
-        requiredAddons[] = { "DZ_Scripts", "MyCore_Scripts" };
+        requiredAddons[] = { "DZ_Scripts", "MyMod_Core_Scripts" };
     };
 };
 
 // Server package config.cpp
 class CfgPatches
 {
-    class MyMyModServer_Scripts
+    class MyMod_SubServer_Scripts
     {
-        requiredAddons[] = { "DZ_Scripts", "MyMyMod_Scripts", "MyCore_Scripts" };
+        requiredAddons[] = { "DZ_Scripts", "MyMod_Sub_Scripts", "MyMod_Core_Scripts" };
         //                                  ^^^ depends on client package
     };
 };
 ```
 
-### Real Example: MyMissions Mod
+### Real Example: Missions Client-Server Split
 
 ```
-MyMissions/
-  MyMissions/                        <-- Client (-mod=)
+MyMod_Missions/
+  MyMod_Missions/                        <-- Client (-mod=)
     mod.cpp                               type = "mod"
     Scripts/
-      config.cpp                          requiredAddons: MyCore_Scripts
-      3_Game/MyMissions/             Shared enums, config, RPC IDs
-      4_World/MyMissions/            Mission markers (client rendering)
-      5_Mission/MyMissions/          Mission UI, radio HUD
+      config.cpp                          requiredAddons: MyMod_Core_Scripts
+      3_Game/MyMod_Missions/             Shared enums, config, RPC IDs
+      4_World/MyMod_Missions/            Mission markers (client rendering)
+      5_Mission/MyMod_Missions/          Mission UI, radio HUD
     GUI/layouts/                          Mission panel layouts
     Sounds/                               Radio beep sounds
 
-  MyMissions_Server/                 <-- Server (-servermod=)
+  MyMod_MissionsServer/                 <-- Server (-servermod=)
     mod.cpp                               type = "servermod"
     Scripts/
-      config.cpp                          requiredAddons: MyScripts, MyCore_Scripts
-      3_Game/MyMissionsServer/       Server config extensions
-      4_World/MyMissionsServer/      Mission spawner, loot manager
-      5_Mission/MyMissionsServer/    Server mission lifecycle
+      config.cpp                          requiredAddons: MyMod_Scripts, MyMod_Core_Scripts
+      3_Game/MyMod_MissionsServer/       Server config extensions
+      4_World/MyMod_MissionsServer/      Mission spawner, loot manager
+      5_Mission/MyMod_MissionsServer/    Server mission lifecycle
 ```
 
 ---
 
 ## What Goes Where
 
-### Adresář Data/
+### Data/ Directory
 
 Physical assets and item definitions:
 
@@ -424,7 +428,7 @@ Data/
   Animations/         <-- .anim animation files (rare)
 ```
 
-### Adresář Scripts/
+### Scripts/ Directory
 
 All Enforce Script code:
 
@@ -441,7 +445,7 @@ Scripts/
   5_Mission/          <-- UI, HUD, mission lifecycle
 ```
 
-### Adresář GUI/
+### GUI/ Directory
 
 User interface resources:
 
@@ -456,7 +460,7 @@ GUI/
   sounds/             <-- UI sound files (click, hover, etc.)
 ```
 
-### Adresář Sounds/
+### Sounds/ Directory
 
 Audio files:
 
@@ -467,9 +471,9 @@ Sounds/
   click.ogg
 ```
 
-Sound config (CfgSoundSets, CfgSoundShaders) goes in `Scripts/config.cpp`, not in a separate Sounds config.
+Sound config (CfgSoundSets, CfgSoundShaders) goes in `Scripts/config.cpp`, not in a oddělený Sounds config.
 
-### Adresář ServerFiles/
+### ServerFiles/ Directory
 
 Files that server administrators copy to their server's mission folder:
 
@@ -485,9 +489,9 @@ ServerFiles/
 
 ## PBO Naming and @mod Folder Naming
 
-### Názvy PBO
+### PBO Names
 
-Each PBO gets a descriptive name with the mod prefix:
+Každý PBO gets a descriptive name with the mod prefix:
 
 ```
 @MyMod/
@@ -498,41 +502,41 @@ Each PBO gets a descriptive name with the mod prefix:
     MyMod_Sounds.pbo          <-- Audio (sometimes bundled with Data)
 ```
 
-The PBO name does not need to match the CfgPatches class name, but keeping them aligned prevents confusion.
+The PBO name ne need to match the CfgPatches class name, but keeping them aligned prevents confusion.
 
-### Název složky @mod
+### @mod Folder Name
 
-The `@` prefix is a Steam Workshop convention. During development, you may omit it:
+The `@` prefix is a Steam Workshop convention. Během development, you may omit it:
 
 ```
 Development:    MyMod/           <-- No @ prefix
 Workshop:       @MyMod/          <-- With @ prefix
 ```
 
-The `@` has no technical meaning to the engine. It is purely organizational convention.
+The `@` has no technical meaning to engine. It is purely organizational convention.
 
-### Více PBO na jeden mod
+### Multiple PBOs Per Mod
 
-Large mods split into multiple PBOs for several reasons:
+Large mods split into více PBOs for several reasons:
 
 1. **Separate update cycles** -- update scripts without re-downloading 3D models
-2. **Optional components** -- GUI PBO is optional if mod works headless
-3. **Build pipeline** -- different PBOs built by different tools
+2. **Optional components** -- GUI PBO je volitelný if mod works headless
+3. **Sestavte pipeline** -- odlišný PBOs built by odlišný přílišls
 
 ```
-@MyWeapons/
+@MyMod_Weapons/
   Addons/
-    MyWeapons_Scripts.pbo    <-- Script behavior
-    MyWeapons_Data.pbo       <-- 268 weapon models, textures, configs
+    MyMod_Weapons_Scripts.pbo    <-- Script behavior
+    MyMod_Weapons_Data.pbo       <-- 268 weapon models, textures, configs
 ```
 
-Each PBO has its own `config.cpp` with its own `CfgPatches` entry. The `requiredAddons` between them controls the load order:
+Each PBO has its own `config.cpp` with its own `CfgPatches` entry. The `povinnýAddons` mezi them controls the pořadí načítání:
 
 ```cpp
 // Scripts/config.cpp
 class CfgPatches
 {
-    class MyWeapons_Scripts
+    class MyMod_Weapons_Scripts
     {
         requiredAddons[] = { "DZ_Scripts", "DZ_Weapons_Firearms" };
     };
@@ -541,7 +545,7 @@ class CfgPatches
 // Data/config.cpp
 class CfgPatches
 {
-    class MyWeapons_Data
+    class MyMod_Weapons_Data
     {
         requiredAddons[] = { "DZ_Data", "DZ_Weapons_Firearms" };
     };
@@ -550,9 +554,9 @@ class CfgPatches
 
 ---
 
-## Příklady z profesionálních modů
+## Reálné příklady from Professional Mods
 
-### MyFramework -- Framework Mod
+### Framework Mod Example
 
 ```
 MyFramework/
@@ -642,13 +646,13 @@ JM/COT/
     config.cpp                            <-- String table config
 ```
 
-Note the `Common/` folder pattern: included in every script module via `files[]`, allowing shared types across all layers.
+Poznámka the `Common/` folder pattern: included in každý script module via `files[]`, allowing shared types across all layers.
 
-### MyWeapons Mod -- Content Mod
+### Content Mod Example
 
 ```
-MyWeapons/
-  MyWeapons/
+MyMod_Weapons/
+  MyMod_Weapons/
     mod.cpp
     Data/
       config.cpp                          <-- Merged config: 268 weapon definitions
@@ -696,7 +700,7 @@ DabsFramework/
     5_Mission/
 ```
 
-Note: DabsFramework uses lowercase folder names (`scripts/`, `gui/`). This works because Windows is case-insensitive, but may cause issues on Linux. The convention is to use the canonical casing (`Scripts/`, `GUI/`).
+Note: DabsFramework uses lowercase folder names (`scripts/`, `gui/`). This works protože Windows is case-insensitive, but may cause issues on Linux. The convention is to use the canonical casing (`Scripts/`, `GUI/`).
 
 ---
 
@@ -711,7 +715,7 @@ Scripts/
     MoreStuff.c             <-- 1500 lines, 12 classes
 ```
 
-**Oprava:** One file per class, organized in subdirectories by subsystem.
+**Fix:** One file per class, organized in subdirectories by subsystem.
 
 ### 2. Wrong Layer Placement
 
@@ -724,7 +728,7 @@ Scripts/
       MyItem.c              <-- Extends ItemBase (belongs in 4_World)
 ```
 
-**Oprava:** Follow the layer rules from Chapter 2.1. Move entity code to `4_World` and UI code to `5_Mission`.
+**Fix:** Následujte the layer rules from Chapter 2.1. Move entity code to `4_World` and UI code to `5_Mission`.
 
 ### 3. No Mod Subdirectory in Script Layers
 
@@ -735,7 +739,7 @@ Scripts/
     RPCs.c
 ```
 
-**Oprava:** Always namespace with a subdirectory:
+**Fix:** Vždy namespace with a subdirectory:
 
 ```
 Scripts/
@@ -753,7 +757,7 @@ Scripts/
   config.cpp
 ```
 
-**Oprava:** `stringtable.csv` goes at the mod root (next to `mod.cpp`):
+**Fix:** `stringtable.csv` goes at the mod root (next to `mod.cpp`):
 
 ```
 MyMod/
@@ -773,7 +777,7 @@ MyMod/
   Textures/weapon_co.paa
 ```
 
-**Oprava:** Separate into multiple PBOs:
+**Fix:** Separate into více PBOs:
 
 ```
 MyMod/
@@ -792,7 +796,7 @@ MyMod/
 Scripts/3_Game/MyMod/Systems/Core/Config/Managers/Settings/PlayerSettings.c
 ```
 
-**Oprava:** Keep nesting to 2-3 levels maximum. Flatten when possible:
+**Fix:** Udržujte nesting to 2-3 levels maximum. Flatten when možný:
 
 ```
 Scripts/3_Game/MyMod/Config/PlayerSettings.c
@@ -807,7 +811,7 @@ MYMOD_Manager.c
 my_mod_panel.c
 ```
 
-**Oprava:** Pick one convention and stick with it:
+**Fix:** Pick one convention and stick with it:
 
 ```
 MyModConfig.c
@@ -818,22 +822,53 @@ MyModPanel.c
 
 ---
 
-## Summary Checklist
+## Shrnutí Checklist
 
-Before publishing your mod, verify:
+Před publishing your mod, verify:
 
 - [ ] `mod.cpp` is at the mod root (next to `Addons/` or `Scripts/`)
 - [ ] `stringtable.csv` is at the mod root (NOT inside `Scripts/`)
-- [ ] `config.cpp` exists in every PBO root
-- [ ] `requiredAddons[]` lists ALL dependencies
+- [ ] `config.cpp` exists in každý PBO root
+- [ ] `povinnýAddons[]` lists ALL dependencies
 - [ ] Script module `files[]` paths match the actual directory structure
 - [ ] Every `.c` file is inside a mod-namespaced subdirectory (e.g., `3_Game/MyMod/`)
 - [ ] Class names have a unique prefix to avoid collisions
 - [ ] Entity classes are in `4_World`, UI classes are in `5_Mission`, data classes are in `3_Game`
 - [ ] No secrets or debug code in the published PBOs
-- [ ] Server-only logic is in a separate `-servermod` package (if applicable)
+- [ ] Server-only logic is in a oddělený `-servermod` package (if applicable)
+
+---
+
+## Pozorováno v reálných modech
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| Deep subsystem folders in `3_Game` | StarDZ Core | 15+ folders under `3_Game/` (Config, RPC, Events, Logging, Permissions, etc.) |
+| `Common/` shared folder | COT | Included in každý script module's `files[]` to provide cross-layer utility types |
+| Lowercase folder names | DabsFramework | Uses `scripts/`, `gui/` místo `Scripts/`, `GUI/` -- works on Windows but risks issues on Linux |
+| Separate GUI PBO | Expansion, COT | GUI resources (layouts, imagesets, styles) packed into a dedicated PBO with its own config.cpp |
+| Minimal Scripts for content mods | Weapon packs | `Data/` directory dominates; `Scripts/` has pouze a thin config.cpp and volitelný behavior overrides |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| One class per file | Each `.c` file contains one class | Small helper classes and enums are často co-located with their parent class for convenience |
+| Separate PBOs for Scripts/Data/GUI | Clean separation by concern | Small mods často merge každýthing into a jeden PBO to simplify distribution |
+| Mod subfolder prevents collisions | `3_Game/MyMod/` namespaces files | True, but class names stále collide globálníly -- the subfolder pouze prevents file-level conflicts |
+| `stringtable.csv` at mod root | Engine finds it automatickýally | Must be at the PBO root that gets loaded; placing it inside `Scripts/` causes it to be tiše ignored |
+| ServerFiles/ ships with the mod | Server admins copy types.xml | Many mod authors forget to include ServerFiles, forcing admins to create types.xml entries ručně |
+
+---
+
+## Kompatibilita a dopad
+
+- **Více modů:** File organization itself ne cause conflicts. Nicméně two mods placing files with the stejný path inside their PBOs (e.g., oba using `3_Game/Config.c` without a mod subfolder) will collide at engine level, causing one to tiše override the jiný.
+- **Výkon:** Directory depth and file count have no measurable impact on script compilation time. Engine recursively scans all listed `files[]` directories bez ohledu na nesting.
 
 ---
 
 **Předchozí:** [Chapter 2.4: Your First Mod -- Minimum Viable](04-minimum-viable-mod.md)
-**Další:** [Part 3: GUI & Layout System](../03-gui-system/01-widget-types.md)
+**Další:** [Chapter 2.6: Server vs Client Architecture](06-server-client-split.md)

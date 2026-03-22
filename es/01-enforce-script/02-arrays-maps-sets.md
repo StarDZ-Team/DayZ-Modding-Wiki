@@ -1,10 +1,10 @@
-# Chapter 1.2: Arrays, Maps & Sets
+# Capítulo 1.2: Arrays, Maps y Sets
 
-[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
+[Inicio](../../README.md) | [<< Anterior: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Siguiente: Classes & Inheritance >>](03-classes-inheritance.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Real DayZ mods deal with collections of things: lists of players, inventories of items, mappings from player IDs to permissions, sets of active zones. Enforce Script provides three collection types to handle these needs:
 
@@ -76,7 +76,7 @@ void Test()
 }
 ```
 
-### Cuando Usar Static Arrays
+### When to Use Static Arrays
 
 Use static arrays for:
 - Vector/matrix data (`vector mat[3]` for 3x3 rotation matrices)
@@ -236,7 +236,7 @@ void RemovingElements()
 }
 ```
 
-### Tamano y Capacidad
+### Sizing and Capacity
 
 ```c
 void SizingArrays()
@@ -258,7 +258,7 @@ void SizingArrays()
 }
 ```
 
-### Ordenamiento y Mezcla
+### Ordering and Shuffling
 
 ```c
 void OrderingArrays()
@@ -284,7 +284,7 @@ void OrderingArrays()
 }
 ```
 
-### Copiado
+### Copying
 
 ```c
 void CopyingArrays()
@@ -304,7 +304,7 @@ void CopyingArrays()
 }
 ```
 
-### Depuracion
+### Debugging
 
 ```c
 void DebuggingArrays()
@@ -322,7 +322,7 @@ void DebuggingArrays()
 
 ---
 
-## Iterando Arrays
+## Iterating Arrays
 
 ### for Loop (Index-Based)
 
@@ -635,7 +635,7 @@ void SetExamples()
 }
 ```
 
-### Cuando Usar Set vs Array
+### When to Use Set vs Array
 
 In practice, most DayZ modders use `array<T>` for almost everything because:
 - `set<T>` has fewer methods than `array<T>`
@@ -646,7 +646,7 @@ Use `set<T>` when your code semantically represents a set (no meaningful order, 
 
 ---
 
-## Iterando Maps
+## Iterating Maps
 
 Maps support `foreach` for convenient iteration:
 
@@ -691,7 +691,7 @@ void IterateMapByIndex()
 
 ---
 
-## Colecciones Anidadas
+## Nested Collections
 
 Collections can contain other collections. When storing reference types (like arrays) inside a map, use `ref` to manage ownership.
 
@@ -732,6 +732,39 @@ class LootTable
     }
 }
 ```
+
+---
+
+## Mejores Prácticas
+
+- Always use `new` to instantiate collections before use -- `array<string> items;` is `null`, not empty.
+- Prefer `map.Set()` over `map.Insert()` for updates -- `Insert` silently ignores existing keys.
+- When removing elements during iteration, use a backward `for` loop or build a separate removal list -- never modify a collection inside `foreach`.
+- Use `Reserve()` when you know the expected element count ahead of time to avoid repeated internal re-allocations.
+- Guard every element access with `IsValidIndex()` or a `Count() > 0` check -- out-of-bounds access causes silent crashes.
+
+---
+
+## Observado en Mods Reales
+
+> Patrones confirmados estudiando código fuente de mods profesionales de DayZ.
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Backward `for` loop for removal | Expansion / COT | Always iterate `Count()-1` down to `0` when removing filtered elements |
+| `map<string, ref ClassName>` for registries | Dabs Framework | All manager registries use `ref` in map values to keep objects alive |
+| `TStringArray` typedef everywhere | Vanilla / VPP | Config parsing, chat messages, and loot tables all use `TStringArray` instead of `array<string>` |
+| Null + empty guard before access | Expansion Market | Every function receiving an array starts with `if (!arr \|\| arr.Count() == 0) return;` |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `Remove(index)` is "fast remove" | Should just delete the element | It swaps with the last element first, silently re-ordering the array |
+| `map.Insert()` adds a key | Expected to update if key exists | Returns `false` and does nothing if the key is already present |
+| `set<T>` for unique collections | Should behave like a mathematical set | Most modders use `array<T>` with `Find()` instead because `set` has fewer methods |
 
 ---
 
@@ -864,7 +897,7 @@ string GetFirstItem(array<string> items)
 
 ---
 
-## Ejercicios Practicos
+## Practice Exercises
 
 ### Exercise 1: Inventory Counter
 Create a function that takes an `array<string>` of item class names (with duplicates) and returns a `map<string, int>` counting how many of each item exists.
@@ -893,14 +926,14 @@ Create a class with two maps that allows lookup in both directions: given a play
 
 ## Resumen
 
-| Coleccion | Tipo | Caso de Uso | Diferencia Clave |
+| Collection | Tipo | Use Case | Key Difference |
 |-----------|------|----------|----------------|
 | Static array | `int arr[5]` | Fixed-size, compile-time known | No resize, no methods |
 | Dynamic array | `array<T>` | General-purpose ordered list | Rich API, resizable |
 | Map | `map<K,V>` | Key-value lookup | `Set()` to insert/update |
 | Set | `set<T>` | Value-based membership | Simpler than array, less common |
 
-| Operacion | Metodo | Notas |
+| Operation | Método | Notas |
 |-----------|--------|-------|
 | Add to end | `Insert(val)` | Returns index |
 | Add at position | `InsertAt(val, idx)` | Shifts right |
@@ -917,4 +950,4 @@ Create a class with two maps that allows lookup in both directions: given a play
 
 ---
 
-[Inicio](../../README.md) | [<< Anterior: Variables & Types](01-variables-types.md) | **Arrays, Maps y Sets** | [Siguiente: Classes & Inheritance >>](03-classes-inheritance.md)
+[Inicio](../../README.md) | [<< Anterior: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Siguiente: Classes & Inheritance >>](03-classes-inheritance.md)

@@ -1,14 +1,14 @@
-# Chapter 4.8: Building Modeling -- Doors & Ladders
+# Capítulo 4.8: Building Modeling -- Doors & Ladders
 
-[Home](../../README.md) | [<< Previous: Workbench Guide](07-workbench-guide.md) | **Building Modeling**
+[Inicio](../../README.md) | [<< Anterior: Workbench Guide](07-workbench-guide.md) | **Building Modeling**
 
 ---
 
-## Introduccion
+## Introducción
 
-Los edificios en DayZ son mas que escenografia estatica. Los jugadores interactuan con ellos constantemente -- abriendo puertas, subiendo escaleras, cubriendose detras de muros. Crear un edificio personalizado que soporte estas interacciones requiere una configuracion cuidadosa del modelo: las puertas necesitan ejes de rotacion y selecciones nombradas a traves de multiples LODs, las escaleras necesitan rutas de escalada colocadas con precision definidas enteramente a traves de vertices del LOD de Memoria.
+Buildings in DayZ are more than static scenery. Players interact with them constantly -- opening doors, climbing ladders, taking cover behind walls. Creating a custom building that supports these interactions requires careful model setup: doors need rotation axes and named selections across multiple LODs, ladders need precisely placed climbing paths defined entirely through Memory LOD vertices.
 
-Este capitulo cubre the complete workflow for adding interactive doors and climbable ladders to custom building models, basado en documentacion oficial de Bohemia Interactive.
+This chapter covers the complete workflow for adding interactive doors and climbable ladders to custom building models, based on official Bohemia Interactive documentation.
 
 ### Prerequisites
 
@@ -43,7 +43,7 @@ Este capitulo cubre the complete workflow for adding interactive doors and climb
 
 ---
 
-## Configuracion de Puertas
+## Door Configuration
 
 Interactive doors require three things to come together: the P3D model with correctly named selections and memory points, a `model.cfg` that defines the animation skeleton and rotation parameters, and a `config.cpp` game config that links the door to sounds, damage zones, and game logic.
 
@@ -66,7 +66,7 @@ A door in the P3D model must include the following:
 
 Almost all doors in vanilla DayZ are **120 x 220 cm** (width x height). Using these standard dimensions ensures animations look correct and characters fit through openings naturally. Model your doors **closed by default** and animate them to the open position -- Bohemia plans to support doors opening in both directions in the future.
 
-### model.cfg -- Esqueletos y Animaciones
+### model.cfg -- Skeletons and Animations
 
 Any animated door requires a `model.cfg` file. This config defines the bone structure (skeleton) and the animation parameters. Place `model.cfg` near your model file, or higher in the folder structure -- the exact location is flexible as long as the binarizer can find it.
 
@@ -144,9 +144,9 @@ class CfgModels
 };
 ```
 
-**Parametros clave explicados:**
+**Key parameters explained:**
 
-| Parametro | Descripcion |
+| Parámetro | Descripción |
 |-----------|-------------|
 | `type` | Animation type. Use `"rotation"` for swinging doors, `"translation"` for sliding doors. |
 | `selection` | The named selection in the model that should be animated. |
@@ -160,7 +160,7 @@ class CfgModels
 
 After writing the `model.cfg`, open your model in Object Builder with Buldozer running. Use the `[` and `]` keys to cycle through available animation sources, and `;` / `'` (or mouse wheel up/down) to advance or recede the animation. This lets you verify that the door pivots correctly on its axis.
 
-### Config del Juego (config.cpp)
+### Game Config (config.cpp)
 
 The game config connects the animated model to game systems -- sounds, damage, and door state logic. The config class name **must** follow the pattern `land_modelname` to link correctly with the model.
 
@@ -296,9 +296,9 @@ class CfgVehicles
 };
 ```
 
-**Parametros de config de puerta explicados:**
+**Door config parameters explained:**
 
-| Parametro | Descripcion |
+| Parámetro | Descripción |
 |-----------|-------------|
 | `component` | Named selection in the **View Geometry LOD** used for this door. |
 | `soundPos` | Named selection in the **Memory LOD** where door sounds are played. |
@@ -310,7 +310,7 @@ class CfgVehicles
 | `soundLocked` | Sound class played when a player tries to open a locked door. |
 | `soundOpenABit` | Sound class played when a player breaks open a locked door. |
 
-**Notas importantes sobre el config:**
+**Important notes on the config:**
 
 - All buildings in DayZ inherit from `HouseNoDestruct`.
 - Each class name under `class Doors` must correspond to the `source` parameter defined in `model.cfg`.
@@ -321,17 +321,17 @@ class CfgVehicles
 
 Double doors (two wings that open together from a single interaction) are common in DayZ. They require special setup:
 
-**En el modelo:**
+**In the model:**
 - Configure each wing as an individual door with its own named selection (e.g., `door3_1` and `door3_2`).
 - In the **Memory LOD**, the action point must be **shared** between the two wings -- use one named selection and one vertex for the action position.
 - The no-suffix named selection (e.g., `door3` without wing suffix) must cover **both** door handles.
 - **View Geometry** and **Fire Geometry** require an additional named selection that covers both wings together.
 
-**En model.cfg:**
+**In model.cfg:**
 - Define each wing as a separate animation class, but set the **same `source` parameter** for both wings (e.g., `"doors34"` for both).
 - Set `angle1` to a **positive** value for one wing and **negative** for the other, so they swing in opposite directions.
 
-**En config.cpp:**
+**In config.cpp:**
 - Define only **one** class under `class Doors`, with its name matching the shared `source` parameter.
 - Similarly, define only **one** entry in `DamageZones` for the double door pair.
 
@@ -360,7 +360,7 @@ This overrides the automatic bounding sphere calculation with one that encompass
 
 ---
 
-## Configuracion de Escaleras
+## Ladder Configuration
 
 Unlike doors, ladders in DayZ require **no animation config** and **no special game config entries** beyond the base building class. The entire ladder setup is done through Memory LOD vertex placement and one View Geometry selection. This makes ladders simpler to set up than doors, but the vertex placement must be precise.
 
@@ -373,13 +373,13 @@ DayZ supports two types of ladders:
 
 Both types also support **middle side-way enter and exit points**, allowing players to get on and off the ladder at intermediate floors. Ladders can also be placed **at an angle** rather than strictly vertical.
 
-### Selecciones Nombradas del LOD de Memoria
+### Memory LOD Named Selections
 
 The ladder is defined entirely by named vertices in the Memory LOD. Every selection name begins with `ladderN_` where **N** is the ladder ID, starting from `1`. A building can have multiple ladders (`ladder1_`, `ladder2_`, `ladder3_`, etc.).
 
 Here is the complete set of named selections for a ladder:
 
-| Seleccion Nombrada | Descripcion |
+| Named Selection | Descripción |
 |----------------|-------------|
 | `ladderN_bottom_front` | Defines the bottom entry step -- where the player begins climbing. |
 | `ladderN_middle_left` | Defines a middle entry/exit point (left side). Can contain multiple vertices if the ladder passes multiple floors. |
@@ -394,7 +394,7 @@ Here is the complete set of named selections for a ladder:
 
 Each of these is a vertex (or set of vertices for middle points) that you place manually in Object Builder's Memory LOD.
 
-### Requisitos de View Geometry
+### View Geometry Requirements
 
 In addition to the Memory LOD setup, you must create a **View Geometry** component with a named selection called `ladderN`. This selection must cover the **entire volume** of the ladder -- the full height and width of the climbable area. Without this View Geometry selection, the ladder will not function correctly.
 
@@ -411,9 +411,9 @@ Characters **collide with geometry while climbing a ladder**. This means you mus
 
 If the space is too tight, the character will clip into walls or get stuck during the climbing animation.
 
-### Requisitos de Config para Escaleras
+### Config Requirements for Ladders
 
-Unlike the Arma series, DayZ does **not** require a `ladders[]` array in the game config class. Sin embargo, two things are still necessary:
+Unlike the Arma series, DayZ does **not** require a `ladders[]` array in the game config class. However, two things are still necessary:
 
 1. Your model must have a **config representation** -- a `config.cpp` with a `CfgVehicles` class (the same base class used for doors; see the door config section above).
 2. The **Geometry LOD** must contain the named property `class` with the value `house`.
@@ -422,11 +422,11 @@ Beyond these two requirements, the ladder is fully defined by the Memory LOD ver
 
 ---
 
-## Resumen de Requisitos del Modelo
+## Model Requirements Summary
 
 Buildings with doors and ladders must include several LODs, each serving a distinct purpose. The table below summarizes what each LOD must contain:
 
-| LOD | Proposito | Requisitos de Puerta | Requisitos de Escalera |
+| LOD | Propósito | Door Requirements | Ladder Requirements |
 |-----|---------|-------------------|---------------------|
 | **Resolution LOD** | Visual mesh displayed to the player. | Named selection for the door geometry (e.g., `door1`). | No specific requirements. |
 | **Geometry LOD** | Physical collision detection. | Named selection for the door geometry. Named property `class = "house"`. | Named property `class = "house"`. Sufficient clearance around the ladder for climbing characters. |
@@ -441,7 +441,7 @@ A critical requirement is that **named selections must be consistent across all 
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Model doors closed by default.** Animate from closed to open. Bohemia plans to support opening doors in both directions, so starting from closed is future-proof.
 
@@ -469,7 +469,7 @@ A critical requirement is that **named selections must be consistent across all 
 
 ### Doors
 
-| Error | Sintoma | Solucion |
+| Error | Symptom | Solución |
 |---------|---------|-----|
 | `CfgModels` class name does not match model filename. | Door animation does not play. | Rename the class to match the `.p3d` filename exactly (without extension). |
 | Missing named selection in one or more LODs. | Door is visible but not interactive, or bullets pass through. | Ensure the selection exists in Resolution, Geometry, View Geometry, and Fire Geometry LODs. |
@@ -481,7 +481,7 @@ A critical requirement is that **named selections must be consistent across all 
 
 ### Ladders
 
-| Error | Sintoma | Solucion |
+| Error | Symptom | Solución |
 |---------|---------|-----|
 | `ladderN_con` not placed at floor level. | "Enter Ladder" action does not appear or appears at the wrong height. | Move the vertex to ground/floor level. |
 | Missing View Geometry selection `ladderN`. | Ladder cannot be interacted with. | Create a View Geometry component with a named selection covering the full ladder volume. |
@@ -492,7 +492,7 @@ A critical requirement is that **named selections must be consistent across all 
 
 ---
 
-## Referencias
+## References
 
 - [Bohemia Interactive -- Doors on buildings](https://community.bistudio.com/wiki/DayZ:Doors_on_buildings) (official BI documentation)
 - [Bohemia Interactive -- Ladders on buildings](https://community.bistudio.com/wiki/DayZ:Ladders_on_buildings) (official BI documentation)
@@ -502,8 +502,8 @@ A critical requirement is that **named selections must be consistent across all 
 
 ---
 
-## Navegacion
+## Navigation
 
-| Anterior | Arriba | Siguiente |
+| Previous | Up | Next |
 |----------|----|------|
 | [4.7 Workbench Guide](07-workbench-guide.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | -- |

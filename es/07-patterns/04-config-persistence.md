@@ -1,10 +1,10 @@
-# Chapter 7.4: Config Persistence
+# Capítulo 7.4: Config Persistence
 
-[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
+[Inicio](../../README.md) | [<< Anterior: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Siguiente: Permission Systems >>](05-permissions.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Almost every DayZ mod needs to save and load configuration data: server settings, spawn tables, ban lists, player data, teleport locations. The engine provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for everything else. Professional mods layer config versioning and auto-migration on top.
 
@@ -210,7 +210,7 @@ void ReadCustomData(string path)
 }
 ```
 
-### Cuando Usar Manual I/O
+### When to Use Manual I/O
 
 - Writing log files (append mode)
 - Writing CSV or plain-text exports
@@ -307,9 +307,9 @@ MakeDirectory("$profile:MyMod/Data");
 MakeDirectory("$profile:MyMod/Data/Players");
 ```
 
-### MyMod Pattern: Constants for Paths
+### Constants for Paths Pattern
 
-MyMod defines all paths as constants in a dedicated class:
+A framework mod defines all paths as constants in a dedicated class:
 
 ```c
 class MyModConst
@@ -360,12 +360,12 @@ class MyModConfig
 };
 ```
 
-### MyMod ConfigBase Pattern
+### Reflective ConfigBase Pattern
 
-MyMod uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
+This pattern uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
 
 ```c
-// Conceptual pattern (simplified from MyMod):
+// Conceptual pattern (reflective config):
 class MyConfigBase
 {
     // Each config declares its version
@@ -379,7 +379,7 @@ class MyConfigBase
     }
 
     // Reflection: get all configurable fields
-    array<ref MyModConfigField> GetFields();
+    array<ref MyConfigField> GetFields();
 
     // Dynamic get/set by field name (for admin panel sync)
     string GetFieldValue(string fieldName);
@@ -576,7 +576,7 @@ void UpdateSetting(string key, string value)
 }
 ```
 
-### Save on Critical Eventos
+### Save on Critical Events
 
 In addition to timed saves, save immediately after critical operations:
 
@@ -651,7 +651,7 @@ string LogPath = "$profile:MyMod/Logs/server.log";
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Use `$profile:` for all file paths.** Never hardcode absolute paths.
 
@@ -675,4 +675,24 @@ string LogPath = "$profile:MyMod/Logs/server.log";
 
 ---
 
-[<< Anterior: RPC Patterns](03-rpc-patterns.md) | [Inicio](../../README.md) | [Siguiente: Permission Systems >>](05-permissions.md)
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Each mod writes to its own `$profile:ModName/` directory. Conflicts only happen if two mods use the same directory name. Use a unique, recognizable prefix for your mod's folder.
+- **Load Order:** Config loading happens in `OnInit` or `OnMissionStart`, both controlled by the mod's own lifecycle. No cross-mod load-order issues unless two mods try to read/write the same file (which they should never do).
+- **Listen Server:** Config files are server-side only (`$profile:` resolves on the server). On listen servers, client-side code can technically access `$profile:`, but configs should only be loaded by server modules to avoid ambiguity.
+- **Performance:** `JsonFileLoader` is synchronous and blocks the main thread. For large configs (100+ KB), load during `OnInit` (before gameplay starts). Auto-save timers prevent repeated writes; the dirty-flag pattern ensures disk I/O only happens when data has actually changed.
+- **Migration:** Adding new fields to a config class is safe --- `JsonFileLoader` ignores missing JSON keys and leaves the class default value. Removing or renaming fields requires a versioned migration step to avoid silent data loss.
+
+---
+
+## Teoría vs Práctica
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use async file I/O to avoid blocking | Enforce Script has no async file I/O; all reads/writes are synchronous. Load at startup, save on timers. |
+| Validate JSON with a schema | No JSON schema validation exists; validate fields in `OnAfterLoad()` or with guard clauses after loading. |
+| Use a database for structured data | No database access from Enforce Script; JSON files in `$profile:` are the only persistence mechanism. |
+
+---
+
+[Inicio](../../README.md) | [<< Anterior: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Siguiente: Permission Systems >>](05-permissions.md)

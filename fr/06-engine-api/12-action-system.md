@@ -1,12 +1,12 @@
-# Chapter 6.12: Action System
+# Chapitre 6.12: Action System
 
-[Home](../../README.md) | [<< Previous: Mission Hooks](11-mission-hooks.md) | **Action System** | [Next: Input System >>](13-input-system.md)
+[Accueil](../../README.md) | [<< Précédent : Mission Hooks](11-mission-hooks.md) | **Action System** | [Suivant : Input System >>](13-input-system.md)
 
 ---
 
 ## Introduction
 
-Le Systeme d'Actions est la facon dont DayZ gere toutes les interactions joueur with items and the world. Every time a player eats food, opens a door, bandages a wound, repairs a wall, or turns on a flashlight, the engine runs through the action pipeline. Understanding this pipeline --- from condition checks to animation callbacks to server execution --- is fundamental to creating any interactive gameplay mod.
+The Action System is how DayZ handles all player interactions with items and le monde. Every time a player eats food, opens a door, bandages a wound, repairs a wall, or turns on a flashlight, le moteur runs through the action pipeline. Understanding this pipeline --- from condition checks to animation callbacks to server execution --- is fundamental to creating any interactive gameplay mod.
 
 The system lives primarily in `4_World/classes/useractionscomponent/` and is built around three pillars:
 
@@ -14,11 +14,11 @@ The system lives primarily in `4_World/classes/useractionscomponent/` and is bui
 2. **Condition components** that gate when an action can appear (distance, item state, target type)
 3. **Action components** that control how the action progresses (time, quantity, repeating cycles)
 
-This chapter covers the full API, class hierarchy, lifecycle, and practical patterns for creating custom actions.
+Ce chapitre couvre the full API, class hierarchy, lifecycle, and practical patterns for creating custom actions.
 
 ---
 
-## Hierarchie des Classes
+## Hiérarchie des classes
 
 ```
 ActionBase_Basic                         // 3_Game — empty shell, compilation anchor
@@ -85,7 +85,7 @@ classDiagram
 
 ### Key Differences Between Action Types
 
-| Propriete | SingleUse | Continuous | Interact |
+| Property | SingleUse | Continuous | Interact |
 |----------|-----------|------------|----------|
 | Category constant | `AC_SINGLE_USE` | `AC_CONTINUOUS` | `AC_INTERACT` |
 | Input type | `DefaultActionInput` | `ContinuousDefaultActionInput` | `InteractActionInput` |
@@ -97,13 +97,13 @@ classDiagram
 
 ---
 
-## Cycle de Vie de l'Action
+## Action Lifecycle
 
 ### State Constants
 
 The action state machine uses these constants defined in `3_Game/constants.c`:
 
-| Constante | Valeur | Signification |
+| Constant | Value | Meaning |
 |----------|-------|---------|
 | `UA_NONE` | 0 | No action running |
 | `UA_PROCESSING` | 2 | Action in progress |
@@ -178,26 +178,26 @@ flowchart TD
 
 These methods are called in order during an action's lifetime. Override them in your custom actions:
 
-| Methode | Appele sur | But |
+| Method | Called on | Purpose |
 |--------|-----------|---------|
 | `CreateConditionComponents()` | Both | Set `m_ConditionItem` and `m_ConditionTarget` |
 | `ActionCondition()` | Both | Custom validation (distance, state, type checks) |
 | `ActionConditionContinue()` | Both | Continuous-only: re-checked each frame during progress |
 | `SetupAction()` | Both | Internal: builds `ActionData`, reserves inventory |
 | `OnStart()` | Both | Action begins (cancels placing if active) |
-| `OnStartServer()` | Server | Server-side start logic |
-| `OnStartClient()` | Client | Client-side start effects |
+| `OnStartServer()` | Server | Côté serveur start logic |
+| `OnStartClient()` | Client | Côté client start effects |
 | `OnExecute()` | Both | Animation event fired --- main execution |
-| `OnExecuteServer()` | Server | Server-side execution logic |
-| `OnExecuteClient()` | Client | Client-side execution effects |
+| `OnExecuteServer()` | Server | Côté serveur execution logic |
+| `OnExecuteClient()` | Client | Côté client execution effects |
 | `OnFinishProgress()` | Both | Continuous-only: one cycle completed |
 | `OnFinishProgressServer()` | Server | Continuous-only: server cycle complete |
 | `OnFinishProgressClient()` | Client | Continuous-only: client cycle complete |
 | `OnStartAnimationLoop()` | Both | Continuous-only: loop animation begins |
 | `OnEndAnimationLoop()` | Both | Continuous-only: loop animation ends |
 | `OnEnd()` | Both | Action finished (success or cancel) |
-| `OnEndServer()` | Server | Server-side cleanup |
-| `OnEndClient()` | Client | Client-side cleanup |
+| `OnEndServer()` | Server | Côté serveur cleanup |
+| `OnEndClient()` | Client | Côté client cleanup |
 
 ---
 
@@ -248,9 +248,9 @@ class MyCustomAction : ActionContinuousBase
 
 ## ActionTarget
 
-The `ActionTarget` class represents what the player is aiming at:
+The `ActionTarget` class represents what le joueur is aiming at:
 
-**File:** `4_World/classes/useractionscomponent/actiontargets.c`
+**Fichier :** `4_World/classes/useractionscomponent/actiontargets.c`
 
 ```c
 class ActionTarget
@@ -266,11 +266,11 @@ class ActionTarget
 
 ### How Targets Are Selected
 
-The `ActionTargets` class runs each frame on the client, gathering potential targets:
+The `ActionTargets` class runs each frame on le client, gathering potential targets:
 
 1. **Raycast** from camera position along camera direction (`c_RayDistance`)
-2. **Vicinity scan** for nearby objects around the player
-3. For each candidate, the engine calls `GetActions()` on the object to find registered actions
+2. **Vicinity scan** for nearby objects around le joueur
+3. For each candidate, le moteur calls `GetActions()` on the object to find registered actions
 4. Each action's condition components (`CCIBase.Can()`, `CCTBase.Can()`) and `ActionCondition()` are tested
 5. Valid actions are ranked by utility and displayed in the HUD
 
@@ -278,15 +278,15 @@ The `ActionTargets` class runs each frame on the client, gathering potential tar
 
 ## Condition Components
 
-Every action has two condition components set in `CreateConditionComponents()`. These are checked **before** `ActionCondition()` and determine whether the action can appear in the player's HUD at all.
+Every action has two condition components set in `CreateConditionComponents()`. These are checked **before** `ActionCondition()` and determine whether the action can appear in le joueur's HUD at all.
 
 ### Item Conditions (CCIBase)
 
-Controls whether the item in the player's hand qualifies for this action.
+Controls whether the item in le joueur's hand qualifies for this action.
 
-**File:** `4_World/classes/useractionscomponent/itemconditioncomponents/`
+**Fichier :** `4_World/classes/useractionscomponent/itemconditioncomponents/`
 
-| Class | Comportement |
+| Class | Behavior |
 |-------|----------|
 | `CCINone` | Always passes --- no item requirement |
 | `CCIDummy` | Passes if item is not null (item must exist) |
@@ -320,11 +320,11 @@ class CCINonRuined : CCIBase
 
 ### Target Conditions (CCTBase)
 
-Controls whether the target object (what the player is looking at) qualifies.
+Controls whether the target object (what le joueur is looking at) qualifies.
 
-**File:** `4_World/classes/useractionscomponent/targetconditionscomponents/`
+**Fichier :** `4_World/classes/useractionscomponent/targetconditionscomponents/`
 
-| Class | Constructor | Comportement |
+| Class | Constructor | Behavior |
 |-------|-------------|----------|
 | `CCTNone` | `CCTNone()` | Always passes --- no target needed |
 | `CCTDummy` | `CCTDummy()` | Passes if target object exists |
@@ -334,7 +334,7 @@ Controls whether the target object (what the player is looking at) qualifies.
 | `CCTNonRuined` | `CCTNonRuined(float dist)` | Target within distance AND not ruined |
 | `CCTCursorParent` | `CCTCursorParent(float dist)` | Cursor on parent object within distance |
 
-Distance is measured from **both** the player's root position and head bone position (whichever is closer). The `CCTObject` check:
+Distance is measured from **both** le joueur's root position and head bone position (whichever is closer). The `CCTObject` check:
 
 ```c
 class CCTObject : CCTBase
@@ -365,9 +365,9 @@ class CCTObject : CCTBase
 
 ### Distance Constants
 
-**File:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
+**Fichier :** `4_World/classes/useractionscomponent/actions/actionconstants.c`
 
-| Constante | Value (meters) | Typical use |
+| Constant | Value (meters) | Typical use |
 |----------|---------------|-------------|
 | `UAMaxDistances.SMALL` | 1.3 | Close interactions, ladders |
 | `UAMaxDistances.DEFAULT` | 2.0 | Standard actions |
@@ -380,7 +380,7 @@ class CCTObject : CCTBase
 
 ## Registering Actions on Items
 
-Actions are registered on entities through the `SetActions()` / `AddAction()` / `RemoveAction()` pattern. The engine calls `GetActions()` on an entity to retrieve its action list; the first time this happens, `InitializeActions()` builds the map via `SetActions()`.
+Actions are registered on entities through the `SetActions()` / `AddAction()` / `RemoveAction()` pattern. Le moteur calls `GetActions()` on an entity to retrieve its action list; the first time this happens, `InitializeActions()` builds the map via `SetActions()`.
 
 ### On ItemBase (Inventory Items)
 
@@ -465,17 +465,17 @@ Each entity type maintains a static `TInputActionMap` (a `map<typename, ref arra
 1. The action singleton is fetched from `ActionManagerBase.GetAction()`
 2. The action's input type is queried (`GetInputType()`)
 3. The action is inserted into the array for that input type
-4. At runtime, the engine queries all actions for the matching input type
+4. At runtime, le moteur queries all actions for the matching input type
 
 This means actions are shared per **type** (class), not per instance. All items of the same class share the same action list.
 
 ---
 
-## Creer un(e) Action --- Step by Step Personnalise(e)
+## Creating a Custom Action --- Step by Step
 
 ### Example 1: Simple Single-Use Action
 
-A custom action that instantly heals the player when they use a special item:
+A custom action that instantly heals le joueur when they use a special item:
 
 ```c
 // File: 4_World/actions/ActionHealInstant.c
@@ -699,7 +699,7 @@ class MyCustomDevice extends BuildingBase
 
 ### Example 4: Action with Specific Item Requirement
 
-An action that requires the player to hold a specific tool type while targeting a specific object:
+An action that requires le joueur to hold a specific tool type while targeting a specific object:
 
 ```c
 class ActionUnlockWithKey : ActionInteractBase
@@ -757,11 +757,11 @@ class ActionUnlockWithKey : ActionInteractBase
 
 Action components control _how_ the action progresses over time. They are created in the callback's `CreateActionComponent()` method.
 
-**File:** `4_World/classes/useractionscomponent/actioncomponents/`
+**Fichier :** `4_World/classes/useractionscomponent/actioncomponents/`
 
 ### Available Components
 
-| Component | Parameters | Comportement |
+| Component | Parameters | Behavior |
 |-----------|------------|----------|
 | `CASingleUse` | none | Instant execution, no progress |
 | `CAInteract` | none | Instant execution for interact actions |
@@ -787,7 +787,7 @@ class MyActionCB : ActionContinuousBaseCB
 
 ### CAContinuousRepeat
 
-Repeating cycles --- `OnFinishProgressServer()` is called each time a cycle completes, and the action continues until the player releases the key:
+Repeating cycles --- `OnFinishProgressServer()` is called each time a cycle completes, and the action continues until le joueur releases the key:
 
 ```c
 class MyRepeatActionCB : ActionContinuousBaseCB
@@ -802,9 +802,9 @@ class MyRepeatActionCB : ActionContinuousBaseCB
 
 ### Time Constants
 
-**File:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
+**Fichier :** `4_World/classes/useractionscomponent/actions/actionconstants.c`
 
-| Constante | Value (seconds) | Use |
+| Constant | Value (seconds) | Use |
 |----------|----------------|-----|
 | `UATimeSpent.DEFAULT` | 1.0 | General |
 | `UATimeSpent.DEFAULT_CONSTRUCT` | 5.0 | Construction |
@@ -822,7 +822,7 @@ class MyRepeatActionCB : ActionContinuousBaseCB
 
 ### ActionOpenDoors (Interact)
 
-**File:** `4_World/classes/useractionscomponent/actions/interact/actionopendoors.c`
+**Fichier :** `4_World/classes/useractionscomponent/actions/interact/actionopendoors.c`
 
 ```c
 class ActionOpenDoors : ActionInteractBase
@@ -875,12 +875,12 @@ class ActionOpenDoors : ActionInteractBase
 
 Key takeaways:
 - Uses `OnStartServer()` (not `OnExecuteServer()`) because interact actions fire immediately
-- `GetComponentIndex()` retrieves which door the player is looking at
+- `GetComponentIndex()` retrieves which door le joueur is looking at
 - Distance check done manually with `IsInReach()` as well as via `CCTCursor`
 
 ### ActionTurnOnPowerGenerator (Interact)
 
-**File:** `4_World/classes/useractionscomponent/actions/interact/actionturnonpowergenerator.c`
+**Fichier :** `4_World/classes/useractionscomponent/actions/interact/actionturnonpowergenerator.c`
 
 ```c
 class ActionTurnOnPowerGenerator : ActionInteractBase
@@ -923,7 +923,7 @@ Key takeaways:
 
 ### ActionEat (Continuous)
 
-**File:** `4_World/classes/useractionscomponent/actions/continuous/actioneat.c`
+**Fichier :** `4_World/classes/useractionscomponent/actions/continuous/actioneat.c`
 
 ```c
 class ActionEatBigCB : ActionContinuousBaseCB
@@ -961,7 +961,7 @@ class ActionEatBig : ActionConsume
 Key takeaways:
 - The callback class controls the pacing (`CAContinuousQuantityEdible`)
 - `ActionConsume` (the parent) handles all the food consumption logic
-- `HasTarget()` returns false --- eating is a self-action
+- `HasTarget()` retourne false --- eating is a self-action
 - Different eat sizes just swap the callback class with different `UAQuantityConsumed` values
 
 ---
@@ -1031,11 +1031,11 @@ override bool HasProneException()
 }
 ```
 
-When `HasProneException()` returns true, the engine uses `m_CommandUIDProne` instead of `m_CommandUID` if the player is in prone stance.
+When `HasProneException()` retourne true, le moteur uses `m_CommandUIDProne` instead of `m_CommandUID` if le joueur is in prone stance.
 
 ### Action Interruption
 
-Actions can be interrupted server-side through the callback:
+Actions can be interrupted côté serveur through the callback:
 
 ```c
 override void OnFinishProgressServer(ActionData action_data)
@@ -1083,9 +1083,9 @@ override bool IsLockTargetOnUse()
 
 ## Action Category Constants
 
-**File:** `4_World/classes/useractionscomponent/_constants.c`
+**Fichier :** `4_World/classes/useractionscomponent/_constants.c`
 
-| Constante | Valeur | Description |
+| Constant | Value | Description |
 |----------|-------|-------------|
 | `AC_UNCATEGORIZED` | 0 | Default --- should not be used |
 | `AC_SINGLE_USE` | 1 | Single-use actions |
@@ -1094,7 +1094,7 @@ override bool IsLockTargetOnUse()
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 ### 1. Forgetting `super.SetActions()`
 
@@ -1110,7 +1110,7 @@ modded class Apple extends ItemBase
 }
 ```
 
-This **removes all vanilla actions** from the item. The player will no longer be able to eat, drop, or otherwise interact with apples through standard actions.
+This **removes all vanilla actions** from the item. Le joueur will no longer be able to eat, drop, or otherwise interact with apples through standard actions.
 
 **Correct:**
 ```c
@@ -1135,7 +1135,7 @@ override void OnExecuteClient(ActionData action_data)
 }
 ```
 
-Health changes and inventory operations must happen on the server. `OnExecuteClient` is only for visual feedback (sounds, particle effects, UI updates).
+Health changes and inventory operations must happen on le serveur. `OnExecuteClient` is only for visual feedback (sounds, particle effects, UI updates).
 
 **Correct:**
 ```c
@@ -1157,7 +1157,7 @@ override void OnExecuteClient(ActionData action_data)
 ```c
 override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 {
-    return target.GetObject().IsInherited(MyClass);  // CRASH if target or object is null
+    return target.GetObject().IsInherited(MyClass);  // PLANTAGE if target or object is null
 }
 ```
 
@@ -1184,7 +1184,7 @@ Common causes:
 - `CCIDummy` requires an item in hand, but the action should work with empty hands --- use `CCINone` instead
 - `CCTDummy` requires a target object, but the action is a self-action --- use `CCTSelf` or `CCTNone`
 - `CCTObject` distance too small for the target type --- increase distance parameter
-- `HasTarget()` returns true but there is no valid target condition --- either add `CCTCursor`/`CCTObject` or set `HasTarget()` to false
+- `HasTarget()` retourne true but there is no valid target condition --- either add `CCTCursor`/`CCTObject` or set `HasTarget()` to false
 
 ### 5. Mixing Up OnStart vs OnExecute
 
@@ -1222,13 +1222,13 @@ override bool HasTarget()
 }
 ```
 
-Without this, the engine expects a target object and may not show the action, or will try to sync a non-existent target to the server.
+Without this, le moteur expects a target object and may not show the action, or will try to sync a non-existent target to le serveur.
 
 ---
 
 ## File Locations Quick Reference
 
-| Fichier | But |
+| File | Purpose |
 |------|---------|
 | `4_World/classes/useractionscomponent/actionbase.c` | `ActionBase` --- core action class |
 | `4_World/classes/useractionscomponent/animatedactionbase.c` | `AnimatedActionBase` + `ActionBaseCB` |
@@ -1245,7 +1245,7 @@ Without this, the engine expects a target object and may not show the action, or
 
 ---
 
-## Resume
+## Résumé
 
 The DayZ Action System follows a consistent pattern:
 
@@ -1256,22 +1256,22 @@ The DayZ Action System follows a consistent pattern:
 5. **Register the action** via `AddAction()` in the appropriate entity's `SetActions()`
 6. **Always call `super.SetActions()`** to preserve vanilla actions
 
-The system is designed to be modular: condition components handle "can this happen?", action components handle "how long does it take?", and your overrides handle "what does it do?". Keep server logic on the server, visual feedback on the client, and always null-check your targets.
+The system is designed to be modular: condition components handle "can this happen?", action components handle "how long does it take?", and your overrides handle "what does it do?". Keep server logic on le serveur, visual feedback on le client, and always null-check your targets.
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 - **Always call `super.SetActions()` when modding existing items.** Omitting it removes all vanilla actions (eat, drop, inspect) from the item, breaking core gameplay.
-- **Put all state-changing logic in `OnExecuteServer` or `OnFinishProgressServer`.** Health changes, item deletion, and inventory manipulation must run server-side. `OnExecuteClient` is only for visual feedback.
+- **Put all state-changing logic in `OnExecuteServer` or `OnFinishProgressServer`.** Health changes, item deletion, and inventory manipulation must run côté serveur. `OnExecuteClient` is only for visual feedback.
 - **Use `CCTObject` with appropriate distance constants.** Hardcoding distance checks in `ActionCondition()` is fragile. The built-in condition components handle distance gating, cursor alignment, and item state checks consistently.
 - **Null-check every object in `ActionCondition()`.** The method is called frequently with potentially null targets. Accessing `.GetObject()` without a guard causes crashes that are hard to diagnose.
-- **Prefer `CAContinuousRepeat` over `CAContinuousTime` for repair-style actions.** Repeat fires `OnFinishProgressServer` each cycle and continues until the player releases the key, which feels more natural for ongoing tasks.
+- **Prefer `CAContinuousRepeat` over `CAContinuousTime` for repair-style actions.** Repeat fires `OnFinishProgressServer` each cycle and continues until le joueur releases the key, which feels more natural for ongoing tasks.
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
-- **Multi-Mod:** Actions are registered per class type via `SetActions()`. Two mods adding different actions to the same item class both work -- actions accumulate. However, if both mods override `SetActions()` without calling `super`, only the last-loaded mod's actions survive.
-- **Performance:** `ActionCondition()` is evaluated every frame for every candidate action on the player's current target. Keep it lightweight -- avoid expensive raycasts, config lookups, or array iterations inside condition checks.
-- **Server/Client:** The action pipeline is split: condition checks and UI display run on the client, execution callbacks run on the server. The engine handles synchronization via internal RPCs. Never rely on client-side state for authoritative game logic.
+- **Multi-Mod :** Actions are registered per class type via `SetActions()`. Two mods adding different actions to the same item class both work -- actions accumulate. Cependant, if both mods override `SetActions()` without calling `super`, only the last-loaded mod's actions survive.
+- **Performance :** `ActionCondition()` is evaluated every frame for every candidate action on le joueur's current target. Keep it lightweight -- avoid expensive raycasts, config lookups, or array iterations inside condition checks.
+- **Serveur/Client :** The action pipeline is split: condition checks and UI display run on le client, execution callbacks run on le serveur. Le moteur handles synchronization via internal RPCs. Never rely on côté client state for authoritative game logic.

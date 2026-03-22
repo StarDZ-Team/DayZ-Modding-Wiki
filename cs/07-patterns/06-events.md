@@ -1,32 +1,32 @@
 # Chapter 7.6: Event-Driven Architecture
 
-[Home](../../README.md) | [<< Previous: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Next: Performance Optimization >>](07-performance.md)
+[Domů](../../README.md) | [<< Předchozí: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Další: Performance Optimization >>](07-performance.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Event-driven architecture decouples the producer of an event from its consumers. When a player connects, the connection handler does not need to know about the killfeed, the admin panel, the mission system, or the logging module --- it fires a "player connected" event, and each interested system subscribes independently. This is the foundation of extensible mod design: new features subscribe to existing events without modifying the code that fires them.
+Event-driven architecture decouples the producer of an dokoncet from its consumers. When hráč connects, the connection handler ne need to know about the killfeed, the admin panel, the mission system, or the logging module --- it fires a "player connected" dokoncet, and každý interested system subscribes nezávisle. Toto je foundation of extensible mod design: nový features subscribe to existing dokoncets without modifying the code that fires them.
 
-DayZ provides `ScriptInvoker` as its built-in event primitive. On top of it, professional mods build event buses with named topics, typed handlers, and lifecycle management. This chapter covers all three major patterns and the critical discipline of memory-leak prevention.
+DayZ provides `ScriptInvoker` as its vestavěný dokoncet primitive. On top of it, professional mods build dokoncet buses with named topics, typed handlers, and lifecycle management. This chapter covers all three major patterns and the critical discipline of memory-leak prevention.
 
 ---
 
-## Table of Contents
+## Obsah
 
 - [ScriptInvoker Pattern](#scriptinvoker-pattern)
 - [EventBus Pattern (String-Routed Topics)](#eventbus-pattern-string-routed-topics)
 - [CF_EventHandler Pattern](#cf_eventhandler-pattern)
 - [When to Use Events vs Direct Calls](#when-to-use-events-vs-direct-calls)
 - [Memory Leak Prevention](#memory-leak-prevention)
-- [Advanced: Custom Event Data](#advanced-custom-event-data)
+- [Advanced: Custom Event Data](#advanced-vlastní-event-data)
 - [Best Practices](#best-practices)
 
 ---
 
 ## ScriptInvoker Pattern
 
-`ScriptInvoker` is the engine's built-in pub/sub primitive. It holds a list of function callbacks and invokes all of them when an event fires. This is the lowest-level event mechanism in DayZ.
+`ScriptInvoker` is engine's vestavěný pub/sub primitive. It holds a list of function zpětné volánís and invokes all of them when an dokoncet fires. Toto je lowest-level dokoncet mechanism in DayZ.
 
 ### Creating an Event
 
@@ -75,16 +75,39 @@ class WeatherUI
 
 ### ScriptInvoker API
 
-| Metoda | Popis |
+| Method | Description |
 |--------|-------------|
-| `Insert(func)` | Add a callback to the subscriber list |
-| `Remove(func)` | Remove a specific callback |
-| `Invoke(...)` | Call all subscribed callbacks with the given arguments |
-| `Clear()` | Remove all subscribers |
+| `Insert(func)` | Přidejte a zpětné volání to the subscriber list |
+| `Remove(func)` | Odstraňte a specifický zpětné volání |
+| `Invoke(...)` | Call all subscribed zpětné volánís with the given arguments |
+| `Clear()` | Odstraňte all subscribers |
 
-### How Insert/Remove Work
+### Event-Driven Pattern
 
-`Insert` adds a function reference to an internal list. `Remove` searches the list and removes the matching entry. If you call `Insert` twice with the same function, it will be called twice on every `Invoke`. If you call `Remove` once, it removes one entry.
+```mermaid
+graph TB
+    PUB["Publisher<br/>(e.g., ConfigManager)"]
+
+    PUB -->|"Invoke()"| INV["ScriptInvoker<br/>OnConfigChanged"]
+
+    INV -->|"callback"| SUB1["Subscriber A<br/>AdminPanel.OnConfigChanged()"]
+    INV -->|"callback"| SUB2["Subscriber B<br/>HUD.OnConfigChanged()"]
+    INV -->|"callback"| SUB3["Subscriber C<br/>Logger.OnConfigChanged()"]
+
+    SUB1 -.->|"Insert()"| INV
+    SUB2 -.->|"Insert()"| INV
+    SUB3 -.->|"Insert()"| INV
+
+    style PUB fill:#D94A4A,color:#fff
+    style INV fill:#FFD700,color:#000
+    style SUB1 fill:#4A90D9,color:#fff
+    style SUB2 fill:#4A90D9,color:#fff
+    style SUB3 fill:#4A90D9,color:#fff
+```
+
+### How Insert/Odstraňte Work
+
+`Insert` adds a function reference to an interní list. `Remove` searches the list and removes the matching entry. Pokud call `Insert` twice with the stejný function, it will be called twice on každý `Invoke`. Pokud call `Remove` once, it removes one entry.
 
 ```c
 // Subscribing the same handler twice is a bug:
@@ -98,18 +121,18 @@ mgr.OnWeatherChanged.Remove(OnWeatherChanged);
 
 ### Typed Signatures
 
-`ScriptInvoker` does not enforce parameter types at compile time. The convention is to document the expected signature in a comment:
+`ScriptInvoker` ne enforce parameter types at compile time. The convention is to document the expected signature in a comment:
 
 ```c
 // Signature: void(string weatherName, float temperature)
 ref ScriptInvoker OnWeatherChanged = new ScriptInvoker();
 ```
 
-If a subscriber has the wrong signature, the behavior is undefined at runtime --- it may crash, receive garbage values, or silently do nothing. Always match the documented signature exactly.
+Pokud subscriber has the wrong signature, the behavior is undefined za běhu --- it may crash, receive garbage values, or tiše nehing. Vždy match the documented signature exactly.
 
 ### ScriptInvoker on Vanilla Classes
 
-Many vanilla DayZ classes expose `ScriptInvoker` events:
+Many vanilla DayZ classes expose `ScriptInvoker` dokoncets:
 
 ```c
 // UIScriptedMenu has OnVisibilityChanged
@@ -126,17 +149,17 @@ class MissionBase
 };
 ```
 
-You can subscribe to these vanilla events from modded classes to react to engine-level state changes.
+You can subscribe to these vanilla dokoncets from modded classes to react to engine-level state changes.
 
 ---
 
 ## EventBus Pattern (String-Routed Topics)
 
-A `ScriptInvoker` is a single event channel. An EventBus is a collection of named channels, providing a central hub where any module can publish or subscribe to events by topic name.
+A `ScriptInvoker` is a jeden dokoncet channel. An EventBus is a collection of named channels, providing a central hub where jakýkoli module can publish or subscribe to dokoncets by topic name.
 
-### MyMod EventBus
+### Custom EventBus Pattern
 
-MyMod implements the EventBus as a static class with named `ScriptInvoker` fields for well-known events, plus a generic `OnCustomEvent` channel for ad-hoc topics:
+This pattern implements the EventBus as a statická class with named `ScriptInvoker` fields for well-known dokoncets, plus a generic `OnCustomEvent` channel for ad-hoc topics:
 
 ```c
 class MyEventBus
@@ -203,7 +226,7 @@ class MyMissionModule : MyServerModule
 
     void OnConfigChanged(string modId, string field, string value)
     {
-        if (modId == "MyMissions")
+        if (modId == "MyMod_Missions")
         {
             // Reload our config
             ReloadSettings();
@@ -214,7 +237,7 @@ class MyMissionModule : MyServerModule
 
 ### Using Custom Events
 
-For one-off or mod-specific events that do not warrant a dedicated `ScriptInvoker` field:
+For one-off or mod-specific dokoncets that ne warrant a dedicated `ScriptInvoker` field:
 
 ```c
 // Publisher (e.g., in the loot system):
@@ -240,16 +263,16 @@ void OnCustomEvent(string eventName, Param params)
 
 | Approach | Use When |
 |----------|----------|
-| Named `ScriptInvoker` field | The event is well-known, frequently used, and has a stable signature |
-| `OnCustomEvent` + string name | The event is mod-specific, experimental, or used by a single subscriber |
+| Named `ScriptInvoker` field | The dokoncet is well-known, frequently used, and has a stable signature |
+| `OnCustomEvent` + string name | The dokoncet is mod-specific, experimental, or used by a jeden subscriber |
 
-Named fields are type-safe by convention and discoverable by reading the class. Custom events are flexible but require string matching and casting.
+Named fields are type-safe by convention and discoverable by reading třída. Custom dokoncets are flexible but require string matching and casting.
 
 ---
 
 ## CF_EventHandler Pattern
 
-Community Framework provides `CF_EventHandler` as a more structured event system with type-safe event args.
+Community Framework provides `CF_EventHandler` as a more structured dokoncet system with type-safe dokoncet args.
 
 ### Concept
 
@@ -285,13 +308,13 @@ class MyModule : CF_ModuleWorld
 
 | Feature | ScriptInvoker | CF_EventHandler |
 |---------|--------------|-----------------|
-| **Type safety** | Convention only | Typed EventArgs classes |
-| **Discovery** | Read comments | Override named methods |
+| **Type safety** | Convention pouze | Typed EventArgs classes |
+| **Discovery** | Přečtěte comments | Override named methods |
 | **Subscription** | `Insert()` / `Remove()` | Override virtual methods |
 | **Custom data** | Param wrappers | Custom EventArgs subclasses |
 | **Cleanup** | Manual `Remove()` | Automatic (method override, no registration) |
 
-CF's approach eliminates the need to manually subscribe and unsubscribe --- you simply override the handler method. This removes an entire class of bugs (forgotten `Remove()` calls) at the cost of requiring CF as a dependency.
+CF's approach eliminates the need to ručně subscribe and unsubscribe --- you simply override the handler method. This removes an celý class of bugs (forgotten `Remove()` calls) at the cost of requiring CF as a dependency.
 
 ---
 
@@ -299,19 +322,19 @@ CF's approach eliminates the need to manually subscribe and unsubscribe --- you 
 
 ### Use Events When:
 
-1. **Multiple independent consumers** need to react to the same occurrence. Player connects? The killfeed, the admin panel, the mission system, and the logger all care.
+1. **Multiple nezávislý consumers** need to react to the stejný occurrence. Player connects? The killfeed, the admin panel, the mission system, and the logger all care.
 
 2. **The producer should not know about the consumers.** The connection handler should not import the killfeed module.
 
-3. **The set of consumers changes at runtime.** Modules can subscribe and unsubscribe dynamically.
+3. **The set of consumers changes za běhu.** Modules can subscribe and unsubscribe dynamically.
 
-4. **Cross-mod communication.** Mod A fires an event; Mod B subscribes to it. Neither imports the other.
+4. **Cross-mod communication.** Mod A fires an dokoncet; Mod B subscribes to it. Neither imports the jiný.
 
 ### Use Direct Calls When:
 
-1. **There is exactly one consumer** and it is known at compile time. If only the health system cares about a damage calculation, call it directly.
+1. **There is exactly one consumer** and it is known at compile time. If pouze the health system cares about a damage calculation, call it přímo.
 
-2. **Return values are needed.** Events are fire-and-forget. If you need a response ("should this action be allowed?"), use a direct method call.
+2. **Return values are needed.** Events are fire-and-forget. If potřebujete a response ("should this action be allowed?"), use a direct method call.
 
 3. **Order matters.** Event subscribers are called in insertion order, but depending on this order is fragile. If step B must happen after step A, call A then B explicitly.
 
@@ -335,11 +358,11 @@ CF's approach eliminates the need to manually subscribe and unsubscribe --- you 
 
 ## Memory Leak Prevention
 
-The single most dangerous aspect of event-driven architecture in Enforce Script is **subscriber leaks**. If an object subscribes to an event and is then destroyed without unsubscribing, one of two things happens:
+The jeden většina dangerous aspect of dokoncet-driven architecture in Enforce Script is **subscriber leaks**. If an object subscribes to an dokoncet and is then destroyed without unsubscribing, one of two things happens:
 
-1. **If the object extends `Managed`:** The weak reference in the invoker is automatically nulled. The invoker will call a null function --- which does nothing, but wastes cycles iterating dead entries.
+1. **Pokud object extends `Managed`:** The weak reference in the invoker is automatickýally nulled. The invoker will call a null function --- which nehing, but wastes cycles iterating dead entries.
 
-2. **If the object does NOT extend `Managed`:** The invoker holds a dangling function pointer. When the event fires, it calls into freed memory. **Crash.**
+2. **Pokud object does NOT extend `Managed`:** The invoker holds a dangling function pointer. Když dokoncet fires, it calls into freed memory. **Crash.**
 
 ### The Golden Rule
 
@@ -392,11 +415,11 @@ class PlayerTracker : Managed
 };
 ```
 
-**Note the null checks in the destructor.** During shutdown, `MyEventBus.Cleanup()` may have already run, setting all invokers to `null`. Calling `Remove()` on a `null` invoker crashes.
+**Poznámka the null checks in the destructor.** Během shutdown, `MyEventBus.Cleanup()` may have již run, setting all invokers to `null`. Calling `Remove()` on a `null` invoker crashes.
 
 ### Pattern: EventBus Cleanup Nulls Everything
 
-MyMod's `MyEventBus.Cleanup()` sets all invokers to `null`, which drops all subscriber references at once. This is the nuclear option --- it guarantees no stale subscribers survive across mission restarts:
+The `MyEventBus.Cleanup()` method sets all invokers to `null`, which drops all subscriber references at once. Toto je nuclear option --- it guarantees no stale subscribers survive across mission restarts:
 
 ```c
 static void Cleanup()
@@ -409,7 +432,7 @@ static void Cleanup()
 }
 ```
 
-This is called from `MyFramework.ShutdownAll()` during `OnMissionFinish`. Modules should still `Remove()` their own subscriptions for correctness, but the EventBus cleanup acts as a safety net.
+This is called from `MyFramework.ShutdownAll()` during `OnMissionFinish`. Modules should stále `Remove()` their own subscriptions for correctness, but the EventBus cleanup acts as a safety net.
 
 ### Anti-Pattern: Anonymous Functions
 
@@ -421,13 +444,13 @@ MyEventBus.OnPlayerConnected.Insert(function(PlayerIdentity id) {
 // How do you Remove this? You cannot reference it.
 ```
 
-Always use named methods so you can unsubscribe later.
+Vždy use named methods so můžete unsubscribe later.
 
 ---
 
 ## Advanced: Custom Event Data
 
-For events that carry complex payloads, use `Param` wrappers:
+For dokoncets that carry complex payloads, use `Param` wrappers:
 
 ### Param Classes
 
@@ -455,7 +478,7 @@ void OnCustomEvent(string eventName, Param params)
 
 ### Custom Event Data Class
 
-For events with many fields, create a dedicated data class:
+For dokoncets with mnoho fields, create a dedicated data class:
 
 ```c
 class KillEventData : Managed
@@ -479,32 +502,54 @@ OnKillEvent.Invoke(killData);
 
 ---
 
-## Best Practices
+## Osvědčené postupy
 
-1. **Every `Insert()` must have a matching `Remove()`.** Audit your code: search for every `Insert` call and verify it has a corresponding `Remove` in the cleanup path.
+1. **Every `Insert()` must have a matching `Remove()`.** Audit your code: search for každý `Insert` call and verify it has a corresponding `Remove` in the cleanup path.
 
-2. **Null-check the invoker before `Remove()` in destructors.** During shutdown, the EventBus may have already been cleaned up.
+2. **Null-check the invoker before `Remove()` in destructors.** Během shutdown, the EventBus may have již been cleaned up.
 
-3. **Document event signatures.** Above every `ScriptInvoker` declaration, write a comment with the expected callback signature:
+3. **Document dokoncet signatures.** Above každý `ScriptInvoker` declaration, write a comment with the expected zpětné volání signature:
    ```c
    // Signature: void(PlayerBase player, float damage, string source)
    static ref ScriptInvoker OnPlayerDamaged;
    ```
 
-4. **Do not rely on subscriber execution order.** If order matters, use direct calls instead.
+4. **Do not rely on subscriber execution order.** If order matters, use direct calls místo toho.
 
-5. **Keep event handlers fast.** If a handler needs to do expensive work, schedule it for the next tick rather than blocking all other subscribers.
+5. **Udržujte dokoncet handlers fast.** Pokud handler needs to do expensive work, schedule it for the next tick spíše než blocking all jiný subscribers.
 
-6. **Use named events for stable APIs, custom events for experiments.** Named `ScriptInvoker` fields are discoverable and documented. String-routed custom events are flexible but harder to find.
+6. **Use named dokoncets for stable APIs, vlastní dokoncets for experiments.** Named `ScriptInvoker` fields are discoverable and documented. String-routed vlastní dokoncets are flexible but harder to find.
 
 7. **Initialize the EventBus early.** Events can fire before `OnMissionStart()`. Call `Init()` during `OnInit()` or use the lazy pattern (check for `null` before `Insert`).
 
 8. **Clean up the EventBus on mission finish.** Null all invokers to prevent stale references across mission restarts.
 
-9. **Never use anonymous functions as event subscribers.** You cannot unsubscribe them.
+9. **Nikdy use anonymous functions as dokoncet subscribers.** You cannot unsubscribe them.
 
-10. **Prefer events over polling.** Instead of checking "has the config changed?" every frame, subscribe to `OnConfigChanged` and react only when it fires.
+10. **Preferujte dokoncets over polling.** Instead of checking "has the config changed?" každý frame, subscribe to `OnConfigChanged` and react pouze when it fires.
 
 ---
 
-[<< Předchozí: Permission Systems](05-permissions.md) | [Domů](../README.md) | [Další: Performance Optimization >>](07-performance.md)
+## Kompatibilita a dopad
+
+- **Více modů:** Multiple mods can subscribe to the stejný EventBus topics without conflict. Each subscriber is called nezávisle. Nicméně if one subscriber throws an unrecoverable error (e.g., null reference), subsequent subscribers on that invoker may not execute.
+- **Pořadí načítání:** Subscription order equals call order on `Invoke()`. Mods that load earlier register first and receive events first. Do not depend on this order --- if execution order matters, use direct calls instead.
+- **Listen Server:** On listen servers, dokoncets fired from server-side code are visible to client-side subscribers if they share the stejný statická `ScriptInvoker`. Use oddělený EventBus fields for server-only and client-only dokoncets, or guard handlers with `GetGame().IsServer()` / `GetGame().IsClient()`.
+- **Výkon:** `ScriptInvoker.Invoke()` iterates all subscribers linearly. With 5--15 subscribers per dokoncet, this is negligible. Vyhněte se subscribing per-entity (100+ entities každý subscribing to the stejný dokoncet) --- use a manager pattern místo toho.
+- **Migration:** `ScriptInvoker` is a stable vanilla API unlikely to change mezi DayZ versions. Custom EventBus wrappers are your own code and migrate with your mod.
+
+---
+
+## Časté chyby
+
+| Mistake | Impact | Fix |
+|---------|--------|-----|
+| Subscribing with `Insert()` but nikdy calling `Remove()` | Memory leak: the invoker holds a reference to the dead object; on `Invoke()`, calls into freed memory (crash) or no-ops with wasted iteration | Pair každý `Insert()` with a `Remove()` in `OnMissionFinish` or the destructor |
+| Calling `Remove()` on a null EventBus invoker during shutdown | `MyEventBus.Cleanup()` may have již nulled the invoker; calling `.Remove()` on null crashes | Vždy null-check the invoker before `Remove()`: `if (MyEventBus.OnPlayerConnected) MyEventBus.OnPlayerConnected.Remove(handler);` |
+| Double `Insert()` of the stejný handler | Handler is called twice per `Invoke()`; one `Remove()` pouze removes one entry, leaving a stale subscription | Zkontrolujte before inserting, or ensure `Insert()` is pouze called once (e.g., in `OnInit` with a guard flag) |
+| Using anonymous/lambda functions as handlers | Cannot be removed protože there is no reference to pass to `Remove()` | Vždy use named methods as dokoncet handlers |
+| Firing dokoncets with mismatched argument signatures | Subscribers receive garbage data or crash za běhu; no compile-time check | Document the expected signature výše každý `ScriptInvoker` declaration and match it exactly in all handlers |
+
+---
+
+[Domů](../../README.md) | [<< Předchozí: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Další: Performance Optimization >>](07-performance.md)

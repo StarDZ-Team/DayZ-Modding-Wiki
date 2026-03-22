@@ -1,22 +1,22 @@
 # Chapter 1.7: Math & Vector Operations
 
-[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
+[Domů](../../README.md) | [<< Předchozí: String Operations](06-strings.md) | **Math & Vector Operations** | [Další: Správa paměti >>](08-memory-management.md)
 
 ---
 
-## Introduction
+## Úvod
 
-DayZ modding frequently requires mathematical calculations: finding distances between players, randomizing spawn positions, interpolating camera movements, computing angles for AI targeting. Enforce Script provides the `Math` class for scalar operations and the `vector` type with static helpers for 3D math. This chapter is a complete reference for both, organized by category.
+DayZ modding frequently requires mathematical calculations: finding distances mezi hráči, randomizing spawn positions, interpolating camera movements, computing angles for AI targeting. Enforce Script provides the `Math` class for scalar operations and the `vector` type with statická helpers for 3D math. This chapter is a complete reference for oba, organized by category.
 
 ---
 
-## Třída Math
+## Math Class
 
-All methods on the `Math` class are **static**. You call them as `Math.MethodName()`.
+All methods on the `Math` class are **statická**. You call them as `Math.MethodName()`.
 
 ### Konstanty
 
-| Konstanta | Hodnota | Popis |
+| Constant | Value | Description |
 |----------|-------|-------------|
 | `Math.PI` | 3.14159265... | Pi |
 | `Math.PI2` | 6.28318530... | 2 * Pi (full circle in radians) |
@@ -35,7 +35,7 @@ float deg = Math.PI * Math.RAD2DEG; // 180.0
 
 ---
 
-### Náhodná čísla
+### Random Numbers
 
 ```c
 // Random integer in range [min, max) -- max is EXCLUSIVE
@@ -95,7 +95,7 @@ vector GetRandomPositionInRadius(vector center, float radius)
 
 ---
 
-### Zaokrouhlování
+### Rounding
 
 ```c
 float rounded = Math.Round(5.6);   // 6.0
@@ -118,7 +118,7 @@ vector SnapToGrid(vector pos, float gridSize)
 
 ---
 
-### Absolutní hodnota a znaménko
+### Absolute Value & Sign
 
 ```c
 float af = Math.AbsFloat(-5.5);    // 5.5
@@ -134,7 +134,7 @@ int si2 = Math.SignInt(7);         // 1
 
 ---
 
-### Mocnina, odmocnina a logaritmus
+### Power, Root & Logarithm
 
 ```c
 float pw = Math.Pow(2, 10);        // 1024.0
@@ -144,7 +144,7 @@ float lg = Math.Log2(8);           // 3.0
 
 ---
 
-### Trigonometrie
+### Trigonometry
 
 All trigonometric functions work in **radians**. Use `Math.DEG2RAD` and `Math.RAD2DEG` to convert.
 
@@ -162,7 +162,7 @@ float acos = Math.Acos(0.5);         // ~1.0472 rad (60 degrees)
 float angle = Math.Atan2(1, 1);      // PI/4 (~0.785 rad = 45 degrees)
 ```
 
-#### DayZ example: Direction angle between two positions
+#### DayZ example: Direction angle mezi two positions
 
 ```c
 float GetAngleBetween(vector from, vector to)
@@ -196,7 +196,7 @@ void SpawnCircleOfBarrels(vector center, float radius, int count)
 
 ---
 
-### Omezení rozsahu a Min/Max
+### Clamping & Min/Max
 
 ```c
 // Clamp a value to a range
@@ -226,7 +226,7 @@ void ApplyDamage(PlayerBase player, float damage)
 
 ---
 
-### Interpolace
+### Interpolation
 
 ```c
 // Linear interpolation (Lerp)
@@ -240,9 +240,9 @@ float t = Math.InverseLerp(0, 100, 50);    // 0.5
 float t2 = Math.InverseLerp(0, 100, 75);   // 0.75
 ```
 
-#### SmoothCD (Hladké kritické tlumení)
+#### SmoothCD (Smooth Critical Damping)
 
-`SmoothCD` provides smooth, framerate-independent interpolation. It is the best choice for camera smoothing, UI animations, and any value that should approach a target gradually without oscillation.
+`SmoothCD` provides smooth, framerate-independent interpolation. It is the best choice for camera smoothing, UI animations, and jakýkoli value that should approach a target gradually without oscillation.
 
 ```c
 // SmoothCD(current, target, velocity, smoothTime, maxSpeed, dt)
@@ -291,7 +291,7 @@ class SmoothZoomCamera
 
 ---
 
-### Operace s úhly
+### Angle Operations
 
 ```c
 // Normalize angle to [0, 360)
@@ -305,7 +305,7 @@ float diff2 = Math.DiffAngle(10, 350);  // 20
 
 ---
 
-### Umocnění a modulo
+### Squared & Modulo
 
 ```c
 // Square (faster than Pow(x, 2))
@@ -322,11 +322,11 @@ int wrapped2 = Math.WrapInt(-1, 0, 10); // 9
 
 ---
 
-## Typ vector
+## Vector Type
 
-The `vector` type is a built-in value type with three float components (x, y, z). It is used everywhere in DayZ for positions, directions, orientations, and scales.
+The `vector` type is a vestavěný value type with three float components (x, y, z). It is used každýwhere in DayZ for positions, directions, orientations, and scales.
 
-### Vytváření vektorů
+### Creating Vectors
 
 ```c
 // String initialization (x y z separated by spaces)
@@ -339,7 +339,7 @@ vector pos2 = Vector(100.5, 0, 200.3);
 vector zero;           // "0 0 0"
 ```
 
-### Přístup ke komponentám
+### Accessing Components
 
 ```c
 vector pos = Vector(10, 25, 30);
@@ -353,9 +353,9 @@ pos[1] = 50.0;    // Set y component
 
 > **DayZ coordinate system:** `[0]` is East-West (X), `[1]` is height (Y), `[2]` is North-South (Z).
 
-### Vektorové konstanty
+### Vector Constants
 
-| Konstanta | Hodnota | Popis |
+| Constant | Value | Description |
 |----------|-------|-------------|
 | `vector.Zero` | `"0 0 0"` | Zero vector (origin) |
 | `vector.Up` | `"0 1 0"` | Points upward |
@@ -364,9 +364,9 @@ pos[1] = 50.0;    // Set y component
 
 ---
 
-### Vektorové operace (statické metody)
+### Vector Operations (Static Methods)
 
-#### Vzdálenost
+#### Distance
 
 ```c
 vector a = Vector(0, 0, 0);
@@ -376,7 +376,7 @@ float dist = vector.Distance(a, b);     // ~141.42
 float distSq = vector.DistanceSq(a, b); // 20000 (no sqrt, faster)
 ```
 
-> **Tip pro výkon:** Use `DistanceSq` when comparing distances. Comparing squared values avoids the expensive square root calculation.
+> **Performance tip:** Use `DistanceSq` when comparing distances. Comparing squared values avoids the expensive square root calculation.
 
 ```c
 // GOOD -- compare squared distances
@@ -393,16 +393,16 @@ if (vector.Distance(playerPos, targetPos) < 100)
 }
 ```
 
-#### Směr
+#### Direction
 
-Returns the direction vector from one point to another (not normalized).
+Returns the direction vector from one point to další (not normalized).
 
 ```c
 vector dir = vector.Direction(from, to);
 // Equivalent to: to - from
 ```
 
-#### Skalární součin
+#### Dot Product
 
 ```c
 float dot = vector.Dot(a, b);
@@ -425,7 +425,7 @@ bool IsTargetInFront(PlayerBase player, vector targetPos)
 }
 ```
 
-#### Normalizace
+#### Normalize
 
 Converts a vector to unit length (length of 1).
 
@@ -441,7 +441,7 @@ dir.Normalize();
 // dir is now Vector(0.6, 0, 0.8)
 ```
 
-#### Délka
+#### Length
 
 ```c
 vector v = Vector(3, 4, 0);
@@ -451,7 +451,7 @@ float lenSq = v.LengthSq();   // 25.0 (faster, no sqrt)
 
 #### Lerp (statická)
 
-Linear interpolation between two vectors.
+Linear interpolation mezi two vectors.
 
 ```c
 vector start = Vector(0, 0, 0);
@@ -464,7 +464,7 @@ vector quarter = vector.Lerp(start, end, 0.25);
 // quarter = Vector(25, 12.5, 50)
 ```
 
-#### RotateAroundZeroDeg (static)
+#### RotateAroundZeroDeg (statická)
 
 Rotates a vector around an axis by a given angle in degrees.
 
@@ -477,7 +477,7 @@ vector rotated = vector.RotateAroundZeroDeg(original, axis, angle);
 // rotated is approximately Vector(0, 0, 1) -- now pointing north
 ```
 
-#### Náhodný směr
+#### Random Direction
 
 ```c
 vector rdir = vector.RandomDir();    // Random 3D direction (unit vector)
@@ -486,7 +486,7 @@ vector rdir2d = vector.RandomDir2D(); // Random direction in XZ plane
 
 ---
 
-### Vektorová aritmetika
+### Vector Arithmetic
 
 Vectors support standard arithmetic operators:
 
@@ -504,7 +504,7 @@ vector dir = player.GetDirection();
 vector ahead = pos + dir * 5; // 5 meters ahead of the player
 ```
 
-### Konverze vektoru na řetězec
+### Converting Vector to String
 
 ```c
 vector pos = Vector(100.5, 25.3, 200.7);
@@ -513,7 +513,7 @@ string s = pos.ToString(); // "<100.5, 25.3, 200.7>"
 
 ---
 
-## Třída Math3D
+## Math3D Class
 
 For advanced 3D operations, the `Math3D` class provides matrix and rotation utilities.
 
@@ -532,9 +532,9 @@ Math3D.MatrixIdentity4(mat4);
 
 ---
 
-## Real-World Examples
+## Příklady z praxe
 
-### Calculating distance between two players
+### Calculating distance mezi two hráči
 
 ```c
 float GetPlayerDistance(PlayerBase player1, PlayerBase player2)
@@ -657,17 +657,50 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 ---
 
-## Common Mistakes
+## Osvědčené postupy
 
-| Chyba | Problém | Oprava |
+- Use `vector.DistanceSq()` and compare against `radius * radius` in tight loops -- it avoids the expensive `sqrt` inside `Distance()`.
+- Vždy multiply by `Math.DEG2RAD` before passing angles to `Sin()`/`Cos()` -- all trig functions work in radians.
+- Zkontrolujte `v.Length() > 0` before calling `Normalize()` -- normalizing a zero-length vector produces `NaN` values.
+- Use `Math.Clamp()` to bound health, damage, and UI values spíše než writing manual `if` chains.
+- Preferujte `Math.RandomIntInclusive()` when the max value should be reachable (e.g., dice rolls) -- `RandomInt()` max is exclusive.
+
+---
+
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| `DistanceSq` with pre-squared threshold | Expansion / COT | Proximity checks store `float maxDistSq = range * range` and compare with `DistanceSq` |
+| `Math.Atan2(dx, dz) * RAD2DEG` for heading | Expansion AI | Direction-to-target computed as angle in degrees for orientation assignment |
+| `Math.RandomFloat(0, Math.PI2)` for spawn ring | Dabs / Expansion | Random angle + `Cos`/`Sin` to generate circular spawn positions |
+| `Math.Clamp` on health/damage values | VPP / COT | Every damage application clamps result to `[0, maxHealth]` to prevent negative or overflow values |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| `Math.RandomInt(0, 10)` | Might expect 0-10 inclusive | Max is exclusive -- returns 0-9; use `RandomIntInclusive` for inclusive max |
+| `vector[1]` is Y axis | Standard XYZ mapping | In DayZ, Y is vertical height -- easy to confuse with Z-up conventions from jiný engines |
+| `Math.SqrFloat` vs `Math.Sqrt` | Names look similar | `SqrFloat(5)` = 25 (squares hodnota), `Sqrt(25)` = 5 (square root) -- opposite operations |
+
+---
+
+## Časté chyby
+
+| Mistake | Problem | Fix |
 |---------|---------|-----|
 | Passing degrees to `Math.Sin()` / `Math.Cos()` | Trig functions expect radians | Multiply by `Math.DEG2RAD` first |
 | Using `Math.RandomInt(0, 10)` and expecting 10 | Max is exclusive | Use `Math.RandomIntInclusive(0, 10)` for inclusive max |
 | Computing `vector.Distance()` in a tight loop | `Distance` uses `sqrt`, which is slow | Use `vector.DistanceSq()` and compare against squared distance |
-| Normalizing a zero-length vector | Division by zero, produces NaN | Check `v.Length() > 0` before normalizing |
+| Normalizing a zero-length vector | Division by zero, produces NaN | Zkontrolujte `v.Length() > 0` before normalizing |
 | Forgetting that DayZ Y is up | `pos[1]` is height, not Z | `[0]` = X (East), `[1]` = Y (Up), `[2]` = Z (North) |
 | Using `Lerp` with t outside [0,1] | Extrapolates beyond the range | Clamp t with `Math.Clamp(t, 0, 1)` |
-| Confusing `SqrFloat` with `Sqrt` | `SqrFloat` squares the value; `Sqrt` takes the square root | `Math.SqrFloat(5)` = 25, `Math.Sqrt(25)` = 5 |
+| Confusing `SqrFloat` with `Sqrt` | `SqrFloat` squares hodnota; `Sqrt` takes the square root | `Math.SqrFloat(5)` = 25, `Math.Sqrt(25)` = 5 |
 
 ---
 
@@ -721,4 +754,4 @@ vector.Zero  vector.Up  vector.Aside  vector.Forward
 
 ---
 
-[<< 1.6: String Operations](06-strings.md) | [Domů](../README.md) | [1.8: Memory Management >>](08-memory-management.md)
+[<< 1.6: String Operations](06-strings.md) | [Domů](../../README.md) | [1.8: Memory Management >>](08-memory-management.md)

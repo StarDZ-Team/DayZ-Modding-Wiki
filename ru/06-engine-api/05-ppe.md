@@ -1,42 +1,41 @@
-# Chapter 6.5: Post-Process Effects (PPE)
+# Глава 6.5: Эффекты постобработки (PPE)
 
-[Home](../../README.md) | [<< Previous: Cameras](04-cameras.md) | **Post-Process Effects** | [Next: Notifications >>](06-notifications.md)
+[Главная](../../README.md) | [<< Предыдущая: Камеры](04-cameras.md) | **Эффекты постобработки** | [Следующая: Уведомления >>](06-notifications.md)
 
 ---
 
 ## Введение
 
-
-DayZ's Post-Process Effects (PPE) system controls visual effects applied after scene rendering: blur, color grading, vignette, chromatic aberration, night vision, and more. The system is built around `PPERequester` classes that can request specific visual effects. Multiple requesters can be active simultaneously, and the engine blends their contributions. Эта глава охватывает how to use the PPE system in mods.
+Система постобработки (PPE) в DayZ управляет визуальными эффектами, применяемыми после рендеринга сцены: размытие, цветокоррекция, виньетка, хроматическая аберрация, ночное видение и многое другое. Система построена на классах `PPERequester`, которые запрашивают определённые визуальные эффекты. Одновременно могут быть активны несколько запросчиков, и движок смешивает их вклады. В этой главе описано, как использовать систему PPE в модах.
 
 ---
 
-## Architecture Overview
+## Обзор архитектуры
 
 ```
 PPEManager
-├── PPERequesterBank              // Static registry of all available requesters
-│   ├── REQ_INVENTORYBLUR         // Inventory blur
-│   ├── REQ_MENUEFFECTS           // Menu effects
-│   ├── REQ_CONTROLLERDISCONNECT  // Controller disconnect overlay
-│   ├── REQ_UNCONSCIOUS           // Unconsciousness effect
-│   ├── REQ_FEVEREFFECTS          // Fever visual effects
-│   ├── REQ_FLASHBANGEFFECTS      // Flashbang
-│   ├── REQ_BURLAPSACK            // Burlap sack on head
-│   ├── REQ_DEATHEFFECTS          // Death screen
-│   ├── REQ_BLOODLOSS             // Blood loss desaturation
-│   └── ... (many more)
-└── PPERequester_*                // Individual requester implementations
+├── PPERequesterBank              // Статический реестр всех доступных запросчиков
+│   ├── REQ_INVENTORYBLUR         // Размытие инвентаря
+│   ├── REQ_MENUEFFECTS           // Эффекты меню
+│   ├── REQ_CONTROLLERDISCONNECT  // Наложение при отключении контроллера
+│   ├── REQ_UNCONSCIOUS           // Эффект потери сознания
+│   ├── REQ_FEVEREFFECTS          // Визуальные эффекты лихорадки
+│   ├── REQ_FLASHBANGEFFECTS      // Ослепление
+│   ├── REQ_BURLAPSACK            // Мешок на голове
+│   ├── REQ_DEATHEFFECTS          // Экран смерти
+│   ├── REQ_BLOODLOSS             // Обесцвечивание при потере крови
+│   └── ... (и многие другие)
+└── PPERequester_*                // Реализации отдельных запросчиков
 ```
 
 ---
 
 ## PPEManager
 
-The `PPEManager` is a singleton that coordinates all active PPE requests. You rarely interact with it directly --- instead, you work through `PPERequester` subclasses.
+`PPEManager` --- это синглтон, координирующий все активные PPE-запросы. Обычно вы не взаимодействуете с ним напрямую --- вместо этого работаете через подклассы `PPERequester`.
 
 ```c
-// Get the manager instance
+// Получение экземпляра менеджера
 PPEManager GetPPEManager();
 ```
 
@@ -44,55 +43,55 @@ PPEManager GetPPEManager();
 
 ## PPERequesterBank
 
-**File:** `3_Game/PPE/pperequesterbank.c`
+**Файл:** `3_Game/PPE/pperequesterbank.c`
 
-A static registry that holds instances of all PPE requesters. Access specific requesters by their constant index.
+Статический реестр, содержащий экземпляры всех PPE-запросчиков. Доступ к конкретным запросчикам осуществляется по константному индексу.
 
-### Getting a Requester
+### Получение запросчика
 
 ```c
-// Get a requester by its bank constant
+// Получение запросчика по константе банка
 PPERequester req = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 ```
 
-### Common Requester Constants
+### Распространённые константы запросчиков
 
-| Constant | Effect |
-|----------|--------|
-| `REQ_INVENTORYBLUR` | Gaussian blur when inventory is open |
-| `REQ_MENUEFFECTS` | Menu background blur |
-| `REQ_UNCONSCIOUS` | Unconsciousness visual (blur + desaturation) |
-| `REQ_DEATHEFFECTS` | Death screen (grayscale + vignette) |
-| `REQ_BLOODLOSS` | Blood loss desaturation |
-| `REQ_FEVEREFFECTS` | Fever chromatic aberration |
-| `REQ_FLASHBANGEFFECTS` | Flashbang whiteout |
-| `REQ_BURLAPSACK` | Burlap sack blindfold |
-| `REQ_PAINBLUR` | Pain blur effect |
-| `REQ_CONTROLLERDISCONNECT` | Controller disconnect overlay |
-| `REQ_CAMERANV` | Night vision |
-| `REQ_FILMGRAINEFFECTS` | Film grain overlay |
-| `REQ_RAINEFFECTS` | Rain screen effects |
-| `REQ_COLORSETTING` | Color correction settings |
+| Константа | Эффект |
+|-----------|--------|
+| `REQ_INVENTORYBLUR` | Гауссово размытие при открытом инвентаре |
+| `REQ_MENUEFFECTS` | Размытие фона меню |
+| `REQ_UNCONSCIOUS` | Визуал потери сознания (размытие + обесцвечивание) |
+| `REQ_DEATHEFFECTS` | Экран смерти (оттенки серого + виньетка) |
+| `REQ_BLOODLOSS` | Обесцвечивание при потере крови |
+| `REQ_FEVEREFFECTS` | Хроматическая аберрация при лихорадке |
+| `REQ_FLASHBANGEFFECTS` | Засвечивание от светошумовой гранаты |
+| `REQ_BURLAPSACK` | Повязка из мешковины |
+| `REQ_PAINBLUR` | Эффект размытия от боли |
+| `REQ_CONTROLLERDISCONNECT` | Наложение при отключении контроллера |
+| `REQ_CAMERANV` | Ночное видение |
+| `REQ_FILMGRAINEFFECTS` | Наложение зернистости плёнки |
+| `REQ_RAINEFFECTS` | Эффекты дождя на экране |
+| `REQ_COLORSETTING` | Настройки цветокоррекции |
 
 ---
 
-## PPERequester Base
+## Базовый класс PPERequester
 
-All PPE requesters extend `PPERequester`:
+Все PPE-запросчики наследуют от `PPERequester`:
 
 ```c
 class PPERequester : Managed
 {
-    // Start the effect
+    // Запуск эффекта
     void Start(Param par = null);
 
-    // Stop the effect
+    // Остановка эффекта
     void Stop(Param par = null);
 
-    // Check if active
+    // Проверка активности
     bool IsActiveRequester();
 
-    // Set values on material parameters
+    // Установка значений параметров материалов
     void SetTargetValueFloat(int mat_id, int param_idx, bool relative,
                               float val, int priority_layer, int operator = PPOperators.SET);
     void SetTargetValueColor(int mat_id, int param_idx, bool relative,
@@ -110,61 +109,61 @@ class PPERequester : Managed
 ```c
 class PPOperators
 {
-    static const int SET          = 0;  // Directly set the value
-    static const int ADD          = 1;  // Add to current value
-    static const int ADD_RELATIVE = 2;  // Add relative to current
-    static const int HIGHEST      = 3;  // Use the highest of current and new
-    static const int LOWEST       = 4;  // Use the lowest of current and new
-    static const int MULTIPLY     = 5;  // Multiply current value
-    static const int OVERRIDE     = 6;  // Force override
+    static const int SET          = 0;  // Установить значение напрямую
+    static const int ADD          = 1;  // Добавить к текущему значению
+    static const int ADD_RELATIVE = 2;  // Добавить относительно текущего
+    static const int HIGHEST      = 3;  // Использовать наибольшее из текущего и нового
+    static const int LOWEST       = 4;  // Использовать наименьшее из текущего и нового
+    static const int MULTIPLY     = 5;  // Умножить текущее значение
+    static const int OVERRIDE     = 6;  // Принудительное переопределение
 }
 ```
 
 ---
 
-## Common PPE Material IDs
+## Распространённые идентификаторы материалов PPE
 
-Effects target specific post-processing materials. Common material IDs:
+Эффекты нацелены на конкретные материалы постобработки. Распространённые идентификаторы:
 
-| Constant | Material |
-|----------|----------|
-| `PostProcessEffectType.Glow` | Bloom / glow |
-| `PostProcessEffectType.FilmGrain` | Film grain |
-| `PostProcessEffectType.RadialBlur` | Radial blur |
-| `PostProcessEffectType.ChromAber` | Chromatic aberration |
-| `PostProcessEffectType.WetEffect` | Wet lens effect |
-| `PostProcessEffectType.ColorGrading` | Color grading / LUT |
-| `PostProcessEffectType.DepthOfField` | Depth of field |
-| `PostProcessEffectType.SSAO` | Screen-space ambient occlusion |
-| `PostProcessEffectType.GodRays` | Volumetric light |
-| `PostProcessEffectType.Rain` | Rain on screen |
-| `PostProcessEffectType.Vignette` | Vignette overlay |
-| `PostProcessEffectType.HBAO` | Horizon-based ambient occlusion |
+| Константа | Материал |
+|-----------|----------|
+| `PostProcessEffectType.Glow` | Свечение / блум |
+| `PostProcessEffectType.FilmGrain` | Зернистость плёнки |
+| `PostProcessEffectType.RadialBlur` | Радиальное размытие |
+| `PostProcessEffectType.ChromAber` | Хроматическая аберрация |
+| `PostProcessEffectType.WetEffect` | Эффект мокрой линзы |
+| `PostProcessEffectType.ColorGrading` | Цветокоррекция / LUT |
+| `PostProcessEffectType.DepthOfField` | Глубина резкости |
+| `PostProcessEffectType.SSAO` | Экранная окклюзия окружающего пространства |
+| `PostProcessEffectType.GodRays` | Объёмный свет |
+| `PostProcessEffectType.Rain` | Дождь на экране |
+| `PostProcessEffectType.Vignette` | Виньетка |
+| `PostProcessEffectType.HBAO` | Окклюзия на основе горизонта |
 
 ---
 
-## Using Built-in Requesters
+## Использование встроенных запросчиков
 
-### Inventory Blur
+### Размытие инвентаря
 
-The simplest example ----  blur that appears when the inventory opens:
+Простейший пример --- размытие, появляющееся при открытии инвентаря:
 
 ```c
-// Start blur
+// Запуск размытия
 PPERequester blurReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 blurReq.Start();
 
-// Stop blur
+// Остановка размытия
 blurReq.Stop();
 ```
 
-### Flashbang Effect
+### Эффект светошумовой гранаты
 
 ```c
 PPERequester flashReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_FLASHBANGEFFECTS);
 flashReq.Start();
 
-// Stop after a delay
+// Остановка через задержку
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(StopFlashbang, 3000, false);
 
 void StopFlashbang()
@@ -176,11 +175,11 @@ void StopFlashbang()
 
 ---
 
-## Creating a Custom PPE Requester
+## Создание пользовательского PPE-запросчика
 
-To create custom post-process effects, extend `PPERequester` and register it.
+Для создания собственных эффектов постобработки наследуйте `PPERequester` и зарегистрируйте его.
 
-### Шаг 1: Define the Requester
+### Шаг 1: Определение запросчика
 
 ```c
 class MyCustomPPERequester extends PPERequester
@@ -189,11 +188,11 @@ class MyCustomPPERequester extends PPERequester
     {
         super.OnStart(par);
 
-        // Apply a strong vignette
+        // Применение сильной виньетки
         SetTargetValueFloat(PostProcessEffectType.Glow, PPEGlow.PARAM_VIGNETTE,
                             false, 0.8, PPEManager.L_0_STATIC, PPOperators.SET);
 
-        // Desaturate colors
+        // Обесцвечивание
         SetTargetValueFloat(PostProcessEffectType.ColorGrading, PPEColorGrading.PARAM_SATURATION,
                             false, 0.3, PPEManager.L_0_STATIC, PPOperators.SET);
     }
@@ -202,7 +201,7 @@ class MyCustomPPERequester extends PPERequester
     {
         super.OnStop(par);
 
-        // Reset to defaults
+        // Сброс к значениям по умолчанию
         SetTargetValueFloat(PostProcessEffectType.Glow, PPEGlow.PARAM_VIGNETTE,
                             false, 0.0, PPEManager.L_0_STATIC, PPOperators.SET);
         SetTargetValueFloat(PostProcessEffectType.ColorGrading, PPEColorGrading.PARAM_SATURATION,
@@ -211,38 +210,38 @@ class MyCustomPPERequester extends PPERequester
 }
 ```
 
-### Шаг 2: Register and Use
+### Шаг 2: Регистрация и использование
 
-Registration is handled by adding the requester to the bank. На практике most modders use the built-in requesters and modify their parameters rather than creating fully custom ones.
+Регистрация осуществляется добавлением запросчика в банк. На практике большинство моддеров используют встроенные запросчики с изменёнными параметрами, а не создают полностью пользовательские.
 
 ---
 
-## Night Vision (NVG)
+## Ночное видение (ПНВ)
 
-Night vision is implemented as a PPE effect. The relevant requester is `REQ_CAMERANV`:
+Ночное видение реализовано как PPE-эффект. Соответствующий запросчик --- `REQ_CAMERANV`:
 
 ```c
-// Enable NVG effect
+// Включение эффекта ПНВ
 PPERequester nvgReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_CAMERANV);
 nvgReq.Start();
 
-// Disable NVG effect
+// Выключение эффекта ПНВ
 nvgReq.Stop();
 ```
 
-The actual NVG in-game is triggered by the NVGoggles item through its `ComponentEnergyManager` and the `NVGoggles.ToggleNVG()` method, which internally drives the PPE system.
+Настоящие ПНВ в игре активируются через предмет NVGoggles посредством его `ComponentEnergyManager` и метода `NVGoggles.ToggleNVG()`, который внутренне управляет системой PPE.
 
 ---
 
-## Color Grading
+## Цветокоррекция
 
-Color grading modifies the overall color appearance of the scene:
+Цветокоррекция изменяет общий цветовой вид сцены:
 
 ```c
 PPERequester colorReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_COLORSETTING);
 colorReq.Start();
 
-// Adjust saturation (1.0 = normal, 0.0 = grayscale, >1.0 = oversaturated)
+// Регулировка насыщенности (1.0 = нормальная, 0.0 = оттенки серого, >1.0 = перенасыщенная)
 colorReq.SetTargetValueFloat(PostProcessEffectType.ColorGrading,
                               PPEColorGrading.PARAM_SATURATION,
                               false, 0.5, PPEManager.L_0_STATIC,
@@ -251,22 +250,22 @@ colorReq.SetTargetValueFloat(PostProcessEffectType.ColorGrading,
 
 ---
 
-## Blur Effects
+## Эффекты размытия
 
-### Gaussian Blur
+### Гауссово размытие
 
 ```c
 PPERequester blurReq = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYBLUR);
 blurReq.Start();
 
-// Adjust blur intensity (0.0 = none, higher = more blur)
+// Регулировка интенсивности размытия (0.0 = нет, больше = сильнее)
 blurReq.SetTargetValueFloat(PostProcessEffectType.GaussFilter,
                              PPEGaussFilter.PARAM_INTENSITY,
                              false, 0.5, PPEManager.L_0_STATIC,
                              PPOperators.SET);
 ```
 
-### Radial Blur
+### Радиальное размытие
 
 ```c
 PPERequester req = PPERequesterBank.GetRequester(PPERequesterBank.REQ_PAINBLUR);
@@ -280,40 +279,57 @@ req.SetTargetValueFloat(PostProcessEffectType.RadialBlur,
 
 ---
 
-## Priority Layers
+## Слои приоритета
 
-When multiple requesters modify the same parameter, the priority layer determines which one wins:
+Когда несколько запросчиков изменяют один и тот же параметр, слой приоритета определяет, какой из них победит:
 
 ```c
 class PPEManager
 {
-    static const int L_0_STATIC   = 0;   // Lowest priority (static effects)
-    static const int L_1_VALUES   = 1;   // Dynamic value changes
-    static const int L_2_SCRIPTS  = 2;   // Script-driven effects
-    static const int L_3_EFFECTS  = 3;   // Gameplay effects
-    static const int L_4_OVERLAY  = 4;   // Overlay effects
-    static const int L_LAST       = 100;  // Highest priority (override all)
+    static const int L_0_STATIC   = 0;   // Самый низкий приоритет (статические эффекты)
+    static const int L_1_VALUES   = 1;   // Динамические изменения значений
+    static const int L_2_SCRIPTS  = 2;   // Эффекты, управляемые скриптами
+    static const int L_3_EFFECTS  = 3;   // Игровые эффекты
+    static const int L_4_OVERLAY  = 4;   // Эффекты наложения
+    static const int L_LAST       = 100;  // Самый высокий приоритет (перекрывает всё)
 }
 ```
 
-Higher numbers take priority. Use `PPEManager.L_LAST` to force your effect to override all others.
+Большие числа имеют более высокий приоритет. Используйте `PPEManager.L_LAST` для принудительного переопределения всех остальных эффектов.
 
 ---
 
 ## Итоги
 
-
-| Concept | Key Point |
-|---------|-----------|
-| Access | `PPERequesterBank.GetRequester(CONSTANT)` |
-| Start/Остановить | `requester.Start()` / `requester.Остановить()` |
-| Parameters | `SetTargetValueFloat(material, param, relative, value, layer, operator)` |
-| Operators | `PPOperators.SET`, `ADD`, `MULTIPLY`, `HIGHEST`, `LOWEST`, `OVERRIDE` |
-| Common effects | Blur, vignette, saturation, NVG, flashbang, grain, chromatic aberration |
-| NVG | `REQ_CAMERANV` requester |
-| Priority | Layers 0-100; higher number wins conflicts |
-| Custom | Extend `PPERequester`, override `OnStart()` / `OnОстановить()` |
+| Концепция | Ключевой момент |
+|-----------|----------------|
+| Доступ | `PPERequesterBank.GetRequester(КОНСТАНТА)` |
+| Запуск/Остановка | `requester.Start()` / `requester.Stop()` |
+| Параметры | `SetTargetValueFloat(материал, параметр, относительный, значение, слой, оператор)` |
+| Операторы | `PPOperators.SET`, `ADD`, `MULTIPLY`, `HIGHEST`, `LOWEST`, `OVERRIDE` |
+| Частые эффекты | Размытие, виньетка, насыщенность, ПНВ, ослепление, зернистость, хроматическая аберрация |
+| ПНВ | Запросчик `REQ_CAMERANV` |
+| Приоритет | Слои 0-100; большее число побеждает в конфликтах |
+| Пользовательские | Наследуйте `PPERequester`, переопределите `OnStart()` / `OnStop()` |
 
 ---
 
-[<< Предыдущая: Cameras](04-cameras.md) | **Post-Process Effects** | [Следующая: Notifications >>](06-notifications.md)
+## Лучшие практики
+
+- **Всегда вызывайте `Stop()` для очистки запросчика.** Невызов `Stop()` оставляет визуальный эффект постоянно активным, даже после окончания вызвавшего его условия.
+- **Используйте подходящие слои приоритета.** Игровые эффекты должны использовать `L_3_EFFECTS` или выше. Использование `L_LAST` (100) перекрывает всё, включая ванильные эффекты потери сознания и смерти, что может нарушить игровой опыт.
+- **Предпочитайте встроенные запросчики пользовательским.** `PPERequesterBank` уже содержит запросчики для размытия, обесцвечивания, виньетки и зернистости. Используйте их с изменёнными параметрами, прежде чем создавать пользовательский класс.
+- **Тестируйте PPE-эффекты при разных условиях освещения.** Виньетка и обесцвечивание выглядят кардинально по-разному ночью и днём. Убедитесь, что ваш эффект хорошо читается в обоих крайних случаях.
+- **Избегайте наложения нескольких интенсивных эффектов размытия.** Множество активных запросчиков размытия накапливаются, потенциально делая экран нечитаемым. Проверяйте `IsActiveRequester()` перед запуском дополнительных эффектов.
+
+---
+
+## Совместимость и влияние
+
+- **Мультимод:** Несколько модов могут активировать PPE-запросчики одновременно. Движок смешивает их, используя слои приоритета и операторы. Конфликты возникают, когда два мода используют один и тот же уровень приоритета с `PPOperators.SET` для одного параметра --- побеждает последний записавший.
+- **Производительность:** PPE-эффекты --- это проходы постобработки на GPU. Включение множества одновременных эффектов (размытие + зернистость + хроматическая аберрация + виньетка) может снизить частоту кадров на слабых GPU. Держите количество активных эффектов минимальным.
+- **Сервер/Клиент:** PPE --- это исключительно клиентский рендеринг. Сервер не знает об эффектах постобработки. Никогда не привязывайте серверную логику к состоянию PPE.
+
+---
+
+[<< Предыдущая: Камеры](04-cameras.md) | **Эффекты постобработки** | [Следующая: Уведомления >>](06-notifications.md)

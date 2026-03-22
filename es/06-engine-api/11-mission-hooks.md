@@ -1,18 +1,18 @@
-# Chapter 6.11: Mission Hooks
+# Capítulo 6.11: Hooks de Misión
 
-[Home](../../README.md) | [<< Previous: Central Economy](10-central-economy.md) | **Mission Hooks** | [Next: Action System >>](12-action-system.md)
-
----
-
-## Introduccion
-
-Todo mod de DayZ necesita un punto de entrada --- un lugar donde inicializa managers, registra handlers de RPC, se conecta a las conexiones de jugadores y limpia al apagar. Ese punto de entrada es la clase **Mission**. El motor crea exactamente una instancia de Mission cuando se carga un escenario: `MissionServer` on a dedicated server, `MissionGameplay` on a client, or both on a listen server. These classes provide lifecycle hooks that fire in a guaranteed order, giving mods a reliable place to inject behavior.
-
-Este capitulo cubre the full Mission class hierarchy, every hookable method, the correct `modded class` pattern for extending them, and real-world examples from vanilla DayZ, COT, and Expansion.
+[Inicio](../../README.md) | [<< Anterior: Central Economy](10-central-economy.md) | **Mission Hooks** | [Siguiente: Action System >>](12-action-system.md)
 
 ---
 
-## Jerarquia de Clases
+## Introducción
+
+Every DayZ mod needs an entry point --- a place where it initializes managers, registers RPC handlers, hooks into player connections, and cleans up on shutdown. That entry point is the **Mission** class. The engine creates exactly one Mission instance when a scenario loads: `MissionServer` on a dedicated server, `MissionGameplay` on a client, or both on a listen server. These classes provide lifecycle hooks that fire in a guaranteed order, giving mods a reliable place to inject behavior.
+
+This chapter covers the full Mission class hierarchy, every hookable method, the correct `modded class` pattern for extending them, and real-world examples from vanilla DayZ, COT, and Expansion.
+
+---
+
+## Class Hierarchy
 
 ```
 Mission                      // 3_Game/gameplay.c (base, defines all hook signatures)
@@ -29,9 +29,9 @@ Mission                      // 3_Game/gameplay.c (base, defines all hook signat
 
 ---
 
-## Vista General del Ciclo de Vida
+## Lifecycle Overview
 
-### Ciclo de Vida de MissionServer (Lado Servidor)
+### MissionServer Lifecycle (Server-Side)
 
 ```mermaid
 flowchart TD
@@ -51,7 +51,7 @@ flowchart TD
     J -.-> M["InvokeOnDisconnect()"]
 ```
 
-### Ciclo de Vida de MissionGameplay (Lado Cliente)
+### MissionGameplay Lifecycle (Client-Side)
 
 ```mermaid
 flowchart TD
@@ -70,15 +70,15 @@ flowchart TD
 
 ---
 
-## Metodos de la Clase Base Mission
+## Mission Base Class Methods
 
-**File:** `3_Game/gameplay.c`
+**Archivo:** `3_Game/gameplay.c`
 
 The `Mission` base class defines every hookable method. All are virtual with empty default implementations unless noted.
 
-### Hooks del Ciclo de Vida
+### Lifecycle Hooks
 
-| Metodo | Firma | Cuando se Dispara |
+| Método | Firma | When It Fires |
 |--------|-----------|---------------|
 | `OnInit` | `void OnInit()` | After constructor, before mission starts. Primary setup point. |
 | `OnMissionStart` | `void OnMissionStart()` | After OnInit. The mission world is active. |
@@ -87,24 +87,24 @@ The `Mission` base class defines every hookable method. All are virtual with emp
 | `OnUpdate` | `void OnUpdate(float timeslice)` | Every frame. `timeslice` is seconds since last frame (typically 0.016-0.033). |
 | `OnMissionFinish` | `void OnMissionFinish()` | On shutdown or disconnect. Clean up everything here. |
 
-### Hooks de Input (Lado Cliente)
+### Input Hooks (Client-Side)
 
-| Metodo | Firma | Cuando se Dispara |
+| Método | Firma | When It Fires |
 |--------|-----------|---------------|
 | `OnKeyPress` | `void OnKeyPress(int key)` | Physical key pressed. `key` is a `KeyCode` constant. |
 | `OnKeyRelease` | `void OnKeyRelease(int key)` | Physical key released. |
 | `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Mouse button pressed. |
 | `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Mouse button released. |
 
-### Hook de Evento
+### Event Hook
 
-| Metodo | Firma | Cuando se Dispara |
+| Método | Firma | When It Fires |
 |--------|-----------|---------------|
 | `OnEvent` | `void OnEvent(EventType eventTypeId, Param params)` | Engine events: chat, VON, player connect/disconnect, window resize, etc. |
 
-### Metodos de Utilidad
+### Utility Methods
 
-| Metodo | Firma | Descripcion |
+| Método | Firma | Descripción |
 |--------|-----------|-------------|
 | `GetHud` | `Hud GetHud()` | Returns the HUD instance (client only). |
 | `GetWorldData` | `WorldData GetWorldData()` | Returns world-specific data (temperature curves, etc.). |
@@ -118,24 +118,24 @@ The `Mission` base class defines every hookable method. All are virtual with emp
 
 ---
 
-## Hooks de MissionServer (Lado Servidor)
+## MissionServer Hooks (Server-Side)
 
-**File:** `5_Mission/mission/missionserver.c`
+**Archivo:** `5_Mission/mission/missionserver.c`
 
 MissionServer is instantiated by the engine on dedicated servers. It handles everything related to player lifecycle on the server.
 
-### Comportamiento Vanilla Clave
+### Key Vanilla Behavior
 
 - **Constructor**: Sets up `CallQueue` for player stats (30-second interval), dead players array, logout tracking maps, rain procurement handler.
 - **OnInit**: Loads `CfgGameplayHandler`, `PlayerSpawnHandler`, `CfgPlayerRestrictedAreaHandler`, `UndergroundAreaLoader`, artillery firing positions.
 - **OnMissionStart**: Creates effect area zones (contaminated zones, etc.).
 - **OnUpdate**: Runs tick scheduler, processes logout timers, updates base environment temperature, rain procurement, random artillery.
 
-### OnEvent --- Eventos de Conexion de Jugador
+### OnEvent --- Player Connection Events
 
 The server's `OnEvent` is the central dispatcher for all player lifecycle events. The engine sends events with typed `Param` objects. Vanilla handles them via a `switch` block:
 
-| Evento | Param Type | Que Sucede |
+| Evento | Param Type | What Happens |
 |-------|-----------|--------------|
 | `ClientPrepareEventTypeID` | `ClientPrepareEventParams` | Decides DB vs fresh character |
 | `ClientNewEventTypeID` | `ClientNewEventParams` | Creates + equips new character, calls `InvokeOnConnect` |
@@ -145,11 +145,11 @@ The server's `OnEvent` is the central dispatcher for all player lifecycle events
 | `ClientDisconnectedEventTypeID` | `ClientDisconnectedEventParams` | Player disconnecting, starts logout timer |
 | `LogoutCancelEventTypeID` | `LogoutCancelEventParams` | Player cancelled logout countdown |
 
-### Metodos de Conexion de Jugador
+### Player Connection Methods
 
 Called from within `OnEvent` when player-related events fire:
 
-| Metodo | Firma | Comportamiento Vanilla |
+| Método | Firma | Vanilla Behavior |
 |--------|-----------|-----------------|
 | `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Calls `player.OnConnect()`. Primary "player joined" hook. |
 | `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Calls `player.OnDisconnect()`. Player fully disconnected. |
@@ -159,9 +159,9 @@ Called from within `OnEvent` when player-related events fire:
 | `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Calls `player.OnReconnect()`. |
 | `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Calls `InvokeOnDisconnect`, saves player, exits hive, handles body, removes from server. |
 
-### Configuracion de Personaje
+### Character Setup
 
-| Metodo | Firma | Descripcion |
+| Método | Firma | Descripción |
 |--------|-----------|-------------|
 | `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Creates player entity via `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()`. |
 | `EquipCharacter` | `void EquipCharacter(MenuDefaultCharacterData char_data)` | Iterates attachment slots, randomizes if custom respawn disabled. Calls `StartingEquipSetup()`. |
@@ -169,13 +169,13 @@ Called from within `OnEvent` when player-related events fire:
 
 ---
 
-## Hooks de MissionGameplay (Lado Cliente)
+## MissionGameplay Hooks (Client-Side)
 
-**File:** `5_Mission/mission/missiongameplay.c`
+**Archivo:** `5_Mission/mission/missiongameplay.c`
 
 MissionGameplay is instantiated on the client when connecting to a server or starting single player. It manages all client-side UI and input.
 
-### Comportamiento Vanilla Clave
+### Key Vanilla Behavior
 
 - **Constructor**: Destroys existing menus, creates Chat, ActionMenu, IngameHud, VoN state, fade timers, SyncEvents registration.
 - **OnInit**: Guards against double init with `m_Initialized`. Creates HUD root widget from `"gui/layouts/day_z_hud.layout"`, chat widget, action menu, microphone icon, VoN voice level widgets, chat channel area. Calls `PPEffects.Init()` and `MapMarkerTypes.Init()`.
@@ -183,7 +183,7 @@ MissionGameplay is instantiated on the client when connecting to a server or sta
 - **OnUpdate**: Tick scheduler for local player, hologram updates, radial quickbar (console), gesture menu, input handling for inventory/chat/VoN, debug monitor, pause behavior.
 - **OnMissionFinish**: Hides dialog, destroys all menus and chat, deletes HUD root widget, stops all PPE effects, re-enables all inputs, sets mission state to `MISSION_STATE_FINNISH`.
 
-### Hooks de Input
+### Input Hooks
 
 ```c
 override void OnKeyPress(int key)
@@ -199,21 +199,21 @@ override void OnKeyRelease(int key)
 }
 ```
 
-### Hook de Evento
+### Event Hook
 
 Vanilla `MissionGameplay.OnEvent()` handles `ChatMessageEventTypeID` (adds to chat widget), `ChatChannelEventTypeID` (updates channel indicator), `WindowsResizeEventTypeID` (rebuilds menus/HUD), `SetFreeCameraEventTypeID` (debug camera), and `VONStateEventTypeID` (voice state). Override it with the same `switch` pattern and always call `super.OnEvent()`.
 
-### Control de Input
+### Input Control
 
 `PlayerControlDisable(int mode)` activates an input exclude group (e.g., `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). `PlayerControlEnable(bool bForceSuppress)` removes it. These map to exclude groups defined in `specific.xml`. Override them if your mod needs custom input exclusion behavior (as Expansion does for its menus).
 
 ---
 
-## Flujo de Eventos del Servidor: Jugador se Conecta
+## Server-Side Event Flow: Player Joins
 
 Understanding the exact sequence of events when a player connects is critical for knowing where to hook your code.
 
-### Nuevo Personaje (Primera Conexion o Despues de Morir)
+### New Character (First Join or After Death)
 
 ```mermaid
 sequenceDiagram
@@ -236,7 +236,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Personaje Existente (Reconexion Despues de Desconectar)
+### Existing Character (Reconnect After Disconnect)
 
 ```mermaid
 sequenceDiagram
@@ -256,7 +256,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Desconexion de Jugador
+### Player Disconnect
 
 ```mermaid
 sequenceDiagram
@@ -283,11 +283,11 @@ sequenceDiagram
 
 ---
 
-## Como Hacer Hook: El Patron modded class
+## How to Hook: The modded class Pattern
 
-La forma correcta de extender las clases Mission es el patron `modded class`. This uses Enforce Script's class inheritance mechanism where `modded class` extends the existing class without replacing it, allowing multiple mods to coexist.
+The correct way to extend Mission classes is the `modded class` pattern. This uses Enforce Script's class inheritance mechanism where `modded class` extends the existing class without replacing it, allowing multiple mods to coexist.
 
-### Hook Basico del Servidor
+### Basic Server Hook
 
 ```c
 // Your mod: Scripts/5_Mission/YourMod/MissionServer.c
@@ -317,7 +317,7 @@ modded class MissionServer
 }
 ```
 
-### Hook Basico del Cliente
+### Basic Client Hook
 
 ```c
 // Your mod: Scripts/5_Mission/YourMod/MissionGameplay.c
@@ -358,7 +358,7 @@ modded class MissionGameplay
 }
 ```
 
-### Hook de Conexion de Jugador
+### Hooking Player Connection
 
 ```c
 modded class MissionServer
@@ -393,7 +393,7 @@ modded class MissionServer
 }
 ```
 
-### Hook de Mensajes de Chat (OnEvent del Servidor)
+### Hooking Chat Messages (Server-Side OnEvent)
 
 ```c
 modded class MissionServer
@@ -419,7 +419,7 @@ modded class MissionServer
 }
 ```
 
-### Hook de Input de Teclado (Lado Cliente)
+### Hooking Keyboard Input (Client-Side)
 
 ```c
 modded class MissionGameplay
@@ -440,7 +440,7 @@ modded class MissionGameplay
 }
 ```
 
-### Donde Registrar Handlers de RPC
+### Where to Register RPC Handlers
 
 RPC handlers should be registered in `OnInit`, not in the constructor. By `OnInit` time, all script modules are loaded and the networking layer is ready.
 
@@ -471,9 +471,9 @@ modded class MissionServer
 
 ---
 
-## Hooks Comunes por Proposito
+## Common Hooks by Purpose
 
-| Quiero... | Hook en este metodo | En cual clase |
+| I want to... | Hook this method | On which class |
 |--------------|------------------|----------------|
 | Initialize my mod on server | `OnInit()` | `MissionServer` |
 | Initialize my mod on client | `OnInit()` | `MissionGameplay` |
@@ -533,7 +533,7 @@ modded class MissionServer
 
 All event constants are defined in `3_Game/gameplay.c` and dispatched through `OnEvent()`.
 
-| Constante | Side | Descripcion |
+| Constante | Side | Descripción |
 |----------|------|-------------|
 | `ClientPrepareEventTypeID` | Server | Player identity received, decide DB vs fresh |
 | `ClientNewEventTypeID` | Server | New character being created |
@@ -888,7 +888,7 @@ override void InvokeOnDisconnect(PlayerBase player)
 
 ## Resumen
 
-| Concepto | Key Point |
+| Concepto | Punto Clave |
 |---------|-----------|
 | Mission hierarchy | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
 | Server class | `MissionServer` --- handles player connections, spawns, tick scheduling |
@@ -907,7 +907,7 @@ override void InvokeOnDisconnect(PlayerBase player)
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Always call `super` as the first line in every Mission override.** This is the single most common DayZ modding mistake. Forgetting `super.OnInit()` silently breaks vanilla initialization and every other mod in the chain.
 - **Keep mission hook code thin --- delegate to manager classes.** Create a singleton manager (e.g., `MyModManager`) and call `manager.Init()` / `manager.Update()` / `manager.Cleanup()` from the hooks. This mirrors the pattern used by COT and Expansion.
@@ -924,7 +924,7 @@ override void InvokeOnDisconnect(PlayerBase player)
 - **Load Order:** The last-loaded mod's `modded class` override runs outermost in the call chain. If a mod forgets `super`, it silently blocks all mods loaded before it. This is the #1 cause of multi-mod incompatibility.
 - **Modded Class Conflicts:** `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate`, and `OnMissionFinish` are the most contested override points. Conflicts are rare as long as every mod calls `super`.
 - **Performance Impact:** Heavy logic in `OnUpdate()` without frame limiting directly reduces server/client FPS. A single mod doing `GetGame().GetPlayers()` iteration every frame on a 60-player server adds measurable overhead.
-- **Servidor/Cliente:** `MissionServer` hooks only fire on dedicated servers. `MissionGameplay` hooks only fire on clients. On a listen server, both classes exist. `GetGame().GetPlayer()` is always null on dedicated servers.
+- **Server/Client:** `MissionServer` hooks only fire on dedicated servers. `MissionGameplay` hooks only fire on clients. On a listen server, both classes exist. `GetGame().GetPlayer()` is always null on dedicated servers.
 
 ---
 
@@ -932,7 +932,7 @@ override void InvokeOnDisconnect(PlayerBase player)
 
 > These patterns were confirmed by studying the source code of professional DayZ mods.
 
-| Patron | Mod | File/Location |
+| Patrón | Mod | File/Location |
 |---------|-----|---------------|
 | Thin `modded class MissionServer.OnInit()` delegating to singleton manager | COT | `CommunityOnlineTools` init in MissionServer |
 | `InvokeOnConnect` override to load per-player JSON data | Expansion | Player settings sync on connect |
@@ -942,4 +942,4 @@ override void InvokeOnDisconnect(PlayerBase player)
 
 ---
 
-[<< Previous: Central Economy](10-central-economy.md) | **Hooks de Mision** | [Next: Action System >>](12-action-system.md)
+[Inicio](../../README.md) | [<< Anterior: Central Economy](10-central-economy.md) | **Mission Hooks** | [Siguiente: Action System >>](12-action-system.md)

@@ -1,59 +1,59 @@
-# Chapter 6.2: Vehicle System
+# Kapitel 6.2: Fahrzeugsystem
 
-[Home](../../README.md) | [<< Previous: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
+[Startseite](../../README.md) | [<< Zurück: Entity-System](01-entity-system.md) | **Fahrzeuge** | [Weiter: Wetter >>](03-weather.md)
 
 ---
 
 ## Einführung
 
-DayZ vehicles are entities that extend the transport system. Cars extend `CarScript`, boats extend `BoatScript`, and both inherit from `Transport`. Vehicles have fluid systems, parts with independent health, gear simulation, and physics managed by the engine. This chapter covers the API methods you need to interact with vehicles in scripts.
+DayZ-Fahrzeuge sind Entities, die das Transportsystem erweitern. Autos erweitern `CarScript`, Boote erweitern `BoatScript`, und beide erben von `Transport`. Fahrzeuge verfügen über Flüssigkeitssysteme, Teile mit unabhängiger Gesundheit, Getriebesimulation und von der Engine verwaltete Physik. Dieses Kapitel behandelt die API-Methoden, die Sie benötigen, um mit Fahrzeugen in Scripts zu interagieren.
 
 ---
 
-## Class Hierarchy
+## Klassenhierarchie
 
 ```
 EntityAI
-└── Transport                    // 3_Game - base for all vehicles
-    ├── Car                      // 3_Game - engine-native car physics
-    │   └── CarScript            // 4_World - scriptable car base
+└── Transport                    // 3_Game - Basis für alle Fahrzeuge
+    ├── Car                      // 3_Game - Engine-native Auto-Physik
+    │   └── CarScript            // 4_World - skriptfähige Auto-Basis
     │       ├── CivilianSedan
     │       ├── OffroadHatchback
     │       ├── Hatchback_02
     │       ├── Sedan_02
     │       ├── Truck_01_Base
     │       └── ...
-    └── Boat                     // 3_Game - engine-native boat physics
-        └── BoatScript           // 4_World - scriptable boat base
+    └── Boat                     // 3_Game - Engine-native Boot-Physik
+        └── BoatScript           // 4_World - skriptfähige Boot-Basis
 ```
 
 ---
 
-## Transport (Base)
+## Transport (Basis)
 
-**File:** `3_Game/entities/transport.c`
+**Datei:** `3_Game/entities/transport.c`
 
-The abstract base for all vehicles. Provides seat management and crew access.
+Die abstrakte Basis für alle Fahrzeuge. Bietet Sitzverwaltung und Besatzungszugriff.
 
-### Crew Management
+### Besatzungsverwaltung
 
 ```c
-proto native int   CrewSize();                          // Total number of seats
-proto native int   CrewMemberIndex(Human crew_member);  // Get seat index of a human
-proto native Human CrewMember(int posIdx);              // Get human at seat index
-proto native void  CrewGetOut(int posIdx);              // Force crew member out of seat
-proto native void  CrewDeath(int posIdx);               // Kill crew member in seat
+proto native int   CrewSize();                          // Gesamtanzahl der Sitze
+proto native int   CrewMemberIndex(Human crew_member);  // Sitzindex eines Menschen ermitteln
+proto native Human CrewMember(int posIdx);              // Mensch an Sitzindex ermitteln
+proto native void  CrewGetOut(int posIdx);              // Besatzungsmitglied aus dem Sitz zwingen
+proto native void  CrewDeath(int posIdx);               // Besatzungsmitglied im Sitz töten
 ```
 
-### Crew Entry
+### Besatzungseinstieg
 
 ```c
 proto native int  GetAnimInstance();
-proto native int  CrewPositionIndex(int componentIdx);  // Component to seat index
-proto native vector CrewEntryPoint(int posIdx);         // World entry position for seat
+proto native int  CrewPositionIndex(int componentIdx);  // Komponente zu Sitzindex
+proto native vector CrewEntryPoint(int posIdx);         // Welteinstiegspunkt für Sitz
 ```
 
-**Example --- eject all passengers:**
+**Beispiel --- alle Passagiere auswerfen:**
 
 ```c
 void EjectAllCrew(Transport vehicle)
@@ -71,13 +71,13 @@ void EjectAllCrew(Transport vehicle)
 
 ---
 
-## Car (Engine Native)
+## Car (Engine-nativ)
 
-**File:** `3_Game/entities/car.c`
+**Datei:** `3_Game/entities/car.c`
 
-Engine-level car physics. All `proto native` methods that drive the vehicle simulation.
+Engine-Level Auto-Physik. Alle `proto native`-Methoden, die die Fahrzeugsimulation antreiben.
 
-### Engine
+### Motor
 
 ```c
 proto native bool  EngineIsOn();
@@ -89,9 +89,9 @@ proto native float EngineGetRPMMax();
 proto native int   GetGear();
 ```
 
-### Fluids
+### Flüssigkeiten
 
-DayZ vehicles have four fluid types defined in the `CarFluid` enum:
+DayZ-Fahrzeuge haben vier Flüssigkeitstypen, definiert im `CarFluid`-Enum:
 
 ```c
 enum CarFluid
@@ -111,7 +111,7 @@ proto native void  Leak(CarFluid fluid, float amount);
 proto native void  LeakAll(CarFluid fluid);
 ```
 
-**Example --- refuel a vehicle:**
+**Beispiel --- ein Fahrzeug betanken:**
 
 ```c
 void RefuelVehicle(Car car)
@@ -123,23 +123,23 @@ void RefuelVehicle(Car car)
 }
 ```
 
-### Speed
+### Geschwindigkeit
 
 ```c
-proto native float GetSpeedometer();    // Speed in km/h (absolute value)
+proto native float GetSpeedometer();    // Geschwindigkeit in km/h (Absolutwert)
 ```
 
-### Controls (Simulation)
+### Steuerung (Simulation)
 
 ```c
-proto native void  SetBrake(float value, int wheel = -1);    // 0.0 - 1.0, -1 = all wheels
+proto native void  SetBrake(float value, int wheel = -1);    // 0.0 - 1.0, -1 = alle Räder
 proto native void  SetHandbrake(float value);                 // 0.0 - 1.0
 proto native void  SetSteering(float value, bool analog = true);
 proto native void  SetThrust(float value, int wheel = -1);    // 0.0 - 1.0
 proto native void  SetClutchState(bool engaged);
 ```
 
-### Wheels
+### Räder
 
 ```c
 proto native int   WheelCount();
@@ -147,7 +147,7 @@ proto native bool  WheelIsAnyLocked();
 proto native float WheelGetSurface(int wheelIdx);
 ```
 
-### Callbacks (Override in CarScript)
+### Callbacks (Überschreiben in CarScript)
 
 ```c
 void OnEngineStart();
@@ -162,47 +162,69 @@ void OnSound(CarSoundCtrl ctrl, float oldValue);
 
 ## CarScript
 
-**File:** `4_World/entities/vehicles/carscript.c`
+**Datei:** `4_World/entities/vehicles/carscript.c`
 
-The scriptable car class that most vehicle mods extend. Adds parts, doors, lights, and sound management.
+Die skriptfähige Auto-Klasse, die die meisten Fahrzeug-Mods erweitern. Fügt Teile-, Tür-, Licht- und Soundverwaltung hinzu.
 
-### Part Health
+### Teilegesundheit
 
-CarScript uses damage zones to represent vehicle parts. Each part can be independently damaged:
+CarScript verwendet Schadenszonen, um Fahrzeugteile darzustellen. Jedes Teil kann unabhängig beschädigt werden:
 
 ```c
-// Check part health via the standard EntityAI API
+// Teilegesundheit über die Standard-EntityAI-API prüfen
 float engineHP = car.GetHealth("Engine", "Health");
 float fuelTankHP = car.GetHealth("FuelTank", "Health");
 
-// Set part health
-car.SetHealth("Engine", "Health", 0);       // Destroy the engine
-car.SetHealth("FuelTank", "Health", 100);   // Repair the fuel tank
+// Teilegesundheit setzen
+car.SetHealth("Engine", "Health", 0);       // Den Motor zerstören
+car.SetHealth("FuelTank", "Health", 100);   // Den Kraftstofftank reparieren
 ```
 
-Common damage zones for vehicles:
+### Schadenszonen-Diagramm
 
-| Zone | Description |
-|------|-------------|
-| `""` (global) | Overall vehicle health |
-| `"Engine"` | Engine part |
-| `"FuelTank"` | Fuel tank |
-| `"Radiator"` | Radiator (coolant) |
-| `"Battery"` | Battery |
-| `"SparkPlug"` | Spark plug |
-| `"FrontLeft"` / `"FrontRight"` | Front wheels |
-| `"RearLeft"` / `"RearRight"` | Rear wheels |
-| `"DriverDoor"` / `"CoDriverDoor"` | Front doors |
-| `"Hood"` / `"Trunk"` | Hood and trunk |
+```mermaid
+graph TD
+    V[Fahrzeug] --> E[Engine]
+    V --> FT[FuelTank]
+    V --> R[Radiator]
+    V --> B[Battery]
+    V --> W1[Wheel_1_1]
+    V --> W2[Wheel_1_2]
+    V --> W3[Wheel_2_1]
+    V --> W4[Wheel_2_2]
+    V --> D1[Door_1_1]
+    V --> D2[Door_2_1]
+    V --> H[Hood]
+    V --> T[Trunk]
 
-### Lights
+    style E fill:#ff6b6b,color:#fff
+    style FT fill:#ffa07a,color:#fff
+    style R fill:#87ceeb,color:#fff
+```
+
+Häufige Schadenszonen für Fahrzeuge:
+
+| Zone | Beschreibung |
+|------|--------------|
+| `""` (global) | Gesamte Fahrzeuggesundheit |
+| `"Engine"` | Motorteil |
+| `"FuelTank"` | Kraftstofftank |
+| `"Radiator"` | Kühler (Kühlmittel) |
+| `"Battery"` | Batterie |
+| `"SparkPlug"` | Zündkerze |
+| `"FrontLeft"` / `"FrontRight"` | Vorderräder |
+| `"RearLeft"` / `"RearRight"` | Hinterräder |
+| `"DriverDoor"` / `"CoDriverDoor"` | Vordertüren |
+| `"Hood"` / `"Trunk"` | Motorhaube und Kofferraum |
+
+### Lichter
 
 ```c
-void SetLightsState(int state);   // 0 = off, 1 = on
+void SetLightsState(int state);   // 0 = aus, 1 = an
 int  GetLightsState();
 ```
 
-### Door Control
+### Türsteuerung
 
 ```c
 bool IsDoorOpen(string doorSource);
@@ -210,17 +232,17 @@ void OpenDoor(string doorSource);
 void CloseDoor(string doorSource);
 ```
 
-### Key Overrides for Custom Vehicles
+### Wichtige Überschreibungen für benutzerdefinierte Fahrzeuge
 
 ```c
-override void EEInit();                    // Initialize vehicle parts, fluids
-override void OnEngineStart();             // Custom engine start behavior
-override void OnEngineStop();              // Custom engine stop behavior
-override void EOnSimulate(IEntity other, float dt);  // Per-tick simulation
+override void EEInit();                    // Fahrzeugteile, Flüssigkeiten initialisieren
+override void OnEngineStart();             // Benutzerdefiniertes Motorstartverhalten
+override void OnEngineStop();              // Benutzerdefiniertes Motorstoppverhalten
+override void EOnSimulate(IEntity other, float dt);  // Simulation pro Tick
 override bool CanObjectAttachWeapon(string slot_name);
 ```
 
-**Example --- create a vehicle with full fluids:**
+**Beispiel --- ein Fahrzeug mit vollen Flüssigkeiten erstellen:**
 
 ```c
 void SpawnReadyVehicle(vector pos)
@@ -230,13 +252,13 @@ void SpawnReadyVehicle(vector pos)
     if (!car)
         return;
 
-    // Fill all fluids
+    // Alle Flüssigkeiten auffüllen
     car.Fill(CarFluid.FUEL, car.GetFluidCapacity(CarFluid.FUEL));
     car.Fill(CarFluid.OIL, car.GetFluidCapacity(CarFluid.OIL));
     car.Fill(CarFluid.BRAKE, car.GetFluidCapacity(CarFluid.BRAKE));
     car.Fill(CarFluid.COOLANT, car.GetFluidCapacity(CarFluid.COOLANT));
 
-    // Spawn required parts
+    // Erforderliche Teile spawnen
     EntityAI carEntity = EntityAI.Cast(car);
     carEntity.GetInventory().CreateAttachment("CarBattery");
     carEntity.GetInventory().CreateAttachment("SparkPlug");
@@ -249,11 +271,11 @@ void SpawnReadyVehicle(vector pos)
 
 ## BoatScript
 
-**File:** `4_World/entities/vehicles/boatscript.c`
+**Datei:** `4_World/entities/vehicles/boatscript.c`
 
-Scriptable base for boat entities. Similar API to CarScript but with propeller-based physics.
+Skriptfähige Basis für Boot-Entities. Ähnliche API wie CarScript, aber mit propellerbasierter Physik.
 
-### Engine & Propulsion
+### Motor und Antrieb
 
 ```c
 proto native bool  EngineIsOn();
@@ -262,22 +284,22 @@ proto native void  EngineStop();
 proto native float EngineGetRPM();
 ```
 
-### Fluids
+### Flüssigkeiten
 
-Boats use the same `CarFluid` enum but typically only use `FUEL`:
+Boote verwenden dasselbe `CarFluid`-Enum, nutzen aber typischerweise nur `FUEL`:
 
 ```c
 float fuel = boat.GetFluidFraction(CarFluid.FUEL);
 boat.Fill(CarFluid.FUEL, boat.GetFluidCapacity(CarFluid.FUEL));
 ```
 
-### Speed
+### Geschwindigkeit
 
 ```c
-proto native float GetSpeedometer();   // Speed in km/h
+proto native float GetSpeedometer();   // Geschwindigkeit in km/h
 ```
 
-**Example --- spawn a boat:**
+**Beispiel --- ein Boot spawnen:**
 
 ```c
 void SpawnBoat(vector waterPos)
@@ -295,9 +317,9 @@ void SpawnBoat(vector waterPos)
 
 ---
 
-## Vehicle Interaction Checks
+## Fahrzeug-Interaktionsprüfungen
 
-### Checking if a Player is in a Vehicle
+### Prüfen ob ein Spieler in einem Fahrzeug ist
 
 ```c
 PlayerBase player;
@@ -308,12 +330,12 @@ if (player.IsInVehicle())
     if (Class.CastTo(car, vehicle))
     {
         float speed = car.GetSpeedometer();
-        Print(string.Format("Driving at %1 km/h", speed));
+        Print(string.Format("Fährt mit %1 km/h", speed));
     }
 }
 ```
 
-### Finding All Vehicles in the World
+### Alle Fahrzeuge in der Welt finden
 
 ```c
 void FindAllVehicles(out array<Transport> vehicles)
@@ -322,7 +344,7 @@ void FindAllVehicles(out array<Transport> vehicles)
     array<Object> objects = new array<Object>;
     array<CargoBase> proxyCargos = new array<CargoBase>;
 
-    // Use a large radius from center of map
+    // Großen Radius von der Kartenmitte verwenden
     GetGame().GetObjectsAtPosition(Vector(7500, 0, 7500), 15000, objects, proxyCargos);
 
     foreach (Object obj : objects)
@@ -340,17 +362,50 @@ void FindAllVehicles(out array<Transport> vehicles)
 
 ## Zusammenfassung
 
-| Concept | Key Point |
+| Konzept | Kernpunkt |
 |---------|-----------|
-| Hierarchy | `Transport` > `Car`/`Boat` > `CarScript`/`BoatScript` |
-| Engine | `EngineStart()`, `EngineStop()`, `EngineIsOn()`, `EngineGetRPM()` |
-| Fluids | `CarFluid` enum: `FUEL`, `OIL`, `BRAKE`, `COOLANT` |
-| Fill/Leak | `Fill(fluid, amount)`, `Leak(fluid, amount)`, `GetFluidFraction(fluid)` |
-| Speed | `GetSpeedometer()` returns km/h |
-| Crew | `CrewSize()`, `CrewMember(idx)`, `CrewGetOut(idx)` |
-| Parts | Standard damage zones: `"Engine"`, `"FuelTank"`, `"Radiator"`, etc. |
-| Creation | `CreateObjectEx` with `ECE_PLACE_ON_SURFACE \| ECE_INITAI \| ECE_CREATEPHYSICS` |
+| Hierarchie | `Transport` > `Car`/`Boat` > `CarScript`/`BoatScript` |
+| Motor | `EngineStart()`, `EngineStop()`, `EngineIsOn()`, `EngineGetRPM()` |
+| Flüssigkeiten | `CarFluid`-Enum: `FUEL`, `OIL`, `BRAKE`, `COOLANT` |
+| Füllen/Lecken | `Fill(fluid, amount)`, `Leak(fluid, amount)`, `GetFluidFraction(fluid)` |
+| Geschwindigkeit | `GetSpeedometer()` gibt km/h zurück |
+| Besatzung | `CrewSize()`, `CrewMember(idx)`, `CrewGetOut(idx)` |
+| Teile | Standard-Schadenszonen: `"Engine"`, `"FuelTank"`, `"Radiator"`, usw. |
+| Erstellung | `CreateObjectEx` mit `ECE_PLACE_ON_SURFACE \| ECE_INITAI \| ECE_CREATEPHYSICS` |
 
 ---
 
-[<< Zurück: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
+## Bewährte Praktiken
+
+- **Fügen Sie beim Spawnen von Fahrzeugen immer `ECE_CREATEPHYSICS | ECE_INITAI` hinzu.** Ohne Physik fällt das Fahrzeug durch den Boden. Ohne AI-Init startet die Motorsimulation nicht und das Fahrzeug kann nicht gefahren werden.
+- **Füllen Sie alle vier Flüssigkeiten nach dem Spawnen auf.** Ein Fahrzeug ohne Öl, Bremsflüssigkeit oder Kühlmittel beschädigt sich sofort, wenn der Motor gestartet wird. Verwenden Sie `GetFluidCapacity()`, um korrekte Maximalwerte pro Fahrzeugtyp zu erhalten.
+- **Null-Prüfung von `CrewMember()` vor Operationen an der Besatzung.** Leere Sitze geben `null` zurück. Das Iterieren über `CrewSize()` ohne Prüfung jedes Index verursacht Abstürze bei unbesetzten Sitzen.
+- **Verwenden Sie `GetSpeedometer()` anstatt die Geschwindigkeit manuell zu berechnen.** Der Tachometer der Engine berücksichtigt Radkontakt, Getriebezustand und Physik korrekt. Manuelle Geschwindigkeitsberechnungen aus Positionsdifferenzen sind unzuverlässig.
+
+---
+
+## Kompatibilität und Auswirkungen
+
+> **Mod-Kompatibilität:** Fahrzeug-Mods erweitern häufig `CarScript` mit modded-Klassen. Konflikte entstehen, wenn mehrere Mods dieselben Callbacks wie `OnEngineStart()` oder `EOnSimulate()` überschreiben.
+
+- **Ladereihenfolge:** Wenn zwei Mods beide `modded class CarScript` verwenden und `OnEngineStart()` überschreiben, läuft nur die zuletzt geladene Mod, es sei denn, beide rufen `super` auf. Fahrzeug-Überarbeitungs-Mods sollten immer `super` in jedem Callback aufrufen.
+- **Modded-Class-Konflikte:** Expansion Vehicles und Vanilla-Fahrzeug-Mods kollidieren häufig bei `EEInit()` und der Flüssigkeitsinitialisierung. Testen Sie mit beiden geladen.
+- **Leistungsauswirkung:** `EOnSimulate()` läuft jeden Physik-Tick für jedes aktive Fahrzeug. Halten Sie die Logik in diesem Callback minimal; verwenden Sie Timer-Akkumulatoren für aufwendige Operationen.
+- **Server/Client:** `EngineStart()`, `EngineStop()`, `Fill()`, `Leak()` und `CrewGetOut()` sind server-autoritativ. `GetSpeedometer()`, `EngineIsOn()` und `GetFluidFraction()` können sicher auf beiden Seiten gelesen werden.
+
+---
+
+## In echten Mods beobachtet
+
+> Diese Muster wurden durch das Studium des Quellcodes professioneller DayZ-Mods bestätigt.
+
+| Muster | Mod | Datei/Ort |
+|--------|-----|-----------|
+| `EEInit()` überschreiben, um benutzerdefinierte Flüssigkeitskapazitäten und Teile zu setzen | Expansion Vehicles | `CarScript`-Unterklassen |
+| `EOnSimulate`-Akkumulator für periodische Kraftstoffverbrauchsprüfungen | Vanilla+ Fahrzeug-Mods | `CarScript`-Überschreibungen |
+| `CrewGetOut()`-Schleife im Admin-Alle-Auswerfen-Befehl | VPP Admin Tools | Fahrzeugverwaltungsmodul |
+| Benutzerdefinierter `OnContact()`-Override für Kollisionsschadens-Tuning | Expansion | `ExpansionCarScript` |
+
+---
+
+[Startseite](../../README.md) | [<< Zurück: Entity-System](01-entity-system.md) | **Fahrzeuge** | [Weiter: Wetter >>](03-weather.md)

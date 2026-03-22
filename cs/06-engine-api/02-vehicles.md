@@ -1,16 +1,16 @@
 # Chapter 6.2: Vehicle System
 
-[Home](../../README.md) | [<< Previous: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
+[Domů](../../README.md) | [<< Předchozí: Systém entit](01-entity-system.md) | **Vozidla** | [Další: Počasí >>](03-weather.md)
 
 ---
 
-## Introduction
+## Úvod
 
-DayZ vehicles are entities that extend the transport system. Cars extend `CarScript`, boats extend `BoatScript`, and both inherit from `Transport`. Vehicles have fluid systems, parts with independent health, gear simulation, and physics managed by the engine. This chapter covers the API methods you need to interact with vehicles in scripts.
+DayZ vehicles are entities that extend the transport system. Cars extend `CarScript`, boats extend `BoatScript`, and oba inherit from `Transport`. Vehicles have fluid systems, parts with nezávislý health, gear simulation, and physics managed by engine. This chapter covers the API methods potřebujete to interact with vehicles in scripts.
 
 ---
 
-## Class Hierarchy
+## Hierarchie tříd
 
 ```
 EntityAI
@@ -29,13 +29,13 @@ EntityAI
 
 ---
 
-## Transport (Base)
+## Transport (základ)
 
-**File:** `3_Game/entities/transport.c`
+**Soubor:** `3_Game/entities/transport.c`
 
-The abstract base for all vehicles. Provides seat management and crew access.
+Abstraktní základ pro všechna vozidla. Poskytuje správu sedadel a přístup k posádce.
 
-### Crew Management
+#### Správa posádky
 
 ```c
 proto native int   CrewSize();                          // Total number of seats
@@ -45,7 +45,7 @@ proto native void  CrewGetOut(int posIdx);              // Force crew member out
 proto native void  CrewDeath(int posIdx);               // Kill crew member in seat
 ```
 
-### Crew Entry
+#### Nastupování posádky
 
 ```c
 proto native int  GetAnimInstance();
@@ -53,7 +53,7 @@ proto native int  CrewPositionIndex(int componentIdx);  // Component to seat ind
 proto native vector CrewEntryPoint(int posIdx);         // World entry position for seat
 ```
 
-**Example --- eject all passengers:**
+**Příklad --- eject all passengers:**
 
 ```c
 void EjectAllCrew(Transport vehicle)
@@ -71,13 +71,13 @@ void EjectAllCrew(Transport vehicle)
 
 ---
 
-## Car (Engine Native)
+## Car (nativní engine)
 
-**File:** `3_Game/entities/car.c`
+**Soubor:** `3_Game/entities/car.c`
 
-Engine-level car physics. All `proto native` methods that drive the vehicle simulation.
+Fyzika auta na úrovni enginu. Všechny `proto native` metody, které řídí simulaci vozidla.
 
-### Engine
+### Motor
 
 ```c
 proto native bool  EngineIsOn();
@@ -89,9 +89,9 @@ proto native float EngineGetRPMMax();
 proto native int   GetGear();
 ```
 
-### Fluids
+### Kapaliny
 
-DayZ vehicles have four fluid types defined in the `CarFluid` enum:
+Vozidla DayZ mají čtyři typy kapalin definované ve `CarFluid` enum:
 
 ```c
 enum CarFluid
@@ -111,7 +111,7 @@ proto native void  Leak(CarFluid fluid, float amount);
 proto native void  LeakAll(CarFluid fluid);
 ```
 
-**Example --- refuel a vehicle:**
+**Příklad --- refuel a vehicle:**
 
 ```c
 void RefuelVehicle(Car car)
@@ -123,13 +123,13 @@ void RefuelVehicle(Car car)
 }
 ```
 
-### Speed
+### Rychlost
 
 ```c
 proto native float GetSpeedometer();    // Speed in km/h (absolute value)
 ```
 
-### Controls (Simulation)
+### Ovládání (simulace)
 
 ```c
 proto native void  SetBrake(float value, int wheel = -1);    // 0.0 - 1.0, -1 = all wheels
@@ -139,7 +139,7 @@ proto native void  SetThrust(float value, int wheel = -1);    // 0.0 - 1.0
 proto native void  SetClutchState(bool engaged);
 ```
 
-### Wheels
+### Kola
 
 ```c
 proto native int   WheelCount();
@@ -147,7 +147,7 @@ proto native bool  WheelIsAnyLocked();
 proto native float WheelGetSurface(int wheelIdx);
 ```
 
-### Callbacks (Override in CarScript)
+### Zpětná volání (přepsat v CarScript)
 
 ```c
 void OnEngineStart();
@@ -162,13 +162,13 @@ void OnSound(CarSoundCtrl ctrl, float oldValue);
 
 ## CarScript
 
-**File:** `4_World/entities/vehicles/carscript.c`
+**Soubor:** `4_World/entities/vehicles/carscript.c`
 
-The scriptable car class that most vehicle mods extend. Adds parts, doors, lights, and sound management.
+The scriptable car class that většina vehicle mods extend. Adds parts, doors, lights, and sound management.
 
-### Part Health
+### Zdraví dílů
 
-CarScript uses damage zones to represent vehicle parts. Each part can be independently damaged:
+CarScript uses damage zones to represent vehicle parts. Each part can be nezávisle damaged:
 
 ```c
 // Check part health via the standard EntityAI API
@@ -180,11 +180,33 @@ car.SetHealth("Engine", "Health", 0);       // Destroy the engine
 car.SetHealth("FuelTank", "Health", 100);   // Repair the fuel tank
 ```
 
-Common damage zones for vehicles:
+### Diagram zón poškození
+
+```mermaid
+graph TD
+    V[Vehicle] --> E[Engine]
+    V --> FT[FuelTank]
+    V --> R[Radiator]
+    V --> B[Battery]
+    V --> W1[Wheel_1_1]
+    V --> W2[Wheel_1_2]
+    V --> W3[Wheel_2_1]
+    V --> W4[Wheel_2_2]
+    V --> D1[Door_1_1]
+    V --> D2[Door_2_1]
+    V --> H[Hood]
+    V --> T[Trunk]
+
+    style E fill:#ff6b6b,color:#fff
+    style FT fill:#ffa07a,color:#fff
+    style R fill:#87ceeb,color:#fff
+```
+
+Běžné damage zones for vehicles:
 
 | Zone | Description |
 |------|-------------|
-| `""` (global) | Overall vehicle health |
+| `""` (globální) | Overall vehicle health |
 | `"Engine"` | Engine part |
 | `"FuelTank"` | Fuel tank |
 | `"Radiator"` | Radiator (coolant) |
@@ -195,14 +217,14 @@ Common damage zones for vehicles:
 | `"DriverDoor"` / `"CoDriverDoor"` | Front doors |
 | `"Hood"` / `"Trunk"` | Hood and trunk |
 
-### Lights
+### Světla
 
 ```c
 void SetLightsState(int state);   // 0 = off, 1 = on
 int  GetLightsState();
 ```
 
-### Door Control
+### Ovládání dveří
 
 ```c
 bool IsDoorOpen(string doorSource);
@@ -210,7 +232,7 @@ void OpenDoor(string doorSource);
 void CloseDoor(string doorSource);
 ```
 
-### Key Overrides for Custom Vehicles
+### Klíčová přepsání pro vlastní vozidla
 
 ```c
 override void EEInit();                    // Initialize vehicle parts, fluids
@@ -220,7 +242,7 @@ override void EOnSimulate(IEntity other, float dt);  // Per-tick simulation
 override bool CanObjectAttachWeapon(string slot_name);
 ```
 
-**Example --- create a vehicle with full fluids:**
+**Příklad --- create a vehicle with plný fluids:**
 
 ```c
 void SpawnReadyVehicle(vector pos)
@@ -249,11 +271,11 @@ void SpawnReadyVehicle(vector pos)
 
 ## BoatScript
 
-**File:** `4_World/entities/vehicles/boatscript.c`
+**Soubor:** `4_World/entities/vehicles/boatscript.c`
 
-Scriptable base for boat entities. Similar API to CarScript but with propeller-based physics.
+Skriptovatelný základ pro entity lodí. Podobné API jako CarScript, ale s fyzikou založenou na vrtuli.
 
-### Engine & Propulsion
+### Motor a pohon
 
 ```c
 proto native bool  EngineIsOn();
@@ -262,22 +284,22 @@ proto native void  EngineStop();
 proto native float EngineGetRPM();
 ```
 
-### Fluids
+### Kapaliny
 
-Boats use the same `CarFluid` enum but typically only use `FUEL`:
+Boats use the stejný `CarFluid` enum but typicky pouze use `FUEL`:
 
 ```c
 float fuel = boat.GetFluidFraction(CarFluid.FUEL);
 boat.Fill(CarFluid.FUEL, boat.GetFluidCapacity(CarFluid.FUEL));
 ```
 
-### Speed
+### Rychlost
 
 ```c
 proto native float GetSpeedometer();   // Speed in km/h
 ```
 
-**Example --- spawn a boat:**
+**Příklad --- spawn a boat:**
 
 ```c
 void SpawnBoat(vector waterPos)
@@ -295,9 +317,9 @@ void SpawnBoat(vector waterPos)
 
 ---
 
-## Vehicle Interaction Checks
+## Kontroly interakce s vozidlem
 
-### Checking if a Player is in a Vehicle
+### Kontrola, zda je hráč ve vozidle
 
 ```c
 PlayerBase player;
@@ -313,7 +335,7 @@ if (player.IsInVehicle())
 }
 ```
 
-### Finding All Vehicles in the World
+### Nalezení všech vozidel ve světě
 
 ```c
 void FindAllVehicles(out array<Transport> vehicles)
@@ -338,7 +360,7 @@ void FindAllVehicles(out array<Transport> vehicles)
 
 ---
 
-## Summary
+## Shrnutí
 
 | Koncept | Klíčový bod |
 |---------|-----------|
@@ -353,4 +375,37 @@ void FindAllVehicles(out array<Transport> vehicles)
 
 ---
 
-[<< Předchozí: Entity System](01-entity-system.md) | **Vehicles** | [Další: Weather >>](03-weather.md)
+## Osvědčené postupy
+
+- **Vždy include `ECE_CREATEPHYSICS | ECE_INITAI` when spawning vehicles.** Bez physics, the vehicle falls through the ground. Bez AI init, engine simulation ne start and the vehicle nemůže být driven.
+- **Fill all four fluids after spawning.** A vehicle chybějící oil, brake fluid, or coolant will damage itself okamžitě when engine starts. Use `GetFluidCapacity()` to get correct max values per vehicle type.
+- **Null-check `CrewMember()` before operating on crew.** Empty seats return `null`. Iterating `CrewSize()` without checking každý index causes crashes when seats are unoccupied.
+- **Use `GetSpeedometer()` místo computing velocity ručně.** Engine's speedometer accounts for wheel contact, transmission state, and physics správně. Manual velocity calculations from position deltas are unreliable.
+
+---
+
+## Kompatibilita a dopad
+
+> **Kompatibilita modů:** Vehicle mods běžně extend `CarScript` with modded classes. Conflicts arise when více mods override the stejný zpětné volánís like `OnEngineStart()` or `EOnSimulate()`.
+
+- **Pořadí načítání:** If two mods both `modded class CarScript` and override `OnEngineStart()`, only the last-loaded mod runs unless both call `super`. Vehicle overhaul mods should always call `super` in every callback.
+- **Konflikty modifikovaných tříd:** Expansion Vehicles and vanilla vehicle mods frequently conflict on `EEInit()` and fluid initialization. Testujte with oba loaded.
+- **Dopad na výkon:** `EOnSimulate()` runs každý physics tick for každý active vehicle. Udržujte logic minimal in this zpětné volání; use timer accumulators for expensive operations.
+- **Server/klient:** `EngineStart()`, `EngineStop()`, `Fill()`, `Leak()`, and `CrewGetOut()` are server-authoritative. `GetSpeedometer()`, `EngineIsOn()`, and `GetFluidFraction()` are safe to read na obou stranách.
+
+---
+
+## Pozorováno v reálných modech
+
+> These patterns were confirmed by studying the source code of professional DayZ mods.
+
+| Vzor | Mod | Soubor/Umístění |
+|---------|-----|---------------|
+| Override `EEInit()` to set vlastní fluid capacities and spawn parts | Expansion Vehicles | `CarScript` subclasses |
+| `EOnSimulate` accumulator for periodic fuel consumption checks | Vanilla+ vehicle mods | `CarScript` overrides |
+| `CrewGetOut()` loop in admin eject-all command | VPP Admin Tools | Vehicle management module |
+| Custom `OnContact()` override for collision damage tuning | Expansion | `ExpansionCarScript` |
+
+---
+
+[Domů](../../README.md) | [<< Předchozí: Systém entit](01-entity-system.md) | **Vozidla** | [Další: Počasí >>](03-weather.md)

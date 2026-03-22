@@ -1,17 +1,19 @@
-# Chapter 5.5: Server Configuration Files
+# Chapitre 5.5: Server Configuration Files
 
-[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
-
----
+[Accueil](../../README.md) | [<< Précédent : ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Suivant : Apparition Gear Configuration >>](06-apparition-gear.md)
 
 ---
 
-## Table des Matieres
+> **Résumé :** DayZ servers are configured through XML, JSON, and script files in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`). These files control item apparitions, economy behavior, gameplay rules, and server identity. Understanding them is essential for adding custom items to the loot economy, tuning server parameters, or building a custom mission.
+
+---
+
+## Table des matières
 
 - [Overview](#overview)
 - [init.c --- Mission Entry Point](#initc--mission-entry-point)
-- [types.xml --- Item Spawn Definitions](#typesxml--item-spawn-definitions)
-- [cfgspawnabletypes.xml --- Attachments and Cargo](#cfgspawnabletypesxml--attachments-and-cargo)
+- [types.xml --- Item Spawn Definitions](#typesxml--item-apparition-definitions)
+- [cfgapparitionabletypes.xml --- Attachments and Cargo](#cfgapparitionabletypesxml--attachments-and-cargo)
 - [cfgrandompresets.xml --- Reusable Loot Pools](#cfgrandompresetsxml--reusable-loot-pools)
 - [globals.xml --- Economy Parameters](#globalsxml--economy-parameters)
 - [cfggameplay.json --- Gameplay Settings](#cfggameplayjson--gameplay-settings)
@@ -23,14 +25,14 @@
 
 ## Vue d'ensemble
 
-Chaque serveur DayZ charge sa configuration depuis un **dossier de mission**. Les fichiers du Central Economy (CE) definissent quels objets apparaissent, ou et pendant combien de temps. The server executable itself is configured through `serverDZ.cfg`, which lives alongside the executable.
+Every DayZ server loads its configuration from a **mission folder**. The Central Economy (CE) files define what items apparition, where, and for how long. Le serveur executable itself is configured through `serverDZ.cfg`, which lives alongside the executable.
 
-| Fichier | But |
+| File | Purpose |
 |------|---------|
-| `init.c` | Mission entry point --- Hive init, date/time, spawn loadout |
-| `db/types.xml` | Item spawn definitions: quantities, lifetimes, locations |
-| `cfgspawnabletypes.xml` | Pre-attached items and cargo on spawned entities |
-| `cfgrandompresets.xml` | Reusable item pools for cfgspawnabletypes |
+| `init.c` | Mission entry point --- Hive init, date/time, apparition loadout |
+| `db/types.xml` | Item apparition definitions: quantities, lifetimes, locations |
+| `cfgapparitionabletypes.xml` | Pre-attached items and cargo on apparitioned entities |
+| `cfgrandompresets.xml` | Reusable item pools for cfgapparitionabletypes |
 | `db/globals.xml` | Global economy parameters: max counts, cleanup timers |
 | `cfggameplay.json` | Gameplay tuning: stamina, base building, UI |
 | `cfgeconomycore.xml` | Root class registration and CE logging |
@@ -41,7 +43,7 @@ Chaque serveur DayZ charge sa configuration depuis un **dossier de mission**. Le
 
 ## init.c --- Mission Entry Point
 
-The `init.c` script is the first thing the server executes. It initializes the Central Economy and creates the mission instance.
+The `init.c` script is the first thing le serveur executes. It initializes the Central Economy and creates the mission instance.
 
 ```c
 void main()
@@ -82,13 +84,13 @@ Mission CreateCustomMission(string path)
 }
 ```
 
-The `Hive` manages the CE database. Without `CreateHive()`, no items spawn and persistence is disabled. `CreateCharacter` creates the player entity at spawn, and `StartingEquipSetup` defines the items a fresh character receives. Other useful `MissionServer` overrides include `OnInit()`, `OnUpdate()`, `InvokeOnConnect()`, and `InvokeOnDisconnect()`.
+The `Hive` manages the CE database. Without `CreateHive()`, no items apparition and persistence is disabled. `CreateCharacter` creates le joueur entity at apparition, and `StartingEquipSetup` defines the items a fresh character receives. Other useful `MissionServer` overrides include `OnInit()`, `OnUpdate()`, `InvokeOnConnect()`, and `InvokeOnDisconnect()`.
 
 ---
 
 ## types.xml --- Item Spawn Definitions
 
-Located at `db/types.xml`, this file is the heart of the CE. Every item that can spawn must have an entry here.
+Located at `db/types.xml`, this file is the heart of the CE. Every item that can apparition must have an entry here.
 
 ### Complete Entry
 
@@ -110,47 +112,47 @@ Located at `db/types.xml`, this file is the heart of the CE. Every item that can
 </type>
 ```
 
-### Reference des Champs
+### Field Reference
 
-| Champ | Description |
+| Field | Description |
 |-------|-------------|
-| `nominal` | Target count on the map. CE spawns items until this is reached |
+| `nominal` | Target count on the map. CE apparitions items until this is reached |
 | `min` | Minimum count before CE triggers restocking |
-| `lifetime` | Seconds an item persists on the ground before despawning |
+| `lifetime` | Seconds an item persists on the ground before deapparition |
 | `restock` | Minimum seconds between restock attempts (0 = immediate) |
 | `quantmin/quantmax` | Fill percentage for items with quantity (magazines, bottles). Use `-1` for items without quantity |
 | `cost` | CE priority weight (higher = prioritized). Most items use `100` |
 
 ### Flags
 
-| Drapeau | But |
+| Flag | Purpose |
 |------|---------|
 | `count_in_cargo` | Count items inside containers toward nominal |
 | `count_in_hoarder` | Count items in stashes/tents/barrels toward nominal |
 | `count_in_map` | Count items on the ground toward nominal |
 | `count_in_player` | Count items in player inventory toward nominal |
-| `crafted` | Item is crafted only, not naturally spawned |
+| `crafted` | Item is crafted only, not naturally apparitioned |
 | `deloot` | Dynamic Event loot (heli crashes, etc.) |
 
 ### Category, Usage, and Value Tags
 
-These tags control **where** items spawn:
+These tags control **where** items apparition:
 
 - **`category`** --- Item type. Vanilla: `tools`, `containers`, `clothes`, `food`, `weapons`, `books`, `explosives`, `lootdispatch`.
 - **`usage`** --- Building types. Vanilla: `Military`, `Police`, `Medic`, `Firefighter`, `Industrial`, `Farm`, `Coast`, `Town`, `Village`, `Hunting`, `Office`, `School`, `Prison`, `ContaminatedArea`, `Historical`.
 - **`value`** --- Map tier zones. Vanilla: `Tier1` (coast), `Tier2` (inland), `Tier3` (military), `Tier4` (deep military), `Unique`.
 
-Multiple tags can be combined. No `usage` tags = item will not spawn. No `value` tags = spawns in all tiers.
+Multiple tags can be combined. No `usage` tags = item will not apparition. No `value` tags = apparitions in all tiers.
 
 ### Disabling an Item
 
-Set `nominal=0` and `min=0`. The item never spawns but can still exist through scripts or crafting.
+Set `nominal=0` and `min=0`. The item never apparitions but can still exist through scripts or crafting.
 
 ---
 
-## cfgspawnabletypes.xml --- Attachments and Cargo
+## cfgapparitionabletypes.xml --- Attachments and Cargo
 
-Controls what spawns **already attached to or inside** other items.
+Controls what apparitions **already attached to or inside** other items.
 
 ### Hoarder Marking
 
@@ -204,7 +206,7 @@ Each line rolls the preset independently --- three lines means three separate ch
 
 ## cfgrandompresets.xml --- Reusable Loot Pools
 
-Defines named item pools referenced by `cfgspawnabletypes.xml`:
+Defines named item pools referenced by `cfgapparitionabletypes.xml`:
 
 ```xml
 <randompresets>
@@ -224,7 +226,7 @@ Defines named item pools referenced by `cfgspawnabletypes.xml`:
 </randompresets>
 ```
 
-The preset's `chance` is the overall probability anything spawns. If the roll succeeds, one item is selected from the pool based on individual item chances. To add modded items, create a new `cargo` block and reference it in `cfgspawnabletypes.xml`.
+The preset's `chance` is the overall probability anything apparitions. If the roll succeeds, one item is selected from the pool based on individual item chances. To add modded items, create a new `cargo` block and reference it in `cfgapparitionabletypes.xml`.
 
 ---
 
@@ -255,9 +257,9 @@ Located at `db/globals.xml`, this file sets global CE parameters:
 </variables>
 ```
 
-### Variables Cles
+### Key Variables
 
-| Variable | Defaut | Description |
+| Variable | Default | Description |
 |----------|---------|-------------|
 | `AnimalMaxCount` | 200 | Maximum animals on the map |
 | `ZombieMaxCount` | 1000 | Maximum infected on the map |
@@ -266,11 +268,11 @@ Located at `db/globals.xml`, this file sets global CE parameters:
 | `FlagRefreshFrequency` | 432000 | Territory flag refresh interval (5 days) |
 | `FlagRefreshMaxDuration` | 3456000 | Max flag lifetime (40 days) |
 | `FoodDecay` | 1 | Food spoilage toggle (0=off, 1=on) |
-| `InitialSpawn` | 100 | Percentage of nominal spawned on startup |
-| `LootDamageMax` | 0.82 | Maximum damage on spawned loot |
+| `InitialSpawn` | 100 | Percentage of nominal apparitioned on startup |
+| `LootDamageMax` | 0.82 | Maximum damage on apparitioned loot |
 | `TimeLogin` / `TimeLogout` | 15 | Login/logout timer (anti-combat-log) |
 | `TimePenalty` | 20 | Combat log penalty timer |
-| `ZoneSpawnDist` | 300 | Player distance triggering zombie/animal spawns |
+| `ZoneSpawnDist` | 300 | Player distance triggering zombie/animal apparitions |
 
 The `type` attribute is `0` for integer, `1` for float. Using the wrong type truncates the value.
 
@@ -278,7 +280,7 @@ The `type` attribute is `0` for integer, `1` for float. Using the wrong type tru
 
 ## cfggameplay.json --- Gameplay Settings
 
-Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, the engine uses hardcoded defaults.
+Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, le moteur uses hardcoded defaults.
 
 ### Structure
 
@@ -325,15 +327,15 @@ Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, th
 }
 ```
 
-Key settings: `disableBaseDamage` prevents base damage, `disablePersonalLight` removes the fresh-spawn light, `staminaWeightLimitThreshold` is in grams (6000 = 6kg), temperature arrays have 12 values (January--December), `lightingConfig` accepts `0` (default) or `1` (darker nights), and `displayPlayerPosition` shows the player dot on the map.
+Key settings: `disableBaseDamage` prevents base damage, `disablePersonalLight` removes the fresh-apparition light, `staminaWeightLimitThreshold` is in grams (6000 = 6kg), temperature arrays have 12 values (January--December), `lightingConfig` accepts `0` (default) or `1` (darker nights), and `displayPlayerPosition` shows le joueur dot on the map.
 
 ---
 
 ## serverDZ.cfg --- Server Settings
 
-This file sits next to the server executable, not in the mission folder.
+This file sits next to le serveur executable, not in the mission folder.
 
-### Parametres Cles
+### Key Settings
 
 ```
 hostname = "My DayZ Server";
@@ -348,7 +350,7 @@ storeHouseStateDisabled = false;
 storageAutoFix = 1;
 ```
 
-| Parametre | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `hostname` | Server name in the browser |
 | `password` | Join password (empty = open) |
@@ -358,7 +360,7 @@ storageAutoFix = 1;
 | `verifySignatures` | Signature check level (2 = strict) |
 | `enableCfgGameplayFile` | Load cfggameplay.json (0/1) |
 
-### Chargement des Mods
+### Mod Loading
 
 Mods are specified via launch parameters, not in the config file:
 
@@ -366,11 +368,11 @@ Mods are specified via launch parameters, not in the config file:
 DayZServer_x64.exe -config=serverDZ.cfg -mod=@CF;@MyMod -servermod=@MyServerMod -port=2302
 ```
 
-`-mod=` mods must be installed by clients. `-servermod=` mods run server-side only.
+`-mod=` mods must be installed by clients. `-servermod=` mods run côté serveur only.
 
 ---
 
-## Comment les Mods Interagissent avec l'Economie
+## How Mods Interact with the Economy
 
 ### cfgeconomycore.xml --- Root Class Registration
 
@@ -409,7 +411,7 @@ Any `category`, `usage`, or `value` used in `types.xml` must be defined here:
 </lists>
 ```
 
-Use `cfglimitsdefinitionuser.xml` for additions that should not overwrite the vanilla file.
+Use `cfglimitsdefinitionuser.xml` for additions that should not overwrite le vanilla file.
 
 ### economy.xml --- Subsystem Control
 
@@ -424,11 +426,11 @@ Controls which CE subsystems are active:
 </economy>
 ```
 
-Flags: `init` (spawn on startup), `load` (load persistence), `respawn` (respawn after cleanup), `save` (persist to database).
+Flags: `init` (apparition on startup), `load` (load persistence), `reapparition` (reapparition after cleanup), `save` (persist to database).
 
 ### Script-Side Economy Interaction
 
-Items created via `CreateInInventory()` are automatically CE-managed. For world spawns, use ECE flags:
+Items created via `CreateInInventory()` are automatically CE-managed. For world apparitions, use ECE flags:
 
 ```c
 EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE);
@@ -436,7 +438,7 @@ EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE)
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 ### XML Syntax Errors
 
@@ -444,7 +446,7 @@ A single unclosed tag breaks the entire file. Always validate XML before deployi
 
 ### Missing Tags in cfglimitsdefinition.xml
 
-Using a `usage` or `value` in types.xml that is not defined in cfglimitsdefinition.xml causes the item to silently fail to spawn. Check RPT logs for warnings.
+Using a `usage` or `value` in types.xml that is not defined in cfglimitsdefinition.xml causes the item to silently fail to apparition. Check RPT logs for warnings.
 
 ### Nominal Too High
 
@@ -456,7 +458,7 @@ Items with very short lifetimes disappear before players find them. Use at least
 
 ### Missing Root Class
 
-Items whose class hierarchy does not trace to a registered root class in `cfgeconomycore.xml` will never spawn, even with correct types.xml entries.
+Items whose class hierarchy does not trace to a registered root class in `cfgeconomycore.xml` will never apparition, even with correct types.xml entries.
 
 ### cfggameplay.json Not Enabled
 
@@ -472,29 +474,29 @@ Modifying vanilla types.xml works but breaks on game updates. Prefer shipping se
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 - Ship a `ServerFiles/` folder with your mod containing pre-configured `types.xml` entries so server admins can copy-paste rather than write from scratch.
-- Use `cfglimitsdefinitionuser.xml` instead of editing the vanilla `cfglimitsdefinition.xml` -- your additions survive game updates.
-- Set `count_in_hoarder="0"` for common items (food, ammo) to prevent hoarding from blocking CE respawns.
+- Use `cfglimitsdefinitionuser.xml` instead of editing le vanilla `cfglimitsdefinition.xml` -- your additions survive game updates.
+- Set `count_in_hoarder="0"` for common items (food, ammo) to prevent hoarding from blocking CE reapparitions.
 - Always set `enableCfgGameplayFile = 1` in `serverDZ.cfg` before expecting `cfggameplay.json` changes to take effect.
 - Keep total `nominal` across all types.xml entries below 12,000 to avoid CE performance degradation on populated servers.
 
 ---
 
-## Theorie vs Pratique
+## Théorie vs Pratique
 
-| Concept | Theorie | Realite |
+| Concept | Théorie | Réalité |
 |---------|--------|---------|
-| `nominal` is a hard target | CE spawns exactly this many items | CE approaches nominal over time but fluctuates based on player interaction, cleanup cycles, and zone distance |
-| `restock=0` means instant respawn | Items reappear immediately after despawn | The CE batch processes restocking in cycles (typically every 30-60 seconds), so there is always a delay regardless of the restock value |
+| `nominal` is a hard target | CE apparitions exactly this many items | CE approaches nominal over time but fluctuates based on player interaction, cleanup cycles, and zone distance |
+| `restock=0` means instant reapparition | Items reappear immediately after deapparition | The CE batch processes restocking in cycles (typically every 30-60 seconds), so there is always a delay regardless of the restock value |
 | `cfggameplay.json` controls all gameplay | All tuning goes here | Many gameplay values are hardcoded in script or config.cpp and cannot be overridden by cfggameplay.json |
 | `init.c` runs only on server start | One-time initialization | `init.c` runs every time the mission loads, including after server restarts. Persistent state is managed by the Hive, not init.c |
 | Multiple types.xml files merge cleanly | CE reads all registered files | Files must be registered in cfgeconomycore.xml via `<ce folder="custom">` directives. Simply placing extra XML files in `db/` does nothing |
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
-- **Multi-Mod:** Multiple mods can add entries to types.xml without conflict as long as classnames are unique. If two mods define the same classname with different nominal/lifetime values, the last-loaded entry wins.
-- **Performance:** Excessive nominal counts (15,000+) cause CE tick spikes visible as server FPS drops. Each CE cycle iterates all registered types to check spawn conditions.
+- **Multi-Mod :** Multiple mods can add entries to types.xml without conflict as long as classnames are unique. If two mods define the same classname with different nominal/lifetime values, the last-loaded entry wins.
+- **Performance :** Excessive nominal counts (15,000+) cause CE tick spikes visible as server FPS drops. Each CE cycle iterates all registered types to check apparition conditions.

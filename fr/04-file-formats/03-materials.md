@@ -1,18 +1,18 @@
-# Chapter 4.3: Materials (.rvmat)
+# Chapitre 4.3: Materials (.rvmat)
 
-[Home](../../README.md) | [<< Previous: 3D Models](02-models.md) | **Materials** | [Next: Audio >>](04-audio.md)
+[Accueil](../../README.md) | [<< Précédent : 3D Models](02-models.md) | **Materials** | [Suivant : Audio >>](04-audio.md)
 
 ---
 
 ## Introduction
 
-A material in DayZ is the bridge between a 3D model and its visual appearance. While textures provide raw image data, the **RVMAT** (Real Virtuality Material) file defines how those textures are combined, which shader interprets them, and what surface properties the engine should simulate -- shininess, transparency, self-illumination, and more. Every face on every P3D model in the game references an RVMAT file, and comprendre comment to create and configure them is essential for any visual mod.
+A material in DayZ is the bridge between a 3D model and its visual appearance. While textures provide raw image data, the **RVMAT** (Real Virtuality Material) file defines how those textures are combined, which shader interprets them, and what surface properties le moteur should simulate -- shininess, transparency, self-illumination, and more. Every face on every P3D model in le jeu references an RVMAT file, and understanding how to create and configure them is essential for any visual mod.
 
 Ce chapitre couvre the RVMAT file format, shader types, texture stage configuration, material properties, the damage-level material swap system, and practical examples drawn from DayZ-Samples.
 
 ---
 
-## Table des matieres
+## Table des matières
 
 - [RVMAT Format Overview](#rvmat-format-overview)
 - [File Structure](#file-structure)
@@ -28,7 +28,7 @@ Ce chapitre couvre the RVMAT file format, shader types, texture stage configurat
 
 ---
 
-## Vue d'ensemble du format RVMAT
+## RVMAT Format Overview
 
 An **RVMAT** file is a text-based configuration file (not binary) that defines a material. Despite the custom extension, the format is plain text using Bohemia's config-style syntax with classes and key-value pairs.
 
@@ -38,8 +38,8 @@ An **RVMAT** file is a text-based configuration file (not binary) that defines a
 - **Shader binding:** Each RVMAT specifies which rendering shader to use.
 - **Texture mapping:** Defines which texture files are assigned to which shader inputs (diffuse, normal, specular, etc.).
 - **Surface properties:** Controls specular intensity, emissive glow, transparency, and more.
-- **Referenced by P3D models:** Faces in Object Builder's Resolution LOD are assigned an RVMAT. The engine loads the RVMAT and all textures it references.
-- **Referenced by config.cpp:** `hiddenSelectionsMaterials[]` can override materials at runtime.
+- **Referenced by P3D models:** Faces in Object Builder's Resolution LOD are assigned an RVMAT. Le moteur loads the RVMAT and all textures it references.
+- **Referenced by config.cpp:** `hiddenSelectionsMaterials[]` can override materials à l'exécution.
 
 ### Path Convention
 
@@ -56,7 +56,7 @@ MyMod/
 
 ---
 
-## Structure du fichier
+## File Structure
 
 An RVMAT file has a consistent structure. Here is a complete, annotated example:
 
@@ -127,7 +127,7 @@ These are declared before the Stage classes and control the material's overall b
 
 ---
 
-## Types de shaders
+## Shader Types
 
 The `PixelShaderID` and `VertexShaderID` values determine which rendering pipeline processes the material. Both should usually be set to the same value.
 
@@ -149,7 +149,7 @@ The `PixelShaderID` and `VertexShaderID` values determine which rendering pipeli
 
 ### Super Shader (Most Common)
 
-The **Super** shader is the standard physically-based rendering shader used for the vast majority of items in DayZ. It expects three texture stages:
+The **Super** shader est le standard physically-based rendering shader used for the vast majority of items in DayZ. It expects three texture stages:
 
 ```
 Stage1 = Normal map (_nohq)
@@ -184,7 +184,7 @@ class Stage2
 
 ---
 
-## Etages de textures
+## Texture Stages
 
 Each `Stage` class in the RVMAT assigns a texture to a specific shader input. The stage number determines what role the texture plays.
 
@@ -237,7 +237,7 @@ This is commonly used for terrain materials and building surfaces where the same
 
 ---
 
-## Proprietes des materiaux
+## Material Properties
 
 ### Specular Control
 
@@ -274,9 +274,9 @@ This is not a top-level RVMAT property but is configured in config.cpp or throug
 
 ---
 
-## Niveaux de sante (echange de materiaux par degats)
+## Health Levels (Damage Material Swaps)
 
-DayZ items degrade over time. The engine supports automatic material swapping at different damage thresholds, defined in `config.cpp` using the `healthLevels[]` array. This creates the visual progression from pristine to ruined.
+DayZ items degrade over time. Le moteur supports automatic material swapping at different damage thresholds, defined in `config.cpp` using the `healthLevels[]` array. This creates the visual progression from pristine to ruined.
 
 ### healthLevels[] Structure
 
@@ -300,8 +300,8 @@ class MyItem: Inventory_Base
 
 ### How It Works
 
-1. The engine monitors the item's health value (0.0 to 1.0).
-2. When health drops below a threshold, the engine swaps the material to the corresponding RVMAT.
+1. Le moteur monitors the item's health value (0.0 to 1.0).
+2. When health drops below a threshold, le moteur swaps the material to the corresponding RVMAT.
 3. Each RVMAT can reference different textures -- typically progressively more damaged-looking variants.
 4. The swap is automatic. No script code is needed.
 
@@ -330,7 +330,7 @@ data/
   my_item_ruined.rvmat             --> my_item_ruined_co.paa (destroyed)
 ```
 
-> **Astuce :** You do not always need unique textures for every damage level. A common optimization is to share the normal and specular maps across all levels and only change the diffuse texture:
+> **Tip:** You do not always need unique textures for every damage level. A common optimization is to share the normal and specular maps across all levels and only change the diffuse texture:
 >
 > ```
 > my_item.rvmat           --> my_item_co.paa
@@ -356,7 +356,7 @@ healthLevels[] =
 
 ---
 
-## Comment les materiaux referencent les textures
+## How Materials Reference Textures
 
 The connection between models, materials, and textures forms a chain:
 
@@ -391,7 +391,7 @@ Full reference: MyMod\data\textures\my_item_co.paa
 
 ### hiddenSelectionsMaterials Override
 
-Config.cpp can override which material is applied to a named selection at runtime:
+Config.cpp can override which material is applied to a named selection à l'exécution:
 
 ```cpp
 class MyItem_Green: MyItem
@@ -406,7 +406,7 @@ This allows creating item variants (color schemes, camo patterns) that share the
 
 ---
 
-## Creer un RVMAT depuis zero
+## Creating an RVMAT from Scratch
 
 ### Step-by-Step: Standard Opaque Item
 
@@ -477,7 +477,7 @@ class Stage3
 
 ---
 
-## Exemples concrets
+## Exemples réels
 
 ### DayZ-Samples Test_ClothingRetexture
 
@@ -574,28 +574,28 @@ VertexShaderID = "Super";
 
 ### 1. Wrong Stage Order
 
-**Symptome :** Texture appears scrambled, normal map shows as color, color shows as bumps.
-**Correction :** Ensure Stage1 = normal, Stage2 = diffuse, Stage3 = specular (for the Super shader).
+**Symptom:** Texture appears scrambled, normal map shows as color, color shows as bumps.
+**Fix:** Ensure Stage1 = normal, Stage2 = diffuse, Stage3 = specular (for the Super shader).
 
 ### 2. Misspelling `emmisive`
 
-**Symptome :** Emissive does not work.
-**Correction :** Bohemia uses `emmisive` (double m, single s). Using the correct English spelling `emissive` will not work. This is a known historical quirk.
+**Symptom:** Emissive does not work.
+**Fix:** Bohemia uses `emmisive` (double m, single s). Using the correct English spelling `emissive` will not work. This is a known historical quirk.
 
 ### 3. Texture Path Mismatch
 
-**Symptome :** Model appears with default gray or magenta material.
-**Correction :** Verify that texture paths in the RVMAT exactly match the file locations relative to P: drive. Paths use backslashes. Check capitalization -- some systems are case-sensitive.
+**Symptom:** Model appears with default gray or magenta material.
+**Fix:** Verify that texture paths in the RVMAT exactly match the file locations relative to P: drive. Paths use backslashes. Check capitalization -- some systems are case-sensitive.
 
 ### 4. Missing RVMAT Assignment in P3D
 
-**Symptome :** Model renders with no material (flat gray or default shader).
-**Correction :** Open the model in Object Builder, select faces, and assign the RVMAT via **Face Properties**.
+**Symptom:** Model renders with no material (flat gray or default shader).
+**Fix:** Open the model in Object Builder, select faces, and assign the RVMAT via **Face Properties**.
 
 ### 5. Using Wrong Shader for Transparent Items
 
-**Symptome :** Transparent texture appears opaque, or entire surface vanishes.
-**Correction :** Use `Glass`, `AlphaTest`, or `AlphaBlend` shader instead of `Super` for transparent surfaces. Use `_ca` suffix textures with proper alpha channels.
+**Symptom:** Transparent texture appears opaque, or entire surface vanishes.
+**Fix:** Use `Glass`, `AlphaTest`, or `AlphaBlend` shader instead of `Super` for transparent surfaces. Use `_ca` suffix textures with proper alpha channels.
 
 ---
 
@@ -612,6 +612,24 @@ VertexShaderID = "Super";
 5. **Test specular in-game, not just in Object Builder.** The editor lighting and in-game lighting produce very different results. What looks perfect in Object Builder may be too shiny or too dull under DayZ's dynamic lighting.
 
 6. **Document your material settings.** When you find specular/power values that work well for a surface type, record them. You will reuse these settings across many items.
+
+---
+
+## Observé dans les mods réels
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| Shared damage RVMAT across all items | Expansion (multiple modules) | Reuses a common set of damage-level RVMATs (`worn`, `damaged`, `ruined`) instead of per-item variants to reduce file count |
+| Emissive materials for screen glow | COT (Admin Tools) | Uses `emmisive[]` values in RVMAT for tablet/device screen effects visible at night |
+| Glass shader for vehicle windows | DayZ-Samples (Test_Vehicle) | Demonstrates `PixelShaderID = "Glass"` with `_ca` textures for transparent windshield panels |
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** RVMAT paths are per-PBO and do not collide across mods. Cependant, `hiddenSelectionsMaterials[]` overrides in config.cpp follow last-loaded-wins priority, so two mods overriding the same vanilla item's material will conflict.
+- **Performance :** Each unique RVMAT referenced on a single P3D model creates a separate draw call. Consolidating faces under fewer materials reduces GPU overhead, especially for complex scenes.
+- **Version :** The RVMAT text format and shader names (Super, Glass, AlphaTest) have been stable since DayZ 1.0. No structural changes have been introduced in recent updates.
 
 ---
 

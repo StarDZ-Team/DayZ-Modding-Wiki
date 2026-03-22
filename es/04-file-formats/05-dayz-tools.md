@@ -1,10 +1,10 @@
-# Chapter 4.5: DayZ Tools Workflow
+# Capítulo 4.5: DayZ Tools Workflow
 
-[Home](../../README.md) | [<< Previous: Audio](04-audio.md) | **DayZ Tools** | [Next: PBO Packing >>](06-pbo-packing.md)
+[Inicio](../../README.md) | [<< Anterior: Audio](04-audio.md) | **DayZ Tools** | [Siguiente: PBO Packing >>](06-pbo-packing.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ Tools is a free suite of development applications distributed through Steam, provided by Bohemia Interactive for modders. It contains everything needed to create, convert, and package game assets: a 3D model editor, texture viewer, terrain editor, script debugger, and the binarization pipeline that transforms human-readable source files into optimized game-ready formats. No DayZ mod can be built without at least some interaction with these tools.
 
@@ -30,11 +30,11 @@ This chapter provides an overview of each tool in the suite, explains the P: dri
 
 ---
 
-## DayZ Tools Suite Vision General
+## DayZ Tools Suite Overview
 
 DayZ Tools is available as a free download on Steam under the **Tools** category. It installs a collection of applications, each serving a specific role in the modding pipeline.
 
-| Herramienta | Proposito | Usuarios Principales |
+| Herramienta | Propósito | Primary Users |
 |------|---------|---------------|
 | **Object Builder** | 3D model creation and editing (.p3d) | 3D artists, modelers |
 | **TexView2** | Texture viewing and conversion (.paa, .tga, .png) | Texture artists, all modders |
@@ -67,7 +67,7 @@ C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools\
 
 ---
 
-## Instalacion y Configuracion
+## Installation and Setup
 
 ### Step 1: Install DayZ Tools from Steam
 
@@ -141,7 +141,7 @@ echo Workdrive P: configured.
 pause
 ```
 
-> **Tip:** The workdrive must be mounted before launching any DayZ tool. If Object Builder or Binarize cannot find files, the first thing to check is whether P: is mounted.
+> **Consejo:** The workdrive must be mounted before launching any DayZ tool. If Object Builder or Binarize cannot find files, the first thing to check is whether P: is mounted.
 
 ---
 
@@ -241,7 +241,7 @@ Terrain Builder is a specialized tool for creating custom maps (terrains). Map m
 DayZ Tools Launcher --> Terrain Builder
 ```
 
-> **Note:** Terrain creation is an advanced topic that warrants its own dedicated guide. This chapter covers Terrain Builder only as part of the tools overview.
+> **Nota:** Terrain creation is an advanced topic that warrants its own dedicated guide. This chapter covers Terrain Builder only as part of the tools overview.
 
 ---
 
@@ -251,7 +251,7 @@ Binarize is the core conversion engine that transforms human-readable source fil
 
 ### What Binarize Converts
 
-| Formato Origen | Formato Salida | Descripcion |
+| Source Format | Output Format | Descripción |
 |---------------|---------------|-------------|
 | MLOD `.p3d` | ODOL `.p3d` | Optimized 3D model |
 | `.tga` / `.png` / `.edds` | `.paa` | Compressed texture |
@@ -261,7 +261,7 @@ Binarize is the core conversion engine that transforms human-readable source fil
 
 ### When Binarization is Needed
 
-| Tipo de Contenido | Binarizar? | Razon |
+| Content Type | Binarize? | Reason |
 |-------------|-----------|--------|
 | Config.cpp with CfgVehicles | **Yes** | Engine requires binarized configs for item definitions |
 | Config.cpp (scripts only) | Optional | Script-only configs work unbinarized |
@@ -285,7 +285,7 @@ In practice, you rarely call Binarize directly -- AddonBuilder wraps it as part 
 
 AddonBuilder is the PBO packing tool. It takes a source directory and creates a `.pbo` archive, optionally running Binarize on the content first. This is covered in detail in [Chapter 4.6: PBO Packing](06-pbo-packing.md).
 
-### Referencia Rapida
+### Quick Reference
 
 ```bash
 # Pack with binarization (for item/weapon mods with configs, models, textures)
@@ -326,7 +326,7 @@ DayZ Tools Launcher --> Workbench
 
 Or directly: `P:\DayZ Tools\Bin\Workbench\workbenchApp.exe`
 
-### Depuracion Workflow
+### Debugging Workflow
 
 1. Open Workbench.
 2. Configure the project to point at your mod's scripts.
@@ -367,7 +367,7 @@ DayZDiag_x64.exe -filePatching -mod="MyMod" -connect=127.0.0.1
 DayZDiag_x64.exe -filePatching -server -mod="MyMod" -config=serverDZ.cfg
 ```
 
-> **Important:** File patching requires the **Diag** (diagnostic) executable (`DayZDiag_x64.exe`), not the retail executable. The retail build ignores `-filePatching` for security.
+> **Importante:** File patching requires the **Diag** (diagnostic) executable (`DayZDiag_x64.exe`), not the retail executable. The retail build ignores `-filePatching` for security.
 
 ### What File Patching Can Do
 
@@ -388,7 +388,7 @@ DayZDiag_x64.exe -filePatching -server -mod="MyMod" -config=serverDZ.cfg
 4. Restart the game (or reconnect) to pick up the changes.
 5. No PBO rebuild needed.
 
-> **Tip:** For script-only changes, file patching eliminates the build step entirely. You edit `.c` files, restart, and test. This is the fastest development loop available.
+> **Consejo:** For script-only changes, file patching eliminates the build step entirely. You edit `.c` files, restart, and test. This is the fastest development loop available.
 
 ### Limitations
 
@@ -402,6 +402,48 @@ DayZDiag_x64.exe -filePatching -server -mod="MyMod" -config=serverDZ.cfg
 ## Complete Workflow: Source to Game
 
 Here is the end-to-end pipeline for turning source assets into a playable mod:
+
+### Complete Asset Pipeline
+
+```mermaid
+graph LR
+    subgraph "Source Assets"
+        TGA[".tga textures"]
+        FBX[".fbx/.obj models"]
+        OGG[".ogg audio"]
+        CPP["config.cpp"]
+        ES[".c scripts"]
+    end
+
+    subgraph "DayZ Tools"
+        TV["TexView2"]
+        OB["Object Builder"]
+        BIN["Binarize"]
+        AB["AddonBuilder"]
+    end
+
+    subgraph "Game Ready"
+        PAA[".paa textures"]
+        P3D[".p3d models"]
+        CBIN["config.bin"]
+        PBO[".pbo archive"]
+    end
+
+    TGA --> TV --> PAA
+    FBX --> OB --> P3D
+    CPP --> BIN --> CBIN
+    PAA --> AB
+    P3D --> AB
+    CBIN --> AB
+    OGG --> AB
+    ES --> AB
+    AB --> PBO
+
+    PBO --> GAME["DayZ Game<br/>@MyMod folder"]
+
+    style PBO fill:#2D8A4E,color:#fff
+    style GAME fill:#4A90D9,color:#fff
+```
 
 ### Phase 1: Create Source Assets
 
@@ -515,7 +557,7 @@ Players subscribe to the mod on Steam Workshop, or server admins install it manu
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Always use the P: drive.** Resist the temptation to use absolute paths. P: is the standard and all tools expect it.
 
@@ -533,7 +575,25 @@ Players subscribe to the mod on Steam Workshop, or server admins install it manu
 
 ---
 
-## Navegacion
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| P: drive junctions via `SetupWorkdrive.bat` | COT / Community Online Tools | Ships a batch script that creates junction links from the mod source to P: drive for consistent path resolution |
+| `.gproj` Workbench project files | Dabs Framework | Includes Workbench project files for debugging Enforce Script with breakpoints and variable inspection |
+| Automated `dev.py` build orchestrator | StarDZ (all mods) | Python script wraps AddonBuilder calls, manages multi-PBO builds, launches server/client, and monitors logs |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** All DayZ tools share the P: drive. Multiple mod projects coexist under `P:\` without conflict as long as folder names differ. Junction collisions happen if two mods use the same P: path.
+- **Performance:** Binarize is CPU-intensive and single-threaded per file. Large mods with many P3D models and textures can take 5-10 minutes to binarize. Splitting into multiple PBOs and using `-packonly` for scripts reduces build time significantly.
+- **Version:** DayZ Tools are updated alongside major DayZ patches. Object Builder and Binarize occasionally receive fixes, but the overall workflow has been stable since DayZ 1.0. Always keep DayZ Tools updated via Steam.
+
+---
+
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|

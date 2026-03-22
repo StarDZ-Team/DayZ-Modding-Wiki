@@ -1,19 +1,23 @@
-# Enforce Script Cheat Sheet
+# Enforce Script Spickzettel
 
-[Home](../README.md) | **Cheat Sheet**
+[Startseite](../README.md) | **Spickzettel**
+
+---
+
+> Einseitige Kurzreferenz für DayZ Enforce Script. Lesezeichen setzen.
 
 ---
 
 ## Typen
 
 | Typ | Beschreibung | Standard | Beispiel |
-|-----|-------------|----------|----------|
+|-----|--------------|----------|----------|
 | `int` | 32-Bit vorzeichenbehaftete Ganzzahl | `0` | `int x = 42;` |
 | `float` | 32-Bit Gleitkommazahl | `0.0` | `float f = 3.14;` |
-| `bool` | Boolescher Wert | `false` | `bool b = true;` |
+| `bool` | Boolean | `false` | `bool b = true;` |
 | `string` | Unveränderlicher Werttyp | `""` | `string s = "hello";` |
-| `vector` | 3-Komponenten-Float (x,y,z) | `"0 0 0"` | `vector v = "1 2 3";` |
-| `typename` | Typreferenz | `null` | `typename t = PlayerBase;` |
+| `vector` | 3-Komponenten Float (x,y,z) | `"0 0 0"` | `vector v = "1 2 3";` |
+| `typename` | Typ-Referenz | `null` | `typename t = PlayerBase;` |
 | `Class` | Wurzel aller Referenztypen | `null` | -- |
 | `void` | Kein Rückgabewert | -- | -- |
 
@@ -24,26 +28,26 @@
 ## Array-Methoden (`array<T>`)
 
 | Methode | Rückgabe | Hinweise |
-|---------|-----------|----------|
-| `Insert(item)` | `int` (Index) | Anfügen |
+|---------|----------|----------|
+| `Insert(item)` | `int` (Index) | Anhängen |
 | `InsertAt(item, idx)` | `void` | An Position einfügen |
 | `Get(idx)` / `arr[idx]` | `T` | Zugriff per Index |
 | `Set(idx, item)` | `void` | An Index ersetzen |
 | `Find(item)` | `int` | Index oder -1 |
 | `Count()` | `int` | Elementanzahl |
-| `IsValidIndex(idx)` | `bool` | Grenzpruefung |
+| `IsValidIndex(idx)` | `bool` | Grenzprüfung |
 | `Remove(idx)` | `void` | **Ungeordnet** (tauscht mit letztem!) |
-| `RemoveOrdered(idx)` | `void` | Behält Reihenfolge bei |
-| `RemoveItem(item)` | `void` | Suchen + Entfernen (geordnet) |
+| `RemoveOrdered(idx)` | `void` | Erhält die Reihenfolge |
+| `RemoveItem(item)` | `void` | Finden + entfernen (geordnet) |
 | `Clear()` | `void` | Alle entfernen |
 | `Sort()` / `Sort(true)` | `void` | Aufsteigend / absteigend |
 | `ShuffleArray()` | `void` | Zufällig mischen |
 | `Invert()` | `void` | Umkehren |
 | `GetRandomElement()` | `T` | Zufällige Auswahl |
-| `InsertAll(other)` | `void` | Alle aus anderem anfügen |
+| `InsertAll(other)` | `void` | Alle aus anderem anhängen |
 | `Copy(other)` | `void` | Mit Kopie ersetzen |
-| `Resize(n)` | `void` | Größe ändern (fuellt mit Standardwerten) |
-| `Reserve(n)` | `void` | Kapazität vorab reservieren |
+| `Resize(n)` | `void` | Größe ändern (füllt mit Standards) |
+| `Reserve(n)` | `void` | Kapazität vorab zuweisen |
 
 **Typedefs:** `TStringArray`, `TIntArray`, `TFloatArray`, `TBoolArray`, `TVectorArray`
 
@@ -52,16 +56,16 @@
 ## Map-Methoden (`map<K,V>`)
 
 | Methode | Rückgabe | Hinweise |
-|---------|-----------|----------|
-| `Insert(key, val)` | `bool` | Neuen hinzufügen |
+|---------|----------|----------|
+| `Insert(key, val)` | `bool` | Neuen Eintrag hinzufügen |
 | `Set(key, val)` | `void` | Einfügen oder aktualisieren |
 | `Get(key)` | `V` | Gibt Standard zurück wenn fehlend |
-| `Find(key, out val)` | `bool` | Sicherer Zugriff |
+| `Find(key, out val)` | `bool` | Sicheres Abrufen |
 | `Contains(key)` | `bool` | Existenz prüfen |
 | `Remove(key)` | `void` | Nach Schlüssel entfernen |
 | `Count()` | `int` | Eintragsanzahl |
-| `GetKey(idx)` | `K` | Schlüssel am Index (O(n)) |
-| `GetElement(idx)` | `V` | Wert am Index (O(n)) |
+| `GetKey(idx)` | `K` | Schlüssel an Index (O(n)) |
+| `GetElement(idx)` | `V` | Wert an Index (O(n)) |
 | `GetKeyArray()` | `array<K>` | Alle Schlüssel |
 | `GetValueArray()` | `array<V>` | Alle Werte |
 | `Clear()` | `void` | Alle entfernen |
@@ -71,7 +75,7 @@
 ## Set-Methoden (`set<T>`)
 
 | Methode | Rückgabe |
-|---------|-----------|
+|---------|----------|
 | `Insert(item)` | `int` (Index) |
 | `Find(item)` | `int` (Index oder -1) |
 | `Get(idx)` | `T` |
@@ -88,17 +92,17 @@
 class MyClass extends BaseClass
 {
     protected int m_Value;                  // Feld
-    private ref array<string> m_List;       // Eigene Referenz
+    private ref array<string> m_List;       // besessene Referenz
 
     void MyClass() { m_List = new array<string>; }  // Konstruktor
     void ~MyClass() { }                              // Destruktor
 
-    override void OnInit() { super.OnInit(); }       // Override
-    static int GetCount() { return 0; }              // Statische Methode
+    override void OnInit() { super.OnInit(); }       // Überschreibung
+    static int GetCount() { return 0; }              // statische Methode
 };
 ```
 
-**Zugriff:** `private` | `protected` | (standardmäßig public)
+**Zugriff:** `private` | `protected` | (standardmäßig öffentlich)
 **Modifikatoren:** `static` | `override` | `ref` | `const` | `out` | `notnull`
 **Modded:** `modded class MissionServer { override void OnInit() { super.OnInit(); } }`
 
@@ -125,8 +129,8 @@ foreach (string key, int val : myMap) { }
 // while
 while (condition) { }
 
-// switch (KEIN Fall-Through!)
-switch (val) { case 0: Print("zero"); break; default: break; }
+// switch (KEIN Durchfallen!)
+switch (val) { case 0: Print("null"); break; default: break; }
 ```
 
 ---
@@ -134,7 +138,7 @@ switch (val) { case 0: Print("zero"); break; default: break; }
 ## String-Methoden
 
 | Methode | Rückgabe | Beispiel |
-|---------|-----------|----------|
+|---------|----------|----------|
 | `s.Length()` | `int` | `"hello".Length()` = 5 |
 | `s.Substring(start, len)` | `string` | `"hello".Substring(1,3)` = `"ell"` |
 | `s.IndexOf(sub)` | `int` | -1 wenn nicht gefunden |
@@ -158,26 +162,26 @@ switch (val) { case 0: Print("zero"); break; default: break; }
 ## Math-Methoden
 
 | Methode | Beschreibung |
-|---------|-------------|
+|---------|--------------|
 | `Math.RandomInt(min, max)` | `[min, max)` max exklusiv |
 | `Math.RandomIntInclusive(min, max)` | `[min, max]` |
 | `Math.RandomFloat01()` | `[0, 1]` |
-| `Math.RandomBool()` | Zufälliges true/false |
+| `Math.RandomBool()` | Zufällig true/false |
 | `Math.Round(f)` / `Floor(f)` / `Ceil(f)` | Rundung |
 | `Math.AbsFloat(f)` / `AbsInt(i)` | Absolutwert |
 | `Math.Clamp(val, min, max)` | Auf Bereich begrenzen |
 | `Math.Min(a, b)` / `Max(a, b)` | Min/Max |
 | `Math.Lerp(a, b, t)` | Lineare Interpolation |
-| `Math.InverseLerp(a, b, val)` | Inverse Interpolation |
+| `Math.InverseLerp(a, b, val)` | Inverse Lerp |
 | `Math.Pow(base, exp)` / `Sqrt(f)` | Potenz/Wurzel |
-| `Math.Sin(r)` / `Cos(r)` / `Tan(r)` | Trigonometrie (Bogenmass) |
+| `Math.Sin(r)` / `Cos(r)` / `Tan(r)` | Trigonometrie (Bogenmaß) |
 | `Math.Atan2(y, x)` | Winkel aus Komponenten |
 | `Math.NormalizeAngle(deg)` | Auf 0-360 normalisieren |
 | `Math.SqrFloat(f)` / `SqrInt(i)` | Quadrat |
 
 **Konstanten:** `Math.PI`, `Math.PI2`, `Math.PI_HALF`, `Math.DEG2RAD`, `Math.RAD2DEG`
 
-**Vektor:** `vector.Distance(a,b)`, `vector.DistanceSq(a,b)`, `vector.Direction(a,b)`, `vector.Dot(a,b)`, `vector.Lerp(a,b,t)`, `v.Length()`, `v.Normalized()`
+**Vector:** `vector.Distance(a,b)`, `vector.DistanceSq(a,b)`, `vector.Direction(a,b)`, `vector.Dot(a,b)`, `vector.Lerp(a,b,t)`, `v.Length()`, `v.Normalized()`
 
 ---
 
@@ -200,7 +204,7 @@ PlayerBase player = PlayerBase.Cast(obj);
 if (player) player.DoSomething();
 ```
 
-### Null-Pruefung
+### Null-Schutz
 
 ```c
 if (!player) return;
@@ -241,23 +245,23 @@ flags = flags & ~FLAG_B;          // Entfernen
 
 ---
 
-## Was es NICHT gibt
+## Was NICHT existiert
 
 | Fehlendes Feature | Workaround |
 |-------------------|------------|
 | Ternär `? :` | `if/else` |
 | `do...while` | `while(true) { ... break; }` |
-| `try/catch` | Guard Clauses + frühes return |
+| `try/catch` | Schutzklauseln + frühes Return |
 | Mehrfachvererbung | Einfach + Komposition |
-| Operatorüberladung | Benannte Methoden (ausser `[]` über Get/Set) |
+| Operatorüberladung | Benannte Methoden (außer `[]` via Get/Set) |
 | Lambdas | Benannte Methoden |
 | `nullptr` | `null` / `NULL` |
-| `\\` / `\"` in Strings | Vermeiden (CParser bricht) |
+| `\\` / `\"` in Strings | Vermeiden (CParser bricht ab) |
 | `#include` | config.cpp `files[]` |
-| Namensräume | Namenspräfix (`My`, `VPP_`) |
-| Interfaces / abstract | Leere Basismethoden |
-| switch Fall-Through | Jeder case ist unabhängig |
-| `#define` Werte | `const` verwenden |
+| Namensräume | Namenspräfixe (`MyMod_`, `VPP_`) |
+| Interfaces / abstrakt | Leere Basismethoden |
+| Switch-Durchfallen | Jeder Case ist unabhängig |
+| `#define`-Werte | `const` verwenden |
 | Standard-Param-Ausdrücke | Nur Literale/NULL |
 | Variadische Parameter | `string.Format` oder Arrays |
 | Variablen-Neudeklaration in else-if | Eindeutige Namen pro Zweig |
@@ -267,7 +271,7 @@ flags = flags & ~FLAG_B;          // Entfernen
 ## Widget-Erstellung (Programmatisch)
 
 ```c
-// Workspace holen
+// Workspace abrufen
 WorkspaceWidget ws = GetGame().GetWorkspace();
 
 // Aus Layout erstellen
@@ -275,7 +279,7 @@ Widget root = ws.CreateWidgets("MyMod/gui/layouts/MyPanel.layout");
 
 // Kind-Widget finden
 TextWidget title = TextWidget.Cast(root.FindAnyWidget("TitleText"));
-if (title) title.SetText("Hello World");
+if (title) title.SetText("Hallo Welt");
 
 // Anzeigen/Verbergen
 root.Show(true);
@@ -291,7 +295,7 @@ root.Show(false);
 // In 3_Game oder 4_World Init:
 GetGame().RPCSingleParam(null, MY_RPC_ID, null, true, identity);  // Engine-RPC
 
-// Oder mit String-geroutetem RPC (MyRPC / CF):
+// Oder mit string-geroutetem RPC (MyRPC / CF):
 GetRPCManager().AddRPC("MyMod", "RPC_Handler", this, 2);  // CF
 MyRPC.Register("MyMod", "MyRoute", this, MyRPCSide.SERVER);  // MyMod
 ```
@@ -323,16 +327,16 @@ void RPC_Handler(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Ob
 ## Fehlerbehandlung
 
 ```c
-ErrorEx("message");                              // Standard ERROR Schweregrad
+ErrorEx("nachricht");                              // Standard ERROR-Schweregrad
 ErrorEx("info", ErrorExSeverity.INFO);           // Info
-ErrorEx("warning", ErrorExSeverity.WARNING);     // Warnung
-Print("debug output");                           // Skript-Log
-string stack = DumpStackString();                // Aufrufstapel holen
+ErrorEx("warnung", ErrorExSeverity.WARNING);     // Warnung
+Print("Debug-Ausgabe");                           // Script-Log
+string stack = DumpStackString();                // Aufrufstapel abrufen
 ```
 
 ---
 
-## Datei-I/O
+## Datei-E/A
 
 ```c
 // Pfade: "$profile:", "$saves:", "$mission:", "$CurrentDir:"
@@ -344,9 +348,9 @@ MyConfig cfg = new MyConfig();
 JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);  // Gibt VOID zurück!
 JsonFileLoader<MyConfig>.JsonSaveFile(path, cfg);
 
-// Rohe Datei
+// Rohdatei
 FileHandle fh = OpenFile(path, FileMode.WRITE);
-if (fh != 0) { FPrintln(fh, "line"); CloseFile(fh); }
+if (fh != 0) { FPrintln(fh, "zeile"); CloseFile(fh); }
 ```
 
 ---
@@ -363,7 +367,7 @@ Object obj = GetGame().CreateObjectEx("Barrel_Green", pos, ECE_PLACE_ON_SURFACE)
 // Im Spielerinventar
 player.GetInventory().CreateInInventory("BandageDressing");
 
-// Als Aufsatz
+// Als Anbauteil
 weapon.GetInventory().CreateAttachment("ACOGOptic");
 
 // Löschen
@@ -378,13 +382,13 @@ GetGame().ObjectDelete(obj);
 GetGame()                          // CGame-Instanz
 GetGame().GetPlayer()              // Lokaler Spieler (nur CLIENT, null auf Server!)
 GetGame().GetPlayers(out arr)      // Alle Spieler (Server)
-GetGame().GetWorld()               // Welt-Instanz
+GetGame().GetWorld()               // World-Instanz
 GetGame().GetTickTime()            // Serverzeit (float)
 GetGame().GetWorkspace()           // UI-Workspace
 GetGame().SurfaceY(x, z)          // Geländehöhe
-GetGame().IsServer()               // true auf dem Server
-GetGame().IsClient()               // true auf dem Client
-GetGame().IsMultiplayer()          // true wenn Mehrspieler
+GetGame().IsServer()               // true auf Server
+GetGame().IsClient()               // true auf Client
+GetGame().IsMultiplayer()          // true wenn Multiplayer
 ```
 
 ---

@@ -1,10 +1,14 @@
-# Chapter 8.4: Adding Chat Commands
+# Chapitre 8.4: Adding Chat Commands
 
-[Home](../../README.md) | [<< Previous: Building an Admin Panel](03-admin-panel.md) | **Adding Chat Commands** | [Next: Using the DayZ Mod Template >>](05-mod-template.md)
+[Accueil](../../README.md) | [<< Précédent : Building an Admin Panel](03-admin-panel.md) | **Adding Chat Commands** | [Suivant : Using the DayZ Mod Template >>](05-mod-template.md)
 
 ---
 
-## Table des matieres
+> **Résumé :** Ce tutoriel guide you through creating a chat command system for DayZ. You will hook into the chat input, parse command prefixes and arguments, check admin permissions, execute a côté serveur action, and send feedback to le joueur. By the end, you will have a working `/heal` command that fully heals the admin's character, along with a framework for adding more commands.
+
+---
+
+## Table des matières
 
 - [What We Are Building](#what-we-are-building)
 - [Prerequisites](#prerequisites)
@@ -12,7 +16,7 @@
 - [Step 1: Hook Into Chat Input](#step-1-hook-into-chat-input)
 - [Step 2: Parse Command Prefix and Arguments](#step-2-parse-command-prefix-and-arguments)
 - [Step 3: Check Admin Permissions](#step-3-check-admin-permissions)
-- [Step 4: Execute the Server-Side Action](#step-4-execute-the-server-side-action)
+- [Step 4: Execute the Server-Side Action](#step-4-execute-the-côté serveur-action)
 - [Step 5: Send Feedback to the Admin](#step-5-send-feedback-to-the-admin)
 - [Step 6: Register Commands](#step-6-register-commands)
 - [Step 7: Add to an Admin Panel Command List](#step-7-add-to-an-admin-panel-command-list)
@@ -31,7 +35,7 @@ A chat command system with:
 - **`/heal PlayerName`** -- Heals a specific player by name
 - A reusable framework for adding `/kill`, `/teleport`, `/time`, `/weather`, and any other command
 - Admin permission checking so regular players cannot use admin commands
-- Server-side execution with chat feedback messages
+- Côté serveur execution with chat feedback messages
 
 ---
 
@@ -85,7 +89,7 @@ CLIENT                                  SERVER
                                                                         feedback in chat
 ```
 
-**Why process commands on the server?** Because the server has authority over game state. Only the server can reliably heal players, change weather, teleport characters, and modify world state. The client's role is limited to detecting the command and forwarding it.
+**Why process commands on le serveur?** Because le serveur has authority over game state. Only le serveur can reliably heal players, change weather, teleport characters, and modify world state. Le client's role is limited to detecting the command and forwarding it.
 
 ---
 
@@ -95,7 +99,7 @@ We need to intercept chat messages before they are sent as regular chat. DayZ pr
 
 ### The Chat Hook Approach
 
-We will mod the `MissionGameplay` class to intercept chat input events. When the player submits a chat message starting with `/`, we intercept it, prevent it from being sent as normal chat, and instead send it as a command RPC to the server.
+We will mod the `MissionGameplay` class to intercept chat input events. When le joueur submits a chat message starting with `/`, we intercept it, prevent it from being sent as normal chat, and instead send it as a command RPC to le serveur.
 
 ### Create `Scripts/5_Mission/ChatCommands/CCmdChatHook.c`
 
@@ -169,19 +173,19 @@ modded class MissionGameplay
 
 ### How Chat Interception Works
 
-The `OnEvent` method on `MissionGameplay` is called for various game events. When `eventTypeId` is `ChatMessageEventTypeID`, it means the player just submitted a chat message. The `Param3` contains:
+The `OnEvent` method on `MissionGameplay` is called for various game events. When `eventTypeId` is `ChatMessageEventTypeID`, it means le joueur just submitted a chat message. The `Param3` contains:
 
 - `param1` -- Channel (int): the chat channel (global, direct, etc.)
 - `param2` -- Sender name (string)
 - `param3` -- Message text (string)
 
-We check if the message starts with `/`. If it does, we forward the entire string to the server via RPC. The message is still sent as normal chat as well -- in a production mod, you would suppress it (couvert dans the notes at the end).
+We check if the message starts with `/`. If it does, we forward the entire string to le serveur via RPC. The message is still sent as normal chat as well -- in a production mod, you would suppress it (covered in the notes at the end).
 
 ---
 
 ## Step 2: Parse Command Prefix and Arguments
 
-On the server side, we need to break a command string like `/heal PlayerName` into its parts: the command name (`heal`) and the arguments (`["PlayerName"]`).
+On le serveur side, we need to break a command string like `/heal PlayerName` into its parts: the command name (`heal`) and the arguments (`["PlayerName"]`).
 
 ### Create `Scripts/3_Game/ChatCommands/CCmdRPC.c`
 
@@ -422,7 +426,7 @@ Admin permission checking prevents regular players from executing admin commands
 
 ### The Admin Check in the Server Handler
 
-The simplest approach is to check the player's Steam64 ID against a list of known admin IDs. In a production mod, you would load this list from a config file.
+The simplest approach is to check le joueur's Steam64 ID against a list of known admin IDs. In a production mod, you would load this list from a config file.
 
 ```c
 // Simple admin check -- in production, load from a JSON config file
@@ -436,7 +440,7 @@ static bool IsAdmin(PlayerIdentity identity)
 
     // Hardcoded admin list -- replace with config file loading in production
     ref array<string> adminIds = new array<string>;
-    adminIds.Insert("76561198000000001");    // Replace with real Steam64 IDs
+    adminIds.Insert("76561198000000001");    // Remplacer with real Steam64 IDs
     adminIds.Insert("76561198000000002");
 
     return (adminIds.Find(playerId) != -1);
@@ -456,13 +460,13 @@ In a real mod, you would:
 1. Store admin IDs in a JSON file (`$profile:ChatCommands/admins.json`)
 2. Load the file on server startup
 3. Support permission levels (moderator, admin, superadmin)
-4. Use a framework like MyFramework's `MyPermissions` system for hierarchical permissions
+4. Use a framework like MyMod Core's `MyPermissions` system for hierarchical permissions
 
 ---
 
 ## Step 4: Execute the Server-Side Action
 
-Now we create the actual `/heal` command and the server handler that processes incoming command RPCs.
+Now we create the actual `/heal` command and le serveur handler that processes incoming command RPCs.
 
 ### Create `Scripts/4_World/ChatCommands/commands/CCmdHeal.c`
 
@@ -614,7 +618,7 @@ Param2<string, string> data = new Param2<string, string>(prefix, message);
 GetGame().RPCSingleParam(callerPlayer, CCmdRPC.COMMAND_FEEDBACK, data, true, caller);
 ```
 
-The server sends a `COMMAND_FEEDBACK` RPC to the specific client who issued the command. The data contains a prefix (like `"[Heal]"`) and the message text.
+Le serveur sends a `COMMAND_FEEDBACK` RPC to the specific client who issued the command. The data contains a prefix (like `"[Heal]"`) and the message text.
 
 ### Client Receives and Displays Feedback
 
@@ -636,7 +640,7 @@ if (rpc_type == CCmdRPC.COMMAND_FEEDBACK)
 }
 ```
 
-`GetGame().Chat()` displays a message in the player's chat window. The second parameter is the color channel:
+`GetGame().Chat()` displays a message in le joueur's chat window. The second parameter is the color channel:
 
 | Channel | Color | Typical Use |
 |---------|-------|-------------|
@@ -649,7 +653,7 @@ if (rpc_type == CCmdRPC.COMMAND_FEEDBACK)
 
 ## Step 6: Register Commands
 
-The server handler receives command RPCs, looks up the command in the registry, and executes it.
+Le serveur handler receives command RPCs, looks up the command in the registry, and executes it.
 
 ### Create `Scripts/4_World/ChatCommands/CCmdServerHandler.c`
 
@@ -828,7 +832,7 @@ class CCmdRPC
 
 ### Server-Side: Send the Command List
 
-Add this handler in your server-side code:
+Add this handler in your côté serveur code:
 
 ```c
 // In the server handler, add a case for COMMAND_LIST_REQ
@@ -874,7 +878,7 @@ protected void HandleCommandListRequest(PlayerIdentity requestor)
 
 ### Client-Side: Display in a Panel
 
-On the client, catch the response and display it in a text widget:
+On le client, catch the response and display it in a text widget:
 
 ```c
 if (rpc_type == CCmdRPC.COMMAND_LIST_RESP)
@@ -1490,12 +1494,12 @@ CCmdRegistry.Register(new CCmdTime());
 
 ---
 
-## Depannage
+## Troubleshooting
 
 ### Command Is Not Recognized ("Unknown command")
 
 - **Registration missing:** Make sure `CCmdRegistry.Register(new CCmdYourCommand())` is called in `MissionServer.OnInit()`.
-- **GetName() typo:** The string returned by `GetName()` must match what the player types (without the `/`).
+- **GetName() typo:** The string returned by `GetName()` must match what le joueur types (without the `/`).
 - **Case mismatch:** The registry converts names to lowercase. `/Heal`, `/HEAL`, and `/heal` should all work.
 
 ### Permission Denied for Admins
@@ -1505,15 +1509,15 @@ CCmdRegistry.Register(new CCmdTime());
 
 ### Feedback Message Does Not Appear in Chat
 
-- **RPC not reaching client:** Add `Print()` statements on the server to confirm the feedback RPC is being sent.
+- **RPC not reaching client:** Add `Print()` statements on le serveur to confirm the feedback RPC is being sent.
 - **Client OnRPC not catching it:** Verify the RPC ID matches (`CCmdRPC.COMMAND_FEEDBACK`).
-- **GetGame().Chat() not working:** This function requires the game to be in a state where chat is available. It may not work on the loading screen.
+- **GetGame().Chat() not working:** This function requires le jeu to be in a state where chat is available. It may not work on the loading screen.
 
 ### /heal Does Not Actually Heal
 
-- **Server-only execution:** `SetHealth()` and stat changes must run on the server. Verify `GetGame().IsServer()` is true when `Execute()` runs.
-- **PlayerBase cast fails:** If `Class.CastTo(targetPlayer, targetMan)` returns false, the target is not a valid PlayerBase. This can happen with AI or non-player entities.
-- **Stat getters return null:** `GetStatEnergy()` and `GetStatWater()` may return null if the player is dead or not fully initialized. Add null checks in production code.
+- **Server-only execution:** `SetHealth()` and stat changes must run on le serveur. Verify `GetGame().IsServer()` is true when `Execute()` runs.
+- **PlayerBase cast fails:** If `Class.CastTo(targetPlayer, targetMan)` retourne false, the target is not a valid PlayerBase. This can happen with AI or non-player entities.
+- **Stat getters return null:** `GetStatEnergy()` and `GetStatWater()` may return null if le joueur is dead or not fully initialized. Add null checks in production code.
 
 ### Command Appears in Chat as Regular Message
 
@@ -1539,15 +1543,49 @@ The exact implementation depends on the DayZ version and how `ChatInputMenu` exp
 
 ---
 
-## Prochaines etapes
+## Prochaines étapes
 
 1. **Load admins from a config file** -- Use `JsonFileLoader` to load admin IDs from a JSON file instead of hardcoding them.
 2. **Add a /help command** -- List all available commands with their descriptions and usage.
 3. **Add logging** -- Write command usage to a log file for audit purposes.
-4. **Integrate with a framework** -- MyFramework provides `MyPermissions` for hierarchical permissions and `MyRPC` for string-routed RPCs that avoid integer ID collisions.
+4. **Integrate with a framework** -- MyMod Core provides `MyPermissions` for hierarchical permissions and `MyRPC` for string-routed RPCs that avoid integer ID collisions.
 5. **Add cooldowns** -- Prevent command spam by tracking the last execution time per player.
 6. **Build a command palette UI** -- Create an admin panel that lists all commands with clickable buttons (combining this tutorial with [Chapter 8.3](03-admin-panel.md)).
 
 ---
 
-**Previous:** [Chapter 8.3: Building an Admin Panel Module](03-admin-panel.md)
+## Bonnes pratiques
+
+- **Always check permissions before executing admin commands.** A missing permission check means any player can `/heal` or `/kill` anyone. Validate the caller's Steam64 ID (via `GetPlainId()`) on le serveur before processing.
+- **Send feedback to the admin even for failed commands.** Silent failures make debugging impossible. Always send a chat message explaining what went wrong ("Player non trouvé", "Permission denied").
+- **Use `GetPlainId()` for admin checks, not `GetId()`.** `GetId()` returns a session-specific DayZ ID that changes every reconnect. `GetPlainId()` returns the permanent Steam64 ID.
+- **Store admin IDs in a JSON config file, not in code.** Hardcoded IDs require a PBO rebuild to change. A `$profile:` JSON file can be edited by server admins without modding knowledge.
+- **Convert command names to lowercase before matching.** Players may type `/Heal`, `/HEAL`, or `/heal`. Normalizing to lowercase prevents frustrating "unknown command" errors.
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| Chat hook via `OnEvent` | Intercept the message and handle it as a command | The message still appears in chat for all players. Suppressing it requires modding `ChatInputMenu`, which varies by DayZ version. |
+| `GetGame().Chat()` | Displays a message in le joueur's chat window | Only works when the chat UI is active. On the loading screen or in certain menu states, the message is silently dropped. |
+| Command registry pattern | Clean architecture with one class per command | Each command class file must go in the correct script layer. `CCmdBase` in `3_Game`, concrete commands referencing `PlayerBase` in `4_World`. Wrong layer placement causes "Undefined type" at load time. |
+| Player lookup by name | `FindPlayerByName` matches partial names | Partial matching can target the wrong player on a server with similar names. In production, prefer Steam64 ID targeting or add a confirmation step. |
+
+---
+
+## What You Learned
+
+In this tutorial you learned:
+- How to hook into chat input using `MissionGameplay.OnEvent` with `ChatMessageEventTypeID`
+- How to parse command prefixes and arguments from chat text
+- How to check admin permissions on le serveur using Steam64 IDs
+- How to send command feedback back to le joueur via RPC and `GetGame().Chat()`
+- How to build a reusable command registry pattern for adding new commands
+
+**Suivant :** [Chapter 8.6: Debugging & Testing Your Mod](06-debugging-testing.md)
+
+---
+
+**Précédent :** [Chapter 8.3: Building an Admin Panel Module](03-admin-panel.md)

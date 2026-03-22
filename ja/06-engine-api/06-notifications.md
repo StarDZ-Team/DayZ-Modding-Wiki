@@ -1,48 +1,48 @@
-# Chapter 6.6: Notification System
+# 第6.6章: 通知システム
 
-[Home](../../README.md) | [<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
+[ホーム](../../README.md) | [<< 前へ: ポストプロセスエフェクト](05-ppe.md) | **通知** | [次へ: タイマーと CallQueue >>](07-timers.md)
 
 ---
 
 ## はじめに
 
-DayZ includes a built-in notification system for displaying toast-style popup messages to players. The `NotificationSystem` class provides static methods for sending notifications both locally (client-side) and from server to client via RPC. This chapter covers the full API for sending, customizing, and managing notifications.
+DayZ には、プレイヤーにトースト形式のポップアップメッセージを表示するビルトインの通知システムが含まれています。`NotificationSystem` クラスは、ローカル（クライアントサイド）とサーバーからクライアントへの RPC の両方で通知を送信するための静的メソッドを提供します。この章では、通知の送信、カスタマイズ、管理の完全な API を解説します。
 
 ---
 
 ## NotificationSystem
 
-**File:** `3_Game/client/notifications/notificationsystem.c` (320 lines)
+**ファイル:** `3_Game/client/notifications/notificationsystem.c`（320行）
 
-A static class that manages the notification queue. Notifications appear as small popup cards at the top of the screen, stacked vertically, and fade out after their display time expires.
+通知キューを管理する静的クラスです。通知は画面上部に小さなポップアップカードとして表示され、縦に積み重なり、表示時間が経過するとフェードアウトします。
 
 ### 定数
 
 ```c
-const int   DEFAULT_TIME_DISPLAYED = 10;    // Default display time in seconds
-const float NOTIFICATION_FADE_TIME = 3.0;   // Fade-out duration in seconds
-static const int MAX_NOTIFICATIONS = 5;     // Maximum visible notifications
+const int   DEFAULT_TIME_DISPLAYED = 10;    // デフォルト表示時間（秒）
+const float NOTIFICATION_FADE_TIME = 3.0;   // フェードアウト時間（秒）
+static const int MAX_NOTIFICATIONS = 5;     // 最大表示通知数
 ```
 
 ---
 
-## Server-to-Client Notifications
+## サーバーからクライアントへの通知
 
-These methods are called on the server. They send an RPC to the target player's client, which displays the notification locally.
+これらのメソッドはサーバーで呼び出されます。ターゲットプレイヤーのクライアントに RPC を送信し、ローカルで通知を表示します。
 
 ### SendNotificationToPlayerExtended
 
 ```c
 static void SendNotificationToPlayerExtended(
-    Man player,            // Target player (Man or PlayerBase)
-    float show_time,       // Display duration in seconds
-    string title_text,     // Notification title
-    string detail_text = "",  // Optional body text
-    string icon = ""       // Optional icon path (e.g., "set:dayz_gui image:icon_info")
+    Man player,            // ターゲットプレイヤー（Man または PlayerBase）
+    float show_time,       // 表示時間（秒）
+    string title_text,     // 通知タイトル
+    string detail_text = "",  // オプションの本文テキスト
+    string icon = ""       // オプションのアイコンパス（例: "set:dayz_gui image:icon_info"）
 );
 ```
 
-**Example --- notify a specific player:**
+**例 --- 特定のプレイヤーに通知する:**
 
 ```c
 void NotifyPlayer(PlayerBase player, string message)
@@ -52,10 +52,10 @@ void NotifyPlayer(PlayerBase player, string message)
 
     NotificationSystem.SendNotificationToPlayerExtended(
         player,
-        8.0,                   // Show for 8 seconds
-        "Server Notice",       // Title
-        message,               // Body
-        ""                     // Default icon
+        8.0,                   // 8秒間表示
+        "Server Notice",       // タイトル
+        message,               // 本文
+        ""                     // デフォルトアイコン
     );
 }
 ```
@@ -64,7 +64,7 @@ void NotifyPlayer(PlayerBase player, string message)
 
 ```c
 static void SendNotificationToPlayerIdentityExtended(
-    PlayerIdentity player,   // Target identity (null = broadcast to ALL players)
+    PlayerIdentity player,   // ターゲット ID（null = 全プレイヤーにブロードキャスト）
     float show_time,
     string title_text,
     string detail_text = "",
@@ -72,7 +72,7 @@ static void SendNotificationToPlayerIdentityExtended(
 );
 ```
 
-**Example --- broadcast to all players:**
+**例 --- 全プレイヤーにブロードキャストする:**
 
 ```c
 void BroadcastNotification(string title, string message)
@@ -81,8 +81,8 @@ void BroadcastNotification(string title, string message)
         return;
 
     NotificationSystem.SendNotificationToPlayerIdentityExtended(
-        null,                  // null = all connected players
-        10.0,                  // Show for 10 seconds
+        null,                  // null = 接続中の全プレイヤー
+        10.0,                  // 10秒間表示
         title,
         message,
         ""
@@ -90,24 +90,24 @@ void BroadcastNotification(string title, string message)
 }
 ```
 
-### SendNotificationToPlayer (Typed)
+### SendNotificationToPlayer（型付き）
 
 ```c
 static void SendNotificationToPlayer(
     Man player,
-    NotificationType type,    // Predefined notification type
+    NotificationType type,    // 定義済み通知タイプ
     float show_time,
     string detail_text = ""
 );
 ```
 
-This variant uses predefined `NotificationType` enum values that map to built-in titles and icons. The `detail_text` is appended as the body.
+このバリアントは、ビルトインのタイトルとアイコンにマッピングされた定義済みの `NotificationType` 列挙値を使用します。`detail_text` は本文として追加されます。
 
 ---
 
-## Client-Side (Local) Notifications
+## クライアントサイド（ローカル）通知
 
-These methods display notifications only on the local client. They do not involve any networking.
+これらのメソッドはローカルクライアントにのみ通知を表示します。ネットワーキングは関与しません。
 
 ### AddNotificationExtended
 
@@ -120,7 +120,7 @@ static void AddNotificationExtended(
 );
 ```
 
-**Example --- local notification on client:**
+**例 --- クライアントでのローカル通知:**
 
 ```c
 void ShowLocalNotification(string title, string body)
@@ -137,7 +137,7 @@ void ShowLocalNotification(string title, string body)
 }
 ```
 
-### AddNotification (Typed)
+### AddNotification（型付き）
 
 ```c
 static void AddNotification(
@@ -147,62 +147,62 @@ static void AddNotification(
 );
 ```
 
-Uses a predefined `NotificationType` for the title and icon.
+タイトルとアイコンに定義済みの `NotificationType` を使用します。
 
 ---
 
-## NotificationType Enum
+## NotificationType 列挙
 
-The vanilla game defines notification types with associated titles and icons. Common values:
+バニラゲームでは、関連するタイトルとアイコンを持つ通知タイプが定義されています。一般的な値は以下の通りです。
 
-| Type | Description |
+| タイプ | 説明 |
 |------|-------------|
-| `NotificationType.GENERIC` | Generic notification |
-| `NotificationType.FRIENDLY_FIRE` | Friendly fire warning |
-| `NotificationType.JOIN` | Player join |
-| `NotificationType.LEAVE` | Player leave |
-| `NotificationType.STATUS` | Status update |
+| `NotificationType.GENERIC` | 汎用通知 |
+| `NotificationType.FRIENDLY_FIRE` | フレンドリーファイア警告 |
+| `NotificationType.JOIN` | プレイヤー参加 |
+| `NotificationType.LEAVE` | プレイヤー退出 |
+| `NotificationType.STATUS` | ステータス更新 |
 
-> **注意：** The available types depend on the game version. For maximum flexibility, use the `Extended` variants which accept custom title and icon strings.
+> **注意:** 利用可能なタイプはゲームバージョンによって異なります。最大限の柔軟性を得るには、カスタムのタイトルとアイコン文字列を受け付ける `Extended` バリアントを使用してください。
 
 ---
 
-## Icon Paths
+## アイコンパス
 
-Icons use the DayZ image set syntax:
+アイコンは DayZ イメージセット構文を使用します。
 
 ```
 "set:dayz_gui image:icon_name"
 ```
 
-Common icon names:
+一般的なアイコン名:
 
-| Icon | Set Path |
+| アイコン | セットパス |
 |------|----------|
-| Info | `"set:dayz_gui image:icon_info"` |
-| Warning | `"set:dayz_gui image:icon_warning"` |
-| Skull | `"set:dayz_gui image:icon_skull"` |
+| 情報 | `"set:dayz_gui image:icon_info"` |
+| 警告 | `"set:dayz_gui image:icon_warning"` |
+| ドクロ | `"set:dayz_gui image:icon_skull"` |
 
-You can also pass a direct path to an `.edds` image file:
+`.edds` 画像ファイルへの直接パスを渡すこともできます。
 
 ```c
 "MyMod/GUI/notification_icon.edds"
 ```
 
-Or pass an empty string `""` for no icon.
+アイコンなしの場合は空文字列 `""` を渡します。
 
 ---
 
-## Events
+## イベント
 
-The `NotificationSystem` exposes script invokers for reacting to notification lifecycle:
+`NotificationSystem` は通知ライフサイクルに反応するためのスクリプトインボーカーを公開しています。
 
 ```c
 ref ScriptInvoker m_OnNotificationAdded;
 ref ScriptInvoker m_OnNotificationRemoved;
 ```
 
-**Example --- react to notifications:**
+**例 --- 通知に反応する:**
 
 ```c
 void Init()
@@ -228,24 +228,24 @@ void OnNotifRemoved()
 
 ---
 
-## Update Loop
+## 更新ループ
 
-The notification system must be ticked each frame to handle fade-in/fade-out animations and removal of expired notifications:
+通知システムはフェードイン/フェードアウトアニメーションと期限切れ通知の削除を処理するために、毎フレームティックする必要があります。
 
 ```c
 static void Update(float timeslice);
 ```
 
-This is called automatically by the vanilla mission's `OnUpdate` method. If you are writing a completely custom mission, make sure to call it.
+これはバニラミッションの `OnUpdate` メソッドによって自動的に呼び出されます。完全にカスタムのミッションを作成する場合は、必ず呼び出してください。
 
 ---
 
-## Complete Server-to-Client Example
+## サーバーからクライアントへの完全な例
 
-A typical mod pattern for sending notifications from server code:
+サーバーコードから通知を送信する典型的な Mod パターンです。
 
 ```c
-// Server-side: in a mission event handler or module
+// サーバーサイド: ミッションイベントハンドラーまたはモジュール内
 class MyServerModule
 {
     void OnMissionStarted(string missionName, vector location)
@@ -253,7 +253,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Broadcast to all players
+        // 全プレイヤーにブロードキャスト
         string title = "Mission Started!";
         string body = string.Format("Go to %1!", missionName);
 
@@ -271,7 +271,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Notify just this player
+        // このプレイヤーにのみ通知
         NotificationSystem.SendNotificationToPlayerExtended(
             player,
             5.0,
@@ -285,12 +285,12 @@ class MyServerModule
 
 ---
 
-## CommunityFramework (CF) Alternative
+## CommunityFramework（CF）の代替手段
 
-If you use CommunityFramework, it provides its own notification API:
+CommunityFramework を使用している場合、独自の通知 API が提供されています。
 
 ```c
-// CF notification (different RPC internally)
+// CF 通知（内部的に別の RPC を使用）
 NotificationSystem.Create(
     new StringLocaliser("Title"),
     new StringLocaliser("Body with param: %1", someValue),
@@ -301,7 +301,7 @@ NotificationSystem.Create(
 );
 ```
 
-The CF API adds color and localization support. Use whichever system your mod stack requires --- they are functionally similar but use different internal RPCs.
+CF の API はカラーとローカライズのサポートを追加します。どちらのシステムを使用するかは、Mod スタックの要件に応じて決定してください --- 機能的には類似していますが、内部的に異なる RPC を使用します。
 
 ---
 
@@ -309,15 +309,33 @@ The CF API adds color and localization support. Use whichever system your mod st
 
 | 概念 | 要点 |
 |---------|-----------|
-| Server to player | `SendNotificationToPlayerExtended(player, time, title, text, icon)` |
-| Server to all | `SendNotificationToPlayerIdentityExtended(null, time, title, text, icon)` |
-| Client local | `AddNotificationExtended(time, title, text, icon)` |
-| Typed | `SendNotificationToPlayer(player, NotificationType, time, text)` |
-| Max visible | 5 notifications stacked |
-| Default time | 10 seconds display, 3 seconds fade |
-| Icons | `"set:dayz_gui image:icon_name"` or direct `.edds` path |
-| Events | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
+| サーバーからプレイヤーへ | `SendNotificationToPlayerExtended(player, time, title, text, icon)` |
+| サーバーから全員へ | `SendNotificationToPlayerIdentityExtended(null, time, title, text, icon)` |
+| クライアントローカル | `AddNotificationExtended(time, title, text, icon)` |
+| 型付き | `SendNotificationToPlayer(player, NotificationType, time, text)` |
+| 最大表示数 | 5つの通知がスタック |
+| デフォルト時間 | 10秒表示、3秒フェード |
+| アイコン | `"set:dayz_gui image:icon_name"` または直接 `.edds` パス |
+| イベント | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
 
 ---
 
-[<< 前： Post-Process Effects](05-ppe.md) | **Notifications** | [次： Timers & CallQueue >>](07-timers.md)
+## ベストプラクティス
+
+- **カスタム通知には `Extended` バリアントを使用してください。** `SendNotificationToPlayerExtended` はタイトル、本文、アイコンを完全に制御できます。型付きの `NotificationType` バリアントはバニラのプリセットに限定されます。
+- **5つの通知スタック制限を尊重してください。** 短時間に多くの通知を送信すると、プレイヤーが読む前に古い通知が画面から押し出されます。関連するメッセージをまとめるか、より長い表示時間を使用してください。
+- **サーバー通知は必ず `GetGame().IsServer()` でガードしてください。** クライアントで `SendNotificationToPlayerExtended` を呼び出しても効果がなく、メソッド呼び出しの無駄になります。
+- **真のブロードキャストには ID として `null` を渡してください。** `SendNotificationToPlayerIdentityExtended(null, ...)` は接続中の全プレイヤーに配信します。同じメッセージを送信するためにプレイヤーを手動でループしないでください。
+- **通知テキストは簡潔に保ってください。** トーストポップアップの表示幅は限られています。長いタイトルや本文はクリップされます。タイトルは30文字以下、本文は80文字以下を目安にしてください。
+
+---
+
+## 互換性と影響
+
+- **マルチ Mod:** バニラの `NotificationSystem` はすべての Mod で共有されます。複数の Mod が同時に通知を送信すると、5つの通知スタックがオーバーフローする可能性があります。CF は、バニラ通知と競合しない別の通知チャネルを提供します。
+- **パフォーマンス:** 通知は軽量です（通知ごとに1つの RPC）。ただし、数秒ごとに全プレイヤーにブロードキャストすると、60人以上のプレイヤーがいるサーバーでは測定可能なネットワークトラフィックが発生します。
+- **サーバー/クライアント:** `SendNotificationToPlayer*` メソッドはサーバーからクライアントへの RPC です。`AddNotificationExtended` はクライアントのみ（ローカル）です。`Update()` ティックはクライアントミッションループで実行されます。
+
+---
+
+[<< 前へ: ポストプロセスエフェクト](05-ppe.md) | **通知** | [次へ: タイマーと CallQueue >>](07-timers.md)

@@ -1,6 +1,10 @@
-# Chapter 2.6: Server vs Client Architecture
+# Capítulo 2.6: Server vs Client Architecture
 
-[Home](../../README.md) | [<< Previous: File Organization](05-file-organization.md) | **Server vs Client Architecture**
+[Inicio](../../README.md) | [<< Anterior: File Organization](05-file-organization.md) | **Server vs Client Architecture**
+
+---
+
+> **Resumen:** DayZ is a client-server game. Every line of code you write runs in a specific context -- server, client, or both. Understanding this split is essential for writing secure, functional mods. This chapter explains where code runs, how to detect which side you are on, how to structure multi-package mods, and the patterns that keep server and client code properly separated.
 
 ---
 
@@ -25,9 +29,9 @@
 
 ---
 
-## La Division Fundamental
+## The Fundamental Split
 
-DayZ usa un modelo de **servidor dedicado**. El servidor y el cliente son procesos separados ejecutando ejecutables separados. Se comunican por la red, y el motor maneja la sincronizacion de entidades, variables y RPCs.
+DayZ uses a **dedicated server** model. The server and the client are separate processes running separate executables. They communicate over the network, and the engine handles synchronization of entities, variables, and RPCs.
 
 This means your mod code runs in one of three contexts, and the rules for each are fundamentally different.
 
@@ -61,11 +65,11 @@ This means your mod code runs in one of three contexts, and the rules for each a
 
 ---
 
-## Los Tres Contextos de Ejecucion
+## The Three Execution Contexts
 
 ### 1. Dedicated Server
 
-El servidor dedicado es un **proceso sin interfaz grafica**. No tiene ventana, no tiene salida de tarjeta grafica, no tiene monitor, no tiene teclado, no tiene mouse. Existe solo para ejecutar logica de juego.
+The dedicated server is a **headless process**. It has no window, no graphics card output, no monitor, no keyboard, no mouse. It exists only to run game logic.
 
 Key characteristics:
 - **Authoritative** -- the server's state is the truth. If the server says a player has 50 health, the player has 50 health.
@@ -77,7 +81,7 @@ Key characteristics:
 
 ### 2. Client
 
-El cliente es el juego del jugador. Tiene una ventana, renderiza graficos 3D, reproduce audio y maneja input.
+The client is the player's game. It has a window, renders 3D graphics, plays audio, and handles input.
 
 Key characteristics:
 - **Presentation layer** -- the client renders what the server tells it to render. It does not decide what exists in the world.
@@ -89,7 +93,7 @@ Key characteristics:
 
 ### 3. Listen Server (Development/Testing)
 
-Un listen server es tanto servidor COMO cliente en el mismo proceso. This is what you get when you launch DayZ through the Workbench or use the `-server` launch parameter with a local game.
+A listen server is both server AND client in the same process. This is what you get when you launch DayZ through the Workbench or use the `-server` launch parameter with a local game.
 
 Key characteristics:
 - **Both `IsServer()` and `IsClient()` return true** -- this is the critical difference from dedicated servers.
@@ -100,7 +104,7 @@ Key characteristics:
 
 ---
 
-## Verificar Donde se Ejecuta tu Codigo
+## Checking Where Your Code Runs
 
 The `GetGame()` global function returns the game instance, which provides methods to detect the execution context:
 
@@ -140,7 +144,7 @@ if (GetGame().IsMultiplayer())
 
 ### Truth Table
 
-| Metodo | Dedicated Server | Client (Remote) | Listen Server |
+| Método | Dedicated Server | Client (Remote) | Listen Server |
 |--------|:---:|:---:|:---:|
 | `IsServer()` | true | false | true |
 | `IsClient()` | false | true | true |
@@ -148,7 +152,7 @@ if (GetGame().IsMultiplayer())
 | `IsMultiplayer()` | true | true | false |
 | `GetPlayer()` returns | null | PlayerBase | PlayerBase |
 
-### Patrones Comunes
+### Common Patterns
 
 ```c
 // Guard: server-only logic
@@ -203,7 +207,7 @@ type = "mod";
 
 The mod is loaded on **both server and client**. The server loads it, clients download and load it. Both sides compile and execute the scripts.
 
-**Cuando usar:** Most mods use this. Any mod that has shared types (entity definitions, config classes, RPC data structures) needs to be `type = "mod"` so both sides know about the same types.
+**When to use:** Most mods use this. Any mod that has shared types (entity definitions, config classes, RPC data structures) needs to be `type = "mod"` so both sides know about the same types.
 
 **Ejemplo:** The StarDZ AI client mod uses `type = "mod"` because both server and client need the AI entity class definitions, RPC constants, and sync data structures:
 
@@ -222,7 +226,7 @@ type = "servermod";
 
 The mod is loaded on the **server only**. Clients never see it, never download it, never know it exists. The server does not send it in the mod list.
 
-**Cuando usar:** Server-side logic that clients should never have access to. This includes:
+**When to use:** Server-side logic that clients should never have access to. This includes:
 - Spawn algorithms (prevents players from predicting loot)
 - AI brain logic (prevents exploit analysis)
 - Admin commands and server management
@@ -239,7 +243,7 @@ type = "servermod";
 
 ### Why This Matters for Security
 
-Si tu logica de spawn esta en un paquete `type = "mod"`, **cada jugador lo descarga**. Pueden decompilar el PBO y leer tus algoritmos de spawn, tablas de loot, contrasenas de admin o logica anti-cheat. Siempre coloca la logica sensible del servidor en un paquete `type = "servermod"`.
+If your spawn logic is in a `type = "mod"` package, **every player downloads it**. They can decompile the PBO and read your spawn algorithms, loot tables, admin passwords, or anti-cheat logic. Always put sensitive server logic in a `type = "servermod"` package.
 
 ---
 
@@ -286,7 +290,7 @@ Notice that the server mod defines both `STARDZ_AI` and `STARDZ_AISERVER`. This 
 
 ---
 
-## Arquitectura de Mod Multi-Paquete
+## Multi-Package Mod Architecture
 
 ### Why Split Into Multiple Packages?
 
@@ -355,25 +359,25 @@ This ensures the client package compiles first, and the server package can refer
 
 ---
 
-## Las Reglas de Oro
+## The Golden Rules
 
 These rules govern every decision about where code belongs:
 
 ### Rule 1: Server is AUTHORITATIVE
 
-El servidor posee el estado del juego. Decide que existe, donde existe y que le sucede. Nunca dejes que el cliente tome decisiones autoritativas.
+The server owns the game state. It decides what exists, where it exists, and what happens to it. Never let the client make authoritative decisions.
 
 ### Rule 2: Client handles PRESENTATION
 
-El cliente renderiza el mundo, reproduce sonidos, muestra UI y recolecta input. No decide los resultados del juego.
+The client renders the world, plays sounds, shows UI, and collects input. It does not decide game outcomes.
 
 ### Rule 3: RPC is the BRIDGE
 
-Las llamadas a procedimiento remoto (RPCs) son la unica forma estructurada de comunicacion entre servidor y cliente. The client sends requests, the server sends responses and state updates.
+Remote Procedure Calls (RPCs) are the only structured way for server and client to communicate. The client sends requests, the server sends responses and state updates.
 
 ### Rule 4: Never Trust the Client
 
-Cualquier dato que venga del cliente podria ser manipulado. Siempre valida en el servidor.
+Any data coming from a client could be tampered with. Always validate on the server.
 
 ### Decision Tree
 
@@ -394,7 +398,7 @@ flowchart TD
 
 ### Responsibility Matrix
 
-| Tarea | Donde | Por que |
+| Task | Where | Why |
 |------|-------|-----|
 | Spawn entities | Server | Prevents item duplication |
 | Apply damage | Server | Prevents god mode hacks |
@@ -414,13 +418,13 @@ flowchart TD
 
 ---
 
-## Matriz de Capa de Script y Lado
+## Script Layer and Side Matrix
 
 The 5-layer hierarchy (Chapter 2.1) intersects with the server-client split. Not all layers run on all sides in the same way:
 
 ### Full Matrix
 
-| Layer | Dedicated Server | Client | Listen Server | Notas |
+| Capa | Dedicated Server | Client | Listen Server | Notas |
 |-------|:---:|:---:|:---:|-------|
 | `1_Core` | Compiled | Compiled | Compiled | Identical on all sides |
 | `2_GameLib` | Compiled | Compiled | Compiled | Identical on all sides |
@@ -465,7 +469,7 @@ modded class MissionGameplay
 
 ---
 
-## Guardas de Preprocesador
+## Preprocessor Guards
 
 Enforce Script supports preprocessor directives that let you conditionally compile code based on the execution context.
 
@@ -487,7 +491,7 @@ The engine automatically defines `SERVER` when compiling for a dedicated server.
 
 ### When to Use Preprocessor Guards vs Runtime Checks
 
-| Enfoque | Cuando Usar | Ejemplo |
+| Approach | When to Use | Ejemplo |
 |----------|-------------|---------|
 | `#ifndef SERVER` | Wrapping entire class definitions that should only exist on client | `modded class MissionGameplay` in a shared mod |
 | `#ifdef SERVER` | Wrapping entire class definitions that should only exist on server | Server-only helper classes |
@@ -552,7 +556,7 @@ modded class MissionGameplay
 
 ---
 
-## Patrones Comunes de Servidor-Cliente
+## Common Server-Client Patterns
 
 ### Pattern 1: Server-Side Validation with Client Feedback
 
@@ -766,7 +770,7 @@ void OnAdminCommand(PlayerIdentity sender, ParamsReadContext ctx)
 
 ---
 
-## Problemas del Listen Server
+## Listen Server Gotchas
 
 The listen server is the most treacherous environment because it blurs the line between server and client. Here are the pitfalls:
 
@@ -791,7 +795,7 @@ void MyFunction()
 }
 ```
 
-**Solucion:** If you need exclusive branches, use `else if` or check `IsDedicatedServer()`:
+**Fix:** If you need exclusive branches, use `else if` or check `IsDedicatedServer()`:
 
 ```c
 void MyFunction()
@@ -834,7 +838,7 @@ modded class MissionGameplay
 }
 ```
 
-**Solucion:** Use server/client specific subclasses or guard with context checks:
+**Fix:** Use server/client specific subclasses or guard with context checks:
 
 ```c
 modded class MissionServer
@@ -883,7 +887,7 @@ void DoServerThing(PlayerBase player)
 
 ### 4. Testing on Listen Server Masks Bugs
 
-Una trampa comun: you test your mod on a listen server, everything works, you publish it, and it crashes on every dedicated server. This happens because:
+A common trap: you test your mod on a listen server, everything works, you publish it, and it crashes on every dedicated server. This happens because:
 
 - Types that exist only in `MissionGameplay` are available on listen server
 - `GetPlayer()` returns a value on listen server
@@ -1158,7 +1162,7 @@ class MyServerPanel
 }
 ```
 
-**Solucion:** All UI code belongs in the client package (`type = "mod"`), wrapped in `#ifndef SERVER`.
+**Fix:** All UI code belongs in the client package (`type = "mod"`), wrapped in `#ifndef SERVER`.
 
 ### Mistake 3: GetGame().GetPlayer() on Server
 
@@ -1176,7 +1180,7 @@ modded class MissionServer
 }
 ```
 
-**Solucion:** On the server, players are passed to you through events, RPCs, or iteration:
+**Fix:** On the server, players are passed to you through events, RPCs, or iteration:
 
 ```c
 modded class MissionServer
@@ -1266,7 +1270,7 @@ class MyStateData  // Client has never heard of this class
 }
 ```
 
-**Solucion:** Shared data structures (RPC data, entity definitions, config classes) go in the client package (`type = "mod"`) so both sides have them:
+**Fix:** Shared data structures (RPC data, entity definitions, config classes) go in the client package (`type = "mod"`) so both sides have them:
 
 ```c
 // In MyMod (type = "mod") -- 3_Game layer:
@@ -1289,7 +1293,7 @@ void LoadConfig()
 }
 ```
 
-**Solucion:** The server loads configs and sends relevant data to clients via RPC. Clients never read server config files directly.
+**Fix:** The server loads configs and sends relevant data to clients via RPC. Clients never read server config files directly.
 
 ---
 
@@ -1325,7 +1329,7 @@ Use this to determine where a piece of code belongs:
 
 ---
 
-## Resumen Checklist
+## Summary Checklist
 
 Before publishing a split mod, verify:
 
@@ -1344,5 +1348,5 @@ Before publishing a split mod, verify:
 
 ---
 
-**Previous:** [Chapter 2.5: File Organization Best Practices](05-file-organization.md)
-**Next:** [Part 3: GUI & Layout System](../03-gui-system/01-widget-types.md)
+**Anterior:** [Chapter 2.5: File Organization Best Practices](05-file-organization.md)
+**Siguiente:** [Part 3: GUI & Layout System](../03-gui-system/01-widget-types.md)

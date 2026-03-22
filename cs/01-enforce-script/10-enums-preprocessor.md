@@ -1,10 +1,14 @@
 # Chapter 1.10: Enums & Preprocessor
 
-[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
+[Domů](../../README.md) | [<< Předchozí: Přetypování a reflexe](09-casting-reflection.md) | **Výčty a preprocesor** | [Další: Zpracování chyb >>](11-error-handling.md)
 
 ---
 
-## Table of Contents
+> **Goal:** Understand enum declarations, enum reflection přílišls, bitflag patterns, constants, and the preprocessor system for conditional compilation.
+
+---
+
+## Obsah
 
 - [Enum Declaration](#enum-declaration)
   - [Explicit Values](#explicit-values)
@@ -19,24 +23,24 @@
 - [Preprocessor Directives](#preprocessor-directives)
   - [#ifdef / #ifndef / #endif](#ifdef--ifndef--endif)
   - [#define](#define)
-  - [Common Engine Defines](#common-engine-defines)
-  - [Custom Defines via config.cpp](#custom-defines-via-configcpp)
+  - [Běžné Engine Defines](#common-engine-defines)
+  - [Custom Defines via config.cpp](#vlastní-defines-via-configcpp)
 - [Real-World Examples](#real-world-examples)
   - [Platform-Specific Code](#platform-specific-code)
-  - [Optional Mod Dependencies](#optional-mod-dependencies)
+  - [Optional Mod Dependencies](#volitelný-mod-dependencies)
   - [Debug-Only Diagnostics](#debug-only-diagnostics)
   - [Server vs Client Logic](#server-vs-client-logic)
-- [Common Mistakes](#common-mistakes)
+- [Běžné Mistakes](#common-mistakes)
 - [Summary](#summary)
 - [Navigation](#navigation)
 
 ---
 
-## Deklarace výčtů
+## Enum Declaration
 
 Enums in Enforce Script define named integer constants grouped under a type name. They behave like `int` under the hood.
 
-### Explicitní hodnoty
+### Explicit Values
 
 ```c
 enum EDamageState
@@ -49,9 +53,9 @@ enum EDamageState
 };
 ```
 
-### Implicitní hodnoty
+### Implicit Values
 
-If you omit values, they auto-increment from the previous value (starting at 0):
+Pokud omit values, they auto-increment from the previous value (starting at 0):
 
 ```c
 enum EWeaponMode
@@ -63,9 +67,9 @@ enum EWeaponMode
 };
 ```
 
-### Dědičnost výčtů
+### Enum Inheritance
 
-Enums can inherit from other enums. Values continue from the last parent value:
+Enums can inherit from jiný enums. Values continue from the last parent value:
 
 ```c
 enum EBaseColor
@@ -90,13 +94,13 @@ int c = EExtendedColor.RED;      // 0 — inherited from EBaseColor
 int d = EExtendedColor.YELLOW;   // 3 — defined in EExtendedColor
 ```
 
-> **Poznámka:** Enum inheritance is useful for extending vanilla enums in modded code without changing the original.
+> **Poznámka:** Enum inheritance is užitečný for extending vanilla enums in modded code without changing the original.
 
 ---
 
-## Použití výčtů
+## Using Enums
 
-Enums act as `int` — you can assign them to `int` variables, compare them, and use them in switch statements:
+Enums act as `int` — můžete assign them to `int` variables, compare them, and use them in switch statements:
 
 ```c
 EDamageState state = EDamageState.WORN;
@@ -134,17 +138,17 @@ int stateInt = state;  // 1
 EDamageState fromInt = 99;  // No error, even though 99 is not a valid enum value
 ```
 
-> **Varování:** Enforce Script does **not** validate enum assignments. Assigning an out-of-range integer to an enum variable compiles and runs without error.
+> **Varování:** Enforce Script does **not** platnýate enum assignments. Assigning an out-of-range integer to an enum variable compiles and runs without error.
 
 ---
 
-## Reflexe výčtů
+## Enum Reflection
 
-Enforce Script provides built-in functions to convert between enum values and strings.
+Enforce Script provides vestavěný functions to convert mezi enum values and strings.
 
 ### typename.EnumToString
 
-Convert an enum value to its name as a string:
+Convert an enum value to its name as řetězec:
 
 ```c
 EDamageState state = EDamageState.DAMAGED;
@@ -164,7 +168,7 @@ void LogDamageState(EntityAI item, EDamageState state)
 
 ### typename.StringToEnum
 
-Convert a string back to an enum value:
+Convert řetězec back to an enum value:
 
 ```c
 int value;
@@ -187,9 +191,9 @@ if (typename.StringToEnum(EWeaponMode, configValue, modeInt))
 
 ---
 
-## Vzor bitových příznaků
+## Bitflags Pattern
 
-Enums with power-of-2 values create bitflags — multiple options combined in a single integer:
+Enums with power-of-2 values create bitflags — více options combined in a jeden integer:
 
 ```c
 enum ESpawnFlags
@@ -228,7 +232,7 @@ DayZ uses this pattern extensively for object creation flags (`ECE_PLACE_ON_SURF
 
 ## Konstanty
 
-Use `const` to declare immutable values. Constants must be initialized at declaration.
+Use `const` to declare immutable values. Constants musí být initialized at declaration.
 
 ```c
 // Integer constants
@@ -245,7 +249,7 @@ const string CONFIG_PATH = "$profile:MyMod/config.json";
 const string LOG_PREFIX = "[MyMod] ";
 ```
 
-Constants can be used as switch case values and array sizes:
+Constants lze použít as switch case values and array sizes:
 
 ```c
 // Array with const size
@@ -275,7 +279,7 @@ switch (command)
 
 ---
 
-## Direktivy preprocesoru
+## Preprocessor Directives
 
 The Enforce Script preprocessor runs before compilation, enabling conditional code inclusion. It works similarly to C/C++ preprocessor but with fewer features.
 
@@ -305,7 +309,7 @@ Conditionally include code based on whether a symbol is defined:
 
 ### #define
 
-Define your own symbols (no value — just existence):
+Define your own symbols (no value — jen existence):
 
 ```c
 #define MY_MOD_DEBUG
@@ -315,17 +319,17 @@ Define your own symbols (no value — just existence):
 #endif
 ```
 
-> **Poznámka:** Enforce Script `#define` only creates existence flags. It does **not** support macro substitution (no `#define MAX_HP 100` — use `const` instead).
+> **Poznámka:** Enforce Script `#define` pouze creates existence flags. It does **not** support macro substitution (no `#define MAX_HP 100` — use `const` místo toho).
 
-### Běžné definice enginu
+### Běžné Engine Defines
 
-DayZ provides these built-in defines based on build type and platform:
+DayZ provides these vestavěný defines based on build type and platform:
 
-| Definice | Kdy k dispozici | Použití |
+| Define | When Available | Use For |
 |--------|---------------|---------|
 | `SERVER` | Running on dedicated server | Server-only logic |
 | `DEVELOPER` | Developer build of DayZ | Dev-only features |
-| `DIAG_DEVELOPER` | Diagnostic build | Diagnostic menus, debug tools |
+| `DIAG_DEVELOPER` | Diagnostic build | Diagnostic menus, debug přílišls |
 | `PLATFORM_WINDOWS` | Windows platform | Platform-specific paths |
 | `PLATFORM_XBOX` | Xbox platform | Console-specific UI |
 | `PLATFORM_PS4` | PlayStation platform | Console-specific logic |
@@ -348,39 +352,39 @@ void InitPlatform()
 }
 ```
 
-### Vlastní definice přes config.cpp
+### Custom Defines via config.cpp
 
-Mods can define their own symbols in `config.cpp` using the `defines[]` array. These are available to all scripts loaded after this mod:
+Mods can define their own symbols in `config.cpp` using the `defines[]` array. These are dostupný to all scripts loaded after this mod:
 
 ```cpp
 class CfgMods
 {
-    class MyMissions
+    class MyMod_MissionSystem
     {
         // ...
-        defines[] = { "MYMOD_MISSIONS" };
+        defines[] = { "MY_MISSIONS_LOADED" };
         // ...
     };
 };
 ```
 
-Now other mods can detect whether MyMissions is loaded:
+Now jiný mods can detect whether your missions mod is loaded:
 
 ```c
-#ifdef MYMOD_MISSIONS
-    // MyMissions is loaded — use its API
-    MissionManager.Start();
+#ifdef MY_MISSIONS_LOADED
+    // Missions mod is loaded — use its API
+    MyMissionManager.Start();
 #else
-    // MyMissions is not loaded — skip or use fallback
-    Print("Missions mod not detected");
+    // Missions mod is not loaded — skip or use fallback
+    Print("Mission system not detected");
 #endif
 ```
 
 ---
 
-## Real-World Examples
+## Příklady z praxe
 
-### Kód specifický pro platformu
+### Platform-Specific Code
 
 ```c
 string GetSavePath()
@@ -393,9 +397,9 @@ string GetSavePath()
 }
 ```
 
-### Volitelné závislosti modů
+### Optional Mod Dependencies
 
-This is the standard pattern for mods that optionally integrate with other mods:
+Toto je standard pattern for mods that volitelnýly integrate with jiný mods:
 
 ```c
 class MyModManager
@@ -409,8 +413,8 @@ class MyModManager
         RegisterRPCs();
 
         // Optional integration with MyFramework
-        #ifdef MYMOD_CORE
-            MyLog.Info("MyMod", "MyFramework detected — using unified logging");
+        #ifdef MY_FRAMEWORK
+            Print("[MyMod] Framework detected — using unified logging");
             RegisterWithCore();
         #endif
 
@@ -422,7 +426,7 @@ class MyModManager
 }
 ```
 
-### Diagnostika pouze pro ladění
+### Debug-Only Diagnostics
 
 ```c
 void ProcessAI(DayZInfected zombie)
@@ -447,7 +451,7 @@ void ProcessAI(DayZInfected zombie)
 }
 ```
 
-### Logika server vs. klient
+### Server vs Client Logic
 
 ```c
 class MissionHandler
@@ -470,9 +474,42 @@ class MissionHandler
 
 ---
 
-## Common Mistakes
+## Osvědčené postupy
 
-### 1. Using enums as validated types
+- Přidejte a `COUNT` sentinel value as the last enum entry to easily iterate or platnýate ranges (e.g., `for (int i = 0; i < EMode.COUNT; i++)`).
+- Use power-of-2 values for bitflag enums and combine them with `|`; test with `&`; remove with `& ~FLAG`.
+- Use `const` místo `#define` for numeric constants -- Enforce Script `#define` pouze creates existence flags, not value macros.
+- Define a `defines[]` array in your mod's `config.cpp` to expose cross-mod detection symbols (e.g., `"STARDZ_CORE"`).
+- Vždy platnýate enum values loaded from externí data (configs, RPCs) -- Enforce Script accepts jakýkoli `int` as an enum with no range check.
+
+---
+
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| `#ifdef` for volitelný mod integration | Expansion / COT | Checks `#ifdef JM_CF` or `#ifdef EXPANSIONMOD` before calling cross-mod APIs |
+| Bitflag enums for spawn options | Vanilla DayZ | `ECE_PLACE_ON_SURFACE`, `ECE_CREATEPHYSICS` etc. combined with `\|` for `CreateObjectEx` |
+| `typename.EnumToString` for logging | Expansion / Dabs | Damage states and dokoncet types are logged as readable strings místo raw ints |
+| `defines[]` in config.cpp | StarDZ Core / Expansion | Each mod declares its own symbol so jiný mods can detect it with `#ifdef` |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| Enum assignment platnýation | Expect compiler to reject neplatný values | `EDamageState state = 999` compiles fine -- no range checking whatsoever |
+| `#define MAX_HP 100` | Works like C/C++ macro | Enforce Script `#define` creates pouze existence flags; use `const int` for values |
+| `switch` case stacking | Multiple cases sharing one handler | No fall-through in Enforce Script -- každý `case` is nezávislý; use `if`/`\|\|` místo toho |
+
+---
+
+## Časté chyby
+
+### 1. Using enums as platnýated types
 
 ```c
 // PROBLEM — no validation, any int is accepted
@@ -498,12 +535,12 @@ const int MAX_HEALTH = 100;
 int hp = MAX_HEALTH;
 ```
 
-### 3. Nesting #ifdef incorrectly
+### 3. Nesting #ifdef insprávně
 
 ```c
 // CORRECT — nested ifdefs are fine
 #ifdef SERVER
-    #ifdef MYMOD_CORE
+    #ifdef MY_FRAMEWORK
         MyLog.Info("MyMod", "Server + Core");
     #endif
 #endif
@@ -529,7 +566,7 @@ switch (state)
 }
 ```
 
-If you need multiple cases to share logic, use if/else:
+If potřebujete více cases to share logic, use if/else:
 
 ```c
 if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
@@ -540,11 +577,11 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ---
 
-## Summary
+## Shrnutí
 
 ### Enums
 
-| Funkce | Syntaxe |
+| Feature | Syntax |
 |---------|--------|
 | Declare | `enum EName { A = 0, B = 1 };` |
 | Implicit | `enum EName { A, B, C };` (0, 1, 2) |
@@ -556,7 +593,7 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ### Preprocessor
 
-| Direktiva | Účel |
+| Directive | Purpose |
 |-----------|---------|
 | `#ifdef SYMBOL` | Compile if symbol exists |
 | `#ifndef SYMBOL` | Compile if symbol does NOT exist |
@@ -566,7 +603,7 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ### Key Defines
 
-| Definice | Význam |
+| Define | Meaning |
 |--------|---------|
 | `SERVER` | Dedicated server |
 | `DEVELOPER` | Developer build |
@@ -576,8 +613,8 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ---
 
-## Navigation
+## Navigace
 
-| Předchozí | Up | Next |
+| Previous | Up | Next |
 |----------|----|------|
 | [1.9 Casting & Reflection](09-casting-reflection.md) | [Part 1: Enforce Script](../README.md) | [1.11 Error Handling](11-error-handling.md) |

@@ -1,6 +1,10 @@
-# Chapter 8.8: Building a HUD Overlay
+# Capítulo 8.8: Building a HUD Overlay
 
-[Home](../../README.md) | [<< Previous: Publishing to the Steam Workshop](07-publishing-workshop.md) | **Building a HUD Overlay** | [Next: Professional Mod Template >>](09-professional-template.md)
+[Inicio](../../README.md) | [<< Anterior: Publishing to the Steam Workshop](07-publishing-workshop.md) | **Building a HUD Overlay** | [Siguiente: Professional Mod Template >>](09-professional-template.md)
+
+---
+
+> **Resumen:** This tutorial walks you through building a custom HUD overlay that displays server information in the top-right corner of the screen. You will create a layout file, write a controller class, hook into the mission lifecycle, request data from the server via RPC, add a toggle keybind, and polish the result with fade animations and smart visibility. By the end, you will have a non-intrusive Server Info HUD showing the server name, player count, and current in-game time -- plus a solid understanding of how HUD overlays work in DayZ.
 
 ---
 
@@ -40,7 +44,7 @@ When loaded, you will see a dark semi-transparent rectangle in the top-right are
 
 ---
 
-## Prerequisites
+## Requisitos Previos
 
 - A working mod structure (complete [Chapter 8.1](01-first-mod.md) first)
 - Basic understanding of Enforce Script syntax
@@ -166,7 +170,7 @@ Layout files (`.layout`) define the widget hierarchy in XML. DayZ's GUI system u
 
 ### Key Layout Concepts
 
-| Attribute | Significado |
+| Atributo | Meaning |
 |-----------|---------|
 | `halign="2"` | Horizontal alignment: **right**. The widget anchors to the right edge of its parent. |
 | `valign="0"` | Vertical alignment: **top**. |
@@ -642,7 +646,7 @@ DayZ uses `inputs.xml` to register custom key actions. The file must be placed i
 </modded_inputs>
 ```
 
-| Element | Proposito |
+| Elemento | Propósito |
 |---------|---------|
 | `<actions>` | Declares the input action by name. `loc` is the display string shown in the keybinding options menu. |
 | `<preset>` | Assigns the default key. `kF7` maps to the F7 key. |
@@ -1372,7 +1376,7 @@ protected void RefreshFPS()
 }
 ```
 
-Call `RefreshFPS()` alongside `RefreshTime()` in the update method. Ten en cuenta que `GetDeltaT()` returns the time of the current frame, so the FPS value will fluctuate. For a smoother display, average over several frames:
+Call `RefreshFPS()` alongside `RefreshTime()` in the update method. Note that `GetDeltaT()` returns the time of the current frame, so the FPS value will fluctuate. For a smoother display, average over several frames:
 
 ```c
 protected float m_FPSAccum;
@@ -1491,7 +1495,7 @@ class DraggableHUD : ScriptedWidgetEventHandler
 };
 ```
 
-Nota: for dragging to work, the widget must have `SetHandler(this)` called on it so the event handler receives events. Also, the cursor must be visible, which limits draggable HUDs to situations where a menu or edit mode is active.
+Note: for dragging to work, the widget must have `SetHandler(this)` called on it so the event handler receives events. Also, the cursor must be visible, which limits draggable HUDs to situations where a menu or edit mode is active.
 
 ---
 
@@ -1568,11 +1572,11 @@ The layout path in `CreateWidgets()` is relative to the game's search paths. If 
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 Now that you have a working HUD overlay, consider these progressions:
 
-1. **Save user preferences** -- Store whether the HUD is visible in a local JSON file so the toggle state persists across sessions. Ver [Capitulo 4.5: Player Data](../04-scripting-guide/05-persistence.md).
+1. **Save user preferences** -- Store whether the HUD is visible in a local JSON file so the toggle state persists across sessions. 
 2. **Add server-side configuration** -- Let server admins enable/disable the HUD or choose which fields to show via a JSON config file.
 3. **Build an admin overlay** -- Expand the HUD to show admin-only information (server performance, entity count, restart timer) using permission checks.
 4. **Create a compass HUD** -- Use `GetGame().GetCurrentCameraDirection()` to calculate heading and display a compass bar at the top of the screen.
@@ -1580,7 +1584,7 @@ Now that you have a working HUD overlay, consider these progressions:
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Throttle `OnUpdate` to 1-second intervals minimum.** Use a timer accumulator to avoid running expensive operations (RPC requests, text formatting) 60+ times per second. Only per-frame visuals like FPS counters should update every frame.
 - **Hide the HUD when inventory or any menu is open.** Check `GetGame().GetUIManager().GetMenu()` on each update and suppress your overlay. Overlapping UI elements confuse players and block interaction.
@@ -1590,9 +1594,9 @@ Now that you have a working HUD overlay, consider these progressions:
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
-| Concepto | Teoria | Realidad |
+| Concepto | Teoría | Realidad |
 |---------|--------|---------|
 | `OnUpdate(float timeslice)` | Called once per frame with the frame delta time | On a 144 FPS client, this fires 144 times per second. Sending an RPC each call creates 144 network packets/second per player. Always accumulate `timeslice` and act only when the sum exceeds your interval. |
 | `CreateWidgets()` layout path | Loads the layout from the path you provide | The path is relative to the PBO prefix, not the file system. If your PBO prefix does not match the path string, `CreateWidgets` silently returns NULL with no error in the log. |
@@ -1610,4 +1614,4 @@ In this tutorial you learned:
 - How to request server data via RPC and display it on the client
 - How to register a custom keybind via `inputs.xml` and toggle HUD visibility with fade animations
 
-**Previous:** [Chapter 8.7: Publishing to Steam Workshop](07-publishing-workshop.md)
+**Anterior:** [Chapter 8.7: Publishing to Steam Workshop](07-publishing-workshop.md)

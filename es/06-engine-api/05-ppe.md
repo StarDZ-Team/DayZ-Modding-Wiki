@@ -1,16 +1,16 @@
-# Chapter 6.5: Post-Process Effects (PPE)
+# Capítulo 6.5: Efectos de Post-Procesado (PPE)
 
-[Home](../../README.md) | [<< Previous: Cameras](04-cameras.md) | **Post-Process Effects** | [Next: Notifications >>](06-notifications.md)
+[Inicio](../../README.md) | [<< Anterior: Cameras](04-cameras.md) | **Post-Process Effects** | [Siguiente: Notifications >>](06-notifications.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ's Post-Process Effects (PPE) system controls visual effects applied after scene rendering: blur, color grading, vignette, chromatic aberration, night vision, and more. The system is built around `PPERequester` classes that can request specific visual effects. Multiple requesters can be active simultaneously, and the engine blends their contributions. This chapter covers how to use the PPE system in mods.
 
 ---
 
-## Architecture Vision General
+## Descripción General de la Arquitectura
 
 ```
 PPEManager
@@ -43,7 +43,7 @@ PPEManager GetPPEManager();
 
 ## PPERequesterBank
 
-**File:** `3_Game/PPE/pperequesterbank.c`
+**Archivo:** `3_Game/PPE/pperequesterbank.c`
 
 A static registry that holds instances of all PPE requesters. Access specific requesters by their constant index.
 
@@ -56,7 +56,7 @@ PPERequester req = PPERequesterBank.GetRequester(PPERequesterBank.REQ_INVENTORYB
 
 ### Common Requester Constants
 
-| Constante | Efecto |
+| Constante | Effect |
 |----------|--------|
 | `REQ_INVENTORYBLUR` | Gaussian blur when inventory is open |
 | `REQ_MENUEFFECTS` | Menu background blur |
@@ -314,4 +314,22 @@ Higher numbers take priority. Use `PPEManager.L_LAST` to force your effect to ov
 
 ---
 
-[<< Anterior: Cameras](04-cameras.md) | **Efectos de Post-Procesado** | [Siguiente: Notifications >>](06-notifications.md)
+## Mejores Prácticas
+
+- **Always call `Stop()` to clean up your requester.** Failing to stop a PPE requester leaves its visual effect permanently active, even after the triggering condition ends.
+- **Use appropriate priority layers.** Gameplay effects should use `L_3_EFFECTS` or higher. Using `L_LAST` (100) overrides everything including vanilla unconsciousness and death effects, which can break the player experience.
+- **Prefer built-in requesters over custom ones.** The `PPERequesterBank` already contains requesters for blur, desaturation, vignette, and grain. Reuse them with adjusted parameters before creating a custom requester class.
+- **Test PPE effects under different lighting conditions.** Vignette and desaturation look drastically different at night vs daytime. Verify your effect reads well in both extremes.
+- **Avoid stacking multiple high-intensity blur effects.** Multiple active blur requesters compound, potentially rendering the screen unreadable. Check `IsActiveRequester()` before starting additional effects.
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Multiple mods can activate PPE requesters simultaneously. The engine blends them using priority layers and operators. Conflicts occur when two mods use the same priority level with `PPOperators.SET` on the same parameter -- the last to write wins.
+- **Performance:** PPE effects are GPU-bound post-processing passes. Enabling many simultaneous effects (blur + grain + chromatic aberration + vignette) can reduce frame rate on lower-end GPUs. Keep active effects minimal.
+- **Server/Client:** PPE is entirely client-side rendering. The server has no knowledge of post-process effects. Never condition server logic on PPE state.
+
+---
+
+[<< Anterior: Cameras](04-cameras.md) | **Post-Process Effects** | [Siguiente: Notifications >>](06-notifications.md)

@@ -1,10 +1,10 @@
-# Chapter 4.4: Audio (.ogg, .wss)
+# Capítulo 4.4: Audio (.ogg, .wss)
 
-[Home](../../README.md) | [<< Previous: Materials](03-materials.md) | **Audio** | [Next: DayZ Tools Workflow >>](05-dayz-tools.md)
+[Inicio](../../README.md) | [<< Anterior: Materials](03-materials.md) | **Audio** | [Siguiente: DayZ Tools Workflow >>](05-dayz-tools.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Sound design is one of the most immersive aspects of DayZ modding. From the crack of a rifle to the ambient wind in a forest, audio brings the game world to life. DayZ uses **OGG Vorbis** as its primary audio format and configures sound playback through a layered system of **CfgSoundShaders** and **CfgSoundSets** defined in `config.cpp`. Understanding this pipeline -- from raw audio file to spatialized in-game sound -- is essential for any mod that introduces custom weapons, vehicles, ambient effects, or UI feedback.
 
@@ -27,7 +27,7 @@ This chapter covers audio formats, the config-driven sound system, 3D positional
 
 ---
 
-## Formatos de Audio
+## Audio Formats
 
 ### OGG Vorbis (Primary Format)
 
@@ -107,7 +107,7 @@ class CfgSoundShaders
 
 #### SoundShader Properties
 
-| Propiedad | Tipo | Descripcion |
+| Propiedad | Tipo | Descripción |
 |----------|------|-------------|
 | `samples[]` | array | List of `{path, weight}` pairs. Path excludes the file extension. |
 | `volume` | float | Base volume multiplier (0.0 to 1.0). |
@@ -115,7 +115,7 @@ class CfgSoundShaders
 | `rangeCurve[]` | array | Array of `{distance, volume}` points defining attenuation over distance. |
 | `frequency` | float | Playback speed multiplier. 1.0 = normal, 0.5 = half speed (lower pitch), 2.0 = double speed (higher pitch). |
 
-> **Important:** The `samples[]` path does NOT include the file extension. The engine appends `.ogg` (or `.wss`) automatically based on what it finds on disk.
+> **Importante:** The `samples[]` path does NOT include the file extension. The engine appends `.ogg` (or `.wss`) automatically based on what it finds on disk.
 
 ### CfgSoundSets
 
@@ -139,7 +139,7 @@ class CfgSoundSets
 
 #### SoundSet Properties
 
-| Propiedad | Tipo | Descripcion |
+| Propiedad | Tipo | Descripción |
 |----------|------|-------------|
 | `soundShaders[]` | array | List of SoundShader class names to combine. |
 | `volumeFactor` | float | Additional volume multiplier applied on top of shader volume. |
@@ -155,11 +155,11 @@ class CfgSoundSets
 
 ---
 
-## Categorias de Sonido
+## Sound Categories
 
 DayZ organizes sounds into categories that affect how they interact with the game's audio mixing system.
 
-### Sonidos de Armas
+### Weapon Sounds
 
 Weapon sounds are the most complex audio in DayZ, typically involving multiple SoundSets for different aspects of a single gunshot:
 
@@ -226,7 +226,7 @@ class CfgSoundSets
 };
 ```
 
-### Sonidos Ambientales
+### Ambient Sounds
 
 Environmental audio for atmosphere:
 
@@ -247,7 +247,7 @@ class MyMod_Wind_SoundSet
 };
 ```
 
-### Sonidos de UI
+### UI Sounds
 
 Interface feedback sounds (button clicks, notifications):
 
@@ -268,7 +268,7 @@ class MyMod_ButtonClick_SoundSet
 };
 ```
 
-### Sonidos de Vehiculos
+### Vehicle Sounds
 
 Vehicles use complex sound configurations with multiple components:
 
@@ -278,7 +278,7 @@ Vehicles use complex sound configurations with multiple components:
 - **Horn** -- triggered, looping while held
 - **Crash** -- one-shot on collision
 
-### Sonidos de Personaje
+### Character Sounds
 
 Player-related sounds include:
 
@@ -382,7 +382,7 @@ rangeCurve[] = {{0, 1.0}, {50, 0.7}, {100, 0.4}, {200, 0.0}};
 
 ---
 
-## Sonidos en Bucle
+## Looping Sounds
 
 Looping sounds repeat continuously until explicitly stopped. They are used for engines, ambient atmosphere, alarms, and any sustained audio.
 
@@ -558,7 +558,7 @@ Audacity is the recommended tool for DayZ audio production:
 
 ### Other Useful Tools
 
-| Herramienta | Proposito | Cost |
+| Herramienta | Propósito | Cost |
 |------|---------|------|
 | **Audacity** | General audio editing, format conversion | Free |
 | **Reaper** | Professional DAW, advanced editing | $60 (personal license) |
@@ -633,7 +633,7 @@ frequencyRandomizer = 0.05;    // +/- 5% pitch variation
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Always export 3D sounds as mono OGG.** This is the single most important rule. Stereo files will not spatialize.
 
@@ -653,7 +653,26 @@ frequencyRandomizer = 0.05;    // +/- 5% pitch variation
 
 ---
 
-## Navegacion
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Custom notification sounds via SoundSets | Expansion (Notification module) | Defines multiple `CfgSoundSets` for different notification types (success, warning, error) with `spatial = 0` |
+| UI click sounds with cached playback | VPP Admin Tools | Uses `SEffectManager.PlaySoundCachedParams()` for button clicks to avoid re-parsing config each time |
+| Multi-layer weapon audio (shot + tail + crack) | Community weapon packs (RFCP, MuchStuffPack) | Each weapon defines 3-5 separate SoundSets per fire event for close shot, distant rumble, supersonic crack |
+| `frequencyRandomizer` for footstep variation | Vanilla DayZ | Uses 0.05-0.08 pitch randomization on footstep SoundSets to prevent robotic repetition |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** SoundShader and SoundSet class names are global. Two mods defining the same class name will conflict (last loaded wins). Always prefix names with your mod identifier (e.g., `MyMod_Shot_SoundShader`).
+- **Performance:** OGG files are decompressed at runtime. Mods with hundreds of unique audio files increase memory usage. Keep individual files under 500 KB and reuse samples across variants.
+- **Version:** DayZ's audio system (CfgSoundShaders/CfgSoundSets) has been stable since 1.0. The `sound3DProcessingType` and `volumeCurve` named presets were added in later updates but are backward-compatible.
+
+---
+
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|

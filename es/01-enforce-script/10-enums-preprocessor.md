@@ -1,6 +1,10 @@
-# Chapter 1.10: Enums & Preprocessor
+# Capítulo 1.10: Enums y Preprocesador
 
-[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
+[Inicio](../../README.md) | [<< Anterior: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Siguiente: Error Handling >>](11-error-handling.md)
+
+---
+
+> **Goal:** Understand enum declarations, enum reflection tools, bitflag patterns, constants, and the preprocessor system for conditional compilation.
 
 ---
 
@@ -90,7 +94,7 @@ int c = EExtendedColor.RED;      // 0 — inherited from EBaseColor
 int d = EExtendedColor.YELLOW;   // 3 — defined in EExtendedColor
 ```
 
-> **Note:** Enum inheritance is useful for extending vanilla enums in modded code without changing the original.
+> **Nota:** Enum inheritance is useful for extending vanilla enums in modded code without changing the original.
 
 ---
 
@@ -134,7 +138,7 @@ int stateInt = state;  // 1
 EDamageState fromInt = 99;  // No error, even though 99 is not a valid enum value
 ```
 
-> **Warning:** Enforce Script does **not** validate enum assignments. Assigning an out-of-range integer to an enum variable compiles and runs without error.
+> **Advertencia:** Enforce Script does **not** validate enum assignments. Assigning an out-of-range integer to an enum variable compiles and runs without error.
 
 ---
 
@@ -271,7 +275,7 @@ switch (command)
 }
 ```
 
-> **Note:** There is no `const` for reference types (objects). You cannot make an object reference immutable.
+> **Nota:** There is no `const` for reference types (objects). You cannot make an object reference immutable.
 
 ---
 
@@ -315,13 +319,13 @@ Define your own symbols (no value — just existence):
 #endif
 ```
 
-> **Note:** Enforce Script `#define` only creates existence flags. It does **not** support macro substitution (no `#define MAX_HP 100` — use `const` instead).
+> **Nota:** Enforce Script `#define` only creates existence flags. It does **not** support macro substitution (no `#define MAX_HP 100` — use `const` instead).
 
 ### Common Engine Defines
 
 DayZ provides these built-in defines based on build type and platform:
 
-| Define | Cuando Disponible | Usar Para |
+| Define | When Available | Use For |
 |--------|---------------|---------|
 | `SERVER` | Running on dedicated server | Server-only logic |
 | `DEVELOPER` | Developer build of DayZ | Dev-only features |
@@ -355,30 +359,30 @@ Mods can define their own symbols in `config.cpp` using the `defines[]` array. T
 ```cpp
 class CfgMods
 {
-    class MyMissions
+    class MyMod_MissionSystem
     {
         // ...
-        defines[] = { "MYMOD_MISSIONS" };
+        defines[] = { "MY_MISSIONS_LOADED" };
         // ...
     };
 };
 ```
 
-Now other mods can detect whether MyMissions is loaded:
+Now other mods can detect whether your missions mod is loaded:
 
 ```c
-#ifdef MYMOD_MISSIONS
-    // MyMissions is loaded — use its API
-    MissionManager.Start();
+#ifdef MY_MISSIONS_LOADED
+    // Missions mod is loaded — use its API
+    MyMissionManager.Start();
 #else
-    // MyMissions is not loaded — skip or use fallback
-    Print("Missions mod not detected");
+    // Missions mod is not loaded — skip or use fallback
+    Print("Mission system not detected");
 #endif
 ```
 
 ---
 
-## Ejemplos Practicos
+## Real-World Examples
 
 ### Platform-Specific Code
 
@@ -409,8 +413,8 @@ class MyModManager
         RegisterRPCs();
 
         // Optional integration with MyFramework
-        #ifdef MYMOD_CORE
-            MyLog.Info("MyMod", "MyFramework detected — using unified logging");
+        #ifdef MY_FRAMEWORK
+            Print("[MyMod] Framework detected — using unified logging");
             RegisterWithCore();
         #endif
 
@@ -470,6 +474,39 @@ class MissionHandler
 
 ---
 
+## Mejores Prácticas
+
+- Add a `COUNT` sentinel value as the last enum entry to easily iterate or validate ranges (e.g., `for (int i = 0; i < EMode.COUNT; i++)`).
+- Use power-of-2 values for bitflag enums and combine them with `|`; test with `&`; remove with `& ~FLAG`.
+- Use `const` instead of `#define` for numeric constants -- Enforce Script `#define` only creates existence flags, not value macros.
+- Define a `defines[]` array in your mod's `config.cpp` to expose cross-mod detection symbols (e.g., `"STARDZ_CORE"`).
+- Always validate enum values loaded from external data (configs, RPCs) -- Enforce Script accepts any `int` as an enum with no range check.
+
+---
+
+## Observado en Mods Reales
+
+> Patrones confirmados estudiando código fuente de mods profesionales de DayZ.
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| `#ifdef` for optional mod integration | Expansion / COT | Checks `#ifdef JM_CF` or `#ifdef EXPANSIONMOD` before calling cross-mod APIs |
+| Bitflag enums for spawn options | Vanilla DayZ | `ECE_PLACE_ON_SURFACE`, `ECE_CREATEPHYSICS` etc. combined with `\|` for `CreateObjectEx` |
+| `typename.EnumToString` for logging | Expansion / Dabs | Damage states and event types are logged as readable strings instead of raw ints |
+| `defines[]` in config.cpp | StarDZ Core / Expansion | Each mod declares its own symbol so other mods can detect it with `#ifdef` |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| Enum assignment validation | Expect compiler to reject invalid values | `EDamageState state = 999` compiles fine -- no range checking whatsoever |
+| `#define MAX_HP 100` | Works like C/C++ macro | Enforce Script `#define` creates only existence flags; use `const int` for values |
+| `switch` case stacking | Multiple cases sharing one handler | No fall-through in Enforce Script -- each `case` is independent; use `if`/`\|\|` instead |
+
+---
+
 ## Errores Comunes
 
 ### 1. Using enums as validated types
@@ -503,7 +540,7 @@ int hp = MAX_HEALTH;
 ```c
 // CORRECT — nested ifdefs are fine
 #ifdef SERVER
-    #ifdef MYMOD_CORE
+    #ifdef MY_FRAMEWORK
         MyLog.Info("MyMod", "Server + Core");
     #endif
 #endif
@@ -544,7 +581,7 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ### Enums
 
-| Caracteristica | Sintaxis |
+| Característica | Sintaxis |
 |---------|--------|
 | Declare | `enum EName { A = 0, B = 1 };` |
 | Implicit | `enum EName { A, B, C };` (0, 1, 2) |
@@ -556,7 +593,7 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ### Preprocessor
 
-| Directiva | Proposito |
+| Directive | Propósito |
 |-----------|---------|
 | `#ifdef SYMBOL` | Compile if symbol exists |
 | `#ifndef SYMBOL` | Compile if symbol does NOT exist |
@@ -566,7 +603,7 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ### Key Defines
 
-| Define | Significado |
+| Define | Meaning |
 |--------|---------|
 | `SERVER` | Dedicated server |
 | `DEVELOPER` | Developer build |
@@ -576,7 +613,7 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ---
 
-## Navegacion
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|

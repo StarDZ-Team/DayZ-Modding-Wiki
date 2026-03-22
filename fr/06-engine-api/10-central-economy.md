@@ -1,23 +1,23 @@
-# Chapter 6.10: Central Economy
+# Chapitre 6.10: Central Economy
 
-[Home](../../README.md) | [<< Previous: Networking & RPC](09-networking.md) | **Central Economy** | [Next: Mission Hooks >>](11-mission-hooks.md)
+[Accueil](../../README.md) | [<< Précédent : Networking & RPC](09-networking.md) | **Central Economy** | [Suivant : Mission Hooks >>](11-mission-hooks.md)
 
 ---
 
 ## Introduction
 
-The Central Economy (CE) is DayZ's server-side system for managing all spawnable entities in the world: loot, vehicles, infected, animals, and dynamic events. It is configured entirely through XML files in the mission folder. While the CE itself is an engine system (not directly scriptable), understanding its configuration files is essential for any server mod. Ce chapitre couvre all CE configuration files, their structure, key parameters, and how they interact.
+The Central Economy (CE) is DayZ's côté serveur system for managing all apparitionable entities in le monde: loot, vehicles, infected, animals, and dynamic events. It is configured entirely through XML files in the mission folder. While the CE itself is an engine system (not directly scriptable), understanding its configuration files is essential for any server mod. Ce chapitre couvre all CE configuration files, their structure, key parameters, and how they interact.
 
 ---
 
 ## How the CE Works
 
-1. The server reads `types.xml` to learn every item's **nominal** (target count) and **min** (minimum before restock).
+1. Le serveur reads `types.xml` to learn every item's **nominal** (target count) and **min** (minimum before restock).
 2. Items are assigned **usage flags** (e.g., `Military`, `Town`) that map to building/location types.
 3. Items are assigned **value flags** (e.g., `Tier1` through `Tier4`) that restrict them to map zones.
-4. The CE periodically scans the world, counts existing items, and spawns new ones when counts fall below `min`.
+4. The CE periodically scans le monde, counts existing items, and apparitions new ones when counts fall below `min`.
 5. Items untouched for their `lifetime` (seconds) are cleaned up.
-6. Dynamic events (`events.xml`) spawn vehicles, helicopter crashes, and infected groups on their own schedule.
+6. Dynamic events (`events.xml`) apparition vehicles, helicopter crashes, and infected groups on their own schedule.
 
 ---
 
@@ -27,22 +27,43 @@ All CE files live in the mission folder (e.g., `dayzOffline.chernarusplus/`).
 
 | File | Purpose |
 |------|---------|
-| `db/types.xml` | Every spawnable item's parameters |
+| `db/types.xml` | Every apparitionable item's parameters |
 | `db/events.xml` | Dynamic event definitions (vehicles, crashes, infected) |
 | `db/globals.xml` | Global CE parameters (timers, limits) |
 | `db/economy.xml` | Subsystem toggle switches |
 | `cfgeconomycore.xml` | Root classes, defaults, CE logging |
-| `cfgspawnabletypes.xml` | Per-item attachment and cargo rules |
+| `cfgapparitionabletypes.xml` | Per-item attachment and cargo rules |
 | `cfgrandompresets.xml` | Random loot preset pools |
-| `cfgeventspawns.xml` | World coordinates for event spawn positions |
+| `cfgeventapparitions.xml` | World coordinates for event apparition positions |
 | `cfglimitsdefinition.xml` | All valid category, usage, and value flag names |
-| `cfgplayerspawnpoints.xml` | Fresh spawn locations |
+| `cfgplayerapparitionpoints.xml` | Fresh apparition locations |
+
+---
+
+## Spawn Cycle
+
+```mermaid
+flowchart TD
+    A[CE Startup] --> B[Load types.xml]
+    B --> C[For each item type]
+    C --> D{Current count < nominal?}
+    D -->|Yes| E{Restock timer elapsed?}
+    E -->|Yes| F[Spawn item at valid position]
+    E -->|No| G[Wait for restock interval]
+    D -->|No| H{Current count > nominal?}
+    H -->|Yes| I[Mark excess for cleanup]
+    H -->|No| J[Item count balanced]
+    F --> K{Lifetime expired?}
+    K -->|Yes| L[Delete item]
+    K -->|No| M[Item persists]
+    L --> C
+```
 
 ---
 
 ## types.xml
 
-The most critical CE file. Every item that can exist in the world must have an entry here.
+The most critical CE file. Every item that can exist in le monde must have an entry here.
 
 ### Structure
 
@@ -68,12 +89,12 @@ The most critical CE file. Every item that can exist in the world must have an e
 
 ### Parameters
 
-| Parameter | Description | Typical Values |
+| Paramètre | Description | Typical Values |
 |-----------|-------------|----------------|
 | `nominal` | Target count on the entire map | 1 - 200 |
-| `lifetime` | Seconds before untouched items despawn | 3600 (1h) - 14400 (4h) |
-| `restock` | Seconds before CE attempts to respawn after item is taken | 0 (immediate) - 1800 |
-| `min` | Minimum count before CE spawns more | Usually `nominal / 2` |
+| `lifetime` | Seconds before untouched items deapparition | 3600 (1h) - 14400 (4h) |
+| `restock` | Seconds before CE attempts to reapparition after item is taken | 0 (immediate) - 1800 |
+| `min` | Minimum count before CE apparitions more | Usually `nominal / 2` |
 | `quantmin` | Minimum quantity % (ammo, liquids); -1 = not applicable | -1, 0 - 100 |
 | `quantmax` | Maximum quantity %; -1 = not applicable | -1, 0 - 100 |
 | `cost` | Priority cost (always 100 in vanilla) | 100 |
@@ -86,18 +107,18 @@ The most critical CE file. Every item that can exist in the world must have an e
 | `count_in_hoarder` | Count items in storage (tents, barrels, buried stashes) |
 | `count_in_map` | Count items on the ground and in buildings |
 | `count_in_player` | Count items on player characters |
-| `crafted` | Item is craftable (CE does not spawn it naturally) |
-| `deloot` | Dynamic event loot (spawned by events, not CE) |
+| `crafted` | Item is craftable (CE does not apparition it naturally) |
+| `deloot` | Dynamic event loot (apparitioned by events, not CE) |
 
 ### Category, Usage, and Value
 
 - **category**: Item category (e.g., `weapons`, `tools`, `food`, `clothes`, `containers`)
-- **usage**: Where the item spawns (e.g., `Military`, `Police`, `Town`, `Village`, `Farm`, `Hunting`, `Coast`)
+- **usage**: Where the item apparitions (e.g., `Military`, `Police`, `Town`, `Village`, `Farm`, `Hunting`, `Coast`)
 - **value**: Map tier restriction (e.g., `Tier1` = coast, `Tier2` = inland, `Tier3` = military, `Tier4` = deep inland)
 
-An item can have multiple `<usage>` and `<value>` tags to spawn in multiple locations and tiers.
+An item can have multiple `<usage>` and `<value>` tags to apparition in multiple locations and tiers.
 
-**Example --- add a custom item to the economy:**
+**Exemple --- add a custom item to the economy:**
 
 ```xml
 <type name="MyCustomRifle">
@@ -160,12 +181,12 @@ Global CE parameters that affect all items.
 |----------|-------------|
 | `AnimalMaxCount` | Maximum animals alive simultaneously |
 | `ZombieMaxCount` | Maximum infected alive simultaneously |
-| `CleanupLifetimeDeadPlayer` | Seconds before dead player body despawns |
-| `CleanupLifetimeDeadInfected` | Seconds before dead zombie despawns |
-| `InitialSpawn` | Number of items to spawn on server startup |
-| `SpawnInitial` | Number of spawn attempts on startup |
-| `LootDamageMin` / `LootDamageMax` | Damage range applied to spawned loot (0-4: Pristine to Ruined) |
-| `RespawnAttempt` | Seconds between respawn checks |
+| `CleanupLifetimeDeadPlayer` | Seconds before dead player body deapparitions |
+| `CleanupLifetimeDeadInfected` | Seconds before dead zombie deapparitions |
+| `InitialSpawn` | Number of items to apparition on server startup |
+| `SpawnInitial` | Number of apparition attempts on startup |
+| `LootDamageMin` / `LootDamageMax` | Damage range applied to apparitioned loot (0-4: Pristine to Ruined) |
+| `ReapparitionAttempt` | Seconds between reapparition checks |
 | `FlagRefreshFrequency` | Territory flag refresh interval (seconds) |
 | `TimeLogin` / `TimeLogout` | Login/logout timer (seconds) |
 
@@ -173,7 +194,7 @@ Global CE parameters that affect all items.
 
 ## events.xml
 
-Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes, and other world events.
+Defines dynamic events: infected apparition zones, vehicle apparitions, helicopter crashes, and other world events.
 
 ### Structure
 
@@ -202,32 +223,32 @@ Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes
 
 ### Event Parameters
 
-| Parameter | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `nominal` | Target number of active events |
 | `min` / `max` | Minimum and maximum active at once |
-| `lifetime` | Seconds before event despawns |
-| `saferadius` | Minimum distance from players when spawning |
+| `lifetime` | Seconds before event deapparitions |
+| `saferadius` | Minimum distance from players when apparition |
 | `distanceradius` | Minimum distance between event instances |
 | `cleanupradius` | Radius for cleanup checks |
-| `position` | `"fixed"` (from cfgeventspawns.xml) or `"player"` (near players) |
+| `position` | `"fixed"` (from cfgeventapparitions.xml) or `"player"` (near players) |
 | `active` | `1` = enabled, `0` = disabled |
 
 ### Children (Event Objects)
 
-Each event can spawn one or more child objects:
+Each event can apparition one or more child objects:
 
-| Attribute | Description |
+| Attribut | Description |
 |-----------|-------------|
-| `type` | Class name of the object to spawn |
+| `type` | Class name of the object to apparition |
 | `min` / `max` | Count range for this child |
-| `lootmin` / `lootmax` | Number of loot items spawned with this child |
+| `lootmin` / `lootmax` | Number of loot items apparitioned with this child |
 
 ---
 
-## cfgspawnabletypes.xml
+## cfgapparitionabletypes.xml
 
-Defines what attachments and cargo spawn with specific items.
+Defines what attachments and cargo apparition with specific items.
 
 ```xml
 <spawnabletypes>
@@ -260,7 +281,7 @@ Defines what attachments and cargo spawn with specific items.
 
 ## cfgrandompresets.xml
 
-Defines reusable loot preset pools referenced by `cfgspawnabletypes.xml`.
+Defines reusable loot preset pools referenced by `cfgapparitionabletypes.xml`.
 
 ```xml
 <randompresets>
@@ -274,7 +295,7 @@ Defines reusable loot preset pools referenced by `cfgspawnabletypes.xml`.
 </randompresets>
 ```
 
-These presets can be referenced by name in `cfgspawnabletypes.xml`:
+These presets can be referenced by name in `cfgapparitionabletypes.xml`:
 
 ```xml
 <type name="Barrel_Green">
@@ -358,23 +379,23 @@ Custom mods can add new flags here and reference them in their `types.xml` entri
 
 ## ECE Flags in Script
 
-When spawning entities from script, the ECE flags (couvert dans [Chapter 6.1](01-entity-system.md)) determine how the entity interacts with the CE:
+When apparition entities from script, the ECE flags (covered in [Chapter 6.1](01-entity-system.md)) determine how the entity interacts with the CE:
 
 | Flag | CE Behavior |
 |------|-------------|
-| `ECE_NOLIFETIME` | Entity will never despawn (not tracked by CE lifetime) |
+| `ECE_NOLIFETIME` | Entity will never deapparition (not tracked by CE lifetime) |
 | `ECE_DYNAMIC_PERSISTENCY` | Entity becomes persistent only after player interaction |
-| `ECE_EQUIP_ATTACHMENTS` | CE spawns configured attachments from `cfgspawnabletypes.xml` |
-| `ECE_EQUIP_CARGO` | CE spawns configured cargo from `cfgspawnabletypes.xml` |
+| `ECE_EQUIP_ATTACHMENTS` | CE apparitions configured attachments from `cfgapparitionabletypes.xml` |
+| `ECE_EQUIP_CARGO` | CE apparitions configured cargo from `cfgapparitionabletypes.xml` |
 
-**Example --- spawn an item that persists forever:**
+**Exemple --- apparition an item that persists forever:**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_NOLIFETIME;
 Object obj = GetGame().CreateObjectEx("Barrel_Green", pos, flags);
 ```
 
-**Example --- spawn with CE-configured attachments:**
+**Exemple --- apparition with CE-configured attachments:**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_EQUIP_ATTACHMENTS | ECE_EQUIP_CARGO;
@@ -429,12 +450,12 @@ GetGame().SurfaceGetType(x, z, surfaceType);
 
 1. Define the item class in your mod's `config.cpp` under `CfgVehicles`.
 2. Add a `<type>` entry in `types.xml` with nominal, lifetime, usage, and value flags.
-3. Optionally add attachment/cargo rules in `cfgspawnabletypes.xml`.
+3. Optionally add attachment/cargo rules in `cfgapparitionabletypes.xml`.
 4. If using new usage/value flags, define them in `cfglimitsdefinition.xml`.
 
 ### Modifying Existing Items
 
-Edit the `<type>` entry in `types.xml` to change spawn rates, lifetimes, or location restrictions. Changes take effect on server restart.
+Edit the `<type>` entry in `types.xml` to change apparition rates, lifetimes, or location restrictions. Changes take effect on server restart.
 
 ### Disabling Items
 
@@ -450,7 +471,7 @@ Set `nominal` and `min` to `0`:
 
 ### Adding Custom Events
 
-Add a new `<event>` block in `events.xml` and corresponding spawn positions in `cfgeventspawns.xml`:
+Add a new `<event>` block in `events.xml` and corresponding apparition positions in `cfgeventapparitions.xml`:
 
 ```xml
 <!-- events.xml -->
@@ -485,28 +506,46 @@ Add a new `<event>` block in `events.xml` and corresponding spawn positions in `
 
 ---
 
-## Resume
+## Résumé
 
 | File | Purpose | Key Parameters |
 |------|---------|----------------|
-| `types.xml` | Item spawn definitions | `nominal`, `min`, `lifetime`, `usage`, `value` |
+| `types.xml` | Item apparition definitions | `nominal`, `min`, `lifetime`, `usage`, `value` |
 | `globals.xml` | Global CE variables | `ZombieMaxCount`, `AnimalMaxCount`, cleanup timers |
 | `events.xml` | Dynamic events | `nominal`, `lifetime`, `position`, `children` |
-| `cfgspawnabletypes.xml` | Attachment/cargo rules per item | `attachments`, `cargo`, `chance` |
+| `cfgapparitionabletypes.xml` | Attachment/cargo rules per item | `attachments`, `cargo`, `chance` |
 | `cfgrandompresets.xml` | Reusable loot pools | `cargo`/`attachments` presets |
 | `cfgeconomycore.xml` | Root CE configuration | `classes`, `defaults`, CE folder |
 | `cfglimitsdefinition.xml` | Valid flag definitions | `categories`, `usageflags`, `valueflags` |
 
-| Concept | Key Point |
+| Concept | Point clé |
 |---------|-----------|
-| Nominal/Min | CE spawns items when count drops below `min`, targeting `nominal` |
-| Lifetime | Seconds before untouched items despawn |
-| Usage flags | Where items spawn (Military, Town, etc.) |
+| Nominal/Min | CE apparitions items when count drops below `min`, targeting `nominal` |
+| Lifetime | Seconds before untouched items deapparition |
+| Usage flags | Where items apparition (Military, Town, etc.) |
 | Value flags | Map tier restriction (Tier1 = coast through Tier4 = deep inland) |
 | Count flags | Which items count toward nominal (cargo, hoarder, map, player) |
-| Events | Dynamic spawns with their own lifecycle (crashes, vehicles, infected) |
-| ECE flags | `ECE_NOLIFETIME`, `ECE_EQUIP` for script-spawned items |
+| Events | Dynamic apparitions with their own lifecycle (crashes, vehicles, infected) |
+| ECE flags | `ECE_NOLIFETIME`, `ECE_EQUIP` for script-apparitioned items |
 
 ---
 
-[<< Previous: Networking & RPC](09-networking.md) | **Central Economy** | [Accueil](../../README.md)
+## Bonnes pratiques
+
+- **Set `count_in_hoarder="1"` for high-value items.** Without this flag, players can hoard rare weapons in stashes without reducing le monde apparition count, leading to item duplication in practice.
+- **Keep `restock` at 0 for most items.** Non-zero restock values delay reapparition after an item is picked up. Use it only for items that should not immediately reappear (e.g., rare military gear).
+- **Test nominal/min ratios on a live server with players.** Static testing does not reveal real CE behavior. Items interact with player movement patterns, container storage, and cleanup timers in ways that are only visible under real load.
+- **Always define new items in both `config.cpp` and `types.xml`.** A config entry without a types.xml entry means the item will never apparition naturally. A types.xml entry without a config class causes CE errors.
+- **Use `cfgapparitionabletypes.xml` to create weapon variety.** Instead of apparition naked weapons, define attachment presets so players find weapons with random stocks, handguards, and magazines -- this dramatically improves loot quality perception.
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** Multiple mods can add entries to `types.xml`. If two mods define the same `<type name="">`, the last loaded file wins. Use unique class names to avoid collisions. Merge types.xml entries carefully on community servers.
+- **Performance :** High `nominal` values (200+) for many item types strain the CE's apparition loop. The CE runs periodic scans that scale with total tracked entity count. Keep nominals realistic -- 5-20 for weapons, 20-100 for common items.
+- **Serveur/Client :** The CE runs entirely on le serveur. Clients have no visibility into CE state. All XML files are côté serveur only and are not distributed to clients.
+
+---
+
+[Accueil](../../README.md) | [<< Précédent : Networking & RPC](09-networking.md) | **Central Economy** | [Suivant : Mission Hooks >>](11-mission-hooks.md)

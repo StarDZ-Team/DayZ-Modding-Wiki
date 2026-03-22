@@ -1,10 +1,10 @@
-# Chapter 6.22: Admin & Server Management
+# Capítulo 6.22: Admin & Server Management
 
-[Home](../../README.md) | [<< Previous: Zombie & AI System](21-zombie-ai-system.md) | **Admin & Server Management** | [Next: World Systems >>](23-world-systems.md)
+[Inicio](../../README.md) | [<< Anterior: Zombie & AI System](21-zombie-ai-system.md) | **Admin & Server Management** | [Siguiente: World Systems >>](23-world-systems.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Server administration in DayZ covers a broad set of responsibilities: managing connected players, enforcing rules, controlling world state (time, weather), logging events for audit trails, and integrating with persistence systems. Unlike most game engines that provide a built-in admin panel, DayZ offers only low-level scripting APIs. The admin tool ecosystem --- COT, VPP, and custom solutions --- is built entirely on top of these APIs.
 
@@ -94,7 +94,7 @@ class PlayerIdentity : PlayerIdentityBase {}
 
 **Identity ID guidance:**
 
-| Metodo | Retorna | Use For |
+| Método | Retorna | Use For |
 |--------|---------|---------|
 | `GetPlainId()` | Raw Steam64 ID (e.g. `"76561198012345678"`) | Admin lists, Steam profile lookups, display |
 | `GetId()` | BattlEye GUID hash | Database keys, persistent storage, log files |
@@ -219,7 +219,7 @@ if (adm)
 
 The vanilla `PluginAdminLog` class (registered in `4_World/plugins/pluginmanager.c`) wraps `AdminLog()` and provides structured logging for player events:
 
-| Metodo | Logged Event |
+| Método | Logged Event |
 |--------|-------------|
 | `PlayerKilled(player, source)` | Kill with weapon, distance, attacker |
 | `PlayerHitBy(damageResult, ...)` | Hit details: zone, damage, ammo type |
@@ -564,7 +564,7 @@ The `$profile:` path prefix resolves to the server's profile directory (set via 
 
 ### Common Launch Parameters
 
-| Parametro | Proposito |
+| Parámetro | Propósito |
 |-----------|---------|
 | `-config=serverDZ.cfg` | Server configuration file |
 | `-port=2302` | Game port |
@@ -755,7 +755,7 @@ World objects (tents, barrels, buried stashes, vehicles) persist through the Cen
 
 ### Hive Initialization Modes
 
-| Mode | Metodo | Caso de Uso |
+| Mode | Método | Use Case |
 |------|--------|----------|
 | Online | `InitOnline(ceSetup)` | Normal dedicated server with persistence |
 | Offline | `InitOffline()` | Singleplayer / listen server, local storage |
@@ -929,7 +929,7 @@ RCON (Remote Console) is BattlEye's admin interface, separate from script. RCON 
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Always validate permissions server-side.** Client-side checks are cosmetic only. Any RPC handler that performs a privileged action must call a permission check before executing. The client can be modified to skip UI-level checks.
 - **Use `GetPlainId()` for admin UID lists, `GetId()` for persistent data.** `GetPlainId()` returns the Steam64 ID that administrators actually know and use. `GetId()` returns the BattlEye GUID hash, which is what DayZ uses internally for character persistence.
@@ -945,7 +945,7 @@ RCON (Remote Console) is BattlEye's admin interface, separate from script. RCON 
 
 > These patterns were confirmed by studying the source code of professional DayZ admin mods.
 
-| Patron | Mod | File/Location |
+| Patrón | Mod | File/Location |
 |---------|-----|---------------|
 | Deferred kick via `CallLater` + `DisconnectPlayer` with reason RPC | VPP Admin Tools | `5_Mission/missionServer.c` |
 | `GetPermissionsManager().HasPermission()` check before every RPC handler | COT | `5_Mission/CommunityOnlineTools.c` |
@@ -1056,4 +1056,4 @@ FileHandle f = OpenFile("$profile:MyMod/Logs/session.txt", FileMode.WRITE);
 - **PluginAdminLog Conflicts:** If multiple mods override `PluginAdminLog` (e.g., COT adds webhook support), only the last-loaded override is active unless each calls `super` in every overridden method.
 - **RPC ID Collisions:** COT uses CF's string-based RPC routing. VPP uses `GetRPCManager().AddRPC()` with string identifiers. Custom admin mods should avoid using raw integer RPC IDs that may collide with vanilla `ERPCs` values.
 - **Performance Impact:** ESP systems that send frequent player position updates can generate significant network traffic. Both COT and VPP use update timers (typically 1-5 second intervals) rather than per-frame updates. The vanilla `PluginAdminLog.PlayerList()` runs every 300 seconds (5 minutes) to minimize overhead.
-- **Servidor/Cliente:** All admin commands are server-authoritative. Client mods provide UI only. Server-only mods (`-servermod=`) can implement admin logic without distributing scripts to clients, but cannot provide in-game UI.
+- **Server/Client:** All admin commands are server-authoritative. Client mods provide UI only. Server-only mods (`-servermod=`) can implement admin logic without distributing scripts to clients, but cannot provide in-game UI.

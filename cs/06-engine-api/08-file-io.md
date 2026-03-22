@@ -1,12 +1,12 @@
 # Chapter 6.8: File I/O & JSON
 
-[Home](../../README.md) | [<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
+[Domů](../../README.md) | [<< Předchozí: Časovače a CallQueue](07-timers.md) | **Souborové I/O a JSON** | [Další: Síťování a RPC >>](09-networking.md)
 
 ---
 
-## Introduction
+## Úvod
 
-DayZ provides file I/O operations for reading and writing text files, JSON serialization/deserialization, directory management, and file enumeration. All file operations use special path prefixes (`$profile:`, `$saves:`, `$mission:`) rather than absolute filesystem paths. This chapter covers every file operation available in Enforce Script.
+DayZ provides file I/O operations for reading and writing text files, JSON serialization/deserialization, directory management, and file enumeration. All file operations use special path prefixes (`$profile:`, `$saves:`, `$mission:`) spíše než absolute filesystem paths. This chapter covers každý file operation dostupný in Enforce Script.
 
 ---
 
@@ -15,12 +15,12 @@ DayZ provides file I/O operations for reading and writing text files, JSON seria
 | Prefix | Location | Writable |
 |--------|----------|----------|
 | `$profile:` | Server/client profile directory (e.g., `DayZServer/profiles/`) | Yes |
-| `$saves:` | Save directory | Yes |
-| `$mission:` | Current mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`) | Read typically |
+| `$saves:` | Uložte directory | Yes |
+| `$mission:` | Current mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`) | Přečtěte typicky |
 | `$CurrentDir:` | Current working directory | Depends |
-| No prefix | Relative to game root | Read only |
+| No prefix | Relative to game root | Přečtěte pouze |
 
-> **Důležité:** Most file write operations are restricted to `$profile:` and `$saves:`. Attempting to write elsewhere may silently fail.
+> **Important:** Most file write operations are restricted to `$profile:` and `$saves:`. Attempting to write elsewhere may tiše fail.
 
 ---
 
@@ -30,7 +30,7 @@ DayZ provides file I/O operations for reading and writing text files, JSON seria
 proto bool FileExist(string name);
 ```
 
-Returns `true` if the file exists at the given path.
+Returns `true` if soubor exists at the given path.
 
 **Example:**
 
@@ -79,29 +79,29 @@ if (fh != 0)
 }
 ```
 
-> **Critical:** Always call `CloseFile()` when done. Failure to close files can cause data loss and resource leaks.
+> **Critical:** Vždy call `CloseFile()` when done. Failure to close files can cause data loss and resource leaks.
 
 ---
 
 ## Writing Files
 
-### FPrintln (Write Line)
+### FPrintln (Zapište Line)
 
 ```c
 proto void FPrintln(FileHandle file, void var);
 ```
 
-Writes the value followed by a newline character.
+Writes hodnota followed by a novýline character.
 
-### FPrint (Write Without Newline)
+### FPrint (Zapište Bez Newline)
 
 ```c
 proto void FPrint(FileHandle file, void var);
 ```
 
-Writes the value without a trailing newline.
+Writes hodnota without a trailing novýline.
 
-**Example --- write a log file:**
+**Příklad --- write a log file:**
 
 ```c
 void WriteLog(string message)
@@ -123,15 +123,15 @@ void WriteLog(string message)
 
 ## Reading Files
 
-### FGets (Read Line)
+### FGets (Přečtěte Line)
 
 ```c
 proto int FGets(FileHandle file, string var);
 ```
 
-Reads one line from the file into `var`. Returns the number of characters read, or `-1` at end of file.
+Reads one line from soubor into `var`. Returns the number of characters read, or `-1` at end of file.
 
-**Example --- read a file line by line:**
+**Příklad --- read a file line by line:**
 
 ```c
 void ReadConfigFile()
@@ -168,9 +168,9 @@ Reads raw bytes into a buffer. Used for binary data.
 proto native bool MakeDirectory(string name);
 ```
 
-Creates a directory. Returns `true` on success. Creates only the final directory --- parent directories must already exist.
+Creates a directory. Returns `true` on success. Creates pouze the final directory --- parent directories must již exist.
 
-**Example --- ensure directory structure:**
+**Příklad --- ensure directory structure:**
 
 ```c
 void EnsureDirectories()
@@ -244,7 +244,7 @@ enum FindFileFlags
 }
 ```
 
-**Example --- enumerate all JSON files in a directory:**
+**Příklad --- enumerate all JSON files in a directory:**
 
 ```c
 void ListJsonFiles()
@@ -277,9 +277,9 @@ void ListJsonFiles()
 }
 ```
 
-> **Důležité:** `FindFile` returns just the file name, not the full path. You must prepend the directory path yourself when processing the files.
+> **Important:** `FindFile` returns jen soubor name, not the plný path. You must prepend the directory path yourself when processing soubors.
 
-**Example --- count files in a directory:**
+**Příklad --- count files in a directory:**
 
 ```c
 int CountFiles(string pattern)
@@ -307,9 +307,9 @@ int CountFiles(string pattern)
 
 ## JsonFileLoader (Generic JSON)
 
-**File:** `3_Game/tools/jsonfileloader.c` (173 lines)
+**Soubor:** `3_Game/tools/jsonfileloader.c` (173 lines)
 
-The recommended way to load and save JSON data. Works with any class that has public fields.
+The doporučený way to load and save JSON data. Works with jakýkoli class that has public fields.
 
 ### Modern API (Preferred)
 
@@ -347,7 +347,7 @@ class JsonFileLoader<Class T>
 
 > **Critical Gotcha:** `JsonLoadFile()` returns `void`. You CANNOT use it in an `if` condition:
 > ```c
-> // WRONG - will not compile or will always be false
+> // WRONG - will not compile or will vždy be false
 > if (JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg)) { }
 >
 > // CORRECT - use the modern LoadFile() which returns bool
@@ -356,7 +356,7 @@ class JsonFileLoader<Class T>
 
 ### Data Class Requirements
 
-The target class must have **public fields** with default values. The JSON serializer maps field names directly to JSON keys.
+The target class must have **public fields** with výchozí values. The JSON serializer maps field names přímo to JSON keys.
 
 ```c
 class MyConfig
@@ -389,7 +389,7 @@ This produces JSON:
 }
 ```
 
-### Complete Load/Save Example
+### Complete Load/Uložte Example
 
 ```c
 class MyModConfig
@@ -448,9 +448,9 @@ class MyModConfigManager
 
 ## JsonSerializer (Direct Use)
 
-**File:** `3_Game/gameplay.c`
+**Soubor:** `3_Game/gameplay.c`
 
-For cases where you need to serialize/deserialize JSON strings directly without file operations:
+For cases where potřebujete to serialize/deserialize JSON strings přímo without file operations:
 
 ```c
 class JsonSerializer : Serializer
@@ -482,17 +482,17 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 
 ---
 
-## Summary
+## Shrnutí
 
 | Operation | Function | Notes |
 |-----------|----------|-------|
-| Check exists | `FileExist(path)` | Returns bool |
-| Open | `OpenFile(path, FileMode)` | Returns handle (0 = fail) |
-| Close | `CloseFile(handle)` | Always call when done |
-| Write line | `FPrintln(handle, data)` | With newline |
-| Write | `FPrint(handle, data)` | Without newline |
-| Read line | `FGets(handle, out line)` | Returns -1 at EOF |
-| Make dir | `MakeDirectory(path)` | Single level only |
+| Zkontrolujte exists | `FileExist(path)` | Returns bool |
+| Otevřete | `OpenFile(path, FileMode)` | Returns handle (0 = fail) |
+| Zavřete | `CloseFile(handle)` | Vždy call when done |
+| Zapište line | `FPrintln(handle, data)` | With novýline |
+| Zapište | `FPrint(handle, data)` | Bez novýline |
+| Přečtěte line | `FGets(handle, out line)` | Returns -1 at EOF |
+| Make dir | `MakeDirectory(path)` | Single level pouze |
 | Delete | `DeleteFile(path)` | Only `$profile:` / `$saves:` |
 | Copy | `CopyFile(src, dst)` | -- |
 | Find files | `FindFile(pattern, ...)` | Returns handle, iterate with `FindNextFile` |
@@ -503,11 +503,45 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 | Koncept | Klíčový bod |
 |---------|-----------|
 | Path prefixes | `$profile:` (writable), `$mission:` (read), `$saves:` (writable) |
-| JsonLoadFile | **Returns void** --- use `LoadFile()` (bool) instead |
-| Data classes | Public fields with defaults, `ref` for arrays/maps |
-| Always close | Every `OpenFile` must have a matching `CloseFile` |
-| FindFile | Returns only filenames, not full paths |
+| JsonLoadFile | **Returns void** --- use `LoadFile()` (bool) místo toho |
+| Data classes | Public fields with výchozís, `ref` for arrays/maps |
+| Vždy close | Every `OpenFile` must have a matching `CloseFile` |
+| FindFile | Returns pouze filenames, not plný paths |
 
 ---
 
-[<< Předchozí: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Další: Networking & RPC >>](09-networking.md)
+## Osvědčené postupy
+
+- **Vždy wrap file operations in existence checks and close handles in all code paths.** An unclosed `FileHandle` leaks resources and can prevent soubor from being written to disk. Use guard patterns: check `fh != 0`, do work, then `CloseFile(fh)` before každý `return`.
+- **Use the modern `JsonFileLoader<T>.LoadFile()` (returns bool) místo the legacy `JsonLoadFile()` (returns void).** The legacy API cannot report errors, and attempting to use its void return in a condition tiše fails.
+- **Vytvořte directories with `MakeDirectory()` in order from parent to child.** `MakeDirectory` pouze creates the final directory segment. `MakeDirectory("$profile:A/B/C")` fails if `A/B` ne exist. Vytvořte každý level sequentially.
+- **Use `CopyFile()` to create backups before overwriting config files.** JSON parse errors from corrupted saves are unrecoverable. A `.bak` copy lets server owners restore the last good state.
+- **Remember that `FindFile()` returns pouze filenames, not plný paths.** You must concatenate the directory prefix yourself when loading files found via `FindFile`/`FindNextFile`.
+
+---
+
+## Kompatibilita a dopad
+
+> **Kompatibilita modů:** File I/O is inherently isolated per mod when každý mod uses its own `$profile:` subdirectory. Conflicts occur pouze when two mods read/write the stejný file path.
+
+- **Pořadí načítání:** File I/O has no load-order dependency. Mods read and write independently.
+- **Konflikty modifikovaných tříd:** No class conflicts. The risk is two mods using the stejný `$profile:` subdirectory name or filename, causing data corruption.
+- **Dopad na výkon:** JSON serialization via `JsonFileLoader` is synchronous and blocks the main thread. Loading large JSON files (>100KB) during gameplay causes frame hitches. Načtěte configs in `OnInit()` or `OnMissionStart()`, nikdy in `OnUpdate()`.
+- **Server/klient:** File writes are restricted to `$profile:` and `$saves:`. On clients, `$profile:` points to klient profile directory. On dedicated servers, it points to server profile. `$mission:` is typicky read-only na obou stranách.
+
+---
+
+## Pozorováno v reálných modech
+
+> These patterns were confirmed by studying the source code of professional DayZ mods.
+
+| Vzor | Mod | Soubor/Umístění |
+|---------|-----|---------------|
+| `MakeDirectory` chain + `FileExist` check + `LoadFile` with fallback to výchozís | Expansion | Settings manager (`ExpansionSettings`) |
+| `CopyFile` backup before config save | COT | Permission file management |
+| `FindFile`/`FindNextFile` to enumerate per-player JSON files in `$profile:` | VPP Admin Tools | Player data loader |
+| `JsonSerializer.WriteToString()` for RPC payload serialization (no file) | Dabs Framework | Network config sync |
+
+---
+
+[<< Předchozí: Časovače a CallQueue](07-timers.md) | **Souborové I/O a JSON** | [Další: Síťování a RPC >>](09-networking.md)

@@ -1,16 +1,16 @@
-# Chapter 4.8: Building Modeling -- Doors & Ladders
+# Chapitre 4.8: Building Modeling -- Doors & Ladders
 
-[Home](../../README.md) | [<< Previous: Workbench Guide](07-workbench-guide.md) | **Building Modeling**
+[Accueil](../../README.md) | [<< Précédent : Workbench Guide](07-workbench-guide.md) | **Building Modeling**
 
 ---
 
 ## Introduction
 
-Les batiments dans DayZ sont plus que du decor statique. Les joueurs interagissent constamment avec eux -- opening doors, climbing ladders, taking cover behind walls. Creating a custom building that supports these interactions requires careful model setup: doors need rotation axes and named selections across multiple LODs, ladders need precisely placed climbing paths defined entirely through Memory LOD vertices.
+Buildings in DayZ are more than static scenery. Players interact with them constantly -- opening doors, climbing ladders, taking cover behind walls. Creating a custom building that supports these interactions requires careful model setup: doors need rotation axes and named selections across multiple LODs, ladders need precisely placed climbing paths defined entirely through Memory LOD vertices.
 
-This chapter covers the complete workflow for adding interactive doors and climbable ladders to custom building models, based on official Bohemia Interactive documentation.
+Ce chapitre couvre the complete workflow for adding interactive doors and climbable ladders to custom building models, based on official Bohemia Interactive documentation.
 
-### Prerequis
+### Prerequisites
 
 - A working **Work-drive** with your custom mod folder structure.
 - **Object Builder** (from the DayZ Tools package) with **Buldozer** (model preview) configured.
@@ -19,7 +19,7 @@ This chapter covers the complete workflow for adding interactive doors and climb
 
 ---
 
-## Table des Matieres
+## Table des matières
 
 - [Overview](#introduction)
 - [Door Configuration](#door-configuration)
@@ -43,28 +43,28 @@ This chapter covers the complete workflow for adding interactive doors and climb
 
 ---
 
-## Configuration des Portes
+## Door Configuration
 
-Interactive doors require three things to come together: the P3D model with correctly named selections and memory points, a `model.cfg` that defines the animation skeleton and rotation parameters, and a `config.cpp` game config that links the door to sounds, damage zones, and game logic.
+Interactive doors require three things to come together: the P3D model with correctly named selections and memory points, a `model.cfg` that defines the animation skeleton and rotation parameters, and a `config.cpp` game config that links the door to sounds, zones de dégâts, and game logic.
 
 ### Model Setup for Doors
 
 A door in the P3D model must include the following:
 
 1. **Named selections across all relevant LODs.** The geometry that represents the door must be assigned to a named selection (e.g., `door1`) in each of these LODs:
-   - **Resolution LOD** -- the visual mesh the player sees.
+   - **Resolution LOD** -- the visual mesh le joueur sees.
    - **Geometry LOD** -- the physical collision shape. Must also contain a named property `class` with the value `house`.
-   - **View Geometry LOD** -- used for visibility checks and action ray-casting. The selection name here corresponds to the `component` parameter in the game config.
+   - **View Geometry LOD** -- used for visibility checks and action ray-casting. The selection name here corresponds to the `component` parameter in le jeu config.
    - **Fire Geometry LOD** -- used for ballistic hit detection.
 
 2. **Memory LOD vertices** that define:
    - **Rotation axis** -- Two vertices forming the axis of rotation, assigned to a named selection like `door1_axis`. This axis defines the hinge line around which the door pivots.
    - **Sound position** -- A vertex assigned to a named selection like `door1_action`, marking where door sounds originate.
-   - **Action widget position** -- Where the interaction widget is displayed to the player.
+   - **Action widget position** -- Where the interaction widget is displayed to le joueur.
 
 #### Recommended Door Dimensions
 
-Almost all doors in vanilla DayZ are **120 x 220 cm** (width x height). Using these standard dimensions ensures animations look correct and characters fit through openings naturally. Model your doors **closed by default** and animate them to the open position -- Bohemia plans to support doors opening in both directions in the future.
+Almost all doors in le DayZ vanilla are **120 x 220 cm** (width x height). Using these standard dimensions ensures animations look correct and characters fit through openings naturally. Model your doors **closed by default** and animate them to the open position -- Bohemia plans to support doors opening in both directions in the future.
 
 ### model.cfg -- Skeletons and Animations
 
@@ -144,13 +144,13 @@ class CfgModels
 };
 ```
 
-**Parametres cles expliques :**
+**Key parameters explained:**
 
-| Parametre | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `type` | Animation type. Use `"rotation"` for swinging doors, `"translation"` for sliding doors. |
 | `selection` | The named selection in the model that should be animated. |
-| `source` | Links to the game config's `Doors` class. Must match the class name in `config.cpp`. |
+| `source` | Links to le jeu config's `Doors` class. Must match the class name in `config.cpp`. |
 | `axis` | Named selection in the Memory LOD defining the rotation axis (two vertices). |
 | `memory` | Set to `1` to indicate the axis is defined in the Memory LOD. |
 | `minValue` / `maxValue` | Animation phase range. Typically `0` to `1`. |
@@ -162,7 +162,7 @@ After writing the `model.cfg`, open your model in Object Builder with Buldozer r
 
 ### Game Config (config.cpp)
 
-The game config connects the animated model to game systems -- sounds, damage, and door state logic. The config class name **must** follow the pattern `land_modelname` to link correctly with the model.
+Le jeu config connects the animated model to game systems -- sounds, damage, and door state logic. The config class name **must** follow the pattern `land_modelname` to link correctly with the model.
 
 ```cpp
 class CfgPatches
@@ -296,21 +296,21 @@ class CfgVehicles
 };
 ```
 
-**Parametres de config des portes :**
+**Door config parameters explained:**
 
-| Parametre | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `component` | Named selection in the **View Geometry LOD** used for this door. |
 | `soundPos` | Named selection in the **Memory LOD** where door sounds are played. |
 | `animPeriod` | Speed of the door animation (in seconds). |
 | `initPhase` | Initial animation phase (`0` = closed, `1` = fully open). Test in Buldozer to verify which value corresponds to which state. |
-| `initOpened` | Probability that the door spawns open in the world. `0.5` means a 50% chance. |
+| `initOpened` | Probability that the door apparitions open in le monde. `0.5` means a 50% chance. |
 | `soundOpen` | Sound class from `CfgActionSounds` played when the door opens. See `DZ\sounds\hpp\config.cpp` for available sound sets. |
 | `soundClose` | Sound class played when the door closes. |
 | `soundLocked` | Sound class played when a player tries to open a locked door. |
 | `soundOpenABit` | Sound class played when a player breaks open a locked door. |
 
-**Notes importantes sur la config :**
+**Important notes on the config:**
 
 - All buildings in DayZ inherit from `HouseNoDestruct`.
 - Each class name under `class Doors` must correspond to the `source` parameter defined in `model.cfg`.
@@ -360,7 +360,7 @@ This overrides the automatic bounding sphere calculation with one that encompass
 
 ---
 
-## Configuration des Echelles
+## Ladder Configuration
 
 Unlike doors, ladders in DayZ require **no animation config** and **no special game config entries** beyond the base building class. The entire ladder setup is done through Memory LOD vertex placement and one View Geometry selection. This makes ladders simpler to set up than doors, but the vertex placement must be precise.
 
@@ -368,8 +368,8 @@ Unlike doors, ladders in DayZ require **no animation config** and **no special g
 
 DayZ supports two types of ladders:
 
-1. **Front bottom enter with side-way top exit** -- The player approaches from the front at the bottom and exits to the side at the top (against a wall).
-2. **Front bottom enter with front top exit** -- The player approaches from the front at the bottom and exits forward at the top (onto a roof or platform).
+1. **Front bottom enter with side-way top exit** -- Le joueur approaches from the front at the bottom and exits to the side at the top (against a wall).
+2. **Front bottom enter with front top exit** -- Le joueur approaches from the front at the bottom and exits forward at the top (onto a roof or platform).
 
 Both types also support **middle side-way enter and exit points**, allowing players to get on and off the ladder at intermediate floors. Ladders can also be placed **at an angle** rather than strictly vertical.
 
@@ -379,15 +379,15 @@ The ladder is defined entirely by named vertices in the Memory LOD. Every select
 
 Here is the complete set of named selections for a ladder:
 
-| Selection Nommee | Description |
+| Named Selection | Description |
 |----------------|-------------|
-| `ladderN_bottom_front` | Defines the bottom entry step -- where the player begins climbing. |
+| `ladderN_bottom_front` | Defines the bottom entry step -- where le joueur begins climbing. |
 | `ladderN_middle_left` | Defines a middle entry/exit point (left side). Can contain multiple vertices if the ladder passes multiple floors. |
 | `ladderN_middle_right` | Defines a middle entry/exit point (right side). Can contain multiple vertices for multi-floor ladders. |
-| `ladderN_top_front` | Defines the upper exit step -- where the player finishes climbing (front exit type). |
+| `ladderN_top_front` | Defines the upper exit step -- where le joueur finishes climbing (front exit type). |
 | `ladderN_top_left` | Defines the upper exit direction for wall-mounted ladders (left side). Must be at least **5 ladder steps higher** than the floor (approximately the height of a standing player on a ladder). |
 | `ladderN_top_right` | Defines the upper exit direction for wall-mounted ladders (right side). Same height requirement as `top_left`. |
-| `ladderN` | Defines where the "Enter Ladder" action widget appears to the player. |
+| `ladderN` | Defines where the "Enter Ladder" action widget appears to le joueur. |
 | `ladderN_dir` | Defines the direction from which the ladder can be climbed (approach direction). |
 | `ladderN_con` | The measurement point for the enter action. **Must be placed at floor level.** |
 | `ladderN_con_dir` | Defines the direction of a 180-degree cone (originating from `ladderN_con`) within which the action to enter the ladder is available. |
@@ -400,7 +400,7 @@ In addition to the Memory LOD setup, you must create a **View Geometry** compone
 
 ### Ladder Dimensions
 
-Ladder climbing animations are designed for **fixed dimensions**. Your ladder rungs and spacing should match the vanilla ladder proportions to ensure animations align correctly. Refer to the official DayZ Samples repository for exact measurements -- the sample ladder parts are the same ones used on most vanilla buildings.
+Ladder climbing animations are designed for **fixed dimensions**. Your ladder rungs and spacing should match le vanilla ladder proportions to ensure animations align correctly. Refer to the official DayZ Samples repository for exact measurements -- the sample ladder parts are the same ones used on most vanilla buildings.
 
 ### Collision Space
 
@@ -413,7 +413,7 @@ If the space is too tight, the character will clip into walls or get stuck durin
 
 ### Config Requirements for Ladders
 
-Unlike the Arma series, DayZ does **not** require a `ladders[]` array in the game config class. However, two things are still necessary:
+Unlike the Arma series, DayZ does **not** require a `ladders[]` array in le jeu config class. Cependant, two things are still necessary:
 
 1. Your model must have a **config representation** -- a `config.cpp` with a `CfgVehicles` class (the same base class used for doors; see the door config section above).
 2. The **Geometry LOD** must contain the named property `class` with the value `house`.
@@ -422,13 +422,13 @@ Beyond these two requirements, the ladder is fully defined by the Memory LOD ver
 
 ---
 
-## Resume des Exigences du Modele
+## Model Requirements Summary
 
 Buildings with doors and ladders must include several LODs, each serving a distinct purpose. The table below summarizes what each LOD must contain:
 
-| LOD | But | Exigences Portes | Exigences Echelles |
+| LOD | Purpose | Door Requirements | Ladder Requirements |
 |-----|---------|-------------------|---------------------|
-| **Resolution LOD** | Visual mesh displayed to the player. | Named selection for the door geometry (e.g., `door1`). | No specific requirements. |
+| **Resolution LOD** | Visual mesh displayed to le joueur. | Named selection for the door geometry (e.g., `door1`). | No specific requirements. |
 | **Geometry LOD** | Physical collision detection. | Named selection for the door geometry. Named property `class = "house"`. | Named property `class = "house"`. Sufficient clearance around the ladder for climbing characters. |
 | **Fire Geometry LOD** | Ballistic hit detection (bullets, projectiles). | Named selection matching `componentNames[]` in the damage zone config. | No specific requirements. |
 | **View Geometry LOD** | Visibility checks, action ray-casting. | Named selection matching the `component` parameter in the door config. | Named selection `ladderN` covering the full volume of the ladder. |
@@ -441,7 +441,7 @@ A critical requirement is that **named selections must be consistent across all 
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 1. **Model doors closed by default.** Animate from closed to open. Bohemia plans to support opening doors in both directions, so starting from closed is future-proof.
 
@@ -465,11 +465,11 @@ A critical requirement is that **named selections must be consistent across all 
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 ### Doors
 
-| Erreur | Symptome | Correction |
+| Mistake | Symptom | Fix |
 |---------|---------|-----|
 | `CfgModels` class name does not match model filename. | Door animation does not play. | Rename the class to match the `.p3d` filename exactly (without extension). |
 | Missing named selection in one or more LODs. | Door is visible but not interactive, or bullets pass through. | Ensure the selection exists in Resolution, Geometry, View Geometry, and Fire Geometry LODs. |
@@ -481,7 +481,7 @@ A critical requirement is that **named selections must be consistent across all 
 
 ### Ladders
 
-| Erreur | Symptome | Correction |
+| Mistake | Symptom | Fix |
 |---------|---------|-----|
 | `ladderN_con` not placed at floor level. | "Enter Ladder" action does not appear or appears at the wrong height. | Move the vertex to ground/floor level. |
 | Missing View Geometry selection `ladderN`. | Ladder cannot be interacted with. | Create a View Geometry component with a named selection covering the full ladder volume. |
@@ -504,6 +504,6 @@ A critical requirement is that **named selections must be consistent across all 
 
 ## Navigation
 
-| Previous | Haut | Next |
+| Previous | Up | Next |
 |----------|----|------|
 | [4.7 Workbench Guide](07-workbench-guide.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | -- |

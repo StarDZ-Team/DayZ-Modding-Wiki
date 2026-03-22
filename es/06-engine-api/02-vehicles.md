@@ -1,10 +1,10 @@
-# Chapter 6.2: Vehicle System
+# Capítulo 6.2: Sistema de Vehículos
 
-[Home](../../README.md) | [<< Previous: Entity System](01-entity-system.md) | **Vehicles** | [Next: Weather >>](03-weather.md)
+[Inicio](../../README.md) | [<< Anterior: Entity System](01-entity-system.md) | **Vehicles** | [Siguiente: Weather >>](03-weather.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ vehicles are entities that extend the transport system. Cars extend `CarScript`, boats extend `BoatScript`, and both inherit from `Transport`. Vehicles have fluid systems, parts with independent health, gear simulation, and physics managed by the engine. This chapter covers the API methods you need to interact with vehicles in scripts.
 
@@ -31,7 +31,7 @@ EntityAI
 
 ## Transport (Base)
 
-**File:** `3_Game/entities/transport.c`
+**Archivo:** `3_Game/entities/transport.c`
 
 The abstract base for all vehicles. Provides seat management and crew access.
 
@@ -53,7 +53,7 @@ proto native int  CrewPositionIndex(int componentIdx);  // Component to seat ind
 proto native vector CrewEntryPoint(int posIdx);         // World entry position for seat
 ```
 
-**Example --- eject all passengers:**
+**Ejemplo --- eject all passengers:**
 
 ```c
 void EjectAllCrew(Transport vehicle)
@@ -73,7 +73,7 @@ void EjectAllCrew(Transport vehicle)
 
 ## Car (Engine Native)
 
-**File:** `3_Game/entities/car.c`
+**Archivo:** `3_Game/entities/car.c`
 
 Engine-level car physics. All `proto native` methods that drive the vehicle simulation.
 
@@ -111,7 +111,7 @@ proto native void  Leak(CarFluid fluid, float amount);
 proto native void  LeakAll(CarFluid fluid);
 ```
 
-**Example --- refuel a vehicle:**
+**Ejemplo --- refuel a vehicle:**
 
 ```c
 void RefuelVehicle(Car car)
@@ -162,7 +162,7 @@ void OnSound(CarSoundCtrl ctrl, float oldValue);
 
 ## CarScript
 
-**File:** `4_World/entities/vehicles/carscript.c`
+**Archivo:** `4_World/entities/vehicles/carscript.c`
 
 The scriptable car class that most vehicle mods extend. Adds parts, doors, lights, and sound management.
 
@@ -180,9 +180,31 @@ car.SetHealth("Engine", "Health", 0);       // Destroy the engine
 car.SetHealth("FuelTank", "Health", 100);   // Repair the fuel tank
 ```
 
+### Damage Zone Diagram
+
+```mermaid
+graph TD
+    V[Vehicle] --> E[Engine]
+    V --> FT[FuelTank]
+    V --> R[Radiator]
+    V --> B[Battery]
+    V --> W1[Wheel_1_1]
+    V --> W2[Wheel_1_2]
+    V --> W3[Wheel_2_1]
+    V --> W4[Wheel_2_2]
+    V --> D1[Door_1_1]
+    V --> D2[Door_2_1]
+    V --> H[Hood]
+    V --> T[Trunk]
+
+    style E fill:#ff6b6b,color:#fff
+    style FT fill:#ffa07a,color:#fff
+    style R fill:#87ceeb,color:#fff
+```
+
 Common damage zones for vehicles:
 
-| Zone | Descripcion |
+| Zone | Descripción |
 |------|-------------|
 | `""` (global) | Overall vehicle health |
 | `"Engine"` | Engine part |
@@ -220,7 +242,7 @@ override void EOnSimulate(IEntity other, float dt);  // Per-tick simulation
 override bool CanObjectAttachWeapon(string slot_name);
 ```
 
-**Example --- create a vehicle with full fluids:**
+**Ejemplo --- create a vehicle with full fluids:**
 
 ```c
 void SpawnReadyVehicle(vector pos)
@@ -249,7 +271,7 @@ void SpawnReadyVehicle(vector pos)
 
 ## BoatScript
 
-**File:** `4_World/entities/vehicles/boatscript.c`
+**Archivo:** `4_World/entities/vehicles/boatscript.c`
 
 Scriptable base for boat entities. Similar API to CarScript but with propeller-based physics.
 
@@ -277,7 +299,7 @@ boat.Fill(CarFluid.FUEL, boat.GetFluidCapacity(CarFluid.FUEL));
 proto native float GetSpeedometer();   // Speed in km/h
 ```
 
-**Example --- spawn a boat:**
+**Ejemplo --- spawn a boat:**
 
 ```c
 void SpawnBoat(vector waterPos)
@@ -353,4 +375,37 @@ void FindAllVehicles(out array<Transport> vehicles)
 
 ---
 
-[<< Anterior: Entity System](01-entity-system.md) | **Vehicles** | [Siguiente: Weather >>](03-weather.md)
+## Mejores Prácticas
+
+- **Always include `ECE_CREATEPHYSICS | ECE_INITAI` when spawning vehicles.** Without physics, the vehicle falls through the ground. Without AI init, the engine simulation does not start and the vehicle cannot be driven.
+- **Fill all four fluids after spawning.** A vehicle missing oil, brake fluid, or coolant will damage itself immediately when the engine starts. Use `GetFluidCapacity()` to get correct max values per vehicle type.
+- **Null-check `CrewMember()` before operating on crew.** Empty seats return `null`. Iterating `CrewSize()` without checking each index causes crashes when seats are unoccupied.
+- **Use `GetSpeedometer()` instead of computing velocity manually.** The engine's speedometer accounts for wheel contact, transmission state, and physics correctly. Manual velocity calculations from position deltas are unreliable.
+
+---
+
+## Compatibilidad e Impacto
+
+> **Mod Compatibility:** Vehicle mods commonly extend `CarScript` with modded classes. Conflicts arise when multiple mods override the same callbacks like `OnEngineStart()` or `EOnSimulate()`.
+
+- **Load Order:** If two mods both `modded class CarScript` and override `OnEngineStart()`, only the last-loaded mod runs unless both call `super`. Vehicle overhaul mods should always call `super` in every callback.
+- **Modded Class Conflicts:** Expansion Vehicles and vanilla vehicle mods frequently conflict on `EEInit()` and fluid initialization. Test with both loaded.
+- **Performance Impact:** `EOnSimulate()` runs every physics tick for each active vehicle. Keep logic minimal in this callback; use timer accumulators for expensive operations.
+- **Server/Client:** `EngineStart()`, `EngineStop()`, `Fill()`, `Leak()`, and `CrewGetOut()` are server-authoritative. `GetSpeedometer()`, `EngineIsOn()`, and `GetFluidFraction()` are safe to read on both sides.
+
+---
+
+## Observado en Mods Reales
+
+> These patterns were confirmed by studying the source code of professional DayZ mods.
+
+| Patrón | Mod | File/Location |
+|---------|-----|---------------|
+| Override `EEInit()` to set custom fluid capacities and spawn parts | Expansion Vehicles | `CarScript` subclasses |
+| `EOnSimulate` accumulator for periodic fuel consumption checks | Vanilla+ vehicle mods | `CarScript` overrides |
+| `CrewGetOut()` loop in admin eject-all command | VPP Admin Tools | Vehicle management module |
+| Custom `OnContact()` override for collision damage tuning | Expansion | `ExpansionCarScript` |
+
+---
+
+[Inicio](../../README.md) | [<< Anterior: Entity System](01-entity-system.md) | **Vehicles** | [Siguiente: Weather >>](03-weather.md)

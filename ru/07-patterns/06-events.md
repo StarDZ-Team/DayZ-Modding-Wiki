@@ -1,41 +1,39 @@
-# Chapter 7.6: Event-Driven Architecture
+# Глава 7.6: Событийно-ориентированная архитектура
 
-[Home](../../README.md) | [<< Previous: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Next: Performance Optimization >>](07-performance.md)
+[Главная](../../README.md) | [<< Предыдущая: Системы прав доступа](05-permissions.md) | **Событийно-ориентированная архитектура** | [Следующая: Оптимизация производительности >>](07-performance.md)
 
 ---
 
 ## Введение
 
+Событийно-ориентированная архитектура отделяет производителя события от его потребителей. Когда игрок подключается, обработчик подключения не должен знать о килфиде, админ-панели, системе миссий или модуле логирования --- он генерирует событие «игрок подключился», и каждая заинтересованная система подписывается независимо. Это основа расширяемого дизайна модов: новые возможности подписываются на существующие события без изменения кода, который их генерирует.
 
-Event-driven architecture decouples the producer of an event from its consumers. When a player connects, the connection handler does not need to know about the killfeed, the admin panel, the mission system, or the logging module ---- он fires a "player connected" event, and each interested system subscribes independently. Это foundation of extensible mod design: new features subscribe to existing events without modifying the code that fires them.
-
-DayZ provides `ScriptInvoker` as its built-in event primitive. On top of it, professional mods build event buses with named topics, typed handlers, and lifecycle management. Эта глава охватывает all three major patterns and the critical discipline of memory-leak prevention.
+DayZ предоставляет `ScriptInvoker` как встроенный примитив событий. Поверх него профессиональные моды строят шины событий с именованными топиками, типизированными обработчиками и управлением жизненным циклом. В этой главе описаны все три основных паттерна и критически важная дисциплина предотвращения утечек памяти.
 
 ---
 
 ## Содержание
 
-
-- [ScriptInvoker Pattern](#scriptinvoker-pattern)
-- [EventBus Pattern (String-Routed Topics)](#eventbus-pattern-string-routed-topics)
-- [CF_EventHandler Pattern](#cf_eventhandler-pattern)
-- [When to Use Events vs Direct Calls](#when-to-use-events-vs-direct-calls)
-- [Memory Leak Prevention](#memory-leak-prevention)
-- [Advanced: Custom Event Data](#advanced-custom-event-data)
-- [Best Practices](#best-practices)
+- [Паттерн ScriptInvoker](#паттерн-scriptinvoker)
+- [Паттерн EventBus (строковая маршрутизация топиков)](#паттерн-eventbus-строковая-маршрутизация-топиков)
+- [Паттерн CF_EventHandler](#паттерн-cf_eventhandler)
+- [Когда использовать события vs прямые вызовы](#когда-использовать-события-vs-прямые-вызовы)
+- [Предотвращение утечек памяти](#предотвращение-утечек-памяти)
+- [Продвинутое: пользовательские данные событий](#продвинутое-пользовательские-данные-событий)
+- [Лучшие практики](#лучшие-практики)
 
 ---
 
-## ScriptInvoker Pattern
+## Паттерн ScriptInvoker
 
-`ScriptInvoker` is the engine's built-in pub/sub primitive. It holds a list of function callbacks and invokes all of them when an event fires. Это lowest-level event mechanism in DayZ.
+`ScriptInvoker` --- это встроенный примитив издатель/подписчик в движке. Он хранит список функций обратного вызова и вызывает их все при срабатывании события. Это самый низкоуровневый механизм событий в DayZ.
 
-### Creating an Event
+### Создание события
 
 ```c
 class WeatherManager
 {
-    // The event. Anyone can subscribe to be notified when weather changes.
+    // Событие. Кто угодно может подписаться для уведомления об изменении погоды.
     ref ScriptInvoker OnWeatherChanged = new ScriptInvoker();
 
     protected string m_CurrentWeather;
@@ -44,83 +42,106 @@ class WeatherManager
     {
         m_CurrentWeather = newWeather;
 
-        // Fire the event — all subscribers are notified
+        // Генерация события — все подписчики уведомлены
         OnWeatherChanged.Invoke(newWeather);
     }
 };
 ```
 
-### Subscribing to an Event
+### Подписка на событие
 
 ```c
 class WeatherUI
 {
     void Init(WeatherManager mgr)
     {
-        // Subscribe: when weather changes, call our handler
+        // Подписка: при изменении погоды вызвать наш обработчик
         mgr.OnWeatherChanged.Insert(OnWeatherChanged);
     }
 
     void OnWeatherChanged(string newWeather)
     {
-        // Update the UI
-        m_WeatherLabel.SetText("Weather: " + newWeather);
+        // Обновить UI
+        m_WeatherLabel.SetText("Погода: " + newWeather);
     }
 
     void Cleanup(WeatherManager mgr)
     {
-        // CRITICAL: Unsubscribe when done
+        // КРИТИЧЕСКИ ВАЖНО: Отписаться по завершении
         mgr.OnWeatherChanged.Remove(OnWeatherChanged);
     }
 };
 ```
 
-### ScriptInvoker API
+### API ScriptInvoker
 
-| Method | Description |
-|--------|-------------|
-| `Insert(func)` | Add a callback to the subscriber list |
-| `Remove(func)` | Remove a specific callback |
-| `Invoke(...)` | Call all subscribed callbacks with the given arguments |
-| `Clear()` | Remove all subscribers |
+| Метод | Описание |
+|-------|----------|
+| `Insert(func)` | Добавить обратный вызов в список подписчиков |
+| `Remove(func)` | Удалить конкретный обратный вызов |
+| `Invoke(...)` | Вызвать все подписанные обратные вызовы с заданными аргументами |
+| `Clear()` | Удалить всех подписчиков |
 
-### How Insert/Remove Work
+### Событийно-ориентированный паттерн
 
-`Insert` adds a function reference to an internal list. `Remove` searches the list and removes the matching entry. If you call `Insert` twice with the same function, it will be called twice on every `Invoke`. If you call `Remove` once, it removes one entry.
+```mermaid
+graph TB
+    PUB["Издатель<br/>(напр., ConfigManager)"]
 
-```c
-// Subscribing the same handler twice is a bug:
-mgr.OnWeatherChanged.Insert(OnWeatherChanged);
-mgr.OnWeatherChanged.Insert(OnWeatherChanged);  // Now called 2x per Invoke
+    PUB -->|"Invoke()"| INV["ScriptInvoker<br/>OnConfigChanged"]
 
-// One Remove only removes one entry:
-mgr.OnWeatherChanged.Remove(OnWeatherChanged);
-// Still called 1x per Invoke — the second Insert is still there
+    INV -->|"callback"| SUB1["Подписчик A<br/>AdminPanel.OnConfigChanged()"]
+    INV -->|"callback"| SUB2["Подписчик B<br/>HUD.OnConfigChanged()"]
+    INV -->|"callback"| SUB3["Подписчик C<br/>Logger.OnConfigChanged()"]
+
+    SUB1 -.->|"Insert()"| INV
+    SUB2 -.->|"Insert()"| INV
+    SUB3 -.->|"Insert()"| INV
+
+    style PUB fill:#D94A4A,color:#fff
+    style INV fill:#FFD700,color:#000
+    style SUB1 fill:#4A90D9,color:#fff
+    style SUB2 fill:#4A90D9,color:#fff
+    style SUB3 fill:#4A90D9,color:#fff
 ```
 
-### Typed Signatures
+### Как работают Insert/Remove
 
-`ScriptInvoker` does not enforce parameter types at compile time. The convention is to document the expected signature in a comment:
+`Insert` добавляет ссылку на функцию во внутренний список. `Remove` ищет в списке и удаляет совпадающую запись. Если вы вызовете `Insert` дважды с одной и той же функцией, она будет вызвана дважды при каждом `Invoke`. Если вызвать `Remove` один раз, он удалит одну запись.
 
 ```c
-// Signature: void(string weatherName, float temperature)
+// Подписка одного обработчика дважды — это баг:
+mgr.OnWeatherChanged.Insert(OnWeatherChanged);
+mgr.OnWeatherChanged.Insert(OnWeatherChanged);  // Теперь вызывается 2 раза за Invoke
+
+// Один Remove удаляет только одну запись:
+mgr.OnWeatherChanged.Remove(OnWeatherChanged);
+// Всё ещё вызывается 1 раз за Invoke — второй Insert всё ещё здесь
+```
+
+### Типизированные сигнатуры
+
+`ScriptInvoker` не обеспечивает проверку типов параметров во время компиляции. Соглашение --- документировать ожидаемую сигнатуру в комментарии:
+
+```c
+// Сигнатура: void(string weatherName, float temperature)
 ref ScriptInvoker OnWeatherChanged = new ScriptInvoker();
 ```
 
-If a subscriber has the wrong signature, the behavior is undefined at runtime ---- он may crash, receive garbage values, or silently do nothing. Always match the documented signature exactly.
+Если подписчик имеет неправильную сигнатуру, поведение в рантайме не определено --- может произойти вылет, получение мусорных значений или молчаливое бездействие. Всегда точно соответствуйте документированной сигнатуре.
 
-### ScriptInvoker on Vanilla Classes
+### ScriptInvoker в ванильных классах
 
-Many vanilla DayZ classes expose `ScriptInvoker` events:
+Многие ванильные классы DayZ предоставляют события `ScriptInvoker`:
 
 ```c
-// UIScriptedMenu has OnVisibilityChanged
+// UIScriptedMenu имеет OnVisibilityChanged
 class UIScriptedMenu
 {
     ref ScriptInvoker m_OnVisibilityChanged;
 };
 
-// MissionBase has event hooks
+// MissionBase имеет хуки событий
 class MissionBase
 {
     void OnUpdate(float timeslice);
@@ -128,22 +149,22 @@ class MissionBase
 };
 ```
 
-You can subscribe to these vanilla events from modded classes to react to engine-level state changes.
+Вы можете подписываться на эти ванильные события из modded-классов для реакции на изменения состояния на уровне движка.
 
 ---
 
-## EventBus Pattern (String-Routed Topics)
+## Паттерн EventBus (строковая маршрутизация топиков)
 
-A `ScriptInvoker` is a single event channel. An EventBus is a collection of named channels, providing a central hub where any module can publish or subscribe to events by topic name.
+`ScriptInvoker` --- это один канал события. EventBus --- это коллекция именованных каналов, предоставляющая центральный узел, где любой модуль может публиковать или подписываться на события по имени топика.
 
-### MyMod EventBus
+### Пользовательский паттерн EventBus
 
-MyMod implements the EventBus as a static class with named `ScriptInvoker` fields for well-known events, plus a generic `OnCustomEvent` channel for ad-hoc topics:
+Этот паттерн реализует EventBus как статический класс с именованными полями `ScriptInvoker` для известных событий, плюс общий канал `OnCustomEvent` для произвольных топиков:
 
 ```c
 class MyEventBus
 {
-    // Well-known lifecycle events
+    // Известные события жизненного цикла
     static ref ScriptInvoker OnPlayerConnected;      // void(PlayerIdentity)
     static ref ScriptInvoker OnPlayerDisconnected;    // void(PlayerIdentity)
     static ref ScriptInvoker OnPlayerReady;           // void(PlayerBase, PlayerIdentity)
@@ -153,13 +174,13 @@ class MyEventBus
     static ref ScriptInvoker OnMissionCompleted;      // void(MyInstance, int reason)
     static ref ScriptInvoker OnAdminDataSynced;       // void()
 
-    // Generic custom event channel
+    // Общий канал пользовательских событий
     static ref ScriptInvoker OnCustomEvent;           // void(string eventName, Param params)
 
-    static void Init() { ... }   // Creates all invokers
-    static void Cleanup() { ... } // Nulls all invokers
+    static void Init() { ... }   // Создаёт все инвокеры
+    static void Cleanup() { ... } // Обнуляет все инвокеры
 
-    // Helper to fire a custom event
+    // Вспомогательный метод для генерации пользовательского события
     static void Fire(string eventName, Param params)
     {
         if (!OnCustomEvent) Init();
@@ -168,7 +189,7 @@ class MyEventBus
 };
 ```
 
-### Subscribing to the EventBus
+### Подписка на EventBus
 
 ```c
 class MyMissionModule : MyServerModule
@@ -177,17 +198,17 @@ class MyMissionModule : MyServerModule
     {
         super.OnInit();
 
-        // Subscribe to player lifecycle
+        // Подписка на жизненный цикл игрока
         MyEventBus.OnPlayerConnected.Insert(OnPlayerJoined);
         MyEventBus.OnPlayerDisconnected.Insert(OnPlayerLeft);
 
-        // Subscribe to config changes
+        // Подписка на изменения конфигурации
         MyEventBus.OnConfigChanged.Insert(OnConfigChanged);
     }
 
     override void OnMissionFinish()
     {
-        // Always unsubscribe on shutdown
+        // Всегда отписывайтесь при завершении
         MyEventBus.OnPlayerConnected.Remove(OnPlayerJoined);
         MyEventBus.OnPlayerDisconnected.Remove(OnPlayerLeft);
         MyEventBus.OnConfigChanged.Remove(OnConfigChanged);
@@ -195,34 +216,34 @@ class MyMissionModule : MyServerModule
 
     void OnPlayerJoined(PlayerIdentity identity)
     {
-        MyLog.Info("Missions", "Player joined: " + identity.GetName());
+        MyLog.Info("Missions", "Игрок подключился: " + identity.GetName());
     }
 
     void OnPlayerLeft(PlayerIdentity identity)
     {
-        MyLog.Info("Missions", "Player left: " + identity.GetName());
+        MyLog.Info("Missions", "Игрок отключился: " + identity.GetName());
     }
 
     void OnConfigChanged(string modId, string field, string value)
     {
-        if (modId == "MyMissions")
+        if (modId == "MyMod_Missions")
         {
-            // Reload our config
+            // Перезагрузить наши настройки
             ReloadSettings();
         }
     }
 };
 ```
 
-### Using Custom Events
+### Использование пользовательских событий
 
-For one-off or mod-specific events that do not warrant a dedicated `ScriptInvoker` field:
+Для разовых или модоспецифичных событий, не требующих выделенного поля `ScriptInvoker`:
 
 ```c
-// Publisher (e.g., in the loot system):
+// Издатель (напр., в системе лута):
 MyEventBus.Fire("LootRespawned", new Param1<int>(spawnedCount));
 
-// Subscriber (e.g., in a logging module):
+// Подписчик (напр., в модуле логирования):
 MyEventBus.OnCustomEvent.Insert(OnCustomEvent);
 
 void OnCustomEvent(string eventName, Param params)
@@ -232,34 +253,34 @@ void OnCustomEvent(string eventName, Param params)
         Param1<int> data;
         if (Class.CastTo(data, params))
         {
-            MyLog.Info("Loot", "Respawned " + data.param1.ToString() + " items");
+            MyLog.Info("Loot", "Возрождено " + data.param1.ToString() + " предметов");
         }
     }
 }
 ```
 
-### When to Use Named Fields vs Custom Events
+### Когда использовать именованные поля vs пользовательские события
 
-| Approach | Use When |
-|----------|----------|
-| Named `ScriptInvoker` field | The event is well-known, frequently used, and has a stable signature |
-| `OnCustomEvent` + string name | The event is mod-specific, experimental, or used by a single subscriber |
+| Подход | Когда использовать |
+|--------|-------------------|
+| Именованное поле `ScriptInvoker` | Событие известное, часто используемое и имеет стабильную сигнатуру |
+| `OnCustomEvent` + строковое имя | Событие модоспецифичное, экспериментальное или используется одним подписчиком |
 
-Named fields are type-safe by convention and discoverable by reading the class. Custom events are flexible but require string matching and casting.
+Именованные поля типобезопасны по соглашению и обнаруживаемы при чтении класса. Пользовательские события гибкие, но требуют строкового сопоставления и приведения типов.
 
 ---
 
-## CF_EventHandler Pattern
+## Паттерн CF_EventHandler
 
-Community Framework provides `CF_EventHandler` as a more structured event system with type-safe event args.
+Community Framework предоставляет `CF_EventHandler` как более структурированную систему событий с типобезопасными аргументами.
 
-### Concept
+### Концепция
 
 ```c
-// CF event handler pattern (simplified):
+// Паттерн обработчика событий CF (упрощённый):
 class CF_EventArgs
 {
-    // Base class for all event arguments
+    // Базовый класс для всех аргументов событий
 };
 
 class CF_EventPlayerArgs : CF_EventArgs
@@ -268,86 +289,86 @@ class CF_EventPlayerArgs : CF_EventArgs
     PlayerBase Player;
 };
 
-// Modules override event handler methods:
+// Модули переопределяют методы обработчиков событий:
 class MyModule : CF_ModuleWorld
 {
     override void OnEvent(Class sender, CF_EventArgs args)
     {
-        // Handle generic events
+        // Обработка общих событий
     }
 
     override void OnClientReady(Class sender, CF_EventArgs args)
     {
-        // Client is ready, UI can be created
+        // Клиент готов, можно создавать UI
     }
 };
 ```
 
-### Key Differences from ScriptInvoker
+### Ключевые отличия от ScriptInvoker
 
-| Feature | ScriptInvoker | CF_EventHandler |
-|---------|--------------|-----------------|
-| **Type safety** | Convention only | Typed EventArgs classes |
-| **Discovery** | Read comments | Override named methods |
-| **Subscription** | `Insert()` / `Remove()` | Override virtual methods |
-| **Custom data** | Param wrappers | Custom EventArgs subclasses |
-| **Cleanup** | Ручное `Remove()` | Automatic (method override, no registration) |
+| Характеристика | ScriptInvoker | CF_EventHandler |
+|----------------|--------------|-----------------|
+| **Типобезопасность** | Только по соглашению | Типизированные классы EventArgs |
+| **Обнаруживаемость** | Чтение комментариев | Переопределение именованных методов |
+| **Подписка** | `Insert()` / `Remove()` | Переопределение виртуальных методов |
+| **Пользовательские данные** | Обёртки Param | Пользовательские подклассы EventArgs |
+| **Очистка** | Ручной `Remove()` | Автоматическая (переопределение метода, без регистрации) |
 
-CF's approach eliminates the need to manually subscribe and unsubscribe ---- вы simply override the handler method. This removes an entire class of bugs (forgotten `Remove()` calls) at the cost of requiring CF as a dependency.
+Подход CF устраняет необходимость ручной подписки и отписки --- вы просто переопределяете метод обработчика. Это исключает целый класс багов (забытые вызовы `Remove()`) ценой зависимости от CF.
 
 ---
 
-## When to Use Events vs Direct Calls
+## Когда использовать события vs прямые вызовы
 
-### Use Events When:
+### Используйте события когда:
 
-1. **Multiple independent consumers** need to react to the same occurrence. Player connects? The killfeed, the admin panel, the mission system, and the logger all care.
+1. **Множество независимых потребителей** должны реагировать на одно и то же событие. Игрок подключился? Килфид, админ-панель, система миссий и логгер --- все заинтересованы.
 
-2. **The producer should not know about the consumers.** The connection handler should not import the killfeed module.
+2. **Производитель не должен знать о потребителях.** Обработчик подключения не должен импортировать модуль килфида.
 
-3. **The set of consumers changes at runtime.** Modules can subscribe and unsubscribe dynamically.
+3. **Набор потребителей меняется во время выполнения.** Модули могут подписываться и отписываться динамически.
 
-4. **Cross-mod communication.** Mod A fires an event; Mod B subscribes to it. Neither imports the other.
+4. **Межмодовое взаимодействие.** Мод A генерирует событие; Мод B подписывается на него. Ни один не импортирует другой.
 
-### Use Direct Calls When:
+### Используйте прямые вызовы когда:
 
-1. **There is exactly one consumer** and it is known at compile time. If only the health system cares about a damage calculation, call it directly.
+1. **Есть ровно один потребитель**, известный на этапе компиляции. Если только система здоровья интересуется расчётом урона, вызывайте её напрямую.
 
-2. **Return values are needed.** Events are fire-and-forget. If you need a response ("should this action be allowed?"), use a direct method call.
+2. **Нужны возвращаемые значения.** События работают по принципу «выстрелил и забыл». Если нужен ответ («разрешено ли это действие?»), используйте прямой вызов метода.
 
-3. **Order matters.** Event subscribers are called in insertion order, but depending on this order is fragile. If step B must happen after step A, call A then B explicitly.
+3. **Важен порядок.** Подписчики событий вызываются в порядке вставки, но зависеть от этого порядка хрупко. Если шаг B должен произойти после шага A, вызывайте A затем B явно.
 
-4. **Performance is critical.** Events have overhead (iterating the subscriber list, calling via reflection). For per-frame, per-entity logic, direct calls are faster.
+4. **Критична производительность.** События имеют накладные расходы (итерация списка подписчиков, вызов через отражение). Для покадровой, попредметной логики прямые вызовы быстрее.
 
-### Decision Guide
+### Руководство по принятию решения
 
 ```
-                    Does the producer need a return value?
+                    Нужно ли производителю возвращаемое значение?
                          /                    \
-                       YES                     NO
+                        ДА                    НЕТ
                         |                       |
-                   Direct call          How many consumers?
+                   Прямой вызов         Сколько потребителей?
                                        /              \
-                                     ONE            MULTIPLE
+                                     ОДИН            НЕСКОЛЬКО
                                       |                |
-                                 Direct call        EVENT
+                                 Прямой вызов       СОБЫТИЕ
 ```
 
 ---
 
-## Memory Leak Prevention
+## Предотвращение утечек памяти
 
-The single most dangerous aspect of event-driven architecture in Enforce Script is **subscriber leaks**. If an object subscribes to an event and is then destroyed without unsubscribing, one of two things happens:
+Наиболее опасный аспект событийно-ориентированной архитектуры в Enforce Script --- **утечки подписчиков**. Если объект подписывается на событие и затем уничтожается без отписки, происходит одно из двух:
 
-1. **If the object extends `Managed`:** The weak reference in the invoker is automatically nulled. The invoker will call a null function --- which does nothing, but wastes cycles iterating dead entries.
+1. **Если объект наследует `Managed`:** Слабая ссылка в инвокере автоматически обнуляется. Инвокер вызовет null-функцию --- что ничего не делает, но тратит циклы на итерацию мёртвых записей.
 
-2. **If the object does NOT extend `Managed`:** The invoker holds a dangling function pointer. When the event fires, it calls into freed memory. **Crash.**
+2. **Если объект НЕ наследует `Managed`:** Инвокер держит висячий указатель на функцию. Когда событие срабатывает, он обращается к освобождённой памяти. **Вылет.**
 
-### The Golden Rule
+### Золотое правило
 
-**Every `Insert()` must have a matching `Remove()`.** No exceptions.
+**Каждый `Insert()` должен иметь соответствующий `Remove()`.** Без исключений.
 
-### Pattern: Subscribe in OnInit, Unsubscribe in OnMissionFinish
+### Паттерн: подписка в OnInit, отписка в OnMissionFinish
 
 ```c
 class MyModule : MyServerModule
@@ -361,16 +382,16 @@ class MyModule : MyServerModule
     override void OnMissionFinish()
     {
         MyEventBus.OnPlayerConnected.Remove(HandlePlayerConnect);
-        // Then call super or do other cleanup
+        // Затем вызвать super или выполнить другую очистку
     }
 
     void HandlePlayerConnect(PlayerIdentity identity) { ... }
 };
 ```
 
-### Pattern: Subscribe in Constructor, Unsubscribe in Destructor
+### Паттерн: подписка в конструкторе, отписка в деструкторе
 
-For objects with a clear ownership lifecycle:
+Для объектов с чётким жизненным циклом владения:
 
 ```c
 class PlayerTracker : Managed
@@ -394,11 +415,11 @@ class PlayerTracker : Managed
 };
 ```
 
-**Note the null checks in the destructor.** During shutdown, `MyEventBus.Cleanup()` may have already run, setting all invokers to `null`. Calling `Remove()` on a `null` invoker crashes.
+**Обратите внимание на проверки null в деструкторе.** При завершении работы `MyEventBus.Cleanup()` может быть уже выполнен, установив все инвокеры в `null`. Вызов `Remove()` на `null`-инвокере вызывает вылет.
 
-### Pattern: EventBus Cleanup Nulls Everything
+### Паттерн: очистка EventBus обнуляет всё
 
-MyMod's `MyEventBus.Cleanup()` sets all invokers to `null`, which drops all subscriber references at once. Это nuclear option ---- он guarantees no stale subscribers survive across mission restarts:
+Метод `MyEventBus.Cleanup()` устанавливает все инвокеры в `null`, что сбрасывает все ссылки на подписчиков разом. Это «ядерный вариант» --- он гарантирует, что никакие устаревшие подписчики не переживут перезапуск миссии:
 
 ```c
 static void Cleanup()
@@ -406,41 +427,41 @@ static void Cleanup()
     OnPlayerConnected    = null;
     OnPlayerDisconnected = null;
     OnConfigChanged      = null;
-    // ... all other invokers
+    // ... все остальные инвокеры
     s_Initialized = false;
 }
 ```
 
-This is called from `MyFramework.ShutdownAll()` during `OnMissionFinish`. Modules should still `Remove()` their own subscriptions for correctness, but the EventBus cleanup acts as a safety net.
+Это вызывается из `MyFramework.ShutdownAll()` во время `OnMissionFinish`. Модули всё равно должны вызывать `Remove()` для своих подписок для корректности, но очистка EventBus действует как страховочная сеть.
 
-### Anti-Pattern: Anonymous Functions
+### Антипаттерн: анонимные функции
 
 ```c
-// BAD: You cannot Remove an anonymous function
+// ПЛОХО: Вы не можете вызвать Remove для анонимной функции
 MyEventBus.OnPlayerConnected.Insert(function(PlayerIdentity id) {
-    Print("Connected: " + id.GetName());
+    Print("Подключился: " + id.GetName());
 });
-// How do you Remove this? You cannot reference it.
+// Как вы сделаете Remove? Нельзя получить ссылку на неё.
 ```
 
-Always use named methods so you can unsubscribe later.
+Всегда используйте именованные методы, чтобы можно было отписаться позже.
 
 ---
 
-## Advanced: Custom Event Data
+## Продвинутое: пользовательские данные событий
 
-For events that carry complex payloads, use `Param` wrappers:
+Для событий с комплексной полезной нагрузкой используйте обёртки `Param`:
 
-### Param Classes
+### Классы Param
 
-DayZ provides `Param1<T>` through `Param4<T1, T2, T3, T4>` for wrapping typed data:
+DayZ предоставляет `Param1<T>` --- `Param4<T1, T2, T3, T4>` для обёртывания типизированных данных:
 
 ```c
-// Firing with structured data:
+// Генерация со структурированными данными:
 Param2<string, int> data = new Param2<string, int>("AK74", 5);
 MyEventBus.Fire("ItemSpawned", data);
 
-// Receiving:
+// Получение:
 void OnCustomEvent(string eventName, Param params)
 {
     if (eventName == "ItemSpawned")
@@ -455,9 +476,9 @@ void OnCustomEvent(string eventName, Param params)
 }
 ```
 
-### Custom Event Data Class
+### Пользовательский класс данных события
 
-For events with many fields, create a dedicated data class:
+Для событий с множеством полей создайте выделенный класс данных:
 
 ```c
 class KillEventData : Managed
@@ -470,7 +491,7 @@ class KillEventData : Managed
     vector VictimPos;
 };
 
-// Fire:
+// Генерация:
 KillEventData killData = new KillEventData();
 killData.KillerName = killer.GetIdentity().GetName();
 killData.VictimName = victim.GetIdentity().GetName();
@@ -481,32 +502,54 @@ OnKillEvent.Invoke(killData);
 
 ---
 
-## Best Practices
+## Лучшие практики
 
-1. **Every `Insert()` must have a matching `Remove()`.** Audit your code: search for every `Insert` call and verify it has a corresponding `Remove` in the cleanup path.
+1. **Каждый `Insert()` должен иметь соответствующий `Remove()`.** Аудируйте свой код: найдите каждый вызов `Insert` и убедитесь, что у него есть соответствующий `Remove` в пути очистки.
 
-2. **Null-check the invoker before `Remove()` in destructors.** During shutdown, the EventBus may have already been cleaned up.
+2. **Проверяйте инвокер на null перед `Remove()` в деструкторах.** При завершении работы EventBus может быть уже очищен.
 
-3. **Document event signatures.** Above every `ScriptInvoker` declaration, write a comment with the expected callback signature:
+3. **Документируйте сигнатуры событий.** Над каждым объявлением `ScriptInvoker` пишите комментарий с ожидаемой сигнатурой обратного вызова:
    ```c
-   // Signature: void(PlayerBase player, float damage, string source)
+   // Сигнатура: void(PlayerBase player, float damage, string source)
    static ref ScriptInvoker OnPlayerDamaged;
    ```
 
-4. **Do not rely on subscriber execution order.** If order matters, use direct calls instead.
+4. **Не полагайтесь на порядок выполнения подписчиков.** Если порядок важен, используйте прямые вызовы.
 
-5. **Keep event handlers fast.** If a handler needs to do expensive work, schedule it for the next tick rather than blocking all other subscribers.
+5. **Держите обработчики событий быстрыми.** Если обработчику нужно выполнить затратную работу, запланируйте её на следующий тик, а не блокируйте всех остальных подписчиков.
 
-6. **Use named events for stable APIs, custom events for experiments.** Named `ScriptInvoker` fields are discoverable and documented. String-routed custom events are flexible but harder to find.
+6. **Используйте именованные события для стабильных API, пользовательские события для экспериментов.** Именованные поля `ScriptInvoker` обнаруживаемы и документированы. Пользовательские события со строковой маршрутизацией гибкие, но их сложнее найти.
 
-7. **Initialize the EventBus early.** Events can fire before `OnMissionStart()`. Call `Init()` during `OnInit()` or use the lazy pattern (check for `null` before `Insert`).
+7. **Инициализируйте EventBus рано.** События могут генерироваться до `OnMissionStart()`. Вызывайте `Init()` во время `OnInit()` или используйте ленивый паттерн (проверка на `null` перед `Insert`).
 
-8. **Clean up the EventBus on mission finish.** Null all invokers to prevent stale references across mission restarts.
+8. **Очищайте EventBus при завершении миссии.** Обнуляйте все инвокеры для предотвращения устаревших ссылок между перезапусками миссий.
 
-9. **Never use anonymous functions as event subscribers.** You cannot unsubscribe them.
+9. **Никогда не используйте анонимные функции как подписчиков событий.** Вы не сможете отписать их.
 
-10. **Prefer events over polling.** Instead of checking "has the config changed?" every frame, subscribe to `OnConfigChanged` and react only when it fires.
+10. **Предпочитайте события поллингу.** Вместо проверки «изменилась ли конфигурация?» каждый кадр, подпишитесь на `OnConfigChanged` и реагируйте только при срабатывании.
 
 ---
 
-[<< Предыдущая: Permission Systems](05-permissions.md) | [Главная](../../README.md) | [Следующая: Performance Optimization >>](07-performance.md)
+## Совместимость и влияние
+
+- **Мультимод:** Несколько модов могут подписываться на одни и те же топики EventBus без конфликтов. Каждый подписчик вызывается независимо. Однако если один подписчик выбрасывает неисправимую ошибку (напр., null-ссылка), последующие подписчики на этом инвокере могут не выполниться.
+- **Порядок загрузки:** Порядок подписки равен порядку вызова при `Invoke()`. Моды, загруженные раньше, регистрируются первыми и получают события первыми. Не зависьте от этого порядка --- если порядок выполнения важен, используйте прямые вызовы.
+- **Listen Server:** На listen-серверах события, генерируемые серверным кодом, видны клиентским подписчикам, если они разделяют один и тот же статический `ScriptInvoker`. Используйте отдельные поля EventBus для серверных и клиентских событий, или защитите обработчики проверками `GetGame().IsServer()` / `GetGame().IsClient()`.
+- **Производительность:** `ScriptInvoker.Invoke()` итерирует всех подписчиков линейно. При 5-15 подписчиках на событие это пренебрежимо. Избегайте подписки по-сущностно (100+ сущностей, каждая подписывается на одно событие) --- используйте паттерн менеджера.
+- **Миграция:** `ScriptInvoker` --- стабильный ванильный API, маловероятно что изменится между версиями DayZ. Пользовательские обёртки EventBus --- это ваш собственный код и мигрируют с вашим модом.
+
+---
+
+## Распространённые ошибки
+
+| Ошибка | Последствие | Исправление |
+|--------|------------|-------------|
+| Подписка через `Insert()` без вызова `Remove()` | Утечка памяти: инвокер хранит ссылку на мёртвый объект; при `Invoke()` вызывает освобождённую память (вылет) или бесполезно итерирует | Сопоставляйте каждый `Insert()` с `Remove()` в `OnMissionFinish` или деструкторе |
+| Вызов `Remove()` на null-инвокере EventBus при завершении | `MyEventBus.Cleanup()` мог уже обнулить инвокер; вызов `.Remove()` на null вызывает вылет | Всегда проверяйте инвокер на null перед `Remove()`: `if (MyEventBus.OnPlayerConnected) MyEventBus.OnPlayerConnected.Remove(handler);` |
+| Двойной `Insert()` одного обработчика | Обработчик вызывается дважды за `Invoke()`; один `Remove()` удаляет только одну запись, оставляя устаревшую подписку | Проверяйте перед вставкой или убедитесь, что `Insert()` вызывается только один раз (напр., в `OnInit` с защитным флагом) |
+| Использование анонимных/лямбда-функций как обработчиков | Невозможно удалить, так как нет ссылки для передачи в `Remove()` | Всегда используйте именованные методы как обработчики событий |
+| Генерация событий с несовпадающими сигнатурами аргументов | Подписчики получают мусорные данные или вылетают в рантайме; нет проверки на этапе компиляции | Документируйте ожидаемую сигнатуру над каждым объявлением `ScriptInvoker` и точно соответствуйте ей во всех обработчиках |
+
+---
+
+[Главная](../../README.md) | [<< Предыдущая: Системы прав доступа](05-permissions.md) | **Событийно-ориентированная архитектура** | [Следующая: Оптимизация производительности >>](07-performance.md)

@@ -1,8 +1,10 @@
-# Chapter 5.6: Spawning Gear Configuration
+# Capítulo 5.6: Spawning Gear Configuration
 
-[Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
+[Inicio](../../README.md) | [<< Anterior: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
 
 ---
+
+> **Resumen:** DayZ has two complementary systems that control how players enter the world: **spawn points** determine *where* a character appears on the map, and **spawn gear** determines *what equipment* they carry. This chapter covers both systems in depth, including file structure, field reference, practical presets, and mod integration.
 
 ---
 
@@ -36,7 +38,7 @@
 
 ---
 
-## Vista General
+## Descripción General
 
 ```mermaid
 flowchart TD
@@ -63,9 +65,9 @@ Both systems are server-side only. Clients never see these configuration files a
 
 ---
 
-## Los Dos Sistemas
+## The Two Systems
 
-| System | File | Format | Controls |
+| System | File | Formato | Controls |
 |--------|------|--------|----------|
 | Spawn Points | `cfgplayerspawnpoints.xml` | XML | **Where** --- map positions, distance scoring, spawn groups |
 | Spawn Gear | Custom preset JSON files | JSON | **What** --- character model, clothing, weapons, cargo, quickbar |
@@ -74,9 +76,9 @@ The two systems are independent. You can use custom spawn points with vanilla ge
 
 ---
 
-## Equipamiento Inicial: cfgPlayerSpawnGear.json
+## Spawn Gear: cfgPlayerSpawnGear.json
 
-### Habilitar Presets de Equipamiento Inicial
+### Enabling Spawn Gear Presets
 
 Spawn gear presets are **not** enabled by default. To use them, you must:
 
@@ -109,11 +111,11 @@ Preset files can be nested in subdirectories under the mission folder:
 
 Each JSON file contains a single preset object. All registered presets are pooled together, and the server selects one based on `spawnWeight` each time a fresh character spawns.
 
-### Estructura del Preset
+### Preset Structure
 
 A preset is the top-level JSON object with these fields:
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `name` | string | Human-readable name for the preset (any string, used for identification only) |
 | `spawnWeight` | integer | Weight for random selection. Minimum is `1`. Higher values make this preset more likely to be chosen |
@@ -144,7 +146,7 @@ This array defines items that go into specific character attachment slots --- bo
 
 Each entry targets one slot:
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `slotName` | string | The attachment slot name. Derived from CfgSlots. Common values: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
 | `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `spawnWeight`) |
@@ -185,7 +187,7 @@ Each entry targets one slot:
 
 Each entry in `discreteItemSets` represents one possible item for that slot. The server picks one entry at random, weighted by `spawnWeight`. This structure is used inside both `attachmentSlotItemSets` (for slot-based items) and is the mechanism for random selection.
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `itemType` | string | Item classname (typename). Use `""` (empty string) to represent "nothing" --- the slot remains empty |
 | `spawnWeight` | integer | Weight for selection. Minimum `1`. Higher = more likely |
@@ -224,7 +226,7 @@ This top-level array defines items that go into the character's **cargo** --- an
 
 Each entry represents one cargo variant, and the server selects one based on `spawnWeight`.
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `name` | string | Human-readable name (for identification only) |
 | `spawnWeight` | integer | Weight for selection. Minimum `1` |
@@ -267,7 +269,7 @@ Each entry represents one cargo variant, and the server selects one based on `sp
 
 Complex children are items spawned **inside** a parent item with full control over their attributes, quickbar assignment, and their own nested children. The primary use case is spawning items with contents --- for example, a weapon with attachments, or a cooking pot with food inside.
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `itemType` | string | Item classname |
 | `attributes` | object | Health/quantity ranges for this specific item |
@@ -327,7 +329,7 @@ Example --- a weapon with attachments and magazine:
 }
 ```
 
-En este ejemplo, the AKM spawns with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseDefaultAttributes` is `false`.
+In this example, the AKM spawns with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseDefaultAttributes` is `false`.
 
 ### SimpleChildrenTypes
 
@@ -340,11 +342,11 @@ Their attributes are determined by the `simpleChildrenUseDefaultAttributes` flag
 
 Simple children cannot have their own nested children or quickbar assignments. For those capabilities, use `complexChildrenTypes` instead.
 
-### Atributos
+### Attributes
 
 Attributes control the condition and quantity of spawned items. All values are floating point between `0.0` and `1.0`:
 
-| Field | Type | Descripcion |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `healthMin` | float | Minimum health percentage. `1.0` = pristine, `0.0` = ruined |
 | `healthMax` | float | Maximum health percentage. A random value between min and max is applied |
@@ -364,15 +366,15 @@ When both min and max are specified, the engine picks a random value in that ran
 
 ---
 
-## Puntos de Spawn: cfgplayerspawnpoints.xml
+## Spawn Points: cfgplayerspawnpoints.xml
 
 This XML file defines where players appear on the map. It is located in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
 
-### Estructura del Archivo
+### File Structure
 
 The root element contains up to three sections:
 
-| Section | Proposito |
+| Section | Propósito |
 |---------|---------|
 | `<fresh>` | **Required.** Spawn points for newly created characters |
 | `<hop>` | Spawn points for players hopping from another server on the same map (official servers only) |
@@ -416,7 +418,7 @@ Runtime parameters that score candidate spawn points against nearby entities. Po
 </spawn_params>
 ```
 
-| Parametro | Descripcion |
+| Parámetro | Descripción |
 |-----------|-------------|
 | `min_dist_infected` | Minimum meters from infected. Points closer than this are penalized |
 | `max_dist_infected` | Maximum scoring distance from infected |
@@ -445,7 +447,7 @@ Controls how the grid of candidate spawn points is generated around each positio
 </generator_params>
 ```
 
-| Parametro | Descripcion |
+| Parámetro | Descripción |
 |-----------|-------------|
 | `grid_density` | Sample frequency. `4` means a 4x4 grid of candidate points. Higher = more candidates, more CPU cost. Must be at least `1`. When `0`, only the center point is used |
 | `grid_width` | Total width of the sampling rectangle in meters |
@@ -457,7 +459,7 @@ Controls how the grid of candidate spawn points is generated around each positio
 
 Around every `<pos>` defined in `generator_posbubbles`, the engine creates a rectangle of `grid_width` x `grid_height` meters, samples it at `grid_density` frequency, and discards points that overlap with objects, water, or exceed slope limits.
 
-### Grupos de Spawn
+### Spawning Groups
 
 Groups allow you to cluster spawn points and rotate through them over time. This prevents all players from always spawning at the same locations.
 
@@ -472,7 +474,7 @@ Groups are enabled through `<group_params>` inside each section:
 </group_params>
 ```
 
-| Parametro | Descripcion |
+| Parámetro | Descripción |
 |-----------|-------------|
 | `enablegroups` | `true` to enable group rotation, `false` for a flat list of points |
 | `groups_as_regular` | When `enablegroups` is `false`, treat group points as regular spawn points instead of ignoring them. Default: `true` |
@@ -515,7 +517,7 @@ Individual groups can override global lifetime and counter values:
 
 > **Position format:** The `x` and `z` attributes use DayZ world coordinates. `x` is east-west, `z` is north-south. The `y` (height) coordinate is not specified --- the engine places the point on the terrain surface. You can find coordinates using the in-game debug monitor or the DayZ Editor mod.
 
-### Configuraciones Especificas de Mapa
+### Map-Specific Configs
 
 Each map has its own `cfgplayerspawnpoints.xml` in its mission folder:
 
@@ -531,7 +533,7 @@ When creating a custom map or modifying spawn locations, always work from the va
 
 ## Practical Examples
 
-### Loadout de Superviviente por Defecto
+### Default Survivor Loadout
 
 The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic shoes, plus cargo containing a bandage, chemlight (random color), and a fruit (random between pear, plum, or apple). All items spawn in worn-to-damaged condition.
 
@@ -655,7 +657,7 @@ The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic s
 }
 ```
 
-### Kit de Spawn Militar
+### Military Spawn Kit
 
 A heavily equipped preset with an AKM (with attachments), plate carrier, gorka uniform, backpack with extra magazines, and unsorted cargo including a sidearm and food. This uses multiple `spawnWeight` values to create rarity tiers for weapon variants.
 
@@ -849,7 +851,7 @@ Key points about this example:
 - **Nested children**: the PSO1Optic has `simpleChildrenTypes: ["Battery9V"]` so the optic spawns with a battery inside.
 - **Backpack contents**: the blue backpack gets a drum magazine while the orange one gets two standard magazines.
 
-### Kit de Spawn Medico
+### Medical Spawn Kit
 
 A medic-themed preset with scrubs, first aid kit containing medical supplies, and a melee weapon for defense.
 
@@ -996,7 +998,7 @@ A medic-themed preset with scrubs, first aid kit containing medical supplies, an
 
 Note how `characterTypes` is omitted --- this preset uses whatever character the player selected in the main menu. Two cargo variants offer different first aid kit contents (blood bag vs. antibiotics), selected by `spawnWeight`.
 
-### Seleccion Aleatoria de Equipamiento
+### Random Gear Selection
 
 You can create randomized loadouts by using multiple presets with different weights, and within each preset using multiple `discreteItemSets` per slot:
 
@@ -1061,7 +1063,7 @@ override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 }
 ```
 
-> **Remember:** If `spawnGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
+> **Recuerda:** If `spawnGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
 
 ### Mod Items in Presets
 
@@ -1088,7 +1090,7 @@ If the mod is not loaded on the server, items with unknown classnames will silen
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Start from vanilla.** Copy the vanilla preset from the official documentation as your base and modify it, rather than writing from scratch.
 
@@ -1112,7 +1114,7 @@ If the mod is not loaded on the server, items with unknown classnames will silen
 
 ## Errores Comunes
 
-| Error | Consecuencia | Solucion |
+| Error | Consequence | Solución |
 |---------|-------------|-----|
 | Forgetting `enableCfgGameplayFile = 1` in `serverDZ.cfg` | `cfggameplay.json` is not loaded, presets are ignored | Add the flag and restart the server |
 | Invalid JSON syntax (trailing comma, missing bracket) | All presets in that file silently fail | Validate JSON with an external tool before deploying |
@@ -1156,4 +1158,4 @@ cfgplayerspawnpoints.xml
 
 ---
 
-[Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Configuracion de Equipamiento Inicial**
+[Inicio](../../README.md) | [<< Anterior: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**

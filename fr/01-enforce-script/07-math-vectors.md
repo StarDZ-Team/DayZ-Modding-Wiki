@@ -1,12 +1,12 @@
-# Chapter 1.7: Math & Vector Operations
+# Chapitre 1.7: Math & Vector Operations
 
-[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
+[Accueil](../../README.md) | [<< Précédent : String Operations](06-strings.md) | **Math & Vector Operations** | [Suivant : Memory Management >>](08-memory-management.md)
 
 ---
 
 ## Introduction
 
-DayZ modding frequently requires mathematical calculations: finding distances between players, randomizing spawn positions, interpolating camera movements, computing angles for AI targeting. Enforce Script provides the `Math` class for scalar operations and the `vector` type with static helpers for 3D math. This chapter is a complete reference for both, organized by category.
+DayZ modding frequently requires mathematical calculations: finding distances between players, randomizing apparition positions, interpolating camera movements, computing angles for AI targeting. Enforce Script provides the `Math` class for scalar operations and the `vector` type with static helpers for 3D math. This chapter is a complete reference for both, organized by category.
 
 ---
 
@@ -351,7 +351,7 @@ float z = pos[2]; // 30
 pos[1] = 50.0;    // Set y component
 ```
 
-> **Systeme de coordonnees DayZ:** `[0]` is East-West (X), `[1]` is height (Y), `[2]` is North-South (Z).
+> **DayZ coordinate system:** `[0]` is East-West (X), `[1]` is height (Y), `[2]` is North-South (Z).
 
 ### Vector Constants
 
@@ -379,7 +379,7 @@ float distSq = vector.DistanceSq(a, b); // 20000 (no sqrt, faster)
 > **Performance tip:** Use `DistanceSq` when comparing distances. Comparing squared values avoids the expensive square root calculation.
 
 ```c
-// GOOD -- compare squared distances
+// BON -- compare squared distances
 float maxDistSq = 100 * 100; // 10000
 if (vector.DistanceSq(playerPos, targetPos) < maxDistSq)
 {
@@ -633,7 +633,7 @@ class PathMover
 }
 ```
 
-### Calculating a spawn ring around a point
+### Calculating a apparition ring around a point
 
 ```c
 array<vector> GetSpawnRing(vector center, float radius, int count)
@@ -657,9 +657,42 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 ---
 
+## Bonnes pratiques
+
+- Use `vector.DistanceSq()` and compare against `radius * radius` in tight loops -- it avoids the expensive `sqrt` inside `Distance()`.
+- Always multiply by `Math.DEG2RAD` before passing angles to `Sin()`/`Cos()` -- all trig functions work in radians.
+- Check `v.Length() > 0` before calling `Normalize()` -- normalizing a zero-length vector produces `NaN` values.
+- Use `Math.Clamp()` to bound health, damage, and UI values rather than writing manual `if` chains.
+- Prefer `Math.RandomIntInclusive()` when the max value should be reachable (e.g., dice rolls) -- `RandomInt()` max is exclusive.
+
+---
+
+## Observé dans les mods réels
+
+> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| `DistanceSq` with pre-squared threshold | Expansion / COT | Proximity checks store `float maxDistSq = range * range` and compare with `DistanceSq` |
+| `Math.Atan2(dx, dz) * RAD2DEG` for heading | Expansion AI | Direction-to-target computed as angle in degrees for orientation assignment |
+| `Math.RandomFloat(0, Math.PI2)` for apparition ring | Dabs / Expansion | Random angle + `Cos`/`Sin` to generate circular apparition positions |
+| `Math.Clamp` on health/damage values | VPP / COT | Every damage application clamps result to `[0, maxHealth]` to prevent negative or overflow values |
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| `Math.RandomInt(0, 10)` | Might expect 0-10 inclusive | Max is exclusive -- returns 0-9; use `RandomIntInclusive` for inclusive max |
+| `vector[1]` is Y axis | Standard XYZ mapping | In DayZ, Y is vertical height -- easy to confuse with Z-up conventions from other engines |
+| `Math.SqrFloat` vs `Math.Sqrt` | Names look similar | `SqrFloat(5)` = 25 (squares the value), `Sqrt(25)` = 5 (square root) -- opposite operations |
+
+---
+
 ## Erreurs courantes
 
-| Mistake | Problem | Fix |
+| Erreur | Problème | Solution |
 |---------|---------|-----|
 | Passing degrees to `Math.Sin()` / `Math.Cos()` | Trig functions expect radians | Multiply by `Math.DEG2RAD` first |
 | Using `Math.RandomInt(0, 10)` and expecting 10 | Max is exclusive | Use `Math.RandomIntInclusive(0, 10)` for inclusive max |
@@ -671,7 +704,7 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 ---
 
-## Reference rapide
+## Référence rapide
 
 ```c
 // Constants
@@ -721,4 +754,4 @@ vector.Zero  vector.Up  vector.Aside  vector.Forward
 
 ---
 
-[<< 1.6: Operations sur les chaines](06-strings.md) | [Accueil](../../README.md) | [1.8: Gestion de la memoire >>](08-memory-management.md)
+[<< 1.6: String Operations](06-strings.md) | [Accueil](../../README.md) | [1.8: Memory Management >>](08-memory-management.md)

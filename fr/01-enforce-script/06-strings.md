@@ -1,6 +1,6 @@
-# Chapter 1.6: String Operations
+# Chapitre 1.6: String Operations
 
-[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
+[Accueil](../../README.md) | [<< Précédent : Control Flow](05-control-flow.md) | **String Operations** | [Suivant : Math & Vectors >>](07-math-vectors.md)
 
 ---
 
@@ -10,15 +10,15 @@ Strings in Enforce Script are a **value type**, like `int` or `float`. They are 
 
 ---
 
-## Bases des chaines
+## Bases des chaînes
 
 ```c
-// Declaration and initialization
+// Déclaration et initialisation
 string empty;                          // "" (empty string by default)
 string greeting = "Hello, Chernarus!";
-string combined = "Player: " + "John"; // Concatenation with +
+string combined = "Player: " + "John"; // Concaténation avec +
 
-// Strings are value types -- assignment creates a copy
+// Les chaînes sont des types valeur -- assignment creates a copy
 string original = "DayZ";
 string copy = original;
 copy = "Arma";
@@ -27,7 +27,7 @@ Print(original); // Still "DayZ"
 
 ---
 
-## Reference complete des methodes de chaines
+## Référence complète des méthodes de chaîne
 
 ### Length
 
@@ -56,7 +56,7 @@ string rest = s.Substring(6, s.Length() - 6); // "World"
 
 ### IndexOf
 
-Finds the first occurrence of a substring. Returns the index, or `-1` if not found.
+Finds the first occurrence of a substring. Returns the index, or `-1` si non trouvé.
 
 ```c
 string s = "Hello World";
@@ -156,7 +156,7 @@ string log = string.Format("[%1] %2 :: %3", "MyMod", "INFO", "Server started");
 // log = "[MyMod] INFO :: Server started"
 ```
 
-> **Remarque :** There is no `printf`-style formatting (`%d`, `%f`, `%s`). Only `%1` through `%9`.
+> **Note :** There is no `printf`-style formatting (`%d`, `%f`, `%s`). Only `%1` through `%9`.
 
 ### ToLower
 
@@ -248,7 +248,7 @@ vector pos = s.ToVector(); // Vector(100.5, 0, 200.3)
 
 ---
 
-## Comparaison de chaines
+## Comparaison de chaînes
 
 Strings are compared by value using standard operators. Comparison is **case-sensitive** and follows lexicographic (dictionary) order.
 
@@ -280,7 +280,7 @@ bool EqualsIgnoreCase(string a, string b)
 
 ---
 
-## Concatenation de chaines
+## Concaténation de chaînes
 
 Use the `+` operator to concatenate strings. Non-string types are automatically converted.
 
@@ -436,9 +436,42 @@ string GetFileName(string path)
 
 ---
 
+## Bonnes pratiques
+
+- Use `string.Format()` with `%1`..`%9` placeholders for all formatted output -- it is more readable and avoids type-conversion pitfalls of `+` concatenation.
+- Remember that `ToLower()`, `ToUpper()`, and `Replace()` modify the string in place -- copy the string first if you need to preserve the original.
+- Always allocate the target array with `new TStringArray` before calling `Split()` -- passing a null array causes a crash.
+- Use `Contains()` for simple substring checks and `IndexOf()` only when you need the position.
+- For case-insensitive comparisons, copy both strings and call `ToLower()` on each before comparing -- there is no built-in case-insensitive compare.
+
+---
+
+## Observé dans les mods réels
+
+> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| `Split(" ", parts)` for chat command parsing | VPP / COT | All chat command systems split by space, then switch on `parts.Get(0)` |
+| `string.Format` with `[TAG]` prefix | Expansion / Dabs | Log messages always use `string.Format("[%1] %2", tag, msg)` rather than concatenation |
+| `"$profile:ModName/"` path convention | COT / Expansion | File paths built with `+` use forward slashes and `$profile:` prefix to avoid backslash issues |
+| `ToLower()` before command matching | VPP Admin | User input is lowered before `switch`/comparison to handle mixed-case input |
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| `ToLower()` / `Replace()` return value | Expected to return a new string (like C#) | They modify in place and return `void` or count -- a constant source of bugs |
+| `string.Format` placeholders | `%d`, `%f`, `%s` like C printf | Only `%1` through `%9` work; C-style specifiers are silently ignored |
+| Backslash `\\` in strings | Standard escape character | Can break DayZ's CParser in JSON contexts -- prefer forward slashes for paths |
+
+---
+
 ## Erreurs courantes
 
-| Mistake | Problem | Fix |
+| Erreur | Problème | Solution |
 |---------|---------|-----|
 | Expecting `ToLower()` to return a new string | `ToLower()` modifies in place, returns `void` | Copy the string first, then call `ToLower()` on the copy |
 | Expecting `ToUpper()` to return a new string | Same as above -- modifies in place | Copy first, then call `ToUpper()` on the copy |
@@ -451,7 +484,7 @@ string GetFileName(string path)
 
 ---
 
-## Reference rapide
+## Référence rapide
 
 ```c
 // Length
@@ -494,4 +527,4 @@ bool lt = (a < b);
 
 ---
 
-[<< 1.5: Flux de controle](05-control-flow.md) | [Accueil](../../README.md) | [1.7: Mathematiques et vecteurs >>](07-math-vectors.md)
+[<< 1.5: Control Flow](05-control-flow.md) | [Accueil](../../README.md) | [1.7: Math & Vectors >>](07-math-vectors.md)

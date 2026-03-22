@@ -1,16 +1,16 @@
-# Chapter 6.15: Sound System
+# Capítulo 6.15: Sistema de Sonido
 
-[Home](../../README.md) | [<< Previous: Player System](14-player-system.md) | **Sound System** | [Next: Crafting System >>](16-crafting-system.md)
+[Inicio](../../README.md) | [<< Anterior: Player System](14-player-system.md) | **Sound System** | [Siguiente: Crafting System >>](16-crafting-system.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ provides two main approaches for playing sounds from scripts: a **high-level API** built around `EffectSound` and `SEffectManager`, and a **config-driven shortcut** via `PlaySoundSet` / `StopSoundSet` on entities. Both ultimately rely on engine-level `CfgSoundSets` and `CfgSoundShaders` definitions in `config.cpp`.
 
 All scripted sound playback is **client-side only**. Dedicated servers have no audio output device --- calling sound methods on a headless server wastes resources and can trigger warnings. Always guard sound calls behind `!GetGame().IsDedicatedServer()` or use the built-in guards provided by the API.
 
-Este capitulo cubre the complete sound pipeline: config definitions, the `SEffectManager` API, the entity convenience methods, the `EffectSound` class, spatial vs UI sounds, looping, and common patterns found in vanilla and community mods.
+This chapter covers the complete sound pipeline: config definitions, the `SEffectManager` API, the entity convenience methods, the `EffectSound` class, spatial vs UI sounds, looping, and common patterns found in vanilla and community mods.
 
 ---
 
@@ -78,7 +78,7 @@ class CfgSoundShaders
 
 **Key properties:**
 
-| Property | Type | Descripcion |
+| Propiedad | Tipo | Descripción |
 |----------|------|-------------|
 | `samples[]` | array | Pairs of `{path, probability}`. Multiple entries for random variation. |
 | `volume` | float | Base volume multiplier, 0.0 to 1.0. |
@@ -118,7 +118,7 @@ class CfgSoundSets
 
 **Key properties:**
 
-| Property | Type | Descripcion |
+| Propiedad | Tipo | Descripción |
 |----------|------|-------------|
 | `soundShaders[]` | array | List of `CfgSoundShaders` class names to use. |
 | `spatial` | int | `1` for 3D positional audio, `0` for 2D (flat, no position). |
@@ -372,7 +372,7 @@ The "Safe" variant is useful when a sound set might change dynamically (e.g. swi
 
 ### Key Methods
 
-| Metodo | Descripcion |
+| Método | Descripción |
 |--------|-------------|
 | `SoundPlay()` | Start playback. Returns `bool` (success). |
 | `SoundStop()` | Stop playback. Respects fade-out duration if set. |
@@ -662,7 +662,7 @@ wave.Loop(false);
 
 The `AbstractWave` is the live handle to a playing sound:
 
-| Metodo | Descripcion |
+| Método | Descripción |
 |--------|-------------|
 | `Play()` | Start playback. |
 | `Stop()` | Stop playback. |
@@ -946,7 +946,7 @@ void OnActivated()
 }
 ```
 
-Nota: `PlaySoundSet` / `StopSoundSet` on `Object` already include this guard internally, so you do not need to check when using those methods.
+Note: `PlaySoundSet` / `StopSoundSet` on `Object` already include this guard internally, so you do not need to check when using those methods.
 
 ### 4. Missing CfgSoundSets Definition
 
@@ -1013,9 +1013,9 @@ Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`,
 
 ---
 
-## Referencia Rapida
+## Referencia Rápida
 
-| Tarea | Metodo |
+| Task | Método |
 |------|--------|
 | Play one-shot at position | `SEffectManager.PlaySound(soundSet, pos)` |
 | Play attached to entity | `SEffectManager.PlaySoundOnObject(soundSet, obj)` |
@@ -1034,7 +1034,7 @@ Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`,
 
 ## Source Files
 
-| File | Descripcion |
+| File | Descripción |
 |------|-------------|
 | `scripts/3_game/effects/effectsound.c` | `EffectSound` class --- the main sound wrapper |
 | `scripts/3_game/effectmanager.c` | `SEffectManager` --- static manager for all effects |
@@ -1045,7 +1045,7 @@ Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`,
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Always call `SetAutodestroy(true)` on one-shot sounds.** Without it, `EffectSound` instances accumulate in `SEffectManager`'s internal registry and are only cleaned on mission end, causing a memory leak over long play sessions.
 - **Guard all sound playback with `!GetGame().IsDedicatedServer()`.** Dedicated servers have no audio device. Calling sound methods on the server wastes CPU cycles and may log warnings. The `PlaySoundSet` convenience methods include this guard internally, but `SEffectManager.PlaySound()` does not.
@@ -1058,9 +1058,9 @@ Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`,
 ## Compatibilidad e Impacto
 
 - **Multi-Mod:** CfgSoundShaders and CfgSoundSets class names share a global namespace across all loaded mods. Name collisions cause one mod's sounds to silently replace another's. Always use a unique mod prefix.
-- **Rendimiento:** Each active `EffectSound` consumes an audio channel. The engine has a limited channel pool -- excessive simultaneous sounds (50+) can cause newer sounds to fail silently. Use `limitation` in CfgSoundShaders to cap concurrent instances of frequent sounds.
-- **Servidor/Cliente:** All sound playback is client-side only. The server has no audio output. Entity convenience methods (`PlaySoundSet`, `StopSoundSet`) include server guards internally, but direct `SEffectManager` calls do not.
+- **Performance:** Each active `EffectSound` consumes an audio channel. The engine has a limited channel pool -- excessive simultaneous sounds (50+) can cause newer sounds to fail silently. Use `limitation` in CfgSoundShaders to cap concurrent instances of frequent sounds.
+- **Server/Client:** All sound playback is client-side only. The server has no audio output. Entity convenience methods (`PlaySoundSet`, `StopSoundSet`) include server guards internally, but direct `SEffectManager` calls do not.
 
 ---
 
-[Home](../../README.md) | [<< Previous: Player System](14-player-system.md) | **Sound System**
+[Inicio](../../README.md) | [<< Anterior: Player System](14-player-system.md) | **Sound System** | [Siguiente: Crafting System >>](16-crafting-system.md)

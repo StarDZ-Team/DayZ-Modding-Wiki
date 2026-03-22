@@ -1,22 +1,22 @@
-# Chapter 6.13: Input System
+# Chapitre 6.13: Input System
 
-[Home](../../README.md) | [<< Previous: Action System](12-action-system.md) | **Input System** | [Next: Player System >>](14-player-system.md)
+[Accueil](../../README.md) | [<< Précédent : Action System](12-action-system.md) | **Input System** | [Suivant : Player System >>](14-player-system.md)
 
 ---
 
 ## Introduction
 
-Le systeme d'entrees de DayZ connecte les entrees materielles --- keyboard, mouse, and gamepad --- to named actions that scripts can query. It operates in two layers:
+The DayZ input system connects hardware inputs --- keyboard, mouse, and gamepad --- to named actions that scripts can query. It operates in two layers:
 
-1. **inputs.xml** (config layer) --- declares named actions, assigns default keybindings, and organizes them into groups for the player's Controls settings menu. Voir [Chapitre 5.2: inputs.xml](../05-config-files/02-inputs-xml.md) for full coverage.
+1. **inputs.xml** (config layer) --- declares named actions, assigns default keybindings, and organizes them into groups for le joueur's Controls settings menu. See [Chapter 5.2: inputs.xml](../05-config-files/02-inputs-xml.md) for full coverage.
 
-2. **UAInput API** (script layer) --- queries input state at runtime. This is what your scripts call every frame to detect presses, releases, holds, and analog values.
+2. **UAInput API** (script layer) --- queries input state à l'exécution. This is what your scripts call every frame to detect presses, releases, holds, and analog values.
 
-This chapter covers the script layer: the classes, methods, and patterns you use to read and control inputs from Enforce Script.
+Ce chapitre couvre the script layer: the classes, methods, and patterns you use to read and control inputs from Enforce Script.
 
 ---
 
-## Classes Principales
+## Core Classes
 
 The input system is built on three main classes:
 
@@ -26,7 +26,7 @@ UAInputAPI         Global singleton (accessed via GetUApi())
 └── Input          Lower-level input access (accessed via GetGame().GetInput())
 ```
 
-| Class | Source File | But |
+| Class | Source File | Purpose |
 |-------|-----------|---------|
 | `UAInputAPI` | `3_Game/inputapi/uainput.c` | Global input manager. Retrieves inputs by name/ID, manages excludes, presets, and backlit. |
 | `UAInput` | `3_Game/inputapi/uainput.c` | Single input action. Provides state queries (press, hold, release) and control (disable, suppress, lock). |
@@ -67,9 +67,9 @@ if (input.LocalPress("UAMyAction", false))
 }
 ```
 
-The `bool check_focus` parameter (second argument) controls whether the check respects game focus. Pass `true` (default) to return false when the game window is unfocused. Pass `false` to always return the raw input state.
+The `bool check_focus` parameter (second argument) controls whether the check respects game focus. Pass `true` (default) to return false when le jeu window is unfocused. Pass `false` to always return the raw input state.
 
-### When to Use Which
+### Quand utiliser Which
 
 - **`GetUApi().GetInputByName()`** --- Use when you need to query the same input multiple times, suppress/disable it, or inspect its bindings. You get a `UAInput` object you can reuse.
 - **`GetGame().GetInput().LocalPress()`** --- Use for one-off checks where you do not need to manipulate the input itself. Simpler syntax but slightly less efficient for repeated queries.
@@ -84,12 +84,12 @@ Once you have a `UAInput` reference, these methods query its current state:
 UAInput input = GetUApi().GetInputByName("UAMyAction");
 
 // Frame-precise checks
-bool justPressed   = input.LocalPress();        // True on the FIRST frame the key goes down
-bool justReleased  = input.LocalRelease();       // True on the FIRST frame the key comes up
-bool holdStarted   = input.LocalHoldBegin();     // True on the first frame hold threshold is met
-bool isHeld        = input.LocalHold();          // True EVERY frame while key is held past threshold
-bool clicked       = input.LocalClick();         // True on press-and-release before hold threshold
-bool doubleClicked = input.LocalDoubleClick();   // True when a double-tap is detected
+bool justPressed   = input.LocalPress();        // Vrai on the FIRST frame the key goes down
+bool justReleased  = input.LocalRelease();       // Vrai on the FIRST frame the key comes up
+bool holdStarted   = input.LocalHoldBegin();     // Vrai on the first frame hold threshold is met
+bool isHeld        = input.LocalHold();          // Vrai EVERY frame while key is held past threshold
+bool clicked       = input.LocalClick();         // Vrai on press-and-release before hold threshold
+bool doubleClicked = input.LocalDoubleClick();   // Vrai when a double-tap is detected
 
 // Analog value
 float value = input.LocalValue();                // 0.0 or 1.0 for digital; 0.0-1.0 for analog axes
@@ -121,7 +121,7 @@ Both classes also provide `_ID` variants that accept integer action IDs instead 
 
 ### UAInput Methods
 
-| Methode | Retourne | Quand Vrai | Cas d'Utilisation |
+| Méthode | Retourne | When True | Use Case |
 |--------|---------|-----------|----------|
 | `LocalPress()` | `bool` | First frame the key goes down | Toggle actions, one-shot triggers |
 | `LocalRelease()` | `bool` | First frame the key comes up | End continuous actions |
@@ -133,7 +133,7 @@ Both classes also provide `_ID` variants that accept integer action IDs instead 
 
 ### Input Class Methods
 
-| Methode | Retourne | Signature | Equivalent UAInput Method |
+| Méthode | Retourne | Signature | Equivalent UAInput Method |
 |--------|---------|-----------|--------------------------|
 | `LocalPress()` | `bool` | `LocalPress(string action, bool check_focus = true)` | `UAInput.LocalPress()` |
 | `LocalRelease()` | `bool` | `LocalRelease(string action, bool check_focus = true)` | `UAInput.LocalRelease()` |
@@ -143,9 +143,9 @@ Both classes also provide `_ID` variants that accept integer action IDs instead 
 
 ### Important Timing Notes
 
-- **`LocalPress()`** fires on exactly **one frame** --- the frame the key transitions from up to down. If you check it on any other frame, it returns false.
+- **`LocalPress()`** fires on exactly **one frame** --- the frame the key transitions from up to down. If you check it on any other frame, it retourne false.
 - **`LocalClick()`** fires when the key is pressed and released quickly (before the hold timer kicks in). It is NOT the same as `LocalPress()`. Use `LocalPress()` for immediate key-down detection.
-- **`LocalHold()`** does NOT fire immediately. It waits for the engine's hold threshold to be met first. Use `LocalPress()` if you need instant response.
+- **`LocalHold()`** does NOT fire immediately. It waits for le moteur's hold threshold to be met first. Use `LocalPress()` if you need instant response.
 - **`LocalHoldBegin()`** fires once when the hold threshold is first met. `LocalHold()` then fires every subsequent frame.
 
 ---
@@ -206,7 +206,7 @@ Inputs can technically be checked in any per-frame callback, but `MissionGamepla
 - `ScriptedWidgetEventHandler.Update()` --- for UI-specific input (but prefer widget event handlers)
 - `PluginBase.OnUpdate()` --- for plugin-scoped input
 
-Avoid checking inputs in server-side code, entity constructors, or one-off event handlers where frame timing is not guaranteed.
+Avoid checking inputs in côté serveur code, entity constructors, or one-off event handlers where frame timing is not guaranteed.
 
 ---
 
@@ -240,9 +240,9 @@ modded class MissionGameplay
 }
 ```
 
-### UAInput vs OnKeyPress: When to Use Which
+### UAInput vs OnKeyPress: Quand utiliser Which
 
-| Fonctionnalite | UAInput (GetUApi) | OnKeyPress |
+| Feature | UAInput (GetUApi) | OnKeyPress |
 |---------|-------------------|------------|
 | Player can rebind | Yes | No |
 | Supports modifiers | Yes (Ctrl+Key combos via inputs.xml) | Manual checking required |
@@ -252,7 +252,7 @@ modded class MissionGameplay
 | Simplicity | Requires inputs.xml setup | Just check KeyCode |
 | Best for | All player-facing actions | Debug tools, hardcoded dev shortcuts |
 
-**Rule of thumb:** If a player will ever press this key, use UAInput with inputs.xml. Only use OnKeyPress for internal debug tools or prototype testing.
+**Règle générale :** If a player will ever press this key, use UAInput with inputs.xml. Only use OnKeyPress for internal debug tools or prototype testing.
 
 ---
 
@@ -262,7 +262,7 @@ The `KeyCode` enum is defined in `1_Core/proto/ensystem.c`. These constants are 
 
 ### Commonly Used Keys
 
-| Categorie | Constants |
+| Category | Constants |
 |----------|-----------|
 | Escape | `KC_ESCAPE` |
 | Function keys | `KC_F1` through `KC_F12` |
@@ -356,7 +356,7 @@ input.Unlock();  // Re-enable
 bool locked = input.IsLocked();  // Check state
 ```
 
-The engine documentation recommends using exclude groups instead of Lock/Unlock for most cases.
+Le moteur documentation recommends using exclude groups instead of Lock/Unlock for most cases.
 
 ### ForceDisable All Inputs (Bulk)
 
@@ -388,7 +388,7 @@ void DisableAllInputs(bool state)
 
 ### Input Exclude Groups
 
-The mission system provides named exclude groups defined in the engine's `specific.xml`. When activated, they disable categories of inputs:
+The mission system provides named exclude groups defined in le moteur's `specific.xml`. When activated, they disable categories of inputs:
 
 ```c
 // Suppress gameplay inputs while a menu is open
@@ -409,7 +409,7 @@ bool IsInputExcludeActive(string exclude);
 
 The `bForceSupress` parameter on `RemoveActiveInputExcludes` calls `SupressNextFrame` internally to prevent input bleed when re-enabling.
 
-Expansion uses its own custom exclude group registered with the engine:
+Expansion uses its own custom exclude group registered with le moteur:
 
 ```c
 GetUApi().ActivateExclude("menuexpansion");
@@ -448,19 +448,19 @@ Player sees in Settings > Controls       input.LocalPress() returns true
 and can rebind the key                   when player hits the bound key
 ```
 
-1. At startup, the engine reads all `inputs.xml` files from loaded mods
+1. At startup, le moteur reads all `inputs.xml` files from loaded mods
 2. Each `<input name="...">` is registered as a `UAInput` in the global `UAInputAPI`
-3. Default key bindings from `<preset>` are applied (unless the player has customized them)
+3. Default key bindings from `<preset>` are applied (unless le joueur has customized them)
 4. In script, `GetUApi().GetInputByName("UAMyModOpenMenu")` retrieves the registered input
-5. Calling `LocalPress()` etc. checks against whatever key the player has bound
+5. Calling `LocalPress()` etc. checks against whatever key le joueur has bound
 
 The name string must match **exactly** (case-sensitive) between the XML and the script call.
 
-For complete inputs.xml syntax, voir [Chapitre 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).
+For complete inputs.xml syntax, see [Chapter 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).
 
 ### Runtime Registration (Advanced)
 
-Inputs can also be registered at runtime from script, without an inputs.xml file:
+Inputs can also be registered à l'exécution from script, without an inputs.xml file:
 
 ```c
 // Register a new group
@@ -478,7 +478,7 @@ This is rarely used. The inputs.xml approach is preferred because it integrates 
 
 ---
 
-## Patrons Courants
+## Patrons courants
 
 ### Toggle Panel Open/Close
 
@@ -592,7 +592,7 @@ class MyMenuHandler extends ScriptedWidgetEventHandler
 
 ### Getting the Display Name of a Bound Key
 
-To show the player what key is bound to an action (for UI prompts):
+To show le joueur what key is bound to an action (for UI prompts):
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyModAction");
@@ -615,7 +615,7 @@ string richText = InputUtils.GetRichtextButtonIconFromInputAction(
 
 ## Game Focus
 
-The `Input` class provides game focus management, which controls whether inputs are processed when the game window is not focused:
+The `Input` class provides game focus management, which controls whether inputs are processed when le jeu window is not focused:
 
 ```c
 Input input = GetGame().GetInput();
@@ -637,14 +637,14 @@ This is a reference-counted system. Multiple systems can request focus changes, 
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 ### Polling Input on the Server
 
-Inputs are **client-only**. The server has no concept of keyboard, mouse, or gamepad state. If you call `GetUApi().GetInputByName()` on the server, the result is meaningless.
+Inputs are **client-only**. Le serveur has no concept of keyboard, mouse, or gamepad state. If you call `GetUApi().GetInputByName()` on le serveur, the result is meaningless.
 
 ```c
-// WRONG --- this runs on the server, inputs do not exist here
+// INCORRECT --- this runs on the server, inputs do not exist here
 modded class MissionServer
 {
     override void OnUpdate(float timeslice)
@@ -677,7 +677,7 @@ modded class MissionGameplay  // Client-side mission class
 ### Using OnKeyPress for Player-Facing Actions
 
 ```c
-// WRONG --- hardcoded key, player cannot rebind
+// INCORRECT --- hardcoded key, player cannot rebind
 override void OnKeyPress(int key)
 {
     super.OnKeyPress(key);
@@ -697,10 +697,10 @@ override void OnUpdate(float timeslice)
 
 ### Not Suppressing Input When UI Is Open
 
-When your mod opens a UI panel, the player's WASD keys will still move the character, the mouse will still aim, and clicking will fire the weapon --- unless you disable game inputs:
+When your mod opens a UI panel, le joueur's WASD keys will still move the character, the mouse will still aim, and clicking will fire the weapon --- unless you disable game inputs:
 
 ```c
-// WRONG --- character walks around behind the menu
+// INCORRECT --- character walks around behind the menu
 void OpenMenu()
 {
     m_MenuWidget.Show(true);
@@ -727,7 +727,7 @@ void CloseMenu()
 `LocalPress()` returns `true` for exactly one frame --- the frame the key transitions from released to pressed. If your code path does not execute on that exact frame, you miss the event.
 
 ```c
-// WRONG --- if DoExpensiveCheck() takes time or skips frames, you miss the press
+// INCORRECT --- if DoExpensiveCheck() takes time or skips frames, you miss the press
 void SomeCallback()
 {
     if (GetUApi().GetInputByName("UAMyAction").LocalPress())
@@ -764,7 +764,7 @@ if (input.LocalPress())  // Usually what you want
 When you `ForceDisable()` multiple inputs, you must call `UpdateControls()` for the changes to take effect:
 
 ```c
-// WRONG --- changes may not apply immediately
+// INCORRECT --- changes may not apply immediately
 GetUApi().GetInputByName("UAFire").ForceDisable(true);
 GetUApi().GetInputByName("UAMoveForward").ForceDisable(true);
 
@@ -776,10 +776,10 @@ GetUApi().UpdateControls();
 
 ### Misspelling Supress
 
-The engine method is `Supress()` with a single 's' (not `Suppress`). The global method `SupressNextFrame()` also uses a single 's'. This is a quirk of the engine API:
+Le moteur method is `Supress()` with a single 's' (not `Suppress`). The global method `SupressNextFrame()` also uses a single 's'. This is a quirk of le moteur API:
 
 ```c
-// WRONG --- will not compile
+// INCORRECT --- will not compile
 input.Suppress();
 
 // CORRECT --- single 's'
@@ -789,7 +789,7 @@ GetUApi().SupressNextFrame(true);
 
 ---
 
-## Reference Rapide
+## Référence rapide
 
 ```c
 // === Getting inputs ===
@@ -839,22 +839,22 @@ string name = InputUtils.GetButtonNameFromInput("UAMyAction", EUAINPUT_DEVICE_KE
 
 ---
 
-*This chapter covers the script-side Input System API. For the XML configuration that registers keybindings, voir [Chapitre 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).*
+*Ce chapitre couvre the script-side Input System API. For the XML configuration that registers keybindings, see [Chapter 5.2: inputs.xml](../05-config-files/02-inputs-xml.md).*
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 - **Always use `UAInput` via inputs.xml for player-facing keybindings.** This allows players to rebind keys, shows actions in the Controls menu, and supports gamepad input. Reserve `OnKeyPress` for debug shortcuts only.
 - **Call `AddActiveInputExcludes({"menu"})` when opening full-screen UI.** Without this, player movement keys (WASD), mouse aiming, and weapon firing remain active behind your menu, causing accidental actions.
-- **Check inputs only in per-frame callbacks like `OnUpdate()`.** `LocalPress()` returns true for exactly one frame. Checking it in event handlers or callbacks that do not run every frame will miss key presses.
+- **Check inputs only in per-frame callbacks like `OnUpdate()`.** `LocalPress()` retourne true for exactly one frame. Checking it in event handlers or callbacks that do not run every frame will miss key presses.
 - **Call `GetUApi().UpdateControls()` after bulk `ForceDisable()` changes.** Without this flush call, disable/enable state changes may not take effect until the next frame, causing one-frame input bleed.
-- **Remember that `Supress()` uses a single "s".** The engine API spells it `Supress()` and `SupressNextFrame()`. Using the correct English spelling `Suppress` will not compile.
+- **Remember that `Supress()` uses a single "s".** Le moteur API spells it `Supress()` and `SupressNextFrame()`. Using the correct English spelling `Suppress` will not compile.
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
-- **Multi-Mod:** Input action names are global. Two mods registering the same `UAInput` name (e.g., `"UAOpenMenu"`) will collide. Always prefix with your mod name: `"UAMyModOpenMenu"`. Input exclude groups are shared -- one mod activating `"menu"` excludes affects all mods.
-- **Performance:** Input polling is lightweight. `GetUApi().GetInputByName()` performs a hash lookup. Caching the `UAInput` reference in a member variable avoids repeated lookups but is not strictly necessary for performance.
-- **Server/Client:** Inputs exist only on the client. The server has no keyboard, mouse, or gamepad state. Always detect input on the client and send RPCs to the server for authoritative actions.
+- **Multi-Mod :** Input action names are global. Two mods registering the same `UAInput` name (e.g., `"UAOpenMenu"`) will collide. Always prefix with your mod name: `"UAMyModOpenMenu"`. Input exclude groups are shared -- one mod activating `"menu"` excludes affects all mods.
+- **Performance :** Input polling is lightweight. `GetUApi().GetInputByName()` performs a hash lookup. Caching the `UAInput` reference in a member variable avoids repeated lookups but is not strictly necessary for performance.
+- **Serveur/Client :** Inputs exist only on le client. Le serveur has no keyboard, mouse, or gamepad state. Always detect input on le client and send RPCs to le serveur for authoritative actions.

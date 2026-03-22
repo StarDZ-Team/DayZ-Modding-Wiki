@@ -1,6 +1,10 @@
-# Enforce Script Cheat Sheet
+# Шпаргалка по Enforce Script
 
-[Home](../README.md) | **Cheat Sheet**
+[Главная](../README.md) | **Шпаргалка**
+
+---
+
+> Краткий справочник по Enforce Script для DayZ на одной странице. Добавьте в закладки.
 
 ---
 
@@ -14,8 +18,8 @@
 | `string` | Неизменяемый тип-значение | `""` | `string s = "hello";` |
 | `vector` | 3-компонентный float (x,y,z) | `"0 0 0"` | `vector v = "1 2 3";` |
 | `typename` | Ссылка на тип | `null` | `typename t = PlayerBase;` |
-| `Class` | Корень всех ссылочных типов | `null` | — |
-| `void` | Нет возвращаемого значения | — | — |
+| `Class` | Корень всех ссылочных типов | `null` | --- |
+| `void` | Нет возвращаемого значения | --- | --- |
 
 **Пределы:** `int.MAX` = 2147483647, `int.MIN` = -2147483648, `float.MAX`, `float.MIN`
 
@@ -28,24 +32,24 @@
 | `Insert(item)` | `int` (индекс) | Добавить в конец |
 | `InsertAt(item, idx)` | `void` | Вставить на позицию |
 | `Get(idx)` / `arr[idx]` | `T` | Доступ по индексу |
-| `Set(idx, item)` | `void` | Замена по индексу |
+| `Set(idx, item)` | `void` | Заменить по индексу |
 | `Find(item)` | `int` | Индекс или -1 |
 | `Count()` | `int` | Количество элементов |
 | `IsValidIndex(idx)` | `bool` | Проверка границ |
-| `Remove(idx)` | `void` | **Неупорядоченное** (меняет местами с последним!) |
+| `Remove(idx)` | `void` | **Неупорядоченное** (меняет с последним!) |
 | `RemoveOrdered(idx)` | `void` | Сохраняет порядок |
-| `RemoveItem(item)` | `void` | Поиск + удаление (упорядоченное) |
+| `RemoveItem(item)` | `void` | Найти + удалить (упорядоченно) |
 | `Clear()` | `void` | Удалить все |
 | `Sort()` / `Sort(true)` | `void` | По возрастанию / по убыванию |
 | `ShuffleArray()` | `void` | Перемешать |
-| `Invert()` | `void` | Перевернуть |
-| `GetRandomElement()` | `T` | Случайный элемент |
+| `Invert()` | `void` | Обратить порядок |
+| `GetRandomElement()` | `T` | Случайный выбор |
 | `InsertAll(other)` | `void` | Добавить все из другого |
 | `Copy(other)` | `void` | Заменить копией |
 | `Resize(n)` | `void` | Изменить размер (заполняет значениями по умолчанию) |
-| `Reserve(n)` | `void` | Предварительно выделить ёмкость |
+| `Reserve(n)` | `void` | Предвыделить ёмкость |
 
-**Typedefs:** `TStringArray`, `TIntArray`, `TFloatArray`, `TBoolArray`, `TVectorArray`
+**Псевдонимы типов:** `TStringArray`, `TIntArray`, `TFloatArray`, `TBoolArray`, `TVectorArray`
 
 ---
 
@@ -55,7 +59,7 @@
 |-------|-----------|------------|
 | `Insert(key, val)` | `bool` | Добавить новый |
 | `Set(key, val)` | `void` | Вставить или обновить |
-| `Get(key)` | `V` | Возвращает значение по умолчанию, если не найден |
+| `Get(key)` | `V` | Возвращает значение по умолчанию, если отсутствует |
 | `Find(key, out val)` | `bool` | Безопасное получение |
 | `Contains(key)` | `bool` | Проверка наличия |
 | `Remove(key)` | `void` | Удалить по ключу |
@@ -87,20 +91,20 @@
 ```c
 class MyClass extends BaseClass
 {
-    protected int m_Value;                  // field
-    private ref array<string> m_List;       // owned ref
+    protected int m_Value;                  // поле
+    private ref array<string> m_List;       // владеющая ссылка
 
-    void MyClass() { m_List = new array<string>; }  // constructor
-    void ~MyClass() { }                              // destructor
+    void MyClass() { m_List = new array<string>; }  // конструктор
+    void ~MyClass() { }                              // деструктор
 
-    override void OnInit() { super.OnInit(); }       // override
-    static int GetCount() { return 0; }              // static method
+    override void OnInit() { super.OnInit(); }       // переопределение
+    static int GetCount() { return 0; }              // статический метод
 };
 ```
 
-**Доступ:** `private` | `protected` | (public по умолчанию)
+**Доступ:** `private` | `protected` | (по умолчанию публичный)
 **Модификаторы:** `static` | `override` | `ref` | `const` | `out` | `notnull`
-**Modded:** `modded class MissionServer { override void OnInit() { super.OnInit(); } }`
+**Модификация:** `modded class MissionServer { override void OnInit() { super.OnInit(); } }`
 
 ---
 
@@ -125,7 +129,7 @@ foreach (string key, int val : myMap) { }
 // while
 while (condition) { }
 
-// switch (БЕЗ проваливания!)
+// switch (НЕТ проваливания!)
 switch (val) { case 0: Print("zero"); break; default: break; }
 ```
 
@@ -146,12 +150,12 @@ switch (val) { case 0: Print("zero"); break; default: break; }
 | `s.TrimInPlace()` | `void` | **На месте!** |
 | `s.Split(delim, out arr)` | `void` | Разделяет в TStringArray |
 | `s.Get(idx)` | `string` | Один символ |
-| `s.Set(idx, ch)` | `void` | Замена символа |
-| `s.ToInt()` | `int` | Парсинг int |
-| `s.ToFloat()` | `float` | Парсинг float |
+| `s.Set(idx, ch)` | `void` | Заменить символ |
+| `s.ToInt()` | `int` | Парсинг целого |
+| `s.ToFloat()` | `float` | Парсинг дробного |
 | `s.ToVector()` | `vector` | Парсинг `"1 2 3"` |
-| `string.Format(fmt, ...)` | `string` | Заполнители `%1`..`%9` |
-| `string.Join(sep, arr)` | `string` | Объединить элементы array |
+| `string.Format(fmt, ...)` | `string` | Подстановки `%1`..`%9` |
+| `string.Join(sep, arr)` | `string` | Объединение элементов массива |
 
 ---
 
@@ -159,25 +163,25 @@ switch (val) { case 0: Print("zero"); break; default: break; }
 
 | Метод | Описание |
 |-------|----------|
-| `Math.RandomInt(min, max)` | `[min, max)` max не включён |
+| `Math.RandomInt(min, max)` | `[min, max)` исключая max |
 | `Math.RandomIntInclusive(min, max)` | `[min, max]` |
 | `Math.RandomFloat01()` | `[0, 1]` |
-| `Math.RandomBool()` | Случайное true/false |
+| `Math.RandomBool()` | Случайный true/false |
 | `Math.Round(f)` / `Floor(f)` / `Ceil(f)` | Округление |
 | `Math.AbsFloat(f)` / `AbsInt(i)` | Абсолютное значение |
-| `Math.Clamp(val, min, max)` | Ограничить диапазоном |
+| `Math.Clamp(val, min, max)` | Ограничение диапазоном |
 | `Math.Min(a, b)` / `Max(a, b)` | Минимум/максимум |
 | `Math.Lerp(a, b, t)` | Линейная интерполяция |
 | `Math.InverseLerp(a, b, val)` | Обратная интерполяция |
 | `Math.Pow(base, exp)` / `Sqrt(f)` | Степень/корень |
 | `Math.Sin(r)` / `Cos(r)` / `Tan(r)` | Тригонометрия (радианы) |
-| `Math.Atan2(y, x)` | Угол по компонентам |
-| `Math.NormalizeAngle(deg)` | Привести к 0-360 |
+| `Math.Atan2(y, x)` | Угол из компонентов |
+| `Math.NormalizeAngle(deg)` | Приведение к 0-360 |
 | `Math.SqrFloat(f)` / `SqrInt(i)` | Квадрат |
 
 **Константы:** `Math.PI`, `Math.PI2`, `Math.PI_HALF`, `Math.DEG2RAD`, `Math.RAD2DEG`
 
-**Vector:** `vector.Distance(a,b)`, `vector.DistanceSq(a,b)`, `vector.Direction(a,b)`, `vector.Dot(a,b)`, `vector.Lerp(a,b,t)`, `v.Length()`, `v.Normalized()`
+**Вектор:** `vector.Distance(a,b)`, `vector.DistanceSq(a,b)`, `vector.Direction(a,b)`, `vector.Dot(a,b)`, `vector.Lerp(a,b,t)`, `v.Length()`, `v.Normalized()`
 
 ---
 
@@ -224,7 +228,7 @@ foreach (string key, int value : myMap)
 }
 ```
 
-### Преобразование Enum
+### Преобразование перечислений
 
 ```c
 string name = typename.EnumToString(EDamageState, state);
@@ -236,15 +240,15 @@ int val; typename.StringToEnum(EDamageState, "RUINED", val);
 ```c
 int flags = FLAG_A | FLAG_B;       // объединить
 if (flags & FLAG_A) { }           // проверить
-flags = flags & ~FLAG_B;          // убрать
+flags = flags & ~FLAG_B;          // удалить
 ```
 
 ---
 
 ## Чего НЕ существует
 
-| Отсутствующая возможность | Обходное решение |
-|--------------------------|-----------------|
+| Отсутствующая возможность | Обходной путь |
+|--------------------------|---------------|
 | Тернарный `? :` | `if/else` |
 | `do...while` | `while(true) { ... break; }` |
 | `try/catch` | Защитные проверки + ранний return |
@@ -254,30 +258,30 @@ flags = flags & ~FLAG_B;          // убрать
 | `nullptr` | `null` / `NULL` |
 | `\\` / `\"` в строках | Избегать (CParser ломается) |
 | `#include` | config.cpp `files[]` |
-| Пространства имён | Префиксы имён (`My`, `VPP_`) |
-| Интерфейсы / abstract | Пустые базовые методы |
-| Проваливание switch | Каждый case независим |
+| Пространства имён | Префиксы имён (`MyMod_`, `VPP_`) |
+| Интерфейсы / абстрактные | Пустые базовые методы |
+| Проваливание в switch | Каждый case независим |
 | `#define` со значениями | Используйте `const` |
 | Выражения в параметрах по умолчанию | Только литералы/NULL |
-| Вариативные параметры | `string.Format` или arrays |
-| Переобъявление переменных в else-if | Уникальные имена для каждой ветви |
+| Вариадические параметры | `string.Format` или массивы |
+| Переобъявление переменных в else-if | Уникальные имена в каждой ветке |
 
 ---
 
-## Создание виджетов (программное)
+## Создание виджетов (программно)
 
 ```c
-// Get workspace
+// Получение рабочей области
 WorkspaceWidget ws = GetGame().GetWorkspace();
 
-// Create from layout
+// Создание из макета
 Widget root = ws.CreateWidgets("MyMod/gui/layouts/MyPanel.layout");
 
-// Find child widget
+// Поиск дочернего виджета
 TextWidget title = TextWidget.Cast(root.FindAnyWidget("TitleText"));
 if (title) title.SetText("Hello World");
 
-// Show/hide
+// Показать/скрыть
 root.Show(true);
 root.Show(false);
 ```
@@ -288,21 +292,21 @@ root.Show(false);
 
 **Регистрация (сервер):**
 ```c
-// In 3_Game or 4_World init:
-GetGame().RPCSingleParam(null, MY_RPC_ID, null, true, identity);  // Engine RPC
+// В инициализации 3_Game или 4_World:
+GetGame().RPCSingleParam(null, MY_RPC_ID, null, true, identity);  // RPC движка
 
-// Or with string-routed RPC (MyRPC / CF):
+// Или через строковую маршрутизацию RPC (MyRPC / CF):
 GetRPCManager().AddRPC("MyMod", "RPC_Handler", this, 2);  // CF
 MyRPC.Register("MyMod", "MyRoute", this, MyRPCSide.SERVER);  // MyMod
 ```
 
-**Отправка (клиент на сервер):**
+**Отправка (клиент серверу):**
 ```c
 Param2<string, int> data = new Param2<string, int>("itemName", 5);
 GetGame().RPCSingleParam(null, MY_RPC_ID, data, true);
 ```
 
-**Получение (обработчик на сервере):**
+**Приём (обработчик на сервере):**
 ```c
 void RPC_Handler(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
 {
@@ -314,7 +318,7 @@ void RPC_Handler(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Ob
 
     string itemName = data.param1;
     int quantity = data.param2;
-    // Process...
+    // Обработка...
 }
 ```
 
@@ -323,11 +327,11 @@ void RPC_Handler(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Ob
 ## Обработка ошибок
 
 ```c
-ErrorEx("message");                              // Default ERROR severity
-ErrorEx("info", ErrorExSeverity.INFO);           // Info
-ErrorEx("warning", ErrorExSeverity.WARNING);     // Warning
-Print("debug output");                           // Script log
-string stack = DumpStackString();                // Get call stack
+ErrorEx("message");                              // Серьёзность ERROR по умолчанию
+ErrorEx("info", ErrorExSeverity.INFO);           // Информация
+ErrorEx("warning", ErrorExSeverity.WARNING);     // Предупреждение
+Print("debug output");                           // Лог скрипта
+string stack = DumpStackString();                // Получить стек вызовов
 ```
 
 ---
@@ -335,16 +339,16 @@ string stack = DumpStackString();                // Get call stack
 ## Файловый ввод-вывод
 
 ```c
-// Paths: "$profile:", "$saves:", "$mission:", "$CurrentDir:"
+// Пути: "$profile:", "$saves:", "$mission:", "$CurrentDir:"
 bool exists = FileExist("$profile:MyMod/config.json");
 MakeDirectory("$profile:MyMod");
 
 // JSON
 MyConfig cfg = new MyConfig();
-JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);  // Returns VOID!
+JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);  // Возвращает VOID!
 JsonFileLoader<MyConfig>.JsonSaveFile(path, cfg);
 
-// Raw file
+// Прямой файл
 FileHandle fh = OpenFile(path, FileMode.WRITE);
 if (fh != 0) { FPrintln(fh, "line"); CloseFile(fh); }
 ```
@@ -354,39 +358,39 @@ if (fh != 0) { FPrintln(fh, "line"); CloseFile(fh); }
 ## Создание объектов
 
 ```c
-// Basic
+// Базовое
 Object obj = GetGame().CreateObject("AK101", pos, false, false, true);
 
-// With flags
+// С флагами
 Object obj = GetGame().CreateObjectEx("Barrel_Green", pos, ECE_PLACE_ON_SURFACE);
 
-// In player inventory
+// В инвентаре игрока
 player.GetInventory().CreateInInventory("BandageDressing");
 
-// As attachment
+// Как вложение
 weapon.GetInventory().CreateAttachment("ACOGOptic");
 
-// Delete
+// Удаление
 GetGame().ObjectDelete(obj);
 ```
 
 ---
 
-## Основные глобальные функции
+## Ключевые глобальные функции
 
 ```c
-GetGame()                          // CGame instance
-GetGame().GetPlayer()              // Local player (CLIENT only, null on server!)
-GetGame().GetPlayers(out arr)      // All players (server)
-GetGame().GetWorld()               // World instance
-GetGame().GetTickTime()            // Server time (float)
-GetGame().GetWorkspace()           // UI workspace
-GetGame().SurfaceY(x, z)          // Terrain height
-GetGame().IsServer()               // true on server
-GetGame().IsClient()               // true on client
-GetGame().IsMultiplayer()          // true if multiplayer
+GetGame()                          // Экземпляр CGame
+GetGame().GetPlayer()              // Локальный игрок (только КЛИЕНТ, null на сервере!)
+GetGame().GetPlayers(out arr)      // Все игроки (сервер)
+GetGame().GetWorld()               // Экземпляр мира
+GetGame().GetTickTime()            // Серверное время (float)
+GetGame().GetWorkspace()           // Рабочая область UI
+GetGame().SurfaceY(x, z)          // Высота рельефа
+GetGame().IsServer()               // true на сервере
+GetGame().IsClient()               // true на клиенте
+GetGame().IsMultiplayer()          // true в мультиплеере
 ```
 
 ---
 
-*Полная документация: [Вики по моддингу DayZ](../README.md) | [Ловушки](01-enforce-script/12-gotchas.md) | [Обработка ошибок](01-enforce-script/11-error-handling.md)*
+*Полная документация: [Вики моддинга DayZ](../README.md) | [Подводные камни](01-enforce-script/12-gotchas.md) | [Обработка ошибок](01-enforce-script/11-error-handling.md)*

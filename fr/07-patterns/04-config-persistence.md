@@ -1,18 +1,18 @@
-# Chapter 7.4: Config Persistence
+# Chapitre 7.4: Config Persistence
 
-[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
+[Accueil](../../README.md) | [<< Précédent : RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Suivant : Permission Systems >>](05-permissions.md)
 
 ---
 
 ## Introduction
 
-Almost every DayZ mod needs to save and load configuration data: server settings, spawn tables, ban lists, player data, teleport locations. The engine provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for everything else. Professional mods layer config versioning and auto-migration on top.
+Almost every DayZ mod needs to save and load configuration data: server settings, apparition tables, ban lists, player data, teleport locations. Le moteur provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for everything else. Professional mods layer config versioning and auto-migration on top.
 
 Ce chapitre couvre the standard patterns for config persistence, from basic JSON load/save through versioned migration systems, directory management, and auto-save timers.
 
 ---
 
-## Table des matieres
+## Table des matières
 
 - [JsonFileLoader Pattern](#jsonfileloader-pattern)
 - [Manual JSON Writing (FPrintln)](#manual-json-writing-fprintln)
@@ -28,17 +28,17 @@ Ce chapitre couvre the standard patterns for config persistence, from basic JSON
 
 ## JsonFileLoader Pattern
 
-`JsonFileLoader` is the engine's built-in serializer. It converts between Enforce Script objects and JSON files using reflection --- it reads the public fields of your class and maps them to JSON keys automatically.
+`JsonFileLoader` is le moteur's built-in serializer. It converts between Enforce Script objects and JSON files using reflection --- it reads the public fields of your class and maps them to JSON keys automatically.
 
 ### Critical Gotcha
 
-**`JsonFileLoader<T>.JsonLoadFile()` and `JsonFileLoader<T>.JsonSaveFile()` return `void`.** You cannot check their return value. You cannot assign them to a `bool`. You cannot use them in an `if` condition. C'est l'un des common mistakes in DayZ modding.
+**`JsonFileLoader<T>.JsonLoadFile()` and `JsonFileLoader<T>.JsonSaveFile()` return `void`.** You cannot check their return value. You cannot assign them to a `bool`. You cannot use them in an `if` condition. This is one of the most common mistakes in DayZ modding.
 
 ```c
-// WRONG — will not compile
+// INCORRECT — will not compile
 bool success = JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
 
-// WRONG — will not compile
+// INCORRECT — will not compile
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config))
 {
     // ...
@@ -210,7 +210,7 @@ void ReadCustomData(string path)
 }
 ```
 
-### When to Use Manual I/O
+### Quand utiliser Manual I/O
 
 - Writing log files (append mode)
 - Writing CSV or plain-text exports
@@ -223,7 +223,7 @@ For standard config files, prefer `JsonFileLoader`. It is faster to implement, l
 
 ## The $profile Path
 
-DayZ provides the `$profile:` path prefix, which resolves to the server's profile directory (typically the folder containing `DayZServer_x64.exe`, or the profile path specified with `-profiles=`).
+DayZ provides the `$profile:` path prefix, which resolves to le serveur's profile directory (typically the folder containing `DayZServer_x64.exe`, or the profile path specified with `-profiles=`).
 
 ```c
 // These resolve to the profile directory:
@@ -233,16 +233,16 @@ DayZ provides the `$profile:` path prefix, which resolves to the server's profil
 
 ### Always Use $profile
 
-Never use absolute paths. Never use relative paths. Always use `$profile:` for any file your mod creates or reads at runtime:
+Never use absolute paths. Never use relative paths. Always use `$profile:` for any file your mod creates or reads à l'exécution:
 
 ```c
-// BAD: Absolute path — breaks on any other machine
+// MAUVAIS : Absolute path — breaks on any other machine
 const string CONFIG_PATH = "C:/DayZServer/MyMod/config.json";
 
-// BAD: Relative path — depends on working directory, which varies
+// MAUVAIS : Relative path — depends on working directory, which varies
 const string CONFIG_PATH = "MyMod/config.json";
 
-// GOOD: $profile resolves correctly everywhere
+// BON : $profile resolves correctly everywhere
 const string CONFIG_PATH = "$profile:MyMod/config.json";
 ```
 
@@ -298,7 +298,7 @@ void EnsureDirectories()
 `MakeDirectory` creates only the final directory in the path. If the parent does not exist, it fails silently. You must create each level:
 
 ```c
-// WRONG: Parent "MyMod" doesn't exist yet
+// INCORRECT: Parent "MyMod" doesn't exist yet
 MakeDirectory("$profile:MyMod/Data/Players");  // Fails silently
 
 // RIGHT: Create each level
@@ -307,9 +307,9 @@ MakeDirectory("$profile:MyMod/Data");
 MakeDirectory("$profile:MyMod/Data/Players");
 ```
 
-### MyMod Pattern: Constants for Paths
+### Constants for Paths Pattern
 
-MyMod defines all paths as constants in a dedicated class:
+A framework mod defines all paths as constants in a dedicated class:
 
 ```c
 class MyModConst
@@ -360,12 +360,12 @@ class MyModConfig
 };
 ```
 
-### MyMod ConfigBase Pattern
+### Reflective ConfigBase Pattern
 
-MyMod uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
+This pattern uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
 
 ```c
-// Conceptual pattern (simplified from MyMod):
+// Conceptual pattern (reflective config):
 class MyConfigBase
 {
     // Each config declares its version
@@ -379,7 +379,7 @@ class MyConfigBase
     }
 
     // Reflection: get all configurable fields
-    array<ref MyModConfigField> GetFields();
+    array<ref MyConfigField> GetFields();
 
     // Dynamic get/set by field name (for admin panel sync)
     string GetFieldValue(string fieldName);
@@ -519,7 +519,7 @@ This is the gold standard for config versioning in DayZ mods.
 
 ## Auto-Save Timers
 
-For configs that change at runtime (admin edits, player data accumulation), implement an auto-save timer to prevent data loss on crashes.
+For configs that change à l'exécution (admin edits, player data accumulation), implement an auto-save timer to prevent data loss on crashes.
 
 ### Timer-Based Auto-Save
 
@@ -595,7 +595,7 @@ void BanPlayer(string uid, string reason)
 ### 1. Treating JsonLoadFile as if It Returns a Value
 
 ```c
-// WRONG — does not compile
+// INCORRECT — does not compile
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config)) { ... }
 ```
 
@@ -604,7 +604,7 @@ if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config)) { ... }
 ### 2. Not Checking FileExist Before Loading
 
 ```c
-// WRONG — crashes or produces empty object with no diagnostic
+// INCORRECT — crashes or produces empty object with no diagnostic
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 
 // RIGHT — check first, create defaults if missing
@@ -671,8 +671,28 @@ string LogPath = "$profile:MyMod/Logs/server.log";
 
 9. **Log load/save operations.** When debugging config issues, a log line saying "Loaded config v3 from $profile:MyMod/Config.json" is invaluable.
 
-10. **Testez avec a deleted config file.** Your mod should handle first-run gracefully: create directories, write defaults, log what it did.
+10. **Test with a deleted config file.** Your mod should handle first-run gracefully: create directories, write defaults, log what it did.
 
 ---
 
-[<< Previous: RPC Patterns](03-rpc-patterns.md) | [Accueil](../../README.md) | [Next: Permission Systems >>](05-permissions.md)
+## Compatibilité et impact
+
+- **Multi-Mod :** Each mod writes to its own `$profile:ModName/` directory. Conflicts only happen if two mods use the same directory name. Use a unique, recognizable prefix for your mod's folder.
+- **Ordre de chargement :** Config loading happens in `OnInit` or `OnMissionStart`, both controlled by the mod's own lifecycle. No cross-mod load-order issues unless two mods try to read/write the same file (which they should never do).
+- **Listen Server:** Config files are côté serveur only (`$profile:` resolves on le serveur). On listen servers, côté client code can technically access `$profile:`, but configs should only be loaded by server modules to avoid ambiguity.
+- **Performance :** `JsonFileLoader` is synchronous and blocks the main thread. For large configs (100+ KB), load during `OnInit` (before gameplay starts). Auto-save timers prevent repeated writes; the dirty-flag pattern ensures disk I/O only happens when data has actually changed.
+- **Migration:** Adding new fields to a config class is safe --- `JsonFileLoader` ignores missing JSON keys and leaves the class default value. Removing or renaming fields requires a versioned migration step to avoid silent data loss.
+
+---
+
+## Théorie vs Pratique
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use async file I/O to avoid blocking | Enforce Script has no async file I/O; all reads/writes are synchronous. Load at startup, save on timers. |
+| Validate JSON with a schema | No JSON schema validation exists; validate fields in `OnAfterLoad()` or with guard clauses after loading. |
+| Use a database for structured data | No database access from Enforce Script; JSON files in `$profile:` are the only persistence mechanism. |
+
+---
+
+[Accueil](../../README.md) | [<< Précédent : RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Suivant : Permission Systems >>](05-permissions.md)

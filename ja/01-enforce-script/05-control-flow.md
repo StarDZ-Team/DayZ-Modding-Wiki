@@ -1,18 +1,18 @@
-# Chapter 1.5: Control Flow
+# 第1.5章: 制御フロー
 
-[Home](../../README.md) | [<< Previous: Modded Classes](04-modded-classes.md) | **Control Flow** | [Next: String Operations >>](06-strings.md)
+[ホーム](../../README.md) | [<< 前へ: Modded クラス](04-modded-classes.md) | **制御フロー** | [次へ: 文字列操作 >>](06-strings.md)
 
 ---
 
 ## はじめに
 
-制御フローはコードの実行順序を決定します。Enforce Script はおなじみの `if/else`、`for`、`while`、`foreach`、`switch` 構文を提供しますが、C/C++ との重要な違いがいくつかあり、準備していないと不意を突かれます。この章では、DayZ のスクリプトエンジン固有の落とし穴を含む、すべての制御フローメカニズムを扱います。
+制御フローはコードが実行される順序を決定します。Enforce Script はおなじみの `if/else`、`for`、`while`、`foreach`、`switch` 構文を提供しますが、C/C++ とのいくつかの重要な違いがあり、準備していないと思わぬ落とし穴にはまります。この章では、DayZ のスクリプトエンジン固有の注意点を含む、利用可能なすべての制御フローメカニズムを解説します。
 
 ---
 
 ## if / else / else if
 
-The `if` statement evaluates a boolean expression and executes a block of code when the result is `true`. You can chain conditions with `else if` and provide a fallback with `else`.
+`if` 文はブーリアン式を評価し、結果が `true` の場合にコードブロックを実行します。`else if` で条件を連鎖させ、`else` でフォールバックを提供できます。
 
 ```c
 void CheckHealth(PlayerBase player)
@@ -36,7 +36,7 @@ void CheckHealth(PlayerBase player)
 
 ### Null チェック
 
-In Enforce Script, object references evaluate to `false` when null. これが null アクセスを防ぐ標準的な方法です：
+Enforce Script では、オブジェクト参照は null の場合に `false` と評価されます。これは null アクセスを防ぐための標準的な方法です。
 
 ```c
 void ProcessItem(EntityAI item)
@@ -51,14 +51,14 @@ void ProcessItem(EntityAI item)
 
 ### 論理演算子
 
-条件を以下で組み合わせます： `&&` (AND) and `||` (OR). 短絡評価が適用されます： `&&` の左辺が `false` の場合、右辺は評価されません。
+`&&`（AND）と `||`（OR）で条件を結合します。短絡評価が適用されます: `&&` の左辺が `false` の場合、右辺は評価されません。
 
 ```c
 void CheckPlayerState(PlayerBase player)
 {
     if (player && player.IsAlive())
     {
-        // Safe -- player is checked for null before calling IsAlive()
+        // 安全 -- IsAlive() を呼ぶ前に player の null チェックが行われる
         Print("Player is alive");
     }
 
@@ -69,12 +69,12 @@ void CheckPlayerState(PlayerBase player)
 }
 ```
 
-### PITFALL: Variable redeclaration in else-if blocks
+### 注意: else-if ブロックでの変数再宣言
 
-これは Enforce Script で最も一般的なエラーの1つです。 ほとんどの言語では、`if` ブランチ内で宣言された変数は兄弟の `else` ブランチの変数と独立しています。 **Enforce Script では違います。** Declaring the same variable name in sibling `if`/`else if`/`else` blocks causes a **multiple declaration error** at compile time.
+これは最も一般的な Enforce Script エラーの1つです。ほとんどの言語では、1つの `if` ブランチ内で宣言された変数は兄弟の `else` ブランチ内の変数とは独立しています。**Enforce Script ではそうではありません。** 兄弟の `if`/`else if`/`else` ブロックで同じ変数名を宣言すると、コンパイル時に **多重宣言エラー** が発生します。
 
 ```c
-// WRONG -- Compile error!
+// 間違い -- コンパイルエラー!
 void BadExample(Object obj)
 {
     if (obj.IsKindOf("Car"))
@@ -84,21 +84,21 @@ void BadExample(Object obj)
     }
     else if (obj.IsKindOf("ItemBase"))
     {
-        ItemBase item = ItemBase.Cast(obj);    // OK -- different name
+        ItemBase item = ItemBase.Cast(obj);    // OK -- 異なる名前
         item.GetQuantity();
     }
     else
     {
-        string msg = "Unknown object";         // First declaration of msg
+        string msg = "Unknown object";         // msg の最初の宣言
         Print(msg);
     }
 }
 ```
 
-Wait -- that looks fine, right? The problem occurs when you use the **same variable name** in two branches:
+上記は問題なさそうに見えますが、2つのブランチで**同じ変数名**を使用すると問題が発生します:
 
 ```c
-// WRONG -- Compile error: multiple declaration of 'result'
+// 間違い -- コンパイルエラー: 'result' の多重宣言
 void ProcessObject(Object obj)
 {
     if (obj.IsKindOf("Car"))
@@ -108,16 +108,16 @@ void ProcessObject(Object obj)
     }
     else
     {
-        string result = "It's something else";  // ERROR! Same name as in the if block
+        string result = "It's something else";  // エラー! if ブロックと同じ名前
         Print(result);
     }
 }
 ```
 
-**修正方法：** if 文の**前**で変数を宣言するか、ブランチごとに一意な名前を使用します。
+**修正方法:** if 文の**前に**変数を宣言するか、ブランチごとに一意の名前を使用します。
 
 ```c
-// CORRECT -- Declare before the if
+// 正しい -- if の前に宣言
 void ProcessObject(Object obj)
 {
     string result;
@@ -139,10 +139,10 @@ void ProcessObject(Object obj)
 
 ## for ループ
 
-`for` ループは C スタイルの構文と同一です： 初期化子、条件、インクリメント。
+`for` ループは C スタイルの構文と同一です: 初期化子、条件、インクリメント。
 
 ```c
-// Print numbers 0 through 9
+// 0 から 9 までの数字を表示
 void CountToTen()
 {
     for (int i = 0; i < 10; i++)
@@ -152,7 +152,7 @@ void CountToTen()
 }
 ```
 
-### Iterating over an array with for
+### for でのインデックスの配列イテレーション
 
 ```c
 void ListInventory(PlayerBase player)
@@ -171,10 +171,10 @@ void ListInventory(PlayerBase player)
 }
 ```
 
-### Nested for loops
+### ネストされた for ループ
 
 ```c
-// Spawn a grid of objects
+// オブジェクトのグリッドをスポーン
 void SpawnGrid(vector origin, int rows, int cols, float spacing)
 {
     for (int r = 0; r < rows; r++)
@@ -192,16 +192,16 @@ void SpawnGrid(vector origin, int rows, int cols, float spacing)
 }
 ```
 
-> **注意：** Do not redeclare the loop variable `i` if there is already a variable named `i` in the enclosing scope. Enforce Script treats this as a multiple declaration error, even in nested scopes.
+> **注意:** 囲んでいるスコープにすでに `i` という名前の変数がある場合、ループ変数 `i` を再宣言しないでください。Enforce Script はネストされたスコープでもこれを多重宣言エラーとして扱います。
 
 ---
 
 ## while ループ
 
-`while` ループは条件が `true` の間、ブロックを繰り返します。 条件は各反復の**前**に評価されます。
+`while` ループは条件が `true` の間ブロックを繰り返します。条件は各反復の**前に**評価されます。
 
 ```c
-// Remove all dead zombies from a tracking list
+// トラッキングリストからすべての死んだゾンビを除去
 void CleanupDeadZombies(array<DayZInfected> zombieList)
 {
     int i = 0;
@@ -211,7 +211,7 @@ void CleanupDeadZombies(array<DayZInfected> zombieList)
         if (Class.CastTo(eai, zombieList.Get(i)) && !eai.IsAlive())
         {
             zombieList.RemoveOrdered(i);
-            // Do NOT increment i -- the next element has shifted into this index
+            // i をインクリメントしない -- 次の要素がこのインデックスにシフトしている
         }
         else
         {
@@ -221,24 +221,24 @@ void CleanupDeadZombies(array<DayZInfected> zombieList)
 }
 ```
 
-### WARNING: There is NO do...while in Enforce Script
+### 警告: Enforce Script には do...while が存在しません
 
-`do...while` キーワードは存在しません。 コンパイラは拒否します。 If you need a loop that always executes at least once, use the flag pattern described below.
+`do...while` キーワードは存在しません。コンパイラはこれを拒否します。少なくとも1回は必ず実行するループが必要な場合は、以下で説明するフラグパターンを使用してください。
 
 ```c
-// WRONG -- This will NOT compile
+// 間違い -- これはコンパイルされません
 do
 {
-    // body
+    // 本体
 }
 while (someCondition);
 ```
 
 ---
 
-## フラグによる do...while のシミュレーション
+## フラグを使った do...while のシミュレーション
 
-The standard workaround is to use a `bool` flag that is `true` on the first iteration:
+標準的な回避策は、最初の反復で `true` になる `bool` フラグを使用することです。
 
 ```c
 void SimulateDoWhile()
@@ -261,17 +261,17 @@ void SimulateDoWhile()
 }
 ```
 
-An alternative approach using `break`:
+`break` を使用した代替アプローチ:
 
 ```c
 void AlternativeDoWhile()
 {
     while (true)
     {
-        // Body executes at least once
+        // 本体は少なくとも1回実行される
         DoSomething();
 
-        // Check the exit condition at the END
+        // 終了条件を末尾でチェック
         if (!ShouldContinue())
             break;
     }
@@ -282,9 +282,9 @@ void AlternativeDoWhile()
 
 ## foreach
 
-`foreach` 文は array、map、静的配列を反復処理する最もクリーンな方法です。 2つの形式があります。
+`foreach` 文は配列、マップ、静的配列をイテレートする最もクリーンな方法です。2つの形式があります。
 
-### Simple foreach (value only)
+### シンプルな foreach（値のみ）
 
 ```c
 void AnnounceItems(array<string> itemNames)
@@ -296,9 +296,9 @@ void AnnounceItems(array<string> itemNames)
 }
 ```
 
-### foreach with index
+### インデックス付き foreach
 
-When iterating over arrays, the first variable receives the index:
+配列をイテレートする場合、最初の変数にインデックスが入ります。
 
 ```c
 void ListPlayers(array<Man> players)
@@ -310,9 +310,9 @@ void ListPlayers(array<Man> players)
 }
 ```
 
-### foreach over maps
+### マップに対する foreach
 
-For maps, the first variable receives the key and the second receives the value:
+マップの場合、最初の変数にキーが、2番目の変数に値が入ります。
 
 ```c
 void PrintScoreboard(map<string, int> scores)
@@ -324,7 +324,7 @@ void PrintScoreboard(map<string, int> scores)
 }
 ```
 
-You can also iterate over maps with just the value:
+値のみでマップをイテレートすることもできます:
 
 ```c
 void SumScores(map<string, int> scores)
@@ -338,7 +338,7 @@ void SumScores(map<string, int> scores)
 }
 ```
 
-### foreach over static arrays
+### 静的配列に対する foreach
 
 ```c
 void PrintStaticArray()
@@ -356,11 +356,11 @@ void PrintStaticArray()
 
 ## switch / case
 
-`switch` 文は値を `case` ラベルのリストと照合します。 `int`、`string`、enum 値、定数で動作します。
+`switch` 文は値を `case` ラベルのリストと照合します。`int`、`string`、列挙値、定数で動作します。
 
-### Important: NO fall-through
+### 重要: フォールスルーなし
 
-C/C++ と異なり、Enforce Script の `switch/case` はあるケースから次のケースへ**フォールスルーしません**。 各 `case` は独立しています。 明確さのために `break` を含めることはできますが、フォールスルー防止のために必須ではありません。
+C/C++ とは異なり、Enforce Script の `switch/case` はあるケースから次のケースにフォールスルー**しません**。各 `case` は独立しています。明確さのために `break` を含めることはできますが、フォールスルーを防ぐために必須ではありません。
 
 ```c
 void HandleCommand(string command)
@@ -386,7 +386,7 @@ void HandleCommand(string command)
 }
 ```
 
-### switch with enums
+### 列挙を使った switch
 
 ```c
 enum EDifficulty
@@ -423,7 +423,7 @@ void SetDifficulty(EDifficulty difficulty)
 }
 ```
 
-### switch with integer constants
+### 整数定数を使った switch
 
 ```c
 void DescribeWeaponSlot(int slotId)
@@ -453,7 +453,7 @@ void DescribeWeaponSlot(int slotId)
 }
 ```
 
-> **Remember:** Because there is no fall-through, you cannot stack cases to share a handler the way you would in C. Each case must have its own body.
+> **注意:** フォールスルーがないため、C のようにケースをスタックしてハンドラーを共有することはできません。各ケースには独自の本体が必要です。
 
 ---
 
@@ -461,10 +461,10 @@ void DescribeWeaponSlot(int slotId)
 
 ### break
 
-`break` は最も内側のループ（または switch case）を即座に抜けます。
+`break` は最も内側のループ（または switch case）を即座に終了します。
 
 ```c
-// Find the first player within 100 meters
+// 100メートル以内の最初のプレイヤーを見つける
 void FindNearbyPlayer(vector origin, array<Man> players)
 {
     foreach (Man player : players)
@@ -473,7 +473,7 @@ void FindNearbyPlayer(vector origin, array<Man> players)
         if (dist < 100)
         {
             Print("Found nearby player: " + player.GetIdentity().GetName());
-            break; // Stop searching
+            break; // 検索を停止
         }
     }
 }
@@ -481,20 +481,20 @@ void FindNearbyPlayer(vector origin, array<Man> players)
 
 ### continue
 
-`continue` は現在の反復の残りをスキップし、次の反復に進みます。
+`continue` は現在の反復の残りをスキップし、次の反復にジャンプします。
 
 ```c
-// Process only alive players
+// 生存しているプレイヤーのみを処理
 void HealAllPlayers(array<Man> players)
 {
     foreach (Man man : players)
     {
         PlayerBase player;
         if (!Class.CastTo(player, man))
-            continue; // Not a PlayerBase, skip
+            continue; // PlayerBase ではない、スキップ
 
         if (!player.IsAlive())
-            continue; // Dead, skip
+            continue; // 死亡、スキップ
 
         player.SetHealth("", "Health", 100);
         Print("Healed: " + player.GetIdentity().GetName());
@@ -502,9 +502,9 @@ void HealAllPlayers(array<Man> players)
 }
 ```
 
-### Nested loops with break
+### ネストされたループでの break
 
-`break` は最も内側のループのみを抜けます。 ネストされたループを抜けるにはフラグ変数を使用します：
+`break` は最も内側のループのみを終了します。ネストされたループから抜けるには、フラグ変数を使用します。
 
 ```c
 void FindItemInGrid(array<array<string>> grid, string target)
@@ -519,28 +519,94 @@ void FindItemInGrid(array<array<string>> grid, string target)
             {
                 Print(string.Format("Found '%1' at [%2, %3]", target, row, col));
                 found = true;
-                break; // Only exits inner loop
+                break; // 内側のループのみを終了
             }
         }
 
         if (found)
-            break; // Exits outer loop
+            break; // 外側のループを終了
     }
 }
 ```
 
 ---
 
+## thread キーワード
+
+Enforce Script には非同期実行のための `thread` キーワードがあります。
+
+```c
+// スレッド関数を宣言
+thread void LongOperation()
+{
+    // これは非同期で実行される
+    Sleep(5000);  // ブロックせずに5秒待機
+    Print("Done!");
+}
+
+// 呼び出し
+thread LongOperation();  // 呼び出し元をブロックせずに開始
+```
+
+**重要:** Enforce Script の `thread` は OS スレッドとは**異なります**。コルーチンに近いものです --- 同じスレッドで実行されますが、ゲームをブロックせずに yield/sleep できます。ほとんどの Mod のユースケースでは `thread` の代わりに `CallLater` を使用してください --- よりシンプルで予測可能です。
+
+### Thread vs CallLater
+
+| 機能 | `thread` | `CallLater` |
+|---------|----------|-------------|
+| 構文 | `thread MyFunc();` | `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunc, delayMs, repeat);` |
+| sleep/yield できるか | はい（`Sleep()`） | いいえ（1回実行またはインターバルで繰り返し） |
+| キャンセル可能か | ビルトインのキャンセルなし | はい（`CallQueue.Remove()`） |
+| ユースケース | 待機を含むシーケンシャルな非同期ロジック | 遅延または繰り返しコールバック |
+
+ほとんどの DayZ Modding シナリオでは、タイマー付きの `CallLater` が推奨されるアプローチです。`thread` は、中間的な待機を含むシーケンシャルなロジックが本当に必要な場合（例: マルチステップのアニメーションシーケンス）にのみ使用してください。
+
+---
+
+## ベストプラクティス
+
+- 深くネストされた `if` ブロックの代わりに、関数の先頭でガード句（`if (!x) return;`）を使用してください --- ハッピーパスをフラットで読みやすく保ちます。
+- Enforce Script 固有の兄弟スコープ再宣言エラーを避けるため、`if`/`else` ブロックの前に共有変数を宣言してください。
+- 単純なイテレーションには `foreach` を使用し、要素の削除や隣接要素へのアクセスが必要な場合にのみインデックス付き `for` を使用してください。
+- `do...while` は `bool first = true` フラグを使用した `while (first || condition)` で置き換えてください --- これが標準的な Enforce Script の回避策です。
+- 遅延または繰り返しアクションには `thread` より `CallLater` を優先してください --- キャンセル可能で、よりシンプルで予測可能です。
+
+---
+
+## 実際の Mod で確認されたパターン
+
+> プロフェッショナルな DayZ Mod のソースコードを研究して確認されたパターンです。
+
+| パターン | Mod | 詳細 |
+|---------|-----|--------|
+| ガード句 + ループ内 `continue` | COT / Expansion | プレイヤーをループする際、作業前にキャスト失敗や `!IsAlive()` で常に `continue` |
+| 文字列コマンドでの `switch` | VPP Admin | チャットコマンドハンドラーは `"!heal"`, `"!tp"` のような文字列ケースで `switch(command)` を使用 |
+| ネストされたループを抜けるフラグ変数 | Expansion Market | 外側のループを終了するために内側のループ後にチェックする `bool found = false` を使用 |
+| 遅延スポーンのための `CallLater` | Dabs Framework | `thread` より `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater()` を優先 |
+
+---
+
+## 理論 vs 実践
+
+| 概念 | 理論 | 現実 |
+|---------|--------|---------|
+| `do...while` ループ | ほとんどの C 系言語で標準 | Enforce Script には存在しない; わかりにくいコンパイルエラーが発生 |
+| `switch` フォールスルー | C/C++ では `break` なしでケースがフォールスルー | Enforce Script のケースは独立 -- ケースのスタックでハンドラーを共有できない |
+| `thread` キーワード | マルチスレッドのように聞こえる | 実際にはメインスレッド上のコルーチン; `Sleep()` は yield であり、ブロックではない |
+| `if`/`else` での変数スコープ | 兄弟ブロックは独立したスコープを持つべき | Enforce Script は共有スコープとして扱う -- 両方のブロックで同じ変数名はコンパイルエラー |
+
+---
+
 ## よくある間違い
 
-| 間違い | 問題 | 修正方法 |
+| 間違い | 問題 | 修正 |
 |---------|---------|-----|
-| Using `do...while` | Does not exist in Enforce Script | Use `while` with a `bool first = true` flag |
-| Declaring same variable in `if` and `else` blocks | Multiple declaration error | Declare the variable before the `if` |
-| Redeclaring loop variable `i` in nested scope | Multiple declaration error | Use different names (`i`, `j`, `k`) or declare outside |
-| Expecting `switch` fall-through | Cases are independent, no fall-through | Each case needs its own complete handler |
-| Modifying array while iterating with `foreach` | Undefined behavior, potential crash | Use index-based `for` loop when removing elements |
-| Infinite `while` loop without `break` | Server freeze / client hang | Always ensure the condition will eventually be `false`, or use `break` |
+| `do...while` の使用 | Enforce Script に存在しない | `bool first = true` フラグ付き `while` を使用 |
+| `if` と `else` ブロックで同じ変数を宣言 | 多重宣言エラー | `if` の前に変数を宣言 |
+| ネストされたスコープでループ変数 `i` を再宣言 | 多重宣言エラー | 異なる名前（`i`, `j`, `k`）を使用するか外で宣言 |
+| `switch` のフォールスルーを期待 | ケースは独立、フォールスルーなし | 各ケースに完全なハンドラーが必要 |
+| `foreach` でイテレート中に配列を変更 | 未定義動作、クラッシュの可能性 | 要素を削除する場合はインデックスベースの `for` ループを使用 |
+| `break` なしの無限 `while` ループ | サーバーフリーズ / クライアントハング | 条件が最終的に `false` になることを保証するか、`break` を使用 |
 
 ---
 
@@ -550,29 +616,33 @@ void FindItemInGrid(array<array<string>> grid, string target)
 // if / else if / else
 if (condition) { } else if (other) { } else { }
 
-// for loop
+// for ループ
 for (int i = 0; i < count; i++) { }
 
-// while loop
+// while ループ
 while (condition) { }
 
-// Simulate do...while
+// do...while のシミュレーション
 bool first = true;
-while (first || condition) { first = false; /* body */ }
+while (first || condition) { first = false; /* 本体 */ }
 
-// foreach (value only)
+// foreach（値のみ）
 foreach (Type value : collection) { }
 
-// foreach (index + value)
+// foreach（インデックス + 値）
 foreach (int i, Type value : array) { }
 
-// foreach (key + value on map)
+// foreach（マップのキー + 値）
 foreach (KeyType key, ValueType val : someMap) { }
 
-// switch/case (no fall-through)
+// switch/case（フォールスルーなし）
 switch (value) { case X: /* ... */ break; default: break; }
+
+// thread（コルーチンスタイルの非同期）
+thread void MyFunc() { Sleep(1000); }
+thread MyFunc();  // ノンブロッキング呼び出し
 ```
 
 ---
 
-[<< 1.4: Modded Classes](04-modded-classes.md) | [ホーム](../../README.md) | [1.6: String Operations >>](06-strings.md)
+[<< 1.4: Modded クラス](04-modded-classes.md) | [ホーム](../../README.md) | [1.6: 文字列操作 >>](06-strings.md)

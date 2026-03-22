@@ -1,14 +1,16 @@
-# Chapter 3.10: Advanced Widgets
+# Capítulo 3.10: Widgets Avanzados
 
-[Home](../../README.md) | [<< Previous: Real Mod UI Patterns](09-real-mod-patterns.md) | **Advanced Widgets**
-
----
-
-Este capitulo cubre every advanced widget type with confirmed API signatures extracted from vanilla source code and real mod usage.
+[Inicio](../../README.md) | [<< Anterior: Real Mod UI Patterns](09-real-mod-patterns.md) | **Advanced Widgets**
 
 ---
 
-## Formato de RichTextWidget
+Beyond the standard containers, text, and image widgets covered in earlier chapters, DayZ provides specialized widget types for rich text formatting, 2D canvas drawing, map display, 3D item previews, video playback, and render-to-texture. These widgets unlock capabilities that simple layouts cannot achieve.
+
+This chapter covers every advanced widget type with confirmed API signatures extracted from vanilla source code and real mod usage.
+
+---
+
+## RichTextWidget Formatting
 
 `RichTextWidget` extends `TextWidget` and supports inline markup tags within its text content. It is the primary way to display formatted text with embedded images, variable font sizes, and line breaks.
 
@@ -31,11 +33,11 @@ class RichTextWidget extends TextWidget
 
 `RichTextWidget` inherits all `TextWidget` methods -- `SetText()`, `SetTextExactSize()`, `SetOutline()`, `SetShadow()`, `SetTextFormat()`, and the rest. The key difference is that `SetText()` on a `RichTextWidget` parses inline markup tags.
 
-### Etiquetas Inline Soportadas
+### Supported Inline Tags
 
 These tags are confirmed through vanilla DayZ usage in `news_feed.txt`, `InputUtils.c`, and multiple menu scripts.
 
-#### Imagen Inline
+#### Inline Image
 
 ```
 <image set="IMAGESET_NAME" name="IMAGE_NAME" />
@@ -44,12 +46,12 @@ These tags are confirmed through vanilla DayZ usage in `news_feed.txt`, `InputUt
 
 Embeds an image from a named imageset directly into the text flow. The `scale` attribute controls the image size relative to the text line height.
 
-Ejemplo vanilla de `scripts/data/news_feed.txt`:
+Vanilla example from `scripts/data/news_feed.txt`:
 ```
 <image set="dayz_gui" name="icon_pin" />  Welcome to DayZ!
 ```
 
-Ejemplo vanilla de `scripts/3_game/tools/inpututils.c` -- building controller button icons:
+Vanilla example from `scripts/3_game/tools/inpututils.c` -- building controller button icons:
 ```c
 string icon = string.Format(
     "<image set=\"%1\" name=\"%2\" scale=\"%3\" />",
@@ -66,7 +68,7 @@ Common imagesets in vanilla DayZ:
 - `xbox_buttons` -- Xbox controller button images (A, B, X, Y)
 - `playstation_buttons` -- PlayStation controller button images
 
-#### Salto de Linea
+#### Line Break
 
 ```
 </br>
@@ -74,7 +76,7 @@ Common imagesets in vanilla DayZ:
 
 Forces a line break within the rich text content. Note the closing-tag syntax -- this is how DayZ's parser expects it.
 
-#### Tamano de Fuente / Encabezado
+#### Font Size / Heading
 
 ```
 <h scale="0.8">Text content here</h>
@@ -83,7 +85,7 @@ Forces a line break within the rich text content. Note the closing-tag syntax --
 
 Wraps text in a heading block with a scale multiplier. The `scale` attribute is a float that controls the font size relative to the widget's base font. Larger values produce bigger text.
 
-Ejemplo vanilla de `scripts/data/news_feed.txt`:
+Vanilla example from `scripts/data/news_feed.txt`:
 ```
 <h scale="0.8">
 <image set="dayz_gui" name="icon_pin" />  Section Title
@@ -94,9 +96,9 @@ Body text at smaller size goes here.
 </br>
 ```
 
-### Patrones de Uso Practico
+### Practical Usage Patterns
 
-#### Obtener una referencia de RichTextWidget
+#### Getting a RichTextWidget reference
 
 In scripts, cast from the layout exactly like any other widget:
 
@@ -115,7 +117,7 @@ RichTextWidgetClass MyRichLabel {
 }
 ```
 
-#### Establecer contenido enriquecido con iconos de controlador
+#### Setting rich content with controller icons
 
 The vanilla `InputUtils` class provides a helper that generates the `<image>` tag string for any input action:
 
@@ -139,7 +141,7 @@ The two predefined scale constants:
 - `InputUtils.ICON_SCALE_NORMAL` = 1.21
 - `InputUtils.ICON_SCALE_TOOLBAR` = 1.81
 
-#### Contenido de texto enriquecido desplazable
+#### Scrollable rich text content
 
 `RichTextWidget` exposes content height and offset methods for paging or scrolling:
 
@@ -153,7 +155,7 @@ float totalHeight = m_content.GetContentHeight();
 m_content.SetContentOffset(pageOffset, true);  // snapToLine = true
 ```
 
-#### Elision de texto
+#### Text elision
 
 When text overflows a fixed-width area, you can elide (truncate with an indicator):
 
@@ -162,7 +164,7 @@ When text overflows a fixed-width area, you can elide (truncate with an indicato
 richText.ElideText(0, maxWidth, "...");
 ```
 
-#### Control de visibilidad de lineas
+#### Line visibility control
 
 Show or hide specific line ranges within the content:
 
@@ -174,7 +176,7 @@ richText.SetLinesVisibility(5, lineCount - 1, false);
 float width = richText.GetLineWidth(2);
 ```
 
-### HtmlWidget -- RichTextWidget Extendido
+### HtmlWidget -- Extended RichTextWidget
 
 `HtmlWidget` extends `RichTextWidget` with a single additional method:
 
@@ -194,9 +196,9 @@ Class.CastTo(content, layoutRoot.FindAnyWidget("HtmlWidget"));
 content.LoadFile(book.ConfigGetString("file"));
 ```
 
-### RichTextWidget vs TextWidget -- Diferencias Clave
+### RichTextWidget vs TextWidget -- Key Differences
 
-| Caracteristica | TextWidget | RichTextWidget |
+| Característica | TextWidget | RichTextWidget |
 |---------|-----------|---------------|
 | Inline `<image>` tags | No | Yes |
 | `<h>` heading tags | No | Yes |
@@ -210,7 +212,7 @@ Use `TextWidget` for simple labels. Use `RichTextWidget` only when you need inli
 
 ---
 
-## Dibujo con CanvasWidget
+## CanvasWidget Drawing
 
 `CanvasWidget` provides immediate-mode 2D drawing on screen. It has exactly two native methods:
 
@@ -224,7 +226,7 @@ class CanvasWidget extends Widget
 };
 ```
 
-Esa es toda la API. All complex shapes -- rectangles, circles, grids -- must be built from line segments.
+That is the entire API. All complex shapes -- rectangles, circles, grids -- must be built from line segments.
 
 ### Coordinate System
 
@@ -272,7 +274,7 @@ m_Canvas = CanvasWidget.Cast(
 
 ### Drawing Primitives
 
-#### Lineas
+#### Lines
 
 ```c
 // Draw a red horizontal line
@@ -284,7 +286,7 @@ m_Canvas.DrawLine(0, 0, 100, 100, 3, COLOR_WHITE);
 
 The `color` parameter uses ARGB format: `ARGB(alpha, red, green, blue)`.
 
-#### Rectangulos (desde lineas)
+#### Rectangles (from lines)
 
 ```c
 void DrawRectangle(CanvasWidget canvas, float x, float y,
@@ -297,7 +299,7 @@ void DrawRectangle(CanvasWidget canvas, float x, float y,
 }
 ```
 
-#### Circulos (desde segmentos de linea)
+#### Circles (from line segments)
 
 COT implements this pattern in `JMESPCanvas`:
 
@@ -329,7 +331,7 @@ More segments produce a smoother circle. 36 segments is a common default.
 
 `CanvasWidget` is immediate-mode: you must `Clear()` and redraw every frame. This is typically done in an `Update()` or `OnUpdate()` callback.
 
-Ejemplo vanilla de `scripts/5_mission/gui/mapmenu.c`:
+Vanilla example from `scripts/5_mission/gui/mapmenu.c`:
 
 ```c
 override void Update(float timeslice)
@@ -364,11 +366,11 @@ protected void RenderScaleRuler()
 }
 ```
 
-### Patron de Overlay ESP (de COT)
+### ESP Overlay Pattern (from COT)
 
 COT (Community Online Tools) uses `CanvasWidget` as a full-screen overlay to draw skeleton wireframes on players and objects. This is one of the most sophisticated canvas usage patterns in any DayZ mod.
 
-**Arquitectura:**
+**Architecture:**
 
 1. A full-screen `CanvasWidget` is created from a layout file
 2. Every frame, `Clear()` is called
@@ -448,7 +450,7 @@ static void DrawSkeleton(Human human, CanvasWidget canvas)
 }
 ```
 
-### Canvas de Depuracion Vanilla
+### Vanilla Debug Canvas
 
 The engine provides a built-in debug canvas through the `Debug` class:
 
@@ -559,7 +561,7 @@ m_Map.AddUserMark(
 );
 ```
 
-Ejemplo vanilla de `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
+Vanilla example from `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
 
 ```c
 // Mark player position
@@ -651,7 +653,7 @@ float cellSize = m_Map.GetCellSize(legendWidth);      // cell size for scale rul
 
 Handle mouse clicks on the map via the `OnDoubleClick` or `OnMouseButtonDown` callbacks on a `ScriptedWidgetEventHandler` or `UIScriptedMenu`. Convert the click position to world coordinates using `ScreenToMap()`.
 
-Ejemplo vanilla de `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
+Vanilla example from `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
 
 ```c
 override bool OnDoubleClick(Widget w, int x, int y, int button)
@@ -973,7 +975,7 @@ Subtitles require a font assigned to the `VideoWidget` in the layout. Subtitle f
 m_Video.DisableSubtitles(false);  // explicitly enable
 ```
 
-### Valores de Retorno
+### Return Values
 
 The `Load()`, `Play()`, `Pause()`, and `Stop()` methods return `bool`, but this return value is **deprecated**. Use `VideoCallback.ON_ERROR` to detect failures instead.
 
@@ -1062,7 +1064,7 @@ imgWidget.SetImageTexture(0, rtTexture);
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Use the right widget for the job.** `TextWidget` for simple labels, `RichTextWidget` only when you need inline images or formatted content. `CanvasWidget` for dynamic 2D overlays, not static graphics (use `ImageWidget` for those).
 
@@ -1155,7 +1157,7 @@ In Enforce Script strings, backslashes must be doubled:
 
 ---
 
-## Compatibilidad e Impacto
+## Compatibility and Impact
 
 | Widget | Client-Only | Performance Cost | Mod Compatibility |
 |--------|------------|-----------------|-------------------|

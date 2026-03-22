@@ -1,14 +1,14 @@
-# Chapter 6.18: Animation System
+# Capítulo 6.18: Sistema de Animación
 
-[Home](../../README.md) | [<< Previous: Construction System](17-construction-system.md) | **Animation System** | [Next: Terrain & World Queries >>](19-terrain-queries.md)
+[Inicio](../../README.md) | [<< Anterior: Construction System](17-construction-system.md) | **Animation System** | [Siguiente: Terrain & World Queries >>](19-terrain-queries.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ uses a state-machine-driven animation system built into the Enfusion engine. Player animations are controlled by a hierarchy of `HumanCommand` classes -- movement, actions, climbing, swimming, vehicles, falling, death, and unconsciousness each have their own dedicated command. Object animations (doors, lids, deployables) are driven through `model.cfg` AnimationSources and controlled from script via `SetAnimationPhase()`.
 
-Este capitulo cubre the full animation API: the player movement state machine, the human command system, the gesture/emote pipeline, object animation sources, action callbacks with animation events, and the key constants from `DayZPlayerConstants` that modders interact with daily. All method signatures and constants are taken directly from the vanilla script source.
+This chapter covers the full animation API: the player movement state machine, the human command system, the gesture/emote pipeline, object animation sources, action callbacks with animation events, and the key constants from `DayZPlayerConstants` that modders interact with daily. All method signatures and constants are taken directly from the vanilla script source.
 
 ---
 
@@ -73,7 +73,7 @@ if (state.m_iMovement >= 2)
 
 These constants identify the player's current body posture. Defined in `DayZPlayerConstants` (scripts/3_game/dayzplayer.c):
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `STANCEIDX_ERECT` | 0 | Standing upright |
 | `STANCEIDX_CROUCH` | 1 | Crouching |
@@ -89,7 +89,7 @@ The relationship: `STANCEIDX_ERECT + STANCEIDX_RAISED = STANCEIDX_RAISEDERECT`.
 
 Bitmask flags used by `IsPlayerInStance()` and `StartCommand_Action()` to specify which stances an animation supports:
 
-| Constante | Descripcion |
+| Constante | Descripción |
 |----------|-------------|
 | `STANCEMASK_ERECT` | Standing |
 | `STANCEMASK_CROUCH` | Crouching |
@@ -114,7 +114,7 @@ if (player.IsPlayerInStance(DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerCon
 
 ### Movement Indices
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `MOVEMENTIDX_SLIDE` | -2 | Sliding |
 | `MOVEMENTIDX_IDLE` | 0 | Stationary |
@@ -133,7 +133,7 @@ At any given moment, exactly one **main command** controls the player's animatio
 
 ### Command Hierarchy
 
-| Getter | Class | Descripcion |
+| Getter | Clase | Descripción |
 |--------|-------|-------------|
 | `GetCommand_Move()` | `HumanCommandMove` | Normal locomotion (idle, walk, run, sprint) |
 | `GetCommand_Action()` | `HumanCommandActionCallback` | Full-body action animations |
@@ -155,7 +155,7 @@ Each command also has a corresponding `StartCommand_*()` method on the `Human` c
 
 Every command type has a unique integer ID stored in `HumanMovementState.m_CommandTypeId`. Also returned by `GetCurrentCommandID()`:
 
-| Constante | Descripcion |
+| Constante | Descripción |
 |----------|-------------|
 | `COMMANDID_NONE` | No command (invalid) |
 | `COMMANDID_MOVE` | Normal movement |
@@ -174,7 +174,7 @@ Every command type has a unique integer ID stored in `HumanMovementState.m_Comma
 
 Modifier command IDs (additive, always-on):
 
-| Constante | Descripcion |
+| Constante | Descripción |
 |----------|-------------|
 | `COMMANDID_MOD_LOOKAT` | Head look-at (always active) |
 | `COMMANDID_MOD_WEAPONS` | Weapon handling (always active) |
@@ -541,7 +541,7 @@ class CfgModels
 
 ### Source Types
 
-| Source Type | Descripcion |
+| Source Type | Descripción |
 |-------------|-------------|
 | `user` | Driven entirely by script via `SetAnimationPhase()` |
 | `hit` | Driven by damage system (destruction animations) |
@@ -552,7 +552,7 @@ For modding, `user` is the most common. You control it from Enforce Script.
 
 ### Animation Types in model.cfg
 
-| Type | Descripcion |
+| Tipo | Descripción |
 |------|-------------|
 | `rotation` | Rotates a selection around an axis |
 | `rotationX/Y/Z` | Rotates around a specific world axis |
@@ -622,7 +622,7 @@ class HumanCommandActionCallback
 
 Actions go through defined states accessible via `GetState()`:
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `STATE_NONE` | 0 | Not running |
 | `STATE_LOOP_IN` | 1 | Entering loop |
@@ -637,7 +637,7 @@ Actions go through defined states accessible via `GetState()`:
 
 Use `InternalCommand()` to control action flow:
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `CMD_ACTIONINT_INTERRUPT` | -2 | Hard cancel, no exit animation |
 | `CMD_ACTIONINT_FINISH` | -1 | Secondary ending (e.g., ran out of water) |
@@ -677,7 +677,7 @@ class EmoteCB extends HumanCommandActionCallback
 
 Custom animation event constants for emotes:
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `EMOTE_SUICIDE_DEATH` | 1 | Player dies (server-side) |
 | `EMOTE_SUICIDE_BLEED` | 2 | Bleeding effect starts |
@@ -809,7 +809,7 @@ Access via `player.GetCommandModifier_Additives()`. These are always active and 
 
 **Additive (CMD_ACTIONMOD_*)** -- played while standing/crouching:
 
-| Constante | ID | Descripcion |
+| Constante | ID | Descripción |
 |----------|----|-------------|
 | `CMD_ACTIONMOD_DRINK` | 0 | Drinking |
 | `CMD_ACTIONMOD_EAT` | 1 | Eating |
@@ -822,7 +822,7 @@ Access via `player.GetCommandModifier_Additives()`. These are always active and 
 
 **Full-body (CMD_ACTIONFB_*)** -- played in prone or special stances:
 
-| Constante | ID | Descripcion |
+| Constante | ID | Descripción |
 |----------|----|-------------|
 | `CMD_ACTIONFB_DRINK` | 0 | Drinking (prone) |
 | `CMD_ACTIONFB_BANDAGE` | 58 | Bandaging |
@@ -989,7 +989,7 @@ else if (player.GetCommand_Action())
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Always null-check command getters.** `GetCommand_Move()` returns `null` when the player is not in the move command. Every command getter can return null.
 
@@ -1014,7 +1014,7 @@ else if (player.GetCommand_Action())
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
 **Theory:** `HumanCommandScript` lets you create entirely custom animation commands with full physics control.
 **Practice:** Most modders never need it. The action system (`StartCommand_Action` / `AddCommandModifier_Action`) with pre-existing animation IDs covers 95% of use cases. `HumanCommandScript` is reserved for edge cases like custom vehicle types or entirely new movement modes.

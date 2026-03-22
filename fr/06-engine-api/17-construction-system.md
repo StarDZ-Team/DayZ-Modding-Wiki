@@ -1,12 +1,12 @@
-# Chapter 6.17: Construction System
+# Chapitre 6.17: Construction System
 
-[Home](../../README.md) | [<< Previous: Crafting System](16-crafting-system.md) | **Construction System** | [Next: Animation System >>](18-animation-system.md)
+[Accueil](../../README.md) | [<< Précédent : Crafting System](16-crafting-system.md) | **Construction System** | [Suivant : Animation System >>](18-animation-system.md)
 
 ---
 
 ## Introduction
 
-Le systeme de construction de base de DayZ permet aux joueurs de construire des fortifications --- fences, watchtowers, and shelters --- by assembling individual parts using tools and materials. Each structure is divided into named construction parts (walls, platforms, roofs, gates) that are built, dismantled, or destroyed independently.
+DayZ's base building system allows players to construct fortifications --- fences, watchtowers, and shelters --- by assembling individual parts using tools and materials. Each structure is divided into named construction parts (walls, platforms, roofs, gates) that are built, dismantled, or destroyed independently.
 
 The system lives primarily in three files:
 
@@ -18,7 +18,7 @@ Construction actions are in `4_World/classes/useractionscomponent/actions/contin
 
 ---
 
-## Hierarchie des Classes
+## Hiérarchie des classes
 
 ```
 ItemBase
@@ -78,7 +78,7 @@ Construction GetConstruction()
 
 Each buildable section is a `ConstructionPart` with these fields:
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
 | `m_Name` | `string` | Localized display name |
 | `m_Id` | `int` | Unique ID for bitmask sync (1-93) |
@@ -115,7 +115,7 @@ Material type enum: `MATERIAL_NONE(0)`, `MATERIAL_LOG(1)`, `MATERIAL_WOOD(2)`, `
 
 ---
 
-## Processus de Construction
+## Building Process
 
 ### Process Flow
 
@@ -135,7 +135,7 @@ flowchart TD
 
 ### Checking Eligibility
 
-`Construction.CanBuildPart(string part_name, ItemBase tool, bool use_tool)` returns true only when ALL conditions pass:
+`Construction.CanBuildPart(string part_name, ItemBase tool, bool use_tool)` retourne true only when ALL conditions pass:
 
 1. Part is not already built (`!IsPartConstructed`)
 2. All prerequisite parts are built (`HasRequiredPart`)
@@ -171,11 +171,11 @@ void BuildPartServer(notnull Man player, string part_name, int action_id)
 - **Quantity-based**: quantity subtracted from attachment stack
 - **Delete** (quantity = -1): entire attachment is deleted
 
-`OnPartBuiltServer()` then: registers the part bit, syncs to clients, updates visuals/physics/navmesh, and if the part `IsBase()`, marks the base state and spawns a construction kit.
+`OnPartBuiltServer()` then: registers the part bit, syncs to clients, updates visuals/physics/navmesh, and if the part `IsBase()`, marks the base state and apparitions a construction kit.
 
 ### Synchronization
 
-Part states sync via three `int` bitmask variables (`m_SyncParts01/02/03`). The server manages these with:
+Part states sync via three `int` bitmask variables (`m_SyncParts01/02/03`). Le serveur manages these with:
 
 ```
 void RegisterPartForSync(int part_id)    // sets bit in appropriate sync variable
@@ -183,11 +183,11 @@ void UnregisterPartForSync(int part_id)  // clears bit
 bool IsPartBuildInSyncData(int part_id)  // reads bit state
 ```
 
-After changing bits, the server calls `SynchronizeBaseState()` which triggers `SetSynchDirty()`. On the client, `OnVariablesSynchronized()` fires `SetPartsFromSyncData()`, iterating all parts and updating built states, visuals, and physics.
+After changing bits, le serveur calls `SynchronizeBaseState()` which triggers `SetSynchDirty()`. On le client, `OnVariablesSynchronized()` fires `SetPartsFromSyncData()`, iterating all parts and updating built states, visuals, and physics.
 
 Action type constants (defined in `_constants.c`):
 
-| Constante | Valeur | But |
+| Constant | Value | Purpose |
 |----------|-------|---------|
 | `AT_BUILD_PART` | 193 | Build action identifier |
 | `AT_DISMANTLE_PART` | 195 | Dismantle action identifier |
@@ -221,7 +221,7 @@ bool CanDismantlePart(string part_name, ItemBase tool)
     // Part must be built, have no dependent parts, and tool must match dismantle_action_type
 ```
 
-`DismantlePartServer()` calls `ReceiveMaterialsServer()` which spawns material piles. Material return is reduced by damage level: `qty_coef = 1 - (healthLevel * 0.2) - 0.2`. A fully healthy part returns 80%; each damage level costs 20% more.
+`DismantlePartServer()` calls `ReceiveMaterialsServer()` which apparitions material piles. Material return is reduced by damage level: `qty_coef = 1 - (healthLevel * 0.2) - 0.2`. A fully healthy part returns 80%; each damage level costs 20% more.
 
 Dismantling the base part triggers `DestroyConstruction()` (deletes the entire entity) after a 200ms delay.
 
@@ -280,7 +280,7 @@ Only when health drops below 1 does `DestroyPartServer()` execute. Tool is damag
 
 ### ActionBuildShelter
 
-No-tool continuous interact action (`ContinuousInteractActionInput`) for `ShelterSite`. Three variants: leather, fabric, stick. When building completes, `ShelterSite.OnPartBuiltServer()` spawns the corresponding finished shelter object (`ShelterLeather`, `ShelterFabric`, or `ShelterStick`) and deletes the site. Player hands are hidden during the action.
+No-tool continuous interact action (`ContinuousInteractActionInput`) for `ShelterSite`. Three variants: leather, fabric, stick. When building completes, `ShelterSite.OnPartBuiltServer()` apparitions the corresponding finished shelter object (`ShelterLeather`, `ShelterFabric`, or `ShelterStick`) and deletes the site. Player hands are hidden during the action.
 
 ### ConstructionActionData
 
@@ -292,7 +292,7 @@ ref array<ConstructionPart>  m_BuildPartsNoTool;     // parts buildable without 
 ref ConstructionPart         m_TargetPart;           // target for dismantle/destroy
 ```
 
-The `OnUpdateActions()` callback is registered with `ActionVariantManager` and fires when the player looks at a construction object, populating the build part list for the action variant system.
+The `OnUpdateActions()` callback is registered with `ActionVariantManager` and fires when le joueur looks at a construction object, populating the build part list for the action variant system.
 
 ---
 
@@ -394,13 +394,13 @@ The p3d model must have:
 - **Animation sources** for each selection (type `user`, range 0-1)
 - **Proxy physics** geometry per part (separate named physics components)
 - **Memory points** `<part_name>_min` / `<part_name>_max` for collision boxes
-- **`kit_spawn_position`** memory point
+- **`kit_apparition_position`** memory point
 - **Component names** in geometry LOD matching part names (for `GetActionComponentName()`)
 - **`Deployed`** selection for the unbuilt state
 
 ### 4. Construction Kit
 
-Create a kit item extending `KitBase` that players place to spawn the construction site.
+Create a kit item extending `KitBase` that players place to apparition the construction site.
 
 ---
 
@@ -439,7 +439,7 @@ Multi-level tower. Kit: `WatchtowerKit`. Up to 3 floors with walls and roofs per
 
 ### ShelterSite
 
-Temporary construction site. Kit: `ShelterKit`. Three mutually exclusive build options (leather, fabric, stick) that each spawn a different finished `ShelterBase` subclass and delete the site. Built without tools via `ActionBuildShelter`.
+Temporary construction site. Kit: `ShelterKit`. Three mutually exclusive build options (leather, fabric, stick) that each apparition a different finished `ShelterBase` subclass and delete the site. Built without tools via `ActionBuildShelter`.
 
 ---
 
@@ -455,7 +455,7 @@ if (newLevel == GameConstants.STATE_RUINED)
 }
 ```
 
-This is the raiding mechanism: explosives and weapons deal damage to damage zones until they reach ruined state. Barbed wire attachments have special handling --- when their zone is ruined, the wire's mounted state is cleared.
+This is the raiding mechanism: explosives and weapons deal damage to zones de dégâts until they reach ruined state. Barbed wire attachments have special handling --- when their zone is ruined, the wire's mounted state is cleared.
 
 Server admins can make bases indestructible via the `"disableBaseDamage"` invulnerability type in `cfgGameplay.json`.
 
@@ -463,19 +463,19 @@ Repair uses `TakeMaterialsServer(part_name, true)`, requiring only 15% of origin
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 1. **Part IDs must be unique** within an object (1-93 range). Gaps are allowed but waste capacity.
 2. **Always define `collision_data` memory points** to prevent building through geometry.
 3. **Use `required_parts`** to enforce build order (foundation before walls).
 4. **Use `conflicted_parts`** for mutually exclusive options (wall vs gate on same section).
 5. **Match damage zone names to part names** exactly (case-insensitive) or health/damage will not work.
-6. **Enable debug logging** via `LogManager.IsBaseBuildingLogEnable()` for diagnostics --- the vanilla code has extensive `[bsb]` prefixed debug output.
+6. **Enable debug logging** via `LogManager.IsBaseBuildingLogEnable()` for diagnostics --- le vanilla code has extensive `[bsb]` prefixed debug output.
 7. **Stay under 93 parts** per object. Complex structures should be split into multiple placeable objects.
 
 ---
 
-## Observe dans les Mods Reels
+## Observé dans les mods réels
 
 - **DayZ Expansion** extends `BaseBuildingBase` with custom floors, walls, and ramps using dozens of parts per object.
 - **Raid mods** override `EEHealthLevelChanged()` or adjust `DamageZones` hitpoints to tune raid difficulty.
@@ -484,9 +484,9 @@ Repair uses `TakeMaterialsServer(part_name, true)`, requiring only 15% of origin
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
-| Erreur | Consequence | Correction |
+| Mistake | Consequence | Fix |
 |---------|-------------|-----|
 | Part ID exceeds 93 | State never syncs/persists | Keep IDs in 1-93 range |
 | Missing model selection | Part builds but is invisible | Add named selection matching `part_name` |

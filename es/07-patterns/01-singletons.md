@@ -1,12 +1,12 @@
-# Chapter 7.1: Singleton Pattern
+# Capítulo 7.1: Singleton Pattern
 
-[Home](../../README.md) | **Singleton Pattern** | [Next: Module Systems >>](02-module-systems.md)
+[Inicio](../../README.md) | **Singleton Pattern** | [Siguiente: Module Systems >>](02-module-systems.md)
 
 ---
 
-## Introduccion
+## Introducción
 
-The singleton pattern guarantees that a class has exactly one instance, accessible globally. In DayZ modding it is the most common architectural pattern --- virtually every manager, cache, registry, and subsystem uses it. COT, VPP, Expansion, Dabs Framework, and MyMod all rely on singletons to coordinate state across the engine's script layers.
+The singleton pattern guarantees that a class has exactly one instance, accessible globally. In DayZ modding it is the most common architectural pattern --- virtually every manager, cache, registry, and subsystem uses it. COT, VPP, Expansion, Dabs Framework, and others all rely on singletons to coordinate state across the engine's script layers.
 
 This chapter covers the canonical implementation, lifecycle management, when the pattern is appropriate, and where it goes wrong.
 
@@ -87,7 +87,7 @@ class LootManager
 
 ### Why `private static ref`?
 
-| Palabra Clave | Proposito |
+| Keyword | Propósito |
 |---------|---------|
 | `private` | Prevents other classes from setting `s_Instance` to null or replacing it |
 | `static` | Shared across all code --- no instance needed to access it |
@@ -210,12 +210,12 @@ modded class MissionServer
 };
 ```
 
-### MyMod Centralized Shutdown
+### Centralized Shutdown Pattern
 
-MyFramework consolidates all singleton cleanup into `MyFramework.ShutdownAll()`, which is called from the modded `MissionServer.OnMissionFinish()`. This prevents the common mistake of forgetting one singleton:
+A framework mod can consolidate all singleton cleanup into `MyFramework.ShutdownAll()`, which is called from the modded `MissionServer.OnMissionFinish()`. This prevents the common mistake of forgetting one singleton:
 
 ```c
-// Conceptual pattern (simplified from MyFramework):
+// Conceptual pattern (centralized shutdown):
 static void ShutdownAll()
 {
     MyRPC.Cleanup();
@@ -228,11 +228,11 @@ static void ShutdownAll()
 
 ---
 
-## Cuando Usar Singletons
+## When to Use Singletons
 
 ### Good Candidates
 
-| Caso de Uso | Why Singleton Works |
+| Use Case | Why Singleton Works |
 |----------|-------------------|
 | **Manager classes** (LootManager, VehicleManager) | Exactly one coordinator for a domain |
 | **Caches** (CfgVehicles cache, icon cache) | Single source of truth avoids redundant computation |
@@ -242,7 +242,7 @@ static void ShutdownAll()
 
 ### Poor Candidates
 
-| Caso de Uso | Why Not |
+| Use Case | Why Not |
 |----------|---------|
 | **Per-player data** | One instance per player, not one global instance |
 | **Temporary computations** | Create, use, discard --- no global state needed |
@@ -251,7 +251,7 @@ static void ShutdownAll()
 
 ---
 
-## Ejemplos Practicos
+## Real-World Examples
 
 ### COT (Community Online Tools)
 
@@ -352,7 +352,7 @@ Or better yet, avoid circular initialization entirely.
 
 ---
 
-## Anti-Patrones
+## Anti-Patterns
 
 ### 1. Global Mutable State Without Encapsulation
 
@@ -487,7 +487,7 @@ class MyLog
 };
 ```
 
-This is the approach used by `MyLog`, `MyRPC`, `MyEventBus`, and `MyModuleManager` in MyFramework. It is simpler, avoids the `GetInstance()` null-check overhead, and makes the intent clear: there is no instance, only shared state.
+This is the approach used by `MyLog`, `MyRPC`, `MyEventBus`, and `MyModuleManager` in a framework mod. It is simpler, avoids the `GetInstance()` null-check overhead, and makes the intent clear: there is no instance, only shared state.
 
 **Use a static-only class when:**
 - All methods are stateless or operate on static fields
@@ -515,4 +515,36 @@ Before shipping a singleton, verify:
 
 ---
 
-[Inicio](../../README.md) | **Patron Singleton** | [Siguiente: Module Systems >>](02-module-systems.md)
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Multiple mods each defining their own singletons coexist safely --- each has its own `s_Instance`. Conflicts only arise if two mods define the same class name, which Enforce Script will flag as a redefinition error at load time.
+- **Load Order:** Lazy singletons are unaffected by mod load order. Eager singletons created in `OnInit()` depend on the `modded class` chain order, which follows `config.cpp` `requiredAddons`.
+- **Listen Server:** Static fields are shared between client and server contexts in the same process. A singleton that should only exist server-side must guard construction with `GetGame().IsServer()`, or it will be accessible (and potentially initialized) from client code as well.
+- **Performance:** Singleton access is a static null check + method call --- negligible overhead. The cost is in what the singleton *does*, not in accessing it.
+- **Migration:** Singletons survive DayZ version updates as long as the APIs they call (e.g., `GetGame()`, `JsonFileLoader`) remain stable. No special migration is needed for the pattern itself.
+
+---
+
+## Errores Comunes
+
+| Error | Impact | Solución |
+|---------|--------|-----|
+| Missing `DestroyInstance()` call in `OnMissionFinish` | Stale data and dead entity references carry over across mission restarts, causing crashes or ghost state | Always call `DestroyInstance()` from `OnMissionFinish` or a centralized `ShutdownAll()` |
+| Calling `GetInstance()` inside another singleton's constructor | Triggers re-entrant construction; `s_Instance` is still null, so a second instance is created | Defer cross-singleton access to an `Initialize()` method called after construction |
+| Using `public static ref` instead of `private static ref` | Any code can set `s_Instance = null` or replace it, breaking the single-instance guarantee | Always declare `s_Instance` as `private static ref` |
+| Not guarding eager init on listen servers | Singleton is constructed twice (once from server path, once from client path) if `Create()` lacks a null check | Always check `if (!s_Instance)` inside `Create()` |
+| Accumulating state without bounds (unbounded caches) | Memory grows indefinitely on long-running servers; eventual OOM or severe lag | Cap collections with a max size or periodic eviction in `OnUpdate` |
+
+---
+
+## Teoría vs Práctica
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Singletons are an anti-pattern; use dependency injection | Enforce Script has no DI container. Singletons are the standard approach for global managers across all major mods. |
+| Lazy initialization is always sufficient | RPC handlers must be registered before any client connects, so eager init in `OnInit()` is often necessary. |
+| Singletons should never be destroyed | DayZ missions restart without restarting the server process; singletons *must* be destroyed and recreated on each mission cycle. |
+
+---
+
+[Inicio](../../README.md) | **Singleton Pattern** | [Siguiente: Module Systems >>](02-module-systems.md)

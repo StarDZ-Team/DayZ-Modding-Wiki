@@ -1,27 +1,29 @@
-# Chapter 3.8: Dialogs & Modals
+# Capítulo 3.8: Diálogos y Modales
 
-[Home](../../README.md) | [<< Previous: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Next: Real Mod UI Patterns >>](09-real-mod-patterns.md)
-
----
+[Inicio](../../README.md) | [<< Anterior: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Siguiente: Real Mod UI Patterns >>](09-real-mod-patterns.md)
 
 ---
 
-## Modal vs. No Modal
+Dialogs are temporary overlay windows that demand user interaction -- confirmation prompts, alert messages, input forms, and settings panels. This chapter covers the built-in dialog system, manual dialog patterns, layout structure, focus management, and common pitfalls.
+
+---
+
+## Modal vs. Modeless
 
 There are two fundamental types of dialog:
 
-- **Modal** -- Bloquea toda interaccion con el contenido detras del dialogo. El usuario debe responder (confirmar, cancelar, cerrar) antes de hacer cualquier otra cosa. Examples: quit confirmation, delete warning, rename prompt.
-- **No Modal** -- Permite al usuario interactuar con el contenido detras del dialogo mientras permanece abierto. Examples: info panels, settings windows, tool palettes.
+- **Modal** -- Blocks all interaction with content behind the dialog. The user must respond (confirm, cancel, close) before doing anything else. Examples: quit confirmation, delete warning, rename prompt.
+- **Modeless** -- Allows the user to interact with content behind the dialog while it remains open. Examples: info panels, settings windows, tool palettes.
 
-En DayZ, the distinction is controlled by whether you lock game input when the dialog opens. A modal dialog calls `ChangeGameFocus(1)` and shows the cursor; a modeless dialog may skip this or use a toggle approach.
+In DayZ, the distinction is controlled by whether you lock game input when the dialog opens. A modal dialog calls `ChangeGameFocus(1)` and shows the cursor; a modeless dialog may skip this or use a toggle approach.
 
 ---
 
-## UIScriptedMenu -- El Sistema Incorporado
+## UIScriptedMenu -- The Built-in System
 
 `UIScriptedMenu` is the engine-level base class for all menu screens in DayZ. It integrates with the `UIManager` menu stack, handles input locking automatically, and provides lifecycle hooks. Vanilla DayZ uses it for the in-game menu, logout dialog, respawn dialog, options menu, and many others.
 
-### Jerarquia de Clases
+### Class Hierarchy
 
 ```
 UIMenuPanel          (base: menu stack, Close(), submenu management)
@@ -101,7 +103,7 @@ class MyDialog extends UIScriptedMenu
 }
 ```
 
-### Abrir y Cerrar
+### Opening and Closing
 
 ```c
 // Opening -- create the menu and push it onto the UIManager stack
@@ -117,9 +119,9 @@ Close();
 
 `ShowScriptedMenu()` pushes the menu onto the engine menu stack, triggers `Init()`, then `OnShow()`. `Close()` triggers `OnHide()`, pops it from the stack, and destroys the widget tree.
 
-### Metodos Clave del Ciclo de Vida
+### Key Lifecycle Methods
 
-| Metodo | Cuando se Llama | Uso Tipico |
+| Método | When Called | Typical Use |
 |--------|------------|-------------|
 | `Init()` | Once, when menu is created | Create widgets, cache references |
 | `OnShow()` | After menu becomes visible | Lock input, start timers |
@@ -154,9 +156,9 @@ Because `UIScriptedMenu` handles focus management automatically in `OnShow()`/`O
 
 ---
 
-## ShowDialog Incorporado (Cajas de Mensaje Nativas)
+## Built-in ShowDialog (Native Message Boxes)
 
-El motor proporciona un sistema de dialogo nativo para confirmaciones simples. Renderiza un cuadro de dialogo apropiado para la plataforma sin requerir ningun archivo de layout.
+The engine provides a native dialog system for simple confirmation prompts. It renders a platform-appropriate dialog box without requiring any layout file.
 
 ### Usage
 
@@ -200,7 +202,7 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
 
 **Button configurations** (`DBT_` -- DialogBoxType):
 
-| Constante | Botones Mostrados |
+| Constante | Buttons Shown |
 |----------|---------------|
 | `DBT_OK` | OK |
 | `DBT_YESNO` | Yes, No |
@@ -208,7 +210,7 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
 
 **Button identifiers** (`DBB_` -- DialogBoxButton):
 
-| Constante | Valor | Significado |
+| Constante | Valor | Meaning |
 |----------|-------|---------|
 | `DBB_NONE` | 0 | No default |
 | `DBB_OK` | 1 | OK button |
@@ -218,7 +220,7 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
 
 **Message types** (`DMT_` -- DialogMessageType):
 
-| Constante | Icono |
+| Constante | Ícono |
 |----------|------|
 | `DMT_NONE` | No icon |
 | `DMT_INFO` | Info |
@@ -232,7 +234,7 @@ Use `ShowDialog()` for simple alerts and confirmations that do not need custom s
 
 ---
 
-## Patron Manual de Dialogo (Sin UIScriptedMenu)
+## Manual Dialog Pattern (Without UIScriptedMenu)
 
 When you need a dialog that is not part of the engine menu stack -- for example, a popup inside an existing panel -- extend `ScriptedWidgetEventHandler` instead of `UIScriptedMenu`. This gives you full control but requires manual focus and lifecycle management.
 
@@ -306,7 +308,7 @@ class SimplePopup : ScriptedWidgetEventHandler
 }
 ```
 
-### Popup Estilo VPP (Patron OnWidgetScriptInit)
+### VPP-Style Popup (OnWidgetScriptInit Pattern)
 
 VPP Admin Tools and other mods use `OnWidgetScriptInit()` to initialize popups. The widget is created by a parent, and the script class is attached via `scriptclass` in the layout file:
 
@@ -377,7 +379,7 @@ The engine automatically calls `OnWidgetScriptInit()` on the script class specif
 
 ---
 
-## Estructura del Layout de Dialogo
+## Dialog Layout Structure
 
 A dialog layout typically has three layers: a full-screen root for click interception, a semi-transparent overlay for dimming, and the centered dialog panel.
 
@@ -453,7 +455,7 @@ FrameWidget "DialogRoot" {
 
 ---
 
-## Patron de Dialogo de Confirmacion
+## Confirmation Dialog Pattern
 
 A reusable confirmation dialog accepts a title, message, and callback. This is the most common dialog pattern in DayZ mods.
 
@@ -571,7 +573,7 @@ The callback uses `GameScript.CallFunction()` which invokes a function by name o
 
 ---
 
-## Patron de Dialogo de Input
+## Input Dialog Pattern
 
 An input dialog adds an `EditBoxWidget` for text entry with validation.
 
@@ -695,9 +697,9 @@ class InputDialog : ScriptedWidgetEventHandler
 
 ---
 
-## Gestion del Foco
+## Focus Management
 
-La gestion del foco es el aspecto mas critico de la implementacion de dialogos. DayZ usa un sistema de foco **con conteo de referencias** -- cada `ChangeGameFocus(1)` debe ser balanceado con un `ChangeGameFocus(-1)`.
+Focus management is the most critical aspect of dialog implementation. DayZ uses a **reference-counted** focus system -- every `ChangeGameFocus(1)` must be balanced by a `ChangeGameFocus(-1)`.
 
 ### How It Works
 
@@ -731,7 +733,7 @@ GetGame().GetUIManager().ShowUICursor(false);
 
 ### What Goes Wrong
 
-| Error | Sintoma |
+| Error | Symptom |
 |---------|---------|
 | Forgot `ChangeGameFocus(-1)` on close | Player cannot move, shoot, or interact after dialog closes |
 | Called `-1` twice | Focus counter goes negative; next menu that opens will not properly lock input |
@@ -740,7 +742,7 @@ GetGame().GetUIManager().ShowUICursor(false);
 
 ---
 
-## Orden Z y Capas
+## Z-Order and Layering
 
 When a dialog opens on top of existing UI, it must render above everything else. DayZ provides two mechanisms:
 
@@ -766,17 +768,17 @@ FrameWidget "DialogRoot" {
 }
 ```
 
-### Mejores Practicas
+### Best Practices
 
-- **Fondo de overlay**: Use a high sort value (e.g., 998) for the semi-transparent background.
-- **Panel de dialogo**: Use a higher sort value (e.g., 999 or 1024) for the dialog itself.
-- **Dialogos apilados**: If your system supports nested dialogs, increment the sort value for each new dialog layer.
+- **Overlay background**: Use a high sort value (e.g., 998) for the semi-transparent background.
+- **Dialog panel**: Use a higher sort value (e.g., 999 or 1024) for the dialog itself.
+- **Stacking dialogs**: If your system supports nested dialogs, increment the sort value for each new dialog layer.
 
 ---
 
 ## Patrones Comunes
 
-### Panel de Alternancia (Abrir/Cerrar con la Misma Tecla)
+### Toggle Panel (Open/Close with Same Key)
 
 ```c
 class TogglePanel : ScriptedWidgetEventHandler
@@ -819,7 +821,7 @@ class TogglePanel : ScriptedWidgetEventHandler
 }
 ```
 
-### ESC para Cerrar
+### ESC to Close
 
 ```c
 // Inside Update() of a UIScriptedMenu:
@@ -846,7 +848,7 @@ override bool OnKeyDown(Widget w, int x, int y, int key)
 }
 ```
 
-### Clic Afuera para Cerrar
+### Click Outside to Close
 
 Make the full-screen overlay widget clickable. When clicked, close the dialog:
 
@@ -882,7 +884,7 @@ class OverlayDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### Callbacks de Resultado de Dialogo
+### Dialog Result Callbacks
 
 For dialogs that need to return complex results, use `GameScript.CallFunctionParams()` with `Param` objects:
 
@@ -909,7 +911,7 @@ This is the same pattern VPP Admin Tools uses for its `VPPDialogBox` callback sy
 
 ---
 
-## UIScriptedWindow -- Ventanas Flotantes
+## UIScriptedWindow -- Floating Windows
 
 DayZ has a second built-in system: `UIScriptedWindow`, for floating windows that exist alongside a `UIScriptedMenu`. Unlike `UIScriptedMenu`, windows are tracked in a static map and their events are routed through the active menu.
 
@@ -948,15 +950,15 @@ GetGame().GetUIManager().CloseWindow(MY_WINDOW_ID);
 GetGame().GetUIManager().IsWindowOpened(MY_WINDOW_ID);
 ```
 
-En la practica, most mod developers use `ScriptedWidgetEventHandler`-based popups rather than `UIScriptedWindow`, because the window system requires registering with the engine's switch-case in `MissionBase` and the events route through the active `UIScriptedMenu`. The manual pattern is simpler and more flexible.
+In practice, most mod developers use `ScriptedWidgetEventHandler`-based popups rather than `UIScriptedWindow`, because the window system requires registering with the engine's switch-case in `MissionBase` and the events route through the active `UIScriptedMenu`. The manual pattern is simpler and more flexible.
 
 ---
 
 ## Errores Comunes
 
-### 1. No Restaurar el Foco del Juego al Cerrar
+### 1. Not Restoring Game Focus on Close
 
-**El problema:** Player cannot move, shoot, or interact after the dialog closes.
+**The problem:** Player cannot move, shoot, or interact after the dialog closes.
 
 ```c
 // WRONG -- no focus restoration
@@ -977,9 +979,9 @@ void CloseDialog()
 }
 ```
 
-### 2. No Desvincular Widgets al Cerrar
+### 2. Not Unlinking Widgets on Close
 
-**El problema:** Widget tree stays in memory, events keep firing, memory leaks accumulate.
+**The problem:** Widget tree stays in memory, events keep firing, memory leaks accumulate.
 
 ```c
 // WRONG -- just hiding
@@ -1001,21 +1003,21 @@ void Hide()
 
 If you need to show/hide the same dialog repeatedly, keeping the widget and using `Show(true/false)` is fine -- just ensure you `Unlink()` in the destructor.
 
-### 3. El Dialogo se Renderiza Detras de Otra UI
+### 3. Dialog Renders Behind Other UI
 
-**El problema:** Dialog is invisible or partially hidden because other widgets have higher rendering priority.
+**The problem:** Dialog is invisible or partially hidden because other widgets have higher rendering priority.
 
-**La solucion:** Use `SetSort()` to push the dialog above everything:
+**The fix:** Use `SetSort()` to push the dialog above everything:
 
 ```c
 m_Root.SetSort(1024, true);
 ```
 
-### 4. Multiples Dialogos Apilando Cambios de Foco
+### 4. Multiple Dialogs Stacking Focus Changes
 
-**El problema:** Opening dialog A (+1), then dialog B (+1), then closing B (-1) -- focus counter is still 1, so input is still locked even though the user sees no dialog.
+**The problem:** Opening dialog A (+1), then dialog B (+1), then closing B (-1) -- focus counter is still 1, so input is still locked even though the user sees no dialog.
 
-**La solucion:** Track whether each dialog instance has locked focus, and only decrement if it did:
+**The fix:** Track whether each dialog instance has locked focus, and only decrement if it did:
 
 ```c
 class SafeDialog : ScriptedWidgetEventHandler
@@ -1054,11 +1056,11 @@ class SafeDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### 5. Llamar Close() o Delete en el Constructor
+### 5. Calling Close() or Delete in the Constructor
 
-**El problema:** Calling `Close()` or `delete this` during construction causes crashes or undefined behavior because the object is not fully initialized.
+**The problem:** Calling `Close()` or `delete this` during construction causes crashes or undefined behavior because the object is not fully initialized.
 
-**La solucion:** Defer closure using `CallLater`:
+**The fix:** Defer closure using `CallLater`:
 
 ```c
 void MyDialog()
@@ -1079,9 +1081,9 @@ void DeferredClose()
 }
 ```
 
-### 6. No Verificar Null Antes de Operaciones con Widgets
+### 6. Not Checking for Null Before Widget Operations
 
-**El problema:** Crash when accessing a widget that was already destroyed or never created.
+**The problem:** Crash when accessing a widget that was already destroyed or never created.
 
 ```c
 // WRONG
@@ -1102,18 +1104,18 @@ void UpdateMessage(string text)
 
 ## Resumen
 
-| Enfoque | Clase Base | Gestion del Foco | Mejor Para |
+| Approach | Base Class | Focus Management | Best For |
 |----------|-----------|-----------------|----------|
 | Engine menu stack | `UIScriptedMenu` | Automatic via `LockControls`/`UnlockControls` | Full-screen menus, major dialogs |
 | Native dialog | `ShowDialog()` | Automatic | Simple Yes/No/OK prompts |
 | Manual popup | `ScriptedWidgetEventHandler` | Manual `ChangeGameFocus` | In-panel popups, custom dialogs |
 | Floating window | `UIScriptedWindow` | Via parent menu | Tool windows alongside a menu |
 
-La regla de oro: **every `ChangeGameFocus(1)` must be matched by a `ChangeGameFocus(-1)`.** Put focus cleanup in your destructor as a safety net, always `Unlink()` widgets when done, and use `SetSort()` to ensure your dialog renders on top.
+The golden rule: **every `ChangeGameFocus(1)` must be matched by a `ChangeGameFocus(-1)`.** Put focus cleanup in your destructor as a safety net, always `Unlink()` widgets when done, and use `SetSort()` to ensure your dialog renders on top.
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 - [3.6 Event Handling](06-event-handling.md) -- Handle clicks, hover, keyboard events inside dialogs
 - [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Build dialog content dynamically in code

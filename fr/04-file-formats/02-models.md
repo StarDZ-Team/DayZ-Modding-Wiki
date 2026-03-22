@@ -1,18 +1,18 @@
-# Chapter 4.2: 3D Models (.p3d)
+# Chapitre 4.2: 3D Models (.p3d)
 
-[Home](../../README.md) | [<< Previous: Textures](01-textures.md) | **3D Models** | [Next: Materials >>](03-materials.md)
+[Accueil](../../README.md) | [<< Précédent : Textures](01-textures.md) | **3D Models** | [Suivant : Materials >>](03-materials.md)
 
 ---
 
 ## Introduction
 
-Every physical object in DayZ -- weapons, clothing, buildings, vehicles, trees, rocks -- is a 3D model stored in Bohemia's proprietary **P3D** format. The P3D format is far more than a mesh container: it encodes multiple levels of detail, collision geometry, animation selections, memory points for attachments and effects, and proxy positions for mountable items. Comprendre comment P3D files work and how to create them with **Object Builder** is essential for any mod that adds physical items to the game world.
+Every physical object in DayZ -- weapons, clothing, buildings, vehicles, trees, rocks -- is a 3D model stored in Bohemia's proprietary **P3D** format. The P3D format is far more than a mesh container: it encodes multiple levels of detail, collision geometry, animation selections, memory points for attachments and effects, and proxy positions for mountable items. Understanding how P3D files work and how to create them with **Object Builder** is essential for any mod that adds physical items to le jeu world.
 
 Ce chapitre couvre the P3D format structure, the LOD system, named selections, memory points, the proxy system, animation configuration via `model.cfg`, and the import workflow from standard 3D formats.
 
 ---
 
-## Table des matieres
+## Table des matières
 
 - [P3D Format Overview](#p3d-format-overview)
 - [Object Builder](#object-builder)
@@ -28,7 +28,7 @@ Ce chapitre couvre the P3D format structure, the LOD system, named selections, m
 
 ---
 
-## Vue d'ensemble du format P3D
+## P3D Format Overview
 
 **P3D** (Point 3D) is Bohemia Interactive's binary 3D model format, inherited from the Real Virtuality engine and carried forward into Enfusion. It is a compiled, engine-ready format -- you do not write P3D files by hand.
 
@@ -37,7 +37,7 @@ Ce chapitre couvre the P3D format structure, the LOD system, named selections, m
 - **Binary format:** Not human-readable. Created and edited exclusively with Object Builder.
 - **Multi-LOD container:** A single P3D file contains multiple LOD (Level of Detail) meshes, each with a different purpose.
 - **Engine-native:** The DayZ engine loads P3D directly. No runtime conversion occurs.
-- **Binarized vs. unbinarized:** Source P3D files from Object Builder are "MLOD" (editable). Binarize converts them to "ODOL" (optimized, read-only). The game can load both, but ODOL loads faster and is smaller.
+- **Binarized vs. unbinarized:** Source P3D files from Object Builder are "MLOD" (editable). Binarize converts them to "ODOL" (optimized, read-only). Le jeu can load both, but ODOL loads faster and is smaller.
 
 ### File Types You Will Encounter
 
@@ -79,7 +79,7 @@ Ce chapitre couvre the P3D format structure, the LOD system, named selections, m
 
 ### Workspace Setup
 
-Object Builder requires the **P: drive** (workdrive) to be set up. This virtual drive provides a unified path prefix that the engine uses to locate assets.
+Object Builder requires the **P: drive** (workdrive) to be set up. This virtual drive provides a unified path prefix that le moteur uses to locate assets.
 
 ```
 P:\
@@ -93,7 +93,7 @@ P:\
         my_item_co.paa
 ```
 
-All paths in P3D files and materials are relative to the P: drive root. For example, a material reference inside the model would be `MyMod\data\textures\my_item_co.paa`.
+All paths in P3D files and materials are relative to the P: drive root. Par exemple, a material reference inside the model would be `MyMod\data\textures\my_item_co.paa`.
 
 ### Basic Workflow in Object Builder
 
@@ -109,9 +109,9 @@ All paths in P3D files and materials are relative to the P: drive root. For exam
 
 ---
 
-## Le systeme LOD
+## The LOD System
 
-A P3D file contains multiple **LODs** (Levels of Detail), each serving a specific purpose. The engine selects which LOD to use based on the situation -- distance from camera, physics calculations, shadow rendering, etc.
+A P3D file contains multiple **LODs** (Levels of Detail), each serving a specific purpose. Le moteur selects which LOD to use based on the situation -- distance from camera, physics calculations, shadow rendering, etc.
 
 ### LOD Types
 
@@ -121,7 +121,7 @@ A P3D file contains multiple **LODs** (Levels of Detail), each serving a specifi
 | **Resolution 1** | 1.100 | Medium detail. Rendered at moderate distance. |
 | **Resolution 2** | 1.200 | Low detail. Rendered at far distance. |
 | **Resolution 3+** | 1.300+ | Additional distance LODs. |
-| **View Geometry** | Special | Determines what blocks the player's view (first person). Simplified mesh. |
+| **View Geometry** | Special | Determines what blocks le joueur's view (first person). Simplified mesh. |
 | **Fire Geometry** | Special | Collision for bullets and projectiles. Must be convex or composed of convex parts. |
 | **Geometry** | Special | Physics collision. Used for movement collision, gravity, placement. Must be convex or composed of convex decomposition. |
 | **Shadow 0** | Special | Shadow casting mesh (close range). |
@@ -130,15 +130,34 @@ A P3D file contains multiple **LODs** (Levels of Detail), each serving a specifi
 | **Roadway** | Special | Defines walkable surfaces on objects (vehicles, buildings with enterable interiors). |
 | **Paths** | Special | AI pathfinding hints for buildings. |
 
+### LOD Hierarchy
+
+```mermaid
+graph TB
+    P3D["weapon.p3d"]
+
+    P3D --> RES["Resolution LODs<br/>1.0, 2.0, 4.0, 8.0, 16.0<br/>Visible 3D meshes"]
+    P3D --> GEO["Geometry LOD<br/>Collision detection<br/>Convex hull"]
+    P3D --> FIRE["Fire Geometry LOD<br/>Bullet collision<br/>Simplified shape"]
+    P3D --> VIEW["View Geometry LOD<br/>Camera collision"]
+    P3D --> SHADOW["Shadow LODs<br/>0.0, 10.0, 1000.0<br/>Shadow casting"]
+    P3D --> MEM["Memory LOD<br/>Named points<br/>Attachment positions"]
+
+    style RES fill:#4A90D9,color:#fff
+    style GEO fill:#D94A4A,color:#fff
+    style FIRE fill:#D97A4A,color:#fff
+    style MEM fill:#2D8A4E,color:#fff
+```
+
 ### LOD Resolution Values (Visual LODs)
 
-The engine uses a formula based on distance and object size to determine which visual LOD to render:
+Le moteur uses a formula based on distance and object size to determine which visual LOD to render:
 
 ```
 LOD selected = (distance_to_object * LOD_factor) / object_bounding_sphere_radius
 ```
 
-Lower values = closer camera. The engine finds the LOD whose resolution value is the closest match to the calculated value.
+Lower values = closer camera. Le moteur finds the LOD whose resolution value is the closest match to the calculated value.
 
 ### Creating LODs in Object Builder
 
@@ -161,16 +180,16 @@ Lower values = closer camera. The engine finds the LOD whose resolution value is
 
 The Geometry and Fire Geometry LODs have strict requirements:
 
-- **Must be convex** or composed of multiple convex components. The engine's physics system requires convex collision shapes.
+- **Must be convex** or composed of multiple convex components. Le moteur's physics system requires convex collision shapes.
 - **Named selections must match** those in the Resolution LOD (for animated parts).
 - **Mass must be defined.** Select all vertices in the Geometry LOD and assign mass via **Structure --> Mass**. This determines the object's physical weight.
 - **Keep it simple.** Fewer triangles = better physics performance. A weapon's geometry LOD might have 20-50 triangles vs. thousands in the visual LOD.
 
 ---
 
-## Selections nommees
+## Named Selections
 
-Named selections are groups of vertices, edges, or faces within a LOD that are tagged with a name. They serve as handles that the engine and scripts use to manipulate parts of a model.
+Named selections are groups of vertices, edges, or faces within a LOD that are tagged with a name. They serve as handles that le moteur and scripts use to manipulate parts of a model.
 
 ### What Named Selections Do
 
@@ -183,7 +202,7 @@ Named selections are groups of vertices, edges, or faces within a LOD that are t
 
 ### hiddenSelections (Texture Swaps)
 
-Le plus courant use of named selections for modders is **hiddenSelections** -- the ability to swap textures at runtime via config.cpp.
+The most common use of named selections for modders is **hiddenSelections** -- the ability to swap textures à l'exécution via config.cpp.
 
 **In the P3D model (Resolution LOD):**
 1. Select the faces that should be retexturable.
@@ -210,7 +229,7 @@ In Object Builder:
 3. Click **New**, enter the selection name.
 4. Click **Assign** to tag the selected geometry with that name.
 
-> **Astuce :** Selection names are case-sensitive. `Camo` and `camo` are different selections. Convention is lowercase.
+> **Tip:** Selection names are case-sensitive. `Camo` and `camo` are different selections. Convention is lowercase.
 
 ### Selections Across LODs
 
@@ -221,9 +240,9 @@ Named selections must be consistent across LODs for animations to work:
 
 ---
 
-## Points memoire
+## Memory Points
 
-Memory points are named positions defined in the **Memory LOD**. They have no visual representation in-game -- they define spatial coordinates that the engine and scripts reference for positioning effects, attachments, sounds, and more.
+Memory points are named positions defined in the **Memory LOD**. They have no visual representation in-game -- they define spatial coordinates that le moteur and scripts reference for positioning effects, attachments, sounds, and more.
 
 ### Common Memory Points
 
@@ -262,17 +281,17 @@ The direction vector is: konec hlavne - usti hlavne
 2. Create a vertex at the desired position.
 3. Name it via **Structure --> Named Selections**: create a selection with the point name and assign the single vertex to it.
 
-> **Remarque :** The Memory LOD should contain ONLY named points (individual vertices). Do not create faces or edges in the Memory LOD.
+> **Note :** The Memory LOD should contain ONLY named points (individual vertices). Do not create faces or edges in the Memory LOD.
 
 ---
 
-## Le systeme de proxy
+## The Proxy System
 
 Proxies define positions where other P3D models can be attached. When you see a magazine inserted in a weapon, an optic mounted on a rail, or a suppressor screwed onto a barrel -- those are proxy-attached models.
 
 ### How Proxies Work
 
-A proxy is a special reference placed in the Resolution LOD that points to another P3D file. The engine renders the proxy's referenced model at the proxy's position and orientation.
+A proxy is a special reference placed in the Resolution LOD that points to another P3D file. Le moteur renders the proxy's referenced model at the proxy's position and orientation.
 
 ### Proxy Naming Convention
 
@@ -317,7 +336,7 @@ class MyWeapon: Rifle_Base
 
 ---
 
-## Model.cfg pour les animations
+## Model.cfg for Animations
 
 The `model.cfg` file defines animations for P3D models. It maps animation sources (driven by game logic) to transformations on named selections.
 
@@ -417,7 +436,7 @@ Animation sources are engine-provided values that drive animations:
 
 ---
 
-## Importer depuis FBX/OBJ
+## Importing from FBX/OBJ
 
 Most modders create 3D models in external tools (Blender, 3ds Max, Maya) and import them into Object Builder.
 
@@ -463,7 +482,7 @@ Most modders create 3D models in external tools (Blender, 3ds Max, Maya) and imp
 
 ---
 
-## Types de modeles courants
+## Common Model Types
 
 ### Weapons
 
@@ -509,33 +528,33 @@ Vehicles combine many systems:
 
 ### 1. Missing Geometry LOD
 
-**Symptome :** Object has no collision. Players and bullets pass through it.
-**Correction :** Create a Geometry LOD with a simplified convex mesh. Assign mass to vertices.
+**Symptom:** Object has no collision. Players and bullets pass through it.
+**Fix:** Create a Geometry LOD with a simplified convex mesh. Assign mass to vertices.
 
 ### 2. Non-Convex Collision Shapes
 
-**Symptome :** Physics glitches, objects bouncing erratically, items falling through surfaces.
-**Correction :** Break complex shapes into multiple convex components in the Geometry LOD. Each component must be a closed convex solid.
+**Symptom:** Physics glitches, objects bouncing erratically, items falling through surfaces.
+**Fix:** Break complex shapes into multiple convex components in the Geometry LOD. Each component must be a closed convex solid.
 
 ### 3. Inconsistent Named Selections
 
-**Symptome :** Animations only work visually but not for collision, or shadow does not animate.
-**Correction :** Ensure every named selection that exists in the Resolution LOD also exists in Geometry, Fire Geometry, and Shadow LODs.
+**Symptom:** Animations only work visually but not for collision, or shadow does not animate.
+**Fix:** Ensure every named selection that exists in the Resolution LOD also exists in Geometry, Fire Geometry, and Shadow LODs.
 
 ### 4. Wrong Scale
 
-**Symptome :** Object is gigantic or microscopic in-game.
-**Correction :** Verify your 3D software uses meters as the unit. A DayZ character is approximately 1.8 meters tall.
+**Symptom:** Object is gigantic or microscopic in-game.
+**Fix:** Verify your 3D software uses meters as the unit. A DayZ character is approximately 1.8 meters tall.
 
 ### 5. Missing Memory Points
 
-**Symptome :** Muzzle flash appears at the wrong position, attachments float in space.
-**Correction :** Create the Memory LOD and add all required named points at correct positions.
+**Symptom:** Muzzle flash appears at the wrong position, attachments float in space.
+**Fix:** Create the Memory LOD and add all required named points at correct positions.
 
 ### 6. No Mass Defined
 
-**Symptome :** Object cannot be picked up, or physics interactions behave strangely.
-**Correction :** Select all vertices in the Geometry LOD and assign mass via **Structure --> Mass**.
+**Symptom:** Object cannot be picked up, or physics interactions behave strangely.
+**Fix:** Select all vertices in the Geometry LOD and assign mass via **Structure --> Mass**.
 
 ---
 
@@ -543,7 +562,7 @@ Vehicles combine many systems:
 
 1. **Start with the Geometry LOD.** Block out your collision shape first, then build the visual detail on top. This prevents the common mistake of creating a beautiful model that cannot collide properly.
 
-2. **Use reference models.** Extract vanilla P3D files from the game data and study them in Object Builder. They show exactly what the engine expects for each item type.
+2. **Use reference models.** Extract vanilla P3D files from le jeu data and study them in Object Builder. They show exactly what le moteur expects for each item type.
 
 3. **Validate frequently.** Use Object Builder's **Structure --> Validate** after every significant change. Fix warnings before they become mysterious in-game bugs.
 
@@ -551,9 +570,27 @@ Vehicles combine many systems:
 
 5. **Name selections descriptively.** Use `bolt_carrier` instead of `sel01`. Your future self (and other modders) will thank you.
 
-6. **Testez avec file patching first.** Load your unbinarized P3D via file patching mode before committing to a full PBO build. This catches most issues faster.
+6. **Test with file patching first.** Load your unbinarized P3D via file patching mode before committing to a full PBO build. This catches most issues faster.
 
 7. **Document memory points.** Keep a reference image or text file listing all memory points and their intended positions. Complex weapons can have 20+ points.
+
+---
+
+## Observé dans les mods réels
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| Full LOD chain with 5+ resolution levels | DayZ-Samples (Test_Weapon) | Shows complete LOD hierarchy: Resolution 1.0 through 16.0, plus Geometry, Fire Geometry, Memory, Shadow |
+| Complex skeletons with 20+ bones | Expansion Vehicles | Helicopter and boat models use extensive bone hierarchies for doors, rotors, rudders, and turrets |
+| Proxy stacking for modular weapons | Dabs Framework (RFCP weapons) | Weapons use multiple proxy slots for rail attachments, allowing optic + laser + grip combos |
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** Two mods can safely reference different P3D models without conflict. Conflicts arise only when both mods try to `modded class` the same entity and change its `model` path in config.cpp.
+- **Performance :** Each visible P3D adds draw calls proportional to its material count. Models with 10+ materials per LOD can be expensive in scenes with many instances. Keep material count under 4 per visual LOD when possible.
+- **Version :** The P3D format (MLOD/ODOL) has remained stable across DayZ updates. Object Builder occasionally receives minor updates via DayZ Tools, but the format itself has not changed since DayZ 1.0.
 
 ---
 

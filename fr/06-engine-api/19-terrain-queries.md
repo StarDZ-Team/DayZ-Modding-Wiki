@@ -1,12 +1,12 @@
-# Chapter 6.19: Terrain & World Queries
+# Chapitre 6.19: Terrain & World Queries
 
-[Home](../../README.md) | [<< Previous: Animation System](18-animation-system.md) | **Terrain & World Queries** | [Next: Particle & Effect System >>](20-particle-effects.md)
+[Accueil](../../README.md) | [<< Précédent : Animation System](18-animation-system.md) | **Terrain & World Queries** | [Suivant : Particle & Effect System >>](20-particle-effects.md)
 
 ---
 
 ## Introduction
 
-Chaque operation spatiale dans DayZ --- spawning objects on the ground, checking line of sight, detecting nearby entities, determining surface type for footstep sounds --- depends on querying the world. The engine exposes three categories of spatial API: **terrain queries** (height, surface type, normals), **object queries** (finding entities near a position), and **raycasting** (tracing a line through the world to detect collisions). This chapter documents every available method, its exact signature, and the practical patterns found in vanilla code.
+Every spatial operation in DayZ --- apparition objects on the ground, checking line of sight, detecting nearby entities, determining surface type for footstep sounds --- depends on querying le monde. Le moteur exposes three categories of spatial API: **terrain queries** (height, surface type, normals), **object queries** (finding entities near a position), and **raycasting** (tracing a line through le monde to detect collisions). This chapter documents every available method, its exact signature, and the practical patterns found in vanilla code.
 
 All terrain and surface functions live on the `CGame` class, accessed via `GetGame()` or the global `g_Game`. Raycasting is provided by the static `DayZPhysics` class. World state (time, date, coordinates) is accessed through the `World` object returned by `GetGame().GetWorld()`.
 
@@ -46,7 +46,7 @@ partPos[1] = g_Game.SurfaceY(partPos[0], partPos[2]); // Snap particles to groun
 
 ### SurfaceRoadY --- Height Including Roads
 
-Returns height including road surfaces (bridges, elevated roads). Use this when you need the actual walkable surface, not raw terrain.
+Returns height including road surfaces (bridges, elevated roads). Utilisez ceci quand you need the actual walkable surface, not raw terrain.
 
 ```c
 // Signatures (CGame)
@@ -233,11 +233,11 @@ proto native float SurfaceGetNoiseMultiplier(Object directHit, vector pos, int c
 
 ```c
 // Signatures (CGame)
-proto native bool SurfaceIsSea(float x, float z);    // True if position is over the sea
-proto native bool SurfaceIsPond(float x, float z);    // True if position is over a pond/lake
+proto native bool SurfaceIsSea(float x, float z);    // Vrai if position is over the sea
+proto native bool SurfaceIsPond(float x, float z);    // Vrai if position is over a pond/lake
 ```
 
-There is no single `SurfaceIsWater` function in the engine. To check for any water, combine both:
+There is no single `SurfaceIsWater` function in le moteur. To check for any water, combine both:
 
 ```c
 bool IsOverWater(float x, float z)
@@ -327,7 +327,7 @@ g_Game.GetObjectsAtPosition(pos, 100.0, objects, proxyCargos);
 
 ## Raycasting --- DayZPhysics
 
-Raycasting traces a line (or thick line) through the world and reports what it hits. DayZ provides several raycast methods on the static `DayZPhysics` class, each suited to different use cases.
+Raycasting traces a line (or thick line) through le monde and reports what it hits. DayZ provides several raycast methods on the static `DayZPhysics` class, each suited to different use cases.
 
 ### ObjIntersect Modes
 
@@ -344,7 +344,7 @@ enum ObjIntersect
 }
 ```
 
-| Mode | Cas d'Utilisation |
+| Mode | Use Case |
 |------|----------|
 | `ObjIntersectFire` | Bullet collision, damage traces |
 | `ObjIntersectView` | Visual obstruction checks, action targeting |
@@ -444,7 +444,7 @@ proto static bool RaycastRV(
 
 **Parameters:**
 
-| Parametre | Type | Description |
+| Parameter | Type | Description |
 |-----------|------|-------------|
 | `begPos` | `vector` | Start position of the ray |
 | `endPos` | `vector` | End position of the ray |
@@ -742,14 +742,14 @@ float distSq = vector.DistanceSq(posA, posB);
 **Always prefer `DistanceSq` for distance comparisons.** It avoids the expensive square root operation:
 
 ```c
-// GOOD: compare squared distances
+// BON : compare squared distances
 float maxRangeSq = maxRange * maxRange;
 if (vector.DistanceSq(myPos, targetPos) < maxRangeSq)
 {
     // Within range
 }
 
-// BAD: computing square root every check
+// MAUVAIS : computing square root every check
 if (vector.Distance(myPos, targetPos) < maxRange)
 {
     // Works but slower
@@ -880,7 +880,7 @@ m_MinTemps = {-3,-2,0,4,9,14,18,17,12,7,4,0};
 
 ---
 
-## Exemples Pratiques
+## Practical Examples
 
 ### Spawn an Object on the Ground
 
@@ -1035,61 +1035,61 @@ const static PhxInteractionLayers MELEE_TARGET_OBSTRUCTION_LAYERS =
 
 ---
 
-## Bonnes Pratiques
+## Bonnes pratiques
 
 - **Use `DistanceSq` instead of `Distance` for comparisons.** The square root in `Distance` is expensive. Pre-compute `maxRange * maxRange` and compare against `DistanceSq`. The vanilla codebase does this extensively in action targeting and vicinity checks.
 - **Keep `GetObjectsAtPosition` radius as small as possible.** Every meter of radius dramatically increases the number of objects returned. A 100m radius in a city can return thousands of objects. Cache results and reuse them within the same frame.
 - **Never raycast every frame without throttling.** Even `RaycastRV` is expensive at scale. Use timers (0.1--0.5 second intervals) for periodic checks. The rangefinder uses a 0.5-second timer for its measurements.
-- **Prefer `RaycastRVProxy` over `RaycastRV` for complex queries.** The proxy version returns structured results with hierarchy information, surface data, and component indices. It is what the vanilla action system uses for cursor targeting.
+- **Prefer `RaycastRVProxy` over `RaycastRV` for complex queries.** The proxy version returns structured results with hierarchy information, surface data, and component indices. It is what le vanilla action system uses for cursor targeting.
 - **Use `ground_only = true` when you only need terrain height.** This skips all object intersection tests and is significantly faster than a full raycast.
 - **Combine `SurfaceIsSea` and `SurfaceIsPond` for water checks.** There is no single `SurfaceIsWater` function. Always check both unless you specifically need to distinguish between sea and pond.
 
 ---
 
-## Compatibilite et Impact
+## Compatibilité et impact
 
-> **Mod Compatibility:** Terrain and raycast queries are read-only operations that do not modify world state. Multiple mods can safely call these functions simultaneously without conflicts.
+> **Compatibilité des mods :** Terrain and raycast queries are read-only operations that do not modify world state. Multiple mods can safely call these functions simultaneously without conflicts.
 
-- **Server/Client:** All terrain queries (`SurfaceY`, `SurfaceGetType`, `SurfaceGetNormal`, `SurfaceIsSea`, `SurfaceIsPond`) are safe to call on both server and client. World modification methods like `SetDate()` are server-authoritative.
-- **Performance Impact:** `GetObjectsAtPosition` with large radii is the most common performance mistake. A mod that calls it every frame with a 50m+ radius will cause noticeable server lag. Raycast operations are cheaper but still should not run every frame on many entities.
+- **Serveur/Client :** All terrain queries (`SurfaceY`, `SurfaceGetType`, `SurfaceGetNormal`, `SurfaceIsSea`, `SurfaceIsPond`) are safe to call on both server and client. World modification methods like `SetDate()` are server-authoritative.
+- **Impact sur la performance :** `GetObjectsAtPosition` with large radii est le plus courant performance mistake. A mod that calls it every frame with a 50m+ radius will cause noticeable server lag. Raycast operations are cheaper but still should not run every frame on many entities.
 - **Map Dependency:** `SurfaceGetType` returns different surface names depending on the map. Chernarus and Livonia share most surface type names (`cp_gravel`, `cp_concrete`, etc.), but custom maps may define their own. Always handle unknown surface types gracefully.
-- **WorldData Subclassing:** If your mod needs to read or override temperature or weather data, note that `WorldData` is subclassed per map. Modding the base class affects all maps; modding `ChernarusPlusData` only affects Chernarus.
+- **WorldData Subclassing:** If your mod needs to read or override temperature or weather data, notez que `WorldData` is subclassed per map. Modding the base class affects all maps; modding `ChernarusPlusData` only affects Chernarus.
 
 ---
 
-## Theorie vs Pratique
+## Théorie vs Pratique
 
 | Documentation/Expectation | Actual Behavior |
 |--------------------------|-----------------|
 | `SurfaceY` returns ground height | Returns raw terrain height, ignoring roads, bridges, and objects. Use `SurfaceRoadY` for surfaces that include roads. |
 | `RaycastRV` `ignore` parameter ignores one object | Only ignores one object. For multiple exclusions, use `RaycastRVProxy` with the `excluded` array parameter. |
 | `GetObjectsAtPosition` returns all objects | Returns objects with physics bodies. Pure visual objects (particles, effects) are not returned. |
-| `RaycastRVResult.obj` is always the world object | When `hierLevel > 0`, `obj` is the proxy (attachment/component) and `parent` is the actual world object. Always check `hierLevel`. |
+| `RaycastRVResult.obj` is always le monde object | When `hierLevel > 0`, `obj` is the proxy (attachment/component) and `parent` is the actual world object. Always check `hierLevel`. |
 | `CollisionFlags.ALLOBJECTS` returns everything | Returns the first contact per object, not all contacts per object. Multiple results come from multiple distinct objects. |
 | Surface type names are standardized | Surface names are map-dependent configuration values from CfgSurfaces. Custom maps define custom surface names. |
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
-| Erreur | Correction |
+| Mistake | Fix |
 |---------|-----|
 | Calling `GetObjectsAtPosition` every frame with a large radius | Use a timer (0.25--1.0 second interval). Cache the results array. |
 | Using `vector.Distance` in a loop comparing many objects | Use `vector.DistanceSq` and compare against `maxRange * maxRange`. |
 | Ignoring the `hierLevel` field in `RaycastRVResult` | When `hierLevel > 0`, the hit is on a proxy. Use `parent` to get the actual world entity. |
-| Using `SurfaceY` for spawn placement on bridges or buildings | `SurfaceY` returns terrain height only. For structures, raycast downward with `ObjIntersectGeom` or use `SurfaceRoadY`. |
+| Using `SurfaceY` for apparition placement on bridges or buildings | `SurfaceY` returns terrain height only. For structures, raycast downward with `ObjIntersectGeom` or use `SurfaceRoadY`. |
 | Assuming `RaycastRV` `contactDir` is always valid | `contactDir` is only populated when an object is hit, not when hitting bare terrain with `ground_only = true`. |
 | Not null-checking `RaycastRVResult.obj` | Terrain-only hits return `obj = NULL`. Always check before casting or accessing properties. |
-| Passing `null` for `ignore` when the player could self-intersect | Always pass the player (or the casting entity) as `ignore` to prevent the ray from hitting the caster's own collision geometry. |
+| Passing `null` for `ignore` when le joueur could self-intersect | Always pass le joueur (or the casting entity) as `ignore` to prevent the ray from hitting the caster's own collision geometry. |
 | Using `ObjIntersectFire` for visual obstruction checks | `Fire` geometry is optimized for bullet paths and may have gaps that `View` geometry covers. Use `ObjIntersectView` for line-of-sight checks. |
 
 ---
 
-## Observe dans les Mods Reels
+## Observé dans les mods réels
 
 > These patterns were confirmed by studying the source code of professional DayZ mods and vanilla game scripts.
 
-| Patron | Source | File/Location |
+| Pattern | Source | File/Location |
 |---------|--------|---------------|
 | `SurfaceY` snap for ground-level particle placement | Vanilla | `4_World/classes/contaminatedarea/effectarea.c` |
 | `SurfaceGetType` for vehicle wheel surface detection | Vanilla | `4_World/entities/vehicles/carscript.c` |
@@ -1104,4 +1104,4 @@ const static PhxInteractionLayers MELEE_TARGET_OBSTRUCTION_LAYERS =
 
 ---
 
-[Accueil](../../README.md) | [<< Precedent : Animation System](18-animation-system.md) | **Requetes Terrain et Monde**
+[Accueil](../../README.md) | [<< Précédent : Animation System](18-animation-system.md) | **Terrain & World Queries** | [Suivant : Particle & Effect System >>](20-particle-effects.md)

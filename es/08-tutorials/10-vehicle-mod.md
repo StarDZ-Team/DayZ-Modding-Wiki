@@ -1,6 +1,10 @@
-# Chapter 8.10: Creating a Custom Vehicle Mod
+# Capítulo 8.10: Creating a Custom Vehicle Mod
 
-[Home](../../README.md) | [<< Previous: Professional Mod Template](09-professional-template.md) | **Creating a Custom Vehicle** | [Next: Creating Custom Clothing >>](11-clothing-mod.md)
+[Inicio](../../README.md) | [<< Anterior: Professional Mod Template](09-professional-template.md) | **Creating a Custom Vehicle** | [Siguiente: Creating Custom Clothing >>](11-clothing-mod.md)
+
+---
+
+> **Resumen:** This tutorial walks you through creating a custom vehicle variant in DayZ by extending an existing vanilla vehicle. You will define the vehicle in config.cpp, customize its stats and textures, write script behavior for doors and engine, add it to the server spawn table with pre-attached parts, and test it in-game. By the end, you will have a fully drivable custom Offroad Hatchback variant with modified performance and appearance.
 
 ---
 
@@ -36,7 +40,7 @@ We extend `OffroadHatchback` rather than building a vehicle from scratch. This i
 
 ---
 
-## Prerequisites
+## Requisitos Previos
 
 - A working mod structure (complete [Chapter 8.1](01-first-mod.md) and [Chapter 8.2](02-custom-item.md) first)
 - A text editor
@@ -309,7 +313,7 @@ class CfgVehicles
 
 ### Key Fields Explained
 
-| Field | Proposito |
+| Campo | Propósito |
 |-------|---------|
 | `scope = 2` | Makes the vehicle spawnable. Use `0` for base classes that should never spawn directly. |
 | `displayName` | Name shown in admin tools and in-game. You can use `$STR_` references for localization. |
@@ -341,7 +345,7 @@ Other vanilla vehicle parent classes you could extend:
 
 The `SimulationModule` controls how the vehicle drives. Key parameters:
 
-| Parametro | Effect |
+| Parámetro | Effect |
 |-----------|--------|
 | `drive` | `0` = rear-wheel drive, `1` = front-wheel drive, `2` = all-wheel drive |
 | `torqueMax` | Peak engine torque in Nm. Higher = more acceleration. Vanilla Niva is ~114. |
@@ -417,7 +421,7 @@ To create a unique appearance:
 
 ### Texture Naming Conventions for Vehicles
 
-| Suffix | Type | Proposito |
+| Suffix | Tipo | Propósito |
 |--------|------|---------|
 | `_co` | Color (Diffuse) | Main color and appearance |
 | `_nohq` | Normal Map | Surface bumps, panel lines, rivet detail |
@@ -916,7 +920,7 @@ If the vehicle does not spawn or behaves incorrectly, check the script log at:
 
 Common errors:
 
-| Log Message | Causa |
+| Log Message | Cause |
 |-------------|-------|
 | `Cannot create object type MFM_RallyHatchback` | config.cpp class name mismatch or Data PBO not loaded |
 | `Undefined variable 'OffroadHatchback'` | `requiredAddons` missing `"DZ_Vehicles_Wheeled"` |
@@ -1188,7 +1192,7 @@ class CfgMods
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Always extend an existing vehicle class.** Creating a vehicle from scratch requires a custom 3D model with correct geometry LODs, proxies, memory points, and a physics simulation config. Extending a vanilla vehicle gives you all of this for free.
 - **Test with `OnDebugSpawn()` first.** Before setting up types.xml and cfgspawnabletypes.xml, verify the vehicle works by spawning it fully equipped via the debug menu or script console.
@@ -1200,9 +1204,9 @@ class CfgMods
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
-| Concepto | Teoria | Realidad |
+| Concepto | Teoría | Realidad |
 |---------|--------|---------|
 | `SimulationModule` in config.cpp | Full control over vehicle physics | Not all parameters override cleanly when extending a parent class. If your speed/torque changes seem to have no effect, try adjusting `transmissionRatio` and gear `ratios[]` instead of just `torqueMax`. |
 | Damage zones with `componentNames[]` | Each zone maps to a geometry component | When extending a vanilla vehicle, the parent model's component names are already set. Your `componentNames[]` values in config only matter if you provide a custom model. The parent's geometry LOD determines actual hit detection. |
@@ -1224,7 +1228,7 @@ In this tutorial you learned:
 - How to test vehicles in-game using the script console and the `OnDebugSpawn()` method
 - How to add custom sounds for horns and custom light classes for headlights
 
-**Next:** Expand your vehicle mod with custom door models, interior textures, or even a completely new vehicle body using Blender and Object Builder.
+**Siguiente:** Expand your vehicle mod with custom door models, interior textures, or even a completely new vehicle body using Blender and Object Builder.
 
 ---
 
@@ -1264,4 +1268,4 @@ The Niva rear seats require the front seat to be folded forward. If your `CrewCa
 
 ---
 
-**Previous:** [Chapter 8.9: Professional Mod Template](09-professional-template.md)
+**Anterior:** [Chapter 8.9: Professional Mod Template](09-professional-template.md)

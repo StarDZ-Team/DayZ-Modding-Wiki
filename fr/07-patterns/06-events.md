@@ -1,6 +1,6 @@
-# Chapter 7.6: Event-Driven Architecture
+# Chapitre 7.6: Event-Driven Architecture
 
-[Home](../../README.md) | [<< Previous: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Next: Performance Optimization >>](07-performance.md)
+[Accueil](../../README.md) | [<< Précédent : Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Suivant : Performance Optimization >>](07-performance.md)
 
 ---
 
@@ -12,12 +12,12 @@ DayZ provides `ScriptInvoker` as its built-in event primitive. On top of it, pro
 
 ---
 
-## Table des matieres
+## Table des matières
 
 - [ScriptInvoker Pattern](#scriptinvoker-pattern)
 - [EventBus Pattern (String-Routed Topics)](#eventbus-pattern-string-routed-topics)
 - [CF_EventHandler Pattern](#cf_eventhandler-pattern)
-- [When to Use Events vs Direct Calls](#when-to-use-events-vs-direct-calls)
+- [Quand utiliser Events vs Direct Calls](#when-to-use-events-vs-direct-calls)
 - [Memory Leak Prevention](#memory-leak-prevention)
 - [Advanced: Custom Event Data](#advanced-custom-event-data)
 - [Best Practices](#best-practices)
@@ -26,7 +26,7 @@ DayZ provides `ScriptInvoker` as its built-in event primitive. On top of it, pro
 
 ## ScriptInvoker Pattern
 
-`ScriptInvoker` is the engine's built-in pub/sub primitive. It holds a list of function callbacks and invokes all of them when an event fires. This is the lowest-level event mechanism in DayZ.
+`ScriptInvoker` is le moteur's built-in pub/sub primitive. It holds a list of function callbacks and invokes all of them when an event fires. This is the lowest-level event mechanism in DayZ.
 
 ### Creating an Event
 
@@ -75,12 +75,35 @@ class WeatherUI
 
 ### ScriptInvoker API
 
-| Method | Description |
+| Méthode | Description |
 |--------|-------------|
 | `Insert(func)` | Add a callback to the subscriber list |
 | `Remove(func)` | Remove a specific callback |
 | `Invoke(...)` | Call all subscribed callbacks with the given arguments |
 | `Clear()` | Remove all subscribers |
+
+### Event-Driven Pattern
+
+```mermaid
+graph TB
+    PUB["Publisher<br/>(e.g., ConfigManager)"]
+
+    PUB -->|"Invoke()"| INV["ScriptInvoker<br/>OnConfigChanged"]
+
+    INV -->|"callback"| SUB1["Subscriber A<br/>AdminPanel.OnConfigChanged()"]
+    INV -->|"callback"| SUB2["Subscriber B<br/>HUD.OnConfigChanged()"]
+    INV -->|"callback"| SUB3["Subscriber C<br/>Logger.OnConfigChanged()"]
+
+    SUB1 -.->|"Insert()"| INV
+    SUB2 -.->|"Insert()"| INV
+    SUB3 -.->|"Insert()"| INV
+
+    style PUB fill:#D94A4A,color:#fff
+    style INV fill:#FFD700,color:#000
+    style SUB1 fill:#4A90D9,color:#fff
+    style SUB2 fill:#4A90D9,color:#fff
+    style SUB3 fill:#4A90D9,color:#fff
+```
 
 ### How Insert/Remove Work
 
@@ -98,18 +121,18 @@ mgr.OnWeatherChanged.Remove(OnWeatherChanged);
 
 ### Typed Signatures
 
-`ScriptInvoker` does not enforce parameter types at compile time. The convention is to document the expected signature in a comment:
+`ScriptInvoker` does not enforce parameter types à la compilation. The convention is to document the expected signature in a comment:
 
 ```c
-// Signature: void(string weatherName, float temperature)
+// Signature : void(string weatherName, float temperature)
 ref ScriptInvoker OnWeatherChanged = new ScriptInvoker();
 ```
 
-If a subscriber has the wrong signature, the behavior is undefined at runtime --- it may crash, receive garbage values, or silently do nothing. Always match the documented signature exactly.
+If a subscriber has the wrong signature, the behavior is undefined à l'exécution --- it may crash, receive garbage values, or silently do nothing. Always match the documented signature exactly.
 
 ### ScriptInvoker on Vanilla Classes
 
-Many vanilla DayZ classes expose `ScriptInvoker` events:
+Many le DayZ vanilla classes expose `ScriptInvoker` events:
 
 ```c
 // UIScriptedMenu has OnVisibilityChanged
@@ -134,9 +157,9 @@ You can subscribe to these vanilla events from modded classes to react to engine
 
 A `ScriptInvoker` is a single event channel. An EventBus is a collection of named channels, providing a central hub where any module can publish or subscribe to events by topic name.
 
-### MyMod EventBus
+### Custom EventBus Pattern
 
-MyMod implements the EventBus as a static class with named `ScriptInvoker` fields for well-known events, plus a generic `OnCustomEvent` channel for ad-hoc topics:
+This pattern implements the EventBus as a static class with named `ScriptInvoker` fields for well-known events, plus a generic `OnCustomEvent` channel for ad-hoc topics:
 
 ```c
 class MyEventBus
@@ -185,7 +208,7 @@ class MyMissionModule : MyServerModule
 
     override void OnMissionFinish()
     {
-        // Always unsubscribe on shutdown
+        // Toujours se désabonner on shutdown
         MyEventBus.OnPlayerConnected.Remove(OnPlayerJoined);
         MyEventBus.OnPlayerDisconnected.Remove(OnPlayerLeft);
         MyEventBus.OnConfigChanged.Remove(OnConfigChanged);
@@ -203,7 +226,7 @@ class MyMissionModule : MyServerModule
 
     void OnConfigChanged(string modId, string field, string value)
     {
-        if (modId == "MyMissions")
+        if (modId == "MyMod_Missions")
         {
             // Reload our config
             ReloadSettings();
@@ -236,7 +259,7 @@ void OnCustomEvent(string eventName, Param params)
 }
 ```
 
-### When to Use Named Fields vs Custom Events
+### Quand utiliser Named Fields vs Custom Events
 
 | Approach | Use When |
 |----------|----------|
@@ -295,7 +318,7 @@ CF's approach eliminates the need to manually subscribe and unsubscribe --- you 
 
 ---
 
-## When to Use Events vs Direct Calls
+## Quand utiliser Events vs Direct Calls
 
 ### Use Events When:
 
@@ -303,13 +326,13 @@ CF's approach eliminates the need to manually subscribe and unsubscribe --- you 
 
 2. **The producer should not know about the consumers.** The connection handler should not import the killfeed module.
 
-3. **The set of consumers changes at runtime.** Modules can subscribe and unsubscribe dynamically.
+3. **The set of consumers changes à l'exécution.** Modules can subscribe and unsubscribe dynamically.
 
 4. **Cross-mod communication.** Mod A fires an event; Mod B subscribes to it. Neither imports the other.
 
 ### Use Direct Calls When:
 
-1. **There is exactly one consumer** and it is known at compile time. If only the health system cares about a damage calculation, call it directly.
+1. **There is exactly one consumer** and it is known à la compilation. If only the health system cares about a damage calculation, call it directly.
 
 2. **Return values are needed.** Events are fire-and-forget. If you need a response ("should this action be allowed?"), use a direct method call.
 
@@ -396,7 +419,7 @@ class PlayerTracker : Managed
 
 ### Pattern: EventBus Cleanup Nulls Everything
 
-MyMod's `MyEventBus.Cleanup()` sets all invokers to `null`, which drops all subscriber references at once. This is the nuclear option --- it guarantees no stale subscribers survive across mission restarts:
+The `MyEventBus.Cleanup()` method sets all invokers to `null`, which drops all subscriber references at once. This is the nuclear option --- it guarantees no stale subscribers survive across mission restarts:
 
 ```c
 static void Cleanup()
@@ -414,7 +437,7 @@ This is called from `MyFramework.ShutdownAll()` during `OnMissionFinish`. Module
 ### Anti-Pattern: Anonymous Functions
 
 ```c
-// BAD: You cannot Remove an anonymous function
+// MAUVAIS : You cannot Remove an anonymous function
 MyEventBus.OnPlayerConnected.Insert(function(PlayerIdentity id) {
     Print("Connected: " + id.GetName());
 });
@@ -507,4 +530,26 @@ OnKillEvent.Invoke(killData);
 
 ---
 
-[<< Previous: Permission Systems](05-permissions.md) | [Accueil](../../README.md) | [Next: Performance Optimization >>](07-performance.md)
+## Compatibilité et impact
+
+- **Multi-Mod :** Multiple mods can subscribe to the same EventBus topics without conflict. Each subscriber is called independently. Cependant, if one subscriber throws an unrecoverable error (e.g., null reference), subsequent subscribers on that invoker may not execute.
+- **Ordre de chargement :** Subscription order equals call order on `Invoke()`. Mods that load earlier register first and receive events first. Do not depend on this order --- if execution order matters, use direct calls instead.
+- **Listen Server:** On listen servers, events fired from côté serveur code are visible to côté client subscribers if they share the same static `ScriptInvoker`. Use separate EventBus fields for server-only and client-only events, or guard handlers with `GetGame().IsServer()` / `GetGame().IsClient()`.
+- **Performance :** `ScriptInvoker.Invoke()` iterates all subscribers linearly. With 5--15 subscribers per event, this is negligible. Avoid subscribing per-entity (100+ entities each subscribing to the same event) --- use a manager pattern instead.
+- **Migration:** `ScriptInvoker` is a stable vanilla API unlikely to change between DayZ versions. Custom EventBus wrappers are your own code and migrate with your mod.
+
+---
+
+## Erreurs courantes
+
+| Mistake | Impact | Fix |
+|---------|--------|-----|
+| Subscribing with `Insert()` but never calling `Remove()` | Memory leak: the invoker holds a reference to the dead object; on `Invoke()`, calls into freed memory (crash) or no-ops with wasted iteration | Pair every `Insert()` with a `Remove()` in `OnMissionFinish` or the destructor |
+| Calling `Remove()` on a null EventBus invoker during shutdown | `MyEventBus.Cleanup()` may have already nulled the invoker; calling `.Remove()` on null crashes | Always null-check the invoker before `Remove()`: `if (MyEventBus.OnPlayerConnected) MyEventBus.OnPlayerConnected.Remove(handler);` |
+| Double `Insert()` of the same handler | Handler is called twice per `Invoke()`; one `Remove()` only removes one entry, leaving a stale subscription | Check before inserting, or ensure `Insert()` is only called once (e.g., in `OnInit` with a guard flag) |
+| Using anonymous/lambda functions as handlers | Cannot be removed because there is no reference to pass to `Remove()` | Always use named methods as event handlers |
+| Firing events with mismatched argument signatures | Subscribers receive garbage data or crash à l'exécution; no compile-time check | Document the expected signature above every `ScriptInvoker` declaration and match it exactly in all handlers |
+
+---
+
+[Accueil](../../README.md) | [<< Précédent : Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Suivant : Performance Optimization >>](07-performance.md)

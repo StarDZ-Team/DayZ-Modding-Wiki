@@ -1,10 +1,10 @@
-# Chapter 1.8: Memory Management
+# Capítulo 1.8: Gestión de Memoria
 
-[Home](../../README.md) | [<< Previous: Math & Vectors](07-math-vectors.md) | **Memory Management** | [Next: Casting & Reflection >>](09-casting-reflection.md)
+[Inicio](../../README.md) | [<< Anterior: Math & Vectors](07-math-vectors.md) | **Memory Management** | [Siguiente: Casting & Reflection >>](09-casting-reflection.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Enforce Script uses **automatic reference counting (ARC)** for memory management -- not garbage collection in the traditional sense. Understanding how `ref`, `autoptr`, and raw pointers work is essential for writing stable DayZ mods. Get it wrong and you will either leak memory (your server gradually consumes more RAM until it crashes) or access deleted objects (instant crash with no useful error message). This chapter explains every pointer type, when to use each, and how to avoid the most dangerous pitfall: reference cycles.
 
@@ -14,7 +14,7 @@ Enforce Script uses **automatic reference counting (ARC)** for memory management
 
 Enforce Script has three ways to hold a reference to an object:
 
-| Tipo de Puntero | Palabra Clave | Mantiene el Objeto Vivo? | Se Anula al Eliminar? | Uso Principal |
+| Pointer Type | Keyword | Keeps Object Alive? | Zeroed on Delete? | Primary Use |
 |-------------|---------|---------------------|-------------------|-------------|
 | **Raw pointer** | *(none)* | No (weak reference) | Only if class extends `Managed` | Back-references, observers, caches |
 | **Strong reference** | `ref` | Yes | Yes | Owned members, collections |
@@ -335,6 +335,45 @@ class AdminPanelTab
 }
 ```
 
+### Reference Counting Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant Code as Your Code
+    participant Obj as MyObject
+    participant GC as Garbage Collector
+
+    Code->>Obj: ref MyObject obj = new MyObject()
+    Note over Obj: refcount = 1
+
+    Code->>Obj: ref MyObject copy = obj
+    Note over Obj: refcount = 2
+
+    Code->>Obj: copy = null
+    Note over Obj: refcount = 1
+
+    Code->>Obj: obj = null
+    Note over Obj: refcount = 0
+
+    Obj->>GC: ~MyObject() destructor called
+    GC->>GC: Memory freed
+```
+
+### Reference Cycle (Memory Leak)
+
+```mermaid
+graph LR
+    A[Object A<br/>ref m_B] -->|"strong ref"| B[Object B<br/>ref m_A]
+    B -->|"strong ref"| A
+
+    style A fill:#D94A4A,color:#fff
+    style B fill:#D94A4A,color:#fff
+
+    C["Neither can be freed!<br/>Both refcount = 1 forever"]
+
+    style C fill:#FFD700,color:#000
+```
+
 ---
 
 ## The delete Keyword
@@ -538,9 +577,42 @@ When `DestroyInstance()` is called:
 
 ---
 
+## Mejores Prácticas
+
+- Use `ref` for class members your class creates and owns; use raw pointers (no keyword) for back-references and external observations.
+- Always extend `Managed` for pure-script classes -- it ensures weak references are zeroed on delete, preventing dangling pointer crashes.
+- Break reference cycles by making the child hold a raw pointer to its parent: parent owns child (`ref`), child observes parent (raw).
+- Use `array<ref MyClass>` when the collection owns its elements; `array<MyClass>` holds weak references that will not keep objects alive.
+- Prefer ARC-driven cleanup over manual `delete` -- let the last `ref` release trigger the destructor naturally.
+
+---
+
+## Observado en Mods Reales
+
+> Patrones confirmados estudiando código fuente de mods profesionales de DayZ.
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Parent `ref` + child raw back-pointer | COT / Expansion UI | Panels own tabs with `ref`, tabs hold raw pointer to parent panel to avoid cycles |
+| `static ref` singleton + `Destroy()` nulling | Dabs / VPP | All singletons use `s_Instance = null` in a static `Destroy()` to trigger cleanup |
+| `ref array<ref T>` for managed collections | Expansion Market | Both the array and its elements are `ref` to ensure proper ownership |
+| Raw pointer for engine entities (players, items) | COT Admin | Player references stored as raw pointers since the engine manages entity lifetime |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `autoptr` for local variables | Should auto-delete at scope exit | Locals are already implicitly strong references; `autoptr` is rarely used in practice |
+| ARC handles all cleanup | Objects freed when refcount hits zero | Reference cycles are never collected -- they leak permanently until server restart |
+| `delete` for immediate cleanup | Destroys the object right away | Can null out references held by other systems unexpectedly -- prefer letting ARC handle it |
+
+---
+
 ## Errores Comunes
 
-| Error | Problema | Solucion |
+| Error | Problema | Solución |
 |---------|---------|-----|
 | Two objects with `ref` to each other | Reference cycle, permanent memory leak | One side must be a raw (weak) reference |
 | `array<MyClass>` instead of `array<ref MyClass>` | Elements are weak references, objects may be deleted immediately | Use `array<ref MyClass>` for owned elements |
@@ -574,7 +646,7 @@ Function parameter that must never be null?
 
 ---
 
-## Referencia Rapida
+## Referencia Rápida
 
 ```c
 // Raw pointer (weak reference for class members)

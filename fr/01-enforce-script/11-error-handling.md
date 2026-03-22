@@ -1,10 +1,14 @@
-# Chapter 1.11: Error Handling
+# Chapitre 1.11: Error Handling
 
-[Home](../../README.md) | [<< Previous: Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Next: Gotchas >>](12-gotchas.md)
+[Accueil](../../README.md) | [<< Précédent : Enums & Preprocessor](10-enums-preprocessor.md) | **Error Handling** | [Suivant : Gotchas >>](12-gotchas.md)
 
 ---
 
-## Table des matieres
+> **Objectif :** Learn how to handle errors in a language with no try/catch. Master guard clauses, defensive coding, and structured logging patterns that keep your mod stable.
+
+---
+
+## Table des matières
 
 - [The Fundamental Rule: No try/catch](#the-fundamental-rule-no-trycatch)
 - [Guard Clause Pattern](#guard-clause-pattern)
@@ -17,7 +21,7 @@
   - [The notnull Keyword](#the-notnull-keyword)
 - [ErrorEx — Engine Error Reporting](#errorex--engine-error-reporting)
   - [Severity Levels](#severity-levels)
-  - [When to Use Each Level](#when-to-use-each-level)
+  - [Quand utiliser Each Level](#when-to-use-each-level)
 - [DumpStackString — Stack Traces](#dumpstackstring--stack-traces)
 - [Debug Printing](#debug-printing)
   - [Basic Print](#basic-print)
@@ -38,19 +42,19 @@
 
 ---
 
-## La regle fondamentale : pas de try/catch
+## The Fundamental Rule: No try/catch
 
-Enforce Script n'a **aucune gestion d'exceptions**. Il n'y a pas de `try`, pas de `catch`, pas de `throw`, pas de `finally`. If something goes wrong at runtime (null dereference, invalid cast, array out of bounds), the engine either:
+Enforce Script has **no exception handling**. There is no `try`, no `catch`, no `throw`, no `finally`. If something goes wrong à l'exécution (null dereference, invalid cast, array out of bounds), le moteur either:
 
 1. **Crashes silently** — the function stops executing, no error message
 2. **Logs a script error** — visible in the `.RPT` log file
-3. **Crashes the server/client** — in severe cases
+3. **Crashes le serveur/client** — in severe cases
 
 This means **every potential failure point must be guarded manually**. The primary defense is the **guard clause pattern**.
 
 ---
 
-## Pattern de clause de garde
+## Guard Clause Pattern
 
 A guard clause checks a precondition at the top of a function and returns early if it fails. This keeps the "happy path" un-nested and readable.
 
@@ -130,14 +134,14 @@ void StartMission(PlayerBase initiator, string missionId)
 
 ---
 
-## Verification de null
+## Null Checking
 
 Null references are the most common crash source in DayZ modding. Every reference type can be `null`.
 
 ### Before Every Operation
 
 ```c
-// WRONG — crashes if player, identity, or name is null at any point
+// INCORRECT — crashes if player, identity, or name is null at any point
 string name = player.GetIdentity().GetName();
 
 // CORRECT — check at each step
@@ -191,7 +195,7 @@ if (item)
 {
     ProcessItem(item);  // OK — compiler knows item is not null here
 }
-ProcessItem(null);      // Compile error!
+ProcessItem(null);      // Erreur de compilation !
 ```
 
 > **Limitation:** `notnull` only catches literal `null` and obviously-null variables at the call site. It does not prevent a variable that was non-null at check time from becoming null due to engine deletion.
@@ -222,13 +226,13 @@ ErrorEx("Failed to create object: class not found");
 ErrorEx("Critical failure in RPC handler", ErrorExSeverity.ERROR);
 ```
 
-| Severity | When to Use |
+| Severity | Quand utiliser |
 |----------|-------------|
 | `ErrorExSeverity.INFO` | Informational messages you want in the error log |
 | `ErrorExSeverity.WARNING` | Recoverable problems (missing config, fallback used) |
 | `ErrorExSeverity.ERROR` | Definite bugs or unrecoverable states |
 
-### When to Use Each Level
+### Quand utiliser Each Level
 
 ```c
 void LoadConfig(string path)
@@ -294,7 +298,7 @@ void CriticalFunction(PlayerBase player)
 
 ---
 
-## Affichage de debogage
+## Debug Printing
 
 ### Basic Print
 
@@ -345,7 +349,7 @@ For mod-specific debug flags, define your own symbol:
 
 ---
 
-## Patterns de journalisation structuree
+## Structured Logging Patterns
 
 ### Simple Prefix Pattern
 
@@ -413,7 +417,7 @@ g_MissionLog.Info("System started");
 g_MissionLog.Error("Failed to load mission data");
 ```
 
-### MyLog Style (Production Pattern)
+### Production Logger Pattern
 
 For production mods, a static logging class with file output, daily rotation, and multiple output targets:
 
@@ -476,7 +480,7 @@ class MyLog
 Usage across multiple modules:
 
 ```c
-MyLog.Info("MissionServer", "MyFramework initialized (server)");
+MyLog.Info("MissionServer", "MyMod Core initialized (server)");
 MyLog.Warning("ServerWebhooksRPC", "Unauthorized request from: " + sender.GetName());
 MyLog.Error("ConfigManager", "Failed to load config: " + path);
 ```
@@ -675,7 +679,7 @@ bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
 
 ---
 
-## Resume des patterns defensifs
+## Defensive Patterns Summary
 
 | Pattern | Purpose | Example |
 |---------|---------|---------|
@@ -690,12 +694,45 @@ bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
 
 ---
 
+## Bonnes pratiques
+
+- Use flat guard clauses (`if (!x) return;`) at the top of every function instead of deeply nested `if` blocks -- it keeps code readable and the happy path un-nested.
+- Always log a message inside guard clauses -- silent `return` makes failures invisible and extremely hard to debug.
+- Use `ErrorEx` with appropriate severity levels (`INFO`, `WARNING`, `ERROR`) for messages that should appear in `.RPT` logs; use `Print` for script-log output.
+- Wrap heavy debug logging in `#ifdef DIAG_DEVELOPER` or a custom define so it compiles out of release builds and does not hurt performance.
+- Validate config data after loading with `JsonFileLoader` -- it returns `void` and silently leaves default values on parse failure.
+
+---
+
+## Observé dans les mods réels
+
+> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| Stacked guard clauses with log messages | COT / VPP | Every RPC handler checks sender, params, permissions, and logs on each failure |
+| Static logger class with level filtering | Expansion / Dabs | A single `Log` class routes `Info`/`Warning`/`Error` to console, file, and optionally Discord |
+| `DumpStackString()` in critical guards | COT Admin | Captures call stack on unexpected null to trace which caller passed bad data |
+| `#ifdef DIAG_DEVELOPER` around debug prints | Vanilla DayZ / Expansion | All per-frame debug output is wrapped so it never runs in release builds |
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| `try`/`catch` | Standard in most languages | Does not exist in Enforce Script -- every failure point must be guarded manually |
+| `JsonFileLoader.JsonLoadFile` | Expected to return success/failure | Returns `void`; on bad JSON the object keeps its default values with no error |
+| `ErrorEx` | Sounds like it throws an error | It only writes to the `.RPT` log -- execution continues normally |
+
+---
+
 ## Erreurs courantes
 
 ### 1. Assuming a function ran successfully
 
 ```c
-// WRONG — JsonLoadFile returns void, not a success indicator
+// INCORRECT — JsonLoadFile returns void, not a success indicator
 MyConfig cfg = new MyConfig();
 JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);
 // If the file has bad JSON, cfg still has default values — no error
@@ -711,7 +748,7 @@ if (cfg.SomeCriticalField == 0)
 ### 2. Deeply nested null checks instead of guards
 
 ```c
-// WRONG — pyramid of doom
+// INCORRECT — pyramid of doom
 void Process(PlayerBase player)
 {
     if (player)
@@ -740,7 +777,7 @@ void Process(PlayerBase player)
 ### 3. Forgetting to log in guard clauses
 
 ```c
-// WRONG — silent failure, impossible to debug
+// INCORRECT — silent failure, impossible to debug
 if (!player) return;
 
 // CORRECT — leaves a trail
@@ -754,7 +791,7 @@ if (!player)
 ### 4. Using Print in hot paths
 
 ```c
-// WRONG — Print every frame kills performance
+// INCORRECT — Print every frame kills performance
 override void OnUpdate(float timeslice)
 {
     Print("Updating...");  // Called every frame!
@@ -776,7 +813,7 @@ override void OnUpdate(float timeslice)
 
 ---
 
-## Resume
+## Résumé
 
 | Tool | Purpose | Syntax |
 |------|---------|--------|
@@ -789,7 +826,7 @@ override void OnUpdate(float timeslice)
 | #ifdef guard | Compile-time debug switch | `#ifdef DIAG_DEVELOPER` |
 | notnull | Compiler null check | `void Fn(notnull Class obj)` |
 
-**La regle d'or :** In Enforce Script, assume everything can be null and every operation can fail. Check first, act second, log always.
+**The golden rule:** In Enforce Script, assume everything can be null and every operation can fail. Check first, act second, log always.
 
 ---
 
@@ -797,4 +834,4 @@ override void OnUpdate(float timeslice)
 
 | Previous | Up | Next |
 |----------|----|------|
-| [1.10 Enums et preprocesseur](10-enums-preprocessor.md) | [Part 1: Enforce Script](../README.md) | [1.12 Ce qui n'existe PAS](12-gotchas.md) |
+| [1.10 Enums & Preprocessor](10-enums-preprocessor.md) | [Part 1: Enforce Script](../README.md) | [1.12 What Does NOT Exist](12-gotchas.md) |

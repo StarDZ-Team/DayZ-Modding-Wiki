@@ -1,39 +1,39 @@
-# Chapter 6.4: Camera System
+# Kapitola 6.4: Systém kamer
 
-[Home](../../README.md) | [<< Previous: Weather](03-weather.md) | **Cameras** | [Next: Post-Process Effects >>](05-ppe.md)
-
----
-
-## Introduction
-
-DayZ uses a multi-layered camera system. The player camera is managed by the engine through `DayZPlayerCamera` subclasses. For modding and debugging, the `FreeDebugCamera` allows free-flight. The engine also provides global accessors for the current camera state. This chapter covers camera types, how to access camera data, and how to use the scripted camera tools.
+[Domů](../../README.md) | [<< Předchozí: Počasí](03-weather.md) | **Kamery** | [Další: Post-processingové efekty >>](05-ppe.md)
 
 ---
 
-## Current Camera State (Global Accessors)
+## Úvod
 
-These methods are available anywhere and return the active camera's state regardless of camera type:
+DayZ používá vícevrstvý systém kamer. Kamera hráče je spravována enginem prostřednictvím podtříd `DayZPlayerCamera`. Pro moddování a ladění umožňuje `FreeDebugCamera` volný let. Engine také poskytuje globální přístupové metody pro aktuální stav kamery. Tato kapitola pokrývá typy kamer, jak přistupovat k datům kamery a jak používat skriptované kamerové nástroje.
+
+---
+
+## Aktuální stav kamery (globální přístupové metody)
+
+Tyto metody jsou dostupné odkudkoli a vracejí stav aktivní kamery bez ohledu na její typ:
 
 ```c
-// Current camera world position
+// Aktuální světová pozice kamery
 proto native vector GetGame().GetCurrentCameraPosition();
 
-// Current camera forward direction (unit vector)
+// Aktuální směr kamery (jednotkový vektor)
 proto native vector GetGame().GetCurrentCameraDirection();
 
-// Convert world position to screen coordinates
+// Převod světové pozice na souřadnice obrazovky
 proto native vector GetGame().GetScreenPos(vector world_pos);
-// Returns: x = screen X (pixels), y = screen Y (pixels), z = depth (distance from camera)
+// Vrací: x = obrazovka X (pixely), y = obrazovka Y (pixely), z = hloubka (vzdálenost od kamery)
 ```
 
-**Example --- check if a position is on screen:**
+**Příklad --- kontrola, zda je pozice na obrazovce:**
 
 ```c
 bool IsPositionOnScreen(vector worldPos)
 {
     vector screenPos = GetGame().GetScreenPos(worldPos);
 
-    // z < 0 means behind the camera
+    // z < 0 znamená za kamerou
     if (screenPos[2] < 0)
         return false;
 
@@ -45,7 +45,7 @@ bool IsPositionOnScreen(vector worldPos)
 }
 ```
 
-**Example --- get distance from camera to a point:**
+**Příklad --- získání vzdálenosti od kamery k bodu:**
 
 ```c
 float DistanceFromCamera(vector worldPos)
@@ -56,34 +56,34 @@ float DistanceFromCamera(vector worldPos)
 
 ---
 
-## DayZPlayerCamera System
+## Systém DayZPlayerCamera
 
-DayZ player cameras are native classes managed by the engine's player controller. They are not directly instantiated from script --- instead, the engine selects the appropriate camera based on the player's state (standing, prone, swimming, vehicle, unconscious, etc.).
+Kamery hráčů DayZ jsou nativní třídy spravované řídicím systémem hráče enginu. Nejsou přímo vytvářeny ze skriptu --- místo toho engine vybere vhodnou kameru na základě stavu hráče (stojící, ležící, plavání, vozidlo, v bezvědomí atd.).
 
-### Camera Types (DayZPlayerCameras Constants)
+### Typy kamer (konstanty DayZPlayerCameras)
 
-The camera type IDs are defined as constants:
+ID typů kamer jsou definovány jako konstanty:
 
-| Constant | Description |
-|----------|-------------|
-| `DayZPlayerCameras.DAYZCAMERA_1ST` | First-person camera |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC` | Third-person erect (standing) |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO` | Third-person crouched |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_PRO` | Third-person prone |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_SPR` | Third-person sprint |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_RAISED` | Third-person raised weapon |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO_RAISED` | Third-person crouched raised |
-| `DayZPlayerCameras.DAYZCAMERA_IRONSIGHTS` | Ironsight aiming |
-| `DayZPlayerCameras.DAYZCAMERA_OPTICS` | Optic/scope aiming |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_VEHICLE` | Third-person vehicle |
-| `DayZPlayerCameras.DAYZCAMERA_1ST_VEHICLE` | First-person vehicle |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_SWIM` | Third-person swimming |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_UNCONSCIOUS` | Third-person unconscious |
-| `DayZPlayerCameras.DAYZCAMERA_1ST_UNCONSCIOUS` | First-person unconscious |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_CLIMB` | Third-person climbing |
-| `DayZPlayerCameras.DAYZCAMERA_3RD_JUMP` | Third-person jumping |
+| Konstanta | Popis |
+|-----------|-------|
+| `DayZPlayerCameras.DAYZCAMERA_1ST` | Kamera z pohledu první osoby |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC` | Třetí osoba vzpřímeně (stojící) |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO` | Třetí osoba v podřepu |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_PRO` | Třetí osoba vleže |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_SPR` | Třetí osoba sprint |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_ERC_RAISED` | Třetí osoba se zdviženou zbraní |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CRO_RAISED` | Třetí osoba v podřepu se zbraní |
+| `DayZPlayerCameras.DAYZCAMERA_IRONSIGHTS` | Míření přes mířidla |
+| `DayZPlayerCameras.DAYZCAMERA_OPTICS` | Míření přes optiku/puškohled |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_VEHICLE` | Třetí osoba ve vozidle |
+| `DayZPlayerCameras.DAYZCAMERA_1ST_VEHICLE` | První osoba ve vozidle |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_SWIM` | Třetí osoba plavání |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_UNCONSCIOUS` | Třetí osoba v bezvědomí |
+| `DayZPlayerCameras.DAYZCAMERA_1ST_UNCONSCIOUS` | První osoba v bezvědomí |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_CLIMB` | Třetí osoba lezení |
+| `DayZPlayerCameras.DAYZCAMERA_3RD_JUMP` | Třetí osoba skok |
 
-### Getting the Current Camera Type
+### Získání aktuálního typu kamery
 
 ```c
 DayZPlayer player = GetGame().GetPlayer();
@@ -101,40 +101,40 @@ if (player)
 
 ## FreeDebugCamera
 
-**File:** `5_Mission/gui/scriptconsole/freedebugcamera.c`
+**Soubor:** `5_Mission/gui/scriptconsole/freedebugcamera.c`
 
-The free-flight camera used for debugging and cinematic work. Available in diagnostic builds or when enabled by mods.
+Kamera volného letu používaná pro ladění a filmovou práci. Dostupná v diagnostických buildech nebo při povolení mody.
 
-### Accessing the Instance
+### Přístup k instanci
 
 ```c
 FreeDebugCamera GetFreeDebugCamera();
 ```
 
-This global function returns the singleton free camera instance (or null if it does not exist).
+Tato globální funkce vrací singleton instanci volné kamery (nebo null, pokud neexistuje).
 
-### Key Methods
+### Klíčové metody
 
 ```c
-// Enable/disable the free camera
+// Povolit/zakázat volnou kameru
 static void SetActive(bool active);
 static bool GetActive();
 
-// Position and orientation
+// Pozice a orientace
 vector GetPosition();
 void   SetPosition(vector pos);
 vector GetOrientation();
-void   SetOrientation(vector ori);   // yaw, pitch, roll
+void   SetOrientation(vector ori);   // otočení, náklon, naklonění
 
-// Speed
+// Rychlost
 void SetFlySpeed(float speed);
 float GetFlySpeed();
 
-// Camera direction
+// Směr kamery
 vector GetDirection();
 ```
 
-**Example --- activate free camera and teleport it:**
+**Příklad --- aktivace volné kamery a teleportace:**
 
 ```c
 void ActivateDebugCamera(vector pos)
@@ -145,7 +145,7 @@ void ActivateDebugCamera(vector pos)
     if (cam)
     {
         cam.SetPosition(pos);
-        cam.SetOrientation(Vector(0, -30, 0));  // Look slightly down
+        cam.SetOrientation(Vector(0, -30, 0));  // Mírně pohled dolů
         cam.SetFlySpeed(10.0);
     }
 }
@@ -153,56 +153,56 @@ void ActivateDebugCamera(vector pos)
 
 ---
 
-## Field of View (FOV)
+## Zorné pole (FOV)
 
-The engine controls FOV natively. You can read and modify it through the player camera system:
+Engine řídí FOV nativně. Můžete jej číst a upravovat prostřednictvím systému kamery hráče:
 
-### Reading FOV
+### Čtení FOV
 
 ```c
-// Get current camera FOV
+// Získat aktuální FOV kamery
 float fov = GetDayZGame().GetFieldOfView();
 ```
 
-### DayZPlayerCamera FOV Override
+### Přepsání FOV v DayZPlayerCamera
 
-In custom camera classes that extend `DayZPlayerCamera`, you can override the FOV:
+Ve vlastních třídách kamery, které rozšiřují `DayZPlayerCamera`, můžete přepsat FOV:
 
 ```c
 class MyCustomCamera extends DayZPlayerCamera1stPerson
 {
     override float GetCurrentFOV()
     {
-        return 0.7854;  // ~45 degrees (radians)
+        return 0.7854;  // ~45 stupňů (radiány)
     }
 }
 ```
 
 ---
 
-## Depth of Field (DOF)
+## Hloubka ostrosti (DOF)
 
-Depth of field is controlled through the Post-Process Effects system (see [Chapter 6.5](05-ppe.md)). However, the camera system works with DOF through these mechanisms:
+Hloubka ostrosti je řízena prostřednictvím systému post-processingových efektů (viz [Kapitola 6.5](05-ppe.md)). Systém kamer však pracuje s DOF prostřednictvím těchto mechanismů:
 
-### Setting DOF via World
+### Nastavení DOF přes World
 
 ```c
 World world = GetGame().GetWorld();
 if (world)
 {
-    // SetDOF(focus_distance, focus_length, focus_length_near, blur, focus_depth_offset)
-    // All values in meters
+    // SetDOF(vzdálenost_zaostření, délka_zaostření, délka_zaostření_blízko, rozmazání, offset_hloubky_zaostření)
+    // Všechny hodnoty v metrech
     world.SetDOF(5.0, 100.0, 0.5, 0.3, 0.0);
 }
 ```
 
-### Disabling DOF
+### Vypnutí DOF
 
 ```c
 World world = GetGame().GetWorld();
 if (world)
 {
-    world.SetDOF(0, 0, 0, 0, 0);  // All zeros disables DOF
+    world.SetDOF(0, 0, 0, 0, 0);  // Samé nuly vypnou DOF
 }
 ```
 
@@ -210,42 +210,42 @@ if (world)
 
 ## ScriptCamera (GameLib)
 
-**File:** `2_GameLib/entities/scriptcamera.c`
+**Soubor:** `2_GameLib/entities/scriptcamera.c`
 
-A lower-level scripted camera entity from the GameLib layer. This is the base for custom camera implementations.
+Nízkoúrovňová skriptovaná entita kamery z vrstvy GameLib. Toto je základ pro vlastní implementace kamer.
 
-### Creating a Camera
+### Vytvoření kamery
 
 ```c
 ScriptCamera camera = ScriptCamera.Cast(
-    GetGame().CreateObject("ScriptCamera", pos, true)  // local only
+    GetGame().CreateObject("ScriptCamera", pos, true)  // pouze lokální
 );
 ```
 
-### Key Methods
+### Klíčové metody
 
 ```c
-proto native void SetFOV(float fov);          // FOV in radians
+proto native void SetFOV(float fov);          // FOV v radiánech
 proto native void SetNearPlane(float nearPlane);
 proto native void SetFarPlane(float farPlane);
 proto native void SetFocus(float dist, float len);
 ```
 
-### Activating a Camera
+### Aktivace kamery
 
 ```c
-// Make this camera the active rendering camera
-GetGame().SelectPlayer(null, null);   // Detach from player
-GetGame().ObjectRelease(camera);      // Release to engine
+// Nastavit tuto kameru jako aktivní renderovací kameru
+GetGame().SelectPlayer(null, null);   // Odpojit od hráče
+GetGame().ObjectRelease(camera);      // Uvolnit pro engine
 ```
 
-> **Poznámka:** Switching away from the player camera requires careful handling of input and HUD. Most mods use the free debug camera or PPE overlay effects instead of creating custom cameras.
+> **Poznámka:** Přepnutí z kamery hráče vyžaduje pečlivé zacházení se vstupy a HUD. Většina modů používá volnou debug kameru nebo PPE překryvné efekty místo vytváření vlastních kamer.
 
 ---
 
-## Raycasting from Camera
+## Raycast z kamery
 
-A common pattern is to raycast from the camera position in the camera direction to find what the player is looking at:
+Běžný vzor je provádění raycastu z pozice kamery ve směru kamery pro nalezení toho, na co se hráč dívá:
 
 ```c
 Object GetObjectInCrosshair(float maxDistance)
@@ -272,18 +272,36 @@ Object GetObjectInCrosshair(float maxDistance)
 
 ---
 
-## Summary
+## Shrnutí
 
 | Koncept | Klíčový bod |
-|---------|-----------|
-| Global accessors | `GetCurrentCameraPosition()`, `GetCurrentCameraDirection()`, `GetScreenPos()` |
-| Camera types | `DayZPlayerCameras` constants (1ST, 3RD_ERC, IRONSIGHTS, OPTICS, VEHICLE, etc.) |
-| Current type | `player.GetCurrentCameraType()` |
-| Free camera | `FreeDebugCamera.SetActive(true)`, then `GetFreeDebugCamera()` |
-| FOV | `GetDayZGame().GetFieldOfView()` to read, override `GetCurrentFOV()` in camera class |
-| DOF | `GetGame().GetWorld().SetDOF(focus, length, near, blur, offset)` |
-| Screen conversion | `GetScreenPos(worldPos)` returns pixel XY + depth Z |
+|---------|-------------|
+| Globální přístupové metody | `GetCurrentCameraPosition()`, `GetCurrentCameraDirection()`, `GetScreenPos()` |
+| Typy kamer | Konstanty `DayZPlayerCameras` (1ST, 3RD_ERC, IRONSIGHTS, OPTICS, VEHICLE atd.) |
+| Aktuální typ | `player.GetCurrentCameraType()` |
+| Volná kamera | `FreeDebugCamera.SetActive(true)`, pak `GetFreeDebugCamera()` |
+| FOV | `GetDayZGame().GetFieldOfView()` pro čtení, přepsat `GetCurrentFOV()` ve třídě kamery |
+| DOF | `GetGame().GetWorld().SetDOF(zaostření, délka, blízko, rozmazání, offset)` |
+| Převod na obrazovku | `GetScreenPos(worldPos)` vrací pixel XY + hloubku Z |
 
 ---
 
-[<< Předchozí: Weather](03-weather.md) | **Cameras** | [Další: Post-Process Effects >>](05-ppe.md)
+## Osvědčené postupy
+
+- **Cachujte pozici kamery při opakovaném dotazování v rámci jednoho snímku.** `GetGame().GetCurrentCameraPosition()` a `GetCurrentCameraDirection()` jsou volání enginu -- uložte výsledek do lokální proměnné, pokud ho potřebujete ve více výpočtech v rámci jednoho snímku.
+- **Používejte kontrolu hloubky `GetScreenPos()` před umístěním UI.** Vždy ověřte `screenPos[2] > 0` (před kamerou) před vykreslováním HUD značek na světových pozicích, jinak se značky objeví zrcadlově za hráčem.
+- **Vyhněte se vytváření vlastních instancí ScriptCamera pro jednoduché efekty.** FreeDebugCamera a systém PPE pokrývají většinu filmových a vizuálních potřeb. Vlastní kamery vyžadují pečlivou správu vstupů/HUD, která se snadno rozbije.
+- **Respektujte přechody typů kamer enginu.** Nevynucujte změny typu kamery ze skriptu, pokud plně nezvládáte stav řídicího systému hráče. Neočekávané přepnutí kamery může zablokovat pohyb hráče nebo způsobit desynchronizaci.
+- **Zabezpečte použití volné kamery za kontrolou admin/debug oprávnění.** FreeDebugCamera poskytuje neomezený pohled na svět. Povolte ji pouze pro ověřené administrátory nebo diagnostické buildy, aby se předešlo zneužití.
+
+---
+
+## Kompatibilita a dopad
+
+- **Multi-Mod:** Přístupové metody kamery jsou globální jen pro čtení, takže více modů může bezpečně číst stav kamery současně. Konflikty vznikají pouze pokud dva mody oba aktivují FreeDebugCamera nebo vlastní instance ScriptCamera.
+- **Výkon:** `GetScreenPos()` a `GetCurrentCameraPosition()` jsou lehká volání enginu. Raycast z kamery (`DayZPhysics.RaycastRV`) je náročnější -- omezte na jednou za snímek, ne za entitu.
+- **Server/Klient:** Stav kamery existuje pouze na klientovi. Všechny metody kamery vracejí bezvýznamná data na dedikovaném serveru. Nikdy nepoužívejte dotazy na kameru v serverové logice.
+
+---
+
+[<< Předchozí: Počasí](03-weather.md) | **Kamery** | [Další: Post-processingové efekty >>](05-ppe.md)

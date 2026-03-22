@@ -1,10 +1,14 @@
-# Chapter 8.9: Professional Mod Template
+# Chapitre 8.9: Professional Mod Template
 
-[Home](../../README.md) | [<< Previous: Building a HUD Overlay](08-hud-overlay.md) | **Professional Mod Template** | [Next: Creating a Custom Vehicle >>](10-vehicle-mod.md)
+[Accueil](../../README.md) | [<< Précédent : Building a HUD Overlay](08-hud-overlay.md) | **Professional Mod Template** | [Suivant : Creating a Custom Vehicle >>](10-vehicle-mod.md)
 
 ---
 
-## Table des Matieres
+> **Résumé :** Ce chapitre fournit a complete, production-ready mod template with every file you need for a professional DayZ mod. Unlike [Chapter 8.5](05-mod-template.md) which introduces InclementDab's starter skeleton, this is a full-featured template with a config system, singleton manager, client-server RPC, UI panel, keybinds, localization, and build automation. Every file is copy-paste ready and heavily commented to explain **why** each line exists.
+
+---
+
+## Table des matières
 
 - [Overview](#overview)
 - [Complete Directory Structure](#complete-directory-structure)
@@ -137,7 +141,7 @@ actionURL    = "";
 
 ## config.cpp
 
-This is the most critical file. It registers your mod with the engine, declares dependencies, wires up script layers, and optionally sets preprocessor defines and image sets.
+This is the most critical file. It registers your mod with le moteur, declares dependencies, wires up script layers, and optionally sets preprocessor defines and image sets.
 
 Place this at `Scripts/config.cpp`.
 
@@ -338,7 +342,7 @@ enum MyModNotifyType
 
 Place at `Scripts/3_Game/MyMod/MyModConfig.c`.
 
-This is a JSON-serializable settings class. The server loads it on startup. If no file exists, defaults are used and a fresh config is saved to disk.
+This is a JSON-serializable settings class. Le serveur loads it on startup. If no file exists, defaults are used and a fresh config is saved to disk.
 
 ```c
 // ==========================================================================
@@ -404,7 +408,7 @@ class MyModConfig
         {
             // JsonLoadFile populates the existing object. It does NOT return
             // a new object. Fields present in the JSON overwrite defaults;
-            // fields missing from the JSON keep their default values.
+            // champs missing from the JSON keep their default values.
             JsonFileLoader<MyModConfig>.JsonLoadFile(MYMOD_CONFIG_PATH, cfg);
         }
         else
@@ -450,7 +454,7 @@ The resulting `config.json` on disk looks like this:
 }
 ```
 
-Admins edit this file, restart the server, and the new values take effect.
+Admins edit this file, restart le serveur, and the new values take effect.
 
 ---
 
@@ -458,7 +462,7 @@ Admins edit this file, restart the server, and the new values take effect.
 
 Place at `Scripts/3_Game/MyMod/MyModRPC.c`.
 
-RPC (Remote Procedure Call) is how the client and server communicate in DayZ. This file defines route names and provides helper methods for registration.
+RPC (Remote Procedure Call) is how le client and server communicate in DayZ. This file defines route names and provides helper methods for registration.
 
 ```c
 // ==========================================================================
@@ -548,7 +552,7 @@ class MyModRPCHelper
 
 Place at `Scripts/4_World/MyMod/MyModManager.c`.
 
-This is the central brain of your mod on the server side. It owns the config, processes RPC, and runs periodic updates.
+This is the central brain of your mod on le serveur side. It owns the config, processes RPC, and runs periodic updates.
 
 ```c
 // ==========================================================================
@@ -733,7 +737,7 @@ class MyModManager
 
 Place at `Scripts/4_World/MyMod/MyModPlayerHandler.c`.
 
-This uses the `modded class` pattern to hook into the vanilla `PlayerBase` entity and detect connect/disconnect events.
+This uses the `modded class` pattern to hook into le vanilla `PlayerBase` entity and detect connect/disconnect events.
 
 ```c
 // ==========================================================================
@@ -796,7 +800,7 @@ modded class PlayerBase
 
 Place at `Scripts/5_Mission/MyMod/MyModMissionServer.c`.
 
-This hooks into `MissionServer` to initialize and shut down the mod on the server side.
+This hooks into `MissionServer` to initialize and shut down the mod on le serveur side.
 
 ```c
 // ==========================================================================
@@ -912,7 +916,7 @@ modded class MissionServer
 
 Place at `Scripts/5_Mission/MyMod/MyModMissionClient.c`.
 
-This hooks into `MissionGameplay` for client-side initialization, input handling, and RPC receiving.
+This hooks into `MissionGameplay` for côté client initialization, input handling, and RPC receiving.
 
 ```c
 // ==========================================================================
@@ -1241,7 +1245,7 @@ PanelWidgetClass MyModPanelRoot {
  color 0.1 0.1 0.12 0.92
  priority 100
  {
-  // Title bar: full width, 36px tall, at the top.
+  // Titre bar: full width, 36px tall, at the top.
   PanelWidgetClass TitleBar {
    position 0 0
    size 1 36
@@ -1251,7 +1255,7 @@ PanelWidgetClass MyModPanelRoot {
    vexactsize 1
    color 0.15 0.15 0.18 1
    {
-    // Title text: left-aligned with padding.
+    // Titre text: left-aligned with padding.
     TextWidgetClass TitleText {
      position 12 0
      size 300 36
@@ -1335,7 +1339,7 @@ PanelWidgetClass MyModPanelRoot {
 
 Place at `Scripts/stringtable.csv`.
 
-This provides localization for all player-facing text. The engine reads the column matching the player's game language. The `original` column is the fallback.
+This provides localization for all player-facing text. Le moteur reads the column matching le joueur's game language. The `original` column is the fallback.
 
 DayZ supports 13 language columns. Every row must have all 13 columns (use the English text as placeholder for languages you do not translate).
 
@@ -1356,7 +1360,7 @@ DayZ supports 13 language columns. Every row must have all 13 columns (use the E
 
 Place at `Scripts/Inputs.xml`.
 
-This defines custom keybinds that appear in the game's Options > Controls menu. The `inputs` field in `config.cpp` CfgMods must point to this file.
+This defines custom keybinds that appear in le jeu's Options > Controls menu. The `inputs` field in `config.cpp` CfgMods must point to this file.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -1511,7 +1515,7 @@ When you use this template for your own mod, you need to rename every occurrence
 
 Decide on these identifiers before making any edits:
 
-| Identifier | Exemple | Rules |
+| Identifier | Example | Rules |
 |------------|---------|-------|
 | **Mod folder name** | `MyBountySystem` | No spaces, PascalCase or underscores |
 | **Display name** | `"My Bounty System"` | Human-readable, for mod.cpp and config.cpp |
@@ -1596,7 +1600,7 @@ Once your mod is running, here is how to add common features.
 const string MYMOD_RPC_BOUNTY_SET = "MyMod:BountySet";
 ```
 
-**2. Add the server handler** in `MyModManager.c` (4_World):
+**2. Add le serveur handler** in `MyModManager.c` (4_World):
 
 ```c
 void OnBountySet(PlayerIdentity sender, ParamsReadContext ctx)
@@ -1621,7 +1625,7 @@ else if (routeName == MYMOD_RPC_BOUNTY_SET)
 }
 ```
 
-**4. Send from the client** (wherever the action is triggered):
+**4. Send from le client** (wherever the action is triggered):
 
 ```c
 ScriptRPC rpc = new ScriptRPC();
@@ -1769,7 +1773,7 @@ string localizedText = Widget.TranslateString("#STR_MYMOD_BOUNTY_PLACED");
 myTextWidget.SetText(localizedText);
 ```
 
-Or in a `.layout` file, the engine resolves `#STR_` keys automatically:
+Or in a `.layout` file, le moteur resolves `#STR_` keys automatically:
 
 ```
 text "#STR_MYMOD_BOUNTY_PLACED"
@@ -1777,7 +1781,7 @@ text "#STR_MYMOD_BOUNTY_PLACED"
 
 ---
 
-## Prochaines Etapes
+## Prochaines étapes
 
 With this professional template running, you can:
 
@@ -1790,4 +1794,4 @@ With this professional template running, you can:
 
 ---
 
-**Previous:** [Chapter 8.8: Building a HUD Overlay](08-hud-overlay.md) | [Accueil](../../README.md)
+**Précédent :** [Chapter 8.8: Building a HUD Overlay](08-hud-overlay.md) | [Accueil](../../README.md)

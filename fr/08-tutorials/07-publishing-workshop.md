@@ -1,10 +1,14 @@
-# Chapter 8.7: Publishing to the Steam Workshop
+# Chapitre 8.7: Publishing to the Steam Workshop
 
-[Home](../../README.md) | [<< Previous: Debugging & Testing](06-debugging-testing.md) | **Publishing to the Steam Workshop** | [Next: Building a HUD Overlay >>](08-hud-overlay.md)
+[Accueil](../../README.md) | [<< Précédent : Debugging & Testing](06-debugging-testing.md) | **Publishing to the Steam Workshop** | [Suivant : Building a HUD Overlay >>](08-hud-overlay.md)
 
 ---
 
-## Table des Matieres
+> **Résumé :** Your mod is built, tested, and ready for le monde. Ce tutoriel guide you through the complete publishing process from start to finish: preparing your mod folder, signing PBOs for multiplayer compatibility, creating a Steam Workshop item, uploading via DayZ Tools or command line, and maintaining updates over time. By the end, your mod will be live on the Workshop and playable by anyone.
+
+---
+
+## Table des matières
 
 - [Introduction](#introduction)
 - [Pre-Publishing Checklist](#pre-publishing-checklist)
@@ -28,7 +32,7 @@
 
 ## Introduction
 
-Publishing to the Steam Workshop is the final step in the DayZ modding journey. Everything you have learned in previous chapters culminates here. Once your mod is on the Workshop, any DayZ player can subscribe, download, and play with it. This chapter covers the complete process: preparing your mod, signing PBOs, uploading, and maintaining updates.
+Publishing to the Steam Workshop is the final step in the DayZ modding journey. Everything you have learned in previous chapters culminates here. Once your mod is on the Workshop, any DayZ player can subscribe, download, and play with it. Ce chapitre couvre the complete process: preparing your mod, signing PBOs, uploading, and maintaining updates.
 
 ---
 
@@ -71,7 +75,7 @@ Your final mod folder must follow DayZ's expected structure exactly.
 
 ### Folder Breakdown
 
-| Folder / File | But |
+| Folder / File | Purpose |
 |---------------|---------|
 | `addons/` | Contains all `.pbo` files (packed mod content) and their `.bisign` signature files |
 | `keys/` | Contains the public key (`.bikey`) that servers use to verify your PBOs |
@@ -108,9 +112,9 @@ version      = "1.0.0";
 versionPath  = "MyMod/Data/version.txt";
 ```
 
-### Reference des Champs
+### Field Reference
 
-| Champ | Required | Description |
+| Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Display name shown in the DayZ Launcher mod list |
 | `picture` | Yes | Path to the main logo image (displayed in launcher). Relative to the P: drive or mod root |
@@ -121,11 +125,11 @@ versionPath  = "MyMod/Data/version.txt";
 | `overview` | Yes | Longer description shown in the mod details panel |
 | `author` | Yes | Your name or team name |
 | `overviewPicture` | No | Large image shown in the mod overview panel |
-| `action` | No | URL opened when the player clicks "Website" (typically your Workshop page or GitHub) |
+| `action` | No | URL opened when le joueur clicks "Website" (typically your Workshop page or GitHub) |
 | `version` | Yes | Current version string (e.g., `"1.0.0"`) |
 | `versionPath` | No | Path to a text file containing the version number (for automated builds) |
 
-### Erreurs Courantes
+### Common Mistakes
 
 - **Missing semicolons** at the end of each line. Every line must end with `;`.
 - **Wrong image paths.** Paths are relative to the P: drive root when building. After packing, the path should reflect the PBO prefix. Test by loading the mod locally before uploading.
@@ -172,7 +176,7 @@ Key signing is **essential** for multiplayer. Almost all public servers enable s
 - You create a **key pair**: a `.biprivatekey` (private) and a `.bikey` (public)
 - You sign each `.pbo` with the private key, producing a `.bisign` file
 - You distribute the `.bikey` with your mod; server operators place it in their `keys/` folder
-- When a player joins, the server checks each `.pbo` against its `.bisign` using the `.bikey`
+- When a player joins, le serveur checks each `.pbo` against its `.bisign` using the `.bikey`
 
 ### Generating Keys with DayZ Tools
 
@@ -269,7 +273,7 @@ DayZ Tools includes a built-in Workshop publisher -- the easiest way to get your
 
 ### Fill In the Details
 
-| Champ | What to Enter |
+| Field | What to Enter |
 |-------|---------------|
 | **Title** | Your mod's display name (e.g., "My Awesome Mod") |
 | **Description** | Detailed overview of what your mod does. Supports Steam's BB code formatting (see below) |
@@ -309,7 +313,7 @@ Do not skip this. Test your mod as a regular player would:
 1. Visit `https://steamcommunity.com/sharedfiles/filedetails/?id=YOUR_ID` and verify title, description, preview image
 2. **Subscribe** to your own mod on the Workshop
 3. Launch DayZ, confirm the mod appears in the launcher
-4. Enable it, launch the game, join a server (or run your own test server)
+4. Enable it, launch le jeu, join a server (or run your own test server)
 5. Confirm all features work
 6. Update the `action` field in `mod.cpp` to point to your Workshop page URL
 
@@ -343,9 +347,9 @@ SteamCMD uses a `.vdf` file to describe what to upload. Create a file called `wo
 }
 ```
 
-### Reference des Champs
+### Field Reference
 
-| Champ | Valeur |
+| Field | Value |
 |-------|-------|
 | `appid` | Always `221100` for DayZ |
 | `publishedfileid` | `0` for a new item; use the Workshop ID for updates |
@@ -364,7 +368,7 @@ C:\SteamCMD\steamcmd.exe +login YourSteamUsername +workshop_build_item "C:\Path\
 
 SteamCMD will prompt for your password and Steam Guard code on first use. After authentication, it uploads the mod and prints the Workshop ID.
 
-### When to Use Command Line
+### Quand utiliser Command Line
 
 - **Automated builds:** integrate into a build script that packs PBOs, signs them, and uploads in one step
 - **Batch operations:** uploading multiple mods at once
@@ -415,7 +419,7 @@ Always sign updates with the **same private key** you used for the original rele
 
 Use **MAJOR.MINOR.PATCH** format:
 
-| Component | When to Increment | Exemple |
+| Component | When to Increment | Example |
 |-----------|-------------------|---------|
 | **MAJOR** | Breaking changes: config format changes, removed features, API overhauls | `1.0.0` to `2.0.0` |
 | **MINOR** | New features that are backwards-compatible | `1.0.0` to `1.1.0` |
@@ -520,7 +524,7 @@ Include this information in your Workshop description for server admins.
    steamcmd +login anonymous +workshop_download_item 221100 WORKSHOP_ID +quit
    ```
 2. **Copy** (or symlink) the `@ModName` folder to the DayZ Server directory
-3. **Copy the `.bikey` file** from `@ModName/keys/` to the server's `keys/` folder
+3. **Copy the `.bikey` file** from `@ModName/keys/` to le serveur's `keys/` folder
 4. **Add the mod** to the `-mod=` launch parameter
 
 ### Launch Parameter Syntax
@@ -531,7 +535,7 @@ Mods are loaded via the `-mod=` parameter, separated by semicolons:
 -mod=@CF;@VPPAdminTools;@MyMod
 ```
 
-Use the **full relative path** from the server root. On Linux, paths are case-sensitive.
+Use the **full relative path** from le serveur root. On Linux, paths are case-sensitive.
 
 ### Load Order
 
@@ -543,10 +547,10 @@ Mods load in the order listed in `-mod=`. This matters when mods depend on each 
 
 ### Key Management
 
-- Place **one `.bikey` per mod** in the server's `keys/` directory
+- Place **one `.bikey` per mod** in le serveur's `keys/` directory
 - When a mod updates with the same key, no action needed -- existing `.bikey` still works
 - If a mod author changes keys, you must replace the old `.bikey` with the new one
-- The `keys/` folder path is relative to the server root (e.g., `DayZServer/keys/`)
+- The `keys/` folder path is relative to le serveur root (e.g., `DayZServer/keys/`)
 
 ---
 
@@ -601,10 +605,10 @@ This gives you version history, download counts, and a stable URL for each relea
 
 ## Common Problems and Solutions
 
-| Problem | Cause | Correction |
+| Problem | Cause | Fix |
 |---------|-------|-----|
 | "Addon rejected by server" | Server missing `.bikey`, or `.bisign` does not match `.pbo` | Confirm `.bikey` is in server `keys/` folder. Re-sign PBOs with the correct `.biprivatekey`. |
-| "Signature check failed" | PBO modified after signing, or signed with wrong key | Rebuild PBO from clean source. Re-sign with the **same key** that generated the server's `.bikey`. |
+| "Signature check failed" | PBO modified after signing, or signed with wrong key | Rebuild PBO from clean source. Re-sign with the **same key** that generated le serveur's `.bikey`. |
 | Mod not in DayZ Launcher | Malformed `mod.cpp` or wrong folder structure | Check `mod.cpp` for syntax errors (missing `;`). Ensure folder starts with `@`. Restart launcher. |
 | Upload fails in Publisher | Auth, connection, or file lock issue | Verify Steam login. Close Workbench/Addon Builder. Try running DayZ Tools as Administrator. |
 | Wrong/missing Workshop icon | Bad path in `mod.cpp` or wrong image format | Verify `picture`/`logo` paths point to actual `.paa` files. Workshop preview (`.png`) is separate. |
@@ -626,7 +630,7 @@ After publishing, player feedback sends you back to CODE, TEST, and DEBUG. That 
 
 ---
 
-## Prochaines Etapes
+## Prochaines étapes
 
 You have completed the full DayZ modding tutorial series -- from a blank workspace to a published, signed, and maintained mod on the Steam Workshop. From here:
 

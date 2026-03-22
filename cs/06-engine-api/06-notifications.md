@@ -1,48 +1,48 @@
-# Chapter 6.6: Notification System
+# Kapitola 6.6: Systém notifikací
 
-[Home](../../README.md) | [<< Previous: Post-Process Effects](05-ppe.md) | **Notifications** | [Next: Timers & CallQueue >>](07-timers.md)
+[Domů](../../README.md) | [<< Předchozí: Post-processingové efekty](05-ppe.md) | **Notifikace** | [Další: Časovače a CallQueue >>](07-timers.md)
 
 ---
 
-## Introduction
+## Úvod
 
-DayZ includes a built-in notification system for displaying toast-style popup messages to players. The `NotificationSystem` class provides static methods for sending notifications both locally (client-side) and from server to client via RPC. This chapter covers the full API for sending, customizing, and managing notifications.
+DayZ obsahuje vestavěný systém notifikací pro zobrazování vyskakovacích zpráv ve stylu toast hráčům. Třída `NotificationSystem` poskytuje statické metody pro odesílání notifikací lokálně (na straně klienta) i ze serveru klientovi přes RPC. Tato kapitola pokrývá kompletní API pro odesílání, přizpůsobení a správu notifikací.
 
 ---
 
 ## NotificationSystem
 
-**File:** `3_Game/client/notifications/notificationsystem.c` (320 lines)
+**Soubor:** `3_Game/client/notifications/notificationsystem.c` (320 řádků)
 
-A static class that manages the notification queue. Notifications appear as small popup cards at the top of the screen, stacked vertically, and fade out after their display time expires.
+Statická třída, která spravuje frontu notifikací. Notifikace se zobrazují jako malé vyskakovací karty v horní části obrazovky, naskládané vertikálně, a zmizí po uplynutí doby zobrazení.
 
 ### Konstanty
 
 ```c
-const int   DEFAULT_TIME_DISPLAYED = 10;    // Default display time in seconds
-const float NOTIFICATION_FADE_TIME = 3.0;   // Fade-out duration in seconds
-static const int MAX_NOTIFICATIONS = 5;     // Maximum visible notifications
+const int   DEFAULT_TIME_DISPLAYED = 10;    // Výchozí doba zobrazení v sekundách
+const float NOTIFICATION_FADE_TIME = 3.0;   // Doba prolínání v sekundách
+static const int MAX_NOTIFICATIONS = 5;     // Maximální počet viditelných notifikací
 ```
 
 ---
 
-## Server-to-Client Notifications
+## Notifikace ze serveru klientovi
 
-These methods are called on the server. They send an RPC to the target player's client, which displays the notification locally.
+Tyto metody se volají na serveru. Odešlou RPC cílovému klientovi hráče, který notifikaci zobrazí lokálně.
 
 ### SendNotificationToPlayerExtended
 
 ```c
 static void SendNotificationToPlayerExtended(
-    Man player,            // Target player (Man or PlayerBase)
-    float show_time,       // Display duration in seconds
-    string title_text,     // Notification title
-    string detail_text = "",  // Optional body text
-    string icon = ""       // Optional icon path (e.g., "set:dayz_gui image:icon_info")
+    Man player,            // Cílový hráč (Man nebo PlayerBase)
+    float show_time,       // Doba zobrazení v sekundách
+    string title_text,     // Titulek notifikace
+    string detail_text = "",  // Volitelný text těla
+    string icon = ""       // Volitelná cesta k ikoně (např. "set:dayz_gui image:icon_info")
 );
 ```
 
-**Example --- notify a specific player:**
+**Příklad --- upozornit konkrétního hráče:**
 
 ```c
 void NotifyPlayer(PlayerBase player, string message)
@@ -52,10 +52,10 @@ void NotifyPlayer(PlayerBase player, string message)
 
     NotificationSystem.SendNotificationToPlayerExtended(
         player,
-        8.0,                   // Show for 8 seconds
-        "Server Notice",       // Title
-        message,               // Body
-        ""                     // Default icon
+        8.0,                   // Zobrazit na 8 sekund
+        "Server Notice",       // Titulek
+        message,               // Tělo
+        ""                     // Výchozí ikona
     );
 }
 ```
@@ -64,7 +64,7 @@ void NotifyPlayer(PlayerBase player, string message)
 
 ```c
 static void SendNotificationToPlayerIdentityExtended(
-    PlayerIdentity player,   // Target identity (null = broadcast to ALL players)
+    PlayerIdentity player,   // Cílová identita (null = broadcast VŠEM hráčům)
     float show_time,
     string title_text,
     string detail_text = "",
@@ -72,7 +72,7 @@ static void SendNotificationToPlayerIdentityExtended(
 );
 ```
 
-**Example --- broadcast to all players:**
+**Příklad --- broadcast všem hráčům:**
 
 ```c
 void BroadcastNotification(string title, string message)
@@ -81,8 +81,8 @@ void BroadcastNotification(string title, string message)
         return;
 
     NotificationSystem.SendNotificationToPlayerIdentityExtended(
-        null,                  // null = all connected players
-        10.0,                  // Show for 10 seconds
+        null,                  // null = všichni připojení hráči
+        10.0,                  // Zobrazit na 10 sekund
         title,
         message,
         ""
@@ -90,24 +90,24 @@ void BroadcastNotification(string title, string message)
 }
 ```
 
-### SendNotificationToPlayer (Typed)
+### SendNotificationToPlayer (s typem)
 
 ```c
 static void SendNotificationToPlayer(
     Man player,
-    NotificationType type,    // Predefined notification type
+    NotificationType type,    // Předdefinovaný typ notifikace
     float show_time,
     string detail_text = ""
 );
 ```
 
-This variant uses predefined `NotificationType` enum values that map to built-in titles and icons. The `detail_text` is appended as the body.
+Tato varianta používá předdefinované hodnoty výčtu `NotificationType`, které mapují na vestavěné titulky a ikony. `detail_text` se připojí jako tělo.
 
 ---
 
-## Client-Side (Local) Notifications
+## Notifikace na straně klienta (lokální)
 
-These methods display notifications only on the local client. They do not involve any networking.
+Tyto metody zobrazují notifikace pouze na lokálním klientovi. Nezahrnují žádnou síťovou komunikaci.
 
 ### AddNotificationExtended
 
@@ -120,7 +120,7 @@ static void AddNotificationExtended(
 );
 ```
 
-**Example --- local notification on client:**
+**Příklad --- lokální notifikace na klientovi:**
 
 ```c
 void ShowLocalNotification(string title, string body)
@@ -137,7 +137,7 @@ void ShowLocalNotification(string title, string body)
 }
 ```
 
-### AddNotification (Typed)
+### AddNotification (s typem)
 
 ```c
 static void AddNotification(
@@ -147,62 +147,62 @@ static void AddNotification(
 );
 ```
 
-Uses a predefined `NotificationType` for the title and icon.
+Používá předdefinovaný `NotificationType` pro titulek a ikonu.
 
 ---
 
-## NotificationType Enum
+## Výčet NotificationType
 
-The vanilla game defines notification types with associated titles and icons. Common values:
+Vanilla hra definuje typy notifikací s přiřazenými titulky a ikonami. Běžné hodnoty:
 
-| Type | Description |
-|------|-------------|
-| `NotificationType.GENERIC` | Generic notification |
-| `NotificationType.FRIENDLY_FIRE` | Friendly fire warning |
-| `NotificationType.JOIN` | Player join |
-| `NotificationType.LEAVE` | Player leave |
-| `NotificationType.STATUS` | Status update |
+| Typ | Popis |
+|-----|-------|
+| `NotificationType.GENERIC` | Obecná notifikace |
+| `NotificationType.FRIENDLY_FIRE` | Varování přátelské palby |
+| `NotificationType.JOIN` | Připojení hráče |
+| `NotificationType.LEAVE` | Odpojení hráče |
+| `NotificationType.STATUS` | Aktualizace stavu |
 
-> **Poznámka:** The available types depend on the game version. For maximum flexibility, use the `Extended` variants which accept custom title and icon strings.
+> **Poznámka:** Dostupné typy závisí na verzi hry. Pro maximální flexibilitu používejte varianty `Extended`, které přijímají vlastní řetězce titulku a ikony.
 
 ---
 
-## Icon Paths
+## Cesty k ikonám
 
-Icons use the DayZ image set syntax:
+Ikony používají syntaxi DayZ image set:
 
 ```
 "set:dayz_gui image:icon_name"
 ```
 
-Common icon names:
+Běžné názvy ikon:
 
-| Icon | Set Path |
-|------|----------|
+| Ikona | Cesta sady |
+|-------|------------|
 | Info | `"set:dayz_gui image:icon_info"` |
-| Warning | `"set:dayz_gui image:icon_warning"` |
-| Skull | `"set:dayz_gui image:icon_skull"` |
+| Varování | `"set:dayz_gui image:icon_warning"` |
+| Lebka | `"set:dayz_gui image:icon_skull"` |
 
-You can also pass a direct path to an `.edds` image file:
+Můžete také předat přímou cestu k souboru `.edds`:
 
 ```c
 "MyMod/GUI/notification_icon.edds"
 ```
 
-Or pass an empty string `""` for no icon.
+Nebo prázdný řetězec `""` pro žádnou ikonu.
 
 ---
 
-## Events
+## Události
 
-The `NotificationSystem` exposes script invokers for reacting to notification lifecycle:
+`NotificationSystem` vystavuje skriptové invokery pro reakci na životní cyklus notifikací:
 
 ```c
 ref ScriptInvoker m_OnNotificationAdded;
 ref ScriptInvoker m_OnNotificationRemoved;
 ```
 
-**Example --- react to notifications:**
+**Příklad --- reakce na notifikace:**
 
 ```c
 void Init()
@@ -228,24 +228,24 @@ void OnNotifRemoved()
 
 ---
 
-## Update Loop
+## Aktualizační smyčka
 
-The notification system must be ticked each frame to handle fade-in/fade-out animations and removal of expired notifications:
+Systém notifikací musí být tiknut každý snímek pro zpracování animací prolínání a odstranění expirovaných notifikací:
 
 ```c
 static void Update(float timeslice);
 ```
 
-This is called automatically by the vanilla mission's `OnUpdate` method. If you are writing a completely custom mission, make sure to call it.
+Toto je automaticky voláno metodou `OnUpdate` vanilla mise. Pokud píšete zcela vlastní misi, ujistěte se, že ji voláte.
 
 ---
 
-## Complete Server-to-Client Example
+## Kompletní příklad server-klient
 
-A typical mod pattern for sending notifications from server code:
+Typický vzor modu pro odesílání notifikací ze serverového kódu:
 
 ```c
-// Server-side: in a mission event handler or module
+// Serverová strana: v handleru událostí mise nebo modulu
 class MyServerModule
 {
     void OnMissionStarted(string missionName, vector location)
@@ -253,7 +253,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Broadcast to all players
+        // Broadcast všem hráčům
         string title = "Mission Started!";
         string body = string.Format("Go to %1!", missionName);
 
@@ -271,7 +271,7 @@ class MyServerModule
         if (!GetGame().IsServer())
             return;
 
-        // Notify just this player
+        // Upozornit pouze tohoto hráče
         NotificationSystem.SendNotificationToPlayerExtended(
             player,
             5.0,
@@ -285,12 +285,12 @@ class MyServerModule
 
 ---
 
-## CommunityFramework (CF) Alternative
+## Alternativa CommunityFramework (CF)
 
-If you use CommunityFramework, it provides its own notification API:
+Pokud používáte CommunityFramework, poskytuje vlastní API notifikací:
 
 ```c
-// CF notification (different RPC internally)
+// CF notifikace (interně jiné RPC)
 NotificationSystem.Create(
     new StringLocaliser("Title"),
     new StringLocaliser("Body with param: %1", someValue),
@@ -301,23 +301,41 @@ NotificationSystem.Create(
 );
 ```
 
-The CF API adds color and localization support. Use whichever system your mod stack requires --- they are functionally similar but use different internal RPCs.
+CF API přidává podporu barev a lokalizace. Použijte systém, který váš mod vyžaduje --- jsou funkčně podobné, ale používají různá interní RPC.
 
 ---
 
-## Summary
+## Shrnutí
 
 | Koncept | Klíčový bod |
-|---------|-----------|
-| Server to player | `SendNotificationToPlayerExtended(player, time, title, text, icon)` |
-| Server to all | `SendNotificationToPlayerIdentityExtended(null, time, title, text, icon)` |
-| Client local | `AddNotificationExtended(time, title, text, icon)` |
-| Typed | `SendNotificationToPlayer(player, NotificationType, time, text)` |
-| Max visible | 5 notifications stacked |
-| Default time | 10 seconds display, 3 seconds fade |
-| Icons | `"set:dayz_gui image:icon_name"` or direct `.edds` path |
-| Events | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
+|---------|-------------|
+| Server hráči | `SendNotificationToPlayerExtended(player, čas, titulek, text, ikona)` |
+| Server všem | `SendNotificationToPlayerIdentityExtended(null, čas, titulek, text, ikona)` |
+| Klient lokálně | `AddNotificationExtended(čas, titulek, text, ikona)` |
+| S typem | `SendNotificationToPlayer(player, NotificationType, čas, text)` |
+| Max viditelných | 5 notifikací naskládaných |
+| Výchozí čas | 10 sekund zobrazení, 3 sekundy prolínání |
+| Ikony | `"set:dayz_gui image:icon_name"` nebo přímá cesta `.edds` |
+| Události | `m_OnNotificationAdded`, `m_OnNotificationRemoved` |
 
 ---
 
-[<< Předchozí: Post-Process Effects](05-ppe.md) | **Notifications** | [Další: Timers & CallQueue >>](07-timers.md)
+## Osvědčené postupy
+
+- **Pro vlastní notifikace používejte varianty `Extended`.** `SendNotificationToPlayerExtended` vám dává plnou kontrolu nad titulkem, tělem a ikonou. Typované varianty `NotificationType` jsou omezeny na vanilla předvolby.
+- **Respektujte limit 5 notifikací ve frontě.** Odesílání mnoha notifikací v rychlém sledu vytlačí starší z obrazovky dříve, než je hráči stihnou přečíst. Seskupte související zprávy nebo používejte delší doby zobrazení.
+- **Serverové notifikace vždy chraňte kontrolou `GetGame().IsServer()`.** Volání `SendNotificationToPlayerExtended` na klientovi nemá žádný efekt a plýtvá voláním metody.
+- **Pro skutečné broadcasty předávejte `null` jako identitu.** `SendNotificationToPlayerIdentityExtended(null, ...)` doručí všem připojeným hráčům. Neprocházejte hráče ručně pro odeslání stejné zprávy.
+- **Text notifikací udržujte stručný.** Toast vyskakovací okno má omezenou šířku zobrazení. Dlouhé titulky nebo těla budou oříznuty. Cílte na titulky pod 30 znaků a text těla pod 80 znaků.
+
+---
+
+## Kompatibilita a dopad
+
+- **Multi-Mod:** Vanilla `NotificationSystem` je sdílen všemi mody. Více modů odesílajících notifikace současně může přetečit frontu 5 notifikací. CF poskytuje oddělený kanál notifikací, který nekoliduje s vanilla notifikacemi.
+- **Výkon:** Notifikace jsou lehké (jedno RPC na notifikaci). Nicméně broadcasting všem hráčům každých pár sekund generuje měřitelný síťový provoz na serverech s 60+ hráči.
+- **Server/Klient:** Metody `SendNotificationToPlayer*` jsou RPC ze serveru klientovi. `AddNotificationExtended` je pouze klientské (lokální). Tik `Update()` běží v klientské smyčce mise.
+
+---
+
+[<< Předchozí: Post-processingové efekty](05-ppe.md) | **Notifikace** | [Další: Časovače a CallQueue >>](07-timers.md)

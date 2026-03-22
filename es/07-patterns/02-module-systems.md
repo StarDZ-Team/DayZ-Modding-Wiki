@@ -1,14 +1,14 @@
-# Chapter 7.2: Module / Plugin Systems
+# Capítulo 7.2: Module / Plugin Systems
 
-[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
+[Inicio](../../README.md) | [<< Anterior: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Siguiente: RPC Patterns >>](03-rpc-patterns.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle events --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- to each module in a predictable order.
 
-This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and MyMod's `MyModuleManager`. Each solves the same problem differently; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
+This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and a custom static module manager. Each solves the same problem differently; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
 
 ---
 
@@ -18,7 +18,7 @@ This chapter examines four real-world approaches: Community Framework's `CF_Modu
 - [CF_ModuleCore (COT / Expansion)](#cf_modulecore-cot--expansion)
 - [VPP PluginBase / ConfigurablePlugin](#vpp-pluginbase--configurableplugin)
 - [Dabs Attribute-Based Registration](#dabs-attribute-based-registration)
-- [MyMod MyModuleManager](#custom-static-module-manager)
+- [Custom Static Module Manager](#custom-static-module-manager)
 - [Module Lifecycle: The Universal Contract](#module-lifecycle-the-universal-contract)
 - [Best Practices for Module Design](#best-practices-for-module-design)
 - [Comparison Table](#comparison-table)
@@ -102,7 +102,7 @@ Community Framework (CF) provides the most widely-used module system in the DayZ
 
 CF provides three base classes corresponding to DayZ's script layers:
 
-| Base Class | Capa | Uso Tipico |
+| Base Class | Capa | Typical Use |
 |-----------|-------|-------------|
 | `CF_ModuleGame` | 3_Game | Early init, RPC registration, data classes |
 | `CF_ModuleWorld` | 4_World | Entity interaction, gameplay systems |
@@ -273,9 +273,9 @@ At startup, CF scans all loaded script classes for the registration attribute. F
 
 ---
 
-## MyMod MyModuleManager
+## Custom Static Module Manager
 
-MyFramework uses an explicit registration pattern with a static manager class. There is no instance of the manager --- it is entirely static methods and static storage.
+This approach uses an explicit registration pattern with a static manager class. There is no instance of the manager --- it is entirely static methods and static storage. This is useful when you want zero dependencies on external frameworks.
 
 ### Module Base Classes
 
@@ -346,7 +346,7 @@ modded class MissionServer
 
 ### Listen-Server Safety
 
-MyMod's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle events twice on listen servers (where both `MissionServer` and `MissionGameplay` run in the same process).
+The custom module system's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle events twice on listen servers (where both `MissionServer` and `MissionGameplay` run in the same process).
 
 The base `MyModuleBase` returns `true` from both --- which is why the codebase warns against subclassing it directly.
 
@@ -408,7 +408,7 @@ Despite implementation differences, all four frameworks follow the same lifecycl
 
 ---
 
-## Mejores Practicas for Module Design
+## Best Practices for Module Design
 
 ### 1. One Module, One Responsibility
 
@@ -492,13 +492,13 @@ override void OnMissionStart()
 {
     super.OnMissionStart();
 
-    #ifdef MyAI
+    #ifdef MYMOD_AI
     MyEventBus.OnMissionStarted.Insert(OnAIMissionStarted);
     #endif
 }
 ```
 
-### 6. Log Module Lifecycle Eventos
+### 6. Log Module Lifecycle Events
 
 Logging makes debugging straightforward. Every module should log when it initializes and shuts down:
 
@@ -520,7 +520,7 @@ override void OnMissionFinish()
 
 ## Comparison Table
 
-| Caracteristica | CF_ModuleCore | VPP Plugin | Dabs Attribute | MyMod Module |
+| Característica | CF_ModuleCore | VPP Plugin | Dabs Attribute | Custom Module |
 |---------|--------------|------------|----------------|---------------|
 | **Discovery** | config.cpp + auto | Manual `Register()` | Attribute scan | Manual `Register()` |
 | **Base classes** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribute | ServerModule / ClientModule |
@@ -531,8 +531,41 @@ override void OnMissionFinish()
 | **Cleanup** | CF handles it | Manual `OnDestroy` | CF handles it | `MyModuleManager.Cleanup()` |
 | **Cross-mod access** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
 
-Choose the approach that matches your mod's dependency profile. If you already depend on CF, use `CF_ModuleCore`. If you want zero external dependencies, build your own system following the MyMod or VPP pattern.
+Choose the approach that matches your mod's dependency profile. If you already depend on CF, use `CF_ModuleCore`. If you want zero external dependencies, build your own system following the custom manager or VPP pattern.
 
 ---
 
-[<< Anterior: Singleton Pattern](01-singletons.md) | [Inicio](../../README.md) | [Siguiente: RPC Patterns >>](03-rpc-patterns.md)
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Multiple mods can each register their own modules with the same manager (CF, VPP, or custom). Name collisions only happen if two mods register the same class type --- use unique class names prefixed with your mod tag.
+- **Load Order:** CF auto-discovers modules from `config.cpp`, so load order follows `requiredAddons`. Custom managers register modules in `OnInit()`, where the `modded class` chain determines order. Modules should not depend on registration order --- use lazy access patterns.
+- **Listen Server:** On listen servers, both `MissionServer` and `MissionGameplay` run in the same process. If your module manager dispatches `OnUpdate` from both, modules receive double ticks. Use typed subclasses (`ServerModule` / `ClientModule`) that return `IsServer()` or `IsClient()` to prevent this.
+- **Performance:** Module dispatch adds one loop iteration per registered module per lifecycle call. With 10--20 modules this is negligible. Ensure individual module `OnUpdate` methods are cheap (see Chapter 7.7).
+- **Migration:** When upgrading DayZ versions, module systems are stable as long as the base class API (`CF_ModuleWorld`, `PluginBase`, etc.) does not change. Pin your CF dependency version to avoid breakage.
+
+---
+
+## Errores Comunes
+
+| Error | Impact | Solución |
+|---------|--------|-----|
+| Missing `OnMissionFinish` cleanup in a module | Collections, timers, and event subscriptions survive across mission restarts, causing stale data or crashes | Override `OnMissionFinish`, clear all `ref` collections, unsubscribe all events |
+| Dispatching lifecycle events twice on listen servers | Server modules run client logic and vice versa; duplicate spawns, double RPC sends | Use `IsServer()` / `IsClient()` guards or typed module subclasses that enforce the split |
+| Registering RPCs in `OnMissionStart` instead of `OnInit` | Clients that connect during mission setup can send RPCs before handlers are ready --- messages are silently dropped | Always register RPC handlers in `OnInit()`, which runs during module registration before any client connects |
+| One "God module" handling everything | Impossible to debug, test, or extend; merge conflicts when multiple developers work on it | Split into focused modules with a single responsibility each |
+| Holding direct `ref` to another module instance | Creates hard coupling and potential ref-cycle memory leaks | Use the module manager's lookup (`GetModule()`, `CF_Modules<T>.Get()`) for cross-module access |
+
+---
+
+## Teoría vs Práctica
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Module discovery should be automatic via reflection | Enforce Script reflection is limited; `config.cpp`-based discovery (CF) or explicit `Register()` calls are the only reliable approaches |
+| Modules should be hot-swappable at runtime | DayZ does not support hot-reloading scripts; modules live for the entire mission lifecycle |
+| Use interfaces for module contracts | Enforce Script has no `interface` keyword; use base class virtual methods (`override`) instead |
+| Dependency injection decouples modules | No DI framework exists; use manager lookups and `#ifdef` guards for optional cross-mod dependencies |
+
+---
+
+[Inicio](../../README.md) | [<< Anterior: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Siguiente: RPC Patterns >>](03-rpc-patterns.md)

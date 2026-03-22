@@ -1,32 +1,36 @@
-# Chapter 5.4: ImageSet Format
+# Chapter 5.4: ImageNastavte Format
 
-[Home](../../README.md) | [<< Previous: Credits.json](03-credits-json.md) | **ImageSet Format** | [Next: Server Configuration Files >>](05-server-configs.md)
+[Domů](../../README.md) | [<< Předchozí: Credits.json](03-credits-json.md) | **Formát ImageSet** | [Další: Server Configuration Files >>](05-server-configs.md)
 
 ---
 
-## Table of Contents
+> **Shrnutí:** ImageSets define named sprite regions within a texture atlas. They are DayZ's primary mechanism for referencing icons, UI graphics, and sprite sheets from layout files and scripts. Instead of loading hundreds of individual image files, you pack all icons into a jeden texture and describe každý icon's position and size in an imageset definition file.
+
+---
+
+## Obsah
 
 - [Overview](#overview)
 - [How ImageSets Work](#how-imagesets-work)
-- [DayZ Native ImageSet Format](#dayz-native-imageset-format)
-- [XML ImageSet Format](#xml-imageset-format)
+- [DayZ Native ImageNastavte Format](#dayz-native-imageset-format)
+- [XML ImageNastavte Format](#xml-imageset-format)
 - [Registering ImageSets in config.cpp](#registering-imagesets-in-configcpp)
 - [Referencing Images in Layouts](#referencing-images-in-layouts)
 - [Referencing Images in Scripts](#referencing-images-in-scripts)
 - [Image Flags](#image-flags)
 - [Multi-Resolution Textures](#multi-resolution-textures)
-- [Creating Custom Icon Sets](#creating-custom-icon-sets)
+- [Creating Custom Icon Sets](#creating-vlastní-icon-sets)
 - [Font Awesome Integration Pattern](#font-awesome-integration-pattern)
 - [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+- [Běžné Mistakes](#common-mistakes)
 
 ---
 
-## Overview
+## Přehled
 
-A texture atlas is a single large image (typically in `.edds` format) containing many smaller icons arranged in a grid or freeform layout. An imageset file maps human-readable names to rectangular regions within that atlas.
+A texture atlas is a jeden large image (typicky in `.edds` format) containing mnoho smaller icons arranged in a grid or freeform layout. An imageset file maps human-readable names to rectangular regions within that atlas.
 
-For example, a 1024x1024 texture might contain 64 icons at 64x64 pixels each. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and the engine extracts the correct sub-rectangle from the atlas at render time.
+Například a 1024x1024 texture might contain 64 icons at 64x64 pixels každý. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and engine extracts the correct sub-rectangle from the atlas at render time.
 
 This approach is efficient: one GPU texture load serves all icons, reducing draw calls and memory overhead.
 
@@ -36,18 +40,18 @@ This approach is efficient: one GPU texture load serves all icons, reducing draw
 
 The data flow:
 
-1. **Texture atlas** (`.edds` file) --- a single image containing all icons
-2. **ImageSet definition** (`.imageset` file) --- maps names to regions in the atlas
-3. **config.cpp registration** --- tells the engine to load the imageset at startup
-4. **Layout/script reference** --- uses `set:name image:iconName` syntax to render a specific icon
+1. **Texture atlas** (`.edds` file) --- a jeden image containing all icons
+2. **ImageNastavte definition** (`.imageset` file) --- maps names to regions in the atlas
+3. **config.cpp registration** --- tells engine to load the imageset při startu
+4. **Layout/script reference** --- uses `set:name image:iconName` syntax to render a specifický icon
 
-Once registered, any widget in any layout file can reference any image from the set by name.
+Once registered, jakýkoli widget in jakýkoli layout file can reference jakýkoli image from the set by name.
 
 ---
 
-## DayZ Native ImageSet Format
+## DayZ Native ImageNastavte Format
 
-The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). This is the format used by the vanilla game and most established mods.
+The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). Toto je format used by the vanilla game and většina established mods.
 
 ### Structure
 
@@ -72,13 +76,13 @@ ImageSetClass {
 }
 ```
 
-### Top-Level Fields
+### Pole nejvyšší úrovně
 
 | Field | Description |
 |-------|-------------|
 | `Name` | The set name. Used in the `set:` part of image references. Must be unique across all loaded mods. |
 | `RefSize` | Reference dimensions of the texture (width height). Used for coordinate mapping. |
-| `Textures` | Contains one or more `ImageSetTextureClass` entries for different resolution mip levels. |
+| `Textures` | Contains one or more `ImageSetTextureClass` entries for odlišný resolution mip levels. |
 
 ### Texture Entry Fields
 
@@ -89,7 +93,7 @@ ImageSetClass {
 
 ### Image Entry Fields
 
-Each image is an `ImageSetDefClass` inside the `Images` block:
+Každý image is an `ImageSetDefClass` inside the `Images` block:
 
 | Field | Description |
 |-------|-------------|
@@ -97,7 +101,7 @@ Each image is an `ImageSetDefClass` inside the `Images` block:
 | `Name` | The image identifier. Used in the `image:` part of references. |
 | `Pos` | Top-left corner position in the atlas (x y), in pixels |
 | `Size` | Dimensions (width height), in pixels |
-| `Flags` | Tiling behavior flags (see [Image Flags](#image-flags)) |
+| `Flags` | Tiling behavior flags (viz [Image Flags](#image-flags)) |
 
 ### Full Example (DayZ Vanilla)
 
@@ -134,9 +138,9 @@ ImageSetClass {
 
 ---
 
-## XML ImageSet Format
+## XML ImageNastavte Format
 
-An alternative XML-based format exists and is used by some mods. It is simpler but offers fewer features (no multi-resolution support).
+An alternative XML-based format exists and is used by některé mods. It is simpler but offers fewer features (no multi-resolution support).
 
 ### Structure
 
@@ -177,15 +181,15 @@ An alternative XML-based format exists and is used by some mods. It is simpler b
 | Used by vanilla DayZ | Yes | No |
 | Used by Expansion, MyMod, VPP | Yes | Occasionally |
 
-**Recommendation:** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that do not need tiling or multi-resolution support.
+**Doporučení:** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that ne need tiling or multi-resolution support.
 
 ---
 
 ## Registering ImageSets in config.cpp
 
-ImageSet files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Without this registration, the engine never loads the imageset and your image references fail silently.
+ImageNastavte files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Bez this registration, engine nikdy loads the imageset and your image references fail tiše.
 
-### Syntaxe
+### Syntax
 
 ```cpp
 class CfgMods
@@ -208,9 +212,9 @@ class CfgMods
 };
 ```
 
-### Real Example: MyFramework
+### Real Example: MyMod Core
 
-MyFramework registers seven imagesets including Font Awesome icon sets:
+MyMod Core registers seven imagesets including Font Awesome icon sets:
 
 ```cpp
 class defs
@@ -276,18 +280,18 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-### Syntaxe Breakdown
+### Syntax Breakdown
 
 ```
 set:SETNAME image:IMAGENAME
 ```
 
 - `SETNAME` --- the `Name` field from the imageset definition (e.g., `dayz_gui`, `solid`, `brands`)
-- `IMAGENAME` --- the `Name` field from a specific `ImageSetDefClass` entry (e.g., `icon_refresh`, `arrow_down`)
+- `IMAGENAME` --- the `Name` field from a specifický `ImageSetDefClass` entry (e.g., `icon_refresh`, `arrow_down`)
 
 ### Multiple Image States
 
-Some widgets support multiple image states (normal, hover, pressed):
+Some widgets support více image states (normal, hover, pressed):
 
 ```
 ImageWidgetClass icon {
@@ -299,7 +303,7 @@ ButtonWidgetClass btn {
 }
 ```
 
-### Examples from Real Mods
+### Příklady z reálných modů
 
 ```
 image0 "set:regular image:arrow_down_short_wide"     -- MyMod: Font Awesome regular icon
@@ -332,7 +336,7 @@ collapseIcon.LoadImageFile(0, "set:regular image:square_plus");    // Normal sta
 collapseIcon.LoadImageFile(1, "set:solid image:square_minus");     // Toggled state
 ```
 
-Switch between states using `SetImage(index)`:
+Switch mezi states using `SetImage(index)`:
 
 ```c
 collapseIcon.SetImage(isExpanded ? 1 : 0);
@@ -360,7 +364,7 @@ The `Flags` field in native-format imageset entries controls tiling behavior whe
 | `0` | 0 | No tiling. The image stretches to fill the widget. |
 | `ISHorizontalTile` | 1 | Tiles horizontally when the widget is wider than the image. |
 | `ISVerticalTile` | 2 | Tiles vertically when the widget is taller than the image. |
-| Both | 3 | Tiles in both directions (`ISHorizontalTile` + `ISVerticalTile`). |
+| Oba | 3 | Tiles in oba directions (`ISHorizontalTile` + `ISVerticalTile`). |
 
 ### Usage
 
@@ -381,7 +385,7 @@ Most icons use `Flags 0` (no tiling). Tiling flags are primarily for UI elements
 
 ## Multi-Resolution Textures
 
-The native format supports multiple resolution textures for the same imageset. This allows the engine to use higher-resolution artwork on high-DPI displays.
+The native format supports více resolution textures for the stejný imageset. This allows engine to use higher-resolution artwork on high-DPI displays.
 
 ```
 Textures {
@@ -397,13 +401,13 @@ Textures {
 ```
 
 - `mpix 0` --- low resolution (used on low-quality settings or distant UI elements)
-- `mpix 1` --- standard/high resolution (default)
+- `mpix 1` --- standard/high resolution (výchozí)
 
-The `@2x` naming convention is borrowed from Apple's Retina display system but is not enforced --- you can name the file anything.
+The `@2x` naming convention is borrowed from Apple's Retina display system but is not enforced --- můžete name soubor jakýkolithing.
 
 ### In Practice
 
-Most mods only include `mpix 1` (a single resolution). Multi-resolution support is primarily used by the vanilla game:
+Most mods pouze include `mpix 1` (a jeden resolution). Multi-resolution support is primarily used by the vanilla game:
 
 ```
 Textures {
@@ -420,24 +424,24 @@ Textures {
 
 ### Step-by-Step Workflow
 
-**1. Create the Texture Atlas**
+**1. Vytvořte the Texture Atlas**
 
-Use an image editor (Photoshop, GIMP, etc.) to arrange your icons on a single canvas:
-- Choose a power-of-two size (256x256, 512x512, 1024x1024, etc.)
+Use an image editor (Photoshop, GIMP, etc.) to arrange your icons on a jeden canvas:
+- Choose a mocnina dvou size (256x256, 512x512, 1024x1024, etc.)
 - Arrange icons in a grid for easy coordinate calculation
-- Leave some padding between icons to prevent texture bleeding
-- Save as `.tga` or `.png`
+- Leave některé padding mezi icons to prevent texture bleeding
+- Uložte as `.tga` or `.png`
 
 **2. Convert to EDDS**
 
-DayZ uses `.edds` (Enfusion DDS) format for textures. Use the DayZ Workbench or Mikero's tools to convert:
+DayZ uses `.edds` (Enfusion DDS) format for textures. Use the DayZ Workbench or Mikero's přílišls to convert:
 - Import your `.tga` into DayZ Workbench
 - Or use `Pal2PacE.exe` to convert `.paa` to `.edds`
-- The output must be an `.edds` file
+- The output musí být an `.edds` file
 
-**3. Write the ImageSet Definition**
+**3. Zapište the ImageNastavte Definition**
 
-Map each icon to a named region. If your icons are on a 64-pixel grid:
+Map každý icon to a named region. Pokud váš icons are on a 64-pixel grid:
 
 ```
 ImageSetClass {
@@ -474,7 +478,7 @@ ImageSetClass {
 
 **4. Register in config.cpp**
 
-Add the imageset path to your mod's config.cpp:
+Přidejte the imageset path to your mod's config.cpp:
 
 ```cpp
 class imageSets
@@ -501,16 +505,16 @@ ImageWidgetClass SettingsIcon {
 
 ## Font Awesome Integration Pattern
 
-MyFramework (inherited from DabsFramework) demonstrates a powerful pattern: converting Font Awesome icon fonts into DayZ imagesets. This gives mods access to thousands of professional-quality icons without creating custom artwork.
+MyMod Core (inherited from DabsFramework) demonstrates a powerful pattern: converting Font Awesome icon fonts into DayZ imagesets. This gives mods access to thousands of professional-quality icons without creating vlastní artwork.
 
 ### Jak to funguje
 
 1. Font Awesome icons are rendered to a texture atlas at a fixed grid size (64x64 per icon)
-2. Each icon style gets its own imageset: `solid`, `regular`, `light`, `thin`, `brands`
+2. Každý icon style gets its own imageset: `solid`, `regular`, `light`, `thin`, `brands`
 3. Icon names in the imageset match Font Awesome icon names (e.g., `circle`, `arrow_down`, `discord`)
-4. The imagesets are registered in config.cpp and available to any layout or script
+4. The imagesets are registered in config.cpp and dostupný to jakýkoli layout or script
 
-### MyFramework / DabsFramework Icon Sets
+### MyMod Core / DabsFramework Icon Sets
 
 ```
 MyFramework/GUI/icons/
@@ -541,15 +545,15 @@ CollapseIcon.LoadImageFile(0, "set:regular image:square_plus");
 
 ### Why This Pattern Works Well
 
-- **Massive icon library**: Thousands of icons available without any artwork creation
-- **Consistent style**: All icons share the same visual weight and style
-- **Multiple weights**: Choose solid, regular, light, or thin for different visual contexts
+- **Massive icon library**: Thousands of icons dostupný without jakýkoli artwork creation
+- **Consistent style**: All icons share the stejný visual weight and style
+- **Multiple weights**: Choose solid, regular, light, or thin for odlišný visual contexts
 - **Brand icons**: Ready-made logos for Discord, Steam, GitHub, etc.
 - **Standard names**: Icon names follow Font Awesome conventions, making discovery easy
 
 ### The Atlas Structure
 
-The solid imageset, for example, has a `RefSize` of 3648x3712 with icons arranged at 64-pixel intervals:
+The solid imageset, například, has a `RefSize` of 3648x3712 with icons arranged at 64-pixel intervals:
 
 ```
 ImageSetClass {
@@ -581,11 +585,11 @@ ImageSetClass {
 
 ---
 
-## Real Examples
+## Reálné příklady
 
 ### VPP Admin Tools
 
-VPP packs all admin tool icons into a single 1920x1080 atlas with freeform positioning (not a strict grid):
+VPP packs all admin přílišl icons into a jeden 1920x1080 atlas with freeform positioning (not a strict grid):
 
 ```
 ImageSetClass {
@@ -619,7 +623,7 @@ Referenced in layouts as:
 image0 "set:dayz_gui_vpp image:vpp_icon_cloud"
 ```
 
-### MyWeapons Mod
+### MyMod Weapons
 
 Weapon and attachment icons packed into large atlases with varied icon sizes:
 
@@ -650,9 +654,9 @@ ImageSetClass {
 }
 ```
 
-This shows that icons do not need to be uniform size --- inventory icons for weapons use 300x300 while UI icons typically use 64x64.
+This shows that icons ne need to be uniform size --- inventory icons for weapons use 300x300 while UI icons typicky use 64x64.
 
-### MyFramework Prefabs
+### MyMod Core Prefabs
 
 UI primitives (rounded corners, alpha gradients) packed into a small 256x256 atlas:
 
@@ -683,7 +687,7 @@ ImageSetClass {
 }
 ```
 
-Notable: image names can contain spaces when quoted (e.g., `"Alpha 10"`). However, referencing these in layouts requires the exact name including the space.
+Notable: image names can contain spaces when quoted (e.g., `"Alpha 10"`). Nicméně referencing these in layouts requires the exact name including the space.
 
 ### MyMod Market Hub (XML Format)
 
@@ -709,15 +713,15 @@ image0 "set:mh_icons image:icon_store"
 
 ---
 
-## Common Mistakes
+## Časté chyby
 
 ### Forgetting config.cpp Registration
 
-The most common issue. If your imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, the engine never loads it. All image references will fail silently (widgets appear blank).
+Nejčastější problém. Pokud váš imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, engine nikdy loads it. All image references will fail tiše (widgets appear blank).
 
-### Set Name Collisions
+### Nastavte Name Collisions
 
-If two mods register imagesets with the same `Name`, only one is loaded (the last one wins). Use a unique prefix:
+Pokud dva mods register imagesets with the stejný `Name`, pouze one is loaded (the last one wins). Use a unique prefix:
 
 ```
 Name "mymod_icons"     -- Good
@@ -726,7 +730,7 @@ Name "icons"           -- Risky, too generic
 
 ### Wrong Texture Path
 
-The `path` must be relative to the PBO root (how the file appears inside the packed PBO):
+The `path` musí být relative to the PBO root (how soubor appears inside the packed PBO):
 
 ```
 path "MyMod/GUI/imagesets/icons.edds"     -- Correct if MyMod is the PBO root
@@ -736,16 +740,59 @@ path "C:/Users/dev/icons.edds"            -- Wrong: absolute paths do not work
 
 ### Mismatched RefSize
 
-The `RefSize` must match the actual pixel dimensions of your texture. If you specify `RefSize 512 512` but your texture is 1024x1024, all icon positions will be off by a factor of two.
+The `RefSize` must match the actual pixel dimensions of your texture. Pokud specify `RefSize 512 512` but your texture is 1024x1024, all icon positions will be off by a factor of two.
 
 ### Pos Coordinates Off by One
 
-`Pos` is the top-left corner of the icon region. If your icons are at 64-pixel intervals but you accidentally offset by 1 pixel, icons will have a thin slice of the adjacent icon visible.
+`Pos` is the top-left corner of the icon region. Pokud váš icons are at 64-pixel intervals but you accidentally offset by 1 pixel, icons will have a thin slice of the adjacent icon visible.
 
 ### Using .png or .tga Directly
 
-The engine requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Always convert to `.edds` using DayZ Workbench or Mikero's tools.
+Engine requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Vždy convert to `.edds` using DayZ Workbench or Mikero's přílišls.
 
 ### Spaces in Image Names
 
-While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in some parsing contexts. Prefer underscores: `Alpha_10`.
+Zatímco engine supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in některé parsing contexts. Preferujte underscores: `Alpha_10`.
+
+---
+
+## Osvědčené postupy
+
+- Vždy use a unique, mod-prefixed set name (e.g., `"mymod_icons"` místo `"icons"`). Nastavte name collisions mezi mods cause one set to tiše overwrite the jiný.
+- Use mocnina dvou texture dimensions (256x256, 512x512, 1024x1024). Non-mocnina dvou textures work but may have reduced rendering performance on některé GPUs.
+- Přidejte 1-2 pixels of padding mezi icons in the atlas to prevent texture bleeding at the edges, especially when the texture is displayed at non-native sizes.
+- Preferujte the native `.imageset` format over XML for production mods. It supports multi-resolution textures and tiling flags that XML format lacks.
+- Ověřte `RefSize` matches the actual texture dimensions exactly. A mismatch causes all icon coordinates to be wrong by a proportional factor.
+
+---
+
+## Teorie vs praxe
+
+> What the documentation says versus how things actually work za běhu.
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| config.cpp registration je povinný | ImageSets must be listed in `class imageSets` | Correct, and this is the většina common source of "blank icon" bugs. Engine gives no error if the registration is chybějící -- widgets simply render prázdný |
+| `RefSize` maps coordinates | Coordinates are in `RefSize` space | `RefSize` must match actual texture pixel dimensions. Pokud váš texture is 1024x1024 but `RefSize` says 512x512, all `Pos` values are interpreted at double scale |
+| XML format is simpler | Fewer features but works the stejný | XML imagesets cannot specify tiling flags or multi-resolution mip levels. For icons this is fine, but for repeating UI elements (borders, gradients) potřebujete the native format |
+| Multiple `mpix` entries | Engine selects by quality setting | V praxi většina mods ship pouze `mpix 1`. Engine falls back gracefully if pouze one mip level is provided -- no visual glitch, jen no high-DPI optimization |
+| Image names are case-sensitive | `"MyIcon"` and `"myicon"` are odlišný | True in the imageset definition, but `LoadImageFile()` in script performs case-insensitive lookup on některé engine builds. Vždy match case exactly to be safe |
+
+---
+
+## Kompatibilita a dopad
+
+- **Více modů:** Nastavte name collisions are the main risk. Pokud dva mods oba define an imageset named `"icons"`, pouze one is loaded (last PBO wins). All references to `set:icons` in the losing mod break tiše. Vždy use a mod-specific prefix.
+- **Výkon:** Each unique imageset texture is one GPU texture load. Consolidating icons into fewer, larger atlases reduces draw calls. A mod with 10 oddělený 64x64 textures performs worse than one 512x512 atlas with 10 icons.
+- **Verze:** The native `.imageset` format and `set:name image:name` reference syntax have been stable since DayZ 1.0. The XML format has been dostupný as an alternative since early versions but is not officially documented by Bohemia.
+
+---
+
+## Pozorováno v reálných modech
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| Font Awesome icon atlases | DabsFramework / StarDZ Core | Renders Font Awesome icons to large atlases (3648x3712), providing thousands of professional icons via `set:solid`, `set:regular`, `set:brands` |
+| Freeform atlas layout | VPP Admin Tools | Icons arranged non-uniformly on a 1920x1080 atlas with varying sizes, maximizing texture space usage |
+| Per-feature small atlases | Expansion | Each Expansion sub-module has its own small imageset spíše než one massive atlas, keeping PBO sizes minimal |
+| 300x300 inventory icons | SNAFU Weapons | Large icon sizes for weapon/attachment inventory slots where detail matters, unlike 64x64 UI icons |

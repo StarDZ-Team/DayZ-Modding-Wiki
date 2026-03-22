@@ -1,18 +1,18 @@
 # Chapter 1.5: Control Flow
 
-[Home](../../README.md) | [<< Previous: Modded Classes](04-modded-classes.md) | **Control Flow** | [Next: String Operations >>](06-strings.md)
+[Domů](../../README.md) | [<< Předchozí: Modifikované třídy](04-modded-classes.md) | **Řízení toku** | [Další: String Operations >>](06-strings.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Control flow determines the order in which your code executes. Enforce Script provides the familiar `if/else`, `for`, `while`, `foreach`, and `switch` constructs -- but with several important differences from C/C++ that will catch you off guard if you are not prepared. This chapter covers every control flow mechanism available, including the pitfalls unique to DayZ's scripting engine.
+Control flow determines the order in which your code executes. Enforce Script provides the familiar `if/else`, `for`, `while`, `foreach`, and `switch` constructs -- but with several důležitý differences from C/C++ that will catch you off guard if you are not prepared. This chapter covers každý control flow mechanism dostupný, including the pitfalls unique to DayZ's scripting engine.
 
 ---
 
 ## if / else / else if
 
-The `if` statement evaluates a boolean expression and executes a block of code when the result is `true`. You can chain conditions with `else if` and provide a fallback with `else`.
+The `if` statement evaluates a boolean expression and executes a block of code when výsledek is `true`. You can chain conditions with `else if` and provide a fallback with `else`.
 
 ```c
 void CheckHealth(PlayerBase player)
@@ -34,9 +34,9 @@ void CheckHealth(PlayerBase player)
 }
 ```
 
-### Kontroly null
+### Null checks
 
-In Enforce Script, object references evaluate to `false` when null. This is the standard way to guard against null access:
+In Enforce Script, object references evaluate to `false` when null. Toto je standard way to guard against null access:
 
 ```c
 void ProcessItem(EntityAI item)
@@ -49,9 +49,9 @@ void ProcessItem(EntityAI item)
 }
 ```
 
-### Logické operátory
+### Logical operators
 
-Combine conditions with `&&` (AND) and `||` (OR). Short-circuit evaluation applies: if the left side of `&&` is `false`, the right side is never evaluated.
+Combine conditions with `&&` (AND) and `||` (OR). Short-circuit evaluation applies: if the left side of `&&` is `false`, the right side is nikdy evaluated.
 
 ```c
 void CheckPlayerState(PlayerBase player)
@@ -69,9 +69,9 @@ void CheckPlayerState(PlayerBase player)
 }
 ```
 
-### ÚSKALÍ: Opakovaná deklarace proměnných v blocích else-if
+### PITFALL: Variable redeclaration in else-if blocks
 
-This is one of the most common Enforce Script errors. In most languages, variables declared inside one `if` branch are independent from variables in a sibling `else` branch. **Not in Enforce Script.** Declaring the same variable name in sibling `if`/`else if`/`else` blocks causes a **multiple declaration error** at compile time.
+This is one of the většina common Enforce Script errors. In většina languages, variables declared inside one `if` branch are nezávislý from variables in a sibling `else` branch. **Not in Enforce Script.** Declaring the stejný variable name in sibling `if`/`else if`/`else` blocks causes a **multiple declaration error** at compile time.
 
 ```c
 // WRONG -- Compile error!
@@ -137,7 +137,7 @@ void ProcessObject(Object obj)
 
 ---
 
-## Cyklus for
+## for Loop
 
 The `for` loop is identical to C-style syntax: initializer, condition, and increment.
 
@@ -152,7 +152,7 @@ void CountToTen()
 }
 ```
 
-### Iterace přes pole cyklem for
+### Iterating over pole with for
 
 ```c
 void ListInventory(PlayerBase player)
@@ -171,7 +171,7 @@ void ListInventory(PlayerBase player)
 }
 ```
 
-### Vnořené cykly for
+### Nested for loops
 
 ```c
 // Spawn a grid of objects
@@ -192,13 +192,13 @@ void SpawnGrid(vector origin, int rows, int cols, float spacing)
 }
 ```
 
-> **Poznámka:** Do not redeclare the loop variable `i` if there is already a variable named `i` in the enclosing scope. Enforce Script treats this as a multiple declaration error, even in nested scopes.
+> **Poznámka:** Do not redeclare the loop variable `i` if there is již a variable named `i` in the enclosing scope. Enforce Script treats this as a více declaration error, dokonce in nested scopes.
 
 ---
 
-## Cyklus while
+## while Loop
 
-The `while` loop repeats a block as long as its condition is `true`. The condition is evaluated **before** each iteration.
+The `while` loop repeats a block as long as its condition is `true`. The condition is evaluated **before** každý iteration.
 
 ```c
 // Remove all dead zombies from a tracking list
@@ -221,9 +221,9 @@ void CleanupDeadZombies(array<DayZInfected> zombieList)
 }
 ```
 
-### VAROVÁNÍ: V Enforce Script NEEXISTUJE do...while
+### WARNING: There is NO do...while in Enforce Script
 
-The `do...while` keyword does not exist. The compiler will reject it. If you need a loop that always executes at least once, use the flag pattern described below.
+The `do...while` keyword ne exist. The compiler will reject it. If potřebujete a loop that vždy executes at least once, use the flag pattern described níže.
 
 ```c
 // WRONG -- This will NOT compile
@@ -236,7 +236,7 @@ while (someCondition);
 
 ---
 
-## Simulace do...while pomocí příznaku
+## Simulating do...while with a Flag
 
 The standard workaround is to use a `bool` flag that is `true` on the first iteration:
 
@@ -282,9 +282,9 @@ void AlternativeDoWhile()
 
 ## foreach
 
-The `foreach` statement is the cleanest way to iterate over arrays, maps, and static arrays. It comes in two forms.
+The `foreach` statement is the cleanest way to iterate over arrays, maps, and statická arrays. It comes in two forms.
 
-### Jednoduchý foreach (pouze hodnota)
+### Simple foreach (value pouze)
 
 ```c
 void AnnounceItems(array<string> itemNames)
@@ -296,9 +296,9 @@ void AnnounceItems(array<string> itemNames)
 }
 ```
 
-### foreach s indexem
+### foreach with index
 
-When iterating over arrays, the first variable receives the index:
+When iterating over arrays, the first variable receives index:
 
 ```c
 void ListPlayers(array<Man> players)
@@ -310,9 +310,9 @@ void ListPlayers(array<Man> players)
 }
 ```
 
-### foreach přes mapy
+### foreach over maps
 
-For maps, the first variable receives the key and the second receives the value:
+For maps, the first variable receives klíč and the second receives hodnota:
 
 ```c
 void PrintScoreboard(map<string, int> scores)
@@ -324,7 +324,7 @@ void PrintScoreboard(map<string, int> scores)
 }
 ```
 
-You can also iterate over maps with just the value:
+You can také iterate over maps with jen hodnota:
 
 ```c
 void SumScores(map<string, int> scores)
@@ -338,7 +338,7 @@ void SumScores(map<string, int> scores)
 }
 ```
 
-### foreach přes statická pole
+### foreach over statická arrays
 
 ```c
 void PrintStaticArray()
@@ -358,9 +358,9 @@ void PrintStaticArray()
 
 The `switch` statement matches a value against a list of `case` labels. It works with `int`, `string`, enum values, and constants.
 
-### Důležité: ŽÁDNÝ průchod (fall-through)
+### Important: NO fall-through
 
-Unlike C/C++, Enforce Script `switch/case` does **NOT** fall through from one case to the next. Each `case` is independent. You can include `break` for clarity, but it is not required to prevent fall-through.
+Unlike C/C++, Enforce Script `switch/case` does **NOT** fall through from one case to the next. Each `case` is nezávislý. You can include `break` for clarity, but it is not povinný to prevent fall-through.
 
 ```c
 void HandleCommand(string command)
@@ -386,7 +386,7 @@ void HandleCommand(string command)
 }
 ```
 
-### switch s výčty
+### switch with enums
 
 ```c
 enum EDifficulty
@@ -423,7 +423,7 @@ void SetDifficulty(EDifficulty difficulty)
 }
 ```
 
-### switch s celočíselnými konstantami
+### switch with integer constants
 
 ```c
 void DescribeWeaponSlot(int slotId)
@@ -453,15 +453,15 @@ void DescribeWeaponSlot(int slotId)
 }
 ```
 
-> **Zapamatujte si:** Because there is no fall-through, you cannot stack cases to share a handler the way you would in C. Each case must have its own body.
+> **Remember:** Protože there is no fall-through, můžetenot stack cases to share a handler the way you would in C. Each case must have its own body.
 
 ---
 
-## break a continue
+## break and continue
 
 ### break
 
-`break` exits the innermost loop (or switch case) immediately.
+`break` exits the innermost loop (or switch case) okamžitě.
 
 ```c
 // Find the first player within 100 meters
@@ -502,9 +502,9 @@ void HealAllPlayers(array<Man> players)
 }
 ```
 
-### Vnořené cykly s break
+### Nested loops with break
 
-`break` only exits the innermost loop. To break out of nested loops, use a flag variable:
+`break` pouze exits the innermost loop. To break out of nested loops, use a flag variable:
 
 ```c
 void FindItemInGrid(array<array<string>> grid, string target)
@@ -531,16 +531,82 @@ void FindItemInGrid(array<array<string>> grid, string target)
 
 ---
 
-## Common Mistakes
+## Thread Keyword
 
-| Chyba | Problém | Oprava |
+Enforce Script has a `thread` keyword for asynchronous execution:
+
+```c
+// Declare a threaded function
+thread void LongOperation()
+{
+    // This runs asynchronously
+    Sleep(5000);  // Wait 5 seconds without blocking
+    Print("Done!");
+}
+
+// Call it
+thread LongOperation();  // Starts without blocking the caller
+```
+
+**Important:** `thread` in Enforce Script is NOT the stejný as OS threads. It is more like a coroutine --- it runs on the stejný thread but can yield/sleep without blocking the game. Use `CallLater` místo `thread` for většina mod případ užitís --- it is simpler and more predictable.
+
+### Thread vs CallLater
+
+| Feature | `thread` | `CallLater` |
+|---------|----------|-------------|
+| Syntax | `thread MyFunc();` | `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunc, delayMs, repeat);` |
+| Can sleep/yield | Yes (`Sleep()`) | No (fires once or repeats at interval) |
+| Cancellable | No vestavěný cancel | Yes (`CallQueue.Remove()`) |
+| Use case | Sequential async logic with waits | Delayed or repeated zpětné volánís |
+
+For většina DayZ modding scenarios, `CallLater` with a timer is the preferred approach. Reserve `thread` for cases where you genuinely need sequential logic with intermediate waits (e.g., a multi-step animation sequence).
+
+---
+
+## Osvědčené postupy
+
+- Use guard clauses (`if (!x) return;`) at the top of functions místo deeply nested `if` blocks -- it keeps the happy path flat and readable.
+- Declare shared variables before `if`/`else` blocks to avoid the sibling-scope redeclaration error unique to Enforce Script.
+- Use `foreach` for simple iteration and `for` with index pouze when potřebujete to remove elements or access neighbors.
+- Nahraďte `do...while` with `while (first || condition)` using a `bool first = true` flag -- this is the standard Enforce Script workaround.
+- Preferujte `CallLater` over `thread` for delayed or repeated actions -- it is cancellable, simpler, and more predictable.
+
+---
+
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| Guard clause + `continue` in loops | COT / Expansion | Loops over hráči vždy `continue` on failed cast or `!IsAlive()` before doing work |
+| `switch` on string commands | VPP Admin | Chat command handlers use `switch(command)` with string cases like `"!heal"`, `"!tp"` |
+| Flag variable to break nested loops | Expansion Market | Uses `bool found = false` with check after inner loop to exit outer loop |
+| `CallLater` for delayed spawn | Dabs Framework | Prefers `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater()` over `thread` |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| `do...while` loop | Standard in většina C-like languages | Does not exist in Enforce Script; causes a confusing compile error |
+| `switch` fall-through | C/C++ cases fall through without `break` | Enforce Script cases are nezávislý -- stacking cases ne share handlers |
+| `thread` keyword | Sounds like multithreading | Actually a coroutine on the main thread; `Sleep()` yields, ne block |
+| Variable scope in `if`/`else` | Sibling blocks should have nezávislý scope | Enforce Script treats them as shared scope -- stejný variable name in oba blocks is a compile error |
+
+---
+
+## Časté chyby
+
+| Mistake | Problem | Fix |
 |---------|---------|-----|
 | Using `do...while` | Does not exist in Enforce Script | Use `while` with a `bool first = true` flag |
-| Declaring same variable in `if` and `else` blocks | Multiple declaration error | Declare the variable before the `if` |
-| Redeclaring loop variable `i` in nested scope | Multiple declaration error | Use different names (`i`, `j`, `k`) or declare outside |
-| Expecting `switch` fall-through | Cases are independent, no fall-through | Each case needs its own complete handler |
+| Declaring stejný variable in `if` and `else` blocks | Multiple declaration error | Declare the variable before the `if` |
+| Redeclaring loop variable `i` in nested scope | Multiple declaration error | Use odlišný names (`i`, `j`, `k`) or declare outside |
+| Expecting `switch` fall-through | Cases are nezávislý, no fall-through | Each case needs its own complete handler |
 | Modifying array while iterating with `foreach` | Undefined behavior, potential crash | Use index-based `for` loop when removing elements |
-| Infinite `while` loop without `break` | Server freeze / client hang | Always ensure the condition will eventually be `false`, or use `break` |
+| Infinite `while` loop without `break` | Server freeze / client hang | Vždy ensure the condition will dokoncetually be `false`, or use `break` |
 
 ---
 
@@ -571,8 +637,12 @@ foreach (KeyType key, ValueType val : someMap) { }
 
 // switch/case (no fall-through)
 switch (value) { case X: /* ... */ break; default: break; }
+
+// thread (coroutine-style async)
+thread void MyFunc() { Sleep(1000); }
+thread MyFunc();  // non-blocking call
 ```
 
 ---
 
-[<< 1.4: Modded Classes](04-modded-classes.md) | [Domů](../README.md) | [1.6: String Operations >>](06-strings.md)
+[<< 1.4: Modded Classes](04-modded-classes.md) | [Domů](../../README.md) | [1.6: String Operations >>](06-strings.md)

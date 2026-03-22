@@ -1,52 +1,56 @@
-# Chapter 8.5: Using the DayZ Mod Template
+# Capitolo 8.5: Usare il Template Mod di DayZ
 
-[Home](../../README.md) | [<< Previous: Adding Chat Commands](04-chat-commands.md) | **Using the DayZ Mod Template** | [Next: Debugging & Testing >>](06-debugging-testing.md)
+[Home](../../README.md) | [<< Precedente: Aggiungere Comandi Chat](04-chat-commands.md) | **Usare il Template Mod di DayZ** | [Successivo: Debug e Test >>](06-debugging-testing.md)
 
 ---
 
-## Indice dei Contenuti
+> **Sommario:** Questo tutorial ti mostra come usare il Template Mod open-source di InclementDab per iniziare un nuovo progetto mod in pochi secondi. Invece di creare ogni file da zero, cloni uno scheletro pronto che ha già la struttura cartelle corretta, config.cpp, mod.cpp e stub dei layer script. Poi rinomini alcune cose e inizi a scrivere codice immediatamente.
 
-- [Cos'e' il Template per Mod DayZ?](#cose-il-template-per-mod-dayz)
+---
+
+## Indice
+
+- [Che Cos'è il Template Mod di DayZ?](#che-cosè-il-template-mod-di-dayz)
 - [Cosa Fornisce il Template](#cosa-fornisce-il-template)
 - [Passo 1: Clonare o Scaricare il Template](#passo-1-clonare-o-scaricare-il-template)
 - [Passo 2: Comprendere la Struttura dei File](#passo-2-comprendere-la-struttura-dei-file)
-- [Passo 3: Rinominare il Mod](#passo-3-rinominare-il-mod)
+- [Passo 3: Rinominare la Mod](#passo-3-rinominare-la-mod)
 - [Passo 4: Aggiornare config.cpp](#passo-4-aggiornare-configcpp)
 - [Passo 5: Aggiornare mod.cpp](#passo-5-aggiornare-modcpp)
-- [Passo 6: Rinominare le Cartelle e i File degli Script](#passo-6-rinominare-le-cartelle-e-i-file-degli-script)
+- [Passo 6: Rinominare Cartelle e File Script](#passo-6-rinominare-cartelle-e-file-script)
 - [Passo 7: Compilare e Testare](#passo-7-compilare-e-testare)
 - [Integrazione con DayZ Tools e Workbench](#integrazione-con-dayz-tools-e-workbench)
-- [Template vs. Configurazione Manuale](#template-vs-configurazione-manuale)
+- [Template vs. Setup Manuale](#template-vs-setup-manuale)
 - [Prossimi Passi](#prossimi-passi)
 
 ---
 
-## Cos'e' il Template per Mod DayZ?
+## Che Cos'è il Template Mod di DayZ?
 
-Il **Template per Mod DayZ** e' un repository open-source mantenuto da InclementDab che fornisce uno scheletro completo e pronto all'uso per i mod DayZ:
+Il **Template Mod di DayZ** è un repository open-source mantenuto da InclementDab che fornisce uno scheletro mod completo e pronto all'uso per DayZ:
 
 **Repository:** [https://github.com/InclementDab/DayZ-Mod-Template](https://github.com/InclementDab/DayZ-Mod-Template)
 
-Invece di creare ogni file a mano (come descritto nel [Capitolo 8.1: Il Tuo Primo Mod](01-first-mod.md)), il template fornisce una struttura di directory pre-costruita con tutto il codice boilerplate gia' presente. Si clona, si rinominano alcuni identificatori, e si e' pronti a scrivere la logica di gioco.
+Piuttosto che creare ogni file a mano (come trattato nel [Capitolo 8.1: La Tua Prima Mod](01-first-mod.md)), il template ti dà una struttura di directory pre-costruita con tutto il boilerplate già al suo posto. Lo cloni, rinomini alcuni identificatori e sei pronto per scrivere logica di gioco.
 
-Questo e' il punto di partenza raccomandato per chiunque abbia gia' creato un mod Hello World e voglia passare a progetti piu' complessi.
+Questo è il punto di partenza consigliato per chi ha già costruito una mod Hello World e vuole passare a progetti più complessi.
 
 ---
 
 ## Cosa Fornisce il Template
 
-Il template include tutto cio' di cui un mod DayZ ha bisogno per compilare e caricarsi:
+Il template include tutto ciò di cui una mod DayZ ha bisogno per compilare e caricare:
 
 | File / Cartella | Scopo |
 |-----------------|-------|
-| `mod.cpp` | Metadati del mod (nome, autore, versione) visualizzati nel launcher di DayZ |
-| `config.cpp` | Dichiarazioni CfgPatches e CfgMods che registrano il mod con il motore |
-| `Scripts/3_Game/` | Stub degli script del layer Game (enum, costanti, classi config) |
-| `Scripts/4_World/` | Stub degli script del layer World (entita', manager, interazioni mondo) |
-| `Scripts/5_Mission/` | Stub degli script del layer Mission (UI, hook della missione) |
-| `.gitignore` | Ignore pre-configurati per lo sviluppo DayZ (PBO, log, file temporanei) |
+| `mod.cpp` | Metadati della mod (nome, autore, versione) mostrati nel launcher di DayZ |
+| `config.cpp` | Dichiarazioni CfgPatches e CfgMods che registrano la mod nel motore |
+| `Scripts/3_Game/` | Stub di script layer Game (enum, costanti, classi di configurazione) |
+| `Scripts/4_World/` | Stub di script layer World (entità, manager, interazioni col mondo) |
+| `Scripts/5_Mission/` | Stub di script layer Mission (UI, hook della missione) |
+| `.gitignore` | Ignore preconfigurati per lo sviluppo DayZ (PBO, log, file temporanei) |
 
-Il template segue la gerarchia standard a 5 layer degli script documentata nel [Capitolo 2.1: La Gerarchia a 5 Layer degli Script](../02-mod-structure/01-five-layers.md). Tutti e tre i layer degli script sono configurati in config.cpp, cosi' si puo' immediatamente inserire codice in qualsiasi layer senza configurazione aggiuntiva.
+Il template segue la gerarchia standard a 5 layer documentata nel [Capitolo 2.1: La Gerarchia a 5 Layer degli Script](../02-mod-structure/01-five-layers.md). Tutti e tre i layer script sono collegati in config.cpp così puoi immediatamente inserire codice in qualsiasi layer senza configurazione aggiuntiva.
 
 ---
 
@@ -55,26 +59,26 @@ Il template segue la gerarchia standard a 5 layer degli script documentata nel [
 ### Opzione A: Usare la Funzione "Use this template" di GitHub
 
 1. Vai su [https://github.com/InclementDab/DayZ-Mod-Template](https://github.com/InclementDab/DayZ-Mod-Template)
-2. Clicca il pulsante verde **"Use this template"** in alto nel repository
+2. Clicca il pulsante verde **"Use this template"** in cima al repository
 3. Scegli **"Create a new repository"**
 4. Dai un nome al tuo repository (es. `MyAwesomeMod`)
 5. Clona il tuo nuovo repository nel drive P:
 
 ```bash
 cd P:\
-git clone https://github.com/YourUsername/MyAwesomeMod.git
+git clone https://github.com/TuoUsername/MyAwesomeMod.git
 ```
 
 ### Opzione B: Clone Diretto
 
-Se non hai bisogno di un tuo repository GitHub, clona il template direttamente:
+Se non hai bisogno del tuo repository GitHub, clona il template direttamente:
 
 ```bash
 cd P:\
 git clone https://github.com/InclementDab/DayZ-Mod-Template.git MyAwesomeMod
 ```
 
-### Opzione C: Scarica come ZIP
+### Opzione C: Scaricare come ZIP
 
 1. Vai alla pagina del repository
 2. Clicca **Code** poi **Download ZIP**
@@ -84,7 +88,7 @@ git clone https://github.com/InclementDab/DayZ-Mod-Template.git MyAwesomeMod
 
 ## Passo 2: Comprendere la Struttura dei File
 
-Dopo la clonazione, la directory del tuo mod appare cosi':
+Dopo il clone, la directory della tua mod appare così:
 
 ```
 P:\MyAwesomeMod\
@@ -102,47 +106,47 @@ P:\MyAwesomeMod\
                 (script del layer mission)
 ```
 
-### Come Ogni Pezzo si Inserisce nel Tutto
+### Come Ogni Pezzo si Incastra
 
-**`mod.cpp`** e' la carta d'identita' del tuo mod. Controlla cio' che i giocatori vedono nella lista mod del launcher DayZ. Consulta il [Capitolo 2.3: mod.cpp e Workshop](../02-mod-structure/03-mod-cpp.md) per tutti i campi disponibili.
+**`mod.cpp`** è la carta d'identità della tua mod. Controlla ciò che i giocatori vedono nella lista mod del launcher di DayZ. Vedi [Capitolo 2.3: mod.cpp e Workshop](../02-mod-structure/03-mod-cpp.md) per tutti i campi disponibili.
 
-**`Scripts/config.cpp`** e' il file piu' critico. Dice al motore DayZ:
-- Da cosa dipende il tuo mod (`CfgPatches.requiredAddons[]`)
-- Dove si trova ogni layer degli script (`CfgMods.class defs`)
-- Quali definizioni del preprocessore impostare (`defines[]`)
+**`Scripts/config.cpp`** è il file più critico. Dice al motore di DayZ:
+- Da cosa dipende la tua mod (`CfgPatches.requiredAddons[]`)
+- Dove si trova ogni layer script (`CfgMods.class defs`)
+- Quali define del preprocessore impostare (`defines[]`)
 
-Consulta il [Capitolo 2.2: config.cpp in Dettaglio](../02-mod-structure/02-config-cpp.md) per un riferimento completo.
+Vedi [Capitolo 2.2: Approfondimento config.cpp](../02-mod-structure/02-config-cpp.md) per un riferimento completo.
 
-**`Scripts/3_Game/`** viene caricato per primo. Inserisci qui enum, costanti, ID RPC, classi di configurazione e tutto cio' che non fa riferimento a entita' del mondo.
+**`Scripts/3_Game/`** carica per primo. Metti qui enum, costanti, ID RPC, classi di configurazione e qualsiasi cosa che non faccia riferimento a entità del mondo.
 
-**`Scripts/4_World/`** viene caricato per secondo. Inserisci qui classi di entita' (`modded class ItemBase`), manager e tutto cio' che interagisce con gli oggetti di gioco.
+**`Scripts/4_World/`** carica per secondo. Metti qui classi entità (`modded class ItemBase`), manager e qualsiasi cosa che interagisca con oggetti di gioco.
 
-**`Scripts/5_Mission/`** viene caricato per ultimo. Inserisci qui hook della missione (`modded class MissionServer`), pannelli UI e logica di avvio. Questo layer puo' fare riferimento ai tipi di tutti i layer inferiori.
+**`Scripts/5_Mission/`** carica per ultimo. Metti qui hook della missione (`modded class MissionServer`), pannelli UI e logica di avvio. Questo layer può fare riferimento a tipi di tutti i layer inferiori.
 
 ---
 
-## Passo 3: Rinominare il Mod
+## Passo 3: Rinominare la Mod
 
-Il template viene fornito con nomi segnaposto. Devi sostituirli con il nome effettivo del tuo mod. Ecco un approccio sistematico.
+Il template viene fornito con nomi segnaposto. Devi sostituirli con il nome effettivo della tua mod. Ecco un approccio sistematico.
 
-### Scegli i Tuoi Nomi
+### Scegliere i Tuoi Nomi
 
-Prima di apportare qualsiasi modifica, decidi:
+Prima di fare qualsiasi modifica, decidi:
 
 | Identificatore | Esempio | Usato In |
 |----------------|---------|----------|
-| **Nome visualizzato del mod** | `"My Awesome Mod"` | mod.cpp, config.cpp |
-| **Nome della directory** | `MyAwesomeMod` | Nome cartella, percorsi config.cpp |
-| **Classe CfgPatches** | `MyAwesomeMod_Scripts` | config.cpp CfgPatches |
-| **Classe CfgMods** | `MyAwesomeMod` | config.cpp CfgMods |
+| **Nome visualizzato mod** | `"My Awesome Mod"` | mod.cpp, config.cpp |
+| **Nome directory** | `MyAwesomeMod` | Nome cartella, percorsi config.cpp |
+| **Classe CfgPatches** | `MyAwesomeMod_Scripts` | CfgPatches in config.cpp |
+| **Classe CfgMods** | `MyAwesomeMod` | CfgMods in config.cpp |
 | **Sottocartella script** | `MyAwesomeMod` | Dentro 3_Game/, 4_World/, 5_Mission/ |
-| **Definizione preprocessore** | `MYAWESOMEMOD` | config.cpp defines[], controlli #ifdef |
+| **Define preprocessore** | `MYAWESOMEMOD` | defines[] in config.cpp, controlli #ifdef |
 
 ### Regole di Denominazione
 
 - **Nessuno spazio o carattere speciale** nei nomi di directory e classi. Usa PascalCase o underscore.
-- **I nomi delle classi CfgPatches devono essere globalmente univoci.** Due mod con lo stesso nome di classe CfgPatches entreranno in conflitto. Usa il nome del tuo mod come prefisso.
-- **I nomi delle sottocartelle degli script** dentro ogni layer dovrebbero corrispondere al nome del tuo mod per coerenza.
+- **I nomi delle classi CfgPatches devono essere globalmente unici.** Due mod con lo stesso nome di classe CfgPatches entreranno in conflitto. Usa il nome della tua mod come prefisso.
+- **I nomi delle sottocartelle script** dentro ogni layer dovrebbero corrispondere al nome della tua mod per coerenza.
 
 ---
 
@@ -152,12 +156,12 @@ Apri `Scripts/config.cpp` e aggiorna le seguenti sezioni.
 
 ### CfgPatches
 
-Sostituisci il nome della classe del template con il tuo:
+Sostituisci il nome della classe template con il tuo:
 
 ```cpp
 class CfgPatches
 {
-    class MyAwesomeMod_Scripts    // <-- Il tuo nome patch univoco
+    class MyAwesomeMod_Scripts    // <-- Il tuo nome patch unico
     {
         units[] = {};
         weapons[] = {};
@@ -170,7 +174,7 @@ class CfgPatches
 };
 ```
 
-Se il tuo mod dipende da un altro mod, aggiungi il suo nome di classe CfgPatches a `requiredAddons[]`:
+Se la tua mod dipende da un'altra mod, aggiungi il suo nome di classe CfgPatches a `requiredAddons[]`:
 
 ```cpp
 requiredAddons[] =
@@ -182,7 +186,7 @@ requiredAddons[] =
 
 ### CfgMods
 
-Aggiorna l'identita' del mod e i percorsi degli script:
+Aggiorna l'identità della mod e i percorsi script:
 
 ```cpp
 class CfgMods
@@ -191,7 +195,7 @@ class CfgMods
     {
         dir = "MyAwesomeMod";
         name = "My Awesome Mod";
-        author = "YourName";
+        author = "TuoNome";
         type = "mod";
 
         dependencies[] = { "Game", "World", "Mission" };
@@ -219,13 +223,13 @@ class CfgMods
 ```
 
 **Punti chiave:**
-- Il valore `dir` deve corrispondere esattamente al nome della cartella radice del tuo mod.
-- Ogni percorso `files[]` e' relativo alla radice del mod.
-- L'array `dependencies[]` dovrebbe elencare quali moduli script vanilla si agganciano. La maggior parte dei mod usa tutti e tre: `"Game"`, `"World"` e `"Mission"`.
+- Il valore `dir` deve corrispondere esattamente al nome della cartella radice della tua mod.
+- Ogni percorso `files[]` è relativo alla radice della mod.
+- L'array `dependencies[]` dovrebbe elencare quali moduli script vanilla agganci. La maggior parte delle mod usa tutti e tre: `"Game"`, `"World"` e `"Mission"`.
 
-### Definizioni Preprocessore (Opzionale)
+### Define del Preprocessore (Opzionale)
 
-Se vuoi che altri mod possano rilevare la presenza del tuo mod, aggiungi un array `defines[]`:
+Se vuoi che altre mod rilevino la presenza della tua mod, aggiungi un array `defines[]`:
 
 ```cpp
 class MyAwesomeMod
@@ -242,39 +246,39 @@ class MyAwesomeMod
         // ... altri moduli ...
     };
 
-    // Abilita il rilevamento tra mod
+    // Abilitare il rilevamento cross-mod
     defines[] = { "MYAWESOMEMOD" };
 };
 ```
 
-Altri mod possono poi usare `#ifdef MYAWESOMEMOD` per compilare condizionalmente il codice che si integra con il tuo.
+Altre mod possono quindi usare `#ifdef MYAWESOMEMOD` per compilare condizionalmente codice che si integra con la tua.
 
 ---
 
 ## Passo 5: Aggiornare mod.cpp
 
-Apri `mod.cpp` nella directory radice e aggiornalo con le informazioni del tuo mod:
+Apri `mod.cpp` nella directory radice e aggiornalo con le informazioni della tua mod:
 
 ```cpp
 name         = "My Awesome Mod";
-author       = "YourName";
+author       = "TuoNome";
 version      = "1.0.0";
-overview     = "Una breve descrizione di cosa fa il tuo mod.";
+overview     = "Una breve descrizione di cosa fa la tua mod.";
 picture      = "";             // Opzionale: percorso a un'immagine di anteprima
 logo         = "";             // Opzionale: percorso a un logo
 logoSmall    = "";             // Opzionale: percorso a un logo piccolo
-logoOver     = "";             // Opzionale: percorso a un logo per lo stato hover
+logoOver     = "";             // Opzionale: percorso a un logo stato hover
 tooltip      = "My Awesome Mod";
-action       = "";             // Opzionale: URL al sito web del tuo mod
+action       = "";             // Opzionale: URL al sito web della tua mod
 ```
 
 Come minimo, imposta `name`, `author` e `overview`. Gli altri campi sono opzionali ma migliorano la presentazione nel launcher.
 
 ---
 
-## Passo 6: Rinominare le Cartelle e i File degli Script
+## Passo 6: Rinominare Cartelle e File Script
 
-Rinomina le sottocartelle degli script dentro ogni layer per corrispondere al nome del tuo mod:
+Rinomina le sottocartelle script dentro ogni layer per corrispondere al nome della tua mod:
 
 ```
 Scripts/3_Game/ModName/    -->  Scripts/3_Game/MyAwesomeMod/
@@ -282,7 +286,7 @@ Scripts/4_World/ModName/   -->  Scripts/4_World/MyAwesomeMod/
 Scripts/5_Mission/ModName/ -->  Scripts/5_Mission/MyAwesomeMod/
 ```
 
-Dentro queste cartelle, rinomina qualsiasi file `.c` segnaposto e aggiorna i nomi delle loro classi. Per esempio, se il template include un file come `ModInit.c` con una classe chiamata `ModInit`, rinominalo in `MyAwesomeModInit.c` e aggiorna la classe:
+Dentro queste cartelle, rinomina tutti i file `.c` segnaposto e aggiorna i nomi delle classi. Per esempio, se il template include un file come `ModInit.c` con una classe chiamata `ModInit`, rinominalo in `MyAwesomeModInit.c` e aggiorna la classe:
 
 ```c
 modded class MissionServer
@@ -290,7 +294,7 @@ modded class MissionServer
     override void OnInit()
     {
         super.OnInit();
-        Print("[MyAwesomeMod] Server initialized!");
+        Print("[MyAwesomeMod] Server inizializzato!");
     }
 };
 ```
@@ -299,19 +303,19 @@ modded class MissionServer
 
 ## Passo 7: Compilare e Testare
 
-### Usare il File Patching (Iterazione Rapida)
+### Usare il File Patching (Iterazione Veloce)
 
-Il modo piu' veloce per testare durante lo sviluppo:
+Il modo più veloce per testare durante lo sviluppo:
 
 ```batch
 DayZDiag_x64.exe -mod=P:\MyAwesomeMod -filePatching
 ```
 
-Questo carica gli script direttamente dalle cartelle sorgente senza impacchettare un PBO. Modifica un file `.c`, riavvia il gioco e vedi le modifiche immediatamente.
+Questo carica i tuoi script direttamente dalle cartelle sorgente senza impacchettare un PBO. Modifica un file `.c`, riavvia il gioco e vedi le modifiche immediatamente.
 
-### Usare l'Addon Builder (Per la Distribuzione)
+### Usare Addon Builder (Per la Distribuzione)
 
-Quando sei pronto per la distribuzione:
+Quando sei pronto per distribuire:
 
 1. Apri **DayZ Tools** da Steam
 2. Avvia **Addon Builder**
@@ -334,10 +338,10 @@ P:\@MyAwesomeMod\
 Dopo l'avvio, controlla il log degli script per i tuoi messaggi:
 
 ```
-%localappdata%\DayZ\script_<date>_<time>.log
+%localappdata%\DayZ\script_<data>_<ora>.log
 ```
 
-Cerca il tag prefisso del tuo mod (es. `[MyAwesomeMod]`).
+Cerca il tag prefisso della tua mod (es. `[MyAwesomeMod]`).
 
 ---
 
@@ -345,27 +349,27 @@ Cerca il tag prefisso del tuo mod (es. `[MyAwesomeMod]`).
 
 ### Workbench
 
-Il Workbench di DayZ puo' aprire e modificare gli script del tuo mod con evidenziazione della sintassi:
+DayZ Workbench può aprire e modificare gli script della tua mod con evidenziazione della sintassi:
 
 1. Apri **Workbench** da DayZ Tools
-2. Vai su **File > Open** e naviga fino alla cartella `Scripts/` del tuo mod
-3. Apri qualsiasi file `.c` per modificarlo con supporto base per Enforce Script
+2. Vai su **File > Open** e naviga nella cartella `Scripts/` della tua mod
+3. Apri qualsiasi file `.c` per modificarlo con supporto base di Enforce Script
 
-Il Workbench legge il `config.cpp` per capire quali file appartengono a quale modulo script, quindi avere un config.cpp correttamente configurato e' essenziale.
+Workbench legge il `config.cpp` per capire quali file appartengono a quale modulo script, quindi avere un config.cpp configurato correttamente è essenziale.
 
-### Configurazione del Drive P:
+### Setup Drive P:
 
-Il template e' progettato per funzionare dal drive P:. Se hai clonato in un'altra posizione, crea un collegamento:
+Il template è progettato per funzionare dal drive P:. Se hai clonato in un'altra posizione, crea un junction:
 
 ```batch
 mklink /J P:\MyAwesomeMod "D:\Projects\MyAwesomeMod"
 ```
 
-Questo rende il mod accessibile a `P:\MyAwesomeMod` senza spostare file.
+Questo rende la mod accessibile su `P:\MyAwesomeMod` senza spostare file.
 
-### Automazione dell'Addon Builder
+### Automazione di Addon Builder
 
-Per compilazioni ripetute, puoi creare un file batch nella radice del tuo mod:
+Per build ripetute, puoi creare un file batch nella radice della tua mod:
 
 ```batch
 @echo off
@@ -375,38 +379,38 @@ set OUTPUT=P:\@MyAwesomeMod\Addons
 set PREFIX=MyAwesomeMod\Scripts
 
 %DAYZ_TOOLS%\Bin\AddonBuilder\AddonBuilder.exe %SOURCE% %OUTPUT% -prefix=%PREFIX% -clear
-echo Compilazione completata.
+echo Build completata.
 pause
 ```
 
 ---
 
-## Template vs. Configurazione Manuale
+## Template vs. Setup Manuale
 
 | Aspetto | Template | Manuale (Capitolo 8.1) |
 |---------|----------|------------------------|
-| **Tempo per la prima compilazione** | ~2 minuti | ~15 minuti |
-| **Tutti e 3 i layer script** | Pre-configurati | Li aggiungi secondo necessita' |
-| **config.cpp** | Completo con tutti i moduli | Minimo (solo missione) |
+| **Tempo alla prima build** | ~2 minuti | ~15 minuti |
+| **Tutti e 3 i layer script** | Preconfigurati | Li aggiungi secondo necessità |
+| **config.cpp** | Completo con tutti i moduli | Minimale (solo mission) |
 | **Pronto per Git** | .gitignore incluso | Lo crei tu |
-| **Valore educativo** | Inferiore (file pre-fatti) | Superiore (costruisci tutto tu) |
-| **Raccomandato per** | Modder esperti, nuovi progetti | Modder alle prime armi che imparano le basi |
+| **Valore formativo** | Inferiore (file pre-fatti) | Superiore (costruisci tutto tu) |
+| **Consigliato per** | Modder esperti, nuovi progetti | Modder alle prime armi che imparano le basi |
 
-**Raccomandazione:** Se questo e' il tuo primissimo mod DayZ, inizia con il [Capitolo 8.1](01-first-mod.md) per capire ogni file. Una volta acquisita familiarita', usa il template per tutti i progetti futuri.
+**Raccomandazione:** Se questa è la tua primissima mod DayZ, inizia con il [Capitolo 8.1](01-first-mod.md) per capire ogni file. Una volta che ti senti a tuo agio, usa il template per tutti i progetti futuri.
 
 ---
 
 ## Prossimi Passi
 
-Con il tuo mod basato sul template funzionante, puoi:
+Con la tua mod basata su template funzionante, puoi:
 
 1. **Aggiungere un oggetto personalizzato** -- Segui il [Capitolo 8.2: Creare un Oggetto Personalizzato](02-custom-item.md) per definire oggetti in config.cpp.
-2. **Costruire un pannello di amministrazione** -- Segui il [Capitolo 8.3: Pannello di Amministrazione](03-admin-panel.md) per l'UI di gestione del server.
-3. **Aggiungere comandi chat** -- Segui il [Capitolo 8.4: Comandi Chat](04-chat-commands.md) per comandi testuali in gioco.
-4. **Studiare config.cpp in profondita'** -- Leggi il [Capitolo 2.2: config.cpp in Dettaglio](../02-mod-structure/02-config-cpp.md) per capire ogni campo.
-5. **Scoprire le opzioni di mod.cpp** -- Leggi il [Capitolo 2.3: mod.cpp e Workshop](../02-mod-structure/03-mod-cpp.md) per la pubblicazione su Workshop.
-6. **Aggiungere dipendenze** -- Se il tuo mod usa Community Framework o un altro mod, aggiorna `requiredAddons[]` e consulta il [Capitolo 2.4: Il Tuo Primo Mod](../02-mod-structure/04-minimum-viable-mod.md).
+2. **Costruire un pannello admin** -- Segui il [Capitolo 8.3: Costruire un Pannello Admin](03-admin-panel.md) per UI di gestione server.
+3. **Aggiungere comandi chat** -- Segui il [Capitolo 8.4: Aggiungere Comandi Chat](04-chat-commands.md) per comandi di testo in gioco.
+4. **Studiare config.cpp in profondità** -- Leggi il [Capitolo 2.2: Approfondimento config.cpp](../02-mod-structure/02-config-cpp.md) per capire ogni campo.
+5. **Imparare le opzioni di mod.cpp** -- Leggi il [Capitolo 2.3: mod.cpp e Workshop](../02-mod-structure/03-mod-cpp.md) per la pubblicazione su Workshop.
+6. **Aggiungere dipendenze** -- Se la tua mod usa Community Framework o un'altra mod, aggiorna `requiredAddons[]` e vedi [Capitolo 2.4: La Tua Prima Mod](../02-mod-structure/04-minimum-viable-mod.md).
 
 ---
 
-**Precedente:** [Capitolo 8.4: Comandi Chat](04-chat-commands.md) | [Home](../../README.md)
+**Precedente:** [Capitolo 8.4: Aggiungere Comandi Chat](04-chat-commands.md) | [Home](../../README.md)

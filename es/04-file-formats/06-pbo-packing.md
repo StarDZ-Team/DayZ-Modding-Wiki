@@ -1,10 +1,10 @@
-# Chapter 4.6: PBO Packing
+# Capítulo 4.6: Empaquetado de PBOs
 
-[Home](../../README.md) | [<< Previous: DayZ Tools Workflow](05-dayz-tools.md) | **PBO Packing** | [Next: Workbench Guide >>](07-workbench-guide.md)
+[Inicio](../../README.md) | [<< Anterior: DayZ Tools Workflow](05-dayz-tools.md) | **PBO Packing** | [Siguiente: Workbench Guide >>](07-workbench-guide.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 A **PBO** (Packed Bank of Objects) is DayZ's archive format -- the equivalent of a `.zip` file for game content. Every mod the game loads is delivered as one or more PBO files. When a player subscribes to a mod on Steam Workshop, they download PBOs. When a server loads mods, it reads PBOs. The PBO is the final deliverable of the entire modding pipeline.
 
@@ -135,7 +135,7 @@ AddonBuilder.exe [source_path] [output_path] [options]
 
 ### Command-Line Options
 
-| Flag | Descripcion |
+| Bandera | Descripción |
 |------|-------------|
 | `-prefix=<path>` | Set the PBO internal prefix (critical for path resolution) |
 | `-packonly` | Skip binarization, pack files as-is |
@@ -153,9 +153,9 @@ AddonBuilder.exe [source_path] [output_path] [options]
 
 The `-packonly` flag is one of the most important options in AddonBuilder. It tells the tool to skip all binarization and pack the source files exactly as they are.
 
-### Cuando Usar -packonly
+### When to Use -packonly
 
-| Mod Content | Use -packonly? | Razon |
+| Mod Content | Use -packonly? | Reason |
 |-------------|---------------|--------|
 | Scripts only (.c files) | **Yes** | Scripts are never binarized |
 | UI layouts (.layout) | **Yes** | Layouts are never binarized |
@@ -178,7 +178,7 @@ For an **item mod** (weapons, clothing, vehicles with models and textures):
 AddonBuilder.exe "P:\MyItemMod" "P:\output" -prefix="MyItemMod" -sign="P:\keys\MyKey"
 ```
 
-> **Tip:** Many mods split into multiple PBOs precisely to optimize the build process. Script PBOs use `-packonly` (fast), while data PBOs with models and textures get full binarization (slower but necessary).
+> **Consejo:** Many mods split into multiple PBOs precisely to optimize the build process. Script PBOs use `-packonly` (fast), while data PBOs with models and textures get full binarization (slower but necessary).
 
 ---
 
@@ -217,10 +217,10 @@ If your config.cpp references `MyMod\data\texture_co.paa`, then the PBO containi
 
 ### Common Prefix Patterns
 
-| Mod Structure | Source Path | Prefix | Config Reference |
+| Mod Structure | Source Path | Prefijo | Config Reference |
 |---------------|-------------|--------|-----------------|
 | Simple mod | `P:\MyMod\` | `MyMod` | `MyMod\data\item.p3d` |
-| Namespaced mod | `P:\MyWeapons\` | `MyWeapons` | `MyWeapons\data\rifle.p3d` |
+| Namespaced mod | `P:\MyMod_Weapons\` | `MyMod_Weapons` | `MyMod_Weapons\data\rifle.p3d` |
 | Script sub-package | `P:\MyFramework\MyMod\Scripts\` | `MyFramework\MyMod\Scripts` | (referenced via config.cpp `CfgMods`) |
 
 ---
@@ -242,7 +242,7 @@ Binarization is the conversion of human-readable source formats into engine-opti
 
 ### What is NOT Binarized
 
-| File Type | Razon |
+| File Type | Reason |
 |-----------|--------|
 | `.c` scripts | Scripts are loaded as text by the engine |
 | `.ogg` audio | Already in game-ready format |
@@ -274,7 +274,7 @@ PBOs can be signed with a cryptographic key pair. Servers use signature verifica
 
 ### Key Pair Components
 
-| File | Extension | Proposito | Who Has It |
+| File | Extensión | Propósito | Who Has It |
 |------|-----------|---------|------------|
 | Private key | `.biprivatekey` | Signs PBOs during build | Mod author only (KEEP SECRET) |
 | Public key | `.bikey` | Verifies signatures | Server admins, distributed with mod |
@@ -351,9 +351,9 @@ Large mods often split into multiple PBOs within a single `@mod` folder:
 ```
 @MyFramework/
   addons/
-    MyCore_Scripts.pbo        <-- Script layer
-    MyCore_Data.pbo           <-- Textures, models, materials
-    MyCore_GUI.pbo            <-- Layout files, imagesets
+    MyMod_Core_Scripts.pbo        <-- Script layer
+    MyMod_Core_Data.pbo           <-- Textures, models, materials
+    MyMod_Core_GUI.pbo            <-- Layout files, imagesets
   keys/
     MyMod.bikey
   mod.cpp
@@ -368,7 +368,7 @@ Mods are loaded via the `-mod` parameter:
 DayZDiag_x64.exe -mod="@MyMod"
 
 # Multiple mods (semicolon-separated)
-DayZDiag_x64.exe -mod="@MyFramework;@MyWeapons;@MyMissions"
+DayZDiag_x64.exe -mod="@MyFramework;@MyMod_Weapons;@MyMod_Missions"
 ```
 
 The `@` folder must be in the game's root directory, or an absolute path must be provided.
@@ -582,7 +582,7 @@ Development involves two testing modes. Choosing the right one for each situatio
 
 ### File Patching (Development)
 
-| Aspecto | Detalle |
+| Aspect | Detalle |
 |--------|--------|
 | **Speed** | Instant -- edit file, restart game |
 | **Setup** | Mount P: drive, launch with `-filePatching` flag |
@@ -593,7 +593,7 @@ Development involves two testing modes. Choosing the right one for each situatio
 
 ### PBO Loading (Release Testing)
 
-| Aspecto | Detalle |
+| Aspect | Detalle |
 |--------|--------|
 | **Speed** | Slower -- must rebuild PBO for each change |
 | **Setup** | Build PBO, place in `@mod/addons/` |
@@ -611,7 +611,7 @@ Development involves two testing modes. Choosing the right one for each situatio
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Use `-packonly` for script PBOs.** Scripts are never binarized, so `-packonly` is always correct and much faster.
 
@@ -635,8 +635,27 @@ Development involves two testing modes. Choosing the right one for each situatio
 
 ---
 
-## Navegacion
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| 20+ PBOs per mod with fine-grained splits | Expansion (all modules) | Splits into separate PBOs for Scripts, Data, GUI, Vehicles, Book, Market, etc., enabling independent rebuilds and optional client/server separation |
+| Scripts/Data/GUI triple-split | StarDZ (Core, Missions, AI) | Each mod produces 2-3 PBOs: `_Scripts.pbo` (packonly), `_Data.pbo` (binarized models/textures), `_GUI.pbo` (packonly layouts) |
+| Single monolithic PBO | Simple retexture mods | Small mods with only a config.cpp and a few PAA textures pack everything into one PBO with binarization |
+| Key versioning per major release | Expansion | Generates new key pairs for breaking updates, forcing all clients and servers to update in sync |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** PBO prefix collisions cause the engine to load one mod's files instead of another's. Every mod must use a unique prefix. Check `$PBOPREFIX$` carefully when debugging "file not found" errors in multi-mod environments.
+- **Performance:** PBO loading is fast (sequential file reads), but mods with many large PBOs increase server startup time. Binarized content loads faster than unbinarized. Use ODOL models and PAA textures for release builds.
+- **Version:** The PBO format itself has not changed. AddonBuilder receives periodic fixes via DayZ Tools updates, but the command-line flags and packing behavior have been stable since DayZ 1.0.
+
+---
+
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|
-| [4.5 DayZ Tools Workflow](05-dayz-tools.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [Part 5: Config Files](07-workbench-guide.md) |
+| [4.5 DayZ Tools Workflow](05-dayz-tools.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [Siguiente: Workbench Guide](07-workbench-guide.md) |

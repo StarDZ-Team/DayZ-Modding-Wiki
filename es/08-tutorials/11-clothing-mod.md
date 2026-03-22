@@ -1,6 +1,10 @@
-# Chapter 8.11: Creating Custom Clothing
+# Capítulo 8.11: Creating Custom Clothing
 
-[Home](../../README.md) | [<< Previous: Creating a Custom Vehicle](10-vehicle-mod.md) | **Creating Custom Clothing** | [Next: Building a Trading System >>](12-trading-system.md)
+[Inicio](../../README.md) | [<< Anterior: Creating a Custom Vehicle](10-vehicle-mod.md) | **Creating Custom Clothing** | [Siguiente: Building a Trading System >>](12-trading-system.md)
+
+---
+
+> **Resumen:** This tutorial walks you through creating a custom tactical jacket for DayZ. You will choose a base class, define the clothing in config.cpp with insulation and cargo properties, retexture it with a camo pattern using hidden selections, add localization and spawning, and optionally extend it with scripted behavior. By the end, you will have a wearable jacket that keeps players warm, holds items, and spawns in the world.
 
 ---
 
@@ -41,7 +45,7 @@ We will create a **Tactical Camo Jacket** -- a military-style jacket with woodla
 
 Clothing in DayZ inherits from `Clothing_Base`, but you almost never extend that directly. DayZ provides intermediate base classes for each body slot:
 
-| Clase Base | Body Slot | Examples |
+| Base Class | Body Slot | Examples |
 |------------|-----------|----------|
 | `Top_Base` | Body (torso) | Jackets, shirts, hoodies |
 | `Pants_Base` | Legs | Jeans, cargo pants |
@@ -188,7 +192,7 @@ class CfgVehicles
 
 **Thermal and stealth:**
 
-| Field | Valor | Explanation |
+| Campo | Valor | Explanation |
 |-------|-------|-------------|
 | `heatIsolation` | `0.8` | Warmth provided (0.0-1.0 range). The engine multiplies this by health and wetness factors. A pristine dry jacket gives full warmth; a ruined, soaked one gives almost none. |
 | `visibilityModifier` | `0.7` | Player visibility to AI (lower = harder to detect). |
@@ -223,7 +227,7 @@ The Gorka jacket textures live at `DZ\characters\tops\data\` -- extract the `gor
 
 ### Texture Types
 
-| Suffix | Proposito | Required? |
+| Suffix | Propósito | Required? |
 |--------|---------|-----------|
 | `_co` | Main color/pattern | Yes |
 | `_nohq` | Normal map (fabric detail) | No -- uses vanilla default |
@@ -359,7 +363,7 @@ class MCM_TacticalJacket_ColorBase extends GorkaEJacket_ColorBase
 
 ### Key Clothing Events
 
-| Evento | Cuando se Dispara | Common Use |
+| Evento | When It Fires | Common Use |
 |-------|---------------|------------|
 | `OnWasAttached(parent, slot_id)` | Player equips the item | Apply buffs, show effects |
 | `OnWasDetached(parent, slot_id)` | Player unequips the item | Remove buffs, clean up |
@@ -448,7 +452,7 @@ All other files are shown in full in their respective steps above.
 
 ## Errores Comunes
 
-| Error | Consecuencia | Solucion |
+| Error | Consequence | Solución |
 |---------|-------------|-----|
 | Forgetting `scope=2` on variants | Item does not spawn or appear in admin tools | Set `scope=0` on base, `scope=2` on each spawnable variant |
 | Wrong texture array count | White/pink textures on some parts | Match `hiddenSelectionsTextures` count to the model's hidden selections (Gorka has 3) |
@@ -460,7 +464,7 @@ All other files are shown in full in their respective steps above.
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Start with a simple retexture.** Get a working mod with a texture swap before adding custom properties or scripts. This isolates config issues from texture issues.
 - **Use the _ColorBase pattern.** Shared properties in `scope=0` base, only textures and names in `scope=2` variants. No duplication.
@@ -472,9 +476,9 @@ All other files are shown in full in their respective steps above.
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
-| Concepto | Teoria | Realidad |
+| Concepto | Teoría | Realidad |
 |---------|--------|---------|
 | `heatIsolation` | A simple warmth number | Effective warmth depends on health and wetness. The engine multiplies it by factors in `MiscGameplayFunctions.GetCurrentItemHeatIsolation()`. |
 | Armor `damage` values | Lower = more protection | A value of 0.8 means the player receives 80% damage (only 20% absorbed). Many modders read 0.9 as "90% protection" when it is actually 10%. |
@@ -497,9 +501,9 @@ In this tutorial you learned:
 - How to add spawn entries with `types.xml` and display names with `Stringtable.csv`
 - How to optionally add script behavior with `OnWasAttached` and `OnWasDetached` events
 
-**Next:** Apply the same techniques to create pants (`Pants_Base`), boots (`Shoes_Base`), or a vest (`Vest_Base`). The config structure is identical -- only the parent class and inventory slot change.
+**Siguiente:** Apply the same techniques to create pants (`Pants_Base`), boots (`Shoes_Base`), or a vest (`Vest_Base`). The config structure is identical -- only the parent class and inventory slot change.
 
 ---
 
-**Previous:** [Chapter 8.8: HUD Overlay](08-hud-overlay.md)
-**Next:** Coming soon
+**Anterior:** [Chapter 8.8: HUD Overlay](08-hud-overlay.md)
+**Siguiente:** Coming soon

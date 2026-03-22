@@ -1,10 +1,10 @@
-# Chapter 6.14: Player System
+# Capítulo 6.14: Sistema del Jugador
 
-[Home](../../README.md) | [<< Previous: Input System](13-input-system.md) | **Player System** | [Next: Sound System >>](15-sound-system.md)
+[Inicio](../../README.md) | [<< Anterior: Input System](13-input-system.md) | **Player System** | [Siguiente: Sound System >>](15-sound-system.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 `PlayerBase` is the single most important class in DayZ modding. Every gameplay system --- health, hunger, bleeding, stamina, inventory, restraints, unconsciousness --- lives on the player entity or one of its manager subsystems. Whether you are writing an admin tool, a survival mechanic, or a PvP mod, you will interact with PlayerBase constantly.
 
@@ -12,7 +12,7 @@ This chapter is an API reference for the player class hierarchy, its identity sy
 
 ---
 
-## Jerarquia de Clases
+## Class Hierarchy
 
 The player entity sits at the bottom of a deep inheritance chain. Each level adds capabilities:
 
@@ -79,7 +79,7 @@ classDiagram
 
 ### What Each Level Provides
 
-| Class | Key Additions |
+| Clase | Key Additions |
 |-------|---------------|
 | **Object** | `GetPosition()`, `SetPosition()`, `GetHealth()`, `SetHealth()`, `IsAlive()`, `SetAllowDamage()` |
 | **EntityAI** | Inventory, attachments, damage zones, `EEInit()`, `EEKilled()`, `EEHitBy()`, net sync variables |
@@ -93,13 +93,13 @@ classDiagram
 
 ## PlayerIdentity --- Who Is the Player?
 
-**File:** `3_Game/gameplay.c`
+**Archivo:** `3_Game/gameplay.c`
 
 `PlayerIdentity` represents the real person behind a player entity. It holds network and platform identifiers. Access it from any `Man`-derived class via `GetIdentity()`.
 
 ### Key Methods
 
-| Metodo | Return Type | Descripcion |
+| Método | Return Type | Descripción |
 |--------|-------------|-------------|
 | `GetName()` | `string` | Display name (may contain special characters) |
 | `GetPlainName()` | `string` | Name without any processing |
@@ -133,12 +133,12 @@ void LogPlayerInfo(PlayerBase player)
 
 This is a common source of confusion:
 
-| Metodo | Valor | Caso de Uso |
+| Método | Valor | Use Case |
 |--------|-------|----------|
 | `GetPlainId()` | Raw Steam64 ID (`"76561198012345678"`) | Linking to Steam profiles, cross-server identity |
 | `GetId()` | Hashed BattlEye GUID | Database storage, admin logs (Bohemia's recommended ID for persistence) |
 
-> **Regla general:** Use `GetPlainId()` when you need a human-readable identifier or cross-platform lookup. Use `GetId()` when storing data in databases or logs, as Bohemia designed it for that purpose.
+> **Rule of thumb:** Use `GetPlainId()` when you need a human-readable identifier or cross-platform lookup. Use `GetId()` when storing data in databases or logs, as Bohemia designed it for that purpose.
 
 ---
 
@@ -281,7 +281,7 @@ player.GetStatEnergy().Set(energyMax);
 
 Default maximums are defined in `PlayerConstants`:
 
-| Stat | Constante | Por defecto |
+| Stat | Constante | Predeterminado |
 |------|----------|---------|
 | Water max | `PlayerConstants.SL_WATER_MAX` | 5000 |
 | Energy max | `PlayerConstants.SL_ENERGY_MAX` | 20000 |
@@ -344,7 +344,7 @@ bool restrained  = player.IsRestrained();    // Handcuffed
 
 ### Where These Methods Live
 
-| Metodo | Defined In | How It Works |
+| Método | Defined In | How It Works |
 |--------|-----------|--------------|
 | `IsAlive()` | `Object` | Returns `!IsDamageDestroyed()` |
 | `IsUnconscious()` | `PlayerBase` | Checks command type or `m_IsUnconscious` flag |
@@ -546,7 +546,7 @@ PlayerBase registers numerous variables for automatic network synchronization vi
 
 **Automatically synced variables include:**
 
-| Variable | Type | What It Represents |
+| Variable | Tipo | What It Represents |
 |----------|------|-------------------|
 | `m_IsUnconscious` | `bool` | Unconscious state |
 | `m_IsRestrained` | `bool` | Handcuffed state |
@@ -731,7 +731,7 @@ bool locked = emoteMgr.IsControllsLocked();
 
 ### Other Managers
 
-| Manager | Member Variable | Proposito |
+| Manager | Member Variable | Propósito |
 |---------|----------------|---------|
 | `SymptomManager` | `m_SymptomManager` | Visual/audio symptoms (coughing, sneezing) |
 | `SoftSkillsManager` | `m_SoftSkillsManager` | Soft skill progression |
@@ -953,9 +953,9 @@ if (entity && entity.IsAlive())
 
 ---
 
-## Tabla de Referencia Rapida
+## Quick Reference Table
 
-| Tarea | Code |
+| Task | Code |
 |------|------|
 | Get identity | `player.GetIdentity()` |
 | Get Steam ID | `player.GetIdentity().GetPlainId()` |
@@ -983,11 +983,11 @@ if (entity && entity.IsAlive())
 
 ---
 
-*Este capitulo cubre the PlayerBase API as of DayZ 1.26. Method signatures are sourced from vanilla script files in `3_Game/` and `4_World/`. For the complete entity hierarchy that PlayerBase inherits from, ver [Capitulo 6.1: Entity System](01-entity-system.md).*
+*This chapter covers the PlayerBase API as of DayZ 1.26. Method signatures are sourced from vanilla script files in `3_Game/` and `4_World/`. For the complete entity hierarchy that PlayerBase inherits from, see [Chapter 6.1: Entity System](01-entity-system.md).*
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Always null-check `GetIdentity()` before accessing player identity fields.** During the connection handshake and disconnect teardown, a `PlayerBase` entity can exist without an identity. Calling `GetIdentity().GetName()` without a null check crashes the server.
 - **Use `GetPlainId()` for Steam lookups, `GetId()` for database storage.** `GetPlainId()` returns the raw Steam64 ID suitable for profile URLs. `GetId()` returns the BattlEye GUID hash, which Bohemia recommends for persistent data keys.
@@ -1004,7 +1004,7 @@ if (entity && entity.IsAlive())
 - **Load Order:** Multiple `modded class PlayerBase` declarations coexist as long as each calls `super` in every override. The last-loaded mod's overrides wrap all previous ones.
 - **Modded Class Conflicts:** Common conflict points are `OnVariablesSynchronized()` (forgetting `super` hides other mods' sync logic), `EEHitBy()` (damage modification mods overriding each other), and the constructor (net sync variable registration order must be consistent).
 - **Performance Impact:** Adding many `RegisterNetSyncVariable*` calls to PlayerBase increases per-player network traffic. Each synced variable is checked for changes every time `SetSynchDirty()` is called. Keep custom synced variables under 4-5 per mod.
-- **Servidor/Cliente:** `GetGame().GetPlayer()` returns null on dedicated servers. Use `GetGame().GetPlayers(array)` to iterate server-side players. Manager subsystems like `GetBleedingManagerServer()` return null on clients; use `GetBleedingManagerRemote()` for client-side particle effects instead.
+- **Server/Client:** `GetGame().GetPlayer()` returns null on dedicated servers. Use `GetGame().GetPlayers(array)` to iterate server-side players. Manager subsystems like `GetBleedingManagerServer()` return null on clients; use `GetBleedingManagerRemote()` for client-side particle effects instead.
 
 ---
 
@@ -1012,7 +1012,7 @@ if (entity && entity.IsAlive())
 
 > These patterns were confirmed by studying the source code of professional DayZ mods.
 
-| Patron | Mod | File/Location |
+| Patrón | Mod | File/Location |
 |---------|-----|---------------|
 | `modded class PlayerBase` with custom `RegisterNetSyncVariableBool` for group membership | Expansion | Party system player sync |
 | `EEHitBy` override to track damage source for killfeed display | Dabs Framework | Hit tracking / killfeed |

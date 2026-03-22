@@ -1,6 +1,6 @@
-# Chapter 6.3: Weather System
+# Chapitre 6.3: Weather System
 
-[Home](../../README.md) | [<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
+[Accueil](../../README.md) | [<< Précédent : Vehicles](02-vehicles.md) | **Weather** | [Suivant : Cameras >>](04-cameras.md)
 
 ---
 
@@ -10,17 +10,17 @@ DayZ has a fully dynamic weather system controlled through the `Weather` class. 
 
 ---
 
-## Accessing the Weather Object
+## Accéder à l'objet Weather
 
 ```c
 Weather weather = GetGame().GetWeather();
 ```
 
-The `Weather` object is a singleton managed by the engine. It is always available after the game world initializes.
+The `Weather` object is a singleton managed by le moteur. It is always available after le jeu world initializes.
 
 ---
 
-## Weather Phenomena
+## Phénomènes météorologiques
 
 Each weather phenomenon (overcast, fog, rain, snowfall, wind magnitude, wind direction) is represented by a `WeatherPhenomenon` object. You access them through getter methods on `Weather`.
 
@@ -66,7 +66,7 @@ class WeatherPhenomenon
 }
 ```
 
-**Example --- read current weather state:**
+**Exemple --- read current weather state:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -80,37 +80,37 @@ float windDir   = w.GetWindDirection().GetActual();
 Print(string.Format("Overcast: %1, Rain: %2, Fog: %3", overcast, rain, fog));
 ```
 
-**Example --- force clear weather (server):**
+**Exemple --- force clear weather (server):**
 
 ```c
 void ForceClearWeather()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(0.0, 30, 600);    // Clear sky, 30s transition, hold 10 min
-    w.GetRain().Set(0.0, 10, 600);        // No rain
-    w.GetFog().Set(0.0, 30, 600);         // No fog
-    w.GetSnowfall().Set(0.0, 10, 600);    // No snow
+    w.GetOvercast().Set(0.0, 30, 600);    // Ciel dégagé, 30s transition, hold 10 min
+    w.GetRain().Set(0.0, 10, 600);        // Pas de pluie
+    w.GetFog().Set(0.0, 30, 600);         // Pas de brouillard
+    w.GetSnowfall().Set(0.0, 10, 600);    // Pas de neige
 }
 ```
 
-**Example --- create a storm:**
+**Exemple --- create a storm:**
 
 ```c
 void ForceStorm()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(1.0, 60, 1800);   // Full overcast, 60s ramp, hold 30 min
-    w.GetRain().Set(0.8, 120, 1800);      // Heavy rain
-    w.GetFog().Set(0.3, 120, 1800);       // Light fog
-    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Strong wind (m/s)
+    w.GetOvercast().Set(1.0, 60, 1800);   // Ciel complètement couvert, 60s ramp, hold 30 min
+    w.GetRain().Set(0.8, 120, 1800);      // Forte pluie
+    w.GetFog().Set(0.3, 120, 1800);       // Léger brouillard
+    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Vent fort (m/s)
 }
 ```
 
 ---
 
-## Rain Thresholds
+## Seuils de pluie
 
-Rain is tied to overcast levels. The engine only renders rain when overcast exceeds a threshold. You can configure this via `cfgweather.xml`:
+Rain is tied to overcast levels. Le moteur only renders rain when overcast exceeds a threshold. You can configure this via `cfgweather.xml`:
 
 ```xml
 <rain>
@@ -125,7 +125,7 @@ In script, rain will not visually appear if overcast is too low, even if `GetRai
 
 ---
 
-## Wind
+## Vent
 
 Wind uses two phenomena: magnitude (speed in m/s) and direction (angle in radians).
 
@@ -136,7 +136,7 @@ proto native vector GetWind();           // Wind direction vector (world space)
 proto native float  GetWindSpeed();      // Wind speed in m/s
 ```
 
-**Example --- get wind info:**
+**Exemple --- get wind info:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -153,13 +153,13 @@ Print(string.Format("Wind: %1 m/s, direction: %2", windSpd, windVec));
 proto native void SetStorm(float density, float threshold, float timeout);
 ```
 
-| Parameter | Description |
+| Paramètre | Description |
 |-----------|-------------|
 | `density` | Lightning density (0.0 - 1.0) |
 | `threshold` | Minimum overcast level for lightning to appear (0.0 - 1.0) |
 | `timeout` | Seconds between lightning strikes |
 
-**Example --- enable frequent lightning:**
+**Exemple --- enable frequent lightning:**
 
 ```c
 GetGame().GetWeather().SetStorm(1.0, 0.6, 10);
@@ -168,7 +168,7 @@ GetGame().GetWeather().SetStorm(1.0, 0.6, 10);
 
 ---
 
-## MissionWeather Control
+## Contrôle MissionWeather
 
 To take manual control of weather (disabling the automatic weather state machine), call:
 
@@ -176,9 +176,9 @@ To take manual control of weather (disabling the automatic weather state machine
 proto native void MissionWeather(bool use);
 ```
 
-When `MissionWeather(true)` is called, the engine stops the automatic weather transitions and only your script-driven `Set()` calls control the weather.
+When `MissionWeather(true)` is called, le moteur stops the automatic weather transitions and only your script-driven `Set()` calls control the weather.
 
-**Example --- full manual control in init.c:**
+**Exemple --- full manual control in init.c:**
 
 ```c
 void main()
@@ -195,9 +195,9 @@ void main()
 
 ---
 
-## Date & Time
+## Date et heure
 
-The game date and time affect lighting, sun position, and the day/night cycle. These are controlled through the `World` object, not `Weather`, but they are closely related.
+Le jeu date and time affect lighting, sun position, and the day/night cycle. These are controlled through the `World` object, not `Weather`, but they are closely related.
 
 ### Getting Current Date/Time
 
@@ -212,7 +212,7 @@ GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 proto native void SetDate(int year, int month, int day, int hour, int minute);
 ```
 
-**Example --- set time to noon:**
+**Exemple --- set time to noon:**
 
 ```c
 int year, month, day, hour, minute;
@@ -229,11 +229,11 @@ serverTimeAcceleration = 12;      // 12x real time
 serverNightTimeAcceleration = 4;  // 4x acceleration during night
 ```
 
-In script, you can read the current time multiplier but typically cannot change it at runtime.
+In script, you can read the current time multiplier but typically cannot change it à l'exécution.
 
 ---
 
-## WorldData Weather State Machine
+## Machine à états météorologiques WorldData
 
 Vanilla DayZ uses a scripted weather state machine in `WorldData` classes (e.g., `ChernarusPlusData`, `EnochData`, `SakhalData`). The key override point is:
 
@@ -292,7 +292,7 @@ Key structure:
 </weather>
 ```
 
-| Attribute | Description |
+| Attribut | Description |
 |-----------|-------------|
 | `reset` | Whether to reset weather from storage on server start |
 | `enable` | Whether this file is active |
@@ -305,9 +305,9 @@ Key structure:
 
 ---
 
-## Resume
+## Résumé
 
-| Concept | Key Point |
+| Concept | Point clé |
 |---------|-----------|
 | Access | `GetGame().GetWeather()` returns the `Weather` singleton |
 | Phenomena | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
@@ -320,4 +320,38 @@ Key structure:
 
 ---
 
-[<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
+## Bonnes pratiques
+
+- **Call `MissionWeather(true)` before setting weather in `init.c`.** Without this, the automatic weather state machine will override your `Set()` calls within seconds. Always take manual control first if you want deterministic weather.
+- **Always provide a `minDuration` parameter in `Set()`.** Setting `minDuration` to 0 means the weather system can immediately transition away from your value. Use at least 300-600 seconds to hold your desired state.
+- **Set overcast before rain.** Rain is visually tied to overcast thresholds. If overcast is below the threshold configured in `cfgweather.xml`, rain will not render even if `GetRain().GetActual()` returns a non-zero value.
+- **Use `WeatherOnBeforeChange()` for server-wide weather policy.** Override this in a `modded class ChernarusPlusData` (or the appropriate WorldData subclass) to clamp or redirect weather transitions without fighting the state machine.
+- **Read weather on both sides, write only on server.** `GetActual()` and `GetForecast()` work on client and server, but `Set()` only has effect on le serveur.
+
+---
+
+## Compatibilité et impact
+
+> **Compatibilité des mods :** Weather mods commonly override `WeatherOnBeforeChange()` in WorldData subclasses. Only one mod's override chain runs per map's WorldData class.
+
+- **Ordre de chargement :** Multiple mods overriding `WeatherOnBeforeChange` on the same WorldData subclass (e.g., `ChernarusPlusData`) must all call `super`, or earlier mods lose their weather logic.
+- **Conflits de classes moddées :** If one mod calls `MissionWeather(true)` and another expects automatic weather, they are fundamentally incompatible. Document whether your mod takes manual weather control.
+- **Impact sur la performance :** Weather API calls are lightweight. The phenomena interpolation runs in le moteur, not in script. Frequent `Set()` calls (every frame) are wasteful but not harmful.
+- **Serveur/Client :** All `Set()` calls are server-only. Clients receive weather state via engine synchronization automatically. Côté client `Set()` calls are silently ignored.
+
+---
+
+## Observé dans les mods réels
+
+> Ces patrons ont été confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Fichier/Emplacement |
+|---------|-----|---------------|
+| `MissionWeather(true)` + scripted weather cycle with `CallLater` | Expansion | Weather controller in mission init |
+| `WeatherOnBeforeChange` override to prevent rain in specific areas | COT Weather Module | Modded `ChernarusPlusData` |
+| Admin command to force clear/storm via `Set()` with long hold duration | VPP Admin Tools | Weather admin panel |
+| `cfgweather.xml` with custom thresholds for snow-only maps | Namalsk | Mission folder config |
+
+---
+
+[<< Précédent : Vehicles](02-vehicles.md) | **Weather** | [Suivant : Cameras >>](04-cameras.md)

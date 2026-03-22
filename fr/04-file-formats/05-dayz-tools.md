@@ -1,6 +1,6 @@
-# Chapter 4.5: DayZ Tools Workflow
+# Chapitre 4.5: DayZ Tools Workflow
 
-[Home](../../README.md) | [<< Previous: Audio](04-audio.md) | **DayZ Tools** | [Next: PBO Packing >>](06-pbo-packing.md)
+[Accueil](../../README.md) | [<< Précédent : Audio](04-audio.md) | **DayZ Tools** | [Suivant : PBO Packing >>](06-pbo-packing.md)
 
 ---
 
@@ -8,11 +8,11 @@
 
 DayZ Tools is a free suite of development applications distributed through Steam, provided by Bohemia Interactive for modders. It contains everything needed to create, convert, and package game assets: a 3D model editor, texture viewer, terrain editor, script debugger, and the binarization pipeline that transforms human-readable source files into optimized game-ready formats. No DayZ mod can be built without at least some interaction with these tools.
 
-This chapter provides an overview of each tool in the suite, explains the P: drive (workdrive) system that underpins the entire workflow, covers file patching for rapid development iteration, and walks through the complete asset pipeline from source files to playable mod.
+Ce chapitre fournit an overview of each tool in the suite, explains the P: drive (workdrive) system that underpins the entire workflow, covers file patching for rapid development iteration, and walks through the complete asset pipeline from source files to playable mod.
 
 ---
 
-## Table des matieres
+## Table des matières
 
 - [DayZ Tools Suite Overview](#dayz-tools-suite-overview)
 - [Installation and Setup](#installation-and-setup)
@@ -30,7 +30,7 @@ This chapter provides an overview of each tool in the suite, explains the P: dri
 
 ---
 
-## Vue d'ensemble de la suite DayZ Tools
+## DayZ Tools Suite Overview
 
 DayZ Tools is available as a free download on Steam under the **Tools** category. It installs a collection of applications, each serving a specific role in the modding pipeline.
 
@@ -67,7 +67,7 @@ C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools\
 
 ---
 
-## Installation et configuration
+## Installation and Setup
 
 ### Step 1: Install DayZ Tools from Steam
 
@@ -88,17 +88,17 @@ The launcher provides a button to create and mount the P: drive (workdrive). Thi
 
 1. Click **Setup Workdrive** (or the P: drive configuration button).
 2. The tool creates a subst-mapped P: drive pointing to a directory on your real disk.
-3. Extract or symlink vanilla DayZ data to P: so the tools can reference game assets.
+3. Extract or symlink le DayZ vanilla data to P: so the tools can reference game assets.
 
 ---
 
-## Lecteur P: (Workdrive)
+## P: Drive (Workdrive)
 
 The **P: drive** is a Windows virtual drive (created via `subst` or junction) that serves as the unified root path for all DayZ modding. Every path in P3D models, RVMAT materials, config.cpp references, and build scripts is relative to P:.
 
 ### Why P: Drive Exists
 
-DayZ's asset pipeline was designed around a fixed root path. When a material references `MyMod\data\texture_co.paa`, the engine looks for `P:\MyMod\data\texture_co.paa`. This convention ensures:
+DayZ's asset pipeline was designed around a fixed root path. When a material references `MyMod\data\texture_co.paa`, le moteur looks for `P:\MyMod\data\texture_co.paa`. This convention ensures:
 
 - All tools agree on where files are.
 - Paths in packed PBOs match paths during development.
@@ -141,13 +141,13 @@ echo Workdrive P: configured.
 pause
 ```
 
-> **Astuce :** The workdrive must be mounted before launching any DayZ tool. If Object Builder or Binarize cannot find files, the first thing to check is whether P: is mounted.
+> **Tip:** The workdrive must be mounted before launching any DayZ tool. If Object Builder or Binarize cannot find files, the first thing to check is whether P: is mounted.
 
 ---
 
 ## Object Builder
 
-Object Builder is the 3D model editor for P3D files. It is couvert dans detail in [Chapter 4.2: 3D Models](02-models.md). Here is a summary of its role in the toolchain.
+Object Builder is the 3D model editor for P3D files. It is covered in detail in [Chapter 4.2: 3D Models](02-models.md). Here is a summary of its role in the toolchain.
 
 ### Key Capabilities
 
@@ -241,7 +241,7 @@ Terrain Builder is a specialized tool for creating custom maps (terrains). Map m
 DayZ Tools Launcher --> Terrain Builder
 ```
 
-> **Remarque :** Terrain creation is an advanced topic that warrants its own dedicated guide. Ce chapitre couvre Terrain Builder only as part of the tools overview.
+> **Note :** Terrain creation is an advanced topic that warrants its own dedicated guide. Ce chapitre couvre Terrain Builder only as part of the tools overview.
 
 ---
 
@@ -266,7 +266,7 @@ Binarize is the core conversion engine that transforms human-readable source fil
 | Config.cpp with CfgVehicles | **Yes** | Engine requires binarized configs for item definitions |
 | Config.cpp (scripts only) | Optional | Script-only configs work unbinarized |
 | P3D models | **Yes** | ODOL is faster to load, smaller, engine-optimized |
-| Textures (TGA/PNG) | **Yes** | PAA is required at runtime |
+| Textures (TGA/PNG) | **Yes** | PAA is required à l'exécution |
 | Scripts (.c files) | **No** | Scripts are loaded as-is (text) |
 | Audio (.ogg) | **No** | OGG is already game-ready |
 | Layouts (.layout) | **No** | Loaded as-is |
@@ -277,13 +277,13 @@ Binarize is the core conversion engine that transforms human-readable source fil
 Binarize.exe -targetPath="P:\build\MyMod" -sourcePath="P:\MyMod" -noLogs
 ```
 
-In practice, you rarely call Binarize directly -- AddonBuilder wraps it as part of the PBO packing process.
+En pratique, you rarely call Binarize directly -- AddonBuilder wraps it as part of the PBO packing process.
 
 ---
 
 ## AddonBuilder
 
-AddonBuilder is the PBO packing tool. It takes a source directory and creates a `.pbo` archive, optionally running Binarize on the content first. This is couvert dans detail in [Chapter 4.6: PBO Packing](06-pbo-packing.md).
+AddonBuilder is the PBO packing tool. It takes a source directory and creates a `.pbo` archive, optionally running Binarize on the content first. This is covered in detail in [Chapter 4.6: PBO Packing](06-pbo-packing.md).
 
 ### Quick Reference
 
@@ -331,8 +331,8 @@ Or directly: `P:\DayZ Tools\Bin\Workbench\workbenchApp.exe`
 1. Open Workbench.
 2. Configure the project to point at your mod's scripts.
 3. Set breakpoints in your `.c` files.
-4. Launch the game through Workbench (it starts DayZ in debug mode).
-5. When execution hits a breakpoint, Workbench pauses the game and shows the call stack, local variables, and allows step-through.
+4. Launch le jeu through Workbench (it starts DayZ in debug mode).
+5. When execution hits a breakpoint, Workbench pauses le jeu and shows the call stack, local variables, and allows step-through.
 
 ### Limitations
 
@@ -342,13 +342,13 @@ Or directly: `P:\DayZ Tools\Bin\Workbench\workbenchApp.exe`
 
 ---
 
-## Mode File Patching
+## File Patching Mode
 
-**File patching** is a development shortcut that allows the game to load loose files from disk instead of requiring them to be packed into PBOs. This dramatically speeds up iteration during development.
+**File patching** is a development shortcut that allows le jeu to load loose files from disk instead of requiring them to be packed into PBOs. This dramatically speeds up iteration during development.
 
 ### How File Patching Works
 
-When DayZ is launched with the `-filePatching` parameter, the engine checks the P: drive for files before looking in PBOs. If a file exists on P:, the loose version is loaded instead of the PBO version.
+When DayZ is launched with the `-filePatching` parameter, le moteur checks the P: drive for files before looking in PBOs. If a file exists on P:, the loose version is loaded instead of the PBO version.
 
 ```
 Normal mode:   Game loads --> PBO --> files
@@ -385,10 +385,10 @@ DayZDiag_x64.exe -filePatching -server -mod="MyMod" -config=serverDZ.cfg
 1. Set up P: drive with your mod's source files.
 2. Launch server and client with `-filePatching`.
 3. Edit a script file in your editor.
-4. Restart the game (or reconnect) to pick up the changes.
+4. Restart le jeu (or reconnect) to pick up the changes.
 5. No PBO rebuild needed.
 
-> **Astuce :** For script-only changes, file patching eliminates the build step entirely. You edit `.c` files, restart, and test. This is the fastest development loop available.
+> **Tip:** For script-only changes, file patching eliminates the build step entirely. You edit `.c` files, restart, and test. This is the fastest development loop available.
 
 ### Limitations
 
@@ -399,9 +399,51 @@ DayZDiag_x64.exe -filePatching -server -mod="MyMod" -config=serverDZ.cfg
 
 ---
 
-## Workflow complet : sources vers jeu
+## Complete Workflow: Source to Game
 
 Here is the end-to-end pipeline for turning source assets into a playable mod:
+
+### Complete Asset Pipeline
+
+```mermaid
+graph LR
+    subgraph "Source Assets"
+        TGA[".tga textures"]
+        FBX[".fbx/.obj models"]
+        OGG[".ogg audio"]
+        CPP["config.cpp"]
+        ES[".c scripts"]
+    end
+
+    subgraph "DayZ Tools"
+        TV["TexView2"]
+        OB["Object Builder"]
+        BIN["Binarize"]
+        AB["AddonBuilder"]
+    end
+
+    subgraph "Game Ready"
+        PAA[".paa textures"]
+        P3D[".p3d models"]
+        CBIN["config.bin"]
+        PBO[".pbo archive"]
+    end
+
+    TGA --> TV --> PAA
+    FBX --> OB --> P3D
+    CPP --> BIN --> CBIN
+    PAA --> AB
+    P3D --> AB
+    CBIN --> AB
+    OGG --> AB
+    ES --> AB
+    AB --> PBO
+
+    PBO --> GAME["DayZ Game<br/>@MyMod folder"]
+
+    style PBO fill:#2D8A4E,color:#fff
+    style GAME fill:#4A90D9,color:#fff
+```
 
 ### Phase 1: Create Source Assets
 
@@ -446,7 +488,7 @@ P:\MyMod\
       my_panel.layout           <-- UI layout
 ```
 
-### Phase 4: Testez avec File Patching (Development)
+### Phase 4: Test with File Patching (Development)
 
 ```
 Launch DayZDiag with -filePatching
@@ -490,34 +532,34 @@ Players subscribe to the mod on Steam Workshop, or server admins install it manu
 
 ### 1. P: Drive Not Mounted
 
-**Symptome :** All tools report "file not found" errors. Object Builder shows blank textures.
-**Correction :** Run your `SetupWorkdrive.bat` or mount P: via DayZ Tools Launcher before launching any tool.
+**Symptom:** All tools report "file non trouvé" errors. Object Builder shows blank textures.
+**Fix:** Run your `SetupWorkdrive.bat` or mount P: via DayZ Tools Launcher before launching any tool.
 
 ### 2. Wrong Tool for the Job
 
-**Symptome :** Trying to edit a PAA file in a text editor, or opening a P3D in Notepad.
-**Correction :** PAA is binary -- use TexView2. P3D is binary -- use Object Builder. Config.cpp is text -- use any text editor.
+**Symptom:** Trying to edit a PAA file in a text editor, or opening a P3D in Notepad.
+**Fix:** PAA is binary -- use TexView2. P3D is binary -- use Object Builder. Config.cpp is text -- use any text editor.
 
 ### 3. Forgetting to Extract Vanilla Data
 
-**Symptome :** Object Builder cannot display vanilla textures on referenced models. Materials show pink/magenta.
-**Correction :** Extract vanilla DayZ data to `P:\DZ\` so tools can resolve cross-references to game content.
+**Symptom:** Object Builder cannot display vanilla textures on referenced models. Materials show pink/magenta.
+**Fix:** Extract le DayZ vanilla data to `P:\DZ\` so tools can resolve cross-references to game content.
 
 ### 4. File Patching with Retail Executable
 
-**Symptome :** Changes to files on P: drive are not reflected in-game.
-**Correction :** Use `DayZDiag_x64.exe`, not `DayZ_x64.exe`. Only the Diag build supports `-filePatching`.
+**Symptom:** Changes to files on P: drive are not reflected in-game.
+**Fix:** Use `DayZDiag_x64.exe`, not `DayZ_x64.exe`. Only the Diag build supports `-filePatching`.
 
 ### 5. Building Without P: Drive
 
-**Symptome :** AddonBuilder or Binarize fails with path resolution errors.
-**Correction :** Mount P: drive before running any build tool. All paths in models and materials are P:-relative.
+**Symptom:** AddonBuilder or Binarize fails with path resolution errors.
+**Fix:** Mount P: drive before running any build tool. All paths in models and materials are P:-relative.
 
 ---
 
 ## Bonnes pratiques
 
-1. **Always use the P: drive.** Resist the temptation to use absolute paths. P: is the standard and all tools expect it.
+1. **Always use the P: drive.** Resist the temptation to use absolute paths. P: est le standard and all tools expect it.
 
 2. **Use file patching during development.** It cuts iteration time from minutes (PBO rebuild) to seconds (game restart). Only build PBOs for release testing and distribution.
 
@@ -530,6 +572,24 @@ Players subscribe to the mod on Steam Workshop, or server admins install it manu
 6. **Extract and study vanilla data.** The best way to learn how DayZ assets are structured is to examine existing ones. Extract vanilla PBOs and open models, materials, and textures in the appropriate tools.
 
 7. **Use Workbench for debugging, external editors for writing.** VS Code with Enforce Script extensions provides better editing. Workbench provides better debugging. Use both.
+
+---
+
+## Observé dans les mods réels
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| P: drive junctions via `SetupWorkdrive.bat` | COT / Community Online Tools | Ships a batch script that creates junction links from the mod source to P: drive for consistent path resolution |
+| `.gproj` Workbench project files | Dabs Framework | Includes Workbench project files for debugging Enforce Script with breakpoints and variable inspection |
+| Automated `dev.py` build orchestrator | StarDZ (all mods) | Python script wraps AddonBuilder calls, manages multi-PBO builds, launches server/client, and monitors logs |
+
+---
+
+## Compatibilité et impact
+
+- **Multi-Mod :** All DayZ tools share the P: drive. Multiple mod projects coexist under `P:\` without conflict as long as folder names differ. Junction collisions happen if two mods use the same P: path.
+- **Performance :** Binarize is CPU-intensive and single-threaded per file. Large mods with many P3D models and textures can take 5-10 minutes to binarize. Splitting into multiple PBOs and using `-packonly` for scripts reduces build time significantly.
+- **Version :** DayZ Tools are updated alongside major DayZ patches. Object Builder and Binarize occasionally receive fixes, but the overall workflow has been stable since DayZ 1.0. Always keep DayZ Tools updated via Steam.
 
 ---
 

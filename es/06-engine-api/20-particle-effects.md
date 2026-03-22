@@ -1,10 +1,10 @@
-# Chapter 6.20: Particle & Effect System
+# Capítulo 6.20: Particle & Effect System
 
-[Home](../../README.md) | [<< Previous: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System** | [Next: Zombie & AI System >>](21-zombie-ai-system.md)
+[Inicio](../../README.md) | [<< Anterior: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System** | [Siguiente: Zombie & AI System >>](21-zombie-ai-system.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ's particle and visual effects system handles fire, smoke, blood, explosions, weather effects, vehicle exhaust, contaminated area gas, and more. Every visual effect you see in the game world --- from a campfire to a bullet impact crater --- is driven by this system.
 
@@ -15,7 +15,7 @@ There are **two layers** for working with particles from script:
 
 All particle playback is **client-side only**. Dedicated servers have no rendering pipeline and cannot display particles. Always guard particle creation behind `!GetGame().IsDedicatedServer()` or rely on the built-in guards in the API. The `ParticleManager.GetInstance()` method already returns `null` on dedicated servers.
 
-Este capitulo cubre the complete particle pipeline: the `ParticleList` registry, both creation approaches, the `EmitorParam` system for runtime tuning, the `EffectParticle` wrapper, `SEffectManager` integration, and real-world patterns from vanilla code.
+This chapter covers the complete particle pipeline: the `ParticleList` registry, both creation approaches, the `EmitorParam` system for runtime tuning, the `EffectParticle` wrapper, `SEffectManager` integration, and real-world patterns from vanilla code.
 
 ---
 
@@ -98,7 +98,7 @@ IDs are assigned sequentially starting from 1. `NONE = 0` and `INVALID = -1` are
 
 **Fire particles:**
 
-| Constante | File | Caso de Uso |
+| Constante | File | Use Case |
 |----------|------|----------|
 | `CAMP_FIRE_START` | `fire_small_camp_01_start` | Campfire ignition |
 | `CAMP_SMALL_FIRE` | `fire_small_camp_01` | Small campfire flame |
@@ -110,7 +110,7 @@ IDs are assigned sequentially starting from 1. `NONE = 0` and `INVALID = -1` are
 
 **Smoke particles:**
 
-| Constante | File | Caso de Uso |
+| Constante | File | Use Case |
 |----------|------|----------|
 | `CAMP_SMALL_SMOKE` | `smoke_small_camp_01` | Campfire smoke (small) |
 | `CAMP_NORMAL_SMOKE` | `smoke_medium_camp_01` | Campfire smoke (medium) |
@@ -121,7 +121,7 @@ IDs are assigned sequentially starting from 1. `NONE = 0` and `INVALID = -1` are
 
 **Blood and player effects:**
 
-| Constante | File | Caso de Uso |
+| Constante | File | Use Case |
 |----------|------|----------|
 | `BLEEDING_SOURCE` | `blood_bleeding_01` | Active bleeding wound |
 | `BLEEDING_SOURCE_LIGHT` | `blood_bleeding_02` | Light bleeding wound |
@@ -133,7 +133,7 @@ IDs are assigned sequentially starting from 1. `NONE = 0` and `INVALID = -1` are
 
 **Cooking effects:**
 
-| Constante | File | Caso de Uso |
+| Constante | File | Use Case |
 |----------|------|----------|
 | `COOKING_BOILING_START` | `cooking_boiling_start` | Water starting to boil |
 | `COOKING_BOILING_DONE` | `cooking_boiling_done` | Boiling complete |
@@ -143,7 +143,7 @@ IDs are assigned sequentially starting from 1. `NONE = 0` and `INVALID = -1` are
 
 **Weapon effects:**
 
-| Constante | File | Caso de Uso |
+| Constante | File | Use Case |
 |----------|------|----------|
 | `GUN_FNX` | `weapon_shot_fnx_01` | FNX muzzle flash |
 | `GUN_AKM` | `weapon_shot_akm_01` | AKM muzzle flash |
@@ -153,7 +153,7 @@ IDs are assigned sequentially starting from 1. `NONE = 0` and `INVALID = -1` are
 
 **Bullet impacts (per material):**
 
-| Patron | Ejemplo | Descripcion |
+| Patrón | Ejemplo | Descripción |
 |---------|---------|-------------|
 | `IMPACT_<MATERIAL>_ENTER` | `IMPACT_WOOD_ENTER` | Bullet entry into surface |
 | `IMPACT_<MATERIAL>_RICOCHET` | `IMPACT_METAL_RICOCHET` | Bullet deflection |
@@ -163,7 +163,7 @@ Materials include: `WOOD`, `CONCRETE`, `DIRT`, `METAL`, `GLASS`, `SAND`, `SNOW`,
 
 **Explosions and grenades:**
 
-| Constante | Descripcion |
+| Constante | Descripción |
 |----------|-------------|
 | `RGD5`, `M67` | Fragmentation grenade explosions |
 | `EXPLOSION_LANDMINE` | Landmine detonation |
@@ -173,7 +173,7 @@ Materials include: `WOOD`, `CONCRETE`, `DIRT`, `METAL`, `GLASS`, `SAND`, `SNOW`,
 
 **Vehicles:**
 
-| Constante | Descripcion |
+| Constante | Descripción |
 |----------|-------------|
 | `HATCHBACK_EXHAUST_SMOKE` | Vehicle exhaust |
 | `HATCHBACK_COOLANT_OVERHEATING` | Engine warning steam |
@@ -182,7 +182,7 @@ Materials include: `WOOD`, `CONCRETE`, `DIRT`, `METAL`, `GLASS`, `SAND`, `SNOW`,
 
 **Environment:**
 
-| Constante | Descripcion |
+| Constante | Descripción |
 |----------|-------------|
 | `CONTAMINATED_AREA_GAS_BIGASS` | Large contaminated zone gas |
 | `ENV_SWARMING_FLIES` | Flies around corpses |
@@ -384,7 +384,7 @@ Every particle effect contains one or more **emitters** (also spelled "emitors" 
 
 ### EmitorParam Values
 
-| Parametro | Type | Descripcion |
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
 | `CONEANGLE` | vector | Emission cone angle |
 | `EMITOFFSET` | vector | Emission offset from origin |
@@ -500,7 +500,7 @@ p.StopWiggle();
 
 `EffectParticle` extends the `Effect` base class to provide a managed lifecycle for particles, integrated with `SEffectManager`. It wraps a `Particle` or `ParticleSource` internally.
 
-### Jerarquia de Clases
+### Class Hierarchy
 
 ```
 Effect (base)
@@ -636,7 +636,7 @@ SEffectManager.Stop(effectID);
 
 ### Key Methods for Particles
 
-| Metodo | Retorna | Descripcion |
+| Método | Retorna | Descripción |
 |--------|---------|-------------|
 | `PlayInWorld(eff, pos)` | `int` | Register and play Effect at world position |
 | `PlayOnObject(eff, obj, pos, ori)` | `int` | Register and play Effect on parent object |
@@ -696,7 +696,7 @@ ParticleProperties props = new ParticleProperties(
 
 ### ParticlePropertiesFlags
 
-| Flag | Descripcion |
+| Bandera | Descripción |
 |------|-------------|
 | `NONE` | Default, no special behavior |
 | `PLAY_ON_CREATION` | Start playing immediately when created |
@@ -934,7 +934,7 @@ Patterns seen in vanilla DayZ and community mods:
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
 | What the API Suggests | What Actually Works |
 |----------------------|-------------------|
@@ -1030,7 +1030,7 @@ ps.ResetParticle();  // Works correctly
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 - **Always use `ParticleManager.GetInstance()` for new code.** The pool-based approach is more efficient, supports batch creation, and provides full `ParticleSource` functionality including reset, restart, and native lifecycle management.
 - **Guard all particle code with `!GetGame().IsDedicatedServer()`.** Even though `ParticleManager.GetInstance()` returns null on servers, calling any particle-related method on the server is wasteful. Guard early and return.
@@ -1044,7 +1044,7 @@ ps.ResetParticle();  // Works correctly
 
 ## Key Source Files
 
-| File | Contiene |
+| File | Contains |
 |------|----------|
 | `scripts/3_game/particles/particlelist.c` | `ParticleList` --- all registered particle IDs and lookup methods |
 | `scripts/3_game/particles/particlebase.c` | `ParticleBase`, `ParticleEvents` --- base class and event system |
@@ -1062,10 +1062,10 @@ ps.ResetParticle();  // Works correctly
 ## Compatibilidad e Impacto
 
 - **Multi-Mod:** `ParticleList` is a single global class. Multiple mods can register particles via `modded class ParticleList`, but particle filenames must be unique --- duplicates cause an error on the second registration, and `GetParticleIDByName()` only returns the first match.
-- **Rendimiento:** The global `ParticleManager` pool is limited to 10,000 slots (`ParticleManagerConstants.POOL_SIZE`). Exceeding this creates "virtual" particles that wait for a slot to free up. Mods spawning many simultaneous particles (e.g., weather effects, contaminated areas with hundreds of emitters) should monitor pool usage and avoid exhausting it.
-- **Servidor/Cliente:** All particle rendering is client-side. Server-side particle effecters (`ParticleEffecter`) are network-synced entities that trigger client-side rendering via `OnVariablesSynchronized`. Direct `Particle` or `ParticleManager` calls on a dedicated server do nothing.
+- **Performance:** The global `ParticleManager` pool is limited to 10,000 slots (`ParticleManagerConstants.POOL_SIZE`). Exceeding this creates "virtual" particles that wait for a slot to free up. Mods spawning many simultaneous particles (e.g., weather effects, contaminated areas with hundreds of emitters) should monitor pool usage and avoid exhausting it.
+- **Server/Client:** All particle rendering is client-side. Server-side particle effecters (`ParticleEffecter`) are network-synced entities that trigger client-side rendering via `OnVariablesSynchronized`. Direct `Particle` or `ParticleManager` calls on a dedicated server do nothing.
 - **Legacy Compatibility:** The legacy `Particle` static methods (`Particle.PlayOnObject`, `Particle.CreateInWorld`) still work and are used by older mods. They are not deprecated but are less efficient than `ParticleManager` equivalents.
 
 ---
 
-[Home](../../README.md) | [<< Previous: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System**
+[Inicio](../../README.md) | [<< Anterior: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System** | [Siguiente: Zombie & AI System >>](21-zombie-ai-system.md)

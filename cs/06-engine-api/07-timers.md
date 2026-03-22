@@ -1,12 +1,12 @@
 # Chapter 6.7: Timers & CallQueue
 
-[Home](../../README.md) | [<< Previous: Notifications](06-notifications.md) | **Timers & CallQueue** | [Next: File I/O & JSON >>](08-file-io.md)
+[Domů](../../README.md) | [<< Předchozí: Oznámení](06-notifications.md) | **Časovače a CallQueue** | [Další: Souborové I/O a JSON >>](08-file-io.md)
 
 ---
 
-## Introduction
+## Úvod
 
-DayZ provides several mechanisms for deferred and repeating function calls: `ScriptCallQueue` (the primary system), `Timer`, `ScriptInvoker`, and `WidgetFadeTimer`. These are essential for scheduling delayed logic, creating update loops, and managing timed events without blocking the main thread. This chapter covers each mechanism with full API signatures and usage patterns.
+DayZ provides several mechanisms for deferred and repeating function calls: `ScriptCallQueue` (the primary system), `Timer`, `ScriptInvoker`, and `WidgetFadeTimer`. These are essential for scheduling delayed logic, creating update loops, and managing timed dokoncets without blocking the main thread. This chapter covers každý mechanism with plný API signatures and usage patterns.
 
 ---
 
@@ -33,7 +33,7 @@ TimerQueue       timers  = GetGame().GetTimerQueue(CALL_CATEGORY_GAMEPLAY);
 
 ## ScriptCallQueue
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Soubor:** `3_Game/tools/utilityclasses.c`
 
 The primary mechanism for deferred function calls. Supports one-shot delays, repeating calls, and immediate next-frame execution.
 
@@ -50,23 +50,23 @@ void CallLater(func fn, int delay = 0, bool repeat = false,
 | `fn` | The function to call (method reference: `this.MyMethod`) |
 | `delay` | Delay in milliseconds (0 = next frame) |
 | `repeat` | `true` = call repeatedly at `delay` intervals; `false` = call once |
-| `param1..4` | Optional parameters passed to the function |
+| `param1..4` | Optional parameters passed to funkce |
 
-**Example --- one-shot delay:**
+**Příklad --- one-shot delay:**
 
 ```c
 // Call MyFunction once after 5 seconds
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunction, 5000, false);
 ```
 
-**Example --- repeating call:**
+**Příklad --- repeating call:**
 
 ```c
 // Call UpdateLoop every 1 second, repeating
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.UpdateLoop, 1000, true);
 ```
 
-**Example --- with parameters:**
+**Příklad --- with parameters:**
 
 ```c
 void ShowMessage(string text, int color)
@@ -87,7 +87,7 @@ void Call(func fn, void param1 = NULL, void param2 = NULL,
           void param3 = NULL, void param4 = NULL);
 ```
 
-Executes the function on the next frame (delay = 0, no repeat). Shorthand for `CallLater(fn, 0, false)`.
+Executes funkce on the next frame (delay = 0, no repeat). Shorthand for `CallLater(fn, 0, false)`.
 
 **Example:**
 
@@ -103,7 +103,7 @@ void CallByName(Class obj, string fnName, int delay = 0, bool repeat = false,
                 Param par = null);
 ```
 
-Call a method by its string name. Useful when the method reference is not directly available.
+Call a method by its string name. Useful when metoda reference is not přímo dostupný.
 
 **Example:**
 
@@ -134,7 +134,7 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateLoop);
 void RemoveByName(Class obj, string fnName);
 ```
 
-Remove a call scheduled via `CallByName`.
+Odstraňte a call scheduled via `CallByName`.
 
 ### Tick
 
@@ -142,17 +142,17 @@ Remove a call scheduled via `CallByName`.
 void Tick(float timeslice);
 ```
 
-Called internally by the engine each frame. You should never need to call this manually.
+Called interníly by engine každý frame. You should nikdy need to call this ručně.
 
 ---
 
 ## Timer
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Soubor:** `3_Game/tools/utilityclasses.c`
 
 A class-based timer with explicit start/stop lifecycle. Cleaner for long-lived timers that need to be paused or restarted.
 
-### Konstruktor
+### Constructor
 
 ```c
 void Timer(int category = CALL_CATEGORY_SYSTEM);
@@ -170,9 +170,9 @@ void Run(float duration, Class obj, string fn_name, Param params = null, bool lo
 | `obj` | The object whose method will be called |
 | `fn_name` | Method name as string |
 | `params` | Optional `Param` object with parameters |
-| `loop` | `true` = repeat after each duration |
+| `loop` | `true` = repeat after každý duration |
 
-**Example --- one-shot timer:**
+**Příklad --- one-shot timer:**
 
 ```c
 ref Timer m_Timer;
@@ -189,7 +189,7 @@ void OnTimerComplete()
 }
 ```
 
-**Example --- repeating timer:**
+**Příklad --- repeating timer:**
 
 ```c
 ref Timer m_UpdateTimer;
@@ -213,7 +213,7 @@ void StopUpdateLoop()
 void Stop();
 ```
 
-Stops the timer. Can be restarted with another `Run()` call.
+Stops the timer. Can be restarted with další `Run()` call.
 
 ### IsRunning
 
@@ -221,7 +221,51 @@ Stops the timer. Can be restarted with another `Run()` call.
 bool IsRunning();
 ```
 
-Returns `true` if the timer is currently active.
+Returns `true` if the timer is aktuálně active.
+
+### Pause
+
+```c
+void Pause();
+```
+
+Pauses a running timer, preserving the remaining time. The timer can be resumed with `Continue()`.
+
+### Continue
+
+```c
+void Continue();
+```
+
+Resumes a paused timer from where it left off.
+
+### IsPaused
+
+```c
+bool IsPaused();
+```
+
+Returns `true` if the timer is aktuálně paused.
+
+**Příklad --- pause and resume:**
+
+```c
+ref Timer m_Timer;
+
+void StartTimer()
+{
+    m_Timer = new Timer(CALL_CATEGORY_GAMEPLAY);
+    m_Timer.Run(10.0, this, "OnTimerComplete", null, false);
+}
+
+void TogglePause()
+{
+    if (m_Timer.IsPaused())
+        m_Timer.Continue();
+    else
+        m_Timer.Pause();
+}
+```
 
 ### GetRemaining
 
@@ -243,9 +287,9 @@ Returns the total duration set by `Run()`.
 
 ## ScriptInvoker
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Soubor:** `3_Game/tools/utilityclasses.c`
 
-An event/delegate system. `ScriptInvoker` holds a list of callback functions and invokes all of them when `Invoke()` is called. This is DayZ's equivalent of C# events or the observer pattern.
+An dokoncet/delegate system. `ScriptInvoker` holds a list of zpětné volání functions and invokes all of them when `Invoke()` is called. This is DayZ's equivalent of C# dokoncets or the observer pattern.
 
 ### Insert
 
@@ -253,7 +297,7 @@ An event/delegate system. `ScriptInvoker` holds a list of callback functions and
 void Insert(func fn);
 ```
 
-Register a callback function.
+Register a zpětné volání function.
 
 ### Remove
 
@@ -261,7 +305,7 @@ Register a callback function.
 void Remove(func fn);
 ```
 
-Unregister a callback function.
+Unregister a zpětné volání function.
 
 ### Invoke
 
@@ -278,7 +322,7 @@ Call all registered functions with the provided parameters.
 int Count();
 ```
 
-Number of registered callbacks.
+Number of registered zpětné volánís.
 
 ### Clear
 
@@ -286,9 +330,9 @@ Number of registered callbacks.
 void Clear();
 ```
 
-Remove all registered callbacks.
+Odstraňte all registered zpětné volánís.
 
-**Example --- custom event system:**
+**Příklad --- vlastní dokoncet system:**
 
 ```c
 class MyModule
@@ -325,9 +369,9 @@ class MyUI
 }
 ```
 
-### Update Queue
+### Aktualizujte Queue
 
-The engine provides per-frame `ScriptInvoker` queues:
+Engine provides per-frame `ScriptInvoker` queues:
 
 ```c
 ScriptInvoker updater = GetGame().GetUpdateQueue(CALL_CATEGORY_GAMEPLAY);
@@ -337,13 +381,13 @@ updater.Insert(this.OnFrame);
 updater.Remove(this.OnFrame);
 ```
 
-Functions registered on the update queue are called every frame with no parameters. This is useful for per-frame logic without using `EntityEvent.FRAME`.
+Functions registered on the update queue are called každý frame with no parameters. This is užitečný for per-frame logic without using `EntityEvent.FRAME`.
 
 ---
 
 ## WidgetFadeTimer
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Soubor:** `3_Game/tools/utilityclasses.c`
 
 A specialized timer for fading widgets in and out.
 
@@ -361,7 +405,7 @@ class WidgetFadeTimer
 |-----------|-------------|
 | `w` | The widget to fade |
 | `time` | Duration of the fade in seconds |
-| `continue_from_current` | If `true`, start from current alpha; otherwise start from 0 (fade in) or 1 (fade out) |
+| `continue_from_current` | If `true`, start from current alpha; jinak start from 0 (fade in) or 1 (fade out) |
 
 **Example:**
 
@@ -387,11 +431,30 @@ void HideNotification()
 
 ---
 
-## Běžné vzory
+## GetRemainingTime (CallQueue)
+
+The `ScriptCallQueue` také provides a way to query how much time is left on a scheduled `CallLater`:
+
+```c
+float GetRemainingTime(Class obj, string fnName);
+```
+
+**Example:**
+
+```c
+// Get how much time is left on a CallLater
+float remaining = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).GetRemainingTime(this, "MyCallback");
+if (remaining > 0)
+    Print(string.Format("Callback fires in %1 ms", remaining));
+```
+
+---
+
+## Běžné Patterns
 
 ### Timer Accumulator (Throttled OnUpdate)
 
-When you have a per-frame callback but want to run logic at a slower rate:
+Když have a per-frame zpětné volání but want to run logic at a slower rate:
 
 ```c
 class MyModule
@@ -414,7 +477,7 @@ class MyModule
 
 ### Cleanup Pattern
 
-Always remove scheduled calls when your object is destroyed to prevent crashes:
+Vždy remove scheduled calls when your object is destroyed to prevent crashes:
 
 ```c
 class MyManager
@@ -438,7 +501,7 @@ class MyManager
 
 ### One-Shot Delayed Init
 
-A common pattern for initializing systems after the world is fully loaded:
+A common pattern for initializing systems after the world is plnýy loaded:
 
 ```c
 void OnMissionStart()
@@ -455,7 +518,7 @@ void DelayedInit()
 
 ---
 
-## Summary
+## Shrnutí
 
 | Mechanism | Use Case | Time Unit |
 |-----------|----------|-----------|
@@ -464,15 +527,49 @@ void DelayedInit()
 | `Timer` | Class-based timer with start/stop/remaining | Seconds |
 | `ScriptInvoker` | Event/delegate (observer pattern) | N/A (manual invoke) |
 | `WidgetFadeTimer` | Widget fade-in/fade-out | Seconds |
-| `GetUpdateQueue()` | Per-frame callback registration | N/A (every frame) |
+| `GetUpdateQueue()` | Per-frame zpětné volání registration | N/A (every frame) |
 
 | Koncept | Klíčový bod |
 |---------|-----------|
 | Categories | `CALL_CATEGORY_SYSTEM` (0), `GUI` (1), `GAMEPLAY` (2) |
-| Remove calls | Always `Remove()` in destructor to prevent dangling references |
+| Odstraňte calls | Vždy `Remove()` in destructor to prevent dangling references |
 | Timer vs CallLater | Timer is seconds + class-based; CallLater is milliseconds + functional |
-| ScriptInvoker | Insert/Remove callbacks, Invoke to fire all |
+| ScriptInvoker | Insert/Odstraňte zpětné volánís, Invoke to fire all |
 
 ---
 
-[<< Předchozí: Notifications](06-notifications.md) | **Timers & CallQueue** | [Další: File I/O & JSON >>](08-file-io.md)
+## Osvědčené postupy
+
+- **Vždy `Remove()` scheduled `CallLater` calls in your destructor.** Pokud owning object is destroyed while a `CallLater` is stále pending, engine will call a method on a deleted object and crash. Every `CallLater` must have a matching `Remove()` in the destructor.
+- **Use `Timer` (seconds) for long-lived timers with pause/resume, `CallLater` (milliseconds) for fire-and-forget delays.** Mixing them up leads to off-by-1000x timing bugs since `Timer.Run()` uses seconds but `CallLater` uses milliseconds.
+- **Throttle `OnUpdate` with a timer accumulator místo registering a repeating `CallLater`.** A `CallLater` with repeat creates a oddělený tracked entry in the queue, while an accumulator pattern (`m_Acc += timeslice; if (m_Acc >= INTERVAL)`) has zero overhead and is easier to tune.
+- **Unsubscribe `ScriptInvoker` zpětné volánís before the listener is destroyed.** Forgetting to call `Remove()` on a `ScriptInvoker` leaves a dangling function reference that crashes when `Invoke()` fires.
+- **Nikdy call `Tick()` ručně on `ScriptCallQueue`.** Engine calls it automatickýally každý frame. Manual calls double-fire all pending zpětné volánís.
+
+---
+
+## Kompatibilita a dopad
+
+> **Kompatibilita modů:** Timer systems are per-instance, so mods rarely conflict on timers přímo. The risk is in shared `ScriptInvoker` dokoncets where více mods register zpětné volánís.
+
+- **Pořadí načítání:** Timer and CallQueue systems are load-order independent. Each mod manages its own timers.
+- **Konflikty modifikovaných tříd:** No direct conflicts, but if two mods oba override `OnUpdate()` on the stejný class (e.g., `MissionServer`) and one forgets `super`, the jiný's accumulator-based timers stop working.
+- **Dopad na výkon:** Each active `CallLater` with `repeat = true` is checked každý frame. Hundreds of repeating calls degrade server tick rate. Preferujte fewer timers with longer intervals, or use the accumulator pattern in `OnUpdate`.
+- **Server/klient:** `CallLater` and `Timer` work na obou stranách. Use `CALL_CATEGORY_GAMEPLAY` for herní logika, `CALL_CATEGORY_GUI` for UI updates (client pouze), and `CALL_CATEGORY_SYSTEM` for low-level operations.
+
+---
+
+## Pozorováno v reálných modech
+
+> These patterns were confirmed by studying the source code of professional DayZ mods.
+
+| Vzor | Mod | Soubor/Umístění |
+|---------|-----|---------------|
+| Destructor `Remove()` cleanup for každý `CallLater` registration | COT | Module manager lifecycle |
+| `ScriptInvoker` dokoncet bus for cross-module notifications | Expansion | `ExpansionEventBus` |
+| `Timer` with `Pause()`/`Continue()` for logout countdown | Vanilla | `MissionServer` logout system |
+| Accumulator pattern in `OnUpdate` for 5-second periodic checks | Dabs Framework | Module tick scheduling |
+
+---
+
+[<< Předchozí: Oznámení](06-notifications.md) | **Časovače a CallQueue** | [Další: Souborové I/O a JSON >>](08-file-io.md)

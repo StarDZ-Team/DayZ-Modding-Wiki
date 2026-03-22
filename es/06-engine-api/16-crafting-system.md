@@ -1,10 +1,10 @@
-# Chapter 6.16: Crafting System
+# Capítulo 6.16: Sistema de Fabricación
 
-[Home](../../README.md) | [<< Previous: Sound System](15-sound-system.md) | **Crafting System** | [Next: Construction System >>](17-construction-system.md)
+[Inicio](../../README.md) | [<< Anterior: Sound System](15-sound-system.md) | **Crafting System** | [Siguiente: Construction System >>](17-construction-system.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 The Crafting System is how DayZ handles combining items to produce new items --- sharpening sticks with knives, tying rags into rope, sawing off shotgun barrels, assembling splints. It is a data-driven pipeline that sits on top of the Action System (Chapter 6.12) and uses a central recipe registry to discover, validate, and execute item transformations.
 
@@ -70,9 +70,9 @@ sequenceDiagram
     R-->>P: Result items created
 ```
 
-### Clases Principales
+### Core Classes
 
-| Class | File | Proposito |
+| Clase | File | Propósito |
 |-------|------|---------|
 | `RecipeBase` | `4_World/classes/recipes/recipebase.c` | Base class for all recipes. Declares ingredients, results, conditions. |
 | `PluginRecipesManagerBase` | `4_World/classes/recipes/recipes/pluginrecipesmanagerbase.c` | Registers all vanilla recipes via `RegisterRecipies()`. |
@@ -110,7 +110,7 @@ Every crafting recipe is a class that extends `RecipeBase`. The constructor call
 
 #### Recipe Metadata
 
-| Field | Type | Por defecto | Descripcion |
+| Campo | Tipo | Predeterminado | Descripción |
 |-------|------|---------|-------------|
 | `m_Name` | `string` | `"RecipeBase default name"` | Display name (stringtable key like `"#STR_CraftTorch0"`). |
 | `m_IsInstaRecipe` | `bool` | `false` | If `true`, recipe completes instantly without animation. |
@@ -120,7 +120,7 @@ Every crafting recipe is a class that extends `RecipeBase`. The constructor call
 
 #### Ingredient Conditions (per slot, indexed 0 or 1)
 
-| Field | Por defecto | Descripcion |
+| Campo | Predeterminado | Descripción |
 |-------|---------|-------------|
 | `m_MinDamageIngredient[i]` | `0` | Minimum damage level required. `-1` = disable check. |
 | `m_MaxDamageIngredient[i]` | `0` | Maximum damage level allowed. `-1` = disable check. |
@@ -129,7 +129,7 @@ Every crafting recipe is a class that extends `RecipeBase`. The constructor call
 
 #### Ingredient Modifications (per slot, applied after crafting)
 
-| Field | Por defecto | Descripcion |
+| Campo | Predeterminado | Descripción |
 |-------|---------|-------------|
 | `m_IngredientAddHealth[i]` | `0` | Health delta applied. `0` = do nothing. |
 | `m_IngredientSetHealth[i]` | `0` | Set health to this value. `-1` = do nothing. |
@@ -139,7 +139,7 @@ Every crafting recipe is a class that extends `RecipeBase`. The constructor call
 
 #### Result Configuration (per result, indexed 0 to `MAXIMUM_RESULTS - 1`)
 
-| Field | Por defecto | Descripcion |
+| Campo | Predeterminado | Descripción |
 |-------|---------|-------------|
 | `m_ResultSetFullQuantity[i]` | `false` | If `true`, result spawns at max quantity. |
 | `m_ResultSetQuantity[i]` | `0` | Set result quantity to this value. `-1` = do nothing. |
@@ -431,7 +431,7 @@ void InsertIngredient(int index, string ingredient,
     bool showItem = false)
 ```
 
-- `uid` --- Override the crafting animation when this specific ingredient is used. Por ejemplo, `CleanWeapon` uses `CMD_ACTIONFB_CLEANING_WEAPON` when the ingredient is a `DefaultWeapon`.
+- `uid` --- Override the crafting animation when this specific ingredient is used. For example, `CleanWeapon` uses `CMD_ACTIONFB_CLEANING_WEAPON` when the ingredient is a `DefaultWeapon`.
 - `showItem` --- If `true`, the item remains visible in the player's hands during the animation. If `false` (default), the item is hidden.
 
 ### InsertIngredientEx(int index, string ingredient, string soundCategory, ...)
@@ -565,7 +565,7 @@ When `m_IsInstaRecipe = true`, the crafting skips the animation entirely. The `C
 
 ### Supporting Actions
 
-| Accion | Proposito |
+| Acción | Propósito |
 |--------|---------|
 | `ActionWorldCraftCancel` | Cancels inventory-initiated crafting. Only appears when `IsInventoryCraft()` is true. |
 | `ActionWorldCraftSwitch` | (Deprecated) Cycles to next recipe variant. Replaced by the variant manager system. |
@@ -650,7 +650,7 @@ When two items are combined:
 
 ---
 
-## Temas Avanzados
+## Advanced Topics
 
 ### Tool Recipes (Non-Consuming Ingredients)
 
@@ -747,7 +747,7 @@ seconds = m_AnimationLength * 4.0
 
 ---
 
-## Mejores Practicas
+## Mejores Prácticas
 
 1. **Always call `super.RegisterRecipies()`** when modding `PluginRecipesManagerBase`. Forgetting this removes all vanilla recipes.
 
@@ -781,7 +781,7 @@ The official Bohemia sample demonstrates the simplest possible recipe mod:
 
 Examining the ~150 registered vanilla recipes reveals these patterns:
 
-| Categoria | Count | Patron | Ejemplo |
+| Categoría | Count | Patrón | Ejemplo |
 |----------|-------|---------|---------|
 | Craft | ~50 | Two ingredients -> new item | `CraftTorch`, `CraftSplint` |
 | DeCraft | ~15 | Reverse crafting, disassemble | `DeCraftSplint`, `DeCraftHandDrillKit` |
@@ -794,7 +794,7 @@ Examining the ~150 registered vanilla recipes reveals these patterns:
 
 ---
 
-## Teoria vs Practica
+## Teoría vs Práctica
 
 ### What the API Suggests
 
@@ -841,7 +841,7 @@ modded class PluginRecipesManagerBase extends PluginBase
 
 Each field uses different "do nothing" values:
 
-| Field | "Do nothing" value |
+| Campo | "Do nothing" value |
 |-------|--------------------|
 | `m_IngredientAddHealth` | `0` |
 | `m_IngredientSetHealth` | `-1` |
@@ -906,7 +906,7 @@ override bool CanDo(ItemBase ingredients[], PlayerBase player)
 
 ---
 
-## Compatibilidad e Impacto
+## Compatibility and Impact
 
 ### Mod Conflicts
 
@@ -931,7 +931,7 @@ override bool CanDo(ItemBase ingredients[], PlayerBase player)
 
 ## File Locations Quick Reference
 
-| File | Proposito |
+| File | Propósito |
 |------|---------|
 | `4_World/classes/recipes/recipebase.c` | `RecipeBase` --- base class, field definitions, execution pipeline |
 | `4_World/classes/recipes/cacheobject.c` | `CacheObject`, `RecipeCacheData` --- bitmask cache entries |

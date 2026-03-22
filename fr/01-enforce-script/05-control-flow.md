@@ -1,12 +1,12 @@
-# Chapter 1.5: Control Flow
+# Chapitre 1.5: Control Flow
 
-[Home](../../README.md) | [<< Previous: Modded Classes](04-modded-classes.md) | **Control Flow** | [Next: String Operations >>](06-strings.md)
+[Accueil](../../README.md) | [<< Précédent : Modded Classes](04-modded-classes.md) | **Control Flow** | [Suivant : String Operations >>](06-strings.md)
 
 ---
 
 ## Introduction
 
-Le flux de controle determine l'ordre dans lequel votre code s'execute. Enforce Script provides the familiar `if/else`, `for`, `while`, `foreach`, and `switch` constructs -- but with several important differences from C/C++ that will catch you off guard if you are not prepared. Ce chapitre couvre every control flow mechanism available, including the pitfalls unique to DayZ's scripting engine.
+Control flow determines the order in which your code executes. Enforce Script provides the familiar `if/else`, `for`, `while`, `foreach`, and `switch` constructs -- but with several important differences from C/C++ that will catch you off guard if you are not prepared. Ce chapitre couvre every control flow mechanism available, including the pitfalls unique to DayZ's scripting engine.
 
 ---
 
@@ -36,7 +36,7 @@ void CheckHealth(PlayerBase player)
 
 ### Null checks
 
-In Enforce Script, object references evaluate to `false` when null. C'est le standard way to guard against null access:
+In Enforce Script, object references evaluate to `false` when null. This est le standard way to guard against null access:
 
 ```c
 void ProcessItem(EntityAI item)
@@ -58,7 +58,7 @@ void CheckPlayerState(PlayerBase player)
 {
     if (player && player.IsAlive())
     {
-        // Safe -- player is checked for null before calling IsAlive()
+        // Sûr -- player is checked for null before calling IsAlive()
         Print("Player is alive");
     }
 
@@ -71,10 +71,10 @@ void CheckPlayerState(PlayerBase player)
 
 ### PITFALL: Variable redeclaration in else-if blocks
 
-C'est l'un des common Enforce Script errors. In most languages, variables declared inside one `if` branch are independent from variables in a sibling `else` branch. **Not in Enforce Script.** Declaring the same variable name in sibling `if`/`else if`/`else` blocks causes a **multiple declaration error** at compile time.
+This is one of the most common Enforce Script errors. In most languages, variables declared inside one `if` branch are independent from variables in a sibling `else` branch. **Not in Enforce Script.** Declaring the same variable name in sibling `if`/`else if`/`else` blocks causes a **multiple declaration error** à la compilation.
 
 ```c
-// WRONG -- Compile error!
+// INCORRECT -- Compile error!
 void BadExample(Object obj)
 {
     if (obj.IsKindOf("Car"))
@@ -89,7 +89,7 @@ void BadExample(Object obj)
     }
     else
     {
-        string msg = "Unknown object";         // First declaration of msg
+        string msg = "Unknown object";         // Première déclaration of msg
         Print(msg);
     }
 }
@@ -98,7 +98,7 @@ void BadExample(Object obj)
 Wait -- that looks fine, right? The problem occurs when you use the **same variable name** in two branches:
 
 ```c
-// WRONG -- Compile error: multiple declaration of 'result'
+// INCORRECT -- Compile error: multiple declaration of 'result'
 void ProcessObject(Object obj)
 {
     if (obj.IsKindOf("Car"))
@@ -108,7 +108,7 @@ void ProcessObject(Object obj)
     }
     else
     {
-        string result = "It's something else";  // ERROR! Same name as in the if block
+        string result = "It's something else";  // ERREUR ! Same name as in the if block
         Print(result);
     }
 }
@@ -142,7 +142,7 @@ void ProcessObject(Object obj)
 The `for` loop is identical to C-style syntax: initializer, condition, and increment.
 
 ```c
-// Print numbers 0 through 9
+// Afficher les nombres 0 through 9
 void CountToTen()
 {
     for (int i = 0; i < 10; i++)
@@ -174,7 +174,7 @@ void ListInventory(PlayerBase player)
 ### Nested for loops
 
 ```c
-// Spawn a grid of objects
+// Générer une grille of objects
 void SpawnGrid(vector origin, int rows, int cols, float spacing)
 {
     for (int r = 0; r < rows; r++)
@@ -192,7 +192,7 @@ void SpawnGrid(vector origin, int rows, int cols, float spacing)
 }
 ```
 
-> **Remarque :** Do not redeclare the loop variable `i` if there is already a variable named `i` in the enclosing scope. Enforce Script treats this as a multiple declaration error, even in nested scopes.
+> **Note :** Do not redeclare the loop variable `i` if there is already a variable named `i` in the enclosing scope. Enforce Script treats this as a multiple declaration error, even in nested scopes.
 
 ---
 
@@ -201,7 +201,7 @@ void SpawnGrid(vector origin, int rows, int cols, float spacing)
 The `while` loop repeats a block as long as its condition is `true`. The condition is evaluated **before** each iteration.
 
 ```c
-// Remove all dead zombies from a tracking list
+// Supprimer tous les morts zombies from a tracking list
 void CleanupDeadZombies(array<DayZInfected> zombieList)
 {
     int i = 0;
@@ -211,7 +211,7 @@ void CleanupDeadZombies(array<DayZInfected> zombieList)
         if (Class.CastTo(eai, zombieList.Get(i)) && !eai.IsAlive())
         {
             zombieList.RemoveOrdered(i);
-            // Do NOT increment i -- the next element has shifted into this index
+            // NE PAS incrémenter i -- the next element has shifted into this index
         }
         else
         {
@@ -226,7 +226,7 @@ void CleanupDeadZombies(array<DayZInfected> zombieList)
 The `do...while` keyword does not exist. The compiler will reject it. If you need a loop that always executes at least once, use the flag pattern described below.
 
 ```c
-// WRONG -- This will NOT compile
+// INCORRECT -- This will NOT compile
 do
 {
     // body
@@ -268,10 +268,10 @@ void AlternativeDoWhile()
 {
     while (true)
     {
-        // Body executes at least once
+        // Le corps s'exécute au moins une fois
         DoSomething();
 
-        // Check the exit condition at the END
+        // Vérifier la condition de sortie à la FIN
         if (!ShouldContinue())
             break;
     }
@@ -464,7 +464,7 @@ void DescribeWeaponSlot(int slotId)
 `break` exits the innermost loop (or switch case) immediately.
 
 ```c
-// Find the first player within 100 meters
+// Trouver le premier joueur within 100 meters
 void FindNearbyPlayer(vector origin, array<Man> players)
 {
     foreach (Man player : players)
@@ -473,7 +473,7 @@ void FindNearbyPlayer(vector origin, array<Man> players)
         if (dist < 100)
         {
             Print("Found nearby player: " + player.GetIdentity().GetName());
-            break; // Stop searching
+            break; // Arrêter la recherche
         }
     }
 }
@@ -484,17 +484,17 @@ void FindNearbyPlayer(vector origin, array<Man> players)
 `continue` skips the rest of the current iteration and jumps to the next one.
 
 ```c
-// Process only alive players
+// Traiter uniquement les joueurs vivants
 void HealAllPlayers(array<Man> players)
 {
     foreach (Man man : players)
     {
         PlayerBase player;
         if (!Class.CastTo(player, man))
-            continue; // Not a PlayerBase, skip
+            continue; // Pas un PlayerBase, passer
 
         if (!player.IsAlive())
-            continue; // Dead, skip
+            continue; // Mort, passer
 
         player.SetHealth("", "Health", 100);
         Print("Healed: " + player.GetIdentity().GetName());
@@ -519,21 +519,87 @@ void FindItemInGrid(array<array<string>> grid, string target)
             {
                 Print(string.Format("Found '%1' at [%2, %3]", target, row, col));
                 found = true;
-                break; // Only exits inner loop
+                break; // Quitte seulement la boucle interne
             }
         }
 
         if (found)
-            break; // Exits outer loop
+            break; // Quitte la boucle externe
     }
 }
 ```
 
 ---
 
+## Thread Keyword
+
+Enforce Script has a `thread` keyword for asynchronous execution:
+
+```c
+// Declare a threaded function
+thread void LongOperation()
+{
+    // Ceci s'exécute de manière asynchrone
+    Sleep(5000);  // Attendre 5 secondes sans bloquer
+    Print("Done!");
+}
+
+// Call it
+thread LongOperation();  // Démarre sans bloquer l'appelant
+```
+
+**Important:** `thread` in Enforce Script is NOT the same as OS threads. It is more like a coroutine --- it runs on the same thread but can yield/sleep without blocking le jeu. Use `CallLater` instead of `thread` for most mod use cases --- it is simpler and more predictable.
+
+### Thread vs CallLater
+
+| Feature | `thread` | `CallLater` |
+|---------|----------|-------------|
+| Syntax | `thread MyFunc();` | `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunc, delayMs, repeat);` |
+| Can sleep/yield | Yes (`Sleep()`) | No (fires once or repeats at interval) |
+| Cancellable | No built-in cancel | Yes (`CallQueue.Remove()`) |
+| Use case | Sequential async logic with waits | Delayed or repeated callbacks |
+
+Pour la plupart des modding scenarios, `CallLater` with a timer est la méthode préférée approach. Reserve `thread` for cases where you genuinely need sequential logic with intermediate waits (e.g., a multi-step animation sequence).
+
+---
+
+## Bonnes pratiques
+
+- Use guard clauses (`if (!x) return;`) at the top of functions instead of deeply nested `if` blocks -- it keeps the happy path flat and readable.
+- Declare shared variables before `if`/`else` blocks to avoid the sibling-scope redeclaration error unique to Enforce Script.
+- Use `foreach` for simple iteration and `for` with index only when you need to remove elements or access neighbors.
+- Replace `do...while` with `while (first || condition)` using a `bool first = true` flag -- this est le standard Enforce Script workaround.
+- Prefer `CallLater` over `thread` for delayed or repeated actions -- it is cancellable, simpler, and more predictable.
+
+---
+
+## Observé dans les mods réels
+
+> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| Guard clause + `continue` in loops | COT / Expansion | Loops over players always `continue` on failed cast or `!IsAlive()` before doing work |
+| `switch` on string commands | VPP Admin | Chat command handlers use `switch(command)` with string cases like `"!heal"`, `"!tp"` |
+| Flag variable to break nested loops | Expansion Market | Uses `bool found = false` with check after inner loop to exit outer loop |
+| `CallLater` for delayed apparition | Dabs Framework | Prefers `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater()` over `thread` |
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| `do...while` loop | Standard in most C-like languages | Does not exist in Enforce Script; causes a confusing compile error |
+| `switch` fall-through | C/C++ cases fall through without `break` | Enforce Script cases are independent -- stacking cases does not share handlers |
+| `thread` keyword | Sounds like multithreading | Actually a coroutine on the main thread; `Sleep()` yields, does not block |
+| Variable scope in `if`/`else` | Sibling blocks should have independent scope | Enforce Script treats them as shared scope -- same variable name in both blocks is a compile error |
+
+---
+
 ## Erreurs courantes
 
-| Mistake | Problem | Fix |
+| Erreur | Problème | Solution |
 |---------|---------|-----|
 | Using `do...while` | Does not exist in Enforce Script | Use `while` with a `bool first = true` flag |
 | Declaring same variable in `if` and `else` blocks | Multiple declaration error | Declare the variable before the `if` |
@@ -544,7 +610,7 @@ void FindItemInGrid(array<array<string>> grid, string target)
 
 ---
 
-## Reference rapide
+## Référence rapide
 
 ```c
 // if / else if / else
@@ -571,8 +637,12 @@ foreach (KeyType key, ValueType val : someMap) { }
 
 // switch/case (no fall-through)
 switch (value) { case X: /* ... */ break; default: break; }
+
+// thread (coroutine-style async)
+thread void MyFunc() { Sleep(1000); }
+thread MyFunc();  // non-blocking call
 ```
 
 ---
 
-[<< 1.4: Classes moddees](04-modded-classes.md) | [Accueil](../../README.md) | [1.6: Operations sur les chaines >>](06-strings.md)
+[<< 1.4: Modded Classes](04-modded-classes.md) | [Accueil](../../README.md) | [1.6: String Operations >>](06-strings.md)

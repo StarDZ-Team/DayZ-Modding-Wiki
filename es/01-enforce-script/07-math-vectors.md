@@ -1,10 +1,10 @@
-# Chapter 1.7: Math & Vector Operations
+# Capítulo 1.7: Math & Vector Operations
 
-[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
+[Inicio](../../README.md) | [<< Anterior: String Operations](06-strings.md) | **Math & Vector Operations** | [Siguiente: Memory Management >>](08-memory-management.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ modding frequently requires mathematical calculations: finding distances between players, randomizing spawn positions, interpolating camera movements, computing angles for AI targeting. Enforce Script provides the `Math` class for scalar operations and the `vector` type with static helpers for 3D math. This chapter is a complete reference for both, organized by category.
 
@@ -16,7 +16,7 @@ All methods on the `Math` class are **static**. You call them as `Math.MethodNam
 
 ### Constants
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `Math.PI` | 3.14159265... | Pi |
 | `Math.PI2` | 6.28318530... | 2 * Pi (full circle in radians) |
@@ -355,7 +355,7 @@ pos[1] = 50.0;    // Set y component
 
 ### Vector Constants
 
-| Constante | Valor | Descripcion |
+| Constante | Valor | Descripción |
 |----------|-------|-------------|
 | `vector.Zero` | `"0 0 0"` | Zero vector (origin) |
 | `vector.Up` | `"0 1 0"` | Points upward |
@@ -532,7 +532,7 @@ Math3D.MatrixIdentity4(mat4);
 
 ---
 
-## Ejemplos Practicos
+## Real-World Examples
 
 ### Calculating distance between two players
 
@@ -657,9 +657,42 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 ---
 
+## Mejores Prácticas
+
+- Use `vector.DistanceSq()` and compare against `radius * radius` in tight loops -- it avoids the expensive `sqrt` inside `Distance()`.
+- Always multiply by `Math.DEG2RAD` before passing angles to `Sin()`/`Cos()` -- all trig functions work in radians.
+- Check `v.Length() > 0` before calling `Normalize()` -- normalizing a zero-length vector produces `NaN` values.
+- Use `Math.Clamp()` to bound health, damage, and UI values rather than writing manual `if` chains.
+- Prefer `Math.RandomIntInclusive()` when the max value should be reachable (e.g., dice rolls) -- `RandomInt()` max is exclusive.
+
+---
+
+## Observado en Mods Reales
+
+> Patrones confirmados estudiando código fuente de mods profesionales de DayZ.
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| `DistanceSq` with pre-squared threshold | Expansion / COT | Proximity checks store `float maxDistSq = range * range` and compare with `DistanceSq` |
+| `Math.Atan2(dx, dz) * RAD2DEG` for heading | Expansion AI | Direction-to-target computed as angle in degrees for orientation assignment |
+| `Math.RandomFloat(0, Math.PI2)` for spawn ring | Dabs / Expansion | Random angle + `Cos`/`Sin` to generate circular spawn positions |
+| `Math.Clamp` on health/damage values | VPP / COT | Every damage application clamps result to `[0, maxHealth]` to prevent negative or overflow values |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `Math.RandomInt(0, 10)` | Might expect 0-10 inclusive | Max is exclusive -- returns 0-9; use `RandomIntInclusive` for inclusive max |
+| `vector[1]` is Y axis | Standard XYZ mapping | In DayZ, Y is vertical height -- easy to confuse with Z-up conventions from other engines |
+| `Math.SqrFloat` vs `Math.Sqrt` | Names look similar | `SqrFloat(5)` = 25 (squares the value), `Sqrt(25)` = 5 (square root) -- opposite operations |
+
+---
+
 ## Errores Comunes
 
-| Error | Problema | Solucion |
+| Error | Problema | Solución |
 |---------|---------|-----|
 | Passing degrees to `Math.Sin()` / `Math.Cos()` | Trig functions expect radians | Multiply by `Math.DEG2RAD` first |
 | Using `Math.RandomInt(0, 10)` and expecting 10 | Max is exclusive | Use `Math.RandomIntInclusive(0, 10)` for inclusive max |
@@ -671,7 +704,7 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 ---
 
-## Referencia Rapida
+## Referencia Rápida
 
 ```c
 // Constants

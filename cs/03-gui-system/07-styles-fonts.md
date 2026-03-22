@@ -1,6 +1,10 @@
 # Chapter 3.7: Styles, Fonts & Images
 
-[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
+[Domů](../../README.md) | [<< Předchozí: Zpracování událostí](06-event-handling.md) | **Styles, Fonts & Images** | [Další: Dialogy a modální okna >>](08-dialogs-modals.md)
+
+---
+
+This chapter covers the visual building blocks of DayZ UI: predefined styles, font usage, text sizing, image widgets with imageset references, and how to create vlastní imagesets for your mod.
 
 ---
 
@@ -8,20 +12,20 @@
 
 Styles are predefined visual appearances that can be applied to widgets via the `style` attribute in layout files. They control background rendering, borders, and overall look without requiring manual color and image configuration.
 
-### Common Built-In Styles
+### Běžné Built-In Styles
 
 | Style Name | Description |
 |---|---|
-| `blank` | No visual -- completely transparent background |
+| `blank` | No visual -- zcela transparent background |
 | `Empty` | No background rendering |
 | `Default` | Default button/widget style with standard DayZ appearance |
 | `Colorable` | Style that can be tinted using `SetColor()` |
-| `rover_sim_colorable` | Colored panel style, commonly used for backgrounds |
+| `rover_sim_colorable` | Colored panel style, běžně used for backgrounds |
 | `rover_sim_black` | Dark panel background |
 | `rover_sim_black_2` | Darker panel variant |
 | `Outline_1px_BlackBackground` | 1-pixel outline with solid black background |
 | `OutlineFilled` | Outline with a filled interior |
-| `DayZDefaultPanelRight` | DayZ default right panel style |
+| `DayZDefaultPanelRight` | DayZ výchozí right panel style |
 | `DayZNormal` | DayZ normal text/widget style |
 | `MenuDefault` | Standard menu button style |
 
@@ -45,7 +49,7 @@ PanelWidgetClass Background {
 
 ### Style + Color Pattern
 
-The `Colorable` and `rover_sim_colorable` styles are designed to be tinted. Set the `color` attribute in the layout or call `SetColor()` in code:
+The `Colorable` and `rover_sim_colorable` styles are designed to be tinted. Nastavte the `color` attribute in the layout or call `SetColor()` in code:
 
 ```
 PanelWidgetClass TitleBar {
@@ -81,7 +85,7 @@ Colorful UI uses `rover_sim_colorable` extensively for themed panels where the c
 
 ## Fonts
 
-DayZ includes several built-in fonts. Font paths are specified in the `font` attribute.
+DayZ includes several vestavěný fonts. Font paths are specified in the `font` attribute.
 
 ### Built-In Font Paths
 
@@ -91,7 +95,7 @@ DayZ includes several built-in fonts. Font paths are specified in the `font` att
 | `"gui/fonts/Metron28"` | Standard font, 28pt variant |
 | `"gui/fonts/Metron-Bold"` | Bold variant |
 | `"gui/fonts/Metron-Bold58"` | Bold 58pt variant |
-| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) font -- crisp at any size |
+| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) font -- crisp at jakýkoli size |
 
 ### Using Fonts in Layouts
 
@@ -119,7 +123,7 @@ tw.SetText("Hello");
 
 ### SDF Fonts
 
-SDF (Signed Distance Field) fonts render crisply at any zoom level, making them ideal for UI elements that may appear at various sizes. The `sdf_MetronBook24` font is the best choice for text that needs to look sharp across different UI scale settings.
+SDF (Signed Distance Field) fonts render crisply at jakýkoli zoom level, making them ideal for UI elements that may appear at různý sizes. The `sdf_MetronBook24` font is the best choice for text that needs to look sharp across odlišný UI scale settings.
 
 ---
 
@@ -129,7 +133,7 @@ DayZ text widgets support two sizing modes, controlled by the `"exact text"` att
 
 ### Proportional Text (Default)
 
-When `"exact text" 0` (the default), the font size is determined by the widget's height. The text scales with the widget. This is the default behavior.
+When `"exact text" 0` (the výchozí), the font size is determined by the widget's height. The text scales with the widget. Toto je výchozí behavior.
 
 ```
 TextWidgetClass ScalingText {
@@ -159,9 +163,9 @@ TextWidgetClass FixedText {
 
 | Scenario | Recommendation |
 |---|---|
-| HUD elements that scale with screen size | Proportional (default) |
-| Menu text at a specific size | `"exact text" 1` with `"exact text size"` |
-| Text that must match a specific font pixel size | `"exact text" 1` |
+| HUD elements that scale with screen size | Proportional (výchozí) |
+| Menu text at a specifický size | `"exact text" 1` with `"exact text size"` |
+| Text that must match a specifický font pixel size | `"exact text" 1` |
 | Text inside spacers/grids | Often proportional, determined by cell height |
 
 ### Text-Related Size Attributes
@@ -171,9 +175,9 @@ TextWidgetClass FixedText {
 | `"size to text h" 1` | Widget width adjusts to fit the text |
 | `"size to text v" 1` | Widget height adjusts to fit the text |
 | `"text sharpness"` | Float value controlling rendering sharpness |
-| `wrap 1` | Enable word wrapping for text that exceeds widget width |
+| `wrap 1` | Povolte word wrapping for text that exceeds widget width |
 
-The `"size to text"` attributes are useful for labels and tags where the widget should be exactly as large as its text content.
+The `"size to text"` attributes are užitečný for labels and tags where the widget should be exactly as large as its text content.
 
 ---
 
@@ -198,7 +202,7 @@ TextWidgetClass CenteredLabel {
 
 ## Text Outline
 
-Add outlines to text for readability on busy backgrounds:
+Přidejte outlines to text for readability on busy backgrounds:
 
 ```c
 TextWidget tw;
@@ -216,7 +220,7 @@ int color = tw.GetOutlineColor();         // Read outline color (ARGB)
 
 ### Imageset References
 
-The most common way to display images. An imageset is a sprite atlas -- a single texture file with multiple named sub-images.
+The většina common way to display images. An imageset is a sprite atlas -- a jeden texture file with více named sub-images.
 
 In a layout file:
 
@@ -231,7 +235,7 @@ ImageWidgetClass MyIcon {
 
 The format is `"set:<imageset_name> image:<image_name>"`.
 
-Common vanilla imagesets and images:
+Běžné vanilla imagesets and images:
 
 ```
 "set:dayz_gui image:icon_pin"           -- Map pin icon
@@ -246,7 +250,7 @@ Common vanilla imagesets and images:
 
 ### Multiple Image Slots
 
-A single `ImageWidget` can hold multiple images in different slots (`image0`, `image1`, etc.) and switch between them:
+A jeden `ImageWidget` can hold více images in odlišný slots (`image0`, `image1`, etc.) and switch mezi them:
 
 ```
 ImageWidgetClass StatusIcon {
@@ -263,7 +267,7 @@ icon.SetImage(1);    // Show image1 (health icon)
 
 ### Loading Images from Files
 
-Load images dynamically at runtime:
+Načtěte images dynamically za běhu:
 
 ```c
 ImageWidget img;
@@ -293,17 +297,17 @@ img.LoadMaskTexture("gui/textures/mask_wipe.edds");
 img.SetMaskProgress(0.5);  // 50% revealed
 ```
 
-This is useful for loading bars, health displays, and reveal animations.
+This is užitečný for loading bars, health displays, and reveal animations.
 
 ---
 
-## ImageSet Format
+## ImageNastavte Format
 
 An imageset file (`.imageset`) defines named regions within a sprite atlas texture. DayZ supports two imageset formats.
 
 ### DayZ Native Format
 
-Used by vanilla DayZ and most mods. This is **not** XML -- it uses the same brace-delimited format as layout files.
+Used by vanilla DayZ and většina mods. This is **not** XML -- it uses the stejný brace-delimited format as layout files.
 
 ```
 ImageSetClass {
@@ -343,11 +347,11 @@ Key fields:
 - `RefSize` -- Reference size of the source texture in pixels (width height)
 - `path` -- Path to the texture file (`.edds`)
 - `mpix` -- Mipmap level (0 = standard resolution, 1 = 2x resolution)
-- Each image entry defines `Name`, `Pos` (x y in pixels), and `Size` (width height in pixels)
+- Každý image entry defines `Name`, `Pos` (x y in pixels), and `Size` (width height in pixels)
 
 ### XML Format
 
-Some mods (including some DayZ Expansion modules) use an XML-based imageset format:
+Some mods (including některé DayZ Expansion modules) use an XML-based imageset format:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -358,7 +362,7 @@ Some mods (including some DayZ Expansion modules) use an XML-based imageset form
 </imageset>
 ```
 
-Both formats accomplish the same thing. The native format is used by vanilla DayZ; the XML format is sometimes easier to read and edit by hand.
+Oba formats accomplish the stejný thing. The native format is used by vanilla DayZ; the XML format is některétimes easier to read and edit by hand.
 
 ---
 
@@ -366,15 +370,15 @@ Both formats accomplish the same thing. The native format is used by vanilla Day
 
 To create your own imageset for a mod:
 
-### Step 1: Create the Sprite Atlas Texture
+### Step 1: Vytvořte the Sprite Atlas Texture
 
-Use an image editor (Photoshop, GIMP, etc.) to create a single texture that contains all your icons/images arranged on a grid. Common sizes are 256x256, 512x512, or 1024x1024 pixels.
+Use an image editor (Photoshop, GIMP, etc.) to create a jeden texture that contains all your icons/images arranged on a grid. Běžné sizes are 256x256, 512x512, or 1024x1024 pixels.
 
-Save as `.tga`, then convert to `.edds` using DayZ Tools (TexView2 or the ImageTool).
+Uložte as `.tga`, then convert to `.edds` using DayZ Tools (TexView2 or the ImageTool).
 
-### Step 2: Create the Imageset File
+### Step 2: Vytvořte the Imageset File
 
-Create a `.imageset` file that maps named regions to positions in the texture:
+Vytvořte a `.imageset` file that maps named regions to positions in the texture:
 
 ```
 ImageSetClass {
@@ -449,7 +453,7 @@ ImageWidget icon;
 
 ## Color Theme Pattern
 
-Professional mods centralize their color definitions in a theme class, then apply colors at runtime. This makes it easy to restyle the entire UI by changing one file.
+Professional mods centralize their color definitions in a theme class, then apply colors za běhu. This makes it easy to restyle the celý UI by changing one file.
 
 ```c
 class UIColor
@@ -473,11 +477,11 @@ statusText.SetColor(UIColor.Accent());
 errorText.SetColor(UIColor.Danger());
 ```
 
-This pattern (used by Colorful UI, MyMod, and others) means changing the entire UI color scheme requires editing only the theme class.
+This pattern (used by Colorful UI, MyMod, and jinýs) means changing the celý UI color scheme requires editing pouze the theme class.
 
 ---
 
-## Summary of Visual Attributes by Widget Type
+## Shrnutí of Visual Attributes by Widget Type
 
 | Widget | Key Visual Attributes |
 |---|---|
@@ -491,25 +495,45 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ---
 
-## Best Practices
+## Osvědčené postupy
 
-1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by the engine.
+1. **Use imageset references** místo direct file paths where možný -- imagesets are batched more efficiently by engine.
 
-2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at any scale.
+2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at jakýkoli scale.
 
-3. **Use `"exact text" 1`** for UI text at specific pixel sizes; use proportional text for HUD elements that should scale.
+3. **Use `"exact text" 1`** for UI text at specifický pixel sizes; use proportional text for HUD elements that should scale.
 
-4. **Centralize colors** in a theme class rather than hardcoding ARGB values throughout your code.
+4. **Centralize colors** in a theme class spíše než hardcoding ARGB values throughout your code.
 
-5. **Set `"src alpha" 1`** on image widgets to get proper transparency.
+5. **Nastavte `"src alpha" 1`** on image widgets to get proper transparency.
 
-6. **Register custom imagesets** in `config.cpp` so they are available globally without manual loading.
+6. **Register vlastní imagesets** in `config.cpp` so they are dostupný globálníly without manual loading.
 
-7. **Keep sprite atlases reasonably sized** -- 512x512 or 1024x1024 is typical. Larger textures waste memory if most of the space is empty.
+7. **Udržujte sprite atlases reasonably sized** -- 512x512 or 1024x1024 is typical. Larger textures waste memory if většina of the space is prázdný.
 
 ---
 
-## Next Steps
+## Další kroky
 
-- [3.1 Widget Types](01-widget-types.md) -- Review the full widget catalog
+- [3.8 Dialogs & Modals](08-dialogs-modals.md) -- Popup windows, confirmation prompts, and overlay panels
+- [3.1 Widget Types](01-widget-types.md) -- Review the plný widget catalog
 - [3.6 Event Handling](06-event-handling.md) -- Make your styled widgets interactive
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| SDF fonts scale to jakýkoli size | `sdf_MetronBook24` is crisp at all sizes | True for sizes výše ~10px. Below that, SDF fonts can appear blurry compared to bitmap fonts at their native size |
+| `"exact text" 1` gives pixel-perfect sizing | Font renders at the exact pixel size specified | DayZ applies interní scaling, so `"exact text size" 16` may render slightly odlišnýly across resolutions. Testujte on 1080p and 1440p |
+| Built-in styles cover all needs | `Default`, `blank`, `Colorable` are sufficient | Most professional mods define their own `.styles` files protože vestavěný styles have limited visual variety |
+| Imageset XML and native formats are equivalent | Oba define sprite regions | The native brace format is what engine processes fastest. XML format works but adds a parsing step; use native format for production |
+| `SetColor()` overrides layout color | Runtime color replaces the layout value | `SetColor()` tints the widget's existing visual. On styled widgets, the tint multiplies with the style's base color, producing unexpected results |
+
+---
+
+## Kompatibilita a dopad
+
+- **Více modů:** Style names are globální. Pokud dva mods register a `.styles` file defining the stejný style name, the last-loaded mod wins. Prefix vlastní style names with your mod identifier (e.g., `MyMod_PanelDark`).
+- **Výkon:** Imagesets are loaded once into GPU memory při startu. Adding large sprite atlases (2048x2048+) increases VRAM usage. Udržujte atlases at 512x512 or 1024x1024 and split across více imagesets if needed.

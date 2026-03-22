@@ -1,30 +1,30 @@
-# Chapter 6.3: Weather System
+# Kapitola 6.3: Systém počasí
 
-[Home](../../README.md) | [<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
-
----
-
-## Introduction
-
-DayZ has a fully dynamic weather system controlled through the `Weather` class. The system manages overcast, rain, snowfall, fog, wind, and thunderstorms. Weather can be configured through script (the Weather API), through `cfgweather.xml` in the mission folder, or through a scripted weather state machine. This chapter covers the script API for reading and controlling weather programmatically.
+[Domů](../../README.md) | [<< Předchozí: Vozidla](02-vehicles.md) | **Počasí** | [Další: Kamery >>](04-cameras.md)
 
 ---
 
-## Accessing the Weather Object
+## Úvod
+
+DayZ má plně dynamický systém počasí řízený prostřednictvím třídy `Weather`. Systém spravuje oblačnost, déšť, sněžení, mlhu, vítr a bouřky. Počasí lze konfigurovat prostřednictvím skriptu (Weather API), prostřednictvím `cfgweather.xml` ve složce mise, nebo prostřednictvím skriptovaného stavového automatu počasí. Tato kapitola pokrývá skriptové API pro čtení a programové řízení počasí.
+
+---
+
+## Přístup k objektu Weather
 
 ```c
 Weather weather = GetGame().GetWeather();
 ```
 
-The `Weather` object is a singleton managed by the engine. It is always available after the game world initializes.
+Objekt `Weather` je singleton spravovaný enginem. Je vždy dostupný po inicializaci herního světa.
 
 ---
 
-## Weather Phenomena
+## Meteorologické jevy
 
-Each weather phenomenon (overcast, fog, rain, snowfall, wind magnitude, wind direction) is represented by a `WeatherPhenomenon` object. You access them through getter methods on `Weather`.
+Každý meteorologický jev (oblačnost, mlha, déšť, sněžení, síla větru, směr větru) je reprezentován objektem `WeatherPhenomenon`. Přistupujete k nim prostřednictvím getter metod na `Weather`.
 
-### Getting Phenomenon Objects
+### Získání objektů jevů
 
 ```c
 proto native WeatherPhenomenon GetOvercast();
@@ -35,38 +35,38 @@ proto native WeatherPhenomenon GetWindMagnitude();
 proto native WeatherPhenomenon GetWindDirection();
 ```
 
-### WeatherPhenomenon API
+### API WeatherPhenomenon
 
-Each phenomenon shares the same interface:
+Každý jev sdílí stejné rozhraní:
 
 ```c
 class WeatherPhenomenon
 {
-    // Current state
-    proto native float GetActual();          // Current interpolated value (0.0 - 1.0 for most)
-    proto native float GetForecast();        // Target value being interpolated toward
-    proto native float GetDuration();        // How long the current forecast persists (seconds)
+    // Aktuální stav
+    proto native float GetActual();          // Aktuální interpolovaná hodnota (0.0 - 1.0 pro většinu)
+    proto native float GetForecast();        // Cílová hodnota k interpolaci
+    proto native float GetDuration();        // Jak dlouho aktuální předpověď trvá (sekundy)
 
-    // Set the forecast (server only)
+    // Nastavit předpověď (pouze server)
     proto native void Set(float forecast, float time = 0, float minDuration = 0);
-    // forecast: target value
-    // time:     seconds to interpolate to that value (0 = instant)
-    // minDuration: minimum time the value holds before auto-change
+    // forecast: cílová hodnota
+    // time:     sekundy pro interpolaci k této hodnotě (0 = okamžitě)
+    // minDuration: minimální doba, po kterou hodnota drží před automatickou změnou
 
-    // Limits
+    // Limity
     proto native void  SetLimits(float fnMin, float fnMax);
     proto native float GetMin();
     proto native float GetMax();
 
-    // Change speed limits (how fast the phenomenon can change)
+    // Limity rychlosti změny (jak rychle se jev může měnit)
     proto native void SetTimeLimits(float fnMin, float fnMax);
 
-    // Change magnitude limits
+    // Limity rozsahu změny
     proto native void SetChangeLimits(float fnMin, float fnMax);
 }
 ```
 
-**Example --- read current weather state:**
+**Příklad --- čtení aktuálního stavu počasí:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -80,37 +80,37 @@ float windDir   = w.GetWindDirection().GetActual();
 Print(string.Format("Overcast: %1, Rain: %2, Fog: %3", overcast, rain, fog));
 ```
 
-**Example --- force clear weather (server):**
+**Příklad --- vynutit jasné počasí (server):**
 
 ```c
 void ForceClearWeather()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(0.0, 30, 600);    // Clear sky, 30s transition, hold 10 min
-    w.GetRain().Set(0.0, 10, 600);        // No rain
-    w.GetFog().Set(0.0, 30, 600);         // No fog
-    w.GetSnowfall().Set(0.0, 10, 600);    // No snow
+    w.GetOvercast().Set(0.0, 30, 600);    // Jasná obloha, 30s přechod, držet 10 min
+    w.GetRain().Set(0.0, 10, 600);        // Bez deště
+    w.GetFog().Set(0.0, 30, 600);         // Bez mlhy
+    w.GetSnowfall().Set(0.0, 10, 600);    // Bez sněhu
 }
 ```
 
-**Example --- create a storm:**
+**Příklad --- vytvořit bouři:**
 
 ```c
 void ForceStorm()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(1.0, 60, 1800);   // Full overcast, 60s ramp, hold 30 min
-    w.GetRain().Set(0.8, 120, 1800);      // Heavy rain
-    w.GetFog().Set(0.3, 120, 1800);       // Light fog
-    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Strong wind (m/s)
+    w.GetOvercast().Set(1.0, 60, 1800);   // Plná oblačnost, 60s nárůst, držet 30 min
+    w.GetRain().Set(0.8, 120, 1800);      // Silný déšť
+    w.GetFog().Set(0.3, 120, 1800);       // Lehká mlha
+    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Silný vítr (m/s)
 }
 ```
 
 ---
 
-## Rain Thresholds
+## Prahy deště
 
-Rain is tied to overcast levels. The engine only renders rain when overcast exceeds a threshold. You can configure this via `cfgweather.xml`:
+Déšť je vázán na úrovně oblačnosti. Engine vykresluje déšť pouze když oblačnost překročí práh. To můžete konfigurovat přes `cfgweather.xml`:
 
 ```xml
 <rain>
@@ -118,25 +118,25 @@ Rain is tied to overcast levels. The engine only renders rain when overcast exce
 </rain>
 ```
 
-- `min` / `max`: overcast range where rain is allowed
-- `end`: seconds for rain to stop if overcast falls below threshold
+- `min` / `max`: rozsah oblačnosti, kde je déšť povolen
+- `end`: sekundy pro zastavení deště, pokud oblačnost klesne pod práh
 
-In script, rain will not visually appear if overcast is too low, even if `GetRain().GetActual()` returns a non-zero value.
+Ve skriptu se déšť vizuálně neobjeví, pokud je oblačnost příliš nízká, i když `GetRain().GetActual()` vrací nenulovou hodnotu.
 
 ---
 
-## Wind
+## Vítr
 
-Wind uses two phenomena: magnitude (speed in m/s) and direction (angle in radians).
+Vítr používá dva jevy: sílu (rychlost v m/s) a směr (úhel v radiánech).
 
-### Wind Vector
+### Vektor větru
 
 ```c
-proto native vector GetWind();           // Wind direction vector (world space)
-proto native float  GetWindSpeed();      // Wind speed in m/s
+proto native vector GetWind();           // Vektor směru větru (světový prostor)
+proto native float  GetWindSpeed();      // Rychlost větru v m/s
 ```
 
-**Example --- get wind info:**
+**Příklad --- získat informace o větru:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -147,46 +147,46 @@ Print(string.Format("Wind: %1 m/s, direction: %2", windSpd, windVec));
 
 ---
 
-## Thunderstorms (Lightning)
+## Bouřky (blesky)
 
 ```c
 proto native void SetStorm(float density, float threshold, float timeout);
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `density` | Lightning density (0.0 - 1.0) |
-| `threshold` | Minimum overcast level for lightning to appear (0.0 - 1.0) |
-| `timeout` | Seconds between lightning strikes |
+| Parametr | Popis |
+|----------|-------|
+| `density` | Hustota blesků (0.0 - 1.0) |
+| `threshold` | Minimální úroveň oblačnosti pro výskyt blesků (0.0 - 1.0) |
+| `timeout` | Sekundy mezi údery blesků |
 
-**Example --- enable frequent lightning:**
+**Příklad --- povolit časté blesky:**
 
 ```c
 GetGame().GetWeather().SetStorm(1.0, 0.6, 10);
-// Full density, triggers at 60% overcast, strikes every 10 seconds
+// Plná hustota, spouští se při 60% oblačnosti, údery každých 10 sekund
 ```
 
 ---
 
-## MissionWeather Control
+## Řízení MissionWeather
 
-To take manual control of weather (disabling the automatic weather state machine), call:
+Pro převzetí manuální kontroly nad počasím (vypnutí automatického stavového automatu počasí) volejte:
 
 ```c
 proto native void MissionWeather(bool use);
 ```
 
-When `MissionWeather(true)` is called, the engine stops the automatic weather transitions and only your script-driven `Set()` calls control the weather.
+Při zavolání `MissionWeather(true)` engine zastaví automatické přechody počasí a pouze vaše skriptové volání `Set()` řídí počasí.
 
-**Example --- full manual control in init.c:**
+**Příklad --- plná manuální kontrola v init.c:**
 
 ```c
 void main()
 {
-    // Take manual control of weather
+    // Převzít manuální kontrolu nad počasím
     GetGame().GetWeather().MissionWeather(true);
 
-    // Set desired weather
+    // Nastavit požadované počasí
     GetGame().GetWeather().GetOvercast().Set(0.3, 0, 0);
     GetGame().GetWeather().GetRain().Set(0.0, 0, 0);
     GetGame().GetWeather().GetFog().Set(0.1, 0, 0);
@@ -195,24 +195,24 @@ void main()
 
 ---
 
-## Date & Time
+## Datum a čas
 
-The game date and time affect lighting, sun position, and the day/night cycle. These are controlled through the `World` object, not `Weather`, but they are closely related.
+Herní datum a čas ovlivňují osvětlení, pozici slunce a cyklus den/noc. Tyto jsou řízeny prostřednictvím objektu `World`, ne `Weather`, ale úzce s ním souvisí.
 
-### Getting Current Date/Time
+### Získání aktuálního data/času
 
 ```c
 int year, month, day, hour, minute;
 GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 ```
 
-### Setting Date/Time (Server Only)
+### Nastavení data/času (pouze server)
 
 ```c
 proto native void SetDate(int year, int month, int day, int hour, int minute);
 ```
 
-**Example --- set time to noon:**
+**Příklad --- nastavit čas na poledne:**
 
 ```c
 int year, month, day, hour, minute;
@@ -220,22 +220,22 @@ GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 GetGame().GetWorld().SetDate(year, month, day, 12, 0);
 ```
 
-### Time Acceleration
+### Zrychlení času
 
-Time acceleration is configured in `serverDZ.cfg` via:
+Zrychlení času je konfigurováno v `serverDZ.cfg` přes:
 
 ```
-serverTimeAcceleration = 12;      // 12x real time
-serverNightTimeAcceleration = 4;  // 4x acceleration during night
+serverTimeAcceleration = 12;      // 12x reálný čas
+serverNightTimeAcceleration = 4;  // 4x zrychlení během noci
 ```
 
-In script, you can read the current time multiplier but typically cannot change it at runtime.
+Ve skriptu můžete číst aktuální multiplikátor času, ale obvykle ho nelze změnit za běhu.
 
 ---
 
-## WorldData Weather State Machine
+## Stavový automat počasí WorldData
 
-Vanilla DayZ uses a scripted weather state machine in `WorldData` classes (e.g., `ChernarusPlusData`, `EnochData`, `SakhalData`). The key override point is:
+Vanilla DayZ používá skriptovaný stavový automat počasí ve třídách `WorldData` (např. `ChernarusPlusData`, `EnochData`, `SakhalData`). Klíčový bod pro přepsání je:
 
 ```c
 class WorldData
@@ -245,7 +245,7 @@ class WorldData
 }
 ```
 
-Override this method in a `modded` WorldData class to intercept and modify weather transitions:
+Přepište tuto metodu ve třídě `modded` WorldData pro zachycení a úpravu přechodů počasí:
 
 ```c
 modded class ChernarusPlusData
@@ -255,7 +255,7 @@ modded class ChernarusPlusData
     {
         super.WeatherOnBeforeChange(type, actual, change, time);
 
-        // Prevent rain from ever going above 0.5
+        // Zabránit dešti v překročení 0.5
         if (type == EWeatherPhenomenon.RAIN && change > 0.5)
         {
             GetGame().GetWeather().GetRain().Set(0.5, time, 300);
@@ -268,9 +268,9 @@ modded class ChernarusPlusData
 
 ## cfgweather.xml
 
-The `cfgweather.xml` file in the mission folder provides a declarative way to configure weather without scripting. When present, it overrides the default weather state machine parameters.
+Soubor `cfgweather.xml` ve složce mise poskytuje deklarativní způsob konfigurace počasí bez skriptování. Pokud je přítomen, přepíše výchozí parametry stavového automatu počasí.
 
-Key structure:
+Klíčová struktura:
 
 ```xml
 <weather reset="0" enable="1">
@@ -292,32 +292,66 @@ Key structure:
 </weather>
 ```
 
-| Attribute | Description |
-|-----------|-------------|
-| `reset` | Whether to reset weather from storage on server start |
-| `enable` | Whether this file is active |
-| `actual` | Initial value |
-| `time` | Seconds to reach the initial value |
-| `duration` | Seconds the initial value holds |
-| `limits min/max` | Range for the phenomenon value |
-| `timelimits min/max` | Range for transition duration (seconds) |
-| `changelimits min/max` | Range for change magnitude per transition |
+| Atribut | Popis |
+|---------|-------|
+| `reset` | Zda resetovat počasí z úložiště při startu serveru |
+| `enable` | Zda je tento soubor aktivní |
+| `actual` | Počáteční hodnota |
+| `time` | Sekundy pro dosažení počáteční hodnoty |
+| `duration` | Sekundy, po které počáteční hodnota drží |
+| `limits min/max` | Rozsah pro hodnotu jevu |
+| `timelimits min/max` | Rozsah pro dobu trvání přechodu (sekundy) |
+| `changelimits min/max` | Rozsah pro velikost změny za přechod |
 
 ---
 
-## Summary
+## Shrnutí
 
 | Koncept | Klíčový bod |
-|---------|-----------|
-| Access | `GetGame().GetWeather()` returns the `Weather` singleton |
-| Phenomena | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
-| Read | `phenomenon.GetActual()` for current value (0.0 - 1.0) |
-| Write | `phenomenon.Set(forecast, transitionTime, holdDuration)` (server only) |
-| Storms | `SetStorm(density, threshold, timeout)` |
-| Manual mode | `MissionWeather(true)` disables automatic weather changes |
-| Date/Time | `GetGame().GetWorld().GetDate()` / `SetDate()` |
-| Config file | `cfgweather.xml` in mission folder for declarative setup |
+|---------|-------------|
+| Přístup | `GetGame().GetWeather()` vrací singleton `Weather` |
+| Jevy | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
+| Čtení | `phenomenon.GetActual()` pro aktuální hodnotu (0.0 - 1.0) |
+| Zápis | `phenomenon.Set(předpověď, časPřechodu, dobaDržení)` (pouze server) |
+| Bouřky | `SetStorm(hustota, práh, časový limit)` |
+| Manuální režim | `MissionWeather(true)` vypne automatické změny počasí |
+| Datum/Čas | `GetGame().GetWorld().GetDate()` / `SetDate()` |
+| Konfigurační soubor | `cfgweather.xml` ve složce mise pro deklarativní nastavení |
 
 ---
 
-[<< Předchozí: Vehicles](02-vehicles.md) | **Weather** | [Další: Cameras >>](04-cameras.md)
+## Osvědčené postupy
+
+- **Volejte `MissionWeather(true)` před nastavením počasí v `init.c`.** Bez toho automatický stavový automat počasí přepíše vaše volání `Set()` během sekund. Vždy nejdříve převezměte manuální kontrolu, pokud chcete deterministické počasí.
+- **Vždy zadávejte parametr `minDuration` v `Set()`.** Nastavení `minDuration` na 0 znamená, že systém počasí může okamžitě přejít od vaší hodnoty. Použijte alespoň 300-600 sekund pro udržení požadovaného stavu.
+- **Nastavte oblačnost před deštěm.** Déšť je vizuálně vázán na prahy oblačnosti. Pokud je oblačnost pod prahem konfigurovaným v `cfgweather.xml`, déšť se nevykreslí, i když `GetRain().GetActual()` vrací nenulovou hodnotu.
+- **Používejte `WeatherOnBeforeChange()` pro celoserverovou politiku počasí.** Přepište to ve třídě `modded class ChernarusPlusData` (nebo příslušné podtřídě WorldData) pro omezení nebo přesměrování přechodů počasí bez boje se stavovým automatem.
+- **Čtěte počasí na obou stranách, zapisujte pouze na serveru.** `GetActual()` a `GetForecast()` fungují na klientovi i serveru, ale `Set()` má efekt pouze na serveru.
+
+---
+
+## Kompatibilita a dopad
+
+> **Kompatibilita modů:** Mody počasí běžně přepisují `WeatherOnBeforeChange()` v podtřídách WorldData. Pouze jeden řetězec přepsání jednoho modu běží pro každou třídu WorldData příslušné mapy.
+
+- **Pořadí načítání:** Pokud více modů přepisuje `WeatherOnBeforeChange` na stejné podtřídě WorldData (např. `ChernarusPlusData`), všechny musí volat `super`, jinak dřívější mody ztratí svou logiku počasí.
+- **Konflikty modded tříd:** Pokud jeden mod volá `MissionWeather(true)` a druhý očekává automatické počasí, jsou zásadně nekompatibilní. Dokumentujte, zda váš mod přebírá manuální kontrolu nad počasím.
+- **Dopad na výkon:** Volání Weather API jsou lehká. Interpolace jevů běží v enginu, ne ve skriptu. Časté volání `Set()` (každý snímek) je plýtvání, ale neškodí.
+- **Server/Klient:** Všechna volání `Set()` jsou pouze serverová. Klienti přijímají stav počasí prostřednictvím automatické synchronizace enginu. Klientská volání `Set()` jsou tiše ignorována.
+
+---
+
+## Pozorováno v reálných modech
+
+> Tyto vzory byly potvrzeny studiem zdrojového kódu profesionálních DayZ modů.
+
+| Vzor | Mod | Soubor/Umístění |
+|------|-----|-----------------|
+| `MissionWeather(true)` + skriptovaný cyklus počasí s `CallLater` | Expansion | Kontroler počasí v inicializaci mise |
+| Přepsání `WeatherOnBeforeChange` pro zabránění deště v konkrétních oblastech | COT Weather Module | Modded `ChernarusPlusData` |
+| Admin příkaz pro vynucení jasna/bouře přes `Set()` s dlouhou dobou držení | VPP Admin Tools | Panel správy počasí |
+| `cfgweather.xml` s vlastními prahy pro mapy pouze se sněhem | Namalsk | Konfigurace ve složce mise |
+
+---
+
+[<< Předchozí: Vozidla](02-vehicles.md) | **Počasí** | [Další: Kamery >>](04-cameras.md)

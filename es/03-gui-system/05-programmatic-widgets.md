@@ -1,10 +1,14 @@
-# Chapter 3.5: Programmatic Widget Creation
+# Capítulo 3.5: Programmatic Widget Creation
 
-[Home](../../README.md) | [<< Previous: Container Widgets](04-containers.md) | **Programmatic Widget Creation** | [Next: Event Handling >>](06-event-handling.md)
+[Inicio](../../README.md) | [<< Anterior: Container Widgets](04-containers.md) | **Programmatic Widget Creation** | [Siguiente: Event Handling >>](06-event-handling.md)
 
 ---
 
-## Dos Enfoques
+While `.layout` files are the standard way to define UI structure, you can also create and configure widgets entirely from code. This is useful for dynamic UIs, procedurally generated elements, and situations where the layout is not known at compile time.
+
+---
+
+## Two Approaches
 
 DayZ provides two ways to create widgets in code:
 
@@ -57,7 +61,7 @@ void PopulateList(WrapSpacerWidget container, array<string> items)
 
 ---
 
-## CreateWidget() -- Creacion Programatica
+## CreateWidget() -- Programmatic Creation
 
 Creates a single widget with explicit type, position, size, flags, and parent.
 
@@ -77,7 +81,7 @@ Widget w = GetGame().GetWorkspace().CreateWidget(
 
 ### Parameters
 
-| Parameter | Tipo | Descripcion |
+| Parámetro | Tipo | Descripción |
 |---|---|---|
 | typeID | int | Widget type constant (e.g., `FrameWidgetTypeID`, `TextWidgetTypeID`) |
 | x | float | X position (proportional or pixel based on flags) |
@@ -121,7 +125,7 @@ WorkspaceWidgetTypeID
 
 Flags control widget behavior when created programmatically. Combine them with bitwise OR (`|`).
 
-| Flag | Efecto |
+| Bandera | Effect |
 |---|---|
 | `WidgetFlags.VISIBLE` | Widget starts visible |
 | `WidgetFlags.IGNOREPOINTER` | Widget does not receive mouse events |
@@ -153,7 +157,7 @@ int flags = widget.GetFlags();                  // Read current flags
 
 ---
 
-## Estableciendo Propiedades Despues de la Creacion
+## Setting Properties After Creation
 
 After creating a widget with `CreateWidget()`, you need to configure it. The widget is returned as the base `Widget` type, so you must cast to the specific type.
 
@@ -227,7 +231,7 @@ MyDataClass myData = MyDataClass.Cast(data);
 
 ---
 
-## Limpieza de Widgets
+## Widget Cleanup
 
 Widgets that are no longer needed must be properly cleaned up to avoid memory leaks.
 
@@ -263,7 +267,7 @@ void ClearChildren(Widget parent)
 }
 ```
 
-**Important:** You must get `GetSibling()` **before** calling `Unlink()`, because unlinking invalidates the widget's sibling chain.
+**Importante:** You must get `GetSibling()` **before** calling `Unlink()`, because unlinking invalidates the widget's sibling chain.
 
 ### Null Checks
 
@@ -279,7 +283,7 @@ if (tw)
 
 ---
 
-## Navegacion de la Jerarquia de Widgets
+## Widget Hierarchy Navigation
 
 Navigate the widget tree from code:
 
@@ -324,7 +328,7 @@ void WalkWidgets(Widget w, int depth = 0)
 
 ---
 
-## Ejemplo Completo: Creating a Dialog in Code
+## Complete Example: Creating a Dialog in Code
 
 Here is a complete example that creates a simple information dialog entirely in code, without any layout file:
 
@@ -409,9 +413,86 @@ SimpleCodeDialog dialog = new SimpleCodeDialog("Alert", "Server restart in 5 min
 
 ---
 
-## Layout Files vs. Programmatic: Cuando Usar Each
+## Widget Pooling
 
-| Situacion | Recommendation |
+Creating and destroying widgets every frame causes performance issues. Instead, maintain a pool of reusable widgets:
+
+```c
+class WidgetPool
+{
+    protected ref array<Widget> m_Pool;
+    protected ref array<Widget> m_Active;
+    protected Widget m_Parent;
+    protected string m_LayoutPath;
+
+    void WidgetPool(Widget parent, string layoutPath, int initialSize = 10)
+    {
+        m_Pool = new array<Widget>();
+        m_Active = new array<Widget>();
+        m_Parent = parent;
+        m_LayoutPath = layoutPath;
+
+        // Pre-create widgets
+        for (int i = 0; i < initialSize; i++)
+        {
+            Widget w = GetGame().GetWorkspace().CreateWidgets(m_LayoutPath, m_Parent);
+            w.Show(false);
+            m_Pool.Insert(w);
+        }
+    }
+
+    Widget Acquire()
+    {
+        Widget w;
+        if (m_Pool.Count() > 0)
+        {
+            w = m_Pool[m_Pool.Count() - 1];
+            m_Pool.Remove(m_Pool.Count() - 1);
+        }
+        else
+        {
+            w = GetGame().GetWorkspace().CreateWidgets(m_LayoutPath, m_Parent);
+        }
+        w.Show(true);
+        m_Active.Insert(w);
+        return w;
+    }
+
+    void Release(Widget w)
+    {
+        w.Show(false);
+        int idx = m_Active.Find(w);
+        if (idx >= 0)
+            m_Active.Remove(idx);
+        m_Pool.Insert(w);
+    }
+
+    void ReleaseAll()
+    {
+        foreach (Widget w : m_Active)
+        {
+            w.Show(false);
+            m_Pool.Insert(w);
+        }
+        m_Active.Clear();
+    }
+}
+```
+
+**When to use pooling:**
+- Lists that update frequently (kill feed, chat, player list)
+- Grids with dynamic content (inventory, market)
+- Any UI that creates/destroys 10+ widgets per second
+
+**When NOT to use pooling:**
+- Static panels created once
+- Dialogs shown/hidden (just use Show/Hide)
+
+---
+
+## Layout Files vs. Programmatic: When to Use Each
+
+| Situation | Recommendation |
 |---|---|
 | Static UI structure | Layout file (`.layout`) |
 | Complex widget trees | Layout file |
@@ -424,7 +505,38 @@ In practice, most mods use **layout files** for the structure and **code** for p
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 - [3.6 Event Handling](06-event-handling.md) -- Handle clicks, changes, and mouse events
 - [3.7 Styles, Fonts & Images](07-styles-fonts.md) -- Visual styling and image resources
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `CreateWidget()` creates any widget type | All TypeIDs work with `CreateWidget()` | `ScrollWidget` and `WrapSpacerWidget` created programmatically often need manual flag setup (`EXACTSIZE`, sizing) that layout files handle automatically |
+| `Unlink()` frees all memory | Widget and children are destroyed | References held in script variables become dangling. Always set widget refs to `null` after `Unlink()` or you risk crashes |
+| `SetHandler()` routes all events | One handler receives all widget events | The handler only receives events for widgets that have called `SetHandler(this)`. Children do not inherit the handler from their parent |
+| `CreateWidgets()` from layout is instant | Layout loads synchronously | Large layouts with many nested widgets cause a frame spike. Pre-load layouts during loading screens, not during gameplay |
+| Proportional sizing (0.0-1.0) scales to parent | Values are relative to parent dimensions | Without `EXACTSIZE` flag, even `CreateWidget()` values like `100` are treated as proportional (0-1 range), causing widgets to fill the entire parent |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Programmatically created widgets are private to the creating mod. Unlike `modded class`, there is no collision risk unless two mods attach widgets to the same vanilla parent widget by name.
+- **Performance:** Each `CreateWidgets()` call parses the layout file from disk. Cache the root widget and show/hide it rather than recreating from layout every time the UI opens.
+
+---
+
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Layout template + code population | COT, Expansion | Load a row `.layout` template via `CreateWidgets()` per list item, then populate via `FindAnyWidget()` |
+| Widget pooling for kill feed | Colorful UI | Pre-creates 20 feed entry widgets, shows/hides them instead of creating and destroying |
+| Pure code dialogs | Debug/admin tools | Simple alert dialogs built entirely with `CreateWidget()` to avoid shipping extra `.layout` files |
+| `SetHandler(this)` on every interactive child | VPP Admin Tools | Iterates all buttons after layout load and calls `SetHandler()` on each one individually |
+| `Unlink()` + null pattern | DabsFramework | Every dialog's `Close()` method calls `m_Root.Unlink(); m_Root = null;` consistently |

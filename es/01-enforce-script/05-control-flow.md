@@ -1,10 +1,10 @@
-# Chapter 1.5: Control Flow
+# Capítulo 1.5: Flujo de Control
 
-[Home](../../README.md) | [<< Previous: Modded Classes](04-modded-classes.md) | **Control Flow** | [Next: String Operations >>](06-strings.md)
+[Inicio](../../README.md) | [<< Anterior: Modded Classes](04-modded-classes.md) | **Control Flow** | [Siguiente: String Operations >>](06-strings.md)
 
 ---
 
-## Introduccion
+## Introducción
 
 Control flow determines the order in which your code executes. Enforce Script provides the familiar `if/else`, `for`, `while`, `foreach`, and `switch` constructs -- but with several important differences from C/C++ that will catch you off guard if you are not prepared. This chapter covers every control flow mechanism available, including the pitfalls unique to DayZ's scripting engine.
 
@@ -192,7 +192,7 @@ void SpawnGrid(vector origin, int rows, int cols, float spacing)
 }
 ```
 
-> **Note:** Do not redeclare the loop variable `i` if there is already a variable named `i` in the enclosing scope. Enforce Script treats this as a multiple declaration error, even in nested scopes.
+> **Nota:** Do not redeclare the loop variable `i` if there is already a variable named `i` in the enclosing scope. Enforce Script treats this as a multiple declaration error, even in nested scopes.
 
 ---
 
@@ -453,7 +453,7 @@ void DescribeWeaponSlot(int slotId)
 }
 ```
 
-> **Remember:** Because there is no fall-through, you cannot stack cases to share a handler the way you would in C. Each case must have its own body.
+> **Recuerda:** Because there is no fall-through, you cannot stack cases to share a handler the way you would in C. Each case must have its own body.
 
 ---
 
@@ -531,9 +531,75 @@ void FindItemInGrid(array<array<string>> grid, string target)
 
 ---
 
+## Thread Keyword
+
+Enforce Script has a `thread` keyword for asynchronous execution:
+
+```c
+// Declare a threaded function
+thread void LongOperation()
+{
+    // This runs asynchronously
+    Sleep(5000);  // Wait 5 seconds without blocking
+    Print("Done!");
+}
+
+// Call it
+thread LongOperation();  // Starts without blocking the caller
+```
+
+**Importante:** `thread` in Enforce Script is NOT the same as OS threads. It is more like a coroutine --- it runs on the same thread but can yield/sleep without blocking the game. Use `CallLater` instead of `thread` for most mod use cases --- it is simpler and more predictable.
+
+### Thread vs CallLater
+
+| Característica | `thread` | `CallLater` |
+|---------|----------|-------------|
+| Sintaxis | `thread MyFunc();` | `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunc, delayMs, repeat);` |
+| Can sleep/yield | Yes (`Sleep()`) | No (fires once or repeats at interval) |
+| Cancellable | No built-in cancel | Yes (`CallQueue.Remove()`) |
+| Caso de uso | Sequential async logic with waits | Delayed or repeated callbacks |
+
+For most DayZ modding scenarios, `CallLater` with a timer is the preferred approach. Reserve `thread` for cases where you genuinely need sequential logic with intermediate waits (e.g., a multi-step animation sequence).
+
+---
+
+## Mejores Prácticas
+
+- Use guard clauses (`if (!x) return;`) at the top of functions instead of deeply nested `if` blocks -- it keeps the happy path flat and readable.
+- Declare shared variables before `if`/`else` blocks to avoid the sibling-scope redeclaration error unique to Enforce Script.
+- Use `foreach` for simple iteration and `for` with index only when you need to remove elements or access neighbors.
+- Replace `do...while` with `while (first || condition)` using a `bool first = true` flag -- this is the standard Enforce Script workaround.
+- Prefer `CallLater` over `thread` for delayed or repeated actions -- it is cancellable, simpler, and more predictable.
+
+---
+
+## Observado en Mods Reales
+
+> Patrones confirmados estudiando código fuente de mods profesionales de DayZ.
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Guard clause + `continue` in loops | COT / Expansion | Loops over players always `continue` on failed cast or `!IsAlive()` before doing work |
+| `switch` on string commands | VPP Admin | Chat command handlers use `switch(command)` with string cases like `"!heal"`, `"!tp"` |
+| Flag variable to break nested loops | Expansion Market | Uses `bool found = false` with check after inner loop to exit outer loop |
+| `CallLater` for delayed spawn | Dabs Framework | Prefers `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater()` over `thread` |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `do...while` loop | Standard in most C-like languages | Does not exist in Enforce Script; causes a confusing compile error |
+| `switch` fall-through | C/C++ cases fall through without `break` | Enforce Script cases are independent -- stacking cases does not share handlers |
+| `thread` keyword | Sounds like multithreading | Actually a coroutine on the main thread; `Sleep()` yields, does not block |
+| Variable scope in `if`/`else` | Sibling blocks should have independent scope | Enforce Script treats them as shared scope -- same variable name in both blocks is a compile error |
+
+---
+
 ## Errores Comunes
 
-| Error | Problema | Solucion |
+| Error | Problema | Solución |
 |---------|---------|-----|
 | Using `do...while` | Does not exist in Enforce Script | Use `while` with a `bool first = true` flag |
 | Declaring same variable in `if` and `else` blocks | Multiple declaration error | Declare the variable before the `if` |
@@ -544,7 +610,7 @@ void FindItemInGrid(array<array<string>> grid, string target)
 
 ---
 
-## Referencia Rapida
+## Referencia Rápida
 
 ```c
 // if / else if / else
@@ -571,6 +637,10 @@ foreach (KeyType key, ValueType val : someMap) { }
 
 // switch/case (no fall-through)
 switch (value) { case X: /* ... */ break; default: break; }
+
+// thread (coroutine-style async)
+thread void MyFunc() { Sleep(1000); }
+thread MyFunc();  // non-blocking call
 ```
 
 ---

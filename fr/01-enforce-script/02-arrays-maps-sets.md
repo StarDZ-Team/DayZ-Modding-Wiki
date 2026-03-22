@@ -1,31 +1,31 @@
-# Chapter 1.2: Arrays, Maps & Sets
+# Chapitre 1.2: Arrays, Maps & Sets
 
-[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
+[Accueil](../../README.md) | [<< Précédent : Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Suivant : Classes & Inheritance >>](03-classes-inheritance.md)
 
 ---
 
 ## Introduction
 
-Les vrais mods DayZ manipulent des collections de choses: listes de joueurs, inventaires d'objets, correspondances d'IDs joueurs vers permissions, ensembles de zones actives. Enforce Script fournit trois types de collections to handle these needs:
+Real DayZ mods deal with collections of things: lists of players, inventories of items, mappings from player IDs to permissions, sets of active zones. Enforce Script provides three collection types to handle these needs:
 
 - **`array<T>`** --- Dynamic, ordered, resizable list (the collection you will use most)
 - **`map<K,V>`** --- Key-value associative container (hash map)
 - **`set<T>`** --- Ordered collection with value-based removal
 
-There are also **static arrays** (`int arr[5]`) for fixed-size data known at compile time. Ce chapitre couvre all of them in depth, including every available method, iteration patterns, and the subtle pitfalls that cause real bugs in production mods.
+There are also **static arrays** (`int arr[5]`) for fixed-size data known à la compilation. Ce chapitre couvre all of them in depth, including every available method, iteration patterns, and the subtle pitfalls that cause real bugs in production mods.
 
 ---
 
 ## Tableaux statiques
 
-Static arrays have a fixed size determined at compile time. They cannot grow or shrink. They are useful for small, known-size collections and are more memory-efficient than dynamic arrays.
+Static arrays have a fixed size determined à la compilation. They cannot grow or shrink. They are useful for small, known-size collections and are more memory-efficient than dynamic arrays.
 
 ### Declaration and Usage
 
 ```c
 void StaticArrayBasics()
 {
-    // Declare with literal size
+    // Déclarer avec une taille littérale
     int numbers[5];
     numbers[0] = 10;
     numbers[1] = 20;
@@ -33,18 +33,18 @@ void StaticArrayBasics()
     numbers[3] = 40;
     numbers[4] = 50;
 
-    // Declare with initializer list
+    // Déclarer avec une liste d'initialisation
     float damages[3] = {10.5, 25.0, 50.0};
 
-    // Declare with const size
+    // Déclarer avec une taille constante
     const int GRID_SIZE = 4;
     string labels[GRID_SIZE];
 
-    // Access elements
+    // Accéder aux éléments
     int first = numbers[0];     // 10
     float maxDmg = damages[2];  // 50.0
 
-    // Iterate with for loop
+    // Itérer avec une boucle for
     for (int i = 0; i < 5; i++)
     {
         Print(numbers[i]);
@@ -76,7 +76,7 @@ void Test()
 }
 ```
 
-### When to Use Static Arrays
+### Quand utiliser Static Arrays
 
 Use static arrays for:
 - Vector/matrix data (`vector mat[3]` for 3x3 rotation matrices)
@@ -87,23 +87,23 @@ Use dynamic `array<T>` for everything else.
 
 ---
 
-## Tableaux dynamiques : `array<T>`
+## Dynamic Arrays: `array<T>`
 
-Dynamic arrays are the most commonly used collection in DayZ modding. They can grow and shrink at runtime, support generics, and provide a rich set of methods.
+Dynamic arrays are the most commonly used collection in DayZ modding. They can grow and shrink à l'exécution, support generics, and provide a rich set of methods.
 
 ### Creation
 
 ```c
 void CreateArrays()
 {
-    // Method 1: new operator
+    // Méthode 1 : new operator
     array<string> names = new array<string>;
 
-    // Method 2: Initializer list
+    // Méthode 2 : Initializer list
     array<int> scores = {100, 85, 92, 78};
 
-    // Method 3: Using typedef
-    TStringArray items = new TStringArray;  // same as array<string>
+    // Méthode 3 : Using typedef
+    TStringArray items = new TStringArray;  // identique à array<string>
 
     // Arrays of any type
     array<float> distances = new array<float>;
@@ -129,7 +129,7 @@ You will encounter `TStringArray` constantly in DayZ code --- config parsing, ch
 
 ---
 
-## Reference complete des methodes de tableaux
+## Complete Array Method Reference
 
 ### Adding Elements
 
@@ -248,11 +248,11 @@ void SizingArrays()
     data.Reserve(100);
     // data.Count() == 0, but internal buffer is ready for 100 elements
 
-    // Resize: change the Count, filling new slots with default values
+    // Redimensionner: change the Count, filling new slots with default values
     data.Resize(10);
     // data.Count() == 10, all elements are 0
 
-    // Resize smaller truncates
+    // Redimensionner smaller truncates
     data.Resize(5);
     // data.Count() == 5
 }
@@ -313,7 +313,7 @@ void DebuggingArrays()
 
     // Debug: prints all elements to script log
     items.Debug();
-    // Output:
+    // Sortie :
     // [0] => Bandage
     // [1] => Morphine
     // [2] => Saline
@@ -322,7 +322,7 @@ void DebuggingArrays()
 
 ---
 
-## Parcourir les tableaux
+## Itération des tableaux
 
 ### for Loop (Index-Based)
 
@@ -409,7 +409,7 @@ PlayerBase FindNearestPlayer(vector origin, float maxRange)
 
 ---
 
-## Maps : `map<K,V>`
+## Maps: `map<K,V>`
 
 Maps store key-value pairs. They are used when you need to look up a value by a key --- player data by UID, item prices by class name, permissions by role name, and so on.
 
@@ -418,10 +418,10 @@ Maps store key-value pairs. They are used when you need to look up a value by a 
 ```c
 void CreateMaps()
 {
-    // Standard creation
+    // Création standard
     map<string, int> prices = new map<string, int>;
 
-    // Maps of various types
+    // Maps de différents types
     map<string, float> multipliers = new map<string, float>;
     map<int, string> idToName = new map<int, string>;
     map<string, ref array<string>> categories = new map<string, ref array<string>>;
@@ -439,7 +439,7 @@ typedef map<string, float>   TStringFloatMap;
 
 ---
 
-## Reference complete des methodes de Maps
+## Complete Map Method Reference
 
 ### Inserting and Updating
 
@@ -598,7 +598,7 @@ class PlayerTracker
 
 ---
 
-## Sets : `set<T>`
+## Sets: `set<T>`
 
 Sets are ordered collections similar to arrays, but with semantics oriented toward value-based operations (find and remove by value). They are less commonly used than arrays and maps.
 
@@ -635,18 +635,18 @@ void SetExamples()
 }
 ```
 
-### When to Use Set vs Array
+### Quand utiliser Set vs Array
 
-In practice, most DayZ modders use `array<T>` for almost everything because:
+En pratique, most DayZ modders use `array<T>` for almost everything because:
 - `set<T>` has fewer methods than `array<T>`
 - `array<T>` provides `Find()` for search and `RemoveItem()` for value-based removal
 - The API you need is typically on `array<T>` already
 
-Use `set<T>` when your code semantically represents a set (no meaningful order, focused on membership testing), or when you encounter it in vanilla DayZ code and need to interface with it.
+Use `set<T>` when your code semantically represents a set (no meaningful order, focused on membership testing), or when you encounter it in le DayZ vanilla code and need to interface with it.
 
 ---
 
-## Parcourir les Maps
+## Itération des maps
 
 Maps support `foreach` for convenient iteration:
 
@@ -691,7 +691,7 @@ void IterateMapByIndex()
 
 ---
 
-## Collections imbriquees
+## Collections imbriquées
 
 Collections can contain other collections. When storing reference types (like arrays) inside a map, use `ref` to manage ownership.
 
@@ -735,6 +735,39 @@ class LootTable
 
 ---
 
+## Bonnes pratiques
+
+- Always use `new` to instantiate collections before use -- `array<string> items;` is `null`, not empty.
+- Prefer `map.Set()` over `map.Insert()` for updates -- `Insert` silently ignores existing keys.
+- When removing elements during iteration, use a backward `for` loop or build a separate removal list -- never modify a collection inside `foreach`.
+- Use `Reserve()` when you know the expected element count ahead of time to avoid repeated internal re-allocations.
+- Guard every element access with `IsValidIndex()` or a `Count() > 0` check -- out-of-bounds access causes silent crashes.
+
+---
+
+## Observé dans les mods réels
+
+> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| Backward `for` loop for removal | Expansion / COT | Always iterate `Count()-1` down to `0` when removing filtered elements |
+| `map<string, ref ClassName>` for registries | Dabs Framework | All manager registries use `ref` in map values to keep objects alive |
+| `TStringArray` typedef everywhere | Vanilla / VPP | Config parsing, chat messages, and loot tables all use `TStringArray` instead of `array<string>` |
+| Null + empty guard before access | Expansion Market | Every function receiving an array starts with `if (!arr \|\| arr.Count() == 0) return;` |
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| `Remove(index)` is "fast remove" | Should just delete the element | It swaps with the last element first, silently re-ordering the array |
+| `map.Insert()` adds a key | Expected to update if key exists | Returns `false` and does nothing if the key is already present |
+| `set<T>` for unique collections | Should behave like a mathematical set | Most modders use `array<T>` with `Find()` instead because `set` has fewer methods |
+
+---
+
 ## Erreurs courantes
 
 ### 1. `Remove` vs `RemoveOrdered`: The Silent Bug
@@ -742,7 +775,7 @@ class LootTable
 `Remove(index)` is fast but **changes the order** by swapping with the last element. If you are iterating forward and removing, this causes skipped elements:
 
 ```c
-// BAD: skips elements because Remove swaps order
+// MAUVAIS : skips elements because Remove swaps order
 array<int> nums = {1, 2, 3, 4, 5};
 for (int i = 0; i < nums.Count(); i++)
 {
@@ -751,15 +784,15 @@ for (int i = 0; i < nums.Count(); i++)
                           // and we skip to index 2, missing "5"
 }
 
-// GOOD: iterate backward when removing
+// BON : iterate backward when removing
 array<int> nums2 = {1, 2, 3, 4, 5};
 for (int j = nums2.Count() - 1; j >= 0; j--)
 {
     if (nums2[j] % 2 == 0)
-        nums2.Remove(j);  // Safe: removing from the end doesn't affect lower indices
+        nums2.Remove(j);  // Sûr : removing from the end doesn't affect lower indices
 }
 
-// ALSO GOOD: use RemoveOrdered with backward iteration for order preservation
+// AUSSI BON : use RemoveOrdered with backward iteration for order preservation
 array<int> nums3 = {1, 2, 3, 4, 5};
 for (int k = nums3.Count() - 1; k >= 0; k--)
 {
@@ -774,17 +807,17 @@ for (int k = nums3.Count() - 1; k >= 0; k--)
 Enforce Script does not throw exceptions for out-of-bounds access --- it silently returns garbage or crashes. Always check bounds.
 
 ```c
-// BAD: no bounds check
+// MAUVAIS : no bounds check
 array<string> items = {"A", "B", "C"};
-string fourth = items[3];  // UNDEFINED BEHAVIOR: index 3 doesn't exist
+string fourth = items[3];  // INDÉFINI BEHAVIOR: index 3 doesn't exist
 
-// GOOD: check bounds
+// BON : check bounds
 if (items.IsValidIndex(3))
 {
     string fourth2 = items[3];
 }
 
-// GOOD: check count
+// BON : check count
 if (items.Count() > 0)
 {
     string last = items[items.Count() - 1];
@@ -796,15 +829,15 @@ if (items.Count() > 0)
 Collections are objects and must be instantiated with `new`:
 
 ```c
-// BAD: null reference crash
+// MAUVAIS : null reference crash
 array<string> items;
-items.Insert("Test");  // CRASH: items is null
+items.Insert("Test");  // PLANTAGE: items is null
 
-// GOOD: create first
+// BON : create first
 array<string> items2 = new array<string>;
 items2.Insert("Test");
 
-// ALSO GOOD: initializer list creates automatically
+// AUSSI BON : initializer list creates automatically
 array<string> items3 = {"Test"};
 ```
 
@@ -826,15 +859,15 @@ data.Set("key", 200);      // Now value is 200
 Do not add or remove elements from a collection while iterating over it with `foreach`. Build a separate list of elements to remove, then remove them afterward.
 
 ```c
-// BAD: modifying during iteration
+// MAUVAIS : modifying during iteration
 array<string> items = {"A", "B", "C", "D"};
 foreach (string item : items)
 {
     if (item == "B")
-        items.RemoveItem(item);  // UNDEFINED: invalidates iterator
+        items.RemoveItem(item);  // INDÉFINI: invalidates iterator
 }
 
-// GOOD: collect then remove
+// BON : collect then remove
 array<string> toRemove = new array<string>;
 foreach (string item2 : items)
 {
@@ -866,55 +899,55 @@ string GetFirstItem(array<string> items)
 
 ## Exercices pratiques
 
-### Exercice 1: Inventory Counter
-Creez une fonction that takes an `array<string>` of item class names (with duplicates) and returns a `map<string, int>` counting how many of each item exists.
+### Exercise 1: Inventory Counter
+Create a function that takes an `array<string>` of item class names (with duplicates) and returns a `map<string, int>` counting how many of each item exists.
 
 Example: `{"Bandage", "Morphine", "Bandage", "Saline", "Bandage"}` should produce `{"Bandage": 3, "Morphine": 1, "Saline": 1}`.
 
-### Exercice 2: Array Deduplication
-Ecrivez une fonction `array<string> RemoveDuplicates(array<string> input)` that returns a new array with duplicates removed, preserving the order of first occurrence.
+### Exercise 2: Array Deduplication
+Write a function `array<string> RemoveDuplicates(array<string> input)` that returns a new array with duplicates removed, preserving the order of first occurrence.
 
-### Exercice 3: Leaderboard
+### Exercise 3: Leaderboard
 Create a `map<string, int>` of player names to kill counts. Write functions to:
 1. Add a kill for a player (creating the entry if needed)
 2. Get the top N players sorted by kills (hint: extract to arrays, sort)
 3. Remove all players with zero kills
 
-### Exercice 4: Position History
-Creez une classe that stores the last 10 positions of a player (ring buffer using an array). It should:
+### Exercise 4: Position History
+Create a class that stores the last 10 positions of a player (ring buffer using an array). It should:
 1. Add a new position (dropping the oldest if at capacity)
 2. Return the total distance traveled across all stored positions
 3. Return the average position
 
-### Exercice 5: Two-Way Lookup
-Creez une classe with two maps that allows lookup in both directions: given a player UID, find their name; given a name, find their UID. Implement `Register(uid, name)`, `GetNameByUID(uid)`, `GetUIDByName(name)`, and `Unregister(uid)`.
+### Exercise 5: Two-Way Lookup
+Create a class with two maps that allows lookup in both directions: given a player UID, find their name; given a name, find their UID. Implement `Register(uid, name)`, `GetNameByUID(uid)`, `GetUIDByName(name)`, and `Unregister(uid)`.
 
 ---
 
-## Resume
+## Résumé
 
-| Collection | Type | Use Case | Key Difference |
+| Collection | Type | Cas d'utilisation | Différence clé |
 |-----------|------|----------|----------------|
-| Static array | `int arr[5]` | Taille fixe, connue a la compilation | Pas de redimensionnement, pas de methodes |
-| Dynamic array | `array<T>` | Liste ordonnee polyvalente | API riche, redimensionnable |
-| Map | `map<K,V>` | Recherche cle-valeur | `Set()` to insert/update |
-| Set | `set<T>` | Appartenance basee sur la valeur | Plus simple que array, moins courant |
+| Static array | `int arr[5]` | Fixed-size, compile-time known | No resize, no methods |
+| Dynamic array | `array<T>` | General-purpose ordered list | Rich API, resizable |
+| Map | `map<K,V>` | Key-value lookup | `Set()` to insert/update |
+| Set | `set<T>` | Value-based membership | Simpler than array, less common |
 
-| Operation | Method | Notes |
+| Opération | Méthode | Notes |
 |-----------|--------|-------|
-| Add to end | `Insert(val)` | Retourne l'index |
-| Add at position | `InsertAt(val, idx)` | Decale a droite |
-| Remove fast | `Remove(idx)` | Echange avec le dernier, **unordered** |
-| Remove ordered | `RemoveOrdered(idx)` | Decale a gauche, preserve l'ordre |
-| Remove by value | `RemoveItem(val)` | Trouve puis supprime (ordonne) |
-| Find | `Find(val)` | Retourne l'index or -1 |
-| Count | `Count()` | Nombre d'elements |
-| Bounds check | `IsValidIndex(idx)` | Retourne bool |
-| Sort | `Sort()` / `Sort(true)` | Croissant / decroissant |
-| Random | `GetRandomElement()` | Retourne une valeur aleatoire |
-| foreach | `foreach (T val : arr)` | Valeur seule |
-| foreach indexed | `foreach (int i, T val : arr)` | Index + valeur |
+| Add to end | `Insert(val)` | Returns index |
+| Add at position | `InsertAt(val, idx)` | Shifts right |
+| Remove fast | `Remove(idx)` | Swaps with last, **unordered** |
+| Remove ordered | `RemoveOrdered(idx)` | Shifts left, preserves order |
+| Remove by value | `RemoveItem(val)` | Finds then removes (ordered) |
+| Find | `Find(val)` | Returns index or -1 |
+| Count | `Count()` | Number of elements |
+| Bounds check | `IsValidIndex(idx)` | Returns bool |
+| Sort | `Sort()` / `Sort(true)` | Ascending / descending |
+| Random | `GetRandomElement()` | Returns random value |
+| foreach | `foreach (T val : arr)` | Value only |
+| foreach indexed | `foreach (int i, T val : arr)` | Index + value |
 
 ---
 
-[Accueil](../../README.md) | [<< Previous: Variables et types](01-variables-types.md) | **Tableaux, Maps et Sets** | [Next: Classes et heritage >>](03-classes-inheritance.md)
+[Accueil](../../README.md) | [<< Précédent : Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Suivant : Classes & Inheritance >>](03-classes-inheritance.md)

@@ -1,20 +1,20 @@
 # Chapter 1.8: Memory Management
 
-[Home](../../README.md) | [<< Previous: Math & Vectors](07-math-vectors.md) | **Memory Management** | [Next: Casting & Reflection >>](09-casting-reflection.md)
+[Domů](../../README.md) | [<< Předchozí: Matematika a vektory](07-math-vectors.md) | **Správa paměti** | [Další: Přetypování a reflexe >>](09-casting-reflection.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Enforce Script uses **automatic reference counting (ARC)** for memory management -- not garbage collection in the traditional sense. Understanding how `ref`, `autoptr`, and raw pointers work is essential for writing stable DayZ mods. Get it wrong and you will either leak memory (your server gradually consumes more RAM until it crashes) or access deleted objects (instant crash with no useful error message). This chapter explains every pointer type, when to use each, and how to avoid the most dangerous pitfall: reference cycles.
+Enforce Script uses **automatický reference counting (ARC)** for memory management -- not garbage collection in the traditional sense. Understanding how `ref`, `autoptr`, and raw pointers work is essential for writing stable DayZ mods. Get it wrong and you will either leak memory (your server gradually consumes more RAM until it crashes) or access deleted objects (instant crash with no užitečný error message). This chapter explains každý pointer type, when to use každý, and how to avoid the většina dangerous pitfall: reference cycles.
 
 ---
 
 ## Tři typy ukazatelů
 
-Enforce Script has three ways to hold a reference to an object:
+Enforce Script má tři způsoby, jak držet referenci na objekt:
 
-| Typ ukazatele | Klíčové slovo | Udržuje objekt naživu? | Vynulován při smazání? | Primární použití |
+| Pointer Type | Keyword | Keeps Object Alive? | Zeroed on Delete? | Primary Use |
 |-------------|---------|---------------------|-------------------|-------------|
 | **Raw pointer** | *(none)* | No (weak reference) | Only if class extends `Managed` | Back-references, observers, caches |
 | **Strong reference** | `ref` | Yes | Yes | Owned members, collections |
@@ -22,15 +22,15 @@ Enforce Script has three ways to hold a reference to an object:
 
 ### Jak funguje ARC
 
-Every object has a **reference count** -- the number of strong references (`ref`, `autoptr`, local variables, function arguments) pointing to it. When the count drops to zero, the object is automatically destroyed and its destructor is called.
+Every object has a **reference count** -- the number of strong references (`ref`, `autoptr`, lokální variables, function arguments) pointing to it. Když count drops to zero, the object is automatickýally destroyed and its destructor is called.
 
-**Weak references** (raw pointers) do NOT increase the reference count. They observe the object without keeping it alive.
+**Weak references** (raw pointers) NEZVYŠUJÍ počet referencí. Pozorují objekt bez toho, aby ho udržovaly naživu.
 
 ---
 
-## Surové ukazatele (slabé reference)
+## Raw Pointers (Weak References)
 
-A raw pointer is any variable declared without `ref` or `autoptr`. For class members, this creates a **weak reference**: it points to the object but does NOT keep it alive.
+A raw pointer is jakýkoli variable declared without `ref` or `autoptr`. For class members, this creates a **weak reference**: it points to the object but does NOT keep it alive.
 
 ```c
 class Observer
@@ -56,12 +56,12 @@ class Observer
 }
 ```
 
-### Třídy Managed vs. Non-Managed
+### Managed vs Non-Managed classes
 
-The safety of weak references depends on whether the object's class extends `Managed`:
+Bezpečnost slabých referencí závisí na tom, zda třída objektu rozšiřuje `Managed`:
 
-- **Managed classes** (most DayZ gameplay classes): When the object is deleted, all weak references are automatically set to `null`. This is safe.
-- **Non-Managed classes** (plain `class` without inheriting `Managed`): When the object is deleted, weak references become **dangling pointers** -- they still hold the old memory address. Accessing them causes a crash.
+- **Managed classes** (most DayZ gameplay classes): Když object is deleted, all weak references are automatickýally set to `null`. This is safe.
+- **Non-Managed classes** (plain `class` without inheriting `Managed`): Když object is deleted, weak references become **dangling pointers** -- they stále hold the old memory address. Accessing them causes a crash.
 
 ```c
 // SAFE -- Managed class, weak refs are zeroed
@@ -103,17 +103,17 @@ void TestNonManaged()
 }
 ```
 
-> **Pravidlo:** If you are writing your own classes, always extend `Managed` for safety. Most DayZ engine classes (EntityAI, ItemBase, PlayerBase, etc.) already inherit from `Managed`.
+> **Rule:** Pokud are writing your own classes, vždy extend `Managed` for safety. Most DayZ engine classes (EntityAI, ItemBase, PlayerBase, etc.) již inherit from `Managed`.
 
 ---
 
-## ref (silná reference)
+## ref (Strong Reference)
 
-The `ref` keyword marks a variable as a **strong reference**. The object stays alive as long as at least one strong reference exists. When the last strong reference is destroyed or overwritten, the object is deleted.
+The `ref` keyword marks a variable as a **strong reference**. The object stays alive as long as at least one strong reference exists. Když last strong reference is destroyed or overwritten, the object is deleted.
 
-### Členy třídy
+### Class members
 
-Use `ref` for objects that your class **owns** and is responsible for creating and destroying.
+Use `ref` pro objekty, které vaše třída **vlastní** a je zodpovědná za jejich vytvoření a zničení.
 
 ```c
 class MissionManager
@@ -136,9 +136,9 @@ class MissionManager
 }
 ```
 
-### Kolekce vlastněných objektů
+### Collections of owned objects
 
-When you store objects in an array or map and want the collection to own them, use `ref` on both the collection AND the elements:
+Když store objects in pole or map and want the collection to own them, use `ref` on oba the collection AND the elements:
 
 ```c
 class ZoneManager
@@ -159,7 +159,7 @@ class ZoneManager
 }
 ```
 
-**Zásadní rozdíl:** An `array<SafeZone>` holds **weak** references. An `array<ref SafeZone>` holds **strong** references. If you use the weak version, objects inserted into the array may be immediately deleted because no strong reference keeps them alive.
+**Critical distinction:** An `array<SafeZone>` holds **weak** references. An `array<ref SafeZone>` holds **strong** references. Pokud use the weak version, objects inserted into pole may be okamžitě deleted protože no strong reference keeps them alive.
 
 ```c
 // WRONG -- Objects are deleted immediately after insertion!
@@ -174,9 +174,9 @@ strongArray.Insert(new MyClass()); // Object lives as long as it's in the array
 
 ---
 
-## autoptr (silná reference s rozsahem)
+## autoptr (Scoped Strong Reference)
 
-`autoptr` is identical to `ref` but is intended for **local variables**. The object is automatically deleted when the variable goes out of scope (when the function returns).
+`autoptr` is identical to `ref` but is intended for **lokální variables**. The object is automatickýally deleted when the variable goes out of scope (when funkce returns).
 
 ```c
 void ProcessData()
@@ -190,7 +190,7 @@ void ProcessData()
 
 ### Kdy použít autoptr
 
-In practice, **local variables are already strong references by default** in Enforce Script. The `autoptr` keyword makes this explicit and self-documenting. You can use either:
+V praxi **lokální variables are již strong references by výchozí** in Enforce Script. The `autoptr` keyword makes this explicit and self-documenting. You can use either:
 
 ```c
 void Example()
@@ -203,13 +203,13 @@ void Example()
 }
 ```
 
-> **Konvence v DayZ moddingu:** Most codebases use `ref` for class members and omit `autoptr` for locals (relying on the implicit strong reference behavior). The CLAUDE.md for this project notes: "**`autoptr` is NOT used** -- use explicit `ref`." Follow whichever convention your project establishes.
+> **Convention in DayZ modding:** Most codebases use `ref` for class members and omit `autoptr` for lokálnís (relying on the implicit strong reference behavior). The CLAUDE.md for this project notes: "**`autoptr` is NOT used** -- use explicit `ref`." Následujte whichever convention your project establishes.
 
 ---
 
-## Modifikátor parametru notnull
+## notnull Parameter Modifier
 
-The `notnull` modifier on a function parameter tells the compiler that null is not a valid argument. The compiler enforces this at call sites.
+The `notnull` modifier on a function parameter tells the compiler that null is not a platný argument. The compiler enforces this at call sites.
 
 ```c
 void ProcessPlayer(notnull PlayerBase player)
@@ -230,13 +230,13 @@ void CallExample(PlayerBase maybeNull)
 }
 ```
 
-Use `notnull` on parameters where null would always be a programming error. It catches bugs at compile time rather than causing crashes at runtime.
+Use `notnull` on parameters where null would vždy be a programming error. It catches bugs at compile time spíše než causing crashes za běhu.
 
 ---
 
-## Cykly referencí (VAROVÁNÍ PŘED ÚNIKEM PAMĚTI)
+## Reference Cycles (MEMORY LEAK WARNING)
 
-A reference cycle occurs when two objects hold strong references (`ref`) to each other. Neither object can ever be deleted because each one keeps the other alive. This is the most common source of memory leaks in DayZ mods.
+A reference cycle occurs when two objects hold strong references (`ref`) to každý jiný. Neither object can ever be deleted protože každý one keeps the jiný alive. Toto je většina common source of memory leaks in DayZ mods.
 
 ### Problém
 
@@ -335,11 +335,50 @@ class AdminPanelTab
 }
 ```
 
+### Reference Counting Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant Code as Your Code
+    participant Obj as MyObject
+    participant GC as Garbage Collector
+
+    Code->>Obj: ref MyObject obj = new MyObject()
+    Note over Obj: refcount = 1
+
+    Code->>Obj: ref MyObject copy = obj
+    Note over Obj: refcount = 2
+
+    Code->>Obj: copy = null
+    Note over Obj: refcount = 1
+
+    Code->>Obj: obj = null
+    Note over Obj: refcount = 0
+
+    Obj->>GC: ~MyObject() destructor called
+    GC->>GC: Memory freed
+```
+
+### Reference Cycle (Memory Leak)
+
+```mermaid
+graph LR
+    A[Object A<br/>ref m_B] -->|"strong ref"| B[Object B<br/>ref m_A]
+    B -->|"strong ref"| A
+
+    style A fill:#D94A4A,color:#fff
+    style B fill:#D94A4A,color:#fff
+
+    C["Neither can be freed!<br/>Both refcount = 1 forever"]
+
+    style C fill:#FFD700,color:#000
+```
+
 ---
 
-## Klíčové slovo delete
+## The delete Keyword
 
-You can manually delete an object at any time using `delete`. This destroys the object **immediately**, regardless of its reference count. All references (both strong and weak, on Managed classes) are set to null.
+You can ručně delete an object at jakýkoli time using `delete`. This destroys the object **okamžitě**, bez ohledu na its reference count. All references (both strong and weak, on Managed classes) are set to null.
 
 ```c
 void ManualDelete()
@@ -359,30 +398,30 @@ void ManualDelete()
 
 ### When to use delete
 
-- When you need to release a resource **immediately** (not waiting for ARC)
+- When potřebujete to release a resource **okamžitě** (not waiting for ARC)
 - When cleaning up in a shutdown/destroy method
-- When removing objects from the game world (`GetGame().ObjectDelete(obj)` for game entities)
+- When removing objects from the herní svět (`GetGame().ObjectDelete(obj)` for game entities)
 
 ### When NOT to use delete
 
-- On objects owned by someone else (the owner's `ref` will become null unexpectedly)
-- On objects still in use by other systems (timers, callbacks, UI)
+- On objects owned by některéone else (the owner's `ref` will become null unexpectedly)
+- On objects stále in use by jiný systems (timers, zpětné volánís, UI)
 - On engine-managed entities without going through proper channels
 
 ---
 
-## Chování garbage collectoru
+## Garbage Collection Behavior
 
 Enforce Script does NOT have a traditional garbage collector that periodically scans for unreachable objects. Instead, it uses **deterministic reference counting:**
 
-1. When a strong reference is created (assignment to `ref`, local variable, function argument), the object's reference count increases.
-2. When a strong reference goes out of scope or is overwritten, the reference count decreases.
-3. When the reference count reaches zero, the object is **immediately** destroyed (destructor is called, memory is freed).
-4. `delete` bypasses the reference count and destroys the object immediately.
+1. Když strong reference is created (assignment to `ref`, lokální variable, function argument), the object's reference count increases.
+2. Když strong reference goes out of scope or is overwritten, the reference count decreases.
+3. Když reference count reaches zero, the object is **okamžitě** destroyed (destructor is called, memory is freed).
+4. `delete` bypasses the reference count and destroys the object okamžitě.
 
 This means:
 - Object lifetimes are predictable and deterministic
-- There are no "GC pauses" or unpredictable delays
+- Existují no "GC pauses" or unpredictable delays
 - Reference cycles are NEVER collected -- they are permanent leaks
 - Order of destruction is well-defined: objects are destroyed in reverse order of their last reference being released
 
@@ -511,7 +550,7 @@ class MyZoneConfig
 }
 ```
 
-### Diagram vlastnictví paměti pro tento příklad
+### Memory ownership diagram for this example
 
 ```
 MyZoneManager (singleton, owned by static s_Instance)
@@ -531,29 +570,62 @@ MyZoneManager (singleton, owned by static s_Instance)
 When `DestroyInstance()` is called:
 1. `s_Instance` is set to null, releasing the strong reference
 2. `MyZoneManager` destructor runs
-3. `m_Zones` is released -> array is deleted -> each `MyZone` is deleted
-4. `m_Configs` is released -> map is deleted -> each `MyZoneConfig` is deleted
+3. `m_Zones` is released -> array is deleted -> každý `MyZone` is deleted
+4. `m_Configs` is released -> map is deleted -> každý `MyZoneConfig` is deleted
 5. `m_LastEditor` is a weak reference, nothing to clean up
 6. All memory is freed. No leaks.
 
 ---
 
-## Common Mistakes
+## Osvědčené postupy
 
-| Chyba | Problém | Oprava |
-|---------|---------|-----|
-| Two objects with `ref` to each other | Reference cycle, permanent memory leak | One side must be a raw (weak) reference |
-| `array<MyClass>` instead of `array<ref MyClass>` | Elements are weak references, objects may be deleted immediately | Use `array<ref MyClass>` for owned elements |
-| Accessing a raw pointer after the object was deleted | Crash (dangling pointer on non-Managed classes) | Extend `Managed` and always null-check weak references |
-| Not checking weak references for null | Crash when the referenced object has been deleted | Always: `if (weakRef) { weakRef.DoThing(); }` |
-| Using `delete` on objects owned by another system | The owner's `ref` becomes null unexpectedly | Let the owner release the object through ARC |
-| Storing `ref` to engine entities (players, items) | Can fight with engine lifetime management | Use raw pointers for engine entities |
-| Forgetting `ref` on class member collections | Collection is a weak reference, may be collected | Always: `protected ref array<...> m_List;` |
-| Circular parent-child with `ref` on both sides | Classic cycle; neither parent nor child is ever freed | Parent owns child (`ref`), child observes parent (raw) |
+- Use `ref` for class members your class creates and owns; use raw pointers (no keyword) for back-references and externí observations.
+- Vždy extend `Managed` for pure-script classes -- it ensures weak references are zeroed on delete, preventing dangling pointer crashes.
+- Break reference cycles by making the child hold a raw pointer to its parent: parent owns child (`ref`), child observes parent (raw).
+- Use `array<ref MyClass>` when the collection owns its elements; `array<MyClass>` holds weak references that will not keep objects alive.
+- Preferujte ARC-driven cleanup over manual `delete` -- let the last `ref` release trigger the destructor naturally.
 
 ---
 
-## Průvodce rozhodováním: Který typ ukazatele?
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| Parent `ref` + child raw back-pointer | COT / Expansion UI | Panels own tabs with `ref`, tabs hold raw pointer to parent panel to avoid cycles |
+| `statická ref` jedenton + `Destroy()` nulling | Dabs / VPP | All jedentons use `s_Instance = null` in a statická `Destroy()` to trigger cleanup |
+| `ref array<ref T>` for managed collections | Expansion Market | Oba pole and its elements are `ref` to ensure proper ownership |
+| Raw pointer for engine entities (hráči, items) | COT Admin | Player references stored as raw pointers since engine manages entity lifetime |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| `autoptr` for lokální variables | Should auto-delete at scope exit | Locals are již implicitly strong references; `autoptr` is rarely used v praxi |
+| ARC handles all cleanup | Objects freed when refcount hits zero | Reference cycles are nikdy collected -- they leak permanently until server restart |
+| `delete` for immediate cleanup | Destroys the object right away | Can null out references held by jiný systems unexpectedly -- prefer letting ARC handle it |
+
+---
+
+## Časté chyby
+
+| Mistake | Problem | Fix |
+|---------|---------|-----|
+| Two objects with `ref` to každý jiný | Reference cycle, permanent memory leak | One side must be a raw (weak) reference |
+| `array<MyClass>` místo `array<ref MyClass>` | Elements are weak references, objects may be deleted okamžitě | Use `array<ref MyClass>` for owned elements |
+| Accessing a raw pointer after the object was deleted | Crash (dangling pointer on non-Managed classes) | Extend `Managed` and vždy null-check weak references |
+| Not checking weak references for null | Crash when the referenced object has been deleted | Always: `if (weakRef) { weakRef.DoThing(); }` |
+| Using `delete` on objects owned by další system | The owner's `ref` becomes null unexpectedly | Let the owner release the object through ARC |
+| Storing `ref` to engine entities (hráči, items) | Can fight with engine lifetime management | Use raw pointers for engine entities |
+| Forgetting `ref` on class member collections | Collection is a weak reference, may be collected | Always: `protected ref array<...> m_List;` |
+| Circular parent-child with `ref` na obou stranách | Classic cycle; neither parent nor child is ever freed | Parent owns child (`ref`), child observes parent (raw) |
+
+---
+
+## Decision Guide: Which Pointer Type?
 
 ```
 Is this a class member that this class CREATES and OWNS?
@@ -601,4 +673,4 @@ class Child  { Parent m_Parent; }        // Weak   -- child observes parent
 
 ---
 
-[<< 1.7: Math & Vectors](07-math-vectors.md) | [Domů](../README.md) | [1.9: Casting & Reflection >>](09-casting-reflection.md)
+[<< 1.7: Math & Vectors](07-math-vectors.md) | [Domů](../../README.md) | [1.9: Casting & Reflection >>](09-casting-reflection.md)

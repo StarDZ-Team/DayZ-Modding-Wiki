@@ -1,6 +1,10 @@
-# Chapter 1.9: Casting & Reflection
+# Capítulo 1.9: Casting y Reflexión
 
-[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
+[Inicio](../../README.md) | [<< Anterior: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Siguiente: Enums & Preprocessor >>](10-enums-preprocessor.md)
+
+---
+
+> **Goal:** Master safe type casting, runtime type checks, and Enforce Script's reflection API for dynamic property access.
 
 ---
 
@@ -142,13 +146,13 @@ override void OnEvent(EventType eventTypeId, Param params)
 
 ---
 
-## CastTo vs Type.Cast — Cuando Usar Which
+## CastTo vs Type.Cast — When to Use Which
 
-| Caracteristica | `Class.CastTo` | `Type.Cast` |
+| Característica | `Class.CastTo` | `Type.Cast` |
 |---------|----------------|-------------|
 | Return type | `bool` | Target type or `null` |
 | Null on failure | Yes (out param set to null) | Yes (returns null) |
-| Mejor para | if-blocks with branching logic | One-liner assignments |
+| Best for | if-blocks with branching logic | One-liner assignments |
 | Used in DayZ vanilla | Everywhere | Everywhere |
 | Works with non-Object | Yes (any `Class`) | Yes (any `Class`) |
 
@@ -214,11 +218,11 @@ if (obj.IsKindOf("DayZAnimal"))
 }
 ```
 
-**Important:** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
+**Importante:** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
 
 ### IsInherited vs IsKindOf
 
-| Caracteristica | `IsInherited(typename)` | `IsKindOf(string)` |
+| Característica | `IsInherited(typename)` | `IsKindOf(string)` |
 |---------|------------------------|---------------------|
 | Argument | Compile-time type | String name |
 | Speed | Faster (type comparison) | Slower (string lookup) |
@@ -299,7 +303,7 @@ Class instance = t.Spawn();  // Creates a new instance
 Class instance2 = GetGame().CreateObjectEx("AK101", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-> **Note:** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
+> **Nota:** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
 
 ---
 
@@ -331,7 +335,7 @@ void InspectObject(Class obj)
 
 **Available reflection methods on `typename`:**
 
-| Metodo | Retorna | Descripcion |
+| Método | Retorna | Descripción |
 |--------|---------|-------------|
 | `GetVariableCount()` | `int` | Number of member variables |
 | `GetVariableName(int index)` | `string` | Variable name at index |
@@ -379,11 +383,11 @@ void DemoReflection()
 }
 ```
 
-> **Warning:** `GetClassVar`/`SetClassVar` silently fail if the variable name is wrong or the type doesn't match. Always validate variable names before use.
+> **Advertencia:** `GetClassVar`/`SetClassVar` silently fail if the variable name is wrong or the type doesn't match. Always validate variable names before use.
 
 ---
 
-## Ejemplos Practicos
+## Real-World Examples
 
 ### Finding All Vehicles in the World
 
@@ -437,7 +441,7 @@ static bool IsObjectAlive(Object obj)
 
 ### Reflection-Based Config System
 
-This pattern (used in MyFramework) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
+This pattern (used in MyMod Core) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
 
 ```c
 class ConfigBase
@@ -532,6 +536,39 @@ class EventDispatcher
 
 ---
 
+## Mejores Prácticas
+
+- Always null-check after every cast -- both `Class.CastTo` and `Type.Cast` return null on failure, and using the result unchecked causes crashes.
+- Use `Class.CastTo` when you need to branch on success/failure; use `Type.Cast` for concise one-liner assignments followed by a null check.
+- Prefer `IsInherited(typename)` over `IsKindOf(string)` when the type is known at compile time -- it is faster and catches typos at compile time.
+- Cast to `EntityAI` before calling `IsAlive()` -- the base `Object` class does not have this method.
+- Validate variable names with `GetVariableCount`/`GetVariableName` before using `EnScript.GetClassVar` -- it fails silently on wrong names.
+
+---
+
+## Observado en Mods Reales
+
+> Patrones confirmados estudiando código fuente de mods profesionales de DayZ.
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| `Class.CastTo` + `continue` in entity loops | COT / Expansion | Every loop over `Object` arrays uses cast-and-continue to skip non-matching types |
+| `IsKindOf` for config-driven type checks | Expansion Market | Item categories loaded from JSON use string-based `IsKindOf` because types are data |
+| `EnScript.GetClassVar`/`SetClassVar` for admin panels | Dabs Framework | Generic config editors read/write fields by name so one UI works for all config classes |
+| `obj.Type().ToString()` for logging | VPP Admin | Debug logs always include `entity.Type().ToString()` to identify what was processed |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `Object.IsAlive()` | Expect it to exist on `Object` | Only available on `EntityAI` and subclasses -- calling it on `Object` crashes |
+| `EnScript.SetClassVar` returns `bool` | Should indicate success/failure | Returns `false` silently on wrong field name with no error message -- easy to miss |
+| `typename.Spawn()` | Creates any class instance | Only works for classes with a parameterless constructor; for game entities use `CreateObject` |
+
+---
+
 ## Errores Comunes
 
 ### 1. Forgetting to null-check after cast
@@ -592,7 +629,7 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 ## Resumen
 
-| Operacion | Sintaxis | Retorna |
+| Operation | Sintaxis | Retorna |
 |-----------|--------|---------|
 | Safe downcast | `Class.CastTo(out target, source)` | `bool` |
 | Inline cast | `TargetType.Cast(source)` | Target or `null` |
@@ -607,7 +644,7 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 ---
 
-## Navegacion
+## Navigation
 
 | Previous | Up | Next |
 |----------|----|------|

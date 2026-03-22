@@ -1,27 +1,27 @@
-# Chapter 6.7: Timers & CallQueue
+# 6.7. fejezet: Időzítők és CallQueue
 
-[Home](../../README.md) | [<< Previous: Notifications](06-notifications.md) | **Timers & CallQueue** | [Next: File I/O & JSON >>](08-file-io.md)
-
----
-
-## Bevezetes
-
-DayZ provides several mechanisms for deferred and repeating function calls: `ScriptCallQueue` (the primary system), `Timer`, `ScriptInvoker`, and `WidgetFadeTimer`. These are essential for scheduling delayed logic, creating update loops, and managing timed events without blocking the main thread. This chapter covers each mechanism with full API signatures and usage patterns.
+[Kezdőlap](../../README.md) | [<< Előző: Értesítések](06-notifications.md) | **Időzítők és CallQueue** | [Következő: Fájl I/O és JSON >>](08-file-io.md)
 
 ---
 
-## Call Categories
+## Bevezetés
 
-All timer and call queue systems require a **call category** that determines when the deferred call executes within the frame:
+A DayZ több mechanizmust biztosít a késleltetett és ismétlődő függvényhívásokhoz: `ScriptCallQueue` (az elsődleges rendszer), `Timer`, `ScriptInvoker` és `WidgetFadeTimer`. Ezek elengedhetetlenek a késleltetett logika ütemezéséhez, frissítési ciklusok létrehozásához és időzített események kezeléséhez a fő szál blokkolása nélkül. Ez a fejezet minden mechanizmust ismertet teljes API szignatúrákkal és használati mintákkal.
+
+---
+
+## Hívási kategóriák
+
+Minden időzítő és hívási sor rendszer egy **hívási kategóriát** igényel, amely meghatározza, hogy a késleltetett hívás mikor hajtódik végre a képkockán belül:
 
 ```c
-const int CALL_CATEGORY_SYSTEM   = 0;   // System-level operations
-const int CALL_CATEGORY_GUI      = 1;   // UI updates
-const int CALL_CATEGORY_GAMEPLAY = 2;   // Gameplay logic
-const int CALL_CATEGORY_COUNT    = 3;   // Total number of categories
+const int CALL_CATEGORY_SYSTEM   = 0;   // Rendszerszintű műveletek
+const int CALL_CATEGORY_GUI      = 1;   // UI frissítések
+const int CALL_CATEGORY_GAMEPLAY = 2;   // Játéklogika
+const int CALL_CATEGORY_COUNT    = 3;   // Kategóriák összszáma
 ```
 
-Access the queue for a category:
+A sor elérése egy adott kategóriához:
 
 ```c
 ScriptCallQueue  queue   = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY);
@@ -33,9 +33,9 @@ TimerQueue       timers  = GetGame().GetTimerQueue(CALL_CATEGORY_GAMEPLAY);
 
 ## ScriptCallQueue
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Fájl:** `3_Game/tools/utilityclasses.c`
 
-The primary mechanism for deferred function calls. Supports one-shot delays, repeating calls, and immediate next-frame execution.
+Az elsődleges mechanizmus késleltetett függvényhívásokhoz. Támogatja az egyszeri késleltetéseket, ismétlődő hívásokat és azonnali következő-képkockás végrehajtást.
 
 ### CallLater
 
@@ -45,28 +45,28 @@ void CallLater(func fn, int delay = 0, bool repeat = false,
                void param3 = NULL, void param4 = NULL);
 ```
 
-| Parameter | Leiras |
+| Paraméter | Leírás |
 |-----------|-------------|
-| `fn` | The function to call (method reference: `this.MyMethod`) |
-| `delay` | Delay in milliseconds (0 = next frame) |
-| `repeat` | `true` = call repeatedly at `delay` intervals; `false` = call once |
-| `param1..4` | Optional parameters passed to the function |
+| `fn` | A meghívandó függvény (metódushivatkozás: `this.MyMethod`) |
+| `delay` | Késleltetés milliszekundumban (0 = következő képkocka) |
+| `repeat` | `true` = ismételt hívás `delay` időközönként; `false` = egyszeri hívás |
+| `param1..4` | Opcionális paraméterek, amelyeket a függvénynek adunk át |
 
-**Example --- one-shot delay:**
+**Példa --- egyszeri késleltetés:**
 
 ```c
-// Call MyFunction once after 5 seconds
+// MyFunction hívása egyszer 5 másodperc múlva
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.MyFunction, 5000, false);
 ```
 
-**Example --- repeating call:**
+**Példa --- ismétlődő hívás:**
 
 ```c
-// Call UpdateLoop every 1 second, repeating
+// UpdateLoop hívása minden 1 másodpercben, ismétlődően
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.UpdateLoop, 1000, true);
 ```
 
-**Example --- with parameters:**
+**Példa --- paraméterekkel:**
 
 ```c
 void ShowMessage(string text, int color)
@@ -74,7 +74,7 @@ void ShowMessage(string text, int color)
     Print(text);
 }
 
-// Call with parameters after 2 seconds
+// Hívás paraméterekkel 2 másodperc múlva
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(
     this.ShowMessage, 2000, false, "Hello!", ARGB(255, 255, 0, 0)
 );
@@ -87,12 +87,12 @@ void Call(func fn, void param1 = NULL, void param2 = NULL,
           void param3 = NULL, void param4 = NULL);
 ```
 
-Executes the function on the next frame (delay = 0, no repeat). Shorthand for `CallLater(fn, 0, false)`.
+A függvényt a következő képkockán hajtja végre (delay = 0, nincs ismétlés). Rövidítés a `CallLater(fn, 0, false)` helyett.
 
-**Example:**
+**Példa:**
 
 ```c
-// Execute next frame
+// Végrehajtás a következő képkockán
 GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Call(this.Initialize);
 ```
 
@@ -103,9 +103,9 @@ void CallByName(Class obj, string fnName, int delay = 0, bool repeat = false,
                 Param par = null);
 ```
 
-Call a method by its string name. Useful when the method reference is not directly available.
+Metódus hívása a string neve alapján. Hasznos, ha a metódushivatkozás nem érhető el közvetlenül.
 
-**Example:**
+**Példa:**
 
 ```c
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallByName(
@@ -119,12 +119,12 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallByName(
 void Remove(func fn);
 ```
 
-Removes a scheduled call. Essential for stopping repeating calls and preventing calls on destroyed objects.
+Egy ütemezett hívás eltávolítása. Elengedhetetlen az ismétlődő hívások leállításához és a megsemmisített objektumokon történő hívások megelőzéséhez.
 
-**Example:**
+**Példa:**
 
 ```c
-// Stop a repeating call
+// Ismétlődő hívás leállítása
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateLoop);
 ```
 
@@ -134,7 +134,7 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).Remove(this.UpdateLoop);
 void RemoveByName(Class obj, string fnName);
 ```
 
-Remove a call scheduled via `CallByName`.
+A `CallByName`-mel ütemezett hívás eltávolítása.
 
 ### Tick
 
@@ -142,17 +142,17 @@ Remove a call scheduled via `CallByName`.
 void Tick(float timeslice);
 ```
 
-Called internally by the engine each frame. You should never need to call this manually.
+A motor minden képkockában belsőleg hívja. Soha nem szabad manuálisan meghívnod.
 
 ---
 
 ## Timer
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Fájl:** `3_Game/tools/utilityclasses.c`
 
-A class-based timer with explicit start/stop lifecycle. Cleaner for long-lived timers that need to be paused or restarted.
+Osztályalapú időzítő explicit start/stop életciklussal. Tisztább megoldás hosszú életű időzítőkhöz, amelyeket szüneteltetni vagy újraindítani kell.
 
-### Constructor
+### Konstruktor
 
 ```c
 void Timer(int category = CALL_CATEGORY_SYSTEM);
@@ -164,15 +164,15 @@ void Timer(int category = CALL_CATEGORY_SYSTEM);
 void Run(float duration, Class obj, string fn_name, Param params = null, bool loop = false);
 ```
 
-| Parameter | Leiras |
+| Paraméter | Leírás |
 |-----------|-------------|
-| `duration` | Time in seconds (not milliseconds!) |
-| `obj` | The object whose method will be called |
-| `fn_name` | Method name as string |
-| `params` | Optional `Param` object with parameters |
-| `loop` | `true` = repeat after each duration |
+| `duration` | Idő másodpercben (nem milliszekundumban!) |
+| `obj` | Az objektum, amelynek a metódusa meghívásra kerül |
+| `fn_name` | Metódusnév stringként |
+| `params` | Opcionális `Param` objektum paraméterekkel |
+| `loop` | `true` = ismétlés minden időtartam után |
 
-**Example --- one-shot timer:**
+**Példa --- egyszeri időzítő:**
 
 ```c
 ref Timer m_Timer;
@@ -185,11 +185,11 @@ void StartTimer()
 
 void OnTimerComplete()
 {
-    Print("Timer finished!");
+    Print("Időzítő befejeződött!");
 }
 ```
 
-**Example --- repeating timer:**
+**Példa --- ismétlődő időzítő:**
 
 ```c
 ref Timer m_UpdateTimer;
@@ -197,7 +197,7 @@ ref Timer m_UpdateTimer;
 void StartUpdateLoop()
 {
     m_UpdateTimer = new Timer(CALL_CATEGORY_GAMEPLAY);
-    m_UpdateTimer.Run(1.0, this, "OnUpdate", null, true);  // Every 1 second
+    m_UpdateTimer.Run(1.0, this, "OnUpdate", null, true);  // Minden 1 másodpercben
 }
 
 void StopUpdateLoop()
@@ -213,7 +213,7 @@ void StopUpdateLoop()
 void Stop();
 ```
 
-Stops the timer. Can be restarted with another `Run()` call.
+Megállítja az időzítőt. Újraindítható egy újabb `Run()` hívással.
 
 ### IsRunning
 
@@ -221,7 +221,51 @@ Stops the timer. Can be restarted with another `Run()` call.
 bool IsRunning();
 ```
 
-Returns `true` if the timer is currently active.
+`true`-t ad vissza, ha az időzítő jelenleg aktív.
+
+### Pause
+
+```c
+void Pause();
+```
+
+Szünetelteti a futó időzítőt, megőrizve a hátralévő időt. Az időzítő a `Continue()`-val folytatható.
+
+### Continue
+
+```c
+void Continue();
+```
+
+Folytatja a szüneteltetett időzítőt onnan, ahol megállt.
+
+### IsPaused
+
+```c
+bool IsPaused();
+```
+
+`true`-t ad vissza, ha az időzítő jelenleg szünetel.
+
+**Példa --- szüneteltetés és folytatás:**
+
+```c
+ref Timer m_Timer;
+
+void StartTimer()
+{
+    m_Timer = new Timer(CALL_CATEGORY_GAMEPLAY);
+    m_Timer.Run(10.0, this, "OnTimerComplete", null, false);
+}
+
+void TogglePause()
+{
+    if (m_Timer.IsPaused())
+        m_Timer.Continue();
+    else
+        m_Timer.Pause();
+}
+```
 
 ### GetRemaining
 
@@ -229,7 +273,7 @@ Returns `true` if the timer is currently active.
 float GetRemaining();
 ```
 
-Returns the remaining time in seconds.
+A hátralévő időt adja vissza másodpercben.
 
 ### GetDuration
 
@@ -237,15 +281,15 @@ Returns the remaining time in seconds.
 float GetDuration();
 ```
 
-Returns the total duration set by `Run()`.
+A `Run()` által beállított teljes időtartamot adja vissza.
 
 ---
 
 ## ScriptInvoker
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Fájl:** `3_Game/tools/utilityclasses.c`
 
-An event/delegate system. `ScriptInvoker` holds a list of callback functions and invokes all of them when `Invoke()` is called. This is DayZ's equivalent of C# events or the observer pattern.
+Egy esemény/delegált rendszer. A `ScriptInvoker` visszahívási függvények listáját tartja, és mindegyiket meghívja, amikor az `Invoke()` hívásra kerül. Ez a DayZ megfelelője a C# eseményeknek vagy a megfigyelő mintának.
 
 ### Insert
 
@@ -253,7 +297,7 @@ An event/delegate system. `ScriptInvoker` holds a list of callback functions and
 void Insert(func fn);
 ```
 
-Register a callback function.
+Visszahívási függvény regisztrálása.
 
 ### Remove
 
@@ -261,7 +305,7 @@ Register a callback function.
 void Remove(func fn);
 ```
 
-Unregister a callback function.
+Visszahívási függvény regisztrációjának törlése.
 
 ### Invoke
 
@@ -270,7 +314,7 @@ void Invoke(void param1 = NULL, void param2 = NULL,
             void param3 = NULL, void param4 = NULL);
 ```
 
-Call all registered functions with the provided parameters.
+Az összes regisztrált függvény hívása a megadott paraméterekkel.
 
 ### Count
 
@@ -278,7 +322,7 @@ Call all registered functions with the provided parameters.
 int Count();
 ```
 
-Number of registered callbacks.
+A regisztrált visszahívások száma.
 
 ### Clear
 
@@ -286,9 +330,9 @@ Number of registered callbacks.
 void Clear();
 ```
 
-Remove all registered callbacks.
+Az összes regisztrált visszahívás eltávolítása.
 
-**Example --- custom event system:**
+**Példa --- egyéni eseményrendszer:**
 
 ```c
 class MyModule
@@ -297,9 +341,9 @@ class MyModule
 
     void CompleteMission()
     {
-        // Do completion logic...
+        // Befejezési logika végrehajtása...
 
-        // Notify all listeners
+        // Összes figyelő értesítése
         m_OnMissionComplete.Invoke("MissionAlpha", 1500);
     }
 }
@@ -308,44 +352,44 @@ class MyUI
 {
     void Init(MyModule module)
     {
-        // Subscribe to the event
+        // Feliratkozás az eseményre
         module.m_OnMissionComplete.Insert(this.OnMissionComplete);
     }
 
     void OnMissionComplete(string name, int reward)
     {
-        Print(string.Format("Mission %1 complete! Reward: %2", name, reward));
+        Print(string.Format("Misszió %1 befejezve! Jutalom: %2", name, reward));
     }
 
     void Cleanup(MyModule module)
     {
-        // Always unsubscribe to prevent dangling references
+        // Mindig iratkozz le a lógó hivatkozások megelőzése érdekében
         module.m_OnMissionComplete.Remove(this.OnMissionComplete);
     }
 }
 ```
 
-### Update Queue
+### Frissítési sor
 
-The engine provides per-frame `ScriptInvoker` queues:
+A motor képkockánkénti `ScriptInvoker` sorokat biztosít:
 
 ```c
 ScriptInvoker updater = GetGame().GetUpdateQueue(CALL_CATEGORY_GAMEPLAY);
 updater.Insert(this.OnFrame);
 
-// Remove when done
+// Eltávolítás, ha kész
 updater.Remove(this.OnFrame);
 ```
 
-Functions registered on the update queue are called every frame with no parameters. This is useful for per-frame logic without using `EntityEvent.FRAME`.
+A frissítési sorba regisztrált függvények minden képkockában meghívódnak paraméterek nélkül. Ez hasznos képkockánkénti logikához az `EntityEvent.FRAME` használata nélkül.
 
 ---
 
 ## WidgetFadeTimer
 
-**File:** `3_Game/tools/utilityclasses.c`
+**Fájl:** `3_Game/tools/utilityclasses.c`
 
-A specialized timer for fading widgets in and out.
+Speciális időzítő widgetek be- és kihalványításához.
 
 ```c
 class WidgetFadeTimer
@@ -357,13 +401,13 @@ class WidgetFadeTimer
 }
 ```
 
-| Parameter | Leiras |
+| Paraméter | Leírás |
 |-----------|-------------|
-| `w` | The widget to fade |
-| `time` | Duration of the fade in seconds |
-| `continue_from_current` | If `true`, start from current alpha; otherwise start from 0 (fade in) or 1 (fade out) |
+| `w` | A halványítandó widget |
+| `time` | A halványítás időtartama másodpercben |
+| `continue_from_current` | Ha `true`, az aktuális alfa értéktől indul; egyébként 0-ról (behalványítás) vagy 1-ről (kihalványítás) |
 
-**Example:**
+**Példa:**
 
 ```c
 ref WidgetFadeTimer m_FadeTimer;
@@ -375,7 +419,7 @@ void ShowNotification()
     m_FadeTimer = new WidgetFadeTimer;
     m_FadeTimer.FadeIn(m_NotificationPanel, 0.3);
 
-    // Auto-hide after 5 seconds
+    // Automatikus elrejtés 5 másodperc múlva
     GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(this.HideNotification, 5000, false);
 }
 
@@ -387,17 +431,36 @@ void HideNotification()
 
 ---
 
-## Common Patterns
+## GetRemainingTime (CallQueue)
 
-### Timer Accumulator (Throttled OnUpdate)
+A `ScriptCallQueue` lehetőséget biztosít arra is, hogy lekérdezd, mennyi idő van hátra egy ütemezett `CallLater`-ból:
 
-When you have a per-frame callback but want to run logic at a slower rate:
+```c
+float GetRemainingTime(Class obj, string fnName);
+```
+
+**Példa:**
+
+```c
+// Mennyi idő van hátra egy CallLater-ből
+float remaining = GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).GetRemainingTime(this, "MyCallback");
+if (remaining > 0)
+    Print(string.Format("A visszahívás %1 ms múlva fut le", remaining));
+```
+
+---
+
+## Gyakori minták
+
+### Időzítő akkumulátor (lassított OnUpdate)
+
+Amikor képkockánkénti visszahívásod van, de lassabb ütemben szeretnéd futtatni a logikát:
 
 ```c
 class MyModule
 {
     protected float m_UpdateAccumulator;
-    protected const float UPDATE_INTERVAL = 2.0;  // Every 2 seconds
+    protected const float UPDATE_INTERVAL = 2.0;  // Minden 2 másodpercben
 
     void OnUpdate(float timeslice)
     {
@@ -406,15 +469,15 @@ class MyModule
             return;
         m_UpdateAccumulator = 0;
 
-        // Throttled logic here
+        // Lassított logika itt
         DoPeriodicWork();
     }
 }
 ```
 
-### Cleanup Pattern
+### Takarítási minta
 
-Always remove scheduled calls when your object is destroyed to prevent crashes:
+Mindig távolítsd el az ütemezett hívásokat, amikor az objektumod megsemmisül, hogy megelőzd az összeomlásokat:
 
 ```c
 class MyManager
@@ -431,48 +494,82 @@ class MyManager
 
     void Tick()
     {
-        // Periodic work
+        // Periodikus munka
     }
 }
 ```
 
-### One-Shot Delayed Init
+### Egyszeri késleltetett inicializálás
 
-A common pattern for initializing systems after the world is fully loaded:
+Gyakori minta rendszerek inicializálásához a világ teljes betöltése után:
 
 ```c
 void OnMissionStart()
 {
-    // Delay init by 1 second to ensure everything is loaded
+    // Init késleltetése 1 másodperccel, hogy minden biztosan betöltődjön
     GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this.DelayedInit, 1000, false);
 }
 
 void DelayedInit()
 {
-    // Safe to access world objects now
+    // Biztonságosan hozzáférhetünk a világ objektumaihoz
 }
 ```
 
 ---
 
-## Osszefoglalas
+## Összefoglalás
 
-| Mechanism | Felhasznalasi terrulet | Time Unit |
+| Mechanizmus | Felhasználás | Időegység |
 |-----------|----------|-----------|
-| `CallLater` | One-shot or repeating deferred calls | Milliseconds |
-| `Call` | Execute next frame | N/A (immediate) |
-| `Timer` | Class-based timer with start/stop/remaining | Seconds |
-| `ScriptInvoker` | Event/delegate (observer pattern) | N/A (manual invoke) |
-| `WidgetFadeTimer` | Widget fade-in/fade-out | Seconds |
-| `GetUpdateQueue()` | Per-frame callback registration | N/A (every frame) |
+| `CallLater` | Egyszeri vagy ismétlődő késleltetett hívások | Milliszekundum |
+| `Call` | Végrehajtás a következő képkockán | N/A (azonnali) |
+| `Timer` | Osztályalapú időzítő start/stop/hátralévő idővel | Másodperc |
+| `ScriptInvoker` | Esemény/delegált (megfigyelő minta) | N/A (kézi hívás) |
+| `WidgetFadeTimer` | Widget behalványítás/kihalványítás | Másodperc |
+| `GetUpdateQueue()` | Képkockánkénti visszahívás regisztráció | N/A (minden képkocka) |
 
-| Fogalom | Kulcspont |
+| Fogalom | Lényeg |
 |---------|-----------|
-| Categories | `CALL_CATEGORY_SYSTEM` (0), `GUI` (1), `GAMEPLAY` (2) |
-| Remove calls | Always `Remove()` in destructor to prevent dangling references |
-| Timer vs CallLater | Timer is seconds + class-based; CallLater is milliseconds + functional |
-| ScriptInvoker | Insert/Remove callbacks, Invoke to fire all |
+| Kategóriák | `CALL_CATEGORY_SYSTEM` (0), `GUI` (1), `GAMEPLAY` (2) |
+| Hívások eltávolítása | Mindig `Remove()` a destruktorban a lógó hivatkozások megelőzéséhez |
+| Timer vs CallLater | Timer másodperc + osztályalapú; CallLater milliszekundum + funkcionális |
+| ScriptInvoker | Insert/Remove visszahívások, Invoke az összes kiváltásához |
 
 ---
 
-[<< Elozo: Ertesitesek](06-notifications.md) | **Idozitok & CallQueue** | [Kovetkezo: Fajl I/O & JSON >>](08-file-io.md)
+## Legjobb gyakorlatok
+
+- **Mindig hívd meg a `Remove()`-ot az ütemezett `CallLater` hívásokra a destruktorodban.** Ha a tulajdonos objektum megsemmisül, miközben egy `CallLater` még függőben van, a motor egy törölt objektum metódusát hívja meg és összeomlik. Minden `CallLater`-nek kell egy megfelelő `Remove()` a destruktorban.
+- **Használd a `Timer`-t (másodperc) hosszú életű időzítőkhöz szüneteltetéssel/folytatással, a `CallLater`-t (milliszekundum) tüzelj-és-felejtsd késleltetésekhez.** A kettő keverése 1000-szeres időzítési hibákhoz vezet, mivel a `Timer.Run()` másodpercet, de a `CallLater` milliszekundumot használ.
+- **Lassítsd az `OnUpdate`-et időzítő akkumulátorral az ismétlődő `CallLater` regisztrálása helyett.** Az ismétlődő `CallLater` külön nyomon követett bejegyzést hoz létre a sorban, míg az akkumulátor minta (`m_Acc += timeslice; if (m_Acc >= INTERVAL)`) nulla terheléssel jár és könnyebben hangolható.
+- **Iratkozz le a `ScriptInvoker` visszahívásokról, mielőtt a figyelő megsemmisül.** A `Remove()` elfelejtése egy `ScriptInvoker`-en lógó függvényhivatkozást hagy hátra, ami összeomlást okoz, amikor az `Invoke()` kiváltódik.
+- **Soha ne hívd meg manuálisan a `Tick()`-et a `ScriptCallQueue`-n.** A motor automatikusan hívja minden képkockán. A manuális hívások duplán váltják ki az összes függőben lévő visszahívást.
+
+---
+
+## Kompatibilitás és hatás
+
+> **Mod kompatibilitás:** Az időzítő rendszerek példányonkéntiák, így a modok ritkán ütköznek közvetlenül az időzítőkön. A kockázat a megosztott `ScriptInvoker` eseményeknél van, ahol több mod regisztrál visszahívásokat.
+
+- **Betöltési sorrend:** Az időzítő és CallQueue rendszerek betöltési sorrendtől függetlenek. Minden mod kezeli a saját időzítőit.
+- **Modolt osztály ütközések:** Nincs közvetlen ütközés, de ha két mod is felülírja az `OnUpdate()`-et ugyanazon az osztályon (pl. `MissionServer`) és az egyik elfelejti a `super`-t, a másik akkumulátor-alapú időzítői nem működnek.
+- **Teljesítményhatás:** Minden aktív `CallLater` `repeat = true`-val minden képkockán ellenőrzésre kerül. Több száz ismétlődő hívás rontja a szerver frissítési rátáját. Előnyben részesítsd a kevesebb időzítőt hosszabb időközökkel, vagy használd az akkumulátor mintát az `OnUpdate`-ben.
+- **Szerver/Kliens:** A `CallLater` és a `Timer` mindkét oldalon működik. Használd a `CALL_CATEGORY_GAMEPLAY`-t játéklogikához, a `CALL_CATEGORY_GUI`-t UI frissítésekhez (csak kliens), és a `CALL_CATEGORY_SYSTEM`-et alacsony szintű műveletekhez.
+
+---
+
+## Valós modokban megfigyelt minták
+
+> Ezeket a mintákat professzionális DayZ modok forráskódjának tanulmányozásával igazoltuk.
+
+| Minta | Mod | Fájl/Hely |
+|---------|-----|---------------|
+| Destruktor `Remove()` takarítás minden `CallLater` regisztrációhoz | COT | Modulkezelő életciklus |
+| `ScriptInvoker` eseménybusz modulok közötti értesítésekhez | Expansion | `ExpansionEventBus` |
+| `Timer` `Pause()`/`Continue()` használattal kilépési visszaszámláláshoz | Vanilla | `MissionServer` kilépési rendszer |
+| Akkumulátor minta `OnUpdate`-ben 5 másodperces periodikus ellenőrzésekhez | Dabs Framework | Modul frissítés ütemezés |
+
+---
+
+[<< Előző: Értesítések](06-notifications.md) | **Időzítők és CallQueue** | [Következő: Fájl I/O és JSON >>](08-file-io.md)

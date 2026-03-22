@@ -1,372 +1,376 @@
-# Chapter 3.1: Widget Types
+# 第3.1章: ウィジェットタイプ
 
-[Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
-
----
+[ホーム](../../README.md) | **ウィジェットタイプ** | [次へ: レイアウトファイル >>](02-layout-files.md)
 
 ---
 
-## Widget の仕組み
+DayZ の GUI システムはウィジェット上に構築されています --- シンプルなコンテナから複雑なインタラクティブコントロールまでの再利用可能な UI コンポーネントです。画面上のすべての可視要素はウィジェットであり、完全なカタログを理解することは Mod UI の構築に不可欠です。
 
-Every widget in DayZ inherits from the `Widget` base class. Widgets are organized in a parent-child tree, where the root is typically a `WorkspaceWidget` obtained via `GetGame().GetWorkspace()`.
+この章では、Enforce Script で利用可能なすべてのウィジェットタイプの完全なリファレンスを提供します。
 
-Each widget type has three associated identifiers:
+---
 
-| Identifier | Example | Used For |
+## ウィジェットの仕組み
+
+DayZ のすべてのウィジェットは `Widget` ベースクラスを継承しています。ウィジェットは親子ツリーで構成され、ルートは通常 `GetGame().GetWorkspace()` で取得される `WorkspaceWidget` です。
+
+各ウィジェットタイプには3つの関連する識別子があります。
+
+| 識別子 | 例 | 用途 |
 |---|---|---|
-| **Script class** | `TextWidget` | Code references, casting |
-| **Layout class** | `TextWidgetClass` | `.layout` file declarations |
-| **TypeID constant** | `TextWidgetTypeID` | Programmatic creation with `CreateWidget()` |
+| **スクリプトクラス** | `TextWidget` | コード参照、キャスト |
+| **レイアウトクラス** | `TextWidgetClass` | `.layout` ファイルの宣言 |
+| **TypeID 定数** | `TextWidgetTypeID` | `CreateWidget()` によるプログラム的な作成 |
 
-In `.layout` files you always use the layout class name (ending in `Class`). In scripts you work with the script class name.
+`.layout` ファイルでは常にレイアウトクラス名（`Class` で終わる）を使用します。スクリプトではスクリプトクラス名を使用します。
 
 ---
 
-## コンテナ / レイアウト Widget
+## コンテナ / レイアウトウィジェット
 
-Container widgets hold and organize child widgets. They do not display content themselves (except `PanelWidget`, which draws a colored rectangle).
+コンテナウィジェットは子ウィジェットを保持し整理します。コンテンツ自体は表示しません（色付き矩形を描画する `PanelWidget` を除く）。
 
-| Script Class | Layout Class | Purpose |
+| スクリプトクラス | レイアウトクラス | 目的 |
 |---|---|---|
-| `Widget` | `WidgetClass` | Abstract base class for all widgets. Never instantiate directly. |
-| `WorkspaceWidget` | `WorkspaceWidgetClass` | Root workspace. Obtained via `GetGame().GetWorkspace()`. Used to create widgets programmatically. |
-| `FrameWidget` | `FrameWidgetClass` | General-purpose container. The most commonly used widget in DayZ. |
-| `PanelWidget` | `PanelWidgetClass` | Solid colored rectangle. Use for backgrounds, dividers, separators. |
-| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Flow layout. Arranges children sequentially with wrapping, padding, and margins. |
-| `GridSpacerWidget` | `GridSpacerWidgetClass` | Grid layout. Arranges children in a grid defined by `Columns` and `Rows`. |
-| `ScrollWidget` | `ScrollWidgetClass` | Scrollable viewport. Enables vertical/horizontal scrolling of child content. |
-| `SpacerBaseWidget` | -- | Abstract base class for `WrapSpacerWidget` and `GridSpacerWidget`. |
+| `Widget` | `WidgetClass` | すべてのウィジェットの抽象ベースクラス。直接インスタンス化しないでください。 |
+| `WorkspaceWidget` | `WorkspaceWidgetClass` | ルートワークスペース。`GetGame().GetWorkspace()` で取得。プログラム的なウィジェット作成に使用。 |
+| `FrameWidget` | `FrameWidgetClass` | 汎用コンテナ。DayZ で最も一般的に使用されるウィジェット。 |
+| `PanelWidget` | `PanelWidgetClass` | ソリッドカラーの矩形。背景、仕切り、セパレータに使用。 |
+| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | フローレイアウト。折り返し、パディング、マージン付きで子を順次配置。 |
+| `GridSpacerWidget` | `GridSpacerWidgetClass` | グリッドレイアウト。`Columns` と `Rows` で定義されたグリッドに子を配置。 |
+| `ScrollWidget` | `ScrollWidgetClass` | スクロール可能なビューポート。子コンテンツの縦/横スクロールを有効化。 |
+| `SpacerBaseWidget` | -- | `WrapSpacerWidget` と `GridSpacerWidget` の抽象ベースクラス。 |
 
 ### FrameWidget
 
-The workhorse of DayZ UI. Use `FrameWidget` as your default container when you need to group widgets together. It has no visual appearance -- it is purely structural.
+DayZ UI の主力です。ウィジェットをグループ化する必要がある場合、デフォルトのコンテナとして `FrameWidget` を使用してください。視覚的な外観はありません --- 純粋に構造的です。
 
-**Key methods:**
-- All base `Widget` methods (position, size, color, children, flags)
+**主要メソッド:**
+- すべてのベース `Widget` メソッド（位置、サイズ、色、子、フラグ）
 
-**When to use:** Almost everywhere. Wrap groups of related widgets. Use as the root of dialogs, panels, and HUD elements.
+**使用場面:** ほぼどこでも。関連するウィジェットのグループをラップします。ダイアログ、パネル、HUD 要素のルートとして使用します。
 
 ```c
-// Find a frame widget by name
+// 名前でフレームウィジェットを検索
 FrameWidget panel = FrameWidget.Cast(root.FindAnyWidget("MyPanel"));
 panel.Show(true);
 ```
 
 ### PanelWidget
 
-A visible rectangle with a solid color. Unlike `FrameWidget`, a `PanelWidget` actually draws something on screen.
+ソリッドカラーの可視矩形です。`FrameWidget` と異なり、`PanelWidget` は実際に画面上に何かを描画します。
 
-**Key methods:**
-- `SetColor(int argb)` -- Set the background color
-- `SetAlpha(float alpha)` -- Set transparency
+**主要メソッド:**
+- `SetColor(int argb)` -- 背景色を設定
+- `SetAlpha(float alpha)` -- 透明度を設定
 
-**When to use:** Backgrounds behind text, colored dividers, overlay rectangles, tint layers.
+**使用場面:** テキストの背後の背景、色付き仕切り、オーバーレイ矩形、ティントレイヤー。
 
 ```c
 PanelWidget bg = PanelWidget.Cast(root.FindAnyWidget("Background"));
-bg.SetColor(ARGB(200, 0, 0, 0));  // Semi-transparent black
+bg.SetColor(ARGB(200, 0, 0, 0));  // 半透明の黒
 ```
 
 ### WrapSpacerWidget
 
-Automatically arranges children in a flow layout. Children are placed one after another, wrapping to the next line when space runs out.
+フローレイアウトで子を自動配置します。子は1つずつ配置され、スペースがなくなると次の行に折り返されます。
 
-**Key layout attributes:**
-- `Padding` -- Inner padding (pixels)
-- `Margin` -- Outer margin (pixels)
-- `"Size To Content H" 1` -- Resize width to fit children
-- `"Size To Content V" 1` -- Resize height to fit children
-- `content_halign` -- Horizontal alignment of content (`left`, `center`, `right`)
-- `content_valign` -- Vertical alignment of content (`top`, `center`, `bottom`)
+**主要レイアウト属性:**
+- `Padding` -- 内部パディング（ピクセル）
+- `Margin` -- 外部マージン（ピクセル）
+- `"Size To Content H" 1` -- 子に合わせて幅をリサイズ
+- `"Size To Content V" 1` -- 子に合わせて高さをリサイズ
+- `content_halign` -- コンテンツの水平配置（`left`, `center`, `right`）
+- `content_valign` -- コンテンツの垂直配置（`top`, `center`, `bottom`）
 
-**When to use:** Dynamic lists, tag clouds, button rows, any layout where children have varying sizes.
+**使用場面:** 動的リスト、タグクラウド、ボタン行、子のサイズが異なるレイアウト。
 
 ### GridSpacerWidget
 
-Arranges children in a fixed grid. Each cell has equal size.
+固定グリッドに子を配置します。各セルは同じサイズです。
 
-**Key layout attributes:**
-- `Columns` -- Number of columns
-- `Rows` -- Number of rows
-- `Margin` -- Space between cells
-- `"Size To Content V" 1` -- Resize height to fit content
+**主要レイアウト属性:**
+- `Columns` -- 列数
+- `Rows` -- 行数
+- `Margin` -- セル間のスペース
+- `"Size To Content V" 1` -- コンテンツに合わせて高さをリサイズ
 
-**When to use:** Inventory grids, icon galleries, settings panels with uniform rows.
+**使用場面:** インベントリグリッド、アイコンギャラリー、均一な行を持つ設定パネル。
 
 ### ScrollWidget
 
-Provides a scrollable viewport for content that exceeds the visible area.
+可視領域を超えるコンテンツ用のスクロール可能なビューポートを提供します。
 
-**Key layout attributes:**
-- `"Scrollbar V" 1` -- Enable vertical scrollbar
-- `"Scrollbar H" 1` -- Enable horizontal scrollbar
+**主要レイアウト属性:**
+- `"Scrollbar V" 1` -- 縦スクロールバーを有効化
+- `"Scrollbar H" 1` -- 横スクロールバーを有効化
 
-**Key methods:**
-- `VScrollToPos(float pos)` -- Scroll to a vertical position
-- `GetVScrollPos()` -- Get current vertical scroll position
-- `GetContentHeight()` -- Get total content height
-- `VScrollStep(int step)` -- Scroll by step amount
+**主要メソッド:**
+- `VScrollToPos(float pos)` -- 縦方向の位置にスクロール
+- `GetVScrollPos()` -- 現在の縦スクロール位置を取得
+- `GetContentHeight()` -- コンテンツ全体の高さを取得
+- `VScrollStep(int step)` -- ステップ量だけスクロール
 
-**When to use:** Long lists, configuration panels, chat windows, log viewers.
+**使用場面:** 長いリスト、設定パネル、チャットウィンドウ、ログビューア。
 
 ---
 
-## 表示 Widget
+## 表示ウィジェット
 
-Display widgets show content to the user but are not interactive.
+表示ウィジェットはユーザーにコンテンツを表示しますが、インタラクティブではありません。
 
-| Script Class | Layout Class | Purpose |
+| スクリプトクラス | レイアウトクラス | 目的 |
 |---|---|---|
-| `TextWidget` | `TextWidgetClass` | Single-line text display |
-| `MultilineTextWidget` | `MultilineTextWidgetClass` | Multi-line read-only text |
-| `RichTextWidget` | `RichTextWidgetClass` | Text with embedded images (`<image>` tags) |
-| `ImageWidget` | `ImageWidgetClass` | Image display (from imagesets or files) |
-| `CanvasWidget` | `CanvasWidgetClass` | Programmable drawing surface |
-| `VideoWidget` | `VideoWidgetClass` | Video file playback |
-| `RTTextureWidget` | `RTTextureWidgetClass` | Render-to-texture surface |
-| `RenderTargetWidget` | `RenderTargetWidgetClass` | 3D scene render target |
-| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D DayZ item preview |
-| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D player character preview |
-| `MapWidget` | `MapWidgetClass` | Interactive world map |
+| `TextWidget` | `TextWidgetClass` | 単一行テキスト表示 |
+| `MultilineTextWidget` | `MultilineTextWidgetClass` | 複数行読み取り専用テキスト |
+| `RichTextWidget` | `RichTextWidgetClass` | 埋め込み画像付きテキスト（`<image>` タグ） |
+| `ImageWidget` | `ImageWidgetClass` | 画像表示（イメージセットまたはファイルから） |
+| `CanvasWidget` | `CanvasWidgetClass` | プログラム可能な描画サーフェス |
+| `VideoWidget` | `VideoWidgetClass` | 動画ファイル再生 |
+| `RTTextureWidget` | `RTTextureWidgetClass` | レンダーテクスチャサーフェス |
+| `RenderTargetWidget` | `RenderTargetWidgetClass` | 3D シーンレンダーターゲット |
+| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D DayZ アイテムプレビュー |
+| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D プレイヤーキャラクタープレビュー |
+| `MapWidget` | `MapWidgetClass` | インタラクティブワールドマップ |
 
 ### TextWidget
 
-The most common display widget. Shows a single line of text.
+最も一般的な表示ウィジェットです。単一行のテキストを表示します。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 TextWidget tw;
 tw.SetText("Hello World");
-tw.GetText();                           // Returns string
-tw.GetTextSize(out int w, out int h);   // Pixel dimensions of rendered text
-tw.SetTextExactSize(float size);        // Set font size in pixels
-tw.SetOutline(int size, int color);     // Add text outline
-tw.GetOutlineSize();                    // Returns int
-tw.GetOutlineColor();                   // Returns int (ARGB)
-tw.SetColor(int argb);                  // Text color
+tw.GetText();                           // 文字列を返す
+tw.GetTextSize(out int w, out int h);   // レンダリングされたテキストのピクセル寸法
+tw.SetTextExactSize(float size);        // フォントサイズをピクセルで設定
+tw.SetOutline(int size, int color);     // テキストアウトラインを追加
+tw.GetOutlineSize();                    // int を返す
+tw.GetOutlineColor();                   // int を返す（ARGB）
+tw.SetColor(int argb);                  // テキスト色
 ```
 
-**Key layout attributes:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
+**主要レイアウト属性:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`。
 
 ### MultilineTextWidget
 
-Displays multiple lines of read-only text. Text wraps automatically based on widget width.
+複数行の読み取り専用テキストを表示します。テキストはウィジェット幅に基づいて自動的に折り返されます。
 
-**When to use:** Description panels, help text, log displays.
+**使用場面:** 説明パネル、ヘルプテキスト、ログ表示。
 
 ### RichTextWidget
 
-Supports inline images embedded within text using `<image>` tags. Also supports text wrapping.
+`<image>` タグを使用してテキスト内にインライン画像を埋め込むことをサポートします。テキストの折り返しもサポートします。
 
-**Key layout attributes:**
-- `wrap 1` -- Enable word wrapping
+**主要レイアウト属性:**
+- `wrap 1` -- 単語の折り返しを有効化
 
-**Usage in text:**
+**テキスト内での使用:**
 ```
 "Health: <image set:dayz_gui image:iconHealth0 /> OK"
 ```
 
-**When to use:** Status text with icons, formatted messages, chat with inline images.
+**使用場面:** アイコン付きステータステキスト、フォーマットされたメッセージ、インライン画像付きチャット。
 
 ### ImageWidget
 
-Displays images from imageset sprite sheets or loaded from file paths.
+イメージセットのスプライトシートまたはファイルパスからロードされた画像を表示します。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 ImageWidget iw;
-iw.SetImage(int index);                    // Switch between image0, image1, etc.
-iw.LoadImageFile(int slot, string path);   // Load image from file
-iw.LoadMaskTexture(string path);           // Load a mask texture
-iw.SetMaskProgress(float progress);        // 0-1 for wipe/reveal transitions
+iw.SetImage(int index);                    // image0, image1 などを切り替え
+iw.LoadImageFile(int slot, string path);   // ファイルから画像をロード
+iw.LoadMaskTexture(string path);           // マスクテクスチャをロード
+iw.SetMaskProgress(float progress);        // ワイプ/リビールトランジション用の 0-1
 ```
 
-**Key layout attributes:**
-- `image0 "set:dayz_gui image:icon_refresh"` -- Image from an imageset
-- `mode blend` -- Blend mode (`blend`, `additive`, `stretch`)
-- `"src alpha" 1` -- Use source alpha channel
-- `stretch 1` -- Stretch image to fill widget
-- `"flip u" 1` -- Flip horizontally
-- `"flip v" 1` -- Flip vertically
+**主要レイアウト属性:**
+- `image0 "set:dayz_gui image:icon_refresh"` -- イメージセットからの画像
+- `mode blend` -- ブレンドモード（`blend`, `additive`, `stretch`）
+- `"src alpha" 1` -- ソースアルファチャネルを使用
+- `stretch 1` -- ウィジェットに合わせて画像をストレッチ
+- `"flip u" 1` -- 水平反転
+- `"flip v" 1` -- 垂直反転
 
-**When to use:** Icons, logos, backgrounds, map markers, status indicators.
+**使用場面:** アイコン、ロゴ、背景、マップマーカー、ステータスインジケータ。
 
 ### CanvasWidget
 
-A drawing surface where you can render lines programmatically.
+プログラム的にラインをレンダリングできる描画サーフェスです。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 CanvasWidget cw;
 cw.DrawLine(float x1, float y1, float x2, float y2, float width, int color);
 cw.Clear();
 ```
 
-**When to use:** Custom graphs, connection lines between nodes, debug overlays.
+**使用場面:** カスタムグラフ、ノード間の接続線、デバッグオーバーレイ。
 
 ### MapWidget
 
-The full interactive world map. Supports panning, zooming, and coordinate conversion.
+完全なインタラクティブワールドマップです。パン、ズーム、座標変換をサポートします。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 MapWidget mw;
-mw.SetMapPos(vector pos);              // Center on world position
-mw.GetMapPos();                        // Current center position
-mw.SetScale(float scale);             // Zoom level
-mw.GetScale();                        // Current zoom
-mw.MapToScreen(vector world_pos);     // World coords to screen coords
-mw.ScreenToMap(vector screen_pos);    // Screen coords to world coords
+mw.SetMapPos(vector pos);              // ワールド位置を中心に
+mw.GetMapPos();                        // 現在の中心位置
+mw.SetScale(float scale);             // ズームレベル
+mw.GetScale();                        // 現在のズーム
+mw.MapToScreen(vector world_pos);     // ワールド座標をスクリーン座標に
+mw.ScreenToMap(vector screen_pos);    // スクリーン座標をワールド座標に
 ```
 
-**When to use:** Mission maps, GPS systems, location pickers.
+**使用場面:** ミッションマップ、GPS システム、位置選択ツール。
 
 ### ItemPreviewWidget
 
-Renders a 3D preview of any DayZ inventory item.
+任意の DayZ インベントリアイテムの 3D プレビューをレンダリングします。
 
-**When to use:** Inventory screens, loot previews, shop interfaces.
+**使用場面:** インベントリ画面、ルートプレビュー、ショップインターフェース。
 
 ### PlayerPreviewWidget
 
-Renders a 3D preview of the player character model.
+プレイヤーキャラクターモデルの 3D プレビューをレンダリングします。
 
-**When to use:** Character creation screens, equipment preview, wardrobe systems.
+**使用場面:** キャラクター作成画面、装備プレビュー、ワードローブシステム。
 
 ### RTTextureWidget
 
-Renders its children to a texture surface rather than directly to the screen.
+子を画面に直接ではなくテクスチャサーフェスにレンダリングします。
 
-**When to use:** Minimap rendering, picture-in-picture effects, offscreen UI composition.
+**使用場面:** ミニマップレンダリング、ピクチャインピクチャエフェクト、オフスクリーン UI 合成。
 
 ---
 
-## インタラクティブ Widget
+## インタラクティブウィジェット
 
-Interactive widgets respond to user input and fire events.
+インタラクティブウィジェットはユーザー入力に応答し、イベントを発行します。
 
-| Script Class | Layout Class | Purpose |
+| スクリプトクラス | レイアウトクラス | 目的 |
 |---|---|---|
-| `ButtonWidget` | `ButtonWidgetClass` | Clickable button |
-| `CheckBoxWidget` | `CheckBoxWidgetClass` | Boolean checkbox |
-| `EditBoxWidget` | `EditBoxWidgetClass` | Single-line text input |
-| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Multi-line text input |
-| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Masked password input |
-| `SliderWidget` | `SliderWidgetClass` | Horizontal slider control |
-| `XComboBoxWidget` | `XComboBoxWidgetClass` | Dropdown selection |
-| `TextListboxWidget` | `TextListboxWidgetClass` | Selectable row list |
-| `ProgressBarWidget` | `ProgressBarWidgetClass` | Progress indicator |
-| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Minimal progress indicator |
+| `ButtonWidget` | `ButtonWidgetClass` | クリック可能なボタン |
+| `CheckBoxWidget` | `CheckBoxWidgetClass` | ブーリアンチェックボックス |
+| `EditBoxWidget` | `EditBoxWidgetClass` | 単一行テキスト入力 |
+| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | 複数行テキスト入力 |
+| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | マスクされたパスワード入力 |
+| `SliderWidget` | `SliderWidgetClass` | 水平スライダーコントロール |
+| `XComboBoxWidget` | `XComboBoxWidgetClass` | ドロップダウン選択 |
+| `TextListboxWidget` | `TextListboxWidgetClass` | 選択可能な行リスト |
+| `ProgressBarWidget` | `ProgressBarWidgetClass` | プログレスインジケータ |
+| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | 最小限のプログレスインジケータ |
 
 ### ButtonWidget
 
-The primary interactive control. Supports both momentary click and toggle modes.
+主要なインタラクティブコントロールです。瞬間クリックとトグルモードの両方をサポートします。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 ButtonWidget bw;
 bw.SetText("Click Me");
-bw.GetState();              // Returns bool (toggle buttons only)
-bw.SetState(bool state);    // Set toggle state
+bw.GetState();              // bool を返す（トグルボタンのみ）
+bw.SetState(bool state);    // トグル状態を設定
 ```
 
-**Key layout attributes:**
-- `text "Label"` -- Button label text
-- `switch toggle` -- Make it a toggle button
-- `style Default` -- Visual style
+**主要レイアウト属性:**
+- `text "Label"` -- ボタンラベルテキスト
+- `switch toggle` -- トグルボタンにする
+- `style Default` -- ビジュアルスタイル
 
-**Events fired:** `OnClick(Widget w, int x, int y, int button)`
+**発行されるイベント:** `OnClick(Widget w, int x, int y, int button)`
 
 ### CheckBoxWidget
 
-A boolean toggle control.
+ブーリアントグルコントロールです。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 CheckBoxWidget cb;
-cb.IsChecked();                 // Returns bool
-cb.SetChecked(bool checked);    // Set state
+cb.IsChecked();                 // bool を返す
+cb.SetChecked(bool checked);    // 状態を設定
 ```
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)`
+**発行されるイベント:** `OnChange(Widget w, int x, int y, bool finished)`
 
 ### EditBoxWidget
 
-A single-line text input field.
+単一行テキスト入力フィールドです。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 EditBoxWidget eb;
-eb.GetText();               // Returns string
-eb.SetText("default");      // Set text content
+eb.GetText();               // 文字列を返す
+eb.SetText("default");      // テキスト内容を設定
 ```
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when Enter is pressed.
+**発行されるイベント:** `OnChange(Widget w, int x, int y, bool finished)` -- Enter キーが押されると `finished` が `true` になります。
 
 ### SliderWidget
 
-A horizontal slider for numeric values.
+数値用の水平スライダーです。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 SliderWidget sw;
-sw.GetCurrent();            // Returns float (0-1)
-sw.SetCurrent(float val);   // Set position
+sw.GetCurrent();            // float を返す（0-1）
+sw.SetCurrent(float val);   // 位置を設定
 ```
 
-**Key layout attributes:**
-- `"fill in" 1` -- Show filled track behind handle
-- `"listen to input" 1` -- Respond to mouse input
+**主要レイアウト属性:**
+- `"fill in" 1` -- ハンドルの背後に塗りつぶしトラックを表示
+- `"listen to input" 1` -- マウス入力に応答
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when the user releases the slider.
+**発行されるイベント:** `OnChange(Widget w, int x, int y, bool finished)` -- ユーザーがスライダーを離すと `finished` が `true` になります。
 
 ### XComboBoxWidget
 
-A dropdown selection list.
+ドロップダウン選択リストです。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 XComboBoxWidget xcb;
 xcb.AddItem("Option A");
 xcb.AddItem("Option B");
-xcb.SetCurrentItem(0);         // Select by index
-xcb.GetCurrentItem();          // Returns selected index
-xcb.ClearAll();                // Remove all items
+xcb.SetCurrentItem(0);         // インデックスで選択
+xcb.GetCurrentItem();          // 選択中のインデックスを返す
+xcb.ClearAll();                // すべてのアイテムを削除
 ```
 
 ### TextListboxWidget
 
-A scrollable list of text rows. Supports selection and multi-column data.
+スクロール可能なテキスト行のリストです。選択と複数列データをサポートします。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 TextListboxWidget tlb;
-tlb.AddItem("Row text", null, 0);   // text, userData, column
-tlb.GetSelectedRow();               // Returns int (-1 if none)
-tlb.SetRow(int row);                // Select a row
+tlb.AddItem("Row text", null, 0);   // テキスト、userData、列
+tlb.GetSelectedRow();               // int を返す（選択なしの場合 -1）
+tlb.SetRow(int row);                // 行を選択
 tlb.RemoveRow(int row);
 tlb.ClearItems();
 ```
 
-**Events fired:** `OnItemSelected`
+**発行されるイベント:** `OnItemSelected`
 
 ### ProgressBarWidget
 
-Displays a progress indicator.
+プログレスインジケータを表示します。
 
-**Key methods:**
+**主要メソッド:**
 ```c
 ProgressBarWidget pb;
 pb.SetCurrent(float value);    // 0-100
 ```
 
-**When to use:** Loading bars, health bars, mission progress, cooldown indicators.
+**使用場面:** ローディングバー、ヘルスバー、ミッション進捗、クールダウンインジケータ。
 
 ---
 
-## TypeID 完全リファレンス
+## 完全な TypeID リファレンス
 
-Use these constants with `GetGame().GetWorkspace().CreateWidget()` for programmatic widget creation:
+プログラム的なウィジェット作成のために `GetGame().GetWorkspace().CreateWidget()` でこれらの定数を使用します。
 
 ```
 FrameWidgetTypeID
@@ -394,36 +398,65 @@ ScrollWidgetTypeID
 
 ---
 
-## 適切な Widget の選択
+## 適切なウィジェットの選択
 
-| I need to... | Use this widget |
+| やりたいこと | 使用するウィジェット |
 |---|---|
-| Group widgets together (invisible) | `FrameWidget` |
-| Draw a colored rectangle | `PanelWidget` |
-| Show text | `TextWidget` |
-| Show multi-line text | `MultilineTextWidget` or `RichTextWidget` with `wrap 1` |
-| Show text with inline icons | `RichTextWidget` |
-| Display an image/icon | `ImageWidget` |
-| Create a clickable button | `ButtonWidget` |
-| Create a toggle (on/off) | `CheckBoxWidget` or `ButtonWidget` with `switch toggle` |
-| Accept text input | `EditBoxWidget` |
-| Accept multi-line text input | `MultilineEditBoxWidget` |
-| Accept a password | `PasswordEditBoxWidget` |
-| Let user pick a number | `SliderWidget` |
-| Let user pick from a list | `XComboBoxWidget` (dropdown) or `TextListboxWidget` (visible list) |
-| Show progress | `ProgressBarWidget` or `SimpleProgressBarWidget` |
-| Arrange children in a flow | `WrapSpacerWidget` |
-| Arrange children in a grid | `GridSpacerWidget` |
-| Make content scrollable | `ScrollWidget` |
-| Show a 3D item model | `ItemPreviewWidget` |
-| Show the player model | `PlayerPreviewWidget` |
-| Show the world map | `MapWidget` |
-| Draw custom lines/shapes | `CanvasWidget` |
-| Render to a texture | `RTTextureWidget` |
+| ウィジェットをグループ化（不可視） | `FrameWidget` |
+| 色付き矩形を描画 | `PanelWidget` |
+| テキストを表示 | `TextWidget` |
+| 複数行テキストを表示 | `MultilineTextWidget` または `wrap 1` 付き `RichTextWidget` |
+| インラインアイコン付きテキストを表示 | `RichTextWidget` |
+| 画像/アイコンを表示 | `ImageWidget` |
+| クリック可能なボタンを作成 | `ButtonWidget` |
+| トグル（オン/オフ）を作成 | `CheckBoxWidget` または `switch toggle` 付き `ButtonWidget` |
+| テキスト入力を受け付け | `EditBoxWidget` |
+| 複数行テキスト入力を受け付け | `MultilineEditBoxWidget` |
+| パスワードを受け付け | `PasswordEditBoxWidget` |
+| ユーザーに数値を選択させる | `SliderWidget` |
+| ユーザーにリストから選択させる | `XComboBoxWidget`（ドロップダウン）または `TextListboxWidget`（可視リスト） |
+| 進捗を表示 | `ProgressBarWidget` または `SimpleProgressBarWidget` |
+| フローで子を配置 | `WrapSpacerWidget` |
+| グリッドで子を配置 | `GridSpacerWidget` |
+| コンテンツをスクロール可能にする | `ScrollWidget` |
+| 3D アイテムモデルを表示 | `ItemPreviewWidget` |
+| プレイヤーモデルを表示 | `PlayerPreviewWidget` |
+| ワールドマップを表示 | `MapWidget` |
+| カスタムの線/図形を描画 | `CanvasWidget` |
+| テクスチャにレンダリング | `RTTextureWidget` |
 
 ---
 
 ## 次のステップ
 
-- [3.2 Layout File Format](02-layout-files.md) -- Learn how to define widget trees in `.layout` files
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code instead of layout files
+- [3.2 レイアウトファイルフォーマット](02-layout-files.md) -- `.layout` ファイルでウィジェットツリーを定義する方法を学ぶ
+- [3.5 プログラム的なウィジェット作成](05-programmatic-widgets.md) -- レイアウトファイルの代わりにコードからウィジェットを作成
+
+---
+
+## ベストプラクティス
+
+- デフォルトのコンテナとして `FrameWidget` を使用してください。可視の色付き背景が必要な場合にのみ `PanelWidget` を使用してください。
+- 後でインラインアイコンが必要になる可能性がある場合は `TextWidget` より `RichTextWidget` を優先してください --- 既存のレイアウトでタイプを切り替えるのは面倒です。
+- `FindAnyWidget()` と `Cast()` の後は必ず null チェックしてください。欠落したウィジェット名は無言で `null` を返し、次のメソッド呼び出しでクラッシュを引き起こします。
+- 動的リストには `WrapSpacerWidget` を、固定グリッドには `GridSpacerWidget` を使用してください。フローレイアウトで子を手動配置しないでください。
+- 本番 UI には `CanvasWidget` を避けてください --- 毎フレーム再描画され、バッチ処理されません。デバッグオーバーレイにのみ使用してください。
+
+---
+
+## 理論 vs 実践
+
+| 概念 | 理論 | 現実 |
+|---------|--------|---------|
+| `ScrollWidget` がコンテンツに自動スクロール | コンテンツが境界を超えるとスクロールバーが表示される | 新しいコンテンツにスクロールするには手動で `VScrollToPos()` を呼ぶ必要がある; 子の追加時に自動スクロールしない |
+| `SliderWidget` が連続イベントを発行 | ドラッグの各ピクセルで `OnChange` が発行される | ドラッグ中は `finished` パラメータが `false` で、リリース時に `true` になる; 重い処理は `finished == true` の時のみ更新 |
+| `XComboBoxWidget` が多くのアイテムをサポート | ドロップダウンは任意の数で動作 | 100以上のアイテムでパフォーマンスが顕著に低下する; 長いリストには代わりに `TextListboxWidget` を使用 |
+| `ItemPreviewWidget` が任意のアイテムを表示 | 3D プレビュー用に任意のクラス名を渡す | ウィジェットはアイテムの `.p3d` モデルがロードされている必要がある; Mod アイテムには Data PBO が必要 |
+| `MapWidget` は単純な表示 | マップを表示するだけ | デフォルトですべてのマウス入力をインターセプトする; 重なるウィジェットへのクリックをブロックしないよう `IGNOREPOINTER` フラグを慎重に管理する必要がある |
+
+---
+
+## 互換性と影響
+
+- **マルチ Mod:** ウィジェットタイプ ID はすべての Mod で共有されるエンジン定数です。2つの Mod が同じ親の下で同じ名前のウィジェットを作成すると衝突します。Mod プレフィックス付きの一意なウィジェット名を使用してください。
+- **パフォーマンス:** 数百の子を持つ `TextListboxWidget` と `ScrollWidget` はフレーム落ちを引き起こします。50アイテムを超えるリストにはウィジェットをプールしてリサイクルしてください。

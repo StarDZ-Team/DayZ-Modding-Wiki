@@ -1,23 +1,23 @@
 # Chapter 6.10: Central Economy
 
-[Home](../../README.md) | [<< Previous: Networking & RPC](09-networking.md) | **Central Economy** | [Next: Mission Hooks >>](11-mission-hooks.md)
+[Domů](../../README.md) | [<< Předchozí: Síťování a RPC](09-networking.md) | **Centrální ekonomika** | [Další: Háčky misí >>](11-mission-hooks.md)
 
 ---
 
-## Introduction
+## Úvod
 
-The Central Economy (CE) is DayZ's server-side system for managing all spawnable entities in the world: loot, vehicles, infected, animals, and dynamic events. It is configured entirely through XML files in the mission folder. While the CE itself is an engine system (not directly scriptable), understanding its configuration files is essential for any server mod. This chapter covers all CE configuration files, their structure, key parameters, and how they interact.
+The Central Economy (CE) is DayZ's server-side system for managing all spawnable entities in the world: loot, vehicles, infected, animals, and dynamic dokoncets. It is configured celýly through XML files in the mission folder. Zatímco the CE itself is an engine system (not přímo scriptable), understanding its configuration files is essential for jakýkoli server mod. This chapter covers all CE configuration files, their structure, key parameters, and how they interact.
 
 ---
 
 ## How the CE Works
 
-1. The server reads `types.xml` to learn every item's **nominal** (target count) and **min** (minimum before restock).
+1. The server reads `types.xml` to learn každý item's **nominal** (target count) and **min** (minimum before restock).
 2. Items are assigned **usage flags** (e.g., `Military`, `Town`) that map to building/location types.
 3. Items are assigned **value flags** (e.g., `Tier1` through `Tier4`) that restrict them to map zones.
-4. The CE periodically scans the world, counts existing items, and spawns new ones when counts fall below `min`.
+4. The CE periodically scans the world, counts existing items, and spawns nový ones when counts fall níže `min`.
 5. Items untouched for their `lifetime` (seconds) are cleaned up.
-6. Dynamic events (`events.xml`) spawn vehicles, helicopter crashes, and infected groups on their own schedule.
+6. Dynamic dokoncets (`events.xml`) spawn vehicles, helicopter crashes, and infected groups on their own schedule.
 
 ---
 
@@ -28,21 +28,42 @@ All CE files live in the mission folder (e.g., `dayzOffline.chernarusplus/`).
 | File | Purpose |
 |------|---------|
 | `db/types.xml` | Every spawnable item's parameters |
-| `db/events.xml` | Dynamic event definitions (vehicles, crashes, infected) |
-| `db/globals.xml` | Global CE parameters (timers, limits) |
+| `db/events.xml` | Dynamic dokoncet definitions (vehicles, crashes, infected) |
+| `db/globálnís.xml` | Global CE parameters (timers, limits) |
 | `db/economy.xml` | Subsystem toggle switches |
-| `cfgeconomycore.xml` | Root classes, defaults, CE logging |
+| `cfgeconomycore.xml` | Root classes, výchozís, CE logging |
 | `cfgspawnabletypes.xml` | Per-item attachment and cargo rules |
 | `cfgrandompresets.xml` | Random loot preset pools |
-| `cfgeventspawns.xml` | World coordinates for event spawn positions |
-| `cfglimitsdefinition.xml` | All valid category, usage, and value flag names |
-| `cfgplayerspawnpoints.xml` | Fresh spawn locations |
+| `cfgeventspawns.xml` | World coordinates for dokoncet spawn positions |
+| `cfglimitsdefinition.xml` | All platný category, usage, and value flag names |
+| `cfghráčipawnpoints.xml` | Fresh spawn locations |
+
+---
+
+## Spawn Cycle
+
+```mermaid
+flowchart TD
+    A[CE Startup] --> B[Load types.xml]
+    B --> C[For each item type]
+    C --> D{Current count < nominal?}
+    D -->|Yes| E{Restock timer elapsed?}
+    E -->|Yes| F[Spawn item at valid position]
+    E -->|No| G[Wait for restock interval]
+    D -->|No| H{Current count > nominal?}
+    H -->|Yes| I[Mark excess for cleanup]
+    H -->|No| J[Item count balanced]
+    F --> K{Lifetime expired?}
+    K -->|Yes| L[Delete item]
+    K -->|No| M[Item persists]
+    L --> C
+```
 
 ---
 
 ## types.xml
 
-The most critical CE file. Every item that can exist in the world must have an entry here.
+The většina critical CE file. Every item that can exist in the world must have an entry zde.
 
 ### Structure
 
@@ -70,7 +91,7 @@ The most critical CE file. Every item that can exist in the world must have an e
 
 | Parameter | Description | Typical Values |
 |-----------|-------------|----------------|
-| `nominal` | Target count on the entire map | 1 - 200 |
+| `nominal` | Target count on the celý map | 1 - 200 |
 | `lifetime` | Seconds before untouched items despawn | 3600 (1h) - 14400 (4h) |
 | `restock` | Seconds before CE attempts to respawn after item is taken | 0 (immediate) - 1800 |
 | `min` | Minimum count before CE spawns more | Usually `nominal / 2` |
@@ -86,8 +107,8 @@ The most critical CE file. Every item that can exist in the world must have an e
 | `count_in_hoarder` | Count items in storage (tents, barrels, buried stashes) |
 | `count_in_map` | Count items on the ground and in buildings |
 | `count_in_player` | Count items on player characters |
-| `crafted` | Item is craftable (CE does not spawn it naturally) |
-| `deloot` | Dynamic event loot (spawned by events, not CE) |
+| `crafted` | Item is craftable (CE ne spawn it naturally) |
+| `deloot` | Dynamic dokoncet loot (spawned by dokoncets, not CE) |
 
 ### Category, Usage, and Value
 
@@ -95,9 +116,9 @@ The most critical CE file. Every item that can exist in the world must have an e
 - **usage**: Where the item spawns (e.g., `Military`, `Police`, `Town`, `Village`, `Farm`, `Hunting`, `Coast`)
 - **value**: Map tier restriction (e.g., `Tier1` = coast, `Tier2` = inland, `Tier3` = military, `Tier4` = deep inland)
 
-An item can have multiple `<usage>` and `<value>` tags to spawn in multiple locations and tiers.
+An item can have více `<usage>` and `<value>` tags to spawn in více locations and tiers.
 
-**Example --- add a custom item to the economy:**
+**Příklad --- add a vlastní item to the economy:**
 
 ```xml
 <type name="MyCustomRifle">
@@ -119,7 +140,7 @@ An item can have multiple `<usage>` and `<value>` tags to spawn in multiple loca
 
 ---
 
-## globals.xml
+## globálnís.xml
 
 Global CE parameters that affect all items.
 
@@ -158,22 +179,22 @@ Global CE parameters that affect all items.
 
 | Variable | Description |
 |----------|-------------|
-| `AnimalMaxCount` | Maximum animals alive simultaneously |
-| `ZombieMaxCount` | Maximum infected alive simultaneously |
+| `AnimalMaxCount` | Maximum animals alive současně |
+| `ZombieMaxCount` | Maximum infected alive současně |
 | `CleanupLifetimeDeadPlayer` | Seconds before dead player body despawns |
 | `CleanupLifetimeDeadInfected` | Seconds before dead zombie despawns |
 | `InitialSpawn` | Number of items to spawn on server startup |
 | `SpawnInitial` | Number of spawn attempts on startup |
 | `LootDamageMin` / `LootDamageMax` | Damage range applied to spawned loot (0-4: Pristine to Ruined) |
-| `RespawnAttempt` | Seconds between respawn checks |
+| `RespawnAttempt` | Seconds mezi respawn checks |
 | `FlagRefreshFrequency` | Territory flag refresh interval (seconds) |
 | `TimeLogin` / `TimeLogout` | Login/logout timer (seconds) |
 
 ---
 
-## events.xml
+## dokoncets.xml
 
-Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes, and other world events.
+Defines dynamic dokoncets: infected spawn zones, vehicle spawns, helicopter crashes, and jiný world dokoncets.
 
 ### Structure
 
@@ -204,18 +225,18 @@ Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes
 
 | Parameter | Description |
 |-----------|-------------|
-| `nominal` | Target number of active events |
+| `nominal` | Target number of active dokoncets |
 | `min` / `max` | Minimum and maximum active at once |
-| `lifetime` | Seconds before event despawns |
-| `saferadius` | Minimum distance from players when spawning |
-| `distanceradius` | Minimum distance between event instances |
+| `lifetime` | Seconds before dokoncet despawns |
+| `saferadius` | Minimum distance from hráči when spawning |
+| `distanceradius` | Minimum distance mezi dokoncet instances |
 | `cleanupradius` | Radius for cleanup checks |
-| `position` | `"fixed"` (from cfgeventspawns.xml) or `"player"` (near players) |
+| `position` | `"fixed"` (from cfgeventspawns.xml) or `"player"` (near hráči) |
 | `active` | `1` = enabled, `0` = disabled |
 
 ### Children (Event Objects)
 
-Each event can spawn one or more child objects:
+Každý dokoncet can spawn one or more child objects:
 
 | Attribute | Description |
 |-----------|-------------|
@@ -227,7 +248,7 @@ Each event can spawn one or more child objects:
 
 ## cfgspawnabletypes.xml
 
-Defines what attachments and cargo spawn with specific items.
+Defines what attachments and cargo spawn with specifický items.
 
 ```xml
 <spawnabletypes>
@@ -251,10 +272,10 @@ Defines what attachments and cargo spawn with specific items.
 
 ### Jak to funguje
 
-- Each `<attachments>` block has a `chance` (0.0 - 1.0) of being applied.
-- Within a block, items are selected by their individual `chance` values (normalized to 100% within the block).
-- Multiple `<attachments>` blocks allow different attachment slots to be independently rolled.
-- `<cargo>` blocks work the same way for items placed in the entity's cargo.
+- Každý `<attachments>` block has a `chance` (0.0 - 1.0) of being applied.
+- V rámci a block, items are selected by their individual `chance` values (normalized to 100% within the block).
+- Multiple `<attachments>` blocks allow odlišný attachment slots to be nezávisle rolled.
+- `<cargo>` blocks work the stejný way for items placed in the entity's cargo.
 
 ---
 
@@ -286,7 +307,7 @@ These presets can be referenced by name in `cfgspawnabletypes.xml`:
 
 ## cfgeconomycore.xml
 
-Root-level CE configuration. Defines default values, CE classes, and logging flags.
+Root-level CE configuration. Defines výchozí values, CE classes, and logging flags.
 
 ```xml
 <economycore>
@@ -307,13 +328,13 @@ Root-level CE configuration. Defines default values, CE classes, and logging fla
 </economycore>
 ```
 
-The `<ce folder="db"/>` tag tells the CE where to find `types.xml`, `events.xml`, and `globals.xml`.
+The `<ce folder="db"/>` tag tells the CE where to find `types.xml`, `events.xml`, and `globálnís.xml`.
 
 ---
 
 ## cfglimitsdefinition.xml
 
-Defines all valid category, usage, tag, and value flag names that can be used in `types.xml`.
+Defines all platný category, usage, tag, and value flag names that lze použít in `types.xml`.
 
 ```xml
 <lists>
@@ -352,7 +373,7 @@ Defines all valid category, usage, tag, and value flag names that can be used in
 </lists>
 ```
 
-Custom mods can add new flags here and reference them in their `types.xml` entries.
+Custom mods can add nový flags zde and reference them in their `types.xml` entries.
 
 ---
 
@@ -362,19 +383,19 @@ When spawning entities from script, the ECE flags (covered in [Chapter 6.1](01-e
 
 | Flag | CE Behavior |
 |------|-------------|
-| `ECE_NOLIFETIME` | Entity will never despawn (not tracked by CE lifetime) |
-| `ECE_DYNAMIC_PERSISTENCY` | Entity becomes persistent only after player interaction |
+| `ECE_NOLIFETIME` | Entity will nikdy despawn (not tracked by CE lifetime) |
+| `ECE_DYNAMIC_PERSISTENCY` | Entity becomes persistent pouze after player interaction |
 | `ECE_EQUIP_ATTACHMENTS` | CE spawns configured attachments from `cfgspawnabletypes.xml` |
 | `ECE_EQUIP_CARGO` | CE spawns configured cargo from `cfgspawnabletypes.xml` |
 
-**Example --- spawn an item that persists forever:**
+**Příklad --- spawn an item that persists forever:**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_NOLIFETIME;
 Object obj = GetGame().CreateObjectEx("Barrel_Green", pos, flags);
 ```
 
-**Example --- spawn with CE-configured attachments:**
+**Příklad --- spawn with CE-configured attachments:**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_EQUIP_ATTACHMENTS | ECE_EQUIP_CARGO;
@@ -386,7 +407,7 @@ Object obj = GetGame().CreateObjectEx("AKM", pos, flags);
 
 ## Script API for CE Interaction
 
-While the CE is primarily XML-configured, there are some script-side interactions:
+Zatímco the CE is primarily XML-configured, there are některé script-side interactions:
 
 ### Reading Config Values
 
@@ -428,9 +449,9 @@ GetGame().SurfaceGetType(x, z, surfaceType);
 ### Adding Custom Items
 
 1. Define the item class in your mod's `config.cpp` under `CfgVehicles`.
-2. Add a `<type>` entry in `types.xml` with nominal, lifetime, usage, and value flags.
+2. Přidejte a `<type>` entry in `types.xml` with nominal, lifetime, usage, and value flags.
 3. Optionally add attachment/cargo rules in `cfgspawnabletypes.xml`.
-4. If using new usage/value flags, define them in `cfglimitsdefinition.xml`.
+4. If using nový usage/value flags, define them in `cfglimitsdefinition.xml`.
 
 ### Modifying Existing Items
 
@@ -438,7 +459,7 @@ Edit the `<type>` entry in `types.xml` to change spawn rates, lifetimes, or loca
 
 ### Disabling Items
 
-Set `nominal` and `min` to `0`:
+Nastavte `nominal` and `min` to `0`:
 
 ```xml
 <type name="UnwantedItem">
@@ -450,7 +471,7 @@ Set `nominal` and `min` to `0`:
 
 ### Adding Custom Events
 
-Add a new `<event>` block in `events.xml` and corresponding spawn positions in `cfgeventspawns.xml`:
+Přidejte a nový `<event>` block in `events.xml` and corresponding spawn positions in `cfgeventspawns.xml`:
 
 ```xml
 <!-- events.xml -->
@@ -485,21 +506,21 @@ Add a new `<event>` block in `events.xml` and corresponding spawn positions in `
 
 ---
 
-## Summary
+## Shrnutí
 
 | File | Purpose | Key Parameters |
 |------|---------|----------------|
 | `types.xml` | Item spawn definitions | `nominal`, `min`, `lifetime`, `usage`, `value` |
-| `globals.xml` | Global CE variables | `ZombieMaxCount`, `AnimalMaxCount`, cleanup timers |
-| `events.xml` | Dynamic events | `nominal`, `lifetime`, `position`, `children` |
+| `globálnís.xml` | Global CE variables | `ZombieMaxCount`, `AnimalMaxCount`, cleanup timers |
+| `events.xml` | Dynamic dokoncets | `nominal`, `lifetime`, `position`, `children` |
 | `cfgspawnabletypes.xml` | Attachment/cargo rules per item | `attachments`, `cargo`, `chance` |
 | `cfgrandompresets.xml` | Reusable loot pools | `cargo`/`attachments` presets |
-| `cfgeconomycore.xml` | Root CE configuration | `classes`, `defaults`, CE folder |
+| `cfgeconomycore.xml` | Root CE configuration | `classes`, `výchozís`, CE folder |
 | `cfglimitsdefinition.xml` | Valid flag definitions | `categories`, `usageflags`, `valueflags` |
 
 | Koncept | Klíčový bod |
 |---------|-----------|
-| Nominal/Min | CE spawns items when count drops below `min`, targeting `nominal` |
+| Nominal/Min | CE spawns items when count drops níže `min`, targeting `nominal` |
 | Lifetime | Seconds before untouched items despawn |
 | Usage flags | Where items spawn (Military, Town, etc.) |
 | Value flags | Map tier restriction (Tier1 = coast through Tier4 = deep inland) |
@@ -509,4 +530,22 @@ Add a new `<event>` block in `events.xml` and corresponding spawn positions in `
 
 ---
 
-[<< Předchozí: Networking & RPC](09-networking.md) | **Central Economy** | [Domů](../README.md)
+## Osvědčené postupy
+
+- **Nastavte `count_in_hoarder="1"` for high-value items.** Bez this flag, hráči can hoard rare weapons in stashes without reducing the world spawn count, leading to item duplication v praxi.
+- **Udržujte `restock` at 0 for většina items.** Non-zero restock values delay respawning after an item is picked up. Use it pouze for items that should not okamžitě reappear (e.g., rare military gear).
+- **Testujte nominal/min ratios on a live server with hráči.** Static testing ne reveal real CE behavior. Items interact with player movement patterns, container storage, and cleanup timers in ways that are pouze visible under real load.
+- **Vždy define nový items in oba `config.cpp` and `types.xml`.** A config entry without a types.xml entry means the item will nikdy spawn naturally. A types.xml entry without a config class causes CE errors.
+- **Use `cfgspawnabletypes.xml` to create weapon variety.** Instead of spawning naked weapons, define attachment presets so hráči find weapons with random stocks, handguards, and magazines -- this dramatically improves loot quality perception.
+
+---
+
+## Kompatibilita a dopad
+
+- **Více modů:** Multiple mods can add entries to `types.xml`. Pokud dva mods define the stejný `<type name="">`, the last loaded file wins. Use unique class names to avoid collisions. Merge types.xml entries carefully on community servers.
+- **Výkon:** High `nominal` values (200+) for mnoho item types strain the CE's spawn loop. The CE runs periodic scans that scale with total tracked entity count. Udržujte nominals realistic -- 5-20 for weapons, 20-100 for common items.
+- **Server/klient:** The CE runs celýly on server. Clients have no visibility into CE state. All XML files are server-side pouze and are not distributed to clients.
+
+---
+
+[Domů](../../README.md) | [<< Předchozí: Síťování a RPC](09-networking.md) | **Centrální ekonomika** | [Další: Háčky misí >>](11-mission-hooks.md)

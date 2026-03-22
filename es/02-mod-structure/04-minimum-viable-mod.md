@@ -1,6 +1,10 @@
-# Chapter 2.4: Your First Mod -- Minimum Viable
+# Capítulo 2.4: Your First Mod -- Minimum Viable
 
-[Home](../../README.md) | [<< Previous: mod.cpp & Workshop](03-mod-cpp.md) | **Minimum Viable Mod** | [Next: File Organization >>](05-file-organization.md)
+[Inicio](../../README.md) | [<< Anterior: mod.cpp & Workshop](03-mod-cpp.md) | **Minimum Viable Mod** | [Siguiente: File Organization >>](05-file-organization.md)
+
+---
+
+> **Resumen:** This chapter walks you through creating the smallest possible DayZ mod from scratch. By the end, you will have a working mod that prints a message to the script log when the game starts. Three files, zero dependencies, under five minutes.
 
 ---
 
@@ -20,7 +24,7 @@
 
 ---
 
-## Lo que Necesitas
+## What You Need
 
 - DayZ game installed (retail or DayZ Tools/Diag)
 - A text editor (VS Code, Notepad++, or any plain text editor)
@@ -28,7 +32,7 @@
 
 ---
 
-## El Objetivo
+## The Goal
 
 We will create a mod called **HelloMod** that:
 1. Loads into DayZ without errors
@@ -172,7 +176,7 @@ DayZDiag_x64.exe -mod=HelloMod -filePatching
 
 This loads scripts directly from the folder without PBO packing.
 
-### Option B: Empaquetado PBO (Required for Distribution)
+### Option B: PBO Packing (Required for Distribution)
 
 For Workshop publishing or server deployment, you need to pack into a PBO:
 
@@ -243,7 +247,7 @@ If the log contains lines starting with `SCRIPT (E):`, something went wrong. See
 
 ---
 
-## Comprendiendo lo que Sucedio
+## Understanding What Happened
 
 Here is the sequence of events when DayZ loaded your mod:
 
@@ -270,7 +274,7 @@ The `modded` keyword is the key mechanism. It tells the engine "take the existin
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 Now that you have a working mod, here are natural progressions:
 
@@ -371,7 +375,7 @@ requiredAddons[] = { "DZ_Data", "JM_CF_Scripts" };
 
 ---
 
-## Solucion de Problemas
+## Solución de Problemas
 
 ### "Addon HelloMod_Scripts requires addon DZ_Data which is not loaded"
 
@@ -404,7 +408,7 @@ The method or property you are calling does not exist on that class. Double-chec
 - Ensure the file has a `.c` extension (not `.txt` or `.cs`)
 - Verify the `modded class` name matches the vanilla class exactly (case-sensitive)
 
-### Empaquetado PBO Errors
+### PBO Packing Errors
 
 - Ensure `config.cpp` is at the root level inside the PBO
 - File paths inside PBOs use forward slashes (`/`), not backslashes
@@ -412,7 +416,29 @@ The method or property you are calling does not exist on that class. Double-chec
 
 ---
 
-## Listado Completo de Archivos
+## Mejores Prácticas
+
+- Always call `super.OnInit()` before your custom code in modded mission classes -- skipping it breaks other mods' initialization.
+- Use a unique prefix in your `Print()` messages (e.g., `[HelloMod]`) so you can grep log files quickly.
+- Start with `5_Mission` only. Add `3_Game` and `4_World` layers incrementally as your mod grows.
+- Use `-filePatching` during development to avoid re-packing PBOs on every change.
+- Keep your first mod under 3 files until it works, then expand. Debugging a minimal structure is far easier.
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `Print()` outputs to log | Messages appear in script log | Output goes to the `.RPT` file, not a separate script log. On dedicated servers, check the server RPT in the profile folder |
+| `-filePatching` loads loose files | Unpacked mods work instantly | Some assets (models, textures) still require PBO packing; scripts work loose, but `.layout` files may not load from unpacked folders on all setups |
+| `modded class` patches vanilla | Your override replaces the original | Multiple mods can `modded class` the same class; they chain in load order. If one skips `super.OnInit()`, all later mods break |
+| `DZ_Data` is the only needed dependency | Minimal `requiredAddons` | Works for pure script mods, but if you reference any vanilla weapon/item class, you also need `DZ_Scripts` or the specific vanilla PBO |
+| Three files is enough | Mod loads with mod.cpp + config.cpp + one .c file | True for a script-only mod, but adding items or UI requires additional PBOs (Data, GUI) |
+
+---
+
+## Complete File Listing
 
 For reference, here are all three files in their entirety:
 
@@ -489,5 +515,5 @@ modded class MissionGameplay
 
 ---
 
-**Previous:** [Chapter 2.3: mod.cpp & Workshop](03-mod-cpp.md)
-**Next:** [Chapter 2.5: File Organization Best Practices](05-file-organization.md)
+**Anterior:** [Chapter 2.3: mod.cpp & Workshop](03-mod-cpp.md)
+**Siguiente:** [Chapter 2.5: File Organization Best Practices](05-file-organization.md)

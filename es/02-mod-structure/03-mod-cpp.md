@@ -1,6 +1,10 @@
-# Chapter 2.3: mod.cpp & Workshop
+# Capítulo 2.3: mod.cpp y Workshop
 
-[Home](../../README.md) | [<< Previous: config.cpp Deep Dive](02-config-cpp.md) | **mod.cpp & Workshop** | [Next: Minimum Viable Mod >>](04-minimum-viable-mod.md)
+[Inicio](../../README.md) | [<< Anterior: config.cpp Deep Dive](02-config-cpp.md) | **mod.cpp & Workshop** | [Siguiente: Minimum Viable Mod >>](04-minimum-viable-mod.md)
+
+---
+
+> **Resumen:** The `mod.cpp` file is pure metadata -- it controls how your mod appears in the DayZ launcher, in-game mod list, and Steam Workshop. It has no effect on gameplay, scripting, or load order. If `config.cpp` is the engine, `mod.cpp` is the paint job.
 
 ---
 
@@ -18,15 +22,15 @@
 
 ---
 
-## Vision General
+## Descripción General
 
 `mod.cpp` sits at the root of your mod folder (next to the `Addons/` directory). The DayZ launcher reads it to display your mod's name, logo, description, and author in the mod selection screen.
 
-**Key point:** `mod.cpp` is NOT compiled. It is not Enforce Script. It is a simple key-value file read by the launcher. There are no classes, no semicolons after closing braces, no arrays with `[]` syntax (with one exception for Workshop script modules -- see below).
+**Punto clave:** `mod.cpp` is NOT compiled. It is not Enforce Script. It is a simple key-value file read by the launcher. There are no classes, no semicolons after closing braces, no arrays with `[]` syntax (with one exception for Workshop script modules -- see below).
 
 ---
 
-## Donde Reside mod.cpp
+## Where mod.cpp Lives
 
 ```
 @MyMod/                       <-- Workshop/launch folder (prefixed with @)
@@ -43,9 +47,9 @@ The `@` prefix on the folder name is convention for Steam Workshop mods but not 
 
 ---
 
-## All Fields Reference
+## Referencia de Todos los Campos
 
-| Field | Tipo | Proposito | Requerido |
+| Campo | Tipo | Propósito | Obligatorio |
 |-------|------|---------|----------|
 | `name` | string | Mod display name | Yes |
 | `picture` | string | Large image in expanded description | No |
@@ -65,14 +69,14 @@ The `@` prefix on the folder name is convention for Steam Workshop mods but not 
 
 ---
 
-## Field Details
+## Detalles de los Campos
 
 ### name
 
 The display name shown in the DayZ launcher mod list and in-game mod screen.
 
 ```cpp
-name = "MyFramework";
+name = "My Framework";
 ```
 
 You can use string table references for localization:
@@ -120,8 +124,8 @@ logoOver = "MyMod/GUI/images/logo_hover.edds";
 Short text shown when hovering over the mod in the launcher. `tooltipOwned` is shown when the mod is installed (downloaded from Workshop).
 
 ```cpp
-tooltip = "MyFramework - Admin Panel & Framework";
-tooltipOwned = "MyFramework - Central Admin Panel & Shared Library";
+tooltip = "MyMod Core - Admin Panel & Framework";
+tooltipOwned = "My Framework - Central Admin Panel & Shared Library";
 ```
 
 ### overview
@@ -129,7 +133,7 @@ tooltipOwned = "MyFramework - Central Admin Panel & Shared Library";
 A longer description displayed in the mod details panel. This is your "about" text.
 
 ```cpp
-overview = "MyFramework provides a centralized admin panel and shared library for all MyMod mods. Manage configurations, permissions, and mod integration from a single in-game interface.";
+overview = "My Framework provides a centralized admin panel and shared library for all framework mods. Manage configurations, permissions, and mod integration from a single in-game interface.";
 ```
 
 ### action / actionURL
@@ -147,7 +151,7 @@ actionURL = "https://discord.gg/mymod";
 The author name and their Steam64 ID.
 
 ```cpp
-author = "MyMod Team";
+author = "Documentation Team";
 authorID = "76561198000000000";
 ```
 
@@ -186,7 +190,7 @@ extra = 0;
 
 ---
 
-## Client Mod vs Server Mod
+## Mod de Cliente vs Mod de Servidor
 
 DayZ supports two mod loading mechanisms:
 
@@ -225,22 +229,22 @@ type = "servermod";
 Many mods ship as TWO packages -- a client mod and a server mod:
 
 ```
-@MyMissions/           <-- Client mod (-mod=)
+@MyMod_Missions/           <-- Client mod (-mod=)
   mod.cpp                   type = "mod"
   Addons/
-    MyMissions.pbo     Scripts: UI, entity rendering, RPC receive
+    MyMod_Missions.pbo     Scripts: UI, entity rendering, RPC receive
 
-@MyMissionsServer/     <-- Server mod (-servermod=)
+@MyMod_MissionsServer/     <-- Server mod (-servermod=)
   mod.cpp                   type = "servermod"
   Addons/
-    MyMissionsServer.pbo   Scripts: spawning, logic, state management
+    MyMod_MissionsServer.pbo   Scripts: spawning, logic, state management
 ```
 
 This keeps server-side logic private (never sent to clients) and reduces client download size.
 
 ---
 
-## Workshop Metadata
+## Metadatos del Workshop
 
 ### meta.cpp (Auto-Generated)
 
@@ -266,7 +270,7 @@ The `mod.cpp` fields are what players see in the **in-game** mod list. The Works
 
 ### Workshop Image Recommendations
 
-| Imagen | Proposito | Tamano Recomendado |
+| Imagen | Propósito | Tamaño Recomendado |
 |-------|---------|-----------------|
 | `picture` | Expanded mod description | 512x512 or similar |
 | `logo` | Menu logo | 128x128 to 256x256 |
@@ -276,7 +280,7 @@ Use `.edds` format for best compatibility. `.paa` and `.tga` also work. PNG and 
 
 ---
 
-## Required vs Optional Fields
+## Campos Obligatorios vs Opcionales
 
 ### Absolute Minimum
 
@@ -320,23 +324,23 @@ type = "mod";
 
 ## Ejemplos Reales
 
-### MyFramework (Client Mod)
+### Framework Mod (Client Mod)
 
 ```cpp
-name = "MyFramework";
+name = "My Framework";
 picture = "";
 actionURL = "";
-tooltipOwned = "MyFramework - Central Admin Panel & Shared Library";
-overview = "MyFramework provides a centralized admin panel and shared library for all MyMod mods. Manage configurations, permissions, and mod integration from a single in-game interface.";
-author = "MyMod Team";
+tooltipOwned = "My Framework - Central Admin Panel & Shared Library";
+overview = "My Framework provides a centralized admin panel and shared library for all framework mods. Manage configurations, permissions, and mod integration from a single in-game interface.";
+author = "Documentation Team";
 version = "1.0.0";
 ```
 
-### MyFramework Server (Server Mod -- Minimal)
+### Framework Server Mod (Minimal)
 
 ```cpp
-name = "MyFramework Server";
-author = "MyMod Team";
+name = "My Framework Server";
+author = "Documentation Team";
 version = "1.0.0";
 extra = 0;
 type = "mod";
@@ -390,15 +394,15 @@ version = "1.0";
 
 DabsFramework uses `$STR_` string table references for all text fields, enabling multi-language support for the mod listing itself.
 
-### MyAI Mod (Client Mod with Script Modules in mod.cpp)
+### AI Mod (Client Mod with Script Modules in mod.cpp)
 
 ```cpp
-name = "MyAI Mod";
+name = "My AI Mod";
 picture = "";
 actionURL = "";
-tooltipOwned = "MyAI Mod - Intelligent Bot Framework for DayZ";
+tooltipOwned = "My AI Mod - Intelligent Bot Framework for DayZ";
 overview = "Advanced AI bot framework with human-like perception, combat tactics, and developer API";
-author = "MyMod";
+author = "YourName";
 version = "1.0.0";
 type = "mod";
 dependencies[] = {"Game", "World", "Mission"};
@@ -407,17 +411,17 @@ class Defs
     class gameScriptModule
     {
         value = "";
-        files[] = {"MyAI/Scripts/3_Game"};
+        files[] = {"MyMod_AI/Scripts/3_Game"};
     };
     class worldScriptModule
     {
         value = "";
-        files[] = {"MyAI/Scripts/4_World"};
+        files[] = {"MyMod_AI/Scripts/4_World"};
     };
     class missionScriptModule
     {
         value = "";
-        files[] = {"MyAI/Scripts/5_Mission"};
+        files[] = {"MyMod_AI/Scripts/5_Mission"};
     };
 };
 ```
@@ -426,7 +430,7 @@ Note: This mod places script module definitions in `mod.cpp` rather than `config
 
 ---
 
-## Consejos y Mejores Practicas
+## Consejos y Mejores Prácticas
 
 ### 1. Keep mod.cpp Simple
 
@@ -461,5 +465,46 @@ type = "servermod";
 
 ---
 
-**Previous:** [Chapter 2.2: config.cpp Deep Dive](02-config-cpp.md)
-**Next:** [Chapter 2.4: Your First Mod -- Minimum Viable](04-minimum-viable-mod.md)
+## Mejores Prácticas
+
+- Always include at least `name` and `author` -- even for server mods, it helps identify them in log output and admin tools.
+- Use `.edds` format for all image fields (`picture`, `logo`, `logoSmall`, `logoOver`). PNG and JPG are not supported.
+- Keep `mod.cpp` metadata-only. Put `CfgMods`, script modules, and `defines[]` in `config.cpp` instead.
+- Use semantic versioning (`1.2.3`) in the `version` field and update it with every Workshop release.
+- Test your mod without images first; add logos as a final polish step after functionality is confirmed.
+
+---
+
+## Observado en Mods Reales
+
+| Patrón | Mod | Detalle |
+|---------|-----|--------|
+| Localized `name` field | DabsFramework | Uses `$STR_DF_NAME` stringtable reference for multi-language mod listing |
+| Script modules in mod.cpp | Some AI mods | Place `class Defs` with script module paths directly in mod.cpp instead of config.cpp |
+| Missing `name` field | VPP Admin Tools | Omits `name` entirely; launcher falls back to folder name as display text |
+| All image fields identical | Community Framework | Sets `logo`, `logoSmall`, and `logoOver` to the same `.edds` file |
+| Empty image paths | Many early-stage mods | Leave `picture=""` during development; add branding before Workshop publish |
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `mod.cpp` is required | Every mod folder needs one | A mod loads fine without it, but the launcher shows no name or metadata |
+| `type` field controls loading | `"mod"` vs `"servermod"` | The launch parameter (`-mod=` vs `-servermod=`) is what actually controls loading; the `type` field is metadata only |
+| Image paths support common formats | All texture formats work | Only `.edds`, `.paa`, and `.tga` work; `.png` and `.jpg` are silently ignored |
+| `authorID` links to Steam | Steam64 ID creates a clickable link | Only works on the Workshop page; the in-game mod list does not render it as a link |
+| `version` is validated | Engine checks version format | The engine treats it as a raw string; `"banana"` is technically valid |
+
+---
+
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** `mod.cpp` has no effect on load order or dependencies. Two mods with identical field values will not conflict -- only `CfgPatches` class names in `config.cpp` can collide.
+- **Performance:** `mod.cpp` is read once at startup. Image files referenced here are loaded into memory for the launcher UI but have no in-game performance impact.
+
+---
+
+**Anterior:** [Chapter 2.2: config.cpp Deep Dive](02-config-cpp.md)
+**Siguiente:** [Chapter 2.4: Your First Mod -- Minimum Viable](04-minimum-viable-mod.md)

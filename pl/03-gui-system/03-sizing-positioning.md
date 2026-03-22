@@ -1,41 +1,45 @@
-# Chapter 3.3: Sizing & Positioning
+# Rozdział 3.3: Rozmiarowanie i pozycjonowanie
 
-[Home](../../README.md) | [<< Previous: Layout File Format](02-layout-files.md) | **Sizing & Positioning** | [Next: Container Widgets >>](04-containers.md)
+[Strona główna](../../README.md) | [<< Poprzedni: Format pliku layoutu](02-layout-files.md) | **Rozmiarowanie i pozycjonowanie** | [Następny: Widgety kontenerowe >>](04-containers.md)
 
 ---
 
-## Kluczowa koncepcja: proporcjonalny vs. pikselowy
+System layoutu DayZ używa **podwójnego trybu współrzędnych** -- każdy wymiar może być proporcjonalny (względem rodzica) lub pikselowy (bezwzględne piksele ekranu). Niezrozumienie tego systemu jest głównym źródłem błędów layoutu. Ten rozdział wyjaśnia go szczegółowo.
 
-Every widget has a position (`x, y`) and a size (`width, height`). Each of these four values can independently be either:
+---
 
-- **Proportional** (0.0 to 1.0) -- relative to the parent widget's dimensions
-- **Pixel** (any positive number) -- absolute screen pixels
+## Podstawowy koncept: proporcjonalny kontra pikselowy
 
-The mode for each axis is controlled by four flags:
+Każdy widget ma pozycję (`x, y`) i rozmiar (`width, height`). Każda z tych czterech wartości może niezależnie być albo:
 
-| Flag | Controls | `0` = Proportional | `1` = Pixel |
+- **Proporcjonalna** (0.0 do 1.0) -- relatywna do wymiarów widgetu rodzica
+- **Pikselowa** (dowolna liczba dodatnia) -- bezwzględne piksele ekranu
+
+Tryb dla każdej osi jest kontrolowany przez cztery flagi:
+
+| Flaga | Kontroluje | `0` = Proporcjonalny | `1` = Pikselowy |
 |---|---|---|---|
-| `hexactpos` | X position | Fraction of parent width | Pixels from left |
-| `vexactpos` | Y position | Fraction of parent height | Pixels from top |
-| `hexactsize` | Width | Fraction of parent width | Pixel width |
-| `vexactsize` | Height | Fraction of parent height | Pixel height |
+| `hexactpos` | Pozycja X | Ułamek szerokości rodzica | Piksele od lewej |
+| `vexactpos` | Pozycja Y | Ułamek wysokości rodzica | Piksele od góry |
+| `hexactsize` | Szerokość | Ułamek szerokości rodzica | Szerokość w pikselach |
+| `vexactsize` | Wysokość | Ułamek wysokości rodzica | Wysokość w pikselach |
 
-This means you can mix modes freely. For example, a widget can have proportional width but pixel height -- a very common pattern for rows and bars.
+Oznacza to, że możesz dowolnie mieszać tryby. Na przykład widget może mieć proporcjonalną szerokość, ale pikselową wysokość -- bardzo częsty wzorzec dla wierszy i pasków.
 
 ---
 
 ## Zrozumienie trybu proporcjonalnego
 
-When a flag is `0` (proportional), the value represents a **fraction of the parent's dimension**:
+Gdy flaga ma wartość `0` (proporcjonalny), wartość reprezentuje **ułamek wymiaru rodzica**:
 
-- `size 1 1` with `hexactsize 0` and `vexactsize 0` means "100% of parent width, 100% of parent height" -- the child fills the parent.
-- `size 0.5 0.3` means "50% of parent width, 30% of parent height."
-- `position 0.5 0` with `hexactpos 0` means "start at 50% of parent width from the left."
+- `size 1 1` z `hexactsize 0` i `vexactsize 0` oznacza "100% szerokości rodzica, 100% wysokości rodzica" -- dziecko wypełnia rodzica.
+- `size 0.5 0.3` oznacza "50% szerokości rodzica, 30% wysokości rodzica."
+- `position 0.5 0` z `hexactpos 0` oznacza "zacznij od 50% szerokości rodzica od lewej."
 
-Proportional mode is resolution-independent. The widget scales automatically when the parent changes size or when the game runs at a different resolution.
+Tryb proporcjonalny jest niezależny od rozdzielczości. Widget skaluje się automatycznie, gdy rodzic zmienia rozmiar lub gdy gra działa w innej rozdzielczości.
 
 ```
-// A widget that fills the left half of its parent
+// Widget wypełniający lewą połowę rodzica
 FrameWidgetClass LeftHalf {
  position 0 0
  size 0.5 1
@@ -50,15 +54,15 @@ FrameWidgetClass LeftHalf {
 
 ## Zrozumienie trybu pikselowego
 
-When a flag is `1` (pixel/exact), the value is in **screen pixels**:
+Gdy flaga ma wartość `1` (pikselowy/dokładny), wartość jest w **pikselach ekranu**:
 
-- `size 200 40` with `hexactsize 1` and `vexactsize 1` means "200 pixels wide, 40 pixels tall."
-- `position 10 10` with `hexactpos 1` and `vexactpos 1` means "10 pixels from parent's left edge, 10 pixels from parent's top edge."
+- `size 200 40` z `hexactsize 1` i `vexactsize 1` oznacza "200 pikseli szerokości, 40 pikseli wysokości."
+- `position 10 10` z `hexactpos 1` i `vexactpos 1` oznacza "10 pikseli od lewej krawędzi rodzica, 10 pikseli od górnej krawędzi rodzica."
 
-Pixel mode gives you exact control but does NOT automatically scale with resolution.
+Tryb pikselowy daje dokładną kontrolę, ale NIE skaluje się automatycznie z rozdzielczością.
 
 ```
-// A fixed-size button: 120x30 pixels
+// Przycisk o stałym rozmiarze: 120x30 pikseli
 ButtonWidgetClass MyButton {
  position 10 10
  size 120 30
@@ -72,59 +76,80 @@ ButtonWidgetClass MyButton {
 
 ---
 
-## Mieszanie trybow: najczestszy wzorzec
+## Mieszanie trybów: najczęstszy wzorzec
 
-The real power comes from mixing proportional and pixel modes. The most common pattern in professional DayZ mods is:
+Prawdziwa moc pochodzi z mieszania trybów proporcjonalnych i pikselowych. Najczęstszy wzorzec w profesjonalnych modach DayZ to:
 
-**Proportional width, pixel height** -- for bars, rows, and headers.
+**Proporcjonalna szerokość, pikselowa wysokość** -- dla pasków, wierszy i nagłówków.
 
 ```
-// Full-width row, exactly 30 pixels tall
+// Wiersz na pełną szerokość, dokładnie 30 pikseli wysokości
 FrameWidgetClass Row {
  position 0 0
  size 1 30
  hexactpos 0
  vexactpos 0
- hexactsize 0        // Width: proportional (100% of parent)
- vexactsize 1        // Height: pixel (30px)
+ hexactsize 0        // Szerokość: proporcjonalna (100% rodzica)
+ vexactsize 1        // Wysokość: pikselowa (30px)
 }
 ```
 
-**Proportional width and height, pixel position** -- for centered panels offset by a fixed amount.
+**Proporcjonalna szerokość i wysokość, pikselowa pozycja** -- dla wyśrodkowanych paneli przesuniętych o stałą wartość.
 
 ```
-// 60% x 70% panel, offset 0px from center
+// Panel 60% x 70%, przesunięcie 0px od centrum
 FrameWidgetClass Dialog {
  position 0 0
  size 0.6 0.7
  halign center_ref
  valign center_ref
- hexactpos 1         // Position: pixel (0px offset from center)
+ hexactpos 1         // Pozycja: pikselowa (0px przesunięcie od centrum)
  vexactpos 1
- hexactsize 0        // Size: proportional (60% x 70%)
+ hexactsize 0        // Rozmiar: proporcjonalny (60% x 70%)
  vexactsize 0
 }
 ```
 
 ---
 
-## Alignment References: halign and valign
+## Odniesienia wyrównania: halign i valign
 
-The `halign` and `valign` attributes change the **reference point** for positioning:
+Atrybuty `halign` i `valign` zmieniają **punkt odniesienia** dla pozycjonowania:
 
-| Value | Effect |
+| Wartość | Efekt |
 |---|---|
-| `left_ref` (default) | Position is measured from parent's left edge |
-| `center_ref` | Position is measured from parent's center |
-| `right_ref` | Position is measured from parent's right edge |
-| `top_ref` (default) | Position is measured from parent's top edge |
-| `center_ref` | Position is measured from parent's center |
-| `bottom_ref` | Position is measured from parent's bottom edge |
+| `left_ref` (domyślny) | Pozycja mierzona od lewej krawędzi rodzica |
+| `center_ref` | Pozycja mierzona od centrum rodzica |
+| `right_ref` | Pozycja mierzona od prawej krawędzi rodzica |
+| `top_ref` (domyślny) | Pozycja mierzona od górnej krawędzi rodzica |
+| `center_ref` | Pozycja mierzona od centrum rodzica |
+| `bottom_ref` | Pozycja mierzona od dolnej krawędzi rodzica |
 
-When combined with pixel position (`hexactpos 1`), alignment references make centering trivial:
+### Punkty odniesienia wyrównania
+
+```mermaid
+graph TD
+    subgraph "Widget rodzica"
+        TL["halign left_ref<br/>valign top_ref<br/>↘ pozycja stąd"]
+        TC["halign center_ref<br/>valign top_ref"]
+        TR["halign right_ref<br/>valign top_ref<br/>↙ pozycja stąd"]
+        ML["halign left_ref<br/>valign center_ref"]
+        MC["halign center_ref<br/>valign center_ref<br/>↔ pozycja od centrum"]
+        MR["halign right_ref<br/>valign center_ref"]
+        BL["halign left_ref<br/>valign bottom_ref<br/>↗ pozycja stąd"]
+        BC["halign center_ref<br/>valign bottom_ref"]
+        BR["halign right_ref<br/>valign bottom_ref<br/>↖ pozycja stąd"]
+    end
+
+    style MC fill:#4A90D9,color:#fff
+    style TL fill:#2D8A4E,color:#fff
+    style BR fill:#D94A4A,color:#fff
+```
+
+W połączeniu z pikselową pozycją (`hexactpos 1`) odniesienia wyrównania czynią centrowanie trywialnym:
 
 ```
-// Centered on screen with no offset
+// Wyśrodkowany na ekranie bez przesunięcia
 FrameWidgetClass CenteredDialog {
  position 0 0
  size 0.4 0.5
@@ -137,12 +162,12 @@ FrameWidgetClass CenteredDialog {
 }
 ```
 
-With `center_ref`, a position of `0 0` means "centered in parent." A position of `10 0` means "10 pixels right of center."
+Z `center_ref` pozycja `0 0` oznacza "wyśrodkowane w rodzicu." Pozycja `10 0` oznacza "10 pikseli na prawo od centrum."
 
-### Right-Aligned Elements
+### Elementy wyrównane do prawej
 
 ```
-// Icon pinned to the right edge, 5px from the edge
+// Ikona przypięta do prawej krawędzi, 5px od krawędzi
 ImageWidgetClass StatusIcon {
  position 5 5
  size 24 24
@@ -155,10 +180,10 @@ ImageWidgetClass StatusIcon {
 }
 ```
 
-### Bottom-Aligned Elements
+### Elementy wyrównane do dołu
 
 ```
-// Status bar at the bottom of its parent
+// Pasek statusu na dole rodzica
 FrameWidgetClass StatusBar {
  position 0 0
  size 1 30
@@ -173,17 +198,17 @@ FrameWidgetClass StatusBar {
 
 ---
 
-## CRITICAL: No Negative Size Values
+## KRYTYCZNE: Brak ujemnych wartości rozmiaru
 
-**Never use negative values for widget size in layout files.** Negative sizes cause undefined behavior -- widgets may become invisible, render incorrectly, or crash the UI system. If you need a widget to be hidden, use `visible 0` instead.
+**Nigdy nie używaj ujemnych wartości rozmiaru widgetu w plikach layoutu.** Ujemne rozmiary powodują niezdefiniowane zachowanie -- widgety mogą stać się niewidoczne, renderować się nieprawidłowo lub zawiesić system UI. Jeśli potrzebujesz ukryć widget, użyj `visible 0`.
 
-This is one of the most common layout mistakes. If your widget is not showing up, check that you have not accidentally set a negative size value.
+To jeden z najczęstszych błędów layoutu. Jeśli twój widget się nie wyświetla, sprawdź, czy przypadkiem nie ustawiłeś ujemnej wartości rozmiaru.
 
 ---
 
-## Typowe wzorce rozmiaru
+## Typowe wzorce rozmiarowania
 
-### Full Screen Overlay
+### Nakładka pełnoekranowa
 
 ```
 FrameWidgetClass Overlay {
@@ -196,7 +221,7 @@ FrameWidgetClass Overlay {
 }
 ```
 
-### Centered Dialog (60% x 70%)
+### Wyśrodkowany dialog (60% x 70%)
 
 ```
 FrameWidgetClass Dialog {
@@ -211,7 +236,7 @@ FrameWidgetClass Dialog {
 }
 ```
 
-### Right-Aligned Side Panel (25% Width)
+### Panel boczny wyrównany do prawej (25% szerokości)
 
 ```
 FrameWidgetClass SidePanel {
@@ -225,7 +250,7 @@ FrameWidgetClass SidePanel {
 }
 ```
 
-### Top Bar (Full Width, Fixed Height)
+### Górny pasek (pełna szerokość, stała wysokość)
 
 ```
 FrameWidgetClass TopBar {
@@ -238,7 +263,7 @@ FrameWidgetClass TopBar {
 }
 ```
 
-### Bottom-Right Corner Badge
+### Plakietka w prawym dolnym rogu
 
 ```
 FrameWidgetClass Badge {
@@ -253,7 +278,7 @@ FrameWidgetClass Badge {
 }
 ```
 
-### Fixed-Size Centered Icon
+### Wyśrodkowana ikona o stałym rozmiarze
 
 ```
 ImageWidgetClass Icon {
@@ -270,26 +295,26 @@ ImageWidgetClass Icon {
 
 ---
 
-## Pozycja i rozmiar programowo
+## Programowe pozycjonowanie i rozmiarowanie
 
-In code, you can read and set position and size using both proportional and pixel (screen) coordinates:
+W kodzie możesz odczytywać i ustawiać pozycję oraz rozmiar używając zarówno współrzędnych proporcjonalnych, jak i pikselowych (ekranowych):
 
 ```c
-// Proportional coordinates (0-1 range)
+// Współrzędne proporcjonalne (zakres 0-1)
 float x, y, w, h;
-widget.GetPos(x, y);           // Read proportional position
-widget.SetPos(0.5, 0.1);      // Set proportional position
-widget.GetSize(w, h);          // Read proportional size
-widget.SetSize(0.3, 0.2);     // Set proportional size
+widget.GetPos(x, y);           // Odczytaj pozycję proporcjonalną
+widget.SetPos(0.5, 0.1);      // Ustaw pozycję proporcjonalną
+widget.GetSize(w, h);          // Odczytaj rozmiar proporcjonalny
+widget.SetSize(0.3, 0.2);     // Ustaw rozmiar proporcjonalny
 
-// Pixel/screen coordinates
-widget.GetScreenPos(x, y);     // Read pixel position
-widget.SetScreenPos(100, 50);  // Set pixel position
-widget.GetScreenSize(w, h);    // Read pixel size
-widget.SetScreenSize(400, 300);// Set pixel size
+// Współrzędne pikselowe/ekranowe
+widget.GetScreenPos(x, y);     // Odczytaj pozycję pikselową
+widget.SetScreenPos(100, 50);  // Ustaw pozycję pikselową
+widget.GetScreenSize(w, h);    // Odczytaj rozmiar pikselowy
+widget.SetScreenSize(400, 300);// Ustaw rozmiar pikselowy
 ```
 
-To center a widget on screen programmatically:
+Aby programowo wyśrodkować widget na ekranie:
 
 ```c
 int screen_w, screen_h;
@@ -302,39 +327,99 @@ widget.SetScreenPos((screen_w - w) / 2, (screen_h - h) / 2);
 
 ---
 
-## The `scaled` Attribute
+## Atrybut `scaled`
 
-When `scaled 1` is set, the widget respects DayZ's UI scaling setting (Options > Video > HUD Size). This is important for HUD elements that should scale with the user's preference.
+Gdy ustawione jest `scaled 1`, widget respektuje ustawienie skalowania UI w DayZ (Opcje > Wideo > Rozmiar HUD). Jest to ważne dla elementów HUD, które powinny skalować się zgodnie z preferencją użytkownika.
 
-Without `scaled`, pixel-sized widgets will be the same physical size regardless of the UI scaling option.
-
----
-
-## The `fixaspect` Attribute
-
-Use `fixaspect` to maintain a widget's aspect ratio:
-
-- `fixaspect fixwidth` -- Height adjusts to maintain aspect ratio based on width
-- `fixaspect fixheight` -- Width adjusts to maintain aspect ratio based on height
-
-This is primarily useful for `ImageWidget` to prevent image distortion.
+Bez `scaled` widgety o pikselowym rozmiarze będą miały ten sam fizyczny rozmiar niezależnie od opcji skalowania UI.
 
 ---
 
-## Debugging Sizing Issues
+## Atrybut `fixaspect`
 
-When a widget is not appearing where you expect:
+Użyj `fixaspect`, aby zachować proporcje widgetu:
 
-1. **Check exact flags** -- Is `hexactsize` set to `0` when you meant pixels? A value of `200` in proportional mode means 200x the parent width (way off screen).
-2. **Check for negative sizes** -- Any negative value in `size` will cause problems.
-3. **Check the parent size** -- A proportional child of a zero-size parent is zero-size.
-4. **Check `visible`** -- Widgets default to visible, but if a parent is hidden, all children are too.
-5. **Check `priority`** -- A widget with lower priority may be hidden behind another.
-6. **Use `clipchildren`** -- If a parent has `clipchildren 1`, children outside its bounds are not visible.
+- `fixaspect fixwidth` -- Wysokość dostosowuje się, aby zachować proporcje na podstawie szerokości
+- `fixaspect fixheight` -- Szerokość dostosowuje się, aby zachować proporcje na podstawie wysokości
+
+Jest to głównie przydatne dla `ImageWidget`, aby zapobiec zniekształceniu obrazu.
 
 ---
 
-## Nastepne kroki
+## Kolejność Z i priorytet
 
-- [3.4 Container Widgets](04-containers.md) -- How spacers and scroll widgets handle layout automatically
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Setting size and position from code
+Atrybut `priority` kontroluje, które widgety renderują się na wierzchu, gdy się nakładają. Wyższe wartości renderują się nad niższymi.
+
+| Zakres priorytetu | Typowe użycie |
+|-------------------|---------------|
+| 0-5 | Elementy tła, panele dekoracyjne |
+| 10-50 | Normalne elementy UI, komponenty HUD |
+| 50-100 | Elementy nakładkowe, pływające panele |
+| 100-200 | Powiadomienia, podpowiedzi |
+| 998-999 | Okna modalne, nakładki blokujące |
+
+```
+FrameWidget myBackground {
+    priority 1
+    // ...
+}
+
+FrameWidget myDialog {
+    priority 999
+    // ...
+}
+```
+
+**Ważne:** Priorytet wpływa tylko na kolejność renderowania wśród rodzeństwa w tym samym rodzicu. Zagnieżdżone dzieci są zawsze rysowane nad swoim rodzicem niezależnie od wartości priorytetów.
+
+---
+
+## Debugowanie problemów z rozmiarami
+
+Gdy widget nie pojawia się tam, gdzie oczekujesz:
+
+1. **Sprawdź flagi exact** -- Czy `hexactsize` jest ustawiony na `0`, gdy chodziło ci o piksele? Wartość `200` w trybie proporcjonalnym oznacza 200x szerokość rodzica (daleko poza ekranem).
+2. **Sprawdź ujemne rozmiary** -- Każda ujemna wartość w `size` spowoduje problemy.
+3. **Sprawdź rozmiar rodzica** -- Proporcjonalne dziecko rodzica o zerowym rozmiarze ma zerowy rozmiar.
+4. **Sprawdź `visible`** -- Widgety domyślnie są widoczne, ale jeśli rodzic jest ukryty, wszystkie dzieci też.
+5. **Sprawdź `priority`** -- Widget z niższym priorytetem może być ukryty za innym.
+6. **Użyj `clipchildren`** -- Jeśli rodzic ma `clipchildren 1`, dzieci poza jego granicami nie są widoczne.
+
+---
+
+## Dobre praktyki
+
+- Zawsze jawnie określaj wszystkie cztery flagi exact (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`). Ich pominięcie prowadzi do nieprzewidywalnego zachowania, ponieważ wartości domyślne różnią się między typami widgetów.
+- Używaj wzorca proporcjonalna-szerokość + pikselowa-wysokość dla wierszy i pasków. To najbardziej bezpieczna kombinacja pod względem rozdzielczości i standard wśród profesjonalnych modów.
+- Centruj dialogi z `halign center_ref` + `valign center_ref` + pikselowa pozycja `0 0`, nie z proporcjonalną pozycją `0.5 0.5`. Podejście z odniesieniem wyrównania pozostaje wyśrodkowane niezależnie od rozmiaru widgetu.
+- Unikaj pikselowych rozmiarów dla elementów pełnoekranowych lub bliskich pełnemu ekranowi. Używaj proporcjonalnego rozmiarowania, aby UI dostosowywał się do każdej rozdzielczości (1080p, 1440p, 4K).
+- Przy użyciu `SetScreenPos()` / `SetScreenSize()` w kodzie, wywołuj je po dołączeniu widgetu do rodzica. Wywołanie przed dołączeniem może dać nieprawidłowe współrzędne.
+
+---
+
+## Teoria kontra praktyka
+
+> Co mówi dokumentacja w porównaniu z tym, jak rzeczy faktycznie działają w runtime.
+
+| Koncept | Teoria | Rzeczywistość |
+|---------|--------|---------------|
+| Rozmiarowanie proporcjonalne | Wartości 0.0-1.0 skalują się względem rodzica | Jeśli rodzic ma pikselowy rozmiar, proporcjonalne wartości dziecka są względne do tej wartości pikselowej, nie do ekranu -- dziecko rodzica o szerokości 200px z `size 0.5` ma 100px |
+| Wyrównanie `center_ref` | Widget centruje się w rodzicu | Lewy górny róg widgetu jest umieszczany w punkcie centralnym -- widget wisi w prawo i w dół od centrum, chyba że pozycja to `0 0` w trybie pikselowym |
+| Porządkowanie Z przez `priority` | Wyższe wartości renderują się na wierzchu | Priorytet wpływa tylko na rodzeństwo w tym samym rodzicu. Dziecko zawsze renderuje się nad swoim rodzicem niezależnie od wartości priorytetów |
+| Atrybut `scaled` | Widget respektuje ustawienie Rozmiar HUD | Wpływa tylko na wymiary w trybie pikselowym. Wymiary proporcjonalne już skalują się z rodzicem i ignorują flagę `scaled` |
+| Ujemne wartości pozycji | Powinny przesuwać w odwrotnym kierunku | Działa dla pozycji (przesunięcie w lewo/do góry od odniesienia), ale ujemne wartości rozmiaru powodują niezdefiniowane zachowanie renderowania -- nigdy ich nie używaj |
+
+---
+
+## Kompatybilność i wpływ
+
+- **Multi-Mod:** Rozmiarowanie i pozycjonowanie są per-widget i nie mogą kolidować między modami. Jednak mody używające pełnoekranowych nakładek (`size 1 1` na korzeniu) z `priority 999` mogą blokować elementy UI innych modów przed otrzymywaniem wejścia.
+- **Wydajność:** Rozmiarowanie proporcjonalne wymaga przeliczenia względem rodzica w każdej klatce dla animowanych lub dynamicznych widgetów. Dla statycznych layoutów nie ma mierzalnej różnicy między trybem proporcjonalnym a pikselowym.
+- **Wersja:** Podwójny system współrzędnych (proporcjonalny kontra pikselowy) jest stabilny od DayZ 0.63 Experimental. Zachowanie atrybutu `scaled` zostało udoskonalone w DayZ 1.14, aby lepiej respektować suwak Rozmiar HUD.
+
+---
+
+## Następne kroki
+
+- [3.4 Widgety kontenerowe](04-containers.md) -- Jak spacery i widgety przewijania automatycznie obsługują layout
+- [3.5 Programowe tworzenie widgetów](05-programmatic-widgets.md) -- Ustawianie rozmiaru i pozycji z kodu

@@ -1,10 +1,14 @@
 # Chapter 1.9: Casting & Reflection
 
-[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
+[Domů](../../README.md) | [<< Předchozí: Správa paměti](08-memory-management.md) | **Přetypování a reflexe** | [Další: Výčty a preprocesor >>](10-enums-preprocessor.md)
 
 ---
 
-## Table of Contents
+> **Goal:** Master safe type casting, runtime type checks, and Enforce Script's reflection API for dynamic property access.
+
+---
+
+## Obsah
 
 - [Why Casting Matters](#why-casting-matters)
 - [Class.CastTo — Safe Downcasting](#classcastto--safe-downcasting)
@@ -22,7 +26,7 @@
   - [Safe Object Helper With Cast](#safe-object-helper-with-cast)
   - [Reflection-Based Config System](#reflection-based-config-system)
   - [Type-Safe Event Dispatch](#type-safe-event-dispatch)
-- [Common Mistakes](#common-mistakes)
+- [Běžné Mistakes](#common-mistakes)
 - [Summary](#summary)
 - [Navigation](#navigation)
 
@@ -30,7 +34,7 @@
 
 ## Why Casting Matters
 
-DayZ's entity hierarchy is deep. Most engine APIs return a generic base type (`Object`, `Man`, `Class`), but you need a specific type (`PlayerBase`, `ItemBase`, `CarScript`) to access specialized methods. Casting converts a base reference into a derived reference — safely.
+DayZ's entity hierarchy is deep. Most engine APIs return a generic base type (`Object`, `Man`, `Class`), but potřebujete a specifický type (`PlayerBase`, `ItemBase`, `CarScript`) to access specialized methods. Casting converts a base reference into a derived reference — safely.
 
 ```
 Class (root)
@@ -45,13 +49,13 @@ Class (root)
                       └─ DayZPlayer → PlayerBase
 ```
 
-Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error because Enforce Script resolves virtual calls at runtime.
+Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error protože Enforce Script resolves virtual calls za běhu.
 
 ---
 
 ## Class.CastTo — Safe Downcasting
 
-`Class.CastTo` is the **preferred** casting method in DayZ. It is a static method that writes the result to an `out` parameter and returns `bool`.
+`Class.CastTo` is the **preferred** casting method in DayZ. It is a statická method that writes výsledek to an `out` parameter and returns `bool`.
 
 ```c
 // Signature:
@@ -73,10 +77,10 @@ else
 }
 ```
 
-**Proč preferovaný:**
-- Returns `false` on failure instead of crashing
+**Why preferred:**
+- Returns `false` on failure místo crashing
 - The `out` parameter is set to `null` on failure — safe to check
-- Works across the entire class hierarchy (not just `Object`)
+- Works across the celý class hierarchy (not jen `Object`)
 
 ### Pattern: Cast-and-Continue
 
@@ -105,7 +109,7 @@ foreach (Object obj : nearObjects)
 
 ## Type.Cast — Alternative Casting
 
-Every class has a static `Cast` method that returns the cast result directly (or `null` on failure).
+Every class has a statická `Cast` method that vrací cast result přímo (or `null` on failure).
 
 ```c
 // Syntax: TargetType.Cast(source)
@@ -119,11 +123,11 @@ if (player)
 }
 ```
 
-This is a one-liner that combines cast and assignment, but you **must** still null-check the result.
+This is a one-liner that combines cast and assignment, but you **must** stále null-check výsledek.
 
 ### Casting Primitives and Params
 
-`Type.Cast` is also used with `Param` classes (used heavily in RPCs and events):
+`Type.Cast` is také used with `Param` classes (used heavily in RPCs and dokoncets):
 
 ```c
 override void OnEvent(EventType eventTypeId, Param params)
@@ -152,7 +156,7 @@ override void OnEvent(EventType eventTypeId, Param params)
 | Used in DayZ vanilla | Everywhere | Everywhere |
 | Works with non-Object | Yes (any `Class`) | Yes (any `Class`) |
 
-**Pravidlo palce:** Use `Class.CastTo` when you branch on success/failure. Use `Type.Cast` when you just need the typed reference and will null-check later.
+**Rule of thumb:** Use `Class.CastTo` when you branch on success/failure. Use `Type.Cast` when you jen need typd reference and will null-check later.
 
 ```c
 // CastTo — branch on result
@@ -192,13 +196,13 @@ if (obj.IsInherited(CarScript))
 }
 ```
 
-`IsInherited` returns `true` for the exact type **and** any parent types in the hierarchy. A `PlayerBase` object returns `true` for `IsInherited(Man)`, `IsInherited(EntityAI)`, `IsInherited(Object)`, etc.
+`IsInherited` returns `true` for the exact type **and** jakýkoli parent types in the hierarchy. A `PlayerBase` object returns `true` for `IsInherited(Man)`, `IsInherited(EntityAI)`, `IsInherited(Object)`, etc.
 
 ---
 
 ## obj.IsKindOf — String-Based Type Checking
 
-`IsKindOf` does the same check but with a **string** class name. Useful when you have the type name as data (e.g., from config files).
+`IsKindOf` does the stejný check but with a **string** class name. Useful when you have typ name as data (e.g., from config files).
 
 ```c
 Object obj = GetSomeObject();
@@ -214,7 +218,7 @@ if (obj.IsKindOf("DayZAnimal"))
 }
 ```
 
-**Important:** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
+**Important:** `IsKindOf` checks the plný inheritance chain, jen like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
 
 ### IsInherited vs IsKindOf
 
@@ -222,13 +226,13 @@ if (obj.IsKindOf("DayZAnimal"))
 |---------|------------------------|---------------------|
 | Argument | Compile-time type | String name |
 | Speed | Faster (type comparison) | Slower (string lookup) |
-| Use when | You know the type at compile time | Type comes from data/config |
+| Use when | You know typ at compile time | Type comes from data/config |
 
 ---
 
 ## obj.Type — Get Runtime Type
 
-`Type()` returns the `typename` of an object's actual runtime class — not the declared variable type.
+`Type()` vrací `typename` of an object's actual runtime class — not the declared variable type.
 
 ```c
 Object obj = GetSomeObject();
@@ -289,7 +293,7 @@ foreach (typename t : allowedTypes)
 
 ### Creating Instances from typename
 
-You can create objects from a `typename` at runtime:
+You can create objects from a `typename` za běhu:
 
 ```c
 typename t = PlayerBase;
@@ -299,17 +303,17 @@ Class instance = t.Spawn();  // Creates a new instance
 Class instance2 = GetGame().CreateObjectEx("AK101", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-> **Poznámka:** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
+> **Poznámka:** `typename.Spawn()` pouze works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
 
 ---
 
 ## Reflection API
 
-Enforce Script provides basic reflection — the ability to inspect and modify an object's properties at runtime without knowing its type at compile time.
+Enforce Script provides basic reflection — the ability to inspect and modify an object's properties za běhu without knowing its type at compile time.
 
 ### Inspecting Variables
 
-Every object's `Type()` returns a `typename` that exposes variable metadata:
+Every object's `Type()` vrací `typename` that exposes variable metadata:
 
 ```c
 void InspectObject(Class obj)
@@ -331,7 +335,7 @@ void InspectObject(Class obj)
 
 **Available reflection methods on `typename`:**
 
-| Metoda | Vrací | Description |
+| Method | Returns | Description |
 |--------|---------|-------------|
 | `GetVariableCount()` | `int` | Number of member variables |
 | `GetVariableName(int index)` | `string` | Variable name at index |
@@ -340,7 +344,7 @@ void InspectObject(Class obj)
 
 ### EnScript.GetClassVar / SetClassVar
 
-`EnScript.GetClassVar` and `EnScript.SetClassVar` let you read/write member variables by **name** at runtime. This is Enforce Script's equivalent of dynamic property access.
+`EnScript.GetClassVar` and `EnScript.SetClassVar` let you read/write member variables by **name** za běhu. This is Enforce Script's equivalent of dynamic property access.
 
 ```c
 // Signature:
@@ -379,13 +383,13 @@ void DemoReflection()
 }
 ```
 
-> **Varování:** `GetClassVar`/`SetClassVar` silently fail if the variable name is wrong or the type doesn't match. Always validate variable names before use.
+> **Varování:** `GetClassVar`/`SetClassVar` tiše fail if the variable name is wrong or typ doesn't match. Vždy platnýate variable names before use.
 
 ---
 
-## Real-World Examples
+## Příklady z praxe
 
-### Finding All Vehicles in the World
+### Nalezení všech vozidel ve světě
 
 ```c
 static array<CarScript> FindAllVehicles()
@@ -437,7 +441,7 @@ static bool IsObjectAlive(Object obj)
 
 ### Reflection-Based Config System
 
-This pattern (used in MyFramework) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
+This pattern (used in MyMod Core) builds a generic config system where fields are read/written by name, enabling admin panels to edit jakýkoli config without knowing its specifický class:
 
 ```c
 class ConfigBase
@@ -492,7 +496,7 @@ void AdminPanelSave(ConfigBase config, string fieldName, string newValue)
 
 ### Type-Safe Event Dispatch
 
-Use `typename` to build a dispatcher that routes events to the correct handler:
+Use `typename` to build a dispatcher that routes dokoncets to the correct handler:
 
 ```c
 class EventDispatcher
@@ -532,7 +536,40 @@ class EventDispatcher
 
 ---
 
-## Common Mistakes
+## Osvědčené postupy
+
+- Vždy null-check after každý cast -- oba `Class.CastTo` and `Type.Cast` return null on failure, and using výsledek unchecked causes crashes.
+- Use `Class.CastTo` when potřebujete to branch on success/failure; use `Type.Cast` for concise one-liner assignments followed by a null check.
+- Preferujte `IsInherited(typename)` over `IsKindOf(string)` when typ is known at compile time -- it is faster and catches typos at compile time.
+- Cast to `EntityAI` before calling `IsAlive()` -- the base `Object` class ne have tato metoda.
+- Validate variable names with `GetVariableCount`/`GetVariableName` before using `EnScript.GetClassVar` -- it fails tiše on wrong names.
+
+---
+
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| `Class.CastTo` + `continue` in entity loops | COT / Expansion | Every loop over `Object` arrays uses cast-and-continue to skip non-matching types |
+| `IsKindOf` for config-driven type checks | Expansion Market | Item categories loaded from JSON use string-based `IsKindOf` protože types are data |
+| `EnScript.GetClassVar`/`SetClassVar` for admin panels | Dabs Framework | Generic config editors read/write fields by name so one UI works for all config classes |
+| `obj.Type().ToString()` for logging | VPP Admin | Debug logs vždy include `entity.Type().ToString()` to identify what was processed |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| `Object.IsAlive()` | Expect it to exist on `Object` | Only dostupný on `EntityAI` and subclasses -- calling it on `Object` crashes |
+| `EnScript.SetClassVar` returns `bool` | Should indicate success/failure | Returns `false` tiše on wrong field name with no error message -- easy to miss |
+| `typename.Spawn()` | Creates jakýkoli class instance | Only works for classes with a parameterless constructor; for game entities use `CreateObject` |
+
+---
+
+## Časté chyby
 
 ### 1. Forgetting to null-check after cast
 
@@ -573,7 +610,7 @@ EnScript.GetClassVar(obj, "NonExistentField", 0, val);
 // val is 0, no error thrown
 ```
 
-Always validate with `FindVarIndex` or `GetVariableCount`/`GetVariableName` first.
+Vždy platnýate with `FindVarIndex` or `GetVariableCount`/`GetVariableName` first.
 
 ### 4. Confusing Type() with typename literal
 
@@ -590,9 +627,9 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 ---
 
-## Summary
+## Shrnutí
 
-| Operace | Syntaxe | Vrací |
+| Operation | Syntax | Returns |
 |-----------|--------|---------|
 | Safe downcast | `Class.CastTo(out target, source)` | `bool` |
 | Inline cast | `TargetType.Cast(source)` | Target or `null` |
@@ -602,13 +639,13 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 | Variable count | `obj.Type().GetVariableCount()` | `int` |
 | Variable name | `obj.Type().GetVariableName(i)` | `string` |
 | Variable type | `obj.Type().GetVariableType(i)` | `typename` |
-| Read property | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
-| Write property | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
+| Přečtěte property | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
+| Zapište property | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
 
 ---
 
-## Navigation
+## Navigace
 
-| Předchozí | Up | Next |
+| Previous | Up | Next |
 |----------|----|------|
 | [1.8 Memory Management](08-memory-management.md) | [Part 1: Enforce Script](../README.md) | [1.10 Enums & Preprocessor](10-enums-preprocessor.md) |

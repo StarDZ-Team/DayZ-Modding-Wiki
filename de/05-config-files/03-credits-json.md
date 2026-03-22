@@ -1,33 +1,37 @@
-# Chapter 5.3: Credits.json
+# Kapitel 5.3: Credits.json
 
-[Home](../../README.md) | [<< Previous: inputs.xml](02-inputs-xml.md) | **Credits.json** | [Next: ImageSet Format >>](04-imagesets.md)
+[Startseite](../../README.md) | [<< Zurück: inputs.xml](02-inputs-xml.md) | **Credits.json** | [Weiter: ImageSet-Format >>](04-imagesets.md)
+
+---
+
+> **Zusammenfassung:** Die `Credits.json`-Datei definiert die Credits, die DayZ für Ihre Mod im Mod-Menü des Spiels anzeigt. Sie listet Teammitglieder, Mitwirkende und Danksagungen auf, organisiert nach Abteilungen und Sektionen. Obwohl rein kosmetisch, ist sie der Standardweg, um Ihrem Entwicklungsteam Anerkennung zu geben.
 
 ---
 
 ## Inhaltsverzeichnis
 
-- [Overview](#overview)
-- [File Location](#file-location)
-- [JSON Structure](#json-structure)
-- [How DayZ Displays Credits](#how-dayz-displays-credits)
-- [Using Localized Section Names](#using-localized-section-names)
-- [Templates](#templates)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+- [Übersicht](#übersicht)
+- [Dateispeicherort](#dateispeicherort)
+- [JSON-Struktur](#json-struktur)
+- [Wie DayZ Credits anzeigt](#wie-dayz-credits-anzeigt)
+- [Lokalisierte Sektionsnamen verwenden](#lokalisierte-sektionsnamen-verwenden)
+- [Vorlagen](#vorlagen)
+- [Praxisbeispiele](#praxisbeispiele)
+- [Häufige Fehler](#häufige-fehler)
 
 ---
 
-## Überblick
+## Übersicht
 
-When a player selects your mod in the DayZ launcher or in-game mod menu, the engine looks for a `Credits.json` file inside your mod's PBO. If found, the credits are displayed in a scrolling view organized into departments and sections --- similar to movie credits.
+Wenn ein Spieler Ihre Mod im DayZ-Launcher oder im Spiel-Mod-Menü auswählt, sucht die Engine nach einer `Credits.json`-Datei innerhalb des PBOs Ihrer Mod. Wenn gefunden, werden die Credits in einer scrollenden Ansicht angezeigt, organisiert in Abteilungen und Sektionen --- ähnlich wie Filmcredits.
 
-The file is optional. If absent, no credits section appears for your mod. But including one is good practice: it acknowledges your team's work and gives your mod a professional appearance.
+Die Datei ist optional. Wenn sie fehlt, erscheint kein Credits-Bereich für Ihre Mod. Aber eine einzuschließen ist gute Praxis: Sie würdigt die Arbeit Ihres Teams und verleiht Ihrer Mod ein professionelles Erscheinungsbild.
 
 ---
 
-## File Location
+## Dateispeicherort
 
-Place `Credits.json` inside a `Data` subfolder of your Scripts directory, or directly in the Scripts root:
+Platzieren Sie `Credits.json` in einem `Data`-Unterordner Ihres Scripts-Verzeichnisses oder direkt im Scripts-Stammverzeichnis:
 
 ```
 @MyMod/
@@ -35,27 +39,27 @@ Place `Credits.json` inside a `Data` subfolder of your Scripts directory, or dir
     MyMod_Scripts.pbo
       Scripts/
         Data/
-          Credits.json       <-- Common location (COT, Expansion, DayZ Editor)
-        Credits.json         <-- Also valid (DabsFramework, Colorful-UI)
+          Credits.json       <-- Häufiger Speicherort (COT, Expansion, DayZ Editor)
+        Credits.json         <-- Ebenfalls gültig (DabsFramework, Colorful-UI)
 ```
 
-Both locations work. The engine scans the PBO contents for a file named `Credits.json` (case-sensitive on some platforms).
+Beide Speicherorte funktionieren. Die Engine durchsucht den PBO-Inhalt nach einer Datei namens `Credits.json` (auf einigen Plattformen groß-/kleinschreibungsempfindlich).
 
 ---
 
-## JSON Structure
+## JSON-Struktur
 
-The file uses a straightforward JSON structure with three levels of hierarchy:
+Die Datei verwendet eine unkomplizierte JSON-Struktur mit drei Hierarchieebenen:
 
 ```json
 {
-    "Header": "My Mod Name",
+    "Header": "Mein Mod-Name",
     "Departments": [
         {
-            "DepartmentName": "Department Title",
+            "DepartmentName": "Abteilungstitel",
             "Sections": [
                 {
-                    "SectionName": "Section Title",
+                    "SectionName": "Sektionstitel",
                     "Names": ["Person 1", "Person 2"]
                 }
             ]
@@ -64,74 +68,74 @@ The file uses a straightforward JSON structure with three levels of hierarchy:
 }
 ```
 
-### Top-Level Fields
+### Felder der obersten Ebene
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `Header` | string | No | Main title displayed at the top of the credits. If omitted, no header is shown. |
-| `Departments` | array | Yes | Array of department objects |
+| Feld | Typ | Erforderlich | Beschreibung |
+|------|-----|-------------|--------------|
+| `Header` | String | Nein | Haupttitel, der oben in den Credits angezeigt wird. Wenn weggelassen, wird keine Kopfzeile angezeigt. |
+| `Departments` | Array | Ja | Array von Abteilungsobjekten |
 
-### Department Object
+### Abteilungsobjekt
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `DepartmentName` | string | Yes | Section header text. Can be empty `""` for visual grouping without a header. |
-| `Sections` | array | Yes | Array of section objects within this department |
+| Feld | Typ | Erforderlich | Beschreibung |
+|------|-----|-------------|--------------|
+| `DepartmentName` | String | Ja | Sektionskopftext. Kann leer `""` sein für visuelle Gruppierung ohne Kopfzeile. |
+| `Sections` | Array | Ja | Array von Sektionsobjekten innerhalb dieser Abteilung |
 
-### Section Object
+### Sektionsobjekt
 
-Two variants exist in the wild for listing names. The engine supports both.
+In der Praxis existieren zwei Varianten zum Auflisten von Namen. Die Engine unterstützt beide.
 
-**Variant 1: `Names` array** (used by MyFramework)
+**Variante 1: `Names`-Array** (verwendet von MyMod Core)
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `SectionName` | string | Yes | Sub-header within the department |
-| `Names` | array of strings | Yes | List of contributor names |
+| Feld | Typ | Erforderlich | Beschreibung |
+|------|-----|-------------|--------------|
+| `SectionName` | String | Ja | Unterüberschrift innerhalb der Abteilung |
+| `Names` | Array von Strings | Ja | Liste der Mitwirkendennamen |
 
-**Variant 2: `SectionLines` array** (used by COT, Expansion, DabsFramework)
+**Variante 2: `SectionLines`-Array** (verwendet von COT, Expansion, DabsFramework)
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `SectionName` | string | Yes | Sub-header within the department |
-| `SectionLines` | array of strings | Yes | List of contributor names or text lines |
+| Feld | Typ | Erforderlich | Beschreibung |
+|------|-----|-------------|--------------|
+| `SectionName` | String | Ja | Unterüberschrift innerhalb der Abteilung |
+| `SectionLines` | Array von Strings | Ja | Liste der Mitwirkendennamen oder Textzeilen |
 
-Both `Names` and `SectionLines` serve the same purpose. Use whichever you prefer --- the engine renders them identically.
+Sowohl `Names` als auch `SectionLines` dienen demselben Zweck. Verwenden Sie, was Sie bevorzugen --- die Engine rendert sie identisch.
 
 ---
 
-## How DayZ Displays Credits
+## Wie DayZ Credits anzeigt
 
-The credits display follows this visual hierarchy:
+Die Credits-Anzeige folgt dieser visuellen Hierarchie:
 
 ```
 ╔══════════════════════════════════╗
-║         MY MOD NAME              ║  <-- Header (large, centered)
+║         MEIN MOD-NAME            ║  <-- Header (groß, zentriert)
 ║                                  ║
-║     DEPARTMENT NAME              ║  <-- DepartmentName (medium, centered)
+║     ABTEILUNGSNAME               ║  <-- DepartmentName (mittel, zentriert)
 ║                                  ║
-║     Section Name                 ║  <-- SectionName (small, centered)
-║     Person 1                     ║  <-- Names/SectionLines (list)
+║     Sektionsname                 ║  <-- SectionName (klein, zentriert)
+║     Person 1                     ║  <-- Names/SectionLines (Liste)
 ║     Person 2                     ║
 ║     Person 3                     ║
 ║                                  ║
-║     Another Section              ║
+║     Andere Sektion               ║
 ║     Person A                     ║
 ║     Person B                     ║
 ║                                  ║
-║     ANOTHER DEPARTMENT           ║
+║     ANDERE ABTEILUNG             ║
 ║     ...                          ║
 ╚══════════════════════════════════╝
 ```
 
-- The `Header` appears once at the top
-- Each `DepartmentName` acts as a major section divider
-- Each `SectionName` acts as a sub-heading
-- Names scroll vertically in the credits view
+- Der `Header` erscheint einmal oben
+- Jeder `DepartmentName` fungiert als großer Abschnittsteiler
+- Jeder `SectionName` fungiert als Unterüberschrift
+- Namen scrollen vertikal in der Credits-Ansicht
 
-### Empty Strings for Spacing
+### Leere Strings für Abstände
 
-Expansion uses empty `DepartmentName` and `SectionName` strings, plus whitespace-only entries in `SectionLines`, to create visual spacing:
+Expansion verwendet leere `DepartmentName`- und `SectionName`-Strings sowie Leerzeichen-Einträge in `SectionLines`, um visuelle Abstände zu erzeugen:
 
 ```json
 {
@@ -143,13 +147,13 @@ Expansion uses empty `DepartmentName` and `SectionName` strings, plus whitespace
 }
 ```
 
-This is a common trick for controlling visual layout in the credits scroll.
+Dies ist ein häufiger Trick zur Steuerung des visuellen Layouts im Credits-Scroll.
 
 ---
 
-## Using Localized Section Names
+## Lokalisierte Sektionsnamen verwenden
 
-Section names can reference stringtable keys using the `#` prefix, just like UI text:
+Sektionsnamen können Stringtable-Schlüssel mit dem `#`-Präfix referenzieren, genau wie UI-Text:
 
 ```json
 {
@@ -158,9 +162,9 @@ Section names can reference stringtable keys using the `#` prefix, just like UI 
 }
 ```
 
-When the engine renders this, it resolves `#STR_EXPANSION_CREDITS_SCRIPTERS` to the localized text matching the player's language. This is useful if your mod supports multiple languages and you want the credits section headers to be translated.
+Wenn die Engine dies rendert, löst sie `#STR_EXPANSION_CREDITS_SCRIPTERS` in den lokalisierten Text auf, der zur Sprache des Spielers passt. Dies ist nützlich, wenn Ihre Mod mehrere Sprachen unterstützt und Sie die Credits-Sektionsüberschriften übersetzen möchten.
 
-Department names can also use stringtable references:
+Abteilungsnamen können ebenfalls Stringtable-Referenzen verwenden:
 
 ```json
 {
@@ -171,20 +175,20 @@ Department names can also use stringtable references:
 
 ---
 
-## Templates
+## Vorlagen
 
-### Solo Developer
+### Solo-Entwickler
 
 ```json
 {
-    "Header": "My Awesome Mod",
+    "Header": "Meine tolle Mod",
     "Departments": [
         {
-            "DepartmentName": "Development",
+            "DepartmentName": "Entwicklung",
             "Sections": [
                 {
-                    "SectionName": "Developer",
-                    "Names": ["YourName"]
+                    "SectionName": "Entwickler",
+                    "Names": ["IhrName"]
                 }
             ]
         }
@@ -192,29 +196,29 @@ Department names can also use stringtable references:
 }
 ```
 
-### Small Team
+### Kleines Team
 
 ```json
 {
-    "Header": "My Mod",
+    "Header": "Meine Mod",
     "Departments": [
         {
-            "DepartmentName": "Development",
+            "DepartmentName": "Entwicklung",
             "Sections": [
                 {
-                    "SectionName": "Developers",
+                    "SectionName": "Entwickler",
                     "Names": ["Lead Dev", "Co-Developer"]
                 },
                 {
-                    "SectionName": "3D Artists",
+                    "SectionName": "3D-Künstler",
                     "Names": ["Modeler1", "Modeler2"]
                 },
                 {
-                    "SectionName": "Translators",
+                    "SectionName": "Übersetzer",
                     "Names": [
-                        "Translator1 (French)",
-                        "Translator2 (German)",
-                        "Translator3 (Russian)"
+                        "Übersetzer1 (Französisch)",
+                        "Übersetzer2 (Deutsch)",
+                        "Übersetzer3 (Russisch)"
                     ]
                 }
             ]
@@ -223,58 +227,58 @@ Department names can also use stringtable references:
 }
 ```
 
-### Full Professional Structure
+### Volle professionelle Struktur
 
 ```json
 {
-    "Header": "My Big Mod",
+    "Header": "Meine große Mod",
     "Departments": [
         {
-            "DepartmentName": "Core Team",
+            "DepartmentName": "Kernteam",
             "Sections": [
                 {
-                    "SectionName": "Lead Developer",
-                    "Names": ["ProjectLead"]
+                    "SectionName": "Leitender Entwickler",
+                    "Names": ["ProjektLeiter"]
                 },
                 {
-                    "SectionName": "Scripters",
+                    "SectionName": "Scripter",
                     "Names": ["Dev1", "Dev2", "Dev3"]
                 },
                 {
-                    "SectionName": "3D Artists",
-                    "Names": ["Artist1", "Artist2"]
+                    "SectionName": "3D-Künstler",
+                    "Names": ["Künstler1", "Künstler2"]
                 },
                 {
-                    "SectionName": "Mapping",
+                    "SectionName": "Kartierung",
                     "Names": ["Mapper1"]
                 }
             ]
         },
         {
-            "DepartmentName": "Community",
+            "DepartmentName": "Gemeinschaft",
             "Sections": [
                 {
-                    "SectionName": "Translators",
+                    "SectionName": "Übersetzer",
                     "Names": [
-                        "Translator1 (Czech)",
-                        "Translator2 (German)",
-                        "Translator3 (Russian)"
+                        "Übersetzer1 (Tschechisch)",
+                        "Übersetzer2 (Deutsch)",
+                        "Übersetzer3 (Russisch)"
                     ]
                 },
                 {
-                    "SectionName": "Testers",
+                    "SectionName": "Tester",
                     "Names": ["Tester1", "Tester2", "Tester3"]
                 }
             ]
         },
         {
-            "DepartmentName": "Legal Notices",
+            "DepartmentName": "Rechtliche Hinweise",
             "Sections": [
                 {
-                    "SectionName": "Licenses",
+                    "SectionName": "Lizenzen",
                     "Names": [
-                        "Font Awesome - CC BY 4.0 License",
-                        "Some assets licensed under ADPL-SA"
+                        "Font Awesome - CC BY 4.0 Lizenz",
+                        "Einige Assets lizenziert unter ADPL-SA"
                     ]
                 }
             ]
@@ -287,20 +291,20 @@ Department names can also use stringtable references:
 
 ## Praxisbeispiele
 
-### MyFramework
+### MyMod Core
 
-A minimal but complete credits file using the `Names` variant:
+Eine minimale aber vollständige Credits-Datei mit der `Names`-Variante:
 
 ```json
 {
-    "Header": "MyFramework",
+    "Header": "MyMod Core",
     "Departments": [
         {
-            "DepartmentName": "Development",
+            "DepartmentName": "Entwicklung",
             "Sections": [
                 {
                     "SectionName": "Framework",
-                    "Names": ["MyMod Team"]
+                    "Names": ["Dokumentationsteam"]
                 }
             ]
         }
@@ -310,7 +314,7 @@ A minimal but complete credits file using the `Names` variant:
 
 ### Community Online Tools (COT)
 
-Uses the `SectionLines` variant with multiple sections and acknowledgments:
+Verwendet die `SectionLines`-Variante mit mehreren Sektionen und Danksagungen:
 
 ```json
 {
@@ -319,14 +323,14 @@ Uses the `SectionLines` variant with multiple sections and acknowledgments:
             "DepartmentName": "Community Online Tools",
             "Sections": [
                 {
-                    "SectionName": "Active Developers",
+                    "SectionName": "Aktive Entwickler",
                     "SectionLines": [
                         "LieutenantMaster",
                         "LAVA (liquidrock)"
                     ]
                 },
                 {
-                    "SectionName": "Inactive Developers",
+                    "SectionName": "Inaktive Entwickler",
                     "SectionLines": [
                         "Jacob_Mango",
                         "Arkensor",
@@ -336,7 +340,7 @@ Uses the `SectionLines` variant with multiple sections and acknowledgments:
                     ]
                 },
                 {
-                    "SectionName": "Thank you to the following communities",
+                    "SectionName": "Danke an die folgenden Gemeinschaften",
                     "SectionLines": [
                         "PIPSI.NET AU/NZ",
                         "1SKGaming",
@@ -351,32 +355,32 @@ Uses the `SectionLines` variant with multiple sections and acknowledgments:
 }
 ```
 
-Notable: COT omits the `Header` field entirely. The mod name comes from other metadata (config.cpp `CfgMods`).
+Bemerkenswert: COT lässt das `Header`-Feld vollständig weg. Der Mod-Name kommt aus anderen Metadaten (config.cpp `CfgMods`).
 
 ### DabsFramework
 
 ```json
 {
     "Departments": [{
-        "DepartmentName": "Development",
+        "DepartmentName": "Entwicklung",
         "Sections": [{
-                "SectionName": "Developers",
+                "SectionName": "Entwickler",
                 "SectionLines": [
                     "InclementDab",
                     "Gormirn"
                 ]
             },
             {
-                "SectionName": "Translators",
+                "SectionName": "Übersetzer",
                 "SectionLines": [
                     "InclementDab",
-                    "DanceOfJesus (French)",
-                    "MarioE (Spanish)",
-                    "Dubinek (Czech)",
-                    "Steve AKA Salutesh (German)",
-                    "Yuki (Russian)",
-                    ".magik34 (Polish)",
-                    "Daze (Hungarian)"
+                    "DanceOfJesus (Französisch)",
+                    "MarioE (Spanisch)",
+                    "Dubinek (Tschechisch)",
+                    "Steve AKA Salutesh (Deutsch)",
+                    "Yuki (Russisch)",
+                    ".magik34 (Polnisch)",
+                    "Daze (Ungarisch)"
                 ]
             }
         ]
@@ -386,43 +390,60 @@ Notable: COT omits the `Header` field entirely. The mod name comes from other me
 
 ### DayZ Expansion
 
-Expansion demonstrates the most sophisticated use of Credits.json, including:
-- Localized section names via stringtable references (`#STR_EXPANSION_CREDITS_SCRIPTERS`)
-- Legal notices as a separate department
-- Empty department and section names for visual spacing
-- A supporters list with dozens of names
+Expansion demonstriert die anspruchsvollste Verwendung von Credits.json, einschließlich:
+- Lokalisierter Sektionsnamen über Stringtable-Referenzen (`#STR_EXPANSION_CREDITS_SCRIPTERS`)
+- Rechtliche Hinweise als separate Abteilung
+- Leere Abteilungs- und Sektionsnamen für visuelle Abstände
+- Eine Unterstützerliste mit Dutzenden von Namen
 
 ---
 
 ## Häufige Fehler
 
-### Invalid JSON Syntax
+### Ungültige JSON-Syntax
 
-The most common issue. JSON is strict about:
-- **Trailing commas**: `["a", "b",]` is invalid JSON (the trailing comma after `"b"`)
-- **Single quotes**: Use `"double quotes"`, not `'single quotes'`
-- **Unquoted keys**: `DepartmentName` must be `"DepartmentName"`
+Das häufigste Problem. JSON ist streng bei:
+- **Nachgestellte Kommas**: `["a", "b",]` ist ungültiges JSON (das nachgestellte Komma nach `"b"`)
+- **Einfache Anführungszeichen**: Verwenden Sie `"doppelte Anführungszeichen"`, nicht `'einfache Anführungszeichen'`
+- **Nicht-zitierte Schlüssel**: `DepartmentName` muss `"DepartmentName"` sein
 
-Use a JSON validator before shipping.
+Verwenden Sie einen JSON-Validator vor der Veröffentlichung.
 
-### Wrong File Name
+### Falscher Dateiname
 
-The file must be named exactly `Credits.json` (capital C). On case-sensitive file systems, `credits.json` or `CREDITS.JSON` will not be found.
+Die Datei muss genau `Credits.json` heißen (großes C). Auf groß-/kleinschreibungsempfindlichen Dateisystemen wird `credits.json` oder `CREDITS.JSON` nicht gefunden.
 
-### Mixing Names and SectionLines
+### Names und SectionLines mischen
 
-Within a single section, use one or the other:
+Innerhalb einer einzelnen Sektion verwenden Sie das eine oder das andere:
 
 ```json
 {
-    "SectionName": "Developers",
+    "SectionName": "Entwickler",
     "Names": ["Dev1"],
     "SectionLines": ["Dev2"]
 }
 ```
 
-This is ambiguous. Pick one format and use it consistently throughout the file.
+Dies ist mehrdeutig. Wählen Sie ein Format und verwenden Sie es konsistent in der gesamten Datei.
 
-### Encoding Issues
+### Kodierungsprobleme
 
-Save the file as UTF-8. Non-ASCII characters (accented names, CJK characters) require UTF-8 encoding to display correctly in-game.
+Speichern Sie die Datei als UTF-8. Nicht-ASCII-Zeichen (akzentuierte Namen, CJK-Zeichen) erfordern UTF-8-Kodierung, um im Spiel korrekt angezeigt zu werden.
+
+---
+
+## Bewährte Praktiken
+
+- Validieren Sie Ihr JSON mit einem externen Tool, bevor Sie es in ein PBO packen -- die Engine gibt keine nützliche Fehlermeldung für fehlerhaftes JSON aus.
+- Verwenden Sie die `SectionLines`-Variante für Konsistenz, da es das Format ist, das von COT, Expansion und DabsFramework verwendet wird.
+- Fügen Sie eine Abteilung "Rechtliche Hinweise" hinzu, wenn Ihre Mod Drittanbieter-Assets (Schriftarten, Icons, Sounds) mit Zuordnungsanforderungen bündelt.
+- Halten Sie das `Header`-Feld passend zum `name` Ihrer Mod in `mod.cpp` und `config.cpp` für eine konsistente Identität.
+- Verwenden Sie leere `DepartmentName`- und `SectionName`-Strings sparsam für visuelle Abstände -- übermäßige Verwendung lässt Credits fragmentiert wirken.
+
+---
+
+## Kompatibilität und Auswirkungen
+
+- **Multi-Mod:** Jede Mod hat ihre eigene unabhängige `Credits.json`. Es besteht kein Kollisionsrisiko -- die Engine liest die Datei separat aus dem PBO jeder Mod.
+- **Leistung:** Credits werden nur geladen, wenn der Spieler den Mod-Details-Bildschirm öffnet. Die Dateigröße hat keine Auswirkung auf die Spielleistung.

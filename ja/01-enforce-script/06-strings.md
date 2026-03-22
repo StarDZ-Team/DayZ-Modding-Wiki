@@ -1,37 +1,37 @@
-# Chapter 1.6: String Operations
+# 第1.6章: 文字列操作
 
-[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
+[ホーム](../../README.md) | [<< 前へ: 制御フロー](05-control-flow.md) | **文字列操作** | [次へ: 数学とベクトル >>](07-math-vectors.md)
 
 ---
 
 ## はじめに
 
-Enforce Script の String は `int` や `float` と同様に**値型**です。値渡しされ、値で比較されます。`string` 型には検索、切り出し、変換、テキストフォーマットのための豊富な組み込みメソッドがあります。この章は DayZ スクリプティングで利用可能なすべての String 操作の完全リファレンスで、Mod開発の実践的な例を含みます。
+Enforce Script の文字列は `int` や `float` と同様の**値型**です。値渡しされ、値で比較されます。`string` 型には、検索、スライス、変換、テキスト書式設定のための豊富なビルトインメソッドがあります。この章は、DayZ スクリプティングで利用可能なすべての文字列操作の完全なリファレンスであり、Mod 開発の実例を含みます。
 
 ---
 
-## String の基本
+## 文字列の基本
 
 ```c
-// Declaration and initialization
-string empty;                          // "" (empty string by default)
+// 宣言と初期化
+string empty;                          // ""（デフォルトは空文字列）
 string greeting = "Hello, Chernarus!";
-string combined = "Player: " + "John"; // Concatenation with +
+string combined = "Player: " + "John"; // + で結合
 
-// Strings are value types -- assignment creates a copy
+// 文字列は値型 -- 代入するとコピーが作成される
 string original = "DayZ";
 string copy = original;
 copy = "Arma";
-Print(original); // Still "DayZ"
+Print(original); // まだ "DayZ"
 ```
 
 ---
 
-## String メソッド完全リファレンス
+## 完全な文字列メソッドリファレンス
 
 ### Length
 
-文字列内の文字数を返します。
+文字列の文字数を返します。
 
 ```c
 string s = "Hello";
@@ -43,20 +43,20 @@ int emptyLen = empty.Length(); // 0
 
 ### Substring
 
-文字列の一部を取り出します。 Parameters: `start` (index), `length` (number of characters).
+文字列の一部を抽出します。パラメータ: `start`（インデックス）、`length`（文字数）。
 
 ```c
 string s = "Hello World";
 string word = s.Substring(6, 5);  // "World"
 string first = s.Substring(0, 5); // "Hello"
 
-// Extract from a position to the end
+// ある位置から末尾まで抽出
 string rest = s.Substring(6, s.Length() - 6); // "World"
 ```
 
 ### IndexOf
 
-部分文字列の最初の出現位置を見つけます。 インデックスを返します。見つからない場合は `-1`。
+部分文字列の最初の出現位置を見つけます。インデックスを返し、見つからない場合は `-1` を返します。
 
 ```c
 string s = "Hello World";
@@ -66,7 +66,7 @@ int notFound = s.IndexOf("DayZ"); // -1
 
 ### IndexOfFrom
 
-Finds the first occurrence starting from a given index.
+指定されたインデックスから開始して最初の出現位置を見つけます。
 
 ```c
 string s = "one-two-one-two";
@@ -76,7 +76,7 @@ int second = s.IndexOfFrom(1, "one"); // 8
 
 ### LastIndexOf
 
-Finds the last occurrence of a substring.
+部分文字列の最後の出現位置を見つけます。
 
 ```c
 string path = "profiles/MyMod/Players/player.json";
@@ -97,18 +97,18 @@ if (chatMsg.Contains("!teleport"))
 
 ### Replace
 
-部分文字列のすべての出現を置換します。 **文字列をその場で変更します** 置換回数を返します。
+部分文字列のすべての出現を置換します。**文字列をその場で変更し**、置換回数を返します。
 
 ```c
 string s = "Hello World World";
 int count = s.Replace("World", "DayZ");
-// s is now "Hello DayZ DayZ"
-// count is 2
+// s は "Hello DayZ DayZ" になる
+// count は 2
 ```
 
 ### Split
 
-区切り文字で文字列を分割し、配列を埋めます。 配列は事前に割り当てておく必要があります。
+デリミタで文字列を分割し、配列を埋めます。配列は事前に割り当てておく必要があります。
 
 ```c
 string csv = "AK101,M4A1,UMP45,Mosin9130";
@@ -116,7 +116,7 @@ TStringArray weapons = new TStringArray;
 csv.Split(",", weapons);
 // weapons = ["AK101", "M4A1", "UMP45", "Mosin9130"]
 
-// Split chat command by spaces
+// チャットコマンドをスペースで分割
 string chatLine = "!spawn Barrel_Green 5";
 TStringArray parts = new TStringArray;
 chatLine.Split(" ", parts);
@@ -126,9 +126,9 @@ string itemType = parts.Get(1);  // "Barrel_Green"
 int amount = parts.Get(2).ToInt(); // 5
 ```
 
-### Join (static)
+### Join（静的）
 
-文字列の配列をセパレータで結合します。
+文字列配列をセパレータで結合します。
 
 ```c
 TStringArray names = {"Alice", "Bob", "Charlie"};
@@ -136,9 +136,9 @@ string result = string.Join(", ", names);
 // result = "Alice, Bob, Charlie"
 ```
 
-### Format (static)
+### Format（静的）
 
-番号付きプレースホルダを使って文字列を構築します `%1` through `%9`. これは Enforce Script でフォーマット済み文字列を構築する主要な方法です。
+番号付きプレースホルダー `%1` から `%9` を使用して文字列を構築します。これは Enforce Script でフォーマット済み文字列を構築する主要な方法です。
 
 ```c
 string name = "John";
@@ -149,18 +149,18 @@ string msg = string.Format("Player %1 has %2 kills (best shot: %3m)", name, kill
 // msg = "Player John has 15 kills (best shot: 342.5m)"
 ```
 
-プレースホルダは **1から始まるインデックス**です (`%1` is the first argument, not `%0`). You can use up to 9 placeholders.
+プレースホルダーは **1始まり**です（`%1` が最初の引数、`%0` ではありません）。最大9つのプレースホルダーを使用できます。
 
 ```c
 string log = string.Format("[%1] %2 :: %3", "MyMod", "INFO", "Server started");
 // log = "[MyMod] INFO :: Server started"
 ```
 
-> **注意：** There is no `printf`-style formatting (`%d`, `%f`, `%s`). Only `%1` through `%9`.
+> **注意:** `printf` スタイルのフォーマット（`%d`, `%f`, `%s`）はありません。`%1` から `%9` のみです。
 
 ### ToLower
 
-文字列を小文字に変換します。 **その場で変更** -- 新しい文字列を返しません。
+文字列を小文字に変換します。**その場で変更**します --- 新しい文字列を返しません。
 
 ```c
 string s = "Hello WORLD";
@@ -170,7 +170,7 @@ Print(s); // "hello world"
 
 ### ToUpper
 
-文字列を大文字に変換します。 **Modifies in place.**
+文字列を大文字に変換します。**その場で変更**します。
 
 ```c
 string s = "Hello World";
@@ -180,7 +180,7 @@ Print(s); // "HELLO WORLD"
 
 ### Trim / TrimInPlace
 
-先頭と末尾の空白を削除します。 **Modifies in place.**
+先頭と末尾の空白を除去します。**その場で変更**します。
 
 ```c
 string s = "  Hello World  ";
@@ -188,17 +188,17 @@ s.TrimInPlace();
 Print(s); // "Hello World"
 ```
 
-There is also `Trim()` which returns a new trimmed string (available in some engine versions):
+トリミングされた新しい文字列を返す `Trim()` もあります（一部のエンジンバージョンで利用可能）:
 
 ```c
 string raw = "  padded  ";
 string clean = raw.Trim();
-// clean = "padded", raw unchanged
+// clean = "padded"、raw は変更なし
 ```
 
 ### Get
 
-指定インデックスの1文字を文字列として取得します。
+インデックスの1文字を文字列として取得します。
 
 ```c
 string s = "DayZ";
@@ -208,7 +208,7 @@ string ch2 = s.Get(3); // "Z"
 
 ### Set
 
-指定インデックスの1文字を設定します。
+インデックスの1文字を設定します。
 
 ```c
 string s = "DayZ";
@@ -225,7 +225,7 @@ string s = "42";
 int num = s.ToInt(); // 42
 
 string bad = "hello";
-int zero = bad.ToInt(); // 0 (non-numeric strings return 0)
+int zero = bad.ToInt(); // 0（数値でない文字列は 0 を返す）
 ```
 
 ### ToFloat
@@ -248,9 +248,9 @@ vector pos = s.ToVector(); // Vector(100.5, 0, 200.3)
 
 ---
 
-## String の比較
+## 文字列比較
 
-文字列は標準演算子を使って値で比較されます。 比較は**大文字小文字を区別**し、辞書順に従います。
+文字列は標準的な演算子を使用して値で比較されます。比較は**大文字小文字を区別**し、辞書的（辞書順）な順序に従います。
 
 ```c
 string a = "Apple";
@@ -259,13 +259,13 @@ string c = "Apple";
 
 bool equal    = (a == c);  // true
 bool notEqual = (a != b);  // true
-bool less     = (a < b);   // true  ("Apple" < "Banana" lexicographically)
+bool less     = (a < b);   // true（辞書順で "Apple" < "Banana"）
 bool greater  = (b > a);   // true
 ```
 
-### Case-insensitive comparison
+### 大文字小文字を区別しない比較
 
-組み込みの大文字小文字を区別しない比較はありません。 まず両方の文字列を小文字に変換します：
+ビルトインの大文字小文字を区別しない比較はありません。まず両方の文字列を小文字に変換してください:
 
 ```c
 bool EqualsIgnoreCase(string a, string b)
@@ -280,9 +280,9 @@ bool EqualsIgnoreCase(string a, string b)
 
 ---
 
-## String の結合
+## 文字列の結合
 
-`+` 演算子を使って文字列を連結します。 非 String 型は自動的に変換されます。
+`+` 演算子を使用して文字列を結合します。文字列でない型は自動的に変換されます。
 
 ```c
 string name = "John";
@@ -293,13 +293,13 @@ string msg = "Player " + name + " has " + health + " HP at " + distance + "m";
 // "Player John has 75 HP at 42.5m"
 ```
 
-複雑なフォーマットには連結よりも `string.Format()` を優先してください -- より読みやすく、複数の中間割り当てを避けられます。
+複雑なフォーマットには、結合より `string.Format()` を優先してください --- より読みやすく、`+` 結合の型変換の落とし穴を避けられます。
 
 ```c
-// Prefer this:
+// こちらを優先:
 string msg = string.Format("Player %1 has %2 HP at %3m", name, health, distance);
 
-// Over this:
+// こちらより:
 string msg2 = "Player " + name + " has " + health + " HP at " + distance + "m";
 ```
 
@@ -307,19 +307,19 @@ string msg2 = "Player " + name + " has " + health + " HP at " + distance + "m";
 
 ## 実践的な例
 
-### Parsing chat commands
+### チャットコマンドの解析
 
 ```c
 void ProcessChatMessage(string sender, string message)
 {
-    // Trim whitespace
+    // 空白をトリム
     message.TrimInPlace();
 
-    // Must start with !
+    // ! で始まる必要がある
     if (message.Length() == 0 || message.Get(0) != "!")
         return;
 
-    // Split into parts
+    // パーツに分割
     TStringArray parts = new TStringArray;
     message.Split(" ", parts);
 
@@ -361,7 +361,7 @@ void ProcessChatMessage(string sender, string message)
 }
 ```
 
-### Formatting player names for display
+### 表示用のプレイヤー名のフォーマット
 
 ```c
 string FormatPlayerTag(string name, string clanTag, bool isAdmin)
@@ -386,7 +386,7 @@ string FormatPlayerTag(string name, string clanTag, bool isAdmin)
 // FormatPlayerTag("Jane", "", false)   => "Jane"
 ```
 
-### Building file paths
+### ファイルパスの構築
 
 ```c
 string BuildPlayerFilePath(string steamId)
@@ -395,7 +395,7 @@ string BuildPlayerFilePath(string steamId)
 }
 ```
 
-### Sanitizing log messages
+### ログメッセージのサニタイズ
 
 ```c
 string SanitizeForLog(string input)
@@ -405,7 +405,7 @@ string SanitizeForLog(string input)
     safe.Replace("\r", "");
     safe.Replace("\t", " ");
 
-    // Truncate to max length
+    // 最大長に切り詰め
     if (safe.Length() > 200)
     {
         safe = safe.Substring(0, 197) + "...";
@@ -415,7 +415,7 @@ string SanitizeForLog(string input)
 }
 ```
 
-### Extracting file name from a path
+### パスからファイル名を抽出
 
 ```c
 string GetFileName(string path)
@@ -436,18 +436,51 @@ string GetFileName(string path)
 
 ---
 
+## ベストプラクティス
+
+- すべてのフォーマット済み出力には `%1`..`%9` プレースホルダー付きの `string.Format()` を使用してください --- より読みやすく、`+` 結合の型変換の落とし穴を避けられます。
+- `ToLower()`、`ToUpper()`、`Replace()` は文字列をその場で変更することを覚えておいてください --- 元の文字列を保持する必要がある場合は先にコピーしてください。
+- `Split()` を呼ぶ前に必ず `new TStringArray` でターゲット配列を割り当ててください --- null 配列を渡すとクラッシュします。
+- 単純な部分文字列チェックには `Contains()` を使用し、位置が必要な場合にのみ `IndexOf()` を使用してください。
+- 大文字小文字を区別しない比較には、両方の文字列をコピーして比較前にそれぞれ `ToLower()` を呼び出してください --- ビルトインの大文字小文字を区別しない比較はありません。
+
+---
+
+## 実際の Mod で確認されたパターン
+
+> プロフェッショナルな DayZ Mod のソースコードを研究して確認されたパターンです。
+
+| パターン | Mod | 詳細 |
+|---------|-----|--------|
+| チャットコマンド解析のための `Split(" ", parts)` | VPP / COT | すべてのチャットコマンドシステムはスペースで分割し、`parts.Get(0)` で switch |
+| `[TAG]` プレフィックス付き `string.Format` | Expansion / Dabs | ログメッセージは結合ではなく常に `string.Format("[%1] %2", tag, msg)` を使用 |
+| `"$profile:ModName/"` パス規約 | COT / Expansion | `+` で構築されたファイルパスはバックスラッシュの問題を避けるためにスラッシュと `$profile:` プレフィックスを使用 |
+| コマンドマッチング前の `ToLower()` | VPP Admin | 大文字小文字混在の入力を処理するため、`switch`/比較前にユーザー入力を小文字化 |
+
+---
+
+## 理論 vs 実践
+
+| 概念 | 理論 | 現実 |
+|---------|--------|---------|
+| `ToLower()` / `Replace()` の戻り値 | 新しい文字列を返すことが期待される（C# のように） | その場で変更し、`void` またはカウントを返す --- 頻繁なバグの原因 |
+| `string.Format` プレースホルダー | C の printf のような `%d`, `%f`, `%s` | `%1` から `%9` のみが動作; C スタイルの指定子は無視される |
+| 文字列中のバックスラッシュ `\\` | 標準的なエスケープ文字 | JSON コンテキストで DayZ の CParser を壊す可能性がある --- パスにはスラッシュを優先 |
+
+---
+
 ## よくある間違い
 
-| 間違い | 問題 | 修正方法 |
+| 間違い | 問題 | 修正 |
 |---------|---------|-----|
-| Expecting `ToLower()` to return a new string | `ToLower()` modifies in place, returns `void` | Copy the string first, then call `ToLower()` on the copy |
-| Expecting `ToUpper()` to return a new string | Same as above -- modifies in place | Copy first, then call `ToUpper()` on the copy |
-| Expecting `Replace()` to return a new string | `Replace()` modifies in place, returns replacement count | Copy the string first if you need the original |
-| Using `%0` in `string.Format()` | Placeholders are 1-indexed (`%1` through `%9`) | Start from `%1` |
-| Using `%d`, `%f`, `%s` format specifiers | C-style format specifiers do not work | Use `%1`, `%2`, etc. |
-| Comparing strings without normalizing case | `"Hello" != "hello"` | Call `ToLower()` on both before comparing |
-| Treating strings as reference types | Strings are value types; assigning creates a copy | This is usually fine -- just be aware that modifying a copy does not affect the original |
-| Forgetting to create the array before `Split()` | Calling `Split()` on a null array causes a crash | Always: `TStringArray parts = new TStringArray;` before `Split()` |
+| `ToLower()` が新しい文字列を返すと期待 | `ToLower()` はその場で変更、`void` を返す | 先に文字列をコピーし、コピーに `ToLower()` を呼ぶ |
+| `ToUpper()` が新しい文字列を返すと期待 | 同上 -- その場で変更 | 先にコピーし、コピーに `ToUpper()` を呼ぶ |
+| `Replace()` が新しい文字列を返すと期待 | `Replace()` はその場で変更、置換回数を返す | 元が必要な場合は先に文字列をコピー |
+| `string.Format()` で `%0` を使用 | プレースホルダーは1始まり（`%1` から `%9`） | `%1` から開始 |
+| `%d`, `%f`, `%s` フォーマット指定子の使用 | C スタイルのフォーマット指定子は動作しない | `%1`, `%2` などを使用 |
+| 大文字小文字を正規化せずに文字列を比較 | `"Hello" != "hello"` | 比較前に両方に `ToLower()` を呼ぶ |
+| 文字列を参照型として扱う | 文字列は値型; 代入するとコピーが作成される | 通常は問題ない -- コピーの変更が元に影響しないことを認識すること |
+| `Split()` 前に配列を作成し忘れ | null 配列に `Split()` を呼ぶとクラッシュ | 常に: `Split()` 前に `TStringArray parts = new TStringArray;` |
 
 ---
 
@@ -457,41 +490,41 @@ string GetFileName(string path)
 // Length
 int len = s.Length();
 
-// Search
+// 検索
 int idx = s.IndexOf("sub");
 int idx = s.IndexOfFrom(startIdx, "sub");
 int idx = s.LastIndexOf("sub");
 bool has = s.Contains("sub");
 
-// Extract
+// 抽出
 string sub = s.Substring(start, length);
 string ch  = s.Get(index);
 
-// Modify (in place)
+// 変更（その場で）
 s.Set(index, "x");
 int count = s.Replace("old", "new");
 s.ToLower();
 s.ToUpper();
 s.TrimInPlace();
 
-// Split & Join
+// 分割と結合
 TStringArray parts = new TStringArray;
 s.Split(delimiter, parts);
 string joined = string.Join(sep, parts);
 
-// Format (static, %1-%9 placeholders)
+// Format（静的、%1-%9 プレースホルダー）
 string msg = string.Format("Hello %1, you have %2 items", name, count);
 
-// Conversion
+// 変換
 int n    = s.ToInt();
 float f  = s.ToFloat();
 vector v = s.ToVector();
 
-// Comparison (case-sensitive, lexicographic)
+// 比較（大文字小文字区別、辞書順）
 bool eq = (a == b);
 bool lt = (a < b);
 ```
 
 ---
 
-[<< 1.5: Control Flow](05-control-flow.md) | [ホーム](../../README.md) | [1.7: Math & Vectors >>](07-math-vectors.md)
+[<< 1.5: 制御フロー](05-control-flow.md) | [ホーム](../../README.md) | [1.7: 数学とベクトル >>](07-math-vectors.md)

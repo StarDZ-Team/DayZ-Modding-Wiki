@@ -1,42 +1,37 @@
-# Chapter 1.6: String Operations
+# Глава 1.6: Операции со строками
 
-[Home](../../README.md) | [<< Previous: Control Flow](05-control-flow.md) | **String Operations** | [Next: Math & Vectors >>](07-math-vectors.md)
+[Главная](../../README.md) | [<< Предыдущая: Управление потоком](05-control-flow.md) | **Операции со строками** | [Следующая: Математика и векторы >>](07-math-vectors.md)
 
----
 ---
 
 ## Введение
 
-
-Strings in Enforce Script are a **value type**, like `int` or `float`. They are passed by value and compared by value. The `string` type has a rich set of built-in methods for searching, slicing, converting, and formatting text. This chapter is a complete reference for every string operation available in DayZ scripting, with real-world examples from mod development.
+Строки в Enforce Script --- это **тип-значение**, как `int` или `float`. Они передаются по значению и сравниваются по значению. Тип `string` обладает богатым набором встроенных методов для поиска, извлечения подстрок, преобразования и форматирования текста. Эта глава --- полный справочник по всем строковым операциям, доступным в скриптинге DayZ, с реальными примерами из разработки модов.
 
 ---
 
 ## Основы строк
 
-
 ```c
-// Declaration and initialization
-string empty;                          // "" (empty string by default)
+// Объявление и инициализация
+string empty;                          // "" (пустая строка по умолчанию)
 string greeting = "Hello, Chernarus!";
-string combined = "Player: " + "John"; // Concatenation with +
+string combined = "Player: " + "John"; // Конкатенация через +
 
-// Strings are value types -- assignment creates a copy
+// Строки --- типы-значения, присваивание создаёт копию
 string original = "DayZ";
 string copy = original;
 copy = "Arma";
-Print(original); // Still "DayZ"
+Print(original); // По-прежнему "DayZ"
 ```
 
 ---
 
 ## Полный справочник методов строк
 
+### Length
 
-### Длина
-
-
-Returns the number of characters in the string.
+Возвращает количество символов в строке.
 
 ```c
 string s = "Hello";
@@ -48,22 +43,20 @@ int emptyLen = empty.Length(); // 0
 
 ### Substring
 
-
-Extracts a portion of the string. Parameters: `start` (index), `length` (number of characters).
+Извлекает часть строки. Параметры: `start` (индекс), `length` (количество символов).
 
 ```c
 string s = "Hello World";
 string word = s.Substring(6, 5);  // "World"
 string first = s.Substring(0, 5); // "Hello"
 
-// Extract from a position to the end
+// Извлечение от позиции до конца
 string rest = s.Substring(6, s.Length() - 6); // "World"
 ```
 
 ### IndexOf
 
-
-Finds the first occurrence of a substring. Returns the index, or `-1` if not found.
+Находит первое вхождение подстроки. Возвращает индекс или `-1`, если не найдено.
 
 ```c
 string s = "Hello World";
@@ -73,8 +66,7 @@ int notFound = s.IndexOf("DayZ"); // -1
 
 ### IndexOfFrom
 
-
-Finds the first occurrence starting from a given index.
+Находит первое вхождение, начиная с заданного индекса.
 
 ```c
 string s = "one-two-one-two";
@@ -84,8 +76,7 @@ int second = s.IndexOfFrom(1, "one"); // 8
 
 ### LastIndexOf
 
-
-Finds the last occurrence of a substring.
+Находит последнее вхождение подстроки.
 
 ```c
 string path = "profiles/MyMod/Players/player.json";
@@ -94,33 +85,30 @@ int lastSlash = path.LastIndexOf("/"); // 23
 
 ### Contains
 
-
-Returns `true` if the string contains the given substring.
+Возвращает `true`, если строка содержит заданную подстроку.
 
 ```c
 string chatMsg = "!teleport 100 0 200";
 if (chatMsg.Contains("!teleport"))
 {
-    Print("Teleport command detected");
+    Print("Обнаружена команда телепортации");
 }
 ```
 
 ### Replace
 
-
-Replaces all occurrences of a substring. **Modifies the string in place** and returns the number of replacements made.
+Заменяет все вхождения подстроки. **Модифицирует строку на месте** и возвращает количество замен.
 
 ```c
 string s = "Hello World World";
 int count = s.Replace("World", "DayZ");
-// s is now "Hello DayZ DayZ"
-// count is 2
+// s теперь "Hello DayZ DayZ"
+// count равен 2
 ```
 
 ### Split
 
-
-Splits a string by a delimiter and fills an array. The array should be pre-allocated.
+Разделяет строку по разделителю и заполняет массив. Массив должен быть предварительно создан.
 
 ```c
 string csv = "AK101,M4A1,UMP45,Mosin9130";
@@ -128,7 +116,7 @@ TStringArray weapons = new TStringArray;
 csv.Split(",", weapons);
 // weapons = ["AK101", "M4A1", "UMP45", "Mosin9130"]
 
-// Split chat command by spaces
+// Разбиение команды чата по пробелам
 string chatLine = "!spawn Barrel_Green 5";
 TStringArray parts = new TStringArray;
 chatLine.Split(" ", parts);
@@ -140,8 +128,7 @@ int amount = parts.Get(2).ToInt(); // 5
 
 ### Join (статический)
 
-
-Joins an array of strings with a separator.
+Объединяет массив строк через разделитель.
 
 ```c
 TStringArray names = {"Alice", "Bob", "Charlie"};
@@ -151,31 +138,29 @@ string result = string.Join(", ", names);
 
 ### Format (статический)
 
-
-Builds a string using numbered placeholders `%1` through `%9`. Это primary way to build formatted strings in Enforce Script.
+Строит строку с использованием нумерованных подстановок `%1` --- `%9`. Это основной способ создания форматированных строк в Enforce Script.
 
 ```c
 string name = "John";
 int kills = 15;
 float distance = 342.5;
 
-string msg = string.Format("Player %1 has %2 kills (best shot: %3m)", name, kills, distance);
-// msg = "Player John has 15 kills (best shot: 342.5m)"
+string msg = string.Format("Игрок %1 имеет %2 убийств (лучший выстрел: %3м)", name, kills, distance);
+// msg = "Игрок John имеет 15 убийств (лучший выстрел: 342.5м)"
 ```
 
-Placeholders are **1-indexed** (`%1` is the first argument, not `%0`). You can use up to 9 placeholders.
+Подстановки **индексируются с 1** (`%1` --- первый аргумент, не `%0`). Можно использовать до 9 подстановок.
 
 ```c
 string log = string.Format("[%1] %2 :: %3", "MyMod", "INFO", "Server started");
 // log = "[MyMod] INFO :: Server started"
 ```
 
-> **Примечание:** There is no `printf`-style formatting (`%d`, `%f`, `%s`). Only `%1` through `%9`.
+> **Примечание:** Нет форматирования в стиле `printf` (`%d`, `%f`, `%s`). Только `%1` --- `%9`.
 
 ### ToLower
 
-
-Converts the string to lowercase. **Modifies in place** -- does NOT return a new string.
+Преобразует строку в нижний регистр. **Модифицирует на месте** --- НЕ возвращает новую строку.
 
 ```c
 string s = "Hello WORLD";
@@ -185,8 +170,7 @@ Print(s); // "hello world"
 
 ### ToUpper
 
-
-Converts the string to uppercase. **Modifies in place.**
+Преобразует строку в верхний регистр. **Модифицирует на месте.**
 
 ```c
 string s = "Hello World";
@@ -196,8 +180,7 @@ Print(s); // "HELLO WORLD"
 
 ### Trim / TrimInPlace
 
-
-Removes leading and trailing whitespace. **Modifies in place.**
+Удаляет начальные и конечные пробелы. **Модифицирует на месте.**
 
 ```c
 string s = "  Hello World  ";
@@ -205,18 +188,17 @@ s.TrimInPlace();
 Print(s); // "Hello World"
 ```
 
-There is also `Trim()` which returns a new trimmed string (available in some engine versions):
+Также существует `Trim()`, который возвращает новую обрезанную строку (доступен в некоторых версиях движка):
 
 ```c
 string raw = "  padded  ";
 string clean = raw.Trim();
-// clean = "padded", raw unchanged
+// clean = "padded", raw без изменений
 ```
 
 ### Get
 
-
-Gets a single character at an index, returned as a string.
+Получает один символ по индексу, возвращаемый как строка.
 
 ```c
 string s = "DayZ";
@@ -226,8 +208,7 @@ string ch2 = s.Get(3); // "Z"
 
 ### Set
 
-
-Sets a single character at an index.
+Устанавливает один символ по индексу.
 
 ```c
 string s = "DayZ";
@@ -237,21 +218,19 @@ Print(s); // "NayZ"
 
 ### ToInt
 
-
-Converts a numeric string to an integer.
+Преобразует числовую строку в целое число.
 
 ```c
 string s = "42";
 int num = s.ToInt(); // 42
 
 string bad = "hello";
-int zero = bad.ToInt(); // 0 (non-numeric strings return 0)
+int zero = bad.ToInt(); // 0 (нечисловые строки возвращают 0)
 ```
 
 ### ToFloat
 
-
-Converts a numeric string to a float.
+Преобразует числовую строку в число с плавающей точкой.
 
 ```c
 string s = "3.14";
@@ -260,8 +239,7 @@ float f = s.ToFloat(); // 3.14
 
 ### ToVector
 
-
-Converts a space-separated string of three numbers to a vector.
+Преобразует строку из трёх чисел, разделённых пробелами, в вектор.
 
 ```c
 string s = "100.5 0 200.3";
@@ -272,8 +250,7 @@ vector pos = s.ToVector(); // Vector(100.5, 0, 200.3)
 
 ## Сравнение строк
 
-
-Strings are compared by value using standard operators. Comparison is **case-sensitive** and follows lexicographic (dictionary) order.
+Строки сравниваются по значению стандартными операторами. Сравнение **чувствительно к регистру** и следует лексикографическому (словарному) порядку.
 
 ```c
 string a = "Apple";
@@ -282,14 +259,13 @@ string c = "Apple";
 
 bool equal    = (a == c);  // true
 bool notEqual = (a != b);  // true
-bool less     = (a < b);   // true  ("Apple" < "Banana" lexicographically)
+bool less     = (a < b);   // true  ("Apple" < "Banana" лексикографически)
 bool greater  = (b > a);   // true
 ```
 
 ### Сравнение без учёта регистра
 
-
-There is no built-in case-insensitive comparison. Convert both strings to lowercase first:
+Встроенного сравнения без учёта регистра нет. Сначала преобразуйте обе строки в нижний регистр:
 
 ```c
 bool EqualsIgnoreCase(string a, string b)
@@ -306,47 +282,44 @@ bool EqualsIgnoreCase(string a, string b)
 
 ## Конкатенация строк
 
-
-Use the `+` operator to concatenate strings. Non-string types are automatically converted.
+Используйте оператор `+` для конкатенации строк. Нестроковые типы автоматически преобразуются.
 
 ```c
 string name = "John";
 int health = 75;
 float distance = 42.5;
 
-string msg = "Player " + name + " has " + health + " HP at " + distance + "m";
-// "Player John has 75 HP at 42.5m"
+string msg = "Игрок " + name + " имеет " + health + " HP на " + distance + "м";
+// "Игрок John имеет 75 HP на 42.5м"
 ```
 
-For complex formatting, prefer `string.Format()` over concatenation --- он is more readable and avoids multiple intermediate allocations.
+Для сложного форматирования предпочитайте `string.Format()` вместо конкатенации --- это более читаемо и избавляет от множественных промежуточных аллокаций.
 
 ```c
-// Prefer this:
-string msg = string.Format("Player %1 has %2 HP at %3m", name, health, distance);
+// Предпочтительно:
+string msg = string.Format("Игрок %1 имеет %2 HP на %3м", name, health, distance);
 
-// Over this:
-string msg2 = "Player " + name + " has " + health + " HP at " + distance + "m";
+// Вместо:
+string msg2 = "Игрок " + name + " имеет " + health + " HP на " + distance + "м";
 ```
 
 ---
 
-## Примеры из практики
-
+## Реальные примеры
 
 ### Парсинг команд чата
-
 
 ```c
 void ProcessChatMessage(string sender, string message)
 {
-    // Trim whitespace
+    // Обрезать пробелы
     message.TrimInPlace();
 
-    // Must start with !
+    // Должна начинаться с !
     if (message.Length() == 0 || message.Get(0) != "!")
         return;
 
-    // Split into parts
+    // Разбить на части
     TStringArray parts = new TStringArray;
     message.Split(" ", parts);
 
@@ -359,7 +332,7 @@ void ProcessChatMessage(string sender, string message)
     switch (command)
     {
         case "!heal":
-            Print(string.Format("[CMD] %1 used !heal", sender));
+            Print(string.Format("[CMD] %1 использовал !heal", sender));
             break;
 
         case "!spawn":
@@ -370,7 +343,7 @@ void ProcessChatMessage(string sender, string message)
                 if (parts.Count() >= 3)
                     quantity = parts.Get(2).ToInt();
 
-                Print(string.Format("[CMD] %1 spawning %2 x%3", sender, itemType, quantity));
+                Print(string.Format("[CMD] %1 спавнит %2 x%3", sender, itemType, quantity));
             }
             break;
 
@@ -381,7 +354,7 @@ void ProcessChatMessage(string sender, string message)
                 float y = parts.Get(2).ToFloat();
                 float z = parts.Get(3).ToFloat();
                 vector pos = Vector(x, y, z);
-                Print(string.Format("[CMD] %1 teleporting to %2", sender, pos.ToString()));
+                Print(string.Format("[CMD] %1 телепортируется в %2", sender, pos.ToString()));
             }
             break;
     }
@@ -389,7 +362,6 @@ void ProcessChatMessage(string sender, string message)
 ```
 
 ### Форматирование имён игроков для отображения
-
 
 ```c
 string FormatPlayerTag(string name, string clanTag, bool isAdmin)
@@ -405,17 +377,16 @@ string FormatPlayerTag(string name, string clanTag, bool isAdmin)
 
     if (isAdmin)
     {
-        result = result + " (Admin)";
+        result = result + " (Админ)";
     }
 
     return result;
 }
-// FormatPlayerTag("John", "DZR", true) => "[DZR] John (Admin)"
+// FormatPlayerTag("John", "DZR", true) => "[DZR] John (Админ)"
 // FormatPlayerTag("Jane", "", false)   => "Jane"
 ```
 
 ### Построение путей к файлам
-
 
 ```c
 string BuildPlayerFilePath(string steamId)
@@ -424,8 +395,7 @@ string BuildPlayerFilePath(string steamId)
 }
 ```
 
-### Очистка сообщений лога
-
+### Очистка сообщений для лога
 
 ```c
 string SanitizeForLog(string input)
@@ -435,7 +405,7 @@ string SanitizeForLog(string input)
     safe.Replace("\r", "");
     safe.Replace("\t", " ");
 
-    // Truncate to max length
+    // Обрезать до максимальной длины
     if (safe.Length() > 200)
     {
         safe = safe.Substring(0, 197) + "...";
@@ -446,7 +416,6 @@ string SanitizeForLog(string input)
 ```
 
 ### Извлечение имени файла из пути
-
 
 ```c
 string GetFileName(string path)
@@ -467,64 +436,95 @@ string GetFileName(string path)
 
 ---
 
-## Распространённые ошибки
+## Лучшие практики
 
-
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| Expecting `ToLower()` to return a new string | `ToLower()` modifies in place, returns `void` | Copy the string first, then call `ToLower()` on the copy |
-| Expecting `ToUpper()` to return a new string | Same as above -- modifies in place | Copy first, then call `ToUpper()` on the copy |
-| Expecting `Replace()` to return a new string | `Replace()` modifies in place, returns replacement count | Copy the string first if you need the original |
-| Using `%0` in `string.Format()` | Placeholders are 1-indexed (`%1` through `%9`) | Start from `%1` |
-| Using `%d`, `%f`, `%s` format specifiers | C-style format specifiers do not work | Use `%1`, `%2`, etc. |
-| Comparing strings without normalizing case | `"Hello" != "hello"` | Call `ToLower()` on both before comparing |
-| Treating strings as reference types | Strings are value types; assigning creates a copy | This is usually fine -- just be aware that modifying a copy does not affect the original |
-| Forgetting to create the array before `Split()` | Calling `Split()` on a null array causes a crash | Always: `TStringArray parts = new TStringArray;` before `Split()` |
+- Используйте `string.Format()` с подстановками `%1`..`%9` для всего форматированного вывода --- это более читаемо и избавляет от подводных камней преобразования типов при конкатенации через `+`.
+- Помните, что `ToLower()`, `ToUpper()` и `Replace()` модифицируют строку на месте --- скопируйте строку, если нужно сохранить оригинал.
+- Всегда создавайте целевой массив через `new TStringArray` перед вызовом `Split()` --- передача null-массива вызывает вылет.
+- Используйте `Contains()` для простых проверок подстрок и `IndexOf()` только когда нужна позиция.
+- Для сравнения без учёта регистра скопируйте обе строки и вызовите `ToLower()` для каждой перед сравнением --- встроенного сравнения без учёта регистра нет.
 
 ---
 
-## Краткая справка
+## Примеры из реальных модов
 
+> Паттерны подтверждены изучением исходного кода профессиональных модов DayZ.
+
+| Паттерн | Мод | Детали |
+|---------|-----|--------|
+| `Split(" ", parts)` для парсинга команд чата | VPP / COT | Все системы чат-команд разбивают по пробелу, затем switch на `parts.Get(0)` |
+| `string.Format` с префиксом `[TAG]` | Expansion / Dabs | Сообщения логов всегда используют `string.Format("[%1] %2", tag, msg)` вместо конкатенации |
+| Соглашение путей `"$profile:ModName/"` | COT / Expansion | Пути файлов, построенные через `+`, используют прямые слеши и префикс `$profile:` для избежания проблем с обратными слешами |
+| `ToLower()` перед сопоставлением команд | VPP Admin | Пользовательский ввод приводится к нижнему регистру перед `switch`/сравнением для обработки смешанного регистра |
+
+---
+
+## Теория vs Практика
+
+| Концепция | Теория | Реальность |
+|-----------|--------|------------|
+| Возвращаемое значение `ToLower()` / `Replace()` | Ожидается возврат новой строки (как в C#) | Они модифицируют на месте и возвращают `void` или количество --- постоянный источник багов |
+| Подстановки `string.Format` | `%d`, `%f`, `%s` как printf в C | Работают только `%1` --- `%9`; спецификаторы в стиле C молча игнорируются |
+| Обратный слеш `\\` в строках | Стандартный символ экранирования | Может сломать CParser DayZ в контексте JSON --- предпочитайте прямые слеши для путей |
+
+---
+
+## Распространённые ошибки
+
+| Ошибка | Проблема | Исправление |
+|--------|----------|-------------|
+| Ожидание, что `ToLower()` вернёт новую строку | `ToLower()` модифицирует на месте, возвращает `void` | Сначала скопируйте строку, затем вызовите `ToLower()` для копии |
+| Ожидание, что `ToUpper()` вернёт новую строку | Аналогично --- модифицирует на месте | Сначала скопируйте, затем вызовите `ToUpper()` для копии |
+| Ожидание, что `Replace()` вернёт новую строку | `Replace()` модифицирует на месте, возвращает количество замен | Сначала скопируйте строку, если нужен оригинал |
+| Использование `%0` в `string.Format()` | Подстановки индексируются с 1 (`%1` --- `%9`) | Начинайте с `%1` |
+| Использование спецификаторов `%d`, `%f`, `%s` | Спецификаторы формата в стиле C не работают | Используйте `%1`, `%2` и т.д. |
+| Сравнение строк без нормализации регистра | `"Hello" != "hello"` | Вызовите `ToLower()` для обеих перед сравнением |
+| Обращение со строками как с ссылочными типами | Строки --- типы-значения; присваивание создаёт копию | Обычно это нормально --- просто помните, что модификация копии не влияет на оригинал |
+| Забывание создать массив перед `Split()` | Вызов `Split()` с null-массивом вызывает вылет | Всегда: `TStringArray parts = new TStringArray;` перед `Split()` |
+
+---
+
+## Краткий справочник
 
 ```c
-// Length
+// Длина
 int len = s.Length();
 
-// Search
+// Поиск
 int idx = s.IndexOf("sub");
 int idx = s.IndexOfFrom(startIdx, "sub");
 int idx = s.LastIndexOf("sub");
 bool has = s.Contains("sub");
 
-// Extract
+// Извлечение
 string sub = s.Substring(start, length);
 string ch  = s.Get(index);
 
-// Modify (in place)
+// Модификация (на месте)
 s.Set(index, "x");
 int count = s.Replace("old", "new");
 s.ToLower();
 s.ToUpper();
 s.TrimInPlace();
 
-// Split & Join
+// Разделение и объединение
 TStringArray parts = new TStringArray;
 s.Split(delimiter, parts);
 string joined = string.Join(sep, parts);
 
-// Format (static, %1-%9 placeholders)
-string msg = string.Format("Hello %1, you have %2 items", name, count);
+// Форматирование (статический, подстановки %1-%9)
+string msg = string.Format("Привет %1, у вас %2 предметов", name, count);
 
-// Conversion
+// Преобразование
 int n    = s.ToInt();
 float f  = s.ToFloat();
 vector v = s.ToVector();
 
-// Comparison (case-sensitive, lexicographic)
+// Сравнение (чувствительное к регистру, лексикографическое)
 bool eq = (a == b);
 bool lt = (a < b);
 ```
 
 ---
 
-[<< 1.5: Control Flow](05-control-flow.md) | [Главная](../../README.md) | [1.7: Math & Vectors >>](07-math-vectors.md)
+[<< 1.5: Управление потоком](05-control-flow.md) | [Главная](../../README.md) | [1.7: Математика и векторы >>](07-math-vectors.md)

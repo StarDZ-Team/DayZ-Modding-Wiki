@@ -1,26 +1,26 @@
 # Chapter 1.2: Arrays, Maps & Sets
 
-[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
+[Domů](../../README.md) | [<< Předchozí: Proměnné a typy](01-variables-types.md) | **Pole, mapy a množiny** | [Další: Třídy a dědičnost >>](03-classes-inheritance.md)
 
 ---
 
-## Introduction
+## Úvod
 
-Real DayZ mods deal with collections of things: lists of players, inventories of items, mappings from player IDs to permissions, sets of active zones. Enforce Script provides three collection types to handle these needs:
+Real DayZ mods deal with collections of things: lists of hráči, inventories of items, mappings from player IDs to permissions, sets of active zones. Enforce Script provides three collection types to handle these needs:
 
-- **`array<T>`** --- Dynamic, ordered, resizable list (the collection you will use most)
+- **`array<T>`** --- Dynamic, ordered, resizable list (the collection you will use většina)
 - **`map<K,V>`** --- Key-value associative container (hash map)
 - **`set<T>`** --- Ordered collection with value-based removal
 
-There are also **static arrays** (`int arr[5]`) for fixed-size data known at compile time. This chapter covers all of them in depth, including every available method, iteration patterns, and the subtle pitfalls that cause real bugs in production mods.
+Existují také **statická arrays** (`int arr[5]`) for fixed-size data known at compile time. This chapter covers all of them in depth, including každý dostupný method, iteration patterns, and the subtle pitfalls that cause real bugs in production mods.
 
 ---
 
-## Statická pole
+## Static Arrays
 
-Static arrays have a fixed size determined at compile time. They cannot grow or shrink. They are useful for small, known-size collections and are more memory-efficient than dynamic arrays.
+Static arrays have a fixed size determined at compile time. They cannot grow or shrink. They are užitečný for small, known-size collections and are more memory-efficient than dynamic arrays.
 
-### Deklarace a použití
+### Declaration and Usage
 
 ```c
 void StaticArrayBasics()
@@ -52,9 +52,9 @@ void StaticArrayBasics()
 }
 ```
 
-### Pravidla statických polí
+### Static Array Rules
 
-1. Size must be a compile-time constant (literal or `const int`)
+1. Size musí být a compile-time constant (literal or `const int`)
 2. You **cannot** use a variable as the size: `int arr[myVar]` is a compile error
 3. Accessing an out-of-bounds index causes undefined behavior (no runtime bounds check)
 4. Static arrays are passed by reference to functions (unlike primitives)
@@ -76,20 +76,20 @@ void Test()
 }
 ```
 
-### Kdy použít statická pole
+### When to Use Static Arrays
 
-Use static arrays for:
+Use statická arrays for:
 - Vector/matrix data (`vector mat[3]` for 3x3 rotation matrices)
 - Small fixed lookup tables
 - Performance-critical hot paths where allocation matters
 
-Use dynamic `array<T>` for everything else.
+Use dynamic `array<T>` for každýthing else.
 
 ---
 
-## Dynamická pole: `array<T>`
+## Dynamic Arrays: `array<T>`
 
-Dynamic arrays are the most commonly used collection in DayZ modding. They can grow and shrink at runtime, support generics, and provide a rich set of methods.
+Dynamic arrays are the většina běžně used collection in DayZ modding. They can grow and shrink za běhu, support generics, and provide a rich set of methods.
 
 ### Creation
 
@@ -113,9 +113,9 @@ void CreateArrays()
 }
 ```
 
-### Předdefinované typové aliasy
+### Pre-defined Typedefs
 
-DayZ provides shorthand typedefs for the most common array types:
+DayZ provides shorthand typedefs for the většina common array types:
 
 ```c
 typedef array<string>  TStringArray;
@@ -129,9 +129,9 @@ You will encounter `TStringArray` constantly in DayZ code --- config parsing, ch
 
 ---
 
-## Kompletní reference metod pole
+## Complete Array Method Reference
 
-### Přidávání prvků
+### Adding Elements
 
 ```c
 void AddingElements()
@@ -155,7 +155,7 @@ void AddingElements()
 }
 ```
 
-### Přístup k prvkům
+### Accessing Elements
 
 ```c
 void AccessingElements()
@@ -182,7 +182,7 @@ void AccessingElements()
 }
 ```
 
-### Vyhledávání
+### Searching
 
 ```c
 void SearchingArrays()
@@ -205,9 +205,9 @@ void SearchingArrays()
 }
 ```
 
-### Odstraňování prvků
+### Removing Elements
 
-This is where the most common bugs occur. Pay close attention to the difference between `Remove` and `RemoveOrdered`.
+This is where the většina common bugs occur. Pay close attention to the difference mezi `Remove` and `RemoveOrdered`.
 
 ```c
 void RemovingElements()
@@ -236,7 +236,7 @@ void RemovingElements()
 }
 ```
 
-### Velikost a kapacita
+### Sizing and Capacity
 
 ```c
 void SizingArrays()
@@ -258,7 +258,7 @@ void SizingArrays()
 }
 ```
 
-### Řazení a míchání
+### Ordering and Shuffling
 
 ```c
 void OrderingArrays()
@@ -284,7 +284,7 @@ void OrderingArrays()
 }
 ```
 
-### Kopírování
+### Copying
 
 ```c
 void CopyingArrays()
@@ -304,7 +304,7 @@ void CopyingArrays()
 }
 ```
 
-### Ladění
+### Debugging
 
 ```c
 void DebuggingArrays()
@@ -322,9 +322,9 @@ void DebuggingArrays()
 
 ---
 
-## Iterace přes pole
+## Iterating Arrays
 
-### Cyklus for (indexový)
+### for Loop (Index-Based)
 
 ```c
 void ForLoopIteration()
@@ -341,7 +341,7 @@ void ForLoopIteration()
 }
 ```
 
-### foreach (pouze hodnota)
+### foreach (Value Only)
 
 ```c
 void ForEachValue()
@@ -358,7 +358,7 @@ void ForEachValue()
 }
 ```
 
-### foreach (index + hodnota)
+### foreach (Index + Value)
 
 ```c
 void ForEachIndexValue()
@@ -375,7 +375,7 @@ void ForEachIndexValue()
 }
 ```
 
-### Příklad z praxe: Finding the Nearest Player
+### Real-World Example: Finding the Nearest Player
 
 ```c
 PlayerBase FindNearestPlayer(vector origin, float maxRange)
@@ -411,7 +411,7 @@ PlayerBase FindNearestPlayer(vector origin, float maxRange)
 
 ## Maps: `map<K,V>`
 
-Maps store key-value pairs. They are used when you need to look up a value by a key --- player data by UID, item prices by class name, permissions by role name, and so on.
+Maps store key-value pairs. They are used when potřebujete to look up a value by a key --- player data by UID, item prices by class name, permissions by role name, and so on.
 
 ### Creation
 
@@ -428,7 +428,7 @@ void CreateMaps()
 }
 ```
 
-### Předdefinované typové aliasy map
+### Pre-defined Map Typedefs
 
 ```c
 typedef map<string, int>     TStringIntMap;
@@ -439,9 +439,9 @@ typedef map<string, float>   TStringFloatMap;
 
 ---
 
-## Kompletní reference metod mapy
+## Complete Map Method Reference
 
-### Vkládání a aktualizace
+### Inserting and Updating
 
 ```c
 void MapInsertUpdate()
@@ -461,9 +461,9 @@ void MapInsertUpdate()
 }
 ```
 
-**Zásadní rozdíl:** `Insert()` does **not** update existing keys. `Set()` does. When in doubt, use `Set()`.
+**Critical distinction:** `Insert()` does **not** update existing keys. `Set()` does. When in doubt, use `Set()`.
 
-### Přístup k hodnotám
+### Accessing Values
 
 ```c
 void MapAccess()
@@ -491,7 +491,7 @@ void MapAccess()
 }
 ```
 
-### Odstraňování
+### Removing
 
 ```c
 void MapRemove()
@@ -511,7 +511,7 @@ void MapRemove()
 }
 ```
 
-### Indexový přístup
+### Index-Based Access
 
 Maps support positional access, but it is `O(n)` --- use it for iteration, not frequent lookups.
 
@@ -533,7 +533,7 @@ void MapIndexAccess()
 }
 ```
 
-### Extrakce klíčů a hodnot
+### Extracting Keys and Values
 
 ```c
 void MapExtraction()
@@ -553,7 +553,7 @@ void MapExtraction()
 }
 ```
 
-### Příklad z praxe: Player Tracking
+### Real-World Example: Player Tracking
 
 ```c
 class PlayerTracker
@@ -600,7 +600,7 @@ class PlayerTracker
 
 ## Sets: `set<T>`
 
-Sets are ordered collections similar to arrays, but with semantics oriented toward value-based operations (find and remove by value). They are less commonly used than arrays and maps.
+Sets are ordered collections similar to arrays, but with semantics oriented toward value-based operations (find and remove by value). They are less běžně used thpoles and maps.
 
 ```c
 void SetExamples()
@@ -635,22 +635,22 @@ void SetExamples()
 }
 ```
 
-### Kdy použít Set vs. Array
+### When to Use Nastavte vs Array
 
-In practice, most DayZ modders use `array<T>` for almost everything because:
+V praxi většina DayZ modders use `array<T>` for almost každýthing because:
 - `set<T>` has fewer methods than `array<T>`
 - `array<T>` provides `Find()` for search and `RemoveItem()` for value-based removal
-- The API you need is typically on `array<T>` already
+- The API potřebujete is typicky on `array<T>` již
 
 Use `set<T>` when your code semantically represents a set (no meaningful order, focused on membership testing), or when you encounter it in vanilla DayZ code and need to interface with it.
 
 ---
 
-## Iterace přes mapy
+## Iterating Maps
 
 Maps support `foreach` for convenient iteration:
 
-### foreach s klíčem a hodnotou
+### foreach with Key-Value
 
 ```c
 void IterateMap()
@@ -671,7 +671,7 @@ void IterateMap()
 }
 ```
 
-### Indexový cyklus for
+### Index-Based for Loop
 
 ```c
 void IterateMapByIndex()
@@ -691,9 +691,9 @@ void IterateMapByIndex()
 
 ---
 
-## Vnořené kolekce
+## Nested Collections
 
-Collections can contain other collections. When storing reference types (like arrays) inside a map, use `ref` to manage ownership.
+Collections can contain jiný collections. When storing reference types (like arrays) inside a map, use `ref` to manage ownership.
 
 ```c
 class LootTable
@@ -735,11 +735,44 @@ class LootTable
 
 ---
 
-## Common Mistakes
+## Osvědčené postupy
+
+- Vždy use `new` to instantiate collections before use -- `array<string> items;` is `null`, not prázdný.
+- Preferujte `map.Set()` over `map.Insert()` for updates -- `Insert` tiše ignores existing keys.
+- When removing elements during iteration, use a backward `for` loop or build a oddělený removal list -- nikdy modify a collection inside `foreach`.
+- Use `Reserve()` when you know the expected element count ahead of time to avoid repeated interní re-allocations.
+- Guard každý element access with `IsValidIndex()` or a `Count() > 0` check -- out-of-bounds access causes silent crashes.
+
+---
+
+## Pozorováno v reálných modech
+
+> Patterns confirmed by studying professional DayZ mod source code.
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| Backward `for` loop for removal | Expansion / COT | Vždy iterate `Count()-1` down to `0` when removing filtered elements |
+| `map<string, ref ClassName>` for registries | Dabs Framework | All manager registries use `ref` in map values to keep objects alive |
+| `TStringArray` typedef každýwhere | Vanilla / VPP | Config parsing, chat messages, and loot tables all use `TStringArray` místo `array<string>` |
+| Null + prázdný guard before access | Expansion Market | Every function receiving pole starts with `if (!arr \|\| arr.Count() == 0) return;` |
+
+---
+
+## Teorie vs praxe
+
+| Concept | Theory | Reality |
+|---------|--------|---------|
+| `Remove(index)` is "fast remove" | Should jen delete the element | It swaps with the last element first, tiše re-ordering pole |
+| `map.Insert()` adds a key | Expected to update if key exists | Returns `false` and nehing if klíč is již present |
+| `set<T>` for unique collections | Should behave like a mathematical set | Most modders use `array<T>` with `Find()` místo toho protože `set` has fewer methods |
+
+---
+
+## Časté chyby
 
 ### 1. `Remove` vs `RemoveOrdered`: The Silent Bug
 
-`Remove(index)` is fast but **changes the order** by swapping with the last element. If you are iterating forward and removing, this causes skipped elements:
+`Remove(index)` is fast but **changes the order** by swapping with the last element. Pokud are iterating forward and removing, this causes skipped elements:
 
 ```c
 // BAD: skips elements because Remove swaps order
@@ -771,7 +804,7 @@ for (int k = nums3.Count() - 1; k >= 0; k--)
 
 ### 2. Array Index Out of Bounds
 
-Enforce Script does not throw exceptions for out-of-bounds access --- it silently returns garbage or crashes. Always check bounds.
+Enforce Script ne throw exceptions for out-of-bounds access --- it tiše returns garbage or crashes. Vždy check bounds.
 
 ```c
 // BAD: no bounds check
@@ -791,9 +824,9 @@ if (items.Count() > 0)
 }
 ```
 
-### 3. Forgetting to Create the Collection
+### 3. Forgetting to Vytvořte the Collection
 
-Collections are objects and must be instantiated with `new`:
+Collections are objects and musí být instantiated with `new`:
 
 ```c
 // BAD: null reference crash
@@ -810,7 +843,7 @@ array<string> items3 = {"Test"};
 
 ### 4. `Insert` vs `Set` on Maps
 
-`Insert` does not update existing keys --- it returns `false` and leaves the value unchanged:
+`Insert` ne update existing keys --- it returns `false` and leaves hodnota unchanged:
 
 ```c
 map<string, int> data = new map<string, int>;
@@ -821,9 +854,9 @@ data.Insert("key", 200);   // Returns false, value is STILL 100!
 data.Set("key", 200);      // Now value is 200
 ```
 
-### 5. Modifying a Collection During foreach
+### 5. Modifying a Collection Během foreach
 
-Do not add or remove elements from a collection while iterating over it with `foreach`. Build a separate list of elements to remove, then remove them afterward.
+Do not add or remove elements from a collection while iterating over it with `foreach`. Sestavte a oddělený list of elements to remove, then remove them afterward.
 
 ```c
 // BAD: modifying during iteration
@@ -849,7 +882,7 @@ foreach (string rem : toRemove)
 
 ### 6. Empty Array Safety
 
-Always check if an array is both non-null and non-empty before accessing elements:
+Vždy check if pole is oba non-null and non-empty before accessing elements:
 
 ```c
 string GetFirstItem(array<string> items)
@@ -867,54 +900,54 @@ string GetFirstItem(array<string> items)
 ## Practice Exercises
 
 ### Exercise 1: Inventory Counter
-Create a function that takes an `array<string>` of item class names (with duplicates) and returns a `map<string, int>` counting how many of each item exists.
+Vytvořte a function that takes an `array<string>` of item class names (with duplicates) and vrací `map<string, int>` counting how mnoho of každý item exists.
 
 Example: `{"Bandage", "Morphine", "Bandage", "Saline", "Bandage"}` should produce `{"Bandage": 3, "Morphine": 1, "Saline": 1}`.
 
 ### Exercise 2: Array Deduplication
-Write a function `array<string> RemoveDuplicates(array<string> input)` that returns a new array with duplicates removed, preserving the order of first occurrence.
+Zapište a function `array<string> RemoveDuplicates(array<string> input)` that vrací nový array with duplicates removed, preserving the order of first occurrence.
 
 ### Exercise 3: Leaderboard
-Create a `map<string, int>` of player names to kill counts. Write functions to:
-1. Add a kill for a player (creating the entry if needed)
-2. Get the top N players sorted by kills (hint: extract to arrays, sort)
-3. Remove all players with zero kills
+Vytvořte a `map<string, int>` of player names to kill counts. Zapište functions to:
+1. Přidejte a kill for hráč (creating the entry if needed)
+2. Get the top N hráči sorted by kills (hint: extract to arrays, sort)
+3. Odstraňte all hráči with zero kills
 
 ### Exercise 4: Position History
-Create a class that stores the last 10 positions of a player (ring buffer using an array). It should:
-1. Add a new position (dropping the oldest if at capacity)
+Vytvořte a class that stores the last 10 positions of hráč (ring buffer using pole). It should:
+1. Přidejte a nový position (dropping the oldest if at capacity)
 2. Return the total distance traveled across all stored positions
 3. Return the average position
 
 ### Exercise 5: Two-Way Lookup
-Create a class with two maps that allows lookup in both directions: given a player UID, find their name; given a name, find their UID. Implement `Register(uid, name)`, `GetNameByUID(uid)`, `GetUIDByName(name)`, and `Unregister(uid)`.
+Vytvořte a class with two maps that allows lookup in oba directions: given hráč UID, find their name; given a name, find their UID. Implement `Register(uid, name)`, `GetNameByUID(uid)`, `GetUIDByName(name)`, and `Unregister(uid)`.
 
 ---
 
-## Summary
+## Shrnutí
 
-| Kolekce | Typ | Případ použití | Klíčový rozdíl |
+| Collection | Type | Use Case | Key Difference |
 |-----------|------|----------|----------------|
 | Static array | `int arr[5]` | Fixed-size, compile-time known | No resize, no methods |
 | Dynamic array | `array<T>` | General-purpose ordered list | Rich API, resizable |
 | Map | `map<K,V>` | Key-value lookup | `Set()` to insert/update |
-| Set | `set<T>` | Value-based membership | Simpler than array, less common |
+| Nastavte | `set<T>` | Value-based membership | Simpler thpole, less common |
 
-| Operace | Metoda | Poznámky |
+| Operation | Method | Notes |
 |-----------|--------|-------|
-| Add to end | `Insert(val)` | Returns index |
-| Add at position | `InsertAt(val, idx)` | Shifts right |
-| Remove fast | `Remove(idx)` | Swaps with last, **unordered** |
-| Remove ordered | `RemoveOrdered(idx)` | Shifts left, preserves order |
-| Remove by value | `RemoveItem(val)` | Finds then removes (ordered) |
+| Přidejte to end | `Insert(val)` | Returns index |
+| Přidejte at position | `InsertAt(val, idx)` | Shifts right |
+| Odstraňte fast | `Remove(idx)` | Swaps with last, **unordered** |
+| Odstraňte ordered | `RemoveOrdered(idx)` | Shifts left, preserves order |
+| Odstraňte by value | `RemoveItem(val)` | Finds then removes (ordered) |
 | Find | `Find(val)` | Returns index or -1 |
 | Count | `Count()` | Number of elements |
 | Bounds check | `IsValidIndex(idx)` | Returns bool |
 | Sort | `Sort()` / `Sort(true)` | Ascending / descending |
 | Random | `GetRandomElement()` | Returns random value |
-| foreach | `foreach (T val : arr)` | Value only |
+| foreach | `foreach (T val : arr)` | Value pouze |
 | foreach indexed | `foreach (int i, T val : arr)` | Index + value |
 
 ---
 
-[Domů](../README.md) | [<< Předchozí: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Další: Classes & Inheritance >>](03-classes-inheritance.md)
+[Domů](../../README.md) | [<< Předchozí: Proměnné a typy](01-variables-types.md) | **Pole, mapy a množiny** | [Další: Třídy a dědičnost >>](03-classes-inheritance.md)

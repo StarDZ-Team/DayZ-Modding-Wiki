@@ -1,10 +1,14 @@
-# Chapter 8.13: The Diagnostic Menu (Diag Menu)
+# Chapitre 8.13: The Diagnostic Menu (Diag Menu)
 
-[Home](../../README.md) | [<< Previous: Building a Trading System](12-trading-system.md) | **The Diagnostic Menu**
+[Accueil](../../README.md) | [<< Précédent : Building a Trading System](12-trading-system.md) | **The Diagnostic Menu**
 
 ---
 
-## Table des Matieres
+> **Résumé :** The Diag Menu is DayZ's built-in diagnostic tool, available only through the DayZDiag executable. It provides FPS counters, script profiling, render debugging, free camera, physics visualization, weather control, Central Economy tools, AI navigation debugging, and sound diagnostics. This chapter documents every menu category, option, and keyboard shortcut based on the official Bohemia Interactive documentation.
+
+---
+
+## Table des matières
 
 - [What is the Diag Menu?](#what-is-the-diag-menu)
 - [How to Access](#how-to-access)
@@ -19,7 +23,7 @@
 - [AI](#ai)
 - [Sounds](#sounds)
 - [Useful Features for Modders](#useful-features-for-modders)
-- [When to Use the Diag Menu](#when-to-use-the-diag-menu)
+- [Quand utiliser the Diag Menu](#when-to-use-the-diag-menu)
 - [Common Mistakes](#common-mistakes)
 - [Next Steps](#next-steps)
 
@@ -38,7 +42,7 @@ The Diag Menu is **not available** in the retail DayZ executable (`DayZ_x64.exe`
 ### Requirements
 
 - **DayZDiag_x64.exe** -- The diagnostic executable. Found in your DayZ installation folder alongside the regular `DayZ_x64.exe`.
-- You must be running the game (not sitting in a loading screen). The menu is available in any 3D viewport.
+- You must be running le jeu (not sitting in a loading screen). The menu is available in any 3D viewport.
 
 ### Opening the Menu
 
@@ -75,7 +79,7 @@ When options show multiple values, they are listed in the order they appear in t
 
 These shortcuts work at any time while running DayZDiag, without needing to open the menu:
 
-| Raccourci | Function |
+| Shortcut | Function |
 |----------|----------|
 | **LCtrl + Numpad 1** | Toggle FPS counter |
 | **LCtrl + Numpad 9** | Toggle mouse cursor on screen |
@@ -148,7 +152,7 @@ The profiler shows six data sections:
 
 The Stats and settings panel shows:
 
-| Champ | Signification |
+| Field | Meaning |
 |-------|---------|
 | UI enabled (DIAG) | Whether the script profiler UI is active |
 | Profiling enabled (SCRP) | Whether profiling runs even when UI is not active |
@@ -227,7 +231,7 @@ Class count is never averaged -- it always shows the current instance count. All
 
 Sets the time unit for display. The value represents the denominator (nth of a second):
 
-| Valeur | Unit |
+| Value | Unit |
 |-------|------|
 | 1 | Seconds |
 | 1000 | Milliseconds |
@@ -396,7 +400,7 @@ Turns on the debug visualization for the Bullet physics engine.
 
 | Option | Description |
 |--------|-------------|
-| **Draw Char Ctrl** | Visualize the player character controller. Depends on "Draw Bullet shape" |
+| **Draw Char Ctrl** | Visualize le joueur character controller. Depends on "Draw Bullet shape" |
 | **Draw Simple Char Ctrl** | Visualize the AI character controller. Depends on "Draw Bullet shape" |
 | **Max. Collider Distance** | Maximum distance from player to visualize colliders (values: 0, 1, 2, 5, 10, 20, 50, 100, 200, 500). Default is 0 |
 | **Draw Bullet shape** | Visualize physics collider shapes |
@@ -464,7 +468,7 @@ Geometry types: `normal`, `roadway`, `geometry`, `viewGeometry`, `fireGeometry`,
 
 Drawing modes: `solid+wire`, `Zsolid+wire`, `wire`, `ZWire`, `geom only`
 
-This is extremely useful for modders creating custom models -- you can verify that your fire geometry, view geometry, and memory points are correctly configured without leaving the game.
+This is extremely useful for modders creating custom models -- you can verify that your fire geometry, view geometry, and memory points are correctly configured without leaving le jeu.
 
 ---
 
@@ -557,13 +561,13 @@ Window settings are stored in profiles as `weather_client_imgui.ini` / `weather_
 
 #### Force Fog at Camera
 
-Forces the fog height to match the player camera height. Has priority over the Height bias setting.
+Forces the fog height to match le joueur camera height. Has priority over the Height bias setting.
 
 #### Override Fog
 
 Enables overriding fog values with manual settings:
 
-| Parametre | Range | Step |
+| Parameter | Range | Step |
 |-----------|-------|------|
 | Distance density | 0 -- 1 | 0.01 |
 | Height density | 0 -- 1 | 0.01 |
@@ -572,7 +576,7 @@ Enables overriding fog values with manual settings:
 
 ### Free Camera
 
-The free camera detaches the view from the player character and allows flying through the world. This is one of the most useful debug tools for modders.
+The free camera detaches the view from le joueur character and allows flying through le monde. This is one of the most useful debug tools for modders.
 
 #### Free Camera Controls
 
@@ -599,13 +603,13 @@ The free camera detaches the view from the player character and allows flying th
 
 | Option | Description |
 |--------|-------------|
-| **FrCam Player Move** | Enable/disable player inputs (WASD) moving the player while in free camera |
+| **FrCam Player Move** | Enable/disable player inputs (WASD) moving le joueur while in free camera |
 | **FrCam NoClip** | Enable/disable the camera passing through terrain |
 | **FrCam Freeze** | Enable/disable inputs moving the camera |
 
 ### Vehicles
 
-Extended debug functionality for vehicles. These only work while the player is inside a vehicle.
+Extended debug functionality for vehicles. These only work while le joueur is inside a vehicle.
 
 - **Audio** -- Opens a separate window to tweak sound settings in real time. Includes visualization of audio controllers.
 - **Simulation** -- Opens a separate window with car simulation debug: tweaking physics parameters and visualization.
@@ -618,7 +622,7 @@ Debug tools for combat, shooting, and hitpoints:
 |--------|-------------|
 | **DECombat** | Shows on-screen text with distances to cars, AI, and players |
 | **DEShots** | Projectile debug sub-menu (see below) |
-| **DEHitpoints** | Displays the DamageSystem of the player and the object they are looking at |
+| **DEHitpoints** | Displays the DamageSystem of le joueur and the object they are looking at |
 | **DEExplosions** | Shows explosion penetration data. Numbers show slowdown values. Red cross = stopped. Green cross = penetrated |
 
 **DEShots sub-menu:**
@@ -636,7 +640,7 @@ Debug tools for combat, shooting, and hitpoints:
 
 ### DESurfaceSound
 
-Displays the surface type the player is standing on and the attenuation type.
+Displays the surface type le joueur is standing on and the attenuation type.
 
 ### Central Economy
 
@@ -648,15 +652,15 @@ A comprehensive set of debugging tools for the Central Economy (CE) system.
 
 #### Loot Spawn Edit
 
-Tools for creating and editing loot spawn points on objects. Free camera must be enabled to use the Edit Volume tool.
+Tools for creating and editing loot apparition points on objects. Free camera must be enabled to use the Edit Volume tool.
 
 | Option | Description | Script Equivalent |
 |--------|-------------|-------------------|
-| **Spawn Volume Vis** | Visualize loot spawn points. Options: Off, Adaptive, Volume, Occupied | `GetCEApi().LootSetSpawnVolumeVisualisation()` |
+| **Spawn Volume Vis** | Visualize loot apparition points. Options: Off, Adaptive, Volume, Occupied | `GetCEApi().LootSetSpawnVolumeVisualisation()` |
 | **Setup Vis** | Show CE setup properties on screen with color-coded containers | `GetCEApi().LootToggleSpawnSetup()` |
 | **Edit Volume** | Interactive loot point editor (requires free camera) | `GetCEApi().LootToggleVolumeEditing()` |
 | **Re-Trace Group Points** | Re-trace loot points to fix hovering issues | `GetCEApi().LootRetraceGroupPoints()` |
-| **Spawn Candy** | Spawn loot in all spawn points of selected group | -- |
+| **Spawn Candy** | Spawn loot in all apparition points of selected group | -- |
 | **Spawn Rotation Test** | Test rotation flags at cursor position | -- |
 | **Placement Test** | Visualize placement with sphere cylinder | -- |
 | **Export Group** | Export selected group to `storage/export/mapGroup_CLASSNAME.xml` | `GetCEApi().LootExportGroup()` |
@@ -664,7 +668,7 @@ Tools for creating and editing loot spawn points on objects. Free camera must be
 | **Export Map** | Generate `storage/export/mapgrouppos.xml` | `GetCEApi().LootExportMap()` |
 | **Export Clusters** | Generate `storage/export/mapgroupcluster.xml` | `GetCEApi().ExportClusterData()` |
 | **Export Economy [csv]** | Export economy to `storage/log/economy.csv` | `GetCEApi().EconomyLog(EconomyLogCategories.Economy)` |
-| **Export Respawn Queue [csv]** | Export respawn queue to `storage/log/respawn_queue.csv` | `GetCEApi().EconomyLog(EconomyLogCategories.RespawnQueue)` |
+| **Export Reapparition Queue [csv]** | Export reapparition queue to `storage/log/reapparition_queue.csv` | `GetCEApi().EconomyLog(EconomyLogCategories.ReapparitionQueue)` |
 
 **Edit Volume key bindings:**
 
@@ -688,7 +692,7 @@ Tools for creating and editing loot spawn points on objects. Free camera must be
 | **Set Damage = 1.0** | Sets health to 0 | `GetCEApi().LootSetDamageToOne()` |
 | **Damage + Deplete** | Performs both of the above | `GetCEApi().LootDepleteAndDamage()` |
 | **Invert Avoidance** | Toggles player avoidance (detection of nearby players) | -- |
-| **Project Target Loot** | Emulates spawning of targeted item, generates images and logs. Requires "Loot Vis" enabled | `GetCEApi().SpawnAnalyze()` and `GetCEApi().EconomyMap()` |
+| **Project Target Loot** | Emulates apparition of targeted item, generates images and logs. Requires "Loot Vis" enabled | `GetCEApi().SpawnAnalyze()` and `GetCEApi().EconomyMap()` |
 
 #### Infected
 
@@ -714,16 +718,16 @@ Tools for creating and editing loot spawn points on objects. Free camera must be
 - Left side: whether each door is open/closed and free/locked
 - Middle: stats regarding `buildings.bin` (building persistence)
 
-Door randomization uses the `initOpened` config value. When `rand < initOpened`, the door spawns opened (so `initOpened=0` means doors never spawn open).
+Door randomization uses the `initOpened` config value. When `rand < initOpened`, the door apparitions opened (so `initOpened=0` means doors never apparition open).
 
 Common `<building/>` setups in economy.xml:
 
-| Setup | Comportement |
+| Setup | Behavior |
 |-------|----------|
-| `init="0" load="0" respawn="0" save="0"` | No persistence, no randomization, default state after restart |
-| `init="1" load="0" respawn="0" save="0"` | No persistence, doors randomized by initOpened |
-| `init="1" load="1" respawn="0" save="1"` | Saves only locked doors, doors randomized by initOpened |
-| `init="0" load="1" respawn="0" save="1"` | Full persistence, saves exact door state, no randomization |
+| `init="0" load="0" reapparition="0" save="0"` | No persistence, no randomization, default state after restart |
+| `init="1" load="0" reapparition="0" save="0"` | No persistence, doors randomized by initOpened |
+| `init="1" load="1" reapparition="0" save="1"` | Saves only locked doors, doors randomized by initOpened |
+| `init="0" load="1" reapparition="0" save="1"` | Full persistence, saves exact door state, no randomization |
 
 #### Other Central Economy Tools
 
@@ -733,7 +737,7 @@ Common `<building/>` setups in economy.xml:
 | **Loot Vis** | On-screen Economy Data for anything you look at (loot, infected, dynamic events) | `GetCEApi().ToggleLootVisualisation()` |
 | **Cluster Vis** | On-screen Trajectory DE stats | `GetCEApi().ToggleClusterVisualisation()` |
 | **Dynamic Events Status** | On-screen DE statistics | `GetCEApi().ToggleDynamicEventStatus()` |
-| **Dynamic Events Vis** | Visualize and edit DE spawn points | `GetCEApi().ToggleDynamicEventVisualisation()` |
+| **Dynamic Events Vis** | Visualize and edit DE apparition points | `GetCEApi().ToggleDynamicEventVisualisation()` |
 | **Dynamic Events Spawn** | Spawn a dynamic event at nearest point or "StaticChristmasTree" as fallback | `GetCEApi().DynamicEventSpawn()` |
 | **Export Dyn Event** | Export DE points to `storage/export/eventSpawn_CLASSNAME.xml` | `GetCEApi().DynamicEventExport()` |
 | **Overall Stats** | On-screen CE statistics | `GetCEApi().ToggleOverallStats()` |
@@ -788,11 +792,11 @@ On-screen debug showing how many path job requests have been completed and how m
 
 ### Debug Path Agent
 
-On-screen debug and debug shapes for an AI's pathing. Target an AI entity to select it for tracking. Use this when you are specifically interested in how an AI finds its path.
+On-screen debug and debug shapes for an AI's pathing. Target an AI entity to select it for tracking. Utilisez ceci quand you are specifically interested in how an AI finds its path.
 
 ### Debug AI Agent
 
-On-screen debug and debug shapes for an AI's alertness and behavior. Target an AI entity to select it for tracking. Use this when you want to understand an AI's decision-making and awareness state.
+On-screen debug and debug shapes for an AI's alertness and behavior. Target an AI entity to select it for tracking. Utilisez ceci quand you want to understand an AI's decision-making and awareness state.
 
 ---
 
@@ -834,8 +838,8 @@ While every option has its use, these are the ones modders reach for most freque
 
 ### Visual Debugging
 
-1. **Free Camera** -- Fly around to inspect spawned objects, verify positions, check AI behavior from a distance
-2. **Geometry Diagnostic** -- Verify your custom model's fire geometry, view geometry, roadway LOD, and memory points without leaving the game
+1. **Free Camera** -- Fly around to inspect apparitioned objects, verify positions, check AI behavior from a distance
+2. **Geometry Diagnostic** -- Verify your custom model's fire geometry, view geometry, roadway LOD, and memory points without leaving le jeu
 3. **Render Debug Mode** (RCtrl + RAlt + W) -- See wireframe overlays to check mesh density and material assignments
 
 ### Gameplay Testing
@@ -853,19 +857,19 @@ While every option has its use, these are the ones modders reach for most freque
 
 ---
 
-## When to Use the Diag Menu
+## Quand utiliser the Diag Menu
 
 ### During Development
 
 - **Script Profiler** when optimizing per-frame code (OnUpdate, EOnFrame)
-- **Free Camera** for positioning objects, verifying spawn locations, inspecting model placement
+- **Free Camera** for positioning objects, verifying apparition locations, inspecting model placement
 - **Geometry Diagnostic** immediately after importing a new model to verify LODs and geometry types
 - **FPS counter** as a baseline before and after adding new features
 
 ### During Testing
 
 - **Combat debug** to verify weapon damage, projectile behavior, explosion effects
-- **CE tools** to test loot distribution, spawn points, dynamic events
+- **CE tools** to test loot distribution, apparition points, dynamic events
 - **AI debug** to verify infected/animal behavior responds correctly to player presence
 - **Weather debug** to test your mod under different weather conditions
 
@@ -878,7 +882,7 @@ While every option has its use, these are the ones modders reach for most freque
 
 ---
 
-## Erreurs Courantes
+## Erreurs courantes
 
 **Using retail executable.** The Diag Menu is only available in `DayZDiag_x64.exe`. If you press Win+Alt and nothing happens, you are running the retail build.
 
@@ -901,7 +905,7 @@ While every option has its use, these are the ones modders reach for most freque
 
 ---
 
-## Prochaines Etapes
+## Prochaines étapes
 
 - **Chapter 8.6: [Debugging & Testing](06-debugging-testing.md)** -- Script logs, Print debugging, file patching, and Workbench
 - **Chapter 8.7: [Publishing to Workshop](07-publishing-workshop.md)** -- Package and publish your tested mod

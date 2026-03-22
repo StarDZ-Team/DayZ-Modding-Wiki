@@ -1,15 +1,19 @@
-# Chapter 1.9: Casting & Reflection
+# Chapitre 1.9: Casting & Reflection
 
-[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
+[Accueil](../../README.md) | [<< Précédent : Memory Management](08-memory-management.md) | **Casting & Reflection** | [Suivant : Enums & Preprocessor >>](10-enums-preprocessor.md)
 
 ---
 
-## Table des matieres
+> **Objectif :** Master safe type casting, runtime type checks, and Enforce Script's reflection API for dynamic property access.
+
+---
+
+## Table des matières
 
 - [Why Casting Matters](#why-casting-matters)
 - [Class.CastTo — Safe Downcasting](#classcastto--safe-downcasting)
 - [Type.Cast — Alternative Casting](#typecast--alternative-casting)
-- [CastTo vs Type.Cast — When to Use Which](#castto-vs-typecast--when-to-use-which)
+- [CastTo vs Type.Cast — Quand utiliser Which](#castto-vs-typecast--when-to-use-which)
 - [obj.IsInherited — Runtime Type Checking](#obisinherited--runtime-type-checking)
 - [obj.IsKindOf — String-Based Type Checking](#obiskindof--string-based-type-checking)
 - [obj.Type — Get Runtime Type](#objtype--get-runtime-type)
@@ -28,7 +32,7 @@
 
 ---
 
-## Why Casting Matters
+## Pourquoi le transtypage est important
 
 DayZ's entity hierarchy is deep. Most engine APIs return a generic base type (`Object`, `Man`, `Class`), but you need a specific type (`PlayerBase`, `ItemBase`, `CarScript`) to access specialized methods. Casting converts a base reference into a derived reference — safely.
 
@@ -45,7 +49,7 @@ Class (root)
                       └─ DayZPlayer → PlayerBase
 ```
 
-Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error because Enforce Script resolves virtual calls at runtime.
+Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error because Enforce Script resolves virtual calls à l'exécution.
 
 ---
 
@@ -54,7 +58,7 @@ Calling a method that doesn't exist on the base type causes a **runtime crash** 
 `Class.CastTo` is the **preferred** casting method in DayZ. It is a static method that writes the result to an `out` parameter and returns `bool`.
 
 ```c
-// Signature:
+// Signature :
 // static bool Class.CastTo(out Class target, Class source)
 
 Object obj = GetSomeObject();
@@ -62,18 +66,18 @@ PlayerBase player;
 
 if (Class.CastTo(player, obj))
 {
-    // Cast succeeded — player is valid
+    // Transtypage réussi — player is valid
     string name = player.GetIdentity().GetName();
     Print("Found player: " + name);
 }
 else
 {
-    // Cast failed — obj is not a PlayerBase
+    // Transtypage échoué — obj is not a PlayerBase
     // player is null here
 }
 ```
 
-**Why preferred:**
+**Pourquoi préféré :**
 - Returns `false` on failure instead of crashing
 - The `out` parameter is set to `null` on failure — safe to check
 - Works across the entire class hierarchy (not just `Object`)
@@ -91,9 +95,9 @@ foreach (Object obj : nearObjects)
 {
     EntityAI entity;
     if (!Class.CastTo(entity, obj))
-        continue;  // Skip non-EntityAI objects (buildings, terrain, etc.)
+        continue;  // Passer les non-EntityAI objects (buildings, terrain, etc.)
 
-    // Now safe to call EntityAI methods
+    // Maintenant sûr d'appeler EntityAI methods
     if (entity.IsAlive())
     {
         Print(entity.GetType() + " is alive at " + entity.GetPosition().ToString());
@@ -142,17 +146,17 @@ override void OnEvent(EventType eventTypeId, Param params)
 
 ---
 
-## CastTo vs Type.Cast — When to Use Which
+## CastTo vs Type.Cast — Quand utiliser Which
 
 | Feature | `Class.CastTo` | `Type.Cast` |
 |---------|----------------|-------------|
 | Return type | `bool` | Target type or `null` |
-| Null on failure | Yes (out param set to null) | Yes (returns null) |
+| Null on failure | Yes (out param set to null) | Yes (retourne null) |
 | Best for | if-blocks with branching logic | One-liner assignments |
 | Used in DayZ vanilla | Everywhere | Everywhere |
 | Works with non-Object | Yes (any `Class`) | Yes (any `Class`) |
 
-**Regle generale :** Use `Class.CastTo` when you branch on success/failure. Use `Type.Cast` when you just need the typed reference and will null-check later.
+**Règle générale :** Use `Class.CastTo` when you branch on success/failure. Use `Type.Cast` when you just need the typed reference and will null-check later.
 
 ```c
 // CastTo — branch on result
@@ -214,7 +218,7 @@ if (obj.IsKindOf("DayZAnimal"))
 }
 ```
 
-**Important :** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
+**Important:** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
 
 ### IsInherited vs IsKindOf
 
@@ -222,7 +226,7 @@ if (obj.IsKindOf("DayZAnimal"))
 |---------|------------------------|---------------------|
 | Argument | Compile-time type | String name |
 | Speed | Faster (type comparison) | Slower (string lookup) |
-| Use when | You know the type at compile time | Type comes from data/config |
+| Use when | You know the type à la compilation | Type comes from data/config |
 
 ---
 
@@ -289,7 +293,7 @@ foreach (typename t : allowedTypes)
 
 ### Creating Instances from typename
 
-You can create objects from a `typename` at runtime:
+You can create objects from a `typename` à l'exécution:
 
 ```c
 typename t = PlayerBase;
@@ -299,13 +303,13 @@ Class instance = t.Spawn();  // Creates a new instance
 Class instance2 = GetGame().CreateObjectEx("AK101", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-> **Remarque :** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
+> **Note :** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
 
 ---
 
-## Reflection API
+## API de réflexion
 
-Enforce Script provides basic reflection — the ability to inspect and modify an object's properties at runtime without knowing its type at compile time.
+Enforce Script provides basic reflection — the ability to inspect and modify an object's properties à l'exécution without knowing its type à la compilation.
 
 ### Inspecting Variables
 
@@ -331,7 +335,7 @@ void InspectObject(Class obj)
 
 **Available reflection methods on `typename`:**
 
-| Method | Returns | Description |
+| Méthode | Retourne | Description |
 |--------|---------|-------------|
 | `GetVariableCount()` | `int` | Number of member variables |
 | `GetVariableName(int index)` | `string` | Variable name at index |
@@ -340,10 +344,10 @@ void InspectObject(Class obj)
 
 ### EnScript.GetClassVar / SetClassVar
 
-`EnScript.GetClassVar` and `EnScript.SetClassVar` let you read/write member variables by **name** at runtime. This is Enforce Script's equivalent of dynamic property access.
+`EnScript.GetClassVar` and `EnScript.SetClassVar` let you read/write member variables by **name** à l'exécution. This is Enforce Script's equivalent of dynamic property access.
 
 ```c
-// Signature:
+// Signature :
 // static void EnScript.GetClassVar(Class instance, string varName, int index, out T value)
 // static bool EnScript.SetClassVar(Class instance, string varName, int index, T value)
 // 'index' is the array element index — use 0 for non-array fields.
@@ -437,7 +441,7 @@ static bool IsObjectAlive(Object obj)
 
 ### Reflection-Based Config System
 
-This pattern (used in MyFramework) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
+This pattern (used in MyMod Core) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
 
 ```c
 class ConfigBase
@@ -532,14 +536,47 @@ class EventDispatcher
 
 ---
 
+## Bonnes pratiques
+
+- Always null-check after every cast -- both `Class.CastTo` and `Type.Cast` return null on failure, and using the result unchecked causes crashes.
+- Use `Class.CastTo` when you need to branch on success/failure; use `Type.Cast` for concise one-liner assignments followed by a null check.
+- Prefer `IsInherited(typename)` over `IsKindOf(string)` when the type is known à la compilation -- it is faster and catches typos à la compilation.
+- Cast to `EntityAI` before calling `IsAlive()` -- the base `Object` class does not have this method.
+- Validate variable names with `GetVariableCount`/`GetVariableName` before using `EnScript.GetClassVar` -- it fails silently on wrong names.
+
+---
+
+## Observé dans les mods réels
+
+> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+
+| Patron | Mod | Détail |
+|---------|-----|--------|
+| `Class.CastTo` + `continue` in entity loops | COT / Expansion | Every loop over `Object` arrays uses cast-and-continue to skip non-matching types |
+| `IsKindOf` for config-driven type checks | Expansion Market | Item categories loaded from JSON use string-based `IsKindOf` because types are data |
+| `EnScript.GetClassVar`/`SetClassVar` for admin panels | Dabs Framework | Generic config editors read/write fields by name so one UI works for all config classes |
+| `obj.Type().ToString()` for logging | VPP Admin | Debug logs always include `entity.Type().ToString()` to identify what was processed |
+
+---
+
+## Théorie vs Pratique
+
+| Concept | Théorie | Réalité |
+|---------|--------|---------|
+| `Object.IsAlive()` | Expect it to exist on `Object` | Only available on `EntityAI` and subclasses -- calling it on `Object` crashes |
+| `EnScript.SetClassVar` returns `bool` | Should indicate success/failure | Returns `false` silently on wrong field name with no error message -- easy to miss |
+| `typename.Spawn()` | Creates any class instance | Only works for classes with a parameterless constructor; for game entities use `CreateObject` |
+
+---
+
 ## Erreurs courantes
 
 ### 1. Forgetting to null-check after cast
 
 ```c
-// WRONG — crashes if obj is not a PlayerBase
+// INCORRECT — crashes if obj is not a PlayerBase
 PlayerBase player = PlayerBase.Cast(obj);
-player.GetIdentity();  // CRASH if cast failed!
+player.GetIdentity();  // PLANTAGE if cast failed!
 
 // CORRECT
 PlayerBase player = PlayerBase.Cast(obj);
@@ -552,7 +589,7 @@ if (player)
 ### 2. Calling IsAlive() on base Object
 
 ```c
-// WRONG — Object.IsAlive() does not exist
+// INCORRECT — Object.IsAlive() does not exist
 Object obj = GetSomeObject();
 if (obj.IsAlive())  // Compile error or runtime crash!
 
@@ -567,7 +604,7 @@ if (Class.CastTo(eai, obj) && eai.IsAlive())
 ### 3. Using reflection with wrong variable name
 
 ```c
-// SILENT FAILURE — no error, just returns zero/empty
+// ÉCHEC SILENCIEUX — no error, just returns zero/empty
 int val;
 EnScript.GetClassVar(obj, "NonExistentField", 0, val);
 // val is 0, no error thrown
@@ -590,9 +627,9 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 ---
 
-## Resume
+## Résumé
 
-| Operation | Syntax | Returns |
+| Opération | Syntaxe | Retourne |
 |-----------|--------|---------|
 | Safe downcast | `Class.CastTo(out target, source)` | `bool` |
 | Inline cast | `TargetType.Cast(source)` | Target or `null` |
@@ -611,4 +648,4 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 | Previous | Up | Next |
 |----------|----|------|
-| [1.8 Gestion de la memoire](08-memory-management.md) | [Part 1: Enforce Script](../README.md) | [1.10 Enums et preprocesseur](10-enums-preprocessor.md) |
+| [1.8 Memory Management](08-memory-management.md) | [Part 1: Enforce Script](../README.md) | [1.10 Enums & Preprocessor](10-enums-preprocessor.md) |

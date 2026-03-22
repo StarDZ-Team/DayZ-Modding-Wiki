@@ -1,30 +1,30 @@
-# Chapter 6.3: Weather System
+# 第6.3章: 天候システム
 
-[Home](../../README.md) | [<< Previous: Vehicles](02-vehicles.md) | **Weather** | [Next: Cameras >>](04-cameras.md)
+[ホーム](../../README.md) | [<< 前へ: 車両](02-vehicles.md) | **天候** | [次へ: カメラ >>](04-cameras.md)
 
 ---
 
 ## はじめに
 
-DayZ has a fully dynamic weather system controlled through the `Weather` class. The system manages overcast, rain, snowfall, fog, wind, and thunderstorms. Weather can be configured through script (the Weather API), through `cfgweather.xml` in the mission folder, or through a scripted weather state machine. This chapter covers the script API for reading and controlling weather programmatically.
+DayZ には `Weather` クラスを通じて制御される完全に動的な天候システムがあります。このシステムは曇り、雨、降雪、霧、風、雷雨を管理します。天候はスクリプト（Weather API）、ミッションフォルダの `cfgweather.xml`、またはスクリプト化された天候ステートマシンを通じて設定できます。この章では、天候をプログラムで読み取りおよび制御するためのスクリプト API を解説します。
 
 ---
 
-## Accessing the Weather Object
+## Weather オブジェクトへのアクセス
 
 ```c
 Weather weather = GetGame().GetWeather();
 ```
 
-The `Weather` object is a singleton managed by the engine. It is always available after the game world initializes.
+`Weather` オブジェクトはエンジンによって管理されるシングルトンです。ゲームワールドの初期化後は常に利用可能です。
 
 ---
 
-## Weather Phenomena
+## 気象現象
 
-Each weather phenomenon (overcast, fog, rain, snowfall, wind magnitude, wind direction) is represented by a `WeatherPhenomenon` object. You access them through getter methods on `Weather`.
+各気象現象（曇り、霧、雨、降雪、風速、風向）は `WeatherPhenomenon` オブジェクトで表現されます。`Weather` のゲッターメソッドを通じてアクセスします。
 
-### Getting Phenomenon Objects
+### 現象オブジェクトの取得
 
 ```c
 proto native WeatherPhenomenon GetOvercast();
@@ -37,36 +37,36 @@ proto native WeatherPhenomenon GetWindDirection();
 
 ### WeatherPhenomenon API
 
-Each phenomenon shares the same interface:
+各現象は同じインターフェースを共有しています。
 
 ```c
 class WeatherPhenomenon
 {
-    // Current state
-    proto native float GetActual();          // Current interpolated value (0.0 - 1.0 for most)
-    proto native float GetForecast();        // Target value being interpolated toward
-    proto native float GetDuration();        // How long the current forecast persists (seconds)
+    // 現在の状態
+    proto native float GetActual();          // 現在の補間値（ほとんどの場合 0.0 - 1.0）
+    proto native float GetForecast();        // 補間先の目標値
+    proto native float GetDuration();        // 現在の予報が持続する時間（秒）
 
-    // Set the forecast (server only)
+    // 予報の設定（サーバーのみ）
     proto native void Set(float forecast, float time = 0, float minDuration = 0);
-    // forecast: target value
-    // time:     seconds to interpolate to that value (0 = instant)
-    // minDuration: minimum time the value holds before auto-change
+    // forecast: 目標値
+    // time:     その値への補間にかかる秒数（0 = 即時）
+    // minDuration: 自動変更前に値が保持される最小時間
 
-    // Limits
+    // 制限
     proto native void  SetLimits(float fnMin, float fnMax);
     proto native float GetMin();
     proto native float GetMax();
 
-    // Change speed limits (how fast the phenomenon can change)
+    // 変化速度の制限（現象の変化速度の上限）
     proto native void SetTimeLimits(float fnMin, float fnMax);
 
-    // Change magnitude limits
+    // 変化量の制限
     proto native void SetChangeLimits(float fnMin, float fnMax);
 }
 ```
 
-**Example --- read current weather state:**
+**例 --- 現在の天候状態を読み取る:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -80,37 +80,37 @@ float windDir   = w.GetWindDirection().GetActual();
 Print(string.Format("Overcast: %1, Rain: %2, Fog: %3", overcast, rain, fog));
 ```
 
-**Example --- force clear weather (server):**
+**例 --- 快晴の天候を強制する（サーバー）:**
 
 ```c
 void ForceClearWeather()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(0.0, 30, 600);    // Clear sky, 30s transition, hold 10 min
-    w.GetRain().Set(0.0, 10, 600);        // No rain
-    w.GetFog().Set(0.0, 30, 600);         // No fog
-    w.GetSnowfall().Set(0.0, 10, 600);    // No snow
+    w.GetOvercast().Set(0.0, 30, 600);    // 快晴、30秒で遷移、10分間保持
+    w.GetRain().Set(0.0, 10, 600);        // 雨なし
+    w.GetFog().Set(0.0, 30, 600);         // 霧なし
+    w.GetSnowfall().Set(0.0, 10, 600);    // 雪なし
 }
 ```
 
-**Example --- create a storm:**
+**例 --- 嵐を作成する:**
 
 ```c
 void ForceStorm()
 {
     Weather w = GetGame().GetWeather();
-    w.GetOvercast().Set(1.0, 60, 1800);   // Full overcast, 60s ramp, hold 30 min
-    w.GetRain().Set(0.8, 120, 1800);      // Heavy rain
-    w.GetFog().Set(0.3, 120, 1800);       // Light fog
-    w.GetWindMagnitude().Set(15.0, 60, 1800);  // Strong wind (m/s)
+    w.GetOvercast().Set(1.0, 60, 1800);   // 完全な曇り、60秒で上昇、30分間保持
+    w.GetRain().Set(0.8, 120, 1800);      // 大雨
+    w.GetFog().Set(0.3, 120, 1800);       // 薄い霧
+    w.GetWindMagnitude().Set(15.0, 60, 1800);  // 強風（m/s）
 }
 ```
 
 ---
 
-## Rain Thresholds
+## 雨のしきい値
 
-Rain is tied to overcast levels. The engine only renders rain when overcast exceeds a threshold. You can configure this via `cfgweather.xml`:
+雨は曇りレベルに結びついています。エンジンは曇りがしきい値を超えた場合にのみ雨をレンダリングします。これは `cfgweather.xml` で設定できます。
 
 ```xml
 <rain>
@@ -118,25 +118,25 @@ Rain is tied to overcast levels. The engine only renders rain when overcast exce
 </rain>
 ```
 
-- `min` / `max`: overcast range where rain is allowed
-- `end`: seconds for rain to stop if overcast falls below threshold
+- `min` / `max`: 雨が許可される曇りの範囲
+- `end`: 曇りがしきい値を下回った場合に雨が止むまでの秒数
 
-In script, rain will not visually appear if overcast is too low, even if `GetRain().GetActual()` returns a non-zero value.
+スクリプトでは、曇りが低すぎる場合、`GetRain().GetActual()` がゼロ以外の値を返しても雨は視覚的に表示されません。
 
 ---
 
-## Wind
+## 風
 
-Wind uses two phenomena: magnitude (speed in m/s) and direction (angle in radians).
+風には2つの現象があります: 風速（m/s での速度）と風向（ラジアンでの角度）。
 
-### Wind Vector
+### 風ベクトル
 
 ```c
-proto native vector GetWind();           // Wind direction vector (world space)
-proto native float  GetWindSpeed();      // Wind speed in m/s
+proto native vector GetWind();           // 風向ベクトル（ワールド空間）
+proto native float  GetWindSpeed();      // 風速（m/s）
 ```
 
-**Example --- get wind info:**
+**例 --- 風の情報を取得する:**
 
 ```c
 Weather w = GetGame().GetWeather();
@@ -147,46 +147,46 @@ Print(string.Format("Wind: %1 m/s, direction: %2", windSpd, windVec));
 
 ---
 
-## Thunderstorms (Lightning)
+## 雷雨（落雷）
 
 ```c
 proto native void SetStorm(float density, float threshold, float timeout);
 ```
 
-| Parameter | Description |
+| パラメータ | 説明 |
 |-----------|-------------|
-| `density` | Lightning density (0.0 - 1.0) |
-| `threshold` | Minimum overcast level for lightning to appear (0.0 - 1.0) |
-| `timeout` | Seconds between lightning strikes |
+| `density` | 落雷密度（0.0 - 1.0） |
+| `threshold` | 落雷が発生するための最小曇りレベル（0.0 - 1.0） |
+| `timeout` | 落雷間隔の秒数 |
 
-**Example --- enable frequent lightning:**
+**例 --- 頻繁な落雷を有効にする:**
 
 ```c
 GetGame().GetWeather().SetStorm(1.0, 0.6, 10);
-// Full density, triggers at 60% overcast, strikes every 10 seconds
+// 最大密度、60%の曇りでトリガー、10秒ごとに落雷
 ```
 
 ---
 
-## MissionWeather Control
+## MissionWeather コントロール
 
-To take manual control of weather (disabling the automatic weather state machine), call:
+天候の手動制御（自動天候ステートマシンを無効化）を行うには、以下を呼び出します。
 
 ```c
 proto native void MissionWeather(bool use);
 ```
 
-When `MissionWeather(true)` is called, the engine stops the automatic weather transitions and only your script-driven `Set()` calls control the weather.
+`MissionWeather(true)` を呼び出すと、エンジンは自動天候遷移を停止し、スクリプト駆動の `Set()` 呼び出しのみが天候を制御します。
 
-**Example --- full manual control in init.c:**
+**例 --- init.c での完全な手動制御:**
 
 ```c
 void main()
 {
-    // Take manual control of weather
+    // 天候の手動制御を取得
     GetGame().GetWeather().MissionWeather(true);
 
-    // Set desired weather
+    // 希望する天候を設定
     GetGame().GetWeather().GetOvercast().Set(0.3, 0, 0);
     GetGame().GetWeather().GetRain().Set(0.0, 0, 0);
     GetGame().GetWeather().GetFog().Set(0.1, 0, 0);
@@ -195,24 +195,24 @@ void main()
 
 ---
 
-## Date & Time
+## 日付と時刻
 
-The game date and time affect lighting, sun position, and the day/night cycle. These are controlled through the `World` object, not `Weather`, but they are closely related.
+ゲームの日付と時刻はライティング、太陽の位置、昼夜サイクルに影響します。これらは `Weather` ではなく `World` オブジェクトを通じて制御されますが、密接に関連しています。
 
-### Getting Current Date/Time
+### 現在の日付/時刻の取得
 
 ```c
 int year, month, day, hour, minute;
 GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 ```
 
-### Setting Date/Time (Server Only)
+### 日付/時刻の設定（サーバーのみ）
 
 ```c
 proto native void SetDate(int year, int month, int day, int hour, int minute);
 ```
 
-**Example --- set time to noon:**
+**例 --- 時刻を正午に設定する:**
 
 ```c
 int year, month, day, hour, minute;
@@ -220,22 +220,22 @@ GetGame().GetWorld().GetDate(year, month, day, hour, minute);
 GetGame().GetWorld().SetDate(year, month, day, 12, 0);
 ```
 
-### Time Acceleration
+### 時間加速
 
-Time acceleration is configured in `serverDZ.cfg` via:
+時間加速は `serverDZ.cfg` で以下のように設定します。
 
 ```
-serverTimeAcceleration = 12;      // 12x real time
-serverNightTimeAcceleration = 4;  // 4x acceleration during night
+serverTimeAcceleration = 12;      // 実時間の12倍
+serverNightTimeAcceleration = 4;  // 夜間は4倍加速
 ```
 
-In script, you can read the current time multiplier but typically cannot change it at runtime.
+スクリプトでは現在の時間倍率を読み取ることはできますが、通常ランタイムでは変更できません。
 
 ---
 
-## WorldData Weather State Machine
+## WorldData 天候ステートマシン
 
-Vanilla DayZ uses a scripted weather state machine in `WorldData` classes (e.g., `ChernarusPlusData`, `EnochData`, `SakhalData`). The key override point is:
+バニラの DayZ は `WorldData` クラス（例: `ChernarusPlusData`, `EnochData`, `SakhalData`）でスクリプト化された天候ステートマシンを使用します。主要なオーバーライドポイントは以下の通りです。
 
 ```c
 class WorldData
@@ -245,7 +245,7 @@ class WorldData
 }
 ```
 
-Override this method in a `modded` WorldData class to intercept and modify weather transitions:
+`modded` WorldData クラスでこのメソッドをオーバーライドして、天候遷移をインターセプトおよび変更します。
 
 ```c
 modded class ChernarusPlusData
@@ -255,7 +255,7 @@ modded class ChernarusPlusData
     {
         super.WeatherOnBeforeChange(type, actual, change, time);
 
-        // Prevent rain from ever going above 0.5
+        // 雨が0.5を超えるのを防ぐ
         if (type == EWeatherPhenomenon.RAIN && change > 0.5)
         {
             GetGame().GetWeather().GetRain().Set(0.5, time, 300);
@@ -268,9 +268,9 @@ modded class ChernarusPlusData
 
 ## cfgweather.xml
 
-The `cfgweather.xml` file in the mission folder provides a declarative way to configure weather without scripting. When present, it overrides the default weather state machine parameters.
+ミッションフォルダの `cfgweather.xml` ファイルは、スクリプトなしで天候を設定する宣言的な方法を提供します。存在する場合、デフォルトの天候ステートマシンパラメータをオーバーライドします。
 
-Key structure:
+主要な構造:
 
 ```xml
 <weather reset="0" enable="1">
@@ -292,16 +292,16 @@ Key structure:
 </weather>
 ```
 
-| Attribute | Description |
+| 属性 | 説明 |
 |-----------|-------------|
-| `reset` | Whether to reset weather from storage on server start |
-| `enable` | Whether this file is active |
-| `actual` | Initial value |
-| `time` | Seconds to reach the initial value |
-| `duration` | Seconds the initial value holds |
-| `limits min/max` | Range for the phenomenon value |
-| `timelimits min/max` | Range for transition duration (seconds) |
-| `changelimits min/max` | Range for change magnitude per transition |
+| `reset` | サーバー起動時にストレージから天候をリセットするかどうか |
+| `enable` | このファイルがアクティブかどうか |
+| `actual` | 初期値 |
+| `time` | 初期値に到達するまでの秒数 |
+| `duration` | 初期値が保持される秒数 |
+| `limits min/max` | 現象値の範囲 |
+| `timelimits min/max` | 遷移時間の範囲（秒） |
+| `changelimits min/max` | 遷移ごとの変化量の範囲 |
 
 ---
 
@@ -309,15 +309,49 @@ Key structure:
 
 | 概念 | 要点 |
 |---------|-----------|
-| Access | `GetGame().GetWeather()` returns the `Weather` singleton |
-| Phenomena | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
-| Read | `phenomenon.GetActual()` for current value (0.0 - 1.0) |
-| Write | `phenomenon.Set(forecast, transitionTime, holdDuration)` (server only) |
-| Storms | `SetStorm(density, threshold, timeout)` |
-| Manual mode | `MissionWeather(true)` disables automatic weather changes |
-| Date/Time | `GetGame().GetWorld().GetDate()` / `SetDate()` |
-| Config file | `cfgweather.xml` in mission folder for declarative setup |
+| アクセス | `GetGame().GetWeather()` が `Weather` シングルトンを返す |
+| 現象 | `GetOvercast()`, `GetRain()`, `GetFog()`, `GetSnowfall()`, `GetWindMagnitude()`, `GetWindDirection()` |
+| 読み取り | `phenomenon.GetActual()` で現在値を取得（0.0 - 1.0） |
+| 書き込み | `phenomenon.Set(forecast, transitionTime, holdDuration)` （サーバーのみ） |
+| 嵐 | `SetStorm(density, threshold, timeout)` |
+| 手動モード | `MissionWeather(true)` が自動天候変更を無効化 |
+| 日付/時刻 | `GetGame().GetWorld().GetDate()` / `SetDate()` |
+| 設定ファイル | ミッションフォルダの `cfgweather.xml` で宣言的に設定 |
 
 ---
 
-[<< 前： Vehicles](02-vehicles.md) | **Weather** | [次： Cameras >>](04-cameras.md)
+## ベストプラクティス
+
+- **`init.c` で天候を設定する前に `MissionWeather(true)` を呼び出してください。** これがないと、自動天候ステートマシンが数秒以内に `Set()` 呼び出しをオーバーライドします。決定論的な天候が必要な場合は、まず手動制御を取得してください。
+- **`Set()` では必ず `minDuration` パラメータを指定してください。** `minDuration` を 0 に設定すると、天候システムがすぐに値から遷移する可能性があります。希望する状態を保持するために少なくとも 300-600 秒を使用してください。
+- **雨の前に曇りを設定してください。** 雨は曇りのしきい値に視覚的に結びついています。曇りが `cfgweather.xml` で設定されたしきい値未満の場合、`GetRain().GetActual()` がゼロ以外の値を返しても雨はレンダリングされません。
+- **サーバー全体の天候ポリシーには `WeatherOnBeforeChange()` を使用してください。** `modded class ChernarusPlusData`（または適切な WorldData サブクラス）でこれをオーバーライドして、ステートマシンと闘わずに天候遷移をクランプまたはリダイレクトします。
+- **両側で天候を読み取り、サーバーでのみ書き込んでください。** `GetActual()` と `GetForecast()` はクライアントとサーバーで動作しますが、`Set()` はサーバーでのみ効果があります。
+
+---
+
+## 互換性と影響
+
+> **Mod 互換性:** 天候 Mod は一般的に WorldData サブクラスの `WeatherOnBeforeChange()` をオーバーライドします。マップの WorldData クラスごとに1つの Mod のオーバーライドチェーンのみが実行されます。
+
+- **ロード順序:** 同じ WorldData サブクラス（例: `ChernarusPlusData`）で `WeatherOnBeforeChange` をオーバーライドする複数の Mod はすべて `super` を呼び出す必要があります。そうでないと、先にロードされた Mod の天候ロジックが失われます。
+- **Modded クラスの衝突:** ある Mod が `MissionWeather(true)` を呼び出し、別の Mod が自動天候を期待している場合、根本的に互換性がありません。Mod が手動天候制御を取得するかどうかを文書化してください。
+- **パフォーマンスへの影響:** Weather API の呼び出しは軽量です。現象の補間はスクリプトではなくエンジンで実行されます。頻繁な `Set()` 呼び出し（毎フレーム）は無駄ですが有害ではありません。
+- **サーバー/クライアント:** すべての `Set()` 呼び出しはサーバー専用です。クライアントはエンジンの同期を通じて自動的に天候状態を受信します。クライアントサイドの `Set()` 呼び出しは無視されます。
+
+---
+
+## 実際の Mod で確認されたパターン
+
+> これらのパターンは、プロフェッショナルな DayZ Mod のソースコードを研究して確認されました。
+
+| パターン | Mod | ファイル/場所 |
+|---------|-----|---------------|
+| `MissionWeather(true)` + `CallLater` によるスクリプト天候サイクル | Expansion | ミッション初期化の天候コントローラー |
+| 特定エリアの雨を防ぐ `WeatherOnBeforeChange` オーバーライド | COT Weather Module | Modded `ChernarusPlusData` |
+| 長い保持時間で `Set()` を使用した快晴/嵐の管理コマンド | VPP Admin Tools | 天候管理パネル |
+| 雪専用マップ向けカスタムしきい値の `cfgweather.xml` | Namalsk | ミッションフォルダの設定 |
+
+---
+
+[<< 前へ: 車両](02-vehicles.md) | **天候** | [次へ: カメラ >>](04-cameras.md)

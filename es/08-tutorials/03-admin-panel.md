@@ -1,6 +1,10 @@
-# Chapter 8.3: Building an Admin Panel Module
+# Capítulo 8.3: Building an Admin Panel Module
 
-[Home](../../README.md) | [<< Previous: Creating a Custom Item](02-custom-item.md) | **Building an Admin Panel** | [Next: Adding Chat Commands >>](04-chat-commands.md)
+[Inicio](../../README.md) | [<< Anterior: Creating a Custom Item](02-custom-item.md) | **Building an Admin Panel** | [Siguiente: Adding Chat Commands >>](04-chat-commands.md)
+
+---
+
+> **Resumen:** This tutorial walks you through building a complete admin panel module from scratch. You will create a UI layout, bind widgets in script, handle button clicks, send an RPC from client to server, process the request on the server, send a response back, and display the result in the UI. This covers the full client-server-client roundtrip that every networked mod needs.
 
 ---
 
@@ -37,7 +41,7 @@ This demonstrates the fundamental pattern used by every networked admin tool, mo
 
 ---
 
-## Prerequisites
+## Requisitos Previos
 
 - A working mod from [Chapter 8.1](01-first-mod.md) or a new mod with the standard structure
 - Understanding of the [5-Layer Script Hierarchy](../02-mod-structure/01-five-layers.md) (we will use `3_Game`, `4_World`, and `5_Mission`)
@@ -69,7 +73,7 @@ AdminDemo/
 
 ---
 
-## Architecture Vision General
+## Descripción General de la Arquitectura
 
 Before writing code, understand the data flow:
 
@@ -213,7 +217,7 @@ FrameWidgetClass AdminDemoPanel {
 
 ### Layout Breakdown
 
-| Widget | Proposito |
+| Widget | Propósito |
 |--------|---------|
 | `AdminDemoPanel` | Root frame, 40% wide and 50% tall, centered on screen |
 | `Background` | Dark semi-transparent background filling the entire panel |
@@ -463,7 +467,7 @@ if (player)
 
 **`GetGame().RPCSingleParam(target, rpcID, params, guaranteed)`:**
 
-| Parameter | Significado |
+| Parámetro | Meaning |
 |-----------|---------|
 | `target` | The object this RPC is associated with. Using the player is standard. |
 | `rpcID` | Your unique integer identifier (defined in `AdminDemoRPC`). |
@@ -474,7 +478,7 @@ if (player)
 
 DayZ provides template `Param` classes for sending data:
 
-| Class | Usage |
+| Clase | Usage |
 |-------|-------|
 | `Param1<T>` | One value |
 | `Param2<T1, T2>` | Two values |
@@ -797,7 +801,7 @@ class CfgMods
 
 ### Why Three Layers?
 
-| Capa | Contains | Razon |
+| Capa | Contains | Reason |
 |-------|----------|--------|
 | `3_Game` | `AdminDemoRPC.c` | RPC ID constants need to be visible to both `4_World` and `5_Mission` |
 | `4_World` | `AdminDemoServer.c` | Server-side handler modding `PlayerBase` (a world entity) |
@@ -1160,7 +1164,7 @@ Total time: typically under 100ms on a local network.
 
 ---
 
-## Solucion de Problemas
+## Solución de Problemas
 
 ### Panel Does Not Open When Pressing F5
 
@@ -1194,15 +1198,49 @@ Total time: typically under 100ms on a local network.
 
 ---
 
-## Siguientes Pasos
+## Next Steps
 
 1. **[Chapter 8.4: Adding Chat Commands](04-chat-commands.md)** -- Create server-side chat commands for admin operations.
 2. **Add permissions** -- Check if the requesting player is an admin before processing RPCs.
 3. **Add more features** -- Extend the panel with tabs for weather control, player teleport, item spawning.
-4. **Use a framework** -- Frameworks like MyFramework provide built-in RPC routing, config management, and admin panel infrastructure that eliminates much of this boilerplate.
+4. **Use a framework** -- Frameworks like MyMod Core provide built-in RPC routing, config management, and admin panel infrastructure that eliminates much of this boilerplate.
 5. **Style the UI** -- Learn about widget styles, imagesets, and fonts in [Chapter 3: GUI System](../03-gui-system/01-widget-types.md).
 
 ---
 
-**Previous:** [Chapter 8.2: Creating a Custom Item](02-custom-item.md)
-**Next:** [Chapter 8.4: Adding Chat Commands](04-chat-commands.md)
+## Mejores Prácticas
+
+- **Validate all RPC data on the server before executing.** Never trust data from the client -- always check permissions, validate parameters, and guard against null values before performing any server action.
+- **Cache widget references in member variables instead of calling `FindAnyWidget` every frame.** Widget lookup is not free; calling it in `OnUpdate` or `OnClick` repeatedly wastes performance.
+- **Always call `SetHandler(this)` on interactive widgets.** Without it, `OnClick()` will never fire, and there is no error message -- buttons just silently do nothing.
+- **Use high, unique RPC ID numbers.** Vanilla DayZ uses low IDs. Other mods pick common ranges. Use numbers above 70000 and add your mod prefix to comments so collisions are traceable.
+- **Clean up widgets in `OnMissionFinish`.** Leaked widget roots stack up across server hops, consuming memory and causing ghost UI elements.
+
+---
+
+## Teoría vs Práctica
+
+| Concepto | Teoría | Realidad |
+|---------|--------|---------|
+| `RPCSingleParam` delivery | Setting `guaranteed=true` means the RPC always arrives | RPCs can still be lost if the player disconnects mid-flight or the server crashes. Always handle the "no response" case in your UI (e.g., a timeout message). |
+| `OnClick` widget matching | Compare `w == m_Button` to identify clicks | If `FindAnyWidget` returned NULL (typo in widget name), `m_Button` is NULL and the comparison silently fails. Always log a warning if widget binding fails in `Open()`. |
+| Param type matching | Client and server use the same `Param2<int, string>` | If the types or order do not match exactly, `ctx.Read()` returns false and the data is silently lost. There is no type-checking error message at runtime. |
+| Listen server testing | Good enough for quick iteration | Listen servers run client and server in one process, so RPCs arrive instantly and never cross the network. Timing bugs, packet loss, and authority issues only appear on a real dedicated server. |
+
+---
+
+## What You Learned
+
+In this tutorial you learned:
+- How to create a UI panel with layout files and bind widgets in script
+- How to handle button clicks with `OnClick()` and `SetHandler()`
+- How to send RPCs from client to server and back using `RPCSingleParam` and `Param` classes
+- The full client-server-client roundtrip pattern used by every networked admin tool
+- How to register the panel in `MissionGameplay` with proper lifecycle management
+
+**Siguiente:** [Chapter 8.4: Adding Chat Commands](04-chat-commands.md)
+
+---
+
+**Anterior:** [Chapter 8.2: Creating a Custom Item](02-custom-item.md)
+**Siguiente:** [Chapter 8.4: Adding Chat Commands](04-chat-commands.md)

@@ -1,14 +1,14 @@
-# Chapter 7.7: Performance Optimization
+# Capítulo 7.7: Optimización del Rendimiento
 
-[Home](../../README.md) | [<< Previous: Event-Driven Architecture](06-events.md) | **Performance Optimization**
+[Inicio](../../README.md) | [<< Anterior: Event-Driven Architecture](06-events.md) | **Performance Optimization**
 
 ---
 
-## Introduccion
+## Introducción
 
 DayZ runs at 10--60 server FPS depending on player count, entity load, and mod complexity. Every script cycle that takes too long eats into that frame budget. A single poorly-written `OnUpdate` that scans every vehicle on the map or rebuilds a UI list from scratch can drop server performance noticeably. Professional mods earn their reputation by running fast --- not by having more features, but by implementing the same features with less waste.
 
-This chapter covers the battle-tested optimization patterns used by COT, VPP, Expansion, Dabs Framework, and MyMod. These are not premature optimizations --- they are standard engineering practices that every DayZ modder should know from the start.
+This chapter covers the battle-tested optimization patterns used by COT, VPP, Expansion, and Dabs Framework. These are not premature optimizations --- they are standard engineering practices that every DayZ modder should know from the start.
 
 ---
 
@@ -768,4 +768,36 @@ Before shipping performance-sensitive code, verify:
 
 ---
 
-[<< Anterior: Event-Driven Architecture](06-events.md) | [Inicio](../../README.md)
+## Compatibilidad e Impacto
+
+- **Multi-Mod:** Performance costs are cumulative. Each mod's `OnUpdate` runs every frame. Five mods each taking 2ms means 10ms per frame from scripts alone. Coordinate with other mod authors to stagger timers and avoid duplicate world scans.
+- **Load Order:** Load order does not affect performance directly. However, if multiple mods `modded class` the same entity (e.g., `CarScript.EEInit`), each override adds to the call chain cost. Keep modded overrides minimal.
+- **Listen Server:** Listen servers run both client and server scripts in the same process. Widget pooling, UI updates, and rendering costs compound with server-side ticks. Performance budgets are tighter on listen servers than dedicated servers.
+- **Performance:** The DayZ server frame budget at 60 FPS is ~16ms. At 20 FPS (common on loaded servers), it is ~50ms. A single mod should aim to stay under 2ms per frame. Profile with `GetGame().GetTickTime()` to verify.
+- **Migration:** Performance patterns are engine-agnostic and survive DayZ version updates. Specific API costs (e.g., `GetObjectsAtPosition3D`) may change between engine versions, so re-profile after major DayZ updates.
+
+---
+
+## Errores Comunes
+
+| Error | Impact | Solución |
+|---------|--------|-----|
+| Premature optimization (micro-optimizing code that runs once at startup) | Wasted development time; no measurable improvement; harder-to-read code | Profile first. Only optimize code that runs per-frame or processes large collections. Startup cost is paid once. |
+| Using `GetObjectsAtPosition3D` with map-wide radius in `OnUpdate` | 50--200ms stall per call, scanning every physical object on the map; server FPS drops to single digits | Use a registration-based registry (register in `EEInit`, unregister in `EEDelete`). Never world-scan per frame. |
+| Rebuilding UI widget trees on every data change | Frame spikes from widget creation/destruction; visible stutter for the player | Use widget pooling: hide/show existing widgets instead of destroying and recreating them |
+| Sorting large arrays every frame | O(n log n) per frame for data that rarely changes; unnecessary CPU waste | Sort once when data changes (dirty flag), cache the sorted result, re-sort only on mutation |
+| Running expensive file I/O (JsonSaveFile) every `OnUpdate` tick | Disk writes block the main thread; 5--20ms per save depending on file size | Use auto-save timers (300s default) with a dirty flag. Only write when data has actually changed. |
+
+---
+
+## Teoría vs Práctica
+
+| Textbook Says | DayZ Reality |
+|---------------|-------------|
+| Use async processing for expensive operations | Enforce Script is single-threaded with no async primitives; batch work across frames using index-based processing instead |
+| Object pooling is premature optimization | Widget creation is genuinely expensive in Enfusion; pooling is standard practice in every major mod (COT, VPP, Expansion) |
+| Profile before optimizing | Correct, but some patterns (world scans, per-frame string alloc, per-keystroke rebuilds) are *always* wrong in DayZ. Avoid them from the start. |
+
+---
+
+[Inicio](../../README.md) | [<< Anterior: Event-Driven Architecture](06-events.md) | **Performance Optimization**
