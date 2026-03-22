@@ -1,31 +1,31 @@
-# Chapter 1.2: Arrays, Maps & Sets
+# 第 1.2 章：数组、映射与集合
 
-[Home](../../README.md) | [<< Previous: Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Next: Classes & Inheritance >>](03-classes-inheritance.md)
+[首页](../../README.md) | [<< 上一章：变量与类型](01-variables-types.md) | **数组、映射与集合** | [下一章：类与继承 >>](03-classes-inheritance.md)
 
 ---
 
 ## 简介
 
-Real DayZ mods deal with collections of things: lists of players, inventories of items, mappings from player IDs to permissions, sets of active zones. Enforce Script provides three collection types to handle these needs:
+真实的 DayZ 模组处理的是事物的集合：玩家列表、物品栏、玩家 ID 到权限的映射、活跃区域的集合。Enforce Script 提供了三种集合类型来处理这些需求：
 
-- **`array<T>`** --- Dynamic, ordered, resizable list (the collection you will use most)
-- **`map<K,V>`** --- Key-value associative container (hash map)
-- **`set<T>`** --- Ordered collection with value-based removal
+- **`array<T>`**——动态的、有序的、可调整大小的列表（你最常使用的集合）
+- **`map<K,V>`**——键值关联容器（哈希映射）
+- **`set<T>`**——基于值移除的有序集合
 
-There are also **static arrays** (`int arr[5]`) for fixed-size data known at compile time. This chapter covers all of them in depth, including every available method, iteration patterns, and the subtle pitfalls that cause real bugs in production mods.
+还有**静态数组**（`int arr[5]`）用于编译时已知的固定大小数据。本章深入涵盖所有这些，包括每个可用方法、迭代模式，以及在生产模组中导致真实错误的微妙陷阱。
 
 ---
 
 ## 静态数组
 
-Static arrays have a fixed size determined at compile time. They cannot grow or shrink. They are useful for small, known-size collections and are more memory-efficient than dynamic arrays.
+静态数组有在编译时确定的固定大小。它们不能增长或缩小。它们对于小的、已知大小的集合很有用，并且比动态数组更节省内存。
 
-### Declaration and Usage
+### 声明和使用
 
 ```c
 void StaticArrayBasics()
 {
-    // Declare with literal size
+    // 使用字面量大小声明
     int numbers[5];
     numbers[0] = 10;
     numbers[1] = 20;
@@ -33,18 +33,18 @@ void StaticArrayBasics()
     numbers[3] = 40;
     numbers[4] = 50;
 
-    // Declare with initializer list
+    // 使用初始化列表声明
     float damages[3] = {10.5, 25.0, 50.0};
 
-    // Declare with const size
+    // 使用 const 大小声明
     const int GRID_SIZE = 4;
     string labels[GRID_SIZE];
 
-    // Access elements
+    // 访问元素
     int first = numbers[0];     // 10
     float maxDmg = damages[2];  // 50.0
 
-    // Iterate with for loop
+    // 使用 for 循环迭代
     for (int i = 0; i < 5; i++)
     {
         Print(numbers[i]);
@@ -54,13 +54,13 @@ void StaticArrayBasics()
 
 ### 静态数组规则
 
-1. Size must be a compile-time constant (literal or `const int`)
-2. You **cannot** use a variable as the size: `int arr[myVar]` is a compile error
-3. Accessing an out-of-bounds index causes undefined behavior (no runtime bounds check)
-4. Static arrays are passed by reference to functions (unlike primitives)
+1. 大小必须是编译时常量（字面量或 `const int`）
+2. 你**不能**使用变量作为大小：`int arr[myVar]` 是编译错误
+3. 访问越界索引会导致未定义行为（没有运行时边界检查）
+4. 静态数组通过引用传递给函数（与原始类型不同）
 
 ```c
-// Static arrays as function parameters
+// 静态数组作为函数参数
 void FillArray(int arr[3])
 {
     arr[0] = 100;
@@ -72,40 +72,40 @@ void Test()
 {
     int myArr[3];
     FillArray(myArr);
-    Print(myArr[0]);  // 100 -- the original was modified (passed by reference)
+    Print(myArr[0]);  // 100——原始数组被修改了（通过引用传递）
 }
 ```
 
 ### 何时使用静态数组
 
-Use static arrays for:
-- Vector/matrix data (`vector mat[3]` for 3x3 rotation matrices)
-- Small fixed lookup tables
-- Performance-critical hot paths where allocation matters
+使用静态数组用于：
+- 向量/矩阵数据（`vector mat[3]` 用于 3x3 旋转矩阵）
+- 小的固定查找表
+- 分配开销重要的性能关键热路径
 
-Use dynamic `array<T>` for everything else.
+其他所有情况使用动态 `array<T>`。
 
 ---
 
-## Dynamic Arrays: `array<T>`
+## 动态数组：`array<T>`
 
-Dynamic arrays are the most commonly used collection in DayZ modding. They can grow and shrink at runtime, support generics, and provide a rich set of methods.
+动态数组是 DayZ 模组开发中最常用的集合。它们可以在运行时增长和缩小，支持泛型，并提供丰富的方法集。
 
 ### 创建
 
 ```c
 void CreateArrays()
 {
-    // Method 1: new operator
+    // 方法 1：new 运算符
     array<string> names = new array<string>;
 
-    // Method 2: Initializer list
+    // 方法 2：初始化列表
     array<int> scores = {100, 85, 92, 78};
 
-    // Method 3: Using typedef
-    TStringArray items = new TStringArray;  // same as array<string>
+    // 方法 3：使用 typedef
+    TStringArray items = new TStringArray;  // 等同于 array<string>
 
-    // Arrays of any type
+    // 任何类型的数组
     array<float> distances = new array<float>;
     array<bool> flags = new array<bool>;
     array<vector> positions = new array<vector>;
@@ -113,9 +113,9 @@ void CreateArrays()
 }
 ```
 
-### 预定义类型别名
+### 预定义的 Typedef
 
-DayZ provides shorthand typedefs for the most common array types:
+DayZ 为最常见的数组类型提供了简写 typedef：
 
 ```c
 typedef array<string>  TStringArray;
@@ -125,11 +125,11 @@ typedef array<bool>    TBoolArray;
 typedef array<vector>  TVectorArray;
 ```
 
-You will encounter `TStringArray` constantly in DayZ code --- config parsing, chat messages, loot tables, and more.
+你会在 DayZ 代码中经常遇到 `TStringArray`——配置解析、聊天消息、战利品表等。
 
 ---
 
-## Complete Array Method Reference
+## 完整的数组方法参考
 
 ### 添加元素
 
@@ -138,17 +138,17 @@ void AddingElements()
 {
     array<string> items = new array<string>;
 
-    // Insert: append to end, returns the new index
+    // Insert：追加到末尾，返回新索引
     int idx = items.Insert("Bandage");     // idx == 0
     idx = items.Insert("Morphine");        // idx == 1
     idx = items.Insert("Saline");          // idx == 2
     // items: ["Bandage", "Morphine", "Saline"]
 
-    // InsertAt: insert at specific index, shifts existing elements right
+    // InsertAt：在指定索引处插入，将现有元素右移
     items.InsertAt("Epinephrine", 1);
     // items: ["Bandage", "Epinephrine", "Morphine", "Saline"]
 
-    // InsertAll: append all elements from another array
+    // InsertAll：从另一个数组追加所有元素
     array<string> moreItems = {"Tetracycline", "Charcoal"};
     items.InsertAll(moreItems);
     // items: ["Bandage", "Epinephrine", "Morphine", "Saline", "Tetracycline", "Charcoal"]
@@ -162,20 +162,20 @@ void AccessingElements()
 {
     array<string> items = {"Apple", "Banana", "Cherry", "Date"};
 
-    // Get: access by index
+    // Get：按索引访问
     string first = items.Get(0);       // "Apple"
     string third = items.Get(2);       // "Cherry"
 
-    // Bracket operator: same as Get
+    // 方括号运算符：与 Get 相同
     string second = items[1];          // "Banana"
 
-    // Set: replace element at index
-    items.Set(1, "Blueberry");         // items[1] is now "Blueberry"
+    // Set：替换指定索引处的元素
+    items.Set(1, "Blueberry");         // items[1] 现在是 "Blueberry"
 
-    // Count: number of elements
+    // Count：元素数量
     int count = items.Count();         // 4
 
-    // IsValidIndex: bounds check
+    // IsValidIndex：边界检查
     bool valid = items.IsValidIndex(3);   // true
     bool invalid = items.IsValidIndex(4); // false
     bool negative = items.IsValidIndex(-1); // false
@@ -189,98 +189,98 @@ void SearchingArrays()
 {
     array<string> weapons = {"AKM", "M4A1", "Mosin", "IZH18", "AKM"};
 
-    // Find: returns first index of element, or -1 if not found
+    // Find：返回元素的第一个索引，如果未找到返回 -1
     int idx = weapons.Find("Mosin");    // 2
     int notFound = weapons.Find("FAL");  // -1
 
-    // Check existence
+    // 检查是否存在
     if (weapons.Find("M4A1") != -1)
         Print("M4A1 found!");
 
-    // GetRandomElement: returns a random element
+    // GetRandomElement：返回一个随机元素
     string randomWeapon = weapons.GetRandomElement();
 
-    // GetRandomIndex: returns a random valid index
+    // GetRandomIndex：返回一个随机有效索引
     int randomIdx = weapons.GetRandomIndex();
 }
 ```
 
-### 删除元素
+### 移除元素
 
-This is where the most common bugs occur. Pay close attention to the difference between `Remove` and `RemoveOrdered`.
+这是最常发生错误的地方。请仔细注意 `Remove` 和 `RemoveOrdered` 之间的区别。
 
 ```c
 void RemovingElements()
 {
     array<string> items = {"A", "B", "C", "D", "E"};
 
-    // Remove(index): FAST but UNORDERED
-    // Swaps the element at index with the LAST element, then shrinks the array
-    items.Remove(1);  // Removes "B" by swapping with "E"
-    // items is now: ["A", "E", "C", "D"]  -- ORDER CHANGED!
+    // Remove(index)：快速但无序
+    // 将索引处的元素与最后一个元素交换，然后缩小数组
+    items.Remove(1);  // 通过与 "E" 交换来移除 "B"
+    // items 现在是：["A", "E", "C", "D"]——顺序改变了！
 
-    // RemoveOrdered(index): SLOW but preserves order
-    // Shifts all elements after the index left by one
+    // RemoveOrdered(index)：较慢但保持顺序
+    // 将索引之后的所有元素左移一位
     items = {"A", "B", "C", "D", "E"};
-    items.RemoveOrdered(1);  // Removes "B", shifts C,D,E left
-    // items is now: ["A", "C", "D", "E"]  -- order preserved
+    items.RemoveOrdered(1);  // 移除 "B"，将 C,D,E 左移
+    // items 现在是：["A", "C", "D", "E"]——顺序保持
 
-    // RemoveItem(value): finds the element and removes it (ordered)
+    // RemoveItem(value)：查找元素并移除它（有序）
     items = {"A", "B", "C", "D", "E"};
     items.RemoveItem("C");
-    // items is now: ["A", "B", "D", "E"]
+    // items 现在是：["A", "B", "D", "E"]
 
-    // Clear: remove all elements
+    // Clear：移除所有元素
     items.Clear();
     // items.Count() == 0
 }
 ```
 
-### 大小与容量
+### 大小和容量
 
 ```c
 void SizingArrays()
 {
     array<int> data = new array<int>;
 
-    // Reserve: pre-allocate internal capacity (does NOT change Count)
-    // Use when you know how many elements you will add
+    // Reserve：预分配内部容量（不改变 Count）
+    // 当你知道要添加多少元素时使用
     data.Reserve(100);
-    // data.Count() == 0, but internal buffer is ready for 100 elements
+    // data.Count() == 0，但内部缓冲区已准备好容纳 100 个元素
 
-    // Resize: change the Count, filling new slots with default values
+    // Resize：改变 Count，用默认值填充新位置
     data.Resize(10);
-    // data.Count() == 10, all elements are 0
+    // data.Count() == 10，所有元素为 0
 
-    // Resize smaller truncates
+    // Resize 缩小则截断
     data.Resize(5);
     // data.Count() == 5
 }
 ```
 
-### 排序与洗牌
+### 排序和打乱
 
 ```c
 void OrderingArrays()
 {
     array<int> numbers = {5, 2, 8, 1, 9, 3};
 
-    // Sort ascending
+    // 升序排序
     numbers.Sort();
     // numbers: [1, 2, 3, 5, 8, 9]
 
-    // Sort descending
+    // 降序排序
     numbers.Sort(true);
     // numbers: [9, 8, 5, 3, 2, 1]
 
-    // Invert (reverse) the array
+    // 反转数组
     numbers = {1, 2, 3, 4, 5};
     numbers.Invert();
     // numbers: [5, 4, 3, 2, 1]
 
-    // Shuffle randomly
+    // 随机打乱
     numbers.ShuffleArray();
-    // numbers: [3, 1, 5, 2, 4]  (random order)
+    // numbers: [3, 1, 5, 2, 4]（随机顺序）
 }
 ```
 
@@ -291,13 +291,13 @@ void CopyingArrays()
 {
     array<string> original = {"A", "B", "C"};
 
-    // Copy: replaces all contents with a copy of another array
+    // Copy：用另一个数组的副本替换所有内容
     array<string> copy = new array<string>;
     copy.Copy(original);
     // copy: ["A", "B", "C"]
-    // Modifying copy does NOT affect original
+    // 修改 copy 不会影响 original
 
-    // InsertAll: appends (does not replace)
+    // InsertAll：追加（不替换）
     array<string> combined = {"X", "Y"};
     combined.InsertAll(original);
     // combined: ["X", "Y", "A", "B", "C"]
@@ -311,9 +311,9 @@ void DebuggingArrays()
 {
     array<string> items = {"Bandage", "Morphine", "Saline"};
 
-    // Debug: prints all elements to script log
+    // Debug：将所有元素打印到脚本日志
     items.Debug();
-    // Output:
+    // 输出：
     // [0] => Bandage
     // [1] => Morphine
     // [2] => Saline
@@ -322,9 +322,9 @@ void DebuggingArrays()
 
 ---
 
-## 遍历数组
+## 迭代数组
 
-### for Loop (Index-Based)
+### for 循环（基于索引）
 
 ```c
 void ForLoopIteration()
@@ -341,7 +341,7 @@ void ForLoopIteration()
 }
 ```
 
-### foreach (Value Only)
+### foreach（仅值）
 
 ```c
 void ForEachValue()
@@ -358,7 +358,7 @@ void ForEachValue()
 }
 ```
 
-### foreach (Index + Value)
+### foreach（索引 + 值）
 
 ```c
 void ForEachIndexValue()
@@ -375,7 +375,7 @@ void ForEachIndexValue()
 }
 ```
 
-### Real-World Example: Finding the Nearest Player
+### 真实案例：查找最近的玩家
 
 ```c
 PlayerBase FindNearestPlayer(vector origin, float maxRange)
@@ -409,26 +409,26 @@ PlayerBase FindNearestPlayer(vector origin, float maxRange)
 
 ---
 
-## Maps: `map<K,V>`
+## 映射：`map<K,V>`
 
-Maps store key-value pairs. They are used when you need to look up a value by a key --- player data by UID, item prices by class name, permissions by role name, and so on.
+映射存储键值对。当你需要通过键查找值时使用它们——通过 UID 查找玩家数据、通过类名查找物品价格、通过角色名查找权限等。
 
 ### 创建
 
 ```c
 void CreateMaps()
 {
-    // Standard creation
+    // 标准创建
     map<string, int> prices = new map<string, int>;
 
-    // Maps of various types
+    // 各种类型的映射
     map<string, float> multipliers = new map<string, float>;
     map<int, string> idToName = new map<int, string>;
     map<string, ref array<string>> categories = new map<string, ref array<string>>;
 }
 ```
 
-### Pre-defined Map Typedefs
+### 预定义的映射 Typedef
 
 ```c
 typedef map<string, int>     TStringIntMap;
@@ -439,31 +439,31 @@ typedef map<string, float>   TStringFloatMap;
 
 ---
 
-## Complete Map Method Reference
+## 完整的映射方法参考
 
-### Inserting and 上级dating
+### 插入和更新
 
 ```c
 void MapInsertUpdate()
 {
     map<string, int> inventory = new map<string, int>;
 
-    // Insert: add a new key-value pair
-    // Returns true if the key was new, false if it already existed
-    bool isNew = inventory.Insert("Bandage", 5);    // true (new key)
-    isNew = inventory.Insert("Bandage", 10);         // false (key exists, value NOT updated)
-    // inventory["Bandage"] is still 5!
+    // Insert：添加新的键值对
+    // 如果键是新的返回 true，如果已存在返回 false
+    bool isNew = inventory.Insert("Bandage", 5);    // true（新键）
+    isNew = inventory.Insert("Bandage", 10);         // false（键已存在，值未更新）
+    // inventory["Bandage"] 仍然是 5！
 
-    // Set: insert OR update (this is what you usually want)
-    inventory.Set("Bandage", 10);    // Now inventory["Bandage"] == 10
-    inventory.Set("Morphine", 3);    // New key added
-    inventory.Set("Morphine", 7);    // Existing key updated to 7
+    // Set：插入或更新（这是你通常需要的）
+    inventory.Set("Bandage", 10);    // 现在 inventory["Bandage"] == 10
+    inventory.Set("Morphine", 3);    // 添加新键
+    inventory.Set("Morphine", 7);    // 更新现有键为 7
 }
 ```
 
-**关键区别：** `Insert()` does **not** update existing keys. `Set()` does. When in doubt, use `Set()`.
+**关键区别：**`Insert()` **不会**更新现有键。`Set()` 会。当有疑问时，使用 `Set()`。
 
-### Accessing Values
+### 访问值
 
 ```c
 void MapAccess()
@@ -473,25 +473,25 @@ void MapAccess()
     prices.Set("M4A1", 7500);
     prices.Set("Mosin", 2000);
 
-    // Get: returns value, or default (0 for int) if key not found
+    // Get：返回值，如果键未找到则返回默认值（int 的默认值为 0）
     int akmPrice = prices.Get("AKM");         // 5000
-    int falPrice = prices.Get("FAL");          // 0 (not found, returns default)
+    int falPrice = prices.Get("FAL");          // 0（未找到，返回默认值）
 
-    // Find: safe access, returns true if key exists and sets the out parameter
+    // Find：安全访问，如果键存在返回 true 并设置 out 参数
     int price;
     bool found = prices.Find("M4A1", price);  // found == true, price == 7500
-    bool notFound = prices.Find("SVD", price); // notFound == false, price unchanged
+    bool notFound = prices.Find("SVD", price); // notFound == false, price 不变
 
-    // Contains: check if key exists (no value retrieval)
+    // Contains：检查键是否存在（不检索值）
     bool hasAKM = prices.Contains("AKM");     // true
     bool hasFAL = prices.Contains("FAL");     // false
 
-    // Count: number of key-value pairs
+    // Count：键值对数量
     int count = prices.Count();  // 3
 }
 ```
 
-### Removing
+### 移除
 
 ```c
 void MapRemove()
@@ -501,11 +501,11 @@ void MapRemove()
     data.Set("b", 2);
     data.Set("c", 3);
 
-    // Remove: remove by key
+    // Remove：按键移除
     data.Remove("b");
-    // data now has: {"a": 1, "c": 3}
+    // data 现在有：{"a": 1, "c": 3}
 
-    // Clear: remove all entries
+    // Clear：移除所有条目
     data.Clear();
     // data.Count() == 0
 }
@@ -513,7 +513,7 @@ void MapRemove()
 
 ### 基于索引的访问
 
-Maps support positional access, but it is `O(n)` --- use it for iteration, not frequent lookups.
+映射支持位置访问，但它是 `O(n)` 的——用于迭代，而不是频繁查找。
 
 ```c
 void MapIndexAccess()
@@ -523,7 +523,7 @@ void MapIndexAccess()
     data.Set("beta", 2);
     data.Set("gamma", 3);
 
-    // Access by internal index (O(n), order is insertion order)
+    // 按内部索引访问（O(n)，顺序是插入顺序）
     for (int i = 0; i < data.Count(); i++)
     {
         string key = data.GetKey(i);
@@ -543,23 +543,23 @@ void MapExtraction()
     prices.Set("M4A1", 7500);
     prices.Set("Mosin", 2000);
 
-    // Get all keys as an array
+    // 获取所有键作为数组
     array<string> keys = prices.GetKeyArray();
     // keys: ["AKM", "M4A1", "Mosin"]
 
-    // Get all values as an array
+    // 获取所有值作为数组
     array<int> values = prices.GetValueArray();
     // values: [5000, 7500, 2000]
 }
 ```
 
-### Real-World Example: Player Tracking
+### 真实案例：玩家跟踪
 
 ```c
 class PlayerTracker
 {
-    protected ref map<string, vector> m_LastPositions;  // UID -> position
-    protected ref map<string, float> m_PlayTime;        // UID -> seconds
+    protected ref map<string, vector> m_LastPositions;  // UID -> 位置
+    protected ref map<string, float> m_PlayTime;        // UID -> 秒数
 
     void PlayerTracker()
     {
@@ -598,35 +598,35 @@ class PlayerTracker
 
 ---
 
-## Sets: `set<T>`
+## 集合：`set<T>`
 
-Sets are ordered collections similar to arrays, but with semantics oriented toward value-based operations (find and remove by value). They are less commonly used than arrays and maps.
+集合是类似于数组的有序集合，但语义面向基于值的操作（按值查找和移除）。它们比数组和映射使用得更少。
 
 ```c
 void SetExamples()
 {
     set<string> activeZones = new set<string>;
 
-    // Insert: add an element
+    // Insert：添加元素
     activeZones.Insert("NWAF");
     activeZones.Insert("Tisy");
     activeZones.Insert("Balota");
 
-    // Find: returns index or -1
+    // Find：返回索引或 -1
     int idx = activeZones.Find("Tisy");    // 1
     int missing = activeZones.Find("Zelenogorsk");  // -1
 
-    // Get: access by index
+    // Get：按索引访问
     string first = activeZones.Get(0);     // "NWAF"
 
     // Count
     int count = activeZones.Count();       // 3
 
-    // Remove by index
+    // 按索引移除
     activeZones.Remove(0);
     // activeZones: ["Tisy", "Balota"]
 
-    // RemoveItem: remove by value
+    // RemoveItem：按值移除
     activeZones.RemoveItem("Tisy");
     // activeZones: ["Balota"]
 
@@ -635,22 +635,22 @@ void SetExamples()
 }
 ```
 
-### When to Use Set vs Array
+### 何时使用 Set 与 Array
 
-In practice, most DayZ modders use `array<T>` for almost everything because:
-- `set<T>` has fewer methods than `array<T>`
-- `array<T>` provides `Find()` for search and `RemoveItem()` for value-based removal
-- The API you need is typically on `array<T>` already
+实际上，大多数 DayZ 模组开发者对几乎所有情况都使用 `array<T>`，因为：
+- `set<T>` 比 `array<T>` 方法更少
+- `array<T>` 提供 `Find()` 用于搜索和 `RemoveItem()` 用于基于值的移除
+- 你通常需要的 API 已经在 `array<T>` 上了
 
-Use `set<T>` when your code semantically represents a set (no meaningful order, focused on membership testing), or when you encounter it in vanilla DayZ code and need to interface with it.
+当你的代码在语义上表示一个集合（没有有意义的顺序，专注于成员测试）时，或者当你在原版 DayZ 代码中遇到它并需要与之交互时，使用 `set<T>`。
 
 ---
 
-## 遍历映射
+## 迭代映射
 
-Maps support `foreach` for convenient iteration:
+映射支持 `foreach` 以方便迭代：
 
-### foreach with Key-Value
+### foreach 带键值
 
 ```c
 void IterateMap()
@@ -660,7 +660,7 @@ void IterateMap()
     scores.Set("Bob", 230);
     scores.Set("Charlie", 180);
 
-    // foreach with key and value
+    // foreach 带键和值
     foreach (string name, int score : scores)
     {
         Print(string.Format("%1: %2 points", name, score));
@@ -671,7 +671,7 @@ void IterateMap()
 }
 ```
 
-### Index-Based for Loop
+### 基于索引的 for 循环
 
 ```c
 void IterateMapByIndex()
@@ -693,19 +693,19 @@ void IterateMapByIndex()
 
 ## 嵌套集合
 
-Collections can contain other collections. When storing reference types (like arrays) inside a map, use `ref` to manage ownership.
+集合可以包含其他集合。当在映射中存储引用类型（如数组）时，使用 `ref` 管理所有权。
 
 ```c
 class LootTable
 {
-    // Map from category name to list of class names
+    // 从类别名称到类名列表的映射
     protected ref map<string, ref array<string>> m_Categories;
 
     void LootTable()
     {
         m_Categories = new map<string, ref array<string>>;
 
-        // Create category arrays
+        // 创建类别数组
         ref array<string> medical = new array<string>;
         medical.Insert("Bandage");
         medical.Insert("Morphine");
@@ -735,106 +735,139 @@ class LootTable
 
 ---
 
+## 最佳实践
+
+- 使用前始终用 `new` 实例化集合——`array<string> items;` 是 `null`，不是空的。
+- 更新时优先使用 `map.Set()` 而非 `map.Insert()`——`Insert` 静默忽略现有键。
+- 在迭代期间移除元素时，使用反向 `for` 循环或构建单独的移除列表——永远不要在 `foreach` 内修改集合。
+- 当你预先知道预期的元素数量时使用 `Reserve()`，以避免重复的内部重新分配。
+- 用 `IsValidIndex()` 或 `Count() > 0` 检查守卫每次元素访问——越界访问会导致静默崩溃。
+
+---
+
+## 真实模组中的观察
+
+> 通过研究专业 DayZ 模组源代码确认的模式。
+
+| 模式 | 模组 | 细节 |
+|---------|-----|--------|
+| 反向 `for` 循环用于移除 | Expansion / COT | 移除过滤后的元素时始终从 `Count()-1` 迭代到 `0` |
+| `map<string, ref ClassName>` 用于注册表 | Dabs Framework | 所有管理器注册表在映射值中使用 `ref` 保持对象存活 |
+| 到处使用 `TStringArray` typedef | Vanilla / VPP | 配置解析、聊天消息和战利品表都使用 `TStringArray` 而非 `array<string>` |
+| 访问前的空值 + 空检查守卫 | Expansion Market | 每个接收数组的函数都以 `if (!arr \|\| arr.Count() == 0) return;` 开头 |
+
+---
+
+## 理论与实践
+
+| 概念 | 理论 | 现实 |
+|---------|--------|---------|
+| `Remove(index)` 是"快速移除" | 应该只是删除元素 | 它先与最后一个元素交换，静默地重新排列数组 |
+| `map.Insert()` 添加键 | 期望如果键存在则更新 | 如果键已存在则返回 `false` 且不做任何事 |
+| `set<T>` 用于唯一集合 | 应该像数学集合一样行为 | 大多数模组开发者使用 `array<T>` 配合 `Find()` 替代，因为 `set` 方法更少 |
+
+---
+
 ## 常见错误
 
-### 1. `Remove` vs `RemoveOrdered`: The Silent Bug
+### 1. `Remove` 与 `RemoveOrdered`：静默的错误
 
-`Remove(index)` is fast but **changes the order** by swapping with the last element. If you are iterating forward and removing, this causes skipped elements:
+`Remove(index)` 很快但**改变了顺序**，通过与最后一个元素交换。如果你向前迭代并移除，这会导致跳过元素：
 
 ```c
-// BAD: skips elements because Remove swaps order
+// 错误：因为 Remove 交换顺序而跳过元素
 array<int> nums = {1, 2, 3, 4, 5};
 for (int i = 0; i < nums.Count(); i++)
 {
     if (nums[i] % 2 == 0)
-        nums.Remove(i);  // After removing index 1, element at index 1 is now "5"
-                          // and we skip to index 2, missing "5"
+        nums.Remove(i);  // 移除索引 1 后，索引 1 处的元素现在是 "5"
+                          // 我们跳到索引 2，错过了 "5"
 }
 
-// GOOD: iterate backward when removing
+// 好：移除时反向迭代
 array<int> nums2 = {1, 2, 3, 4, 5};
 for (int j = nums2.Count() - 1; j >= 0; j--)
 {
     if (nums2[j] % 2 == 0)
-        nums2.Remove(j);  // Safe: removing from the end doesn't affect lower indices
+        nums2.Remove(j);  // 安全：从末尾移除不影响较低的索引
 }
 
-// ALSO GOOD: use RemoveOrdered with backward iteration for order preservation
+// 也好：使用 RemoveOrdered 配合反向迭代以保持顺序
 array<int> nums3 = {1, 2, 3, 4, 5};
 for (int k = nums3.Count() - 1; k >= 0; k--)
 {
     if (nums3[k] % 2 == 0)
         nums3.RemoveOrdered(k);
 }
-// nums3: [1, 3, 5] in original order
+// nums3: [1, 3, 5] 保持原始顺序
 ```
 
-### 2. Array Index Out of Bounds
+### 2. 数组索引越界
 
-Enforce Script does not throw exceptions for out-of-bounds access --- it silently returns garbage or crashes. Always check bounds.
+Enforce Script 不会对越界访问抛出异常——它静默返回垃圾值或崩溃。始终检查边界。
 
 ```c
-// BAD: no bounds check
+// 错误：没有边界检查
 array<string> items = {"A", "B", "C"};
-string fourth = items[3];  // UNDEFINED BEHAVIOR: index 3 doesn't exist
+string fourth = items[3];  // 未定义行为：索引 3 不存在
 
-// GOOD: check bounds
+// 好：检查边界
 if (items.IsValidIndex(3))
 {
     string fourth2 = items[3];
 }
 
-// GOOD: check count
+// 好：检查数量
 if (items.Count() > 0)
 {
     string last = items[items.Count() - 1];
 }
 ```
 
-### 3. Forgetting to Create the Collection
+### 3. 忘记创建集合
 
-Collections are objects and must be instantiated with `new`:
+集合是对象，必须用 `new` 实例化：
 
 ```c
-// BAD: null reference crash
+// 错误：空引用崩溃
 array<string> items;
-items.Insert("Test");  // CRASH: items is null
+items.Insert("Test");  // 崩溃：items 是 null
 
-// GOOD: create first
+// 好：先创建
 array<string> items2 = new array<string>;
 items2.Insert("Test");
 
-// ALSO GOOD: initializer list creates automatically
+// 也好：初始化列表自动创建
 array<string> items3 = {"Test"};
 ```
 
-### 4. `Insert` vs `Set` on Maps
+### 4. 映射上的 `Insert` 与 `Set`
 
-`Insert` does not update existing keys --- it returns `false` and leaves the value unchanged:
+`Insert` 不更新现有键——它返回 `false` 并保留值不变：
 
 ```c
 map<string, int> data = new map<string, int>;
 data.Insert("key", 100);
-data.Insert("key", 200);   // Returns false, value is STILL 100!
+data.Insert("key", 200);   // 返回 false，值仍然是 100！
 
-// Use Set to update
-data.Set("key", 200);      // Now value is 200
+// 使用 Set 更新
+data.Set("key", 200);      // 现在值是 200
 ```
 
-### 5. Modifying a Collection During foreach
+### 5. 在 foreach 期间修改集合
 
-Do not add or remove elements from a collection while iterating over it with `foreach`. Build a separate list of elements to remove, then remove them afterward.
+不要在使用 `foreach` 迭代集合时添加或移除元素。构建一个单独的要移除的元素列表，然后再移除它们。
 
 ```c
-// BAD: modifying during iteration
+// 错误：在迭代期间修改
 array<string> items = {"A", "B", "C", "D"};
 foreach (string item : items)
 {
     if (item == "B")
-        items.RemoveItem(item);  // UNDEFINED: invalidates iterator
+        items.RemoveItem(item);  // 未定义：使迭代器失效
 }
 
-// GOOD: collect then remove
+// 好：收集然后移除
 array<string> toRemove = new array<string>;
 foreach (string item2 : items)
 {
@@ -847,14 +880,14 @@ foreach (string rem : toRemove)
 }
 ```
 
-### 6. Empty Array Safety
+### 6. 空数组安全
 
-Always check if an array is both non-null and non-empty before accessing elements:
+在访问元素之前始终检查数组是否非空且非 null：
 
 ```c
 string GetFirstItem(array<string> items)
 {
-    // Guard clause: null check + empty check
+    // 守卫子句：空值检查 + 空检查
     if (!items || items.Count() == 0)
         return "";
 
@@ -864,57 +897,57 @@ string GetFirstItem(array<string> items)
 
 ---
 
-## 练习题
+## 练习
 
-### Exercise 1: Inventory Counter
-Create a function that takes an `array<string>` of item class names (with duplicates) and returns a `map<string, int>` counting how many of each item exists.
+### 练习 1：物品栏计数器
+创建一个函数，接受 `array<string>` 的物品类名（有重复），返回 `map<string, int>` 计算每种物品的数量。
 
-Example: `{"Bandage", "Morphine", "Bandage", "Saline", "Bandage"}` should produce `{"Bandage": 3, "Morphine": 1, "Saline": 1}`.
+示例：`{"Bandage", "Morphine", "Bandage", "Saline", "Bandage"}` 应产生 `{"Bandage": 3, "Morphine": 1, "Saline": 1}`。
 
-### Exercise 2: Array Deduplication
-Write a function `array<string> RemoveDuplicates(array<string> input)` that returns a new array with duplicates removed, preserving the order of first occurrence.
+### 练习 2：数组去重
+编写函数 `array<string> RemoveDuplicates(array<string> input)`，返回一个移除了重复项的新数组，保留首次出现的顺序。
 
-### Exercise 3: Leaderboard
-Create a `map<string, int>` of player names to kill counts. Write functions to:
-1. Add a kill for a player (creating the entry if needed)
-2. Get the top N players sorted by kills (hint: extract to arrays, sort)
-3. Remove all players with zero kills
+### 练习 3：排行榜
+创建玩家名称到击杀数的 `map<string, int>`。编写函数来：
+1. 为玩家添加击杀（如果需要则创建条目）
+2. 获取按击杀数排序的前 N 名玩家（提示：提取到数组，排序）
+3. 移除所有零击杀的玩家
 
-### Exercise 4: Position History
-Create a class that stores the last 10 positions of a player (ring buffer using an array). It should:
-1. Add a new position (dropping the oldest if at capacity)
-2. Return the total distance traveled across all stored positions
-3. Return the average position
+### 练习 4：位置历史
+创建一个类，存储玩家最近 10 个位置（使用数组的环形缓冲区）。它应该：
+1. 添加新位置（达到容量时丢弃最旧的）
+2. 返回所有存储位置的总移动距离
+3. 返回平均位置
 
-### Exercise 5: Two-Way Lookup
-Create a class with two maps that allows lookup in both directions: given a player UID, find their name; given a name, find their UID. Implement `Register(uid, name)`, `GetNameByUID(uid)`, `GetUIDByName(name)`, and `Unregister(uid)`.
+### 练习 5：双向查找
+创建一个带有两个映射的类，允许双向查找：给定玩家 UID，找到其名称；给定名称，找到其 UID。实现 `Register(uid, name)`、`GetNameByUID(uid)`、`GetUIDByName(name)` 和 `Unregister(uid)`。
 
 ---
 
 ## 总结
 
-| 集合 | 类型 | 用途 | 主要区别 |
+| 集合 | 类型 | 用途 | 关键区别 |
 |-----------|------|----------|----------------|
-| Static array | `int arr[5]` | Fixed-size, compile-time known | No resize, no methods |
-| Dynamic array | `array<T>` | General-purpose ordered list | Rich API, resizable |
-| Map | `map<K,V>` | Key-value lookup | `Set()` to insert/update |
-| Set | `set<T>` | Value-based membership | Simpler than array, less common |
+| 静态数组 | `int arr[5]` | 固定大小，编译时已知 | 不能调整大小，没有方法 |
+| 动态数组 | `array<T>` | 通用有序列表 | 丰富的 API，可调整大小 |
+| 映射 | `map<K,V>` | 键值查找 | 用 `Set()` 插入/更新 |
+| 集合 | `set<T>` | 基于值的成员关系 | 比数组简单，不太常用 |
 
-| 操作 | 方法 | 说明 |
+| 操作 | 方法 | 备注 |
 |-----------|--------|-------|
-| Add to end | `Insert(val)` | Returns index |
-| Add at position | `InsertAt(val, idx)` | Shifts right |
-| Remove fast | `Remove(idx)` | Swaps with last, **unordered** |
-| Remove ordered | `RemoveOrdered(idx)` | Shifts left, preserves order |
-| Remove by value | `RemoveItem(val)` | Finds then removes (ordered) |
-| Find | `Find(val)` | Returns index or -1 |
-| Count | `Count()` | Number of elements |
-| Bounds check | `IsValidIndex(idx)` | Returns bool |
-| Sort | `Sort()` / `Sort(true)` | Ascending / descending |
-| Random | `GetRandomElement()` | Returns random value |
-| foreach | `foreach (T val : arr)` | Value only |
-| foreach indexed | `foreach (int i, T val : arr)` | Index + value |
+| 添加到末尾 | `Insert(val)` | 返回索引 |
+| 在位置添加 | `InsertAt(val, idx)` | 右移 |
+| 快速移除 | `Remove(idx)` | 与最后一个交换，**无序** |
+| 有序移除 | `RemoveOrdered(idx)` | 左移，保持顺序 |
+| 按值移除 | `RemoveItem(val)` | 查找然后移除（有序） |
+| 查找 | `Find(val)` | 返回索引或 -1 |
+| 数量 | `Count()` | 元素数量 |
+| 边界检查 | `IsValidIndex(idx)` | 返回布尔值 |
+| 排序 | `Sort()` / `Sort(true)` | 升序 / 降序 |
+| 随机 | `GetRandomElement()` | 返回随机值 |
+| foreach | `foreach (T val : arr)` | 仅值 |
+| 索引 foreach | `foreach (int i, T val : arr)` | 索引 + 值 |
 
 ---
 
-[Home](../../README.md) | [<< 上一章：变量与类型](01-variables-types.md) | **数组、映射与集合** | [下一章：类与继承 >>](03-classes-inheritance.md)
+[首页](../../README.md) | [<< 上一章：变量与类型](01-variables-types.md) | **数组、映射与集合** | [下一章：类与继承 >>](03-classes-inheritance.md)

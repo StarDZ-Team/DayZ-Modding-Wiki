@@ -1,91 +1,91 @@
-# Chapter 4.2: 3D Models (.p3d)
+# 第4.2章: 3Dモデル (.p3d)
 
-[Home](../../README.md) | [<< Previous: Textures](01-textures.md) | **3D Models** | [Next: Materials >>](03-materials.md)
+[ホーム](../../README.md) | [<< 前: テクスチャ](01-textures.md) | **3Dモデル** | [次: マテリアル >>](03-materials.md)
 
 ---
 
 ## はじめに
 
-Every physical object in DayZ -- weapons, clothing, buildings, vehicles, trees, rocks -- is a 3D model stored in Bohemia's proprietary **P3D** format. The P3D format is far more than a mesh container: it encodes multiple levels of detail, collision geometry, animation selections, memory points for attachments and effects, and proxy positions for mountable items. Understanding how P3D files work and how to create them with **Object Builder** is essential for any mod that adds physical items to the game world.
+DayZのすべての物理オブジェクト -- 武器、衣服、建物、車両、木、岩 -- はBohemiaの独自フォーマットである**P3D**に格納された3Dモデルです。P3Dフォーマットは単なるメッシュコンテナ以上のものです。複数のディテールレベル、コリジョンジオメトリ、アニメーションセレクション、アタッチメントやエフェクト用のメモリポイント、そしてマウント可能なアイテム用のプロキシ位置をエンコードします。P3Dファイルの仕組みと**Object Builder**でそれを作成する方法を理解することは、ゲームワールドに物理アイテムを追加するすべてのモッドにとって不可欠です。
 
-This chapter covers the P3D format structure, the LOD system, named selections, memory points, the proxy system, animation configuration via `model.cfg`, and the import workflow from standard 3D formats.
+この章では、P3Dフォーマットの構造、LODシステム、名前付きセレクション、メモリポイント、プロキシシステム、`model.cfg`によるアニメーション設定、そして標準3Dフォーマットからのインポートワークフローについて説明します。
 
 ---
 
 ## 目次
 
-- [P3D Format Overview](#p3d-format-overview)
+- [P3Dフォーマットの概要](#p3dフォーマットの概要)
 - [Object Builder](#object-builder)
-- [The LOD System](#the-lod-system)
-- [Named Selections](#named-selections)
-- [Memory Points](#memory-points)
-- [The Proxy System](#the-proxy-system)
-- [Model.cfg for Animations](#modelcfg-for-animations)
-- [Importing from FBX/OBJ](#importing-from-fbxobj)
-- [Common Model Types](#common-model-types)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [LODシステム](#lodシステム)
+- [名前付きセレクション](#名前付きセレクション)
+- [メモリポイント](#メモリポイント)
+- [プロキシシステム](#プロキシシステム)
+- [アニメーション用model.cfg](#アニメーション用modelcfg)
+- [FBX/OBJからのインポート](#fbxobjからのインポート)
+- [一般的なモデルタイプ](#一般的なモデルタイプ)
+- [よくある間違い](#よくある間違い)
+- [ベストプラクティス](#ベストプラクティス)
 
 ---
 
-## P3D Format Overview
+## P3Dフォーマットの概要
 
-**P3D** (Point 3D) is Bohemia Interactive's binary 3D model format, inherited from the Real Virtuality engine and carried forward into Enfusion. It is a compiled, engine-ready format -- you do not write P3D files by hand.
+**P3D** (Point 3D) はBohemia Interactiveのバイナリ3Dモデルフォーマットで、Real Virtualityエンジンから引き継がれ、Enfusionに受け継がれています。コンパイル済みのエンジン対応フォーマットです -- P3Dファイルを手動で書くことはありません。
 
-### Key Characteristics
+### 主な特徴
 
-- **Binary format:** Not human-readable. Created and edited exclusively with Object Builder.
-- **Multi-LOD container:** A single P3D file contains multiple LOD (Level of Detail) meshes, each with a different purpose.
-- **Engine-native:** The DayZ engine loads P3D directly. No runtime conversion occurs.
-- **Binarized vs. unbinarized:** Source P3D files from Object Builder are "MLOD" (editable). Binarize converts them to "ODOL" (optimized, read-only). The game can load both, but ODOL loads faster and is smaller.
+- **バイナリフォーマット:** 人間が読むことはできません。Object Builderでのみ作成・編集されます。
+- **マルチLODコンテナ:** 1つのP3Dファイルには、それぞれ異なる目的を持つ複数のLOD（Level of Detail）メッシュが含まれます。
+- **エンジンネイティブ:** DayZエンジンはP3Dを直接ロードします。ランタイム変換は行われません。
+- **バイナライズ vs. 非バイナライズ:** Object Builderからのソースp3DファイルはMLOD（編集可能）です。BinarizeはそれらをODOL（最適化済み、読み取り専用）に変換します。ゲームは両方をロードできますが、ODOLの方がロードが速く、サイズも小さくなります。
 
-### File Types You Will Encounter
+### 遭遇するファイルタイプ
 
-| Extension | Description |
+| 拡張子 | 説明 |
 |-----------|-------------|
-| `.p3d` | 3D model (both MLOD source and ODOL binarized) |
-| `.rtm` | Runtime Motion -- animation keyframe data |
-| `.bisurf` | Surface properties file (used alongside P3D) |
+| `.p3d` | 3Dモデル（MLODソースとODOLバイナライズ済みの両方） |
+| `.rtm` | Runtime Motion -- アニメーションキーフレームデータ |
+| `.bisurf` | サーフェスプロパティファイル（P3Dと併用） |
 
 ### MLOD vs. ODOL
 
-| Property | MLOD (Source) | ODOL (Binarized) |
+| プロパティ | MLOD（ソース） | ODOL（バイナライズ済み） |
 |----------|---------------|-------------------|
-| Created by | Object Builder | Binarize |
-| Editable | Yes | No |
-| File size | Larger | Smaller |
-| Load speed | Slower | Faster |
-| Used during | Development | Release |
-| Contains | Full edit data, named selections | Optimized mesh data |
+| 作成元 | Object Builder | Binarize |
+| 編集可能 | はい | いいえ |
+| ファイルサイズ | 大きい | 小さい |
+| ロード速度 | 遅い | 速い |
+| 使用時期 | 開発中 | リリース時 |
+| 含まれるもの | 完全な編集データ、名前付きセレクション | 最適化されたメッシュデータ |
 
-> **重要：** When you pack a PBO with binarization enabled, your MLOD P3D files are automatically converted to ODOL. If you pack with `-packonly`, the MLOD files are included as-is. Both work in-game, but ODOL is preferred for release builds.
+> **重要:** バイナライズを有効にしてPBOをパックすると、MLODのP3Dファイルは自動的にODOLに変換されます。`-packonly`でパックする場合、MLODファイルはそのまま含まれます。両方ともゲーム内で動作しますが、リリースビルドではODOLが推奨されます。
 
 ---
 
 ## Object Builder
 
-**Object Builder** is the Bohemia-provided tool for creating and editing P3D models. It is included in the DayZ Tools suite on Steam.
+**Object Builder**は、P3Dモデルを作成・編集するためのBohemia提供のツールです。SteamのDayZ Toolsスイートに含まれています。
 
-### Core Capabilities
+### 主な機能
 
-- Create and edit 3D meshes with vertices, edges, and faces.
-- Define multiple LODs within a single P3D file.
-- Assign **named selections** (groups of vertices/faces) for animation and texture control.
-- Place **memory points** for attachment positions, particle origins, and sound sources.
-- Add **proxy objects** for attachable items (magazines, optics, etc.).
-- Assign materials (`.rvmat`) and textures (`.paa`) to faces.
-- Import meshes from FBX, OBJ, and 3DS formats.
-- Export validated P3D files for Binarize.
+- 頂点、エッジ、フェースを使って3Dメッシュを作成・編集する。
+- 1つのP3Dファイル内に複数のLODを定義する。
+- アニメーションとテクスチャ制御用の**名前付きセレクション**（頂点/フェースのグループ）を割り当てる。
+- アタッチメント位置、パーティクル原点、サウンドソース用の**メモリポイント**を配置する。
+- アタッチ可能なアイテム（マガジン、光学機器など）用の**プロキシオブジェクト**を追加する。
+- マテリアル（`.rvmat`）とテクスチャ（`.paa`）をフェースに割り当てる。
+- FBX、OBJ、3DSフォーマットからメッシュをインポートする。
+- Binarize用のバリデーション済みP3Dファイルをエクスポートする。
 
-### Workspace Setup
+### ワークスペースのセットアップ
 
-Object Builder requires the **P: drive** (workdrive) to be set up. This virtual drive provides a unified path prefix that the engine uses to locate assets.
+Object Builderは**P:ドライブ**（ワークドライブ）のセットアップが必要です。この仮想ドライブは、エンジンがアセットを見つけるために使用する統一パスプレフィックスを提供します。
 
 ```
 P:\
-  DZ\                        <-- Vanilla DayZ data (extracted)
-  DayZ Tools\                <-- Tools installation
-  MyMod\                     <-- Your mod's source directory
+  DZ\                        <-- バニラDayZデータ（展開済み）
+  DayZ Tools\                <-- ツールインストール
+  MyMod\                     <-- モッドのソースディレクトリ
     data\
       models\
         my_item.p3d
@@ -93,103 +93,103 @@ P:\
         my_item_co.paa
 ```
 
-All paths in P3D files and materials are relative to the P: drive root. For example, a material reference inside the model would be `MyMod\data\textures\my_item_co.paa`.
+P3Dファイルとマテリアル内のすべてのパスはP:ドライブのルートに対する相対パスです。たとえば、モデル内のマテリアル参照は`MyMod\data\textures\my_item_co.paa`のようになります。
 
-### Basic Workflow in Object Builder
+### Object Builderでの基本ワークフロー
 
-1. **Create or import** your mesh geometry.
-2. **Define LODs** -- at minimum, create Resolution, Geometry, and Fire Geometry LODs.
-3. **Assign materials** to faces in the Resolution LOD.
-4. **Name selections** for any parts that animate, swap textures, or need code interaction.
-5. **Place memory points** for attachments, muzzle flash positions, ejection ports, etc.
-6. **Add proxies** for items that can be attached (optics, magazines, suppressors).
-7. **Validate** using Object Builder's built-in validation (Structure --> Validate).
-8. **Save** as P3D.
-9. **Build** via Binarize or AddonBuilder.
+1. メッシュジオメトリを**作成またはインポート**します。
+2. **LODを定義**します -- 最低限、Resolution、Geometry、Fire Geometry LODを作成します。
+3. Resolution LODでフェースに**マテリアルを割り当て**ます。
+4. アニメーション、テクスチャスワップ、またはコードインタラクションが必要なパーツに**セレクション名を付け**ます。
+5. アタッチメント、マズルフラッシュ位置、排出ポートなどの**メモリポイントを配置**します。
+6. アタッチ可能なアイテム（光学機器、マガジン、サプレッサー）用の**プロキシを追加**します。
+7. Object Builderの組み込みバリデーション（Structure --> Validate）で**バリデーション**します。
+8. P3Dとして**保存**します。
+9. BinarizeまたはAddonBuilderで**ビルド**します。
 
 ---
 
-## The LOD System
+## LODシステム
 
-A P3D file contains multiple **LODs** (Levels of Detail), each serving a specific purpose. The engine selects which LOD to use based on the situation -- distance from camera, physics calculations, shadow rendering, etc.
+P3Dファイルには、それぞれ特定の目的を果たす複数の**LOD**（Level of Detail）が含まれます。エンジンは状況に応じて使用するLODを選択します -- カメラからの距離、物理計算、シャドウレンダリングなど。
 
-### LOD Types
+### LODタイプ
 
-| LOD | Resolution Value | Purpose |
+| LOD | 解像度値 | 目的 |
 |-----|-----------------|---------|
-| **Resolution 0** | 1.000 | Highest detail visual mesh. Rendered when the object is close to the camera. |
-| **Resolution 1** | 1.100 | Medium detail. Rendered at moderate distance. |
-| **Resolution 2** | 1.200 | Low detail. Rendered at far distance. |
-| **Resolution 3+** | 1.300+ | Additional distance LODs. |
-| **View Geometry** | Special | Determines what blocks the player's view (first person). Simplified mesh. |
-| **Fire Geometry** | Special | Collision for bullets and projectiles. Must be convex or composed of convex parts. |
-| **Geometry** | Special | Physics collision. Used for movement collision, gravity, placement. Must be convex or composed of convex decomposition. |
-| **Shadow 0** | Special | Shadow casting mesh (close range). |
-| **Shadow 1000** | Special | Shadow casting mesh (far range). Simpler than Shadow 0. |
-| **Memory** | Special | Contains only named points (no visible geometry). Used for attachment positions, sound origins, etc. |
-| **Roadway** | Special | Defines walkable surfaces on objects (vehicles, buildings with enterable interiors). |
-| **Paths** | Special | AI pathfinding hints for buildings. |
+| **Resolution 0** | 1.000 | 最高詳細のビジュアルメッシュ。オブジェクトがカメラに近い時にレンダリングされます。 |
+| **Resolution 1** | 1.100 | 中詳細。中距離でレンダリングされます。 |
+| **Resolution 2** | 1.200 | 低詳細。遠距離でレンダリングされます。 |
+| **Resolution 3+** | 1.300+ | 追加の距離LOD。 |
+| **View Geometry** | 特殊 | プレイヤーの視界を遮るもの（一人称）を決定します。簡略化されたメッシュ。 |
+| **Fire Geometry** | 特殊 | 弾丸やプロジェクタイルのコリジョン。凸形状または凸形状の組み合わせでなければなりません。 |
+| **Geometry** | 特殊 | 物理コリジョン。移動コリジョン、重力、配置に使用されます。凸形状または凸形状分解の組み合わせでなければなりません。 |
+| **Shadow 0** | 特殊 | シャドウキャスティングメッシュ（近距離）。 |
+| **Shadow 1000** | 特殊 | シャドウキャスティングメッシュ（遠距離）。Shadow 0よりシンプルです。 |
+| **Memory** | 特殊 | 名前付きポイントのみを含みます（可視ジオメトリなし）。アタッチメント位置、サウンド原点などに使用されます。 |
+| **Roadway** | 特殊 | オブジェクト上の歩行可能な表面を定義します（車両、進入可能な建物の内部）。 |
+| **Paths** | 特殊 | 建物用のAIパスファインディングヒント。 |
 
-### LOD Resolution Values (Visual LODs)
+### LOD解像度値（ビジュアルLOD）
 
-The engine uses a formula based on distance and object size to determine which visual LOD to render:
+エンジンは距離とオブジェクトサイズに基づく式を使用して、レンダリングするビジュアルLODを決定します:
 
 ```
-LOD selected = (distance_to_object * LOD_factor) / object_bounding_sphere_radius
+LOD選択 = (オブジェクトまでの距離 * LODファクター) / オブジェクトのバウンディングスフィア半径
 ```
 
-Lower values = closer camera. The engine finds the LOD whose resolution value is the closest match to the calculated value.
+値が低い = カメラが近い。エンジンは計算された値に最も近い解像度値を持つLODを見つけます。
 
-### Creating LODs in Object Builder
+### Object BuilderでのLOD作成
 
-1. **File --> New LOD** or right-click the LOD list.
-2. Select the LOD type from the dropdown.
-3. For visual LODs (Resolution), enter the resolution value.
-4. Model the geometry for that LOD.
+1. **File --> New LOD**または右クリックでLODリスト。
+2. ドロップダウンからLODタイプを選択します。
+3. ビジュアルLOD（Resolution）の場合、解像度値を入力します。
+4. そのLODのジオメトリをモデリングします。
 
-### LOD Requirements by Item Type
+### アイテムタイプ別のLOD要件
 
-| Item Type | Required LODs | Recommended Additional LODs |
+| アイテムタイプ | 必須LOD | 推奨追加LOD |
 |-----------|---------------|----------------------------|
-| **Handheld item** | Resolution 0, Geometry, Fire Geometry, Memory | Shadow 0, Resolution 1 |
-| **Clothing** | Resolution 0, Geometry, Fire Geometry, Memory | Shadow 0, Resolution 1, Resolution 2 |
-| **Weapon** | Resolution 0, Geometry, Fire Geometry, View Geometry, Memory | Shadow 0, Resolution 1, Resolution 2 |
-| **Building** | Resolution 0, Geometry, Fire Geometry, View Geometry, Memory | Shadow 0, Shadow 1000, Roadway, Paths |
-| **Vehicle** | Resolution 0, Geometry, Fire Geometry, View Geometry, Memory | Shadow 0, Roadway, Resolution 1+ |
+| **携行アイテム** | Resolution 0, Geometry, Fire Geometry, Memory | Shadow 0, Resolution 1 |
+| **衣服** | Resolution 0, Geometry, Fire Geometry, Memory | Shadow 0, Resolution 1, Resolution 2 |
+| **武器** | Resolution 0, Geometry, Fire Geometry, View Geometry, Memory | Shadow 0, Resolution 1, Resolution 2 |
+| **建物** | Resolution 0, Geometry, Fire Geometry, View Geometry, Memory | Shadow 0, Shadow 1000, Roadway, Paths |
+| **車両** | Resolution 0, Geometry, Fire Geometry, View Geometry, Memory | Shadow 0, Roadway, Resolution 1+ |
 
-### Geometry LOD Rules
+### Geometry LODルール
 
-The Geometry and Fire Geometry LODs have strict requirements:
+GeometryとFire Geometry LODには厳格な要件があります:
 
-- **Must be convex** or composed of multiple convex components. The engine's physics system requires convex collision shapes.
-- **Named selections must match** those in the Resolution LOD (for animated parts).
-- **Mass must be defined.** Select all vertices in the Geometry LOD and assign mass via **Structure --> Mass**. This determines the object's physical weight.
-- **Keep it simple.** Fewer triangles = better physics performance. A weapon's geometry LOD might have 20-50 triangles vs. thousands in the visual LOD.
+- **凸形状**または複数の凸形状コンポーネントで構成されている必要があります。エンジンの物理システムは凸形状のコリジョンシェイプを必要とします。
+- **名前付きセレクションが一致**している必要があります。Resolution LODのものと同じ（アニメーションパーツ用）。
+- **質量が定義されている**必要があります。Geometry LODですべての頂点を選択し、**Structure --> Mass**で質量を割り当てます。これはオブジェクトの物理的重量を決定します。
+- **シンプルに保つ。** トライアングルが少ない = 物理パフォーマンスが向上。武器のGeometry LODはビジュアルLODの数千に対して20-50トライアングル程度です。
 
 ---
 
-## Named Selections
+## 名前付きセレクション
 
-Named selections are groups of vertices, edges, or faces within a LOD that are tagged with a name. They serve as handles that the engine and scripts use to manipulate parts of a model.
+名前付きセレクションは、LOD内の頂点、エッジ、またはフェースのグループに名前を付けたものです。エンジンとスクリプトがモデルの部分を操作するためのハンドルとして機能します。
 
-### What Named Selections Do
+### 名前付きセレクションの機能
 
-| Purpose | Example Selection Name | Used By |
+| 目的 | セレクション名の例 | 使用元 |
 |---------|----------------------|---------|
-| **Animation** | `bolt`, `trigger`, `magazine` | `model.cfg` animation sources |
-| **Texture swaps** | `camo`, `camo1`, `body` | `hiddenSelections[]` in config.cpp |
-| **Damage textures** | `zbytek` | Engine damage system, material swaps |
-| **Attachment points** | `magazine`, `optics`, `suppressor` | Proxy and attachment system |
+| **アニメーション** | `bolt`, `trigger`, `magazine` | `model.cfg`アニメーションソース |
+| **テクスチャスワップ** | `camo`, `camo1`, `body` | config.cppの`hiddenSelections[]` |
+| **ダメージテクスチャ** | `zbytek` | エンジンダメージシステム、マテリアルスワップ |
+| **アタッチメントポイント** | `magazine`, `optics`, `suppressor` | プロキシとアタッチメントシステム |
 
-### hiddenSelections (Texture Swaps)
+### hiddenSelections（テクスチャスワップ）
 
-The most common use of named selections for modders is **hiddenSelections** -- the ability to swap textures at runtime via config.cpp.
+モッダーにとって名前付きセレクションの最も一般的な用途は**hiddenSelections** -- config.cppを通じてランタイムにテクスチャをスワップする機能です。
 
-**In the P3D model (Resolution LOD):**
-1. Select the faces that should be retexturable.
-2. Name the selection (e.g., `camo`).
+**P3Dモデル内（Resolution LOD）:**
+1. リテクスチャ可能にするフェースを選択します。
+2. セレクションに名前を付けます（例: `camo`）。
 
-**In config.cpp:**
+**config.cpp内:**
 ```cpp
 class MyRifle: Rifle_Base
 {
@@ -199,106 +199,106 @@ class MyRifle: Rifle_Base
 };
 ```
 
-This allows different variants of the same model with different textures without duplicating the P3D file.
+これにより、P3Dファイルを複製せずに、異なるテクスチャを持つ同じモデルの異なるバリアントを作成できます。
 
-### Creating Named Selections
+### 名前付きセレクションの作成
 
-In Object Builder:
+Object Builderでの手順:
 
-1. Select the vertices or faces you want to group.
-2. Go to **Structure --> Named Selections** (or press Ctrl+N).
-3. Click **New**, enter the selection name.
-4. Click **Assign** to tag the selected geometry with that name.
+1. グループ化したい頂点またはフェースを選択します。
+2. **Structure --> Named Selections**（またはCtrl+N）に移動します。
+3. **New**をクリックし、セレクション名を入力します。
+4. **Assign**をクリックして、選択したジオメトリにその名前をタグ付けします。
 
-> **Tip:** Selection names are case-sensitive. `Camo` and `camo` are different selections. Convention is lowercase.
+> **ヒント:** セレクション名は大文字と小文字が区別されます。`Camo`と`camo`は異なるセレクションです。慣例は小文字です。
 
-### Selections Across LODs
+### LOD間のセレクション
 
-Named selections must be consistent across LODs for animations to work:
+アニメーションが動作するためには、名前付きセレクションはLOD間で一貫している必要があります:
 
-- If the `bolt` selection exists in Resolution 0, it must also exist in Geometry and Fire Geometry LODs (covering the corresponding collision geometry).
-- Shadow LODs should also have the selection if the animated part should cast correct shadows.
+- `bolt`セレクションがResolution 0に存在する場合、GeometryとFire Geometry LODにも存在する必要があります（対応するコリジョンジオメトリをカバー）。
+- アニメーションパーツが正しいシャドウをキャストする場合、Shadow LODにもそのセレクションが必要です。
 
 ---
 
-## Memory Points
+## メモリポイント
 
-Memory points are named positions defined in the **Memory LOD**. They have no visual representation in-game -- they define spatial coordinates that the engine and scripts reference for positioning effects, attachments, sounds, and more.
+メモリポイントは**Memory LOD**で定義される名前付き位置です。ゲーム内では視覚的な表現はありません -- エンジンとスクリプトがエフェクト、アタッチメント、サウンドなどの位置決めに参照する空間座標を定義します。
 
-### Common Memory Points
+### 一般的なメモリポイント
 
-| Point Name | Purpose |
+| ポイント名 | 目的 |
 |------------|---------|
-| `usti hlavne` | Muzzle position (where bullets originate, muzzle flash appears) |
-| `konec hlavne` | End of barrel (used with `usti hlavne` to define barrel direction) |
-| `nabojnicestart` | Ejection port start (where shell casings emerge) |
-| `nabojniceend` | Ejection port end (direction of ejection) |
-| `handguard` | Handguard attachment point |
-| `magazine` | Magazine well position |
-| `optics` | Optic rail position |
-| `suppressor` | Suppressor mount position |
-| `trigger` | Trigger position (for hand IK) |
-| `pistolgrip` | Pistol grip position (for hand IK) |
-| `lefthand` | Left hand grip position |
-| `righthand` | Right hand grip position |
-| `eye` | Eye position (for first-person view alignment) |
-| `pilot` | Driver/pilot seat position (vehicles) |
-| `light_l` / `light_r` | Left/right headlight positions (vehicles) |
+| `usti hlavne` | マズル位置（弾丸の発射元、マズルフラッシュの表示位置） |
+| `konec hlavne` | バレルの端（`usti hlavne`と共にバレル方向を定義） |
+| `nabojnicestart` | 排莢口の開始位置（薬莢が出る場所） |
+| `nabojniceend` | 排莢口の終了位置（排莢方向） |
+| `handguard` | ハンドガードアタッチメントポイント |
+| `magazine` | マガジンウェル位置 |
+| `optics` | 光学機器レール位置 |
+| `suppressor` | サプレッサーマウント位置 |
+| `trigger` | トリガー位置（ハンドIK用） |
+| `pistolgrip` | ピストルグリップ位置（ハンドIK用） |
+| `lefthand` | 左手のグリップ位置 |
+| `righthand` | 右手のグリップ位置 |
+| `eye` | 目の位置（一人称ビューの整列用） |
+| `pilot` | ドライバー/パイロットシート位置（車両） |
+| `light_l` / `light_r` | 左/右ヘッドライト位置（車両） |
 
-### Directional Memory Points
+### 方向性メモリポイント
 
-Many effects need both a position and a direction. This is achieved with paired memory points:
+多くのエフェクトには位置と方向の両方が必要です。これはペアのメモリポイントで実現されます:
 
 ```
 usti hlavne  ------>  konec hlavne
-(muzzle start)        (muzzle end)
+(マズル開始)          (マズル終了)
 
-The direction vector is: konec hlavne - usti hlavne
+方向ベクトル: konec hlavne - usti hlavne
 ```
 
-### Creating Memory Points in Object Builder
+### Object Builderでのメモリポイント作成
 
-1. Switch to the **Memory LOD** in the LOD list.
-2. Create a vertex at the desired position.
-3. Name it via **Structure --> Named Selections**: create a selection with the point name and assign the single vertex to it.
+1. LODリストで**Memory LOD**に切り替えます。
+2. 目的の位置に頂点を作成します。
+3. **Structure --> Named Selections**で名前を付けます: ポイント名でセレクションを作成し、単一の頂点を割り当てます。
 
-> **注意：** The Memory LOD should contain ONLY named points (individual vertices). Do not create faces or edges in the Memory LOD.
+> **注意:** Memory LODには名前付きポイント（個別の頂点）のみを含める必要があります。Memory LODにフェースやエッジを作成しないでください。
 
 ---
 
-## The Proxy System
+## プロキシシステム
 
-Proxies define positions where other P3D models can be attached. When you see a magazine inserted in a weapon, an optic mounted on a rail, or a suppressor screwed onto a barrel -- those are proxy-attached models.
+プロキシは、他のP3Dモデルをアタッチできる位置を定義します。武器にマガジンが挿入されているのを見たり、レールに光学機器がマウントされていたり、バレルにサプレッサーが取り付けられているのを見たりする場合 -- それらはプロキシアタッチされたモデルです。
 
-### How Proxies Work
+### プロキシの仕組み
 
-A proxy is a special reference placed in the Resolution LOD that points to another P3D file. The engine renders the proxy's referenced model at the proxy's position and orientation.
+プロキシは、Resolution LODに配置される特別な参照で、別のP3Dファイルを指します。エンジンはプロキシの参照モデルをプロキシの位置と方向でレンダリングします。
 
-### Proxy Naming Convention
+### プロキシの命名規則
 
-Proxy names follow the pattern: `proxy:\path\to\model.p3d`
+プロキシ名は以下のパターンに従います: `proxy:\path\to\model.p3d`
 
-For attachment proxies on weapons, the standard names are:
+武器のアタッチメントプロキシの標準名は以下の通りです:
 
-| Proxy Path | Attachment Type |
+| プロキシパス | アタッチメントタイプ |
 |------------|----------------|
-| `proxy:\dz\weapons\attachments\magazine\mag_placeholder.p3d` | Magazine slot |
-| `proxy:\dz\weapons\attachments\optics\optic_placeholder.p3d` | Optics rail |
-| `proxy:\dz\weapons\attachments\suppressor\sup_placeholder.p3d` | Suppressor mount |
-| `proxy:\dz\weapons\attachments\handguard\handguard_placeholder.p3d` | Handguard slot |
-| `proxy:\dz\weapons\attachments\stock\stock_placeholder.p3d` | Stock/buttstock slot |
+| `proxy:\dz\weapons\attachments\magazine\mag_placeholder.p3d` | マガジンスロット |
+| `proxy:\dz\weapons\attachments\optics\optic_placeholder.p3d` | 光学機器レール |
+| `proxy:\dz\weapons\attachments\suppressor\sup_placeholder.p3d` | サプレッサーマウント |
+| `proxy:\dz\weapons\attachments\handguard\handguard_placeholder.p3d` | ハンドガードスロット |
+| `proxy:\dz\weapons\attachments\stock\stock_placeholder.p3d` | ストック/バットストックスロット |
 
-### Adding Proxies in Object Builder
+### Object Builderでのプロキシ追加
 
-1. In the Resolution LOD, position the 3D cursor where the attachment should appear.
-2. Go to **Structure --> Proxy --> Create**.
-3. Enter the proxy path (e.g., `dz\weapons\attachments\magazine\mag_placeholder.p3d`).
-4. The proxy appears as a small arrow indicating position and orientation.
-5. Rotate and position the proxy to align correctly with the attachment geometry.
+1. Resolution LODで、アタッチメントを表示させたい位置に3Dカーソルを配置します。
+2. **Structure --> Proxy --> Create**に移動します。
+3. プロキシパスを入力します（例: `dz\weapons\attachments\magazine\mag_placeholder.p3d`）。
+4. プロキシは位置と方向を示す小さな矢印として表示されます。
+5. アタッチメントジオメトリと正しくアラインするようにプロキシを回転・配置します。
 
-### Proxy Index
+### プロキシインデックス
 
-Each proxy has an index number (starting from 1). When a model has multiple proxies of the same type, the index differentiates them. The index is referenced in config.cpp:
+各プロキシにはインデックス番号（1から開始）があります。モデルに同じタイプの複数のプロキシがある場合、インデックスでそれらを区別します。インデックスはconfig.cppで参照されます:
 
 ```cpp
 class MyWeapon: Rifle_Base
@@ -317,9 +317,9 @@ class MyWeapon: Rifle_Base
 
 ---
 
-## Model.cfg for Animations
+## アニメーション用model.cfg
 
-The `model.cfg` file defines animations for P3D models. It maps animation sources (driven by game logic) to transformations on named selections.
+`model.cfg`ファイルはP3Dモデルのアニメーションを定義します。アニメーションソース（ゲームロジックによって駆動）を名前付きセレクションのトランスフォームにマッピングします。
 
 ### 基本構造
 
@@ -343,14 +343,14 @@ class CfgModels
             class bolt_move
             {
                 type = "translation";
-                source = "reload";        // Engine animation source
-                selection = "bolt";       // Named selection in P3D
-                axis = "bolt_axis";       // Axis memory point pair
-                memory = 1;               // Axis defined in Memory LOD
+                source = "reload";        // エンジンアニメーションソース
+                selection = "bolt";       // P3D内の名前付きセレクション
+                axis = "bolt_axis";       // 軸メモリポイントペア
+                memory = 1;               // 軸はMemory LODで定義
                 minValue = 0;
                 maxValue = 1;
                 offset0 = 0;
-                offset1 = 0.05;           // 5cm translation
+                offset1 = 0.05;           // 5cmの平行移動
             };
 
             class trigger_move
@@ -363,7 +363,7 @@ class CfgModels
                 minValue = 0;
                 maxValue = 1;
                 angle0 = 0;
-                angle1 = -0.4;            // Radians
+                angle1 = -0.4;            // ラジアン
             };
         };
     };
@@ -382,7 +382,7 @@ class CfgSkeletons
     {
         skeletonBones[] =
         {
-            "bolt", "",          // "bone_name", "parent_bone" ("" = root)
+            "bolt", "",          // "ボーン名", "親ボーン"（"" = ルート）
             "trigger", "",
             "magazine", ""
         };
@@ -390,170 +390,170 @@ class CfgSkeletons
 };
 ```
 
-### Animation Types
+### アニメーションタイプ
 
-| Type | Keyword | Movement | Controlled By |
+| タイプ | キーワード | 動き | 制御元 |
 |------|---------|----------|---------------|
-| **Translation** | `translation` | Linear movement along an axis | `offset0` / `offset1` (meters) |
-| **Rotation** | `rotation` | Rotation around an axis | `angle0` / `angle1` (radians) |
-| **RotationX/Y/Z** | `rotationX` | Rotation around a fixed world axis | `angle0` / `angle1` |
-| **Hide** | `hide` | Show/hide a selection | `hideValue` threshold |
+| **平行移動** | `translation` | 軸に沿った直線移動 | `offset0` / `offset1`（メートル） |
+| **回転** | `rotation` | 軸を中心とした回転 | `angle0` / `angle1`（ラジアン） |
+| **RotationX/Y/Z** | `rotationX` | 固定ワールド軸を中心とした回転 | `angle0` / `angle1` |
+| **非表示** | `hide` | セレクションの表示/非表示 | `hideValue`しきい値 |
 
-### Animation Sources
+### アニメーションソース
 
-Animation sources are engine-provided values that drive animations:
+アニメーションソースは、アニメーションを駆動するエンジン提供の値です:
 
-| Source | Range | Description |
+| ソース | 範囲 | 説明 |
 |--------|-------|-------------|
-| `reload` | 0-1 | Weapon reload phase |
-| `trigger` | 0-1 | Trigger pull |
-| `zeroing` | 0-N | Weapon zeroing setting |
-| `isFlipped` | 0-1 | Iron sight flip state |
-| `door` | 0-1 | Door open/close |
-| `rpm` | 0-N | Vehicle engine RPM |
-| `speed` | 0-N | Vehicle speed |
-| `fuel` | 0-1 | Vehicle fuel level |
-| `damper` | 0-1 | Vehicle suspension |
+| `reload` | 0-1 | 武器リロードフェーズ |
+| `trigger` | 0-1 | トリガー引き |
+| `zeroing` | 0-N | 武器ゼロイング設定 |
+| `isFlipped` | 0-1 | アイアンサイトフリップ状態 |
+| `door` | 0-1 | ドア開閉 |
+| `rpm` | 0-N | 車両エンジンRPM |
+| `speed` | 0-N | 車両速度 |
+| `fuel` | 0-1 | 車両燃料レベル |
+| `damper` | 0-1 | 車両サスペンション |
 
 ---
 
-## Importing from FBX/OBJ
+## FBX/OBJからのインポート
 
-Most modders create 3D models in external tools (Blender, 3ds Max, Maya) and import them into Object Builder.
+ほとんどのモッダーは外部ツール（Blender、3ds Max、Maya）で3Dモデルを作成し、Object Builderにインポートします。
 
-### Supported Import Formats
+### サポートされるインポートフォーマット
 
-| Format | Extension | Notes |
+| フォーマット | 拡張子 | 備考 |
 |--------|-----------|-------|
-| **FBX** | `.fbx` | Best compatibility. Export as FBX 2013 or later (binary). |
-| **OBJ** | `.obj` | Wavefront OBJ. Simple mesh data only (no animations). |
-| **3DS** | `.3ds` | Legacy 3ds Max format. Limited to 65K vertices per mesh. |
+| **FBX** | `.fbx` | 最良の互換性。FBX 2013以降（バイナリ）でエクスポートしてください。 |
+| **OBJ** | `.obj` | Wavefront OBJ。シンプルなメッシュデータのみ（アニメーションなし）。 |
+| **3DS** | `.3ds` | レガシー3ds Maxフォーマット。メッシュあたり65K頂点に制限。 |
 
-### Import Workflow
+### インポートワークフロー
 
-**Step 1: Prepare in your 3D software**
-- Model should be centered at origin.
-- Apply all transforms (location, rotation, scale).
-- Scale: 1 unit = 1 meter. DayZ uses meters.
-- Triangulate the mesh (Object Builder works with triangles).
-- UV unwrap the model.
-- Export as FBX (binary, no animation, Y-up or Z-up -- Object Builder handles both).
+**ステップ1: 3Dソフトウェアで準備**
+- モデルを原点の中心に配置します。
+- すべてのトランスフォーム（位置、回転、スケール）を適用します。
+- スケール: 1ユニット = 1メートル。DayZはメートルを使用します。
+- メッシュをトライアングレートします（Object Builderはトライアングルで動作します）。
+- モデルをUVアンラップします。
+- FBX（バイナリ、アニメーションなし、Y-upまたはZ-up -- Object Builderは両方を処理）としてエクスポートします。
 
-**Step 2: Import into Object Builder**
-1. Open Object Builder.
-2. **File --> Import --> FBX** (or OBJ/3DS).
-3. Review the import settings:
-   - Scale factor (should be 1.0 if your source is in meters).
-   - Axis conversion (Z-up to Y-up if needed).
-4. The mesh appears in a new Resolution LOD.
+**ステップ2: Object Builderにインポート**
+1. Object Builderを開きます。
+2. **File --> Import --> FBX**（またはOBJ/3DS）。
+3. インポート設定を確認します:
+   - スケールファクター（ソースがメートル単位の場合1.0であるべき）。
+   - 軸変換（必要に応じてZ-upからY-up）。
+4. メッシュが新しいResolution LODに表示されます。
 
-**Step 3: Post-import setup**
-1. Assign materials to faces (select faces, right-click --> **Face Properties**).
-2. Create additional LODs (Geometry, Fire Geometry, Memory, Shadow).
-3. Simplify geometry for collision LODs (remove small details, ensure convexity).
-4. Add named selections, memory points, and proxies.
-5. Validate and save.
+**ステップ3: インポート後のセットアップ**
+1. フェースにマテリアルを割り当てます（フェースを選択、右クリック --> **Face Properties**）。
+2. 追加LOD（Geometry、Fire Geometry、Memory、Shadow）を作成します。
+3. コリジョンLOD用にジオメトリを簡略化します（小さなディテールを削除、凸性を確保）。
+4. 名前付きセレクション、メモリポイント、プロキシを追加します。
+5. バリデーションして保存します。
 
-### Blender-Specific Tips
+### Blender固有のヒント
 
-- Use the **Blender DayZ Toolbox** community addon if available -- it streamlines export settings.
-- Export with: **Apply Modifiers**, **Triangulate Faces**, **Apply Scale**.
-- Set **Forward: -Z Forward**, **Up: Y Up** in the FBX export dialog.
-- Name mesh objects in Blender to match intended named selections -- some importers preserve object names.
+- 利用可能な場合は**Blender DayZ Toolbox**コミュニティアドオンを使用してください -- エクスポート設定を効率化します。
+- エクスポート時: **Apply Modifiers**、**Triangulate Faces**、**Apply Scale**。
+- FBXエクスポートダイアログで**Forward: -Z Forward**、**Up: Y Up**を設定します。
+- Blenderのメッシュオブジェクトの名前を意図する名前付きセレクションに合わせます -- 一部のインポーターはオブジェクト名を保持します。
 
 ---
 
-## Common Model Types
+## 一般的なモデルタイプ
 
-### Weapons
+### 武器
 
-Weapons are the most complex P3D models, requiring:
-- High-poly Resolution LOD (5,000-20,000 triangles)
-- Multiple named selections (bolt, trigger, magazine, camo, etc.)
-- Full memory point set (muzzle, ejection, grip positions)
-- Multiple proxies (magazine, optics, suppressor, handguard, stock)
-- Skeleton and animations in model.cfg
-- View Geometry for first-person obstruction
+武器は最も複雑なP3Dモデルで、以下が必要です:
+- 高ポリResolution LOD（5,000-20,000トライアングル）
+- 複数の名前付きセレクション（bolt、trigger、magazine、camoなど）
+- 完全なメモリポイントセット（マズル、排莢、グリップ位置）
+- 複数のプロキシ（マガジン、光学機器、サプレッサー、ハンドガード、ストック）
+- model.cfgでのスケルトンとアニメーション
+- 一人称遮蔽用のView Geometry
 
-### Clothing
+### 衣服
 
-Clothing models are rigged to the character skeleton:
-- Resolution LOD follows the character's bone structure
-- Named selections for texture variants (`camo`, `camo1`)
-- Simpler collision geometry
-- No proxies (usually)
-- hiddenSelections for color/camo variants
+衣服モデルはキャラクタースケルトンにリグされています:
+- Resolution LODはキャラクターのボーン構造に従う
+- テクスチャバリアント用の名前付きセレクション（`camo`、`camo1`）
+- よりシンプルなコリジョンジオメトリ
+- プロキシなし（通常）
+- カラー/カモバリアント用のhiddenSelections
 
-### Buildings
+### 建物
 
-Buildings have unique requirements:
-- Large, detailed Resolution LODs
-- Roadway LOD for walkable surfaces (floors, stairs)
-- Paths LOD for AI navigation
-- View Geometry to prevent seeing through walls
-- Multiple Shadow LODs for performance at different distances
-- Named selections for doors and windows that open
+建物には独自の要件があります:
+- 大きく詳細なResolution LOD
+- 歩行可能な表面用のRoadway LOD（床、階段）
+- AIナビゲーション用のPaths LOD
+- 壁の透視防止用のView Geometry
+- 異なる距離でのパフォーマンス用の複数のShadow LOD
+- 開くドアや窓用の名前付きセレクション
 
-### Vehicles
+### 車両
 
-Vehicles combine many systems:
-- Detailed Resolution LOD with animated parts (wheels, doors, hood)
-- Complex skeleton with many bones
-- Roadway LOD for passengers standing in truck beds
-- Memory points for lights, exhaust, driver position, passenger seats
-- Multiple proxies for attachments (wheels, doors)
+車両は多くのシステムを組み合わせます:
+- アニメーションパーツ（ホイール、ドア、フード）を持つ詳細なResolution LOD
+- 多くのボーンを持つ複雑なスケルトン
+- トラック荷台で立つ乗客用のRoadway LOD
+- ライト、排気、ドライバー位置、乗客シート用のメモリポイント
+- アタッチメント（ホイール、ドア）用の複数のプロキシ
 
 ---
 
 ## よくある間違い
 
-### 1. Missing Geometry LOD
+### 1. Geometry LODの欠落
 
-**症状：** Object has no collision. Players and bullets pass through it.
-**修正：** Create a Geometry LOD with a simplified convex mesh. Assign mass to vertices.
+**症状:** オブジェクトにコリジョンがない。プレイヤーと弾丸が通り抜ける。
+**修正:** 簡略化された凸メッシュでGeometry LODを作成してください。頂点に質量を割り当ててください。
 
-### 2. Non-Convex Collision Shapes
+### 2. 非凸コリジョンシェイプ
 
-**症状：** Physics glitches, objects bouncing erratically, items falling through surfaces.
-**修正：** Break complex shapes into multiple convex components in the Geometry LOD. Each component must be a closed convex solid.
+**症状:** 物理のグリッチ、オブジェクトが不規則に跳ねる、アイテムがサーフェスを通り抜ける。
+**修正:** Geometry LODで複雑な形状を複数の凸コンポーネントに分割してください。各コンポーネントは閉じた凸形状でなければなりません。
 
-### 3. Inconsistent Named Selections
+### 3. 一貫性のない名前付きセレクション
 
-**症状：** Animations only work visually but not for collision, or shadow does not animate.
-**修正：** Ensure every named selection that exists in the Resolution LOD also exists in Geometry, Fire Geometry, and Shadow LODs.
+**症状:** アニメーションが視覚的にのみ動作するがコリジョンには反映されない、またはシャドウがアニメーションしない。
+**修正:** Resolution LODに存在するすべての名前付きセレクションが、Geometry、Fire Geometry、Shadow LODにも存在することを確認してください。
 
-### 4. Wrong Scale
+### 4. 間違ったスケール
 
-**症状：** Object is gigantic or microscopic in-game.
-**修正：** Verify your 3D software uses meters as the unit. A DayZ character is approximately 1.8 meters tall.
+**症状:** オブジェクトがゲーム内で巨大または微小。
+**修正:** 3Dソフトウェアがメートルを単位として使用していることを確認してください。DayZキャラクターは約1.8メートルの高さです。
 
-### 5. Missing Memory Points
+### 5. メモリポイントの欠落
 
-**症状：** Muzzle flash appears at the wrong position, attachments float in space.
-**修正：** Create the Memory LOD and add all required named points at correct positions.
+**症状:** マズルフラッシュが間違った位置に表示される、アタッチメントが空中に浮く。
+**修正:** Memory LODを作成し、正しい位置にすべての必要な名前付きポイントを追加してください。
 
-### 6. No Mass Defined
+### 6. 質量が未定義
 
-**症状：** Object cannot be picked up, or physics interactions behave strangely.
-**修正：** Select all vertices in the Geometry LOD and assign mass via **Structure --> Mass**.
+**症状:** オブジェクトを拾えない、または物理インタラクションが奇妙に動作する。
+**修正:** Geometry LODですべての頂点を選択し、**Structure --> Mass**で質量を割り当ててください。
 
 ---
 
-## Best Practices
+## ベストプラクティス
 
-1. **Start with the Geometry LOD.** Block out your collision shape first, then build the visual detail on top. This prevents the common mistake of creating a beautiful model that cannot collide properly.
+1. **Geometry LODから始めてください。** 最初にコリジョンシェイプをブロックアウトし、その上にビジュアルのディテールを構築します。これにより、美しいモデルを作成したが適切にコリジョンできないという一般的な間違いを防ぎます。
 
-2. **Use reference models.** Extract vanilla P3D files from the game data and study them in Object Builder. They show exactly what the engine expects for each item type.
+2. **参考モデルを使用してください。** ゲームデータからバニラP3Dファイルを抽出し、Object Builderで調べてください。各アイテムタイプに対してエンジンが何を期待しているかを正確に示しています。
 
-3. **Validate frequently.** Use Object Builder's **Structure --> Validate** after every significant change. Fix warnings before they become mysterious in-game bugs.
+3. **頻繁にバリデーションしてください。** 重要な変更のたびにObject Builderの**Structure --> Validate**を使用してください。警告がゲーム内の謎のバグになる前に修正してください。
 
-4. **Keep LOD triangle counts proportional.** Resolution 0 might have 10,000 triangles; Resolution 1 should have ~5,000; Geometry should have ~100-500. Dramatic reduction at each level.
+4. **LODトライアングル数を比例的に保ってください。** Resolution 0は10,000トライアングル、Resolution 1は約5,000、Geometryは約100-500であるべきです。各レベルで劇的な削減。
 
-5. **Name selections descriptively.** Use `bolt_carrier` instead of `sel01`. Your future self (and other modders) will thank you.
+5. **セレクションに説明的な名前を付けてください。** `sel01`の代わりに`bolt_carrier`を使用してください。将来のあなた自身（および他のモッダー）に感謝されます。
 
-6. **Test with file patching first.** Load your unbinarized P3D via file patching mode before committing to a full PBO build. This catches most issues faster.
+6. **まずファイルパッチングでテストしてください。** 完全なPBOビルドをコミットする前に、ファイルパッチングモードで非バイナライズP3Dをロードしてください。ほとんどの問題をより速くキャッチできます。
 
-7. **Document memory points.** Keep a reference image or text file listing all memory points and their intended positions. Complex weapons can have 20+ points.
+7. **メモリポイントを文書化してください。** すべてのメモリポイントとその意図する位置をリストした参照画像やテキストファイルを保管してください。複雑な武器には20以上のポイントがあることがあります。
 
 ---
 
@@ -561,4 +561,4 @@ Vehicles combine many systems:
 
 | 前 | 上 | 次 |
 |----------|----|------|
-| [4.1 Textures](01-textures.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.3 Materials](03-materials.md) |
+| [4.1 テクスチャ](01-textures.md) | [Part 4: ファイルフォーマット & DayZ Tools](01-textures.md) | [4.3 マテリアル](03-materials.md) |

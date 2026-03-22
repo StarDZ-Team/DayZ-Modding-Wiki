@@ -1,76 +1,76 @@
-# Chapter 4.3: Materials (.rvmat)
+# 第4.3章: マテリアル (.rvmat)
 
-[Home](../../README.md) | [<< Previous: 3D Models](02-models.md) | **Materials** | [Next: Audio >>](04-audio.md)
+[ホーム](../../README.md) | [<< 前: 3Dモデル](02-models.md) | **マテリアル** | [次: オーディオ >>](04-audio.md)
 
 ---
 
 ## はじめに
 
-A material in DayZ is the bridge between a 3D model and its visual appearance. While textures provide raw image data, the **RVMAT** (Real Virtuality Material) file defines how those textures are combined, which shader interprets them, and what surface properties the engine should simulate -- shininess, transparency, self-illumination, and more. Every face on every P3D model in the game references an RVMAT file, and understanding how to create and configure them is essential for any visual mod.
+DayZにおけるマテリアルは、3Dモデルとその視覚的な外観を橋渡しするものです。テクスチャが生の画像データを提供する一方で、**RVMAT**（Real Virtuality Material）ファイルはそれらのテクスチャがどのように組み合わされるか、どのシェーダーがそれらを解釈するか、そしてエンジンがシミュレートすべきサーフェスプロパティ -- 光沢、透明度、自己発光など -- を定義します。ゲーム内のすべてのP3DモデルのすべてのフェースがRVMATファイルを参照しており、それらを作成・設定する方法を理解することは、あらゆるビジュアルモッドに不可欠です。
 
-This chapter covers the RVMAT file format, shader types, texture stage configuration, material properties, the damage-level material swap system, and practical examples drawn from DayZ-Samples.
+この章では、RVMATファイルフォーマット、シェーダータイプ、テクスチャステージの設定、マテリアルプロパティ、ダメージレベルのマテリアルスワップシステム、そしてDayZ-Samplesからの実践的な例について説明します。
 
 ---
 
 ## 目次
 
-- [RVMAT Format Overview](#rvmat-format-overview)
-- [File Structure](#file-structure)
-- [Shader Types](#shader-types)
-- [Texture Stages](#texture-stages)
-- [Material Properties](#material-properties)
-- [Health Levels (Damage Material Swaps)](#health-levels-damage-material-swaps)
-- [How Materials Reference Textures](#how-materials-reference-textures)
-- [Creating an RVMAT from Scratch](#creating-an-rvmat-from-scratch)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [RVMATフォーマットの概要](#rvmatフォーマットの概要)
+- [ファイル構造](#ファイル構造)
+- [シェーダータイプ](#シェーダータイプ)
+- [テクスチャステージ](#テクスチャステージ)
+- [マテリアルプロパティ](#マテリアルプロパティ)
+- [ヘルスレベル（ダメージマテリアルスワップ）](#ヘルスレベルダメージマテリアルスワップ)
+- [マテリアルがテクスチャを参照する方法](#マテリアルがテクスチャを参照する方法)
+- [RVMATをゼロから作成する](#rvmatをゼロから作成する)
+- [実際の例](#実際の例)
+- [よくある間違い](#よくある間違い)
+- [ベストプラクティス](#ベストプラクティス)
 
 ---
 
-## RVMAT Format Overview
+## RVMATフォーマットの概要
 
-An **RVMAT** file is a text-based configuration file (not binary) that defines a material. Despite the custom extension, the format is plain text using Bohemia's config-style syntax with classes and key-value pairs.
+**RVMAT**ファイルは、マテリアルを定義するテキストベースの設定ファイル（バイナリではない）です。カスタム拡張子にもかかわらず、フォーマットはBohemiaの設定スタイルの構文を使用するプレーンテキストで、クラスとキーバリューペアで構成されています。
 
-### Key Characteristics
+### 主な特徴
 
-- **Text format:** Editable in any text editor (Notepad++, VS Code).
-- **Shader binding:** Each RVMAT specifies which rendering shader to use.
-- **Texture mapping:** Defines which texture files are assigned to which shader inputs (diffuse, normal, specular, etc.).
-- **Surface properties:** Controls specular intensity, emissive glow, transparency, and more.
-- **Referenced by P3D models:** Faces in Object Builder's Resolution LOD are assigned an RVMAT. The engine loads the RVMAT and all textures it references.
-- **Referenced by config.cpp:** `hiddenSelectionsMaterials[]` can override materials at runtime.
+- **テキストフォーマット:** 任意のテキストエディタ（Notepad++、VS Code）で編集可能です。
+- **シェーダーバインディング:** 各RVMATは使用するレンダリングシェーダーを指定します。
+- **テクスチャマッピング:** どのテクスチャファイルがどのシェーダー入力（ディフューズ、ノーマル、スペキュラなど）に割り当てられるかを定義します。
+- **サーフェスプロパティ:** スペキュラ強度、エミッシブグロー、透明度などを制御します。
+- **P3Dモデルから参照:** Object BuilderのResolution LODのフェースにRVMATが割り当てられます。エンジンはRVMATとそれが参照するすべてのテクスチャをロードします。
+- **config.cppから参照:** `hiddenSelectionsMaterials[]`はランタイムにマテリアルをオーバーライドできます。
 
-### Path Convention
+### パス規則
 
-RVMAT files live alongside their textures, typically in a `data/` directory:
+RVMATファイルはテクスチャと一緒に、通常は`data/`ディレクトリに配置されます:
 
 ```
 MyMod/
   data/
-    my_item.rvmat              <-- Material definition
-    my_item_co.paa             <-- Diffuse texture (referenced by the RVMAT)
-    my_item_nohq.paa           <-- Normal map (referenced by the RVMAT)
-    my_item_smdi.paa           <-- Specular map (referenced by the RVMAT)
+    my_item.rvmat              <-- マテリアル定義
+    my_item_co.paa             <-- ディフューズテクスチャ（RVMATから参照）
+    my_item_nohq.paa           <-- ノーマルマップ（RVMATから参照）
+    my_item_smdi.paa           <-- スペキュラマップ（RVMATから参照）
 ```
 
 ---
 
-## File Structure
+## ファイル構造
 
-An RVMAT file has a consistent structure. Here is a complete, annotated example:
+RVMATファイルには一貫した構造があります。以下は完全な注釈付きの例です:
 
 ```cpp
-ambient[] = {1.0, 1.0, 1.0, 1.0};        // Ambient color multiplier (RGBA)
-diffuse[] = {1.0, 1.0, 1.0, 1.0};        // Diffuse color multiplier (RGBA)
-forcedDiffuse[] = {0.0, 0.0, 0.0, 0.0};  // Additive diffuse override
-emmisive[] = {0.0, 0.0, 0.0, 0.0};       // Emissive (self-illumination) color
-specular[] = {0.7, 0.7, 0.7, 1.0};       // Specular highlight color
-specularPower = 80;                        // Specular sharpness (higher = tighter highlight)
-PixelShaderID = "Super";                   // Shader program to use
-VertexShaderID = "Super";                  // Vertex shader program
+ambient[] = {1.0, 1.0, 1.0, 1.0};        // アンビエントカラー乗数（RGBA）
+diffuse[] = {1.0, 1.0, 1.0, 1.0};        // ディフューズカラー乗数（RGBA）
+forcedDiffuse[] = {0.0, 0.0, 0.0, 0.0};  // 加算ディフューズオーバーライド
+emmisive[] = {0.0, 0.0, 0.0, 0.0};       // エミッシブ（自己発光）カラー
+specular[] = {0.7, 0.7, 0.7, 1.0};       // スペキュラハイライトカラー
+specularPower = 80;                        // スペキュラの鮮明さ（高い = タイトなハイライト）
+PixelShaderID = "Super";                   // 使用するシェーダープログラム
+VertexShaderID = "Super";                  // 頂点シェーダープログラム
 
-class Stage1                               // Texture stage: Normal map
+class Stage1                               // テクスチャステージ: ノーマルマップ
 {
     texture = "MyMod\data\my_item_nohq.paa";
     uvSource = "tex";
@@ -83,7 +83,7 @@ class Stage1                               // Texture stage: Normal map
     };
 };
 
-class Stage2                               // Texture stage: Diffuse/Color map
+class Stage2                               // テクスチャステージ: ディフューズ/カラーマップ
 {
     texture = "MyMod\data\my_item_co.paa";
     uvSource = "tex";
@@ -96,7 +96,7 @@ class Stage2                               // Texture stage: Diffuse/Color map
     };
 };
 
-class Stage3                               // Texture stage: Specular/Metallic map
+class Stage3                               // テクスチャステージ: スペキュラ/メタリックマップ
 {
     texture = "MyMod\data\my_item_smdi.paa";
     uvSource = "tex";
@@ -110,58 +110,58 @@ class Stage3                               // Texture stage: Specular/Metallic m
 };
 ```
 
-### Top-Level Properties
+### トップレベルプロパティ
 
-These are declared before the Stage classes and control the material's overall behavior:
+これらはStageクラスの前に宣言され、マテリアルの全体的な動作を制御します:
 
-| Property | Type | Description |
+| プロパティ | タイプ | 説明 |
 |----------|------|-------------|
-| `ambient[]` | float[4] | Ambient light color multiplier. `{1,1,1,1}` = full, `{0,0,0,0}` = no ambient. |
-| `diffuse[]` | float[4] | Diffuse light color multiplier. Usually `{1,1,1,1}`. |
-| `forcedDiffuse[]` | float[4] | Additive override to diffuse. Usually `{0,0,0,0}`. |
-| `emmisive[]` | float[4] | Self-illumination color. Non-zero values make the surface glow. Note: Bohemia uses the misspelling `emmisive`, not `emissive`. |
-| `specular[]` | float[4] | Specular highlight color and intensity. |
-| `specularPower` | float | Sharpness of specular highlights. Range 1-200. Higher = tighter, more focused reflection. |
-| `PixelShaderID` | string | Name of the pixel shader program. |
-| `VertexShaderID` | string | Name of the vertex shader program. |
+| `ambient[]` | float[4] | アンビエントライトカラー乗数。`{1,1,1,1}` = フル、`{0,0,0,0}` = アンビエントなし。 |
+| `diffuse[]` | float[4] | ディフューズライトカラー乗数。通常`{1,1,1,1}`。 |
+| `forcedDiffuse[]` | float[4] | ディフューズへの加算オーバーライド。通常`{0,0,0,0}`。 |
+| `emmisive[]` | float[4] | 自己発光カラー。ゼロでない値はサーフェスを光らせます。注意: Bohemiaは`emissive`ではなく`emmisive`というスペルミスを使用しています。 |
+| `specular[]` | float[4] | スペキュラハイライトのカラーと強度。 |
+| `specularPower` | float | スペキュラハイライトの鮮明さ。範囲1-200。高い = タイトで集中した反射。 |
+| `PixelShaderID` | string | ピクセルシェーダープログラム名。 |
+| `VertexShaderID` | string | 頂点シェーダープログラム名。 |
 
 ---
 
-## Shader Types
+## シェーダータイプ
 
-The `PixelShaderID` and `VertexShaderID` values determine which rendering pipeline processes the material. Both should usually be set to the same value.
+`PixelShaderID`と`VertexShaderID`の値は、マテリアルを処理するレンダリングパイプラインを決定します。通常、両方を同じ値に設定する必要があります。
 
-### Available Shaders
+### 利用可能なシェーダー
 
-| Shader | Use Case | Texture Stages Required |
+| シェーダー | 用途 | 必要なテクスチャステージ |
 |--------|----------|------------------------|
-| **Super** | Standard opaque surfaces (weapons, clothing, items) | Normal, Diffuse, Specular/Metallic |
-| **Multi** | Multi-layered terrain and complex surfaces | Multiple diffuse/normal pairs |
-| **Glass** | Transparent and semi-transparent surfaces | Diffuse with alpha |
-| **Water** | Water surfaces with reflection and refraction | Special water textures |
-| **Terrain** | Terrain ground surfaces | Satellite, mask, material layers |
-| **NormalMap** | Simplified normal-mapped surface | Normal, Diffuse |
-| **NormalMapSpecular** | Normal-mapped with specular | Normal, Diffuse, Specular |
-| **Hair** | Character hair rendering | Diffuse with alpha, special translucency |
-| **Skin** | Character skin with subsurface scattering | Diffuse, Normal, Specular |
-| **AlphaTest** | Hard-edge transparency (foliage, fences) | Diffuse with alpha |
-| **AlphaBlend** | Smooth transparency (glass, smoke) | Diffuse with alpha |
+| **Super** | 標準的な不透明サーフェス（武器、衣服、アイテム） | ノーマル、ディフューズ、スペキュラ/メタリック |
+| **Multi** | マルチレイヤーの地形と複雑なサーフェス | 複数のディフューズ/ノーマルペア |
+| **Glass** | 透明および半透明サーフェス | アルファ付きディフューズ |
+| **Water** | 反射と屈折を持つ水面 | 特殊な水テクスチャ |
+| **Terrain** | 地形の地面サーフェス | サテライト、マスク、マテリアルレイヤー |
+| **NormalMap** | 簡略化されたノーマルマップサーフェス | ノーマル、ディフューズ |
+| **NormalMapSpecular** | スペキュラ付きノーマルマップ | ノーマル、ディフューズ、スペキュラ |
+| **Hair** | キャラクターの髪のレンダリング | アルファ付きディフューズ、特殊なトランスルーセンシー |
+| **Skin** | サブサーフェススキャッタリングを持つキャラクターの肌 | ディフューズ、ノーマル、スペキュラ |
+| **AlphaTest** | ハードエッジ透明度（植物、フェンス） | アルファ付きディフューズ |
+| **AlphaBlend** | スムーズ透明度（ガラス、煙） | アルファ付きディフューズ |
 
-### Super Shader (Most Common)
+### Superシェーダー（最も一般的）
 
-The **Super** shader is the standard physically-based rendering shader used for the vast majority of items in DayZ. It expects three texture stages:
+**Super**シェーダーは、DayZの大多数のアイテムに使用される標準的な物理ベースレンダリングシェーダーです。3つのテクスチャステージを期待します:
 
 ```
-Stage1 = Normal map (_nohq)
-Stage2 = Diffuse/Color map (_co)
-Stage3 = Specular/Metallic map (_smdi)
+Stage1 = ノーマルマップ (_nohq)
+Stage2 = ディフューズ/カラーマップ (_co)
+Stage3 = スペキュラ/メタリックマップ (_smdi)
 ```
 
-If you are creating a mod item (weapon, clothing, tool, container), you will almost always use the Super shader.
+モッドアイテム（武器、衣服、ツール、コンテナ）を作成する場合、ほぼ常にSuperシェーダーを使用します。
 
-### Glass Shader
+### Glassシェーダー
 
-The **Glass** shader handles transparent surfaces. It reads alpha from the diffuse texture to determine transparency:
+**Glass**シェーダーは透明サーフェスを処理します。ディフューズテクスチャからアルファを読み取って透明度を決定します:
 
 ```cpp
 PixelShaderID = "Glass";
@@ -176,7 +176,7 @@ class Stage1
 
 class Stage2
 {
-    texture = "MyMod\data\glass_ca.paa";    // Note: _ca suffix for color+alpha
+    texture = "MyMod\data\glass_ca.paa";    // 注意: カラー+アルファ用の_caサフィックス
     uvSource = "tex";
     class uvTransform { /* ... */ };
 };
@@ -184,164 +184,164 @@ class Stage2
 
 ---
 
-## Texture Stages
+## テクスチャステージ
 
-Each `Stage` class in the RVMAT assigns a texture to a specific shader input. The stage number determines what role the texture plays.
+RVMAT内の各`Stage`クラスは、テクスチャを特定のシェーダー入力に割り当てます。ステージ番号がテクスチャの役割を決定します。
 
-### Stage Assignments for the Super Shader
+### Superシェーダーのステージ割り当て
 
-| Stage | Texture Role | Typical Suffix | Description |
+| ステージ | テクスチャの役割 | 一般的なサフィックス | 説明 |
 |-------|-------------|----------------|-------------|
-| **Stage1** | Normal map | `_nohq` | Surface detail, bumps, grooves |
-| **Stage2** | Diffuse / Color map | `_co` or `_ca` | Base color of the surface |
-| **Stage3** | Specular / Metallic map | `_smdi` | Shininess, metallic properties, detail |
-| **Stage4** | Ambient Shadow | `_as` | Pre-baked ambient occlusion (optional) |
-| **Stage5** | Macro map | `_mc` | Large-scale color variation (optional) |
-| **Stage6** | Detail map | `_de` | Tiling micro-detail (optional) |
-| **Stage7** | Emissive / Light map | `_li` | Self-illumination (optional) |
+| **Stage1** | ノーマルマップ | `_nohq` | サーフェスのディテール、バンプ、溝 |
+| **Stage2** | ディフューズ/カラーマップ | `_co`または`_ca` | サーフェスのベースカラー |
+| **Stage3** | スペキュラ/メタリックマップ | `_smdi` | 光沢、メタリック特性、ディテール |
+| **Stage4** | アンビエントシャドウ | `_as` | プリベイクされたアンビエントオクルージョン（オプション） |
+| **Stage5** | マクロマップ | `_mc` | 大規模な色のバリエーション（オプション） |
+| **Stage6** | ディテールマップ | `_de` | タイリングマイクロディテール（オプション） |
+| **Stage7** | エミッシブ/ライトマップ | `_li` | 自己発光（オプション） |
 
-### Stage Properties
+### ステージプロパティ
 
-Each stage contains:
+各ステージには以下が含まれます:
 
 ```cpp
 class Stage1
 {
-    texture = "path\to\texture.paa";    // Path relative to P: drive
-    uvSource = "tex";                    // UV source: "tex" (model UVs) or "tex1" (2nd UV set)
-    class uvTransform                    // UV transformation matrix
+    texture = "path\to\texture.paa";    // P:ドライブに対する相対パス
+    uvSource = "tex";                    // UVソース: "tex"（モデルUV）または"tex1"（2番目のUVセット）
+    class uvTransform                    // UV変換マトリクス
     {
-        aside[] = {1.0, 0.0, 0.0};     // U-axis scale and direction
-        up[] = {0.0, 1.0, 0.0};        // V-axis scale and direction
-        dir[] = {0.0, 0.0, 0.0};       // Not typically used
-        pos[] = {0.0, 0.0, 0.0};       // UV offset (translation)
+        aside[] = {1.0, 0.0, 0.0};     // U軸のスケールと方向
+        up[] = {0.0, 1.0, 0.0};        // V軸のスケールと方向
+        dir[] = {0.0, 0.0, 0.0};       // 通常使用されない
+        pos[] = {0.0, 0.0, 0.0};       // UVオフセット（移動）
     };
 };
 ```
 
-### UV Transform for Tiling
+### タイリング用UV変換
 
-To tile a texture (repeat it across a surface), modify the `aside` and `up` values:
+テクスチャをタイリング（サーフェス全体に繰り返す）するには、`aside`と`up`の値を変更します:
 
 ```cpp
 class uvTransform
 {
-    aside[] = {4.0, 0.0, 0.0};     // Tile 4x horizontally
-    up[] = {0.0, 4.0, 0.0};        // Tile 4x vertically
+    aside[] = {4.0, 0.0, 0.0};     // 水平方向に4倍タイリング
+    up[] = {0.0, 4.0, 0.0};        // 垂直方向に4倍タイリング
     dir[] = {0.0, 0.0, 0.0};
     pos[] = {0.0, 0.0, 0.0};
 };
 ```
 
-This is commonly used for terrain materials and building surfaces where the same detail texture repeats.
+これは地形マテリアルや建物のサーフェスで、同じディテールテクスチャが繰り返される場合によく使用されます。
 
 ---
 
-## Material Properties
+## マテリアルプロパティ
 
-### Specular Control
+### スペキュラ制御
 
-The `specular[]` and `specularPower` values work together to define how shiny a surface appears:
+`specular[]`と`specularPower`の値が連携して、サーフェスの光沢の外観を定義します:
 
-| Material Type | specular[] | specularPower | Appearance |
+| マテリアルタイプ | specular[] | specularPower | 外観 |
 |---------------|-----------|---------------|------------|
-| **Matte plastic** | `{0.1, 0.1, 0.1, 1.0}` | 10 | Dull, wide highlight |
-| **Worn metal** | `{0.3, 0.3, 0.3, 1.0}` | 40 | Moderate shine |
-| **Polished metal** | `{0.8, 0.8, 0.8, 1.0}` | 120 | Bright, tight highlight |
-| **Chrome** | `{1.0, 1.0, 1.0, 1.0}` | 200 | Mirror-like reflection |
-| **Rubber** | `{0.02, 0.02, 0.02, 1.0}` | 5 | Almost no highlight |
-| **Wet surface** | `{0.6, 0.6, 0.6, 1.0}` | 80 | Slick, medium-sharp highlight |
+| **マットプラスチック** | `{0.1, 0.1, 0.1, 1.0}` | 10 | 鈍い、広いハイライト |
+| **使い古した金属** | `{0.3, 0.3, 0.3, 1.0}` | 40 | 中程度の光沢 |
+| **磨かれた金属** | `{0.8, 0.8, 0.8, 1.0}` | 120 | 明るく、タイトなハイライト |
+| **クロム** | `{1.0, 1.0, 1.0, 1.0}` | 200 | 鏡のような反射 |
+| **ゴム** | `{0.02, 0.02, 0.02, 1.0}` | 5 | ほぼハイライトなし |
+| **濡れたサーフェス** | `{0.6, 0.6, 0.6, 1.0}` | 80 | 滑らかで、中程度のシャープなハイライト |
 
-### Emissive (Self-Illumination)
+### エミッシブ（自己発光）
 
-To make a surface glow (LED lights, screens, glowing elements):
+サーフェスを光らせるには（LEDライト、スクリーン、光る要素）:
 
 ```cpp
-emmisive[] = {0.2, 0.8, 0.2, 1.0};   // Green glow
+emmisive[] = {0.2, 0.8, 0.2, 1.0};   // 緑の発光
 ```
 
-The emissive color is added to the final pixel color regardless of lighting. An `_li` emissive map in a later texture stage can mask which parts of the surface glow.
+エミッシブカラーはライティングに関係なく最終ピクセルカラーに加算されます。後のテクスチャステージの`_li`エミッシブマップで、サーフェスのどの部分が光るかをマスクできます。
 
-### Two-Sided Rendering
+### 両面レンダリング
 
-For thin surfaces that should be visible from both sides (flags, foliage, cloth):
+両側から見える薄いサーフェス（旗、植物、布）の場合:
 
 ```cpp
 renderFlags[] = {"noZWrite", "noAlpha", "twoSided"};
 ```
 
-This is not a top-level RVMAT property but is configured in config.cpp or through the material's shader settings depending on the use case.
+これはトップレベルのRVMATプロパティではなく、使用ケースに応じてconfig.cppまたはマテリアルのシェーダー設定を通じて構成されます。
 
 ---
 
-## Health Levels (Damage Material Swaps)
+## ヘルスレベル（ダメージマテリアルスワップ）
 
-DayZ items degrade over time. The engine supports automatic material swapping at different damage thresholds, defined in `config.cpp` using the `healthLevels[]` array. This creates the visual progression from pristine to ruined.
+DayZのアイテムは時間とともに劣化します。エンジンは異なるダメージしきい値での自動マテリアルスワップをサポートしており、`config.cpp`の`healthLevels[]`配列で定義されます。これにより、新品から破損までの視覚的な進行が作成されます。
 
-### healthLevels[] Structure
+### healthLevels[]構造
 
 ```cpp
 class MyItem: Inventory_Base
 {
-    // ... other config ...
+    // ... その他の設定 ...
 
     healthLevels[] =
     {
-        // {health_threshold, {"material_set"}},
+        // {ヘルスしきい値, {"マテリアルセット"}},
 
-        {1.0, {"MyMod\data\my_item.rvmat"}},           // Pristine (100% health)
-        {0.7, {"MyMod\data\my_item_worn.rvmat"}},       // Worn (70% health)
-        {0.5, {"MyMod\data\my_item_damaged.rvmat"}},     // Damaged (50% health)
-        {0.3, {"MyMod\data\my_item_badly_damaged.rvmat"}},// Badly Damaged (30% health)
-        {0.0, {"MyMod\data\my_item_ruined.rvmat"}}       // Ruined (0% health)
+        {1.0, {"MyMod\data\my_item.rvmat"}},           // 新品（100%ヘルス）
+        {0.7, {"MyMod\data\my_item_worn.rvmat"}},       // 使い古し（70%ヘルス）
+        {0.5, {"MyMod\data\my_item_damaged.rvmat"}},     // 損傷（50%ヘルス）
+        {0.3, {"MyMod\data\my_item_badly_damaged.rvmat"}},// ひどく損傷（30%ヘルス）
+        {0.0, {"MyMod\data\my_item_ruined.rvmat"}}       // 破損（0%ヘルス）
     };
 };
 ```
 
-### How It Works
+### 仕組み
 
-1. The engine monitors the item's health value (0.0 to 1.0).
-2. When health drops below a threshold, the engine swaps the material to the corresponding RVMAT.
-3. Each RVMAT can reference different textures -- typically progressively more damaged-looking variants.
-4. The swap is automatic. No script code is needed.
+1. エンジンがアイテムのヘルス値（0.0〜1.0）を監視します。
+2. ヘルスがしきい値を下回ると、エンジンは対応するRVMATにマテリアルをスワップします。
+3. 各RVMATは異なるテクスチャを参照できます -- 通常、段階的に損傷した外観のバリアントです。
+4. スワップは自動的です。スクリプトコードは不要です。
 
-### Damage Texture Progression
+### ダメージテクスチャの進行
 
-A typical damage progression:
+一般的なダメージ進行:
 
-| Level | Health | Visual Change |
+| レベル | ヘルス | 視覚的変化 |
 |-------|--------|---------------|
-| **Pristine** | 1.0 | Clean, factory-new appearance |
-| **Worn** | 0.7 | Slight scuffing, minor scratches |
-| **Damaged** | 0.5 | Visible scratches, discoloration, dirt |
-| **Badly Damaged** | 0.3 | Heavy wear, rust, cracks, peeling paint |
-| **Ruined** | 0.0 | Severely degraded, broken appearance |
+| **新品** | 1.0 | きれいな、工場出荷時の外観 |
+| **使い古し** | 0.7 | わずかな擦り傷、軽微な傷 |
+| **損傷** | 0.5 | 目に見える傷、変色、汚れ |
+| **ひどく損傷** | 0.3 | 重度の摩耗、錆、亀裂、塗装剥がれ |
+| **破損** | 0.0 | ひどく劣化した、壊れた外観 |
 
-### Creating Damage Materials
+### ダメージマテリアルの作成
 
-For each damage level, create a separate RVMAT that references progressively more damaged textures:
+各ダメージレベルに対して、段階的に損傷したテクスチャを参照する個別のRVMATを作成します:
 
 ```
 data/
-  my_item.rvmat                    --> my_item_co.paa (clean)
-  my_item_worn.rvmat               --> my_item_worn_co.paa (light damage)
-  my_item_damaged.rvmat            --> my_item_damaged_co.paa (moderate damage)
-  my_item_badly_damaged.rvmat      --> my_item_badly_damaged_co.paa (heavy damage)
-  my_item_ruined.rvmat             --> my_item_ruined_co.paa (destroyed)
+  my_item.rvmat                    --> my_item_co.paa（きれい）
+  my_item_worn.rvmat               --> my_item_worn_co.paa（軽微なダメージ）
+  my_item_damaged.rvmat            --> my_item_damaged_co.paa（中程度のダメージ）
+  my_item_badly_damaged.rvmat      --> my_item_badly_damaged_co.paa（重度のダメージ）
+  my_item_ruined.rvmat             --> my_item_ruined_co.paa（破壊）
 ```
 
-> **Tip:** You do not always need unique textures for every damage level. A common optimization is to share the normal and specular maps across all levels and only change the diffuse texture:
+> **ヒント:** すべてのダメージレベルに固有のテクスチャが必要とは限りません。一般的な最適化は、ノーマルマップとスペキュラマップをすべてのレベルで共有し、ディフューズテクスチャのみを変更することです:
 >
 > ```
 > my_item.rvmat           --> my_item_co.paa
-> my_item_worn.rvmat      --> my_item_co.paa  (same diffuse, lower specular)
+> my_item_worn.rvmat      --> my_item_co.paa（同じディフューズ、低いスペキュラ）
 > my_item_damaged.rvmat   --> my_item_damaged_co.paa
 > my_item_ruined.rvmat    --> my_item_ruined_co.paa
 > ```
 
-### Using Vanilla Damage Materials
+### バニラダメージマテリアルの使用
 
-DayZ provides a set of generic damage overlay materials that can be used if you do not want to create custom damage textures:
+DayZは、カスタムダメージテクスチャを作成したくない場合に使用できる汎用ダメージオーバーレイマテリアルのセットを提供しています:
 
 ```cpp
 healthLevels[] =
@@ -356,42 +356,42 @@ healthLevels[] =
 
 ---
 
-## How Materials Reference Textures
+## マテリアルがテクスチャを参照する方法
 
-The connection between models, materials, and textures forms a chain:
+モデル、マテリアル、テクスチャ間の接続はチェーンを形成します:
 
 ```
-P3D Model (Object Builder)
+P3Dモデル（Object Builder）
   |
-  |--> Face assigned to RVMAT
+  |--> フェースにRVMATを割り当て
          |
          |--> Stage1.texture = "path\to\normal_nohq.paa"
          |--> Stage2.texture = "path\to\color_co.paa"
          |--> Stage3.texture = "path\to\specular_smdi.paa"
 ```
 
-### Path Resolution
+### パス解決
 
-All texture paths in RVMAT files are relative to the **P: drive** root:
+RVMATファイル内のすべてのテクスチャパスは**P:ドライブ**ルートに対する相対パスです:
 
 ```cpp
-// Correct: relative to P: drive
+// 正しい: P:ドライブに対する相対パス
 texture = "MyMod\data\textures\my_item_co.paa";
 
-// This means: P:\MyMod\data\textures\my_item_co.paa
+// これは次を意味します: P:\MyMod\data\textures\my_item_co.paa
 ```
 
-When packed into a PBO, the path prefix must match the PBO's prefix:
+PBOにパックする場合、パスプレフィックスはPBOのプレフィックスと一致する必要があります:
 
 ```
-PBO prefix: MyMod
-Internal path: data\textures\my_item_co.paa
-Full reference: MyMod\data\textures\my_item_co.paa
+PBOプレフィックス: MyMod
+内部パス: data\textures\my_item_co.paa
+完全参照: MyMod\data\textures\my_item_co.paa
 ```
 
-### hiddenSelectionsMaterials Override
+### hiddenSelectionsMaterialsオーバーライド
 
-Config.cpp can override which material is applied to a named selection at runtime:
+Config.cppはランタイムに名前付きセレクションに適用されるマテリアルをオーバーライドできます:
 
 ```cpp
 class MyItem_Green: MyItem
@@ -402,20 +402,20 @@ class MyItem_Green: MyItem
 };
 ```
 
-This allows creating item variants (color schemes, camo patterns) that share the same P3D model but use different materials.
+これにより、同じP3Dモデルを共有しながら異なるマテリアルを使用するアイテムバリアント（カラースキーム、カモパターン）を作成できます。
 
 ---
 
-## Creating an RVMAT from Scratch
+## RVMATをゼロから作成する
 
-### Step-by-Step: Standard Opaque Item
+### ステップバイステップ: 標準不透明アイテム
 
-1. **Create your texture files:**
-   - `my_item_co.paa` (diffuse color)
-   - `my_item_nohq.paa` (normal map)
-   - `my_item_smdi.paa` (specular/metallic)
+1. **テクスチャファイルを作成します:**
+   - `my_item_co.paa`（ディフューズカラー）
+   - `my_item_nohq.paa`（ノーマルマップ）
+   - `my_item_smdi.paa`（スペキュラ/メタリック）
 
-2. **Create the RVMAT file** (plain text):
+2. **RVMATファイルを作成します**（プレーンテキスト）:
 
 ```cpp
 ambient[] = {1.0, 1.0, 1.0, 1.0};
@@ -467,13 +467,13 @@ class Stage3
 };
 ```
 
-3. **Assign in Object Builder:**
-   - Open your P3D model.
-   - Select faces in the Resolution LOD.
-   - Right-click --> **Face Properties**.
-   - Browse to your RVMAT file.
+3. **Object Builderで割り当てます:**
+   - P3Dモデルを開きます。
+   - Resolution LODでフェースを選択します。
+   - 右クリック --> **Face Properties**。
+   - RVMATファイルを参照します。
 
-4. **Test in-game** via file patching or PBO build.
+4. ファイルパッチングまたはPBOビルドで**ゲーム内でテスト**します。
 
 ---
 
@@ -481,10 +481,10 @@ class Stage3
 
 ### DayZ-Samples Test_ClothingRetexture
 
-The official DayZ-Samples include a `Test_ClothingRetexture` example that demonstrates the standard material workflow:
+公式DayZ-Samplesには、標準的なマテリアルワークフローを示す`Test_ClothingRetexture`の例が含まれています:
 
 ```cpp
-// From DayZ-Samples retexture example
+// DayZ-Samplesリテクスチャの例から
 ambient[] = {1.0, 1.0, 1.0, 1.0};
 diffuse[] = {1.0, 1.0, 1.0, 1.0};
 forcedDiffuse[] = {0.0, 0.0, 0.0, 0.0};
@@ -534,84 +534,84 @@ class Stage3
 };
 ```
 
-### Metallic Weapon Material
+### メタリック武器マテリアル
 
-A polished weapon barrel with high metallic response:
+高いメタリックレスポンスを持つ磨かれた武器バレル:
 
 ```cpp
 ambient[] = {1.0, 1.0, 1.0, 1.0};
 diffuse[] = {1.0, 1.0, 1.0, 1.0};
 forcedDiffuse[] = {0.0, 0.0, 0.0, 0.0};
 emmisive[] = {0.0, 0.0, 0.0, 0.0};
-specular[] = {0.9, 0.9, 0.9, 1.0};        // High specular for metal
-specularPower = 150;                        // Tight, focused highlight
+specular[] = {0.9, 0.9, 0.9, 1.0};        // 金属用の高スペキュラ
+specularPower = 150;                        // タイトで集中したハイライト
 PixelShaderID = "Super";
 VertexShaderID = "Super";
 
-// ... Stage definitions with weapon textures ...
+// ... 武器テクスチャを使用したStage定義 ...
 ```
 
-### Emissive Material (Glowing Screen)
+### エミッシブマテリアル（光るスクリーン）
 
-A material for a device screen that emits light:
+光を発するデバイススクリーン用のマテリアル:
 
 ```cpp
 ambient[] = {1.0, 1.0, 1.0, 1.0};
 diffuse[] = {1.0, 1.0, 1.0, 1.0};
 forcedDiffuse[] = {0.0, 0.0, 0.0, 0.0};
-emmisive[] = {0.05, 0.3, 0.05, 1.0};      // Soft green glow
+emmisive[] = {0.05, 0.3, 0.05, 1.0};      // 柔らかい緑の発光
 specular[] = {0.5, 0.5, 0.5, 1.0};
 specularPower = 80;
 PixelShaderID = "Super";
 VertexShaderID = "Super";
 
-// ... Stage definitions including _li emissive map in Stage7 ...
+// ... Stage7に_liエミッシブマップを含むStage定義 ...
 ```
 
 ---
 
 ## よくある間違い
 
-### 1. Wrong Stage Order
+### 1. ステージの順序の誤り
 
-**症状：** Texture appears scrambled, normal map shows as color, color shows as bumps.
-**修正：** Ensure Stage1 = normal, Stage2 = diffuse, Stage3 = specular (for the Super shader).
+**症状:** テクスチャがスクランブルされて表示され、ノーマルマップがカラーとして表示され、カラーがバンプとして表示される。
+**修正:** Superシェーダーの場合、Stage1 = ノーマル、Stage2 = ディフューズ、Stage3 = スペキュラであることを確認してください。
 
-### 2. Misspelling `emmisive`
+### 2. `emmisive`のスペルミス
 
-**症状：** Emissive does not work.
-**修正：** Bohemia uses `emmisive` (double m, single s). Using the correct English spelling `emissive` will not work. This is a known historical quirk.
+**症状:** エミッシブが動作しない。
+**修正:** Bohemiaは`emmisive`（ダブルm、シングルs）を使用しています。正しい英語のスペル`emissive`を使用しても動作しません。これは既知の歴史的な癖です。
 
-### 3. Texture Path Mismatch
+### 3. テクスチャパスの不一致
 
-**症状：** Model appears with default gray or magenta material.
-**修正：** Verify that texture paths in the RVMAT exactly match the file locations relative to P: drive. Paths use backslashes. Check capitalization -- some systems are case-sensitive.
+**症状:** モデルがデフォルトのグレーまたはマゼンタのマテリアルで表示される。
+**修正:** RVMAT内のテクスチャパスがP:ドライブに対する相対的なファイル位置と正確に一致していることを確認してください。パスにはバックスラッシュを使用します。大文字小文字を確認してください -- 一部のシステムでは大文字小文字が区別されます。
 
-### 4. Missing RVMAT Assignment in P3D
+### 4. P3Dでのrvmat割り当ての欠落
 
-**症状：** Model renders with no material (flat gray or default shader).
-**修正：** Open the model in Object Builder, select faces, and assign the RVMAT via **Face Properties**.
+**症状:** モデルがマテリアルなしでレンダリングされる（フラットグレーまたはデフォルトシェーダー）。
+**修正:** Object Builderでモデルを開き、フェースを選択し、**Face Properties**でRVMATを割り当ててください。
 
-### 5. Using Wrong Shader for Transparent Items
+### 5. 透明アイテムに間違ったシェーダーを使用
 
-**症状：** Transparent texture appears opaque, or entire surface vanishes.
-**修正：** Use `Glass`, `AlphaTest`, or `AlphaBlend` shader instead of `Super` for transparent surfaces. Use `_ca` suffix textures with proper alpha channels.
+**症状:** 透明テクスチャが不透明に見える、またはサーフェス全体が消える。
+**修正:** 透明サーフェスには`Super`の代わりに`Glass`、`AlphaTest`、または`AlphaBlend`シェーダーを使用してください。適切なアルファチャンネルを持つ`_ca`サフィックスのテクスチャを使用してください。
 
 ---
 
-## Best Practices
+## ベストプラクティス
 
-1. **Start from a working example.** Copy an RVMAT from DayZ-Samples or a vanilla item and modify it. Starting from scratch invites typos.
+1. **動作する例から始めてください。** DayZ-Samplesまたはバニラアイテムからrvmatをコピーして変更してください。ゼロから始めるとタイプミスが発生しやすくなります。
 
-2. **Keep materials and textures together.** Store the RVMAT in the same `data/` directory as its textures. This makes the relationship obvious and simplifies path management.
+2. **マテリアルとテクスチャを一緒に保管してください。** テクスチャと同じ`data/`ディレクトリにRVMATを保存してください。関係が明確になり、パス管理が簡素化されます。
 
-3. **Use the Super shader unless you have a reason not to.** It handles 95% of use cases correctly.
+3. **理由がない限りSuperシェーダーを使用してください。** 95%のユースケースを正しく処理します。
 
-4. **Create damage materials even for simple items.** Players notice when items do not visually degrade. At minimum, use vanilla default damage materials for the lower health levels.
+4. **シンプルなアイテムでもダメージマテリアルを作成してください。** アイテムが視覚的に劣化しないとプレイヤーは気づきます。最低限、低いヘルスレベルにはバニラのデフォルトダメージマテリアルを使用してください。
 
-5. **Test specular in-game, not just in Object Builder.** The editor lighting and in-game lighting produce very different results. What looks perfect in Object Builder may be too shiny or too dull under DayZ's dynamic lighting.
+5. **スペキュラはObject Builderではなくゲーム内でテストしてください。** エディタのライティングとゲーム内のライティングは非常に異なる結果を生み出します。Object Builderで完璧に見えるものが、DayZのダイナミックライティングの下では光りすぎたり鈍すぎたりする可能性があります。
 
-6. **Document your material settings.** When you find specular/power values that work well for a surface type, record them. You will reuse these settings across many items.
+6. **マテリアル設定を文書化してください。** サーフェスタイプに適したスペキュラ/パワー値を見つけたら記録してください。これらの設定は多くのアイテムで再利用します。
 
 ---
 
@@ -619,4 +619,4 @@ VertexShaderID = "Super";
 
 | 前 | 上 | 次 |
 |----------|----|------|
-| [4.2 3D Models](02-models.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.4 Audio](04-audio.md) |
+| [4.2 3Dモデル](02-models.md) | [Part 4: ファイルフォーマット & DayZ Tools](01-textures.md) | [4.4 オーディオ](04-audio.md) |
