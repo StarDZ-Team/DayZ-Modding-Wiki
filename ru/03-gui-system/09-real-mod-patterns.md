@@ -1,40 +1,42 @@
-# Chapter 3.9: Real Mod UI Patterns
+# Глава 3.9: Паттерны UI реальных модов
 
-[Home](../../README.md) | [<< Previous: Dialogs & Modals](08-dialogs-modals.md) | **Real Mod UI Patterns** | [Next: Advanced Widgets >>](10-advanced-widgets.md)
-
----
-
-All code shown is extracted from actual mod source. File paths reference the original repositories.
+[Главная](../../README.md) | [<< Назад: Диалоги и модальные окна](08-dialogs-modals.md) | **Паттерны UI реальных модов** | [Далее: Продвинутые виджеты >>](10-advanced-widgets.md)
 
 ---
 
-## Why Study Real Mods?
+Эта глава рассматривает паттерны UI, обнаруженные в шести профессиональных модах DayZ: COT (Community Online Tools), VPP Admin Tools, DabsFramework, Colorful UI, Expansion и DayZ Editor. Каждый мод решает свои задачи. Изучение их подходов даёт библиотеку проверенных паттернов, выходящих за рамки официальной документации.
 
-DayZ documentation explains individual widgets and event callbacks but says nothing about:
-
-- How to manage 12 admin panels without code duplication
-- How to build a dialog system with callback routing
-- How to theme an entire UI without touching vanilla layout files
-- How to synchronize a market grid with server data over RPC
-- How to structure an editor with undo/redo and a command system
-
-These are architecture problems. Every large mod invents solutions for them. Some are elegant, some are cautionary tales. This chapter maps the patterns so you can pick the right approach for your project.
+Весь показанный код извлечён из реального исходного кода модов. Пути к файлам ссылаются на оригинальные репозитории.
 
 ---
 
-## COT (Community Online Tools) UI Patterns
+## Зачем изучать реальные моды?
 
-COT is the most widely-used DayZ admin tool. Its UI architecture is built around a module-form-window system where each tool (ESP, Player Manager, Teleport, Object Spawner, etc.) is a self-contained module with its own panel.
+Документация DayZ объясняет отдельные виджеты и обратные вызовы событий, но ничего не говорит о:
 
-### Module-Form-Window Architecture
+- Как управлять 12 админ-панелями без дублирования кода
+- Как построить систему диалогов с маршрутизацией обратных вызовов
+- Как стилизовать весь UI без изменения ванильных файлов макетов
+- Как синхронизировать сетку маркета с серверными данными через RPC
+- Как структурировать редактор с отменой/повтором и системой команд
 
-COT separates concerns into three layers:
+Это архитектурные задачи. Каждый крупный мод изобретает для них решения. Одни элегантные, другие -- поучительные примеры. Эта глава систематизирует паттерны, чтобы вы могли выбрать правильный подход для своего проекта.
 
-1. **JMRenderableModuleBase** -- Declares the module's metadata (title, icon, layout path, permissions). Manages the CF_Window lifecycle. Does not contain UI logic.
-2. **JMFormBase** -- The actual UI panel. Extends `ScriptedWidgetEventHandler`. Receives widget events, builds UI elements, talks to the module for data operations.
-3. **CF_Window** -- The windowing container provided by the CF framework. Handles drag, resize, close chrome.
+---
 
-A module declares itself with overrides:
+## Паттерны UI COT (Community Online Tools)
+
+COT -- наиболее широко используемый инструмент администрирования DayZ. Его архитектура UI построена вокруг системы модуль-форма-окно, где каждый инструмент (ESP, менеджер игроков, телепорт, спаунер объектов и т.д.) является самодостаточным модулем со своей панелью.
+
+### Архитектура "модуль-форма-окно"
+
+COT разделяет ответственности на три уровня:
+
+1. **JMRenderableModuleBase** -- объявляет метаданные модуля (заголовок, иконка, путь к макету, разрешения). Управляет жизненным циклом CF_Window. Не содержит логики UI.
+2. **JMFormBase** -- фактическая панель UI. Расширяет `ScriptedWidgetEventHandler`. Получает события виджетов, строит элементы UI, взаимодействует с модулем для операций с данными.
+3. **CF_Window** -- оконный контейнер, предоставляемый фреймворком CF. Обрабатывает перетаскивание, изменение размера, закрытие окна.
+
+Модуль объявляет себя через переопределения:
 
 ```c
 class JMExampleModule: JMRenderableModuleBase
@@ -72,7 +74,7 @@ class JMExampleModule: JMRenderableModuleBase
 }
 ```
 
-The module is registered in a central constructor that builds the module list:
+Модуль регистрируется в центральном конструкторе, который строит список модулей:
 
 ```c
 modded class JMModuleConstructor
@@ -91,7 +93,7 @@ modded class JMModuleConstructor
 }
 ```
 
-When `Show()` is called on a module, it creates a window and loads the form:
+Когда вызывается `Show()` для модуля, создаётся окно и загружается форма:
 
 ```c
 void Show()
@@ -106,7 +108,7 @@ void Show()
 }
 ```
 
-The form's `Init` binds the module reference through a protected override:
+Метод `Init` формы привязывает ссылку на модуль через защищённое переопределение:
 
 ```c
 class JMExampleForm: JMFormBase
@@ -120,16 +122,16 @@ class JMExampleForm: JMFormBase
 
     override void OnInit()
     {
-        // Build UI elements programmatically using UIActionManager
+        // Построить элементы UI программно с помощью UIActionManager
     }
 }
 ```
 
-**Ключевой вывод:** Each tool is entirely self-contained. Adding a new admin tool means creating one Module class, one Form class, one layout file, and inserting one line in the constructor. No existing code changes.
+**Ключевой вывод:** Каждый инструмент полностью самодостаточен. Добавление нового инструмента администрирования означает создание одного класса Module, одного класса Form, одного файла макета и вставку одной строки в конструктор. Никаких изменений в существующем коде.
 
-### Programmatic UI with UIActionManager
+### Программное создание UI с UIActionManager
 
-COT does not build complex forms in layout files. Instead, it uses a factory class (`UIActionManager`) that creates standardized UI action widgets at runtime:
+COT не строит сложные формы в файлах макетов. Вместо этого используется фабричный класс (`UIActionManager`), который создаёт стандартизированные виджеты действий UI во время выполнения:
 
 ```c
 override void OnInit()
@@ -137,10 +139,10 @@ override void OnInit()
     m_Scroller = UIActionManager.CreateScroller(layoutRoot.FindAnyWidget("panel"));
     Widget actions = m_Scroller.GetContentWidget();
 
-    // Grid layout: 8 rows, 1 column
+    // Сетка: 8 строк, 1 столбец
     m_PanelAlpha = UIActionManager.CreateGridSpacer(actions, 8, 1);
 
-    // Standard widget types
+    // Стандартные типы виджетов
     m_Text = UIActionManager.CreateText(m_PanelAlpha, "Label", "Value");
     m_EditableText = UIActionManager.CreateEditableText(
         m_PanelAlpha, "Name:", this, "OnChange_EditableText"
@@ -155,22 +157,22 @@ override void OnInit()
         m_PanelAlpha, "Execute", this, "OnClick_Button"
     );
 
-    // Sub-grid for side-by-side buttons
+    // Вложенная сетка для кнопок рядом друг с другом
     Widget gridButtons = UIActionManager.CreateGridSpacer(m_PanelAlpha, 1, 2);
     m_Button = UIActionManager.CreateButton(gridButtons, "Left", this, "OnClick_Left");
     m_NavButton = UIActionManager.CreateNavButton(gridButtons, "Right", ...);
 }
 ```
 
-Each `UIAction*` widget type has its own layout file (e.g., `UIActionSlider.layout`, `UIActionCheckbox.layout`) loaded as a prefab. The factory approach means:
+Каждый тип `UIAction*` виджета имеет собственный файл макета (например, `UIActionSlider.layout`, `UIActionCheckbox.layout`), загружаемый как префаб. Фабричный подход означает:
 
-- Consistent sizing and spacing across all panels
-- No layout file duplication
-- New action types can be added once and used everywhere
+- Единообразные размеры и отступы во всех панелях
+- Нет дублирования файлов макетов
+- Новые типы действий можно добавить один раз и использовать повсюду
 
-### ESP Overlay (Drawing on CanvasWidget)
+### ESP-оверлей (рисование на CanvasWidget)
 
-COT's ESP system draws labels, health bars, and lines directly over the 3D world using `CanvasWidget`. The key pattern is a screen-space `CanvasWidget` that covers the entire viewport, with individual ESP widget handlers positioned at projected world coordinates:
+ESP-система COT рисует метки, полоски здоровья и линии непосредственно поверх 3D-мира с помощью `CanvasWidget`. Ключевой паттерн -- экранный `CanvasWidget`, покрывающий весь viewport, с отдельными обработчиками виджетов ESP, позиционируемыми по проецированным мировым координатам:
 
 ```c
 class JMESPWidgetHandler: ScriptedWidgetEventHandler
@@ -202,11 +204,11 @@ class JMESPWidgetHandler: ScriptedWidgetEventHandler
 }
 ```
 
-ESP widgets are created from prefab layouts (`esp_widget.layout`) and positioned each frame by projecting 3D positions to screen coordinates. The canvas itself is a fullscreen overlay loaded at startup.
+Виджеты ESP создаются из макетов-префабов (`esp_widget.layout`) и позиционируются каждый кадр путём проецирования 3D-позиций в экранные координаты. Сам холст -- это полноэкранный оверлей, загружаемый при запуске.
 
-### Confirmation Dialogs
+### Диалоги подтверждения
 
-COT provides a callback-based confirmation system built into `JMFormBase`. Confirmations are created with named callbacks:
+COT предоставляет систему подтверждений на основе обратных вызовов, встроенную в `JMFormBase`. Подтверждения создаются с именованными обратными вызовами:
 
 ```c
 CreateConfirmation_Two(
@@ -218,7 +220,7 @@ CreateConfirmation_Two(
 );
 ```
 
-The `JMConfirmationForm` uses `CallByName` to invoke the callback method on the form:
+`JMConfirmationForm` использует `CallByName` для вызова метода обратного вызова на форме:
 
 ```c
 class JMConfirmationForm: JMConfirmation
@@ -235,17 +237,17 @@ class JMConfirmationForm: JMConfirmation
 }
 ```
 
-Это позволяет chaining confirmations (one confirmation opens another) without hardcoding the flow.
+Это позволяет цепочку подтверждений (одно подтверждение открывает другое) без жёсткого кодирования потока.
 
 ---
 
-## VPP Admin Tools UI Patterns
+## Паттерны UI VPP Admin Tools
 
-VPP takes a different approach from COT: it uses `UIScriptedMenu` with a toolbar HUD, draggable sub-windows, and a global dialog box system.
+VPP использует другой подход по сравнению с COT: он использует `UIScriptedMenu` с HUD-панелью инструментов, перетаскиваемыми подокнами и глобальной системой диалогов.
 
-### Toolbar Button Registration
+### Регистрация кнопок панели инструментов
 
-`VPPAdminHud` maintains a list of button definitions. Each button maps a permission string to a display name, icon, and tooltip:
+`VPPAdminHud` поддерживает список определений кнопок. Каждая кнопка связывает строку разрешения с отображаемым именем, иконкой и подсказкой:
 
 ```c
 class VPPAdminHud extends VPPScriptedMenu
@@ -260,10 +262,10 @@ class VPPAdminHud extends VPPScriptedMenu
         InsertButton("MenuItemManager", "Items Spawner",
             "set:dayz_gui_vpp image:vpp_icon_item_manager",
             "#VSTR_TOOLTIP_ITEMMANAGER");
-        // ... 10 more tools
+        // ... ещё 10 инструментов
         DefineButtons();
 
-        // Verify permissions with server via RPC
+        // Проверить разрешения на сервере через RPC
         array<string> perms = new array<string>;
         for (int i = 0; i < m_DefinedButtons.Count(); i++)
             perms.Insert(m_DefinedButtons[i].param1);
@@ -273,11 +275,11 @@ class VPPAdminHud extends VPPScriptedMenu
 }
 ```
 
-External mods can override `DefineButtons()` to add their own toolbar buttons, making VPP extensible without modifying its source.
+Внешние моды могут переопределить `DefineButtons()` для добавления своих кнопок на панель инструментов, что делает VPP расширяемым без изменения его исходного кода.
 
-### Sub-Menu Window System
+### Система подокон
 
-Each tool panel extends `AdminHudSubMenu`, which provides draggable window behavior, show/hide toggling, and window priority management:
+Каждая панель инструмента расширяет `AdminHudSubMenu`, который обеспечивает поведение перетаскиваемого окна, переключение видимости и управление приоритетом окон:
 
 ```c
 class AdminHudSubMenu: ScriptedWidgetEventHandler
@@ -296,7 +298,7 @@ class AdminHudSubMenu: ScriptedWidgetEventHandler
         OnMenuShow();
     }
 
-    // Drag support via title bar
+    // Поддержка перетаскивания через заголовок
     override bool OnDrag(Widget w, int x, int y)
     {
         if (w == m_TitlePanel)
@@ -319,7 +321,7 @@ class AdminHudSubMenu: ScriptedWidgetEventHandler
         return true;
     }
 
-    // Double-click title bar to maximize/restore
+    // Двойной клик по заголовку для максимизации/восстановления
     override bool OnDoubleClick(Widget w, int x, int y, int button)
     {
         if (button == MouseState.LEFT && w == m_TitlePanel)
@@ -332,11 +334,11 @@ class AdminHudSubMenu: ScriptedWidgetEventHandler
 }
 ```
 
-**Ключевой вывод:** VPP builds a mini window manager inside DayZ. Each sub-menu is a draggable, resizable window with focus management. The `SetWindowPriorty()` call adjusts z-order so the clicked window comes to front.
+**Ключевой вывод:** VPP строит мини-менеджер окон внутри DayZ. Каждое подменю -- это перетаскиваемое, изменяемое в размерах окно с управлением фокусом. Вызов `SetWindowPriorty()` регулирует z-порядок, чтобы нажатое окно оказывалось поверх остальных.
 
-### VPPDialogBox -- Callback-based Dialog
+### VPPDialogBox -- диалог на основе обратных вызовов
 
-VPP's dialog system uses an enum-driven approach. The dialog shows/hides buttons based on a type enum, and routes the result through `CallFunction`:
+Система диалогов VPP использует подход на основе перечислений. Диалог показывает/скрывает кнопки в зависимости от типа перечисления и направляет результат через `CallFunction`:
 
 ```c
 enum DIAGTYPE
@@ -383,7 +385,7 @@ class VPPDialogBox extends ScriptedWidgetEventHandler
 }
 ```
 
-The `ConfirmationEventHandler` wraps a button widget so clicking it spawns a dialog. The dialog result is forwarded to any class via a named callback:
+`ConfirmationEventHandler` оборачивает виджет кнопки так, чтобы нажатие на неё открывало диалог. Результат диалога передаётся любому классу через именованный обратный вызов:
 
 ```c
 class ConfirmationEventHandler extends ScriptedWidgetEventHandler
@@ -420,9 +422,9 @@ class ConfirmationEventHandler extends ScriptedWidgetEventHandler
 }
 ```
 
-### PopUp with OnWidgetScriptInit
+### Всплывающее окно с OnWidgetScriptInit
 
-VPP popup forms bind to their layout via `OnWidgetScriptInit` and use `ScriptedWidgetEventHandler`:
+Всплывающие формы VPP привязываются к макету через `OnWidgetScriptInit` и используют `ScriptedWidgetEventHandler`:
 
 ```c
 class PopUpCreatePreset extends ScriptedWidgetEventHandler
@@ -468,22 +470,22 @@ class PopUpCreatePreset extends ScriptedWidgetEventHandler
 }
 ```
 
-**Ключевой вывод:** `delete this` on close is the common popup disposal pattern. The destructor calls `m_root.Unlink()` to remove the widget tree. This is clean but requires care --- если anything holds a reference to the popup after deletion, you get a null access.
+**Ключевой вывод:** `delete this` при закрытии -- распространённый паттерн утилизации всплывающих окон. Деструктор вызывает `m_root.Unlink()` для удаления дерева виджетов. Это чисто, но требует осторожности -- если что-то удерживает ссылку на всплывающее окно после удаления, вы получите доступ к null.
 
 ---
 
-## DabsFramework UI Patterns
+## Паттерны UI DabsFramework
 
-DabsFramework introduces a full MVC (Model-View-Controller) architecture for DayZ UI. It is used by DayZ Editor and Expansion as their UI foundation.
+DabsFramework вводит полноценную архитектуру MVC (Модель-Представление-Контроллер) для UI DayZ. Он используется DayZ Editor и Expansion как основа UI.
 
-### ViewController and Data Binding
+### ViewController и привязка данных
 
-The core idea: instead of manually finding widgets and setting their text, you declare properties on a controller class and bind them to widgets by name in the layout editor.
+Основная идея: вместо ручного поиска виджетов и установки их текста, вы объявляете свойства в классе контроллера и привязываете их к виджетам по имени в редакторе макетов.
 
 ```c
 class TestController: ViewController
 {
-    // Variable name matches Binding_Name in the layout
+    // Имя переменной совпадает с Binding_Name в макете
     string TextBox1 = "Initial Text";
     int TextBox2;
     bool WindowButton1;
@@ -506,7 +508,7 @@ class TestController: ViewController
 }
 ```
 
-In the layout, each widget has a `ViewBinding` script class with a `Binding_Name` reference property set to the variable name (e.g., "TextBox1"). When `NotifyPropertyChanged()` is called, the framework finds all ViewBindings with that name and updates the widget:
+В макете каждый виджет имеет скриптовый класс `ViewBinding` с ссылочным свойством `Binding_Name`, установленным в имя переменной (например, "TextBox1"). Когда вызывается `NotifyPropertyChanged()`, фреймворк находит все ViewBinding с этим именем и обновляет виджет:
 
 ```c
 class ViewBinding : ScriptedViewBase
@@ -537,11 +539,11 @@ class ViewBinding : ScriptedViewBase
 }
 ```
 
-**Two-way binding** means changes in the widget (user typing) propagate back to the controller property automatically.
+**Двусторонняя привязка** означает, что изменения в виджете (пользовательский ввод) автоматически распространяются обратно на свойство контроллера.
 
-### ObservableCollection -- List Data Binding
+### ObservableCollection -- привязка данных списков
 
-For dynamic lists, DabsFramework provides `ObservableCollection<T>`. Insert/remove operations automatically update the bound widget (e.g., a WrapSpacer or ScrollWidget):
+Для динамических списков DabsFramework предоставляет `ObservableCollection<T>`. Операции вставки/удаления автоматически обновляют привязанный виджет (например, WrapSpacer или ScrollWidget):
 
 ```c
 class MyController: ViewController
@@ -558,16 +560,16 @@ class MyController: ViewController
     override void CollectionChanged(string property_name,
                                     CollectionChangedEventArgs args)
     {
-        // Called automatically on Insert/Remove
+        // Вызывается автоматически при Insert/Remove
     }
 }
 ```
 
-Each `Insert()` fires a `CollectionChanged` event, which the ViewBinding intercepts to create/destroy child widgets. No manual widget management needed.
+Каждый `Insert()` генерирует событие `CollectionChanged`, которое ViewBinding перехватывает для создания/уничтожения дочерних виджетов. Ручное управление виджетами не требуется.
 
-### ScriptView -- Layout-from-Code
+### ScriptView -- макет из кода
 
-`ScriptView` is the all-script alternative to `OnWidgetScriptInit`. You subclass it, override `GetLayoutFile()`, and instantiate it. The constructor loads the layout, finds the controller, and wires everything:
+`ScriptView` -- это полностью скриптовая альтернатива `OnWidgetScriptInit`. Вы наследуете его, переопределяете `GetLayoutFile()` и создаёте экземпляр. Конструктор загружает макет, находит контроллер и связывает всё:
 
 ```c
 class CustomDialogWindow: ScriptView
@@ -583,34 +585,34 @@ class CustomDialogWindow: ScriptView
     }
 }
 
-// Usage:
+// Использование:
 CustomDialogWindow window = new CustomDialogWindow();
 ```
 
-Widget variables declared as fields on `ScriptView` subclasses are auto-populated by name matching against the layout hierarchy (`LoadWidgetsAsVariables`). This eliminates `FindAnyWidget()` calls.
+Переменные виджетов, объявленные как поля подклассов `ScriptView`, автоматически заполняются путём сопоставления имён с иерархией макета (`LoadWidgetsAsVariables`). Это устраняет вызовы `FindAnyWidget()`.
 
-### RelayCommand -- Button-to-Action Binding
+### RelayCommand -- привязка кнопки к действию
 
-Buttons can be bound to `RelayCommand` objects via the `Relay_Command` reference property in ViewBinding. This decouples button clicks from handlers:
+Кнопки могут быть привязаны к объектам `RelayCommand` через ссылочное свойство `Relay_Command` в ViewBinding. Это отделяет нажатия кнопок от обработчиков:
 
 ```c
 class EditorCommand: RelayCommand
 {
     override bool Execute(Class sender, CommandArgs args)
     {
-        // Perform action
+        // Выполнить действие
         return true;
     }
 
     override bool CanExecute()
     {
-        // Enable/disable the button
+        // Включить/отключить кнопку
         return true;
     }
 
     override void CanExecuteChanged(bool state)
     {
-        // Grey out the widget when disabled
+        // Затемнить виджет когда отключён
         if (m_ViewBinding)
         {
             Widget root = m_ViewBinding.GetLayoutRoot();
@@ -621,19 +623,19 @@ class EditorCommand: RelayCommand
 }
 ```
 
-**Ключевой вывод:** DabsFramework eliminates boilerplate. You declare data, bind it by name, and the framework handles synchronization. The cost is the learning curve and the framework dependency.
+**Ключевой вывод:** DabsFramework устраняет шаблонный код. Вы объявляете данные, привязываете их по имени, и фреймворк обрабатывает синхронизацию. Цена -- кривая обучения и зависимость от фреймворка.
 
 ---
 
-## Colorful UI Patterns
+## Паттерны Colorful UI
 
-Colorful UI replaces vanilla DayZ menus with themed versions without modifying vanilla script files. Its approach is entirely based on `modded class` overrides and a centralized color/branding system.
+Colorful UI заменяет ванильные меню DayZ стилизованными версиями без изменения ванильных файлов скриптов. Его подход полностью основан на переопределениях `modded class` и централизованной системе цветов/брендинга.
 
-### 3-Layer Theme System
+### 3-уровневая система тем
 
-Colors are organized in three tiers:
+Цвета организованы в три уровня:
 
-**Layer 1 -- UIColor (base palette):** Raw color values with semantic names.
+**Уровень 1 -- UIColor (базовая палитра):** Необработанные значения цветов с семантическими именами.
 
 ```c
 class UIColor
@@ -647,7 +649,7 @@ class UIColor
 }
 ```
 
-**Layer 2 -- colorScheme (semantic mapping):** Maps UI concepts to palette colors. Server owners change this layer to theme their server.
+**Уровень 2 -- colorScheme (семантическое отображение):** Связывает концепции UI с цветами палитры. Владельцы серверов меняют этот уровень для стилизации своего сервера.
 
 ```c
 class colorScheme
@@ -663,7 +665,7 @@ class colorScheme
 }
 ```
 
-**Layer 3 -- Branding/Settings (server identity):** Logo paths, URLs, feature toggles.
+**Уровень 3 -- Branding/Settings (идентичность сервера):** Пути к логотипам, URL-адреса, переключатели функций.
 
 ```c
 class Branding
@@ -689,9 +691,9 @@ class SocialURL
 }
 ```
 
-### Non-Destructive Vanilla UI Modification
+### Неразрушающая модификация ванильного UI
 
-Colorful UI replaces vanilla menus using `modded class`. Each vanilla `UIScriptedMenu` subclass is modded to load a custom layout file and apply theme colors:
+Colorful UI заменяет ванильные меню с помощью `modded class`. Каждый подкласс ванильного `UIScriptedMenu` модифицируется для загрузки пользовательского файла макета и применения цветов темы:
 
 ```c
 modded class MainMenu extends UIScriptedMenu
@@ -707,7 +709,7 @@ modded class MainMenu extends UIScriptedMenu
         m_TopShader = ImageWidget.Cast(layoutRoot.FindAnyWidget("TopShader"));
         m_BottomShader = ImageWidget.Cast(layoutRoot.FindAnyWidget("BottomShader"));
 
-        // Apply theme colors
+        // Применить цвета темы
         if (m_TopShader) m_TopShader.SetColor(colorScheme.TopShader());
         if (m_BottomShader) m_BottomShader.SetColor(colorScheme.BottomShader());
         if (m_MenuDivider) m_MenuDivider.SetColor(colorScheme.Separator());
@@ -719,23 +721,23 @@ modded class MainMenu extends UIScriptedMenu
 }
 ```
 
-This pattern is important: Colorful UI ships entirely custom `.layout` files that mirror vanilla widget names. The `modded class` override swaps the layout path but keeps vanilla widget names so that if any vanilla code references those widget names, it still works.
+Этот паттерн важен: Colorful UI поставляет полностью пользовательские файлы `.layout`, которые зеркально повторяют ванильные имена виджетов. Переопределение `modded class` заменяет путь к макету, но сохраняет ванильные имена виджетов, чтобы если какой-либо ванильный код ссылается на эти имена виджетов, он по-прежнему работал.
 
-### Resolution-Aware Layout Variants
+### Варианты макетов с учётом разрешения
 
-Colorful UI provides separate inventory layout directories for different screen widths:
+Colorful UI предоставляет отдельные директории макетов инвентаря для разных ширин экрана:
 
 ```
-GUI/layouts/inventory/narrow/   -- small screens
-GUI/layouts/inventory/medium/   -- standard 1080p
-GUI/layouts/inventory/wide/     -- ultrawide
+GUI/layouts/inventory/narrow/   -- маленькие экраны
+GUI/layouts/inventory/medium/   -- стандартное 1080p
+GUI/layouts/inventory/wide/     -- ультраширокие
 ```
 
-Each directory contains the same file names (`cargo_container.layout`, `left_area.layout`, etc.) with adjusted sizing. The correct variant is selected at runtime based on screen resolution.
+Каждая директория содержит одинаковые имена файлов (`cargo_container.layout`, `left_area.layout` и т.д.) с адаптированными размерами. Правильный вариант выбирается во время выполнения на основе разрешения экрана.
 
-### Configuration via Static Variables
+### Конфигурация через статические переменные
 
-Server owners configure Colorful UI by editing static variable values in `Settings.c`:
+Владельцы серверов настраивают Colorful UI, редактируя значения статических переменных в `Settings.c`:
 
 ```c
 static bool StartMainMenu    = true;
@@ -745,48 +747,48 @@ static bool ShowDeadScreen   = false;
 static bool CuiDebug         = true;
 ```
 
-Это simplest possible config system: edit the script, rebuild PBO. No JSON loading, no config manager. For a client-only visual mod, this is appropriate.
+Это простейшая возможная система конфигурации: отредактировать скрипт, пересобрать PBO. Никакой загрузки JSON, никакого менеджера конфигурации. Для клиентского визуального мода это уместно.
 
-**Ключевой вывод:** Colorful UI demonstrates that you can retheme the entire DayZ client without server-side code, using only `modded class` overrides, custom layout files, and a centralized color system.
+**Ключевой вывод:** Colorful UI демонстрирует, что можно полностью перестилизовать клиент DayZ без серверного кода, используя только переопределения `modded class`, пользовательские файлы макетов и централизованную систему цветов.
 
 ---
 
-## Expansion UI Patterns
+## Паттерны UI Expansion
 
-DayZ Expansion is the largest community mod ecosystem. Its UI ranges from notification toasts to full market trading interfaces with server synchronization.
+DayZ Expansion -- крупнейшая экосистема модов сообщества. Его UI варьируется от всплывающих уведомлений до полноценных торговых интерфейсов маркета с серверной синхронизацией.
 
-### Notification System (Multiple Types)
+### Система уведомлений (несколько типов)
 
-Expansion defines six notification visual types, each with its own layout:
+Expansion определяет шесть визуальных типов уведомлений, каждый со своим макетом:
 
 ```c
 enum ExpansionNotificationType
 {
-    TOAST    = 1,    // Small corner popup
-    BAGUETTE = 2,   // Wide banner across screen
-    ACTIVITY = 4,   // Activity feed entry
-    KILLFEED = 8,   // Kill announcement
-    MARKET   = 16,  // Market transaction result
-    GARAGE   = 32   // Vehicle storage result
+    TOAST    = 1,    // Маленькое всплывающее окно в углу
+    BAGUETTE = 2,   // Широкий баннер через весь экран
+    ACTIVITY = 4,   // Запись ленты активности
+    KILLFEED = 8,   // Объявление об убийстве
+    MARKET   = 16,  // Результат транзакции маркета
+    GARAGE   = 32   // Результат хранения транспорта
 }
 ```
 
-Notifications are created from anywhere (client or server) using a static API:
+Уведомления создаются из любого места (клиент или сервер) через статический API:
 
 ```c
-// From server, sent to specific player via RPC:
+// С сервера, отправляется конкретному игроку через RPC:
 NotificationSystem.Create_Expansion(
-    "Trade Complete",          // title
-    "You purchased M4A1",     // text
-    "market_icon",             // icon name
-    ARGB(255, 50, 200, 50),   // color
-    7,                         // display time (seconds)
-    sendTo,                    // PlayerIdentity (null = all)
-    ExpansionNotificationType.MARKET  // type
+    "Trade Complete",          // заголовок
+    "You purchased M4A1",     // текст
+    "market_icon",             // имя иконки
+    ARGB(255, 50, 200, 50),   // цвет
+    7,                         // время отображения (секунды)
+    sendTo,                    // PlayerIdentity (null = всем)
+    ExpansionNotificationType.MARKET  // тип
 );
 ```
 
-The notification module maintains a list of active notifications and manages their lifecycle. Each `ExpansionNotificationView` (a `ScriptView` subclass) handles its own show/hide animation:
+Модуль уведомлений поддерживает список активных уведомлений и управляет их жизненным циклом. Каждый `ExpansionNotificationView` (подкласс `ScriptView`) обрабатывает свою анимацию показа/скрытия:
 
 ```c
 class ExpansionNotificationView: ScriptView
@@ -816,21 +818,21 @@ class ExpansionNotificationView: ScriptView
 }
 ```
 
-Each notification type has a separate layout file (`expansion_notification_toast.layout`, `expansion_notification_killfeed.layout`, etc.) allowing completely different visual treatments.
+Каждый тип уведомления имеет отдельный файл макета (`expansion_notification_toast.layout`, `expansion_notification_killfeed.layout` и т.д.), что позволяет совершенно различное визуальное оформление.
 
-### Market Menu (Complex Interactive Panel)
+### Меню маркета (сложная интерактивная панель)
 
-The `ExpansionMarketMenu` is one of the most complex UIs in any DayZ mod. It extends `ExpansionScriptViewMenu` (which extends DabsFramework's ScriptView) and manages:
+`ExpansionMarketMenu` -- один из самых сложных UI в любом моде DayZ. Он расширяет `ExpansionScriptViewMenu` (который расширяет ScriptView от DabsFramework) и управляет:
 
-- Category tree with collapsible sections
-- Item grid with search filtering
-- Buy/sell price display with currency icons
-- Quantity controls
-- Item preview widget
-- Player inventory preview
-- Dropdown selectors for skins
-- Attachment configuration checkboxes
-- Confirmation dialogs for purchases/sales
+- Деревом категорий со сворачиваемыми секциями
+- Сеткой предметов с поиском и фильтрацией
+- Отображением цен покупки/продажи с иконками валюты
+- Элементами управления количеством
+- Виджетом предпросмотра предмета
+- Предпросмотром инвентаря игрока
+- Выпадающими списками для выбора скинов
+- Чекбоксами конфигурации вложений
+- Диалогами подтверждения для покупок/продаж
 
 ```c
 class ExpansionMarketMenu: ExpansionScriptViewMenu
@@ -839,7 +841,7 @@ class ExpansionMarketMenu: ExpansionScriptViewMenu
     protected ref ExpansionMarketModule m_MarketModule;
     protected ref ExpansionMarketItem m_SelectedMarketItem;
 
-    // Direct widget references (auto-populated by ScriptView)
+    // Прямые ссылки на виджеты (автозаполнение через ScriptView)
     protected EditBoxWidget market_filter_box;
     protected ButtonWidget market_item_buy;
     protected ButtonWidget market_item_sell;
@@ -847,7 +849,7 @@ class ExpansionMarketMenu: ExpansionScriptViewMenu
     protected ItemPreviewWidget market_item_preview;
     protected PlayerPreviewWidget market_player_preview;
 
-    // State tracking
+    // Отслеживание состояния
     protected int m_Quantity = 1;
     protected int m_BuyPrice;
     protected int m_SellPrice;
@@ -855,11 +857,11 @@ class ExpansionMarketMenu: ExpansionScriptViewMenu
 }
 ```
 
-**Ключевой вывод:** For complex interactive UIs, Expansion combines DabsFramework's MVC with traditional widget references. The controller handles data binding for lists and text, while direct widget references handle specialized widgets like `ItemPreviewWidget` and `PlayerPreviewWidget` that need imperative control.
+**Ключевой вывод:** Для сложных интерактивных UI Expansion комбинирует MVC от DabsFramework с традиционными ссылками на виджеты. Контроллер обрабатывает привязку данных для списков и текста, а прямые ссылки на виджеты обрабатывают специализированные виджеты, такие как `ItemPreviewWidget` и `PlayerPreviewWidget`, которые требуют императивного управления.
 
-### ExpansionScriptViewMenu -- Menu Lifecycle
+### ExpansionScriptViewMenu -- жизненный цикл меню
 
-Expansion wraps ScriptView in a menu base class that handles input locking, blur effects, and update timers:
+Expansion оборачивает ScriptView в базовый класс меню, который обрабатывает блокировку ввода, эффекты размытия и таймеры обновления:
 
 ```c
 class ExpansionScriptViewMenu: ExpansionScriptViewMenuBase
@@ -890,17 +892,17 @@ class ExpansionScriptViewMenu: ExpansionScriptViewMenuBase
 }
 ```
 
-Это обеспечивает every Expansion menu consistently locks player movement, shows cursor, applies background blur, and cleans up on close.
+Это гарантирует, что каждое меню Expansion единообразно блокирует движение игрока, показывает курсор, применяет размытие фона и корректно очищается при закрытии.
 
 ---
 
-## DayZ Editor UI Patterns
+## Паттерны UI DayZ Editor
 
-DayZ Editor is a full object placement tool built as a DayZ mod. It uses DabsFramework extensively and implements patterns typically found in desktop applications: toolbars, menus, property inspectors, command system with undo/redo.
+DayZ Editor -- это полноценный инструмент размещения объектов, построенный как мод DayZ. Он активно использует DabsFramework и реализует паттерны, обычно встречающиеся в настольных приложениях: панели инструментов, меню, инспекторы свойств, система команд с отменой/повтором.
 
-### Command Pattern with Keyboard Shortcuts
+### Паттерн команд с горячими клавишами
 
-The Editor's command system decouples actions from UI elements. Each action (New, Open, Сохранить, Undo, Redo, Delete, etc.) is an `EditorCommand` subclass:
+Система команд редактора отделяет действия от элементов UI. Каждое действие (Создать, Открыть, Сохранить, Отменить, Повторить, Удалить и т.д.) -- это подкласс `EditorCommand`:
 
 ```c
 class EditorUndoCommand: EditorCommand
@@ -934,7 +936,7 @@ class EditorUndoCommand: EditorCommand
 }
 ```
 
-The `EditorCommandManager` registers all commands and maps shortcuts:
+`EditorCommandManager` регистрирует все команды и назначает горячие клавиши:
 
 ```c
 class EditorCommandManager
@@ -956,11 +958,11 @@ class EditorCommandManager
 }
 ```
 
-Commands integrate with DabsFramework's `RelayCommand` so toolbar buttons automatically grey out when `CanExecute()` returns false.
+Команды интегрируются с `RelayCommand` от DabsFramework, так что кнопки панели инструментов автоматически становятся серыми, когда `CanExecute()` возвращает false.
 
-### Menu Bar System
+### Система панели меню
 
-The Editor builds its menu bar (File, Edit, View, Editor) using an observable collection of menu items. Each menu is a `ScriptView` subclass:
+Редактор строит свою панель меню (Файл, Редактирование, Вид, Редактор) используя наблюдаемую коллекцию элементов меню. Каждое меню -- это подкласс `ScriptView`:
 
 ```c
 class EditorMenu: ScriptView
@@ -989,34 +991,34 @@ class EditorMenu: ScriptView
 }
 ```
 
-The `ObservableCollection` automatically creates the visual menu items when commands are inserted.
+`ObservableCollection` автоматически создаёт визуальные элементы меню при добавлении команд.
 
-### HUD with Data-Bound Panels
+### HUD с панелями на привязке данных
 
-The editor HUD controller uses `ObservableCollection` for all list panels:
+Контроллер HUD редактора использует `ObservableCollection` для всех панелей списков:
 
 ```c
 class EditorHudController: EditorControllerBase
 {
-    // Object lists bound to sidebar panels
+    // Списки объектов, привязанные к панелям боковой панели
     ref ObservableCollection<ref EditorPlaceableListItem> LeftbarSpacerConfig;
     ref ObservableCollection<EditorListItem> RightbarPlacedData;
     ref ObservableCollection<EditorPlayerListItem> RightbarPlayerData;
 
-    // Log entries with max count
+    // Записи журнала с максимальным количеством
     static const int MAX_LOG_ENTRIES = 20;
     ref ObservableCollection<ref EditorLogEntry> EditorLogEntries;
 
-    // Camera track keyframes
+    // Ключевые кадры трека камеры
     ref ObservableCollection<ref EditorCameraTrackListItem> CameraTrackData;
 }
 ```
 
-Adding an object to the scene automatically adds it to the sidebar list. Deleting removes it. No manual widget creation/destruction.
+Добавление объекта в сцену автоматически добавляет его в список боковой панели. Удаление убирает его. Ручное создание/уничтожение виджетов не требуется.
 
-### Theming via Widget Name Lists
+### Стилизация через списки имён виджетов
 
-The Editor centralizes themed widgets using a static array of widget names:
+Редактор централизует стилизуемые виджеты с помощью статического массива имён виджетов:
 
 ```c
 static const ref array<string> ThemedWidgetStrings = {
@@ -1027,20 +1029,20 @@ static const ref array<string> ThemedWidgetStrings = {
 };
 ```
 
-A theming pass iterates this array and applies colors from `EditorSettings`, avoiding scattered `SetColor()` calls throughout the codebase.
+Проход стилизации перебирает этот массив и применяет цвета из `EditorSettings`, избегая разбросанных вызовов `SetColor()` по всей кодовой базе.
 
 ---
 
-## Common UI Architecture Patterns
+## Общие архитектурные паттерны UI
 
-These patterns appear across multiple mods. They represent the community's consensus on how to solve recurring DayZ UI problems.
+Эти паттерны встречаются в нескольких модах. Они представляют собой консенсус сообщества о том, как решать повторяющиеся проблемы UI DayZ.
 
-### Panel Manager (Show/Hide by Name or Type)
+### Менеджер панелей (показ/скрытие по имени или типу)
 
-Both VPP and COT maintain a registry of UI panels accessible by typename:
+И VPP, и COT поддерживают реестр панелей UI, доступных по typename:
 
 ```c
-// VPP pattern
+// Паттерн VPP
 VPPScriptedMenu GetMenuByType(typename menuType)
 {
     foreach (VPPScriptedMenu menu : M_SCRIPTED_UI_INSTANCES)
@@ -1051,7 +1053,7 @@ VPPScriptedMenu GetMenuByType(typename menuType)
     return NULL;
 }
 
-// COT pattern
+// Паттерн COT
 void ToggleShow()
 {
     if (IsVisible())
@@ -1061,28 +1063,28 @@ void ToggleShow()
 }
 ```
 
-This prevents duplicate panels and provides a single point of control for visibility.
+Это предотвращает дублирование панелей и обеспечивает единую точку управления видимостью.
 
-### Widget Recycling for Lists
+### Переиспользование виджетов для списков
 
-When displaying large lists (player lists, item catalogs, object browsers), mods avoid creating/destroying widgets on every update. Instead they maintain a pool:
+При отображении больших списков (списки игроков, каталоги предметов, браузеры объектов) моды избегают создания/уничтожения виджетов при каждом обновлении. Вместо этого поддерживается пул:
 
 ```c
-// Simplified pattern used across mods
+// Упрощённый паттерн, используемый в разных модах
 void UpdatePlayerList(array<PlayerInfo> players)
 {
-    // Hide excess widgets
+    // Скрыть лишние виджеты
     for (int i = players.Count(); i < m_PlayerWidgets.Count(); i++)
         m_PlayerWidgets[i].Show(false);
 
-    // Create new widgets only if needed
+    // Создать новые виджеты только если нужно
     while (m_PlayerWidgets.Count() < players.Count())
     {
         Widget w = GetGame().GetWorkspace().CreateWidgets(PLAYER_ENTRY_LAYOUT, m_ListParent);
         m_PlayerWidgets.Insert(w);
     }
 
-    // Update visible widgets with data
+    // Обновить видимые виджеты данными
     for (int j = 0; j < players.Count(); j++)
     {
         m_PlayerWidgets[j].Show(true);
@@ -1091,14 +1093,14 @@ void UpdatePlayerList(array<PlayerInfo> players)
 }
 ```
 
-DabsFramework's `ObservableCollection` handles this automatically, but manual implementations use this pattern.
+`ObservableCollection` от DabsFramework обрабатывает это автоматически, но ручные реализации используют этот паттерн.
 
-### Lazy Widget Creation
+### Ленивое создание виджетов
 
-Several mods defer widget creation until first show:
+Несколько модов откладывают создание виджетов до первого показа:
 
 ```c
-// VPP pattern
+// Паттерн VPP
 override Widget Init()
 {
     if (!m_Init)
@@ -1107,19 +1109,19 @@ override Widget Init()
         m_Init = true;
         return layoutRoot;
     }
-    // Subsequent calls skip creation
+    // Последующие вызовы пропускают создание
     return layoutRoot;
 }
 ```
 
-This avoids loading all admin panels at startup when most will never be opened.
+Это позволяет избежать загрузки всех админ-панелей при запуске, когда большинство из них никогда не будут открыты.
 
-### Event Delegation Through Handler Chains
+### Делегирование событий через цепочки обработчиков
 
-A common pattern is a parent handler that delegates to child handlers:
+Распространённый паттерн -- родительский обработчик, который делегирует дочерним обработчикам:
 
 ```c
-// Parent handles click, routes to appropriate child
+// Родитель обрабатывает клик и направляет к соответствующему дочернему
 override bool OnClick(Widget w, int x, int y, int button)
 {
     if (w == m_closeButton)
@@ -1128,7 +1130,7 @@ override bool OnClick(Widget w, int x, int y, int button)
         return true;
     }
 
-    // Delegate to active tool panel
+    // Делегировать активной панели инструмента
     if (m_ActivePanel)
         return m_ActivePanel.OnClick(w, x, y, button);
 
@@ -1136,9 +1138,9 @@ override bool OnClick(Widget w, int x, int y, int button)
 }
 ```
 
-### OnWidgetScriptInit as Universal Entry Point
+### OnWidgetScriptInit как универсальная точка входа
 
-Every mod studied uses `OnWidgetScriptInit` as the layout-to-script binding mechanism:
+Каждый изученный мод использует `OnWidgetScriptInit` как механизм привязки макета к скрипту:
 
 ```c
 void OnWidgetScriptInit(Widget w)
@@ -1146,24 +1148,24 @@ void OnWidgetScriptInit(Widget w)
     m_root = w;
     m_root.SetHandler(this);
 
-    // Find child widgets
+    // Найти дочерние виджеты
     m_Button = ButtonWidget.Cast(m_root.FindAnyWidget("button_name"));
     m_Text = TextWidget.Cast(m_root.FindAnyWidget("text_name"));
 }
 ```
 
-This is set via the `scriptclass` property in the layout file. The engine calls `OnWidgetScriptInit` automatically when `CreateWidgets()` processes a widget with a script class.
+Это устанавливается через свойство `scriptclass` в файле макета. Движок автоматически вызывает `OnWidgetScriptInit`, когда `CreateWidgets()` обрабатывает виджет со скриптовым классом.
 
 ---
 
-## Anti-Patterns to Avoid
+## Антипаттерны, которых следует избегать
 
-These mistakes appear in real mod code and cause performance issues or crashes.
+Эти ошибки встречаются в реальном коде модов и вызывают проблемы с производительностью или вылеты.
 
-### Creating Widgets Every Frame
+### Создание виджетов каждый кадр
 
 ```c
-// BAD: Creates new widgets on every Update call
+// ПЛОХО: Создаёт новые виджеты при каждом вызове Update
 override void Update(float dt)
 {
     Widget label = GetGame().GetWorkspace().CreateWidgets("label.layout", m_Parent);
@@ -1171,55 +1173,55 @@ override void Update(float dt)
 }
 ```
 
-Widget creation allocates memory and triggers layout recalculation. At 60 FPS this creates 60 widgets per second. Always create once and update in place.
+Создание виджетов выделяет память и вызывает пересчёт макета. При 60 FPS это создаёт 60 виджетов в секунду. Всегда создавайте один раз и обновляйте на месте.
 
-### Not Cleaning Up Event Handlers
+### Отсутствие очистки обработчиков событий
 
 ```c
-// BAD: Insert without corresponding Remove
+// ПЛОХО: Insert без соответствующего Remove
 void OnInit()
 {
     GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Insert(Update);
     JMScriptInvokers.ESP_VIEWTYPE_CHANGED.Insert(OnESPViewTypeChanged);
 }
 
-// Missing from destructor:
+// Отсутствует в деструкторе:
 // GetGame().GetUpdateQueue(CALL_CATEGORY_GUI).Remove(Update);
 // JMScriptInvokers.ESP_VIEWTYPE_CHANGED.Remove(OnESPViewTypeChanged);
 ```
 
-Every `Insert` on a `ScriptInvoker` or update queue needs a matching `Remove` in the destructor. Orphaned handlers cause calls to deleted objects and null access crashes.
+Каждый `Insert` в `ScriptInvoker` или очередь обновлений требует соответствующего `Remove` в деструкторе. Осиротевшие обработчики вызывают обращения к удалённым объектам и вылеты из-за доступа к null.
 
-### Hardcoding Pixel Positions
+### Жёсткое кодирование пиксельных позиций
 
 ```c
-// BAD: Breaks on different resolutions
+// ПЛОХО: Ломается на разных разрешениях
 m_Panel.SetPos(540, 320);
 m_Panel.SetSize(400, 300);
 ```
 
-Always use proportional (0.0-1.0) positioning or let container widgets handle layout. Pixel positions only work at the resolution they were designed for.
+Всегда используйте пропорциональное (0.0-1.0) позиционирование или позвольте контейнерным виджетам управлять макетом. Пиксельные позиции работают только на том разрешении, для которого были спроектированы.
 
-### Deep Widget Nesting Without Purpose
+### Глубокая вложенность виджетов без необходимости
 
 ```
 Frame -> Panel -> Frame -> Panel -> Frame -> TextWidget
 ```
 
-Every nesting level adds layout calculation overhead. If an intermediate widget serves no purpose (no background, no sizing constraint, no event handling), remove it. Flatten hierarchies where possible.
+Каждый уровень вложенности добавляет накладные расходы на расчёт макета. Если промежуточный виджет не несёт функции (нет фона, нет ограничений размера, нет обработки событий), удалите его. Делайте иерархии плоскими где возможно.
 
-### Ignoring Focus Management
+### Игнорирование управления фокусом
 
 ```c
-// BAD: Opens dialog but does not set focus
+// ПЛОХО: Открывает диалог, но не устанавливает фокус
 void ShowDialog()
 {
     m_Dialog.Show(true);
-    // Missing: SetFocus(m_Dialog.GetLayoutRoot());
+    // Отсутствует: SetFocus(m_Dialog.GetLayoutRoot());
 }
 ```
 
-Without `SetFocus()`, keyboard events may still go to widgets behind the dialog. Expansion's approach is correct:
+Без `SetFocus()` события клавиатуры могут по-прежнему поступать виджетам за диалогом. Подход Expansion корректен:
 
 ```c
 override void OnShow()
@@ -1228,55 +1230,55 @@ override void OnShow()
 }
 ```
 
-### Forgetting Widget Cleanup on Destruction
+### Забывание об очистке виджетов при уничтожении
 
 ```c
-// BAD: Widget tree leaks when script object is destroyed
+// ПЛОХО: Дерево виджетов утекает при уничтожении скриптового объекта
 void ~MyPanel()
 {
-    // m_root.Unlink() is missing!
+    // m_root.Unlink() отсутствует!
 }
 ```
 
-If you create widgets with `CreateWidgets()`, you own them. Call `Unlink()` on the root in your destructor. `ScriptView` and `UIScriptedMenu` handle this automatically, but raw `ScriptedWidgetEventHandler` subclasses must do it manually.
+Если вы создали виджеты с помощью `CreateWidgets()`, вы владеете ими. Вызывайте `Unlink()` для корня в деструкторе. `ScriptView` и `UIScriptedMenu` обрабатывают это автоматически, но подклассы `ScriptedWidgetEventHandler` должны делать это вручную.
 
 ---
 
-## Итоги: Which Pattern to Use When
+## Сводка: какой паттерн использовать
 
-| Need | Recommended Pattern | Source Mod |
+| Потребность | Рекомендуемый паттерн | Мод-источник |
 |------|-------------------|------------|
-| Simple tool panel | `ScriptedWidgetEventHandler` + `OnWidgetScriptInit` | VPP |
-| Complex data-bound UI | `ScriptView` + `ViewController` + `ObservableCollection` | DabsFramework |
-| Admin panel system | Module + Form + Window (module registration pattern) | COT |
-| Draggable sub-windows | `AdminHudSubMenu` (title bar drag handling) | VPP |
-| Confirmation dialog | `VPPDialogBox` or `JMConfirmation` (callback-based) | VPP / COT |
-| Popup with input | `PopUpCreatePreset` pattern (`delete this` on close) | VPP |
-| Fullscreen menu | `ExpansionScriptViewMenu` (lock controls, blur, timer) | Expansion |
-| Theme/color system | 3-layer (palette, scheme, branding) with `modded class` | Colorful UI |
-| Vanilla UI override | `modded class` + replacement `.layout` files | Colorful UI |
-| Notification system | Type enum + per-type layout + static creation API | Expansion |
-| Toolbar command system | `EditorCommand` + `EditorCommandManager` + shortcuts | DayZ Editor |
-| Menu bar with items | `EditorMenu` + `ObservableCollection<EditorMenuItem>` | DayZ Editor |
-| ESP/HUD overlay | Fullscreen `CanvasWidget` + projected widget positioning | COT |
-| Resolution variants | Separate layout directories (narrow/medium/wide) | Colorful UI |
-| Large list performance | Widget recycling pool (hide/show, create on demand) | Common |
-| Configuration | Static variables (client mod) or JSON via config manager | Colorful UI |
+| Простая панель инструмента | `ScriptedWidgetEventHandler` + `OnWidgetScriptInit` | VPP |
+| Сложный UI с привязкой данных | `ScriptView` + `ViewController` + `ObservableCollection` | DabsFramework |
+| Система админ-панелей | Модуль + Форма + Окно (паттерн регистрации модулей) | COT |
+| Перетаскиваемые подокна | `AdminHudSubMenu` (перетаскивание за заголовок) | VPP |
+| Диалог подтверждения | `VPPDialogBox` или `JMConfirmation` (на основе обратных вызовов) | VPP / COT |
+| Всплывающее окно с вводом | Паттерн `PopUpCreatePreset` (`delete this` при закрытии) | VPP |
+| Полноэкранное меню | `ExpansionScriptViewMenu` (блокировка управления, размытие, таймер) | Expansion |
+| Система тем/цветов | 3-уровневая (палитра, схема, брендинг) с `modded class` | Colorful UI |
+| Переопределение ванильного UI | `modded class` + заменяющие файлы `.layout` | Colorful UI |
+| Система уведомлений | Перечисление типов + макет для каждого типа + статический API создания | Expansion |
+| Система команд панели инструментов | `EditorCommand` + `EditorCommandManager` + горячие клавиши | DayZ Editor |
+| Панель меню с элементами | `EditorMenu` + `ObservableCollection<EditorMenuItem>` | DayZ Editor |
+| ESP/HUD оверлей | Полноэкранный `CanvasWidget` + позиционирование проецированных виджетов | COT |
+| Варианты для разных разрешений | Отдельные директории макетов (narrow/medium/wide) | Colorful UI |
+| Производительность больших списков | Пул переиспользуемых виджетов (скрыть/показать, создать по требованию) | Общий |
+| Конфигурация | Статические переменные (клиентский мод) или JSON через менеджер конфигурации | Colorful UI |
 
 ### Блок-схема принятия решений
 
-1. **Is it a one-off simple panel?** Use `ScriptedWidgetEventHandler` with `OnWidgetScriptInit`. Build the layout in the editor, find widgets by name.
+1. **Это одноразовая простая панель?** Используйте `ScriptedWidgetEventHandler` с `OnWidgetScriptInit`. Постройте макет в редакторе, найдите виджеты по имени.
 
-2. **Does it have dynamic lists or frequently-changing data?** Use DabsFramework's `ViewController` with `ObservableCollection`. The data binding eliminates manual widget updates.
+2. **Есть динамические списки или часто меняющиеся данные?** Используйте `ViewController` от DabsFramework с `ObservableCollection`. Привязка данных устраняет ручное обновление виджетов.
 
-3. **Is it part of a multi-panel admin tool?** Use the COT module-form pattern. Each tool is self-contained with its own module, form, and layout. Registration is a single line.
+3. **Это часть многопанельного инструмента администрирования?** Используйте паттерн модуль-форма от COT. Каждый инструмент самодостаточен со своим модулем, формой и макетом. Регистрация -- одна строка.
 
-4. **Does it need to replace vanilla UI?** Use the Colorful UI pattern: `modded class`, custom layout file, centralized color scheme.
+4. **Нужно ли заменить ванильный UI?** Используйте паттерн Colorful UI: `modded class`, пользовательский файл макета, централизованная цветовая схема.
 
-5. **Does it need server-to-client data sync?** Combine any pattern above with RPC. Expansion's market menu shows how to manage loading states, request/response cycles, and update timers within a ScriptView.
+5. **Нужна синхронизация данных сервер-клиент?** Комбинируйте любой из вышеперечисленных паттернов с RPC. Меню маркета Expansion показывает, как управлять состояниями загрузки, циклами запрос/ответ и таймерами обновления внутри ScriptView.
 
-6. **Does it need undo/redo or complex interaction?** Use the command pattern from DayZ Editor. Commands decouple actions from buttons, support shortcuts, and integrate with DabsFramework's `RelayCommand` for automatic enable/disable.
+6. **Нужна отмена/повтор или сложное взаимодействие?** Используйте паттерн команд из DayZ Editor. Команды отделяют действия от кнопок, поддерживают горячие клавиши и интегрируются с `RelayCommand` от DabsFramework для автоматического включения/отключения.
 
 ---
 
-*Next chapter: [Advanced Widgets](10-advanced-widgets.md) -- RichTextWidget formatting, CanvasWidget drawing, MapWidget markers, ItemPreviewWidget, PlayerPreviewWidget, VideoWidget, and RenderTargetWidget.*
+*Следующая глава: [Продвинутые виджеты](10-advanced-widgets.md) -- форматирование RichTextWidget, рисование CanvasWidget, маркеры MapWidget, ItemPreviewWidget, PlayerPreviewWidget, VideoWidget и RenderTargetWidget.*
