@@ -1,62 +1,62 @@
-# Chapter 7.4: Config Persistence
+# Chapter 7.4: 設定の永続化
 
-[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
+[ホーム](../../README.md) | [<< 前: RPCパターン](03-rpc-patterns.md) | **設定の永続化** | [次: パーミッションシステム >>](05-permissions.md)
 
 ---
 
 ## はじめに
 
-Almost every DayZ mod needs to save and load configuration data: server settings, spawn tables, ban lists, player data, teleport locations. The engine provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for everything else. Professional mods layer config versioning and auto-migration on top.
+ほぼすべてのDayZ Modは設定データの保存と読み込みが必要です：サーバー設定、スポーンテーブル、BANリスト、プレイヤーデータ、テレポート位置など。エンジンはシンプルなJSONシリアライゼーション用の`JsonFileLoader`と、その他すべて用の生のファイルI/O（`FileHandle`、`FPrintln`）を提供しています。プロフェッショナルなModでは、設定のバージョニングと自動マイグレーションをその上に構築しています。
 
-This chapter covers the standard patterns for config persistence, from basic JSON load/save through versioned migration systems, directory management, and auto-save timers.
+この章では、基本的なJSON読み込み/保存からバージョン付きマイグレーションシステム、ディレクトリ管理、自動保存タイマーまで、設定永続化の標準パターンを解説します。
 
 ---
 
 ## 目次
 
-- [JsonFileLoader Pattern](#jsonfileloader-pattern)
-- [Manual JSON Writing (FPrintln)](#manual-json-writing-fprintln)
-- [The $profile Path](#the-profile-path)
-- [Directory Creation](#directory-creation)
-- [Config Data Classes](#config-data-classes)
-- [Config Versioning and Migration](#config-versioning-and-migration)
-- [Auto-Save Timers](#auto-save-timers)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [JsonFileLoaderパターン](#jsonfileloader-pattern)
+- [手動JSON書き込み（FPrintln）](#manual-json-writing-fprintln)
+- [$profileパス](#the-profile-path)
+- [ディレクトリの作成](#directory-creation)
+- [設定データクラス](#config-data-classes)
+- [設定のバージョニングとマイグレーション](#config-versioning-and-migration)
+- [自動保存タイマー](#auto-save-timers)
+- [よくある間違い](#common-mistakes)
+- [ベストプラクティス](#best-practices)
 
 ---
 
-## JsonFileLoader Pattern
+## JsonFileLoaderパターン
 
-`JsonFileLoader` is the engine's built-in serializer. It converts between Enforce Script objects and JSON files using reflection --- it reads the public fields of your class and maps them to JSON keys automatically.
+`JsonFileLoader`はエンジン組み込みのシリアライザです。リフレクションを使用してEnforce ScriptオブジェクトとJSONファイル間の変換を行います --- クラスのpublicフィールドを読み取り、自動的にJSONキーにマッピングします。
 
-### Critical Gotcha
+### 重要な注意事項
 
-**`JsonFileLoader<T>.JsonLoadFile()` and `JsonFileLoader<T>.JsonSaveFile()` return `void`.** You cannot check their return value. You cannot assign them to a `bool`. You cannot use them in an `if` condition. This is one of the most common mistakes in DayZ modding.
+**`JsonFileLoader<T>.JsonLoadFile()`と`JsonFileLoader<T>.JsonSaveFile()`は`void`を返します。** 戻り値をチェックすることはできません。`bool`に代入することもできません。`if`条件で使用することもできません。これはDayZ Moddingで最も一般的なミスの1つです。
 
 ```c
-// WRONG — will not compile
+// 間違い — コンパイルできません
 bool success = JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
 
-// WRONG — will not compile
+// 間違い — コンパイルできません
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config))
 {
     // ...
 }
 
-// RIGHT — call and then check the object state
+// 正しい — 呼び出してからオブジェクトの状態をチェックする
 JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
-// Check if the data was actually populated
+// データが実際にポピュレートされたかチェックする
 if (config.m_ServerName != "")
 {
-    // Data loaded successfully
+    // データが正常に読み込まれた
 }
 ```
 
-### Basic Load/Save
+### 基本的な読み込み/保存
 
 ```c
-// Data class — public fields are serialized to/from JSON
+// データクラス — publicフィールドがJSONとの間でシリアライズされます
 class ServerSettings
 {
     string ServerName = "My DayZ Server";
@@ -80,7 +80,7 @@ class SettingsManager
         }
         else
         {
-            // First run: save defaults
+            // 初回実行：デフォルトを保存する
             Save();
         }
     }
@@ -92,15 +92,15 @@ class SettingsManager
 };
 ```
 
-### What Gets Serialized
+### シリアライズされるもの
 
-`JsonFileLoader` serializes **all public fields** of the object. It does not serialize:
-- Private or protected fields
-- Methods
-- Static fields
-- Transient/runtime-only fields (there is no `[NonSerialized]` attribute --- use access modifiers)
+`JsonFileLoader`はオブジェクトの**すべてのpublicフィールド**をシリアライズします。以下はシリアライズされません：
+- privateまたはprotectedフィールド
+- メソッド
+- staticフィールド
+- 一時的な/ランタイム専用のフィールド（`[NonSerialized]`属性はありません --- アクセス修飾子を使用してください）
 
-The resulting JSON looks like:
+生成されるJSONは以下のようになります：
 
 ```json
 {
@@ -111,20 +111,20 @@ The resulting JSON looks like:
 }
 ```
 
-### Supported Field Types
+### サポートされるフィールド型
 
-| Type | JSON Representation |
+| 型 | JSON表現 |
 |------|-------------------|
-| `int` | Number |
-| `float` | Number |
+| `int` | 数値 |
+| `float` | 数値 |
 | `bool` | `true` / `false` |
-| `string` | String |
-| `vector` | Array of 3 numbers |
-| `array<T>` | JSON array |
-| `map<string, T>` | JSON object (string keys only) |
-| Nested class | Nested JSON object |
+| `string` | 文字列 |
+| `vector` | 3つの数値の配列 |
+| `array<T>` | JSON配列 |
+| `map<string, T>` | JSONオブジェクト（文字列キーのみ） |
+| ネストされたクラス | ネストされたJSONオブジェクト |
 
-### Nested Objects
+### ネストされたオブジェクト
 
 ```c
 class SpawnPoint
@@ -140,7 +140,7 @@ class SpawnConfig
 };
 ```
 
-Produces:
+生成されるJSON：
 
 ```json
 {
@@ -161,11 +161,11 @@ Produces:
 
 ---
 
-## Manual JSON Writing (FPrintln)
+## 手動JSON書き込み（FPrintln）
 
-Sometimes `JsonFileLoader` is not flexible enough: it cannot handle arrays of mixed types, custom formatting, or non-class data structures. In those cases, use raw file I/O.
+`JsonFileLoader`では十分でない場合があります：混合型の配列、カスタムフォーマット、非クラスデータ構造を扱えません。その場合は、生のファイルI/Oを使用します。
 
-### Basic Pattern
+### 基本パターン
 
 ```c
 void WriteCustomData(string path, array<string> lines)
@@ -190,7 +190,7 @@ void WriteCustomData(string path, array<string> lines)
 }
 ```
 
-### Reading Raw Files
+### 生ファイルの読み込み
 
 ```c
 void ReadCustomData(string path)
@@ -203,60 +203,60 @@ void ReadCustomData(string path)
     {
         line = line.Trim();
         if (line == "") continue;
-        // Process line...
+        // 行を処理...
     }
 
     CloseFile(file);
 }
 ```
 
-### 使い分け Manual I/O
+### 手動I/Oの使い分け
 
-- Writing log files (append mode)
-- Writing CSV or plain-text exports
-- Custom JSON formatting that `JsonFileLoader` cannot produce
-- Parsing non-JSON file formats (e.g., DayZ's `.map` or `.xml` files)
+- ログファイルの書き込み（追記モード）
+- CSVまたはプレーンテキストエクスポートの書き込み
+- `JsonFileLoader`では生成できないカスタムJSONフォーマット
+- 非JSONファイルフォーマット（DayZの`.map`や`.xml`ファイルなど）のパース
 
-For standard config files, prefer `JsonFileLoader`. It is faster to implement, less error-prone, and automatically handles nested objects.
+標準的な設定ファイルには`JsonFileLoader`を使用することを推奨します。実装が速く、エラーが発生しにくく、ネストされたオブジェクトを自動的に処理します。
 
 ---
 
-## The $profile Path
+## $profileパス
 
-DayZ provides the `$profile:` path prefix, which resolves to the server's profile directory (typically the folder containing `DayZServer_x64.exe`, or the profile path specified with `-profiles=`).
+DayZは`$profile:`パスプレフィックスを提供しており、サーバーのプロファイルディレクトリ（通常`DayZServer_x64.exe`を含むフォルダ、または`-profiles=`で指定されたプロファイルパス）に解決されます。
 
 ```c
-// These resolve to the profile directory:
+// これらはプロファイルディレクトリに解決されます：
 "$profile:MyMod/config.json"       // → C:/DayZServer/MyMod/config.json
 "$profile:MyMod/Players/data.json" // → C:/DayZServer/MyMod/Players/data.json
 ```
 
-### Always Use $profile
+### 常に$profileを使用する
 
-Never use absolute paths. Never use relative paths. Always use `$profile:` for any file your mod creates or reads at runtime:
+絶対パスは決して使用しないでください。相対パスも使用しないでください。Modがランタイムで作成または読み取るすべてのファイルに対して、常に`$profile:`を使用してください：
 
 ```c
-// BAD: Absolute path — breaks on any other machine
+// 悪い例：絶対パス — 他のマシンでは動作しません
 const string CONFIG_PATH = "C:/DayZServer/MyMod/config.json";
 
-// BAD: Relative path — depends on working directory, which varies
+// 悪い例：相対パス — ワーキングディレクトリに依存し、環境によって異なります
 const string CONFIG_PATH = "MyMod/config.json";
 
-// GOOD: $profile resolves correctly everywhere
+// 良い例：$profileはどこでも正しく解決されます
 const string CONFIG_PATH = "$profile:MyMod/config.json";
 ```
 
-### Conventional Directory Structure
+### 標準的なディレクトリ構造
 
-Most mods follow this convention:
+ほとんどのModは以下の規約に従います：
 
 ```
 $profile:
   └── YourModName/
-      ├── Config.json          (main server config)
-      ├── Permissions.json     (admin permissions)
+      ├── Config.json          (メインサーバー設定)
+      ├── Permissions.json     (管理者パーミッション)
       ├── Logs/
-      │   └── 2025-01-15.log   (daily log files)
+      │   └── 2025-01-15.log   (日次ログファイル)
       └── Players/
           ├── 76561198xxxxx.json
           └── 76561198yyyyy.json
@@ -264,9 +264,9 @@ $profile:
 
 ---
 
-## Directory Creation
+## ディレクトリの作成
 
-Before writing a file, you must ensure its parent directory exists. DayZ does not auto-create directories.
+ファイルを書き込む前に、親ディレクトリが存在することを確認する必要があります。DayZはディレクトリを自動作成しません。
 
 ### MakeDirectory
 
@@ -293,23 +293,23 @@ void EnsureDirectories()
 }
 ```
 
-### Important: MakeDirectory Is Not Recursive
+### 重要：MakeDirectoryは再帰的ではない
 
-`MakeDirectory` creates only the final directory in the path. If the parent does not exist, it fails silently. You must create each level:
+`MakeDirectory`はパスの最後のディレクトリのみを作成します。親が存在しない場合、サイレントに失敗します。各レベルを作成する必要があります：
 
 ```c
-// WRONG: Parent "MyMod" doesn't exist yet
-MakeDirectory("$profile:MyMod/Data/Players");  // Fails silently
+// 間違い：親の"MyMod"がまだ存在しない
+MakeDirectory("$profile:MyMod/Data/Players");  // サイレントに失敗
 
-// RIGHT: Create each level
+// 正しい：各レベルを作成する
 MakeDirectory("$profile:MyMod");
 MakeDirectory("$profile:MyMod/Data");
 MakeDirectory("$profile:MyMod/Data/Players");
 ```
 
-### MyMod Pattern: Constants for Paths
+### パス定数パターン
 
-MyMod defines all paths as constants in a dedicated class:
+フレームワークModではすべてのパスを専用クラスの定数として定義します：
 
 ```c
 class MyModConst
@@ -322,35 +322,35 @@ class MyModConst
 };
 ```
 
-This avoids path string duplication across the codebase and makes it easy to find every file your mod touches.
+これにより、コードベース全体でパス文字列の重複を避け、Modが触れるすべてのファイルを簡単に見つけることができます。
 
 ---
 
-## Config Data Classes
+## 設定データクラス
 
-A well-designed config data class provides default values, version tracking, and clear documentation of each field.
+よく設計された設定データクラスは、デフォルト値、バージョントラッキング、各フィールドの明確なドキュメントを提供します。
 
-### Basic Pattern
+### 基本パターン
 
 ```c
 class MyModConfig
 {
-    // Version tracking for migrations
+    // マイグレーション用のバージョントラッキング
     int ConfigVersion = 3;
 
-    // Gameplay settings with sensible defaults
+    // 適切なデフォルト値を持つゲームプレイ設定
     bool EnableFeatureX = true;
     int MaxEntities = 50;
     float SpawnRadius = 500.0;
     string WelcomeMessage = "Welcome to the server!";
 
-    // Complex settings
+    // 複合的な設定
     ref array<string> AllowedWeapons = new array<string>();
     ref map<string, float> ZoneRadii = new map<string, float>();
 
     void MyModConfig()
     {
-        // Initialize collections with defaults
+        // デフォルトでコレクションを初期化
         AllowedWeapons.Insert("AK74");
         AllowedWeapons.Insert("M4A1");
 
@@ -360,43 +360,43 @@ class MyModConfig
 };
 ```
 
-### MyMod ConfigBase Pattern
+### リフレクティブConfigBaseパターン
 
-MyMod uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
+このパターンでは、各設定クラスがフィールドをディスクリプタとして宣言するリフレクティブな設定システムを使用します。これにより、管理パネルがハードコードされたフィールド名なしで、任意の設定に対してUIを自動生成できます：
 
 ```c
-// Conceptual pattern (simplified from MyMod):
+// 概念的なパターン（リフレクティブ設定）：
 class MyConfigBase
 {
-    // Each config declares its version
+    // 各設定がバージョンを宣言する
     int ConfigVersion;
     string ModId;
 
-    // Subclasses override to declare their fields
+    // サブクラスがフィールドを宣言するためにオーバーライドする
     void Init(string modId)
     {
         ModId = modId;
     }
 
-    // Reflection: get all configurable fields
-    array<ref MyModConfigField> GetFields();
+    // リフレクション：すべての設定可能なフィールドを取得する
+    array<ref MyConfigField> GetFields();
 
-    // Dynamic get/set by field name (for admin panel sync)
+    // フィールド名による動的な取得/設定（管理パネル同期用）
     string GetFieldValue(string fieldName);
     void SetFieldValue(string fieldName, string value);
 
-    // Hooks for custom logic on load/save
+    // 読み込み/保存時のカスタムロジック用フック
     void OnAfterLoad() {}
     void OnBeforeSave() {}
 };
 ```
 
-### VPP ConfigurablePlugin Pattern
+### VPP ConfigurablePluginパターン
 
-VPP merges config management directly into the plugin lifecycle:
+VPPは設定管理をプラグインのライフサイクルに直接統合しています：
 
 ```c
-// VPP pattern (simplified):
+// VPPパターン（簡略化）：
 class VPPESPConfig
 {
     bool EnableESP = true;
@@ -411,7 +411,7 @@ class VPPESPPlugin : ConfigurablePlugin
     override void OnInit()
     {
         m_ESPConfig = new VPPESPConfig();
-        // ConfigurablePlugin.LoadConfig() handles the JSON load
+        // ConfigurablePlugin.LoadConfig()がJSON読み込みを処理する
         super.OnInit();
     }
 };
@@ -419,30 +419,30 @@ class VPPESPPlugin : ConfigurablePlugin
 
 ---
 
-## Config Versioning and Migration
+## 設定のバージョニングとマイグレーション
 
-As your mod evolves, config structures change. You add fields, remove fields, rename fields, change defaults. Without versioning, users with old config files will silently get wrong values or crash.
+Modが進化するにつれて、設定構造は変化します。フィールドの追加、削除、名前変更、デフォルト値の変更が行われます。バージョニングがなければ、古い設定ファイルを持つユーザーはサイレントに不正な値を取得したり、クラッシュしたりします。
 
-### The Version Field
+### バージョンフィールド
 
-Every config class should have an integer version field:
+すべての設定クラスには整数のバージョンフィールドを持たせるべきです：
 
 ```c
 class MyModConfig
 {
-    int ConfigVersion = 5;  // Increment when the structure changes
+    int ConfigVersion = 5;  // 構造が変更されたときにインクリメントする
     // ...
 };
 ```
 
-### Migration on Load
+### 読み込み時のマイグレーション
 
-When loading a config, compare the on-disk version with the current code version. If they differ, run migrations:
+設定を読み込むとき、ディスク上のバージョンと現在のコードバージョンを比較します。異なる場合はマイグレーションを実行します：
 
 ```c
 void LoadConfig()
 {
-    MyModConfig config = new MyModConfig();  // Has current defaults
+    MyModConfig config = new MyModConfig();  // 現在のデフォルトを持つ
 
     if (FileExist(CONFIG_PATH))
     {
@@ -452,52 +452,52 @@ void LoadConfig()
         {
             MigrateConfig(config);
             config.ConfigVersion = CURRENT_VERSION;
-            SaveConfig(config);  // Re-save with updated version
+            SaveConfig(config);  // 更新されたバージョンで再保存する
         }
     }
     else
     {
-        SaveConfig(config);  // First run: write defaults
+        SaveConfig(config);  // 初回実行：デフォルトを書き込む
     }
 
     m_Config = config;
 }
 ```
 
-### Migration Functions
+### マイグレーション関数
 
 ```c
 static const int CURRENT_VERSION = 5;
 
 void MigrateConfig(MyModConfig config)
 {
-    // Run each migration step sequentially
+    // 各マイグレーションステップを順次実行する
     if (config.ConfigVersion < 2)
     {
-        // v1 → v2: "SpawnDelay" was renamed to "RespawnInterval"
-        // Old field is lost on load; set new default
+        // v1 → v2: "SpawnDelay"が"RespawnInterval"に名前変更された
+        // 古いフィールドは読み込み時に失われる。新しいデフォルトを設定する
         config.RespawnInterval = 300.0;
     }
 
     if (config.ConfigVersion < 3)
     {
-        // v2 → v3: Added "EnableNotifications" field
+        // v2 → v3: "EnableNotifications"フィールドが追加された
         config.EnableNotifications = true;
     }
 
     if (config.ConfigVersion < 4)
     {
-        // v3 → v4: "MaxZombies" default changed from 100 to 200
+        // v3 → v4: "MaxZombies"のデフォルトが100から200に変更された
         if (config.MaxZombies == 100)
         {
-            config.MaxZombies = 200;  // Only update if user hadn't changed it
+            config.MaxZombies = 200;  // ユーザーが変更していない場合のみ更新する
         }
     }
 
     if (config.ConfigVersion < 5)
     {
-        // v4 → v5: "DifficultyMode" changed from int to string
-        // config.DifficultyMode = "Normal"; // Set new default
+        // v4 → v5: "DifficultyMode"がintからstringに変更された
+        // config.DifficultyMode = "Normal"; // 新しいデフォルトを設定する
     }
 
     MyLog.Info("Config", "Migrated config from v"
@@ -505,30 +505,30 @@ void MigrateConfig(MyModConfig config)
 }
 ```
 
-### Expansion's Migration Example
+### Expansionのマイグレーション例
 
-Expansion is known for aggressive config evolution. Some Expansion configs have gone through 17+ versions. Their pattern:
-1. Each version bump has a dedicated migration function
-2. Migrations run in order (1 to 2, then 2 to 3, then 3 to 4, etc.)
-3. Each migration only changes what is necessary for that version step
-4. The final version number is written to disk after all migrations complete
+Expansionは積極的な設定進化で知られています。一部のExpansion設定は17以上のバージョンを経ています。そのパターンは以下の通りです：
+1. 各バージョンバンプには専用のマイグレーション関数がある
+2. マイグレーションは順番に実行される（1から2、次に2から3、次に3から4など）
+3. 各マイグレーションはそのバージョンステップに必要な変更のみを行う
+4. すべてのマイグレーションが完了した後、最終バージョン番号がディスクに書き込まれる
 
-This is the gold standard for config versioning in DayZ mods.
+これはDayZ Modにおける設定バージョニングのゴールドスタンダードです。
 
 ---
 
-## Auto-Save Timers
+## 自動保存タイマー
 
-For configs that change at runtime (admin edits, player data accumulation), implement an auto-save timer to prevent data loss on crashes.
+ランタイムで変更される設定（管理者の編集、プレイヤーデータの蓄積）には、クラッシュ時のデータ損失を防ぐための自動保存タイマーを実装してください。
 
-### Timer-Based Auto-Save
+### タイマーベースの自動保存
 
 ```c
 class MyDataManager
 {
-    protected const float AUTOSAVE_INTERVAL = 300.0;  // 5 minutes
+    protected const float AUTOSAVE_INTERVAL = 300.0;  // 5分
     protected float m_AutosaveTimer;
-    protected bool m_Dirty;  // Has data changed since last save?
+    protected bool m_Dirty;  // 最後の保存以降にデータが変更されたか？
 
     void MarkDirty()
     {
@@ -552,7 +552,7 @@ class MyDataManager
 
     void OnMissionFinish()
     {
-        // Always save on shutdown, even if timer hasn't fired
+        // タイマーが発火していなくても、シャットダウン時に常に保存する
         if (m_Dirty)
         {
             Save();
@@ -562,29 +562,29 @@ class MyDataManager
 };
 ```
 
-### Dirty Flag Optimization
+### ダーティフラグの最適化
 
-Only write to disk when data has actually changed. File I/O is expensive. If nothing changed, skip the save:
+データが実際に変更された場合にのみディスクに書き込みます。ファイルI/Oはコストが高いです。何も変更がなければ保存をスキップしてください：
 
 ```c
 void UpdateSetting(string key, string value)
 {
-    if (m_Settings.Get(key) == value) return;  // No change, no save
+    if (m_Settings.Get(key) == value) return;  // 変更なし、保存なし
 
     m_Settings.Set(key, value);
     MarkDirty();
 }
 ```
 
-### Save on Critical Events
+### 重要なイベント時の保存
 
-In addition to timed saves, save immediately after critical operations:
+タイマー保存に加えて、重要な操作後には即座に保存します：
 
 ```c
 void BanPlayer(string uid, string reason)
 {
     m_BanList.Insert(uid);
-    Save();  // Immediate save — bans must survive crashes
+    Save();  // 即時保存 — BANはクラッシュ後も維持される必要がある
 }
 ```
 
@@ -592,22 +592,22 @@ void BanPlayer(string uid, string reason)
 
 ## よくある間違い
 
-### 1. Treating JsonLoadFile as if It Returns a Value
+### 1. JsonLoadFileが値を返すかのように扱う
 
 ```c
-// WRONG — does not compile
+// 間違い — コンパイルできません
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config)) { ... }
 ```
 
-`JsonLoadFile` returns `void`. Call it, then check the object's state.
+`JsonLoadFile`は`void`を返します。呼び出してからオブジェクトの状態をチェックしてください。
 
-### 2. Not Checking FileExist Before Loading
+### 2. 読み込み前にFileExistをチェックしない
 
 ```c
-// WRONG — crashes or produces empty object with no diagnostic
+// 間違い — クラッシュするか、診断なしで空のオブジェクトを生成する
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 
-// RIGHT — check first, create defaults if missing
+// 正しい — 先にチェックし、見つからない場合はデフォルトを作成する
 if (!FileExist("$profile:MyMod/Config.json"))
 {
     SaveDefaults();
@@ -616,63 +616,83 @@ if (!FileExist("$profile:MyMod/Config.json"))
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 ```
 
-### 3. Forgetting to Create Directories
+### 3. ディレクトリの作成を忘れる
 
-`JsonSaveFile` fails silently if the directory は存在しません。 Always ensure directories before saving.
+ディレクトリが存在しない場合、`JsonSaveFile`はサイレントに失敗します。保存前に常にディレクトリを確認してください。
 
-### 4. Public Fields You Did Not Intend to Serialize
+### 4. シリアライズを意図していないpublicフィールド
 
-Every `public` field on a config class ends up in the JSON. If you have runtime-only fields, make them `protected` or `private`:
+設定クラスのすべての`public`フィールドがJSONに含まれます。ランタイム専用のフィールドがある場合は、`protected`または`private`にしてください：
 
 ```c
 class MyConfig
 {
-    // These go to JSON:
+    // これらはJSONに出力される：
     int MaxPlayers = 60;
     string ServerName = "My Server";
 
-    // This does NOT go to JSON (protected):
+    // これはJSONに出力されない（protected）：
     protected bool m_Loaded;
     protected float m_LastSaveTime;
 };
 ```
 
-### 5. Backslash and Quote Characters in JSON Values
+### 5. JSON値のバックスラッシュとクォート文字
 
-Enforce Script's CParser has trouble with `\\` and `\"` in string literals. Avoid storing file paths with backslashes in configs. Use forward slashes:
+Enforce ScriptのCParserは`\\`と`\"`で問題が発生します。設定にバックスラッシュ付きのファイルパスを保存するのは避けてください。フォワードスラッシュを使用してください：
 
 ```c
-// BAD — backslashes may break parsing
+// 悪い例 — バックスラッシュがパースを壊す可能性がある
 string LogPath = "C:\\DayZ\\Logs\\server.log";
 
-// GOOD — forward slashes work everywhere
+// 良い例 — フォワードスラッシュはどこでも動作する
 string LogPath = "$profile:MyMod/Logs/server.log";
 ```
 
 ---
 
-## Best Practices
+## ベストプラクティス
 
-1. **Use `$profile:` for all file paths.** Never hardcode absolute paths.
+1. **すべてのファイルパスに`$profile:`を使用してください。** 絶対パスをハードコードしないでください。
 
-2. **Create directories before writing files.** Check with `FileExist()`, create with `MakeDirectory()`, one level at a time.
+2. **ファイルを書き込む前にディレクトリを作成してください。** `FileExist()`でチェックし、`MakeDirectory()`で一度に1レベルずつ作成します。
 
-3. **Always provide default values in your config class constructor or field initializers.** This ensures first-run configs are sensible.
+3. **設定クラスのコンストラクタまたはフィールド初期化子に常にデフォルト値を提供してください。** これにより初回実行時の設定が適切になります。
 
-4. **Version your configs from day one.** Adding a `ConfigVersion` field costs nothing and saves hours of debugging later.
+4. **初日から設定をバージョン管理してください。** `ConfigVersion`フィールドの追加はコストがかからず、後で何時間ものデバッグを節約します。
 
-5. **Separate config data classes from manager classes.** The data class is a dumb container; the manager handles load/save/sync logic.
+5. **設定データクラスとマネージャークラスを分離してください。** データクラスは単純なコンテナで、マネージャーが読み込み/保存/同期ロジックを処理します。
 
-6. **Use auto-save with a dirty flag.** Do not write to disk every time a value changes --- batch writes on a timer.
+6. **ダーティフラグ付きの自動保存を使用してください。** 値が変更されるたびにディスクに書き込まないでください --- タイマーで書き込みをバッチ処理します。
 
-7. **Save on mission finish.** The auto-save timer is a safety net, not the primary save. Always save during `OnMissionFinish()`.
+7. **ミッション終了時に保存してください。** 自動保存タイマーはセーフティネットであり、主要な保存ではありません。常に`OnMissionFinish()`中に保存してください。
 
-8. **Define path constants in one place.** A `MyModConst` class with all paths prevents string duplication and makes path changes trivial.
+8. **パス定数を一箇所で定義してください。** すべてのパスを持つ`MyModConst`クラスにより文字列の重複を防ぎ、パスの変更を容易にします。
 
-9. **Log load/save operations.** When debugging config issues, a log line saying "Loaded config v3 from $profile:MyMod/Config.json" is invaluable.
+9. **読み込み/保存操作をログに記録してください。** 設定の問題をデバッグする際、「Loaded config v3 from $profile:MyMod/Config.json」というログ行は非常に価値があります。
 
-10. **Test with a deleted config file.** Your mod should handle first-run gracefully: create directories, write defaults, log what it did.
+10. **削除された設定ファイルでテストしてください。** Modは初回実行を適切に処理する必要があります：ディレクトリを作成し、デフォルトを書き込み、何を行ったかをログに記録します。
 
 ---
 
-[<< 前： RPC Patterns](03-rpc-patterns.md) | [ホーム](../../README.md) | [次： Permission Systems >>](05-permissions.md)
+## 互換性と影響
+
+- **マルチMod：** 各Modは独自の`$profile:ModName/`ディレクトリに書き込みます。2つのModが同じディレクトリ名を使用した場合にのみ競合が発生します。Modのフォルダには一意で認識しやすいプレフィックスを使用してください。
+- **読み込み順序：** 設定の読み込みは`OnInit`または`OnMissionStart`で行われ、どちらもModのライフサイクルによって制御されます。2つのModが同じファイルを読み書きしようとしない限り（そうすべきではありません）、クロスMod間の読み込み順序の問題はありません。
+- **リッスンサーバー：** 設定ファイルはサーバーサイドのみです（`$profile:`はサーバー上で解決されます）。リッスンサーバーでは、クライアントサイドのコードは技術的に`$profile:`にアクセスできますが、曖昧さを避けるために設定はサーバーモジュールのみが読み込むべきです。
+- **パフォーマンス：** `JsonFileLoader`は同期的でメインスレッドをブロックします。大きな設定（100KB以上）の場合は、`OnInit`中（ゲームプレイ開始前）に読み込んでください。自動保存タイマーにより繰り返しの書き込みを防ぎ、ダーティフラグパターンによりデータが実際に変更された場合にのみディスクI/Oが発生します。
+- **マイグレーション：** 設定クラスに新しいフィールドを追加することは安全です --- `JsonFileLoader`は存在しないJSONキーを無視し、クラスのデフォルト値を維持します。フィールドの削除や名前変更には、サイレントなデータ損失を避けるためにバージョン付きマイグレーションステップが必要です。
+
+---
+
+## 理論と実践
+
+| 教科書的な説明 | DayZの現実 |
+|---------------|-------------|
+| ブロッキングを避けるために非同期ファイルI/Oを使用する | Enforce Scriptには非同期ファイルI/Oがありません。すべての読み書きは同期的です。起動時に読み込み、タイマーで保存してください。 |
+| スキーマでJSONを検証する | JSONスキーマ検証は存在しません。`OnAfterLoad()`内またはロード後のガード句でフィールドを検証してください。 |
+| 構造化データにはデータベースを使用する | Enforce Scriptからデータベースにアクセスすることはできません。`$profile:`内のJSONファイルが唯一の永続化メカニズムです。 |
+
+---
+
+[ホーム](../../README.md) | [<< 前: RPCパターン](03-rpc-patterns.md) | **設定の永続化** | [次: パーミッションシステム >>](05-permissions.md)

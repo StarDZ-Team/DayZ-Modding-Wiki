@@ -1,57 +1,55 @@
-# Chapter 5.4: ImageSet Format
+# Глава 5.4: Формат ImageSet
 
-[Home](../../README.md) | [<< Previous: Credits.json](03-credits-json.md) | **ImageSet Format** | [Next: Server Configuration Files >>](05-server-configs.md)
+[Главная](../../README.md) | [<< Предыдущая: Credits.json](03-credits-json.md) | **Формат ImageSet** | [Следующая: Серверные конфигурационные файлы >>](05-server-configs.md)
 
 ---
 
 ## Содержание
 
-
-- [Overview](#overview)
-- [How ImageSets Work](#how-imagesets-work)
-- [DayZ Native ImageSet Format](#dayz-native-imageset-format)
-- [XML ImageSet Format](#xml-imageset-format)
-- [Registering ImageSets in config.cpp](#registering-imagesets-in-configcpp)
-- [Referencing Images in Layouts](#referencing-images-in-layouts)
-- [Referencing Images in Scripts](#referencing-images-in-scripts)
-- [Image Flags](#image-flags)
-- [Multi-Resolution Текстуры](#multi-resolution-textures)
-- [Creating Custom Icon Sets](#creating-custom-icon-sets)
-- [Font Awesome Integration Pattern](#font-awesome-integration-pattern)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+- [Обзор](#обзор)
+- [Как работают ImageSet](#как-работают-imageset)
+- [Нативный формат ImageSet в DayZ](#нативный-формат-imageset-в-dayz)
+- [XML-формат ImageSet](#xml-формат-imageset)
+- [Регистрация ImageSet в config.cpp](#регистрация-imageset-в-configcpp)
+- [Ссылки на изображения в макетах](#ссылки-на-изображения-в-макетах)
+- [Ссылки на изображения в скриптах](#ссылки-на-изображения-в-скриптах)
+- [Флаги изображений](#флаги-изображений)
+- [Многоразрешённые текстуры](#многоразрешённые-текстуры)
+- [Создание пользовательских наборов иконок](#создание-пользовательских-наборов-иконок)
+- [Паттерн интеграции Font Awesome](#паттерн-интеграции-font-awesome)
+- [Реальные примеры](#реальные-примеры)
+- [Распространённые ошибки](#распространённые-ошибки)
 
 ---
 
 ## Обзор
 
+Атлас текстур --- это одно большое изображение (обычно в формате `.edds`), содержащее множество маленьких иконок, расположенных в сетке или произвольным образом. Файл imageset сопоставляет человекочитаемые имена с прямоугольными областями внутри этого атласа.
 
-A texture atlas is a single large image (typically in `.edds` format) containing many smaller icons arranged in a grid or freeform layout. An imageset file maps human-readable names to rectangular regions within that atlas.
+Например, текстура 1024x1024 может содержать 64 иконки размером 64x64 пикселей каждая. Файл imageset говорит: «иконка с именем `arrow_down` находится в позиции (128, 64) и имеет размер 64x64 пикселей». Ваши файлы макетов и скрипты ссылаются на `arrow_down` по имени, а движок извлекает нужный под-прямоугольник из атласа при рендеринге.
 
-Например, a 1024x1024 texture might contain 64 icons at 64x64 pixels each. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and the engine extracts the correct sub-rectangle from the atlas at render time.
-
-This approach is efficient: one GPU texture load serves all icons, reducing draw calls and memory overhead.
-
----
-
-## How ImageSets Work
-
-The data flow:
-
-1. **Texture atlas** (`.edds` file) ----  single image containing all icons
-2. **ImageSet definition** (`.imageset` file) --- maps names to regions in the atlas
-3. **config.cpp registration** --- tells the engine to load the imageset at startup
-4. **Layout/script reference** --- uses `set:name image:iconName` syntax to render a specific icon
-
-Once registered, any widget in any layout file can reference any image from the set by name.
+Этот подход эффективен: одна загрузка текстуры GPU обслуживает все иконки, сокращая количество вызовов отрисовки и расход памяти.
 
 ---
 
-## DayZ Native ImageSet Format
+## Как работают ImageSet
 
-The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). Это format used by the vanilla game and most established mods.
+Поток данных:
 
-### Structure
+1. **Атлас текстур** (файл `.edds`) --- одно изображение, содержащее все иконки
+2. **Определение ImageSet** (файл `.imageset`) --- сопоставляет имена с областями в атласе
+3. **Регистрация в config.cpp** --- указывает движку загрузить imageset при запуске
+4. **Ссылка в макете/скрипте** --- использует синтаксис `set:имя image:имяИконки` для рендеринга конкретной иконки
+
+После регистрации любой виджет в любом файле макета может ссылаться на любое изображение из набора по имени.
+
+---
+
+## Нативный формат ImageSet в DayZ
+
+Нативный формат использует классовый синтаксис движка Enfusion (аналогичный config.cpp). Это формат, используемый ванильной игрой и большинством устоявшихся модов.
+
+### Структура
 
 ```
 ImageSetClass {
@@ -74,34 +72,34 @@ ImageSetClass {
 }
 ```
 
-### Top-Level Fields
+### Поля верхнего уровня
 
-| Field | Description |
-|-------|-------------|
-| `Name` | The set name. Used in the `set:` part of image references. Must be unique across all loaded mods. |
-| `RefSize` | Reference dimensions of the texture (width height). Used for coordinate mapping. |
-| `Текстуры` | Contains one or more `ImageSetTextureClass` entries for different resolution mip levels. |
+| Поле | Описание |
+|------|----------|
+| `Name` | Имя набора. Используется в части `set:` ссылок на изображения. Должно быть уникальным среди всех загруженных модов. |
+| `RefSize` | Эталонные размеры текстуры (ширина высота). Используется для маппинга координат. |
+| `Textures` | Содержит одну или несколько записей `ImageSetTextureClass` для разных уровней разрешения (mip). |
 
-### Texture Entry Fields
+### Поля записи текстуры
 
-| Field | Description |
-|-------|-------------|
-| `mpix` | Minimum pixel level (mip level). `0` = lowest resolution, `1` = standard resolution. |
-| `path` | Path to the `.edds` texture file, relative to the mod root. Can use Enfusion GUID format (`{GUID}path`) or plain relative paths. |
+| Поле | Описание |
+|------|----------|
+| `mpix` | Минимальный уровень пикселей (mip-уровень). `0` = самое низкое разрешение, `1` = стандартное разрешение. |
+| `path` | Путь к файлу текстуры `.edds`, относительно корня мода. Может использовать формат GUID Enfusion (`{GUID}путь`) или простые относительные пути. |
 
-### Image Entry Fields
+### Поля записи изображения
 
-Each image is an `ImageSetDefClass` inside the `Images` block:
+Каждое изображение --- это `ImageSetDefClass` внутри блока `Images`:
 
-| Field | Description |
-|-------|-------------|
-| Class name | Must match the `Name` field (used for engine lookups) |
-| `Name` | The image identifier. Used in the `image:` part of references. |
-| `Pos` | Top-left corner position in the atlas (x y), in pixels |
-| `Size` | Dimensions (width height), in pixels |
-| `Flags` | Tiling behavior flags (см. [Image Flags](#image-flags)) |
+| Поле | Описание |
+|------|----------|
+| Имя класса | Должно совпадать с полем `Name` (используется для поиска движком) |
+| `Name` | Идентификатор изображения. Используется в части `image:` ссылок. |
+| `Pos` | Позиция верхнего левого угла в атласе (x y), в пикселях |
+| `Size` | Размеры (ширина высота), в пикселях |
+| `Flags` | Флаги поведения тайлинга (см. [Флаги изображений](#флаги-изображений)) |
 
-### Full Example (DayZ Vanilla)
+### Полный пример (ванильный DayZ)
 
 ```
 ImageSetClass {
@@ -136,11 +134,11 @@ ImageSetClass {
 
 ---
 
-## XML ImageSet Format
+## XML-формат ImageSet
 
-An alternative XML-based format exists and is used by some mods. It is simpler but offers fewer features (no multi-resolution support).
+Существует альтернативный формат на основе XML, используемый некоторыми модами. Он проще, но предлагает меньше возможностей (нет поддержки многоразрешённости).
 
-### Structure
+### Структура
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -151,51 +149,50 @@ An alternative XML-based format exists and is used by some mods. It is simpler b
 </imageset>
 ```
 
-### XML Attributes
+### XML-атрибуты
 
-**`<imageset>` element:**
+**Элемент `<imageset>`:**
 
-| Attribute | Description |
-|-----------|-------------|
-| `name` | The set name (equivalent to native `Name`) |
-| `file` | Path to the texture file (equivalent to native `path`) |
+| Атрибут | Описание |
+|---------|----------|
+| `name` | Имя набора (эквивалент нативного `Name`) |
+| `file` | Путь к файлу текстуры (эквивалент нативного `path`) |
 
-**`<image>` element:**
+**Элемент `<image>`:**
 
-| Attribute | Description |
-|-----------|-------------|
-| `name` | Image identifier |
-| `pos` | Top-left position as `"x y"` |
-| `size` | Dimensions as `"width height"` |
+| Атрибут | Описание |
+|---------|----------|
+| `name` | Идентификатор изображения |
+| `pos` | Позиция верхнего левого угла как `"x y"` |
+| `size` | Размеры как `"ширина высота"` |
 
-### When to Use Which Format
+### Когда какой формат использовать
 
-| Feature | Native Format | XML Format |
-|---------|---------------|------------|
-| Multi-resolution (mip levels) | Yes | No |
-| Tiling flags | Yes | No |
-| Enfusion GUID paths | Yes | Yes |
-| Simplicity | Lower | Higher |
-| Used by vanilla DayZ | Yes | No |
-| Used by Expansion, MyMod, VPP | Yes | Occasionally |
+| Возможность | Нативный формат | XML-формат |
+|-------------|-----------------|------------|
+| Многоразрешённость (mip-уровни) | Да | Нет |
+| Флаги тайлинга | Да | Нет |
+| GUID-пути Enfusion | Да | Да |
+| Простота | Ниже | Выше |
+| Используется ванильным DayZ | Да | Нет |
+| Используется Expansion, MyMod, VPP | Да | Иногда |
 
-**Recommendation:** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that do not need tiling or multi-resolution support.
+**Рекомендация:** Используйте нативный формат для продакшн-модов. Используйте XML-формат для быстрого прототипирования или простых наборов иконок, которым не нужен тайлинг или поддержка многоразрешённости.
 
 ---
 
-## Registering ImageSets in config.cpp
+## Регистрация ImageSet в config.cpp
 
-ImageSet files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Without this registration, the engine never loads the imageset and your image references fail silently.
+Файлы ImageSet должны быть зарегистрированы в `config.cpp` вашего мода в блоке `CfgMods` > `class defs` > `class imageSets`. Без этой регистрации движок никогда не загрузит imageset, и все ссылки на изображения будут молча неуспешными.
 
 ### Синтаксис
-
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        // ... other fields ...
+        // ... другие поля ...
         class defs
         {
             class imageSets
@@ -211,9 +208,9 @@ class CfgMods
 };
 ```
 
-### Real Example: MyFramework
+### Реальный пример: MyFramework
 
-MyFramework registers seven imagesets including Font Awesome icon sets:
+MyFramework регистрирует семь наборов изображений, включая наборы иконок Font Awesome:
 
 ```cpp
 class defs
@@ -234,7 +231,7 @@ class defs
 };
 ```
 
-### Real Example: VPP Admin Tools
+### Реальный пример: VPP Admin Tools
 
 ```cpp
 class defs
@@ -249,7 +246,7 @@ class defs
 };
 ```
 
-### Real Example: DayZ Editor
+### Реальный пример: DayZ Editor
 
 ```cpp
 class defs
@@ -266,9 +263,9 @@ class defs
 
 ---
 
-## Referencing Images in Layouts
+## Ссылки на изображения в макетах
 
-In `.layout` files, use the `image0` property with the `set:name image:imageName` syntax:
+В файлах `.layout` используйте свойство `image0` с синтаксисом `set:имя image:имяИзображения`:
 
 ```
 ImageWidgetClass MyIcon {
@@ -279,18 +276,18 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-### Syntax Breakdown
+### Разбор синтаксиса
 
 ```
-set:SETNAME image:IMAGENAME
+set:ИМЯНАБОРА image:ИМЯИЗОБРАЖЕНИЯ
 ```
 
-- `SETNAME` ----  `Name` field from the imageset definition (e.g., `dayz_gui`, `solid`, `brands`)
-- `IMAGENAME` ----  `Name` field from a specific `ImageSetDefClass` entry (e.g., `icon_refresh`, `arrow_down`)
+- `ИМЯНАБОРА` --- поле `Name` из определения imageset (например, `dayz_gui`, `solid`, `brands`)
+- `ИМЯИЗОБРАЖЕНИЯ` --- поле `Name` из конкретной записи `ImageSetDefClass` (например, `icon_refresh`, `arrow_down`)
 
-### Multiple Image States
+### Несколько состояний изображения
 
-Some widgets support multiple image states (normal, hover, pressed):
+Некоторые виджеты поддерживают несколько состояний изображения (нормальное, при наведении, нажатое):
 
 ```
 ImageWidgetClass icon {
@@ -302,21 +299,21 @@ ButtonWidgetClass btn {
 }
 ```
 
-### Examples from Real Mods
+### Примеры из реальных модов
 
 ```
-image0 "set:regular image:arrow_down_short_wide"     -- MyMod: Font Awesome regular icon
-image0 "set:dayz_gui image:icon_minus"                -- MyMod: vanilla DayZ icon
-image0 "set:dayz_gui image:icon_collapse"             -- MyMod: vanilla DayZ icon
-image0 "set:dayz_gui image:circle"                    -- MyMod: vanilla DayZ shape
-image0 "set:dayz_editor_gui image:eye_open"           -- DayZ Editor: custom icon
+image0 "set:regular image:arrow_down_short_wide"     -- MyMod: иконка Font Awesome regular
+image0 "set:dayz_gui image:icon_minus"                -- MyMod: ванильная иконка DayZ
+image0 "set:dayz_gui image:icon_collapse"             -- MyMod: ванильная иконка DayZ
+image0 "set:dayz_gui image:circle"                    -- MyMod: ванильная фигура DayZ
+image0 "set:dayz_editor_gui image:eye_open"           -- DayZ Editor: пользовательская иконка
 ```
 
 ---
 
-## Referencing Images in Scripts
+## Ссылки на изображения в скриптах
 
-In Enforce Script, use `ImageWidget.LoadImageFile()` or set image properties on widgets:
+В Enforce Script используйте `ImageWidget.LoadImageFile()` или задавайте свойства изображений на виджетах:
 
 ### LoadImageFile
 
@@ -325,47 +322,47 @@ ImageWidget icon = ImageWidget.Cast(layoutRoot.FindAnyWidget("MyIcon"));
 icon.LoadImageFile(0, "set:solid image:circle");
 ```
 
-The `0` parameter is the image index (corresponding to `image0` in layouts).
+Параметр `0` --- это индекс изображения (соответствует `image0` в макетах).
 
-### Multiple States via Index
+### Несколько состояний через индекс
 
 ```c
 ImageWidget collapseIcon;
-collapseIcon.LoadImageFile(0, "set:regular image:square_plus");    // Normal state
-collapseIcon.LoadImageFile(1, "set:solid image:square_minus");     // Toggled state
+collapseIcon.LoadImageFile(0, "set:regular image:square_plus");    // Нормальное состояние
+collapseIcon.LoadImageFile(1, "set:solid image:square_minus");     // Переключённое состояние
 ```
 
-Switch between states using `SetImage(index)`:
+Переключение между состояниями с помощью `SetImage(index)`:
 
 ```c
 collapseIcon.SetImage(isExpanded ? 1 : 0);
 ```
 
-### Using String Variables
+### Использование строковых переменных
 
 ```c
-// From DayZ Editor
+// Из DayZ Editor
 string icon = "set:dayz_editor_gui image:search";
 searchBarIcon.LoadImageFile(0, icon);
 
-// Later, change dynamically
+// Позже, динамическое изменение
 searchBarIcon.LoadImageFile(0, "set:dayz_gui image:icon_x");
 ```
 
 ---
 
-## Image Flags
+## Флаги изображений
 
-The `Flags` field in native-format imageset entries controls tiling behavior when the image is stretched beyond its natural size.
+Поле `Flags` в записях imageset нативного формата управляет поведением тайлинга при растягивании изображения за пределы его естественного размера.
 
-| Flag | Value | Description |
-|------|-------|-------------|
-| `0` | 0 | No tiling. The image stretches to fill the widget. |
-| `ISHorizontalTile` | 1 | Tiles horizontally when the widget is wider than the image. |
-| `ISVerticalTile` | 2 | Tiles vertically when the widget is taller than the image. |
-| Both | 3 | Tiles in both directions (`ISHorizontalTile` + `ISVerticalTile`). |
+| Флаг | Значение | Описание |
+|------|----------|----------|
+| `0` | 0 | Без тайлинга. Изображение растягивается для заполнения виджета. |
+| `ISHorizontalTile` | 1 | Тайлинг по горизонтали, когда виджет шире изображения. |
+| `ISVerticalTile` | 2 | Тайлинг по вертикали, когда виджет выше изображения. |
+| Оба | 3 | Тайлинг в обоих направлениях (`ISHorizontalTile` + `ISVerticalTile`). |
 
-### Usage
+### Использование
 
 ```
 ImageSetDefClass Gradient {
@@ -376,15 +373,15 @@ ImageSetDefClass Gradient {
 }
 ```
 
-This `Gradient` image is 75x5 pixels. When used in a widget taller than 5 pixels, it tiles vertically to fill the height, creating a repeating gradient stripe.
+Это изображение `Gradient` имеет размер 75x5 пикселей. При использовании в виджете высотой более 5 пикселей оно тайлится вертикально для заполнения высоты, создавая повторяющуюся градиентную полосу.
 
-Most icons use `Flags 0` (no tiling). Tiling flags are primarily for UI elements like borders, dividers, and repeating patterns.
+Большинство иконок используют `Flags 0` (без тайлинга). Флаги тайлинга используются в основном для элементов UI, таких как границы, разделители и повторяющиеся паттерны.
 
 ---
 
-## Multi-Resolution Текстуры
+## Многоразрешённые текстуры
 
-The native format supports multiple resolution textures for the same imageset. Это позволяет the engine to use higher-resolution artwork on high-DPI displays.
+Нативный формат поддерживает несколько текстур разного разрешения для одного imageset. Это позволяет движку использовать изображения более высокого разрешения на дисплеях с высокой плотностью пикселей.
 
 ```
 Textures {
@@ -399,14 +396,14 @@ Textures {
 }
 ```
 
-- `mpix 0` --- low resolution (used on low-quality settings or distant UI elements)
-- `mpix 1` --- standard/high resolution (default)
+- `mpix 0` --- низкое разрешение (используется при низких настройках качества или для удалённых элементов UI)
+- `mpix 1` --- стандартное/высокое разрешение (по умолчанию)
 
-The `@2x` naming convention is borrowed from Apple's Retina display system but is not enforced ---- вы can name the file anything.
+Соглашение о наименовании `@2x` заимствовано из системы Retina Display от Apple, но не является обязательным --- вы можете назвать файл как угодно.
 
-### In Practice
+### На практике
 
-Most mods only include `mpix 1` (a single resolution). Multi-resolution support is primarily used by the vanilla game:
+Большинство модов включают только `mpix 1` (одно разрешение). Поддержка многоразрешённости используется в основном ванильной игрой:
 
 ```
 Textures {
@@ -419,28 +416,28 @@ Textures {
 
 ---
 
-## Creating Custom Icon Sets
+## Создание пользовательских наборов иконок
 
-### Step-by-Step Workflow
+### Пошаговый рабочий процесс
 
-**1. Create the Texture Atlas**
+**1. Создание атласа текстур**
 
-Use an image editor (Photoshop, GIMP, etc.) to arrange your icons on a single canvas:
-- Choose a power-of-two size (256x256, 512x512, 1024x1024, etc.)
-- Arrange icons in a grid for easy coordinate calculation
-- Leave some padding between icons to prevent texture bleeding
-- Сохранить as `.tga` or `.png`
+Используйте графический редактор (Photoshop, GIMP и т.д.) для размещения иконок на одном холсте:
+- Выберите размер, кратный степени двойки (256x256, 512x512, 1024x1024 и т.д.)
+- Расположите иконки в сетке для удобного расчёта координат
+- Оставьте некоторый отступ между иконками для предотвращения «растекания» текстур
+- Сохраните как `.tga` или `.png`
 
-**2. Convert to EDDS**
+**2. Конвертация в EDDS**
 
-DayZ uses `.edds` (Enfusion DDS) format for textures. Use the DayZ Workbench or Mikero's tools to convert:
-- Import your `.tga` into DayZ Workbench
-- Or use `Pal2PacE.exe` to convert `.paa` to `.edds`
-- The output must be an `.edds` file
+DayZ использует формат `.edds` (Enfusion DDS) для текстур. Используйте DayZ Workbench или инструменты Mikero для конвертации:
+- Импортируйте ваш `.tga` в DayZ Workbench
+- Или используйте `Pal2PacE.exe` для конвертации `.paa` в `.edds`
+- Результат должен быть файлом `.edds`
 
-**3. Write the ImageSet Definition**
+**3. Написание определения ImageSet**
 
-Map each icon to a named region. If your icons are on a 64-pixel grid:
+Сопоставьте каждую иконку с именованной областью. Если ваши иконки расположены с шагом 64 пикселя:
 
 ```
 ImageSetClass {
@@ -475,9 +472,9 @@ ImageSetClass {
 }
 ```
 
-**4. Register in config.cpp**
+**4. Регистрация в config.cpp**
 
-Add the imageset path to your mod's config.cpp:
+Добавьте путь к imageset в config.cpp вашего мода:
 
 ```cpp
 class imageSets
@@ -489,7 +486,7 @@ class imageSets
 };
 ```
 
-**5. Use in Layouts and Scripts**
+**5. Использование в макетах и скриптах**
 
 ```
 ImageWidgetClass SettingsIcon {
@@ -502,29 +499,29 @@ ImageWidgetClass SettingsIcon {
 
 ---
 
-## Font Awesome Integration Pattern
+## Паттерн интеграции Font Awesome
 
-MyFramework (inherited from DabsFramework) demonstrates a powerful pattern: converting Font Awesome icon fonts into DayZ imagesets. This gives mods access to thousands of professional-quality icons without creating custom artwork.
+MyFramework (унаследованный от DabsFramework) демонстрирует мощный паттерн: конвертация шрифтов иконок Font Awesome в imageset DayZ. Это даёт модам доступ к тысячам профессиональных иконок без создания собственных изображений.
 
-### How It Works
+### Как это работает
 
-1. Font Awesome icons are rendered to a texture atlas at a fixed grid size (64x64 per icon)
-2. Each icon style gets its own imageset: `solid`, `regular`, `light`, `thin`, `brands`
-3. Icon names in the imageset match Font Awesome icon names (e.g., `circle`, `arrow_down`, `discord`)
-4. The imagesets are registered in config.cpp and available to any layout or script
+1. Иконки Font Awesome рендерятся в атлас текстур с фиксированным размером сетки (64x64 на иконку)
+2. Каждый стиль иконок получает свой imageset: `solid`, `regular`, `light`, `thin`, `brands`
+3. Имена иконок в imageset совпадают с именами иконок Font Awesome (например, `circle`, `arrow_down`, `discord`)
+4. Наборы imageset регистрируются в config.cpp и доступны для любого макета или скрипта
 
-### MyFramework / DabsFramework Icon Sets
+### Наборы иконок MyFramework / DabsFramework
 
 ```
 MyFramework/GUI/icons/
-  solid.imageset       -- Filled icons (3648x3712 atlas, 64x64 per icon)
-  regular.imageset     -- Outlined icons
-  light.imageset       -- Light-weight outlined icons
-  thin.imageset        -- Ultra-thin outlined icons
-  brands.imageset      -- Brand logos (Discord, GitHub, etc.)
+  solid.imageset       -- Заполненные иконки (атлас 3648x3712, 64x64 на иконку)
+  regular.imageset     -- Контурные иконки
+  light.imageset       -- Облегчённые контурные иконки
+  thin.imageset        -- Ультратонкие контурные иконки
+  brands.imageset      -- Логотипы брендов (Discord, GitHub и т.д.)
 ```
 
-### Usage in Layouts
+### Использование в макетах
 
 ```
 image0 "set:solid image:circle"
@@ -534,25 +531,25 @@ image0 "set:brands image:discord"
 image0 "set:brands image:500px"
 ```
 
-### Usage in Scripts
+### Использование в скриптах
 
 ```c
-// DayZ Editor using the solid set
+// DayZ Editor использует набор solid
 CollapseIcon.LoadImageFile(1, "set:solid image:square_minus");
 CollapseIcon.LoadImageFile(0, "set:regular image:square_plus");
 ```
 
-### Why This Pattern Works Well
+### Почему этот паттерн хорошо работает
 
-- **Massive icon library**: Thousands of icons available without any artwork creation
-- **Consistent style**: All icons share the same visual weight and style
-- **Multiple weights**: Choose solid, regular, light, or thin for different visual contexts
-- **Brand icons**: Ready-made logos for Discord, Steam, GitHub, etc.
-- **Standard names**: Icon names follow Font Awesome conventions, making discovery easy
+- **Огромная библиотека иконок**: Тысячи иконок доступны без создания изображений
+- **Единый стиль**: Все иконки имеют одинаковый визуальный вес и стиль
+- **Несколько начертаний**: Выбирайте solid, regular, light или thin для различных визуальных контекстов
+- **Иконки брендов**: Готовые логотипы Discord, Steam, GitHub и т.д.
+- **Стандартные имена**: Имена иконок следуют соглашениям Font Awesome, что упрощает поиск
 
-### The Atlas Structure
+### Структура атласа
 
-The solid imageset, for example, has a `RefSize` of 3648x3712 with icons arranged at 64-pixel intervals:
+Набор solid, например, имеет `RefSize` 3648x3712 с иконками, расположенными с интервалом 64 пикселя:
 
 ```
 ImageSetClass {
@@ -586,10 +583,9 @@ ImageSetClass {
 
 ## Реальные примеры
 
-
 ### VPP Admin Tools
 
-VPP packs all admin tool icons into a single 1920x1080 atlas with freeform positioning (not a strict grid):
+VPP упаковывает все иконки админ-инструментов в один атлас 1920x1080 с произвольным расположением (не строгая сетка):
 
 ```
 ImageSetClass {
@@ -618,14 +614,14 @@ ImageSetClass {
 }
 ```
 
-Referenced in layouts as:
+Ссылка в макетах:
 ```
 image0 "set:dayz_gui_vpp image:vpp_icon_cloud"
 ```
 
 ### MyWeapons Mod
 
-Weapon and attachment icons packed into large atlases with varied icon sizes:
+Иконки оружия и вложений, упакованные в большие атласы с различными размерами иконок:
 
 ```
 ImageSetClass {
@@ -654,11 +650,11 @@ ImageSetClass {
 }
 ```
 
-This shows that icons do not need to be uniform size --- inventory icons for weapons use 300x300 while UI icons typically use 64x64.
+Это показывает, что иконки не обязаны быть одинакового размера --- иконки инвентаря для оружия используют 300x300, тогда как иконки UI обычно 64x64.
 
-### MyFramework Prefabs
+### Префабы MyFramework
 
-UI primitives (rounded corners, alpha gradients) packed into a small 256x256 atlas:
+UI-примитивы (скруглённые углы, альфа-градиенты), упакованные в маленький атлас 256x256:
 
 ```
 ImageSetClass {
@@ -687,11 +683,11 @@ ImageSetClass {
 }
 ```
 
-Notable: image names can contain spaces when quoted (e.g., `"Alpha 10"`). However, referencing these in layouts requires the exact name including the space.
+Примечательно: имена изображений могут содержать пробелы в кавычках (например, `"Alpha 10"`). Однако ссылка на них в макетах требует точного имени, включая пробел.
 
-### MyMod Market Hub (XML Format)
+### MyMod Market Hub (XML-формат)
 
-A simpler XML imageset for the market hub module:
+Простой XML-imageset для модуля торговой площадки:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -706,7 +702,7 @@ A simpler XML imageset for the market hub module:
 </imageset>
 ```
 
-Referenced as:
+Ссылка:
 ```
 image0 "set:mh_icons image:icon_store"
 ```
@@ -715,42 +711,41 @@ image0 "set:mh_icons image:icon_store"
 
 ## Распространённые ошибки
 
+### Забыта регистрация в config.cpp
 
-### Forgetting config.cpp Registration
+Самая частая проблема. Если ваш файл imageset существует, но не указан в `class imageSets { files[] = { ... }; };` в config.cpp, движок его никогда не загрузит. Все ссылки на изображения будут молча неуспешными (виджеты отображаются пустыми).
 
-The most common issue. If your imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, the engine never loads it. All image references will fail silently (widgets appear blank).
+### Коллизии имён наборов
 
-### Set Name Collisions
-
-If two mods register imagesets with the same `Name`, only one is loaded (the last one wins). Use a unique prefix:
-
-```
-Name "mymod_icons"     -- Good
-Name "icons"           -- Risky, too generic
-```
-
-### Wrong Texture Path
-
-The `path` must be relative to the PBO root (how the file appears inside the packed PBO):
+Если два мода регистрируют imageset с одинаковым `Name`, загружается только один (последний побеждает). Используйте уникальный префикс:
 
 ```
-path "MyMod/GUI/imagesets/icons.edds"     -- Correct if MyMod is the PBO root
-path "GUI/imagesets/icons.edds"            -- Wrong if the PBO root is MyMod/
-path "C:/Users/dev/icons.edds"            -- Wrong: absolute paths do not work
+Name "mymod_icons"     -- Хорошо
+Name "icons"           -- Рискованно, слишком общее
 ```
 
-### Mismatched RefSize
+### Неверный путь к текстуре
 
-The `RefSize` must match the actual pixel dimensions of your texture. If you specify `RefSize 512 512` but your texture is 1024x1024, all icon positions will be off by a factor of two.
+`path` должен быть относительным к корню PBO (как файл выглядит внутри упакованного PBO):
 
-### Pos Coordinates Off by One
+```
+path "MyMod/GUI/imagesets/icons.edds"     -- Правильно, если MyMod — корень PBO
+path "GUI/imagesets/icons.edds"            -- Неправильно, если корень PBO — MyMod/
+path "C:/Users/dev/icons.edds"            -- Неправильно: абсолютные пути не работают
+```
 
-`Pos` is the top-left corner of the icon region. If your icons are at 64-pixel intervals but you accidentally offset by 1 pixel, icons will have a thin slice of the adjacent icon visible.
+### Несовпадение RefSize
 
-### Using .png or .tga Directly
+`RefSize` должен совпадать с фактическими пиксельными размерами вашей текстуры. Если вы укажете `RefSize 512 512`, но ваша текстура 1024x1024, все позиции иконок будут смещены в два раза.
 
-The engine requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Always convert to `.edds` using DayZ Workbench or Mikero's tools.
+### Координаты Pos смещены на один пиксель
 
-### Spaces in Image Names
+`Pos` --- это верхний левый угол области иконки. Если ваши иконки расположены с интервалом 64 пикселя, но вы случайно сместились на 1 пиксель, иконки будут иметь тонкую полоску соседней иконки.
 
-While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in some parsing contexts. Prefer underscores: `Alpha_10`.
+### Использование .png или .tga напрямую
+
+Движок требует формат `.edds` для атласов текстур, на которые ссылаются imageset. Сырые файлы `.png` или `.tga` не загрузятся. Всегда конвертируйте в `.edds` с помощью DayZ Workbench или инструментов Mikero.
+
+### Пробелы в именах изображений
+
+Хотя движок поддерживает пробелы в именах изображений (например, `"Alpha 10"`), они могут вызвать проблемы в некоторых контекстах парсинга. Предпочитайте подчёркивания: `Alpha_10`.
