@@ -1,69 +1,73 @@
-# Chapter 8.11: Creating Custom Clothing
+# Chapter 8.11: カスタム衣類の作成
 
-[Home](../../README.md) | [<< Previous: Creating a Custom Vehicle](10-vehicle-mod.md) | **Creating Custom Clothing** | [Next: Building a Trading System >>](12-trading-system.md)
+[Home](../../README.md) | [<< 前へ: カスタム車両の作成](10-vehicle-mod.md) | **カスタム衣類の作成** | [次へ: トレーディングシステムの構築 >>](12-trading-system.md)
+
+---
+
+> **概要:** このチュートリアルでは、DayZ用のカスタムタクティカルジャケットを作成する手順を説明します。基底クラスの選択、config.cppでの断熱・カーゴプロパティの定義、hidden selectionsによるカモパターンのリテクスチャ、ローカライズとスポーン設定の追加、そしてオプションでスクリプト動作の拡張を行います。最終的に、プレイヤーを暖かく保ち、アイテムを収納でき、ワールド内でスポーンする着用可能なジャケットが完成します。
 
 ---
 
 ## 目次
 
-- [What We Are Building](#what-we-are-building)
-- [Step 1: Choose a Base Class](#step-1-choose-a-base-class)
-- [Step 2: config.cpp for Clothing](#step-2-configcpp-for-clothing)
-- [Step 3: Create Textures](#step-3-create-textures)
-- [Step 4: Add Cargo Space](#step-4-add-cargo-space)
-- [Step 5: Localization and Spawning](#step-5-localization-and-spawning)
-- [Step 6: Script Behavior (Optional)](#step-6-script-behavior-optional)
-- [Step 7: Build, Test, Polish](#step-7-build-test-polish)
-- [Complete Code Reference](#complete-code-reference)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
-- [Theory vs Practice](#theory-vs-practice)
-- [What You Learned](#what-you-learned)
+- [作るもの](#what-we-are-building)
+- [Step 1: 基底クラスの選択](#step-1-choose-a-base-class)
+- [Step 2: 衣類のconfig.cpp](#step-2-configcpp-for-clothing)
+- [Step 3: テクスチャの作成](#step-3-create-textures)
+- [Step 4: カーゴスペースの追加](#step-4-add-cargo-space)
+- [Step 5: ローカライズとスポーン](#step-5-localization-and-spawning)
+- [Step 6: スクリプト動作（オプション）](#step-6-script-behavior-optional)
+- [Step 7: ビルド、テスト、仕上げ](#step-7-build-test-polish)
+- [完全なコードリファレンス](#complete-code-reference)
+- [よくある間違い](#common-mistakes)
+- [ベストプラクティス](#best-practices)
+- [理論と実践](#theory-vs-practice)
+- [学んだこと](#what-you-learned)
 
 ---
 
-## What We Are Building
+## 作るもの
 
-We will create a **Tactical Camo Jacket** -- a military-style jacket with woodland camouflage that players can find and wear. It will:
+**Tactical Camo Jacket** を作成します。プレイヤーが発見して着用できるウッドランドカモフラージュのミリタリースタイルジャケットです。以下の特徴があります：
 
-- Extend the vanilla Gorka jacket model (no 3D modeling required)
-- Have a custom camo retexture using hidden selections
-- Provide warmth through `heatIsolation` values
-- Carry items in its pockets (cargo space)
-- Take damage with visual degradation across health states
-- Spawn at military locations in the world
+- バニラのGorkaジャケットモデルを拡張（3Dモデリング不要）
+- hidden selectionsを使用したカスタムカモリテクスチャ
+- `heatIsolation` 値による保温性
+- ポケット内のアイテム収納（カーゴスペース）
+- ヘルスステートに応じた視覚的劣化のあるダメージ
+- ワールド内のミリタリーロケーションでスポーン
 
-**Prerequisites:** A working mod structure (complete [Chapter 8.1](01-first-mod.md) and [Chapter 8.2](02-custom-item.md) first), a text editor, DayZ Tools installed (for TexView2), and an image editor for creating camo textures.
+**前提条件：** 動作するMod構造（先に [Chapter 8.1](01-first-mod.md) と [Chapter 8.2](02-custom-item.md) を完了してください）、テキストエディタ、DayZ Toolsのインストール（TexView2用）、カモテクスチャ作成用の画像エディタ。
 
 ---
 
-## Step 1: Choose a Base Class
+## Step 1: 基底クラスの選択
 
-Clothing in DayZ inherits from `Clothing_Base`, but you almost never extend that directly. DayZ provides intermediate 基底クラスes for each body slot:
+DayZの衣類は `Clothing_Base` を継承しますが、直接拡張することはほとんどありません。DayZは各ボディスロットに中間基底クラスを提供しています：
 
-| 基底クラス | Body Slot | Examples |
+| 基底クラス | ボディスロット | 例 |
 |------------|-----------|----------|
-| `Top_Base` | Body (torso) | Jackets, shirts, hoodies |
-| `Pants_Base` | Legs | Jeans, cargo pants |
-| `Shoes_Base` | Feet | Boots, sneakers |
-| `HeadGear_Base` | Head | Helmets, hats |
-| `Mask_Base` | Face | Gas masks, balaclavas |
-| `Gloves_Base` | Hands | Tactical gloves |
-| `Vest_Base` | Vest slot | Plate carriers, chest rigs |
-| `Glasses_Base` | Eyewear | Sunglasses |
-| `Backpack_Base` | Back | Backpacks, bags |
+| `Top_Base` | Body（胴体） | ジャケット、シャツ、フーディー |
+| `Pants_Base` | Legs（脚） | ジーンズ、カーゴパンツ |
+| `Shoes_Base` | Feet（足） | ブーツ、スニーカー |
+| `HeadGear_Base` | Head（頭） | ヘルメット、帽子 |
+| `Mask_Base` | Face（顔） | ガスマスク、バラクラバ |
+| `Gloves_Base` | Hands（手） | タクティカルグローブ |
+| `Vest_Base` | Vest slot（ベスト） | プレートキャリア、チェストリグ |
+| `Glasses_Base` | Eyewear（アイウェア） | サングラス |
+| `Backpack_Base` | Back（背中） | バックパック、バッグ |
 
-The full inheritance chain is: `Clothing_Base -> Clothing -> Top_Base -> GorkaEJacket_ColorBase -> YourJacket`
+完全な継承チェーンは次のとおりです：`Clothing_Base -> Clothing -> Top_Base -> GorkaEJacket_ColorBase -> YourJacket`
 
-### Why Extend an Existing Vanilla Item
+### 既存のバニラアイテムを拡張する理由
 
-You can extend at different levels:
+異なるレベルで拡張できます：
 
-1. **Extend a specific item** (like `GorkaEJacket_ColorBase`) -- easiest. You inherit the model, animations, slot, and all properties. Only change textures and tweak values. This is what Bohemia's `Test_ClothingRetexture` sample does.
-2. **Extend a slot base** (like `Top_Base`) -- clean starting point, but you must specify a model and all properties.
-3. **Extend `Clothing` directly** -- only for completely custom slot behavior. Rarely needed.
+1. **特定のアイテムを拡張**（`GorkaEJacket_ColorBase` など）-- 最も簡単です。モデル、アニメーション、スロット、すべてのプロパティを継承します。テクスチャの変更と値の微調整のみ行います。Bohemiaの `Test_ClothingRetexture` サンプルがこの手法を使用しています。
+2. **スロット基底クラスを拡張**（`Top_Base` など）-- クリーンな出発点ですが、モデルとすべてのプロパティを指定する必要があります。
+3. **`Clothing` を直接拡張** -- 完全にカスタムなスロット動作のためだけです。ほとんど必要ありません。
 
-For our tactical jacket, we will extend `GorkaEJacket_ColorBase`. Looking at the vanilla script:
+このタクティカルジャケットでは、`GorkaEJacket_ColorBase` を拡張します。バニラスクリプトを見てみましょう：
 
 ```c
 class GorkaEJacket_ColorBase extends Top_Base
@@ -78,15 +82,15 @@ class GorkaEJacket_Summer extends GorkaEJacket_ColorBase {};
 class GorkaEJacket_Flat extends GorkaEJacket_ColorBase {};
 ```
 
-Notice the pattern: a `_ColorBase` class handles shared behavior, and individual color variants extend it with no additional code. Their config.cpp entries provide different textures. We will follow the same pattern.
+パターンに注目してください：`_ColorBase` クラスが共有動作を処理し、個別のカラーバリアントは追加コードなしでそれを拡張します。config.cppのエントリが異なるテクスチャを提供します。同じパターンに従います。
 
-To find 基底クラスes, look in `scripts/4_world/entities/itembase/clothing_base.c` (defines all slot bases) and `scripts/4_world/entities/itembase/clothing/` (one file per clothing family).
+基底クラスを探すには、`scripts/4_world/entities/itembase/clothing_base.c`（すべてのスロット基底クラスを定義）と `scripts/4_world/entities/itembase/clothing/`（衣類ファミリーごとに1ファイル）を参照してください。
 
 ---
 
-## Step 2: config.cpp for Clothing
+## Step 2: 衣類のconfig.cpp
 
-Create `MyClothingMod/Data/config.cpp`:
+`MyClothingMod/Data/config.cpp` を作成します：
 
 ```cpp
 class CfgPatches
@@ -184,73 +188,73 @@ class CfgVehicles
 };
 ```
 
-### Clothing-Specific Fields Explained
+### 衣類固有フィールドの説明
 
-**Thermal and stealth:**
+**保温性とステルス：**
 
-| フィールド | 値 | Explanation |
+| フィールド | 値 | 説明 |
 |-------|-------|-------------|
-| `heatIsolation` | `0.8` | Warmth provided (0.0-1.0 range). The engine multiplies this by health and wetness factors. A pristine dry jacket gives full warmth; a ruined, soaked one gives almost none. |
-| `visibilityModifier` | `0.7` | Player visibility to AI (lower = harder to detect). |
-| `absorbency` | `0.3` | Water absorption (0 = waterproof, 1 = sponge). Lower is better for rain resistance. |
+| `heatIsolation` | `0.8` | 提供される保温性（0.0〜1.0の範囲）。エンジンはこの値にヘルスとウェットネスの係数を乗算します。無傷で乾いたジャケットは最大の保温性を発揮し、破損して濡れたものはほぼゼロになります。 |
+| `visibilityModifier` | `0.7` | AIに対するプレイヤーの視認性（低い = 検出されにくい）。 |
+| `absorbency` | `0.3` | 吸水性（0 = 防水、1 = スポンジ）。低いほど耐雨性が高くなります。 |
 
-**Vanilla heatIsolation reference:** T-shirt 0.2, Hoodie 0.5, Gorka Jacket 0.7, Field Jacket 0.8, Wool Coat 0.9.
+**バニラのheatIsolationリファレンス：** Tシャツ 0.2、フーディー 0.5、Gorkaジャケット 0.7、フィールドジャケット 0.8、ウールコート 0.9。
 
-**Repair:** `repairableWithKits[] = { 5, 2 }` lists kit types (5=Sewing Kit, 2=Leather Sewing Kit). `repairCosts[]` gives material consumed per repair, in matching order.
+**修理：** `repairableWithKits[] = { 5, 2 }` はキットタイプ（5=ソーイングキット、2=レザーソーイングキット）をリストします。`repairCosts[]` は対応する順序で修理ごとに消費される素材を示します。
 
-**Armor:** A `damage` value of 0.8 means the player receives 80% of incoming damage (20% absorbed). Lower values = more protection.
+**アーマー：** `damage` 値が0.8の場合、プレイヤーは受けるダメージの80%を受けます（20%が吸収されます）。値が低いほど防御力が高くなります。
 
-**Wetness:** `Soaking` controls how fast rain/water soaks the item. `Drying` negative values represent moisture loss from body heat, fires, and wringing.
+**ウェットネス：** `Soaking` は雨/水がアイテムを濡らす速度を制御します。`Drying` の負の値は体熱、焚き火、絞りによる水分喪失を表します。
 
-**Hidden selections:** The Gorka model has 3 selections -- index 0 is the ground model, indices 1 and 2 are the worn model. You override `hiddenSelectionsTextures[]` with your custom PAA paths.
+**Hidden selections：** Gorkaモデルには3つのselectionがあります -- インデックス0は地面モデル、インデックス1と2は着用モデルです。`hiddenSelectionsTextures[]` をカスタムPAAパスでオーバーライドします。
 
-**Health levels:** Each entry is `{ healthThreshold, { materialPath } }`. When health drops below a threshold, エンジン swaps the material. Vanilla damage rvmats add wear marks and tears.
+**ヘルスレベル：** 各エントリは `{ healthThreshold, { materialPath } }` です。ヘルスが閾値を下回ると、エンジンがマテリアルを切り替えます。バニラのダメージrvmatは摩耗マークや裂け目を追加します。
 
 ---
 
-## Step 3: Create Textures
+## Step 3: テクスチャの作成
 
-### Finding and Creating Textures
+### テクスチャの検索と作成
 
-The Gorka jacket textures live at `DZ\characters\tops\data\` -- extract the `gorka_upper_summer_co.paa` (color), `gorka_upper_nohq.paa` (normal), and `gorka_upper_smdi.paa` (specular) from the P: drive to use as templates.
+Gorkaジャケットのテクスチャは `DZ\characters\tops\data\` にあります。テンプレートとして使用するために、P:ドライブから `gorka_upper_summer_co.paa`（カラー）、`gorka_upper_nohq.paa`（ノーマル）、`gorka_upper_smdi.paa`（スペキュラー）を抽出します。
 
-**Creating the camo pattern:**
+**カモパターンの作成：**
 
-1. Open the vanilla `_co` texture in TexView2, export as TGA/PNG
-2. Paint your woodland camo in your image editor, following the UV layout
-3. Keep the same dimensions (typically 2048x2048 or 1024x1024)
-4. Save as TGA, convert to PAA using TexView2 (File > Save As > .paa)
+1. TexView2でバニラの `_co` テクスチャを開き、TGA/PNGとしてエクスポートします
+2. 画像エディタでUVレイアウトに従ってウッドランドカモを描画します
+3. 同じ解像度を維持します（通常2048x2048または1024x1024）
+4. TGAとして保存し、TexView2でPAAに変換します（File > Save As > .paa）
 
-### Texture Types
+### テクスチャの種類
 
-| Suffix | 目的 | Required? |
+| サフィックス | 用途 | 必須？ |
 |--------|---------|-----------|
-| `_co` | Main color/pattern | Yes |
-| `_nohq` | Normal map (fabric detail) | No -- uses vanilla default |
-| `_smdi` | Specular (shininess) | No -- uses vanilla default |
-| `_as` | Alpha/surface mask | No |
+| `_co` | メインカラー/パターン | はい |
+| `_nohq` | ノーマルマップ（生地のディテール） | いいえ -- バニラのデフォルトを使用 |
+| `_smdi` | スペキュラー（光沢） | いいえ -- バニラのデフォルトを使用 |
+| `_as` | アルファ/サーフェスマスク | いいえ |
 
-For a retexture, you only need `_co` textures. The normal and specular maps from the vanilla model continue to work.
+リテクスチャの場合、`_co` テクスチャのみが必要です。バニラモデルのノーマルマップとスペキュラーマップはそのまま機能します。
 
-For full material control, create `.rvmat` files and reference them in `hiddenSelectionsMaterials[]`. See Bohemia's `Test_ClothingRetexture` sample for working rvmat examples with damage and destruct variants.
-
----
-
-## Step 4: Add Cargo Space
-
-When extending `GorkaEJacket_ColorBase`, you inherit its cargo grid (4x3) and inventory slot (`"Body"`) automatically. The `itemSize[] = { 3, 4 }` property defines how large the jacket is when stored as loot -- NOT its cargo capacity.
-
-Common clothing slots: `"Body"` (jackets), `"Legs"` (pants), `"Feet"` (boots), `"Headgear"` (hats), `"Vest"` (chest rigs), `"Gloves"`, `"Mask"`, `"Back"` (backpacks).
-
-Some clothing accepts attachments (like Plate Carrier pouches). Add them with `attachments[] = { "Shoulder", "Armband" };`. For a basic jacket, the inherited cargo is sufficient.
+完全なマテリアル制御が必要な場合は、`.rvmat` ファイルを作成し、`hiddenSelectionsMaterials[]` で参照します。ダメージおよびデストラクトバリアントを含む動作するrvmatの例については、Bohemiaの `Test_ClothingRetexture` サンプルを参照してください。
 
 ---
 
-## Step 5: Localization and Spawning
+## Step 4: カーゴスペースの追加
+
+`GorkaEJacket_ColorBase` を拡張する場合、そのカーゴグリッド（4x3）とインベントリスロット（`"Body"`）は自動的に継承されます。`itemSize[] = { 3, 4 }` プロパティは、ジャケットがルートとして保管されるときのサイズを定義します。カーゴ容量ではありません。
+
+一般的な衣類スロット：`"Body"`（ジャケット）、`"Legs"`（パンツ）、`"Feet"`（ブーツ）、`"Headgear"`（帽子）、`"Vest"`（チェストリグ）、`"Gloves"`、`"Mask"`、`"Back"`（バックパック）。
+
+一部の衣類はアタッチメントを受け付けます（プレートキャリアのポーチなど）。`attachments[] = { "Shoulder", "Armband" };` で追加します。基本的なジャケットの場合、継承されたカーゴで十分です。
+
+---
+
+## Step 5: ローカライズとスポーン
 
 ### Stringtable
 
-Create `MyClothingMod/Data/Stringtable.csv`:
+`MyClothingMod/Data/Stringtable.csv` を作成します：
 
 ```csv
 "Language","English","Czech","German","Russian","Polish","Hungarian","Italian","Spanish","French","Chinese","Japanese","Portuguese","ChineseSimp","Korean"
@@ -258,9 +262,9 @@ Create `MyClothingMod/Data/Stringtable.csv`:
 "STR_MCM_TacticalJacket_Woodland_Desc","A rugged tactical jacket with woodland camouflage. Provides good insulation and has multiple pockets.","","","","","","","","","","","","",""
 ```
 
-### Spawning (types.xml)
+### スポーン（types.xml）
 
-Add to your server's mission folder `types.xml`:
+サーバーのミッションフォルダの `types.xml` に追加します：
 
 ```xml
 <type name="MCM_TacticalJacket_Woodland">
@@ -279,13 +283,13 @@ Add to your server's mission folder `types.xml`:
 </type>
 ```
 
-Use `category name="clothes"` for all clothing. Set `usage` to match where the item should spawn (Military, Town, Police, etc.) and `value` for the map tier (Tier1=coast through Tier4=deep inland).
+すべての衣類に `category name="clothes"` を使用します。アイテムがスポーンする場所に合わせて `usage` を設定し（Military、Town、Policeなど）、マップティアに `value` を設定します（Tier1=海岸からTier4=内陸奥地まで）。
 
 ---
 
-## Step 6: Script Behavior (Optional)
+## Step 6: スクリプト動作（オプション）
 
-For a simple retexture, you do not need scripts. But to add behavior when the jacket is worn, create a script class.
+シンプルなリテクスチャの場合、スクリプトは不要です。ただし、ジャケット着用時の動作を追加するには、スクリプトクラスを作成します。
 
 ### Scripts config.cpp
 
@@ -322,9 +326,9 @@ class CfgMods
 };
 ```
 
-### Custom Jacket Script
+### カスタムジャケットスクリプト
 
-Create `Scripts/4_World/MyClothingMod/MCM_TacticalJacket.c`:
+`Scripts/4_World/MyClothingMod/MCM_TacticalJacket.c` を作成します：
 
 ```c
 class MCM_TacticalJacket_ColorBase extends GorkaEJacket_ColorBase
@@ -357,42 +361,42 @@ class MCM_TacticalJacket_ColorBase extends GorkaEJacket_ColorBase
 };
 ```
 
-### Key Clothing Events
+### 衣類の主要イベント
 
-| Event | When It Fires | Common Use |
+| イベント | 発火タイミング | 一般的な用途 |
 |-------|---------------|------------|
-| `OnWasAttached(parent, slot_id)` | Player equips the item | Apply buffs, show effects |
-| `OnWasDetached(parent, slot_id)` | Player unequips the item | Remove buffs, clean up |
-| `EEItemAttached(item, slot_name)` | Item attached to this clothing | Show/hide model selections |
-| `EEItemDetached(item, slot_name)` | Item detached from this clothing | Reverse visual changes |
-| `EEHealthLevelChanged(old, new, zone)` | Health crosses a threshold | Update visual state |
+| `OnWasAttached(parent, slot_id)` | プレイヤーがアイテムを装備 | バフの適用、エフェクトの表示 |
+| `OnWasDetached(parent, slot_id)` | プレイヤーがアイテムを解除 | バフの除去、クリーンアップ |
+| `EEItemAttached(item, slot_name)` | この衣類にアイテムがアタッチ | モデルselectionの表示/非表示 |
+| `EEItemDetached(item, slot_name)` | この衣類からアイテムがデタッチ | ビジュアル変更の元に戻す |
+| `EEHealthLevelChanged(old, new, zone)` | ヘルスが閾値を超える | ビジュアルステートの更新 |
 
-**Important:** Always call `super` at the start of every override. The 親クラス handles critical engine behavior.
+**重要：** すべてのオーバーライドの先頭で必ず `super` を呼び出してください。親クラスが重要なエンジン動作を処理します。
 
 ---
 
-## Step 7: Build, Test, Polish
+## Step 7: ビルド、テスト、仕上げ
 
-### Build and Spawn
+### ビルドとスポーン
 
-Pack `Data/` and `Scripts/` as separate PBOs. Launch DayZ with your mod and spawn the jacket:
+`Data/` と `Scripts/` を別々のPBOとしてパックします。Modを有効にしてDayZを起動し、ジャケットをスポーンします：
 
 ```c
 GetGame().GetPlayer().GetInventory().CreateInInventory("MCM_TacticalJacket_Woodland");
 ```
 
-### Verification Checklist
+### 確認チェックリスト
 
-1. **Does it appear in inventory?** If not, check `scope=2` and class name match.
-2. **Correct texture?** Default Gorka texture = wrong paths. White/pink = missing texture file.
-3. **Can you equip it?** Should go to Body slot. If not, check the 親クラス chain.
-4. **Display name shows?** If you see raw `$STR_` text, the stringtable is not loading.
-5. **Provides warmth?** Check `heatIsolation` in the debug/inspect menu.
-6. **Damage degrades visuals?** Test with: `ItemBase.Cast(GetGame().GetPlayer().GetItemOnSlot("Body")).SetHealth("", "", 40);`
+1. **インベントリに表示されますか？** 表示されない場合、`scope=2` とクラス名の一致を確認してください。
+2. **正しいテクスチャですか？** デフォルトのGorkaテクスチャ = パスが間違っています。白/ピンク = テクスチャファイルが見つかりません。
+3. **装備できますか？** Bodyスロットに入るはずです。入らない場合、親クラスチェーンを確認してください。
+4. **表示名は正しいですか？** 生の `$STR_` テキストが表示される場合、stringtableが読み込まれていません。
+5. **保温性はありますか？** デバッグ/インスペクトメニューで `heatIsolation` を確認してください。
+6. **ダメージでビジュアルが劣化しますか？** 次のコードでテストします：`ItemBase.Cast(GetGame().GetPlayer().GetItemOnSlot("Body")).SetHealth("", "", 40);`
 
-### Adding Color Variants
+### カラーバリアントの追加
 
-Follow the `_ColorBase` pattern -- add sibling classes that only differ in textures:
+`_ColorBase` パターンに従います -- テクスチャのみが異なる兄弟クラスを追加します：
 
 ```cpp
 class MCM_TacticalJacket_Desert : MCM_TacticalJacket_ColorBase
@@ -409,25 +413,25 @@ class MCM_TacticalJacket_Desert : MCM_TacticalJacket_ColorBase
 };
 ```
 
-Each variant needs its own `scope=2`, display name, textures, stringtable entries, and types.xml entry.
+各バリアントには独自の `scope=2`、表示名、テクスチャ、stringtableエントリ、types.xmlエントリが必要です。
 
 ---
 
-## Complete Code Reference
+## 完全なコードリファレンス
 
-### Directory Structure
+### ディレクトリ構成
 
 ```
 MyClothingMod/
     mod.cpp
     Data/
-        config.cpp              <-- Item definitions (see Step 2)
-        Stringtable.csv         <-- Display names (see Step 5)
+        config.cpp              <-- アイテム定義（Step 2参照）
+        Stringtable.csv         <-- 表示名（Step 5参照）
         Textures/
             tactical_jacket_woodland_co.paa
             tactical_jacket_g_woodland_co.paa
-    Scripts/                    <-- Only needed for script behavior
-        config.cpp              <-- CfgMods entry (see Step 6)
+    Scripts/                    <-- スクリプト動作が必要な場合のみ
+        config.cpp              <-- CfgModsエントリ（Step 6参照）
         4_World/
             MyClothingMod/
                 MCM_TacticalJacket.c
@@ -442,33 +446,33 @@ version = "1.0";
 overview = "Adds a tactical jacket with camo variants to DayZ.";
 ```
 
-All other files are shown in full in their respective steps above.
+その他のファイルはすべて上記の各ステップで完全に示されています。
 
 ---
 
 ## よくある間違い
 
-| 間違い | Consequence | 修正方法 |
+| 間違い | 結果 | 修正方法 |
 |---------|-------------|-----|
-| Forgetting `scope=2` on variants | Item does not spawn or appear in admin tools | Set `scope=0` on base, `scope=2` on each spawnable variant |
-| Wrong texture array count | White/pink textures on some parts | Match `hiddenSelectionsTextures` count to the model's hidden selections (Gorka has 3) |
-| Forward slashes in texture paths | Textures fail to load silently | Use backslashes: `"MyMod\Data\tex.paa"` |
-| Missing `requiredAddons` | Config parser cannot resolve 親クラス | Include `"DZ_Characters_Tops"` for tops |
-| `heatIsolation` above 1.0 | Player overheats in warm weather | Keep values in 0.0-1.0 range |
-| Empty `healthLevels` materials | No visual damage degradation | Always reference at least vanilla rvmats |
-| Skipping `super` in overrides | Broken inventory, damage, or attachment behavior | Always call `super.MethodName()` first |
+| バリアントで `scope=2` を忘れる | アイテムがスポーンしない、管理ツールに表示されない | 基底には `scope=0`、スポーン可能な各バリアントには `scope=2` を設定 |
+| テクスチャ配列の数が間違い | 一部のパーツが白/ピンクのテクスチャになる | `hiddenSelectionsTextures` の数をモデルのhidden selectionsに合わせる（Gorkaは3つ） |
+| テクスチャパスにスラッシュを使用 | テクスチャが無言で読み込まれない | バックスラッシュを使用：`"MyMod\Data\tex.paa"` |
+| `requiredAddons` が不足 | Configパーサーが親クラスを解決できない | トップスには `"DZ_Characters_Tops"` を含める |
+| `heatIsolation` が1.0を超える | 暖かい天候でプレイヤーが過熱する | 値を0.0〜1.0の範囲に保つ |
+| `healthLevels` のマテリアルが空 | 視覚的なダメージ劣化がない | 少なくともバニラのrvmatを参照する |
+| オーバーライドで `super` をスキップ | インベントリ、ダメージ、アタッチメント動作が壊れる | 常に最初に `super.MethodName()` を呼び出す |
 
 ---
 
 ## ベストプラクティス
 
-- **Start with a simple retexture.** Get a working mod with a texture swap before adding custom properties or scripts. This isolates config issues from texture issues.
-- **Use the _ColorBase pattern.** Shared properties in `scope=0` base, only textures and names in `scope=2` variants. No duplication.
-- **Keep insulation values realistic.** Reference vanilla items with similar real-world equivalents.
-- **Test with script console before types.xml.** Confirm the item works before debugging spawn tables.
-- **Use `$STR_` references for all player-facing text.** Enables future localization without config changes.
-- **Pack Data and Scripts as separate PBOs.** Update textures without rebuilding scripts.
-- **Provide ground textures.** The `_g_` texture makes dropped items look correct.
+- **シンプルなリテクスチャから始めましょう。** カスタムプロパティやスクリプトを追加する前に、テクスチャスワップで動作するModを完成させてください。これによりconfigの問題とテクスチャの問題を分離できます。
+- **_ColorBaseパターンを使用しましょう。** 共有プロパティは `scope=0` の基底に、テクスチャと名前のみを `scope=2` のバリアントに配置します。重複なし。
+- **断熱値は現実的に保ちましょう。** 類似する現実世界の衣類を持つバニラアイテムを参考にしてください。
+- **types.xmlの前にスクリプトコンソールでテストしましょう。** スポーンテーブルのデバッグ前にアイテムが動作することを確認してください。
+- **プレイヤー向けのすべてのテキストに `$STR_` 参照を使用しましょう。** config変更なしで将来のローカライズが可能になります。
+- **DataとScriptsは別々のPBOとしてパックしましょう。** スクリプトの再ビルドなしでテクスチャを更新できます。
+- **地面テクスチャを提供しましょう。** `_g_` テクスチャにより、ドロップされたアイテムが正しく表示されます。
 
 ---
 
@@ -476,30 +480,30 @@ All other files are shown in full in their respective steps above.
 
 | 概念 | 理論 | 現実 |
 |---------|--------|---------|
-| `heatIsolation` | A simple warmth number | Effective warmth depends on health and wetness. The engine multiplies it by factors in `MiscGameplayFunctions.GetCurrentItemHeatIsolation()`. |
-| Armor `damage` values | Lower = more protection | A value of 0.8 means the player receives 80% damage (only 20% absorbed). Many modders read 0.9 as "90% protection" when it is actually 10%. |
-| `scope` inheritance | Children inherit parent scope | They do NOT. Each class must explicitly set `scope`. Parent `scope=0` defaults all children to `scope=0`. |
-| `absorbency` | Controls rain protection | It controls moisture absorption, which REDUCES warmth. Waterproof = LOW absorbency (0.1). High absorbency (0.8+) = soaks like a sponge. |
-| Hidden selections | Work on any model | Not all models expose the same selections. Check with Object Builder or vanilla config before choosing a base model. |
+| `heatIsolation` | シンプルな保温性の数値 | 有効な保温性はヘルスとウェットネスに依存します。エンジンは `MiscGameplayFunctions.GetCurrentItemHeatIsolation()` の係数で乗算します。 |
+| アーマーの `damage` 値 | 低い = より高い防御 | 0.8の値はプレイヤーが80%のダメージを受けることを意味します（20%のみ吸収）。多くのモッダーは0.9を「90%の防御」と読みますが、実際には10%です。 |
+| `scope` の継承 | 子は親のscopeを継承する | 継承しません。各クラスは明示的に `scope` を設定する必要があります。親の `scope=0` はすべての子をデフォルトで `scope=0` にします。 |
+| `absorbency` | 雨からの防御を制御 | 水分吸収を制御し、保温性を低下させます。防水 = 低い absorbency（0.1）。高い absorbency（0.8+）= スポンジのように吸収します。 |
+| Hidden selections | どのモデルでも動作する | すべてのモデルが同じselectionを公開するわけではありません。基底モデルを選択する前にObject Builderまたはバニラconfigで確認してください。 |
 
 ---
 
-## What You Learned
+## 学んだこと
 
-In this tutorial you learned:
+このチュートリアルで学んだこと：
 
-- How DayZ clothing inherits from slot-specific 基底クラスes (`Top_Base`, `Pants_Base`, etc.)
-- How to define a clothing item in config.cpp with thermal, armor, and wetness properties
-- How hidden selections allow retexturing vanilla models with custom camo patterns
-- How `heatIsolation`, `visibilityModifier`, and `absorbency` affect gameplay
-- How the `DamageSystem` controls visual degradation and armor protection
-- How to create color variants using the `_ColorBase` pattern
-- How to add spawn entries with `types.xml` and display names with `Stringtable.csv`
-- How to optionally add script behavior with `OnWasAttached` and `OnWasDetached` events
+- DayZの衣類がスロット固有の基底クラス（`Top_Base`、`Pants_Base` など）からどのように継承するか
+- config.cppで保温性、アーマー、ウェットネスプロパティを持つ衣類アイテムを定義する方法
+- hidden selectionsによりバニラモデルをカスタムカモパターンでリテクスチャする仕組み
+- `heatIsolation`、`visibilityModifier`、`absorbency` がゲームプレイにどう影響するか
+- `DamageSystem` が視覚的劣化とアーマー防御をどのように制御するか
+- `_ColorBase` パターンを使用してカラーバリアントを作成する方法
+- `types.xml` でスポーンエントリを追加し、`Stringtable.csv` で表示名を追加する方法
+- オプションで `OnWasAttached` と `OnWasDetached` イベントによるスクリプト動作を追加する方法
 
-**次:** Apply the same techniques to create pants (`Pants_Base`), boots (`Shoes_Base`), or a vest (`Vest_Base`). The config structure is identical -- only the 親クラス and inventory slot change.
+**次へ：** 同じテクニックを応用してパンツ（`Pants_Base`）、ブーツ（`Shoes_Base`）、またはベスト（`Vest_Base`）を作成できます。config構造は同一で、親クラスとインベントリスロットだけが変わります。
 
 ---
 
-**Previous:** [Chapter 8.8: HUD Overlay](08-hud-overlay.md)
-**次:** Coming soon
+**前へ：** [Chapter 8.8: HUDオーバーレイ](08-hud-overlay.md)
+**次へ：** 近日公開

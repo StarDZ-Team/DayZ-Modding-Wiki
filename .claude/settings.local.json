@@ -6,7 +6,8 @@
       "Bash(curl -sL https://raw.githubusercontent.com/obra/superpowers/main/skills/systematic-debugging/SKILL.md)",
       "Bash(curl -sL https://raw.githubusercontent.com/obra/superpowers/main/skills/writing-plans/SKILL.md)",
       "Bash(curl -sL https://raw.githubusercontent.com/obra/superpowers/main/skills/brainstorming/SKILL.md)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(wc -l D:/DayZProjects/.claude/skills/dayz-modding/*.md)"
     ]
   }
 }

@@ -1,196 +1,196 @@
-# Chapter 6.11: Mission Hooks
+# Capitolo 6.11: Hook delle Missioni
 
-[Home](../../README.md) | [<< Previous: Central Economy](10-central-economy.md) | **Mission Hooks** | [Next: Action System >>](12-action-system.md)
+[Home](../../README.md) | [<< Precedente: Economia Centrale](10-central-economy.md) | **Hook delle Missioni** | [Successivo: Sistema delle Azioni >>](12-action-system.md)
 
 ---
 
 ## Introduzione
 
-Every DayZ mod needs an entry point --- a place where it initializes managers, registers RPC handlers, hooks into player connections, and cleans up on shutdown. That entry point is the **Mission** class. Il motore crea exactly one Mission instance when a scenario loads: `MissionServer` on a dedicated server, `MissionGameplay` on a client, or both on a listen server. These classes provide lifecycle hooks that fire in a guaranteed order, giving mods a reliable place to inject behavior.
+Ogni mod di DayZ ha bisogno di un punto di ingresso --- un posto dove inizializzare i manager, registrare i gestori RPC, agganciarsi alle connessioni dei giocatori e pulire alla chiusura. Quel punto di ingresso è la classe **Mission**. Il motore crea esattamente un'istanza di Mission quando viene caricato uno scenario: `MissionServer` su un server dedicato, `MissionGameplay` su un client, o entrambi su un listen server. Queste classi forniscono hook del ciclo di vita che si attivano in un ordine garantito, dando alle mod un posto affidabile dove iniettare comportamenti.
 
-Questo capitolo tratta the full Mission class hierarchy, every hookable method, the correct `modded class` pattern for extending them, and real-world examples from vanilla DayZ, COT, and Expansion.
+Questo capitolo copre l'intera gerarchia della classe Mission, ogni metodo agganciabile, il pattern corretto `modded class` per estenderli, e esempi reali da DayZ vanilla, COT ed Expansion.
 
 ---
 
 ## Gerarchia delle Classi
 
 ```
-Mission                      // 3_Game/gameplay.c (base, defines all hook signatures)
-└── MissionBaseWorld         // 4_World/classes/missionbaseworld.c (minimal bridge)
-    └── MissionBase          // 5_Mission/mission/missionbase.c (shared setup: HUD, menus, plugins)
-        ├── MissionServer    // 5_Mission/mission/missionserver.c (server-side)
-        └── MissionGameplay  // 5_Mission/mission/missiongameplay.c (client-side)
+Mission                      // 3_Game/gameplay.c (base, definisce tutte le firme degli hook)
+└── MissionBaseWorld         // 4_World/classes/missionbaseworld.c (ponte minimale)
+    └── MissionBase          // 5_Mission/mission/missionbase.c (setup condiviso: HUD, menu, plugin)
+        ├── MissionServer    // 5_Mission/mission/missionserver.c (lato server)
+        └── MissionGameplay  // 5_Mission/mission/missiongameplay.c (lato client)
 ```
 
-- **Mission** definiscis all hook signatures as empty methods: `OnInit()`, `OnUpdate()`, `OnEvent()`, `OnMissionStart()`, `OnMissionFinish()`, `OnKeyPress()`, `OnKeyRelease()`, etc.
-- **MissionBase** initializes the plugin manager, widget event handler, world data, dynamic music, sound sets, and input device tracking. It is the common parent for both server and client.
-- **MissionServer** handles player connections, disconnections, respawns, corpse management, tick scheduling, and artillery.
-- **MissionGameplay** handles HUD creation, chat, action menus, voice-over-network UI, inventory, input exclusion, and client-side player scheduling.
+- **Mission** definisce tutte le firme degli hook come metodi vuoti: `OnInit()`, `OnUpdate()`, `OnEvent()`, `OnMissionStart()`, `OnMissionFinish()`, `OnKeyPress()`, `OnKeyRelease()`, ecc.
+- **MissionBase** inizializza il plugin manager, il gestore degli eventi dei widget, i dati del mondo, la musica dinamica, i set di suoni e il tracciamento dei dispositivi di input. È il genitore comune per server e client.
+- **MissionServer** gestisce le connessioni dei giocatori, le disconnessioni, i respawn, la gestione dei corpi, la pianificazione dei tick e l'artiglieria.
+- **MissionGameplay** gestisce la creazione dell'HUD, la chat, i menu delle azioni, l'UI del voice-over-network, l'inventario, l'esclusione degli input e la pianificazione lato client del giocatore.
 
 ---
 
 ## Panoramica del Ciclo di Vita
 
-### MissionServer Lifecycle (Server-Side)
+### Ciclo di Vita di MissionServer (Lato Server)
 
 ```mermaid
 flowchart TD
-    A["Engine creates MissionServer"] --> B["Constructor: MissionServer()"]
+    A["Il motore crea MissionServer"] --> B["Costruttore: MissionServer()"]
     B --> C["OnInit()"]
     C --> D["OnGameplayDataHandlerLoad()"]
     D --> E["OnMissionStart()"]
     E --> F["OnMissionLoaded()"]
-    F --> G["OnUpdate(timeslice) loop"]
+    F --> G["Loop OnUpdate(timeslice)"]
     G --> G
     G --> H["OnMissionFinish()"]
-    H --> I["Destructor: ~MissionServer()"]
+    H --> I["Distruttore: ~MissionServer()"]
 
-    G -.-> J["OnEvent() — player connect/disconnect/respawn"]
+    G -.-> J["OnEvent() — connessione/disconnessione/respawn giocatori"]
     J -.-> K["InvokeOnConnect()"]
     J -.-> L["OnClientReadyEvent()"]
     J -.-> M["InvokeOnDisconnect()"]
 ```
 
-### MissionGameplay Lifecycle (Client-Side)
+### Ciclo di Vita di MissionGameplay (Lato Client)
 
 ```mermaid
 flowchart TD
-    A["Engine creates MissionGameplay"] --> B["Constructor: MissionGameplay()"]
-    B --> C["OnInit() — HUD, chat, action menu"]
+    A["Il motore crea MissionGameplay"] --> B["Costruttore: MissionGameplay()"]
+    B --> C["OnInit() — HUD, chat, menu azioni"]
     C --> D["OnMissionStart()"]
     D --> E["OnMissionLoaded()"]
-    E --> F["OnUpdate(timeslice) loop"]
+    E --> F["Loop OnUpdate(timeslice)"]
     F --> F
     F --> G["OnMissionFinish()"]
-    G --> H["Destructor: ~MissionGameplay()"]
+    G --> H["Distruttore: ~MissionGameplay()"]
 
     F -.-> I["OnKeyPress(key) / OnKeyRelease(key)"]
-    F -.-> J["OnEvent() — chat, VON, window resize"]
+    F -.-> J["OnEvent() — chat, VON, ridimensionamento finestra"]
 ```
 
 ---
 
-## Mission Base Class Methods
+## Metodi della Classe Base Mission
 
 **File:** `3_Game/gameplay.c`
 
-The `Mission` classe base definiscis every hookable method. All are virtual with empty default implementations unless noted.
+La classe base `Mission` definisce ogni metodo agganciabile. Tutti sono virtuali con implementazioni predefinite vuote a meno che non sia indicato diversamente.
 
-### Lifecycle Hooks
+### Hook del Ciclo di Vita
 
-| Method | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnInit` | `void OnInit()` | After constructor, before mission starts. Primary setup point. |
-| `OnMissionStart` | `void OnMissionStart()` | After OnInit. The mission world is active. |
-| `OnMissionLoaded` | `void OnMissionLoaded()` | After OnMissionStart. All vanilla systems are initialized. |
-| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | Server: after gameplay data (cfggameplay.json) is loaded. |
-| `OnUpdate` | `void OnUpdate(float timeslice)` | Every frame. `timeslice` is seconds since last frame (typically 0.016-0.033). |
-| `OnMissionFinish` | `void OnMissionFinish()` | On shutdown or disconnect. Clean up everything here. |
+| Metodo | Firma | Quando Si Attiva |
+|--------|-------|-----------------|
+| `OnInit` | `void OnInit()` | Dopo il costruttore, prima che la missione inizi. Punto di setup principale. |
+| `OnMissionStart` | `void OnMissionStart()` | Dopo OnInit. Il mondo della missione è attivo. |
+| `OnMissionLoaded` | `void OnMissionLoaded()` | Dopo OnMissionStart. Tutti i sistemi vanilla sono inizializzati. |
+| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | Server: dopo il caricamento dei dati di gameplay (cfggameplay.json). |
+| `OnUpdate` | `void OnUpdate(float timeslice)` | Ogni frame. `timeslice` sono i secondi dall'ultimo frame (tipicamente 0.016-0.033). |
+| `OnMissionFinish` | `void OnMissionFinish()` | All'arresto o alla disconnessione. Pulisci tutto qui. |
 
-### Input Hooks (Client-Side)
+### Hook degli Input (Lato Client)
 
-| Method | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnKeyPress` | `void OnKeyPress(int key)` | Physical key pressed. `key` is a `KeyCode` constant. |
-| `OnKeyRelease` | `void OnKeyRelease(int key)` | Physical key released. |
-| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Mouse button pressed. |
-| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Mouse button released. |
+| Metodo | Firma | Quando Si Attiva |
+|--------|-------|-----------------|
+| `OnKeyPress` | `void OnKeyPress(int key)` | Tasto fisico premuto. `key` è una costante `KeyCode`. |
+| `OnKeyRelease` | `void OnKeyRelease(int key)` | Tasto fisico rilasciato. |
+| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Pulsante del mouse premuto. |
+| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Pulsante del mouse rilasciato. |
 
-### Event Hook
+### Hook degli Eventi
 
-| Method | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnEvent` | `void OnEvent(EventType eventTypeId, Param params)` | Engine events: chat, VON, player connect/disconnect, window resize, etc. |
+| Metodo | Firma | Quando Si Attiva |
+|--------|-------|-----------------|
+| `OnEvent` | `void OnEvent(EventType eventTypeId, Param params)` | Eventi del motore: chat, VON, connessione/disconnessione giocatori, ridimensionamento finestra, ecc. |
 
-### Utility Methods
+### Metodi di Utilità
 
-| Method | Signature | Descrizione |
-|--------|-----------|-------------|
-| `GetHud` | `Hud GetHud()` | Returns the HUD instance (client only). |
-| `GetWorldData` | `WorldData GetWorldData()` | Returns world-specific data (temperature curves, etc.). |
-| `IsPaused` | `bool IsPaused()` | Whether the game is paused (single player / listen server). |
-| `IsServer` | `bool IsServer()` | `true` for MissionServer, `false` for MissionGameplay. |
-| `IsMissionGameplay` | `bool IsMissionGameplay()` | `true` for MissionGameplay, `false` for MissionServer. |
-| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | Re-enable player input after disabling. |
-| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | Disable player input (e.g., `INPUT_EXCLUDE_ALL`). |
-| `IsControlDisabled` | `bool IsControlDisabled()` | Whether player controls are currently disabled. |
-| `GetControlDisabledMode` | `int GetControlDisabledMode()` | Returns the current input exclusion mode. |
+| Metodo | Firma | Descrizione |
+|--------|-------|-------------|
+| `GetHud` | `Hud GetHud()` | Restituisce l'istanza dell'HUD (solo client). |
+| `GetWorldData` | `WorldData GetWorldData()` | Restituisce dati specifici del mondo (curve di temperatura, ecc.). |
+| `IsPaused` | `bool IsPaused()` | Se il gioco è in pausa (single player / listen server). |
+| `IsServer` | `bool IsServer()` | `true` per MissionServer, `false` per MissionGameplay. |
+| `IsMissionGameplay` | `bool IsMissionGameplay()` | `true` per MissionGameplay, `false` per MissionServer. |
+| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | Riabilita l'input del giocatore dopo la disabilitazione. |
+| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | Disabilita l'input del giocatore (es. `INPUT_EXCLUDE_ALL`). |
+| `IsControlDisabled` | `bool IsControlDisabled()` | Se i controlli del giocatore sono attualmente disabilitati. |
+| `GetControlDisabledMode` | `int GetControlDisabledMode()` | Restituisce la modalità corrente di esclusione degli input. |
 
 ---
 
-## MissionServer Hooks (Server-Side)
+## Hook di MissionServer (Lato Server)
 
 **File:** `5_Mission/mission/missionserver.c`
 
-MissionServer is instantiated by il motore on dedicated servers. It handles everything related to player lifecycle on the server.
+MissionServer viene istanziato dal motore sui server dedicati. Gestisce tutto ciò che riguarda il ciclo di vita del giocatore sul server.
 
-### Key Vanilla Behavior
+### Comportamento Vanilla Chiave
 
-- **Constructor**: Sets up `CallQueue` for player stats (30-second interval), dead players array, logout tracking maps, rain procurement handler.
-- **OnInit**: Loads `CfgGameplayHandler`, `PlayerSpawnHandler`, `CfgPlayerRestrictedAreaHandler`, `UndergroundAreaLoader`, artillery firing positions.
-- **OnMissionStart**: Creates effect area zones (contaminated zones, etc.).
-- **OnUpdate**: Runs tick scheduler, processes logout timers, updates base environment temperature, rain procurement, random artillery.
+- **Costruttore**: Configura la `CallQueue` per le statistiche dei giocatori (intervallo di 30 secondi), l'array dei giocatori morti, le mappe di tracciamento dei logout, il gestore di approvvigionamento della pioggia.
+- **OnInit**: Carica `CfgGameplayHandler`, `PlayerSpawnHandler`, `CfgPlayerRestrictedAreaHandler`, `UndergroundAreaLoader`, posizioni di fuoco dell'artiglieria.
+- **OnMissionStart**: Crea le zone di area effetto (zone contaminate, ecc.).
+- **OnUpdate**: Esegue lo scheduler dei tick, elabora i timer di logout, aggiorna la temperatura ambientale di base, l'approvvigionamento della pioggia, l'artiglieria casuale.
 
-### OnEvent --- Player Connection Events
+### OnEvent --- Eventi di Connessione dei Giocatori
 
-The server's `OnEvent` is the central dispatcher for all player lifecycle events. The engine sends events with typed `Param` objects. Vanilla handles them via a `switch` block:
+L'`OnEvent` del server è il dispatcher centrale per tutti gli eventi del ciclo di vita dei giocatori. Il motore invia eventi con oggetti `Param` tipizzati. Vanilla li gestisce tramite un blocco `switch`:
 
-| Event | Param Type | What Happens |
-|-------|-----------|--------------|
-| `ClientPrepareEventTypeID` | `ClientPrepareEventParams` | Decides DB vs fresh character |
-| `ClientNewEventTypeID` | `ClientNewEventParams` | Creates + equips new character, calls `InvokeOnConnect` |
-| `ClientReadyEventTypeID` | `ClientReadyEventParams` | Existing character loaded, calls `OnClientReadyEvent` + `InvokeOnConnect` |
-| `ClientRespawnEventTypeID` | `ClientRespawnEventParams` | Player respawn request, kills old character if unconscious |
-| `ClientReconnectEventTypeID` | `ClientReconnectEventParams` | Player reconnected to alive character |
-| `ClientDisconnectedEventTypeID` | `ClientDisconnectedEventParams` | Player disconnecting, starts logout timer |
-| `LogoutCancelEventTypeID` | `LogoutCancelEventParams` | Player cancelled logout countdown |
+| Evento | Tipo Param | Cosa Succede |
+|--------|-----------|--------------|
+| `ClientPrepareEventTypeID` | `ClientPrepareEventParams` | Decide tra personaggio dal DB o nuovo |
+| `ClientNewEventTypeID` | `ClientNewEventParams` | Crea + equipaggia un nuovo personaggio, chiama `InvokeOnConnect` |
+| `ClientReadyEventTypeID` | `ClientReadyEventParams` | Personaggio esistente caricato, chiama `OnClientReadyEvent` + `InvokeOnConnect` |
+| `ClientRespawnEventTypeID` | `ClientRespawnEventParams` | Richiesta di respawn del giocatore, uccide il vecchio personaggio se incosciente |
+| `ClientReconnectEventTypeID` | `ClientReconnectEventParams` | Giocatore riconnesso a un personaggio vivo |
+| `ClientDisconnectedEventTypeID` | `ClientDisconnectedEventParams` | Giocatore in disconnessione, avvia il timer di logout |
+| `LogoutCancelEventTypeID` | `LogoutCancelEventParams` | Giocatore ha cancellato il conto alla rovescia di logout |
 
-### Player Connection Methods
+### Metodi di Connessione dei Giocatori
 
-Called from within `OnEvent` when player-related events fire:
+Chiamati dall'interno di `OnEvent` quando si attivano eventi relativi ai giocatori:
 
-| Method | Signature | Vanilla Behavior |
-|--------|-----------|-----------------|
-| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Calls `player.OnConnect()`. Primary "player joined" hook. |
-| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Calls `player.OnDisconnect()`. Player fully disconnected. |
-| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | Calls `g_Game.SelectPlayer()`. Existing character loaded from DB. |
-| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | Creates + equips new character. Returns `PlayerBase`. |
-| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | Kills old character if unconscious/restrained. |
-| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Calls `player.OnReconnect()`. |
-| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Calls `InvokeOnDisconnect`, saves player, exits hive, handles body, removes from server. |
+| Metodo | Firma | Comportamento Vanilla |
+|--------|-------|----------------------|
+| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Chiama `player.OnConnect()`. Hook principale "giocatore connesso". |
+| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Chiama `player.OnDisconnect()`. Giocatore completamente disconnesso. |
+| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | Chiama `g_Game.SelectPlayer()`. Personaggio esistente caricato dal DB. |
+| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | Crea + equipaggia un nuovo personaggio. Restituisce `PlayerBase`. |
+| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | Uccide il vecchio personaggio se incosciente/legato. |
+| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Chiama `player.OnReconnect()`. |
+| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Chiama `InvokeOnDisconnect`, salva il giocatore, esce dall'hive, gestisce il corpo, rimuove dal server. |
 
-### Character Setup
+### Setup del Personaggio
 
-| Method | Signature | Descrizione |
-|--------|-----------|-------------|
-| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Creates player entity via `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()`. |
-| `EquipCharacter` | `void EquipCharacter(MenuDefaultCharacterData char_data)` | Iterates attachment slots, randomizes if custom respawn disabled. Calls `StartingEquipSetup()`. |
-| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **Empty in vanilla** --- your entry point for starter kits. |
+| Metodo | Firma | Descrizione |
+|--------|-------|-------------|
+| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Crea l'entità giocatore tramite `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()`. |
+| `EquipCharacter` | `void EquipCharacter(MenuDefaultCharacterData char_data)` | Itera gli slot degli accessori, randomizza se il respawn personalizzato è disabilitato. Chiama `StartingEquipSetup()`. |
+| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **Vuoto nel vanilla** --- il tuo punto di ingresso per i kit iniziali. |
 
 ---
 
-## MissionGameplay Hooks (Client-Side)
+## Hook di MissionGameplay (Lato Client)
 
 **File:** `5_Mission/mission/missiongameplay.c`
 
-MissionGameplay is instantiated on the client when connecting to a server or starting single player. It manages all client-side UI and input.
+MissionGameplay viene istanziato sul client quando ci si connette a un server o si avvia il single player. Gestisce tutta l'UI e gli input lato client.
 
-### Key Vanilla Behavior
+### Comportamento Vanilla Chiave
 
-- **Constructor**: Destroys existing menus, creates Chat, ActionMenu, IngameHud, VoN state, fade timers, SyncEvents registration.
-- **OnInit**: Guards against double init with `m_Initialized`. Creates HUD root widget from `"gui/layouts/day_z_hud.layout"`, chat widget, action menu, microphone icon, VoN voice level widgets, chat channel area. Calls `PPEffects.Init()` and `MapMarkerTypes.Init()`.
-- **OnMissionStart**: Hides cursor, sets mission state to `MISSION_STATE_GAME`, loads effect areas in singleplayer.
-- **OnUpdate**: Tick scheduler for local player, hologram updates, radial quickbar (console), gesture menu, input handling for inventory/chat/VoN, debug monitor, pause behavior.
-- **OnMissionFinish**: Hides dialog, destroys all menus and chat, deletes HUD root widget, stops all PPE effects, re-enables all inputs, sets mission state to `MISSION_STATE_FINNISH`.
+- **Costruttore**: Distrugge i menu esistenti, crea Chat, ActionMenu, IngameHud, stato VoN, timer di dissolvenza, registrazione SyncEvents.
+- **OnInit**: Protegge dalla doppia inizializzazione con `m_Initialized`. Crea il widget radice dell'HUD da `"gui/layouts/day_z_hud.layout"`, il widget della chat, il menu delle azioni, l'icona del microfono, i widget del livello vocale VoN, l'area del canale di chat. Chiama `PPEffects.Init()` e `MapMarkerTypes.Init()`.
+- **OnMissionStart**: Nasconde il cursore, imposta lo stato della missione su `MISSION_STATE_GAME`, carica le aree di effetto nel single player.
+- **OnUpdate**: Scheduler dei tick per il giocatore locale, aggiornamenti dell'ologramma, barra rapida radiale (console), menu dei gesti, gestione degli input per inventario/chat/VoN, monitor di debug, comportamento in pausa.
+- **OnMissionFinish**: Nasconde il dialogo, distrugge tutti i menu e la chat, elimina il widget radice dell'HUD, ferma tutti gli effetti PPE, riabilita tutti gli input, imposta lo stato della missione su `MISSION_STATE_FINNISH`.
 
-### Input Hooks
+### Hook degli Input
 
 ```c
 override void OnKeyPress(int key)
 {
     super.OnKeyPress(key);
-    // Vanilla forwards to Hud.KeyPress(key)
-    // key values are KeyCode constants (e.g., KeyCode.KC_F1 = 59)
+    // Vanilla inoltra a Hud.KeyPress(key)
+    // i valori dei tasti sono costanti KeyCode (es. KeyCode.KC_F1 = 59)
 }
 
 override void OnKeyRelease(int key)
@@ -199,21 +199,21 @@ override void OnKeyRelease(int key)
 }
 ```
 
-### Event Hook
+### Hook degli Eventi
 
-Vanilla `MissionGameplay.OnEvent()` handles `ChatMessageEventTypeID` (adds to chat widget), `ChatChannelEventTypeID` (updates channel indicator), `WindowsResizeEventTypeID` (rebuilds menus/HUD), `SetFreeCameraEventTypeID` (debug camera), and `VONStateEventTypeID` (voice state). Sovrascrivi it with the same `switch` pattern and always call `super.OnEvent()`.
+L'`OnEvent()` di MissionGameplay vanilla gestisce `ChatMessageEventTypeID` (aggiunge al widget della chat), `ChatChannelEventTypeID` (aggiorna l'indicatore del canale), `WindowsResizeEventTypeID` (ricostruisce menu/HUD), `SetFreeCameraEventTypeID` (camera di debug), e `VONStateEventTypeID` (stato vocale). Sovrascrivilo con lo stesso pattern `switch` e chiama sempre `super.OnEvent()`.
 
-### Input Control
+### Controllo degli Input
 
-`PlayerControlDisable(int mode)` activates an input exclude group (e.g., `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). `PlayerControlEnable(bool bForceSuppress)` removes it. These map to exclude groups definiscid in `specific.xml`. Sovrascrivi them if your mod needs custom input exclusion behavior (as Expansion does for its menus).
+`PlayerControlDisable(int mode)` attiva un gruppo di esclusione degli input (es. `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). `PlayerControlEnable(bool bForceSuppress)` lo rimuove. Questi corrispondono ai gruppi di esclusione definiti in `specific.xml`. Sovrascrivili se la tua mod necessita di un comportamento personalizzato di esclusione degli input (come fa Expansion per i suoi menu).
 
 ---
 
-## Server-Side Event Flow: Player Joins
+## Flusso degli Eventi Lato Server: Connessione di un Giocatore
 
-Understanding the exact sequence of events when a player connects is critical for knowing where to hook your code.
+Comprendere la sequenza esatta degli eventi quando un giocatore si connette è critico per sapere dove agganciare il tuo codice.
 
-### New Character (First Join or After Death)
+### Nuovo Personaggio (Prima Connessione o Dopo la Morte)
 
 ```mermaid
 sequenceDiagram
@@ -223,7 +223,7 @@ sequenceDiagram
 
     Engine->>MS: OnEvent(ClientPrepareEventTypeID)
     MS->>MS: OnClientPrepareEvent(identity, useDB, pos, yaw, timeout)
-    Note over MS: Decides DB vs fresh character
+    Note over MS: Decide tra personaggio dal DB o nuovo
 
     Engine->>MS: OnEvent(ClientNewEventTypeID)
     MS->>MS: OnClientNewEvent(identity, pos, ctx)
@@ -236,7 +236,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Existing Character (Reconnect After Disconnect)
+### Personaggio Esistente (Riconnessione Dopo Disconnessione)
 
 ```mermaid
 sequenceDiagram
@@ -256,7 +256,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Player Disconnect
+### Disconnessione del Giocatore
 
 ```mermaid
 sequenceDiagram
@@ -266,42 +266,42 @@ sequenceDiagram
 
     Engine->>MS: OnEvent(ClientDisconnectedEventTypeID)
     MS->>MS: OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)
-    Note over MS: Starts logout timer if alive
+    Note over MS: Avvia il timer di logout se vivo
 
-    alt Logout timer expires
+    alt Il timer di logout scade
         MS->>MS: PlayerDisconnected(player, identity, uid)
         MS->>MS: InvokeOnDisconnect(player)
         MS->>Player: player.OnDisconnect()
         MS->>Player: player.Save()
         MS->>MS: HandleBody(player)
         MS->>MS: g_Game.DisconnectPlayer(identity, uid)
-    else Player cancels logout
+    else Il giocatore cancella il logout
         Engine->>MS: OnEvent(LogoutCancelEventTypeID)
-        Note over MS: Removes from logout queue
+        Note over MS: Rimosso dalla coda di logout
     end
 ```
 
 ---
 
-## How to Hook: The modded class Pattern
+## Come Agganciare: Il Pattern modded class
 
-The correct way to extend Mission classes is the `modded class` pattern. This uses Enforce Script's class inheritance mechanism where `modded class` extends the existing class without replacing it, allowing multiple mods to coexist.
+Il modo corretto per estendere le classi Mission è il pattern `modded class`. Questo utilizza il meccanismo di ereditarietà delle classi di Enforce Script dove `modded class` estende la classe esistente senza sostituirla, permettendo a più mod di coesistere.
 
-### Basic Server Hook
+### Hook Server Base
 
 ```c
-// Your mod: Scripts/5_Mission/YourMod/MissionServer.c
+// La tua mod: Scripts/5_Mission/YourMod/MissionServer.c
 modded class MissionServer
 {
     ref MyServerManager m_MyManager;
 
     override void OnInit()
     {
-        super.OnInit();  // ALWAYS call super first
+        super.OnInit();  // Chiama SEMPRE super per primo
 
         m_MyManager = new MyServerManager();
         m_MyManager.Init();
-        Print("[MyMod] Server manager initialized");
+        Print("[MyMod] Server manager inizializzato");
     }
 
     override void OnMissionFinish()
@@ -312,24 +312,24 @@ modded class MissionServer
             m_MyManager = null;
         }
 
-        super.OnMissionFinish();  // Call super (before or after your cleanup)
+        super.OnMissionFinish();  // Chiama super (prima o dopo la tua pulizia)
     }
 }
 ```
 
-### Basic Client Hook
+### Hook Client Base
 
 ```c
-// Your mod: Scripts/5_Mission/YourMod/MissionGameplay.c
+// La tua mod: Scripts/5_Mission/YourMod/MissionGameplay.c
 modded class MissionGameplay
 {
     ref MyHudWidget m_MyHud;
 
     override void OnInit()
     {
-        super.OnInit();  // ALWAYS call super first
+        super.OnInit();  // Chiama SEMPRE super per primo
 
-        // Create custom HUD elements
+        // Crea elementi HUD personalizzati
         m_MyHud = new MyHudWidget();
         m_MyHud.Init();
     }
@@ -338,7 +338,7 @@ modded class MissionGameplay
     {
         super.OnUpdate(timeslice);
 
-        // Update custom HUD every frame
+        // Aggiorna l'HUD personalizzato ogni frame
         if (m_MyHud)
         {
             m_MyHud.Update(timeslice);
@@ -358,7 +358,7 @@ modded class MissionGameplay
 }
 ```
 
-### Hooking Player Connection
+### Agganciare la Connessione dei Giocatori
 
 ```c
 modded class MissionServer
@@ -367,21 +367,21 @@ modded class MissionServer
     {
         super.InvokeOnConnect(player, identity);
 
-        // Your code runs AFTER vanilla and all earlier mods
+        // Il tuo codice viene eseguito DOPO vanilla e tutte le mod precedenti
         if (player && identity)
         {
             string uid = identity.GetId();
             string name = identity.GetName();
-            Print("[MyMod] Player connected: " + name + " (" + uid + ")");
+            Print("[MyMod] Giocatore connesso: " + name + " (" + uid + ")");
 
-            // Load player data, send settings, etc.
+            // Carica dati giocatore, invia impostazioni, ecc.
             MyPlayerData.Load(uid);
         }
     }
 
     override void InvokeOnDisconnect(PlayerBase player)
     {
-        // Save data BEFORE super (player may be deleted after)
+        // Salva i dati PRIMA di super (il giocatore potrebbe essere eliminato dopo)
         if (player && player.GetIdentity())
         {
             string uid = player.GetIdentity().GetId();
@@ -393,14 +393,14 @@ modded class MissionServer
 }
 ```
 
-### Hooking Chat Messages (Server-Side OnEvent)
+### Agganciare i Messaggi Chat (OnEvent Lato Server)
 
 ```c
 modded class MissionServer
 {
     override void OnEvent(EventType eventTypeId, Param params)
     {
-        // Intercept BEFORE super to potentially block events
+        // Intercetta PRIMA di super per potenzialmente bloccare gli eventi
         if (eventTypeId == ClientNewEventTypeID)
         {
             ClientNewEventParams newParams;
@@ -409,7 +409,7 @@ modded class MissionServer
 
             if (IsPlayerBanned(identity))
             {
-                // Block the connection by not calling super
+                // Blocca la connessione non chiamando super
                 return;
             }
         }
@@ -419,7 +419,7 @@ modded class MissionServer
 }
 ```
 
-### Hooking Keyboard Input (Client-Side)
+### Agganciare gli Input da Tastiera (Lato Client)
 
 ```c
 modded class MissionGameplay
@@ -428,7 +428,7 @@ modded class MissionGameplay
     {
         super.OnKeyPress(key);
 
-        // Open custom menu on F6
+        // Apri il menu personalizzato premendo F6
         if (key == KeyCode.KC_F6)
         {
             if (!GetGame().GetUIManager().GetMenu())
@@ -440,9 +440,9 @@ modded class MissionGameplay
 }
 ```
 
-### Where to Register RPC Handlers
+### Dove Registrare i Gestori RPC
 
-RPC handlers should be registered in `OnInit`, not in the constructor. By `OnInit` time, all script modules are loaded and the networking layer is ready.
+I gestori RPC dovrebbero essere registrati in `OnInit`, non nel costruttore. Al momento di `OnInit`, tutti i moduli script sono caricati e il layer di rete è pronto.
 
 ```c
 modded class MissionServer
@@ -451,7 +451,7 @@ modded class MissionServer
     {
         super.OnInit();
 
-        // Register RPC handlers here
+        // Registra i gestori RPC qui
         GetDayZGame().Event_OnRPC.Insert(OnMyRPC);
     }
 
@@ -464,109 +464,109 @@ modded class MissionServer
     void OnMyRPC(PlayerIdentity sender, Object target, int rpc_type,
                  ParamsReadContext ctx)
     {
-        // Handle your RPCs
+        // Gestisci i tuoi RPC
     }
 }
 ```
 
 ---
 
-## Common Hooks by Purpose
+## Hook Comuni per Scopo
 
-| I want to... | Hook this method | On which class |
-|--------------|------------------|----------------|
-| Initialize my mod on server | `OnInit()` | `MissionServer` |
-| Initialize my mod on client | `OnInit()` | `MissionGameplay` |
-| Run code ogni frame (server) | `OnUpdate(float timeslice)` | `MissionServer` |
-| Run code ogni frame (client) | `OnUpdate(float timeslice)` | `MissionGameplay` |
-| React to player join | `InvokeOnConnect(player, identity)` | `MissionServer` |
-| React to player leave | `InvokeOnDisconnect(player)` | `MissionServer` |
-| Send initial data to new client | `OnClientReadyEvent(identity, player)` | `MissionServer` |
-| React to new character spawn | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
-| Give starter equipment | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
-| React to player respawn | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
-| React to player reconnect | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
-| Handle disconnect/logout logica | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
-| Intercept server events (connect, chat) | `OnEvent(eventTypeId, params)` | `MissionServer` |
-| Intercept client events (chat, VON) | `OnEvent(eventTypeId, params)` | `MissionGameplay` |
-| Handle keyboard input | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
-| Create HUD elements | `OnInit()` | `MissionGameplay` |
-| Clean up on server shutdown | `OnMissionFinish()` | `MissionServer` |
-| Clean up on client disconnect | `OnMissionFinish()` | `MissionGameplay` |
-| Run code once after all systems loaded | `OnMissionLoaded()` | Either |
-| Disable/enable player input | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
+| Voglio... | Agganciare questo metodo | Su quale classe |
+|-----------|--------------------------|-----------------|
+| Inizializzare la mia mod sul server | `OnInit()` | `MissionServer` |
+| Inizializzare la mia mod sul client | `OnInit()` | `MissionGameplay` |
+| Eseguire codice ogni frame (server) | `OnUpdate(float timeslice)` | `MissionServer` |
+| Eseguire codice ogni frame (client) | `OnUpdate(float timeslice)` | `MissionGameplay` |
+| Reagire alla connessione di un giocatore | `InvokeOnConnect(player, identity)` | `MissionServer` |
+| Reagire alla disconnessione di un giocatore | `InvokeOnDisconnect(player)` | `MissionServer` |
+| Inviare dati iniziali al nuovo client | `OnClientReadyEvent(identity, player)` | `MissionServer` |
+| Reagire alla generazione di un nuovo personaggio | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
+| Dare equipaggiamento iniziale | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
+| Reagire al respawn del giocatore | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
+| Reagire alla riconnessione del giocatore | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
+| Gestire la logica di disconnessione/logout | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
+| Intercettare eventi del server (connessione, chat) | `OnEvent(eventTypeId, params)` | `MissionServer` |
+| Intercettare eventi del client (chat, VON) | `OnEvent(eventTypeId, params)` | `MissionGameplay` |
+| Gestire input da tastiera | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
+| Creare elementi HUD | `OnInit()` | `MissionGameplay` |
+| Pulire all'arresto del server | `OnMissionFinish()` | `MissionServer` |
+| Pulire alla disconnessione del client | `OnMissionFinish()` | `MissionGameplay` |
+| Eseguire codice una volta dopo il caricamento di tutti i sistemi | `OnMissionLoaded()` | Entrambi |
+| Disabilitare/abilitare gli input del giocatore | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
 
 ---
 
-## Server vs Client: Which Hooks Fire Where
+## Server vs Client: Quali Hook Si Attivano Dove
 
 | Hook | Server | Client | Note |
-|------|--------|--------|-------|
-| Constructor | Yes | Yes | Different class on each side |
-| `OnInit()` | Yes | Yes | |
-| `OnMissionStart()` | Yes | Yes | |
-| `OnMissionLoaded()` | Yes | Yes | |
-| `OnGameplayDataHandlerLoad()` | Yes | No | cfggameplay.json loaded |
-| `OnUpdate(timeslice)` | Yes | Yes | Both run their own frame loop |
-| `OnMissionFinish()` | Yes | Yes | |
-| `OnEvent()` | Yes | Yes | Different event types on each side |
-| `InvokeOnConnect()` | Yes | No | Server only |
-| `InvokeOnDisconnect()` | Yes | No | Server only |
-| `OnClientReadyEvent()` | Yes | No | Server only |
-| `OnClientNewEvent()` | Yes | No | Server only |
-| `OnClientRespawnEvent()` | Yes | No | Server only |
-| `OnClientReconnectEvent()` | Yes | No | Server only |
-| `OnClientDisconnectedEvent()` | Yes | No | Server only |
-| `PlayerDisconnected()` | Yes | No | Server only |
-| `StartingEquipSetup()` | Yes | No | Server only |
-| `EquipCharacter()` | Yes | No | Server only |
-| `OnKeyPress()` | No | Yes | Client only |
-| `OnKeyRelease()` | No | Yes | Client only |
-| `OnMouseButtonPress()` | No | Yes | Client only |
-| `OnMouseButtonRelease()` | No | Yes | Client only |
-| `PlayerControlDisable()` | No | Yes | Client only |
-| `PlayerControlEnable()` | No | Yes | Client only |
+|------|--------|--------|------|
+| Costruttore | Sì | Sì | Classe diversa su ogni lato |
+| `OnInit()` | Sì | Sì | |
+| `OnMissionStart()` | Sì | Sì | |
+| `OnMissionLoaded()` | Sì | Sì | |
+| `OnGameplayDataHandlerLoad()` | Sì | No | cfggameplay.json caricato |
+| `OnUpdate(timeslice)` | Sì | Sì | Entrambi eseguono il proprio loop di frame |
+| `OnMissionFinish()` | Sì | Sì | |
+| `OnEvent()` | Sì | Sì | Tipi di eventi diversi su ogni lato |
+| `InvokeOnConnect()` | Sì | No | Solo server |
+| `InvokeOnDisconnect()` | Sì | No | Solo server |
+| `OnClientReadyEvent()` | Sì | No | Solo server |
+| `OnClientNewEvent()` | Sì | No | Solo server |
+| `OnClientRespawnEvent()` | Sì | No | Solo server |
+| `OnClientReconnectEvent()` | Sì | No | Solo server |
+| `OnClientDisconnectedEvent()` | Sì | No | Solo server |
+| `PlayerDisconnected()` | Sì | No | Solo server |
+| `StartingEquipSetup()` | Sì | No | Solo server |
+| `EquipCharacter()` | Sì | No | Solo server |
+| `OnKeyPress()` | No | Sì | Solo client |
+| `OnKeyRelease()` | No | Sì | Solo client |
+| `OnMouseButtonPress()` | No | Sì | Solo client |
+| `OnMouseButtonRelease()` | No | Sì | Solo client |
+| `PlayerControlDisable()` | No | Sì | Solo client |
+| `PlayerControlEnable()` | No | Sì | Solo client |
 
 ---
 
-## EventType Constants Reference
+## Riferimento Costanti EventType
 
-All event constants are definiscid in `3_Game/gameplay.c` and dispatched through `OnEvent()`.
+Tutte le costanti degli eventi sono definite in `3_Game/gameplay.c` e inviate attraverso `OnEvent()`.
 
-| Costante | Side | Descrizione |
+| Costante | Lato | Descrizione |
 |----------|------|-------------|
-| `ClientPrepareEventTypeID` | Server | Player identity received, decide DB vs fresh |
-| `ClientNewEventTypeID` | Server | New character being created |
-| `ClientReadyEventTypeID` | Server | Existing character loaded from DB |
-| `ClientRespawnEventTypeID` | Server | Player requested respawn |
-| `ClientReconnectEventTypeID` | Server | Player reconnected to alive character |
-| `ClientDisconnectedEventTypeID` | Server | Player disconnecting |
-| `LogoutCancelEventTypeID` | Server | Player cancelled logout countdown |
-| `ChatMessageEventTypeID` | Client | Chat message received (`ChatMessageEventParams`) |
-| `ChatChannelEventTypeID` | Client | Chat channel changed (`ChatChannelEventParams`) |
-| `VONStateEventTypeID` | Client | Voice-over-network state changed |
-| `VONStartSpeakingEventTypeID` | Client | Player started speaking |
-| `VONStopSpeakingEventTypeID` | Client | Player stopped speaking |
-| `MPSessionStartEventTypeID` | Both | Multiplayer session started |
-| `MPSessionEndEventTypeID` | Both | Multiplayer session ended |
-| `MPConnectionLostEventTypeID` | Client | Connection to server lost |
-| `PlayerDeathEventTypeID` | Both | Player died |
-| `SetFreeCameraEventTypeID` | Client | Free camera toggled (debug) |
+| `ClientPrepareEventTypeID` | Server | Identità del giocatore ricevuta, decide tra DB o nuovo |
+| `ClientNewEventTypeID` | Server | Nuovo personaggio in fase di creazione |
+| `ClientReadyEventTypeID` | Server | Personaggio esistente caricato dal DB |
+| `ClientRespawnEventTypeID` | Server | Il giocatore ha richiesto il respawn |
+| `ClientReconnectEventTypeID` | Server | Il giocatore si è riconnesso a un personaggio vivo |
+| `ClientDisconnectedEventTypeID` | Server | Giocatore in disconnessione |
+| `LogoutCancelEventTypeID` | Server | Il giocatore ha cancellato il conto alla rovescia di logout |
+| `ChatMessageEventTypeID` | Client | Messaggio chat ricevuto (`ChatMessageEventParams`) |
+| `ChatChannelEventTypeID` | Client | Canale chat cambiato (`ChatChannelEventParams`) |
+| `VONStateEventTypeID` | Client | Stato voice-over-network cambiato |
+| `VONStartSpeakingEventTypeID` | Client | Il giocatore ha iniziato a parlare |
+| `VONStopSpeakingEventTypeID` | Client | Il giocatore ha smesso di parlare |
+| `MPSessionStartEventTypeID` | Entrambi | Sessione multiplayer avviata |
+| `MPSessionEndEventTypeID` | Entrambi | Sessione multiplayer terminata |
+| `MPConnectionLostEventTypeID` | Client | Connessione al server persa |
+| `PlayerDeathEventTypeID` | Entrambi | Il giocatore è morto |
+| `SetFreeCameraEventTypeID` | Client | Camera libera attivata/disattivata (debug) |
 
 ---
 
-## Esempi dal Mondo Reale
+## Esempi Reali
 
-### Example 1: Server Manager Initialization
+### Esempio 1: Inizializzazione del Manager del Server
 
-A typical pattern for initializing a server-side manager that needs to run periodic tasks.
+Un pattern tipico per inizializzare un manager lato server che deve eseguire compiti periodici.
 
 ```c
 modded class MissionServer
 {
     ref MyTraderManager m_TraderManager;
     float m_TraderUpdateTimer;
-    const float TRADER_UPDATE_INTERVAL = 5.0; // seconds
+    const float TRADER_UPDATE_INTERVAL = 5.0; // secondi
 
     override void OnInit()
     {
@@ -577,14 +577,14 @@ modded class MissionServer
         m_TraderManager.SpawnTraders();
         m_TraderUpdateTimer = 0;
 
-        Print("[MyMod] Trader manager initialized");
+        Print("[MyMod] Trader manager inizializzato");
     }
 
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
 
-        // Frame-limit the trader update to every 5 seconds
+        // Limita l'aggiornamento dei trader a ogni 5 secondi
         m_TraderUpdateTimer += timeslice;
         if (m_TraderUpdateTimer >= TRADER_UPDATE_INTERVAL)
         {
@@ -607,7 +607,7 @@ modded class MissionServer
 }
 ```
 
-### Example 2: Player Data Loading on Connect
+### Esempio 2: Caricamento Dati del Giocatore alla Connessione
 
 ```c
 modded class MissionServer
@@ -629,7 +629,7 @@ modded class MissionServer
 
         player.m_MyStats = stats;
 
-        // Send initial data to client
+        // Invia dati iniziali al client
         ScriptRPC rpc = new ScriptRPC();
         rpc.Write(stats.GetKills());
         rpc.Write(stats.GetDeaths());
@@ -648,9 +648,9 @@ modded class MissionServer
 }
 ```
 
-### Example 3: Client HUD Creation
+### Esempio 3: Creazione HUD Lato Client
 
-Creating a custom HUD element that updates ogni frame.
+Creare un elemento HUD personalizzato che si aggiorna ogni frame.
 
 ```c
 modded class MissionGameplay
@@ -663,7 +663,7 @@ modded class MissionGameplay
     {
         super.OnInit();
 
-        // Create HUD from layout file
+        // Crea HUD dal file di layout
         m_MyHudRoot = GetGame().GetWorkspace().CreateWidgets(
             "MyMod/gui/layouts/my_hud.layout"
         );
@@ -683,7 +683,7 @@ modded class MissionGameplay
     {
         super.OnUpdate(timeslice);
 
-        // Update HUD text twice per second, not every frame
+        // Aggiorna il testo dell'HUD due volte al secondo, non ogni frame
         m_HudUpdateTimer += timeslice;
         if (m_HudUpdateTimer >= 0.5)
         {
@@ -715,16 +715,16 @@ modded class MissionGameplay
 }
 ```
 
-### Example 4: Chat Command Interception (Server-Side)
+### Esempio 4: Intercettazione Comandi Chat (Lato Server)
 
-Intercepting player connections to implement a ban system. This pattern is used by COT.
+Intercettare le connessioni dei giocatori per implementare un sistema di ban. Questo pattern è usato da COT.
 
 ```c
 modded class MissionServer
 {
     override void OnEvent(EventType eventTypeId, Param params)
     {
-        // Check bans BEFORE super processes the connection
+        // Controlla i ban PRIMA che super elabori la connessione
         if (eventTypeId == ClientNewEventTypeID)
         {
             ClientNewEventParams newParams;
@@ -733,8 +733,8 @@ modded class MissionServer
 
             if (identity && IsBanned(identity.GetId()))
             {
-                Print("[MyMod] Blocked banned player: " + identity.GetId());
-                // Do not call super --- connection is blocked
+                Print("[MyMod] Giocatore bannato bloccato: " + identity.GetId());
+                // Non chiama super --- la connessione è bloccata
                 return;
             }
         }
@@ -750,9 +750,9 @@ modded class MissionServer
 }
 ```
 
-### Example 5: Starter Kit via StartingEquipSetup
+### Esempio 5: Kit Iniziale tramite StartingEquipSetup
 
-The cleanest way to give new players equipment without touching `OnClientNewEvent`.
+Il modo più pulito per dare ai nuovi giocatori l'equipaggiamento senza toccare `OnClientNewEvent`.
 
 ```c
 modded class MissionServer
@@ -764,11 +764,11 @@ modded class MissionServer
         if (!player)
             return;
 
-        // Give every new character a knife and bandage
+        // Dai a ogni nuovo personaggio un coltello e una benda
         EntityAI knife = player.GetInventory().CreateInInventory("KitchenKnife");
         EntityAI bandage = player.GetInventory().CreateInInventory("BandageDressing");
 
-        // Give food in their backpack (if they have one)
+        // Dai del cibo nello zaino (se ne hanno uno)
         EntityAI backpack = player.FindAttachmentBySlotName("Back");
         if (backpack)
         {
@@ -779,68 +779,68 @@ modded class MissionServer
 }
 ```
 
-### Pattern: Delegate to a Central Manager
+### Pattern: Delegare a un Manager Centrale
 
-Both COT and Expansion follow the same pattern: their mission hooks are thin wrappers that delegate to a singleton manager. COT creates `g_cotBase = new CommunityOnlineTools` in the constructor, then calls `g_cotBase.OnStart()` / `OnUpdate()` / `OnFinish()` from the corresponding hooks. Expansion does the same with `GetDayZExpansion().OnStart()` / `OnLoaded()` / `OnFinish()`. Your mod should follow this pattern --- keep mission hook code thin and push logica into dedicated manager classes.
+Sia COT che Expansion seguono lo stesso pattern: i loro hook delle missioni sono wrapper sottili che delegano a un manager singleton. COT crea `g_cotBase = new CommunityOnlineTools` nel costruttore, poi chiama `g_cotBase.OnStart()` / `OnUpdate()` / `OnFinish()` dagli hook corrispondenti. Expansion fa lo stesso con `GetDayZExpansion().OnStart()` / `OnLoaded()` / `OnFinish()`. La tua mod dovrebbe seguire questo pattern --- mantieni il codice degli hook delle missioni sottile e spingi la logica in classi manager dedicate.
 
 ---
 
 ## OnInit vs OnMissionStart vs OnMissionLoaded
 
-| Hook | When | Use For |
-|------|------|---------|
-| `OnInit()` | First. Script modules loaded, world not yet active. | Creating managers, registering RPCs, loading configs. |
-| `OnMissionStart()` | Second. World is active, entities can be spawned. | Spawning entities, starting gameplay systems, creating triggers. |
-| `OnMissionLoaded()` | Third. All vanilla systems fully initialized. | Cross-mod queries, finalization that depends on everything being ready. |
+| Hook | Quando | Usare Per |
+|------|--------|-----------|
+| `OnInit()` | Primo. I moduli script sono caricati, il mondo non è ancora attivo. | Creare manager, registrare RPC, caricare configurazioni. |
+| `OnMissionStart()` | Secondo. Il mondo è attivo, le entità possono essere generate. | Generare entità, avviare sistemi di gameplay, creare trigger. |
+| `OnMissionLoaded()` | Terzo. Tutti i sistemi vanilla completamente inizializzati. | Query tra mod, finalizzazione che dipende dal fatto che tutto sia pronto. |
 
-Always call `super` on all three. Use `OnInit` as your primary initialization point. Use `OnMissionLoaded` only when you need to guarantee other mods have already initialized.
+Chiama sempre `super` su tutti e tre. Usa `OnInit` come punto di inizializzazione principale. Usa `OnMissionLoaded` solo quando hai bisogno di garantire che altre mod si siano già inizializzate.
 
 ---
 
-## Accessing the Current Mission
+## Accedere alla Missione Corrente
 
 ```c
-Mission mission = GetGame().GetMission();                                    // Base class
-MissionServer serverMission = MissionServer.Cast(GetGame().GetMission());   // Server cast
-MissionGameplay clientMission = MissionGameplay.Cast(GetGame().GetMission()); // Client cast
-PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());                  // CLIENT ONLY (null on server)
+Mission mission = GetGame().GetMission();                                    // Classe base
+MissionServer serverMission = MissionServer.Cast(GetGame().GetMission());   // Cast server
+MissionGameplay clientMission = MissionGameplay.Cast(GetGame().GetMission()); // Cast client
+PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());                  // SOLO CLIENT (null sul server)
 ```
 
 ---
 
 ## Errori Comuni
 
-### 1. Forgetting super.OnInit()
+### 1. Dimenticare super.OnInit()
 
-Every `override` **must** call `super`. Forgetting it breaks vanilla and every other mod in the chain. This is the single most common modding mistake.
+Ogni `override` **deve** chiamare `super`. Dimenticarlo rompe vanilla e ogni altra mod nella catena. Questo è l'errore di modding più comune in assoluto.
 
 ```c
-// WRONG                                    // CORRECT
+// SBAGLIATO                                  // CORRETTO
 override void OnInit()                      override void OnInit()
 {                                           {
-    m_MyManager = new MyManager();              super.OnInit();  // Always first!
+    m_MyManager = new MyManager();              super.OnInit();  // Sempre per primo!
 }                                               m_MyManager = new MyManager();
                                             }
 ```
 
-### 2. Using GetGame().GetPlayer() on the Server
+### 2. Usare GetGame().GetPlayer() sul Server
 
-`GetGame().GetPlayer()` is **always null** on a dedicated server. There is no "local" player. Use `GetGame().GetPlayers(array)` to iterate all connected players.
+`GetGame().GetPlayer()` è **sempre null** su un server dedicato. Non c'è un giocatore "locale". Usa `GetGame().GetPlayers(array)` per iterare tutti i giocatori connessi.
 
 ```c
-// CORRECT way to iterate players on server
+// Modo CORRETTO per iterare i giocatori sul server
 array<Man> players = new array<Man>();
 GetGame().GetPlayers(players);
 foreach (Man man : players)
 {
     PlayerBase player = PlayerBase.Cast(man);
-    if (player) { /* process */ }
+    if (player) { /* elabora */ }
 }
 ```
 
-### 3. Not Cleaning Up in OnMissionFinish
+### 3. Non Pulire in OnMissionFinish
 
-Always clean up widgets, callbacks, and references in `OnMissionFinish()`. Without cleanup, widgets leak into the next mission load (client), and stale references persist across server restarts.
+Pulisci sempre widget, callback e riferimenti in `OnMissionFinish()`. Senza pulizia, i widget trapelano nel caricamento della missione successiva (client), e i riferimenti obsoleti persistono attraverso i riavvii del server.
 
 ```c
 override void OnMissionFinish()
@@ -850,26 +850,26 @@ override void OnMissionFinish()
 }
 ```
 
-### 4. OnUpdate Without Frame Limiting
+### 4. OnUpdate Senza Limitazione dei Frame
 
-`OnUpdate` fires ogni frame (15-60+ FPS). Use a timer accumulator for any non-trivial work.
+`OnUpdate` si attiva ogni frame (15-60+ FPS). Usa un accumulatore di timer per qualsiasi lavoro non banale.
 
 ```c
 m_Timer += timeslice;
-if (m_Timer >= 10.0)  // Every 10 seconds
+if (m_Timer >= 10.0)  // Ogni 10 secondi
 {
     m_Timer = 0;
     DoExpensiveWork();
 }
 ```
 
-### 5. Registering RPCs in the Constructor
+### 5. Registrare RPC nel Costruttore
 
-The constructor runs before all script modules are loaded. Register callbacks in `OnInit()` (earliest safe point) and unregister in `OnMissionFinish()`.
+Il costruttore viene eseguito prima che tutti i moduli script siano caricati. Registra i callback in `OnInit()` (il primo punto sicuro) e deregistra in `OnMissionFinish()`.
 
-### 6. Accessing Identity on a Disconnecting Player
+### 6. Accedere all'Identity di un Giocatore in Disconnessione
 
-`player.GetIdentity()` can return `null` during disconnect. Always null-check both `player` and `identity` before accessing.
+`player.GetIdentity()` può restituire `null` durante la disconnessione. Controlla sempre null sia su `player` che su `identity` prima di accedere.
 
 ```c
 override void InvokeOnDisconnect(PlayerBase player)
@@ -878,7 +878,7 @@ override void InvokeOnDisconnect(PlayerBase player)
     {
         PlayerIdentity identity = player.GetIdentity();
         if (identity)
-            Print("[MyMod] Disconnected: " + identity.GetId());
+            Print("[MyMod] Disconnesso: " + identity.GetId());
     }
     super.InvokeOnDisconnect(player);
 }
@@ -888,58 +888,58 @@ override void InvokeOnDisconnect(PlayerBase player)
 
 ## Riepilogo
 
-| Concetto | Key Point |
-|---------|-----------|
-| Mission hierarchy | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
-| Server class | `MissionServer` --- handles player connections, spawns, tick scheduling |
-| Client class | `MissionGameplay` --- handles HUD, input, chat, menus |
-| Lifecycle order | Constructor > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > `OnUpdate()` loop > `OnMissionFinish()` > Destructor |
-| Player join (server) | `OnEvent(ClientNewEventTypeID/ClientReadyEventTypeID)` > `InvokeOnConnect()` |
-| Player leave (server) | `OnEvent(ClientDisconnectedEventTypeID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
-| Hooking pattern | `modded class MissionServer/MissionGameplay` with `override` and `super` calls |
-| Input handling | `OnKeyPress(key)` / `OnKeyRelease(key)` on `MissionGameplay` (client only) |
-| Event handling | `OnEvent(EventType, Param)` on both sides, different event types per side |
-| super calls | **Always call super** on every override, or you break the entire mod chain |
-| Cleanup | **Always clean up** in `OnMissionFinish()` --- remove RPC handlers, destroy widgets, null references |
-| Frame limiting | Use timer accumulators in `OnUpdate()` for any non-trivial work |
-| GetPlayer() | Only works on client; always returns `null` on dedicated server |
-| RPC registration | Register in `OnInit()`, not constructor; unregister in `OnMissionFinish()` |
+| Concetto | Punto Chiave |
+|----------|-------------|
+| Gerarchia Mission | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
+| Classe server | `MissionServer` --- gestisce connessioni giocatori, spawn, pianificazione tick |
+| Classe client | `MissionGameplay` --- gestisce HUD, input, chat, menu |
+| Ordine del ciclo di vita | Costruttore > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > loop `OnUpdate()` > `OnMissionFinish()` > Distruttore |
+| Connessione giocatore (server) | `OnEvent(ClientNewEventTypeID/ClientReadyEventTypeID)` > `InvokeOnConnect()` |
+| Disconnessione giocatore (server) | `OnEvent(ClientDisconnectedEventTypeID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
+| Pattern di aggancio | `modded class MissionServer/MissionGameplay` con chiamate `override` e `super` |
+| Gestione input | `OnKeyPress(key)` / `OnKeyRelease(key)` su `MissionGameplay` (solo client) |
+| Gestione eventi | `OnEvent(EventType, Param)` su entrambi i lati, tipi di eventi diversi per lato |
+| Chiamate super | **Chiama sempre super** ad ogni override, o rompi l'intera catena di mod |
+| Pulizia | **Pulisci sempre** in `OnMissionFinish()` --- rimuovi gestori RPC, distruggi widget, metti a null i riferimenti |
+| Limitazione dei frame | Usa accumulatori di timer in `OnUpdate()` per qualsiasi lavoro non banale |
+| GetPlayer() | Funziona solo sul client; restituisce sempre `null` sul server dedicato |
+| Registrazione RPC | Registra in `OnInit()`, non nel costruttore; deregistra in `OnMissionFinish()` |
 
 ---
 
 ## Buone Pratiche
 
-- **Always call `super` as the first line in every Mission override.** This is the single most common DayZ modding mistake. Forgetting `super.OnInit()` silently breaks vanilla initialization and every other mod in the chain.
-- **Keep mission hook code thin --- delegate to manager classes.** Create a singleton manager (e.g., `MyModManager`) and call `manager.Init()` / `manager.Update()` / `manager.Cleanup()` from the hooks. This mirrors the pattern used by COT and Expansion.
-- **Use timer accumulators in `OnUpdate()` for any work that does not need to run ogni frame.** `OnUpdate` fires 15-60+ times per second. Running database queries, file I/O, or player iteration at frame rate wastes server CPU.
-- **Register RPCs and event handlers in `OnInit()`, not in the constructor.** The constructor runs before all script modules are loaded. The networking layer is not ready until `OnInit()`.
-- **Always clean up in `OnMissionFinish()`.** Destroy widgets, remove `CallLater` registrations, unregister RPC handlers, and null manager references. Failure to clean up causes stale references across mission reloads.
+- **Chiama sempre `super` come prima riga in ogni override di Mission.** Questo è l'errore di modding DayZ più comune in assoluto. Dimenticare `super.OnInit()` rompe silenziosamente l'inizializzazione vanilla e ogni altra mod nella catena.
+- **Mantieni il codice degli hook delle missioni sottile --- delega a classi manager.** Crea un manager singleton (es. `MyModManager`) e chiama `manager.Init()` / `manager.Update()` / `manager.Cleanup()` dagli hook. Questo rispecchia il pattern usato da COT ed Expansion.
+- **Usa accumulatori di timer in `OnUpdate()` per qualsiasi lavoro che non deve essere eseguito ogni frame.** `OnUpdate` si attiva 15-60+ volte al secondo. Eseguire query al database, I/O su file o iterazioni sui giocatori alla frequenza dei frame spreca CPU del server.
+- **Registra RPC e gestori di eventi in `OnInit()`, non nel costruttore.** Il costruttore viene eseguito prima che tutti i moduli script siano caricati. Il layer di rete non è pronto fino a `OnInit()`.
+- **Pulisci sempre in `OnMissionFinish()`.** Distruggi widget, rimuovi registrazioni `CallLater`, deregistra gestori RPC, e metti a null i riferimenti ai manager. Non pulire causa riferimenti obsoleti attraverso i ricaricamenti delle missioni.
 
 ---
 
-## Compatibilita e Impatto
+## Compatibilità e Impatto
 
-> **Mod Compatibility:** `MissionServer` and `MissionGameplay` are the two most commonly modded classes in DayZ. Every mod that has server logica or client UI hooks into them.
+> **Compatibilità Mod:** `MissionServer` e `MissionGameplay` sono le due classi più comunemente modificate in DayZ. Ogni mod con logica server o hook UI client si aggancia ad esse.
 
-- **Load Order:** The last-loaded mod's `modded class` override runs outermost in the call chain. If a mod forgets `super`, it silently blocks all mods loaded before it. This is the #1 cause of multi-mod incompatibility.
-- **Modded Class Conflicts:** `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate`, and `OnMissionFinish` are the most contested override points. Conflicts are rare as long as every mod calls `super`.
-- **Performance Impact:** Heavy logica in `OnUpdate()` without frame limiting directly reduces server/client FPS. A single mod doing `GetGame().GetPlayers()` iteration ogni frame on a 60-player server adds measurable overhead.
-- **Server/Client:** `MissionServer` hooks only fire on dedicated servers. `MissionGameplay` hooks only fire on clients. On a listen server, both classes exist. `GetGame().GetPlayer()` is always null on dedicated servers.
-
----
-
-## Osservato in Mod Reali
-
-> These patterns were confirmed by studying the source code of professional DayZ mods.
-
-| Pattern | Mod | File/Location |
-|---------|-----|---------------|
-| Thin `modded class MissionServer.OnInit()` delegating to singleton manager | COT | `CommunityOnlineTools` init in MissionServer |
-| `InvokeOnConnect` override to load per-player JSON data | Expansion | Player settings sync on connect |
-| `StartingEquipSetup` override for custom starter kits | Multiple community mods | MissionServer starter kit hooks |
-| `OnEvent` interception before `super` to block banned players | COT | Ban system in MissionServer |
-| `OnMissionFinish` cleanup with widget `Unlink()` and null assignments | Expansion | HUD and menu cleanup |
+- **Ordine di Caricamento:** L'override `modded class` dell'ultima mod caricata viene eseguito per primo (più esterno) nella catena di chiamate. Se una mod dimentica `super`, blocca silenziosamente tutte le mod caricate prima di essa. Questa è la causa #1 di incompatibilità tra mod.
+- **Conflitti di Modded Class:** `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate`, e `OnMissionFinish` sono i punti di override più contesi. I conflitti sono rari finché ogni mod chiama `super`.
+- **Impatto sulle Prestazioni:** Logica pesante in `OnUpdate()` senza limitazione dei frame riduce direttamente gli FPS del server/client. Una singola mod che esegue l'iterazione `GetGame().GetPlayers()` ogni frame su un server da 60 giocatori aggiunge un overhead misurabile.
+- **Server/Client:** Gli hook di `MissionServer` si attivano solo sui server dedicati. Gli hook di `MissionGameplay` si attivano solo sui client. Su un listen server, entrambe le classi esistono. `GetGame().GetPlayer()` è sempre null sui server dedicati.
 
 ---
 
-[<< Precedente: Central Economy](10-central-economy.md) | **Mission Hooks** | [Successivo: Action System >>](12-action-system.md)
+## Osservato nelle Mod Reali
+
+> Questi pattern sono stati confermati studiando il codice sorgente di mod DayZ professionali.
+
+| Pattern | Mod | File/Posizione |
+|---------|-----|----------------|
+| `modded class MissionServer.OnInit()` sottile che delega a un manager singleton | COT | Inizializzazione di `CommunityOnlineTools` in MissionServer |
+| Override di `InvokeOnConnect` per caricare dati JSON per giocatore | Expansion | Sincronizzazione impostazioni giocatore alla connessione |
+| Override di `StartingEquipSetup` per kit iniziali personalizzati | Molteplici mod della comunità | Hook dei kit iniziali in MissionServer |
+| Intercettazione `OnEvent` prima di `super` per bloccare giocatori bannati | COT | Sistema ban in MissionServer |
+| Pulizia in `OnMissionFinish` con `Unlink()` dei widget e assegnazioni null | Expansion | Pulizia HUD e menu |
+
+---
+
+[Home](../../README.md) | [<< Precedente: Economia Centrale](10-central-economy.md) | **Hook delle Missioni** | [Successivo: Sistema delle Azioni >>](12-action-system.md)

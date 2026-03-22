@@ -1,88 +1,90 @@
-# Chapter 5.6: Spawning Gear Configuration
+# 5.6. fejezet: Spawn felszerelés konfiguráció
 
-[Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
-
----
+[Főoldal](../../README.md) | [<< Előző: Szerver konfigurációs fájlok](05-server-configs.md) | **Spawn felszerelés konfiguráció**
 
 ---
 
-## Tartalomjegyzek
+> **Összefoglalás:** A DayZ két egymást kiegészítő rendszerrel rendelkezik, amelyek szabályozzák, hogyan lépnek be a játékosok a világba: a **spawn pontok** határozzák meg, *hol* jelenik meg a karakter a térképen, a **spawn felszerelés** pedig azt, *milyen felszereléssel* rendelkezik. Ez a fejezet mindkét rendszert részletesen tárgyalja, beleértve a fájlstruktúrát, a mezők referenciáját, a gyakorlati preset-eket és a mod integrációt.
 
-- [Attekintes](#overview)
-- [The Two Systems](#the-two-systems)
-- [Spawn Gear: cfgPlayerSpawnGear.json](#spawn-gear-cfgplayerspawngearjson)
-  - [Enabling Spawn Gear Presets](#enabling-spawn-gear-presets)
-  - [Preset Structure](#preset-structure)
+---
+
+## Tartalomjegyzék
+
+- [Áttekintés](#overview)
+- [A két rendszer](#the-two-systems)
+- [Spawn felszerelés: cfgPlayerSpawnGear.json](#spawn-gear-cfgplayerspawngearjson)
+  - [Spawn felszerelés preset-ek engedélyezése](#enabling-spawn-gear-presets)
+  - [Preset struktúra](#preset-structure)
   - [attachmentSlotItemSets](#attachmentslotitemsets)
   - [DiscreteItemSets](#discreteitemsets)
   - [discreteUnsortedItemSets](#discreteunsorteditemsets)
-  - [ComplexChildrenTipuss](#complexchildrentypes)
-  - [SimpleChildrenTipuss](#simplechildrentypes)
-  - [Attributes](#attributes)
-- [Spawn Points: cfgplayerspawnpoints.xml](#spawn-points-cfgplayerspawnpointsxml)
-  - [File Structure](#file-structure)
+  - [ComplexChildrenTypes](#complexchildrentypes)
+  - [SimpleChildrenTypes](#simplechildrentypes)
+  - [Attribútumok](#attributes)
+- [Spawn pontok: cfgplayerspawnpoints.xml](#spawn-points-cfgplayerspawnpointsxml)
+  - [Fájl struktúra](#file-structure)
   - [spawn_params](#spawn_params)
   - [generator_params](#generator_params)
-  - [Spawning Groups](#spawning-groups)
-  - [Map-Specific Configs](#map-specific-configs)
-- [Practical Peldas](#practical-examples)
-  - [Alapertelmezett Survivor Loadout](#default-survivor-loadout)
-  - [Military Spawn Kit](#military-spawn-kit)
-  - [Medical Spawn Kit](#medical-spawn-kit)
-  - [Random Gear Selection](#random-gear-selection)
-- [Integration with Mods](#integration-with-mods)
-- [Legjobb gyakorlatok](#best-practices)
-- [Gyakori hibak](#common-mistakes)
+  - [Spawn csoportok](#spawning-groups)
+  - [Térkép-specifikus konfigok](#map-specific-configs)
+- [Gyakorlati példák](#practical-examples)
+  - [Alapértelmezett túlélő felszerelés](#default-survivor-loadout)
+  - [Katonai spawn készlet](#military-spawn-kit)
+  - [Orvosi spawn készlet](#medical-spawn-kit)
+  - [Véletlenszerű felszerelés kiválasztás](#random-gear-selection)
+- [Integráció modokkal](#integration-with-mods)
+- [Bevált gyakorlatok](#best-practices)
+- [Gyakori hibák](#common-mistakes)
 
 ---
 
-## Attekintes
+## Áttekintés
 
 ```mermaid
 flowchart TD
-    A[Player connects] --> B{cfgGameplay.json enabled?}
-    B -->|Yes| C[Load cfgPlayerSpawnGear.json]
-    B -->|No| D[Use StartingEquipSetup in init.c]
-    C --> E[Select preset by spawnWeight]
-    E --> F[Select characterType]
-    F --> G[Apply attachmentSlotItemSets]
-    G --> H[Apply discreteItemSets to cargo]
-    H --> I[Set item attributes - health, quantity]
-    I --> J[Player spawns with gear]
+    A[Játékos csatlakozik] --> B{cfgGameplay.json engedélyezve?}
+    B -->|Igen| C[cfgPlayerSpawnGear.json betöltése]
+    B -->|Nem| D[StartingEquipSetup használata az init.c-ben]
+    C --> E[Preset kiválasztása spawnWeight alapján]
+    E --> F[characterType kiválasztása]
+    F --> G[attachmentSlotItemSets alkalmazása]
+    G --> H[discreteItemSets alkalmazása a rakományba]
+    H --> I[Tárgy attribútumok beállítása - életerő, mennyiség]
+    I --> J[Játékos felszereléssel jelenik meg]
     D --> J
 ```
 
-When a player spawns as a fresh character in DayZ, two questions are answered by the server:
+Amikor egy játékos friss karakterként jelenik meg a DayZ-ben, a szerver két kérdésre válaszol:
 
-1. **Where does the character appear?** --- Controlled by `cfgplayerspawnpoints.xml`.
-2. **What does the character carry?** --- Controlled by spawn gear preset JSON files, registered through `cfggameplay.json`.
+1. **Hol jelenik meg a karakter?** --- A `cfgplayerspawnpoints.xml` vezérli.
+2. **Mit hord magánál a karakter?** --- A spawn felszerelés preset JSON fájlok vezérlik, amelyeket a `cfggameplay.json`-ban regisztrálnak.
 
-Both systems are server-side only. Clients never see these configuration files and cannot tamper with them. The spawn gear system was introduced as an alternative to scripting loadouts in `init.c`, allowing server admins to define multiple weighted presets in JSON without writing any Enforce Script code.
+Mindkét rendszer csak szerver oldali. A kliensek soha nem látják ezeket a konfigurációs fájlokat és nem manipulálhatják őket. A spawn felszerelés rendszert az `init.c`-ben történő felszerelés szkriptelés alternatívájaként vezették be, lehetővé téve a szerver adminoknak, hogy több súlyozott preset-et definiáljanak JSON-ban bármilyen Enforce Script kód írása nélkül.
 
-> **Fontos:** The spawn gear preset system **completely overrides** the `StartingEquipSetup()` method in your mission `init.c`. If you enable spawn gear presets in `cfggameplay.json`, your scripted loadout code will be ignored. Similarly, character types defined in the presets override the character model chosen in the main menu.
-
----
-
-## The Two Systems
-
-| System | File | Format | Controls |
-|--------|------|--------|----------|
-| Spawn Points | `cfgplayerspawnpoints.xml` | XML | **Where** --- map positions, distance scoring, spawn groups |
-| Spawn Gear | Custom preset JSON files | JSON | **What** --- character model, clothing, weapons, cargo, quickbar |
-
-The two systems are independent. You can use custom spawn points with vanilla gear, custom gear with vanilla spawn points, or customize both.
+> **Fontos:** A spawn felszerelés preset rendszer **teljesen felülírja** a `StartingEquipSetup()` metódust a küldetés `init.c`-ben. Ha engedélyezed a spawn felszerelés preset-eket a `cfggameplay.json`-ban, a szkriptelt felszerelés kódod figyelmen kívül marad. Hasonlóképpen, a preset-ekben definiált karaktertípusok felülírják a főmenüben választott karakter modellt.
 
 ---
 
-## Spawn Gear: cfgPlayerSpawnGear.json
+## A két rendszer
 
-### Enabling Spawn Gear Presets
+| Rendszer | Fájl | Formátum | Szabályozza |
+|----------|------|----------|-------------|
+| Spawn pontok | `cfgplayerspawnpoints.xml` | XML | **Hol** --- térkép pozíciók, távolság pontozás, spawn csoportok |
+| Spawn felszerelés | Egyéni preset JSON fájlok | JSON | **Mit** --- karakter modell, ruházat, fegyverek, rakomány, gyorssáv |
 
-Spawn gear presets are **not** enabled by default. To use them, you must:
+A két rendszer független. Használhatsz egyéni spawn pontokat vanilla felszereléssel, egyéni felszerelést vanilla spawn pontokkal, vagy mindkettőt testre szabhatod.
 
-1. Create one or more JSON preset files in your mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`).
-2. Register them in `cfggameplay.json` under `PlayerData.spawnGearPresetFiles`.
-3. Ensure `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+---
+
+## Spawn felszerelés: cfgPlayerSpawnGear.json
+
+### Spawn felszerelés preset-ek engedélyezése
+
+A spawn felszerelés preset-ek alapértelmezés szerint **nincsenek** engedélyezve. Használatukhoz:
+
+1. Hozz létre egy vagy több JSON preset fájlt a küldetés mappádban (pl. `mpmissions/dayzOffline.chernarusplus/`).
+2. Regisztráld őket a `cfggameplay.json`-ban a `PlayerData.spawnGearPresetFiles` alatt.
+3. Győződj meg, hogy az `enableCfgGameplayFile = 1` be van állítva a `serverDZ.cfg`-ben.
 
 ```json
 {
@@ -97,7 +99,7 @@ Spawn gear presets are **not** enabled by default. To use them, you must:
 }
 ```
 
-Preset files can be nested in subdirectories under the mission folder:
+A preset fájlok a küldetés mappa alkönyvtáraiba is beágyazhatók:
 
 ```json
 "spawnGearPresetFiles": [
@@ -107,23 +109,23 @@ Preset files can be nested in subdirectories under the mission folder:
 ]
 ```
 
-Each JSON file contains a single preset object. All registered presets are pooled together, and the server selects one based on `spawnWeight` each time a fresh character spawns.
+Minden JSON fájl egyetlen preset objektumot tartalmaz. Az összes regisztrált preset össze van gyűjtve, és a szerver a `spawnWeight` alapján választ egyet minden alkalommal, amikor friss karakter jelenik meg.
 
-### Preset Structure
+### Preset struktúra
 
-A preset is the top-level JSON object with these fields:
+A preset a legfelső szintű JSON objektum ezekkel a mezőkkel:
 
-| Mezo | Tipus | Leiras |
-|-------|------|-------------|
-| `name` | string | Human-readable name for the preset (any string, used for identification only) |
-| `spawnWeight` | integer | Weight for random selection. Minimum is `1`. Higher values make this preset more likely to be chosen |
-| `characterTipuss` | array | Array of character type classnames (e.g., `"SurvivorM_Mirek"`). One is picked at random when this preset spawns |
-| `attachmentSlotItemSets` | array | Array of `AttachmentSlots` structures defining what the character wears (clothing, weapons on shoulders, etc.) |
-| `discreteUnsortedItemSets` | array | Array of `DiscreteUnsortedItemSets` structures defining cargo items placed into any available inventory space |
+| Mező | Típus | Leírás |
+|------|-------|--------|
+| `name` | string | Ember által olvasható név a preset-hez (bármilyen sztring, csak azonosításra használt) |
+| `spawnWeight` | integer | Súly a véletlenszerű kiválasztáshoz. Minimum `1`. Magasabb értékek nagyobb valószínűséget adnak ennek a preset-nek |
+| `characterTypes` | array | Karaktertípus osztálynevek tömbje (pl. `"SurvivorM_Mirek"`). Véletlenszerűen egy kerül kiválasztásra, amikor ez a preset megjelenik |
+| `attachmentSlotItemSets` | array | `AttachmentSlots` struktúrák tömbje, amelyek meghatározzák, mit visel a karakter (ruházat, fegyverek a vállon, stb.) |
+| `discreteUnsortedItemSets` | array | `DiscreteUnsortedItemSets` struktúrák tömbje, amelyek rakomány tárgyakat definiálnak bármely elérhető leltár helyre |
 
-> **Megjegyzes:** If `characterTipuss` is empty or omitted, the character model last selected in the main menu character creation screen will be used for that preset.
+> **Megjegyzés:** Ha a `characterTypes` üres vagy ki van hagyva, a főmenü karakter létrehozó képernyőjén utoljára kiválasztott karakter modell lesz használva az adott preset-hez.
 
-Minimal example:
+Minimális példa:
 
 ```json
 {
@@ -140,16 +142,16 @@ Minimal example:
 
 ### attachmentSlotItemSets
 
-This array defines items that go into specific character attachment slots --- body, legs, feet, head, back, vest, shoulders, eyewear, etc.
+Ez a tömb meghatározza azokat a tárgyakat, amelyek meghatározott karakter kiegészítő csatlakozási pontokba kerülnek --- test, lábak, lábfej, fej, hát, mellény, vállak, szemüveg, stb.
 
-Each entry targets one slot:
+Minden bejegyzés egy csatlakozási pontot céloz:
 
-| Mezo | Tipus | Leiras |
-|-------|------|-------------|
-| `slotName` | string | The attachment slot name. Derived from CfgSlots. Common values: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
-| `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `spawnWeight`) |
+| Mező | Típus | Leírás |
+|------|-------|--------|
+| `slotName` | string | A kiegészítő csatlakozási pont neve. A CfgSlots-ból származik. Gyakori értékek: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
+| `discreteItemSets` | array | Tárgy változatok tömbje, amelyek kitölthetik ezt a csatlakozási pontot (egy kerül kiválasztásra a `spawnWeight` alapján) |
 
-> **Shoulder shortcuts:** You can use `"shoulderL"` and `"shoulderR"` as slot names. The engine automatically translates these to the correct internal CfgSlots names.
+> **Váll gyorsparancsok:** Használhatod a `"shoulderL"` és `"shoulderR"` csatlakozási pont neveket. A motor automatikusan lefordítja ezeket a helyes belső CfgSlots nevekre.
 
 ```json
 {
@@ -183,19 +185,19 @@ Each entry targets one slot:
 
 ### DiscreteItemSets
 
-Each entry in `discreteItemSets` represents one possible item for that slot. The server picks one entry at random, weighted by `spawnWeight`. This structure is used inside both `attachmentSlotItemSets` (for slot-based items) and is the mechanism for random selection.
+A `discreteItemSets` minden bejegyzése egy lehetséges tárgyat jelöl az adott csatlakozási pontra. A szerver véletlenszerűen választ egy bejegyzést, a `spawnWeight` által súlyozva. Ezt a struktúrát mind az `attachmentSlotItemSets`-en belül (csatlakozási pont alapú tárgyakhoz) használják, és ez a véletlenszerű kiválasztás mechanizmusa.
 
-| Mezo | Tipus | Leiras |
-|-------|------|-------------|
-| `itemTipus` | string | Item classname (typename). Use `""` (empty string) to represent "nothing" --- the slot remains empty |
-| `spawnWeight` | integer | Weight for selection. Minimum `1`. Higher = more likely |
-| `attributes` | object | Health and quantity ranges for this item. See [Attributes](#attributes) |
-| `quickBarSlot` | integer | Quick bar slot assignment (0-based). Use `-1` for no quickbar assignment |
-| `complexChildrenTipuss` | array | Items to spawn nested inside this item. See [ComplexChildrenTipuss](#complexchildrentypes) |
-| `simpleChildrenTipuss` | array | Item classnames to spawn inside this item using default or parent attributes |
-| `simpleChildrenUseAlapertelmezettAttributes` | bool | If `true`, simple children use the parent's `attributes`. If `false`, they use configuration defaults |
+| Mező | Típus | Leírás |
+|------|-------|--------|
+| `itemType` | string | Tárgy osztálynév (típusnév). Használj `""` (üres sztring) értéket a "semmi" jelölésére --- a csatlakozási pont üresen marad |
+| `spawnWeight` | integer | Súly a kiválasztáshoz. Minimum `1`. Magasabb = valószínűbb |
+| `attributes` | object | Életerő és mennyiség tartományok ehhez a tárgyhoz. Lásd: [Attribútumok](#attributes) |
+| `quickBarSlot` | integer | Gyorssáv hely hozzárendelés (0-alapú). Használj `-1`-et a gyorssáv hozzárendelés mellőzéséhez |
+| `complexChildrenTypes` | array | Tárgyak, amelyeket ezen belül kell megjeleníteni. Lásd: [ComplexChildrenTypes](#complexchildrentypes) |
+| `simpleChildrenTypes` | array | Tárgy osztálynevek, amelyeket ezen belül kell megjeleníteni alapértelmezett vagy szülői attribútumokkal |
+| `simpleChildrenUseDefaultAttributes` | bool | Ha `true`, az egyszerű gyermekek a szülő `attributes`-ét használják. Ha `false`, a konfigurációs alapértékeket használják |
 
-**Empty item trick:** To make a slot have a 50/50 chance of being empty or filled, use an empty `itemTipus`:
+**Üres tárgy trükk:** Ha azt akarod, hogy egy csatlakozási pontnak 50/50 esélye legyen üresnek vagy kitöltöttnek lenni, használj üres `itemType`-ot:
 
 ```json
 {
@@ -220,18 +222,18 @@ Each entry in `discreteItemSets` represents one possible item for that slot. The
 
 ### discreteUnsortedItemSets
 
-This top-level array defines items that go into the character's **cargo** --- any available inventory space across all attached clothing and containers. Unlike `attachmentSlotItemSets`, these items are not placed into a specific slot; the engine finds room automatically.
+Ez a felső szintű tömb határozza meg azokat a tárgyakat, amelyek a karakter **rakományába** kerülnek --- bármely elérhető leltár helyre az összes felszerelt ruházaton és konténeren keresztül. Az `attachmentSlotItemSets`-tel ellentétben ezek a tárgyak nem egy meghatározott csatlakozási pontba kerülnek; a motor automatikusan talál helyet.
 
-Each entry represents one cargo variant, and the server selects one based on `spawnWeight`.
+Minden bejegyzés egy rakomány változatot jelöl, és a szerver a `spawnWeight` alapján választ egyet.
 
-| Mezo | Tipus | Leiras |
-|-------|------|-------------|
-| `name` | string | Human-readable name (for identification only) |
-| `spawnWeight` | integer | Weight for selection. Minimum `1` |
-| `attributes` | object | Alapertelmezett health/quantity ranges. Used by children when `simpleChildrenUseAlapertelmezettAttributes` is `true` |
-| `complexChildrenTipuss` | array | Items to spawn into cargo, each with their own attributes and nesting |
-| `simpleChildrenTipuss` | array | Item classnames to spawn into cargo |
-| `simpleChildrenUseAlapertelmezettAttributes` | bool | If `true`, simple children use this structure's `attributes`. If `false`, they use configuration defaults |
+| Mező | Típus | Leírás |
+|------|-------|--------|
+| `name` | string | Ember által olvasható név (csak azonosításra) |
+| `spawnWeight` | integer | Súly a kiválasztáshoz. Minimum `1` |
+| `attributes` | object | Alapértelmezett életerő/mennyiség tartományok. Gyermekek használják, amikor a `simpleChildrenUseDefaultAttributes` értéke `true` |
+| `complexChildrenTypes` | array | Tárgyak a rakományba, mindegyik saját attribútumokkal és beágyazással |
+| `simpleChildrenTypes` | array | Tárgy osztálynevek a rakományba |
+| `simpleChildrenUseDefaultAttributes` | bool | Ha `true`, az egyszerű gyermekek ennek a struktúrának az `attributes`-ét használják. Ha `false`, a konfigurációs alapértékeket használják |
 
 ```json
 {
@@ -263,19 +265,19 @@ Each entry represents one cargo variant, and the server selects one based on `sp
 }
 ```
 
-### ComplexChildrenTipuss
+### ComplexChildrenTypes
 
-Complex children are items spawned **inside** a parent item with full control over their attributes, quickbar assignment, and their own nested children. The primary use case is spawning items with contents --- for example, a weapon with attachments, or a cooking pot with food inside.
+Az összetett gyermekek olyan tárgyak, amelyek egy szülő tárgyon **belül** jelennek meg, teljes ellenőrzéssel az attribútumaik, gyorssáv hozzárendelésük és saját beágyazott gyermekeik felett. Az elsődleges felhasználási eset tartalommal rendelkező tárgyak megjelenítése --- például fegyver kiegészítőkkel, vagy fazék étellel benne.
 
-| Mezo | Tipus | Leiras |
-|-------|------|-------------|
-| `itemTipus` | string | Item classname |
-| `attributes` | object | Health/quantity ranges for this specific item |
-| `quickBarSlot` | integer | Quick bar slot assignment. `-1` = don't assign |
-| `simpleChildrenUseAlapertelmezettAttributes` | bool | Whether simple children inherit these attributes |
-| `simpleChildrenTipuss` | array | Item classnames to spawn inside this item |
+| Mező | Típus | Leírás |
+|------|-------|--------|
+| `itemType` | string | Tárgy osztálynév |
+| `attributes` | object | Életerő/mennyiség tartományok ehhez a konkrét tárgyhoz |
+| `quickBarSlot` | integer | Gyorssáv hely hozzárendelés. `-1` = ne rendeljen |
+| `simpleChildrenUseDefaultAttributes` | bool | Az egyszerű gyermekek öröklik-e ezeket az attribútumokat |
+| `simpleChildrenTypes` | array | Tárgy osztálynevek, amelyeket ezen belül kell megjeleníteni |
 
-Pelda --- a weapon with attachments and magazine:
+Példa --- fegyver kiegészítőkkel és tárral:
 
 ```json
 {
@@ -327,31 +329,31 @@ Pelda --- a weapon with attachments and magazine:
 }
 ```
 
-In this example, the AKM spawns with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseAlapertelmezettAttributes` is `false`.
+Ebben a példában az AKM egy tussal, optikával (elemmel benne) és töltött tárral jelenik meg összetett gyermekekként, plusz egy kézvédővel és szuronnyal egyszerű gyermekekként. Az egyszerű gyermekek konfigurációs alapértékeket használnak, mert a `simpleChildrenUseDefaultAttributes` értéke `false`.
 
-### SimpleChildrenTipuss
+### SimpleChildrenTypes
 
-Simple children are a shorthand for spawning items inside a parent without specifying individual attributes. They are an array of item classnames (strings).
+Az egyszerű gyermekek egy rövidítés tárgyak szülőn belüli megjelenítéséhez egyedi attribútumok megadása nélkül. Tárgy osztálynevek (sztringek) tömbje.
 
-Their attributes are determined by the `simpleChildrenUseAlapertelmezettAttributes` flag:
+Az attribútumaikat a `simpleChildrenUseDefaultAttributes` jelző határozza meg:
 
-- **`true`** --- Items use the `attributes` defined on the parent structure.
-- **`false`** --- Items use the engine's configuration defaults (typically full health and quantity).
+- **`true`** --- A tárgyak a szülő struktúrán definiált `attributes`-t használják.
+- **`false`** --- A tárgyak a motor konfigurációs alapértékeit használják (jellemzően teljes életerő és mennyiség).
 
-Simple children cannot have their own nested children or quickbar assignments. For those capabilities, use `complexChildrenTipuss` instead.
+Az egyszerű gyermekeknek nem lehetnek saját beágyazott gyermekeik vagy gyorssáv hozzárendeléseik. Ezekhez a képességekhez használd a `complexChildrenTypes`-ot.
 
-### Attributes
+### Attribútumok
 
-Attributes control the condition and quantity of spawned items. All values are floating point between `0.0` and `1.0`:
+Az attribútumok szabályozzák a megjelenített tárgyak állapotát és mennyiségét. Minden érték `0.0` és `1.0` közötti lebegőpontos szám:
 
-| Mezo | Tipus | Leiras |
-|-------|------|-------------|
-| `healthMin` | float | Minimum health percentage. `1.0` = pristine, `0.0` = ruined |
-| `healthMax` | float | Maximum health percentage. A random value between min and max is applied |
-| `quantityMin` | float | Minimum quantity percentage. For magazines: fill level. For food: remaining bites |
-| `quantityMax` | float | Maximum quantity percentage |
+| Mező | Típus | Leírás |
+|------|-------|--------|
+| `healthMin` | float | Minimális életerő százalék. `1.0` = hibátlan, `0.0` = tönkrement |
+| `healthMax` | float | Maximális életerő százalék. Véletlenszerű érték a min és max között kerül alkalmazásra |
+| `quantityMin` | float | Minimális mennyiség százalék. Tárakhoz: töltöttségi szint. Ételhez: maradék falatok |
+| `quantityMax` | float | Maximális mennyiség százalék |
 
-When both min and max are specified, the engine picks a random value in that range. This creates natural variation --- for example, health between `0.45` and `0.65` means items spawn in worn to damaged condition.
+Amikor mind a min, mind a max meg van adva, a motor véletlenszerű értéket választ abban a tartományban. Ez természetes variációt hoz létre --- például a `0.45` és `0.65` közötti életerő azt jelenti, hogy a tárgyak kopott-sérült állapotban jelennek meg.
 
 ```json
 "attributes": {
@@ -364,21 +366,21 @@ When both min and max are specified, the engine picks a random value in that ran
 
 ---
 
-## Spawn Points: cfgplayerspawnpoints.xml
+## Spawn pontok: cfgplayerspawnpoints.xml
 
-This XML file defines where players appear on the map. It is located in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
+Ez az XML fájl határozza meg, hol jelennek meg a játékosok a térképen. A küldetés mappában található (pl. `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
 
-### File Structure
+### Fájl struktúra
 
-The root element contains up to three sections:
+A gyökérelem legfeljebb három szekciót tartalmaz:
 
-| Section | Cel |
-|---------|---------|
-| `<fresh>` | **Required.** Spawn points for newly created characters |
-| `<hop>` | Spawn points for players hopping from another server on the same map (official servers only) |
-| `<travel>` | Spawn points for players traveling from a different map (official servers only) |
+| Szekció | Cél |
+|---------|-----|
+| `<fresh>` | **Kötelező.** Spawn pontok újonnan létrehozott karakterekhez |
+| `<hop>` | Spawn pontok másik szerverről ugró játékosokhoz ugyanazon a térképen (csak hivatalos szervereken) |
+| `<travel>` | Spawn pontok másik térképről utazó játékosokhoz (csak hivatalos szervereken) |
 
-Each section contains the same three sub-elements: `<spawn_params>`, `<generator_params>`, and `<generator_posbubbles>`.
+Minden szekció ugyanazt a három alelemet tartalmazza: `<spawn_params>`, `<generator_params>` és `<generator_posbubbles>`.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -403,7 +405,7 @@ Each section contains the same three sub-elements: `<spawn_params>`, `<generator
 
 ### spawn_params
 
-Runtime parameters that score candidate spawn points against nearby entities. Points below `min_dist` are invalidated. Points between `min_dist` and `max_dist` are preferred over points beyond `max_dist`.
+Futásidejű paraméterek, amelyek a jelölt spawn pontokat pontozó entitásokhoz mérik. A `min_dist` alatti pontok érvénytelenítésre kerülnek. A `min_dist` és `max_dist` közötti pontokat előnyben részesítik a `max_dist`-en túli pontokkal szemben.
 
 ```xml
 <spawn_params>
@@ -416,22 +418,22 @@ Runtime parameters that score candidate spawn points against nearby entities. Po
 </spawn_params>
 ```
 
-| Parameter | Leiras |
-|-----------|-------------|
-| `min_dist_infected` | Minimum meters from infected. Points closer than this are penalized |
-| `max_dist_infected` | Maximum scoring distance from infected |
-| `min_dist_player` | Minimum meters from other players. Keeps fresh spawns from appearing on top of existing players |
-| `max_dist_player` | Maximum scoring distance from other players |
-| `min_dist_static` | Minimum meters from buildings/objects |
-| `max_dist_static` | Maximum scoring distance from buildings/objects |
+| Paraméter | Leírás |
+|-----------|--------|
+| `min_dist_infected` | Minimális méterek a fertőzöttektől. Az ennél közelebbi pontok büntetést kapnak |
+| `max_dist_infected` | Maximális pontozási távolság a fertőzöttektől |
+| `min_dist_player` | Minimális méterek más játékosoktól. Meggátolja, hogy friss spawn-ok meglévő játékosokon jelenjenek meg |
+| `max_dist_player` | Maximális pontozási távolság más játékosoktól |
+| `min_dist_static` | Minimális méterek épületektől/objektumoktól |
+| `max_dist_static` | Maximális pontozási távolság épületektől/objektumoktól |
 
-The Sakhal map also adds `min_dist_trigger` and `max_dist_trigger` parameters with a 6x weight multiplier for trigger zone distances.
+A Sakhal térkép `min_dist_trigger` és `max_dist_trigger` paramétereket is hozzáad 6x-os súlyszorzóval a trigger zóna távolságokhoz.
 
-**Scoring logic:** The engine calculates a score for each candidate point. Distance `0` to `min_dist` scores `-1` (nearly invalidated). Distance `min_dist` to midpoint scores up to `1.1`. Distance midpoint to `max_dist` scores down from `1.1` to `0.1`. Beyond `max_dist` scores `0`. Higher total score = more likely spawn location.
+**Pontozási logika:** A motor pontszámot számol minden jelölt pontra. A `0`-tól `min_dist`-ig `-1`-et pontoz (szinte érvénytelenítve). A `min_dist`-tól a középpontig `1.1`-ig pontoz. A középponttól `max_dist`-ig `1.1`-ről `0.1`-re csökken. A `max_dist`-en túl `0`-t pontoz. Magasabb összpontszám = valószínűbb spawn hely.
 
 ### generator_params
 
-Controls how the grid of candidate spawn points is generated around each position bubble:
+Szabályozza, hogyan generálódik a jelölt spawn pontok rácsa minden pozíció buborék körül:
 
 ```xml
 <generator_params>
@@ -445,23 +447,23 @@ Controls how the grid of candidate spawn points is generated around each positio
 </generator_params>
 ```
 
-| Parameter | Leiras |
-|-----------|-------------|
-| `grid_density` | Sample frequency. `4` means a 4x4 grid of candidate points. Higher = more candidates, more CPU cost. Must be at least `1`. When `0`, only the center point is used |
-| `grid_width` | Total width of the sampling rectangle in meters |
-| `grid_height` | Total height of the sampling rectangle in meters |
-| `min_dist_static` | Minimum distance from buildings for a valid candidate |
-| `max_dist_static` | Maximum distance from buildings used for scoring |
-| `min_steepness` | Minimum terrain slope in degrees. Points on steeper terrain are discarded |
-| `max_steepness` | Maximum terrain slope in degrees |
+| Paraméter | Leírás |
+|-----------|--------|
+| `grid_density` | Mintavételi frekvencia. `4` egy 4x4 rácsot jelent a jelölt pontokból. Magasabb = több jelölt, több CPU költség. Legalább `1` kell legyen. `0` esetén csak a középpont kerül felhasználásra |
+| `grid_width` | A mintavételi téglalap teljes szélessége méterben |
+| `grid_height` | A mintavételi téglalap teljes magassága méterben |
+| `min_dist_static` | Minimális távolság épületektől egy érvényes jelölthöz |
+| `max_dist_static` | Maximális távolság épületektől a pontozáshoz |
+| `min_steepness` | Minimális terep lejtés fokban. A meredekebb terepű pontok eldobásra kerülnek |
+| `max_steepness` | Maximális terep lejtés fokban |
 
-Around every `<pos>` defined in `generator_posbubbles`, the engine creates a rectangle of `grid_width` x `grid_height` meters, samples it at `grid_density` frequency, and discards points that overlap with objects, water, or exceed slope limits.
+Minden `<pos>` körül, amely a `generator_posbubbles`-ban van definiálva, a motor egy `grid_width` x `grid_height` méteres téglalapot hoz létre, `grid_density` frekvenciával mintavételez, és eldobja azokat a pontokat, amelyek objektumokkal, vízzel ütköznek, vagy meghaladják a lejtés korlátokat.
 
-### Spawning Groups
+### Spawn csoportok
 
-Groups allow you to cluster spawn points and rotate through them over time. This prevents all players from always spawning at the same locations.
+A csoportok lehetővé teszik a spawn pontok klaszterezését és időbeli rotálását. Ez megakadályozza, hogy minden játékos mindig ugyanazokon a helyeken jelenjen meg.
 
-Groups are enabled through `<group_params>` inside each section:
+A csoportok a `<group_params>` elemmel engedélyezhetők minden szekción belül:
 
 ```xml
 <group_params>
@@ -472,14 +474,14 @@ Groups are enabled through `<group_params>` inside each section:
 </group_params>
 ```
 
-| Parameter | Leiras |
-|-----------|-------------|
-| `enablegroups` | `true` to enable group rotation, `false` for a flat list of points |
-| `groups_as_regular` | When `enablegroups` is `false`, treat group points as regular spawn points instead of ignoring them. Alapertelmezett: `true` |
-| `lifetime` | Seconds a group stays active before rotating to another. Use `-1` to disable the timer |
-| `counter` | Number of spawns that reset the lifetime. Each player spawning in the group resets the timer. Use `-1` to disable the counter |
+| Paraméter | Leírás |
+|-----------|--------|
+| `enablegroups` | `true` a csoport rotáció engedélyezéséhez, `false` a pontok lapos listájához |
+| `groups_as_regular` | Ha az `enablegroups` `false`, a csoportos pontokat normál spawn pontokként kezeli figyelmen kívül hagyásuk helyett. Alapértelmezés: `true` |
+| `lifetime` | Másodpercek, amíg egy csoport aktív marad, mielőtt egy másikra rotál. Használj `-1`-et az időzítő kikapcsolásához |
+| `counter` | Spawn-ok száma, amelyek visszaállítják az élettartamot. Minden játékos, aki a csoportban spawn-ol, visszaállítja az időzítőt. Használj `-1`-et a számláló kikapcsolásához |
 
-Positions are organized into named groups within `<generator_posbubbles>`:
+A pozíciók elnevezett csoportokba vannak szervezve a `<generator_posbubbles>`-on belül:
 
 ```xml
 <generator_posbubbles>
@@ -495,7 +497,7 @@ Positions are organized into named groups within `<generator_posbubbles>`:
 </generator_posbubbles>
 ```
 
-Individual groups can override global lifetime and counter values:
+Az egyedi csoportok felülírhatják a globális lifetime és counter értékeket:
 
 ```xml
 <group name="Tents" lifetime="300" counter="25">
@@ -503,7 +505,7 @@ Individual groups can override global lifetime and counter values:
 </group>
 ```
 
-**Without groups**, positions are listed directly under `<generator_posbubbles>`:
+**Csoportok nélkül** a pozíciók közvetlenül a `<generator_posbubbles>` alatt vannak felsorolva:
 
 ```xml
 <generator_posbubbles>
@@ -513,27 +515,27 @@ Individual groups can override global lifetime and counter values:
 </generator_posbubbles>
 ```
 
-> **Position format:** The `x` and `z` attributes use DayZ world coordinates. `x` is east-west, `z` is north-south. The `y` (height) coordinate is not specified --- the engine places the point on the terrain surface. You can find coordinates using the in-game debug monitor or the DayZ Editor mod.
+> **Pozíció formátum:** Az `x` és `z` attribútumok DayZ világ koordinátákat használnak. Az `x` kelet-nyugat, a `z` észak-dél. Az `y` (magasság) koordináta nincs megadva --- a motor a terep felszínre helyezi a pontot. A koordinátákat a játékon belüli debug monitor vagy a DayZ Editor mod használatával találhatod meg.
 
-### Map-Specific Configs
+### Térkép-specifikus konfigok
 
-Each map has its own `cfgplayerspawnpoints.xml` in its mission folder:
+Minden térkép saját `cfgplayerspawnpoints.xml` fájllal rendelkezik a küldetés mappájában:
 
-| Map | Mission Folder | Megjegyzesek |
-|-----|----------------|-------|
-| Chernarus | `dayzOffline.chernarusplus/` | Coastal spawns: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
-| Livonia | `dayzOffline.enoch/` | Spread across map with different group names |
-| Sakhal | `dayzOffline.sakhal/` | Added `min_dist_trigger`/`max_dist_trigger` params, more detailed comments |
+| Térkép | Küldetés mappa | Megjegyzések |
+|--------|----------------|--------------|
+| Chernarus | `dayzOffline.chernarusplus/` | Parti spawn-ok: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
+| Livonia | `dayzOffline.enoch/` | Elosztva a térképen különböző csoport nevekkel |
+| Sakhal | `dayzOffline.sakhal/` | Hozzáadott `min_dist_trigger`/`max_dist_trigger` paraméterek, részletesebb megjegyzések |
 
-When creating a custom map or modifying spawn locations, always work from the vanilla file as a starting point and adjust positions to match your map's geography.
+Egyéni térkép készítésekor vagy spawn helyek módosításakor mindig a vanilla fájlból indulj ki és igazítsd a pozíciókat a térképed földrajzához.
 
 ---
 
-## Practical Peldas
+## Gyakorlati példák
 
-### Alapertelmezett Survivor Loadout
+### Alapértelmezett túlélő felszerelés
 
-The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic shoes, plus cargo containing a bandage, chemlight (random color), and a fruit (random between pear, plum, or apple). All items spawn in worn-to-damaged condition.
+A vanilla preset véletlenszerű pólót, vászon nadrágot, sportcipőt ad a friss spawn-oknak, plusz rakomány tartalmat: kötszert, fényrúdat (véletlenszerű szín) és gyümölcsöt (véletlenszerű: körte, szilva vagy alma). Minden tárgy kopott-sérült állapotban jelenik meg.
 
 ```json
 {
@@ -655,352 +657,11 @@ The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic s
 }
 ```
 
-### Military Spawn Kit
+### Véletlenszerű felszerelés kiválasztás
 
-A heavily equipped preset with an AKM (with attachments), plate carrier, gorka uniform, backpack with extra magazines, and unsorted cargo including a sidearm and food. This uses multiple `spawnWeight` values to create rarity tiers for weapon variants.
+Randomizált felszereléseket hozhatsz létre különböző súlyú preset-ek használatával, és minden preset-en belül több `discreteItemSets` használatával csatlakozási pontonként:
 
-```json
-{
-  "spawnWeight": 1,
-  "name": "Military - AKM",
-  "characterTypes": [
-    "SurvivorF_Judy",
-    "SurvivorM_Lewis"
-  ],
-  "attachmentSlotItemSets": [
-    {
-      "slotName": "shoulderL",
-      "discreteItemSets": [
-        {
-          "itemType": "AKM",
-          "spawnWeight": 3,
-          "attributes": {
-            "healthMin": 0.5,
-            "healthMax": 1.0,
-            "quantityMin": 1.0,
-            "quantityMax": 1.0
-          },
-          "quickBarSlot": 1,
-          "complexChildrenTypes": [
-            {
-              "itemType": "AK_PlasticBttstck",
-              "attributes": { "healthMin": 0.4, "healthMax": 0.6 },
-              "quickBarSlot": -1
-            },
-            {
-              "itemType": "PSO1Optic",
-              "attributes": { "healthMin": 0.1, "healthMax": 0.2 },
-              "quickBarSlot": -1,
-              "simpleChildrenUseDefaultAttributes": true,
-              "simpleChildrenTypes": ["Battery9V"]
-            },
-            {
-              "itemType": "Mag_AKM_30Rnd",
-              "attributes": {
-                "healthMin": 0.5,
-                "healthMax": 0.5,
-                "quantityMin": 1.0,
-                "quantityMax": 1.0
-              },
-              "quickBarSlot": -1
-            }
-          ],
-          "simpleChildrenUseDefaultAttributes": false,
-          "simpleChildrenTypes": ["AK_PlasticHndgrd", "AK_Bayonet"]
-        },
-        {
-          "itemType": "AKM",
-          "spawnWeight": 1,
-          "attributes": {
-            "healthMin": 1.0,
-            "healthMax": 1.0,
-            "quantityMin": 1.0,
-            "quantityMax": 1.0
-          },
-          "quickBarSlot": 1,
-          "complexChildrenTypes": [
-            {
-              "itemType": "AK_WoodBttstck",
-              "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-              "quickBarSlot": -1
-            },
-            {
-              "itemType": "Mag_AKM_30Rnd",
-              "attributes": {
-                "healthMin": 1.0,
-                "healthMax": 1.0,
-                "quantityMin": 1.0,
-                "quantityMax": 1.0
-              },
-              "quickBarSlot": -1
-            }
-          ],
-          "simpleChildrenUseDefaultAttributes": false,
-          "simpleChildrenTypes": ["AK_WoodHndgrd"]
-        }
-      ]
-    },
-    {
-      "slotName": "Vest",
-      "discreteItemSets": [
-        {
-          "itemType": "PlateCarrierVest",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1,
-          "simpleChildrenUseDefaultAttributes": false,
-          "simpleChildrenTypes": ["PlateCarrierHolster"]
-        }
-      ]
-    },
-    {
-      "slotName": "Back",
-      "discreteItemSets": [
-        {
-          "itemType": "TaloonBag_Blue",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 0.5, "healthMax": 0.8 },
-          "quickBarSlot": 3,
-          "simpleChildrenUseDefaultAttributes": false,
-          "simpleChildrenTypes": ["Mag_AKM_Drum75Rnd"]
-        },
-        {
-          "itemType": "TaloonBag_Orange",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 0.5, "healthMax": 0.8 },
-          "quickBarSlot": 3,
-          "simpleChildrenUseDefaultAttributes": true,
-          "simpleChildrenTypes": ["Mag_AKM_30Rnd", "Mag_AKM_30Rnd"]
-        }
-      ]
-    },
-    {
-      "slotName": "Body",
-      "discreteItemSets": [
-        {
-          "itemType": "GorkaEJacket_Flat",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1
-        }
-      ]
-    },
-    {
-      "slotName": "Legs",
-      "discreteItemSets": [
-        {
-          "itemType": "GorkaPants_Flat",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1
-        }
-      ]
-    },
-    {
-      "slotName": "Feet",
-      "discreteItemSets": [
-        {
-          "itemType": "MilitaryBoots_Bluerock",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1
-        }
-      ]
-    }
-  ],
-  "discreteUnsortedItemSets": [
-    {
-      "name": "Military Cargo",
-      "spawnWeight": 1,
-      "attributes": {
-        "healthMin": 0.5,
-        "healthMax": 1.0,
-        "quantityMin": 0.6,
-        "quantityMax": 0.8
-      },
-      "complexChildrenTypes": [
-        {
-          "itemType": "Mag_AKM_30Rnd",
-          "attributes": {
-            "healthMin": 0.1,
-            "healthMax": 0.8,
-            "quantityMin": 1.0,
-            "quantityMax": 1.0
-          },
-          "quickBarSlot": -1
-        }
-      ],
-      "simpleChildrenUseDefaultAttributes": false,
-      "simpleChildrenTypes": [
-        "Rag",
-        "BoarSteakMeat",
-        "FNX45",
-        "Mag_FNX45_15Rnd",
-        "AmmoBox_45ACP_25rnd"
-      ]
-    }
-  ]
-}
-```
-
-Key points about this example:
-
-- **Two weapon variants** for the same shoulder slot: the `spawnWeight: 3` variant (plastic furniture, PSO1 optic) spawns 3x more often than the `spawnWeight: 1` variant (wood furniture, no optic).
-- **Nested children**: the PSO1Optic has `simpleChildrenTipuss: ["Battery9V"]` so the optic spawns with a battery inside.
-- **Backpack contents**: the blue backpack gets a drum magazine while the orange one gets two standard magazines.
-
-### Medical Spawn Kit
-
-A medic-themed preset with scrubs, first aid kit containing medical supplies, and a melee weapon for defense.
-
-```json
-{
-  "spawnWeight": 1,
-  "name": "Medic",
-  "attachmentSlotItemSets": [
-    {
-      "slotName": "shoulderR",
-      "discreteItemSets": [
-        {
-          "itemType": "PipeWrench",
-          "spawnWeight": 2,
-          "attributes": { "healthMin": 0.5, "healthMax": 0.8 },
-          "quickBarSlot": 2
-        },
-        {
-          "itemType": "Crowbar",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 0.5, "healthMax": 0.8 },
-          "quickBarSlot": 2
-        }
-      ]
-    },
-    {
-      "slotName": "Vest",
-      "discreteItemSets": [
-        {
-          "itemType": "PressVest_LightBlue",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1
-        }
-      ]
-    },
-    {
-      "slotName": "Back",
-      "discreteItemSets": [
-        {
-          "itemType": "TortillaBag",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 0.5, "healthMax": 0.8 },
-          "quickBarSlot": 1
-        },
-        {
-          "itemType": "CoyoteBag_Green",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 0.5, "healthMax": 0.8 },
-          "quickBarSlot": 1
-        }
-      ]
-    },
-    {
-      "slotName": "Body",
-      "discreteItemSets": [
-        {
-          "itemType": "MedicalScrubsShirt_Blue",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1
-        }
-      ]
-    },
-    {
-      "slotName": "Legs",
-      "discreteItemSets": [
-        {
-          "itemType": "MedicalScrubsPants_Blue",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1
-        }
-      ]
-    },
-    {
-      "slotName": "Feet",
-      "discreteItemSets": [
-        {
-          "itemType": "WorkingBoots_Yellow",
-          "spawnWeight": 1,
-          "attributes": { "healthMin": 1.0, "healthMax": 1.0 },
-          "quickBarSlot": -1
-        }
-      ]
-    }
-  ],
-  "discreteUnsortedItemSets": [
-    {
-      "name": "Medic Cargo 1",
-      "spawnWeight": 1,
-      "attributes": {
-        "healthMin": 0.5,
-        "healthMax": 1.0,
-        "quantityMin": 0.6,
-        "quantityMax": 0.8
-      },
-      "complexChildrenTypes": [
-        {
-          "itemType": "FirstAidKit",
-          "attributes": {
-            "healthMin": 0.7,
-            "healthMax": 0.8,
-            "quantityMin": 0.05,
-            "quantityMax": 0.1
-          },
-          "quickBarSlot": 3,
-          "simpleChildrenUseDefaultAttributes": false,
-          "simpleChildrenTypes": ["BloodBagIV", "BandageDressing"]
-        }
-      ],
-      "simpleChildrenUseDefaultAttributes": false,
-      "simpleChildrenTypes": ["Rag", "SheepSteakMeat"]
-    },
-    {
-      "name": "Medic Cargo 2",
-      "spawnWeight": 1,
-      "attributes": {
-        "healthMin": 0.5,
-        "healthMax": 1.0,
-        "quantityMin": 0.6,
-        "quantityMax": 0.8
-      },
-      "complexChildrenTypes": [
-        {
-          "itemType": "FirstAidKit",
-          "attributes": {
-            "healthMin": 0.7,
-            "healthMax": 0.8,
-            "quantityMin": 0.05,
-            "quantityMax": 0.1
-          },
-          "quickBarSlot": 3,
-          "simpleChildrenUseDefaultAttributes": false,
-          "simpleChildrenTypes": ["TetracyclineAntibiotics", "BandageDressing"]
-        }
-      ],
-      "simpleChildrenUseDefaultAttributes": false,
-      "simpleChildrenTypes": ["Canteen", "Rag", "Apple"]
-    }
-  ]
-}
-```
-
-Note how `characterTipuss` is omitted --- this preset uses whatever character the player selected in the main menu. Two cargo variants offer different first aid kit contents (blood bag vs. antibiotics), selected by `spawnWeight`.
-
-### Random Gear Selection
-
-You can create randomized loadouts by using multiple presets with different weights, and within each preset using multiple `discreteItemSets` per slot:
-
-**File: `cfggameplay.json`**
+**Fájl: `cfggameplay.json`**
 
 ```json
 "spawnGearPresetFiles": [
@@ -1010,31 +671,31 @@ You can create randomized loadouts by using multiple presets with different weig
 ]
 ```
 
-**Probability calculation example:**
+**Valószínűség számítási példa:**
 
-| Preset File | spawnWeight | Chance |
-|-------------|------------|--------|
+| Preset fájl | spawnWeight | Esély |
+|-------------|------------|-------|
 | `common_survivor.json` | 5 | 5/8 = 62.5% |
 | `uncommon_hunter.json` | 2 | 2/8 = 25.0% |
 | `rare_military.json` | 1 | 1/8 = 12.5% |
 
-Within each preset, each slot also has its own randomization. If the Body slot has three t-shirt options with `spawnWeight: 1` each, each has a 33% chance. A shirt with `spawnWeight: 3` in a pool with two `spawnWeight: 1` items would have a 60% chance (3/5).
+Minden preset-en belül minden csatlakozási pont saját randomizálással is rendelkezik. Ha a Body csatlakozási pontnak három póló opciója van egyenként `spawnWeight: 1`-gyel, mindegyiknek 33% esélye van. Egy `spawnWeight: 3` értékű póló két `spawnWeight: 1` értékű tárgy mellett 60% eséllyel rendelkezne (3/5).
 
 ---
 
-## Integration with Mods
+## Integráció modokkal
 
-### Using the JSON Preset System from Mods
+### A JSON preset rendszer használata modokból
 
-The spawn gear preset system is designed for mission-level configuration. Mods that want to provide custom loadouts should:
+A spawn felszerelés preset rendszer küldetés szintű konfigurációra tervezett. Azok a modok, amelyek egyéni felszereléseket akarnak biztosítani:
 
-1. **Ship a template JSON** file with the mod's documentation, not embedded in the PBO.
-2. **Document the classnames** so server admins can add mod items to their own preset files.
-3. Let server admins register the preset file through their `cfggameplay.json`.
+1. **Szállítsanak sablon JSON** fájlt a mod dokumentációjával, ne a PBO-ba beágyazva.
+2. **Dokumentálják az osztályneveket**, hogy a szerver adminok hozzáadhassák a mod tárgyakat saját preset fájljaikhoz.
+3. Hagyják, hogy a szerver adminok regisztrálják a preset fájlt a `cfggameplay.json`-jukon keresztül.
 
-### Overriding with init.c
+### Felülírás init.c-vel
 
-If you need programmatic control over spawning (e.g., role selection, database-driven loadouts, or conditional gear based on player state), override `StartingEquipSetup()` in `init.c` instead:
+Ha programozottan kell szabályoznod a spawn-olást (pl. szerep kiválasztás, adatbázis-vezérelt felszerelések, vagy feltételes felszerelés a játékos állapota alapján), írd felül a `StartingEquipSetup()`-ot az `init.c`-ben:
 
 ```c
 override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
@@ -1061,11 +722,11 @@ override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 }
 ```
 
-> **Remember:** If `spawnGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
+> **Emlékeztető:** Ha a `spawnGearPresetFiles` konfigurálva van a `cfggameplay.json`-ban, a JSON preset-ek élveznek elsőbbséget és a `StartingEquipSetup()` nem lesz meghívva.
 
-### Mod Items in Presets
+### Mod tárgyak preset-ekben
 
-Modded items work identically to vanilla items in preset files. Use the item's classname as defined in the mod's `config.cpp`:
+A moddolt tárgyak azonosan működnek a vanilla tárgyakkal a preset fájlokban. Használd a tárgy osztálynevét, ahogy a mod `config.cpp`-jében definiált:
 
 ```json
 {
@@ -1084,76 +745,76 @@ Modded items work identically to vanilla items in preset files. Use the item's c
 }
 ```
 
-If the mod is not loaded on the server, items with unknown classnames will silently fail to spawn. The rest of the preset still applies.
+Ha a mod nincs betöltve a szerveren, az ismeretlen osztálynevű tárgyak csendben nem jelennek meg. A preset többi része továbbra is érvényes.
 
 ---
 
-## Legjobb gyakorlatok
+## Bevált gyakorlatok
 
-1. **Start from vanilla.** Copy the vanilla preset from the official documentation as your base and modify it, rather than writing from scratch.
+1. **Indulj ki a vanilla-ból.** Másold le a vanilla preset-et a hivatalos dokumentációból alapként és módosítsd, ahelyett, hogy a semmiből írnád.
 
-2. **Use multiple preset files.** Separate presets by theme (survivor, military, medic) in individual JSON files. This makes maintenance easier than a single monolithic file.
+2. **Használj több preset fájlt.** Különítsd el a preset-eket téma szerint (túlélő, katonai, orvos) egyedi JSON fájlokban. Ez könnyebb karbantartást biztosít, mint egyetlen monolitikus fájl.
 
-3. **Test incrementally.** Add one preset at a time and verify in-game. A JSON syntax error in any preset file will cause all presets to fail silently.
+3. **Tesztelj fokozatosan.** Adj hozzá egyszerre egy preset-et és ellenőrizd játékon belül. Bármely preset fájlban lévő JSON szintaxis hiba az összes preset csendes meghibásodását okozza.
 
-4. **Use weighted probabilities deliberately.** Plan your spawn weight distribution on paper. With 5 presets, a `spawnWeight: 10` on one will dominate all others.
+4. **Használd tudatosan a súlyozott valószínűségeket.** Tervezd meg a spawn súly eloszlást papíron. 5 preset-tel egy `spawnWeight: 10` az egyiken dominálni fog minden mást.
 
-5. **Validate JSON syntax.** Use a JSON validator before deploying. The DayZ engine does not provide helpful error messages for malformed JSON --- it simply ignores the file.
+5. **Validáld a JSON szintaxist.** Használj JSON validátort telepítés előtt. A DayZ motor nem ad hasznos hibaüzeneteket hibás JSON-hoz --- egyszerűen figyelmen kívül hagyja a fájlt.
 
-6. **Assign quickbar slots intentionally.** Quickbar slots are 0-indexed. Assigning multiple items to the same slot will overwrite. Use `-1` for items that should not be on the quickbar.
+6. **Szándékosan rendeld hozzá a gyorssáv helyeket.** A gyorssáv helyek 0-indexeltek. Több tárgy ugyanarra a helyre rendelése felülírja. Használj `-1`-et azoknál a tárgyaknál, amelyeknek nem kell a gyorssávon lenniük.
 
-7. **Keep spawn points away from water.** The generator discards points in water, but points very close to the shoreline can place players in awkward positions. Move position bubbles a few meters inland.
+7. **Tartsd távol a spawn pontokat a víztől.** A generátor eldobja a vízben lévő pontokat, de a partszélhez nagyon közeli pontok kényelmetlen pozíciókba helyezhetik a játékosokat. Mozgasd a pozíció buborékokat néhány méterrel szárazföldre.
 
-8. **Use groups for coastal maps.** Spawning groups on Chernarus spread fresh spawns across the coast, preventing overcrowding at popular locations like Elektro.
+8. **Használj csoportokat parti térképekhez.** A spawn csoportok a Chernarus-on elosztják a friss spawn-okat a part mentén, megelőzve a zsúfoltságot a népszerű helyszíneken, mint Elektro.
 
-9. **Match clothing and cargo capacity.** Unsorted cargo items can only spawn if the player has inventory space. If you define too many cargo items but only give the player a t-shirt (small inventory), excess items will not spawn.
-
----
-
-## Gyakori hibak
-
-| Hiba | Kovetkezmeny | Javitas |
-|---------|-------------|-----|
-| Forgetting `enableCfgGameplayFile = 1` in `serverDZ.cfg` | `cfggameplay.json` is not loaded, presets are ignored | Add the flag and restart the server |
-| Invalid JSON syntax (trailing comma, missing bracket) | All presets in that file silently fail | Validate JSON with an external tool before deploying |
-| Using `spawnGearPresetFiles` without removing `StartingEquipSetup()` code | The scripted loadout is silently overridden by the JSON preset. The init.c code runs but its items are replaced | This is expected behavior, not a bug. Remove or comment out the init.c loadout code to avoid confusion |
-| Setting `spawnWeight: 0` | Ertek below minimum. Behavior is undefined | Always use `spawnWeight: 1` or higher |
-| Referencing a classname that does not exist | That specific item silently fails to spawn, but the rest of the preset works | Double-check classnames against the mod's `config.cpp` or types.xml |
-| Assigning an item to a slot it cannot occupy | Item does not spawn. No error logged | Verify the item's `inventorySlot[]` in config.cpp matches the `slotName` |
-| Spawning too many cargo items for available inventory space | Excess items are silently dropped (not spawned) | Ensure clothing has enough capacity, or reduce the number of cargo items |
-| Using `characterTipuss` classnames that do not exist | Character creation fails, player may spawn as default model | Use only valid survivor classnames from CfgVehicles |
-| Placing spawn points in water or on steep cliffs | Points are discarded, reducing available spawns. If too many are invalid, players may fail to spawn | Test coordinates in-game with the debug monitor |
-| Mixing up `x`/`z` coordinates in spawn points | Players spawn at wrong map locations | `x` = east-west, `z` = north-south. There is no `y` (vertical) in spawn point definitions |
+9. **Igazítsd a ruházatot és a rakomány kapacitást.** A rendezetlen rakomány tárgyak csak akkor jelenhetnek meg, ha a játékosnak van leltár helye. Ha túl sok rakomány tárgyat definiálsz, de csak egy pólót adsz a játékosnak (kis leltár), a felesleges tárgyak nem jelennek meg.
 
 ---
 
-## Data Flow Osszefoglalas
+## Gyakori hibák
+
+| Hiba | Következmény | Javítás |
+|------|-------------|---------|
+| Az `enableCfgGameplayFile = 1` elfelejtése a `serverDZ.cfg`-ben | A `cfggameplay.json` nem töltődik be, a preset-ek figyelmen kívül maradnak | Add hozzá a jelzőt és indítsd újra a szervert |
+| Érvénytelen JSON szintaxis (záró vessző, hiányzó zárójel) | A fájlban lévő összes preset csendben meghibásodik | Validáld a JSON-t külső eszközzel telepítés előtt |
+| A `spawnGearPresetFiles` használata a `StartingEquipSetup()` kód eltávolítása nélkül | A szkriptelt felszerelés csendben felül lesz írva a JSON preset-tel. Az init.c kód lefut, de a tárgyai lecserélődnek | Ez elvárt viselkedés, nem hiba. Távolítsd el vagy kommenteld ki az init.c felszerelés kódot a félreértések elkerüléséhez |
+| `spawnWeight: 0` beállítása | Az érték a minimum alatt van. A viselkedés definiálatlan | Mindig használj `spawnWeight: 1`-et vagy magasabbat |
+| Nem létező osztálynévre hivatkozás | Az adott tárgy csendben nem jelenik meg, de a preset többi része működik | Ellenőrizd duplán az osztályneveket a mod `config.cpp`-je vagy types.xml-je alapján |
+| Tárgy hozzárendelése olyan csatlakozási ponthoz, amelyet nem foglalhat el | A tárgy nem jelenik meg. Nincs naplózott hiba | Ellenőrizd, hogy a tárgy `inventorySlot[]`-ja a config.cpp-ben egyezik a `slotName`-mel |
+| Túl sok rakomány tárgy megjelenítése az elérhető leltár helyhez képest | A felesleges tárgyak csendben eldobásra kerülnek (nem jelennek meg) | Győződj meg, hogy a ruházatnak elegendő kapacitása van, vagy csökkentsd a rakomány tárgyak számát |
+| Nem létező `characterTypes` osztálynevek használata | A karakter létrehozása sikertelen, a játékos alapértelmezett modellként jelenhet meg | Csak érvényes survivor osztályneveket használj a CfgVehicles-ból |
+| Spawn pontok elhelyezése vízben vagy meredek sziklákon | A pontok eldobásra kerülnek, csökkentve az elérhető spawn-okat. Ha túl sok érvénytelen, a játékosok nem tudnak megjelenni | Teszteld a koordinátákat játékon belül a debug monitorral |
+| Az `x`/`z` koordináták felcserélése spawn pontoknál | A játékosok rossz térkép helyeken jelennek meg | `x` = kelet-nyugat, `z` = észak-dél. Nincs `y` (függőleges) a spawn pont definíciókban |
+
+---
+
+## Adatfolyam összefoglalás
 
 ```
 serverDZ.cfg
   └─ enableCfgGameplayFile = 1
        └─ cfggameplay.json
             └─ PlayerData.spawnGearPresetFiles: ["preset1.json", "preset2.json"]
-                 ├─ preset1.json  (spawnWeight: 3)  ── 75% chance
-                 └─ preset2.json  (spawnWeight: 1)  ── 25% chance
-                      ├─ characterTypes[]         → random character model
-                      ├─ attachmentSlotItemSets[] → slot-based equipment
-                      │    └─ discreteItemSets[]  → weighted random per slot
-                      │         ├─ complexChildrenTypes[] → nested items with attributes
-                      │         └─ simpleChildrenTypes[]  → nested items, simple
-                      └─ discreteUnsortedItemSets[] → cargo items
+                 ├─ preset1.json  (spawnWeight: 3)  ── 75% esély
+                 └─ preset2.json  (spawnWeight: 1)  ── 25% esély
+                      ├─ characterTypes[]         → véletlenszerű karakter modell
+                      ├─ attachmentSlotItemSets[] → csatlakozási pont alapú felszerelés
+                      │    └─ discreteItemSets[]  → súlyozott véletlenszerű csatlakozási pontonként
+                      │         ├─ complexChildrenTypes[] → beágyazott tárgyak attribútumokkal
+                      │         └─ simpleChildrenTypes[]  → beágyazott tárgyak, egyszerű
+                      └─ discreteUnsortedItemSets[] → rakomány tárgyak
                            ├─ complexChildrenTypes[]
                            └─ simpleChildrenTypes[]
 
 cfgplayerspawnpoints.xml
-  ├─ <fresh>   → new characters (required)
-  ├─ <hop>     → server hoppers (official only)
-  └─ <travel>  → map travelers (official only)
-       ├─ spawn_params   → scoring vs infected/players/buildings
-       ├─ generator_params → grid density, size, slope limits
-       └─ generator_posbubbles → positions (optionally in named groups)
+  ├─ <fresh>   → új karakterek (kötelező)
+  ├─ <hop>     → szerver ugráló játékosok (csak hivatalos)
+  └─ <travel>  → térkép utazók (csak hivatalos)
+       ├─ spawn_params   → pontozás fertőzöttek/játékosok/épületek ellen
+       ├─ generator_params → rács sűrűség, méret, lejtés korlátok
+       └─ generator_posbubbles → pozíciók (opcionálisan elnevezett csoportokban)
 ```
 
 ---
 
-[Fooldal](../../README.md) | [<< Elozo: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
+[Főoldal](../../README.md) | [<< Előző: Szerver konfigurációs fájlok](05-server-configs.md) | **Spawn felszerelés konfiguráció**

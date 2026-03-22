@@ -1,4 +1,4 @@
-# Chapter 7.1: Singleton Pattern
+# Kapitola 7.1: Vzor Singleton
 
 [Domů](../../README.md) | **Vzor Singleton** | [Další: Systémy modulů >>](02-module-systems.md)
 
@@ -6,52 +6,52 @@
 
 ## Úvod
 
-The jedenton pattern guarantees that a class has exactly one instance, accessible globálníly. In DayZ modding it is the většina common architectural pattern --- virtually každý manager, cache, registry, and subsystem uses it. COT, VPP, Expansion, Dabs Framework, and jinýs all rely on jedentons to coordinate state across engine's script layers.
+Vzor singleton zaručuje, že třída má právě jednu instanci, přístupnou globálně. V DayZ moddingu je to nejběžnější architektonický vzor --- prakticky každý manažer, cache, registr a subsystém ho používá. COT, VPP, Expansion, Dabs Framework a další, ti všichni spoléhají na singletony pro koordinaci stavu napříč skriptovými vrstvami enginu.
 
-This chapter covers the canonical implementation, lifecycle management, when the pattern is appropriate, and where it goes wrong.
+Tato kapitola pokrývá kanonickou implementaci, správu životního cyklu, kdy je tento vzor vhodný a kde se pokazí.
 
 ---
 
 ## Obsah
 
-- [The Canonical Implementation](#the-canonical-implementation)
-- [Lazy vs Eager Initialization](#lazy-vs-eager-initialization)
-- [Lifecycle Management](#lifecycle-management)
-- [When to Use Singletons](#when-to-use-singletons)
-- [Real-World Examples](#real-world-examples)
-- [Thread Safety Considerations](#thread-safety-considerations)
-- [Anti-Patterns](#anti-patterns)
-- [Alternative: Static-Only Classes](#alternative-statická-only-classes)
-- [Checklist](#checklist)
+- [Kanonická implementace](#kanonická-implementace)
+- [Lazy vs Eager inicializace](#lazy-vs-eager-inicializace)
+- [Správa životního cyklu](#správa-životního-cyklu)
+- [Kdy použít singletony](#kdy-použít-singletony)
+- [Příklady z praxe](#příklady-z-praxe)
+- [Úvahy o bezpečnosti vláken](#úvahy-o-bezpečnosti-vláken)
+- [Anti-vzory](#anti-vzory)
+- [Alternativa: Čistě statické třídy](#alternativa-čistě-statické-třídy)
+- [Kontrolní seznam](#kontrolní-seznam)
 
 ---
 
 ## Kanonická implementace
 
-The standard DayZ jedenton follows a simple formula: a `private statická ref` field, a statická `GetInstance()` accessor, and a statická `DestroyInstance()` for cleanup.
+Standardní DayZ singleton se řídí jednoduchým vzorcem: pole `private static ref`, statický přístupový bod `GetInstance()` a statická metoda `DestroyInstance()` pro úklid.
 
 ```c
 class LootManager
 {
-    // The single instance. 'ref' keeps it alive; 'private' prevents external tampering.
+    // Jediná instance. 'ref' ji drží naživu; 'private' brání vnějšímu zásahu.
     private static ref LootManager s_Instance;
 
-    // Private data owned by the singleton
+    // Privátní data vlastněná singletonem
     protected ref map<string, int> m_SpawnCounts;
 
-    // Constructor — called exactly once
+    // Konstruktor — volán právě jednou
     void LootManager()
     {
         m_SpawnCounts = new map<string, int>();
     }
 
-    // Destructor — called when s_Instance is set to null
+    // Destruktor — volán když je s_Instance nastaven na null
     void ~LootManager()
     {
         m_SpawnCounts = null;
     }
 
-    // Lazy accessor: creates on first call
+    // Líný přístupový bod: vytvoří při prvním volání
     static LootManager GetInstance()
     {
         if (!s_Instance)
@@ -61,13 +61,13 @@ class LootManager
         return s_Instance;
     }
 
-    // Explicit teardown
+    // Explicitní zrušení
     static void DestroyInstance()
     {
         s_Instance = null;
     }
 
-    // --- Public API ---
+    // --- Veřejné API ---
 
     void RecordSpawn(string className)
     {
@@ -85,23 +85,23 @@ class LootManager
 };
 ```
 
-### Why `private statická ref`?
+### Proč `private static ref`?
 
-| Keyword | Purpose |
+| Klíčové slovo | Účel |
 |---------|---------|
-| `private` | Prevents jiný classes from setting `s_Instance` to null or replacing it |
-| `statická` | Shared across all code --- no instance needed to access it |
-| `ref` | Strong reference --- keeps the object alive as long as `s_Instance` is non-null |
+| `private` | Zabraňuje ostatním třídám nastavit `s_Instance` na null nebo ho nahradit |
+| `static` | Sdíleno napříč veškerým kódem --- pro přístup není potřeba instance |
+| `ref` | Silná reference --- drží objekt naživu, dokud je `s_Instance` nenulový |
 
-Bez `ref`, the instance would be a weak reference and could be garbage-collected while stále in use.
+Bez `ref` by instance byla slabá reference a mohla by být uvolněna garbage collectorem, zatímco se stále používá.
 
 ---
 
-## Lazy vs Eager Initialization
+## Lazy vs Eager inicializace
 
-### Lazy Initialization (Recommended Default)
+### Líná inicializace (doporučený výchozí přístup)
 
-The `GetInstance()` method creates the instance on first access. Toto je approach used by většina DayZ mods.
+Metoda `GetInstance()` vytvoří instanci při prvním přístupu. Tento přístup používá většina DayZ modů.
 
 ```c
 static LootManager GetInstance()
@@ -114,27 +114,27 @@ static LootManager GetInstance()
 }
 ```
 
-**Advantages:**
-- No work done until actually needed
-- No dependency on initialization order mezi mods
-- Safe if the jedenton je volitelný (some server configurations may nikdy call it)
+**Výhody:**
+- Žádná práce se nekoná, dokud není skutečně potřeba
+- Žádná závislost na pořadí inicializace mezi mody
+- Bezpečné, pokud je singleton volitelný (některé konfigurace serveru ho nemusí nikdy zavolat)
 
-**Disadvantage:**
-- First caller pays the construction cost (usually negligible)
+**Nevýhoda:**
+- První volající nese náklady na konstrukci (obvykle zanedbatelné)
 
-### Eager Initialization
+### Eager inicializace
 
-Some jedentons are created explicitly during mission startup, typicky from `MissionServer.OnInit()` or a module's `OnMissionStart()`.
+Některé singletony jsou vytvořeny explicitně během startu mise, typicky z `MissionServer.OnInit()` nebo z metody `OnMissionStart()` modulu.
 
 ```c
-// In your modded MissionServer.OnInit():
+// Ve vašem moddovaném MissionServer.OnInit():
 void OnInit()
 {
     super.OnInit();
-    LootManager.Create();  // Eager: constructed now, not on first use
+    LootManager.Create();  // Eager: konstruován nyní, ne při prvním použití
 }
 
-// In LootManager:
+// V LootManageru:
 static void Create()
 {
     if (!s_Instance)
@@ -144,36 +144,36 @@ static void Create()
 }
 ```
 
-**When to prefer eager:**
-- The jedenton loads data from disk (configs, JSON files) and chcete load errors to surface při startu
-- The jedenton registers RPC handlers that must be in place before jakýkoli client connects
-- Initialization order matters and potřebujete to control it explicitly
+**Kdy preferovat eager:**
+- Singleton načítá data z disku (konfigurace, JSON soubory) a chcete, aby se chyby při načítání projevily při startu
+- Singleton registruje RPC handlery, které musí být na místě dříve, než se připojí jakýkoli klient
+- Na pořadí inicializace záleží a potřebujete ho explicitně kontrolovat
 
 ---
 
-## Lifecycle Management
+## Správa životního cyklu
 
-The většina common source of jedenton bugs in DayZ is failing to clean up on mission end. DayZ servers can restart missions without restarting the process, which means statická fields survive across mission restarts. Pokud ne null out `s_Instance` in `OnMissionFinish`, you carry stale references, dead objects, and orphaned zpětné volánís into the next mission.
+Nejčastějším zdrojem chyb se singletony v DayZ je selhání úklidu při konci mise. DayZ servery mohou restartovat mise bez restartování procesu, což znamená, že statická pole přežijí mezi restarty misí. Pokud nevynulujete `s_Instance` v `OnMissionFinish`, přenesete zastaralé reference, mrtvé objekty a osiřelé callbacky do další mise.
 
 ### Kontrakt životního cyklu
 
 ```
-Server Process Start
+Start procesu serveru
   └─ MissionServer.OnInit()
-       └─ Create singletons (eager) or let them self-create (lazy)
+       └─ Vytvoření singletonů (eager) nebo je nechat se samy vytvořit (lazy)
   └─ MissionServer.OnMissionStart()
-       └─ Singletons begin operation
-  └─ ... server runs ...
+       └─ Singletony začnou pracovat
+  └─ ... server běží ...
   └─ MissionServer.OnMissionFinish()
-       └─ DestroyInstance() on every singleton
-       └─ All static refs set to null
-  └─ (Mission may restart)
-       └─ Fresh singletons created again
+       └─ DestroyInstance() na každém singletonu
+       └─ Všechny statické ref nastaveny na null
+  └─ (Mise se může restartovat)
+       └─ Nové singletony vytvořeny znovu
 ```
 
-### Cleanup Pattern
+### Vzor úklidu
 
-Vždy pair your jedenton with a `DestroyInstance()` method and call it during shutdown:
+Vždy spárujte svůj singleton s metodou `DestroyInstance()` a zavolejte ji při ukončení:
 
 ```c
 class VehicleRegistry
@@ -189,7 +189,7 @@ class VehicleRegistry
 
     static void DestroyInstance()
     {
-        s_Instance = null;  // Drops the ref, destructor runs
+        s_Instance = null;  // Uvolní ref, spustí se destruktor
     }
 
     void ~VehicleRegistry()
@@ -199,7 +199,7 @@ class VehicleRegistry
     }
 };
 
-// In your modded MissionServer:
+// Ve vašem moddovaném MissionServer:
 modded class MissionServer
 {
     override void OnMissionFinish()
@@ -210,12 +210,12 @@ modded class MissionServer
 };
 ```
 
-### Centralized Shutdown Pattern
+### Vzor centralizovaného ukončení
 
-A framework mod can consolidate all jedenton cleanup into `MyFramework.ShutdownAll()`, which is called from the modded `MissionServer.OnMissionFinish()`. This prevents the common mistake of forgetting one jedenton:
+Frameworkový mod může konsolidovat veškerý úklid singletonů do `MyFramework.ShutdownAll()`, který se volá z moddovaného `MissionServer.OnMissionFinish()`. Tím se předejde běžné chybě zapomenutí na jeden singleton:
 
 ```c
-// Conceptual pattern (centralized shutdown):
+// Koncepční vzor (centralizované ukončení):
 static void ShutdownAll()
 {
     MyRPC.Cleanup();
@@ -230,24 +230,24 @@ static void ShutdownAll()
 
 ## Kdy použít singletony
 
-### Good Candidates
+### Dobří kandidáti
 
-| Use Case | Why Singleton Works |
+| Případ použití | Proč singleton funguje |
 |----------|-------------------|
-| **Manager classes** (LootManager, VehicleManager) | Exactly one coordinator for a domain |
-| **Caches** (CfgVehicles cache, icon cache) | Single source of truth avoids redundant computation |
-| **Registries** (RPC handler registry, module registry) | Central lookup must be globálníly accessible |
-| **Config holders** (server settings, permissions) | One config per mod, loaded once from disk |
-| **RPC dispatchers** | Single entry point for all incoming RPCs |
+| **Manažerské třídy** (LootManager, VehicleManager) | Právě jeden koordinátor pro danou doménu |
+| **Cache** (CfgVehicles cache, cache ikon) | Jeden zdroj pravdy zabraňuje redundantním výpočtům |
+| **Registry** (registr RPC handlerů, registr modulů) | Centrální vyhledávání musí být globálně přístupné |
+| **Držitelé konfigurace** (nastavení serveru, oprávnění) | Jedna konfigurace na mod, načtená jednou z disku |
+| **RPC dispatchery** | Jeden vstupní bod pro všechny příchozí RPC |
 
-### Poor Candidates
+### Špatní kandidáti
 
-| Use Case | Why Not |
+| Případ použití | Proč ne |
 |----------|---------|
-| **Per-player data** | One instance per player, not one globální instance |
-| **Temporary computations** | Create, use, discard --- no globální state needed |
-| **UI views / dialogs** | Multiple can coexist; use the view stack místo toho |
-| **Entity components** | Attached to individual objects, not globální |
+| **Data pro jednotlivé hráče** | Jedna instance na hráče, ne jedna globální instance |
+| **Dočasné výpočty** | Vytvoř, použi, zahoď --- žádný globální stav není potřeba |
+| **UI pohledy / dialogy** | Může jich koexistovat více; použijte zásobník pohledů |
+| **Komponenty entit** | Připojeny k jednotlivým objektům, nejsou globální |
 
 ---
 
@@ -255,23 +255,23 @@ static void ShutdownAll()
 
 ### COT (Community Online Tools)
 
-COT uses a module-based jedenton pattern through the CF framework. Each přílišl is a `JMModuleBase` jedenton registered při startu:
+COT používá modulový vzor singletonu přes CF framework. Každý nástroj je `JMModuleBase` singleton registrovaný při startu:
 
 ```c
-// COT pattern: CF auto-instantiates modules declared in config.cpp
+// Vzor COT: CF automaticky instanciuje moduly deklarované v config.cpp
 class JM_COT_ESP : JMModuleBase
 {
-    // CF manages the singleton lifecycle
-    // Access via: JM_COT_ESP.Cast(GetModuleManager().GetModule(JM_COT_ESP));
+    // CF spravuje životní cyklus singletonu
+    // Přístup přes: JM_COT_ESP.Cast(GetModuleManager().GetModule(JM_COT_ESP));
 }
 ```
 
 ### VPP Admin Tools
 
-VPP uses explicit `GetInstance()` on manager classes:
+VPP používá explicitní `GetInstance()` na manažerských třídách:
 
 ```c
-// VPP pattern (simplified)
+// Vzor VPP (zjednodušený)
 class VPPATBanManager
 {
     private static ref VPPATBanManager m_Instance;
@@ -287,38 +287,38 @@ class VPPATBanManager
 
 ### Expansion
 
-Expansion declares jedentons for každý subsystem and hooks into the mission lifecycle for cleanup:
+Expansion deklaruje singletony pro každý subsystém a napojuje se na životní cyklus mise pro úklid:
 
 ```c
-// Expansion pattern (simplified)
+// Vzor Expansion (zjednodušený)
 class ExpansionMarketModule : CF_ModuleWorld
 {
-    // CF_ModuleWorld is itself a singleton managed by the CF module system
+    // CF_ModuleWorld je sám singleton spravovaný modulovým systémem CF
     // ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
 }
 ```
 
 ---
 
-## Thread Safety Considerations
+## Úvahy o bezpečnosti vláken
 
-Enforce Script is jeden-threaded. All script execution happens on the main thread within the Enfusion engine's game loop. This means:
+Enforce Script je jednovláknový. Veškeré vykonávání skriptů probíhá na hlavním vlákně v rámci herní smyčky enginu Enfusion. To znamená:
 
-- Existují **no race conditions** mezi concurrent threads
-- You do **not** need mutexes, locks, or atomic operations
-- `GetInstance()` with lazy initialization is vždy safe
+- **Neexistují** žádné race conditions mezi souběžnými vlákny
+- **Nepotřebujete** mutexy, zámky ani atomické operace
+- `GetInstance()` s línou inicializací je vždy bezpečný
 
-Nicméně **re-entrancy** can stále cause problems. If `GetInstance()` triggers code that calls `GetInstance()` again during construction, můžete get a partially-initialized jedenton:
+Nicméně **opětovný vstup (re-entrancy)** může stále způsobit problémy. Pokud `GetInstance()` spustí kód, který znovu zavolá `GetInstance()` během konstrukce, můžete získat částečně inicializovaný singleton:
 
 ```c
-// DANGEROUS: re-entrant singleton construction
+// NEBEZPEČNÉ: opětovně vstupující konstrukce singletonu
 class BadManager
 {
     private static ref BadManager s_Instance;
 
     void BadManager()
     {
-        // This calls GetInstance() during construction!
+        // Toto volá GetInstance() během konstrukce!
         OtherSystem.Register(BadManager.GetInstance());
     }
 
@@ -326,7 +326,7 @@ class BadManager
     {
         if (!s_Instance)
         {
-            // s_Instance is still null here during construction
+            // s_Instance je zde stále null během konstrukce
             s_Instance = new BadManager();
         }
         return s_Instance;
@@ -334,48 +334,48 @@ class BadManager
 };
 ```
 
-The fix is to assign `s_Instance` before running jakýkoli initialization that might re-enter:
+Opravou je přiřadit `s_Instance` před spuštěním jakékoli inicializace, která by mohla způsobit opětovný vstup:
 
 ```c
 static BadManager GetInstance()
 {
     if (!s_Instance)
     {
-        s_Instance = new BadManager();  // Assign first
-        s_Instance.Initialize();         // Then run initialization that may call GetInstance()
+        s_Instance = new BadManager();  // Nejprve přiřadit
+        s_Instance.Initialize();         // Poté spustit inicializaci, která může volat GetInstance()
     }
     return s_Instance;
 }
 ```
 
-Or better yet, avoid circular initialization celýly.
+Nebo ještě lépe, vyhněte se kruhové inicializaci zcela.
 
 ---
 
-## Anti-Patterns
+## Anti-vzory
 
-### 1. Global Mutable State Bez Encapsulation
+### 1. Globální měnitelný stav bez zapouzdření
 
-The jedenton pattern gives you globální access. That ne mean the data should be globálníly writable.
+Vzor singleton vám dává globální přístup. To neznamená, že data by měla být globálně zapisovatelná.
 
 ```c
-// BAD: Public fields invite uncontrolled mutation
+// ŠPATNĚ: Veřejná pole zvou k nekontrolované mutaci
 class GameState
 {
     private static ref GameState s_Instance;
-    int PlayerCount;         // Anyone can write this
-    bool ServerLocked;       // Anyone can write this
-    string CurrentWeather;   // Anyone can write this
+    int PlayerCount;         // Kdokoli může zapisovat
+    bool ServerLocked;       // Kdokoli může zapisovat
+    string CurrentWeather;   // Kdokoli může zapisovat
 
     static GameState GetInstance() { ... }
 };
 
-// Any code can do:
+// Jakýkoli kód může udělat:
 GameState.GetInstance().PlayerCount = -999;  // Chaos
 ```
 
 ```c
-// GOOD: Controlled access through methods
+// SPRÁVNĚ: Kontrolovaný přístup přes metody
 class GameState
 {
     private static ref GameState s_Instance;
@@ -393,31 +393,31 @@ class GameState
 };
 ```
 
-### 2. Missing DestroyInstance
+### 2. Chybějící DestroyInstance
 
-Pokud forget cleanup, the jedenton persists across mission restarts with stale data:
+Pokud zapomenete na úklid, singleton přetrvá mezi restarty misí se zastaralými daty:
 
 ```c
-// BAD: No cleanup path
+// ŠPATNĚ: Žádná cesta pro úklid
 class ZombieTracker
 {
     private static ref ZombieTracker s_Instance;
-    ref array<Object> m_TrackedZombies;  // These objects get deleted on mission end!
+    ref array<Object> m_TrackedZombies;  // Tyto objekty se smažou na konci mise!
 
     static ZombieTracker GetInstance() { ... }
-    // No DestroyInstance() — m_TrackedZombies now holds dead references
+    // Žádná DestroyInstance() — m_TrackedZombies nyní drží mrtvé reference
 };
 ```
 
-### 3. Singletons That Own Everything
+### 3. Singletony, které vlastní všechno
 
-Když jedenton accumulates příliš mnoho responsibilities, it becomes a "God object" that is impossible to reason about:
+Když singleton hromadí příliš mnoho zodpovědností, stává se "God objektem", o kterém nelze rozumně uvažovat:
 
 ```c
-// BAD: One singleton doing everything
+// ŠPATNĚ: Jeden singleton dělá všechno
 class ServerManager
 {
-    // Manages loot AND vehicles AND weather AND spawns AND bans AND...
+    // Spravuje loot I vozidla I počasí I spawny I bany A...
     ref array<Object> m_Loot;
     ref array<Object> m_Vehicles;
     ref WeatherData m_Weather;
@@ -427,38 +427,38 @@ class ServerManager
     void DespawnVehicle() { ... }
     void SetWeather() { ... }
     void BanPlayer() { ... }
-    // 2000 lines later...
+    // O 2000 řádků později...
 };
 ```
 
-Split into focused jedentons: `LootManager`, `VehicleManager`, `WeatherManager`, `BanManager`. Každý one is small, testable, and has a clear domain.
+Rozdělte na zaměřené singletony: `LootManager`, `VehicleManager`, `WeatherManager`, `BanManager`. Každý z nich je malý, testovatelný a má jasnou doménu.
 
-### 4. Accessing Singletons in Constructors of Other Singletons
+### 4. Přístup k singletonům v konstruktorech jiných singletonů
 
-This creates hidden initialization-order dependencies:
+Toto vytváří skryté závislosti na pořadí inicializace:
 
 ```c
-// BAD: Constructor depends on another singleton
+// ŠPATNĚ: Konstruktor závisí na jiném singletonu
 class ModuleA
 {
     void ModuleA()
     {
-        // What if ModuleB hasn't been created yet?
+        // Co když ModuleB ještě nebyl vytvořen?
         ModuleB.GetInstance().Register(this);
     }
 };
 ```
 
-Defer cross-singleton registration to `OnInit()` or `OnMissionStart()`, where initialization order is controlled.
+Odložte registraci mezi singletony do `OnInit()` nebo `OnMissionStart()`, kde je pořadí inicializace kontrolováno.
 
 ---
 
-## Alternative: Static-Only Classes
+## Alternativa: Čistě statické třídy
 
-Some "singletons" ne need an instance at all. If třída holds no instance state and pouze has statická methods and statická fields, skip the `GetInstance()` ceremony celýly:
+Některé "singletony" vůbec nepotřebují instanci. Pokud třída nedrží žádný instanční stav a má pouze statické metody a statická pole, přeskočte ceremoniál `GetInstance()` úplně:
 
 ```c
-// No instance needed — all static
+// Není potřeba instance — vše statické
 class MyLog
 {
     private static FileHandle s_LogFile;
@@ -487,63 +487,63 @@ class MyLog
 };
 ```
 
-Toto je approach used by `MyLog`, `MyRPC`, `MyEventBus`, and `MyModuleManager` in a framework mod. It is simpler, avoids the `GetInstance()` null-check overhead, and makes the intent clear: there is no instance, pouze shared state.
+Toto je přístup používaný `MyLog`, `MyRPC`, `MyEventBus` a `MyModuleManager` ve frameworkovém modu. Je jednodušší, vyhýbá se režii kontroly null v `GetInstance()` a jasně vyjadřuje záměr: žádná instance neexistuje, pouze sdílený stav.
 
-**Use a statická-only class when:**
-- All methods are stateless or operate on statická fields
-- There is no meaningful constructor/destructor logic
-- You nikdy need to pass the "instance" as a parameter
+**Použijte čistě statickou třídu, když:**
+- Všechny metody jsou bezstavové nebo operují nad statickými poli
+- Neexistuje žádná smysluplná logika konstruktoru/destruktoru
+- Nikdy nepotřebujete předat "instanci" jako parametr
 
-**Use a true jedenton when:**
-- The class has instance state that benefits from encapsulation (`protected` fields)
-- You need polymorphism (a base class with overridden methods)
-- The object needs to be passed to jiný systems by reference
+**Použijte skutečný singleton, když:**
+- Třída má instanční stav, který profituje ze zapouzdření (pole `protected`)
+- Potřebujete polymorfismus (bázová třída s přepsanými metodami)
+- Objekt musí být předán jiným systémům referencí
 
 ---
 
-## Checklist
+## Kontrolní seznam
 
-Před shipping a jedenton, verify:
+Před nasazením singletonu ověřte:
 
-- [ ] `s_Instance` is declared `private statická ref`
-- [ ] `GetInstance()` handles the null case (lazy init) or you have an explicit `Create()` call
-- [ ] `DestroyInstance()` exists and sets `s_Instance = null`
-- [ ] `DestroyInstance()` is called from `OnMissionFinish()` or a centralized shutdown method
-- [ ] The destructor cleans up owned collections (`.Clear()`, set to `null`)
-- [ ] No public fields --- all mutation goes through methods
-- [ ] The constructor ne call `GetInstance()` on jiný jedentons (defer to `OnInit()`)
+- [ ] `s_Instance` je deklarován jako `private static ref`
+- [ ] `GetInstance()` ošetřuje null případ (líná inicializace) nebo máte explicitní volání `Create()`
+- [ ] `DestroyInstance()` existuje a nastavuje `s_Instance = null`
+- [ ] `DestroyInstance()` se volá z `OnMissionFinish()` nebo z centralizované metody ukončení
+- [ ] Destruktor uklízí vlastněné kolekce (`.Clear()`, nastavení na `null`)
+- [ ] Žádná veřejná pole --- veškeré mutace probíhají přes metody
+- [ ] Konstruktor nevolá `GetInstance()` na jiných singletonech (odložte do `OnInit()`)
 
 ---
 
 ## Kompatibilita a dopad
 
-- **Více modů:** Multiple mods každý defining their own jedentons coexist safely --- každý has its own `s_Instance`. Conflicts pouze arise if two mods define the stejný class name, which Enforce Script will flag as a redefinition error at load time.
-- **Pořadí načítání:** Lazy singletons are unaffected by mod load order. Eager singletons created in `OnInit()` depend on the `modded class` chain order, which follows `config.cpp` `requiredAddons`.
-- **Listen Server:** Static fields are shared mezi client and server contexts in the stejný process. A jedenton that should pouze exist server-side must guard construction with `GetGame().IsServer()`, or it will be accessible (and potentially initialized) from client code as well.
-- **Výkon:** Singleton access is a statická null check + method call --- negligible overhead. The cost is in what the jedenton *does*, not in accessing it.
-- **Migration:** Singletons survive DayZ version updates as long as the APIs they call (e.g., `GetGame()`, `JsonFileLoader`) remain stable. No special migration is needed for the pattern itself.
+- **Více modů:** Více modů, z nichž každý definuje vlastní singletony, koexistuje bezpečně --- každý má svůj vlastní `s_Instance`. Konflikty vznikají pouze tehdy, když dva mody definují stejný název třídy, což Enforce Script označí jako chybu redefinice při načítání.
+- **Pořadí načítání:** Líné singletony nejsou ovlivněny pořadím načítání modů. Eager singletony vytvořené v `OnInit()` závisí na pořadí řetězce `modded class`, které se řídí `config.cpp` `requiredAddons`.
+- **Listen Server:** Statická pole jsou sdílena mezi klientským a serverovým kontextem ve stejném procesu. Singleton, který by měl existovat pouze na straně serveru, musí hlídat konstrukci pomocí `GetGame().IsServer()`, jinak bude přístupný (a potenciálně inicializovaný) i z klientského kódu.
+- **Výkon:** Přístup k singletonu je statická kontrola null + volání metody --- zanedbatelná režie. Náklady jsou v tom, co singleton *dělá*, ne v přístupu k němu.
+- **Migrace:** Singletony přežívají aktualizace verzí DayZ, dokud API, která volají (např. `GetGame()`, `JsonFileLoader`), zůstávají stabilní. Pro samotný vzor není potřeba žádná speciální migrace.
 
 ---
 
 ## Časté chyby
 
-| Mistake | Impact | Fix |
+| Chyba | Dopad | Oprava |
 |---------|--------|-----|
-| Missing `DestroyInstance()` call in `OnMissionFinish` | Stale data and dead entity references carry over across mission restarts, causing crashes or ghost state | Vždy call `DestroyInstance()` from `OnMissionFinish` or a centralized `ShutdownAll()` |
-| Calling `GetInstance()` inside další jedenton's constructor | Triggers re-entrant construction; `s_Instance` is stále null, so a second instance is created | Defer cross-singleton access to an `Initialize()` method called after construction |
-| Using `public statická ref` místo `private statická ref` | Any code can set `s_Instance = null` or replace it, breaking the jeden-instance guarantee | Vždy declare `s_Instance` as `private statická ref` |
-| Not guarding eager init on listen servers | Singleton is constructed twice (once from server path, once from client path) if `Create()` lacks a null check | Vždy check `if (!s_Instance)` inside `Create()` |
-| Accumulating state without bounds (unbounded caches) | Memory grows indefinitely on long-running servers; dokoncetual OOM or severe lag | Cap collections with a max size or periodic eviction in `OnUpdate` |
+| Chybějící volání `DestroyInstance()` v `OnMissionFinish` | Zastaralá data a mrtvé reference na entity se přenášejí mezi restarty misí, což způsobuje pády nebo duchy stavu | Vždy volejte `DestroyInstance()` z `OnMissionFinish` nebo centralizovaného `ShutdownAll()` |
+| Volání `GetInstance()` uvnitř konstruktoru jiného singletonu | Spustí opětovně vstupující konstrukci; `s_Instance` je stále null, takže se vytvoří druhá instance | Odložte přístup mezi singletony do metody `Initialize()` volané po konstrukci |
+| Použití `public static ref` místo `private static ref` | Jakýkoli kód může nastavit `s_Instance = null` nebo ho nahradit, čímž poruší garanci jedné instance | Vždy deklarujte `s_Instance` jako `private static ref` |
+| Nehlídání eager inicializace na listen serverech | Singleton je konstruován dvakrát (jednou ze serverové cesty, jednou z klientské), pokud `Create()` postrádá kontrolu null | Vždy kontrolujte `if (!s_Instance)` uvnitř `Create()` |
+| Hromadění stavu bez omezení (neomezené cache) | Paměť roste neomezeně na dlouho běžících serverech; případné OOM nebo vážný lag | Omezte kolekce maximální velikostí nebo periodickým vyčišťováním v `OnUpdate` |
 
 ---
 
 ## Teorie vs praxe
 
-| Textbook Says | DayZ Reality |
+| Učebnice říká | Realita DayZ |
 |---------------|-------------|
-| Singletons are an anti-pattern; use dependency injection | Enforce Script has no DI container. Singletons are the standard approach for globální managers across all major mods. |
-| Lazy initialization is vždy sufficient | RPC handlers must be registered before jakýkoli client connects, so eager init in `OnInit()` is často nutný. |
-| Singletons should nikdy be destroyed | DayZ missions restart without restarting server process; jedentons *must* be destroyed and recreated on každý mission cycle. |
+| Singletony jsou anti-vzor; použijte dependency injection | Enforce Script nemá DI kontejner. Singletony jsou standardní přístup pro globální manažery napříč všemi hlavními mody. |
+| Líná inicializace je vždy dostatečná | RPC handlery musí být registrovány dříve, než se připojí jakýkoli klient, takže eager inicializace v `OnInit()` je často nutná. |
+| Singletony by nikdy neměly být zničeny | DayZ mise se restartují bez restartu serverového procesu; singletony *musí* být zničeny a znovu vytvořeny v každém cyklu mise. |
 
 ---
 
