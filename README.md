@@ -10,18 +10,18 @@
 </p>
 
 <p align="center">
-  <a href="en/README.md"><img src="https://img.shields.io/badge/lang-English-blue?style=flat-square" alt="English" /></a>
-  <a href="pt/README.md"><img src="https://img.shields.io/badge/lang-Português-green?style=flat-square" alt="Português" /></a>
-  <a href="de/README.md"><img src="https://img.shields.io/badge/lang-Deutsch-yellow?style=flat-square" alt="Deutsch" /></a>
-  <a href="ru/README.md"><img src="https://img.shields.io/badge/lang-Русский-red?style=flat-square" alt="Русский" /></a>
-  <a href="es/README.md"><img src="https://img.shields.io/badge/lang-Español-orange?style=flat-square" alt="Español" /></a>
-  <a href="fr/README.md"><img src="https://img.shields.io/badge/lang-Français-lightblue?style=flat-square" alt="Français" /></a>
-  <a href="ja/README.md"><img src="https://img.shields.io/badge/lang-日本語-white?style=flat-square" alt="日本語" /></a>
-  <a href="zh-hans/README.md"><img src="https://img.shields.io/badge/lang-简体中文-crimson?style=flat-square" alt="简体中文" /></a>
-  <a href="cs/README.md"><img src="https://img.shields.io/badge/lang-Čeština-darkblue?style=flat-square" alt="Čeština" /></a>
-  <a href="pl/README.md"><img src="https://img.shields.io/badge/lang-Polski-white?style=flat-square" alt="Polski" /></a>
-  <a href="hu/README.md"><img src="https://img.shields.io/badge/lang-Magyar-darkgreen?style=flat-square" alt="Magyar" /></a>
-  <a href="it/README.md"><img src="https://img.shields.io/badge/lang-Italiano-green?style=flat-square" alt="Italiano" /></a>
+  <a href="en/README.md"><img src="https://flagsapi.com/US/flat/48.png" alt="English" /></a>
+  <a href="pt/README.md"><img src="https://flagsapi.com/BR/flat/48.png" alt="Português" /></a>
+  <a href="de/README.md"><img src="https://flagsapi.com/DE/flat/48.png" alt="Deutsch" /></a>
+  <a href="ru/README.md"><img src="https://flagsapi.com/RU/flat/48.png" alt="Русский" /></a>
+  <a href="es/README.md"><img src="https://flagsapi.com/ES/flat/48.png" alt="Español" /></a>
+  <a href="fr/README.md"><img src="https://flagsapi.com/FR/flat/48.png" alt="Français" /></a>
+  <a href="ja/README.md"><img src="https://flagsapi.com/JP/flat/48.png" alt="日本語" /></a>
+  <a href="zh-hans/README.md"><img src="https://flagsapi.com/CN/flat/48.png" alt="简体中文" /></a>
+  <a href="cs/README.md"><img src="https://flagsapi.com/CZ/flat/48.png" alt="Čeština" /></a>
+  <a href="pl/README.md"><img src="https://flagsapi.com/PL/flat/48.png" alt="Polski" /></a>
+  <a href="hu/README.md"><img src="https://flagsapi.com/HU/flat/48.png" alt="Magyar" /></a>
+  <a href="it/README.md"><img src="https://flagsapi.com/IT/flat/48.png" alt="Italiano" /></a>
 </p>
 
 <p align="center">
