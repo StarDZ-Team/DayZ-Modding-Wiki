@@ -1,17 +1,46 @@
-# Chapter 3.4: Container Widgets
+# Глава 3.4: Виджеты-контейнеры
 
-[Home](../../README.md) | [<< Previous: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Next: Programmatic Widgets >>](05-programmatic-widgets.md)
+[Главная](../../README.md) | [<< Назад: Размеры и позиционирование](03-sizing-positioning.md) | **Виджеты-контейнеры** | [Далее: Программное создание виджетов >>](05-programmatic-widgets.md)
 
 ---
 
-## FrameWidget -- Structural Container
+Виджеты-контейнеры организуют дочерние виджеты внутри себя. Хотя `FrameWidget` — самый простой (невидимый блок, ручное позиционирование), DayZ предоставляет три специализированных контейнера, которые управляют компоновкой автоматически: `WrapSpacerWidget`, `GridSpacerWidget` и `ScrollWidget`.
 
-`FrameWidget` is the most basic container. It draws nothing on screen and does not arrange its children --- вы must position each child manually.
+### Сравнение контейнеров
 
-**When to use:**
-- Grouping related widgets so they can be shown/hidden together
-- Root widget of a panel or dialog
-- Any structural grouping where you handle positioning yourself
+```mermaid
+graph LR
+    subgraph "FrameWidget (Абсолютный)"
+        FA["Потомок A<br/>pos: 10,10"]
+        FB["Потомок B<br/>pos: 200,10"]
+        FC["Потомок C<br/>pos: 10,100"]
+    end
+
+    subgraph "WrapSpacer (Поток)"
+        WA["Элемент 1"] --> WB["Элемент 2"] --> WC["Элемент 3"]
+        WC --> WD["Элемент 4<br/>(перенос на след. строку)"]
+    end
+
+    subgraph "GridSpacer (Сетка)"
+        GA["Ячейка 0,0"] --- GB["Ячейка 1,0"] --- GC["Ячейка 2,0"]
+        GD["Ячейка 0,1"] --- GE["Ячейка 1,1"] --- GF["Ячейка 2,1"]
+    end
+
+    style FA fill:#4A90D9,color:#fff
+    style WA fill:#2D8A4E,color:#fff
+    style GA fill:#D97A4A,color:#fff
+```
+
+---
+
+## FrameWidget — структурный контейнер
+
+`FrameWidget` — самый базовый контейнер. Он ничего не отрисовывает на экране и не размещает своих потомков — вы должны позиционировать каждого потомка вручную.
+
+**Когда использовать:**
+- Группировка связанных виджетов для совместного отображения/скрытия
+- Корневой виджет панели или диалога
+- Любая структурная группировка, где вы сами управляете позиционированием
 
 ```
 FrameWidgetClass MyPanel {
@@ -44,30 +73,30 @@ FrameWidgetClass MyPanel {
 }
 ```
 
-**Ключевые характеристики:**
-- No visual appearance (transparent)
-- Children positioned relative to the frame's bounds
-- No automatic layout -- every child needs explicit position/size
-- Lightweight -- zero rendering cost beyond its children
+**Основные характеристики:**
+- Нет визуального отображения (прозрачный)
+- Потомки позиционируются относительно границ фрейма
+- Нет автоматической компоновки — каждому потомку нужна явная позиция/размер
+- Легковесный — нулевые затраты на рендеринг помимо потомков
 
 ---
 
-## WrapSpacerWidget -- Flow Layout
+## WrapSpacerWidget — поточная компоновка
 
-`WrapSpacerWidget` automatically arranges its children in a flow sequence. Children are placed one after another horizontally, wrapping to the next row when they exceed the available width. Это widget to use for dynamic lists where the number of children changes at runtime.
+`WrapSpacerWidget` автоматически размещает своих потомков последовательно. Потомки располагаются один за другим горизонтально, переносясь на следующую строку при превышении доступной ширины. Это виджет для динамических списков, где количество потомков меняется во время выполнения.
 
-### Layout Attributes
+### Атрибуты компоновки
 
-| Attribute | Values | Description |
+| Атрибут | Значения | Описание |
 |---|---|---|
-| `Padding` | integer (pixels) | Space between the spacer's edge and its children |
-| `Margin` | integer (pixels) | Space between individual children |
-| `"Size To Content H"` | `0` or `1` | Resize width to fit all children |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit all children |
-| `content_halign` | `left`, `center`, `right` | Horizontal alignment of the child group |
-| `content_valign` | `top`, `center`, `bottom` | Vertical alignment of the child group |
+| `Padding` | целое число (пиксели) | Отступ между краем спейсера и его потомками |
+| `Margin` | целое число (пиксели) | Расстояние между отдельными потомками |
+| `"Size To Content H"` | `0` или `1` | Подгонка ширины под всех потомков |
+| `"Size To Content V"` | `0` или `1` | Подгонка высоты под всех потомков |
+| `content_halign` | `left`, `center`, `right` | Горизонтальное выравнивание группы потомков |
+| `content_valign` | `top`, `center`, `bottom` | Вертикальное выравнивание группы потомков |
 
-### Basic Flow Layout
+### Базовая поточная компоновка
 
 ```
 WrapSpacerWidgetClass TagList {
@@ -99,16 +128,16 @@ WrapSpacerWidgetClass TagList {
 }
 ```
 
-In this example:
-- The spacer is full parent width (`size 1`), but its height adjusts to fit children (`"Size To Content V" 1`).
-- Children are 80px, 60px, and 90px wide buttons.
-- If the available width cannot fit all three on one row, the spacer wraps them to the next row.
-- `Padding 5` adds 5px of space inside the spacer edges.
-- `Margin 3` adds 3px between each child.
+В этом примере:
+- Спейсер занимает полную ширину родителя (`size 1`), но его высота подстраивается под потомков (`"Size To Content V" 1`).
+- Потомки — кнопки шириной 80px, 60px и 90px.
+- Если доступной ширины не хватает для всех трёх в одной строке, спейсер переносит их на следующую.
+- `Padding 5` добавляет 5px отступа внутри краёв спейсера.
+- `Margin 3` добавляет 3px между каждым потомком.
 
-### Vertical List with WrapSpacer
+### Вертикальный список с WrapSpacer
 
-To create a vertical list (one item per row), make children full-width:
+Чтобы создать вертикальный список (один элемент на строку), сделайте потомков полноширинными:
 
 ```
 WrapSpacerWidgetClass ItemList {
@@ -131,38 +160,38 @@ WrapSpacerWidgetClass ItemList {
 }
 ```
 
-Each child is 100% width (`size 1` with `hexactsize 0`), so only one fits per row, creating a vertical stack.
+Каждый потомок имеет ширину 100% (`size 1` с `hexactsize 0`), поэтому в строку помещается только один, образуя вертикальный стек.
 
-### Dynamic Children
+### Динамические потомки
 
-`WrapSpacerWidget` is ideal for programmatically added children. When you add or remove children, call `Update()` on the spacer to trigger a re-layout:
+`WrapSpacerWidget` идеален для программно добавляемых потомков. При добавлении или удалении потомков вызовите `Update()` у спейсера для пересчёта компоновки:
 
 ```c
 WrapSpacerWidget spacer;
 
-// Add a child from a layout file
+// Добавление потомка из файла компоновки
 Widget child = GetGame().GetWorkspace().CreateWidgets("MyMod/gui/layouts/ListItem.layout", spacer);
 
-// Force the spacer to recalculate
+// Принудительный пересчёт спейсера
 spacer.Update();
 ```
 
 ---
 
-## GridSpacerWidget -- Grid Layout
+## GridSpacerWidget — сеточная компоновка
 
-`GridSpacerWidget` arranges children in a uniform grid. You define the number of columns and rows, and each cell gets equal space.
+`GridSpacerWidget` размещает потомков в равномерной сетке. Вы определяете количество столбцов и строк, и каждая ячейка получает равное пространство.
 
-### Layout Attributes
+### Атрибуты компоновки
 
-| Attribute | Values | Description |
+| Атрибут | Значения | Описание |
 |---|---|---|
-| `Columns` | integer | Number of grid columns |
-| `Rows` | integer | Number of grid rows |
-| `Margin` | integer (pixels) | Space between grid cells |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit content |
+| `Columns` | целое число | Количество столбцов сетки |
+| `Rows` | целое число | Количество строк сетки |
+| `Margin` | целое число (пиксели) | Расстояние между ячейками сетки |
+| `"Size To Content V"` | `0` или `1` | Подгонка высоты под содержимое |
 
-### Basic Grid
+### Базовая сетка
 
 ```
 GridSpacerWidgetClass InventoryGrid {
@@ -173,8 +202,8 @@ GridSpacerWidgetClass InventoryGrid {
  Rows 3
  Margin 2
  {
-  // 12 cells (4 columns x 3 rows)
-  // Children are placed in order: left-to-right, top-to-bottom
+  // 12 ячеек (4 столбца x 3 строки)
+  // Потомки размещаются по порядку: слева направо, сверху вниз
   FrameWidgetClass Slot1 { }
   FrameWidgetClass Slot2 { }
   FrameWidgetClass Slot3 { }
@@ -191,9 +220,9 @@ GridSpacerWidgetClass InventoryGrid {
 }
 ```
 
-### Single-Column Grid (Vertical List)
+### Одноколоночная сетка (вертикальный список)
 
-Setting `Columns 1` creates a simple vertical stack where each child gets the full width:
+Установка `Columns 1` создаёт простой вертикальный стек, где каждый потомок занимает полную ширину:
 
 ```
 GridSpacerWidgetClass SettingsList {
@@ -223,37 +252,37 @@ GridSpacerWidgetClass SettingsList {
 
 ### GridSpacer vs. WrapSpacer
 
-| Feature | GridSpacer | WrapSpacer |
+| Свойство | GridSpacer | WrapSpacer |
 |---|---|---|
-| Cell size | Uniform (equal) | Each child keeps its own size |
-| Layout mode | Fixed grid (columns x rows) | Flow with wrapping |
-| Best for | Inventory slots, uniform galleries | Dynamic lists, tag clouds |
-| Children sizing | Ignored (grid controls it) | Respected (child size matters) |
+| Размер ячейки | Одинаковый (равный) | Каждый потомок сохраняет свой размер |
+| Режим компоновки | Фиксированная сетка (столбцы x строки) | Поток с переносом |
+| Лучше для | Инвентарных слотов, равномерных галерей | Динамических списков, облаков тегов |
+| Размеры потомков | Игнорируются (сетка управляет ими) | Учитываются (размер потомка важен) |
 
 ---
 
-## ScrollWidget -- Scrollable Viewport
+## ScrollWidget — прокручиваемая область просмотра
 
-`ScrollWidget` wraps content that may be taller (or wider) than the visible area, providing scrollbars for navigation.
+`ScrollWidget` оборачивает содержимое, которое может быть выше (или шире) видимой области, предоставляя полосы прокрутки для навигации.
 
-### Layout Attributes
+### Атрибуты компоновки
 
-| Attribute | Values | Description |
+| Атрибут | Значения | Описание |
 |---|---|---|
-| `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
-| `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
+| `"Scrollbar V"` | `0` или `1` | Показывать вертикальную полосу прокрутки |
+| `"Scrollbar H"` | `0` или `1` | Показывать горизонтальную полосу прокрутки |
 
-### Script API
+### API скриптов
 
 ```c
 ScrollWidget sw;
-sw.VScrollToPos(float pos);     // Scroll to vertical position (0 = top)
-sw.GetVScrollPos();             // Get current scroll position
-sw.GetContentHeight();          // Get total content height
-sw.VScrollStep(int step);       // Scroll by a step amount
+sw.VScrollToPos(float pos);     // Прокрутить к вертикальной позиции (0 = верх)
+sw.GetVScrollPos();             // Получить текущую позицию прокрутки
+sw.GetContentHeight();          // Получить общую высоту содержимого
+sw.VScrollStep(int step);       // Прокрутить на шаг
 ```
 
-### Basic Scrollable List
+### Базовый прокручиваемый список
 
 ```
 ScrollWidgetClass ListScroll {
@@ -267,7 +296,7 @@ ScrollWidgetClass ListScroll {
    hexactsize 0
    "Size To Content V" 1
    {
-    // Many children here...
+    // Много потомков...
     FrameWidgetClass Item1 {
      size 1 30
      hexactsize 0
@@ -278,7 +307,7 @@ ScrollWidgetClass ListScroll {
      hexactsize 0
      vexactsize 1
     }
-    // ... more items
+    // ... ещё элементы
    }
   }
  }
@@ -287,19 +316,38 @@ ScrollWidgetClass ListScroll {
 
 ---
 
-## The ScrollWidget + WrapSpacer Pattern
+## Паттерн ScrollWidget + WrapSpacer
 
-This is **the** pattern for scrollable dynamic lists in DayZ mods. It combines a fixed-height `ScrollWidget` with a `WrapSpacerWidget` that grows to fit its children.
+```mermaid
+graph TB
+    SCROLL["ScrollWidget<br/>фиксированный размер области<br/>Scrollbar V = 1"]
+    WRAP["WrapSpacerWidget<br/>size: 1 0<br/>Size To Content V = 1"]
+    I1["Элемент 1"]
+    I2["Элемент 2"]
+    I3["Элемент 3"]
+    I4["Элемент N..."]
+
+    SCROLL --> WRAP
+    WRAP --> I1
+    WRAP --> I2
+    WRAP --> I3
+    WRAP --> I4
+
+    style SCROLL fill:#4A90D9,color:#fff
+    style WRAP fill:#2D8A4E,color:#fff
+```
+
+Это **основной** паттерн для прокручиваемых динамических списков в модах DayZ. Он комбинирует `ScrollWidget` фиксированной высоты с `WrapSpacerWidget`, который растёт для вмещения потомков.
 
 ```
-// Fixed-height scroll viewport
+// Область прокрутки фиксированной высоты
 ScrollWidgetClass DialogScroll {
  size 0.97 235
  hexactsize 0
  vexactsize 1
  "Scrollbar V" 1
  {
-  // Content grows vertically to fit all children
+  // Содержимое растёт вертикально для вмещения всех потомков
   WrapSpacerWidgetClass DialogContent {
    size 1 0
    hexactsize 0
@@ -309,15 +357,15 @@ ScrollWidgetClass DialogScroll {
 }
 ```
 
-How it works:
+Как это работает:
 
-1. The `ScrollWidget` has a **fixed** height (235 pixels in this example).
-2. Inside it, the `WrapSpacerWidget` has `"Size To Content V" 1`, so its height grows as children are added.
-3. When the spacer's content exceeds 235 pixels, the scrollbar appears and the user can scroll.
+1. `ScrollWidget` имеет **фиксированную** высоту (235 пикселей в этом примере).
+2. Внутри него `WrapSpacerWidget` имеет `"Size To Content V" 1`, поэтому его высота растёт при добавлении потомков.
+3. Когда содержимое спейсера превышает 235 пикселей, появляется полоса прокрутки и пользователь может прокручивать.
 
-This pattern appears throughout DabsFramework, DayZ Editor, Expansion, and virtually every professional DayZ mod.
+Этот паттерн встречается во всех DabsFramework, DayZ Editor, Expansion и практически каждом профессиональном моде DayZ.
 
-### Adding Items Programmatically
+### Программное добавление элементов
 
 ```c
 ScrollWidget m_Scroll;
@@ -325,15 +373,15 @@ WrapSpacerWidget m_Content;
 
 void AddItem(string text)
 {
-    // Create a new child inside the WrapSpacer
+    // Создаём нового потомка внутри WrapSpacer
     Widget item = GetGame().GetWorkspace().CreateWidgets(
         "MyMod/gui/layouts/ListItem.layout", m_Content);
 
-    // Configure the new item
+    // Настраиваем новый элемент
     TextWidget tw = TextWidget.Cast(item.FindAnyWidget("Label"));
     tw.SetText(text);
 
-    // Force layout recalculation
+    // Принудительный пересчёт компоновки
     m_Content.Update();
 }
 
@@ -344,7 +392,7 @@ void ScrollToBottom()
 
 void ClearAll()
 {
-    // Remove all children
+    // Удаляем всех потомков
     Widget child = m_Content.GetChildren();
     while (child)
     {
@@ -358,39 +406,39 @@ void ClearAll()
 
 ---
 
-## Nesting Rules
+## Правила вложенности
 
-Containers can be nested to create complex layouts. Some guidelines:
+Контейнеры можно вкладывать друг в друга для создания сложных компоновок. Некоторые рекомендации:
 
-1. **FrameWidget inside anything** -- Always works. Use frames to group sub-sections within spacers or grids.
+1. **FrameWidget внутри чего угодно** — Всегда работает. Используйте фреймы для группировки подсекций внутри спейсеров или сеток.
 
-2. **WrapSpacer inside ScrollWidget** -- The standard pattern for scrollable lists. The spacer grows; the scroll clips.
+2. **WrapSpacer внутри ScrollWidget** — Стандартный паттерн для прокручиваемых списков. Спейсер растёт; прокрутка обрезает.
 
-3. **GridSpacer inside WrapSpacer** -- Works. Useful for putting a fixed grid as one item in a flow layout.
+3. **GridSpacer внутри WrapSpacer** — Работает. Полезно для размещения фиксированной сетки как одного элемента в поточной компоновке.
 
-4. **ScrollWidget inside WrapSpacer** -- Possible but requires a fixed height on the scroll widget (`vexactsize 1`). Without a fixed height, the scroll widget will try to grow to fit its content (defeating the purpose of scrolling).
+4. **ScrollWidget внутри WrapSpacer** — Возможно, но требует фиксированной высоты для ScrollWidget (`vexactsize 1`). Без фиксированной высоты ScrollWidget будет пытаться расти под содержимое (что лишает смысла прокрутку).
 
-5. **Avoid deep nesting** -- Every level of nesting adds layout computation cost. Three or four levels deep is typical for complex UIs; going beyond six levels suggests the layout should be restructured.
+5. **Избегайте глубокой вложенности** — Каждый уровень вложенности добавляет вычислительные затраты на компоновку. Три-четыре уровня глубины типичны для сложных UI; более шести уровней говорит о необходимости реструктуризации.
 
 ---
 
-## When to Use Each Container
+## Когда использовать каждый контейнер
 
-| Scenario | Best Container |
+| Сценарий | Лучший контейнер |
 |---|---|
-| Static panel with manually positioned elements | `FrameWidget` |
-| Dynamic list of varying-size items | `WrapSpacerWidget` |
-| Uniform grid (inventory, gallery) | `GridSpacerWidget` |
-| Vertical list with one item per row | `WrapSpacerWidget` (full-width children) or `GridSpacerWidget` (`Columns 1`) |
-| Content taller than available space | `ScrollWidget` wrapping a spacer |
-| Tab content area | `FrameWidget` (swap children visibility) |
-| Toolbar buttons | `WrapSpacerWidget` or `GridSpacerWidget` |
+| Статическая панель с вручную расположенными элементами | `FrameWidget` |
+| Динамический список элементов различного размера | `WrapSpacerWidget` |
+| Равномерная сетка (инвентарь, галерея) | `GridSpacerWidget` |
+| Вертикальный список с одним элементом на строку | `WrapSpacerWidget` (полноширинные потомки) или `GridSpacerWidget` (`Columns 1`) |
+| Содержимое выше доступного пространства | `ScrollWidget`, оборачивающий спейсер |
+| Область содержимого вкладок | `FrameWidget` (переключение видимости потомков) |
+| Кнопки панели инструментов | `WrapSpacerWidget` или `GridSpacerWidget` |
 
 ---
 
-## Complete Example: Scrollable Settings Panel
+## Полный пример: прокручиваемая панель настроек
 
-A settings panel with a title bar, scrollable content area containing grid-arranged options, and a bottom button bar:
+Панель настроек с заголовком, прокручиваемой областью содержимого с параметрами в сеточном расположении и нижней панелью кнопок:
 
 ```
 FrameWidgetClass SettingsPanel {
@@ -402,7 +450,7 @@ FrameWidgetClass SettingsPanel {
  hexactsize 0
  vexactsize 0
  {
-  // Title bar
+  // Заголовок
   PanelWidgetClass TitleBar {
    position 0 0
    size 1 30
@@ -411,7 +459,7 @@ FrameWidgetClass SettingsPanel {
    color 0.2 0.4 0.8 1
   }
 
-  // Scrollable settings area
+  // Прокручиваемая область настроек
   ScrollWidgetClass SettingsScroll {
    position 0 30
    size 1 0
@@ -431,7 +479,7 @@ FrameWidgetClass SettingsPanel {
    }
   }
 
-  // Button bar at bottom
+  // Панель кнопок внизу
   FrameWidgetClass ButtonBar {
    size 1 40
    halign left_ref
@@ -447,8 +495,50 @@ FrameWidgetClass SettingsPanel {
 
 ---
 
+## Лучшие практики
+
+- Всегда вызывайте `Update()` у `WrapSpacerWidget` или `GridSpacerWidget` после программного добавления или удаления потомков. Без этого вызова спейсер не пересчитывает компоновку, и потомки могут наложиться друг на друга или стать невидимыми.
+- Используйте `ScrollWidget` + `WrapSpacerWidget` как стандартный паттерн для любого динамического списка. Установите для прокрутки фиксированную пиксельную высоту, а для внутреннего спейсера — `"Size To Content V" 1`.
+- Предпочитайте `WrapSpacerWidget` с полноширинными потомками вместо `GridSpacerWidget Columns 1` для вертикальных списков, где элементы имеют различную высоту. GridSpacer принудительно делает ячейки одинакового размера.
+- Всегда устанавливайте `clipchildren 1` на `ScrollWidget`. Без этого содержимое, выходящее за границы, рендерится за пределами области просмотра прокрутки.
+- Избегайте вложенности контейнеров глубже 4-5 уровней. Каждый уровень добавляет вычислительные затраты на компоновку и значительно усложняет отладку.
+
+---
+
+## Теория vs практика
+
+> Что говорит документация и как всё работает на самом деле.
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| `WrapSpacerWidget.Update()` | Компоновка автоматически пересчитывается при изменении потомков | Нужно вызывать `Update()` вручную после `CreateWidgets()` или `Unlink()`. Забыть это — самый частый баг спейсера |
+| `"Size To Content V"` | Спейсер растёт под потомков | Работает только если потомки имеют явные размеры (пиксельная высота или известный пропорциональный родитель). Если потомки тоже `Size To Content`, получится нулевая высота |
+| Размеры ячеек `GridSpacerWidget` | Сетка управляет размером ячеек равномерно | Собственные атрибуты размера потомков игнорируются — сетка переопределяет их. Установка `size` на потомке сетки не имеет эффекта |
+| Позиция прокрутки `ScrollWidget` | `VScrollToPos(0)` прокручивает к верху | После добавления потомков может потребоваться отложить `VScrollToPos()` на один кадр (через `CallLater`), потому что высота содержимого ещё не пересчитана |
+| Вложенные спейсеры | Спейсеры можно свободно вкладывать | `WrapSpacer` внутри `WrapSpacer` работает, но `Size To Content` на обоих уровнях может вызвать бесконечный цикл компоновки, замораживающий UI |
+
+---
+
+## Совместимость и влияние
+
+- **Мульти-мод:** Виджеты-контейнеры принадлежат конкретному макету и не конфликтуют между модами. Однако если два мода добавляют потомков в один и тот же ванильный `ScrollWidget` (через `modded class`), порядок потомков непредсказуем.
+- **Производительность:** `WrapSpacerWidget.Update()` пересчитывает позиции всех потомков. Для списков со 100+ элементами вызывайте `Update()` один раз после пакетных операций, а не после каждого отдельного добавления. GridSpacer быстрее для равномерных сеток, потому что позиции ячеек вычисляются арифметически.
+- **Версии:** `WrapSpacerWidget` и `GridSpacerWidget` доступны с DayZ 1.0. Атрибуты `"Size To Content H/V"` присутствовали с самого начала, но их поведение с глубоко вложенными макетами стабилизировалось примерно в DayZ 1.10.
+
+---
+
+## Замечено в реальных модах
+
+| Паттерн | Мод | Подробности |
+|---------|-----|--------|
+| `ScrollWidget` + `WrapSpacerWidget` для динамических списков | DabsFramework, Expansion, COT | Область прокрутки фиксированной высоты с автоматически растущим внутренним спейсером — универсальный паттерн прокручиваемого списка |
+| `GridSpacerWidget Columns 10` для инвентаря | Ванильный DayZ | Инвентарная сетка использует GridSpacer с фиксированным числом столбцов, соответствующим раскладке слотов |
+| Пулинг потомков в WrapSpacer | VPP Admin Tools | Предварительно создаёт пул виджетов элементов списка, показывает/скрывает их вместо создания/уничтожения для избежания накладных расходов `Update()` |
+| `WrapSpacerWidget` как корень диалога | COT, DayZ Editor | Корень диалога использует `Size To Content V/H`, чтобы диалог автоматически подгонялся под содержимое без жёстко заданных размеров |
+
+---
+
 ## Следующие шаги
 
-
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code
-- [3.6 Event Handling](06-event-handling.md) -- Respond to clicks, changes, and other events
+- [3.5 Программное создание виджетов](05-programmatic-widgets.md) — Создание виджетов из кода
+- [3.6 Обработка событий](06-event-handling.md) — Реагирование на клики, изменения и другие события
