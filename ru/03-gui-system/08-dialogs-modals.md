@@ -1,8 +1,10 @@
-# Chapter 3.8: Dialogs & Modals
+# Глава 3.8: Диалоги и модальные окна
 
-[Home](../../README.md) | [<< Previous: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Next: Real Mod UI Patterns >>](09-real-mod-patterns.md)
+[Главная](../../README.md) | [<< Назад: Стили, шрифты и изображения](07-styles-fonts.md) | **Диалоги и модальные окна** | [Далее: Паттерны UI реальных модов >>](09-real-mod-patterns.md)
 
 ---
+
+Диалоги -- это временные оверлейные окна, требующие взаимодействия пользователя: подтверждения, оповещения, формы ввода и панели настроек. Эта глава охватывает встроенную систему диалогов, ручные паттерны диалогов, структуру макетов, управление фокусом и распространённые подводные камни.
 
 ---
 
@@ -10,22 +12,22 @@
 
 Существует два основных типа диалогов:
 
-- **Модальный** --- Блокирует все взаимодействие с содержимым за диалогом. Пользователь должен ответить (подтвердить, отменить, закрыть) прежде чем делать что-либо еще. Примеры: подтверждение выхода, предупреждение об удалении, запрос переименования.
-- **Немодальный** --- Позволяет пользователю взаимодействовать с содержимым за диалогом, пока он остается открытым. Примеры: информационные панели, окна настроек, палитры инструментов.
+- **Модальный** -- блокирует все взаимодействие с содержимым за диалогом. Пользователь должен ответить (подтвердить, отменить, закрыть) прежде чем делать что-либо ещё. Примеры: подтверждение выхода, предупреждение об удалении, запрос переименования.
+- **Немодальный** -- позволяет пользователю взаимодействовать с содержимым за диалогом, пока он остаётся открытым. Примеры: информационные панели, окна настроек, палитры инструментов.
 
-В DayZ различие контролируется тем, блокируете ли вы игровой ввод при открытии диалога. Модальный диалог вызывает `ChangeGameFocus(1)` и показывает курсор; немодальный диалог может пропустить это или использовать переключаемый подход.
+В DayZ различие контролируется тем, блокируете ли вы игровой ввод при открытии диалога. Модальный диалог вызывает `ChangeGameFocus(1)` и показывает курсор; немодальный может пропустить это или использовать переключаемый подход.
 
 ---
 
-## UIScriptedMenu -- The Built-in System
+## UIScriptedMenu -- встроенная система
 
-`UIScriptedMenu` is the engine-level base class for all menu screens in DayZ. It integrates with the `UIManager` menu stack, handles input locking automatically, and provides lifecycle hooks. Vanilla DayZ uses it for the in-game menu, logout dialog, respawn dialog, options menu, and many others.
+`UIScriptedMenu` -- это базовый класс движка для всех экранов меню в DayZ. Он интегрируется со стеком меню `UIManager`, автоматически обрабатывает блокировку ввода и предоставляет хуки жизненного цикла. Ванильный DayZ использует его для внутриигрового меню, диалога выхода, диалога респауна, меню настроек и многого другого.
 
 ### Иерархия классов
 
 ```
-UIMenuPanel          (base: menu stack, Close(), submenu management)
-  UIScriptedMenu     (scripted menus: Init(), OnShow(), OnHide(), Update())
+UIMenuPanel          (базовый: стек меню, Close(), управление подменю)
+  UIScriptedMenu     (скриптовые меню: Init(), OnShow(), OnHide(), Update())
 ```
 
 ### Минимальный диалог UIScriptedMenu
@@ -55,7 +57,7 @@ class MyDialog extends UIScriptedMenu
     override void OnShow()
     {
         super.OnShow();
-        // super.OnShow() calls LockControls() which handles:
+        // super.OnShow() вызывает LockControls(), который обрабатывает:
         //   GetGame().GetInput().ChangeGameFocus(1);
         //   GetGame().GetUIManager().ShowUICursor(true);
     }
@@ -63,7 +65,7 @@ class MyDialog extends UIScriptedMenu
     override void OnHide()
     {
         super.OnHide();
-        // super.OnHide() calls UnlockControls() which handles:
+        // super.OnHide() вызывает UnlockControls(), который обрабатывает:
         //   GetGame().GetInput().ChangeGameFocus(-1);
         //   GetGame().GetUIManager().ShowUICursor(false);
     }
@@ -74,7 +76,7 @@ class MyDialog extends UIScriptedMenu
 
         if (w == m_BtnConfirm)
         {
-            // Do action
+            // Выполнить действие
             Close();
             return true;
         }
@@ -92,7 +94,7 @@ class MyDialog extends UIScriptedMenu
     {
         super.Update(timeslice);
 
-        // ESC to close
+        // ESC для закрытия
         if (GetUApi().GetInputByID(UAUIBack).LocalPress())
         {
             Close();
@@ -101,38 +103,38 @@ class MyDialog extends UIScriptedMenu
 }
 ```
 
-### Открытие and Closing
+### Открытие и закрытие
 
 ```c
-// Opening -- create the menu and push it onto the UIManager stack
+// Открытие -- создать меню и поместить в стек UIManager
 MyDialog dialog = new MyDialog();
 GetGame().GetUIManager().ShowScriptedMenu(dialog, null);
 
-// Closing from outside
+// Закрытие извне
 GetGame().GetUIManager().HideScriptedMenu(dialog);
 
-// Closing from inside the dialog class
+// Закрытие изнутри класса диалога
 Close();
 ```
 
-`ShowScriptedMenu()` pushes the menu onto the engine menu stack, triggers `Init()`, then `OnShow()`. `Close()` triggers `OnHide()`, pops it from the stack, and destroys the widget tree.
+`ShowScriptedMenu()` помещает меню в стек движка, вызывает `Init()`, затем `OnShow()`. `Close()` вызывает `OnHide()`, извлекает из стека и уничтожает дерево виджетов.
 
 ### Ключевые методы жизненного цикла
 
 | Метод | Когда вызывается | Типичное использование |
 |--------|------------|-------------|
-| `Init()` | Один раз при создании меню | Создание виджетов, кеширование ссылок |
-| `OnShow()` | После появления меню | Блокировка ввода, запуск таймеров |
+| `Init()` | Один раз, при создании меню | Создание виджетов, кэширование ссылок |
+| `OnShow()` | После того, как меню стало видимым | Блокировка ввода, запуск таймеров |
 | `OnHide()` | После скрытия меню | Разблокировка ввода, отмена таймеров |
-| `Update(float timeslice)` | Каждый кадр пока видим | Опрос ввода (клавиша ESC), анимации |
+| `Update(float timeslice)` | Каждый кадр, пока видимо | Опрос ввода (клавиша ESC), анимации |
 | `Cleanup()` | Перед уничтожением | Освобождение ресурсов |
 
 ### LockControls / UnlockControls
 
-`UIScriptedMenu` provides built-in methods that `OnShow()` and `OnHide()` call automatically:
+`UIScriptedMenu` предоставляет встроенные методы, которые `OnShow()` и `OnHide()` вызывают автоматически:
 
 ```c
-// Inside UIScriptedMenu (engine code, simplified):
+// Внутри UIScriptedMenu (код движка, упрощённо):
 void LockControls()
 {
     g_Game.GetInput().ChangeGameFocus(1, INPUT_DEVICE_MOUSE);
@@ -146,38 +148,38 @@ void UnlockControls()
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_MOUSE);
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_KEYBOARD);
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_GAMEPAD);
-    // Cursor visibility depends on whether a parent menu exists
+    // Видимость курсора зависит от наличия родительского меню
 }
 ```
 
-Because `UIScriptedMenu` handles focus management automatically in `OnShow()`/`OnHide()`, you rarely need to call `ChangeGameFocus()` yourself when using this base class. Simply call `super.OnShow()` and `super.OnHide()`.
+Поскольку `UIScriptedMenu` автоматически обрабатывает управление фокусом в `OnShow()`/`OnHide()`, вам редко нужно вызывать `ChangeGameFocus()` самостоятельно при использовании этого базового класса. Просто вызывайте `super.OnShow()` и `super.OnHide()`.
 
 ---
 
 ## Встроенный ShowDialog (нативные диалоговые окна)
 
-The engine provides a native dialog system for simple confirmation prompts. It renders a platform-appropriate dialog box without requiring any layout file.
+Движок предоставляет нативную систему диалогов для простых подтверждающих запросов. Она отрисовывает платформенно-подходящее диалоговое окно без необходимости в файле макета.
 
 ### Использование
 
 ```c
-// Show a Yes/No confirmation dialog
+// Показать диалог подтверждения Да/Нет
 const int MY_DIALOG_ID = 500;
 
 g_Game.GetUIManager().ShowDialog(
-    "Confirm Action",                  // caption
-    "Are you sure you want to do this?", // text
-    MY_DIALOG_ID,                      // custom ID to identify this dialog
-    DBT_YESNO,                         // button configuration
-    DBB_YES,                           // default button
-    DMT_QUESTION,                      // icon type
-    this                               // handler (receives OnModalResult)
+    "Confirm Action",                  // заголовок
+    "Are you sure you want to do this?", // текст
+    MY_DIALOG_ID,                      // пользовательский ID для идентификации диалога
+    DBT_YESNO,                         // конфигурация кнопок
+    DBB_YES,                           // кнопка по умолчанию
+    DMT_QUESTION,                      // тип иконки
+    this                               // обработчик (получает OnModalResult)
 );
 ```
 
 ### Получение результата
 
-The handler (the `UIScriptedMenu` passed as the last argument) receives the result through `OnModalResult`:
+Обработчик (`UIScriptedMenu`, переданный последним аргументом) получает результат через `OnModalResult`:
 
 ```c
 override bool OnModalResult(Widget w, int x, int y, int code, int result)
@@ -188,7 +190,7 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
         {
             PerformAction();
         }
-        // DBB_NO means user declined -- do nothing
+        // DBB_NO означает отказ пользователя -- ничего не делаем
         return true;
     }
 
@@ -198,43 +200,43 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
 
 ### Константы
 
-**Button configurations** (`DBT_` -- DialogBoxType):
+**Конфигурации кнопок** (`DBT_` -- DialogBoxType):
 
 | Константа | Показываемые кнопки |
 |----------|---------------|
 | `DBT_OK` | OK |
-| `DBT_YESNO` | Yes, No |
-| `DBT_YESNOCANCEL` | Yes, No, Cancel |
+| `DBT_YESNO` | Да, Нет |
+| `DBT_YESNOCANCEL` | Да, Нет, Отмена |
 
-**Button identifiers** (`DBB_` -- DialogBoxButton):
+**Идентификаторы кнопок** (`DBB_` -- DialogBoxButton):
 
-| Константа | Значение | Смысл |
+| Константа | Значение | Значение |
 |----------|-------|---------|
-| `DBB_NONE` | 0 | No default |
-| `DBB_OK` | 1 | OK button |
-| `DBB_YES` | 2 | Yes button |
-| `DBB_NO` | 3 | No button |
-| `DBB_CANCEL` | 4 | Cancel button |
+| `DBB_NONE` | 0 | Нет по умолчанию |
+| `DBB_OK` | 1 | Кнопка OK |
+| `DBB_YES` | 2 | Кнопка Да |
+| `DBB_NO` | 3 | Кнопка Нет |
+| `DBB_CANCEL` | 4 | Кнопка Отмена |
 
-**Message types** (`DMT_` -- DialogMessageType):
+**Типы сообщений** (`DMT_` -- DialogMessageType):
 
 | Константа | Иконка |
 |----------|------|
-| `DMT_NONE` | No icon |
-| `DMT_INFO` | Info |
-| `DMT_WARNING` | Warning |
-| `DMT_QUESTION` | Question mark |
-| `DMT_EXCLAMATION` | Exclamation |
+| `DMT_NONE` | Без иконки |
+| `DMT_INFO` | Информация |
+| `DMT_WARNING` | Предупреждение |
+| `DMT_QUESTION` | Вопросительный знак |
+| `DMT_EXCLAMATION` | Восклицательный знак |
 
 ### Когда использовать ShowDialog
 
-Use `ShowDialog()` for simple alerts and confirmations that do not need custom styling. It is reliable and handles focus/cursor automatically. For branded or complex dialogs (custom layout, input fields, multiple options), build your own dialog class.
+Используйте `ShowDialog()` для простых оповещений и подтверждений, не требующих пользовательского стиля. Он надёжен и автоматически обрабатывает фокус/курсор. Для брендированных или сложных диалогов (пользовательский макет, поля ввода, множество вариантов) создавайте собственный класс диалога.
 
 ---
 
-## Паттерн ручного диалога (без UIScriptedMenu)
+## Ручной паттерн диалога (без UIScriptedMenu)
 
-When you need a dialog that is not part of the engine menu stack -- for example, a popup inside an existing panel -- extend `ScriptedWidgetEventHandler` instead of `UIScriptedMenu`. This gives you full control but requires manual focus and lifecycle management.
+Когда вам нужен диалог, не являющийся частью стека меню движка -- например, всплывающее окно внутри существующей панели -- наследуйте `ScriptedWidgetEventHandler` вместо `UIScriptedMenu`. Это даёт полный контроль, но требует ручного управления фокусом и жизненным циклом.
 
 ### Базовый паттерн
 
@@ -258,7 +260,7 @@ class SimplePopup : ScriptedWidgetEventHandler
 
         m_Message.SetText(message);
 
-        // Lock game input so player cannot move/shoot
+        // Блокировать игровой ввод, чтобы игрок не мог двигаться/стрелять
         GetGame().GetInput().ChangeGameFocus(1);
         GetGame().GetUIManager().ShowUICursor(true);
     }
@@ -271,7 +273,7 @@ class SimplePopup : ScriptedWidgetEventHandler
             m_Root = null;
         }
 
-        // Restore game input -- MUST match the +1 from Show()
+        // Восстановить игровой ввод -- ДОЛЖНО совпадать с +1 из Show()
         GetGame().GetInput().ChangeGameFocus(-1);
         GetGame().GetUIManager().ShowUICursor(false);
     }
@@ -301,14 +303,14 @@ class SimplePopup : ScriptedWidgetEventHandler
 
     protected void OnConfirm()
     {
-        // Override in subclasses or set a callback
+        // Переопределите в подклассах или установите обратный вызов
     }
 }
 ```
 
-### VPP-Style Popup (OnWidgetScriptInit Pattern)
+### Всплывающее окно в стиле VPP (паттерн OnWidgetScriptInit)
 
-VPP Admin Tools and other mods use `OnWidgetScriptInit()` to initialize popups. The widget is created by a parent, and the script class is attached via `scriptclass` in the layout file:
+VPP Admin Tools и другие моды используют `OnWidgetScriptInit()` для инициализации всплывающих окон. Виджет создаётся родителем, а класс скрипта привязывается через атрибут `scriptclass` в файле макета:
 
 ```c
 class MyPopup : ScriptedWidgetEventHandler
@@ -327,7 +329,7 @@ class MyPopup : ScriptedWidgetEventHandler
         m_BtnSave   = ButtonWidget.Cast(m_Root.FindAnyWidget("BtnSave"));
         m_NameInput = EditBoxWidget.Cast(m_Root.FindAnyWidget("NameInput"));
 
-        // Push dialog above other widgets
+        // Поместить диалог поверх других виджетов
         m_Root.SetSort(1024, true);
     }
 
@@ -361,12 +363,12 @@ class MyPopup : ScriptedWidgetEventHandler
 
     protected void SaveName(string name)
     {
-        // Process the input
+        // Обработка ввода
     }
 }
 ```
 
-Родитель создает всплывающее окно, создавая виджет макета как дочерний:
+Родитель создаёт всплывающее окно, создавая виджет макета как дочерний:
 
 ```c
 Widget popup = GetGame().GetWorkspace().CreateWidgets(
@@ -379,17 +381,17 @@ Widget popup = GetGame().GetWorkspace().CreateWidgets(
 
 ## Структура макета диалога
 
-Макет диалога обычно имеет три слоя: полноэкранный корневой элемент для перехвата кликов, полупрозрачный оверлей для затемнения и центрированную панель диалога.
+Макет диалога обычно имеет три слоя: полноэкранный корень для перехвата кликов, полупрозрачный оверлей для затемнения и центрированная панель диалога.
 
 ### Пример файла макета
 
 ```
 FrameWidget "DialogRoot" {
-    size 1 1 0 0        // Full screen
+    size 1 1 0 0        // Полный экран
     halign fill
     valign fill
 
-    // Semi-transparent background overlay
+    // Полупрозрачный фоновый оверлей
     ImageWidget "Overlay" {
         size 1 1 0 0
         halign fill
@@ -397,7 +399,7 @@ FrameWidget "DialogRoot" {
         color "0 0 0 180"
     }
 
-    // Centered dialog panel
+    // Центрированная панель диалога
     FrameWidget "DialogPanel" {
         halign center
         valign center
@@ -405,9 +407,9 @@ FrameWidget "DialogRoot" {
         vexactsize 1
         hexactpos  1
         vexactpos  1
-        size 0 0 500 300   // 500x300 pixel dialog
+        size 0 0 500 300   // Диалог 500x300 пикселей
 
-        // Title bar
+        // Заголовок
         TextWidget "TitleText" {
             halign fill
             size 1 0 0 30
@@ -415,14 +417,14 @@ FrameWidget "DialogRoot" {
             font "gui/fonts/MetronBook24"
         }
 
-        // Content area
+        // Область содержимого
         MultilineTextWidget "ContentText" {
             position 0 0 0 35
             size 1 0 0 200
             halign fill
         }
 
-        // Button row at bottom
+        // Ряд кнопок внизу
         FrameWidget "ButtonRow" {
             valign bottom
             halign fill
@@ -446,16 +448,16 @@ FrameWidget "DialogRoot" {
 
 ### Ключевые принципы макета
 
-1. **Full-screen root** -- The outermost widget covers the entire screen so clicks outside the dialog are intercepted.
-2. **Semi-transparent overlay** -- An `ImageWidget` or panel with alpha (e.g., `color "0 0 0 180"`) dims the background, visually indicating a modal state.
-3. **Centered panel** -- Use `halign center` and `valign center` with exact pixel sizes for predictable dimensions.
-4. **Button alignment** -- Place buttons in a horizontal container at the bottom of the dialog panel.
+1. **Полноэкранный корень** -- внешний виджет покрывает весь экран, чтобы клики за пределами диалога перехватывались.
+2. **Полупрозрачный оверлей** -- `ImageWidget` или панель с альфа-каналом (например, `color "0 0 0 180"`) затемняет фон, визуально указывая на модальное состояние.
+3. **Центрированная панель** -- используйте `halign center` и `valign center` с точными пиксельными размерами для предсказуемых размеров.
+4. **Выравнивание кнопок** -- разместите кнопки в горизонтальном контейнере в нижней части панели диалога.
 
 ---
 
 ## Паттерн диалога подтверждения
 
-Переиспользуемый диалог подтверждения принимает заголовок, сообщение и обратный вызов. Это самый распространенный паттерн диалога в модах DayZ.
+Переиспользуемый диалог подтверждения принимает заголовок, сообщение и обратный вызов. Это самый распространённый паттерн диалога в модах DayZ.
 
 ### Реализация
 
@@ -493,7 +495,7 @@ class ConfirmDialog : ScriptedWidgetEventHandler
         m_TitleText.SetText(title);
         m_ContentText.SetText(message);
 
-        // Ensure dialog renders above other UI
+        // Убедиться, что диалог рендерится поверх другого UI
         m_Root.SetSort(1024, true);
 
         GetGame().GetInput().ChangeGameFocus(1);
@@ -511,11 +513,11 @@ class ConfirmDialog : ScriptedWidgetEventHandler
         GetGame().GetInput().ChangeGameFocus(-1);
         GetGame().GetUIManager().ShowUICursor(false);
 
-        // Call the callback function on the target object
+        // Вызвать функцию обратного вызова на целевом объекте
         GetGame().GameScript.CallFunction(
             m_CallbackTarget, m_CallbackFunc, null, confirmed);
 
-        // Clean up -- defer deletion to avoid issues
+        // Очистка -- отложить удаление для избежания проблем
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
             DestroyDialog, 0, false);
     }
@@ -547,7 +549,7 @@ class ConfirmDialog : ScriptedWidgetEventHandler
 ### Использование
 
 ```c
-// In the calling class:
+// В вызывающем классе:
 void AskDeleteItem()
 {
     new ConfirmDialog(
@@ -567,7 +569,7 @@ void OnDeleteConfirmed(bool confirmed)
 }
 ```
 
-Обратный вызов использует `GameScript.CallFunction()`, который вызывает функцию по имени на целевом объекте. Это стандартный способ реализации обратных вызовов диалогов в модах DayZ, поскольку Enforce Script не поддерживает замыкания или делегаты.
+Обратный вызов использует `GameScript.CallFunction()`, который вызывает функцию по имени на целевом объекте. Это стандартный способ реализации обратных вызовов диалогов в модах DayZ, поскольку Enforce Script не поддерживает замыкания и делегаты.
 
 ---
 
@@ -641,7 +643,7 @@ class InputDialog : ScriptedWidgetEventHandler
             GetGame().GetInput().ChangeGameFocus(-1);
             GetGame().GetUIManager().ShowUICursor(false);
 
-            // Send result as Param2: OK status + text
+            // Отправить результат как Param2: статус OK + текст
             GetGame().GameScript.CallFunctionParams(
                 m_CallbackTarget, m_CallbackFunc, null,
                 new Param2<bool, string>(true, text));
@@ -672,10 +674,10 @@ class InputDialog : ScriptedWidgetEventHandler
     {
         if (w == m_InputBox)
         {
-            // Hide error when user starts typing
+            // Скрыть ошибку, когда пользователь начинает печатать
             m_ErrorText.Show(false);
 
-            // Submit on Enter key
+            // Отправить по нажатию Enter
             if (finished)
             {
                 OnClick(m_BtnOk, 0, 0, 0);
@@ -697,84 +699,84 @@ class InputDialog : ScriptedWidgetEventHandler
 
 ## Управление фокусом
 
-Управление фокусом --- наиболее критический аспект реализации диалогов. DayZ использует систему фокуса **со счетчиком ссылок** --- каждый вызов `ChangeGameFocus(1)` должен быть уравновешен вызовом `ChangeGameFocus(-1)`.
+Управление фокусом -- это наиболее критический аспект реализации диалогов. DayZ использует систему фокуса **с подсчётом ссылок** -- каждый `ChangeGameFocus(1)` должен быть сбалансирован `ChangeGameFocus(-1)`.
 
 ### Как это работает
 
 ```c
-// Increment focus counter -- game input is suppressed while counter > 0
+// Увеличить счётчик фокуса -- игровой ввод подавляется, пока счётчик > 0
 GetGame().GetInput().ChangeGameFocus(1);
 
-// Show the mouse cursor
+// Показать курсор мыши
 GetGame().GetUIManager().ShowUICursor(true);
 
-// ... dialog interaction ...
+// ... взаимодействие с диалогом ...
 
-// Decrement focus counter -- game input resumes when counter reaches 0
+// Уменьшить счётчик фокуса -- игровой ввод возобновляется, когда счётчик достигает 0
 GetGame().GetInput().ChangeGameFocus(-1);
 
-// Hide cursor (only if no other menus need it)
+// Скрыть курсор (только если другие меню его не требуют)
 GetGame().GetUIManager().ShowUICursor(false);
 ```
 
 ### Правила
 
-1. **Every +1 must have a matching -1.** If you call `ChangeGameFocus(1)` in `Show()`, you must call `ChangeGameFocus(-1)` in `Hide()`, with no exceptions.
+1. **Каждый +1 должен иметь соответствующий -1.** Если вы вызвали `ChangeGameFocus(1)` в `Show()`, вы должны вызвать `ChangeGameFocus(-1)` в `Hide()`, без исключений.
 
-2. **Call -1 even on error paths.** If the dialog is destroyed unexpectedly (player dies, server disconnect), the destructor must still decrement. Put cleanup in the destructor as a safety net.
+2. **Вызывайте -1 даже при ошибках.** Если диалог уничтожается неожиданно (игрок умер, отключение сервера), деструктор всё равно должен уменьшить счётчик. Поместите очистку в деструктор как страховку.
 
-3. **UIScriptedMenu handles this automatically.** If you extend `UIScriptedMenu` and call `super.OnShow()` / `super.OnHide()`, focus is managed for you. Only manage it manually when using `ScriptedWidgetEventHandler`.
+3. **UIScriptedMenu обрабатывает это автоматически.** Если вы наследуете `UIScriptedMenu` и вызываете `super.OnShow()` / `super.OnHide()`, фокус управляется за вас. Управляйте им вручную только при использовании `ScriptedWidgetEventHandler`.
 
-4. **Per-device focus is optional.** The engine supports per-device focus locking (`INPUT_DEVICE_MOUSE`, `INPUT_DEVICE_KEYBOARD`, `INPUT_DEVICE_GAMEPAD`). For most mod dialogs, a single `ChangeGameFocus(1)` (no device argument) locks all input.
+4. **Фокус для отдельных устройств опционален.** Движок поддерживает блокировку фокуса для отдельных устройств (`INPUT_DEVICE_MOUSE`, `INPUT_DEVICE_KEYBOARD`, `INPUT_DEVICE_GAMEPAD`). Для большинства диалогов модов одного `ChangeGameFocus(1)` (без аргумента устройства) достаточно для блокировки всего ввода.
 
-5. **ResetGameFocus() is a nuclear option.** It forces the counter to zero. Use it only in top-level cleanup (e.g., when closing an entire admin tool), never inside individual dialog classes.
+5. **ResetGameFocus() -- крайнее средство.** Оно принудительно сбрасывает счётчик в ноль. Используйте его только при очистке верхнего уровня (например, при закрытии всего инструмента администратора), никогда внутри отдельных классов диалогов.
 
-### Что идет не так
+### Что может пойти не так
 
-| Mistake | Symptom |
+| Ошибка | Симптом |
 |---------|---------|
-| Forgot `ChangeGameFocus(-1)` on close | Игрок не может двигаться, стрелять или взаимодействовать после закрытия диалога |
-| Called `-1` twice | Счетчик фокуса уходит в минус; next menu that opens will not properly lock input |
-| Forgot `ShowUICursor(false)` | Курсор мыши остается видимым постоянно |
-| Called `ShowUICursor(false)` when parent menu is still open | Курсор исчезает, пока родительское меню еще активно |
+| Забыли `ChangeGameFocus(-1)` при закрытии | Игрок не может двигаться, стрелять или взаимодействовать после закрытия диалога |
+| Вызвали `-1` дважды | Счётчик фокуса становится отрицательным; следующее открывшееся меню не сможет корректно заблокировать ввод |
+| Забыли `ShowUICursor(false)` | Курсор мыши остаётся видимым навсегда |
+| Вызвали `ShowUICursor(false)`, когда родительское меню ещё открыто | Курсор исчезает, пока родительское меню ещё активно |
 
 ---
 
 ## Z-порядок и слои
 
-When a dialog opens on top of existing UI, it must render above everything else. DayZ provides two mechanisms:
+Когда диалог открывается поверх существующего UI, он должен рендериться поверх всего. DayZ предоставляет два механизма:
 
 ### Порядок сортировки виджетов
 
 ```c
-// Push widget above all siblings (sort value 1024)
+// Поместить виджет поверх всех соседей (значение сортировки 1024)
 m_Root.SetSort(1024, true);
 ```
 
-The `SetSort()` method sets the rendering priority. Higher values render on top. The second parameter (`true`) applies recursively to children. VPP Admin Tools use `SetSort(1024, true)` for all dialog boxes.
+Метод `SetSort()` устанавливает приоритет рендеринга. Более высокие значения рендерятся поверх. Второй параметр (`true`) применяется рекурсивно к дочерним элементам. VPP Admin Tools использует `SetSort(1024, true)` для всех диалоговых окон.
 
-### Приоритет макета (статический)
+### Приоритет в макете (статический)
 
-In layout files, you can set priority directly:
+В файлах макета можно установить приоритет напрямую:
 
 ```
 FrameWidget "DialogRoot" {
-    // Higher values render on top
-    // Normal UI: 0-100
-    // Overlay:   998
-    // Dialog:    999
+    // Более высокие значения рендерятся поверх
+    // Обычный UI: 0-100
+    // Оверлей:    998
+    // Диалог:     999
 }
 ```
 
 ### Лучшие практики
 
-- **Overlay background**: Use a high sort value (e.g., 998) for the semi-transparent background.
-- **Dialog panel**: Use a higher sort value (e.g., 999 or 1024) for the dialog itself.
-- **Stacking dialogs**: If your system supports nested dialogs, increment the sort value for each new dialog layer.
+- **Фон оверлея**: используйте высокое значение сортировки (например, 998) для полупрозрачного фона.
+- **Панель диалога**: используйте ещё более высокое значение (например, 999 или 1024) для самого диалога.
+- **Вложенные диалоги**: если ваша система поддерживает вложенные диалоги, увеличивайте значение сортировки для каждого нового слоя.
 
 ---
 
-## Распространенные паттерны
+## Распространённые паттерны
 
 ### Переключаемая панель (открытие/закрытие одной клавишей)
 
@@ -822,7 +824,7 @@ class TogglePanel : ScriptedWidgetEventHandler
 ### ESC для закрытия
 
 ```c
-// Inside Update() of a UIScriptedMenu:
+// Внутри Update() UIScriptedMenu:
 override void Update(float timeslice)
 {
     super.Update(timeslice);
@@ -833,8 +835,8 @@ override void Update(float timeslice)
     }
 }
 
-// Inside a ScriptedWidgetEventHandler (no Update loop):
-// You must poll from an external update source, or use OnKeyDown:
+// Внутри ScriptedWidgetEventHandler (нет цикла Update):
+// Нужно опрашивать из внешнего источника обновлений или использовать OnKeyDown:
 override bool OnKeyDown(Widget w, int x, int y, int key)
 {
     if (key == KeyCode.KC_ESCAPE)
@@ -846,9 +848,9 @@ override bool OnKeyDown(Widget w, int x, int y, int key)
 }
 ```
 
-### Клик за пределами для закрытия
+### Клик вне для закрытия
 
-Сделайте полноэкранный виджет-оверлей кликабельным. При клике закрывайте диалог:
+Сделайте полноэкранный виджет оверлея кликабельным. При клике -- закрыть диалог:
 
 ```c
 class OverlayDialog : ScriptedWidgetEventHandler
@@ -864,13 +866,13 @@ class OverlayDialog : ScriptedWidgetEventHandler
         m_Overlay = m_Root.FindAnyWidget("Overlay");
         m_Panel   = m_Root.FindAnyWidget("DialogPanel");
 
-        // Register handler on both overlay and panel widgets
+        // Зарегистрировать обработчик на виджетах оверлея и панели
         m_Root.SetHandler(this);
     }
 
     override bool OnClick(Widget w, int x, int y, int button)
     {
-        // If user clicked the overlay (not the panel), close
+        // Если пользователь кликнул на оверлей (не на панель), закрыть
         if (w == m_Overlay)
         {
             Hide();
@@ -887,7 +889,7 @@ class OverlayDialog : ScriptedWidgetEventHandler
 Для диалогов, которым нужно возвращать сложные результаты, используйте `GameScript.CallFunctionParams()` с объектами `Param`:
 
 ```c
-// Sending a result with multiple values
+// Отправка результата с несколькими значениями
 GetGame().GameScript.CallFunctionParams(
     m_CallbackTarget,
     m_CallbackFunc,
@@ -895,7 +897,7 @@ GetGame().GameScript.CallFunctionParams(
     new Param2<int, string>(RESULT_OK, inputText)
 );
 
-// Receiving in the caller
+// Получение в вызывающем коде
 void OnDialogResult(int result, string text)
 {
     if (result == RESULT_OK)
@@ -909,9 +911,9 @@ void OnDialogResult(int result, string text)
 
 ---
 
-## UIScriptedWindow --- плавающие окна
+## UIScriptedWindow -- плавающие окна
 
-DayZ has a second built-in system: `UIScriptedWindow`, for floating windows that exist alongside a `UIScriptedMenu`. Unlike `UIScriptedMenu`, windows are tracked in a static map and their events are routed through the active menu.
+DayZ имеет вторую встроенную систему: `UIScriptedWindow`, для плавающих окон, которые существуют рядом с `UIScriptedMenu`. В отличие от `UIScriptedMenu`, окна отслеживаются в статическом словаре и их события маршрутизируются через активное меню.
 
 ```c
 class MyWindow extends UIScriptedWindow
@@ -929,26 +931,26 @@ class MyWindow extends UIScriptedWindow
 
     override bool OnClick(Widget w, int x, int y, int button)
     {
-        // Handle clicks
+        // Обработка кликов
         return false;
     }
 }
 ```
 
-Windows are opened and closed through the `UIManager`:
+Окна открываются и закрываются через `UIManager`:
 
 ```c
-// Open
+// Открыть
 GetGame().GetUIManager().OpenWindow(MY_WINDOW_ID);
 
-// Close
+// Закрыть
 GetGame().GetUIManager().CloseWindow(MY_WINDOW_ID);
 
-// Check if open
+// Проверить, открыто ли
 GetGame().GetUIManager().IsWindowOpened(MY_WINDOW_ID);
 ```
 
-На практике most mod developers use `ScriptedWidgetEventHandler`-based popups rather than `UIScriptedWindow`, because the window system requires registering with the engine's switch-case in `MissionBase` and the events route through the active `UIScriptedMenu`. The manual pattern is simpler and more flexible.
+На практике большинство разработчиков модов используют всплывающие окна на основе `ScriptedWidgetEventHandler`, а не `UIScriptedWindow`, потому что система окон требует регистрации в switch-case движка в `MissionBase` и события маршрутизируются через активное `UIScriptedMenu`. Ручной паттерн проще и гибче.
 
 ---
 
@@ -956,18 +958,18 @@ GetGame().GetUIManager().IsWindowOpened(MY_WINDOW_ID);
 
 ### 1. Не восстановлен фокус игры при закрытии
 
-**Проблема:** Player cannot move, shoot, or interact after the dialog closes.
+**Проблема:** игрок не может двигаться, стрелять или взаимодействовать после закрытия диалога.
 
 ```c
-// WRONG -- no focus restoration
+// НЕПРАВИЛЬНО -- нет восстановления фокуса
 void CloseDialog()
 {
     m_Root.Unlink();
     m_Root = null;
-    // Focus counter is still incremented!
+    // Счётчик фокуса всё ещё увеличен!
 }
 
-// CORRECT -- always decrement
+// ПРАВИЛЬНО -- всегда уменьшайте
 void CloseDialog()
 {
     m_Root.Unlink();
@@ -979,16 +981,16 @@ void CloseDialog()
 
 ### 2. Виджеты не отсоединены при закрытии
 
-**Проблема:** Widget tree stays in memory, events keep firing, memory leaks accumulate.
+**Проблема:** дерево виджетов остаётся в памяти, события продолжают генерироваться, утечки памяти накапливаются.
 
 ```c
-// WRONG -- just hiding
+// НЕПРАВИЛЬНО -- просто скрытие
 void Hide()
 {
-    m_Root.Show(false);  // Widget still exists and consumes memory
+    m_Root.Show(false);  // Виджет всё ещё существует и потребляет память
 }
 
-// CORRECT -- unlink destroys the widget tree
+// ПРАВИЛЬНО -- unlink уничтожает дерево виджетов
 void Hide()
 {
     if (m_Root)
@@ -999,23 +1001,23 @@ void Hide()
 }
 ```
 
-If you need to show/hide the same dialog repeatedly, keeping the widget and using `Show(true/false)` is fine -- just ensure you `Unlink()` in the destructor.
+Если вам нужно показывать/скрывать один и тот же диалог повторно, сохранение виджета и использование `Show(true/false)` допустимо -- просто убедитесь, что вызываете `Unlink()` в деструкторе.
 
-### 3. Диалог отрисовывается за другими элементами UI
+### 3. Диалог рендерится за другим UI
 
-**Проблема:** Dialog is invisible or partially hidden because other widgets have higher rendering priority.
+**Проблема:** диалог невидим или частично скрыт, потому что другие виджеты имеют более высокий приоритет рендеринга.
 
-**Решение:** Use `SetSort()` to push the dialog above everything:
+**Решение:** используйте `SetSort()` для помещения диалога поверх всего:
 
 ```c
 m_Root.SetSort(1024, true);
 ```
 
-### 4. Множественные диалоги с накоплением изменений фокуса
+### 4. Несколько диалогов накапливают изменения фокуса
 
-**Проблема:** Opening dialog A (+1), then dialog B (+1), then closing B (-1) -- focus counter is still 1, so input is still locked even though the user sees no dialog.
+**Проблема:** открытие диалога A (+1), затем диалога B (+1), затем закрытие B (-1) -- счётчик фокуса всё ещё 1, поэтому ввод всё ещё заблокирован, хотя пользователь не видит диалога.
 
-**Решение:** Track whether each dialog instance has locked focus, and only decrement if it did:
+**Решение:** отслеживайте, заблокировал ли каждый экземпляр диалога фокус, и уменьшайте только если он это сделал:
 
 ```c
 class SafeDialog : ScriptedWidgetEventHandler
@@ -1056,9 +1058,9 @@ class SafeDialog : ScriptedWidgetEventHandler
 
 ### 5. Вызов Close() или Delete в конструкторе
 
-**Проблема:** Calling `Close()` or `delete this` during construction causes crashes or undefined behavior because the object is not fully initialized.
+**Проблема:** вызов `Close()` или `delete this` во время конструирования вызывает крэши или неопределённое поведение, потому что объект ещё не полностью инициализирован.
 
-**Решение:** Defer closure using `CallLater`:
+**Решение:** отложите закрытие с помощью `CallLater`:
 
 ```c
 void MyDialog()
@@ -1066,8 +1068,8 @@ void MyDialog()
     // ...
     if (someErrorCondition)
     {
-        // WRONG: Close(); or delete this;
-        // CORRECT:
+        // НЕПРАВИЛЬНО: Close(); или delete this;
+        // ПРАВИЛЬНО:
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
             DeferredClose, 0, false);
     }
@@ -1075,22 +1077,22 @@ void MyDialog()
 
 void DeferredClose()
 {
-    Close();  // or: delete this;
+    Close();  // или: delete this;
 }
 ```
 
 ### 6. Отсутствие проверки на null перед операциями с виджетами
 
-**Проблема:** Crash when accessing a widget that was already destroyed or never created.
+**Проблема:** крэш при обращении к виджету, который уже уничтожен или никогда не был создан.
 
 ```c
-// WRONG
+// НЕПРАВИЛЬНО
 void UpdateMessage(string text)
 {
-    m_MessageText.SetText(text);  // Crash if m_MessageText is null
+    m_MessageText.SetText(text);  // Крэш, если m_MessageText равен null
 }
 
-// CORRECT
+// ПРАВИЛЬНО
 void UpdateMessage(string text)
 {
     if (m_MessageText)
@@ -1102,18 +1104,18 @@ void UpdateMessage(string text)
 
 ## Итоги
 
-| Подход | Базовый класс | Управление фокусом | Лучше для |
+| Подход | Базовый класс | Управление фокусом | Лучше всего для |
 |----------|-----------|-----------------|----------|
-| Engine menu stack | `UIScriptedMenu` | Автоматическое через `LockControls`/`UnlockControls` | Полноэкранные меню, основные диалоги |
-| Native dialog | `ShowDialog()` | Automatic | Простые запросы Да/Нет/ОК |
-| Ручное popup | `ScriptedWidgetEventHandler` | Ручное `ChangeGameFocus` | Всплывающие окна в панелях, пользовательские диалоги |
-| Floating window | `UIScriptedWindow` | Через родительское меню | Окна инструментов рядом с меню |
+| Стек меню движка | `UIScriptedMenu` | Автоматическое через `LockControls`/`UnlockControls` | Полноэкранные меню, основные диалоги |
+| Нативный диалог | `ShowDialog()` | Автоматическое | Простые запросы Да/Нет/OK |
+| Ручное всплывающее окно | `ScriptedWidgetEventHandler` | Ручной `ChangeGameFocus` | Всплывающие окна в панелях, пользовательские диалоги |
+| Плавающее окно | `UIScriptedWindow` | Через родительское меню | Инструментальные окна рядом с меню |
 
-Золотое правило: **каждый `ChangeGameFocus(1)` должен быть сбалансирован `ChangeGameFocus(-1)`.** Помещайте очистку фокуса в деструктор как страховку, всегда используйте `Unlink()` для виджетов по завершении и `SetSort()` для отрисовки диалога поверх всего.
+Золотое правило: **каждый `ChangeGameFocus(1)` должен иметь соответствующий `ChangeGameFocus(-1)`.** Помещайте очистку фокуса в деструктор как страховку, всегда вызывайте `Unlink()` для виджетов после завершения работы и используйте `SetSort()` для гарантии рендеринга диалога поверх.
 
 ---
 
-## Следующие шаги
+## Дальнейшие шаги
 
-- [3.6 Event Handling](06-event-handling.md) -- Handle clicks, hover, keyboard events inside dialogs
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Build dialog content dynamically in code
+- [3.6 Обработка событий](06-event-handling.md) -- обработка кликов, наведений, событий клавиатуры внутри диалогов
+- [3.5 Программное создание виджетов](05-programmatic-widgets.md) -- динамическое построение содержимого диалога в коде

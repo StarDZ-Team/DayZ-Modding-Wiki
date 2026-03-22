@@ -1,83 +1,107 @@
-# Chapter 3.6: Event Handling
+# 第 3.6 章：事件处理
 
-[Home](../../README.md) | [<< Previous: Programmatic Widget Creation](05-programmatic-widgets.md) | **Event Handling** | [Next: Styles, Fonts & Images >>](07-styles-fonts.md)
+[首页](../../README.md) | [<< 上一章：编程式控件创建](05-programmatic-widgets.md) | **事件处理** | [下一章：样式、字体与图像 >>](07-styles-fonts.md)
+
+---
+
+控件在用户与之交互时会生成事件 —— 点击按钮、在编辑框中输入、移动鼠标、拖动元素。本章介绍如何接收和处理这些事件。
 
 ---
 
 ## ScriptedWidgetEventHandler
 
-The `ScriptedWidgetEventHandler` class is the foundation of all widget event handling in DayZ. It provides override methods for every possible widget event.
+`ScriptedWidgetEventHandler` 类是 DayZ 中所有控件事件处理的基础。它提供了每种可能控件事件的可重写方法。
 
-To receive events from a widget, create a class that extends `ScriptedWidgetEventHandler`, override the event methods you care about, and attach the handler to the widget with `SetHandler()`.
+要从控件接收事件，创建一个继承 `ScriptedWidgetEventHandler` 的类，重写你关心的事件方法，然后使用 `SetHandler()` 将处理器附加到控件。
 
-### Complete Event Method List
+### 完整事件方法列表
 
 ```c
 class ScriptedWidgetEventHandler
 {
-    // Click events
+    // 点击事件
     bool OnClick(Widget w, int x, int y, int button);
     bool OnDoubleClick(Widget w, int x, int y, int button);
 
-    // Selection events
+    // 选择事件
     bool OnSelect(Widget w, int x, int y);
     bool OnItemSelected(Widget w, int x, int y, int row, int column,
                          int oldRow, int oldColumn);
 
-    // Focus events
+    // 焦点事件
     bool OnFocus(Widget w, int x, int y);
     bool OnFocusLost(Widget w, int x, int y);
 
-    // Mouse events
+    // 鼠标事件
     bool OnMouseEnter(Widget w, int x, int y);
     bool OnMouseLeave(Widget w, Widget enterW, int x, int y);
     bool OnMouseWheel(Widget w, int x, int y, int wheel);
     bool OnMouseButtonDown(Widget w, int x, int y, int button);
     bool OnMouseButtonUp(Widget w, int x, int y, int button);
 
-    // Keyboard events
+    // 键盘事件
     bool OnKeyDown(Widget w, int x, int y, int key);
     bool OnKeyUp(Widget w, int x, int y, int key);
     bool OnKeyPress(Widget w, int x, int y, int key);
 
-    // Change events (sliders, checkboxes, editboxes)
+    // 更改事件（滑块、复选框、编辑框）
     bool OnChange(Widget w, int x, int y, bool finished);
 
-    // Drag and drop events
+    // 拖放事件
     bool OnDrag(Widget w, int x, int y);
     bool OnDragging(Widget w, int x, int y, Widget receiver);
     bool OnDraggingOver(Widget w, int x, int y, Widget receiver);
     bool OnDrop(Widget w, int x, int y, Widget receiver);
     bool OnDropReceived(Widget w, int x, int y, Widget receiver);
 
-    // Controller (gamepad) events
+    // 手柄（手柄）事件
     bool OnController(Widget w, int control, int value);
 
-    // Layout events
+    // 布局事件
     bool OnResize(Widget w, int x, int y);
     bool OnChildAdd(Widget w, Widget child);
     bool OnChildRemove(Widget w, Widget child);
 
-    // Other
+    // 其他
     bool OnUpdate(Widget w);
     bool OnModalResult(Widget w, int x, int y, int code, int result);
 }
 ```
 
-### Return Value: Consumed vs. Pass-Through
+### 返回值：消费 vs 传递
 
-Every event handler returns a `bool`:
+每个事件处理器返回一个 `bool`：
 
-- **`return true;`** -- The event is **consumed**. No other handler will receive it. The event stops propagating up the widget hierarchy.
-- **`return false;`** -- The event is **passed through** to the parent widget's handler (if any).
+- **`return true;`** -- 事件被**消费**。没有其他处理器会接收到它。事件停止沿控件层次向上传播。
+- **`return false;`** -- 事件被**传递**给父控件的处理器（如果有的话）。
 
-This is critical for building layered UIs. For example, a button click handler should return `true` to prevent the click from also triggering a panel behind it.
+这对于构建分层 UI 至关重要。例如，按钮点击处理器应返回 `true` 以防止点击同时触发后面面板的行为。
+
+### 事件流程
+
+```mermaid
+sequenceDiagram
+    participant User as 用户输入
+    participant Widget as ButtonWidget
+    participant Handler as ScriptedWidgetEventHandler
+    participant Logic as 你的模块
+
+    User->>Widget: 鼠标点击
+    Widget->>Handler: OnClick(widget, x, y, button)
+    Handler->>Logic: 处理按钮操作
+
+    alt 返回 true
+        Logic-->>Handler: 事件被消费（停止传播）
+    else 返回 false
+        Handler-->>Widget: 事件传递给父控件
+    end
+```
 
 ---
 
-## Registering Handlers with SetHandler()
+## 使用 SetHandler() 注册处理器
 
-The simplest way to handle events is to call `SetHandler()` on a widget:
+处理事件的最简单方式是对控件调用 `SetHandler()`：
 
 ```c
 class MyPanel : ScriptedWidgetEventHandler
@@ -94,7 +118,7 @@ class MyPanel : ScriptedWidgetEventHandler
         m_SaveBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("SaveButton"));
         m_CancelBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("CancelButton"));
 
-        // Register this class as the event handler for both buttons
+        // 将此类注册为两个按钮的事件处理器
         m_SaveBtn.SetHandler(this);
         m_CancelBtn.SetHandler(this);
     }
@@ -104,7 +128,7 @@ class MyPanel : ScriptedWidgetEventHandler
         if (w == m_SaveBtn)
         {
             Save();
-            return true;  // Consumed
+            return true;  // 已消费
         }
 
         if (w == m_CancelBtn)
@@ -113,16 +137,16 @@ class MyPanel : ScriptedWidgetEventHandler
             return true;
         }
 
-        return false;  // Not our widget, pass through
+        return false;  // 不是我们的控件，传递
     }
 }
 ```
 
-A single handler instance can be registered on multiple widgets. Inside the event method, compare `w` (the widget that generated the event) against your cached references to determine which widget was interacted with.
+单个处理器实例可以注册到多个控件上。在事件方法内部，将 `w`（生成事件的控件）与你缓存的引用进行比较，以确定是哪个控件被交互了。
 
 ---
 
-## Common Events in Detail
+## 常见事件详解
 
 ### OnClick
 
@@ -130,16 +154,16 @@ A single handler instance can be registered on multiple widgets. Inside the even
 bool OnClick(Widget w, int x, int y, int button)
 ```
 
-Fired when a `ButtonWidget` is clicked (mouse released over the widget).
+当 `ButtonWidget` 被点击时触发（鼠标在控件上释放）。
 
-- `w` -- The clicked widget
-- `x, y` -- Mouse cursor position (screen pixels)
-- `button` -- Mouse button index: `0` = left, `1` = right, `2` = middle
+- `w` -- 被点击的控件
+- `x, y` -- 鼠标光标位置（屏幕像素）
+- `button` -- 鼠标按钮索引：`0` = 左键，`1` = 右键，`2` = 中键
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
 {
-    if (button != 0) return false;  // Only handle left click
+    if (button != 0) return false;  // 只处理左键点击
 
     if (w == m_MyButton)
     {
@@ -156,10 +180,10 @@ override bool OnClick(Widget w, int x, int y, int button)
 bool OnChange(Widget w, int x, int y, bool finished)
 ```
 
-Fired by `SliderWidget`, `CheckBoxWidget`, `EditBoxWidget`, and other value-based widgets when their value changes.
+当 `SliderWidget`、`CheckBoxWidget`、`EditBoxWidget` 及其他基于值的控件的值发生变化时触发。
 
-- `w` -- The widget whose value changed
-- `finished` -- For sliders: `true` when the user releases the slider handle. For edit boxes: `true` when Enter is pressed.
+- `w` -- 值发生变化的控件
+- `finished` -- 对于滑块：当用户释放滑块手柄时为 `true`。对于编辑框：当按下 Enter 键时为 `true`。
 
 ```c
 override bool OnChange(Widget w, int x, int y, bool finished)
@@ -169,14 +193,14 @@ override bool OnChange(Widget w, int x, int y, bool finished)
         SliderWidget slider = SliderWidget.Cast(w);
         float value = slider.GetCurrent();
 
-        // Only apply when user finishes dragging
+        // 仅在用户完成拖动时应用
         if (finished)
         {
             ApplyVolume(value);
         }
         else
         {
-            // Preview while dragging
+            // 拖动时预览
             PreviewVolume(value);
         }
         return true;
@@ -189,7 +213,7 @@ override bool OnChange(Widget w, int x, int y, bool finished)
 
         if (finished)
         {
-            // User pressed Enter
+            // 用户按下了 Enter
             SubmitName(text);
         }
         return true;
@@ -214,16 +238,16 @@ bool OnMouseEnter(Widget w, int x, int y)
 bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 ```
 
-Fired when the mouse cursor enters or leaves a widget's bounds. The `enterW` parameter in `OnMouseLeave` is the widget the cursor moved to.
+当鼠标光标进入或离开控件边界时触发。`OnMouseLeave` 中的 `enterW` 参数是光标移入的控件。
 
-Common use: hover effects.
+常见用途：悬停效果。
 
 ```c
 override bool OnMouseEnter(Widget w, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // Highlight
+        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // 高亮
         return true;
     }
     return false;
@@ -233,7 +257,7 @@ override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // Default
+        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // 默认
         return true;
     }
     return false;
@@ -247,7 +271,7 @@ bool OnFocus(Widget w, int x, int y)
 bool OnFocusLost(Widget w, int x, int y)
 ```
 
-Fired when a widget gains or loses keyboard focus. Important for edit boxes and other text input widgets.
+当控件获得或失去键盘焦点时触发。对于编辑框和其他文本输入控件很重要。
 
 ```c
 override bool OnFocus(Widget w, int x, int y)
@@ -277,9 +301,9 @@ override bool OnFocusLost(Widget w, int x, int y)
 bool OnMouseWheel(Widget w, int x, int y, int wheel)
 ```
 
-Fired when the mouse wheel scrolls over a widget. `wheel` is positive for scroll up, negative for scroll down.
+当鼠标滚轮在控件上滚动时触发。`wheel` 向上滚动为正值，向下滚动为负值。
 
-### OnKeyDown / OnKey上级 / OnKeyPress
+### OnKeyDown / OnKeyUp / OnKeyPress
 
 ```c
 bool OnKeyDown(Widget w, int x, int y, int key)
@@ -287,7 +311,7 @@ bool OnKeyUp(Widget w, int x, int y, int key)
 bool OnKeyPress(Widget w, int x, int y, int key)
 ```
 
-Keyboard events. The `key` parameter corresponds to `KeyCode` constants (e.g., `KeyCode.KC_ESCAPE`, `KeyCode.KC_RETURN`).
+键盘事件。`key` 参数对应 `KeyCode` 常量（例如 `KeyCode.KC_ESCAPE`、`KeyCode.KC_RETURN`）。
 
 ### OnDrag / OnDrop / OnDropReceived
 
@@ -297,11 +321,11 @@ bool OnDrop(Widget w, int x, int y, Widget receiver)
 bool OnDropReceived(Widget w, int x, int y, Widget receiver)
 ```
 
-Drag and drop events. The widget must have `draggable 1` in its layout (or `WidgetFlags.DRAGGABLE` set in code).
+拖放事件。控件必须在布局中设置 `draggable 1`（或在代码中设置 `WidgetFlags.DRAGGABLE`）。
 
-- `OnDrag` -- User started dragging widget `w`
-- `OnDrop` -- Widget `w` was dropped; `receiver` is the widget underneath
-- `OnDropReceived` -- Widget `w` received a drop; `receiver` is the dropped widget
+- `OnDrag` -- 用户开始拖动控件 `w`
+- `OnDrop` -- 控件 `w` 被放下；`receiver` 是下方的控件
+- `OnDropReceived` -- 控件 `w` 接收到一个放置；`receiver` 是被放置的控件
 
 ### OnItemSelected
 
@@ -310,18 +334,18 @@ bool OnItemSelected(Widget w, int x, int y, int row, int column,
                      int oldRow, int oldColumn)
 ```
 
-Fired by `TextListboxWidget` when a row is selected.
+当 `TextListboxWidget` 中的行被选中时触发。
 
 ---
 
-## Vanilla WidgetEventHandler (Callback Registration)
+## 原版 WidgetEventHandler（回调注册）
 
-DayZ's vanilla code uses an alternative pattern: `WidgetEventHandler`, a singleton that routes events to named callback functions. This is commonly used in vanilla menus.
+DayZ 的原版代码使用另一种模式：`WidgetEventHandler`，一个将事件路由到命名回调函数的单例。这在原版菜单中常用。
 
 ```c
 WidgetEventHandler handler = WidgetEventHandler.GetInstance();
 
-// Register event callbacks by function name
+// 按函数名注册事件回调
 handler.RegisterOnClick(myButton, this, "OnMyButtonClick");
 handler.RegisterOnMouseEnter(myWidget, this, "OnHoverStart");
 handler.RegisterOnMouseLeave(myWidget, this, "OnHoverEnd");
@@ -338,46 +362,46 @@ handler.RegisterOnDraggingOver(myWidget, this, "OnDragOver");
 handler.RegisterOnChildAdd(myWidget, this, "OnChildAdded");
 handler.RegisterOnChildRemove(myWidget, this, "OnChildRemoved");
 
-// Unregister all callbacks for a widget
+// 取消注册控件的所有回调
 handler.UnregisterWidget(myWidget);
 ```
 
-The callback function signatures must match the event type:
+回调函数签名必须匹配事件类型：
 
 ```c
 void OnMyButtonClick(Widget w, int x, int y, int button)
 {
-    // Handle click
+    // 处理点击
 }
 
 void OnHoverStart(Widget w, int x, int y)
 {
-    // Handle mouse enter
+    // 处理鼠标进入
 }
 
 void OnHoverEnd(Widget w, Widget enterW, int x, int y)
 {
-    // Handle mouse leave
+    // 处理鼠标离开
 }
 ```
 
 ### SetHandler() vs. WidgetEventHandler
 
-| Aspect | SetHandler() | WidgetEventHandler |
+| 方面 | SetHandler() | WidgetEventHandler |
 |---|---|---|
-| Pattern | Override virtual methods | Register named callbacks |
-| Handler per widget | One handler per widget | Multiple callbacks per event |
-| Used by | DabsFramework, Expansion, custom mods | Vanilla DayZ menus |
-| Flexibility | Must handle all events in one class | Can register different targets for different events |
-| Cleanup | Implicit when handler is destroyed | Must call `UnregisterWidget()` |
+| 模式 | 重写虚方法 | 注册命名回调 |
+| 每个控件的处理器 | 一个控件一个处理器 | 每个事件可以有多个回调 |
+| 使用者 | DabsFramework、Expansion、自定义模组 | 原版 DayZ 菜单 |
+| 灵活性 | 必须在一个类中处理所有事件 | 可以为不同事件注册不同目标 |
+| 清理 | 处理器销毁时隐式清理 | 必须调用 `UnregisterWidget()` |
 
-For new mods, `SetHandler()` with `ScriptedWidgetEventHandler` is the recommended approach.
+对于新模组，推荐使用 `SetHandler()` 配合 `ScriptedWidgetEventHandler`。
 
 ---
 
-## Complete Example: Interactive Button Panel
+## 完整示例：交互式按钮面板
 
-A panel with three buttons that change color on hover and perform actions on click:
+一个包含三个按钮的面板，悬停时变色，点击时执行操作：
 
 ```c
 class InteractivePanel : ScriptedWidgetEventHandler
@@ -402,7 +426,7 @@ class InteractivePanel : ScriptedWidgetEventHandler
         m_BtnReset  = ButtonWidget.Cast(m_Root.FindAnyWidget("BtnReset"));
         m_StatusText = TextWidget.Cast(m_Root.FindAnyWidget("StatusText"));
 
-        // Register this handler on all interactive widgets
+        // 在所有交互控件上注册此处理器
         m_BtnStart.SetHandler(this);
         m_BtnStop.SetHandler(this);
         m_BtnReset.SetHandler(this);
@@ -471,21 +495,21 @@ class InteractivePanel : ScriptedWidgetEventHandler
 
 ---
 
-## Event Handling Best Practices
+## 事件处理最佳实践
 
-1. **Always return `true` when you handle an event** -- Otherwise the event propagates to parent widgets and may trigger unintended behavior.
+1. **处理事件时始终返回 `true`** -- 否则事件会传播到父控件并可能触发意外行为。
 
-2. **Return `false` for events you do not handle** -- This allows parent widgets to process the event.
+2. **对不处理的事件返回 `false`** -- 这允许父控件处理该事件。
 
-3. **Cache widget references** -- Do not call `FindAnyWidget()` inside event handlers. Look up widgets once in the constructor and store references.
+3. **缓存控件引用** -- 不要在事件处理器内部调用 `FindAnyWidget()`。在构造函数中一次性查找控件并存储引用。
 
-4. **Null-check widgets in events** -- The widget `w` is usually valid, but defensive coding prevents crashes.
+4. **在事件中对控件进行空值检查** -- 控件 `w` 通常是有效的，但防御性编码可以防止崩溃。
 
-5. **Clean up handlers** -- When destroying a panel, unlink the root widget. If using `WidgetEventHandler`, call `UnregisterWidget()`.
+5. **清理处理器** -- 销毁面板时，取消链接根控件。如果使用 `WidgetEventHandler`，调用 `UnregisterWidget()`。
 
-6. **Use `finished` parameter wisely** -- For sliders, only apply expensive operations when `finished` is `true` (user released the handle). Use non-finished events for previewing.
+6. **明智地使用 `finished` 参数** -- 对于滑块，仅在 `finished` 为 `true`（用户释放手柄）时执行昂贵的操作。使用非 finished 事件进行预览。
 
-7. **Defer heavy work** -- If an event handler needs to do expensive computation, use `CallLater` to defer it:
+7. **延迟重度工作** -- 如果事件处理器需要执行昂贵的计算，使用 `CallLater` 延迟执行：
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
@@ -501,7 +525,40 @@ override bool OnClick(Widget w, int x, int y, int button)
 
 ---
 
+## 理论与实践
+
+> 文档所说的与运行时实际表现的对比。
+
+| 概念 | 理论 | 现实 |
+|---------|--------|---------|
+| `OnClick` 在任何控件上触发 | 任何控件都可以接收点击事件 | 只有 `ButtonWidget` 能可靠地触发 `OnClick`。对于其他控件类型，改用 `OnMouseButtonDown` / `OnMouseButtonUp` |
+| `SetHandler()` 替换处理器 | 设置新处理器会替换旧处理器 | 正确，但旧处理器不会被通知。如果它持有资源，会导致泄漏。替换处理器前始终先清理 |
+| `OnChange` 的 `finished` 参数 | 用户完成交互时为 `true` | 对于 `EditBoxWidget`，`finished` 仅在按 Enter 键时为 `true` —— 切换标签页或点击其他地方不会将 `finished` 设为 `true` |
+| 事件返回值传播 | `return false` 将事件传递给父控件 | 事件沿控件树向上传播，而非传递给兄弟控件。子控件的 `return false` 传递给其父控件，永远不会传递给相邻控件 |
+| `WidgetEventHandler` 回调名称 | 任何函数名都可以 | 函数必须在注册时存在于目标对象上。如果函数名拼写错误，注册会静默成功但回调永远不会触发 |
+
+---
+
+## 兼容性与影响
+
+- **多模组：** `SetHandler()` 每个控件只允许一个处理器。如果模组 A 和模组 B 都在同一个原版控件上调用 `SetHandler()`（通过 `modded class`），最后一个获胜，另一个静默停止接收事件。使用 `WidgetEventHandler.RegisterOnClick()` 以实现多模组兼容的增量添加。
+- **性能：** 事件处理器在游戏主线程上触发。慢速的 `OnClick` 处理器（例如文件 I/O 或复杂计算）会导致明显的帧率卡顿。使用 `GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater()` 延迟重度工作。
+- **版本：** `ScriptedWidgetEventHandler` API 自 DayZ 1.0 以来一直保持稳定。`WidgetEventHandler` 单例回调是原版模式，自早期 Enforce Script 版本以来一直存在且未改变。
+
+---
+
+## 在真实模组中的观察
+
+| 模式 | 模组 | 详情 |
+|---------|-----|--------|
+| 整个面板使用单个处理器 | COT、VPP Admin Tools | 一个 `ScriptedWidgetEventHandler` 子类处理面板中的所有按钮，通过将 `w` 与缓存的控件引用进行比较来分派 |
+| `WidgetEventHandler.RegisterOnClick` 用于模块化按钮 | Expansion Market | 每个动态创建的买入/卖出按钮注册自己的回调，允许每项单独的处理函数 |
+| `OnMouseEnter` / `OnMouseLeave` 用于悬停提示 | DayZ Editor | 悬停事件触发提示控件，通过 `GetMousePos()` 跟随光标位置 |
+| `OnClick` 中使用 `CallLater` 延迟 | DabsFramework | 重度操作（配置保存、RPC 发送）通过 `CallLater` 以 0ms 延迟，避免在事件期间阻塞 UI 线程 |
+
+---
+
 ## 后续步骤
 
-- [3.7 Styles, Fonts & Images](07-styles-fonts.md) -- Visual styling with styles, fonts, and imageset references
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Creating widgets that generate events
+- [3.7 样式、字体与图像](07-styles-fonts.md) -- 使用样式、字体和图像集引用进行视觉样式设置
+- [3.5 编程式控件创建](05-programmatic-widgets.md) -- 创建生成事件的控件
