@@ -1,31 +1,35 @@
-# Chapter 3.7: Styles, Fonts & Images
+# Глава 3.7: Стили, шрифты и изображения
 
-[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
+[Главная](../../README.md) | [<< Назад: Обработка событий](06-event-handling.md) | **Стили, шрифты и изображения** | [Далее: Диалоги и модальные окна >>](08-dialogs-modals.md)
 
 ---
 
-## Styles
+Эта глава охватывает визуальные строительные блоки UI DayZ: предопределённые стили, использование шрифтов, размеры текста, виджеты изображений с ссылками на imageset-ы и создание пользовательских imageset-ов для вашего мода.
 
-Styles are predefined visual appearances that can be applied to widgets via the `style` attribute in layout files. They control background rendering, borders, and overall look without requiring manual color and image configuration.
+---
 
-### Common Built-In Styles
+## Стили
 
-| Style Name | Description |
+Стили — это предопределённые визуальные оформления, которые можно применять к виджетам через атрибут `style` в файлах layout. Они управляют отрисовкой фона, рамками и общим видом без необходимости ручной настройки цветов и изображений.
+
+### Распространённые встроенные стили
+
+| Имя стиля | Описание |
 |---|---|
-| `blank` | No visual -- completely transparent background |
-| `Empty` | No background rendering |
-| `Default` | Default button/widget style with standard DayZ appearance |
-| `Colorable` | Style that can be tinted using `SetColor()` |
-| `rover_sim_colorable` | Colored panel style, commonly used for backgrounds |
-| `rover_sim_black` | Dark panel background |
-| `rover_sim_black_2` | Darker panel variant |
-| `Outline_1px_BlackBackground` | 1-pixel outline with solid black background |
-| `OutlineFilled` | Outline with a filled interior |
-| `DayZDefaultPanelRight` | DayZ default right panel style |
-| `DayZNormal` | DayZ normal text/widget style |
-| `MenuDefault` | Standard menu button style |
+| `blank` | Без визуала — полностью прозрачный фон |
+| `Empty` | Без отрисовки фона |
+| `Default` | Стиль кнопки/виджета по умолчанию со стандартным оформлением DayZ |
+| `Colorable` | Стиль, который можно тонировать через `SetColor()` |
+| `rover_sim_colorable` | Стиль цветной панели, часто используется для фонов |
+| `rover_sim_black` | Тёмный фон панели |
+| `rover_sim_black_2` | Более тёмный вариант панели |
+| `Outline_1px_BlackBackground` | Обводка 1 пиксель с чёрным фоном |
+| `OutlineFilled` | Обводка с заполненным интерьером |
+| `DayZDefaultPanelRight` | Стиль правой панели DayZ по умолчанию |
+| `DayZNormal` | Нормальный стиль текста/виджета DayZ |
+| `MenuDefault` | Стандартный стиль кнопки меню |
 
-### Using Styles in Layouts
+### Использование стилей в layout
 
 ```
 ButtonWidgetClass MyButton {
@@ -43,9 +47,9 @@ PanelWidgetClass Background {
 }
 ```
 
-### Style + Color Pattern
+### Паттерн стиль + цвет
 
-The `Colorable` and `rover_sim_colorable` styles are designed to be tinted. Set the `color` attribute in the layout or call `SetColor()` in code:
+Стили `Colorable` и `rover_sim_colorable` предназначены для тонирования. Задайте атрибут `color` в layout или вызовите `SetColor()` в коде:
 
 ```
 PanelWidgetClass TitleBar {
@@ -58,14 +62,14 @@ PanelWidgetClass TitleBar {
 ```
 
 ```c
-// Change color at runtime
+// Изменить цвет во время выполнения
 PanelWidget bar = PanelWidget.Cast(root.FindAnyWidget("TitleBar"));
 bar.SetColor(ARGB(240, 107, 165, 255));
 ```
 
-### Styles in Professional Mods
+### Стили в профессиональных модах
 
-DabsFramework dialogs use `Outline_1px_BlackBackground` for dialog containers:
+Диалоги DabsFramework используют `Outline_1px_BlackBackground` для контейнеров диалогов:
 
 ```
 WrapSpacerWidgetClass EditorDialog {
@@ -75,25 +79,25 @@ WrapSpacerWidgetClass EditorDialog {
 }
 ```
 
-Colorful UI uses `rover_sim_colorable` extensively for themed panels where the color is controlled by a centralized theme manager.
+Colorful UI активно использует `rover_sim_colorable` для тематических панелей, где цвет управляется централизованным менеджером тем.
 
 ---
 
-## Fonts
+## Шрифты
 
-DayZ includes several built-in fonts. Font paths are specified in the `font` attribute.
+DayZ включает несколько встроенных шрифтов. Пути шрифтов указываются в атрибуте `font`.
 
-### Built-In Font Paths
+### Пути встроенных шрифтов
 
-| Font Path | Description |
+| Путь шрифта | Описание |
 |---|---|
-| `"gui/fonts/Metron"` | Standard UI font |
-| `"gui/fonts/Metron28"` | Standard font, 28pt variant |
-| `"gui/fonts/Metron-Bold"` | Bold variant |
-| `"gui/fonts/Metron-Bold58"` | Bold 58pt variant |
-| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) font -- crisp at any size |
+| `"gui/fonts/Metron"` | Стандартный шрифт UI |
+| `"gui/fonts/Metron28"` | Стандартный шрифт, вариант 28pt |
+| `"gui/fonts/Metron-Bold"` | Жирный вариант |
+| `"gui/fonts/Metron-Bold58"` | Жирный вариант 58pt |
+| `"gui/fonts/sdf_MetronBook24"` | SDF-шрифт (Signed Distance Field) — чёткий при любом размере |
 
-### Using Fonts in Layouts
+### Использование шрифтов в layout
 
 ```
 TextWidgetClass Title {
@@ -109,27 +113,27 @@ TextWidgetClass Body {
 }
 ```
 
-### Using Fonts in Code
+### Использование шрифтов в коде
 
 ```c
 TextWidget tw = TextWidget.Cast(root.FindAnyWidget("MyText"));
 tw.SetText("Hello");
-// Font is set in the layout, not changeable at runtime via script
+// Шрифт задаётся в layout, его нельзя изменить в рантайме через скрипт
 ```
 
-### SDF Fonts
+### SDF-шрифты
 
-SDF (Signed Distance Field) fonts render crisply at any zoom level, making them ideal for UI elements that may appear at various sizes. The `sdf_MetronBook24` font is the best choice for text that needs to look sharp across different UI scale settings.
+SDF-шрифты (Signed Distance Field) отрисовываются чётко при любом уровне масштабирования, что делает их идеальными для элементов UI, которые могут отображаться при различных размерах. Шрифт `sdf_MetronBook24` — лучший выбор для текста, который должен выглядеть резко при различных настройках масштаба UI.
 
 ---
 
-## Text Sizing: "exact text" vs. Proportional
+## Размер текста: «exact text» и пропорциональный
 
-DayZ text widgets support two sizing modes, controlled by the `"exact text"` attribute:
+Текстовые виджеты DayZ поддерживают два режима размера, управляемых атрибутом `"exact text"`:
 
-### Proportional Text (Default)
+### Пропорциональный текст (по умолчанию)
 
-When `"exact text" 0` (the default), the font size is determined by the widget's height. The text scales with the widget. Это default behavior.
+При `"exact text" 0` (по умолчанию) размер шрифта определяется высотой виджета. Текст масштабируется вместе с виджетом. Это поведение по умолчанию.
 
 ```
 TextWidgetClass ScalingText {
@@ -140,9 +144,9 @@ TextWidgetClass ScalingText {
 }
 ```
 
-### Exact Text Size
+### Точный размер текста
 
-When `"exact text" 1`, the font size is a fixed pixel value set by `"exact text size"`:
+При `"exact text" 1` размер шрифта — фиксированное пиксельное значение, задаваемое через `"exact text size"`:
 
 ```
 TextWidgetClass FixedText {
@@ -155,31 +159,31 @@ TextWidgetClass FixedText {
 }
 ```
 
-### Which to Use?
+### Что использовать?
 
-| Scenario | Recommendation |
+| Сценарий | Рекомендация |
 |---|---|
-| HUD elements that scale with screen size | Proportional (default) |
-| Menu text at a specific size | `"exact text" 1` with `"exact text size"` |
-| Text that must match a specific font pixel size | `"exact text" 1` |
-| Text inside spacers/grids | Often proportional, determined by cell height |
+| Элементы HUD, масштабируемые с экраном | Пропорциональный (по умолчанию) |
+| Текст меню определённого размера | `"exact text" 1` с `"exact text size"` |
+| Текст, который должен соответствовать определённому пиксельному размеру шрифта | `"exact text" 1` |
+| Текст внутри spacer-ов/сеток | Часто пропорциональный, определяется высотой ячейки |
 
-### Text-Related Size Attributes
+### Атрибуты размера текста
 
-| Attribute | Effect |
+| Атрибут | Эффект |
 |---|---|
-| `"size to text h" 1` | Widget width adjusts to fit the text |
-| `"size to text v" 1` | Widget height adjusts to fit the text |
-| `"text sharpness"` | Float value controlling rendering sharpness |
-| `wrap 1` | Enable word wrapping for text that exceeds widget width |
+| `"size to text h" 1` | Ширина виджета подстраивается под текст |
+| `"size to text v" 1` | Высота виджета подстраивается под текст |
+| `"text sharpness"` | Значение float, управляющее резкостью отрисовки |
+| `wrap 1` | Включить перенос слов для текста, превышающего ширину виджета |
 
-The `"size to text"` attributes are useful for labels and tags where the widget should be exactly as large as its text content.
+Атрибуты `"size to text"` полезны для меток и тегов, где виджет должен быть точно такого размера, как его текстовое содержимое.
 
 ---
 
-## Text Alignment
+## Выравнивание текста
 
-Control where text appears within its widget using alignment attributes:
+Управляйте расположением текста внутри виджета с помощью атрибутов выравнивания:
 
 ```
 TextWidgetClass CenteredLabel {
@@ -189,36 +193,36 @@ TextWidgetClass CenteredLabel {
 }
 ```
 
-| Attribute | Values | Effect |
+| Атрибут | Значения | Эффект |
 |---|---|---|
-| `"text halign"` | `left`, `center`, `right` | Horizontal text position within widget |
-| `"text valign"` | `top`, `center`, `bottom` | Vertical text position within widget |
+| `"text halign"` | `left`, `center`, `right` | Горизонтальная позиция текста внутри виджета |
+| `"text valign"` | `top`, `center`, `bottom` | Вертикальная позиция текста внутри виджета |
 
 ---
 
-## Text Outline
+## Обводка текста
 
-Add outlines to text for readability on busy backgrounds:
+Добавьте обводку к тексту для читаемости на загруженных фонах:
 
 ```c
 TextWidget tw;
-tw.SetOutline(1, ARGB(255, 0, 0, 0));   // 1px black outline
+tw.SetOutline(1, ARGB(255, 0, 0, 0));   // обводка 1px чёрная
 
-int size = tw.GetOutlineSize();           // Read outline size
-int color = tw.GetOutlineColor();         // Read outline color (ARGB)
+int size = tw.GetOutlineSize();           // Прочитать размер обводки
+int color = tw.GetOutlineColor();         // Прочитать цвет обводки (ARGB)
 ```
 
 ---
 
 ## ImageWidget
 
-`ImageWidget` displays images from two sources: imageset references and dynamically loaded files.
+`ImageWidget` отображает изображения из двух источников: ссылки на imageset-ы и динамически загружаемые файлы.
 
-### Imageset References
+### Ссылки на imageset-ы
 
-The most common way to display images. An imageset is a sprite atlas ---  single texture file with multiple named sub-images.
+Самый распространённый способ отображения изображений. Imageset — это атлас спрайтов — один файл текстуры с несколькими именованными подизображениями.
 
-In a layout file:
+В файле layout:
 
 ```
 ImageWidgetClass MyIcon {
@@ -229,24 +233,24 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-The format is `"set:<imageset_name> image:<image_name>"`.
+Формат: `"set:<имя_imageset> image:<имя_изображения>"`.
 
-Common vanilla imagesets and images:
+Распространённые ванильные imageset-ы и изображения:
 
 ```
-"set:dayz_gui image:icon_pin"           -- Map pin icon
-"set:dayz_gui image:icon_refresh"       -- Refresh icon
-"set:dayz_gui image:icon_x"            -- Close/X icon
-"set:dayz_gui image:icon_missing"      -- Warning/missing icon
-"set:dayz_gui image:iconHealth0"       -- Health/plus icon
-"set:dayz_gui image:DayZLogo"          -- DayZ logo
-"set:dayz_gui image:Expand"            -- Expand arrow
-"set:dayz_gui image:Gradient"          -- Gradient strip
+"set:dayz_gui image:icon_pin"           -- Иконка маркера на карте
+"set:dayz_gui image:icon_refresh"       -- Иконка обновления
+"set:dayz_gui image:icon_x"            -- Иконка закрытия/крестик
+"set:dayz_gui image:icon_missing"      -- Иконка предупреждения/отсутствия
+"set:dayz_gui image:iconHealth0"       -- Иконка здоровья/плюс
+"set:dayz_gui image:DayZLogo"          -- Логотип DayZ
+"set:dayz_gui image:Expand"            -- Стрелка разворачивания
+"set:dayz_gui image:Gradient"          -- Полоса градиента
 ```
 
-### Multiple Image Slots
+### Множественные слоты изображений
 
-A single `ImageWidget` can hold multiple images in different slots (`image0`, `image1`, etc.) and switch between them:
+Один `ImageWidget` может содержать несколько изображений в разных слотах (`image0`, `image1` и т.д.) и переключаться между ними:
 
 ```
 ImageWidgetClass StatusIcon {
@@ -257,13 +261,13 @@ ImageWidgetClass StatusIcon {
 
 ```c
 ImageWidget icon;
-icon.SetImage(0);    // Show image0 (missing icon)
-icon.SetImage(1);    // Show image1 (health icon)
+icon.SetImage(0);    // Показать image0 (иконка отсутствия)
+icon.SetImage(1);    // Показать image1 (иконка здоровья)
 ```
 
-### Loading Images from Files
+### Загрузка изображений из файлов
 
-Load images dynamically at runtime:
+Загрузка изображений динамически во время выполнения:
 
 ```c
 ImageWidget img;
@@ -271,39 +275,39 @@ img.LoadImageFile(0, "MyMod/gui/textures/my_image.edds");
 img.SetImage(0);
 ```
 
-The path is relative to the mod's root directory. Supported formats include `.edds`, `.paa`, and `.tga` (though `.edds` is standard for DayZ).
+Путь указывается относительно корневого каталога мода. Поддерживаемые форматы включают `.edds`, `.paa` и `.tga` (хотя `.edds` — стандарт для DayZ).
 
-### Image Blend Modes
+### Режимы смешивания изображений
 
-The `mode` attribute controls how the image blends with what's behind it:
+Атрибут `mode` управляет тем, как изображение смешивается с тем, что находится за ним:
 
-| Mode | Effect |
+| Режим | Эффект |
 |---|---|
-| `blend` | Standard alpha blending (most common) |
-| `additive` | Colors add together (glow effects) |
-| `stretch` | Stretch to fill without blending |
+| `blend` | Стандартное альфа-смешивание (самый распространённый) |
+| `additive` | Цвета складываются (эффекты свечения) |
+| `stretch` | Растягивание для заполнения без смешивания |
 
-### Image Mask Transitions
+### Переходы с маской изображения
 
-`ImageWidget` supports mask-based reveal transitions:
+`ImageWidget` поддерживает переходы раскрытия на основе маски:
 
 ```c
 ImageWidget img;
 img.LoadMaskTexture("gui/textures/mask_wipe.edds");
-img.SetMaskProgress(0.5);  // 50% revealed
+img.SetMaskProgress(0.5);  // 50% раскрыто
 ```
 
-This is useful for loading bars, health displays, and reveal animations.
+Это полезно для полос загрузки, отображения здоровья и анимаций раскрытия.
 
 ---
 
-## ImageSet Format
+## Формат ImageSet
 
-An imageset file (`.imageset`) defines named regions within a sprite atlas texture. DayZ supports two imageset formats.
+Файл imageset (`.imageset`) определяет именованные регионы внутри текстуры атласа спрайтов. DayZ поддерживает два формата imageset.
 
-### DayZ Native Format
+### Нативный формат DayZ
 
-Used by vanilla DayZ and most mods. This is **not** XML --- он uses the same brace-delimited format as layout files.
+Используется ванильным DayZ и большинством модов. Это **не** XML — используется тот же формат с фигурными скобками, что и у файлов layout.
 
 ```
 ImageSetClass {
@@ -338,16 +342,16 @@ ImageSetClass {
 }
 ```
 
-Key fields:
-- `Name` -- Imageset name (used in `"set:<name>"`)
-- `RefSize` -- Reference size of the source texture in pixels (width height)
-- `path` -- Path to the texture file (`.edds`)
-- `mpix` -- Mipmap level (0 = standard resolution, 1 = 2x resolution)
-- Each image entry defines `Name`, `Pos` (x y in pixels), and `Size` (width height in pixels)
+Ключевые поля:
+- `Name` — Имя imageset-а (используется в `"set:<имя>"`)
+- `RefSize` — Эталонный размер исходной текстуры в пикселях (ширина высота)
+- `path` — Путь к файлу текстуры (`.edds`)
+- `mpix` — Уровень мипмэп (0 = стандартное разрешение, 1 = разрешение 2x)
+- Каждая запись изображения определяет `Name`, `Pos` (x y в пикселях) и `Size` (ширина высота в пикселях)
 
-### XML Format
+### XML-формат
 
-Some mods (including some DayZ Expansion modules) use an XML-based imageset format:
+Некоторые моды (включая некоторые модули DayZ Expansion) используют формат imageset на основе XML:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -358,23 +362,23 @@ Some mods (including some DayZ Expansion modules) use an XML-based imageset form
 </imageset>
 ```
 
-Both formats accomplish the same thing. The native format is used by vanilla DayZ; the XML format is sometimes easier to read and edit by hand.
+Оба формата делают одно и то же. Нативный формат используется ванильным DayZ; XML-формат иногда проще читать и редактировать вручную.
 
 ---
 
-## Creating Custom Imagesets
+## Создание пользовательских imageset-ов
 
-To create your own imageset for a mod:
+Чтобы создать собственный imageset для мода:
 
-### Шаг 1: Create the Sprite Atlas Texture
+### Шаг 1: Создание текстуры атласа спрайтов
 
-Use an image editor (Photoshop, GIMP, etc.) to create a single texture that contains all your icons/images arranged on a grid. Common sizes are 256x256, 512x512, or 1024x1024 pixels.
+Используйте графический редактор (Photoshop, GIMP и т.д.) для создания одной текстуры, содержащей все ваши иконки/изображения, расположенные на сетке. Типичные размеры: 256x256, 512x512 или 1024x1024 пикселей.
 
-Сохранить as `.tga`, then convert to `.edds` using DayZ Tools (TexView2 or the ImageTool).
+Сохраните как `.tga`, затем конвертируйте в `.edds` с помощью DayZ Tools (TexView2 или ImageTool).
 
-### Шаг 2: Create the Imageset File
+### Шаг 2: Создание файла imageset
 
-Create a `.imageset` file that maps named regions to positions in the texture:
+Создайте файл `.imageset`, который сопоставляет именованные регионы с позициями в текстуре:
 
 ```
 ImageSetClass {
@@ -403,31 +407,31 @@ ImageSetClass {
 }
 ```
 
-### Шаг 3: Register in config.cpp
+### Шаг 3: Регистрация в config.cpp
 
-In your mod's `config.cpp`, register the imageset under `CfgMods`:
+В `config.cpp` вашего мода зарегистрируйте imageset в `CfgMods`:
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        // ... other fields ...
+        // ... другие поля ...
         class defs
         {
             class imageSets
             {
                 files[] = { "MyMod/GUI/imagesets/mymod_icons.imageset" };
             };
-            // ... script modules ...
+            // ... скриптовые модули ...
         };
     };
 };
 ```
 
-### Шаг 4: Use in Layouts and Code
+### Шаг 4: Использование в layout и коде
 
-In layout files:
+В файлах layout:
 
 ```
 ImageWidgetClass MissionIcon {
@@ -437,19 +441,19 @@ ImageWidgetClass MissionIcon {
 }
 ```
 
-In code:
+В коде:
 
 ```c
 ImageWidget icon;
-// Images from registered imagesets are available by set:name image:name
-// No additional loading step needed after config.cpp registration
+// Изображения из зарегистрированных imageset-ов доступны по set:имя image:имя
+// Дополнительный шаг загрузки после регистрации в config.cpp не нужен
 ```
 
 ---
 
-## Color Theme Pattern
+## Паттерн цветовой темы
 
-Professional mods centralize their color definitions in a theme class, then apply colors at runtime. This makes it easy to restyle the entire UI by changing one file.
+Профессиональные моды централизуют определения цветов в классе темы, а затем применяют цвета во время выполнения. Это позволяет легко переоформить весь UI, изменив один файл.
 
 ```c
 class UIColor
@@ -465,7 +469,7 @@ class UIColor
 }
 ```
 
-Apply in code:
+Применение в коде:
 
 ```c
 titleBar.SetColor(UIColor.Primary());
@@ -473,15 +477,15 @@ statusText.SetColor(UIColor.Accent());
 errorText.SetColor(UIColor.Danger());
 ```
 
-This pattern (used by Colorful UI, MyMod, and others) means changing the entire UI color scheme requires editing only the theme class.
+Этот паттерн (используемый Colorful UI, MyMod и другими) означает, что для изменения всей цветовой схемы UI нужно отредактировать только класс темы.
 
 ---
 
-## Summary of Visual Attributes by Widget Type
+## Сводка визуальных атрибутов по типам виджетов
 
-| Widget | Key Visual Attributes |
+| Виджет | Ключевые визуальные атрибуты |
 |---|---|
-| Any widget | `color`, `visible`, `style`, `priority`, `inheritalpha` |
+| Любой виджет | `color`, `visible`, `style`, `priority`, `inheritalpha` |
 | TextWidget | `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `wrap` |
 | ImageWidget | `image0`, `mode`, `"src alpha"`, `stretch`, `"flip u"`, `"flip v"` |
 | ButtonWidget | `text`, `style`, `switch toggle` |
@@ -491,26 +495,45 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ---
 
-## Best Practices
+## Лучшие практики
 
-1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by the engine.
+1. **Используйте ссылки на imageset-ы** вместо прямых путей к файлам, где возможно — imageset-ы более эффективно батчатся движком.
 
-2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at any scale.
+2. **Используйте SDF-шрифты** (`sdf_MetronBook24`) для текста, который должен выглядеть резко при любом масштабе.
 
-3. **Use `"exact text" 1`** for UI text at specific pixel sizes; use proportional text for HUD elements that should scale.
+3. **Используйте `"exact text" 1`** для текста UI с определёнными пиксельными размерами; используйте пропорциональный текст для элементов HUD, которые должны масштабироваться.
 
-4. **Centralize colors** in a theme class rather than hardcoding ARGB values throughout your code.
+4. **Централизуйте цвета** в классе темы, а не разбрасывайте значения ARGB по всему коду.
 
-5. **Set `"src alpha" 1`** on image widgets to get proper transparency.
+5. **Устанавливайте `"src alpha" 1`** на виджетах изображений для правильной прозрачности.
 
-6. **Register custom imagesets** in `config.cpp` so they are available globally without manual loading.
+6. **Регистрируйте пользовательские imageset-ы** в `config.cpp`, чтобы они были доступны глобально без ручной загрузки.
 
-7. **Keep sprite atlases reasonably sized** -- 512x512 or 1024x1024 is typical. Larger textures waste memory if most of the space is empty.
+7. **Держите атласы спрайтов разумного размера** — 512x512 или 1024x1024 типично. Текстуры большего размера тратят память, если большая часть пространства пуста.
 
 ---
 
 ## Следующие шаги
 
+- [3.8 Диалоги и модальные окна](08-dialogs-modals.md) — Всплывающие окна, запросы подтверждения и панели наложения
+- [3.1 Типы виджетов](01-widget-types.md) — Обзор полного каталога виджетов
+- [3.6 Обработка событий](06-event-handling.md) — Сделайте ваши стилизованные виджеты интерактивными
 
-- [3.1 Widget Types](01-widget-types.md) -- Review the full widget catalog
-- [3.6 Event Handling](06-event-handling.md) -- Make your styled widgets interactive
+---
+
+## Теория и практика
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| SDF-шрифты масштабируются до любого размера | `sdf_MetronBook24` чёткий при всех размерах | Верно для размеров выше ~10px. Ниже этого SDF-шрифты могут выглядеть размыто по сравнению с растровыми шрифтами при их нативном размере |
+| `"exact text" 1` даёт пиксельно-точный размер | Шрифт отрисовывается с точно указанным пиксельным размером | DayZ применяет внутреннее масштабирование, поэтому `"exact text size" 16` может отрисовываться слегка по-разному на разных разрешениях. Тестируйте на 1080p и 1440p |
+| Встроенные стили покрывают все потребности | `Default`, `blank`, `Colorable` достаточно | Большинство профессиональных модов определяют собственные файлы `.styles`, потому что встроенные стили имеют ограниченное визуальное разнообразие |
+| XML и нативный форматы imageset эквивалентны | Оба определяют регионы спрайтов | Нативный формат с фигурными скобками обрабатывается движком быстрее всего. XML-формат работает, но добавляет шаг парсинга; используйте нативный формат для продакшна |
+| `SetColor()` переопределяет цвет layout | Цвет времени выполнения заменяет значение layout | `SetColor()` тонирует существующий визуал виджета. На стилизованных виджетах тонирование умножается на базовый цвет стиля, давая неожиданные результаты |
+
+---
+
+## Совместимость и влияние
+
+- **Мультимод:** Имена стилей глобальны. Если два мода регистрируют файл `.styles` с одинаковым именем стиля, побеждает последний загруженный мод. Добавляйте к пользовательским именам стилей идентификатор вашего мода (например, `MyMod_PanelDark`).
+- **Производительность:** Imageset-ы загружаются один раз в память GPU при запуске. Добавление больших атласов спрайтов (2048x2048+) увеличивает использование VRAM. Держите атласы на 512x512 или 1024x1024 и разделяйте на несколько imageset-ов при необходимости.

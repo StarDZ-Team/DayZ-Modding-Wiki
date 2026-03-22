@@ -1,83 +1,107 @@
-# Chapter 3.6: Event Handling
+# Глава 3.6: Обработка событий
 
-[Home](../../README.md) | [<< Previous: Programmatic Widget Creation](05-programmatic-widgets.md) | **Event Handling** | [Next: Styles, Fonts & Images >>](07-styles-fonts.md)
+[Главная](../../README.md) | [<< Назад: Программное создание виджетов](05-programmatic-widgets.md) | **Обработка событий** | [Далее: Стили, шрифты и изображения >>](07-styles-fonts.md)
+
+---
+
+Виджеты генерируют события, когда пользователь взаимодействует с ними — нажимает кнопки, вводит текст в поля ввода, перемещает мышь, перетаскивает элементы. Эта глава рассматривает, как получать и обрабатывать эти события.
 
 ---
 
 ## ScriptedWidgetEventHandler
 
-The `ScriptedWidgetEventHandler` class is the foundation of all widget event handling in DayZ. It provides override methods for every possible widget event.
+Класс `ScriptedWidgetEventHandler` является основой всей обработки событий виджетов в DayZ. Он предоставляет методы для переопределения для каждого возможного события виджета.
 
-To receive events from a widget, create a class that extends `ScriptedWidgetEventHandler`, override the event methods you care about, and attach the handler to the widget with `SetHandler()`.
+Чтобы получать события от виджета, создайте класс, расширяющий `ScriptedWidgetEventHandler`, переопределите нужные методы событий и прикрепите обработчик к виджету через `SetHandler()`.
 
-### Complete Event Method List
+### Полный список методов событий
 
 ```c
 class ScriptedWidgetEventHandler
 {
-    // Click events
+    // События кликов
     bool OnClick(Widget w, int x, int y, int button);
     bool OnDoubleClick(Widget w, int x, int y, int button);
 
-    // Selection events
+    // События выбора
     bool OnSelect(Widget w, int x, int y);
     bool OnItemSelected(Widget w, int x, int y, int row, int column,
                          int oldRow, int oldColumn);
 
-    // Focus events
+    // События фокуса
     bool OnFocus(Widget w, int x, int y);
     bool OnFocusLost(Widget w, int x, int y);
 
-    // Mouse events
+    // События мыши
     bool OnMouseEnter(Widget w, int x, int y);
     bool OnMouseLeave(Widget w, Widget enterW, int x, int y);
     bool OnMouseWheel(Widget w, int x, int y, int wheel);
     bool OnMouseButtonDown(Widget w, int x, int y, int button);
     bool OnMouseButtonUp(Widget w, int x, int y, int button);
 
-    // Keyboard events
+    // События клавиатуры
     bool OnKeyDown(Widget w, int x, int y, int key);
     bool OnKeyUp(Widget w, int x, int y, int key);
     bool OnKeyPress(Widget w, int x, int y, int key);
 
-    // Change events (sliders, checkboxes, editboxes)
+    // События изменения (ползунки, чекбоксы, поля ввода)
     bool OnChange(Widget w, int x, int y, bool finished);
 
-    // Drag and drop events
+    // События перетаскивания
     bool OnDrag(Widget w, int x, int y);
     bool OnDragging(Widget w, int x, int y, Widget receiver);
     bool OnDraggingOver(Widget w, int x, int y, Widget receiver);
     bool OnDrop(Widget w, int x, int y, Widget receiver);
     bool OnDropReceived(Widget w, int x, int y, Widget receiver);
 
-    // Controller (gamepad) events
+    // События контроллера (геймпада)
     bool OnController(Widget w, int control, int value);
 
-    // Layout events
+    // События компоновки
     bool OnResize(Widget w, int x, int y);
     bool OnChildAdd(Widget w, Widget child);
     bool OnChildRemove(Widget w, Widget child);
 
-    // Other
+    // Прочее
     bool OnUpdate(Widget w);
     bool OnModalResult(Widget w, int x, int y, int code, int result);
 }
 ```
 
-### Return Value: Consumed vs. Pass-Through
+### Возвращаемое значение: поглощение или передача
 
-Every event handler returns a `bool`:
+Каждый обработчик события возвращает `bool`:
 
-- **`return true;`** -- The event is **consumed**. No other handler will receive it. The event stops propagating up the widget hierarchy.
-- **`return false;`** -- The event is **passed through** to the parent widget's handler (if any).
+- **`return true;`** — Событие **поглощено**. Никакой другой обработчик его не получит. Событие прекращает распространение вверх по иерархии виджетов.
+- **`return false;`** — Событие **передаётся дальше** обработчику родительского виджета (если есть).
 
-This is critical for building layered UIs. Например, a button click handler should return `true` to prevent the click from also triggering a panel behind it.
+Это критично для построения многослойных UI. Например, обработчик клика кнопки должен возвращать `true`, чтобы предотвратить срабатывание клика на панели за ней.
+
+### Поток событий
+
+```mermaid
+sequenceDiagram
+    participant User as Пользовательский ввод
+    participant Widget as ButtonWidget
+    participant Handler as ScriptedWidgetEventHandler
+    participant Logic as Ваш модуль
+
+    User->>Widget: Клик мышью
+    Widget->>Handler: OnClick(widget, x, y, button)
+    Handler->>Logic: Обработка действия кнопки
+
+    alt return true
+        Logic-->>Handler: Событие поглощено (останавливает распространение)
+    else return false
+        Handler-->>Widget: Событие передано родительскому виджету
+    end
+```
 
 ---
 
-## Registering Handlers with SetHandler()
+## Регистрация обработчиков через SetHandler()
 
-The simplest way to handle events is to call `SetHandler()` on a widget:
+Самый простой способ обработки событий — вызвать `SetHandler()` на виджете:
 
 ```c
 class MyPanel : ScriptedWidgetEventHandler
@@ -94,7 +118,7 @@ class MyPanel : ScriptedWidgetEventHandler
         m_SaveBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("SaveButton"));
         m_CancelBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("CancelButton"));
 
-        // Register this class as the event handler for both buttons
+        // Зарегистрировать этот класс как обработчик событий для обеих кнопок
         m_SaveBtn.SetHandler(this);
         m_CancelBtn.SetHandler(this);
     }
@@ -104,7 +128,7 @@ class MyPanel : ScriptedWidgetEventHandler
         if (w == m_SaveBtn)
         {
             Save();
-            return true;  // Consumed
+            return true;  // Поглощено
         }
 
         if (w == m_CancelBtn)
@@ -113,16 +137,16 @@ class MyPanel : ScriptedWidgetEventHandler
             return true;
         }
 
-        return false;  // Not our widget, pass through
+        return false;  // Не наш виджет, передать дальше
     }
 }
 ```
 
-A single handler instance can be registered on multiple widgets. Inside the event method, compare `w` (the widget that generated the event) against your cached references to determine which widget was interacted with.
+Один экземпляр обработчика может быть зарегистрирован на нескольких виджетах. Внутри метода события сравнивайте `w` (виджет, сгенерировавший событие) с вашими кэшированными ссылками, чтобы определить, какой виджет был задействован.
 
 ---
 
-## Common Events in Detail
+## Основные события подробно
 
 ### OnClick
 
@@ -130,16 +154,16 @@ A single handler instance can be registered on multiple widgets. Inside the even
 bool OnClick(Widget w, int x, int y, int button)
 ```
 
-Fired when a `ButtonWidget` is clicked (mouse released over the widget).
+Генерируется при клике на `ButtonWidget` (мышь отпущена над виджетом).
 
-- `w` -- The clicked widget
-- `x, y` -- Mouse cursor position (screen pixels)
-- `button` -- Mouse button index: `0` = left, `1` = right, `2` = middle
+- `w` — Нажатый виджет
+- `x, y` — Позиция курсора мыши (экранные пиксели)
+- `button` — Индекс кнопки мыши: `0` = левая, `1` = правая, `2` = средняя
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
 {
-    if (button != 0) return false;  // Only handle left click
+    if (button != 0) return false;  // Обрабатывать только левый клик
 
     if (w == m_MyButton)
     {
@@ -156,10 +180,10 @@ override bool OnClick(Widget w, int x, int y, int button)
 bool OnChange(Widget w, int x, int y, bool finished)
 ```
 
-Fired by `SliderWidget`, `CheckBoxWidget`, `EditBoxWidget`, and other value-based widgets when their value changes.
+Генерируется `SliderWidget`, `CheckBoxWidget`, `EditBoxWidget` и другими виджетами со значениями при изменении значения.
 
-- `w` -- The widget whose value changed
-- `finished` -- For sliders: `true` when the user releases the slider handle. For edit boxes: `true` when Enter is pressed.
+- `w` — Виджет, значение которого изменилось
+- `finished` — Для ползунков: `true`, когда пользователь отпускает ручку. Для полей ввода: `true`, когда нажат Enter.
 
 ```c
 override bool OnChange(Widget w, int x, int y, bool finished)
@@ -169,14 +193,14 @@ override bool OnChange(Widget w, int x, int y, bool finished)
         SliderWidget slider = SliderWidget.Cast(w);
         float value = slider.GetCurrent();
 
-        // Only apply when user finishes dragging
+        // Применять только когда пользователь закончил перетаскивание
         if (finished)
         {
             ApplyVolume(value);
         }
         else
         {
-            // Preview while dragging
+            // Предпросмотр во время перетаскивания
             PreviewVolume(value);
         }
         return true;
@@ -189,7 +213,7 @@ override bool OnChange(Widget w, int x, int y, bool finished)
 
         if (finished)
         {
-            // User pressed Enter
+            // Пользователь нажал Enter
             SubmitName(text);
         }
         return true;
@@ -214,16 +238,16 @@ bool OnMouseEnter(Widget w, int x, int y)
 bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 ```
 
-Fired when the mouse cursor enters or leaves a widget's bounds. The `enterW` parameter in `OnMouseLeave` is the widget the cursor moved to.
+Генерируются, когда курсор мыши входит в область виджета или покидает её. Параметр `enterW` в `OnMouseLeave` — виджет, на который переместился курсор.
 
-Common use: hover effects.
+Типичное использование: эффекты наведения.
 
 ```c
 override bool OnMouseEnter(Widget w, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // Highlight
+        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // Подсветка
         return true;
     }
     return false;
@@ -233,7 +257,7 @@ override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // Default
+        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // По умолчанию
         return true;
     }
     return false;
@@ -247,29 +271,7 @@ bool OnFocus(Widget w, int x, int y)
 bool OnFocusLost(Widget w, int x, int y)
 ```
 
-Fired when a widget gains or loses keyboard focus. Important for edit boxes and other text input widgets.
-
-```c
-override bool OnFocus(Widget w, int x, int y)
-{
-    if (w == m_SearchBox)
-    {
-        m_SearchBox.SetColor(ARGB(255, 100, 160, 220));
-        return true;
-    }
-    return false;
-}
-
-override bool OnFocusLost(Widget w, int x, int y)
-{
-    if (w == m_SearchBox)
-    {
-        m_SearchBox.SetColor(ARGB(255, 60, 60, 60));
-        return true;
-    }
-    return false;
-}
-```
+Генерируются, когда виджет получает или теряет фокус клавиатуры. Важно для полей ввода и других виджетов текстового ввода.
 
 ### OnMouseWheel
 
@@ -277,7 +279,7 @@ override bool OnFocusLost(Widget w, int x, int y)
 bool OnMouseWheel(Widget w, int x, int y, int wheel)
 ```
 
-Fired when the mouse wheel scrolls over a widget. `wheel` is positive for scroll up, negative for scroll down.
+Генерируется при прокрутке колеса мыши над виджетом. `wheel` положительный при прокрутке вверх, отрицательный при прокрутке вниз.
 
 ### OnKeyDown / OnKeyUp / OnKeyPress
 
@@ -287,7 +289,7 @@ bool OnKeyUp(Widget w, int x, int y, int key)
 bool OnKeyPress(Widget w, int x, int y, int key)
 ```
 
-Keyboard events. The `key` parameter corresponds to `KeyCode` constants (e.g., `KeyCode.KC_ESCAPE`, `KeyCode.KC_RETURN`).
+События клавиатуры. Параметр `key` соответствует константам `KeyCode` (например, `KeyCode.KC_ESCAPE`, `KeyCode.KC_RETURN`).
 
 ### OnDrag / OnDrop / OnDropReceived
 
@@ -297,11 +299,11 @@ bool OnDrop(Widget w, int x, int y, Widget receiver)
 bool OnDropReceived(Widget w, int x, int y, Widget receiver)
 ```
 
-Drag and drop events. The widget must have `draggable 1` in its layout (or `WidgetFlags.DRAGGABLE` set in code).
+События перетаскивания. Виджет должен иметь `draggable 1` в layout (или `WidgetFlags.DRAGGABLE` в коде).
 
-- `OnDrag` -- User started dragging widget `w`
-- `OnDrop` -- Widget `w` was dropped; `receiver` is the widget underneath
-- `OnDropReceived` -- Widget `w` received a drop; `receiver` is the dropped widget
+- `OnDrag` — Пользователь начал перетаскивание виджета `w`
+- `OnDrop` — Виджет `w` был отпущен; `receiver` — виджет под ним
+- `OnDropReceived` — Виджет `w` принял отпущенный элемент; `receiver` — отпущенный виджет
 
 ### OnItemSelected
 
@@ -310,74 +312,58 @@ bool OnItemSelected(Widget w, int x, int y, int row, int column,
                      int oldRow, int oldColumn)
 ```
 
-Fired by `TextListboxWidget` when a row is selected.
+Генерируется `TextListboxWidget` при выборе строки.
 
 ---
 
-## Vanilla WidgetEventHandler (Callback Registration)
+## Ванильный WidgetEventHandler (регистрация коллбэков)
 
-DayZ's vanilla code uses an alternative pattern: `WidgetEventHandler`, a singleton that routes events to named callback functions. This is commonly used in vanilla menus.
+Ванильный код DayZ использует альтернативный паттерн: `WidgetEventHandler` — синглтон, маршрутизирующий события на именованные функции обратного вызова. Часто используется в ванильных меню.
 
 ```c
 WidgetEventHandler handler = WidgetEventHandler.GetInstance();
 
-// Register event callbacks by function name
+// Регистрация коллбэков по имени функции
 handler.RegisterOnClick(myButton, this, "OnMyButtonClick");
 handler.RegisterOnMouseEnter(myWidget, this, "OnHoverStart");
 handler.RegisterOnMouseLeave(myWidget, this, "OnHoverEnd");
 handler.RegisterOnDoubleClick(myWidget, this, "OnDoubleClick");
-handler.RegisterOnMouseButtonDown(myWidget, this, "OnMouseDown");
-handler.RegisterOnMouseButtonUp(myWidget, this, "OnMouseUp");
-handler.RegisterOnMouseWheel(myWidget, this, "OnWheel");
-handler.RegisterOnFocus(myWidget, this, "OnFocusGained");
-handler.RegisterOnFocusLost(myWidget, this, "OnFocusLost");
-handler.RegisterOnDrag(myWidget, this, "OnDragStart");
-handler.RegisterOnDrop(myWidget, this, "OnDropped");
-handler.RegisterOnDropReceived(myWidget, this, "OnDropReceived");
-handler.RegisterOnDraggingOver(myWidget, this, "OnDragOver");
-handler.RegisterOnChildAdd(myWidget, this, "OnChildAdded");
-handler.RegisterOnChildRemove(myWidget, this, "OnChildRemoved");
 
-// Unregister all callbacks for a widget
+// Отмена регистрации всех коллбэков для виджета
 handler.UnregisterWidget(myWidget);
 ```
 
-The callback function signatures must match the event type:
+Сигнатуры функций обратного вызова должны соответствовать типу события:
 
 ```c
 void OnMyButtonClick(Widget w, int x, int y, int button)
 {
-    // Handle click
+    // Обработка клика
 }
 
 void OnHoverStart(Widget w, int x, int y)
 {
-    // Handle mouse enter
-}
-
-void OnHoverEnd(Widget w, Widget enterW, int x, int y)
-{
-    // Handle mouse leave
+    // Обработка входа мыши
 }
 ```
 
 ### SetHandler() vs. WidgetEventHandler
 
-| Aspect | SetHandler() | WidgetEventHandler |
+| Аспект | SetHandler() | WidgetEventHandler |
 |---|---|---|
-| Pattern | Override virtual methods | Register named callbacks |
-| Handler per widget | One handler per widget | Multiple callbacks per event |
-| Used by | DabsFramework, Expansion, custom mods | Vanilla DayZ menus |
-| Flexibility | Must handle all events in one class | Can register different targets for different events |
-| Cleanup | Implicit when handler is destroyed | Must call `UnregisterWidget()` |
+| Паттерн | Переопределение виртуальных методов | Регистрация именованных коллбэков |
+| Обработчик на виджет | Один обработчик на виджет | Несколько коллбэков на событие |
+| Используется | DabsFramework, Expansion, пользовательские моды | Ванильные меню DayZ |
+| Гибкость | Все события в одном классе | Можно регистрировать разные цели для разных событий |
+| Очистка | Неявная при уничтожении обработчика | Нужно вызывать `UnregisterWidget()` |
 
-For new mods, `SetHandler()` with `ScriptedWidgetEventHandler` is the recommended approach.
+Для новых модов рекомендуется подход `SetHandler()` с `ScriptedWidgetEventHandler`.
 
 ---
 
-## Complete Example: Interactive Button Panel
+## Полный пример: интерактивная панель кнопок
 
-A panel with three buttons that change color on hover and perform actions on click:
+Панель с тремя кнопками, которые меняют цвет при наведении и выполняют действия по клику:
 
 ```c
 class InteractivePanel : ScriptedWidgetEventHandler
@@ -402,7 +388,7 @@ class InteractivePanel : ScriptedWidgetEventHandler
         m_BtnReset  = ButtonWidget.Cast(m_Root.FindAnyWidget("BtnReset"));
         m_StatusText = TextWidget.Cast(m_Root.FindAnyWidget("StatusText"));
 
-        // Register this handler on all interactive widgets
+        // Зарегистрировать обработчик на всех интерактивных виджетах
         m_BtnStart.SetHandler(this);
         m_BtnStop.SetHandler(this);
         m_BtnReset.SetHandler(this);
@@ -471,21 +457,21 @@ class InteractivePanel : ScriptedWidgetEventHandler
 
 ---
 
-## Event Handling Best Practices
+## Лучшие практики обработки событий
 
-1. **Always return `true` when you handle an event** -- Otherwise the event propagates to parent widgets and may trigger unintended behavior.
+1. **Всегда возвращайте `true`, когда обрабатываете событие** — иначе событие распространится на родительские виджеты и может вызвать непредвиденное поведение.
 
-2. **Return `false` for events you do not handle** -- Это позволяет parent widgets to process the event.
+2. **Возвращайте `false` для событий, которые не обрабатываете** — это позволяет родительским виджетам обработать событие.
 
-3. **Cache widget references** -- Do not call `FindAnyWidget()` inside event handlers. Look up widgets once in the constructor and store references.
+3. **Кэшируйте ссылки на виджеты** — не вызывайте `FindAnyWidget()` внутри обработчиков событий. Ищите виджеты один раз в конструкторе и сохраняйте ссылки.
 
-4. **Null-check widgets in events** -- The widget `w` is usually valid, but defensive coding prevents crashes.
+4. **Проверяйте виджеты на null в событиях** — виджет `w` обычно валиден, но защитное программирование предотвращает крэши.
 
-5. **Clean up handlers** -- When destroying a panel, unlink the root widget. If using `WidgetEventHandler`, call `UnregisterWidget()`.
+5. **Очищайте обработчики** — при уничтожении панели отвяжите корневой виджет. При использовании `WidgetEventHandler` вызовите `UnregisterWidget()`.
 
-6. **Use `finished` parameter wisely** -- For sliders, only apply expensive operations when `finished` is `true` (user released the handle). Use non-finished events for previewing.
+6. **Используйте параметр `finished` с умом** — для ползунков применяйте тяжёлые операции только при `finished == true` (пользователь отпустил ручку). Используйте события без `finished` для предпросмотра.
 
-7. **Defer heavy work** -- If an event handler needs to do expensive computation, use `CallLater` to defer it:
+7. **Откладывайте тяжёлую работу** — если обработчику события нужно выполнить затратные вычисления, используйте `CallLater` для отложенного выполнения:
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
@@ -501,8 +487,40 @@ override bool OnClick(Widget w, int x, int y, int button)
 
 ---
 
+## Теория и практика
+
+> Что говорит документация и как всё работает на самом деле в рантайме.
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| `OnClick` генерируется на любом виджете | Любой виджет может получать события клика | Только `ButtonWidget` надёжно генерирует `OnClick`. Для других типов виджетов используйте `OnMouseButtonDown` / `OnMouseButtonUp` |
+| `SetHandler()` заменяет обработчик | Установка нового обработчика заменяет старый | Верно, но старый обработчик не уведомляется. Если он удерживал ресурсы, они утекут. Всегда очищайте перед заменой обработчиков |
+| Параметр `finished` в `OnChange` | `true`, когда пользователь завершил взаимодействие | Для `EditBoxWidget` `finished` равен `true` только по клавише Enter — переключение табом или клик в другое место НЕ устанавливает `finished` в `true` |
+| Распространение возвращаемого значения | `return false` передаёт событие родителю | События распространяются вверх по дереву виджетов, не к соседним. `return false` от дочернего идёт к его родителю, никогда к соседнему виджету |
+| Имена коллбэков `WidgetEventHandler` | Любое имя функции подходит | Функция должна существовать на целевом объекте в момент регистрации. Если имя функции с ошибкой, регистрация молча проходит, но коллбэк никогда не вызывается |
+
+---
+
+## Совместимость и влияние
+
+- **Мультимод:** `SetHandler()` допускает только один обработчик на виджет. Если мод A и мод B оба вызовут `SetHandler()` на одном ванильном виджете (через `modded class`), последний побеждает, а другой молча перестаёт получать события. Используйте `WidgetEventHandler.RegisterOnClick()` для аддитивной мультимодовой совместимости.
+- **Производительность:** Обработчики событий выполняются в главном потоке игры. Медленный обработчик `OnClick` (например, файловый ввод-вывод или сложные вычисления) вызывает видимое подвисание кадра. Откладывайте тяжёлую работу через `GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater()`.
+- **Версия:** API `ScriptedWidgetEventHandler` стабилен с DayZ 1.0. Коллбэки синглтона `WidgetEventHandler` — ванильные паттерны, присутствующие с ранних версий Enforce Script, и остаются без изменений.
+
+---
+
+## Наблюдения в реальных модах
+
+| Паттерн | Мод | Детали |
+|---------|-----|--------|
+| Один обработчик для всей панели | COT, VPP Admin Tools | Один подкласс `ScriptedWidgetEventHandler` обрабатывает все кнопки панели, маршрутизируя по сравнению `w` с кэшированными ссылками |
+| `WidgetEventHandler.RegisterOnClick` для модульных кнопок | Expansion Market | Каждая динамически созданная кнопка покупки/продажи регистрирует свой коллбэк, позволяя обработчики для каждого предмета |
+| `OnMouseEnter` / `OnMouseLeave` для всплывающих подсказок | DayZ Editor | События наведения запускают виджеты подсказок, следующие за позицией курсора через `GetMousePos()` |
+| Отложенный `CallLater` в `OnClick` | DabsFramework | Тяжёлые операции (сохранение конфига, отправка RPC) откладываются на 0мс через `CallLater`, чтобы не блокировать поток UI во время события |
+
+---
+
 ## Следующие шаги
 
-
-- [3.7 Styles, Fonts & Images](07-styles-fonts.md) -- Visual styling with styles, fonts, and imageset references
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Creating widgets that generate events
+- [3.7 Стили, шрифты и изображения](07-styles-fonts.md) — Визуальное оформление стилями, шрифтами и ссылками на imageset-ы
+- [3.5 Программное создание виджетов](05-programmatic-widgets.md) — Создание виджетов, генерирующих события

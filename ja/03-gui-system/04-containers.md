@@ -1,17 +1,46 @@
-# Chapter 3.4: Container Widgets
+# 第3.4章: コンテナウィジェット
 
-[Home](../../README.md) | [<< Previous: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Next: Programmatic Widgets >>](05-programmatic-widgets.md)
+[ホーム](../../README.md) | [<< 前へ: サイズと配置](03-sizing-positioning.md) | **コンテナウィジェット** | [次へ: プログラムによるウィジェット作成 >>](05-programmatic-widgets.md)
 
 ---
 
-## FrameWidget -- Structural Container
+コンテナウィジェットは、内部の子ウィジェットを整理します。`FrameWidget` が最もシンプル（不可視のボックス、手動配置）ですが、DayZにはレイアウトを自動的に処理する3つの特殊コンテナが用意されています: `WrapSpacerWidget`、`GridSpacerWidget`、`ScrollWidget` です。
 
-`FrameWidget` is the most basic container. It draws nothing on screen and does not arrange its children -- you must position each child manually.
+### コンテナの比較
 
-**When to use:**
-- Grouping related widgets so they can be shown/hidden together
-- Root widget of a panel or dialog
-- Any structural grouping where you handle positioning yourself
+```mermaid
+graph LR
+    subgraph "FrameWidget (絶対配置)"
+        FA["子A<br/>pos: 10,10"]
+        FB["子B<br/>pos: 200,10"]
+        FC["子C<br/>pos: 10,100"]
+    end
+
+    subgraph "WrapSpacer (フロー)"
+        WA["アイテム1"] --> WB["アイテム2"] --> WC["アイテム3"]
+        WC --> WD["アイテム4<br/>(次の行に折り返し)"]
+    end
+
+    subgraph "GridSpacer (グリッド)"
+        GA["セル0,0"] --- GB["セル1,0"] --- GC["セル2,0"]
+        GD["セル0,1"] --- GE["セル1,1"] --- GF["セル2,1"]
+    end
+
+    style FA fill:#4A90D9,color:#fff
+    style WA fill:#2D8A4E,color:#fff
+    style GA fill:#D97A4A,color:#fff
+```
+
+---
+
+## FrameWidget -- 構造コンテナ
+
+`FrameWidget` は最も基本的なコンテナです。画面上に何も描画せず、子を配置しません -- 各子を手動で配置する必要があります。
+
+**使用すべき場合:**
+- 関連するウィジェットをグループ化して、まとめて表示/非表示にする
+- パネルやダイアログのルートウィジェット
+- 配置を自分で処理する構造的なグループ化
 
 ```
 FrameWidgetClass MyPanel {
@@ -44,30 +73,30 @@ FrameWidgetClass MyPanel {
 }
 ```
 
-**Key characteristics:**
-- No visual appearance (transparent)
-- Children positioned relative to the frame's bounds
-- No automatic layout -- every child needs explicit position/size
-- Lightweight -- zero rendering cost beyond its children
+**主な特徴:**
+- 視覚的な外観なし（透明）
+- 子はフレームの境界に対して相対的に配置
+- 自動レイアウトなし -- すべての子に明示的な位置/サイズが必要
+- 軽量 -- 子以外のレンダリングコストはゼロ
 
 ---
 
-## WrapSpacerWidget -- Flow Layout
+## WrapSpacerWidget -- フローレイアウト
 
-`WrapSpacerWidget` automatically arranges its children in a flow sequence. Children are placed one after another horizontally, wrapping to the next row when they exceed the available width. This is the widget to use for dynamic lists where the number of children changes at runtime.
+`WrapSpacerWidget` は子を自動的にフローシーケンスで配置します。子は水平に次々と配置され、利用可能な幅を超えると次の行に折り返されます。これは、子の数が実行時に変わる動的リストに使用するウィジェットです。
 
-### Layout Attributes
+### レイアウト属性
 
-| Attribute | Values | Description |
+| 属性 | 値 | 説明 |
 |---|---|---|
-| `Padding` | integer (pixels) | Space between the spacer's edge and its children |
-| `Margin` | integer (pixels) | Space between individual children |
-| `"Size To Content H"` | `0` or `1` | Resize width to fit all children |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit all children |
-| `content_halign` | `left`, `center`, `right` | Horizontal alignment of the child group |
-| `content_valign` | `top`, `center`, `bottom` | Vertical alignment of the child group |
+| `Padding` | 整数（ピクセル） | スペーサーの端と子の間のスペース |
+| `Margin` | 整数（ピクセル） | 個々の子の間のスペース |
+| `"Size To Content H"` | `0` または `1` | すべての子に合わせて幅をリサイズ |
+| `"Size To Content V"` | `0` または `1` | すべての子に合わせて高さをリサイズ |
+| `content_halign` | `left`、`center`、`right` | 子グループの水平方向の配置 |
+| `content_valign` | `top`、`center`、`bottom` | 子グループの垂直方向の配置 |
 
-### Basic Flow Layout
+### 基本的なフローレイアウト
 
 ```
 WrapSpacerWidgetClass TagList {
@@ -99,16 +128,16 @@ WrapSpacerWidgetClass TagList {
 }
 ```
 
-In this example:
-- The spacer is full parent width (`size 1`), but its height adjusts to fit children (`"Size To Content V" 1`).
-- Children are 80px, 60px, and 90px wide buttons.
-- If the available width cannot fit all three on one row, the spacer wraps them to the next row.
-- `Padding 5` adds 5px of space inside the spacer edges.
-- `Margin 3` adds 3px between each child.
+この例では:
+- スペーサーは親の全幅（`size 1`）ですが、高さは子に合わせて調整されます（`"Size To Content V" 1`）。
+- 子は80px、60px、90px幅のボタンです。
+- 利用可能な幅に3つすべてが1行に収まらない場合、スペーサーは次の行に折り返します。
+- `Padding 5` はスペーサーの端の内側に5pxのスペースを追加します。
+- `Margin 3` は各子の間に3pxのスペースを追加します。
 
-### Vertical List with WrapSpacer
+### WrapSpacerによる垂直リスト
 
-To create a vertical list (one item per row), make children full-width:
+垂直リスト（1行に1アイテム）を作成するには、子を全幅にします:
 
 ```
 WrapSpacerWidgetClass ItemList {
@@ -131,38 +160,38 @@ WrapSpacerWidgetClass ItemList {
 }
 ```
 
-Each child is 100% width (`size 1` with `hexactsize 0`), so only one fits per row, creating a vertical stack.
+各子は100%幅（`size 1` と `hexactsize 0`）のため、1行に1つだけ収まり、垂直スタックが作成されます。
 
-### Dynamic Children
+### 動的な子
 
-`WrapSpacerWidget` is ideal for programmatically added children. When you add or remove children, call `Update()` on the spacer to trigger a re-layout:
+`WrapSpacerWidget` はプログラムで追加される子に最適です。子を追加または削除した場合、スペーサーで `Update()` を呼び出してレイアウトの再計算をトリガーします:
 
 ```c
 WrapSpacerWidget spacer;
 
-// Add a child from a layout file
+// レイアウトファイルから子を追加
 Widget child = GetGame().GetWorkspace().CreateWidgets("MyMod/gui/layouts/ListItem.layout", spacer);
 
-// Force the spacer to recalculate
+// スペーサーに再計算を強制
 spacer.Update();
 ```
 
 ---
 
-## GridSpacerWidget -- Grid Layout
+## GridSpacerWidget -- グリッドレイアウト
 
-`GridSpacerWidget` arranges children in a uniform grid. You define the number of columns and rows, and each cell gets equal space.
+`GridSpacerWidget` は子を均一なグリッドに配置します。列と行の数を定義すると、各セルに等しいスペースが割り当てられます。
 
-### Layout Attributes
+### レイアウト属性
 
-| Attribute | Values | Description |
+| 属性 | 値 | 説明 |
 |---|---|---|
-| `Columns` | integer | Number of grid columns |
-| `Rows` | integer | Number of grid rows |
-| `Margin` | integer (pixels) | Space between grid cells |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit content |
+| `Columns` | 整数 | グリッドの列数 |
+| `Rows` | 整数 | グリッドの行数 |
+| `Margin` | 整数（ピクセル） | グリッドセル間のスペース |
+| `"Size To Content V"` | `0` または `1` | コンテンツに合わせて高さをリサイズ |
 
-### Basic Grid
+### 基本的なグリッド
 
 ```
 GridSpacerWidgetClass InventoryGrid {
@@ -173,8 +202,8 @@ GridSpacerWidgetClass InventoryGrid {
  Rows 3
  Margin 2
  {
-  // 12 cells (4 columns x 3 rows)
-  // Children are placed in order: left-to-right, top-to-bottom
+  // 12セル（4列 x 3行）
+  // 子は順番に配置: 左から右、上から下
   FrameWidgetClass Slot1 { }
   FrameWidgetClass Slot2 { }
   FrameWidgetClass Slot3 { }
@@ -191,9 +220,9 @@ GridSpacerWidgetClass InventoryGrid {
 }
 ```
 
-### Single-Column Grid (Vertical List)
+### 単一列グリッド（垂直リスト）
 
-Setting `Columns 1` creates a simple vertical stack where each child gets the full width:
+`Columns 1` を設定すると、各子が全幅を取得するシンプルな垂直スタックが作成されます:
 
 ```
 GridSpacerWidgetClass SettingsList {
@@ -221,39 +250,39 @@ GridSpacerWidgetClass SettingsList {
 }
 ```
 
-### GridSpacer vs. WrapSpacer
+### GridSpacer vs WrapSpacer
 
-| Feature | GridSpacer | WrapSpacer |
+| 機能 | GridSpacer | WrapSpacer |
 |---|---|---|
-| Cell size | Uniform (equal) | Each child keeps its own size |
-| Layout mode | Fixed grid (columns x rows) | Flow with wrapping |
-| Best for | Inventory slots, uniform galleries | Dynamic lists, tag clouds |
-| Children sizing | Ignored (grid controls it) | Respected (child size matters) |
+| セルサイズ | 均一（等しい） | 各子が独自のサイズを維持 |
+| レイアウトモード | 固定グリッド（列 x 行） | 折り返しのあるフロー |
+| 最適な用途 | インベントリスロット、均一なギャラリー | 動的リスト、タグクラウド |
+| 子のサイズ設定 | 無視（グリッドが制御） | 尊重（子のサイズが重要） |
 
 ---
 
-## ScrollWidget -- Scrollable Viewport
+## ScrollWidget -- スクロール可能なビューポート
 
-`ScrollWidget` wraps content that may be taller (or wider) than the visible area, providing scrollbars for navigation.
+`ScrollWidget` は表示領域より高い（または広い）コンテンツをラップし、ナビゲーション用のスクロールバーを提供します。
 
-### Layout Attributes
+### レイアウト属性
 
-| Attribute | Values | Description |
+| 属性 | 値 | 説明 |
 |---|---|---|
-| `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
-| `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
+| `"Scrollbar V"` | `0` または `1` | 垂直スクロールバーを表示 |
+| `"Scrollbar H"` | `0` または `1` | 水平スクロールバーを表示 |
 
-### Script API
+### スクリプトAPI
 
 ```c
 ScrollWidget sw;
-sw.VScrollToPos(float pos);     // Scroll to vertical position (0 = top)
-sw.GetVScrollPos();             // Get current scroll position
-sw.GetContentHeight();          // Get total content height
-sw.VScrollStep(int step);       // Scroll by a step amount
+sw.VScrollToPos(float pos);     // 垂直位置にスクロール（0 = 上端）
+sw.GetVScrollPos();             // 現在のスクロール位置を取得
+sw.GetContentHeight();          // コンテンツの合計高さを取得
+sw.VScrollStep(int step);       // ステップ量でスクロール
 ```
 
-### Basic Scrollable List
+### 基本的なスクロール可能リスト
 
 ```
 ScrollWidgetClass ListScroll {
@@ -267,7 +296,7 @@ ScrollWidgetClass ListScroll {
    hexactsize 0
    "Size To Content V" 1
    {
-    // Many children here...
+    // ここに多くの子...
     FrameWidgetClass Item1 {
      size 1 30
      hexactsize 0
@@ -278,7 +307,7 @@ ScrollWidgetClass ListScroll {
      hexactsize 0
      vexactsize 1
     }
-    // ... more items
+    // ... さらにアイテム
    }
   }
  }
@@ -287,19 +316,40 @@ ScrollWidgetClass ListScroll {
 
 ---
 
-## The ScrollWidget + WrapSpacer Pattern
+## ScrollWidget + WrapSpacerパターン
 
-This is **the** pattern for scrollable dynamic lists in DayZ mods. It combines a fixed-height `ScrollWidget` with a `WrapSpacerWidget` that grows to fit its children.
+### ScrollWidget + WrapSpacerパターン
+
+```mermaid
+graph TB
+    SCROLL["ScrollWidget<br/>固定ビューポートサイズ<br/>Scrollbar V = 1"]
+    WRAP["WrapSpacerWidget<br/>size: 1 0<br/>Size To Content V = 1"]
+    I1["アイテム1"]
+    I2["アイテム2"]
+    I3["アイテム3"]
+    I4["アイテムN..."]
+
+    SCROLL --> WRAP
+    WRAP --> I1
+    WRAP --> I2
+    WRAP --> I3
+    WRAP --> I4
+
+    style SCROLL fill:#4A90D9,color:#fff
+    style WRAP fill:#2D8A4E,color:#fff
+```
+
+これはDayZ MODにおけるスクロール可能な動的リストの**標準パターン**です。固定高さの `ScrollWidget` と、子に合わせて成長する `WrapSpacerWidget` を組み合わせます。
 
 ```
-// Fixed-height scroll viewport
+// 固定高さのスクロールビューポート
 ScrollWidgetClass DialogScroll {
  size 0.97 235
  hexactsize 0
  vexactsize 1
  "Scrollbar V" 1
  {
-  // Content grows vertically to fit all children
+  // コンテンツはすべての子に合わせて垂直に成長
   WrapSpacerWidgetClass DialogContent {
    size 1 0
    hexactsize 0
@@ -309,15 +359,15 @@ ScrollWidgetClass DialogScroll {
 }
 ```
 
-仕組み：
+仕組み:
 
-1. The `ScrollWidget` has a **fixed** height (235 pixels in this example).
-2. Inside it, the `WrapSpacerWidget` has `"Size To Content V" 1`, so its height grows as children are added.
-3. When the spacer's content exceeds 235 pixels, the scrollbar appears and the user can scroll.
+1. `ScrollWidget` は**固定**の高さを持ちます（この例では235ピクセル）。
+2. 内部の `WrapSpacerWidget` は `"Size To Content V" 1` を持つため、子が追加されると高さが増加します。
+3. スペーサーのコンテンツが235ピクセルを超えると、スクロールバーが表示され、ユーザーがスクロールできるようになります。
 
-このパターンは以下のMod全体に見られます： DabsFramework, DayZ Editor, Expansion, および事実上すべてのプロの DayZ Mod。
+このパターンはDabsFramework、DayZ Editor、Expansion、およびほぼすべてのプロフェッショナルなDayZ MODに見られます。
 
-### Adding Items Programmatically
+### プログラムによるアイテムの追加
 
 ```c
 ScrollWidget m_Scroll;
@@ -325,15 +375,15 @@ WrapSpacerWidget m_Content;
 
 void AddItem(string text)
 {
-    // Create a new child inside the WrapSpacer
+    // WrapSpacer内に新しい子を作成
     Widget item = GetGame().GetWorkspace().CreateWidgets(
         "MyMod/gui/layouts/ListItem.layout", m_Content);
 
-    // Configure the new item
+    // 新しいアイテムを設定
     TextWidget tw = TextWidget.Cast(item.FindAnyWidget("Label"));
     tw.SetText(text);
 
-    // Force layout recalculation
+    // レイアウトの再計算を強制
     m_Content.Update();
 }
 
@@ -344,7 +394,7 @@ void ScrollToBottom()
 
 void ClearAll()
 {
-    // Remove all children
+    // すべての子を削除
     Widget child = m_Content.GetChildren();
     while (child)
     {
@@ -360,37 +410,37 @@ void ClearAll()
 
 ## ネストのルール
 
-コンテナをネストして複雑なレイアウトを作成できます。 いくつかのガイドライン：
+コンテナをネストして複雑なレイアウトを作成できます。いくつかのガイドライン:
 
-1. **FrameWidget inside anything** -- Always works. Use frames to group sub-sections within spacers or grids.
+1. **FrameWidget は何にでも入る** -- 常に動作します。スペーサーやグリッド内のサブセクションをグループ化するためにフレームを使用します。
 
-2. **WrapSpacer inside ScrollWidget** -- The standard pattern for scrollable lists. The spacer grows; the scroll clips.
+2. **ScrollWidget内のWrapSpacer** -- スクロール可能なリストの標準パターンです。スペーサーが成長し、スクロールがクリップします。
 
-3. **GridSpacer inside WrapSpacer** -- Works. Useful for putting a fixed grid as one item in a flow layout.
+3. **WrapSpacer内のGridSpacer** -- 動作します。フローレイアウトの1アイテムとして固定グリッドを配置するのに便利です。
 
-4. **ScrollWidget inside WrapSpacer** -- Possible but requires a fixed height on the scroll widget (`vexactsize 1`). Without a fixed height, the scroll widget will try to grow to fit its content (defeating the purpose of scrolling).
+4. **WrapSpacer内のScrollWidget** -- 可能ですが、スクロールウィジェットに固定高さが必要です（`vexactsize 1`）。固定高さがないと、スクロールウィジェットはコンテンツに合わせて成長しようとします（スクロールの目的が無効になります）。
 
-5. **Avoid deep nesting** -- Every level of nesting adds layout computation cost. Three or four levels deep is typical for complex UIs; going beyond six levels suggests the layout should be restructured.
+5. **深いネストを避ける** -- ネストの各レベルがレイアウト計算コストを追加します。複雑なUIでは3〜4レベルの深さが一般的です。6レベルを超える場合は、レイアウトを再構築すべきです。
 
 ---
 
-## 使い分け Each Container
+## 各コンテナの使い分け
 
-| Scenario | Best Container |
+| シナリオ | 最適なコンテナ |
 |---|---|
-| Static panel with manually positioned elements | `FrameWidget` |
-| Dynamic list of varying-size items | `WrapSpacerWidget` |
-| Uniform grid (inventory, gallery) | `GridSpacerWidget` |
-| Vertical list with one item per row | `WrapSpacerWidget` (full-width children) or `GridSpacerWidget` (`Columns 1`) |
-| Content taller than available space | `ScrollWidget` wrapping a spacer |
-| Tab content area | `FrameWidget` (swap children visibility) |
-| Toolbar buttons | `WrapSpacerWidget` or `GridSpacerWidget` |
+| 手動配置された要素を持つ静的パネル | `FrameWidget` |
+| サイズが異なるアイテムの動的リスト | `WrapSpacerWidget` |
+| 均一なグリッド（インベントリ、ギャラリー） | `GridSpacerWidget` |
+| 1行に1アイテムの垂直リスト | `WrapSpacerWidget`（全幅の子）または `GridSpacerWidget`（`Columns 1`） |
+| 利用可能なスペースより高いコンテンツ | スペーサーをラップする `ScrollWidget` |
+| タブコンテンツ領域 | `FrameWidget`（子の可視性を切り替え） |
+| ツールバーボタン | `WrapSpacerWidget` または `GridSpacerWidget` |
 
 ---
 
-## Complete Example: Scrollable Settings Panel
+## 完全な例: スクロール可能な設定パネル
 
-A settings panel with a title bar, scrollable content area containing grid-arranged options, and a bottom button bar:
+タイトルバー、グリッドに配置されたオプションを含むスクロール可能なコンテンツ領域、および下部のボタンバーを持つ設定パネル:
 
 ```
 FrameWidgetClass SettingsPanel {
@@ -402,7 +452,7 @@ FrameWidgetClass SettingsPanel {
  hexactsize 0
  vexactsize 0
  {
-  // Title bar
+  // タイトルバー
   PanelWidgetClass TitleBar {
    position 0 0
    size 1 30
@@ -411,7 +461,7 @@ FrameWidgetClass SettingsPanel {
    color 0.2 0.4 0.8 1
   }
 
-  // Scrollable settings area
+  // スクロール可能な設定領域
   ScrollWidgetClass SettingsScroll {
    position 0 30
    size 1 0
@@ -431,7 +481,7 @@ FrameWidgetClass SettingsPanel {
    }
   }
 
-  // Button bar at bottom
+  // 下部のボタンバー
   FrameWidgetClass ButtonBar {
    size 1 40
    halign left_ref
@@ -447,7 +497,50 @@ FrameWidgetClass SettingsPanel {
 
 ---
 
+## ベストプラクティス
+
+- プログラムで子を追加または削除した後は、常に `WrapSpacerWidget` または `GridSpacerWidget` で `Update()` を呼び出してください。この呼び出しがないと、スペーサーはレイアウトを再計算せず、子が重なったり不可視になったりする可能性があります。
+- 動的リストには `ScrollWidget` + `WrapSpacerWidget` を標準パターンとして使用してください。スクロールを固定ピクセル高さに設定し、内部スペーサーを `"Size To Content V" 1` にします。
+- アイテムの高さが異なる垂直リストには、`GridSpacerWidget Columns 1` よりも全幅の子を持つ `WrapSpacerWidget` を優先してください。GridSpacerは均一なセルサイズを強制します。
+- `ScrollWidget` には常に `clipchildren 1` を設定してください。これがないと、オーバーフローしたコンテンツがスクロールビューポートの境界外にレンダリングされます。
+- 4〜5レベル以上のコンテナのネストを避けてください。各レベルがレイアウト計算コストを追加し、デバッグが大幅に難しくなります。
+
+---
+
+## 理論と実践
+
+> ドキュメントが記載していることと、実行時に実際に動作する方法の比較です。
+
+| 概念 | 理論 | 実際 |
+|---------|--------|---------|
+| `WrapSpacerWidget.Update()` | 子が変更されるとレイアウトが自動再計算される | `CreateWidgets()` や `Unlink()` の後に手動で `Update()` を呼び出す必要があります。これを忘れることが最も一般的なスペーサーのバグです |
+| `"Size To Content V"` | スペーサーが子に合わせて成長する | 子に明示的なサイズ（ピクセル高さまたは既知のプロポーショナルな親）がある場合にのみ機能します。子も `Size To Content` の場合、高さがゼロになります |
+| `GridSpacerWidget` のセルサイズ | グリッドがセルサイズを均一に制御する | 子自身のサイズ属性は無視されます -- グリッドがそれらをオーバーライドします。グリッドの子に `size` を設定しても効果はありません |
+| `ScrollWidget` のスクロール位置 | `VScrollToPos(0)` で上端にスクロール | 子を追加した後、コンテンツの高さがまだ再計算されていないため、`VScrollToPos()` を1フレーム遅延させる必要がある場合があります（`CallLater` 経由） |
+| ネストされたスペーサー | スペーサーは自由にネストできる | `WrapSpacer` 内の `WrapSpacer` は動作しますが、両方のレベルで `Size To Content` を使用すると、UIがフリーズする無限レイアウトループが発生する可能性があります |
+
+---
+
+## 互換性と影響
+
+- **マルチMOD:** コンテナウィジェットはレイアウトごとであり、MOD間で競合しません。ただし、2つのMODが `modded class` 経由で同じバニラの `ScrollWidget` に子を注入する場合、子の順序は予測できません。
+- **パフォーマンス:** `WrapSpacerWidget.Update()` はすべての子の位置を再計算します。100以上のアイテムを持つリストの場合、個別の追加ごとではなく、バッチ操作後に1回 `Update()` を呼び出してください。GridSpacerはセル位置が算術的に計算されるため、均一なグリッドではより高速です。
+- **バージョン:** `WrapSpacerWidget` と `GridSpacerWidget` はDayZ 1.0から利用可能です。`"Size To Content H/V"` 属性は最初から存在していましたが、深くネストされたレイアウトでの動作はDayZ 1.10頃に安定しました。
+
+---
+
+## 実際のMODで確認されたパターン
+
+| パターン | MOD | 詳細 |
+|---------|-----|--------|
+| 動的リストの `ScrollWidget` + `WrapSpacerWidget` | DabsFramework、Expansion、COT | 固定高さのスクロールビューポートと自動成長する内部スペーサー -- ユニバーサルなスクロール可能リストパターン |
+| インベントリの `GridSpacerWidget Columns 10` | バニラDayZ | インベントリグリッドはスロットレイアウトに一致する固定列数のGridSpacerを使用 |
+| WrapSpacer内のプールされた子 | VPP Admin Tools | リストアイテムウィジェットのプールを事前作成し、`Update()` のオーバーヘッドを避けるために作成/破棄の代わりに表示/非表示を切り替え |
+| ダイアログルートとしての `WrapSpacerWidget` | COT、DayZ Editor | ダイアログルートが `Size To Content V/H` を使用し、ハードコードされた寸法なしでコンテンツの周りにダイアログが自動サイズ調整 |
+
+---
+
 ## 次のステップ
 
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code
-- [3.6 Event Handling](06-event-handling.md) -- Respond to clicks, changes, and other events
+- [3.5 プログラムによるウィジェット作成](05-programmatic-widgets.md) -- コードからウィジェットを作成
+- [3.6 イベントハンドリング](06-event-handling.md) -- クリック、変更、その他のイベントへの応答

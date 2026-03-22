@@ -1,32 +1,36 @@
-# Chapter 3.5: Programmatic Widget Creation
+# 第3.5章: プログラムによるウィジェット作成
 
-[Home](../../README.md) | [<< Previous: Container Widgets](04-containers.md) | **Programmatic Widget Creation** | [Next: Event Handling >>](06-event-handling.md)
-
----
-
-## Two Approaches
-
-DayZ provides two ways to create widgets in code:
-
-1. **`CreateWidgets()`** -- Load a `.layout` file and instantiate its widget tree
-2. **`CreateWidget()`** -- Create a single widget with explicit parameters
-
-Both methods are called on the `WorkspaceWidget` obtained from `GetGame().GetWorkspace()`.
+[ホーム](../../README.md) | [<< 前へ: コンテナウィジェット](04-containers.md) | **プログラムによるウィジェット作成** | [次へ: イベントハンドリング >>](06-event-handling.md)
 
 ---
 
-## CreateWidgets() -- From Layout Files
+`.layout` ファイルがUI構造を定義する標準的な方法ですが、コードからウィジェットを完全に作成・設定することもできます。これは動的なUI、手続き的に生成される要素、コンパイル時にレイアウトが不明な場合に有用です。
 
-The most common approach. Loads a `.layout` file and creates the entire widget tree, attaching it to a parent widget.
+---
+
+## 2つのアプローチ
+
+DayZにはコードでウィジェットを作成する2つの方法があります:
+
+1. **`CreateWidgets()`** -- `.layout` ファイルを読み込み、ウィジェットツリーをインスタンス化します
+2. **`CreateWidget()`** -- 明示的なパラメータで単一のウィジェットを作成します
+
+どちらのメソッドも `GetGame().GetWorkspace()` から取得した `WorkspaceWidget` で呼び出します。
+
+---
+
+## CreateWidgets() -- レイアウトファイルから
+
+最も一般的なアプローチです。`.layout` ファイルを読み込み、ウィジェットツリー全体を作成して親ウィジェットにアタッチします。
 
 ```c
 Widget root = GetGame().GetWorkspace().CreateWidgets(
-    "MyMod/gui/layouts/MyPanel.layout",   // Path to layout file
-    parentWidget                            // Parent widget (or null for root)
+    "MyMod/gui/layouts/MyPanel.layout",   // レイアウトファイルへのパス
+    parentWidget                            // 親ウィジェット（またはルートの場合はnull）
 );
 ```
 
-The returned `Widget` is the root widget from the layout file. You can then find child widgets by name:
+返される `Widget` はレイアウトファイルのルートウィジェットです。その後、名前で子ウィジェットを検索できます:
 
 ```c
 TextWidget title = TextWidget.Cast(root.FindAnyWidget("TitleText"));
@@ -35,9 +39,9 @@ title.SetText("Hello World");
 ButtonWidget closeBtn = ButtonWidget.Cast(root.FindAnyWidget("CloseButton"));
 ```
 
-### Creating Multiple Instances
+### 複数インスタンスの作成
 
-A common pattern is creating multiple instances of a layout template (e.g., list items):
+レイアウトテンプレートの複数インスタンスを作成するのは一般的なパターンです（例: リストアイテム）:
 
 ```c
 void PopulateList(WrapSpacerWidget container, array<string> items)
@@ -51,45 +55,45 @@ void PopulateList(WrapSpacerWidget container, array<string> items)
         label.SetText(item);
     }
 
-    container.Update();  // Force layout recalculation
+    container.Update();  // レイアウトの再計算を強制
 }
 ```
 
 ---
 
-## CreateWidget() -- Programmatic Creation
+## CreateWidget() -- プログラムによる作成
 
-Creates a single widget with explicit type, position, size, flags, and parent.
+明示的な型、位置、サイズ、フラグ、親を指定して単一のウィジェットを作成します。
 
 ```c
 Widget w = GetGame().GetWorkspace().CreateWidget(
-    FrameWidgetTypeID,      // Widget type ID constant
-    0,                       // X position
-    0,                       // Y position
-    100,                     // Width
-    100,                     // Height
+    FrameWidgetTypeID,      // ウィジェット型ID定数
+    0,                       // X位置
+    0,                       // Y位置
+    100,                     // 幅
+    100,                     // 高さ
     WidgetFlags.VISIBLE | WidgetFlags.EXACTSIZE | WidgetFlags.EXACTPOS,
-    -1,                      // Color (ARGB integer, -1 = white/default)
-    0,                       // Sort order (priority)
-    parentWidget             // Parent widget
+    -1,                      // 色（ARGB整数、-1 = 白/デフォルト）
+    0,                       // ソート順（優先度）
+    parentWidget             // 親ウィジェット
 );
 ```
 
-### Parameters
+### パラメータ
 
-| Parameter | Type | Description |
+| パラメータ | 型 | 説明 |
 |---|---|---|
-| typeID | int | Widget type constant (e.g., `FrameWidgetTypeID`, `TextWidgetTypeID`) |
-| x | float | X position (proportional or pixel based on flags) |
-| y | float | Y position |
-| width | float | Widget width |
-| height | float | Widget height |
-| flags | int | Bitwise OR of `WidgetFlags` constants |
-| color | int | ARGB color integer (-1 for default/white) |
-| sort | int | Z-order (higher renders on top) |
-| parent | Widget | Parent widget to attach to |
+| typeID | int | ウィジェット型定数（例: `FrameWidgetTypeID`、`TextWidgetTypeID`） |
+| x | float | X位置（フラグに基づいてプロポーショナルまたはピクセル） |
+| y | float | Y位置 |
+| width | float | ウィジェットの幅 |
+| height | float | ウィジェットの高さ |
+| flags | int | `WidgetFlags` 定数のビットOR |
+| color | int | ARGB色整数（デフォルト/白の場合は-1） |
+| sort | int | Z順序（値が大きいほど前面に描画） |
+| parent | Widget | アタッチ先の親ウィジェット |
 
-### Widget Type IDs
+### ウィジェット型ID
 
 ```c
 FrameWidgetTypeID
@@ -119,107 +123,107 @@ WorkspaceWidgetTypeID
 
 ## WidgetFlags
 
-Flags control widget behavior when created programmatically. Combine them with bitwise OR (`|`).
+フラグはプログラムで作成されたウィジェットの動作を制御します。ビットOR（`|`）で組み合わせます。
 
-| Flag | Effect |
+| フラグ | 効果 |
 |---|---|
-| `WidgetFlags.VISIBLE` | Widget starts visible |
-| `WidgetFlags.IGNOREPOINTER` | Widget does not receive mouse events |
-| `WidgetFlags.DRAGGABLE` | Widget can be dragged |
-| `WidgetFlags.EXACTSIZE` | Size values are in pixels (not proportional) |
-| `WidgetFlags.EXACTPOS` | Position values are in pixels (not proportional) |
-| `WidgetFlags.SOURCEALPHA` | Use source alpha channel |
-| `WidgetFlags.BLEND` | Enable alpha blending |
-| `WidgetFlags.FLIPU` | Flip texture horizontally |
-| `WidgetFlags.FLIPV` | Flip texture vertically |
+| `WidgetFlags.VISIBLE` | ウィジェットが表示状態で開始 |
+| `WidgetFlags.IGNOREPOINTER` | ウィジェットがマウスイベントを受信しない |
+| `WidgetFlags.DRAGGABLE` | ウィジェットがドラッグ可能 |
+| `WidgetFlags.EXACTSIZE` | サイズ値がピクセル単位（プロポーショナルではない） |
+| `WidgetFlags.EXACTPOS` | 位置値がピクセル単位（プロポーショナルではない） |
+| `WidgetFlags.SOURCEALPHA` | ソースアルファチャンネルを使用 |
+| `WidgetFlags.BLEND` | アルファブレンディングを有効化 |
+| `WidgetFlags.FLIPU` | テクスチャを水平に反転 |
+| `WidgetFlags.FLIPV` | テクスチャを垂直に反転 |
 
-Common flag combinations:
+一般的なフラグの組み合わせ:
 
 ```c
-// Visible, pixel-sized, pixel-positioned, alpha-blended
+// 表示、ピクセルサイズ、ピクセル位置、アルファブレンド
 int FLAGS_EXACT = WidgetFlags.VISIBLE | WidgetFlags.EXACTSIZE | WidgetFlags.EXACTPOS | WidgetFlags.SOURCEALPHA | WidgetFlags.BLEND;
 
-// Visible, proportional, non-interactive
+// 表示、プロポーショナル、非インタラクティブ
 int FLAGS_OVERLAY = WidgetFlags.VISIBLE | WidgetFlags.IGNOREPOINTER | WidgetFlags.SOURCEALPHA | WidgetFlags.BLEND;
 ```
 
-After creation, you can modify flags dynamically:
+作成後、フラグを動的に変更できます:
 
 ```c
-widget.SetFlags(WidgetFlags.VISIBLE);          // Add a flag
-widget.ClearFlags(WidgetFlags.IGNOREPOINTER);  // Remove a flag
-int flags = widget.GetFlags();                  // Read current flags
+widget.SetFlags(WidgetFlags.VISIBLE);          // フラグを追加
+widget.ClearFlags(WidgetFlags.IGNOREPOINTER);  // フラグを削除
+int flags = widget.GetFlags();                  // 現在のフラグを読み取り
 ```
 
 ---
 
-## Setting Properties After Creation
+## 作成後のプロパティ設定
 
-After creating a widget with `CreateWidget()`, you need to configure it. The widget is returned as the base `Widget` type, so you must cast to the specific type.
+`CreateWidget()` でウィジェットを作成した後、設定が必要です。ウィジェットはベースの `Widget` 型として返されるため、特定の型にキャストする必要があります。
 
-### Setting Name
+### 名前の設定
 
 ```c
 Widget w = GetGame().GetWorkspace().CreateWidget(TextWidgetTypeID, ...);
 w.SetName("MyTextWidget");
 ```
 
-Names are important for `FindAnyWidget()` lookups and debugging.
+名前は `FindAnyWidget()` によるルックアップやデバッグに重要です。
 
-### Setting Text
+### テキストの設定
 
 ```c
 TextWidget tw = TextWidget.Cast(w);
 tw.SetText("Hello World");
-tw.SetTextExactSize(16);           // Font size in pixels
-tw.SetOutline(1, ARGB(255, 0, 0, 0));  // 1px black outline
+tw.SetTextExactSize(16);           // ピクセル単位のフォントサイズ
+tw.SetOutline(1, ARGB(255, 0, 0, 0));  // 1pxの黒アウトライン
 ```
 
-### Setting Color
+### 色の設定
 
-Colors in DayZ use ARGB format (Alpha, Red, Green, Blue), packed into a single 32-bit integer:
+DayZの色はARGB形式（アルファ、赤、緑、青）を使用し、単一の32ビット整数にパックされます:
 
 ```c
-// Using the ARGB helper function (0-255 per channel)
-int red    = ARGB(255, 255, 0, 0);       // Opaque red
-int green  = ARGB(255, 0, 255, 0);       // Opaque green
-int blue   = ARGB(200, 0, 0, 255);       // Semi-transparent blue
-int black  = ARGB(255, 0, 0, 0);         // Opaque black
-int white  = ARGB(255, 255, 255, 255);   // Opaque white  (same as -1)
+// ARGBヘルパー関数を使用（チャンネルごとに0-255）
+int red    = ARGB(255, 255, 0, 0);       // 不透明な赤
+int green  = ARGB(255, 0, 255, 0);       // 不透明な緑
+int blue   = ARGB(200, 0, 0, 255);       // 半透明の青
+int black  = ARGB(255, 0, 0, 0);         // 不透明な黒
+int white  = ARGB(255, 255, 255, 255);   // 不透明な白（-1と同じ）
 
-// Using the float version (0.0-1.0 per channel)
+// float版を使用（チャンネルごとに0.0-1.0）
 int color = ARGBF(1.0, 0.5, 0.25, 0.1);
 
-// Decompose a color back to floats
+// 色をfloatに分解
 float a, r, g, b;
 InverseARGBF(color, a, r, g, b);
 
-// Apply to any widget
+// 任意のウィジェットに適用
 widget.SetColor(ARGB(255, 100, 150, 200));
-widget.SetAlpha(0.5);  // Override just the alpha
+widget.SetAlpha(0.5);  // アルファのみをオーバーライド
 ```
 
-The hexadecimal format `0xAARRGGBB` is also common:
+16進数形式 `0xAARRGGBB` も一般的です:
 
 ```c
 int color = 0xFF4B77BE;   // A=255, R=75, G=119, B=190
 widget.SetColor(color);
 ```
 
-### Setting an Event Handler
+### イベントハンドラの設定
 
 ```c
-widget.SetHandler(myEventHandler);  // ScriptedWidgetEventHandler instance
+widget.SetHandler(myEventHandler);  // ScriptedWidgetEventHandlerインスタンス
 ```
 
-### Setting User Data
+### ユーザーデータの設定
 
-Attach arbitrary data to a widget for later retrieval:
+後で取得するために任意のデータをウィジェットにアタッチします:
 
 ```c
-widget.SetUserData(myDataObject);  // Must inherit from Managed
+widget.SetUserData(myDataObject);  // Managedを継承する必要があります
 
-// Later retrieve it:
+// 後で取得:
 Managed data;
 widget.GetUserData(data);
 MyDataClass myData = MyDataClass.Cast(data);
@@ -227,28 +231,28 @@ MyDataClass myData = MyDataClass.Cast(data);
 
 ---
 
-## Widget Cleanup
+## ウィジェットのクリーンアップ
 
-Widgets that are no longer needed must be properly cleaned up to avoid memory leaks.
+不要になったウィジェットはメモリリークを避けるために適切にクリーンアップする必要があります。
 
 ### Unlink()
 
-Removes a widget from its parent and destroys it (and all its children):
+ウィジェットを親から削除し、それ（とすべての子）を破棄します:
 
 ```c
 widget.Unlink();
 ```
 
-After calling `Unlink()`, the widget reference becomes invalid. Set it to `null`:
+`Unlink()` を呼び出した後、ウィジェット参照は無効になります。`null` に設定してください:
 
 ```c
 widget.Unlink();
 widget = null;
 ```
 
-### Removing All Children
+### すべての子の削除
 
-To clear a container widget of all its children:
+コンテナウィジェットのすべての子をクリアするには:
 
 ```c
 void ClearChildren(Widget parent)
@@ -263,11 +267,11 @@ void ClearChildren(Widget parent)
 }
 ```
 
-**重要：** You must get `GetSibling()` **before** calling `Unlink()`, because unlinking invalidates the widget's sibling chain.
+**重要:** `Unlink()` を呼び出す**前に** `GetSibling()` を取得する必要があります。アンリンクするとウィジェットの兄弟チェーンが無効になるためです。
 
-### Null Checks
+### Nullチェック
 
-Always null-check widgets before using them. `FindAnyWidget()` returns `null` if the widget is not found, and cast operations return `null` if the type does not match:
+ウィジェットを使用する前に必ずnullチェックを行ってください。`FindAnyWidget()` はウィジェットが見つからない場合に `null` を返し、キャスト操作は型が一致しない場合に `null` を返します:
 
 ```c
 TextWidget tw = TextWidget.Cast(root.FindAnyWidget("MaybeExists"));
@@ -279,34 +283,34 @@ if (tw)
 
 ---
 
-## Widget Hierarchy Navigation
+## ウィジェット階層のナビゲーション
 
-Navigate the widget tree from code:
+コードからウィジェットツリーをナビゲートします:
 
 ```c
-Widget parent = widget.GetParent();           // Parent widget
-Widget firstChild = widget.GetChildren();     // First child
-Widget nextSibling = widget.GetSibling();     // Next sibling
-Widget found = widget.FindAnyWidget("Name");  // Recursive search by name
+Widget parent = widget.GetParent();           // 親ウィジェット
+Widget firstChild = widget.GetChildren();     // 最初の子
+Widget nextSibling = widget.GetSibling();     // 次の兄弟
+Widget found = widget.FindAnyWidget("Name");  // 名前による再帰検索
 
-string name = widget.GetName();               // Widget name
-string typeName = widget.GetTypeName();       // e.g., "TextWidget"
+string name = widget.GetName();               // ウィジェット名
+string typeName = widget.GetTypeName();       // 例: "TextWidget"
 ```
 
-To iterate all children:
+すべての子を反復処理するには:
 
 ```c
 Widget child = parent.GetChildren();
 while (child)
 {
-    // Process child
+    // 子を処理
     Print("Child: " + child.GetName());
 
     child = child.GetSibling();
 }
 ```
 
-To iterate all descendants recursively:
+すべての子孫を再帰的に反復処理するには:
 
 ```c
 void WalkWidgets(Widget w, int depth = 0)
@@ -324,9 +328,9 @@ void WalkWidgets(Widget w, int depth = 0)
 
 ---
 
-## Complete Example: Creating a Dialog in Code
+## 完全な例: コードでダイアログを作成する
 
-Here is a complete example that creates a simple information dialog entirely in code, without any layout file:
+以下は、レイアウトファイルなしでコードのみで簡単な情報ダイアログを作成する完全な例です:
 
 ```c
 class SimpleCodeDialog : ScriptedWidgetEventHandler
@@ -345,31 +349,31 @@ class SimpleCodeDialog : ScriptedWidgetEventHandler
 
         WorkspaceWidget workspace = GetGame().GetWorkspace();
 
-        // Root frame: 400x200 pixels, centered on screen
+        // ルートフレーム: 400x200ピクセル、画面中央
         m_Root = workspace.CreateWidget(
             FrameWidgetTypeID, 0, 0, 400, 200, FLAGS_EXACT,
             ARGB(230, 30, 30, 30), 100, null);
 
-        // Center it manually
+        // 手動で中央に配置
         int sw, sh;
         GetScreenSize(sw, sh);
         m_Root.SetScreenPos((sw - 400) / 2, (sh - 200) / 2);
 
-        // Title text: full width, 30px tall, at top
+        // タイトルテキスト: 全幅、高さ30px、上部に配置
         Widget titleW = workspace.CreateWidget(
             TextWidgetTypeID, 0, 0, 400, 30, FLAGS_EXACT,
             ARGB(255, 100, 160, 220), 0, m_Root);
         m_Title = TextWidget.Cast(titleW);
         m_Title.SetText(title);
 
-        // Message text: below title, fills remaining space
+        // メッセージテキスト: タイトルの下、残りのスペースを埋める
         Widget msgW = workspace.CreateWidget(
             TextWidgetTypeID, 10, 40, 380, 110, FLAGS_EXACT,
             ARGB(255, 200, 200, 200), 0, m_Root);
         m_Message = TextWidget.Cast(msgW);
         m_Message.SetText(message);
 
-        // Close button: 80x30 pixels, bottom-right area
+        // 閉じるボタン: 80x30ピクセル、右下エリア
         Widget btnW = workspace.CreateWidget(
             ButtonWidgetTypeID, 310, 160, 80, 30, FLAGS_EXACT,
             ARGB(255, 80, 130, 200), 0, m_Root);
@@ -403,28 +407,136 @@ class SimpleCodeDialog : ScriptedWidgetEventHandler
     }
 }
 
-// Usage:
+// 使用方法:
 SimpleCodeDialog dialog = new SimpleCodeDialog("Alert", "Server restart in 5 minutes.");
 ```
 
 ---
 
-## Layout Files vs. Programmatic: When to Use Each
+## ウィジェットプーリング
 
-| Situation | Recommendation |
+フレームごとにウィジェットを作成・破棄するとパフォーマンスの問題が発生します。代わりに、再利用可能なウィジェットのプールを維持します:
+
+```c
+class WidgetPool
+{
+    protected ref array<Widget> m_Pool;
+    protected ref array<Widget> m_Active;
+    protected Widget m_Parent;
+    protected string m_LayoutPath;
+
+    void WidgetPool(Widget parent, string layoutPath, int initialSize = 10)
+    {
+        m_Pool = new array<Widget>();
+        m_Active = new array<Widget>();
+        m_Parent = parent;
+        m_LayoutPath = layoutPath;
+
+        // ウィジェットを事前作成
+        for (int i = 0; i < initialSize; i++)
+        {
+            Widget w = GetGame().GetWorkspace().CreateWidgets(m_LayoutPath, m_Parent);
+            w.Show(false);
+            m_Pool.Insert(w);
+        }
+    }
+
+    Widget Acquire()
+    {
+        Widget w;
+        if (m_Pool.Count() > 0)
+        {
+            w = m_Pool[m_Pool.Count() - 1];
+            m_Pool.Remove(m_Pool.Count() - 1);
+        }
+        else
+        {
+            w = GetGame().GetWorkspace().CreateWidgets(m_LayoutPath, m_Parent);
+        }
+        w.Show(true);
+        m_Active.Insert(w);
+        return w;
+    }
+
+    void Release(Widget w)
+    {
+        w.Show(false);
+        int idx = m_Active.Find(w);
+        if (idx >= 0)
+            m_Active.Remove(idx);
+        m_Pool.Insert(w);
+    }
+
+    void ReleaseAll()
+    {
+        foreach (Widget w : m_Active)
+        {
+            w.Show(false);
+            m_Pool.Insert(w);
+        }
+        m_Active.Clear();
+    }
+}
+```
+
+**プーリングを使用すべき場合:**
+- 頻繁に更新されるリスト（キルフィード、チャット、プレイヤーリスト）
+- 動的コンテンツのグリッド（インベントリ、マーケット）
+- 毎秒10個以上のウィジェットを作成/破棄するUI
+
+**プーリングを使用すべきでない場合:**
+- 一度作成される静的パネル
+- 表示/非表示されるダイアログ（Show/Hideを使用するだけ）
+
+---
+
+## レイアウトファイル vs プログラム: 使い分け
+
+| 状況 | 推奨 |
 |---|---|
-| Static UI structure | Layout file (`.layout`) |
-| Complex widget trees | Layout file |
-| Dynamic number of items | `CreateWidgets()` from a template layout |
-| Simple runtime elements (debug text, markers) | `CreateWidget()` |
-| Rapid prototyping | `CreateWidget()` |
-| Production mod UI | Layout file + code configuration |
+| 静的なUI構造 | レイアウトファイル（`.layout`） |
+| 複雑なウィジェットツリー | レイアウトファイル |
+| 動的な数のアイテム | テンプレートレイアウトからの `CreateWidgets()` |
+| シンプルなランタイム要素（デバッグテキスト、マーカー） | `CreateWidget()` |
+| ラピッドプロトタイピング | `CreateWidget()` |
+| 本番MODのUI | レイアウトファイル + コードによる設定 |
 
-In practice, most mods use **layout files** for the structure and **code** for populating data, showing/hiding elements, and handling events. Purely programmatic UIs are rare outside of debug tools.
+実際には、ほとんどのMODは構造に**レイアウトファイル**を使用し、データの入力、要素の表示/非表示、イベント処理に**コード**を使用します。完全にプログラム的なUIは、デバッグツール以外ではまれです。
 
 ---
 
 ## 次のステップ
 
-- [3.6 Event Handling](06-event-handling.md) -- Handle clicks, changes, and mouse events
-- [3.7 Styles, Fonts & Images](07-styles-fonts.md) -- Visual styling and image resources
+- [3.6 イベントハンドリング](06-event-handling.md) -- クリック、変更、マウスイベントの処理
+- [3.7 スタイル、フォント、画像](07-styles-fonts.md) -- ビジュアルスタイリングと画像リソース
+
+---
+
+## 理論と実践
+
+| 概念 | 理論 | 実際 |
+|---------|--------|---------|
+| `CreateWidget()` は任意のウィジェット型を作成できる | すべてのTypeIDが `CreateWidget()` で動作する | `ScrollWidget` と `WrapSpacerWidget` はプログラムで作成すると、レイアウトファイルが自動的に処理する手動フラグ設定（`EXACTSIZE`、サイズ設定）が必要になることがよくあります |
+| `Unlink()` がすべてのメモリを解放する | ウィジェットと子が破棄される | スクリプト変数に保持された参照がダングリングになります。`Unlink()` の後は常にウィジェット参照を `null` に設定しないとクラッシュのリスクがあります |
+| `SetHandler()` がすべてのイベントをルーティングする | 1つのハンドラがすべてのウィジェットイベントを受信する | ハンドラは `SetHandler(this)` を呼び出したウィジェットのイベントのみを受信します。子は親からハンドラを継承しません |
+| `CreateWidgets()` からのレイアウト読み込みは瞬時 | レイアウトは同期的に読み込まれる | 多くのネストされたウィジェットを含む大きなレイアウトはフレームスパイクを引き起こします。ゲームプレイ中ではなく、ロード画面中にレイアウトをプリロードしてください |
+| プロポーショナルサイズ（0.0-1.0）が親にスケーリングする | 値は親の寸法に相対的 | `EXACTSIZE` フラグなしでは、`CreateWidget()` の `100` のような値もプロポーショナル（0-1の範囲）として扱われ、ウィジェットが親全体を埋めてしまいます |
+
+---
+
+## 互換性と影響
+
+- **マルチMOD:** プログラムで作成されたウィジェットは作成したMODに固有です。`modded class` とは異なり、2つのMODが名前で同じバニラの親ウィジェットにウィジェットをアタッチしない限り、衝突のリスクはありません。
+- **パフォーマンス:** `CreateWidgets()` の各呼び出しはディスクからレイアウトファイルを解析します。UIを開くたびにレイアウトから再作成するのではなく、ルートウィジェットをキャッシュして表示/非表示にしてください。
+
+---
+
+## 実際のMODで確認されたパターン
+
+| パターン | MOD | 詳細 |
+|---------|-----|--------|
+| レイアウトテンプレート + コードによるデータ入力 | COT、Expansion | リストアイテムごとに `CreateWidgets()` で行の `.layout` テンプレートを読み込み、`FindAnyWidget()` でデータを入力 |
+| キルフィードのウィジェットプーリング | Colorful UI | 20個のフィードエントリウィジェットを事前作成し、作成・破棄の代わりに表示/非表示を切り替え |
+| 純粋なコードダイアログ | デバッグ/管理ツール | 追加の `.layout` ファイルの配布を避けるため、`CreateWidget()` で完全に構築されたシンプルなアラートダイアログ |
+| すべてのインタラクティブな子に `SetHandler(this)` | VPP Admin Tools | レイアウト読み込み後にすべてのボタンを反復処理し、それぞれに個別に `SetHandler()` を呼び出す |
+| `Unlink()` + nullパターン | DabsFramework | すべてのダイアログの `Close()` メソッドが一貫して `m_Root.Unlink(); m_Root = null;` を呼び出す |

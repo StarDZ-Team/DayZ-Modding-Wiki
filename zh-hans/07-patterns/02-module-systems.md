@@ -1,36 +1,36 @@
-# Chapter 7.2: Module / Plugin Systems
+# 第 7.2 章：模块/插件系统
 
-[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
+[首页](../../README.md) | [<< 上一章：单例模式](01-singletons.md) | **模块/插件系统** | [下一章：RPC 模式 >>](03-rpc-patterns.md)
 
 ---
 
 ## 简介
 
-Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle events --- `OnInit`, `OnMissionStart`, `On上级date`, `OnMissionFinish` --- to each module in a predictable order.
+每一个严肃的 DayZ mod 框架都使用模块或插件系统，将代码组织成自包含的单元，并具有定义好的生命周期钩子。模块系统不是将初始化逻辑分散在各种 modded mission 类中，而是将自身注册到一个中央管理器，该管理器以可预测的顺序向每个模块分发生命周期事件——`OnInit`、`OnMissionStart`、`OnUpdate`、`OnMissionFinish`。
 
-This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and MyMod's `MyModuleManager`. Each solves the same problem differently; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
+本章研究四种实际方案：Community Framework 的 `CF_ModuleCore`、VPP 的 `PluginBase` / `ConfigurablePlugin`、Dabs Framework 基于属性的注册，以及自定义的静态模块管理器。每种方案以不同方式解决同样的问题；理解所有四种将帮助你为自己的 mod 选择正确的模式，或与现有框架进行整合。
 
 ---
 
 ## 目录
 
-- [Why Modules?](#why-modules)
-- [CF_ModuleCore (COT / Expansion)](#cf_modulecore-cot--expansion)
+- [为什么需要模块？](#为什么需要模块)
+- [CF_ModuleCore（COT / Expansion）](#cf_modulecorecot--expansion)
 - [VPP PluginBase / ConfigurablePlugin](#vpp-pluginbase--configurableplugin)
-- [Dabs Attribute-Based Registration](#dabs-attribute-based-registration)
-- [MyMod MyModuleManager](#custom-static-module-manager)
-- [Module Lifecycle: The Universal Contract](#module-lifecycle-the-universal-contract)
-- [Best Practices for Module Design](#best-practices-for-module-design)
-- [Comparison Table](#comparison-table)
+- [Dabs 基于属性的注册](#dabs-基于属性的注册)
+- [自定义静态模块管理器](#自定义静态模块管理器)
+- [模块生命周期：通用契约](#模块生命周期通用契约)
+- [模块设计最佳实践](#模块设计最佳实践)
+- [对比表](#对比表)
 
 ---
 
-## Why Modules?
+## 为什么需要模块？
 
-Without a module system, a DayZ mod typically ends up with a monolithic modded `MissionServer` or `MissionGameplay` class that grows until it becomes unmanageable:
+没有模块系统时，DayZ mod 通常会以一个庞大的 modded `MissionServer` 或 `MissionGameplay` 类告终，不断增长直到无法管理：
 
 ```c
-// BAD: Everything crammed into one modded class
+// 差：所有东西塞进一个 modded 类
 modded class MissionServer
 {
     override void OnInit()
@@ -42,7 +42,7 @@ modded class MissionServer
         InitWeatherController();
         InitAdminPanel();
         InitKillfeedHUD();
-        // ... 20 more systems
+        // ... 还有 20 多个系统
     }
 
     override void OnUpdate(float timeslice)
@@ -51,12 +51,12 @@ modded class MissionServer
         TickLootSystem(timeslice);
         TickVehicleTracker(timeslice);
         TickWeatherController(timeslice);
-        // ... 20 more ticks
+        // ... 还有 20 多个 tick
     }
 };
 ```
 
-A module system replaces this with a single, stable hook point:
+模块系统用一个稳定的钩子点取代了这些：
 
 ```c
 modded class MissionServer
@@ -72,81 +72,81 @@ modded class MissionServer
     override void OnMissionStart()
     {
         super.OnMissionStart();
-        MyModuleManager.OnMissionStart();  // Dispatches to all modules
+        MyModuleManager.OnMissionStart();  // 分发到所有模块
     }
 
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
-        MyModuleManager.OnServerUpdate(timeslice);  // Dispatches to all modules
+        MyModuleManager.OnServerUpdate(timeslice);  // 分发到所有模块
     }
 };
 ```
 
-Each module is an independent class with its own file, its own state, and its own lifecycle hooks. Adding a new feature means adding a new module --- not editing a 3000-line mission class.
+每个模块都是一个独立的类，拥有自己的文件、自己的状态和自己的生命周期钩子。添加新功能意味着添加新模块——而不是编辑一个 3000 行的 mission 类。
 
 ---
 
-## CF_ModuleCore (COT / Expansion)
+## CF_ModuleCore（COT / Expansion）
 
-Community Framework (CF) provides the most widely-used module system in the DayZ modding ecosystem. Both COT and Expansion build on it.
+Community Framework（CF）提供了 DayZ modding 生态系统中使用最广泛的模块系统。COT 和 Expansion 都建立在它之上。
 
 ### 工作原理
 
-1. You declare a module class that extends one of CF's module base classes
-2. You register it in `config.cpp` under `CfgPatches` / `CfgMods`
-3. CF's `CF_ModuleCoreManager` auto-discovers and instantiates all registered module classes at startup
-4. Lifecycle events are dispatched automatically
+1. 你声明一个继承自 CF 模块基类的模块类
+2. 你在 `config.cpp` 的 `CfgPatches` / `CfgMods` 中注册它
+3. CF 的 `CF_ModuleCoreManager` 在启动时自动发现并实例化所有注册的模块类
+4. 生命周期事件自动分发
 
-### Module Base Classes
+### 模块基类
 
-CF provides three base classes corresponding to DayZ's script layers:
+CF 提供了三个对应 DayZ 脚本层的基类：
 
-| Base Class | Layer | Typical Use |
+| 基类 | 层 | 典型用途 |
 |-----------|-------|-------------|
-| `CF_ModuleGame` | 3_Game | Early init, RPC registration, data classes |
-| `CF_ModuleWorld` | 4_World | Entity interaction, gameplay systems |
-| `CF_ModuleMission` | 5_Mission | UI, HUD, mission-level hooks |
+| `CF_ModuleGame` | 3_Game | 早期初始化、RPC 注册、数据类 |
+| `CF_ModuleWorld` | 4_World | 实体交互、游戏系统 |
+| `CF_ModuleMission` | 5_Mission | UI、HUD、任务级钩子 |
 
-### Example: A CF Module
+### 示例：一个 CF 模块
 
 ```c
 class MyLootModule : CF_ModuleWorld
 {
-    // CF calls this once during module initialization
+    // CF 在模块初始化时调用一次
     override void OnInit()
     {
         super.OnInit();
-        // Register RPC handlers, allocate data structures
+        // 注册 RPC 处理程序，分配数据结构
     }
 
-    // CF calls this when the mission starts
+    // CF 在任务开始时调用
     override void OnMissionStart(Class sender, CF_EventArgs args)
     {
         super.OnMissionStart(sender, args);
-        // Load configs, spawn initial loot
+        // 加载配置，生成初始战利品
     }
 
-    // CF calls this every frame on the server
+    // CF 在服务器端每帧调用
     override void OnUpdate(Class sender, CF_EventArgs args)
     {
         super.OnUpdate(sender, args);
-        // Tick loot respawn timers
+        // 更新战利品刷新计时器
     }
 
-    // CF calls this when the mission ends
+    // CF 在任务结束时调用
     override void OnMissionFinish(Class sender, CF_EventArgs args)
     {
         super.OnMissionFinish(sender, args);
-        // Save state, release resources
+        // 保存状态，释放资源
     }
 };
 ```
 
-### Accessing a CF Module
+### 访问 CF 模块
 
 ```c
-// Get a reference to a running module by type
+// 按类型获取正在运行的模块的引用
 MyLootModule lootMod;
 CF_Modules<MyLootModule>.Get(lootMod);
 if (lootMod)
@@ -155,30 +155,30 @@ if (lootMod)
 }
 ```
 
-### Key Characteristics
+### 主要特点
 
-- **Auto-discovery**: modules are instantiated by CF based on `config.cpp` declarations --- no manual `new` calls
-- **Event args**: lifecycle hooks receive `CF_EventArgs` with context data
-- **Dependency on CF**: your mod requires Community Framework as a dependency
-- **Widely supported**: if your mod targets servers that already run COT or Expansion, CF is already present
+- **自动发现**：模块由 CF 根据 `config.cpp` 声明实例化——无需手动 `new` 调用
+- **事件参数**：生命周期钩子接收包含上下文数据的 `CF_EventArgs`
+- **依赖 CF**：你的 mod 需要 Community Framework 作为依赖
+- **广泛支持**：如果你的 mod 面向已经运行 COT 或 Expansion 的服务器，CF 已经存在
 
 ---
 
 ## VPP PluginBase / ConfigurablePlugin
 
-VPP Admin Tools uses a plugin architecture where each admin tool is a plugin class registered with a central manager.
+VPP Admin Tools 使用插件架构，每个管理工具都是一个注册到中央管理器的插件类。
 
-### Plugin Base
+### 插件基类
 
 ```c
-// VPP pattern (simplified)
+// VPP 模式（简化版）
 class PluginBase : Managed
 {
     void OnInit();
     void OnUpdate(float dt);
     void OnDestroy();
 
-    // Plugin identity
+    // 插件身份
     string GetPluginName();
     bool IsServerOnly();
 };
@@ -186,12 +186,12 @@ class PluginBase : Managed
 
 ### ConfigurablePlugin
 
-VPP extends the base with a config-aware variant that automatically loads/saves settings:
+VPP 用一个配置感知的变体扩展了基类，自动加载/保存设置：
 
 ```c
 class ConfigurablePlugin : PluginBase
 {
-    // VPP auto-loads this from JSON on init
+    // VPP 在初始化时自动从 JSON 加载
     ref PluginConfigBase m_Config;
 
     override void OnInit()
@@ -217,36 +217,36 @@ class ConfigurablePlugin : PluginBase
 };
 ```
 
-### Registration
+### 注册
 
-VPP registers plugins in the modded `MissionServer.OnInit()`:
+VPP 在 modded `MissionServer.OnInit()` 中注册插件：
 
 ```c
-// VPP pattern
+// VPP 模式
 GetPluginManager().RegisterPlugin(new VPPESPPlugin());
 GetPluginManager().RegisterPlugin(new VPPTeleportPlugin());
 GetPluginManager().RegisterPlugin(new VPPWeatherPlugin());
 ```
 
-### Key Characteristics
+### 主要特点
 
-- **Manual registration**: each plugin is explicitly `new`-ed and registered
-- **Config integration**: `ConfigurablePlugin` merges config management with the module lifecycle
-- **Self-contained**: no dependency on CF; VPP's plugin manager is its own system
-- **Clear ownership**: the plugin manager holds `ref` to all plugins, controlling their lifetime
+- **手动注册**：每个插件显式 `new` 并注册
+- **配置集成**：`ConfigurablePlugin` 将配置管理与模块生命周期合并
+- **自包含**：不依赖 CF；VPP 的插件管理器是自有系统
+- **明确所有权**：插件管理器持有所有插件的 `ref`，控制其生命周期
 
 ---
 
-## Dabs Attribute-Based Registration
+## Dabs 基于属性的注册
 
-The Dabs Framework (used in Dabs Framework Admin Tools) uses a more modern approach: C#-style attributes for auto-registration.
+Dabs Framework（用于 Dabs Framework Admin Tools）使用更现代的方式：C# 风格的属性进行自动注册。
 
-### The Concept
+### 概念
 
-Instead of manually registering modules, you annotate a class with an attribute, and the framework discovers it at startup using reflection:
+不再手动注册模块，你用属性注解一个类，框架在启动时通过反射发现它：
 
 ```c
-// Dabs pattern (conceptual)
+// Dabs 模式（概念性的）
 [CF_RegisterModule(DabsAdminESP)]
 class DabsAdminESP : CF_ModuleWorld
 {
@@ -258,40 +258,40 @@ class DabsAdminESP : CF_ModuleWorld
 };
 ```
 
-The `CF_RegisterModule` attribute tells CF's module manager to instantiate this class automatically. No manual `Register()` call needed.
+`CF_RegisterModule` 属性告诉 CF 的模块管理器自动实例化这个类。不需要手动 `Register()` 调用。
 
-### How Discovery Works
+### 发现机制
 
-At startup, CF scans all loaded script classes for the registration attribute. For each match, it creates an instance and adds it to the module manager. This happens before `OnInit()` is called on any module.
+在启动时，CF 扫描所有加载的脚本类以查找注册属性。对于每个匹配项，它创建一个实例并添加到模块管理器。这在任何模块的 `OnInit()` 被调用之前发生。
 
-### Key Characteristics
+### 主要特点
 
-- **Zero boilerplate**: no registration code in mission classes
-- **Declarative**: the class itself declares that it is a module
-- **Relies on CF**: only works with Community Framework's attribute processing
-- **Discoverability**: you can find all modules by searching for the attribute in the codebase
+- **零样板代码**：不需要在 mission 类中编写注册代码
+- **声明式**：类本身声明它是一个模块
+- **依赖 CF**：仅适用于 Community Framework 的属性处理
+- **可发现性**：你可以通过搜索代码库中的属性来找到所有模块
 
 ---
 
-## MyMod MyModuleManager
+## 自定义静态模块管理器
 
-MyFramework uses an explicit registration pattern with a static manager class. There is no instance of the manager --- it is entirely static methods and static storage.
+这种方式使用显式注册模式和静态管理器类。管理器没有实例——它完全是静态方法和静态存储。当你想要零外部框架依赖时，这很有用。
 
-### Module Base Classes
+### 模块基类
 
 ```c
-// Base: lifecycle hooks
+// 基类：生命周期钩子
 class MyModuleBase : Managed
 {
-    bool IsServer();       // Override in subclass
-    bool IsClient();       // Override in subclass
+    bool IsServer();       // 在子类中覆盖
+    bool IsClient();       // 在子类中覆盖
     string GetModuleName();
     void OnInit();
     void OnMissionStart();
     void OnMissionFinish();
 };
 
-// Server-side module: adds OnUpdate + player events
+// 服务器端模块：添加 OnUpdate + 玩家事件
 class MyServerModule : MyModuleBase
 {
     void OnUpdate(float dt);
@@ -299,26 +299,26 @@ class MyServerModule : MyModuleBase
     void OnPlayerDisconnect(PlayerIdentity identity, string uid);
 };
 
-// Client-side module: adds OnUpdate
+// 客户端模块：添加 OnUpdate
 class MyClientModule : MyModuleBase
 {
     void OnUpdate(float dt);
 };
 ```
 
-### Registration
+### 注册
 
-Modules register themselves explicitly, typically from modded mission classes:
+模块显式注册自身，通常从 modded mission 类：
 
 ```c
-// In modded MissionServer.OnInit():
+// 在 modded MissionServer.OnInit() 中：
 MyModuleManager.Register(new MyMissionServerModule());
 MyModuleManager.Register(new MyAIServerModule());
 ```
 
-### Lifecycle Dispatch
+### 生命周期分发
 
-The modded mission classes call into `MyModuleManager` at each lifecycle point:
+modded mission 类在每个生命周期点调用 `MyModuleManager`：
 
 ```c
 modded class MissionServer
@@ -344,95 +344,95 @@ modded class MissionServer
 };
 ```
 
-### Listen-Server Safety
+### Listen 服务器安全性
 
-MyMod's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle events twice on listen servers (where both `MissionServer` and `MissionGameplay` run in the same process).
+自定义模块系统的模块基类强制执行一个关键不变量：`MyServerModule` 从 `IsServer()` 返回 `true`，从 `IsClient()` 返回 `false`，而 `MyClientModule` 相反。管理器使用这些标志来避免在 listen 服务器上重复分发生命周期事件（在 listen 服务器上，`MissionServer` 和 `MissionGameplay` 在同一进程中运行）。
 
-The base `MyModuleBase` returns `true` from both --- which is why the codebase warns against subclassing it directly.
+基类 `MyModuleBase` 两者都返回 `true`——这就是代码库警告不要直接从它派生子类的原因。
 
-### Key Characteristics
+### 主要特点
 
-- **Zero dependencies**: no CF, no external frameworks
-- **Static manager**: no `GetInstance()` needed; purely static API
-- **Explicit registration**: full control over what gets registered and when
-- **Listen-server safe**: typed subclasses prevent double-dispatch
-- **Centralized cleanup**: `MyModuleManager.Cleanup()` tears down all modules and core timers
+- **零依赖**：不需要 CF，不需要外部框架
+- **静态管理器**：不需要 `GetInstance()`；纯静态 API
+- **显式注册**：完全控制注册什么以及何时注册
+- **Listen 服务器安全**：类型化子类防止双重分发
+- **集中清理**：`MyModuleManager.Cleanup()` 拆除所有模块和核心计时器
 
 ---
 
-## Module Lifecycle: The Universal Contract
+## 模块生命周期：通用契约
 
-Despite implementation differences, all four frameworks follow the same lifecycle contract:
+尽管实现不同，四种框架都遵循相同的生命周期契约：
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Registration / Discovery                            │
-│  Module instance is created and registered            │
+│  注册/发现                                           │
+│  模块实例被创建并注册                                  │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnInit()                                            │
-│  One-time setup: allocate collections, register RPCs │
-│  Called once per module after registration            │
+│  一次性设置：分配集合，注册 RPC                         │
+│  在注册后对每个模块调用一次                              │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionStart()                                    │
-│  Mission is live: load configs, start timers,        │
-│  subscribe to events, spawn initial entities         │
+│  任务已启动：加载配置，启动计时器，                      │
+│  订阅事件，生成初始实体                                 │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
-│  OnUpdate(float dt)         [repeating every frame]  │
-│  Per-frame tick: process queues, update timers,      │
-│  check conditions, advance state machines            │
+│  OnUpdate(float dt)         [每帧重复]                │
+│  逐帧更新：处理队列，更新计时器，                        │
+│  检查条件，推进状态机                                   │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionFinish()                                   │
-│  Teardown: save state, unsubscribe events,           │
-│  clear collections, null out references              │
+│  拆除：保存状态，取消订阅事件，                          │
+│  清空集合，将引用置空                                   │
 └─────────────────────────────────────────────────────┘
 ```
 
-### Rules
+### 规则
 
-1. **OnInit comes before OnMissionStart.** Never load configs or spawn entities in `OnInit()` --- the world may not be ready yet.
-2. **On上级date receives delta time.** Always use `dt` for time-based logic, never assume a fixed frame rate.
-3. **OnMissionFinish must clean up everything.** Every `ref` collection must be cleared. Every event subscription must be removed. Every singleton must be destroyed. This is the only reliable teardown point.
-4. **Modules should not depend on each other's initialization order.** If Module A needs Module B, use lazy access (`GetModule()`) rather than assuming B was registered first.
+1. **OnInit 在 OnMissionStart 之前。** 永远不要在 `OnInit()` 中加载配置或生成实体——世界可能尚未就绪。
+2. **OnUpdate 接收 delta time。** 始终使用 `dt` 进行基于时间的逻辑，永远不要假设固定帧率。
+3. **OnMissionFinish 必须清理一切。** 每个 `ref` 集合必须被清空。每个事件订阅必须被移除。每个单例必须被销毁。这是唯一可靠的拆除点。
+4. **模块不应依赖彼此的初始化顺序。** 如果模块 A 需要模块 B，使用延迟访问（`GetModule()`）而不是假设 B 已经先注册。
 
 ---
 
-## Best Practices for Module Design
+## 模块设计最佳实践
 
-### 1. One Module, One Responsibility
+### 1. 一个模块，一个职责
 
-A module should own exactly one domain. If you find yourself writing `VehicleAndWeatherAndLootModule`, split it.
+一个模块应该恰好拥有一个领域。如果你发现自己在写 `VehicleAndWeatherAndLootModule`，就拆分它。
 
 ```c
-// GOOD: Focused modules
+// 好：专注的模块
 class MyLootModule : MyServerModule { ... }
 class MyVehicleModule : MyServerModule { ... }
 class MyWeatherModule : MyServerModule { ... }
 
-// BAD: God module
+// 差：上帝模块
 class MyEverythingModule : MyServerModule { ... }
 ```
 
-### 2. Keep On上级date Cheap
+### 2. 保持 OnUpdate 轻量
 
-`On上级date` runs every frame. If your module does expensive work (file I/O, world scans, pathfinding), do it on a timer or batch it across frames:
+`OnUpdate` 每帧运行。如果你的模块做昂贵的工作（文件 I/O、世界扫描、寻路），就用计时器或跨帧批处理：
 
 ```c
 class MyCleanupModule : MyServerModule
 {
     protected float m_CleanupTimer;
-    protected const float CLEANUP_INTERVAL = 300.0;  // Every 5 minutes
+    protected const float CLEANUP_INTERVAL = 300.0;  // 每 5 分钟
 
     override void OnUpdate(float dt)
     {
@@ -446,9 +446,9 @@ class MyCleanupModule : MyServerModule
 };
 ```
 
-### 3. Register RPCs in OnInit, Not OnMissionStart
+### 3. 在 OnInit 中注册 RPC，而不是 OnMissionStart
 
-RPC handlers must be in place before any client can send a message. `OnInit()` runs during module registration, which happens early in the mission setup. `OnMissionStart()` may be too late if clients connect fast.
+RPC 处理程序必须在任何客户端能发送消息之前就位。`OnInit()` 在模块注册期间运行，发生在任务设置的早期。如果客户端连接快，`OnMissionStart()` 可能太晚了。
 
 ```c
 class MyModule : MyServerModule
@@ -461,17 +461,17 @@ class MyModule : MyServerModule
 
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // Handle RPC
+        // 处理 RPC
     }
 };
 ```
 
-### 4. Use the Module Manager for Cross-Module Access
+### 4. 使用模块管理器进行跨模块访问
 
-Do not hold direct references to other modules. Use the manager's lookup:
+不要持有对其他模块的直接引用。使用管理器的查找功能：
 
 ```c
-// GOOD: Loose coupling through the manager
+// 好：通过管理器实现松耦合
 MyModuleBase mod = MyModuleManager.GetModule("MyAIServerModule");
 MyAIServerModule aiMod;
 if (Class.CastTo(aiMod, mod))
@@ -479,28 +479,28 @@ if (Class.CastTo(aiMod, mod))
     aiMod.PauseSpawning();
 }
 
-// BAD: Direct static reference creates hard coupling
+// 差：直接静态引用造成硬耦合
 MyAIServerModule.s_Instance.PauseSpawning();
 ```
 
-### 5. Guard Against Missing Dependencies
+### 5. 防范缺失的依赖
 
-Not every server runs every mod. If your module optionally integrates with another mod, use preprocessor checks:
+并非每个服务器都运行每个 mod。如果你的模块可选地与另一个 mod 集成，使用预处理器检查：
 
 ```c
 override void OnMissionStart()
 {
     super.OnMissionStart();
 
-    #ifdef MyAI
+    #ifdef MYMOD_AI
     MyEventBus.OnMissionStarted.Insert(OnAIMissionStarted);
     #endif
 }
 ```
 
-### 6. Log Module Lifecycle Events
+### 6. 记录模块生命周期事件
 
-Logging makes debugging straightforward. Every module should log when it initializes and shuts down:
+日志使调试变得简单。每个模块应在初始化和关闭时记录日志：
 
 ```c
 override void OnInit()
@@ -512,27 +512,60 @@ override void OnInit()
 override void OnMissionFinish()
 {
     MyLog.Info("MyModule", "Shutting down");
-    // Cleanup...
+    // 清理...
 }
 ```
 
 ---
 
-## Comparison Table
+## 对比表
 
-| Feature | CF_ModuleCore | VPP Plugin | Dabs Attribute | MyMod Module |
+| 功能 | CF_ModuleCore | VPP Plugin | Dabs 属性 | 自定义模块 |
 |---------|--------------|------------|----------------|---------------|
-| **Discovery** | config.cpp + auto | Manual `Register()` | Attribute scan | Manual `Register()` |
-| **Base classes** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribute | ServerModule / ClientModule |
-| **Dependencies** | Requires CF | Self-contained | Requires CF | Self-contained |
-| **Listen-server safe** | CF handles it | Manual check | CF handles it | Typed subclasses |
-| **Config integration** | Separate | Built into ConfigurablePlugin | Separate | Via MyConfigManager |
-| **上级date dispatch** | Automatic | Manager calls `On上级date` | Automatic | Manager calls `On上级date` |
-| **Cleanup** | CF handles it | Manual `OnDestroy` | CF handles it | `MyModuleManager.Cleanup()` |
-| **Cross-mod access** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
+| **发现** | config.cpp + 自动 | 手动 `Register()` | 属性扫描 | 手动 `Register()` |
+| **基类** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + 属性 | ServerModule / ClientModule |
+| **依赖** | 需要 CF | 自包含 | 需要 CF | 自包含 |
+| **Listen 服务器安全** | CF 处理 | 手动检查 | CF 处理 | 类型化子类 |
+| **配置集成** | 独立 | 内置于 ConfigurablePlugin | 独立 | 通过 MyConfigManager |
+| **Update 分发** | 自动 | 管理器调用 `OnUpdate` | 自动 | 管理器调用 `OnUpdate` |
+| **清理** | CF 处理 | 手动 `OnDestroy` | CF 处理 | `MyModuleManager.Cleanup()` |
+| **跨 mod 访问** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
 
-Choose the approach that matches your mod's dependency profile. If you already depend on CF, use `CF_ModuleCore`. If you want zero external dependencies, build your own system following the MyMod or VPP pattern.
+选择与你 mod 的依赖情况匹配的方式。如果你已经依赖 CF，使用 `CF_ModuleCore`。如果你想要零外部依赖，按照自定义管理器或 VPP 模式构建自己的系统。
 
 ---
 
-[<< 上一章: Singleton Pattern](01-singletons.md) | [Home](../../README.md) | [下一章: RPC Patterns >>](03-rpc-patterns.md)
+## 兼容性与影响
+
+- **多 Mod：** 多个 mod 可以各自向同一管理器（CF、VPP 或自定义）注册自己的模块。只有两个 mod 注册相同的类类型时才会发生命名冲突——使用带有你 mod 标签前缀的唯一类名。
+- **加载顺序：** CF 从 `config.cpp` 自动发现模块，因此加载顺序遵循 `requiredAddons`。自定义管理器在 `OnInit()` 中注册模块，其中 `modded class` 链决定顺序。模块不应依赖注册顺序——使用延迟访问模式。
+- **Listen 服务器：** 在 listen 服务器上，`MissionServer` 和 `MissionGameplay` 在同一进程中运行。如果你的模块管理器从两者都分发 `OnUpdate`，模块会收到双倍的 tick。使用返回 `IsServer()` 或 `IsClient()` 的类型化子类（`ServerModule` / `ClientModule`）来防止这种情况。
+- **性能：** 模块分发为每个注册模块的每个生命周期调用增加一次循环迭代。对于 10-20 个模块，这可以忽略不计。确保单个模块的 `OnUpdate` 方法开销小（见第 7.7 章）。
+- **迁移：** 升级 DayZ 版本时，只要基类 API（`CF_ModuleWorld`、`PluginBase` 等）没有变化，模块系统就是稳定的。固定你的 CF 依赖版本以避免破坏。
+
+---
+
+## 常见错误
+
+| 错误 | 影响 | 修复 |
+|---------|--------|-----|
+| 模块中缺少 `OnMissionFinish` 清理 | 集合、计时器和事件订阅在任务重启之间存活，导致过期数据或崩溃 | 覆盖 `OnMissionFinish`，清空所有 `ref` 集合，取消订阅所有事件 |
+| 在 listen 服务器上双重分发生命周期事件 | 服务器模块运行客户端逻辑，反之亦然；重复生成，双重 RPC 发送 | 使用 `IsServer()` / `IsClient()` 守卫或强制分离的类型化模块子类 |
+| 在 `OnMissionStart` 而不是 `OnInit` 中注册 RPC | 在任务设置期间连接的客户端可以在处理程序准备好之前发送 RPC——消息被静默丢弃 | 始终在 `OnInit()` 中注册 RPC 处理程序，它在模块注册期间、任何客户端连接之前运行 |
+| 一个处理所有事情的"上帝模块" | 无法调试、测试或扩展；多个开发者同时工作时发生合并冲突 | 拆分为各自承担单一职责的专注模块 |
+| 持有对另一个模块实例的直接 `ref` | 造成硬耦合和潜在的 ref 循环内存泄漏 | 使用模块管理器的查找功能（`GetModule()`、`CF_Modules<T>.Get()`）进行跨模块访问 |
+
+---
+
+## 理论与实践
+
+| 教科书说 | DayZ 现实 |
+|---------------|-------------|
+| 模块发现应通过反射自动进行 | Enforce Script 反射有限；基于 `config.cpp` 的发现（CF）或显式 `Register()` 调用是唯一可靠的方式 |
+| 模块应在运行时可热交换 | DayZ 不支持脚本热重载；模块在整个任务生命周期中存活 |
+| 使用接口定义模块契约 | Enforce Script 没有 `interface` 关键字；使用基类虚方法（`override`）替代 |
+| 依赖注入解耦模块 | 不存在 DI 框架；使用管理器查找和 `#ifdef` 守卫处理可选的跨 mod 依赖 |
+
+---
+
+[首页](../../README.md) | [<< 上一章：单例模式](01-singletons.md) | **模块/插件系统** | [下一章：RPC 模式 >>](03-rpc-patterns.md)

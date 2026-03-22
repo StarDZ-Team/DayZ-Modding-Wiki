@@ -1,41 +1,41 @@
-# Chapitre 1.8: Memory Management
+# Chapitre 1.8 : Gestion de la mémoire
 
-[Accueil](../../README.md) | [<< Précédent : Math & Vectors](07-math-vectors.md) | **Memory Management** | [Suivant : Casting & Reflection >>](09-casting-reflection.md)
+[Accueil](../../README.md) | [<< Précédent : Math & Vecteurs](07-math-vectors.md) | **Gestion de la mémoire** | [Suivant : Casting & Réflexion >>](09-casting-reflection.md)
 
 ---
 
 ## Introduction
 
-Enforce Script uses **automatic reference counting (ARC)** for memory management -- not garbage collection in the traditional sense. Understanding how `ref`, `autoptr`, and raw pointers work is essential for writing stable DayZ mods. Get it wrong and you will either leak memory (your server gradually consumes more RAM until it crashes) or access deleted objects (instant crash with no useful error message). Ce chapitre explique every pointer type, when to use each, and how to avoid the most dangerous pitfall: reference cycles.
+Enforce Script utilise le **comptage automatique de références (ARC)** pour la gestion de la mémoire -- pas un ramasse-miettes au sens traditionnel. Comprendre comment fonctionnent `ref`, `autoptr` et les pointeurs bruts est essentiel pour écrire des mods DayZ stables. Si vous vous trompez, vous allez soit fuir de la mémoire (votre serveur consomme progressivement plus de RAM jusqu'au crash) soit accéder à des objets supprimés (crash instantané sans message d'erreur utile). Ce chapitre explique chaque type de pointeur, quand les utiliser et comment éviter le piège le plus dangereux : les cycles de références.
 
 ---
 
 ## Les trois types de pointeurs
 
-Enforce Script has three ways to hold a reference to an object:
+Enforce Script offre trois façons de maintenir une référence vers un objet :
 
 | Type de pointeur | Mot-clé | Garde l'objet vivant ? | Mis à zéro à la suppression ? | Utilisation principale |
-|-------------|---------|---------------------|-------------------|-------------|
-| **Raw pointer** | *(none)* | No (weak reference) | Only if class extends `Managed` | Back-references, observers, caches |
-| **Strong reference** | `ref` | Yes | Yes | Owned members, collections |
-| **Auto pointer** | `autoptr` | Yes, deleted at end of scope | Yes | Local variables |
+|-----------------|---------|----------------------|------------------------------|----------------------|
+| **Pointeur brut** | *(aucun)* | Non (référence faible) | Seulement si la classe étend `Managed` | Rétro-références, observateurs, caches |
+| **Référence forte** | `ref` | Oui | Oui | Membres possédés, collections |
+| **Pointeur auto** | `autoptr` | Oui, supprimé en fin de portée | Oui | Variables locales |
 
-### How ARC Works
+### Comment fonctionne l'ARC
 
-Every object has a **reference count** -- the number of strong references (`ref`, `autoptr`, local variables, function arguments) pointing to it. When the count drops to zero, the object is automatically destroyed and its destructor is called.
+Chaque objet a un **compteur de références** -- le nombre de références fortes (`ref`, `autoptr`, variables locales, arguments de fonction) pointant vers lui. Quand le compteur tombe à zéro, l'objet est automatiquement détruit et son destructeur est appelé.
 
-**Weak references** (raw pointers) do NOT increase the reference count. They observe the object without keeping it alive.
+Les **références faibles** (pointeurs bruts) n'incrémentent PAS le compteur de références. Elles observent l'objet sans le garder vivant.
 
 ---
 
-## Raw Pointers (Weak References)
+## Pointeurs bruts (Références faibles)
 
-A raw pointer is any variable declared without `ref` or `autoptr`. For class members, this creates a **weak reference**: it points to the object but does NOT keep it alive.
+Un pointeur brut est toute variable déclarée sans `ref` ni `autoptr`. Pour les membres de classe, cela crée une **référence faible** : elle pointe vers l'objet mais ne le garde PAS vivant.
 
 ```c
 class Observer
 {
-    PlayerBase m_WatchedPlayer;  // Référence faible -- does NOT keep player alive
+    PlayerBase m_WatchedPlayer;  // Référence faible -- ne garde PAS le joueur vivant
 
     void Watch(PlayerBase player)
     {
@@ -44,7 +44,7 @@ class Observer
 
     void Report()
     {
-        if (m_WatchedPlayer) // ALWAYS null-check weak references
+        if (m_WatchedPlayer) // TOUJOURS vérifier null sur les références faibles
         {
             Print("Watching: " + m_WatchedPlayer.GetIdentity().GetName());
         }
@@ -56,15 +56,15 @@ class Observer
 }
 ```
 
-### Managed vs Non-Managed classes
+### Classes Managed vs Non-Managed
 
-The safety of weak references depends on whether the object's class extends `Managed`:
+La sûreté des références faibles dépend de si la classe de l'objet étend `Managed` :
 
-- **Managed classes** (most DayZ gameplay classes): When the object is deleted, all weak references are automatically set to `null`. This is safe.
-- **Non-Managed classes** (plain `class` without inheriting `Managed`): When the object is deleted, weak references become **dangling pointers** -- they still hold the old memory address. Accessing them causes a crash.
+- **Classes Managed** (la plupart des classes de gameplay DayZ) : Quand l'objet est supprimé, toutes les références faibles sont automatiquement mises à `null`. C'est sûr.
+- **Classes Non-Managed** (simple `class` sans hériter de `Managed`) : Quand l'objet est supprimé, les références faibles deviennent des **pointeurs pendants** -- elles contiennent encore l'ancienne adresse mémoire. Y accéder cause un crash.
 
 ```c
-// SÛR -- Managed class, weak refs are zeroed
+// SÛR -- Classe Managed, les refs faibles sont mises à zéro
 class SafeData : Managed
 {
     int m_Value;
@@ -76,7 +76,7 @@ void TestManaged()
     SafeData weakRef = data;
     delete data;
 
-    if (weakRef) // false -- weakRef was automatically set to null
+    if (weakRef) // false -- weakRef a été automatiquement mis à null
     {
         Print(weakRef.m_Value); // Jamais atteint
     }
@@ -84,7 +84,7 @@ void TestManaged()
 ```
 
 ```c
-// DANGEREUX -- Non-Managed class, weak refs become dangling
+// DANGEREUX -- Classe Non-Managed, les refs faibles deviennent pendantes
 class UnsafeData
 {
     int m_Value;
@@ -96,24 +96,24 @@ void TestNonManaged()
     UnsafeData weakRef = data;
     delete data;
 
-    if (weakRef) // TRUE -- weakRef still holds old address!
+    if (weakRef) // TRUE -- weakRef contient encore l'ancienne adresse !
     {
-        Print(weakRef.m_Value); // PLANTAGE! Accessing deleted memory
+        Print(weakRef.m_Value); // CRASH ! Accès à de la mémoire supprimée
     }
 }
 ```
 
-> **Rule:** If you are writing your own classes, always extend `Managed` for safety. Most DayZ engine classes (EntityAI, ItemBase, PlayerBase, etc.) already inherit from `Managed`.
+> **Règle :** Si vous écrivez vos propres classes, étendez toujours `Managed` pour la sûreté. La plupart des classes moteur DayZ (EntityAI, ItemBase, PlayerBase, etc.) héritent déjà de `Managed`.
 
 ---
 
-## ref (Strong Reference)
+## ref (Référence forte)
 
-The `ref` keyword marks a variable as a **strong reference**. The object stays alive as long as at least one strong reference exists. When the last strong reference is destroyed or overwritten, the object is deleted.
+Le mot-clé `ref` marque une variable comme **référence forte**. L'objet reste vivant tant qu'au moins une référence forte existe. Quand la dernière référence forte est détruite ou écrasée, l'objet est supprimé.
 
-### Class members
+### Membres de classe
 
-Use `ref` for objects that your class **owns** and is responsible for creating and destroying.
+Utilisez `ref` pour les objets que votre classe **possède** et est responsable de créer et détruire.
 
 ```c
 class MissionManager
@@ -129,21 +129,21 @@ class MissionManager
         m_Logger = new MyLog;
     }
 
-    // No destructor needed! When MissionManager is deleted:
-    // 1. m_Logger ref is released -> MyLog is deleted
-    // 2. m_Configs ref is released -> map is deleted -> each MissionConfig is deleted
-    // 3. m_ActiveMissions ref is released -> array is deleted -> each MissionBase is deleted
+    // Pas de destructeur nécessaire ! Quand MissionManager est supprimé :
+    // 1. La ref m_Logger est relâchée -> MyLog est supprimé
+    // 2. La ref m_Configs est relâchée -> map est supprimée -> chaque MissionConfig est supprimé
+    // 3. La ref m_ActiveMissions est relâchée -> array est supprimé -> chaque MissionBase est supprimé
 }
 ```
 
-### Collections of owned objects
+### Collections d'objets possédés
 
-When you store objects in an array or map and want the collection to own them, use `ref` on both the collection AND the elements:
+Quand vous stockez des objets dans un array ou une map et voulez que la collection les possède, utilisez `ref` sur la collection ET les éléments :
 
 ```c
 class ZoneManager
 {
-    // The array is owned (ref), and each zone inside is owned (ref)
+    // Le tableau est possédé (ref), et chaque zone à l'intérieur est possédée (ref)
     protected ref array<ref SafeZone> m_Zones;
 
     void ZoneManager()
@@ -159,62 +159,62 @@ class ZoneManager
 }
 ```
 
-**Distinction critique :** An `array<SafeZone>` holds **weak** references. An `array<ref SafeZone>` holds **strong** references. If you use the weak version, objects inserted into the array may be immediately deleted because no strong reference keeps them alive.
+**Distinction critique :** Un `array<SafeZone>` contient des références **faibles**. Un `array<ref SafeZone>` contient des références **fortes**. Si vous utilisez la version faible, les objets insérés dans le tableau peuvent être immédiatement supprimés car aucune référence forte ne les garde vivants.
 
 ```c
-// INCORRECT -- Objects are deleted immediately after insertion!
+// FAUX -- Les objets sont supprimés immédiatement après insertion !
 ref array<MyClass> weakArray = new array<MyClass>;
-weakArray.Insert(new MyClass()); // Object created, inserted as weak ref,
-                                  // pas de référence forte exists -> IMMEDIATELY deleted
+weakArray.Insert(new MyClass()); // Objet créé, inséré comme ref faible,
+                                  // aucune ref forte n'existe -> IMMÉDIATEMENT supprimé
 
-// CORRECT -- Objects are kept alive by the array
+// CORRECT -- Les objets sont gardés vivants par le tableau
 ref array<ref MyClass> strongArray = new array<ref MyClass>;
-strongArray.Insert(new MyClass()); // L'objet vit as long as it's in the array
+strongArray.Insert(new MyClass()); // L'objet vit tant qu'il est dans le tableau
 ```
 
 ---
 
-## autoptr (Scoped Strong Reference)
+## autoptr (Référence forte de portée)
 
-`autoptr` is identical to `ref` but is intended for **local variables**. The object is automatically deleted when the variable goes out of scope (when the function returns).
+`autoptr` est identique à `ref` mais est destiné aux **variables locales**. L'objet est automatiquement supprimé quand la variable sort de la portée (quand la fonction retourne).
 
 ```c
 void ProcessData()
 {
     autoptr JsonSerializer serializer = new JsonSerializer;
-    // Use serializer...
+    // Utiliser serializer...
 
-    // serializer is automatically deleted here when the function exits
+    // serializer est automatiquement supprimé ici quand la fonction se termine
 }
 ```
 
 ### Quand utiliser autoptr
 
-En pratique, **local variables are already strong references by default** in Enforce Script. The `autoptr` keyword makes this explicit and self-documenting. You can use either:
+En pratique, **les variables locales sont déjà des références fortes par défaut** en Enforce Script. Le mot-clé `autoptr` rend cela explicite et auto-documenté. Vous pouvez utiliser l'un ou l'autre :
 
 ```c
 void Example()
 {
-    // These are functionally equivalent:
-    MyClass a = new MyClass();       // Variable locale = strong ref (implicit)
-    autoptr MyClass b = new MyClass(); // Variable locale = strong ref (explicit)
+    // Ce sont fonctionnellement équivalents :
+    MyClass a = new MyClass();       // Variable locale = ref forte (implicite)
+    autoptr MyClass b = new MyClass(); // Variable locale = ref forte (explicite)
 
-    // Both a and b are deleted when this function exits
+    // a et b sont tous deux supprimés quand cette fonction se termine
 }
 ```
 
-> **Convention in DayZ modding:** Most codebases use `ref` for class members and omit `autoptr` for locals (relying on the implicit strong reference behavior). The CLAUDE.md for this project notes: "**`autoptr` is NOT used** -- use explicit `ref`." Follow whichever convention your project establishes.
+> **Convention dans le modding DayZ :** La plupart des bases de code utilisent `ref` pour les membres de classe et omettent `autoptr` pour les variables locales (s'appuyant sur le comportement de référence forte implicite). Le CLAUDE.md de ce projet note : « **`autoptr` n'est PAS utilisé** -- utilisez `ref` explicite. » Suivez la convention que votre projet établit.
 
 ---
 
-## notnull Parameter Modifier
+## Modificateur de paramètre notnull
 
-The `notnull` modifier on a function parameter tells the compiler that null is not a valid argument. The compiler enforces this at call sites.
+Le modificateur `notnull` sur un paramètre de fonction dit au compilateur que null n'est pas un argument valide. Le compilateur impose cela aux sites d'appel.
 
 ```c
 void ProcessPlayer(notnull PlayerBase player)
 {
-    // Pas besoin de vérifier null -- the compiler guarantees it
+    // Pas besoin de vérifier null -- le compilateur le garantit
     string name = player.GetIdentity().GetName();
     Print("Processing: " + name);
 }
@@ -223,32 +223,32 @@ void CallExample(PlayerBase maybeNull)
 {
     if (maybeNull)
     {
-        ProcessPlayer(maybeNull); // OK -- we checked first
+        ProcessPlayer(maybeNull); // OK -- nous avons vérifié d'abord
     }
 
-    // ProcessPlayer(null); // ERREUR DE COMPILATION : cannot pass null to notnull parameter
+    // ProcessPlayer(null); // ERREUR DE COMPILATION : impossible de passer null à un paramètre notnull
 }
 ```
 
-Use `notnull` on parameters where null would always be a programming error. It catches bugs à la compilation rather than causing crashes à l'exécution.
+Utilisez `notnull` sur les paramètres où null serait toujours une erreur de programmation. Cela attrape les bugs à la compilation plutôt que de causer des crashs à l'exécution.
 
 ---
 
-## Cycles de référence (AVERTISSEMENT FUITE MÉMOIRE)
+## Cycles de références (ATTENTION FUITE MÉMOIRE)
 
-A reference cycle occurs when two objects hold strong references (`ref`) to each other. Neither object can ever be deleted because each one keeps the other alive. This est le plus courant source of memory leaks in DayZ mods.
+Un cycle de références se produit quand deux objets maintiennent des références fortes (`ref`) l'un vers l'autre. Aucun objet ne peut jamais être supprimé car chacun garde l'autre vivant. C'est la source la plus courante de fuites mémoire dans les mods DayZ.
 
-### The problem
+### Le problème
 
 ```c
 class Parent
 {
-    ref Child m_Child; // Référence forte to Child
+    ref Child m_Child; // Référence forte vers Child
 }
 
 class Child
 {
-    ref Parent m_Parent; // Référence forte to Parent -- CYCLE!
+    ref Parent m_Parent; // Référence forte vers Parent -- CYCLE !
 }
 
 void CreateCycle()
@@ -259,26 +259,26 @@ void CreateCycle()
     parent.m_Child = child;
     child.m_Parent = parent;
 
-    // When this function exits:
-    // - The local 'parent' ref is released, but child.m_Parent still holds parent alive
-    // - The local 'child' ref is released, but parent.m_Child still holds child alive
-    // NEITHER object is ever deleted! This is a permanent memory leak.
+    // Quand cette fonction se termine :
+    // - La ref locale 'parent' est relâchée, mais child.m_Parent garde parent vivant
+    // - La ref locale 'child' est relâchée, mais parent.m_Child garde child vivant
+    // AUCUN objet n'est jamais supprimé ! C'est une fuite mémoire permanente.
 }
 ```
 
-### The fix: One side must be a raw (weak) reference
+### La solution : Un côté doit être une référence brute (faible)
 
-Break the cycle by making one side a weak reference. The "child" should hold a weak reference to its "parent":
+Cassez le cycle en rendant un côté une référence faible. L'« enfant » devrait maintenir une référence faible vers son « parent » :
 
 ```c
 class Parent
 {
-    ref Child m_Child; // Fort -- parent OWNS the child
+    ref Child m_Child; // Forte -- le parent POSSÈDE l'enfant
 }
 
 class Child
 {
-    Parent m_Parent; // Faible (raw) -- child OBSERVES the parent
+    Parent m_Parent; // Faible (brute) -- l'enfant OBSERVE le parent
 }
 
 void NoCycle()
@@ -289,21 +289,21 @@ void NoCycle()
     parent.m_Child = child;
     child.m_Parent = parent;
 
-    // When this function exits:
-    // - Local 'parent' ref is released -> parent's ref count = 0 -> DELETED
-    // - Parent destructor releases m_Child -> child's ref count = 0 -> DELETED
-    // Both objects are properly cleaned up!
+    // Quand cette fonction se termine :
+    // - La ref locale 'parent' est relâchée -> compteur de ref du parent = 0 -> SUPPRIMÉ
+    // - Le destructeur de Parent relâche m_Child -> compteur de ref de child = 0 -> SUPPRIMÉ
+    // Les deux objets sont correctement nettoyés !
 }
 ```
 
-### Real-world example: UI panels
+### Exemple du monde réel : Panneaux UI
 
-A common pattern in DayZ UI code is a panel that holds widgets, where widgets need a reference back to the panel. The panel owns the widgets (strong ref), and widgets observe the panel (weak ref).
+Un pattern courant dans le code UI de DayZ est un panneau qui contient des widgets, où les widgets ont besoin d'une référence vers le panneau. Le panneau possède les widgets (ref forte), et les widgets observent le panneau (ref faible).
 
 ```c
 class AdminPanel
 {
-    protected ref array<ref AdminPanelTab> m_Tabs; // Owns the tabs
+    protected ref array<ref AdminPanelTab> m_Tabs; // Possède les onglets
 
     void AdminPanel()
     {
@@ -320,28 +320,28 @@ class AdminPanel
 class AdminPanelTab
 {
     protected string m_Name;
-    protected AdminPanel m_Owner; // FAIBLE -- avoids cycle
+    protected AdminPanel m_Owner; // FAIBLE -- évite le cycle
 
     void AdminPanelTab(string name, AdminPanel owner)
     {
         m_Name = name;
-        m_Owner = owner; // Référence faible back to parent
+        m_Owner = owner; // Référence faible vers le parent
     }
 
     AdminPanel GetOwner()
     {
-        return m_Owner; // Peut être null if panel was deleted
+        return m_Owner; // Peut être null si le panneau a été supprimé
     }
 }
 ```
 
-### Reference Counting Lifecycle
+### Cycle de vie du comptage de références
 
 ```mermaid
 sequenceDiagram
-    participant Code as Your Code
+    participant Code as Votre code
     participant Obj as MyObject
-    participant GC as Garbage Collector
+    participant GC as Ramasse-miettes
 
     Code->>Obj: ref MyObject obj = new MyObject()
     Note over Obj: refcount = 1
@@ -355,21 +355,21 @@ sequenceDiagram
     Code->>Obj: obj = null
     Note over Obj: refcount = 0
 
-    Obj->>GC: ~MyObject() destructor called
-    GC->>GC: Memory freed
+    Obj->>GC: ~MyObject() destructeur appelé
+    GC->>GC: Mémoire libérée
 ```
 
-### Reference Cycle (Memory Leak)
+### Cycle de références (Fuite mémoire)
 
 ```mermaid
 graph LR
-    A[Object A<br/>ref m_B] -->|"strong ref"| B[Object B<br/>ref m_A]
-    B -->|"strong ref"| A
+    A[Objet A<br/>ref m_B] -->|"ref forte"| B[Objet B<br/>ref m_A]
+    B -->|"ref forte"| A
 
     style A fill:#D94A4A,color:#fff
     style B fill:#D94A4A,color:#fff
 
-    C["Neither can be freed!<br/>Both refcount = 1 forever"]
+    C["Ni l'un ni l'autre ne peut être libéré !<br/>Les deux refcount = 1 pour toujours"]
 
     style C fill:#FFD700,color:#000
 ```
@@ -378,7 +378,7 @@ graph LR
 
 ## Le mot-clé delete
 
-You can manually delete an object at any time using `delete`. This destroys the object **immediately**, regardless of its reference count. All references (both strong and weak, on Managed classes) are set to null.
+Vous pouvez supprimer manuellement un objet à tout moment avec `delete`. Cela détruit l'objet **immédiatement**, indépendamment de son compteur de références. Toutes les références (fortes et faibles, sur les classes Managed) sont mises à null.
 
 ```c
 void ManualDelete()
@@ -392,56 +392,56 @@ void ManualDelete()
     delete obj;
 
     Print(obj != null);        // false
-    Print(anotherRef != null); // false (also nulled, on Managed classes)
+    Print(anotherRef != null); // false (aussi mis à null, sur les classes Managed)
 }
 ```
 
 ### Quand utiliser delete
 
-- When you need to release a resource **immediately** (not waiting for ARC)
-- When cleaning up in a shutdown/destroy method
-- When removing objects from le jeu world (`GetGame().ObjectDelete(obj)` for game entities)
+- Quand vous devez libérer une ressource **immédiatement** (sans attendre l'ARC)
+- Lors du nettoyage dans une méthode shutdown/destroy
+- Lors de la suppression d'objets du monde de jeu (`GetGame().ObjectDelete(obj)` pour les entités de jeu)
 
-### When NOT to use delete
+### Quand NE PAS utiliser delete
 
-- On objects owned by someone else (the owner's `ref` will become null unexpectedly)
-- On objects still in use by other systems (timers, callbacks, UI)
-- On engine-managed entities without going through proper channels
+- Sur des objets possédés par quelqu'un d'autre (la `ref` du propriétaire deviendra null de façon inattendue)
+- Sur des objets encore utilisés par d'autres systèmes (timers, callbacks, UI)
+- Sur des entités gérées par le moteur sans passer par les canaux appropriés
 
 ---
 
 ## Comportement du ramasse-miettes
 
-Enforce Script does NOT have a traditional garbage collector that periodically scans for unreachable objects. Instead, it uses **deterministic reference counting:**
+Enforce Script n'a PAS de ramasse-miettes traditionnel qui scanne périodiquement les objets inaccessibles. À la place, il utilise le **comptage de références déterministe :**
 
-1. When a strong reference is created (assignment to `ref`, local variable, function argument), the object's reference count increases.
-2. When a strong reference goes out of scope or is overwritten, the reference count decreases.
-3. When the reference count reaches zero, the object is **immediately** destroyed (destructor is called, memory is freed).
-4. `delete` bypasses the reference count and destroys the object immediately.
+1. Quand une référence forte est créée (assignation à `ref`, variable locale, argument de fonction), le compteur de références de l'objet augmente.
+2. Quand une référence forte sort de la portée ou est écrasée, le compteur de références diminue.
+3. Quand le compteur de références atteint zéro, l'objet est **immédiatement** détruit (le destructeur est appelé, la mémoire est libérée).
+4. `delete` contourne le compteur de références et détruit l'objet immédiatement.
 
-This means:
-- Object lifetimes are predictable and deterministic
-- There are no "GC pauses" or unpredictable delays
-- Reference cycles are NEVER collected -- they are permanent leaks
-- Order of destruction is well-defined: objects are destroyed in reverse order of their last reference being released
+Cela signifie :
+- Les durées de vie des objets sont prévisibles et déterministes
+- Il n'y a pas de « pauses GC » ou de délais imprévisibles
+- Les cycles de références ne sont JAMAIS collectés -- ce sont des fuites permanentes
+- L'ordre de destruction est bien défini : les objets sont détruits dans l'ordre inverse du relâchement de leur dernière référence
 
 ---
 
-## Real-World Example: Proper Manager Class
+## Exemple du monde réel : Classe Manager correcte
 
-Here is a complete example showing proper memory management patterns for a typical DayZ mod manager:
+Voici un exemple complet montrant les patterns de gestion mémoire corrects pour un gestionnaire de mod DayZ typique :
 
 ```c
 class MyZoneManager
 {
-    // Singleton instance -- the only strong ref keeping this alive
+    // Instance singleton -- la seule ref forte gardant ceci vivant
     private static ref MyZoneManager s_Instance;
 
-    // Possédé collections -- manager is responsible for these
+    // Collections possédées -- le gestionnaire est responsable de celles-ci
     protected ref array<ref MyZone> m_Zones;
     protected ref map<string, ref MyZoneConfig> m_Configs;
 
-    // Référence faible to external system -- we don't own this
+    // Référence faible vers un système externe -- nous ne possédons pas ceci
     protected PlayerBase m_LastEditor;
 
     void MyZoneManager()
@@ -452,7 +452,7 @@ class MyZoneManager
 
     void ~MyZoneManager()
     {
-        // Nettoyage explicite (optional -- ARC handles it, but good practice)
+        // Nettoyage explicite (optionnel -- l'ARC s'en occupe, mais bonne pratique)
         m_Zones.Clear();
         m_Configs.Clear();
         m_LastEditor = null;
@@ -471,7 +471,7 @@ class MyZoneManager
 
     static void DestroyInstance()
     {
-        s_Instance = null; // Libérers the strong ref, triggers destructor
+        s_Instance = null; // Relâche la ref forte, déclenche le destructeur
     }
 
     void CreateZone(string name, vector center, float radius, PlayerBase editor)
@@ -482,7 +482,7 @@ class MyZoneManager
         ref MyZone zone = new MyZone(config);
         m_Zones.Insert(zone);
 
-        m_LastEditor = editor; // Référence faible -- we don't own the player
+        m_LastEditor = editor; // Référence faible -- nous ne possédons pas le joueur
     }
 
     void RemoveZone(int index)
@@ -493,8 +493,8 @@ class MyZoneManager
         MyZone zone = m_Zones.Get(index);
         string name = zone.GetName();
 
-        m_Zones.RemoveOrdered(index); // Fort ref released, zone may be deleted
-        m_Configs.Remove(name);       // Config ref released, config deleted
+        m_Zones.RemoveOrdered(index); // Ref forte relâchée, la zone peut être supprimée
+        m_Configs.Remove(name);       // Ref de config relâchée, config supprimé
     }
 
     MyZone FindZoneAtPosition(vector pos)
@@ -502,7 +502,7 @@ class MyZoneManager
         foreach (MyZone zone : m_Zones)
         {
             if (zone.ContainsPosition(pos))
-                return zone; // Retourner une référence faible to caller
+                return zone; // Retourne une référence faible à l'appelant
         }
         return null;
     }
@@ -513,7 +513,7 @@ class MyZone
     protected string m_Name;
     protected vector m_Center;
     protected float m_Radius;
-    protected MyZoneConfig m_Config; // Faible -- config is owned by manager
+    protected MyZoneConfig m_Config; // Faible -- la config est possédée par le gestionnaire
 
     void MyZone(MyZoneConfig config)
     {
@@ -550,98 +550,98 @@ class MyZoneConfig
 }
 ```
 
-### Memory ownership diagram for this example
+### Diagramme de propriété mémoire pour cet exemple
 
 ```
-MyZoneManager (singleton, owned by static s_Instance)
+MyZoneManager (singleton, possédé par static s_Instance)
   |
-  |-- ref array<ref MyZone>   m_Zones     [STRONG -> STRONG elements]
+  |-- ref array<ref MyZone>   m_Zones     [FORTE -> éléments FORTS]
   |     |
   |     +-- MyZone
-  |           |-- MyZoneConfig m_Config    [WEAK -- owned by m_Configs]
+  |           |-- MyZoneConfig m_Config    [FAIBLE -- possédé par m_Configs]
   |
-  |-- ref map<string, ref MyZoneConfig> m_Configs  [STRONG -> STRONG elements]
+  |-- ref map<string, ref MyZoneConfig> m_Configs  [FORTE -> éléments FORTS]
   |     |
-  |     +-- MyZoneConfig                   [OWNED here]
+  |     +-- MyZoneConfig                   [POSSÉDÉ ici]
   |
-  +-- PlayerBase m_LastEditor                [WEAK -- owned by engine]
+  +-- PlayerBase m_LastEditor                [FAIBLE -- possédé par le moteur]
 ```
 
-When `DestroyInstance()` is called:
-1. `s_Instance` is set to null, releasing the strong reference
-2. `MyZoneManager` destructor runs
-3. `m_Zones` is released -> array is deleted -> each `MyZone` is deleted
-4. `m_Configs` is released -> map is deleted -> each `MyZoneConfig` is deleted
-5. `m_LastEditor` is a weak reference, nothing to clean up
-6. All memory is freed. No leaks.
+Quand `DestroyInstance()` est appelé :
+1. `s_Instance` est mis à null, relâchant la référence forte
+2. Le destructeur de `MyZoneManager` s'exécute
+3. `m_Zones` est relâché -> le tableau est supprimé -> chaque `MyZone` est supprimé
+4. `m_Configs` est relâché -> la map est supprimée -> chaque `MyZoneConfig` est supprimé
+5. `m_LastEditor` est une référence faible, rien à nettoyer
+6. Toute la mémoire est libérée. Pas de fuites.
 
 ---
 
 ## Bonnes pratiques
 
-- Use `ref` for class members your class creates and owns; use raw pointers (no keyword) for back-references and external observations.
-- Always extend `Managed` for pure-script classes -- it ensures weak references are zeroed on delete, preventing dangling pointer crashes.
-- Break reference cycles by making the child hold a raw pointer to its parent: parent owns child (`ref`), child observes parent (raw).
-- Use `array<ref MyClass>` when the collection owns its elements; `array<MyClass>` holds weak references that will not keep objects alive.
-- Prefer ARC-driven cleanup over manual `delete` -- let the last `ref` release trigger the destructor naturally.
+- Utilisez `ref` pour les membres de classe que votre classe crée et possède ; utilisez des pointeurs bruts (pas de mot-clé) pour les rétro-références et les observations externes.
+- Étendez toujours `Managed` pour les classes purement script -- cela garantit que les références faibles sont mises à zéro à la suppression, empêchant les crashs de pointeurs pendants.
+- Cassez les cycles de références en faisant en sorte que l'enfant maintienne un pointeur brut vers son parent : le parent possède l'enfant (`ref`), l'enfant observe le parent (brut).
+- Utilisez `array<ref MyClass>` quand la collection possède ses éléments ; `array<MyClass>` contient des références faibles qui ne garderont pas les objets vivants.
+- Préférez le nettoyage piloté par l'ARC au `delete` manuel -- laissez le relâchement de la dernière `ref` déclencher le destructeur naturellement.
 
 ---
 
 ## Observé dans les mods réels
 
-> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+> Patterns confirmés par l'étude du code source de mods DayZ professionnels.
 
-| Patron | Mod | Détail |
+| Pattern | Mod | Détail |
 |---------|-----|--------|
-| Parent `ref` + child raw back-pointer | COT / Expansion UI | Panels own tabs with `ref`, tabs hold raw pointer to parent panel to avoid cycles |
-| `static ref` singleton + `Destroy()` nulling | Dabs / VPP | All singletons use `s_Instance = null` in a static `Destroy()` to trigger cleanup |
-| `ref array<ref T>` for managed collections | Expansion Market | Both the array and its elements are `ref` to ensure proper ownership |
-| Raw pointer for engine entities (players, items) | COT Admin | Player references stored as raw pointers since le moteur manages entity lifetime |
+| Parent `ref` + rétro-pointeur brut de l'enfant | COT / Expansion UI | Les panneaux possèdent les onglets avec `ref`, les onglets maintiennent un pointeur brut vers le panneau parent pour éviter les cycles |
+| Singleton `static ref` + mise à null dans `Destroy()` | Dabs / VPP | Tous les singletons utilisent `s_Instance = null` dans un `Destroy()` statique pour déclencher le nettoyage |
+| `ref array<ref T>` pour les collections gérées | Expansion Market | Le tableau et ses éléments sont tous deux `ref` pour assurer une propriété correcte |
+| Pointeur brut pour les entités moteur (joueurs, objets) | COT Admin | Les références aux joueurs sont stockées comme pointeurs bruts car le moteur gère la durée de vie des entités |
 
 ---
 
 ## Théorie vs Pratique
 
 | Concept | Théorie | Réalité |
-|---------|--------|---------|
-| `autoptr` for local variables | Should auto-delete at scope exit | Locals are already implicitly strong references; `autoptr` is rarely used in practice |
-| ARC handles all cleanup | Objects freed when refcount hits zero | Reference cycles are never collected -- they leak permanently until server restart |
-| `delete` for immediate cleanup | Destroys the object right away | Can null out references held by other systems unexpectedly -- prefer letting ARC handle it |
+|---------|---------|---------|
+| `autoptr` pour les variables locales | Devrait auto-supprimer en sortie de portée | Les variables locales sont déjà implicitement des références fortes ; `autoptr` est rarement utilisé en pratique |
+| L'ARC gère tout le nettoyage | Les objets libérés quand le refcount atteint zéro | Les cycles de références ne sont jamais collectés -- ils fuient en permanence jusqu'au redémarrage du serveur |
+| `delete` pour le nettoyage immédiat | Détruit l'objet tout de suite | Peut mettre à null des références détenues par d'autres systèmes de façon inattendue -- préférez laisser l'ARC s'en occuper |
 
 ---
 
 ## Erreurs courantes
 
 | Erreur | Problème | Solution |
-|---------|---------|-----|
-| Two objects with `ref` to each other | Reference cycle, permanent memory leak | One side must be a raw (weak) reference |
-| `array<MyClass>` instead of `array<ref MyClass>` | Elements are weak references, objects may be deleted immediately | Use `array<ref MyClass>` for owned elements |
-| Accessing a raw pointer after the object was deleted | Crash (dangling pointer on non-Managed classes) | Extend `Managed` and always null-check weak references |
-| Not checking weak references for null | Crash when the referenced object has been deleted | Always: `if (weakRef) { weakRef.DoThing(); }` |
-| Using `delete` on objects owned by another system | The owner's `ref` becomes null unexpectedly | Let the owner release the object through ARC |
-| Storing `ref` to engine entities (players, items) | Can fight with engine lifetime management | Use raw pointers for engine entities |
-| Forgetting `ref` on class member collections | Collection is a weak reference, may be collected | Always: `protected ref array<...> m_List;` |
-| Circular parent-child with `ref` on both sides | Classic cycle; neither parent nor child is ever freed | Parent owns child (`ref`), child observes parent (raw) |
+|--------|----------|----------|
+| Deux objets avec `ref` l'un vers l'autre | Cycle de références, fuite mémoire permanente | Un côté doit être une référence brute (faible) |
+| `array<MyClass>` au lieu de `array<ref MyClass>` | Les éléments sont des références faibles, les objets peuvent être immédiatement supprimés | Utilisez `array<ref MyClass>` pour les éléments possédés |
+| Accéder à un pointeur brut après la suppression de l'objet | Crash (pointeur pendant sur les classes non-Managed) | Étendez `Managed` et vérifiez toujours null sur les références faibles |
+| Ne pas vérifier null sur les références faibles | Crash quand l'objet référencé a été supprimé | Toujours : `if (weakRef) { weakRef.DoThing(); }` |
+| Utiliser `delete` sur des objets possédés par un autre système | La `ref` du propriétaire devient null de façon inattendue | Laissez le propriétaire relâcher l'objet via l'ARC |
+| Stocker `ref` vers des entités moteur (joueurs, objets) | Peut entrer en conflit avec la gestion de durée de vie du moteur | Utilisez des pointeurs bruts pour les entités moteur |
+| Oublier `ref` sur les collections membres de classe | La collection est une référence faible, peut être collectée | Toujours : `protected ref array<...> m_List;` |
+| Parent-enfant circulaire avec `ref` des deux côtés | Cycle classique ; ni parent ni enfant n'est jamais libéré | Le parent possède l'enfant (`ref`), l'enfant observe le parent (brut) |
 
 ---
 
-## Guide de décision : quel type de pointeur ?
+## Guide de décision : Quel type de pointeur ?
 
 ```
-Is this a class member that this class CREATES and OWNS?
-  -> YES: Use ref
-  -> NO: Is this a back-reference or external observation?
-    -> YES: Use raw pointer (no keyword), always null-check
-    -> NO: Is this a local variable in a function?
-      -> YES: Raw is fine (locals are implicitly strong)
-      -> Explicit autoptr is optional for clarity
+Est-ce un membre de classe que cette classe CRÉE et POSSÈDE ?
+  -> OUI : Utilisez ref
+  -> NON : Est-ce une rétro-référence ou une observation externe ?
+    -> OUI : Utilisez un pointeur brut (pas de mot-clé), vérifiez toujours null
+    -> NON : Est-ce une variable locale dans une fonction ?
+      -> OUI : Brut suffit (les variables locales sont implicitement fortes)
+      -> autoptr explicite est optionnel pour la clarté
 
-Storing objects in a collection (array/map)?
-  -> Objects OWNED by the collection: array<ref MyClass>
-  -> Objects OBSERVED by the collection: array<MyClass>
+Stocker des objets dans une collection (array/map) ?
+  -> Objets POSSÉDÉS par la collection : array<ref MyClass>
+  -> Objets OBSERVÉS par la collection : array<MyClass>
 
-Function parameter that must never be null?
-  -> Use notnull modifier
+Paramètre de fonction qui ne doit jamais être null ?
+  -> Utilisez le modificateur notnull
 ```
 
 ---
@@ -649,28 +649,28 @@ Function parameter that must never be null?
 ## Référence rapide
 
 ```c
-// Raw pointer (weak reference for class members)
-MyClass m_Observer;              // Does NOT keep object alive
-                                 // Set to null on delete (Managed only)
+// Pointeur brut (référence faible pour les membres de classe)
+MyClass m_Observer;              // Ne garde PAS l'objet vivant
+                                 // Mis à null à la suppression (Managed uniquement)
 
-// Référence forte (keeps object alive)
-ref MyClass m_Owned;             // L'objet vit until ref is released
-ref array<ref MyClass> m_List;   // Array AND elements are strongly held
+// Référence forte (garde l'objet vivant)
+ref MyClass m_Owned;             // L'objet vit jusqu'à ce que la ref soit relâchée
+ref array<ref MyClass> m_List;   // Le tableau ET les éléments sont fortement tenus
 
-// Auto pointer (scoped strong reference)
-autoptr MyClass local;           // Deleted when scope exits
+// Pointeur auto (référence forte de portée)
+autoptr MyClass local;           // Supprimé quand la portée se termine
 
-// notnull (compile-time null guard)
-void Func(notnull MyClass obj);  // Compiler rejects null arguments
+// notnull (garde null à la compilation)
+void Func(notnull MyClass obj);  // Le compilateur rejette les arguments null
 
-// Manual delete (immediate, bypasses ARC)
-delete obj;                      // Destroys immediately, nulls all refs (Managed)
+// Suppression manuelle (immédiate, contourne l'ARC)
+delete obj;                      // Détruit immédiatement, met à null toutes les refs (Managed)
 
-// Break reference cycles: one side must be weak
-class Parent { ref Child m_Child; }      // Fort -- parent owns child
-class Child  { Parent m_Parent; }        // Faible   -- child observes parent
+// Casser les cycles de références : un côté doit être faible
+class Parent { ref Child m_Child; }      // Forte -- le parent possède l'enfant
+class Child  { Parent m_Parent; }        // Faible -- l'enfant observe le parent
 ```
 
 ---
 
-[<< 1.7: Math & Vectors](07-math-vectors.md) | [Accueil](../../README.md) | [1.9: Casting & Reflection >>](09-casting-reflection.md)
+[<< 1.7 : Math & Vecteurs](07-math-vectors.md) | [Accueil](../../README.md) | [1.9 : Casting & Réflexion >>](09-casting-reflection.md)

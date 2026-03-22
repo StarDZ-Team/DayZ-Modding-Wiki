@@ -1,40 +1,44 @@
-# Chapter 1.10: Enums & Preprocessor
+# 第 1.10 章：枚举与预处理器
 
-[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
+[首页](../../README.md) | [<< 上一章：类型转换与反射](09-casting-reflection.md) | **枚举与预处理器** | [下一章：错误处理 >>](11-error-handling.md)
+
+---
+
+> **目标：** 理解枚举声明、枚举反射工具、位标志模式、常量以及用于条件编译的预处理器系统。
 
 ---
 
 ## 目录
 
-- [Enum Declaration](#enum-declaration)
-  - [Explicit Values](#explicit-values)
-  - [Implicit Values](#implicit-values)
-  - [Enum Inheritance](#enum-inheritance)
-- [Using Enums](#using-enums)
-- [Enum Reflection](#enum-reflection)
+- [枚举声明](#枚举声明)
+  - [显式值](#显式值)
+  - [隐式值](#隐式值)
+  - [枚举继承](#枚举继承)
+- [使用枚举](#使用枚举)
+- [枚举反射](#枚举反射)
   - [typename.EnumToString](#typenameenumtostring)
   - [typename.StringToEnum](#typenamestringtoenum)
-- [Bitflags Pattern](#bitflags-pattern)
-- [Constants](#constants)
-- [Preprocessor Directives](#preprocessor-directives)
+- [位标志模式](#位标志模式)
+- [常量](#常量)
+- [预处理器指令](#预处理器指令)
   - [#ifdef / #ifndef / #endif](#ifdef--ifndef--endif)
   - [#define](#define)
-  - [Common Engine Defines](#common-engine-defines)
-  - [Custom Defines via config.cpp](#custom-defines-via-configcpp)
-- [Real-World Examples](#real-world-examples)
-  - [Platform-Specific Code](#platform-specific-code)
-  - [Optional Mod Dependencies](#optional-mod-dependencies)
-  - [Debug-Only Diagnostics](#debug-only-diagnostics)
-  - [Server vs Client Logic](#server-vs-client-logic)
-- [Common Mistakes](#common-mistakes)
-- [Summary](#summary)
-- [Navigation](#navigation)
+  - [常用引擎定义](#常用引擎定义)
+  - [通过 config.cpp 自定义定义](#通过-configcpp-自定义定义)
+- [实际示例](#实际示例)
+  - [平台特定代码](#平台特定代码)
+  - [可选 Mod 依赖](#可选-mod-依赖)
+  - [仅调试诊断](#仅调试诊断)
+  - [服务器与客户端逻辑](#服务器与客户端逻辑)
+- [常见错误](#常见错误)
+- [总结](#总结)
+- [导航](#导航)
 
 ---
 
 ## 枚举声明
 
-Enums in Enforce Script define named integer constants grouped under a type name. They behave like `int` under the hood.
+Enforce Script 中的枚举定义了分组在一个类型名称下的命名整数常量。它们本质上表现为 `int`。
 
 ### 显式值
 
@@ -51,7 +55,7 @@ enum EDamageState
 
 ### 隐式值
 
-If you omit values, they auto-increment from the previous value (starting at 0):
+如果省略值，它们会从前一个值自动递增（从 0 开始）：
 
 ```c
 enum EWeaponMode
@@ -59,13 +63,13 @@ enum EWeaponMode
     SEMI,       // 0
     BURST,      // 1
     AUTO,       // 2
-    COUNT       // 3 — common trick to get the total count
+    COUNT       // 3 — 获取总数的常见技巧
 };
 ```
 
 ### 枚举继承
 
-Enums can inherit from other enums. Values continue from the last parent value:
+枚举可以从其他枚举继承。值从最后一个父值继续：
 
 ```c
 enum EBaseColor
@@ -83,31 +87,31 @@ enum EExtendedColor : EBaseColor
 };
 ```
 
-All parent values are accessible through the child enum:
+所有父值都可以通过子枚举访问：
 
 ```c
-int c = EExtendedColor.RED;      // 0 — inherited from EBaseColor
-int d = EExtendedColor.YELLOW;   // 3 — defined in EExtendedColor
+int c = EExtendedColor.RED;      // 0 — 从 EBaseColor 继承
+int d = EExtendedColor.YELLOW;   // 3 — 在 EExtendedColor 中定义
 ```
 
-> **注意：** Enum inheritance is useful for extending vanilla enums in modded code without changing the original.
+> **注意：** 枚举继承对于在 modded 代码中扩展原版枚举非常有用，而无需更改原始枚举。
 
 ---
 
 ## 使用枚举
 
-Enums act as `int` — you can assign them to `int` variables, compare them, and use them in switch statements:
+枚举作为 `int` 行为——你可以将它们赋值给 `int` 变量、进行比较，以及在 switch 语句中使用：
 
 ```c
 EDamageState state = EDamageState.WORN;
 
-// Compare
+// 比较
 if (state == EDamageState.RUINED)
 {
     Print("Item is ruined!");
 }
 
-// Use in switch
+// 在 switch 中使用
 switch (state)
 {
     case EDamageState.PRISTINE:
@@ -127,24 +131,24 @@ switch (state)
         break;
 }
 
-// Assign to int
+// 赋值给 int
 int stateInt = state;  // 1
 
-// Assign from int (no validation — any int value is accepted!)
-EDamageState fromInt = 99;  // No error, even though 99 is not a valid enum value
+// 从 int 赋值（不验证——任何 int 值都被接受！）
+EDamageState fromInt = 99;  // 无错误，即使 99 不是有效的枚举值
 ```
 
-> **警告：** Enforce Script does **not** validate enum assignments. Assigning an out-of-range integer to an enum variable compiles and runs without error.
+> **警告：** Enforce Script **不会** 验证枚举赋值。将超出范围的整数赋给枚举变量可以编译并运行，不会报错。
 
 ---
 
 ## 枚举反射
 
-Enforce Script provides built-in functions to convert between enum values and strings.
+Enforce Script 提供了内置函数来在枚举值和字符串之间转换。
 
 ### typename.EnumToString
 
-Convert an enum value to its name as a string:
+将枚举值转换为其名称字符串：
 
 ```c
 EDamageState state = EDamageState.DAMAGED;
@@ -152,7 +156,7 @@ string name = typename.EnumToString(EDamageState, state);
 Print(name);  // "DAMAGED"
 ```
 
-This is invaluable for logging and UI display:
+这对于日志记录和 UI 显示非常有价值：
 
 ```c
 void LogDamageState(EntityAI item, EDamageState state)
@@ -164,7 +168,7 @@ void LogDamageState(EntityAI item, EDamageState state)
 
 ### typename.StringToEnum
 
-Convert a string back to an enum value:
+将字符串转换回枚举值：
 
 ```c
 int value;
@@ -172,10 +176,10 @@ typename.StringToEnum(EDamageState, "RUINED", value);
 Print(value.ToString());  // "4"
 ```
 
-This is used when loading enum values from config files or JSON:
+当从配置文件或 JSON 加载枚举值时使用：
 
 ```c
-// Loading from a config string
+// 从配置字符串加载
 string configValue = "BURST";
 int modeInt;
 if (typename.StringToEnum(EWeaponMode, configValue, modeInt))
@@ -189,7 +193,7 @@ if (typename.StringToEnum(EWeaponMode, configValue, modeInt))
 
 ## 位标志模式
 
-Enums with power-of-2 values create bitflags — multiple options combined in a single integer:
+使用 2 的幂次值的枚举创建位标志——在单个整数中组合多个选项：
 
 ```c
 enum ESpawnFlags
@@ -203,56 +207,56 @@ enum ESpawnFlags
 };
 ```
 
-Combine with bitwise OR, test with bitwise AND:
+用按位或组合，用按位与测试：
 
 ```c
-// Combine flags
+// 组合标志
 int flags = ESpawnFlags.PLACE_ON_GROUND | ESpawnFlags.CREATE_PHYSICS | ESpawnFlags.UPDATE_NAVMESH;
 
-// Test a single flag
+// 测试单个标志
 if (flags & ESpawnFlags.CREATE_PHYSICS)
 {
     Print("Physics will be created");
 }
 
-// Remove a flag
+// 移除一个标志
 flags = flags & ~ESpawnFlags.CREATE_LOCAL;
 
-// Add a flag
+// 添加一个标志
 flags = flags | ESpawnFlags.NO_LIFETIME;
 ```
 
-DayZ uses this pattern extensively for object creation flags (`ECE_PLACE_ON_SURFACE`, `ECE_CREATEPHYSICS`, `ECE_UPDATEPATHGRAPH`, etc.).
+DayZ 广泛使用此模式用于对象创建标志（`ECE_PLACE_ON_SURFACE`、`ECE_CREATEPHYSICS`、`ECE_UPDATEPATHGRAPH` 等）。
 
 ---
 
 ## 常量
 
-Use `const` to declare immutable values. Constants must be initialized at declaration.
+使用 `const` 声明不可变值。常量必须在声明时初始化。
 
 ```c
-// Integer constants
+// 整数常量
 const int MAX_PLAYERS = 60;
 const int INVALID_INDEX = -1;
 
-// Float constants
+// 浮点常量
 const float GRAVITY = 9.81;
 const float SPAWN_RADIUS = 500.0;
 
-// String constants
+// 字符串常量
 const string MOD_NAME = "MyMod";
 const string CONFIG_PATH = "$profile:MyMod/config.json";
 const string LOG_PREFIX = "[MyMod] ";
 ```
 
-Constants can be used as switch case values and array sizes:
+常量可以作为 switch case 值和数组大小使用：
 
 ```c
-// Array with const size
+// 使用 const 大小的数组
 const int BUFFER_SIZE = 256;
 int buffer[BUFFER_SIZE];
 
-// Switch with const values
+// 使用 const 值的 switch
 const int CMD_HELP = 1;
 const int CMD_SPAWN = 2;
 const int CMD_TELEPORT = 3;
@@ -271,31 +275,31 @@ switch (command)
 }
 ```
 
-> **注意：** There is no `const` for reference types (objects). You cannot make an object reference immutable.
+> **注意：** 引用类型（对象）没有 `const`。你无法使对象引用不可变。
 
 ---
 
 ## 预处理器指令
 
-The Enforce Script preprocessor runs before compilation, enabling conditional code inclusion. It works similarly to C/C++ preprocessor but with fewer features.
+Enforce Script 预处理器在编译之前运行，启用条件代码包含。它的工作方式类似于 C/C++ 预处理器，但功能较少。
 
 ### #ifdef / #ifndef / #endif
 
-Conditionally include code based on whether a symbol is defined:
+根据是否定义了某个符号来有条件地包含代码：
 
 ```c
-// Include code only if DEVELOPER is defined
+// 仅当 DEVELOPER 已定义时包含代码
 #ifdef DEVELOPER
     Print("[DEBUG] Diagnostics enabled");
 #endif
 
-// Include code only if a symbol is NOT defined
+// 仅当某个符号未定义时包含代码
 #ifndef SERVER
-    // Client-only code
+    // 仅客户端代码
     CreateClientUI();
 #endif
 
-// If-else pattern
+// If-else 模式
 #ifdef SERVER
     Print("Running on server");
 #else
@@ -305,7 +309,7 @@ Conditionally include code based on whether a symbol is defined:
 
 ### #define
 
-Define your own symbols (no value — just existence):
+定义你自己的符号（没有值——只是存在性）：
 
 ```c
 #define MY_MOD_DEBUG
@@ -315,21 +319,21 @@ Define your own symbols (no value — just existence):
 #endif
 ```
 
-> **注意：** Enforce Script `#define` only creates existence flags. It does **not** support macro substitution (no `#define MAX_HP 100` — use `const` instead).
+> **注意：** Enforce Script 的 `#define` 只创建存在性标志。它**不**支持宏替换（没有 `#define MAX_HP 100`——改用 `const`）。
 
-### Common Engine Defines
+### 常用引擎定义
 
-DayZ provides these built-in defines based on build type and platform:
+DayZ 根据构建类型和平台提供以下内置定义：
 
-| 定义 | 可用时机 | 用途 |
+| 定义 | 可用时 | 用途 |
 |--------|---------------|---------|
-| `SERVER` | Running on dedicated server | Server-only logic |
-| `DEVELOPER` | Developer build of DayZ | Dev-only features |
-| `DIAG_DEVELOPER` | Diagnostic build | Diagnostic menus, debug tools |
-| `PLATFORM_WINDOWS` | Windows platform | Platform-specific paths |
-| `PLATFORM_XBOX` | Xbox platform | Console-specific UI |
-| `PLATFORM_PS4` | PlayStation platform | Console-specific logic |
-| `BUILD_EXPERIMENTAL` | Experimental branch | Experimental features |
+| `SERVER` | 在专用服务器上运行时 | 仅服务器逻辑 |
+| `DEVELOPER` | DayZ 开发者版本 | 仅开发功能 |
+| `DIAG_DEVELOPER` | 诊断版本 | 诊断菜单、调试工具 |
+| `PLATFORM_WINDOWS` | Windows 平台 | 平台特定路径 |
+| `PLATFORM_XBOX` | Xbox 平台 | 主机特定 UI |
+| `PLATFORM_PS4` | PlayStation 平台 | 主机特定逻辑 |
+| `BUILD_EXPERIMENTAL` | 实验性分支 | 实验性功能 |
 
 ```c
 void InitPlatform()
@@ -348,31 +352,31 @@ void InitPlatform()
 }
 ```
 
-### Custom Defines via config.cpp
+### 通过 config.cpp 自定义定义
 
-Mods can define their own symbols in `config.cpp` using the `defines[]` array. These are available to all scripts loaded after this mod:
+Mod 可以在 `config.cpp` 中使用 `defines[]` 数组定义自己的符号。这些符号对在该 mod 之后加载的所有脚本可用：
 
 ```cpp
 class CfgMods
 {
-    class MyMissions
+    class MyMod_MissionSystem
     {
         // ...
-        defines[] = { "MYMOD_MISSIONS" };
+        defines[] = { "MY_MISSIONS_LOADED" };
         // ...
     };
 };
 ```
 
-Now other mods can detect whether MyMissions is loaded:
+现在其他 mod 可以检测你的任务 mod 是否已加载：
 
 ```c
-#ifdef MYMOD_MISSIONS
-    // MyMissions is loaded — use its API
-    MissionManager.Start();
+#ifdef MY_MISSIONS_LOADED
+    // 任务 mod 已加载——使用其 API
+    MyMissionManager.Start();
 #else
-    // MyMissions is not loaded — skip or use fallback
-    Print("Missions mod not detected");
+    // 任务 mod 未加载——跳过或使用后备方案
+    Print("Mission system not detected");
 #endif
 ```
 
@@ -380,7 +384,7 @@ Now other mods can detect whether MyMissions is loaded:
 
 ## 实际示例
 
-### Platform-Specific Code
+### 平台特定代码
 
 ```c
 string GetSavePath()
@@ -393,9 +397,9 @@ string GetSavePath()
 }
 ```
 
-### Optional Mod Dependencies
+### 可选 Mod 依赖
 
-This is the standard pattern for mods that optionally integrate with other mods:
+这是可选集成其他 mod 的标准模式：
 
 ```c
 class MyModManager
@@ -404,17 +408,17 @@ class MyModManager
     {
         Print("[MyMod] Initializing...");
 
-        // Core features always available
+        // 始终可用的核心功能
         LoadConfig();
         RegisterRPCs();
 
-        // Optional integration with MyFramework
-        #ifdef MYMOD_CORE
-            MyLog.Info("MyMod", "MyFramework detected — using unified logging");
+        // 与 MyFramework 的可选集成
+        #ifdef MY_FRAMEWORK
+            Print("[MyMod] Framework detected — using unified logging");
             RegisterWithCore();
         #endif
 
-        // Optional integration with Community Framework
+        // 与 Community Framework 的可选集成
         #ifdef JM_CommunityFramework
             GetRPCManager().AddRPC("MyMod", "RPC_Handler", this, 2);
         #endif
@@ -422,7 +426,7 @@ class MyModManager
 }
 ```
 
-### Debug-Only Diagnostics
+### 仅调试诊断
 
 ```c
 void ProcessAI(DayZInfected zombie)
@@ -430,16 +434,16 @@ void ProcessAI(DayZInfected zombie)
     vector pos = zombie.GetPosition();
     float health = zombie.GetHealth("", "Health");
 
-    // Heavy debug logging — only in diagnostic builds
+    // 大量调试日志——仅在诊断版本中
     #ifdef DIAG_DEVELOPER
         Print(string.Format("[AI] Zombie %1 at %2, HP: %3",
             zombie.GetType(), pos.ToString(), health.ToString()));
 
-        // Draw debug sphere (only works in diag builds)
+        // 绘制调试球体（仅在 diag 版本中有效）
         Debug.DrawSphere(pos, 1.0, Colors.RED, ShapeFlags.ONCE);
     #endif
 
-    // Actual logic runs in all builds
+    // 实际逻辑在所有版本中运行
     if (health <= 0)
     {
         HandleZombieDeath(zombie);
@@ -447,7 +451,7 @@ void ProcessAI(DayZInfected zombie)
 }
 ```
 
-### Server vs Client Logic
+### 服务器与客户端逻辑
 
 ```c
 class MissionHandler
@@ -455,12 +459,12 @@ class MissionHandler
     void OnMissionStart()
     {
         #ifdef SERVER
-            // Server: load mission data, spawn objects
+            // 服务器：加载任务数据，生成对象
             LoadMissionData();
             SpawnMissionObjects();
             NotifyAllPlayers();
         #else
-            // Client: set up UI, subscribe to events
+            // 客户端：设置 UI，订阅事件
             CreateMissionHUD();
             RegisterClientRPCs();
         #endif
@@ -470,15 +474,48 @@ class MissionHandler
 
 ---
 
+## 最佳实践
+
+- 添加 `COUNT` 哨兵值作为最后一个枚举条目，便于迭代或验证范围（例如 `for (int i = 0; i < EMode.COUNT; i++)`）。
+- 对位标志枚举使用 2 的幂次值，用 `|` 组合；用 `&` 测试；用 `& ~FLAG` 移除。
+- 对数值常量使用 `const` 而不是 `#define`——Enforce Script 的 `#define` 只创建存在性标志，不是值宏。
+- 在你 mod 的 `config.cpp` 中定义 `defines[]` 数组，以暴露跨 mod 检测符号（例如 `"STARDZ_CORE"`）。
+- 始终验证从外部数据（配置、RPC）加载的枚举值——Enforce Script 接受任何 `int` 作为枚举，没有范围检查。
+
+---
+
+## 在实际 Mod 中的观察
+
+> 通过研究专业 DayZ mod 源代码确认的模式。
+
+| 模式 | Mod | 详情 |
+|---------|-----|--------|
+| 用 `#ifdef` 进行可选 mod 集成 | Expansion / COT | 在调用跨 mod API 之前检查 `#ifdef JM_CF` 或 `#ifdef EXPANSIONMOD` |
+| 用于生成选项的位标志枚举 | 原版 DayZ | `ECE_PLACE_ON_SURFACE`、`ECE_CREATEPHYSICS` 等，用 `\|` 组合用于 `CreateObjectEx` |
+| 用 `typename.EnumToString` 进行日志记录 | Expansion / Dabs | 损伤状态和事件类型记录为可读字符串，而不是原始整数 |
+| config.cpp 中的 `defines[]` | StarDZ Core / Expansion | 每个 mod 声明自己的符号，以便其他 mod 可以用 `#ifdef` 检测 |
+
+---
+
+## 理论与实践
+
+| 概念 | 理论 | 现实 |
+|---------|--------|---------|
+| 枚举赋值验证 | 期望编译器拒绝无效值 | `EDamageState state = 999` 可以正常编译——完全没有范围检查 |
+| `#define MAX_HP 100` | 像 C/C++ 宏一样工作 | Enforce Script 的 `#define` 只创建存在性标志；对值使用 `const int` |
+| `switch` case 堆叠 | 多个 case 共享一个处理程序 | Enforce Script 中没有穿透——每个 `case` 是独立的；改用 `if`/`\|\|` |
+
+---
+
 ## 常见错误
 
-### 1. Using enums as validated types
+### 1. 将枚举用作验证类型
 
 ```c
-// PROBLEM — no validation, any int is accepted
-EDamageState state = 999;  // Compiles fine, but 999 is not a valid state
+// 问题——没有验证，任何 int 都被接受
+EDamageState state = 999;  // 编译正常，但 999 不是有效的状态
 
-// SOLUTION — validate manually when loading from external data
+// 解决方案——从外部数据加载时手动验证
 int rawValue = LoadFromConfig();
 if (rawValue >= 0 && rawValue <= EDamageState.RUINED)
 {
@@ -486,50 +523,50 @@ if (rawValue >= 0 && rawValue <= EDamageState.RUINED)
 }
 ```
 
-### 2. Trying to use #define for value substitution
+### 2. 试图用 #define 进行值替换
 
 ```c
-// WRONG — Enforce Script #define does NOT support values
+// 错误——Enforce Script 的 #define 不支持值
 #define MAX_HEALTH 100
-int hp = MAX_HEALTH;  // Compile error!
+int hp = MAX_HEALTH;  // 编译错误！
 
-// CORRECT — use const instead
+// 正确——改用 const
 const int MAX_HEALTH = 100;
 int hp = MAX_HEALTH;
 ```
 
-### 3. Nesting #ifdef incorrectly
+### 3. 不正确地嵌套 #ifdef
 
 ```c
-// CORRECT — nested ifdefs are fine
+// 正确——嵌套 ifdef 没问题
 #ifdef SERVER
-    #ifdef MYMOD_CORE
+    #ifdef MY_FRAMEWORK
         MyLog.Info("MyMod", "Server + Core");
     #endif
 #endif
 
-// WRONG — missing #endif causes mysterious compile errors
+// 错误——缺少 #endif 导致神秘的编译错误
 #ifdef SERVER
     DoServerStuff();
-// forgot #endif here!
+// 这里忘记了 #endif！
 ```
 
-### 4. Forgetting that switch/case has no fall-through
+### 4. 忘记 switch/case 没有穿透
 
 ```c
-// In C/C++, cases fall through without break.
-// In Enforce Script, each case is INDEPENDENT — no fall-through.
+// 在 C/C++ 中，没有 break 的 case 会穿透。
+// 在 Enforce Script 中，每个 case 是独立的——没有穿透。
 
 switch (state)
 {
     case EDamageState.PRISTINE:
     case EDamageState.WORN:
-        Print("Good condition");  // Only reached for WORN, not PRISTINE!
+        Print("Good condition");  // 只有 WORN 才到达这里，不是 PRISTINE！
         break;
 }
 ```
 
-If you need multiple cases to share logic, use if/else:
+如果需要多个 case 共享逻辑，使用 if/else：
 
 ```c
 if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
@@ -542,37 +579,37 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ## 总结
 
-### Enums
+### 枚举
 
-| 特性 | 语法 |
+| 功能 | 语法 |
 |---------|--------|
-| Declare | `enum EName { A = 0, B = 1 };` |
-| Implicit | `enum EName { A, B, C };` (0, 1, 2) |
-| Inherit | `enum EChild : EParent { D, E };` |
-| To string | `typename.EnumToString(EName, value)` |
-| From string | `typename.StringToEnum(EName, "A", out val)` |
-| Bitflag combine | `flags = A | B` |
-| Bitflag test | `if (flags & A)` |
+| 声明 | `enum EName { A = 0, B = 1 };` |
+| 隐式 | `enum EName { A, B, C };`（0, 1, 2）|
+| 继承 | `enum EChild : EParent { D, E };` |
+| 转字符串 | `typename.EnumToString(EName, value)` |
+| 从字符串 | `typename.StringToEnum(EName, "A", out val)` |
+| 位标志组合 | `flags = A | B` |
+| 位标志测试 | `if (flags & A)` |
 
-### Preprocessor
+### 预处理器
 
 | 指令 | 用途 |
 |-----------|---------|
-| `#ifdef SYMBOL` | Compile if symbol exists |
-| `#ifndef SYMBOL` | Compile if symbol does NOT exist |
-| `#else` | Alternate branch |
-| `#endif` | End conditional block |
-| `#define SYMBOL` | Define a symbol (no value) |
+| `#ifdef SYMBOL` | 如果符号存在则编译 |
+| `#ifndef SYMBOL` | 如果符号不存在则编译 |
+| `#else` | 替代分支 |
+| `#endif` | 结束条件块 |
+| `#define SYMBOL` | 定义符号（无值）|
 
-### Key Defines
+### 关键定义
 
 | 定义 | 含义 |
 |--------|---------|
-| `SERVER` | Dedicated server |
-| `DEVELOPER` | Developer build |
-| `DIAG_DEVELOPER` | Diagnostic build |
-| `PLATFORM_WINDOWS` | Windows OS |
-| Custom: `defines[]` | Your mod's config.cpp |
+| `SERVER` | 专用服务器 |
+| `DEVELOPER` | 开发者版本 |
+| `DIAG_DEVELOPER` | 诊断版本 |
+| `PLATFORM_WINDOWS` | Windows 操作系统 |
+| 自定义：`defines[]` | 你 mod 的 config.cpp |
 
 ---
 
@@ -580,4 +617,4 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 | 上一章 | 上级 | 下一章 |
 |----------|----|------|
-| [1.9 Casting & Reflection](09-casting-reflection.md) | [第一部分：Enforce Script](../README.md) | [1.11 错误处理](11-error-handling.md) |
+| [1.9 类型转换与反射](09-casting-reflection.md) | [第 1 部分：Enforce Script](../README.md) | [1.11 错误处理](11-error-handling.md) |
