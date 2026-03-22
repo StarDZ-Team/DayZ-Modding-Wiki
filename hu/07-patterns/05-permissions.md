@@ -1,73 +1,73 @@
-# Chapter 7.5: Permission Systems
+# 7.5. fejezet: Jogosultsági rendszerek
 
-[Home](../../README.md) | [<< Previous: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Next: Event-Driven Architecture >>](06-events.md)
-
----
-
-## Bevezetes
-
-Every admin tool, every privileged action, and every moderation feature in DayZ needs a permission system. The question is not whether to check permissions but how to structure them. The DayZ modding community has settled on three major patterns: hierarchical dot-separated permissions (MyMod), user-group role assignment (VPP), and framework-level role-based access (CF/COT). Each has different trade-offs in granularity, complexity, and server-owner experience.
-
-This chapter covers all three patterns, the permission-checking flow, storage formats, and wildcard/superadmin handling.
+[Kezdőlap](../../README.md) | [<< Előző: Konfiguráció perzisztencia](04-config-persistence.md) | **Jogosultsági rendszerek** | [Következő: Eseményvezérelt architektúra >>](06-events.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [Why Jogosultsagok Matter](#why-permissions-matter)
-- [Hierarchical Dot-Separated (MyMod Pattern)](#hierarchical-dot-separated-mymod-pattern)
-- [VPP UserGroup Pattern](#vpp-usergroup-pattern)
-- [CF Role-Based Pattern (COT)](#cf-role-based-pattern-cot)
-- [Permission Checking Flow](#permission-checking-flow)
-- [Storage Formats](#storage-formats)
-- [Wildcard and Superadmin Patterns](#wildcard-and-superadmin-patterns)
-- [Migration Between Systems](#migration-between-systems)
-- [Best Practices](#best-practices)
+Minden admin eszköz, minden privilegizált művelet és minden moderálási funkció a DayZ-ben jogosultsági rendszert igényel. A kérdés nem az, hogy ellenőrizzük-e a jogosultságokat, hanem az, hogyan strukturáljuk őket. A DayZ modding közösség három fő mintát alakított ki: hierarchikus pont-elválasztásos jogosultságok, felhasználói csoport alapú szerepkiosztás (VPP), és keretrendszer szintű szerep-alapú hozzáférés (CF/COT). Mindegyiknek más kompromisszumai vannak a granularitás, komplexitás és szerver-tulajdonosi élmény terén.
+
+Ez a fejezet mindhárom mintát, a jogosultság-ellenőrzési folyamatot, a tárolási formátumokat és a wildcard/szuperadmin kezelést tárgyalja.
 
 ---
 
-## Why Jogosultsagok Matter
+## Tartalomjegyzék
 
-Without a permission system, you have two options: either every player can do everything (chaos), or you hardcode Steam64 IDs in your scripts (unmaintainable). A permission system lets server owners define who can do what, without modifying code.
-
-The three security rules:
-
-1. **Never trust the client.** The client sends a request; the server decides whether to honor it.
-2. **Default deny.** If a player is not explicitly granted a permission, they do not have it.
-3. **Fail closed.** If the permission check itself fails (null identity, corrupted data), deny the action.
+- [Miért fontosak a jogosultságok](#miért-fontosak-a-jogosultságok)
+- [Hierarchikus pont-elválasztásos (MyMod minta)](#hierarchikus-pont-elválasztásos-mymod-minta)
+- [VPP UserGroup minta](#vpp-usergroup-minta)
+- [CF szerep-alapú minta (COT)](#cf-szerep-alapú-minta-cot)
+- [Jogosultság-ellenőrzési folyamat](#jogosultság-ellenőrzési-folyamat)
+- [Tárolási formátumok](#tárolási-formátumok)
+- [Wildcard és szuperadmin minták](#wildcard-és-szuperadmin-minták)
+- [Migráció rendszerek között](#migráció-rendszerek-között)
+- [Bevált gyakorlatok](#bevált-gyakorlatok)
 
 ---
 
-## Hierarchical Dot-Separated (MyMod Pattern)
+## Miért fontosak a jogosultságok
 
-MyMod uses dot-separated permission strings organized in a tree hierarchy. Each permission is a path like `"MyMod.Admin.Teleport"` or `"MyMod.Missions.Start"`. Wildcards allow granting entire subtrees.
+Jogosultsági rendszer nélkül két lehetőséged van: vagy minden játékos mindent megtehet (káosz), vagy beégeted a Steam64 ID-kat a szkriptjeidbe (karbantarthatatlan). A jogosultsági rendszer lehetővé teszi, hogy a szerver-tulajdonosok meghatározzák, ki mit tehet, kódmódosítás nélkül.
 
-### Permission Format
+A három biztonsági szabály:
+
+1. **Soha ne bízz meg a kliensben.** A kliens kérést küld; a szerver dönti el, hogy teljesíti-e.
+2. **Alapértelmezett tiltás.** Ha egy játékos nem kapott kifejezetten jogosultságot, akkor nincs neki.
+3. **Hibánál zárj.** Ha maga a jogosultság-ellenőrzés sikertelen (null identity, sérült adatok), tagadd meg a műveletet.
+
+---
+
+## Hierarchikus pont-elválasztásos (MyMod minta)
+
+Ez a minta pont-elválasztásos jogosultsági szövegeket használ, fa hierarchiába szervezve. Minden jogosultság egy útvonal, mint a `"MyMod.Admin.Teleport"` vagy `"MyMod.Missions.Start"`. A wildcardok lehetővé teszik teljes részfák megadását.
+
+### Jogosultsági formátum
 
 ```
-MyMod                           (root namespace)
-├── Admin                        (admin tools)
-│   ├── Panel                    (open admin panel)
-│   ├── Teleport                 (teleport self/others)
-│   ├── Kick                     (kick players)
-│   ├── Ban                      (ban players)
-│   └── Weather                  (change weather)
-├── Missions                     (mission system)
-│   ├── Start                    (start missions manually)
-│   └── Stop                     (stop missions)
-└── AI                           (AI system)
-    ├── Spawn                    (spawn AI manually)
-    └── Config                   (edit AI config)
+MyMod                           (gyökér névtér)
+├── Admin                        (admin eszközök)
+│   ├── Panel                    (admin panel megnyitása)
+│   ├── Teleport                 (saját/mások teleportálása)
+│   ├── Kick                     (játékosok kirúgása)
+│   ├── Ban                      (játékosok kitiltása)
+│   └── Weather                  (időjárás változtatása)
+├── Missions                     (küldetésrendszer)
+│   ├── Start                    (küldetések kézi indítása)
+│   └── Stop                     (küldetések leállítása)
+└── AI                           (AI rendszer)
+    ├── Spawn                    (AI kézi spawnolása)
+    └── Config                   (AI konfiguráció szerkesztése)
 ```
 
-### Data Model
+### Adatmodell
 
-Each player (identified by Steam64 ID) has an array of granted permission strings:
+Minden játékos (Steam64 ID-val azonosítva) rendelkezik a kapott jogosultsági szövegek tömbjével:
 
 ```c
 class MyPermissionsData
 {
-    // key: Steam64 ID, value: array of permission strings
+    // kulcs: Steam64 ID, érték: jogosultsági szövegek tömbje
     ref map<string, ref TStringArray> Admins;
 
     void MyPermissionsData()
@@ -77,9 +77,9 @@ class MyPermissionsData
 };
 ```
 
-### Permission Check
+### Jogosultság-ellenőrzés
 
-The check walks the player's granted permissions and supports three match types: exact match, full wildcard (`"*"`), and prefix wildcard (`"MyMod.Admin.*"`):
+Az ellenőrzés végigmegy a játékos kapott jogosultságain és három egyezési típust támogat: pontos egyezés, teljes wildcard (`"*"`) és előtag wildcard (`"MyMod.Admin.*"`):
 
 ```c
 bool HasPermission(string plainId, string permission)
@@ -95,15 +95,15 @@ bool HasPermission(string plainId, string permission)
     {
         string granted = perms[i];
 
-        // Full wildcard: superadmin
+        // Teljes wildcard: szuperadmin
         if (granted == "*")
             return true;
 
-        // Exact match
+        // Pontos egyezés
         if (granted == permission)
             return true;
 
-        // Prefix wildcard: "MyMod.Admin.*" matches "MyMod.Admin.Teleport"
+        // Előtag wildcard: "MyMod.Admin.*" egyezik "MyMod.Admin.Teleport"-tal
         if (granted.IndexOf("*") > 0)
         {
             string prefix = granted.Substring(0, granted.Length() - 1);
@@ -116,7 +116,7 @@ bool HasPermission(string plainId, string permission)
 }
 ```
 
-### JSON Storage
+### JSON tárolás
 
 ```json
 {
@@ -129,46 +129,46 @@ bool HasPermission(string plainId, string permission)
 }
 ```
 
-### Strengths
+### Erősségek
 
-- **Fine-grained:** you can grant exactly the permissions each admin needs
-- **Hierarchical:** wildcards grant entire subtrees without listing every permission
-- **Self-documenting:** the permission string tells you what it controls
-- **Extensible:** new permissions are just new strings --- no schema changes
+- **Finoman részletezett:** pontosan azokat a jogosultságokat adhatod meg, amire az egyes adminoknak szükségük van
+- **Hierarchikus:** a wildcardok teljes részfákat adnak anélkül, hogy minden jogosultságot felsorolnál
+- **Öndokumentáló:** a jogosultsági szöveg megmondja, mit vezérel
+- **Bővíthető:** az új jogosultságok egyszerűen új szövegek --- nincs sémaváltozás
 
-### Weaknesses
+### Gyengeségek
 
-- **No named roles:** if 10 admins need the same set, you list it 10 times
-- **String-based:** typos in permission strings fail silently (they just do not match)
+- **Nincs nevesített szerepkör:** ha 10 adminnak ugyanarra a készletre van szüksége, 10-szer sorolod fel
+- **Szöveg-alapú:** az elgépelések a jogosultsági szövegekben csendben kudarcot vallanak (egyszerűen nem egyeznek)
 
 ---
 
-## VPP UserGroup Pattern
+## VPP UserGroup minta
 
-VPP Admin Tools uses a group-based system. You define named groups (roles) with sets of permissions, then assign players to groups.
+A VPP Admin Tools csoport-alapú rendszert használ. Nevesített csoportokat (szerepköröket) definiálsz jogosultsági készletekkel, majd játékosokat rendelsz a csoportokhoz.
 
-### Concept
+### Koncepció
 
 ```
-Groups:
-  "SuperAdmin"  → [all permissions]
+Csoportok:
+  "SuperAdmin"  → [összes jogosultság]
   "Moderator"   → [kick, ban, mute, teleport]
-  "Builder"     → [spawn objects, teleport, ESP]
+  "Builder"     → [objektumok spawnolása, teleport, ESP]
 
-Players:
+Játékosok:
   "76561198000000001" → "SuperAdmin"
   "76561198000000002" → "Moderator"
   "76561198000000003" → "Builder"
 ```
 
-### Implementation Pattern
+### Implementációs minta
 
 ```c
 class VPPUserGroup
 {
     string GroupName;
     ref array<string> Permissions;
-    ref array<string> Members;  // Steam64 IDs
+    ref array<string> Members;  // Steam64 ID-k
 
     bool HasPermission(string permission)
     {
@@ -195,7 +195,7 @@ class VPPPermissionManager
         {
             VPPUserGroup group = m_Groups[i];
 
-            // Check if player is in this group
+            // Ellenőrizd, hogy a játékos ebben a csoportban van-e
             if (group.Members.Find(plainId) == -1)
                 continue;
 
@@ -207,7 +207,7 @@ class VPPPermissionManager
 };
 ```
 
-### JSON Storage
+### JSON tárolás
 
 ```json
 {
@@ -245,32 +245,32 @@ class VPPPermissionManager
 }
 ```
 
-### Strengths
+### Erősségek
 
-- **Role-based:** define a role once, assign it to many players
-- **Familiar:** server owners understand group/role systems from other games
-- **Easy bulk changes:** change a group's permissions and all members are updated
+- **Szerep-alapú:** egyszer definiálod a szerepkört, sok játékoshoz rendeled
+- **Ismerős:** a szerver-tulajdonosok értik a csoport/szerepkör rendszereket más játékokból
+- **Egyszerű tömeges változtatás:** egy csoport jogosultságainak módosítása az összes tagra érvényes
 
-### Weaknesses
+### Gyengeségek
 
-- **Less granular without extra work:** giving one specific admin one extra permission means creating a new group or adding per-player overrides
-- **Group inheritance is complex:** VPP does not natively support group hierarchy (e.g., "Admin" inherits all "Moderator" permissions)
+- **Kevésbé részletezett extra munka nélkül:** egyetlen konkrét admin egyetlen extra jogosultsággal való felruházása új csoportot vagy játékos szintű felülbírálásokat igényel
+- **A csoport öröklés bonyolult:** a VPP natívan nem támogatja a csoporthierarchiát (pl. az "Admin" örökli az összes "Moderator" jogosultságot)
 
 ---
 
-## CF Role-Based Pattern (COT)
+## CF szerep-alapú minta (COT)
 
-Community Framework / COT uses a role and permission system where roles are defined with explicit permission sets, and players are assigned to roles.
+A Community Framework / COT szerep- és jogosultsági rendszert használ, ahol a szerepkörök explicit jogosultsági készletekkel definiáltak, és a játékosok szerepkörökhöz vannak rendelve.
 
-### Concept
+### Koncepció
 
-CF's permission system is similar to VPP's groups but integrated into the framework layer, making it available to all CF-based mods:
+A CF jogosultsági rendszere hasonló a VPP csoportjaihoz, de a keretrendszer szintjébe integrált, így minden CF-alapú mod számára elérhető:
 
 ```c
-// COT pattern (simplified)
-// Roles are defined in AuthFile.json
-// Each role has a name and an array of permissions
-// Players are assigned to roles by Steam64 ID
+// COT minta (egyszerűsítve)
+// A szerepkörök az AuthFile.json-ban vannak definiálva
+// Minden szerepkörnek van neve és jogosultsági tömbje
+// A játékosok Steam64 ID-val vannak szerepkörökhöz rendelve
 
 class CF_Permission
 {
@@ -280,22 +280,22 @@ class CF_Permission
 };
 ```
 
-### Permission Tree
+### Jogosultsági fa
 
-CF represents permissions as a tree structure, where each node can be explicitly allowed, denied, or inherit from its parent:
+A CF a jogosultságokat fastruktúraként ábrázolja, ahol minden csomópont kifejezetten engedélyezhető, tiltható vagy örökölheti a szülőjét:
 
 ```
 Root
 ├── Admin [ALLOW]
 │   ├── Kick [INHERIT → ALLOW]
 │   ├── Ban [INHERIT → ALLOW]
-│   └── Teleport [DENY]        ← Explicitly denied even though Admin is ALLOW
+│   └── Teleport [DENY]        ← Kifejezetten tiltva, annak ellenére, hogy az Admin ALLOW
 └── ESP [ALLOW]
 ```
 
-This three-state system (allow/deny/inherit) is more expressive than the binary (granted/not-granted) systems used by MyMod and VPP. It allows you to grant a broad category and then carve out exceptions.
+Ez a háromállapotú rendszer (engedélyezés/tiltás/öröklés) kifejezőbb, mint a MyMod és a VPP által használt kétértékű (megadott/nem megadott) rendszerek. Lehetővé teszi, hogy széles kategóriát adj meg, majd kivételeket faragj belőle.
 
-### JSON Storage
+### JSON tárolás
 
 ```json
 {
@@ -316,84 +316,85 @@ This three-state system (allow/deny/inherit) is more expressive than the binary 
 }
 ```
 
-(Where `2 = ALLOW`, `1 = DENY`, `0 = INHERIT`)
+(Ahol `2 = ALLOW`, `1 = DENY`, `0 = INHERIT`)
 
-### Strengths
+### Erősségek
 
-- **Three-state permissions:** allow, deny, inherit gives maximum flexibility
-- **Tree structure:** mirrors the hierarchical nature of permission paths
-- **Framework-level:** all CF mods share the same permission system
+- **Háromállapotú jogosultságok:** engedélyezés, tiltás, öröklés maximális rugalmasságot ad
+- **Fastruktúra:** tükrözi a jogosultsági útvonalak hierarchikus természetét
+- **Keretrendszer szintű:** minden CF mod ugyanazt a jogosultsági rendszert használja
 
-### Weaknesses
+### Gyengeségek
 
-- **Complexity:** three states are harder for server owners to understand than simple "granted"
-- **CF dependency:** only works with Community Framework
+- **Bonyolultság:** a három állapot nehezebben érthető a szerver-tulajdonosok számára, mint az egyszerű "megadott"
+- **CF függőség:** csak a Community Framework-kel működik
 
 ---
 
-## Permission Checking Flow
+## Jogosultság-ellenőrzési folyamat
 
-Regardless of which system you use, the server-side permission check follows the same pattern:
+Függetlenül attól, melyik rendszert használod, a szerver oldali jogosultság-ellenőrzés ugyanazt a mintát követi:
 
 ```
-Client sends RPC request
+A kliens RPC kérést küld
         │
         ▼
-Server RPC handler receives it
+A szerver RPC kezelő fogadja
         │
         ▼
     ┌─────────────────────────────────┐
-    │ Is sender identity non-null?     │
-    │ (Network-level validation)       │
+    │ A küldő identity nem-null?       │
+    │ (Hálózati szintű validáció)      │
     └───────────┬─────────────────────┘
-                │ No → return (drop silently)
-                │ Yes ▼
+                │ Nem → return (csendben eldobja)
+                │ Igen ▼
     ┌─────────────────────────────────┐
-    │ Does sender have the required    │
-    │ permission for this action?      │
+    │ A küldőnek megvan a szükséges    │
+    │ jogosultsága ehhez a művelethez? │
     └───────────┬─────────────────────┘
-                │ No → log warning, optionally send error to client, return
-                │ Yes ▼
+                │ Nem → figyelmeztetés naplózása, opcionálisan hibaküldés a kliensnek, return
+                │ Igen ▼
     ┌─────────────────────────────────┐
-    │ Validate request data            │
-    │ (read params, check bounds)      │
+    │ Kérési adatok validálása         │
+    │ (paraméterek olvasása, határok   │
+    │ ellenőrzése)                     │
     └───────────┬─────────────────────┘
-                │ Invalid → send error to client, return
-                │ Valid ▼
+                │ Érvénytelen → hibaküldés a kliensnek, return
+                │ Érvényes ▼
     ┌─────────────────────────────────┐
-    │ Execute the privileged action    │
-    │ Log the action with admin ID     │
-    │ Send success response            │
+    │ A privilegizált művelet végrehajtása │
+    │ A művelet naplózása admin ID-val │
+    │ Sikeres válasz küldése           │
     └─────────────────────────────────┘
 ```
 
-### Implementation
+### Implementáció
 
 ```c
 void OnRPC_KickPlayer(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
-    // Step 1: Validate sender
+    // 1. lépés: Küldő validálása
     if (!sender) return;
 
-    // Step 2: Check permission
+    // 2. lépés: Jogosultság ellenőrzése
     if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Kick"))
     {
         MyLog.Warning("Admin", "Unauthorized kick attempt: " + sender.GetName());
         return;
     }
 
-    // Step 3: Read and validate data
+    // 3. lépés: Adatok olvasása és validálása
     string targetUid;
     if (!ctx.Read(targetUid)) return;
 
     if (targetUid == sender.GetPlainId())
     {
-        // Cannot kick yourself
+        // Nem rúghatod ki saját magadat
         SendError(sender, "Cannot kick yourself");
         return;
     }
 
-    // Step 4: Execute
+    // 4. lépés: Végrehajtás
     PlayerIdentity targetIdentity = FindPlayerByUid(targetUid);
     if (!targetIdentity)
     {
@@ -403,7 +404,7 @@ void OnRPC_KickPlayer(PlayerIdentity sender, Object target, ParamsReadContext ct
 
     GetGame().DisconnectPlayer(targetIdentity);
 
-    // Step 5: Log and respond
+    // 5. lépés: Naplózás és válasz
     MyLog.Info("Admin", sender.GetName() + " kicked " + targetIdentity.GetName());
     SendSuccess(sender, "Player kicked");
 }
@@ -411,11 +412,11 @@ void OnRPC_KickPlayer(PlayerIdentity sender, Object target, ParamsReadContext ct
 
 ---
 
-## Storage Formats
+## Tárolási formátumok
 
-All three systems store permissions in JSON. The differences are structural:
+Mindhárom rendszer JSON-ban tárolja a jogosultságokat. A különbségek strukturálisak:
 
-### Flat Per-Player (MyMod)
+### Sima játékosonkénti
 
 ```json
 {
@@ -425,14 +426,14 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**File:** One file for all players.
-**Pros:** Simple, easy to edit by hand.
-**Cons:** Redundant if many players share the same permissions.
+**Fájl:** Egy fájl az összes játékosnak.
+**Előny:** Egyszerű, könnyen kézzel szerkeszthető.
+**Hátrány:** Redundáns, ha sok játékosnak ugyanazok a jogosultságai.
 
-### Per-Player File (Expansion / Player Data)
+### Játékosonkénti fájl (Expansion / Player Data)
 
 ```json
-// File: $profile:MyMod/Players/76561198xxxxx.json
+// Fájl: $profile:MyMod/Players/76561198xxxxx.json
 {
     "UID": "76561198xxxxx",
     "Permissions": ["perm.a", "perm.b"],
@@ -440,10 +441,10 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**Pros:** Each player is independent; no locking concerns.
-**Cons:** Many small files; searching "who has permission X?" requires scanning all files.
+**Előny:** Minden játékos független; nincsenek zárolási problémák.
+**Hátrány:** Sok kis fájl; a "kinek van X jogosultsága?" keresés az összes fájl átfésülését igényli.
 
-### Group-Based (VPP)
+### Csoport-alapú (VPP)
 
 ```json
 {
@@ -457,47 +458,63 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**Pros:** Role changes propagate to all members instantly.
-**Cons:** A player cannot easily have per-player permission overrides without a dedicated group.
+**Előny:** A szerepkör változtatások azonnal érvényesülnek az összes tagra.
+**Hátrány:** Egy játékos nem kaphat könnyen játékosonkénti jogosultsági felülbírálásokat dedikált csoport nélkül.
 
-### Choosing a Format
+### Formátum kiválasztása
 
-| Factor | Flat Per-Player | Per-Player File | Group-Based |
+| Tényező | Sima játékosonkénti | Játékosonkénti fájl | Csoport-alapú |
 |--------|----------------|-----------------|-------------|
-| **Small server (1-5 admins)** | Best | Overkill | Overkill |
-| **Medium server (5-20 admins)** | Good | Good | Best |
-| **Large community (20+ roles)** | Redundant | Files multiply | Best |
-| **Per-player customization** | Native | Native | Needs workaround |
-| **Hand-editing** | Easy | Easy per player | Moderate |
+| **Kis szerver (1-5 admin)** | Legjobb | Túlzás | Túlzás |
+| **Közepes szerver (5-20 admin)** | Jó | Jó | Legjobb |
+| **Nagy közösség (20+ szerepkör)** | Redundáns | A fájlok szaporodnak | Legjobb |
+| **Játékosonkénti testreszabás** | Natív | Natív | Megoldás szükséges |
+| **Kézi szerkesztés** | Könnyű | Könnyű játékosonként | Közepes |
 
 ---
 
-## Wildcard and Superadmin Patterns
+## Wildcard és szuperadmin minták
 
-### Full Wildcard: `"*"`
+```mermaid
+graph TD
+    ROOT["*  (szuperadmin)"] --> A["MyMod.*"]
+    A --> B["MyMod.Admin.*"]
+    B --> C["MyMod.Admin.Kick"]
+    B --> D["MyMod.Admin.Ban"]
+    B --> E["MyMod.Admin.Teleport"]
+    A --> F["MyMod.Player.*"]
+    F --> G["MyMod.Player.Shop"]
+    F --> H["MyMod.Player.Trade"]
 
-Grants all permissions. This is the superadmin pattern. A player with `"*"` can do anything.
+    style ROOT fill:#ff4444,color:#fff
+    style A fill:#ff8844,color:#fff
+    style B fill:#ffaa44,color:#fff
+```
+
+### Teljes wildcard: `"*"`
+
+Minden jogosultságot megad. Ez a szuperadmin minta. A `"*"` jogosultsággal rendelkező játékos bármit megtehet.
 
 ```c
 if (granted == "*")
     return true;
 ```
 
-**Convention:** Every permission system in the DayZ modding community uses `"*"` for superadmin. Do not invent a different convention.
+**Konvenció:** A DayZ modding közösség minden jogosultsági rendszere a `"*"`-ot használja szuperadminra. Ne találj ki más konvenciót.
 
-### Prefix Wildcard: `"MyMod.Admin.*"`
+### Előtag wildcard: `"MyMod.Admin.*"`
 
-Grants all permissions that start with `"MyMod.Admin."`. This allows granting an entire subsystem without listing every permission:
+Minden `"MyMod.Admin."`-nal kezdődő jogosultságot megad. Ez lehetővé teszi egy teljes alrendszer megadását minden jogosultság felsorolása nélkül:
 
 ```c
-// "MyMod.Admin.*" matches:
+// "MyMod.Admin.*" egyezik:
 //   "MyMod.Admin.Teleport"  ✓
 //   "MyMod.Admin.Kick"      ✓
 //   "MyMod.Admin.Ban"       ✓
-//   "MyMod.Missions.Start"  ✗ (different subtree)
+//   "MyMod.Missions.Start"  ✗ (más részfa)
 ```
 
-### Implementation
+### Implementáció
 
 ```c
 if (granted.IndexOf("*") > 0)
@@ -509,15 +526,15 @@ if (granted.IndexOf("*") > 0)
 }
 ```
 
-### No Negative Jogosultsagok (MyMod / VPP)
+### Nincs negatív jogosultság (pont-elválasztásos / VPP)
 
-Both MyMod and VPP use additive-only permissions. You can grant permissions but not explicitly deny them. If a permission is not in the player's list, it is denied.
+Mind a pont-elválasztásos, mind a VPP rendszer additív jogosultságokat használ. Jogosultságokat adhatsz, de nem tilthatsz kifejezetten. Ha egy jogosultság nincs a játékos listájában, az tiltott.
 
-CF/COT is the exception with its three-state system (ALLOW/DENY/INHERIT), which supports explicit denials.
+A CF/COT kivétel a háromállapotú rendszerével (ALLOW/DENY/INHERIT), amely támogatja az explicit tiltásokat.
 
-### Superadmin Escape Hatch
+### Szuperadmin kiskapu
 
-Provide a way to check if someone is a superadmin without checking a specific permission. This is useful for bypass logic:
+Biztosíts módot annak ellenőrzésére, hogy valaki szuperadmin-e, anélkül, hogy konkrét jogosultságot ellenőriznél. Ez hasznos a megkerülési logikához:
 
 ```c
 bool IsSuperAdmin(string plainId)
@@ -528,9 +545,9 @@ bool IsSuperAdmin(string plainId)
 
 ---
 
-## Migration Between Systems
+## Migráció rendszerek között
 
-If your mod needs to support servers migrating from one permission system to another (e.g., from a flat admin UID list to hierarchical permissions), implement automatic migration on load:
+Ha a modod támogatnia kell az egyik jogosultsági rendszerről a másikra migráló szervereket (pl. sima admin UID listáról hierarchikus jogosultságokra), valósíts meg automatikus migrációt betöltéskor:
 
 ```c
 void Load()
@@ -541,49 +558,49 @@ void Load()
         return;
     }
 
-    // Try new format first
+    // Először próbáld az új formátumot
     if (LoadNewFormat())
         return;
 
-    // Fall back to legacy format and migrate
+    // Visszaesés a régi formátumra és migráció
     LoadLegacyAndMigrate();
 }
 
 void LoadLegacyAndMigrate()
 {
-    // Read old format: { "AdminUIDs": ["uid1", "uid2"] }
+    // Régi formátum olvasása: { "AdminUIDs": ["uid1", "uid2"] }
     LegacyPermissionData legacyData = new LegacyPermissionData();
     JsonFileLoader<LegacyPermissionData>.JsonLoadFile(PERMISSIONS_FILE, legacyData);
 
-    // Migrate: each legacy admin becomes a superadmin in the new system
+    // Migráció: minden régi admin szuperadmin lesz az új rendszerben
     for (int i = 0; i < legacyData.AdminUIDs.Count(); i++)
     {
         string uid = legacyData.AdminUIDs[i];
         GrantPermission(uid, "*");
     }
 
-    // Save in new format
+    // Mentés új formátumban
     Save();
     MyLog.Info("Permissions", "Migrated " + legacyData.AdminUIDs.Count().ToString()
         + " admin(s) from legacy format");
 }
 ```
 
-This is exactly the pattern MyMod uses to migrate from its original flat `AdminUIDs` array to the hierarchical `Admins` map.
+Ez egy gyakori minta az eredeti sima `AdminUIDs` tömbről a hierarchikus `Admins` map-re való migrációhoz.
 
 ---
 
-## Bevalt gyakorlatok
+## Bevált gyakorlatok
 
-1. **Default deny.** If a permission is not explicitly granted, the answer is "no".
+1. **Alapértelmezett tiltás.** Ha egy jogosultság nincs kifejezetten megadva, a válasz "nem".
 
-2. **Check on the server, never the client.** Client-side permission checks are for UI convenience only (hiding buttons). The server must always re-verify.
+2. **Ellenőrizd a szerveren, soha a kliensen.** A kliens oldali jogosultság-ellenőrzések csak az UI kényelmét szolgálják (gombok elrejtése). A szervernek mindig újra kell ellenőriznie.
 
-3. **Use `"*"` for superadmin.** It is the universal convention. Do not invent `"all"`, `"admin"`, or `"root"`.
+3. **Használd a `"*"`-ot szuperadminra.** Ez az univerzális konvenció. Ne találj ki `"all"`, `"admin"` vagy `"root"` alternatívát.
 
-4. **Log every denied privileged action.** This is your security audit trail.
+4. **Naplózz minden elutasított privilegizált műveletet.** Ez a biztonsági audit nyomod.
 
-5. **Provide a default permissions file with a placeholder.** New server owners should see a clear example:
+5. **Biztosíts alapértelmezett jogosultsági fájlt helyőrzővel.** Az új szerver-tulajdonosoknak világos példát kell látniuk:
 
 ```json
 {
@@ -593,16 +610,48 @@ This is exactly the pattern MyMod uses to migrate from its original flat `AdminU
 }
 ```
 
-6. **Namespace your permissions.** Use `"YourMod.Category.Action"` to avoid collisions with other mods.
+6. **Névtérbe szervezd a jogosultságaidat.** Használd a `"YourMod.Category.Action"` formátumot az ütközések elkerüléséhez más modokkal.
 
-7. **Support prefix wildcards.** Server owners should be able to grant `"YourMod.Admin.*"` instead of listing every admin permission individually.
+7. **Támogasd az előtag wildcardokat.** A szerver-tulajdonosoknak tudniuk kell `"YourMod.Admin.*"`-ot megadni ahelyett, hogy minden admin jogosultságot egyenként felsorolnának.
 
-8. **Keep the permissions file human-editable.** Server owners will edit it by hand. Use clear key names, one permission per line in the JSON, and document the available permissions somewhere in your mod's documentation.
+8. **Tartsd a jogosultsági fájlt kézzel szerkeszthetőnek.** A szerver-tulajdonosok kézzel fogják szerkeszteni. Használj világos kulcsneveket, soronként egy jogosultságot a JSON-ban, és dokumentáld az elérhető jogosultságokat valahol a mod dokumentációjában.
 
-9. **Implement migration from day one.** When your permission format changes (and it will), automatic migration prevents support tickets.
+9. **Valósítsd meg a migrációt az első naptól.** Amikor a jogosultsági formátumod változik (és változni fog), az automatikus migráció megelőzi a support jegyeket.
 
-10. **Sync permissions to the client on connect.** The client needs to know its own permissions for UI purposes (showing/hiding admin buttons). Send a summary on connect; do not send the entire server permissions file.
+10. **Szinkronizáld a jogosultságokat a klienshez csatlakozáskor.** A kliensnek ismernie kell a saját jogosultságait az UI célokra (admin gombok megjelenítése/elrejtése). Küldj összefoglalót csatlakozáskor; ne küldd a teljes szerver jogosultsági fájlt.
 
 ---
 
-[<< Elozo: Konfiguracio perzisztencia](04-config-persistence.md) | [Kezdolap](../../README.md) | [Kovetkezo: Event-Driven Architecture >>](06-events.md)
+## Kompatibilitás és hatás
+
+- **Multi-Mod:** Minden mod definiálhatja a saját jogosultsági névterét (`"ModA.Admin.Kick"`, `"ModB.Build.Spawn"`). A `"*"` wildcard szuperadmint ad az *összes* modra, amely közös jogosultsági tárolót használ. Ha a modok független jogosultsági fájlokat használnak, a `"*"` csak az adott mod hatókörén belül érvényes.
+- **Betöltési sorrend:** A jogosultsági fájlok egyszer töltődnek be a szerver indításakor. Nincs mod-közi sorrendiségi probléma, amíg minden mod a saját fájlját olvassa. Ha egy közös keretrendszer (CF/COT) kezeli a jogosultságokat, minden mod, amely azt a keretrendszert használja, ugyanazon a jogosultsági fán osztozik.
+- **Listen szerver:** A jogosultság-ellenőrzéseknek mindig szerver oldalon kell futniuk. Listen szervereken a kliens oldali kód hívhatja a `HasPermission()`-t az UI kapuzásához (admin gombok megjelenítése/elrejtése), de a szerver oldali ellenőrzés a mérvadó.
+- **Teljesítmény:** A jogosultság-ellenőrzések szövegtömb lineáris keresést végeznek játékosonként. Tipikus admin számokkal (1--20 admin, 5--30 jogosultság mindegyiknek) ez elhanyagolható. Rendkívül nagy jogosultsági készletekhez fontold meg a `set<string>` használatát tömb helyett az O(1) keresés érdekében.
+- **Migráció:** Új jogosultsági szövegek hozzáadása nem-törő --- a meglévő adminoknak egyszerűen nincs meg az új jogosultságuk, amíg nem kapják meg. A jogosultságok átnevezése csendben tönkreteszi a meglévő megadásokat. Használj konfiguráció verziózást az átnevezett jogosultsági szövegek automatikus migrációjához.
+
+---
+
+## Gyakori hibák
+
+| Hiba | Hatás | Javítás |
+|---------|--------|-----|
+| Kliens által küldött jogosultsági adatokban való megbízás | A kihasznált kliensek "admin vagyok" üzenetet küldenek és a szerver elhiszi; teljes szerver kompromittáció | Soha ne olvass jogosultságokat RPC adattartalomból; mindig a `sender.GetPlainId()`-t keresd ki a szerver oldali jogosultsági tárban |
+| Hiányzó alapértelmezett tiltás | A hiányzó jogosultság-ellenőrzés mindenki számára hozzáférést ad; véletlen jogosultság-eszkaláció | Minden privilegizált művelet RPC kezelőjének ellenőriznie kell a `HasPermission()`-t és korán visszatérnie kudarc esetén |
+| Elgépelés a jogosultsági szövegben csendben kudarcot vall | A `"MyMod.Amin.Kick"` (elgépelés) soha nem egyezik --- az admin nem tud kirúgni, nincs hibanaplóbejegyzés | Definiáld a jogosultsági szövegeket `static const` változókként; hivatkozz a konstansra, soha ne nyers szöveg literálra |
+| A teljes jogosultsági fájl küldése a kliensnek | Minden csatlakozott kliens számára felfedi az összes admin Steam64 ID-ját és jogosultsági készletét | Csak a kérelmező játékos saját jogosultsági listáját küldd, soha ne a teljes szerver fájlt |
+| Nincs wildcard támogatás a HasPermission-ben | A szerver-tulajdonosoknak minden egyes jogosultságot fel kell sorolniuk adminonként; fárasztó és hibára hajlamos | Valósítsd meg az előtag wildcardokat (`"MyMod.Admin.*"`) és a teljes wildcardot (`"*"`) az első naptól |
+
+---
+
+## Elmélet vs gyakorlat
+
+| Az elmélet azt mondja | DayZ valóság |
+|---------------|-------------|
+| Használj RBAC-ot (szerep-alapú hozzáférés-vezérlés) csoport örökléssel | Csak a CF/COT támogat háromállapotú jogosultságokat; a legtöbb mod az egyszerűség kedvéért sima játékosonkénti megadást használ |
+| A jogosultságokat adatbázisban kell tárolni | Nincs adatbázis-hozzáférés; JSON fájlok a `$profile:`-ban az egyetlen lehetőség |
+| Használj kriptográfiai tokeneket az engedélyezéshez | Nincsenek kriptográfiai könyvtárak az Enforce Scriptben; a bizalom a `PlayerIdentity.GetPlainId()` (Steam64 ID) alapú, amelyet a motor ellenőriz |
+
+---
+
+[Kezdőlap](../../README.md) | [<< Előző: Konfiguráció perzisztencia](04-config-persistence.md) | **Jogosultsági rendszerek** | [Következő: Eseményvezérelt architektúra >>](06-events.md)

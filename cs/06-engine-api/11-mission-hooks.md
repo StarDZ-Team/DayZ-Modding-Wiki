@@ -1,18 +1,18 @@
 # Chapter 6.11: Mission Hooks
 
-[Home](../../README.md) | [<< Previous: Central Economy](10-central-economy.md) | **Mission Hooks** | [Next: Action System >>](12-action-system.md)
+[Domů](../../README.md) | [<< Předchozí: Central Economy](10-central-economy.md) | **Mission Hooks** | [Další: Action System >>](12-action-system.md)
 
 ---
 
-## Uvod
+## Úvod
 
-Every DayZ mod needs an entry point --- a place where it initializes managers, registers RPC handlers, hooks into player connections, and cleans up on shutdown. That entry point is the **Mission** class. The engine creates exactly one Mission instance when a scenario loads: `MissionServer` on a dedicated server, `MissionGameplay` on a client, or both on a listen server. These classes provide lifecycle hooks that fire in a guaranteed order, giving mods a reliable place to inject behavior.
+Každý DayZ mod potřebuje vstupní bod --- místo, kde inicializuje manažery, registruje RPC handlery, napojuje se na připojení hráčů a uklízí při vypnutí. Tímto vstupním bodem je třída **Mission**. Engine vytvoří přesně jednu instanci Mission při načtení scénáře: `MissionServer` na dedikovaném serveru, `MissionGameplay` na klientovi, nebo obě na listen serveru. Tyto třídy poskytují lifecycle hooky, které se spouštějí v garantovaném pořadí, a dávají tak modům spolehlivé místo pro vložení chování.
 
-This chapter covers the full Mission class hierarchy, every hookable method, the correct `modded class` pattern for extending them, and real-world examples from vanilla DayZ, COT, and Expansion.
+Tato kapitola pokrývá celou hierarchii tříd Mission, každou hookovatelnou metodu, správný vzor `modded class` pro jejich rozšíření a reálné příklady z vanilla DayZ, COT a Expansion.
 
 ---
 
-## Hierarchie trid
+## Hierarchie tříd
 
 ```
 Mission                      // 3_Game/gameplay.c (base, defines all hook signatures)
@@ -22,16 +22,16 @@ Mission                      // 3_Game/gameplay.c (base, defines all hook signat
         └── MissionGameplay  // 5_Mission/mission/missiongameplay.c (client-side)
 ```
 
-- **Mission** defines all hook signatures as empty methods: `OnInit()`, `OnUpdate()`, `OnEvent()`, `OnMissionStart()`, `OnMissionFinish()`, `OnKeyPress()`, `OnKeyRelease()`, etc.
-- **MissionBase** initializes the plugin manager, widget event handler, world data, dynamic music, sound sets, and input device tracking. It is the common parent for both server and client.
-- **MissionServer** handles player connections, disconnections, respawns, corpse management, tick scheduling, and artillery.
-- **MissionGameplay** handles HUD creation, chat, action menus, voice-over-network UI, inventory, input exclusion, and client-side player scheduling.
+- **Mission** definuje všechny signatury hooků jako prázdné metody: `OnInit()`, `OnUpdate()`, `OnEvent()`, `OnMissionStart()`, `OnMissionFinish()`, `OnKeyPress()`, `OnKeyRelease()`, atd.
+- **MissionBase** inicializuje plugin manager, widget event handler, world data, dynamickou hudbu, zvukové sady a sledování vstupních zařízení. Je společným rodičem pro server i klienta.
+- **MissionServer** zpracovává připojení hráčů, odpojení, respawny, správu mrtvol, plánování ticků a dělostřelectvo.
+- **MissionGameplay** zpracovává vytvoření HUD, chat, akční menu, UI voice-over-network, inventář, blokování vstupu a plánování na straně klienta.
 
 ---
 
-## Lifecycle Prehled
+## Přehled životního cyklu
 
-### MissionServer Lifecycle (Server-Side)
+### Životní cyklus MissionServer (strana serveru)
 
 ```mermaid
 flowchart TD
@@ -51,7 +51,7 @@ flowchart TD
     J -.-> M["InvokeOnDisconnect()"]
 ```
 
-### MissionGameplay Lifecycle (Client-Side)
+### Životní cyklus MissionGameplay (strana klienta)
 
 ```mermaid
 flowchart TD
@@ -70,127 +70,127 @@ flowchart TD
 
 ---
 
-## Mission Zakladni trida Metodas
+## Metody základní třídy Mission
 
-**File:** `3_Game/gameplay.c`
+**Soubor:** `3_Game/gameplay.c`
 
-The `Mission` base class defines every hookable method. All are virtual with empty default implementations unless noted.
+Základní třída `Mission` definuje každou hookovatelnou metodu. Všechny jsou virtuální s prázdnými výchozími implementacemi, pokud není uvedeno jinak.
 
-### Lifecycle Hooks
+### Hooky životního cyklu
 
-| Metoda | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnInit` | `void OnInit()` | After constructor, before mission starts. Primary setup point. |
-| `OnMissionStart` | `void OnMissionStart()` | After OnInit. The mission world is active. |
-| `OnMissionLoaded` | `void OnMissionLoaded()` | After OnMissionStart. All vanilla systems are initialized. |
-| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | Server: after gameplay data (cfggameplay.json) is loaded. |
-| `OnUpdate` | `void OnUpdate(float timeslice)` | Every frame. `timeslice` is seconds since last frame (typically 0.016-0.033). |
-| `OnMissionFinish` | `void OnMissionFinish()` | On shutdown or disconnect. Clean up everything here. |
-
-### Input Hooks (Client-Side)
-
-| Metoda | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnKeyPress` | `void OnKeyPress(int key)` | Physical key pressed. `key` is a `KeyCode` constant. |
-| `OnKeyRelease` | `void OnKeyRelease(int key)` | Physical key released. |
-| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Mouse button pressed. |
-| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Mouse button released. |
-
-### Event Hook
-
-| Metoda | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnEvent` | `void OnEvent(EventTyp eventTypId, Param params)` | Engine events: chat, VON, player connect/disconnect, window resize, etc. |
-
-### Utility Metodas
-
-| Metoda | Signature | Popis |
+| Metoda | Signatura | Kdy se volá |
 |--------|-----------|-------------|
-| `GetHud` | `Hud GetHud()` | Vraci the HUD instance (client only). |
-| `GetWorldData` | `WorldData GetWorldData()` | Vraci world-specific data (temperature curves, etc.). |
-| `IsPaused` | `bool IsPaused()` | Whether the game is paused (single player / listen server). |
-| `IsServer` | `bool IsServer()` | `true` for MissionServer, `false` for MissionGameplay. |
-| `IsMissionGameplay` | `bool IsMissionGameplay()` | `true` for MissionGameplay, `false` for MissionServer. |
-| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | Re-enable player input after disabling. |
-| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | Disable player input (e.g., `INPUT_EXCLUDE_ALL`). |
-| `IsControlDisabled` | `bool IsControlDisabled()` | Whether player controls are currently disabled. |
-| `GetControlDisabledMode` | `int GetControlDisabledMode()` | Vraci the current input exclusion mode. |
+| `OnInit` | `void OnInit()` | Po konstruktoru, před startem mise. Primární bod nastavení. |
+| `OnMissionStart` | `void OnMissionStart()` | Po OnInit. Svět mise je aktivní. |
+| `OnMissionLoaded` | `void OnMissionLoaded()` | Po OnMissionStart. Všechny vanilla systémy jsou inicializovány. |
+| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | Server: po načtení gameplay dat (cfggameplay.json). |
+| `OnUpdate` | `void OnUpdate(float timeslice)` | Každý snímek. `timeslice` je počet sekund od posledního snímku (typicky 0,016–0,033). |
+| `OnMissionFinish` | `void OnMissionFinish()` | Při vypnutí nebo odpojení. Zde ukliďte vše. |
+
+### Hooky vstupu (strana klienta)
+
+| Metoda | Signatura | Kdy se volá |
+|--------|-----------|-------------|
+| `OnKeyPress` | `void OnKeyPress(int key)` | Fyzická klávesa stisknuta. `key` je konstanta `KeyCode`. |
+| `OnKeyRelease` | `void OnKeyRelease(int key)` | Fyzická klávesa uvolněna. |
+| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Tlačítko myši stisknuto. |
+| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Tlačítko myši uvolněno. |
+
+### Hook událostí
+
+| Metoda | Signatura | Kdy se volá |
+|--------|-----------|-------------|
+| `OnEvent` | `void OnEvent(EventType eventTypeId, Param params)` | Události enginu: chat, VON, připojení/odpojení hráče, změna velikosti okna, atd. |
+
+### Pomocné metody
+
+| Metoda | Signatura | Popis |
+|--------|-----------|-------|
+| `GetHud` | `Hud GetHud()` | Vrací instanci HUD (pouze klient). |
+| `GetWorldData` | `WorldData GetWorldData()` | Vrací data specifická pro svět (teplotní křivky, atd.). |
+| `IsPaused` | `bool IsPaused()` | Zda je hra pozastavena (singleplayer / listen server). |
+| `IsServer` | `bool IsServer()` | `true` pro MissionServer, `false` pro MissionGameplay. |
+| `IsMissionGameplay` | `bool IsMissionGameplay()` | `true` pro MissionGameplay, `false` pro MissionServer. |
+| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | Znovu povolí vstup hráče po zakázání. |
+| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | Zakáže vstup hráče (např. `INPUT_EXCLUDE_ALL`). |
+| `IsControlDisabled` | `bool IsControlDisabled()` | Zda jsou ovládací prvky hráče aktuálně zakázány. |
+| `GetControlDisabledMode` | `int GetControlDisabledMode()` | Vrací aktuální režim blokování vstupu. |
 
 ---
 
-## MissionServer Hooks (Server-Side)
+## Hooky MissionServer (strana serveru)
 
-**File:** `5_Mission/mission/missionserver.c`
+**Soubor:** `5_Mission/mission/missionserver.c`
 
-MissionServer is instantiated by the engine on dedicated servers. It handles everything related to player lifecycle on the server.
+MissionServer je instanciován enginem na dedikovaných serverech. Zpracovává vše související s životním cyklem hráčů na serveru.
 
-### Key Vanilla Behavior
+### Klíčové vanilla chování
 
-- **Constructor**: Sets up `CallQueue` for player stats (30-second interval), dead players array, logout tracking maps, rain procurement handler.
-- **OnInit**: Loads `CfgGameplayHandler`, `PlayerSpawnHandler`, `CfgPlayerRestrictedAreaHandler`, `UndergroundAreaLoader`, artillery firing positions.
-- **OnMissionStart**: Creates effect area zones (contaminated zones, etc.).
-- **OnUpdate**: Runs tick scheduler, processes logout timers, updates base environment temperature, rain procurement, random artillery.
+- **Konstruktor**: Nastavuje `CallQueue` pro statistiky hráčů (30sekundový interval), pole mrtvých hráčů, mapy sledování odhlášení, handler sběru deště.
+- **OnInit**: Načítá `CfgGameplayHandler`, `PlayerSpawnHandler`, `CfgPlayerRestrictedAreaHandler`, `UndergroundAreaLoader`, pozice dělostřelecké palby.
+- **OnMissionStart**: Vytváří zóny efektových oblastí (kontaminované zóny, atd.).
+- **OnUpdate**: Spouští plánovač ticků, zpracovává časovače odhlášení, aktualizuje základní teplotu prostředí, sběr deště, náhodné dělostřelectvo.
 
-### OnEvent --- Player Connection Events
+### OnEvent --- události připojení hráčů
 
-The server's `OnEvent` is the central dispatcher for all player lifecycle events. The engine sends events with typed `Param` objects. Vanilla handles them via a `switch` block:
+Serverový `OnEvent` je centrální dispečer pro všechny události životního cyklu hráčů. Engine posílá události s typovanými objekty `Param`. Vanilla je zpracovává přes blok `switch`:
 
-| Event | Param Typ | What Happens |
-|-------|-----------|--------------|
-| `ClientPrepareEventTypID` | `ClientPrepareEventParams` | Decides DB vs fresh character |
-| `ClientNewEventTypID` | `ClientNewEventParams` | Creates + equips new character, calls `InvokeOnConnect` |
-| `ClientReadyEventTypID` | `ClientReadyEventParams` | Existing character loaded, calls `OnClientReadyEvent` + `InvokeOnConnect` |
-| `ClientRespawnEventTypID` | `ClientRespawnEventParams` | Player respawn request, kills old character if unconscious |
-| `ClientReconnectEventTypID` | `ClientReconnectEventParams` | Player reconnected to alive character |
-| `ClientDisconnectedEventTypID` | `ClientDisconnectedEventParams` | Player disconnecting, starts logout timer |
-| `LogoutCancelEventTypID` | `LogoutCancelEventParams` | Player cancelled logout countdown |
+| Událost | Typ Param | Co se stane |
+|---------|-----------|-------------|
+| `ClientPrepareEventTypeID` | `ClientPrepareEventParams` | Rozhoduje DB vs nová postava |
+| `ClientNewEventTypeID` | `ClientNewEventParams` | Vytvoří + vybaví novou postavu, volá `InvokeOnConnect` |
+| `ClientReadyEventTypeID` | `ClientReadyEventParams` | Existující postava načtena, volá `OnClientReadyEvent` + `InvokeOnConnect` |
+| `ClientRespawnEventTypeID` | `ClientRespawnEventParams` | Žádost o respawn hráče, zabije starou postavu pokud je v bezvědomí |
+| `ClientReconnectEventTypeID` | `ClientReconnectEventParams` | Hráč se znovu připojil k živé postavě |
+| `ClientDisconnectedEventTypeID` | `ClientDisconnectedEventParams` | Hráč se odpojuje, spouští časovač odhlášení |
+| `LogoutCancelEventTypeID` | `LogoutCancelEventParams` | Hráč zrušil odpočet odhlášení |
 
-### Player Connection Metodas
+### Metody připojení hráčů
 
-Called from within `OnEvent` when player-related events fire:
+Volány zevnitř `OnEvent` při spuštění událostí souvisejících s hráči:
 
-| Metoda | Signature | Vanilla Behavior |
+| Metoda | Signatura | Vanilla chování |
 |--------|-----------|-----------------|
-| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Calls `player.OnConnect()`. Primary "player joined" hook. |
-| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Calls `player.OnDisconnect()`. Player fully disconnected. |
-| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | Calls `g_Game.SelectPlayer()`. Existing character loaded from DB. |
-| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | Creates + equips new character. Vraci `PlayerBase`. |
-| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | Kills old character if unconscious/restrained. |
-| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Calls `player.OnReconnect()`. |
-| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Calls `InvokeOnDisconnect`, saves player, exits hive, handles body, removes from server. |
+| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Volá `player.OnConnect()`. Primární hook „hráč se připojil". |
+| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Volá `player.OnDisconnect()`. Hráč plně odpojen. |
+| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | Volá `g_Game.SelectPlayer()`. Existující postava načtena z DB. |
+| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | Vytvoří + vybaví novou postavu. Vrací `PlayerBase`. |
+| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | Zabije starou postavu pokud je v bezvědomí/spoutána. |
+| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Volá `player.OnReconnect()`. |
+| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Volá `InvokeOnDisconnect`, ukládá hráče, opouští hive, zpracovává tělo, odstraňuje ze serveru. |
 
-### Character Setup
+### Nastavení postavy
 
-| Metoda | Signature | Popis |
-|--------|-----------|-------------|
-| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Creates player entity via `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()`. |
-| `EquipCharacter` | `void EquipCharacter(MenuVychoziCharacterData char_data)` | Iterates attachment slots, randomizes if custom respawn disabled. Calls `StartingEquipSetup()`. |
-| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **Empty in vanilla** --- your entry point for starter kits. |
+| Metoda | Signatura | Popis |
+|--------|-----------|-------|
+| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Vytváří entitu hráče přes `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()`. |
+| `EquipCharacter` | `void EquipCharacter(MenuDefaultCharacterData char_data)` | Iteruje přes attachment sloty, náhodně vybírá pokud je vlastní respawn zakázán. Volá `StartingEquipSetup()`. |
+| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **Prázdná ve vanilla** --- váš vstupní bod pro startovní vybavení. |
 
 ---
 
-## MissionGameplay Hooks (Client-Side)
+## Hooky MissionGameplay (strana klienta)
 
-**File:** `5_Mission/mission/missiongameplay.c`
+**Soubor:** `5_Mission/mission/missiongameplay.c`
 
-MissionGameplay is instantiated on the client when connecting to a server or starting single player. It manages all client-side UI and input.
+MissionGameplay je instanciován na klientovi při připojení k serveru nebo spuštění singleplayeru. Spravuje veškeré UI a vstup na straně klienta.
 
-### Key Vanilla Behavior
+### Klíčové vanilla chování
 
-- **Constructor**: Destroys existing menus, creates Chat, AkceMenu, IngameHud, VoN state, fade timers, SyncEvents registration.
-- **OnInit**: Guards against double init with `m_Initialized`. Creates HUD root widget from `"gui/layouts/day_z_hud.layout"`, chat widget, action menu, microphone icon, VoN voice level widgets, chat channel area. Calls `PPEffects.Init()` and `MapZnackaTyps.Init()`.
-- **OnMissionStart**: Hides cursor, sets mission state to `MISSION_STATE_GAME`, loads effect areas in singleplayer.
-- **OnUpdate**: Tick scheduler for local player, hologram updates, radial quickbar (console), gesture menu, input handling for inventory/chat/VoN, debug monitor, pause behavior.
-- **OnMissionFinish**: Hides dialog, destroys all menus and chat, deletes HUD root widget, stops all PPE effects, re-enables all inputs, sets mission state to `MISSION_STATE_FINNISH`.
+- **Konstruktor**: Ničí existující menu, vytváří Chat, ActionMenu, IngameHud, stav VoN, časovače prolínání, registraci SyncEvents.
+- **OnInit**: Chrání proti dvojí inicializaci pomocí `m_Initialized`. Vytváří kořenový widget HUD z `"gui/layouts/day_z_hud.layout"`, widget chatu, akční menu, ikonu mikrofonu, widgety úrovně hlasu VoN, oblast chatovacího kanálu. Volá `PPEffects.Init()` a `MapMarkerTypes.Init()`.
+- **OnMissionStart**: Skrývá kurzor, nastavuje stav mise na `MISSION_STATE_GAME`, načítá efektové oblasti v singleplayeru.
+- **OnUpdate**: Plánovač ticků pro lokálního hráče, aktualizace hologramu, radiální quickbar (konzole), menu gest, zpracování vstupu pro inventář/chat/VoN, debug monitor, chování pauzy.
+- **OnMissionFinish**: Skrývá dialog, ničí všechna menu a chat, maže kořenový widget HUD, zastavuje všechny PPE efekty, znovu povoluje všechny vstupy, nastavuje stav mise na `MISSION_STATE_FINNISH`.
 
-### Input Hooks
+### Hooky vstupu
 
 ```c
 override void OnKeyPress(int key)
 {
     super.OnKeyPress(key);
-    // Vanilla forwards to Hud.KeyPress(key)
-    // key values are KeyCode constants (e.g., KeyCode.KC_F1 = 59)
+    // Vanilla předává do Hud.KeyPress(key)
+    // hodnoty key jsou konstanty KeyCode (např. KeyCode.KC_F1 = 59)
 }
 
 override void OnKeyRelease(int key)
@@ -199,21 +199,21 @@ override void OnKeyRelease(int key)
 }
 ```
 
-### Event Hook
+### Hook událostí
 
-Vanilla `MissionGameplay.OnEvent()` handles `ChatZpravaEventTypID` (adds to chat widget), `ChatChannelEventTypID` (updates channel indicator), `WindowsResizeEventTypID` (rebuilds menus/HUD), `SetFreeCameraEventTypID` (debug camera), and `VONStateEventTypID` (voice state). Override it with the same `switch` pattern and always call `super.OnEvent()`.
+Vanilla `MissionGameplay.OnEvent()` zpracovává `ChatMessageEventTypeID` (přidává do widgetu chatu), `ChatChannelEventTypeID` (aktualizuje indikátor kanálu), `WindowsResizeEventTypeID` (přestavuje menu/HUD), `SetFreeCameraEventTypeID` (debug kamera) a `VONStateEventTypeID` (stav hlasu). Přepište ji stejným vzorem `switch` a vždy volejte `super.OnEvent()`.
 
-### Input Control
+### Řízení vstupu
 
-`PlayerControlDisable(int mode)` activates an input exclude group (e.g., `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). `PlayerControlEnable(bool bForceSuppress)` removes it. These map to exclude groups defined in `specific.xml`. Override them if your mod needs custom input exclusion behavior (as Expansion does for its menus).
+`PlayerControlDisable(int mode)` aktivuje skupinu vyloučení vstupu (např. `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). `PlayerControlEnable(bool bForceSuppress)` ji odebere. Mapují se na skupiny vyloučení definované v `specific.xml`. Přepište je, pokud váš mod potřebuje vlastní chování blokování vstupu (jako to dělá Expansion pro svá menu).
 
 ---
 
-## Server-Side Event Flow: Player Joins
+## Tok událostí na straně serveru: Připojení hráče
 
-Understanding the exact sequence of events when a player connects is critical for knowing where to hook your code.
+Pochopení přesné sekvence událostí při připojení hráče je klíčové pro to, abyste věděli, kde napojit svůj kód.
 
-### New Character (First Join or After Death)
+### Nová postava (první připojení nebo po smrti)
 
 ```mermaid
 sequenceDiagram
@@ -236,7 +236,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Existing Character (Reconnect After Disconnect)
+### Existující postava (opětovné připojení po odpojení)
 
 ```mermaid
 sequenceDiagram
@@ -256,7 +256,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Player Disconnect
+### Odpojení hráče
 
 ```mermaid
 sequenceDiagram
@@ -283,11 +283,11 @@ sequenceDiagram
 
 ---
 
-## How to Hook: The modded class Vzor
+## Jak hookovat: Vzor modded class
 
-The correct way to extend Mission classes is the `modded class` pattern. This uses Enforce Script's class inheritance mechanism where `modded class` extends the existing class without replacing it, allowing multiple mods to coexist.
+Správný způsob rozšíření tříd Mission je vzor `modded class`. Ten využívá mechanismus dědičnosti tříd v Enforce Scriptu, kde `modded class` rozšiřuje existující třídu bez jejího nahrazení, což umožňuje koexistenci více modů.
 
-### Basic Server Hook
+### Základní serverový hook
 
 ```c
 // Your mod: Scripts/5_Mission/YourMod/MissionServer.c
@@ -317,7 +317,7 @@ modded class MissionServer
 }
 ```
 
-### Basic Client Hook
+### Základní klientský hook
 
 ```c
 // Your mod: Scripts/5_Mission/YourMod/MissionGameplay.c
@@ -358,7 +358,7 @@ modded class MissionGameplay
 }
 ```
 
-### Hooking Player Connection
+### Hookování připojení hráče
 
 ```c
 modded class MissionServer
@@ -393,7 +393,7 @@ modded class MissionServer
 }
 ```
 
-### Hooking Chat Zpravas (Server-Side OnEvent)
+### Hookování chatových zpráv (serverový OnEvent)
 
 ```c
 modded class MissionServer
@@ -419,7 +419,7 @@ modded class MissionServer
 }
 ```
 
-### Hooking Keyboard Input (Client-Side)
+### Hookování klávesového vstupu (strana klienta)
 
 ```c
 modded class MissionGameplay
@@ -440,9 +440,9 @@ modded class MissionGameplay
 }
 ```
 
-### Where to Register RPC Handlers
+### Kde registrovat RPC handlery
 
-RPC handlers should be registered in `OnInit`, not in the constructor. By `OnInit` time, all script modules are loaded and the networking layer is ready.
+RPC handlery by se měly registrovat v `OnInit`, ne v konstruktoru. V době `OnInit` jsou všechny skriptové moduly načteny a síťová vrstva je připravena.
 
 ```c
 modded class MissionServer

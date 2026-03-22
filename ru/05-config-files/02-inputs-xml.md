@@ -1,42 +1,44 @@
-# Chapter 5.2: inputs.xml --- Custom Keybindings
+# Глава 5.2: inputs.xml --- Пользовательские клавиши
 
-[Home](../../README.md) | [<< Previous: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Next: Credits.json >>](03-credits-json.md)
+[Главная](../../README.md) | [<< Предыдущая: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Следующая: Credits.json >>](03-credits-json.md)
+
+---
+
+> **Краткое описание:** Файл `inputs.xml` позволяет вашему моду регистрировать пользовательские назначения клавиш, которые отображаются в меню настроек управления игрока. Игроки могут просматривать, переназначать и переключать эти привязки так же, как и стандартные действия. Это стандартный механизм для добавления горячих клавиш в моды DayZ.
 
 ---
 
 ## Содержание
 
-
-- [Overview](#overview)
-- [File Location](#file-location)
-- [Complete XML Structure](#complete-xml-structure)
-- [Actions Block](#actions-block)
-- [Sorting Block](#sorting-block)
-- [Preset Block (Default Keybindings)](#preset-block-default-keybindings)
-- [Modifier Combos](#modifier-combos)
-- [Hidden Inputs](#hidden-inputs)
-- [Multiple Default Keys](#multiple-default-keys)
-- [Accessing Inputs in Script](#accessing-inputs-in-script)
-- [Input Methods Reference](#input-methods-reference)
-- [Suppressing and Disabling Inputs](#suppressing-and-disabling-inputs)
-- [Key Names Reference](#key-names-reference)
-- [Real Examples](#real-examples)
-- [Common Mistakes](#common-mistakes)
+- [Обзор](#обзор)
+- [Расположение файла](#расположение-файла)
+- [Полная структура XML](#полная-структура-xml)
+- [Блок Actions](#блок-actions)
+- [Блок Sorting](#блок-sorting)
+- [Блок Preset (привязки по умолчанию)](#блок-preset-привязки-по-умолчанию)
+- [Комбинации с модификаторами](#комбинации-с-модификаторами)
+- [Скрытые привязки](#скрытые-привязки)
+- [Несколько клавиш по умолчанию](#несколько-клавиш-по-умолчанию)
+- [Доступ к привязкам из скрипта](#доступ-к-привязкам-из-скрипта)
+- [Справочник по методам ввода](#справочник-по-методам-ввода)
+- [Подавление и отключение ввода](#подавление-и-отключение-ввода)
+- [Справочник имён клавиш](#справочник-имён-клавиш)
+- [Реальные примеры](#реальные-примеры)
+- [Распространённые ошибки](#распространённые-ошибки)
 
 ---
 
 ## Обзор
 
+Когда вашему моду нужно, чтобы игрок нажал клавишу --- открыть меню, переключить функцию, отдать команду AI-юниту --- вы регистрируете пользовательское действие ввода в `inputs.xml`. Движок считывает этот файл при запуске и интегрирует ваши действия в единую систему ввода. Игроки видят ваши назначения клавиш в игровом меню Настройки > Управление, сгруппированные под заголовком, который вы определяете.
 
-When your mod needs the player to press a key --- opening a menu, toggling a feature, commanding an AI unit ---- вы register a custom input action in `inputs.xml`. The engine reads this file at startup and integrates your actions into the universal input system. Players see your keybindings in the game's Settings > Controls menu, grouped under a heading you define.
-
-Custom inputs are identified by a unique action name (conventionally prefixed with `UA` for "User Action") and can have default keybindings that players can rebind at will.
+Пользовательские привязки идентифицируются уникальным именем действия (по соглашению с префиксом `UA` от «User Action») и могут иметь привязки по умолчанию, которые игроки могут переназначить по желанию.
 
 ---
 
-## File Location
+## Расположение файла
 
-Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
+Поместите `inputs.xml` в подпапку `data` вашей директории Scripts:
 
 ```
 @MyMod/
@@ -44,48 +46,47 @@ Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
     MyMod_Scripts.pbo
       Scripts/
         data/
-          inputs.xml        <-- Here
+          inputs.xml        <-- Здесь
         3_Game/
         4_World/
         5_Mission/
 ```
 
-Some mods place it directly in the `Scripts/` folder. Both locations work. The engine discovers the file automatically ---- нет config.cpp registration is needed.
+Некоторые моды размещают его прямо в папке `Scripts/`. Оба расположения работают. Движок обнаруживает файл автоматически --- регистрация в config.cpp не требуется.
 
 ---
 
-## Complete XML Structure
+## Полная структура XML
 
-An `inputs.xml` file has three sections, all wrapped in a `<modded_inputs>` root element:
+Файл `inputs.xml` состоит из трёх секций, обёрнутых в корневой элемент `<modded_inputs>`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <modded_inputs>
     <inputs>
         <actions>
-            <!-- Action definitions go here -->
+            <!-- Определения действий размещаются здесь -->
         </actions>
 
         <sorting name="mymod" loc="STR_MYMOD_INPUT_GROUP">
-            <!-- Sort order for the settings menu -->
+            <!-- Порядок сортировки для меню настроек -->
         </sorting>
     </inputs>
     <preset>
-        <!-- Default keybinding assignments go here -->
+        <!-- Назначения клавиш по умолчанию размещаются здесь -->
     </preset>
 </modded_inputs>
 ```
 
-All three sections --- `<actions>`, `<sorting>`, and `<preset>` --- work together but serve different purposes.
+Все три секции --- `<actions>`, `<sorting>` и `<preset>` --- работают вместе, но служат разным целям.
 
 ---
 
-## Actions Block
+## Блок Actions
 
-The `<actions>` block declares every input action your mod provides. Each action is a single `<input>` element.
+Блок `<actions>` объявляет каждое действие ввода, которое предоставляет ваш мод. Каждое действие --- это один элемент `<input>`.
 
 ### Синтаксис
-
 
 ```xml
 <actions>
@@ -94,17 +95,17 @@ The `<actions>` block declares every input action your mod provides. Each action
 </actions>
 ```
 
-### Attributes
+### Атрибуты
 
-| Attribute | Required | Description |
+| Атрибут | Обязателен | Описание |
 |-----------|----------|-------------|
-| `name` | Yes | Unique action identifier. Convention: prefix with `UA` (User Action). Used in scripts to poll this input. |
-| `loc` | No | Stringtable key for the display name in the Controls menu. **No `#` prefix** ----  system adds it. |
-| `visible` | No | Set to `"false"` to hide from the Controls menu. Defaults to `true`. |
+| `name` | Да | Уникальный идентификатор действия. Соглашение: префикс `UA` (User Action). Используется в скриптах для опроса этого ввода. |
+| `loc` | Нет | Ключ stringtable для отображаемого имени в меню Управление. **Без префикса `#`** --- система добавляет его сама. |
+| `visible` | Нет | Установите `"false"`, чтобы скрыть из меню Управление. По умолчанию `true`. |
 
-### Naming Convention
+### Соглашение об именовании
 
-Action names must be globally unique across all loaded mods. Use your mod prefix:
+Имена действий должны быть глобально уникальными среди всех загруженных модов. Используйте префикс вашего мода:
 
 ```xml
 <input name="UAMyModAdminPanel" loc="STR_MYMOD_INPUT_ADMIN_PANEL" />
@@ -112,16 +113,15 @@ Action names must be globally unique across all loaded mods. Use your mod prefix
 <input name="eAICommandMenu" loc="STR_EXPANSION_AI_COMMAND_MENU" />
 ```
 
-The `UA` prefix is conventional but not enforced. Expansion AI uses `eAI` as its prefix, which also works.
+Префикс `UA` является соглашением, но не обязателен. Expansion AI использует `eAI` в качестве префикса, что тоже работает.
 
 ---
 
-## Sorting Block
+## Блок Sorting
 
-The `<sorting>` block controls how your inputs appear in the player's Controls settings. It defines a named group (which becomes a section header) and lists the inputs in display order.
+Блок `<sorting>` управляет тем, как ваши привязки отображаются в настройках Управления. Он определяет именованную группу (которая становится заголовком секции) и перечисляет привязки в порядке отображения.
 
 ### Синтаксис
-
 
 ```xml
 <sorting name="mymod" loc="STR_MYMOD_INPUT_GROUP">
@@ -131,32 +131,32 @@ The `<sorting>` block controls how your inputs appear in the player's Controls s
 </sorting>
 ```
 
-### Attributes
+### Атрибуты
 
-| Attribute | Required | Description |
+| Атрибут | Обязателен | Описание |
 |-----------|----------|-------------|
-| `name` | Yes | Internal identifier for this sorting group |
-| `loc` | Yes | Stringtable key for the group header displayed in Settings > Controls |
+| `name` | Да | Внутренний идентификатор этой группы сортировки |
+| `loc` | Да | Ключ stringtable для заголовка группы, отображаемого в Настройки > Управление |
 
-### How It Appears
+### Как это выглядит
 
-In the Controls settings, the player sees:
+В настройках Управления игрок видит:
 
 ```
-[MyMod]                          <-- from the sorting loc
-  Open Menu .............. [Y]   <-- from the input loc + preset
-  Toggle HUD ............. [H]   <-- from the input loc + preset
+[MyMod]                          <-- из loc блока sorting
+  Open Menu .............. [Y]   <-- из loc привязки + preset
+  Toggle HUD ............. [H]   <-- из loc привязки + preset
 ```
 
-Only inputs listed in the `<sorting>` block appear in the settings menu. Inputs defined in `<actions>` but not listed in `<sorting>` are silently registered but invisible to the player (even if `visible` is not explicitly set to `false`).
+В меню настроек отображаются только привязки, перечисленные в блоке `<sorting>`. Привязки, определённые в `<actions>`, но не указанные в `<sorting>`, молча регистрируются, но невидимы для игрока (даже если `visible` не установлен явно в `false`).
 
 ---
 
-## Preset Block (Default Keybindings)
+## Блок Preset (привязки по умолчанию)
 
-The `<preset>` block assigns default keys to your actions. These are the keys the player starts with before any customization.
+Блок `<preset>` назначает клавиши по умолчанию для ваших действий. Это клавиши, с которых игрок начинает до любой настройки.
 
-### Simple Key Binding
+### Простая привязка клавиши
 
 ```xml
 <preset>
@@ -166,19 +166,19 @@ The `<preset>` block assigns default keys to your actions. These are the keys th
 </preset>
 ```
 
-This binds the `Y` key as the default for `UAMyModOpenMenu`.
+Это привязывает клавишу `Y` по умолчанию для `UAMyModOpenMenu`.
 
-### No Default Key
+### Без клавиши по умолчанию
 
-If you omit an action from the `<preset>` block, it has no default binding. The player must manually assign a key in Settings > Controls. This is appropriate for optional or advanced bindings.
+Если вы не включите действие в блок `<preset>`, у него не будет привязки по умолчанию. Игрок должен будет вручную назначить клавишу в Настройки > Управление. Это уместно для необязательных или продвинутых привязок.
 
 ---
 
-## Modifier Combos
+## Комбинации с модификаторами
 
-To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
+Чтобы потребовать клавишу-модификатор (Ctrl, Shift, Alt), вложите элементы `<btn>`:
 
-### Ctrl + Left Mouse Button
+### Ctrl + Левая кнопка мыши
 
 ```xml
 <input name="eAISetWaypoint">
@@ -188,9 +188,9 @@ To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
 </input>
 ```
 
-The outer `<btn>` is the modifier; the inner `<btn>` is the primary key. The player must hold the modifier and then press the primary key.
+Внешний `<btn>` --- это модификатор; внутренний `<btn>` --- это основная клавиша. Игрок должен удерживать модификатор и затем нажать основную клавишу.
 
-### Shift + Key
+### Shift + Клавиша
 
 ```xml
 <input name="UAMyModQuickAction">
@@ -200,17 +200,17 @@ The outer `<btn>` is the modifier; the inner `<btn>` is the primary key. The pla
 </input>
 ```
 
-### Nesting Rules
+### Правила вложенности
 
-- The **outer** `<btn>` is always the modifier (held down)
-- The **inner** `<btn>` is the trigger (pressed while modifier is held)
-- Only one level of nesting is typical; deeper nesting is untested and not recommended
+- **Внешний** `<btn>` всегда является модификатором (удерживается)
+- **Внутренний** `<btn>` является триггером (нажимается при удержании модификатора)
+- Обычно используется только один уровень вложенности; более глубокая вложенность не протестирована и не рекомендуется
 
 ---
 
-## Hidden Inputs
+## Скрытые привязки
 
-Use `visible="false"` to register an input that the player cannot see or rebind in the Controls menu. This is useful for internal inputs used by your mod's code that should not be player-configurable.
+Используйте `visible="false"`, чтобы зарегистрировать привязку, которую игрок не может видеть или переназначить в меню Управление. Это полезно для внутренних привязок, используемых кодом вашего мода, которые не должны настраиваться игроком.
 
 ```xml
 <actions>
@@ -219,7 +219,7 @@ Use `visible="false"` to register an input that the player cannot see or rebind 
 </actions>
 ```
 
-Hidden inputs can still have default key assignments in the `<preset>` block:
+Скрытые привязки всё равно могут иметь назначения клавиш по умолчанию в блоке `<preset>`:
 
 ```xml
 <preset>
@@ -231,9 +231,9 @@ Hidden inputs can still have default key assignments in the `<preset>` block:
 
 ---
 
-## Multiple Default Keys
+## Несколько клавиш по умолчанию
 
-An action can have multiple default keys. List multiple `<btn>` elements as siblings:
+Действие может иметь несколько клавиш по умолчанию. Перечислите несколько элементов `<btn>` как соседние:
 
 ```xml
 <input name="UAExpansionConfirm">
@@ -242,23 +242,23 @@ An action can have multiple default keys. List multiple `<btn>` elements as sibl
 </input>
 ```
 
-Both `Enter` and `Numpad Enter` will trigger `UAExpansionConfirm`. This is useful for actions where multiple physical keys should map to the same logical action.
+И `Enter`, и `Numpad Enter` будут вызывать `UAExpansionConfirm`. Это полезно для действий, где несколько физических клавиш должны соответствовать одному логическому действию.
 
 ---
 
-## Accessing Inputs in Script
+## Доступ к привязкам из скрипта
 
-### Getting the Input API
+### Получение API ввода
 
-All input access goes through `GetUApi()`, which returns the global User Action API:
+Весь доступ к вводу идёт через `GetUApi()`, который возвращает глобальный API пользовательских действий:
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyModOpenMenu");
 ```
 
-### Polling in OnUpdate
+### Опрос в OnUpdate
 
-Custom inputs are typically polled in `MissionGameplay.OnUpdate()` or similar per-frame callbacks:
+Пользовательские привязки обычно опрашиваются в `MissionGameplay.OnUpdate()` или аналогичных покадровых обратных вызовах:
 
 ```c
 modded class MissionGameplay
@@ -271,16 +271,16 @@ modded class MissionGameplay
 
         if (input.LocalPress())
         {
-            // Key was just pressed this frame
+            // Клавиша была нажата в этом кадре
             OpenMyModMenu();
         }
     }
 }
 ```
 
-### Alternative: Using the Input Name Directly
+### Альтернатива: использование имени привязки напрямую
 
-Many mods check inputs inline using the `UAInputAPI` methods with string names:
+Многие моды проверяют ввод инлайн, используя методы `UAInputAPI` со строковыми именами:
 
 ```c
 override void OnUpdate(float timeslice)
@@ -296,26 +296,26 @@ override void OnUpdate(float timeslice)
 }
 ```
 
-The `false` parameter in `LocalPress("name", false)` indicates that the check should not consume the input event.
+Параметр `false` в `LocalPress("name", false)` указывает, что проверка не должна поглощать событие ввода.
 
 ---
 
-## Input Methods Reference
+## Справочник по методам ввода
 
-Once you have a `UAInput` reference (from `GetUApi().GetInputByName()`), or are using the `Input` class directly, these methods detect different input states:
+Получив ссылку на `UAInput` (через `GetUApi().GetInputByName()`) или используя класс `Input` напрямую, эти методы определяют различные состояния ввода:
 
-| Method | Returns | When True |
+| Метод | Возвращает | Когда true |
 |--------|---------|-----------|
-| `LocalPress()` | `bool` | The key was pressed **this frame** (single trigger on key-down) |
-| `LocalRelease()` | `bool` | The key was released **this frame** (single trigger on key-up) |
-| `LocalClick()` | `bool` | The key was pressed and released quickly (tap) |
-| `LocalHold()` | `bool` | The key has been held down for a threshold duration |
-| `LocalDoubleClick()` | `bool` | The key was tapped twice quickly |
-| `LocalValue()` | `float` | Current analog value (0.0 or 1.0 for digital keys; variable for analog axes) |
+| `LocalPress()` | `bool` | Клавиша была нажата **в этом кадре** (однократное срабатывание при нажатии) |
+| `LocalRelease()` | `bool` | Клавиша была отпущена **в этом кадре** (однократное срабатывание при отпускании) |
+| `LocalClick()` | `bool` | Клавиша была нажата и быстро отпущена (тап) |
+| `LocalHold()` | `bool` | Клавиша удерживается в течение пороговой длительности |
+| `LocalDoubleClick()` | `bool` | Клавиша была нажата дважды быстро |
+| `LocalValue()` | `float` | Текущее аналоговое значение (0.0 или 1.0 для цифровых клавиш; переменное для аналоговых осей) |
 
-### Usage Patterns
+### Паттерны использования
 
-**Toggle on press:**
+**Переключение по нажатию:**
 ```c
 if (input.LocalPress("UAMyModToggle", false))
 {
@@ -323,7 +323,7 @@ if (input.LocalPress("UAMyModToggle", false))
 }
 ```
 
-**Hold to activate, release to deactivate:**
+**Удержание для активации, отпускание для деактивации:**
 ```c
 if (input.LocalPress("eAICommandMenu", false))
 {
@@ -336,7 +336,7 @@ if (input.LocalRelease("eAICommandMenu", false) || input.LocalValue("eAICommandM
 }
 ```
 
-**Double-tap action:**
+**Действие по двойному нажатию:**
 ```c
 if (input.LocalDoubleClick("UAMyModSpecial", false))
 {
@@ -344,7 +344,7 @@ if (input.LocalDoubleClick("UAMyModSpecial", false))
 }
 ```
 
-**Hold for extended action:**
+**Удержание для длительного действия:**
 ```c
 if (input.LocalHold("UAExpansionGPSToggle"))
 {
@@ -354,23 +354,23 @@ if (input.LocalHold("UAExpansionGPSToggle"))
 
 ---
 
-## Suppressing and Disabling Inputs
+## Подавление и отключение ввода
 
 ### ForceDisable
 
-Temporarily disables a specific input. Commonly used when opening menus to prevent game actions from firing while a UI is active:
+Временно отключает конкретную привязку. Обычно используется при открытии меню для предотвращения срабатывания игровых действий, пока активен UI:
 
 ```c
-// Disable the input while menu is open
+// Отключить ввод, пока меню открыто
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(true);
 
-// Re-enable when menu closes
+// Включить обратно при закрытии меню
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(false);
 ```
 
 ### SupressNextFrame
 
-Suppresses all input processing for the next frame. Used during input context transitions (e.g., closing menus) to prevent one-frame input bleed:
+Подавляет всю обработку ввода на следующий кадр. Используется при переходах контекста ввода (например, закрытие меню) для предотвращения однокадрового «пробоя» ввода:
 
 ```c
 GetUApi().SupressNextFrame(true);
@@ -378,78 +378,77 @@ GetUApi().SupressNextFrame(true);
 
 ### UpdateControls
 
-After modifying input states, call `UpdateControls()` to apply changes immediately:
+После изменения состояний ввода вызовите `UpdateControls()`, чтобы применить изменения немедленно:
 
 ```c
 GetUApi().GetInputByName("UAExpansionBookToggle").ForceDisable(false);
 GetUApi().UpdateControls();
 ```
 
-### Input Excludes
+### Исключения ввода
 
-The vanilla mission system provides exclude groups. When a menu is active, you can exclude categories of inputs:
+Стандартная система миссий предоставляет группы исключений. Когда меню активно, вы можете исключить категории ввода:
 
 ```c
-// Suppress gameplay inputs while inventory is open
+// Подавить игровой ввод, пока инвентарь открыт
 AddActiveInputExcludes({"inventory"});
 
-// Restore when closing
+// Восстановить при закрытии
 RemoveActiveInputExcludes({"inventory"});
 ```
 
 ---
 
-## Key Names Reference
+## Справочник имён клавиш
 
-Key names used in the `<btn name="">` attribute follow a specific naming convention. Here is the complete reference.
+Имена клавиш, используемые в атрибуте `<btn name="">`, следуют определённому соглашению об именовании. Ниже приведён полный справочник.
 
-### Keyboard Keys
+### Клавиши клавиатуры
 
-| Category | Key Names |
+| Категория | Имена клавиш |
 |----------|-----------|
-| Letters | `kA`, `kB`, `kC`, `kD`, `kE`, `kF`, `kG`, `kH`, `kI`, `kJ`, `kK`, `kL`, `kM`, `kN`, `kO`, `kP`, `kQ`, `kR`, `kS`, `kT`, `kU`, `kV`, `kW`, `kX`, `kY`, `kZ` |
-| Numbers (top row) | `k0`, `k1`, `k2`, `k3`, `k4`, `k5`, `k6`, `k7`, `k8`, `k9` |
-| Function keys | `kF1`, `kF2`, `kF3`, `kF4`, `kF5`, `kF6`, `kF7`, `kF8`, `kF9`, `kF10`, `kF11`, `kF12` |
-| Modifiers | `kLControl`, `kRControl`, `kLShift`, `kRShift`, `kLAlt`, `kRAlt` |
-| Navigation | `kUp`, `kDown`, `kLeft`, `kRight`, `kHome`, `kEnd`, `kPageUp`, `kPageDown` |
-| Editing | `kReturn`, `kBackspace`, `kDelete`, `kInsert`, `kSpace`, `kTab`, `kEscape` |
-| Numpad | `kNumpad0` ... `kNumpad9`, `kNumpadEnter`, `kNumpadPlus`, `kNumpadMinus`, `kNumpadMultiply`, `kNumpadDivide`, `kNumpadDecimal` |
-| Punctuation | `kMinus`, `kEquals`, `kLBracket`, `kRBracket`, `kBackslash`, `kSemicolon`, `kApostrophe`, `kComma`, `kPeriod`, `kSlash`, `kGrave` |
-| Locks | `kCapsLock`, `kNumLock`, `kScrollLock` |
+| Буквы | `kA`, `kB`, `kC`, `kD`, `kE`, `kF`, `kG`, `kH`, `kI`, `kJ`, `kK`, `kL`, `kM`, `kN`, `kO`, `kP`, `kQ`, `kR`, `kS`, `kT`, `kU`, `kV`, `kW`, `kX`, `kY`, `kZ` |
+| Цифры (верхний ряд) | `k0`, `k1`, `k2`, `k3`, `k4`, `k5`, `k6`, `k7`, `k8`, `k9` |
+| Функциональные клавиши | `kF1`, `kF2`, `kF3`, `kF4`, `kF5`, `kF6`, `kF7`, `kF8`, `kF9`, `kF10`, `kF11`, `kF12` |
+| Модификаторы | `kLControl`, `kRControl`, `kLShift`, `kRShift`, `kLAlt`, `kRAlt` |
+| Навигация | `kUp`, `kDown`, `kLeft`, `kRight`, `kHome`, `kEnd`, `kPageUp`, `kPageDown` |
+| Редактирование | `kReturn`, `kBackspace`, `kDelete`, `kInsert`, `kSpace`, `kTab`, `kEscape` |
+| Цифровая клавиатура | `kNumpad0` ... `kNumpad9`, `kNumpadEnter`, `kNumpadPlus`, `kNumpadMinus`, `kNumpadMultiply`, `kNumpadDivide`, `kNumpadDecimal` |
+| Пунктуация | `kMinus`, `kEquals`, `kLBracket`, `kRBracket`, `kBackslash`, `kSemicolon`, `kApostrophe`, `kComma`, `kPeriod`, `kSlash`, `kGrave` |
+| Блокировки | `kCapsLock`, `kNumLock`, `kScrollLock` |
 
-### Mouse Buttons
+### Кнопки мыши
 
-| Name | Button |
+| Имя | Кнопка |
 |------|--------|
-| `mBLeft` | Left mouse button |
-| `mBRight` | Right mouse button |
-| `mBMiddle` | Middle mouse button (scroll wheel click) |
-| `mBExtra1` | Mouse button 4 (side button back) |
-| `mBExtra2` | Mouse button 5 (side button forward) |
+| `mBLeft` | Левая кнопка мыши |
+| `mBRight` | Правая кнопка мыши |
+| `mBMiddle` | Средняя кнопка мыши (нажатие колеса прокрутки) |
+| `mBExtra1` | Кнопка мыши 4 (боковая кнопка назад) |
+| `mBExtra2` | Кнопка мыши 5 (боковая кнопка вперёд) |
 
-### Mouse Axes
+### Оси мыши
 
-| Name | Axis |
+| Имя | Ось |
 |------|------|
-| `mAxisX` | Mouse horizontal movement |
-| `mAxisY` | Mouse vertical movement |
-| `mWheelUp` | Scroll wheel up |
-| `mWheelDown` | Scroll wheel down |
+| `mAxisX` | Горизонтальное перемещение мыши |
+| `mAxisY` | Вертикальное перемещение мыши |
+| `mWheelUp` | Прокрутка колеса вверх |
+| `mWheelDown` | Прокрутка колеса вниз |
 
-### Naming Pattern
+### Паттерн именования
 
-- **Keyboard**: `k` prefix + key name (e.g., `kT`, `kF5`, `kLControl`)
-- **Mouse buttons**: `mB` prefix + button name (e.g., `mBLeft`, `mBRight`)
-- **Mouse axes**: `m` prefix + axis name (e.g., `mAxisX`, `mWheelUp`)
+- **Клавиатура**: префикс `k` + имя клавиши (например, `kT`, `kF5`, `kLControl`)
+- **Кнопки мыши**: префикс `mB` + имя кнопки (например, `mBLeft`, `mBRight`)
+- **Оси мыши**: префикс `m` + имя оси (например, `mAxisX`, `mWheelUp`)
 
 ---
 
 ## Реальные примеры
 
-
 ### DayZ Expansion AI
 
-A well-structured inputs.xml with visible keybindings, hidden debug inputs, and modifier combos:
+Хорошо структурированный inputs.xml с видимыми назначениями клавиш, скрытыми отладочными привязками и комбинациями с модификаторами:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -503,14 +502,14 @@ A well-structured inputs.xml with visible keybindings, hidden debug inputs, and 
 </modded_inputs>
 ```
 
-Key observations:
-- `eAICommandMenu` bound to `T` --- visible in settings, player can rebind
-- `eAISetWaypoint` uses a **Ctrl + Left Click** modifier combo
-- Test inputs are `visible="false"` --- hidden from players but accessible in code
+Ключевые наблюдения:
+- `eAICommandMenu` привязан к `T` --- виден в настройках, игрок может переназначить
+- `eAISetWaypoint` использует комбинацию **Ctrl + Левый клик** с модификатором
+- Тестовые привязки имеют `visible="false"` --- скрыты от игроков, но доступны в коде
 
 ### DayZ Expansion Market
 
-A minimal inputs.xml for a hidden utility input with multiple default keys:
+Минимальный inputs.xml для скрытой служебной привязки с несколькими клавишами по умолчанию:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -529,14 +528,14 @@ A minimal inputs.xml for a hidden utility input with multiple default keys:
 </modded_inputs>
 ```
 
-Key observations:
-- Hidden input (`visible="false"`) with empty `loc` --- never shown in settings
-- Two default keys: both Enter and Numpad Enter trigger the same action
-- No `<sorting>` block ---- нетt needed since the input is hidden
+Ключевые наблюдения:
+- Скрытая привязка (`visible="false"`) с пустым `loc` --- никогда не показывается в настройках
+- Две клавиши по умолчанию: и Enter, и Numpad Enter вызывают одно и то же действие
+- Блок `<sorting>` отсутствует --- не нужен, поскольку привязка скрыта
 
-### Complete Starter Template
+### Полный начальный шаблон
 
-A minimal but complete template for a new mod:
+Минимальный, но полный шаблон для нового мода:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -556,12 +555,12 @@ A minimal but complete template for a new mod:
         <input name="UAMyModOpenMenu">
             <btn name="kF6"/>
         </input>
-        <!-- UAMyModQuickAction has no default key; player must bind it -->
+        <!-- UAMyModQuickAction не имеет клавиши по умолчанию; игрок должен назначить -->
     </preset>
 </modded_inputs>
 ```
 
-With a corresponding stringtable.csv:
+С соответствующим stringtable.csv:
 
 ```csv
 "Language","original","english"
@@ -574,36 +573,78 @@ With a corresponding stringtable.csv:
 
 ## Распространённые ошибки
 
-
-### Using `#` in the loc Attribute
+### Использование `#` в атрибуте loc
 
 ```xml
-<!-- WRONG -->
+<!-- НЕПРАВИЛЬНО -->
 <input name="UAMyAction" loc="#STR_MYMOD_ACTION" />
 
-<!-- CORRECT -->
+<!-- ПРАВИЛЬНО -->
 <input name="UAMyAction" loc="STR_MYMOD_ACTION" />
 ```
 
-The input system prepends `#` internally. Adding it yourself causes a double-prefix and the lookup fails.
+Система ввода автоматически добавляет `#` перед значением. Если вы добавите его сами, произойдёт двойной префикс, и поиск не найдёт строку.
 
-### Action Name Collisions
+### Коллизии имён действий
 
-If two mods define `UAOpenMenu`, only one will work. Always use your mod prefix:
+Если два мода определят `UAOpenMenu`, работать будет только один. Всегда используйте префикс вашего мода:
 
 ```xml
-<input name="UAMyModOpenMenu" />     <!-- Good -->
-<input name="UAOpenMenu" />          <!-- Risky -->
+<input name="UAMyModOpenMenu" />     <!-- Хорошо -->
+<input name="UAOpenMenu" />          <!-- Рискованно -->
 ```
 
-### Missing Sorting Entry
+### Пропущенная запись в Sorting
 
-If you define an action in `<actions>` but forget to list it in `<sorting>`, the action works in code but is invisible in the Controls menu. The player has no way to rebind it.
+Если вы определите действие в `<actions>`, но забудете перечислить его в `<sorting>`, действие будет работать в коде, но будет невидимо в меню Управление. У игрока не будет возможности переназначить его.
 
-### Forgetting to Define in Actions
+### Забыли определить в Actions
 
-If you list an input in `<sorting>` or `<preset>` but never define it in `<actions>`, the engine silently ignores it.
+Если вы укажете привязку в `<sorting>` или `<preset>`, но никогда не определите её в `<actions>`, движок молча проигнорирует её.
 
-### Binding Conflicting Keys
+### Конфликтующие клавиши
 
-Choosing keys that conflict with vanilla bindings (like `W`, `A`, `S`, `D`, `Tab`, `I`) causes both your action and the vanilla action to fire simultaneously. Use less common keys (F5-F12, numpad keys) or modifier combos for safety.
+Выбор клавиш, конфликтующих со стандартными привязками (например, `W`, `A`, `S`, `D`, `Tab`, `I`), приводит к одновременному срабатыванию и вашего действия, и стандартного. Используйте менее распространённые клавиши (F5-F12, клавиши цифровой клавиатуры) или комбинации с модификаторами для безопасности.
+
+---
+
+## Лучшие практики
+
+- Всегда добавляйте к именам действий префикс `UA` + название вашего мода (например, `UAMyModOpenMenu`). Общие имена вроде `UAOpenMenu` будут конфликтовать с другими модами.
+- Указывайте атрибут `loc` для каждой видимой привязки и определяйте соответствующий ключ stringtable. Без этого в меню Управление отобразится сырое имя действия.
+- Выбирайте нераспространённые клавиши по умолчанию (F5-F12, цифровая клавиатура) или комбинации с модификаторами (Ctrl+клавиша), чтобы минимизировать конфликты со стандартными и популярными модовыми назначениями.
+- Всегда перечисляйте видимые привязки в блоке `<sorting>`. Привязка, определённая в `<actions>`, но отсутствующая в `<sorting>`, невидима для игрока и не может быть переназначена.
+- Кэшируйте ссылку `UAInput` из `GetUApi().GetInputByName()` в переменной-члене вместо того, чтобы вызывать её каждый кадр в `OnUpdate`. Поиск по строке имеет накладные расходы.
+
+---
+
+## Теория vs Практика
+
+> Что говорит документация и как на самом деле работает в рантайме.
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| `visible="false"` скрывает из меню Управление | Привязка зарегистрирована, но невидима | Скрытые привязки всё равно появляются в списке блока `<sorting>` в некоторых версиях DayZ. Отсутствие в `<sorting>` --- надёжный способ скрыть привязки |
+| `LocalPress()` срабатывает один раз при нажатии | Однократное срабатывание в кадре нажатия клавиши | Если игра «подтормаживает» (низкий FPS), `LocalPress()` может быть полностью пропущен. Для критических действий также проверяйте `LocalValue() > 0` как запасной вариант |
+| Комбинации с модификаторами через вложенные `<btn>` | Внешний --- модификатор, внутренний --- триггер | Клавиша-модификатор сама по себе также регистрируется как нажатие на свою собственную привязку (например, `kLControl` --- это ещё и стандартное приседание). Игрок, удерживающий Ctrl+Клик, также присядет |
+| `ForceDisable(true)` подавляет ввод | Ввод полностью игнорируется | `ForceDisable` сохраняется до явного повторного включения. Если ваш мод вылетит или UI закроется без вызова `ForceDisable(false)`, ввод останется отключённым до перезапуска игры |
+| Несколько соседних `<btn>` | Обе клавиши вызывают одно действие | Работает корректно, но меню Управление отображает только первую клавишу. Игрок может видеть и переназначить первую клавишу, но может не знать о существовании второй по умолчанию |
+
+---
+
+## Совместимость и влияние
+
+- **Мульти-мод:** Коллизии имён действий --- основной риск. Если два мода определят `UAOpenMenu`, работать будет только один, и конфликт произойдёт молча. Движок не выдаёт предупреждений о дублировании имён действий между модами.
+- **Производительность:** Опрос ввода через `GetUApi().GetInputByName()` включает поиск по хешу строки. Опрос 5-10 привязок за кадр ничтожен, но кэширование ссылки `UAInput` всё же рекомендуется для модов с большим количеством привязок.
+- **Версия:** Формат `inputs.xml` и структура `<modded_inputs>` стабильны с DayZ 1.0. Атрибут `visible` был добавлен позже (примерно в 1.08) --- в более ранних версиях все привязки всегда видны в меню Управление.
+
+---
+
+## Наблюдения из реальных модов
+
+| Паттерн | Мод | Подробности |
+|---------|-----|--------|
+| Комбинация с модификатором `Ctrl+Click` | Expansion AI | `eAISetWaypoint` использует вложенные `<btn name="kLControl"><btn name="mBLeft"/>` для Ctrl+Левый клик при размещении путевых точек AI |
+| Скрытые служебные привязки | Expansion Market | `UAExpansionConfirm` имеет `visible="false"` с двумя клавишами (Enter + Numpad Enter) для внутренней логики подтверждения |
+| `ForceDisable` при открытии меню | COT, VPP | Админ-панели вызывают `ForceDisable(true)` на игровых привязках при открытии панели и `ForceDisable(false)` при закрытии, чтобы предотвратить движение персонажа при наборе текста |
+| Кэширование `UAInput` в переменной-члене | DabsFramework | Сохраняет результат `GetUApi().GetInputByName()` в поле класса при инициализации, опрашивает кэшированную ссылку в `OnUpdate`, чтобы избежать покадрового поиска по строке |

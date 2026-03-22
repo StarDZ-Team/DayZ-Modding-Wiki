@@ -1,39 +1,39 @@
-# Chapter 7.6: Event-Driven Architecture
+# 7.6. fejezet: Eseményvezérelt architektúra
 
-[Home](../../README.md) | [<< Previous: Permission Systems](05-permissions.md) | **Event-Driven Architecture** | [Next: Performance Optimization >>](07-performance.md)
-
----
-
-## Bevezetes
-
-Event-driven architecture decouples the producer of an event from its consumers. When a player connects, the connection handler does not need to know about the killfeed, the admin panel, the mission system, or the logging module --- it fires a "player connected" event, and each interested system subscribes independently. This is the foundation of extensible mod design: new features subscribe to existing events without modifying the code that fires them.
-
-DayZ provides `ScriptInvoker` as its built-in event primitive. On top of it, professional mods build event buses with named topics, typed handlers, and lifecycle management. This chapter covers all three major patterns and the critical discipline of memory-leak prevention.
+[Kezdőlap](../../README.md) | [<< Előző: Jogosultsági rendszerek](05-permissions.md) | **Eseményvezérelt architektúra** | [Következő: Teljesítményoptimalizálás >>](07-performance.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [ScriptInvoker Pattern](#scriptinvoker-pattern)
-- [EventBus Pattern (String-Routed Topics)](#eventbus-pattern-string-routed-topics)
-- [CF_EventHandler Pattern](#cf_eventhandler-pattern)
-- [When to Use Esemenyek vs Direct Calls](#when-to-use-events-vs-direct-calls)
-- [Memory Leak Prevention](#memory-leak-prevention)
-- [Advanced: Custom Event Data](#advanced-custom-event-data)
-- [Best Practices](#best-practices)
+Az eseményvezérelt architektúra szétválasztja az esemény kibocsátóját annak fogyasztóitól. Amikor egy játékos csatlakozik, a kapcsolatkezelőnek nem kell tudnia a killfeedről, az admin panelről, a küldetésrendszerről vagy a naplózó modulról --- egyszerűen elindít egy "játékos csatlakozott" eseményt, és minden érdekelt rendszer önállóan feliratkozik rá. Ez a bővíthető mod tervezés alapja: az új funkciók a meglévő eseményekre iratkoznak fel anélkül, hogy módosítanák az azokat kiváltó kódot.
+
+A DayZ a `ScriptInvoker`-t biztosítja beépített esemény primitívként. Erre építve a professzionális modok eseménybuszokat építenek nevesített témákkal, típusos kezelőkkel és életciklus-kezeléssel. Ez a fejezet mindhárom fő mintát és a memóriaszivárgás-megelőzés kritikus fegyelmét tárgyalja.
 
 ---
 
-## ScriptInvoker Pattern
+## Tartalomjegyzék
 
-`ScriptInvoker` is the engine's built-in pub/sub primitive. It holds a list of function callbacks and invokes all of them when an event fires. This is the lowest-level event mechanism in DayZ.
+- [ScriptInvoker minta](#scriptinvoker-minta)
+- [EventBus minta (szöveg-alapú útválasztás)](#eventbus-minta-szöveg-alapú-útválasztás)
+- [CF_EventHandler minta](#cf_eventhandler-minta)
+- [Mikor használjunk eseményeket vs közvetlen hívásokat](#mikor-használjunk-eseményeket-vs-közvetlen-hívásokat)
+- [Memóriaszivárgás megelőzése](#memóriaszivárgás-megelőzése)
+- [Haladó: Egyéni eseményadatok](#haladó-egyéni-eseményadatok)
+- [Bevált gyakorlatok](#bevált-gyakorlatok)
 
-### Creating an Event
+---
+
+## ScriptInvoker minta
+
+A `ScriptInvoker` a motor beépített pub/sub primitívje. Callback függvények listáját tartja, és mindegyiket meghívja, amikor egy esemény bekövetkezik. Ez a legalacsonyabb szintű esemény mechanizmus a DayZ-ben.
+
+### Esemény létrehozása
 
 ```c
 class WeatherManager
 {
-    // The event. Anyone can subscribe to be notified when weather changes.
+    // Az esemény. Bárki feliratkozhat, hogy értesüljön az időjárás változásáról.
     ref ScriptInvoker OnWeatherChanged = new ScriptInvoker();
 
     protected string m_CurrentWeather;
@@ -42,32 +42,32 @@ class WeatherManager
     {
         m_CurrentWeather = newWeather;
 
-        // Fire the event — all subscribers are notified
+        // Esemény kiváltása — minden feliratkozó értesül
         OnWeatherChanged.Invoke(newWeather);
     }
 };
 ```
 
-### Subscribing to an Event
+### Feliratkozás eseményre
 
 ```c
 class WeatherUI
 {
     void Init(WeatherManager mgr)
     {
-        // Subscribe: when weather changes, call our handler
+        // Feliratkozás: időjárás változáskor hívja meg a kezelőnket
         mgr.OnWeatherChanged.Insert(OnWeatherChanged);
     }
 
     void OnWeatherChanged(string newWeather)
     {
-        // Update the UI
+        // UI frissítése
         m_WeatherLabel.SetText("Weather: " + newWeather);
     }
 
     void Cleanup(WeatherManager mgr)
     {
-        // CRITICAL: Unsubscribe when done
+        // KRITIKUS: Leiratkozás befejezéskor
         mgr.OnWeatherChanged.Remove(OnWeatherChanged);
     }
 };
@@ -75,50 +75,73 @@ class WeatherUI
 
 ### ScriptInvoker API
 
-| Metodus | Leiras |
+| Metódus | Leírás |
 |--------|-------------|
-| `Insert(func)` | Add a callback to the subscriber list |
-| `Remove(func)` | Remove a specific callback |
-| `Invoke(...)` | Call all subscribed callbacks with the given arguments |
-| `Clear()` | Remove all subscribers |
+| `Insert(func)` | Callback hozzáadása a feliratkozók listájához |
+| `Remove(func)` | Adott callback eltávolítása |
+| `Invoke(...)` | Az összes feliratkozott callback meghívása a megadott argumentumokkal |
+| `Clear()` | Összes feliratkozó eltávolítása |
 
-### How Insert/Remove Work
+### Eseményvezérelt minta
 
-`Insert` adds a function reference to an internal list. `Remove` searches the list and removes the matching entry. If you call `Insert` twice with the same function, it will be called twice on every `Invoke`. If you call `Remove` once, it removes one entry.
+```mermaid
+graph TB
+    PUB["Kibocsátó<br/>(pl. ConfigManager)"]
 
-```c
-// Subscribing the same handler twice is a bug:
-mgr.OnWeatherChanged.Insert(OnWeatherChanged);
-mgr.OnWeatherChanged.Insert(OnWeatherChanged);  // Now called 2x per Invoke
+    PUB -->|"Invoke()"| INV["ScriptInvoker<br/>OnConfigChanged"]
 
-// One Remove only removes one entry:
-mgr.OnWeatherChanged.Remove(OnWeatherChanged);
-// Still called 1x per Invoke — the second Insert is still there
+    INV -->|"callback"| SUB1["Feliratkozó A<br/>AdminPanel.OnConfigChanged()"]
+    INV -->|"callback"| SUB2["Feliratkozó B<br/>HUD.OnConfigChanged()"]
+    INV -->|"callback"| SUB3["Feliratkozó C<br/>Logger.OnConfigChanged()"]
+
+    SUB1 -.->|"Insert()"| INV
+    SUB2 -.->|"Insert()"| INV
+    SUB3 -.->|"Insert()"| INV
+
+    style PUB fill:#D94A4A,color:#fff
+    style INV fill:#FFD700,color:#000
+    style SUB1 fill:#4A90D9,color:#fff
+    style SUB2 fill:#4A90D9,color:#fff
+    style SUB3 fill:#4A90D9,color:#fff
 ```
 
-### Typed Signatures
+### Az Insert/Remove működése
 
-`ScriptInvoker` does not enforce parameter types at compile time. The convention is to document the expected signature in a comment:
+Az `Insert` egy függvényreferenciát ad hozzá egy belső listához. A `Remove` végigkeresi a listát és eltávolítja az egyező bejegyzést. Ha kétszer hívod meg az `Insert`-et ugyanazzal a függvénnyel, az minden `Invoke`-kor kétszer lesz meghívva. Ha egyszer hívod a `Remove`-t, az csak egy bejegyzést távolít el.
 
 ```c
-// Signature: void(string weatherName, float temperature)
+// Ugyanaz a kezelő kétszeri feliratkozása hiba:
+mgr.OnWeatherChanged.Insert(OnWeatherChanged);
+mgr.OnWeatherChanged.Insert(OnWeatherChanged);  // Most 2x hívódik Invoke-onként
+
+// Egy Remove csak egy bejegyzést távolít el:
+mgr.OnWeatherChanged.Remove(OnWeatherChanged);
+// Továbbra is 1x hívódik Invoke-onként — a második Insert még ott van
+```
+
+### Típusos szignatúrák
+
+A `ScriptInvoker` nem kényszeríti ki a paramétertípusokat fordítási időben. A konvenció az, hogy a várt szignatúrát megjegyzésben dokumentáljuk:
+
+```c
+// Szignatúra: void(string weatherName, float temperature)
 ref ScriptInvoker OnWeatherChanged = new ScriptInvoker();
 ```
 
-If a subscriber has the wrong signature, the behavior is undefined at runtime --- it may crash, receive garbage values, or silently do nothing. Always match the documented signature exactly.
+Ha egy feliratkozónak rossz a szignatúrája, a viselkedés futásidőben definiálatlan --- összeomlhat, szemétértékeket kaphat, vagy csendben nem csinál semmit. Mindig pontosan egyeztesd a dokumentált szignatúrával.
 
-### ScriptInvoker on Vanilla Classes
+### ScriptInvoker vanilla osztályokon
 
-Many vanilla DayZ classes expose `ScriptInvoker` events:
+Számos vanilla DayZ osztály rendelkezik `ScriptInvoker` eseményekkel:
 
 ```c
-// UIScriptedMenu has OnVisibilityChanged
+// UIScriptedMenu rendelkezik OnVisibilityChanged eseménnyel
 class UIScriptedMenu
 {
     ref ScriptInvoker m_OnVisibilityChanged;
 };
 
-// MissionBase has event hooks
+// MissionBase rendelkezik esemény hook-okkal
 class MissionBase
 {
     void OnUpdate(float timeslice);
@@ -126,22 +149,22 @@ class MissionBase
 };
 ```
 
-You can subscribe to these vanilla events from modded classes to react to engine-level state changes.
+Feliratkozhatsz ezekre a vanilla eseményekre modolt osztályokból, hogy reagálj a motor szintű állapotváltozásokra.
 
 ---
 
-## EventBus Pattern (String-Routed Topics)
+## EventBus minta (szöveg-alapú útválasztás)
 
-A `ScriptInvoker` is a single event channel. An EventBus is a collection of named channels, providing a central hub where any module can publish or subscribe to events by topic name.
+A `ScriptInvoker` egyetlen eseménycsatorna. Az EventBus nevesített csatornák gyűjteménye, amely központi elosztóként szolgál, ahol bármely modul közzétehet vagy feliratkozhat eseményekre témanév alapján.
 
-### MyMod EventBus
+### Egyéni EventBus minta
 
-MyMod implements the EventBus as a static class with named `ScriptInvoker` fields for well-known events, plus a generic `OnCustomEvent` channel for ad-hoc topics:
+Ez a minta az EventBus-t statikus osztályként valósítja meg, nevesített `ScriptInvoker` mezőkkel a jól ismert eseményekhez, plusz egy általános `OnCustomEvent` csatornával ad-hoc témákhoz:
 
 ```c
 class MyEventBus
 {
-    // Well-known lifecycle events
+    // Jól ismert életciklus-események
     static ref ScriptInvoker OnPlayerConnected;      // void(PlayerIdentity)
     static ref ScriptInvoker OnPlayerDisconnected;    // void(PlayerIdentity)
     static ref ScriptInvoker OnPlayerReady;           // void(PlayerBase, PlayerIdentity)
@@ -151,13 +174,13 @@ class MyEventBus
     static ref ScriptInvoker OnMissionCompleted;      // void(MyInstance, int reason)
     static ref ScriptInvoker OnAdminDataSynced;       // void()
 
-    // Generic custom event channel
+    // Általános egyéni eseménycsatorna
     static ref ScriptInvoker OnCustomEvent;           // void(string eventName, Param params)
 
-    static void Init() { ... }   // Creates all invokers
-    static void Cleanup() { ... } // Nulls all invokers
+    static void Init() { ... }   // Összes invoker létrehozása
+    static void Cleanup() { ... } // Összes invoker nullázása
 
-    // Helper to fire a custom event
+    // Segédfüggvény egyéni esemény kiváltásához
     static void Fire(string eventName, Param params)
     {
         if (!OnCustomEvent) Init();
@@ -166,7 +189,7 @@ class MyEventBus
 };
 ```
 
-### Subscribing to the EventBus
+### Feliratkozás az EventBus-ra
 
 ```c
 class MyMissionModule : MyServerModule
@@ -175,17 +198,17 @@ class MyMissionModule : MyServerModule
     {
         super.OnInit();
 
-        // Subscribe to player lifecycle
+        // Feliratkozás játékos életciklusra
         MyEventBus.OnPlayerConnected.Insert(OnPlayerJoined);
         MyEventBus.OnPlayerDisconnected.Insert(OnPlayerLeft);
 
-        // Subscribe to config changes
+        // Feliratkozás konfigurációváltozásokra
         MyEventBus.OnConfigChanged.Insert(OnConfigChanged);
     }
 
     override void OnMissionFinish()
     {
-        // Always unsubscribe on shutdown
+        // Mindig iratkozz le leálláskor
         MyEventBus.OnPlayerConnected.Remove(OnPlayerJoined);
         MyEventBus.OnPlayerDisconnected.Remove(OnPlayerLeft);
         MyEventBus.OnConfigChanged.Remove(OnConfigChanged);
@@ -203,24 +226,24 @@ class MyMissionModule : MyServerModule
 
     void OnConfigChanged(string modId, string field, string value)
     {
-        if (modId == "MyMissions")
+        if (modId == "MyMod_Missions")
         {
-            // Reload our config
+            // Konfiguráció újratöltése
             ReloadSettings();
         }
     }
 };
 ```
 
-### Using Custom Esemenyek
+### Egyéni események használata
 
-For one-off or mod-specific events that do not warrant a dedicated `ScriptInvoker` field:
+Egyszeri vagy mod-specifikus eseményekhez, amelyek nem indokolnak dedikált `ScriptInvoker` mezőt:
 
 ```c
-// Publisher (e.g., in the loot system):
+// Kibocsátó (pl. a loot rendszerben):
 MyEventBus.Fire("LootRespawned", new Param1<int>(spawnedCount));
 
-// Subscriber (e.g., in a logging module):
+// Feliratkozó (pl. egy naplózó modulban):
 MyEventBus.OnCustomEvent.Insert(OnCustomEvent);
 
 void OnCustomEvent(string eventName, Param params)
@@ -236,28 +259,28 @@ void OnCustomEvent(string eventName, Param params)
 }
 ```
 
-### Mikor hasznaljuk Named Fields vs Custom Esemenyek
+### Mikor használjunk nevesített mezőket vs egyéni eseményeket
 
-| Approach | Use When |
+| Megközelítés | Mikor használd |
 |----------|----------|
-| Named `ScriptInvoker` field | The event is well-known, frequently used, and has a stable signature |
-| `OnCustomEvent` + string name | The event is mod-specific, experimental, or used by a single subscriber |
+| Nevesített `ScriptInvoker` mező | Az esemény jól ismert, gyakran használt, és stabil szignatúrával rendelkezik |
+| `OnCustomEvent` + szöveg név | Az esemény mod-specifikus, kísérleti, vagy egyetlen feliratkozó használja |
 
-Named fields are type-safe by convention and discoverable by reading the class. Custom events are flexible but require string matching and casting.
+A nevesített mezők konvenció szerint típusbiztonságosak és az osztály olvasásával felfedezhetők. Az egyéni események rugalmasak, de szöveges egyeztetést és kasztolást igényelnek.
 
 ---
 
-## CF_EventHandler Pattern
+## CF_EventHandler minta
 
-Community Framework provides `CF_EventHandler` as a more structured event system with type-safe event args.
+A Community Framework a `CF_EventHandler`-t biztosítja strukturáltabb eseményrendszerként, típusos eseményargumentumokkal.
 
-### Concept
+### Koncepció
 
 ```c
-// CF event handler pattern (simplified):
+// CF eseménykezelő minta (egyszerűsítve):
 class CF_EventArgs
 {
-    // Base class for all event arguments
+    // Minden eseményargumentum alaposztálya
 };
 
 class CF_EventPlayerArgs : CF_EventArgs
@@ -266,86 +289,86 @@ class CF_EventPlayerArgs : CF_EventArgs
     PlayerBase Player;
 };
 
-// Modules override event handler methods:
+// A modulok felülírják az eseménykezelő metódusokat:
 class MyModule : CF_ModuleWorld
 {
     override void OnEvent(Class sender, CF_EventArgs args)
     {
-        // Handle generic events
+        // Általános események kezelése
     }
 
     override void OnClientReady(Class sender, CF_EventArgs args)
     {
-        // Client is ready, UI can be created
+        // A kliens kész, az UI létrehozható
     }
 };
 ```
 
-### Key Differences from ScriptInvoker
+### Főbb különbségek a ScriptInvoker-hez képest
 
-| Funkcio | ScriptInvoker | CF_EventHandler |
+| Jellemző | ScriptInvoker | CF_EventHandler |
 |---------|--------------|-----------------|
-| **Type safety** | Convention only | Typed EventArgs classes |
-| **Discovery** | Read comments | Override named methods |
-| **Subscription** | `Insert()` / `Remove()` | Override virtual methods |
-| **Custom data** | Param wrappers | Custom EventArgs subclasses |
-| **Cleanup** | Manual `Remove()` | Automatic (method override, no registration) |
+| **Típusbiztonság** | Csak konvenció | Típusos EventArgs osztályok |
+| **Felfedezhetőség** | Megjegyzések olvasása | Nevesített metódusok felülírása |
+| **Feliratkozás** | `Insert()` / `Remove()` | Virtuális metódusok felülírása |
+| **Egyéni adatok** | Param burkolók | Egyéni EventArgs alosztályok |
+| **Takarítás** | Kézi `Remove()` | Automatikus (metódus felülírás, nincs regisztráció) |
 
-CF's approach eliminates the need to manually subscribe and unsubscribe --- you simply override the handler method. This removes an entire class of bugs (forgotten `Remove()` calls) at the cost of requiring CF as a dependency.
+A CF megközelítése kiküszöböli a kézi feliratkozás és leiratkozás szükségességét --- egyszerűen felülírod a kezelő metódust. Ez eltávolít egy teljes hibaosztályt (elfelejtett `Remove()` hívások), de CF függőséget igényel.
 
 ---
 
-## Mikor hasznaljuk Esemenyek vs Direct Calls
+## Mikor használjunk eseményeket vs közvetlen hívásokat
 
-### Use Esemenyek When:
+### Használj eseményeket, amikor:
 
-1. **Multiple independent consumers** need to react to the same occurrence. Player connects? The killfeed, the admin panel, the mission system, and the logger all care.
+1. **Több független fogyasztónak** kell reagálnia ugyanarra a történésre. Játékos csatlakozik? A killfeed, az admin panel, a küldetésrendszer és a naplózó mind érintettek.
 
-2. **The producer should not know about the consumers.** The connection handler should not import the killfeed module.
+2. **A kibocsátónak nem kell tudnia a fogyasztókról.** A kapcsolatkezelőnek nem kell importálnia a killfeed modult.
 
-3. **The set of consumers changes at runtime.** Modules can subscribe and unsubscribe dynamically.
+3. **A fogyasztók köre futásidőben változik.** A modulok dinamikusan iratkozhatnak fel és le.
 
-4. **Cross-mod communication.** Mod A fires an event; Mod B subscribes to it. Neither imports the other.
+4. **Mod-közi kommunikáció.** Az A mod egy eseményt vált ki; a B mod feliratkozik rá. Egyik sem importálja a másikat.
 
-### Use Direct Calls When:
+### Használj közvetlen hívásokat, amikor:
 
-1. **There is exactly one consumer** and it is known at compile time. If only the health system cares about a damage calculation, call it directly.
+1. **Pontosan egy fogyasztó van** és az fordítási időben ismert. Ha csak az életerő-rendszert érdekli egy sebzésszámítás, hívd meg közvetlenül.
 
-2. **Return values are needed.** Esemenyek are fire-and-forget. If you need a response ("should this action be allowed?"), use a direct method call.
+2. **Visszatérési értékre van szükség.** Az események "tüzelj és felejtsd el" típusúak. Ha választ kell kapnod ("engedélyezett ez a művelet?"), használj közvetlen metódushívást.
 
-3. **Order matters.** Event subscribers are called in insertion order, but depending on this order is fragile. If step B must happen after step A, call A then B explicitly.
+3. **A sorrend számít.** Az esemény-feliratkozók beszúrási sorrendben hívódnak meg, de erre a sorrendre támaszkodni törékeny. Ha a B lépésnek az A lépés után kell történnie, hívd meg A-t majd B-t explicit módon.
 
-4. **Teljesitmeny is critical.** Esemenyek have overhead (iterating the subscriber list, calling via reflection). For per-frame, per-entity logic, direct calls are faster.
+4. **A teljesítmény kritikus.** Az eseményeknek van többletköltsége (a feliratkozói lista bejárása, reflekción keresztüli hívás). Képkockánkénti, entitásonkénti logikához a közvetlen hívások gyorsabbak.
 
-### Decision Guide
+### Döntési útmutató
 
 ```
-                    Does the producer need a return value?
+                    A kibocsátónak szüksége van visszatérési értékre?
                          /                    \
-                       YES                     NO
+                       IGEN                    NEM
                         |                       |
-                   Direct call          How many consumers?
+                   Közvetlen hívás      Hány fogyasztó van?
                                        /              \
-                                     ONE            MULTIPLE
+                                     EGY            TÖBB
                                       |                |
-                                 Direct call        EVENT
+                                 Közvetlen hívás    ESEMÉNY
 ```
 
 ---
 
-## Memory Leak Prevention
+## Memóriaszivárgás megelőzése
 
-The single most dangerous aspect of event-driven architecture in Enforce Script is **subscriber leaks**. If an object subscribes to an event and is then destroyed without unsubscribing, one of two things happens:
+Az eseményvezérelt architektúra legveszélyesebb aspektusa az Enforce Scriptben a **feliratkozói szivárgás**. Ha egy objektum feliratkozik egy eseményre, majd megsemmisül leiratkozás nélkül, kétféle dolog történhet:
 
-1. **If the object extends `Managed`:** The weak reference in the invoker is automatically nulled. The invoker will call a null function --- which does nothing, but wastes cycles iterating dead entries.
+1. **Ha az objektum `Managed`-ből származik:** Az invokerben lévő gyenge referencia automatikusan nullázódik. Az invoker egy null függvényt hív meg --- ami nem csinál semmit, de ciklusokat pazarol a halott bejegyzések bejárásával.
 
-2. **If the object does NOT extend `Managed`:** The invoker holds a dangling function pointer. When the event fires, it calls into freed memory. **Crash.**
+2. **Ha az objektum NEM származik `Managed`-ből:** Az invoker egy lógó függvénymutatót tart. Amikor az esemény bekövetkezik, felszabadított memóriába hív. **Összeomlás.**
 
-### The Golden Rule
+### Az aranyszabály
 
-**Every `Insert()` must have a matching `Remove()`.** No exceptions.
+**Minden `Insert()`-nek kell legyen egy megfelelő `Remove()`.** Kivétel nélkül.
 
-### Pattern: Subscribe in OnInit, Unsubscribe in OnMissionFinish
+### Minta: Feliratkozás az OnInit-ben, leiratkozás az OnMissionFinish-ben
 
 ```c
 class MyModule : MyServerModule
@@ -359,16 +382,16 @@ class MyModule : MyServerModule
     override void OnMissionFinish()
     {
         MyEventBus.OnPlayerConnected.Remove(HandlePlayerConnect);
-        // Then call super or do other cleanup
+        // Majd hívd meg a super-t vagy végezd el a többi takarítást
     }
 
     void HandlePlayerConnect(PlayerIdentity identity) { ... }
 };
 ```
 
-### Pattern: Subscribe in Constructor, Unsubscribe in Destructor
+### Minta: Feliratkozás a konstruktorban, leiratkozás a destruktorban
 
-For objects with a clear ownership lifecycle:
+Egyértelmű tulajdonosi életciklussal rendelkező objektumokhoz:
 
 ```c
 class PlayerTracker : Managed
@@ -392,11 +415,11 @@ class PlayerTracker : Managed
 };
 ```
 
-**Note the null checks in the destructor.** During shutdown, `MyEventBus.Cleanup()` may have already run, setting all invokers to `null`. Calling `Remove()` on a `null` invoker crashes.
+**Figyelj a null ellenőrzésekre a destruktorban.** Leállás során a `MyEventBus.Cleanup()` már lefuthatott, és az összes invokert `null`-ra állította. A `Remove()` hívása `null` invokeren összeomlást okoz.
 
-### Pattern: EventBus Cleanup Nulls Everything
+### Minta: EventBus takarítás mindent nulláz
 
-MyMod's `MyEventBus.Cleanup()` sets all invokers to `null`, which drops all subscriber references at once. This is the nuclear option --- it guarantees no stale subscribers survive across mission restarts:
+A `MyEventBus.Cleanup()` metódus minden invokert `null`-ra állít, ami egyszerre eldobja az összes feliratkozói referenciát. Ez a nukleáris opció --- garantálja, hogy egyetlen elavult feliratkozó sem éli túl a küldetés-újraindítást:
 
 ```c
 static void Cleanup()
@@ -404,41 +427,41 @@ static void Cleanup()
     OnPlayerConnected    = null;
     OnPlayerDisconnected = null;
     OnConfigChanged      = null;
-    // ... all other invokers
+    // ... összes többi invoker
     s_Initialized = false;
 }
 ```
 
-This is called from `MyFramework.ShutdownAll()` during `OnMissionFinish`. Modules should still `Remove()` their own subscriptions for correctness, but the EventBus cleanup acts as a safety net.
+Ezt a `MyFramework.ShutdownAll()` hívja meg az `OnMissionFinish` során. A moduloknak ettől függetlenül el kell `Remove()`-olniuk a saját feliratkozásaikat a helyesség kedvéért, de az EventBus takarítás biztonsági hálóként működik.
 
-### Anti-Pattern: Anonymous Functions
+### Anti-minta: Anonim függvények
 
 ```c
-// BAD: You cannot Remove an anonymous function
+// ROSSZ: Nem tudsz Remove-olni egy anonim függvényt
 MyEventBus.OnPlayerConnected.Insert(function(PlayerIdentity id) {
     Print("Connected: " + id.GetName());
 });
-// How do you Remove this? You cannot reference it.
+// Hogyan Remove-olod ezt? Nem tudsz rá hivatkozni.
 ```
 
-Always use named methods so you can unsubscribe later.
+Mindig nevesített metódusokat használj, hogy később le tudj iratkozni.
 
 ---
 
-## Advanced: Custom Event Data
+## Haladó: Egyéni eseményadatok
 
-For events that carry complex payloads, use `Param` wrappers:
+Összetett adattartalmú eseményekhez használj `Param` burkolókat:
 
-### Param Classes
+### Param osztályok
 
-DayZ provides `Param1<T>` through `Param4<T1, T2, T3, T4>` for wrapping typed data:
+A DayZ `Param1<T>`-től `Param4<T1, T2, T3, T4>`-ig biztosít típusos adatburkolásra:
 
 ```c
-// Firing with structured data:
+// Kiváltás strukturált adattal:
 Param2<string, int> data = new Param2<string, int>("AK74", 5);
 MyEventBus.Fire("ItemSpawned", data);
 
-// Receiving:
+// Fogadás:
 void OnCustomEvent(string eventName, Param params)
 {
     if (eventName == "ItemSpawned")
@@ -453,9 +476,9 @@ void OnCustomEvent(string eventName, Param params)
 }
 ```
 
-### Custom Event Data Class
+### Egyéni eseményadat osztály
 
-For events with many fields, create a dedicated data class:
+Sok mezővel rendelkező eseményekhez hozz létre dedikált adatosztályt:
 
 ```c
 class KillEventData : Managed
@@ -468,7 +491,7 @@ class KillEventData : Managed
     vector VictimPos;
 };
 
-// Fire:
+// Kiváltás:
 KillEventData killData = new KillEventData();
 killData.KillerName = killer.GetIdentity().GetName();
 killData.VictimName = victim.GetIdentity().GetName();
@@ -479,32 +502,54 @@ OnKillEvent.Invoke(killData);
 
 ---
 
-## Bevalt gyakorlatok
+## Bevált gyakorlatok
 
-1. **Every `Insert()` must have a matching `Remove()`.** Audit your code: search for every `Insert` call and verify it has a corresponding `Remove` in the cleanup path.
+1. **Minden `Insert()`-nek kell legyen egy megfelelő `Remove()`.** Auditáld a kódodat: keress rá minden `Insert` hívásra és ellenőrizd, hogy van hozzá megfelelő `Remove` a takarítási útvonalon.
 
-2. **Null-check the invoker before `Remove()` in destructors.** During shutdown, the EventBus may have already been cleaned up.
+2. **Null-ellenőrizd az invokert a `Remove()` előtt a destruktorokban.** Leállás során az EventBus már takarítva lehet.
 
-3. **Document event signatures.** Above every `ScriptInvoker` declaration, write a comment with the expected callback signature:
+3. **Dokumentáld az esemény-szignatúrákat.** Minden `ScriptInvoker` deklaráció fölé írj megjegyzést a várt callback szignatúrával:
    ```c
-   // Signature: void(PlayerBase player, float damage, string source)
+   // Szignatúra: void(PlayerBase player, float damage, string source)
    static ref ScriptInvoker OnPlayerDamaged;
    ```
 
-4. **Do not rely on subscriber execution order.** If order matters, use direct calls instead.
+4. **Ne támaszkodj a feliratkozók végrehajtási sorrendjére.** Ha a sorrend számít, használj közvetlen hívásokat helyette.
 
-5. **Keep event handlers fast.** If a handler needs to do expensive work, schedule it for the next tick rather than blocking all other subscribers.
+5. **Tartsd gyorsnak az eseménykezelőket.** Ha egy kezelőnek költséges munkát kell végeznie, ütemezd a következő tick-re ahelyett, hogy blokkolnád az összes többi feliratkozót.
 
-6. **Use named events for stable APIs, custom events for experiments.** Named `ScriptInvoker` fields are discoverable and documented. String-routed custom events are flexible but harder to find.
+6. **Használj nevesített eseményeket stabil API-khoz, egyéni eseményeket kísérletekhez.** A nevesített `ScriptInvoker` mezők felfedezhetők és dokumentáltak. A szöveg-alapú egyéni események rugalmasak, de nehezebben megtalálhatók.
 
-7. **Initialize the EventBus early.** Esemenyek can fire before `OnMissionStart()`. Call `Init()` during `OnInit()` or use the lazy pattern (check for `null` before `Insert`).
+7. **Inicializáld az EventBus-t korán.** Az események az `OnMissionStart()` előtt is bekövetkezhetnek. Hívd meg az `Init()`-et az `OnInit()` során, vagy használd a lusta mintát (ellenőrizd a `null`-t az `Insert` előtt).
 
-8. **Clean up the EventBus on mission finish.** Null all invokers to prevent stale references across mission restarts.
+8. **Takarítsd ki az EventBus-t a küldetés befejezésekor.** Nullázz minden invokert az elavult referenciák megelőzéséhez a küldetés-újraindítások között.
 
-9. **Never use anonymous functions as event subscribers.** You cannot unsubscribe them.
+9. **Soha ne használj anonim függvényeket eseményfeliratkozóként.** Nem tudsz leiratkozni róluk.
 
-10. **Prefer events over polling.** Instead of checking "has the config changed?" every frame, subscribe to `OnConfigChanged` and react only when it fires.
+10. **Részesítsd előnyben az eseményeket a lekérdezéssel szemben.** Ahelyett, hogy minden képkockán ellenőriznéd, hogy "megváltozott-e a konfiguráció?", iratkozz fel az `OnConfigChanged`-re és csak akkor reagálj, amikor bekövetkezik.
 
 ---
 
-[<< Elozo: Permission Systems](05-permissions.md) | [Kezdolap](../../README.md) | [Kovetkezo: Teljesitmeny Optimization >>](07-performance.md)
+## Kompatibilitás és hatás
+
+- **Multi-Mod:** Több mod is feliratkozhat ugyanazokra az EventBus témákra ütközés nélkül. Minden feliratkozó függetlenül hívódik. Ha azonban egy feliratkozó helyrehozhatatlan hibát dob (pl. null referencia), az adott invokeren lévő későbbi feliratkozók nem feltétlenül hajtódnak végre.
+- **Betöltési sorrend:** A feliratkozási sorrend egyenlő a hívási sorrenddel az `Invoke()` során. A korábban betöltődő modok elsőként regisztrálnak és elsőként kapják meg az eseményeket. Ne függj ettől a sorrendtől --- ha a végrehajtási sorrend számít, használj közvetlen hívásokat helyette.
+- **Listen szerver:** Listen szervereken a szerver oldali kódból kiváltott események láthatók a kliens oldali feliratkozók számára, ha ugyanazt a statikus `ScriptInvoker`-t osztják meg. Használj külön EventBus mezőket a csak szerveres és csak klienses eseményekhez, vagy védd a kezelőket `GetGame().IsServer()` / `GetGame().IsClient()` ellenőrzéssel.
+- **Teljesítmény:** A `ScriptInvoker.Invoke()` lineárisan bejárja az összes feliratkozót. 5--15 feliratkozóval eseményenként ez elhanyagolható. Kerüld az entitásonkénti feliratkozást (100+ entitás, mindegyik ugyanarra az eseményre iratkozik fel) --- használj menedzser mintát helyette.
+- **Migráció:** A `ScriptInvoker` stabil vanilla API, amely valószínűleg nem változik a DayZ verziók között. Az egyéni EventBus burkolók a te saját kódod, és a mododdal együtt migrálnak.
+
+---
+
+## Gyakori hibák
+
+| Hiba | Hatás | Javítás |
+|---------|--------|-----|
+| `Insert()`-tel való feliratkozás, de a `Remove()` soha nem hívódik meg | Memóriaszivárgás: az invoker referenciát tart a halott objektumra; `Invoke()`-kor felszabadított memóriába hív (összeomlás) vagy semmit nem csinál felesleges iterációval | Párosíts minden `Insert()`-et egy `Remove()`-val az `OnMissionFinish`-ben vagy a destruktorban |
+| `Remove()` hívása null EventBus invokeren leállás közben | A `MyEventBus.Cleanup()` már nullázhatta az invokert; a `.Remove()` hívása null-on összeomlást okoz | Mindig ellenőrizd null-ra az invokert a `Remove()` előtt: `if (MyEventBus.OnPlayerConnected) MyEventBus.OnPlayerConnected.Remove(handler);` |
+| Ugyanaz a kezelő dupla `Insert()`-je | A kezelő kétszer hívódik `Invoke()`-onként; egy `Remove()` csak egy bejegyzést távolít el, elavult feliratkozást hagyva | Ellenőrizd beszúrás előtt, vagy biztosítsd, hogy az `Insert()` csak egyszer hívódik (pl. `OnInit`-ben őrfeltétellel) |
+| Anonim/lambda függvények használata kezelőként | Nem távolíthatók el, mert nincs referencia a `Remove()`-nak átadásához | Mindig nevesített metódusokat használj eseménykezelőkként |
+| Események eltérő argumentum-szignatúrával való kiváltása | A feliratkozók szemétadatokat kapnak vagy futásidőben összeomlanak; nincs fordítási idejű ellenőrzés | Dokumentáld a várt szignatúrát minden `ScriptInvoker` deklaráció fölött és pontosan egyeztesd az összes kezelőben |
+
+---
+
+[Kezdőlap](../../README.md) | [<< Előző: Jogosultsági rendszerek](05-permissions.md) | **Eseményvezérelt architektúra** | [Következő: Teljesítményoptimalizálás >>](07-performance.md)
