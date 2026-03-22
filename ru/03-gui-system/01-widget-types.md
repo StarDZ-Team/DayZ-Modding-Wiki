@@ -1,372 +1,376 @@
-# Chapter 3.1: Widget Types
+# Глава 3.1: Типы виджетов
 
-[Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
-
----
+[Главная](../../README.md) | **Типы виджетов** | [Далее: Файлы Layout >>](02-layout-files.md)
 
 ---
 
-## How Widgets Work
+Система GUI в DayZ построена на виджетах — переиспользуемых UI-компонентах, начиная от простых контейнеров и заканчивая сложными интерактивными элементами управления. Каждый видимый элемент на экране — это виджет, и знание полного каталога необходимо для создания UI модов.
 
-Every widget in DayZ inherits from the `Widget` base class. Widgets are organized in a parent-child tree, where the root is typically a `WorkspaceWidget` obtained via `GetGame().GetWorkspace()`.
+Эта глава содержит полный справочник по всем типам виджетов, доступным в Enforce Script.
 
-Each widget type has three associated identifiers:
+---
 
-| Identifier | Example | Used For |
+## Как работают виджеты
+
+Каждый виджет в DayZ наследует от базового класса `Widget`. Виджеты организованы в дерево «родитель-потомок», где корнем обычно является `WorkspaceWidget`, получаемый через `GetGame().GetWorkspace()`.
+
+У каждого типа виджета есть три связанных идентификатора:
+
+| Идентификатор | Пример | Используется для |
 |---|---|---|
-| **Script class** | `TextWidget` | Code references, casting |
-| **Layout class** | `TextWidgetClass` | `.layout` file declarations |
-| **TypeID constant** | `TextWidgetTypeID` | Programmatic creation with `CreateWidget()` |
+| **Класс скрипта** | `TextWidget` | Ссылки в коде, приведение типов |
+| **Класс layout** | `TextWidgetClass` | Объявления в файлах `.layout` |
+| **Константа TypeID** | `TextWidgetTypeID` | Программное создание через `CreateWidget()` |
 
-In `.layout` files you always use the layout class name (ending in `Class`). In scripts you work with the script class name.
+В файлах `.layout` всегда используется имя класса layout (заканчивающееся на `Class`). В скриптах вы работаете с именем класса скрипта.
 
 ---
 
-## Container / Layout Widgets
+## Виджеты-контейнеры / Компоновка
 
-Container widgets hold and organize child widgets. They do not display content themselves (except `PanelWidget`, which draws a colored rectangle).
+Виджеты-контейнеры содержат и организуют дочерние виджеты. Они сами не отображают контент (за исключением `PanelWidget`, который рисует цветной прямоугольник).
 
-| Script Class | Layout Class | Purpose |
+| Класс скрипта | Класс Layout | Назначение |
 |---|---|---|
-| `Widget` | `WidgetClass` | Abstract base class for all widgets. Never instantiate directly. |
-| `WorkspaceWidget` | `WorkspaceWidgetClass` | Root workspace. Obtained via `GetGame().GetWorkspace()`. Used to create widgets programmatically. |
-| `FrameWidget` | `FrameWidgetClass` | General-purpose container. The most commonly used widget in DayZ. |
-| `PanelWidget` | `PanelWidgetClass` | Solid colored rectangle. Use for backgrounds, dividers, separators. |
-| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Flow layout. Arranges children sequentially with wrapping, padding, and margins. |
-| `GridSpacerWidget` | `GridSpacerWidgetClass` | Grid layout. Arranges children in a grid defined by `Columns` and `Rows`. |
-| `ScrollWidget` | `ScrollWidgetClass` | Scrollable viewport. Enables vertical/horizontal scrolling of child content. |
-| `SpacerBaseWidget` | -- | Abstract base class for `WrapSpacerWidget` and `GridSpacerWidget`. |
+| `Widget` | `WidgetClass` | Абстрактный базовый класс для всех виджетов. Никогда не создавайте экземпляр напрямую. |
+| `WorkspaceWidget` | `WorkspaceWidgetClass` | Корневое рабочее пространство. Получается через `GetGame().GetWorkspace()`. Используется для программного создания виджетов. |
+| `FrameWidget` | `FrameWidgetClass` | Универсальный контейнер. Самый часто используемый виджет в DayZ. |
+| `PanelWidget` | `PanelWidgetClass` | Цветной прямоугольник. Используйте для фонов, разделителей, разграничителей. |
+| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Поточная компоновка. Располагает дочерние элементы последовательно с переносом, отступами и полями. |
+| `GridSpacerWidget` | `GridSpacerWidgetClass` | Сеточная компоновка. Располагает дочерние элементы в сетке, определяемой `Columns` и `Rows`. |
+| `ScrollWidget` | `ScrollWidgetClass` | Прокручиваемая область. Включает вертикальную/горизонтальную прокрутку дочернего контента. |
+| `SpacerBaseWidget` | -- | Абстрактный базовый класс для `WrapSpacerWidget` и `GridSpacerWidget`. |
 
 ### FrameWidget
 
-The workhorse of DayZ UI. Use `FrameWidget` as your default container when you need to group widgets together. It has no visual appearance --- он is purely structural.
+Рабочая лошадка UI DayZ. Используйте `FrameWidget` как контейнер по умолчанию, когда нужно сгруппировать виджеты. Он не имеет визуального представления — он чисто структурный.
 
-**Key methods:**
-- All base `Widget` methods (position, size, color, children, flags)
+**Ключевые методы:**
+- Все базовые методы `Widget` (позиция, размер, цвет, дочерние элементы, флаги)
 
-**When to use:** Almost everywhere. Wrap groups of related widgets. Use as the root of dialogs, panels, and HUD elements.
+**Когда использовать:** Практически везде. Оборачивайте группы связанных виджетов. Используйте как корень диалогов, панелей и элементов HUD.
 
 ```c
-// Find a frame widget by name
+// Найти frame-виджет по имени
 FrameWidget panel = FrameWidget.Cast(root.FindAnyWidget("MyPanel"));
 panel.Show(true);
 ```
 
 ### PanelWidget
 
-A visible rectangle with a solid color. Unlike `FrameWidget`, a `PanelWidget` actually draws something on screen.
+Видимый прямоугольник с заливкой цветом. В отличие от `FrameWidget`, `PanelWidget` действительно отображает что-то на экране.
 
-**Key methods:**
-- `SetColor(int argb)` -- Set the background color
-- `SetAlpha(float alpha)` -- Set transparency
+**Ключевые методы:**
+- `SetColor(int argb)` — Установить цвет фона
+- `SetAlpha(float alpha)` — Установить прозрачность
 
-**When to use:** Backgrounds behind text, colored dividers, overlay rectangles, tint layers.
+**Когда использовать:** Фон за текстом, цветные разделители, прямоугольники наложения, тонирующие слои.
 
 ```c
 PanelWidget bg = PanelWidget.Cast(root.FindAnyWidget("Background"));
-bg.SetColor(ARGB(200, 0, 0, 0));  // Semi-transparent black
+bg.SetColor(ARGB(200, 0, 0, 0));  // Полупрозрачный чёрный
 ```
 
 ### WrapSpacerWidget
 
-Automatically arranges children in a flow layout. Children are placed one after another, wrapping to the next line when space runs out.
+Автоматически располагает дочерние элементы в поточной компоновке. Дочерние элементы размещаются один за другим с переносом на следующую строку, когда место заканчивается.
 
-**Key layout attributes:**
-- `Padding` -- Inner padding (pixels)
-- `Margin` -- Outer margin (pixels)
-- `"Size To Content H" 1` -- Resize width to fit children
-- `"Size To Content V" 1` -- Resize height to fit children
-- `content_halign` -- Horizontal alignment of content (`left`, `center`, `right`)
-- `content_valign` -- Vertical alignment of content (`top`, `center`, `bottom`)
+**Ключевые атрибуты компоновки:**
+- `Padding` — Внутренние отступы (пиксели)
+- `Margin` — Внешние отступы (пиксели)
+- `"Size To Content H" 1` — Изменить ширину под содержимое
+- `"Size To Content V" 1` — Изменить высоту под содержимое
+- `content_halign` — Горизонтальное выравнивание содержимого (`left`, `center`, `right`)
+- `content_valign` — Вертикальное выравнивание содержимого (`top`, `center`, `bottom`)
 
-**When to use:** Dynamic lists, tag clouds, button rows, any layout where children have varying sizes.
+**Когда использовать:** Динамические списки, облака тегов, ряды кнопок, любая компоновка с элементами разного размера.
 
 ### GridSpacerWidget
 
-Arranges children in a fixed grid. Each cell has equal size.
+Располагает дочерние элементы в фиксированной сетке. Каждая ячейка имеет одинаковый размер.
 
-**Key layout attributes:**
-- `Columns` -- Number of columns
-- `Rows` -- Number of rows
-- `Margin` -- Space between cells
-- `"Size To Content V" 1` -- Resize height to fit content
+**Ключевые атрибуты компоновки:**
+- `Columns` — Количество столбцов
+- `Rows` — Количество строк
+- `Margin` — Расстояние между ячейками
+- `"Size To Content V" 1` — Изменить высоту под содержимое
 
-**When to use:** Inventory grids, icon galleries, settings panels with uniform rows.
+**Когда использовать:** Сетки инвентаря, галереи иконок, панели настроек с однородными строками.
 
 ### ScrollWidget
 
-Provides a scrollable viewport for content that exceeds the visible area.
+Обеспечивает прокручиваемую область для контента, превышающего видимую область.
 
-**Key layout attributes:**
-- `"Scrollbar V" 1` -- Enable vertical scrollbar
-- `"Scrollbar H" 1` -- Enable horizontal scrollbar
+**Ключевые атрибуты компоновки:**
+- `"Scrollbar V" 1` — Включить вертикальную полосу прокрутки
+- `"Scrollbar H" 1` — Включить горизонтальную полосу прокрутки
 
-**Key methods:**
-- `VScrollToPos(float pos)` -- Scroll to a vertical position
-- `GetVScrollPos()` -- Get current vertical scroll position
-- `GetContentHeight()` -- Get total content height
-- `VScrollStep(int step)` -- Scroll by step amount
+**Ключевые методы:**
+- `VScrollToPos(float pos)` — Прокрутить до вертикальной позиции
+- `GetVScrollPos()` — Получить текущую позицию вертикальной прокрутки
+- `GetContentHeight()` — Получить полную высоту содержимого
+- `VScrollStep(int step)` — Прокрутить на величину шага
 
-**When to use:** Long lists, configuration panels, chat windows, log viewers.
+**Когда использовать:** Длинные списки, панели конфигурации, окна чата, просмотрщики логов.
 
 ---
 
-## Display Widgets
+## Виджеты отображения
 
-Display widgets show content to the user but are not interactive.
+Виджеты отображения показывают контент пользователю, но не являются интерактивными.
 
-| Script Class | Layout Class | Purpose |
+| Класс скрипта | Класс Layout | Назначение |
 |---|---|---|
-| `TextWidget` | `TextWidgetClass` | Single-line text display |
-| `MultilineTextWidget` | `MultilineTextWidgetClass` | Multi-line read-only text |
-| `RichTextWidget` | `RichTextWidgetClass` | Text with embedded images (`<image>` tags) |
-| `ImageWidget` | `ImageWidgetClass` | Image display (from imagesets or files) |
-| `CanvasWidget` | `CanvasWidgetClass` | Programmable drawing surface |
-| `VideoWidget` | `VideoWidgetClass` | Video file playback |
-| `RTTextureWidget` | `RTTextureWidgetClass` | Render-to-texture surface |
-| `RenderTargetWidget` | `RenderTargetWidgetClass` | 3D scene render target |
-| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D DayZ item preview |
-| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D player character preview |
-| `MapWidget` | `MapWidgetClass` | Interactive world map |
+| `TextWidget` | `TextWidgetClass` | Однострочное отображение текста |
+| `MultilineTextWidget` | `MultilineTextWidgetClass` | Многострочный текст только для чтения |
+| `RichTextWidget` | `RichTextWidgetClass` | Текст со встроенными изображениями (теги `<image>`) |
+| `ImageWidget` | `ImageWidgetClass` | Отображение изображений (из imageset-ов или файлов) |
+| `CanvasWidget` | `CanvasWidgetClass` | Программируемая поверхность рисования |
+| `VideoWidget` | `VideoWidgetClass` | Воспроизведение видеофайлов |
+| `RTTextureWidget` | `RTTextureWidgetClass` | Поверхность рендера в текстуру |
+| `RenderTargetWidget` | `RenderTargetWidgetClass` | Цель рендера 3D-сцены |
+| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D-превью предмета DayZ |
+| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D-превью модели персонажа |
+| `MapWidget` | `MapWidgetClass` | Интерактивная карта мира |
 
 ### TextWidget
 
-The most common display widget. Shows a single line of text.
+Самый распространённый виджет отображения. Показывает одну строку текста.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 TextWidget tw;
 tw.SetText("Hello World");
-tw.GetText();                           // Returns string
-tw.GetTextSize(out int w, out int h);   // Pixel dimensions of rendered text
-tw.SetTextExactSize(float size);        // Set font size in pixels
-tw.SetOutline(int size, int color);     // Add text outline
-tw.GetOutlineSize();                    // Returns int
-tw.GetOutlineColor();                   // Returns int (ARGB)
-tw.SetColor(int argb);                  // Text color
+tw.GetText();                           // Возвращает string
+tw.GetTextSize(out int w, out int h);   // Размеры отрисованного текста в пикселях
+tw.SetTextExactSize(float size);        // Установить размер шрифта в пикселях
+tw.SetOutline(int size, int color);     // Добавить обводку текста
+tw.GetOutlineSize();                    // Возвращает int
+tw.GetOutlineColor();                   // Возвращает int (ARGB)
+tw.SetColor(int argb);                  // Цвет текста
 ```
 
-**Key layout attributes:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
+**Ключевые атрибуты layout:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
 
 ### MultilineTextWidget
 
-Displays multiple lines of read-only text. Text wraps automatically based on widget width.
+Отображает несколько строк текста только для чтения. Текст автоматически переносится по ширине виджета.
 
-**When to use:** Description panels, help text, log displays.
+**Когда использовать:** Панели описания, текст справки, отображение логов.
 
 ### RichTextWidget
 
-Supports inline images embedded within text using `<image>` tags. Also supports text wrapping.
+Поддерживает встроенные изображения внутри текста с помощью тегов `<image>`. Также поддерживает перенос текста.
 
-**Key layout attributes:**
-- `wrap 1` -- Enable word wrapping
+**Ключевые атрибуты layout:**
+- `wrap 1` — Включить перенос слов
 
-**Usage in text:**
+**Использование в тексте:**
 ```
 "Health: <image set:dayz_gui image:iconHealth0 /> OK"
 ```
 
-**When to use:** Status text with icons, formatted messages, chat with inline images.
+**Когда использовать:** Текст со статусом и иконками, форматированные сообщения, чат со встроенными изображениями.
 
 ### ImageWidget
 
-Displays images from imageset sprite sheets or loaded from file paths.
+Отображает изображения из imageset-ов (атласов спрайтов) или загруженные из файлов.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 ImageWidget iw;
-iw.SetImage(int index);                    // Switch between image0, image1, etc.
-iw.LoadImageFile(int slot, string path);   // Load image from file
-iw.LoadMaskTexture(string path);           // Load a mask texture
-iw.SetMaskProgress(float progress);        // 0-1 for wipe/reveal transitions
+iw.SetImage(int index);                    // Переключение между image0, image1 и т.д.
+iw.LoadImageFile(int slot, string path);   // Загрузить изображение из файла
+iw.LoadMaskTexture(string path);           // Загрузить текстуру маски
+iw.SetMaskProgress(float progress);        // 0-1 для переходов стирания/раскрытия
 ```
 
-**Key layout attributes:**
-- `image0 "set:dayz_gui image:icon_refresh"` -- Image from an imageset
-- `mode blend` -- Blend mode (`blend`, `additive`, `stretch`)
-- `"src alpha" 1` -- Use source alpha channel
-- `stretch 1` -- Stretch image to fill widget
-- `"flip u" 1` -- Flip horizontally
-- `"flip v" 1` -- Flip vertically
+**Ключевые атрибуты layout:**
+- `image0 "set:dayz_gui image:icon_refresh"` — Изображение из imageset-а
+- `mode blend` — Режим смешивания (`blend`, `additive`, `stretch`)
+- `"src alpha" 1` — Использовать альфа-канал исходника
+- `stretch 1` — Растянуть изображение для заполнения виджета
+- `"flip u" 1` — Отразить горизонтально
+- `"flip v" 1` — Отразить вертикально
 
-**When to use:** Icons, logos, backgrounds, map markers, status indicators.
+**Когда использовать:** Иконки, логотипы, фоны, маркеры на карте, индикаторы состояния.
 
 ### CanvasWidget
 
-A drawing surface where you can render lines programmatically.
+Поверхность для рисования, где можно программно отрисовывать линии.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 CanvasWidget cw;
 cw.DrawLine(float x1, float y1, float x2, float y2, float width, int color);
 cw.Clear();
 ```
 
-**When to use:** Custom graphs, connection lines between nodes, debug overlays.
+**Когда использовать:** Пользовательские графики, линии связи между узлами, отладочные оверлеи.
 
 ### MapWidget
 
-The full interactive world map. Supports panning, zooming, and coordinate conversion.
+Полная интерактивная карта мира. Поддерживает панорамирование, масштабирование и преобразование координат.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 MapWidget mw;
-mw.SetMapPos(vector pos);              // Center on world position
-mw.GetMapPos();                        // Current center position
-mw.SetScale(float scale);             // Zoom level
-mw.GetScale();                        // Current zoom
-mw.MapToScreen(vector world_pos);     // World coords to screen coords
-mw.ScreenToMap(vector screen_pos);    // Screen coords to world coords
+mw.SetMapPos(vector pos);              // Центрировать на мировой позиции
+mw.GetMapPos();                        // Текущая центральная позиция
+mw.SetScale(float scale);             // Уровень масштабирования
+mw.GetScale();                        // Текущий масштаб
+mw.MapToScreen(vector world_pos);     // Мировые координаты в экранные
+mw.ScreenToMap(vector screen_pos);    // Экранные координаты в мировые
 ```
 
-**When to use:** Mission maps, GPS systems, location pickers.
+**Когда использовать:** Карты миссий, GPS-системы, выбор локаций.
 
 ### ItemPreviewWidget
 
-Renders a 3D preview of any DayZ inventory item.
+Отрисовывает 3D-превью любого предмета инвентаря DayZ.
 
-**When to use:** Inventory screens, loot previews, shop interfaces.
+**Когда использовать:** Экраны инвентаря, превью лута, интерфейсы магазинов.
 
 ### PlayerPreviewWidget
 
-Renders a 3D preview of the player character model.
+Отрисовывает 3D-превью модели персонажа игрока.
 
-**When to use:** Character creation screens, equipment preview, wardrobe systems.
+**Когда использовать:** Экраны создания персонажа, превью экипировки, системы гардероба.
 
 ### RTTextureWidget
 
-Renders its children to a texture surface rather than directly to the screen.
+Отрисовывает своих потомков в поверхность текстуры, а не напрямую на экран.
 
-**When to use:** Minimap rendering, picture-in-picture effects, offscreen UI composition.
+**Когда использовать:** Рендер мини-карты, эффекты «картинка в картинке», компоновка UI вне экрана.
 
 ---
 
-## Interactive Widgets
+## Интерактивные виджеты
 
-Interactive widgets respond to user input and fire events.
+Интерактивные виджеты реагируют на пользовательский ввод и генерируют события.
 
-| Script Class | Layout Class | Purpose |
+| Класс скрипта | Класс Layout | Назначение |
 |---|---|---|
-| `ButtonWidget` | `ButtonWidgetClass` | Clickable button |
-| `CheckBoxWidget` | `CheckBoxWidgetClass` | Boolean checkbox |
-| `EditBoxWidget` | `EditBoxWidgetClass` | Single-line text input |
-| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Multi-line text input |
-| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Masked password input |
-| `SliderWidget` | `SliderWidgetClass` | Horizontal slider control |
-| `XComboBoxWidget` | `XComboBoxWidgetClass` | Dropdown selection |
-| `TextListboxWidget` | `TextListboxWidgetClass` | Selectable row list |
-| `ProgressBarWidget` | `ProgressBarWidgetClass` | Progress indicator |
-| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Minimal progress indicator |
+| `ButtonWidget` | `ButtonWidgetClass` | Нажимаемая кнопка |
+| `CheckBoxWidget` | `CheckBoxWidgetClass` | Булевый флажок |
+| `EditBoxWidget` | `EditBoxWidgetClass` | Однострочный ввод текста |
+| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Многострочный ввод текста |
+| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Маскированный ввод пароля |
+| `SliderWidget` | `SliderWidgetClass` | Горизонтальный ползунок |
+| `XComboBoxWidget` | `XComboBoxWidgetClass` | Выпадающий список выбора |
+| `TextListboxWidget` | `TextListboxWidgetClass` | Список с выбираемыми строками |
+| `ProgressBarWidget` | `ProgressBarWidgetClass` | Индикатор прогресса |
+| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Минимальный индикатор прогресса |
 
 ### ButtonWidget
 
-The primary interactive control. Supports both momentary click and toggle modes.
+Основной интерактивный элемент управления. Поддерживает как мгновенное нажатие, так и режим переключения.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 ButtonWidget bw;
 bw.SetText("Click Me");
-bw.GetState();              // Returns bool (toggle buttons only)
-bw.SetState(bool state);    // Set toggle state
+bw.GetState();              // Возвращает bool (только для кнопок-переключателей)
+bw.SetState(bool state);    // Установить состояние переключения
 ```
 
-**Key layout attributes:**
-- `text "Label"` -- Button label text
-- `switch toggle` -- Make it a toggle button
-- `style Default` -- Visual style
+**Ключевые атрибуты layout:**
+- `text "Label"` — Текст метки кнопки
+- `switch toggle` — Сделать кнопку переключателем
+- `style Default` — Визуальный стиль
 
-**Events fired:** `OnClick(Widget w, int x, int y, int button)`
+**Генерируемые события:** `OnClick(Widget w, int x, int y, int button)`
 
 ### CheckBoxWidget
 
-A boolean toggle control.
+Булевый элемент управления переключением.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 CheckBoxWidget cb;
-cb.IsChecked();                 // Returns bool
-cb.SetChecked(bool checked);    // Set state
+cb.IsChecked();                 // Возвращает bool
+cb.SetChecked(bool checked);    // Установить состояние
 ```
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)`
+**Генерируемые события:** `OnChange(Widget w, int x, int y, bool finished)`
 
 ### EditBoxWidget
 
-A single-line text input field.
+Однострочное поле ввода текста.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 EditBoxWidget eb;
-eb.GetText();               // Returns string
-eb.SetText("default");      // Set text content
+eb.GetText();               // Возвращает string
+eb.SetText("default");      // Установить текст
 ```
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when Enter is pressed.
+**Генерируемые события:** `OnChange(Widget w, int x, int y, bool finished)` — `finished` равен `true`, когда нажат Enter.
 
 ### SliderWidget
 
-A horizontal slider for numeric values.
+Горизонтальный ползунок для числовых значений.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 SliderWidget sw;
-sw.GetCurrent();            // Returns float (0-1)
-sw.SetCurrent(float val);   // Set position
+sw.GetCurrent();            // Возвращает float (0-1)
+sw.SetCurrent(float val);   // Установить позицию
 ```
 
-**Key layout attributes:**
-- `"fill in" 1` -- Show filled track behind handle
-- `"listen to input" 1` -- Respond to mouse input
+**Ключевые атрибуты layout:**
+- `"fill in" 1` — Показать заполненную дорожку за ручкой
+- `"listen to input" 1` — Реагировать на ввод мышью
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when the user releases the slider.
+**Генерируемые события:** `OnChange(Widget w, int x, int y, bool finished)` — `finished` равен `true`, когда пользователь отпускает ползунок.
 
 ### XComboBoxWidget
 
-A dropdown selection list.
+Выпадающий список выбора.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 XComboBoxWidget xcb;
 xcb.AddItem("Option A");
 xcb.AddItem("Option B");
-xcb.SetCurrentItem(0);         // Select by index
-xcb.GetCurrentItem();          // Returns selected index
-xcb.ClearAll();                // Remove all items
+xcb.SetCurrentItem(0);         // Выбрать по индексу
+xcb.GetCurrentItem();          // Возвращает выбранный индекс
+xcb.ClearAll();                // Удалить все элементы
 ```
 
 ### TextListboxWidget
 
-A scrollable list of text rows. Supports selection and multi-column data.
+Прокручиваемый список текстовых строк. Поддерживает выбор и многоколоночные данные.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 TextListboxWidget tlb;
-tlb.AddItem("Row text", null, 0);   // text, userData, column
-tlb.GetSelectedRow();               // Returns int (-1 if none)
-tlb.SetRow(int row);                // Select a row
+tlb.AddItem("Row text", null, 0);   // текст, userData, столбец
+tlb.GetSelectedRow();               // Возвращает int (-1 если ничего не выбрано)
+tlb.SetRow(int row);                // Выбрать строку
 tlb.RemoveRow(int row);
 tlb.ClearItems();
 ```
 
-**Events fired:** `OnItemSelected`
+**Генерируемые события:** `OnItemSelected`
 
 ### ProgressBarWidget
 
-Displays a progress indicator.
+Отображает индикатор прогресса.
 
-**Key methods:**
+**Ключевые методы:**
 ```c
 ProgressBarWidget pb;
 pb.SetCurrent(float value);    // 0-100
 ```
 
-**When to use:** Loading bars, health bars, mission progress, cooldown indicators.
+**Когда использовать:** Полосы загрузки, полосы здоровья, прогресс миссии, индикаторы перезарядки.
 
 ---
 
-## Complete TypeID Reference
+## Полный справочник TypeID
 
-Use these constants with `GetGame().GetWorkspace().CreateWidget()` for programmatic widget creation:
+Используйте эти константы с `GetGame().GetWorkspace().CreateWidget()` для программного создания виджетов:
 
 ```
 FrameWidgetTypeID
@@ -394,37 +398,65 @@ ScrollWidgetTypeID
 
 ---
 
-## Choosing the Right Widget
+## Выбор правильного виджета
 
-| I need to... | Use this widget |
+| Мне нужно... | Используйте этот виджет |
 |---|---|
-| Group widgets together (invisible) | `FrameWidget` |
-| Draw a colored rectangle | `PanelWidget` |
-| Show text | `TextWidget` |
-| Show multi-line text | `MultilineTextWidget` or `RichTextWidget` with `wrap 1` |
-| Show text with inline icons | `RichTextWidget` |
-| Display an image/icon | `ImageWidget` |
-| Create a clickable button | `ButtonWidget` |
-| Create a toggle (on/off) | `CheckBoxWidget` or `ButtonWidget` with `switch toggle` |
-| Accept text input | `EditBoxWidget` |
-| Accept multi-line text input | `MultilineEditBoxWidget` |
-| Accept a password | `PasswordEditBoxWidget` |
-| Let user pick a number | `SliderWidget` |
-| Let user pick from a list | `XComboBoxWidget` (dropdown) or `TextListboxWidget` (visible list) |
-| Show progress | `ProgressBarWidget` or `SimpleProgressBarWidget` |
-| Arrange children in a flow | `WrapSpacerWidget` |
-| Arrange children in a grid | `GridSpacerWidget` |
-| Make content scrollable | `ScrollWidget` |
-| Show a 3D item model | `ItemPreviewWidget` |
-| Show the player model | `PlayerPreviewWidget` |
-| Show the world map | `MapWidget` |
-| Draw custom lines/shapes | `CanvasWidget` |
-| Render to a texture | `RTTextureWidget` |
+| Сгруппировать виджеты (невидимо) | `FrameWidget` |
+| Нарисовать цветной прямоугольник | `PanelWidget` |
+| Показать текст | `TextWidget` |
+| Показать многострочный текст | `MultilineTextWidget` или `RichTextWidget` с `wrap 1` |
+| Показать текст со встроенными иконками | `RichTextWidget` |
+| Отобразить изображение/иконку | `ImageWidget` |
+| Создать нажимаемую кнопку | `ButtonWidget` |
+| Создать переключатель (вкл/выкл) | `CheckBoxWidget` или `ButtonWidget` с `switch toggle` |
+| Принять текстовый ввод | `EditBoxWidget` |
+| Принять многострочный текстовый ввод | `MultilineEditBoxWidget` |
+| Принять пароль | `PasswordEditBoxWidget` |
+| Позволить пользователю выбрать число | `SliderWidget` |
+| Позволить пользователю выбрать из списка | `XComboBoxWidget` (выпадающий) или `TextListboxWidget` (видимый список) |
+| Показать прогресс | `ProgressBarWidget` или `SimpleProgressBarWidget` |
+| Расположить дочерние элементы потоком | `WrapSpacerWidget` |
+| Расположить дочерние элементы в сетке | `GridSpacerWidget` |
+| Сделать контент прокручиваемым | `ScrollWidget` |
+| Показать 3D-модель предмета | `ItemPreviewWidget` |
+| Показать модель игрока | `PlayerPreviewWidget` |
+| Показать карту мира | `MapWidget` |
+| Рисовать пользовательские линии/фигуры | `CanvasWidget` |
+| Рендерить в текстуру | `RTTextureWidget` |
 
 ---
 
 ## Следующие шаги
 
+- [3.2 Формат файлов Layout](02-layout-files.md) — Узнайте, как определять деревья виджетов в файлах `.layout`
+- [3.5 Программное создание виджетов](05-programmatic-widgets.md) — Создание виджетов из кода вместо файлов layout
 
-- [3.2 Layout File Format](02-layout-files.md) -- Learn how to define widget trees in `.layout` files
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code instead of layout files
+---
+
+## Лучшие практики
+
+- Используйте `FrameWidget` как контейнер по умолчанию. Используйте `PanelWidget` только когда нужен видимый цветной фон.
+- Предпочитайте `RichTextWidget` вместо `TextWidget`, если в будущем могут понадобиться встроенные иконки — смена типов в существующем layout утомительна.
+- Всегда проверяйте на null после `FindAnyWidget()` и `Cast()`. Отсутствующие имена виджетов тихо возвращают `null` и вызывают крэши при следующем вызове метода.
+- Используйте `WrapSpacerWidget` для динамических списков и `GridSpacerWidget` для фиксированных сеток. Не позиционируйте дочерние элементы вручную в поточной компоновке.
+- Избегайте `CanvasWidget` для продакшн UI — он перерисовывается каждый кадр и не имеет батчинга. Используйте его только для отладочных оверлеев.
+
+---
+
+## Теория и практика
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| `ScrollWidget` автоматически прокручивается к контенту | Полоса прокрутки появляется, когда контент превышает границы | Вы должны вызывать `VScrollToPos()` вручную для прокрутки к новому контенту; виджет не прокручивается автоматически при добавлении дочерних элементов |
+| `SliderWidget` генерирует непрерывные события | `OnChange` вызывается на каждый пиксель перетаскивания | Параметр `finished` равен `false` во время перетаскивания и `true` при отпускании; обновляйте тяжёлую логику только при `finished == true` |
+| `XComboBoxWidget` поддерживает много элементов | Выпадающий список работает с любым количеством | Производительность заметно падает при 100+ элементах; используйте `TextListboxWidget` для длинных списков |
+| `ItemPreviewWidget` показывает любой предмет | Передайте любое classname для 3D-превью | Виджету нужна загруженная `.p3d` модель предмета; для моддированных предметов должен присутствовать их Data PBO |
+| `MapWidget` — простое отображение | Просто показывает карту | Он перехватывает весь ввод мыши по умолчанию; вы должны аккуратно управлять флагами `IGNOREPOINTER`, иначе он блокирует клики по перекрывающимся виджетам |
+
+---
+
+## Совместимость и влияние
+
+- **Мультимод:** TypeID виджетов — это константы движка, общие для всех модов. Два мода, создающие виджеты с одинаковым именем под одним родителем, столкнутся. Используйте уникальные имена виджетов с префиксом вашего мода.
+- **Производительность:** `TextListboxWidget` и `ScrollWidget` с сотнями дочерних элементов вызывают просадки кадров. Используйте пулинг и переиспользование виджетов для списков, превышающих 50 элементов.

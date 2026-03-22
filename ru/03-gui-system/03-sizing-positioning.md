@@ -1,41 +1,45 @@
-# Chapter 3.3: Sizing & Positioning
+# Глава 3.3: Размеры и позиционирование
 
-[Home](../../README.md) | [<< Previous: Layout File Format](02-layout-files.md) | **Sizing & Positioning** | [Next: Container Widgets >>](04-containers.md)
+[Главная](../../README.md) | [<< Назад: Формат файлов Layout](02-layout-files.md) | **Размеры и позиционирование** | [Далее: Виджеты-контейнеры >>](04-containers.md)
 
 ---
 
-## The Core Concept: Proportional vs. Pixel
+Система компоновки DayZ использует **двойной режим координат** — каждая размерность может быть либо пропорциональной (относительно родителя), либо пиксельной (абсолютные экранные пиксели). Непонимание этой системы — причина номер один ошибок в компоновке. В этой главе она объясняется подробно.
 
-Every widget has a position (`x, y`) and a size (`width, height`). Each of these four values can independently be either:
+---
 
-- **Proportional** (0.0 to 1.0) -- relative to the parent widget's dimensions
-- **Pixel** (any positive number) --- bsolute screen pixels
+## Основная концепция: пропорциональный режим и пиксельный
 
-The mode for each axis is controlled by four flags:
+У каждого виджета есть позиция (`x, y`) и размер (`width, height`). Каждое из этих четырёх значений может независимо быть:
 
-| Flag | Controls | `0` = Proportional | `1` = Pixel |
+- **Пропорциональным** (от 0.0 до 1.0) — относительно размеров родительского виджета
+- **Пиксельным** (любое положительное число) — абсолютные экранные пиксели
+
+Режим для каждой оси управляется четырьмя флагами:
+
+| Флаг | Управляет | `0` = Пропорциональный | `1` = Пиксельный |
 |---|---|---|---|
-| `hexactpos` | X position | Fraction of parent width | Pixels from left |
-| `vexactpos` | Y position | Fraction of parent height | Pixels from top |
-| `hexactsize` | Width | Fraction of parent width | Pixel width |
-| `vexactsize` | Height | Fraction of parent height | Pixel height |
+| `hexactpos` | Позиция X | Доля ширины родителя | Пиксели от левого края |
+| `vexactpos` | Позиция Y | Доля высоты родителя | Пиксели от верхнего края |
+| `hexactsize` | Ширина | Доля ширины родителя | Ширина в пикселях |
+| `vexactsize` | Высота | Доля высоты родителя | Высота в пикселях |
 
-Это означает you can mix modes freely. Например, a widget can have proportional width but pixel height ---  very common pattern for rows and bars.
+Это значит, что вы можете свободно комбинировать режимы. Например, виджет может иметь пропорциональную ширину, но пиксельную высоту — очень распространённый паттерн для строк и полос.
 
 ---
 
-## Understanding Proportional Mode
+## Пропорциональный режим
 
-When a flag is `0` (proportional), the value represents a **fraction of the parent's dimension**:
+Когда флаг равен `0` (пропорциональный), значение представляет **долю размера родителя**:
 
-- `size 1 1` with `hexactsize 0` and `vexactsize 0` means "100% of parent width, 100% of parent height" ---  child fills the parent.
-- `size 0.5 0.3` means "50% of parent width, 30% of parent height."
-- `position 0.5 0` with `hexactpos 0` means "start at 50% of parent width from the left."
+- `size 1 1` с `hexactsize 0` и `vexactsize 0` означает «100% ширины родителя, 100% высоты родителя» — дочерний виджет заполняет родителя.
+- `size 0.5 0.3` означает «50% ширины родителя, 30% высоты родителя».
+- `position 0.5 0` с `hexactpos 0` означает «начать с 50% ширины родителя от левого края».
 
-Proportional mode is resolution-independent. The widget scales automatically when the parent changes size or when the game runs at a different resolution.
+Пропорциональный режим не зависит от разрешения. Виджет автоматически масштабируется при изменении размера родителя или при запуске игры в другом разрешении.
 
 ```
-// A widget that fills the left half of its parent
+// Виджет, заполняющий левую половину родителя
 FrameWidgetClass LeftHalf {
  position 0 0
  size 0.5 1
@@ -48,17 +52,17 @@ FrameWidgetClass LeftHalf {
 
 ---
 
-## Understanding Pixel Mode
+## Пиксельный режим
 
-When a flag is `1` (pixel/exact), the value is in **screen pixels**:
+Когда флаг равен `1` (пиксельный/точный), значение задаётся в **экранных пикселях**:
 
-- `size 200 40` with `hexactsize 1` and `vexactsize 1` means "200 pixels wide, 40 pixels tall."
-- `position 10 10` with `hexactpos 1` and `vexactpos 1` means "10 pixels from parent's left edge, 10 pixels from parent's top edge."
+- `size 200 40` с `hexactsize 1` и `vexactsize 1` означает «200 пикселей в ширину, 40 пикселей в высоту».
+- `position 10 10` с `hexactpos 1` и `vexactpos 1` означает «10 пикселей от левого края родителя, 10 пикселей от верхнего края родителя».
 
-Pixel mode gives you exact control but does NOT automatically scale with resolution.
+Пиксельный режим даёт точный контроль, но НЕ масштабируется автоматически с разрешением.
 
 ```
-// A fixed-size button: 120x30 pixels
+// Кнопка фиксированного размера: 120x30 пикселей
 ButtonWidgetClass MyButton {
  position 10 10
  size 120 30
@@ -72,59 +76,80 @@ ButtonWidgetClass MyButton {
 
 ---
 
-## Mixing Modes: The Most Common Pattern
+## Комбинирование режимов: самый распространённый паттерн
 
-The real power comes from mixing proportional and pixel modes. The most common pattern in professional DayZ mods is:
+Настоящая мощь появляется при комбинировании пропорционального и пиксельного режимов. Самый распространённый паттерн в профессиональных DayZ-модах:
 
-**Proportional width, pixel height** -- for bars, rows, and headers.
+**Пропорциональная ширина, пиксельная высота** — для полос, строк и заголовков.
 
 ```
-// Full-width row, exactly 30 pixels tall
+// Строка на всю ширину, ровно 30 пикселей в высоту
 FrameWidgetClass Row {
  position 0 0
  size 1 30
  hexactpos 0
  vexactpos 0
- hexactsize 0        // Width: proportional (100% of parent)
- vexactsize 1        // Height: pixel (30px)
+ hexactsize 0        // Ширина: пропорциональная (100% родителя)
+ vexactsize 1        // Высота: пиксельная (30px)
 }
 ```
 
-**Proportional width and height, pixel position** -- for centered panels offset by a fixed amount.
+**Пропорциональные ширина и высота, пиксельная позиция** — для центрированных панелей со смещением на фиксированную величину.
 
 ```
-// 60% x 70% panel, offset 0px from center
+// Панель 60% x 70%, смещение 0px от центра
 FrameWidgetClass Dialog {
  position 0 0
  size 0.6 0.7
  halign center_ref
  valign center_ref
- hexactpos 1         // Position: pixel (0px offset from center)
+ hexactpos 1         // Позиция: пиксельная (смещение 0px от центра)
  vexactpos 1
- hexactsize 0        // Size: proportional (60% x 70%)
+ hexactsize 0        // Размер: пропорциональный (60% x 70%)
  vexactsize 0
 }
 ```
 
 ---
 
-## Alignment References: halign and valign
+## Ссылки выравнивания: halign и valign
 
-The `halign` and `valign` attributes change the **reference point** for positioning:
+Атрибуты `halign` и `valign` изменяют **точку отсчёта** для позиционирования:
 
-| Value | Effect |
+| Значение | Эффект |
 |---|---|
-| `left_ref` (default) | Position is measured from parent's left edge |
-| `center_ref` | Position is measured from parent's center |
-| `right_ref` | Position is measured from parent's right edge |
-| `top_ref` (default) | Position is measured from parent's top edge |
-| `center_ref` | Position is measured from parent's center |
-| `bottom_ref` | Position is measured from parent's bottom edge |
+| `left_ref` (по умолчанию) | Позиция отсчитывается от левого края родителя |
+| `center_ref` | Позиция отсчитывается от центра родителя |
+| `right_ref` | Позиция отсчитывается от правого края родителя |
+| `top_ref` (по умолчанию) | Позиция отсчитывается от верхнего края родителя |
+| `center_ref` | Позиция отсчитывается от центра родителя |
+| `bottom_ref` | Позиция отсчитывается от нижнего края родителя |
 
-When combined with pixel position (`hexactpos 1`), alignment references make centering trivial:
+### Точки отсчёта выравнивания
+
+```mermaid
+graph TD
+    subgraph "Родительский виджет"
+        TL["halign left_ref<br/>valign top_ref<br/>↘ позиция отсюда"]
+        TC["halign center_ref<br/>valign top_ref"]
+        TR["halign right_ref<br/>valign top_ref<br/>↙ позиция отсюда"]
+        ML["halign left_ref<br/>valign center_ref"]
+        MC["halign center_ref<br/>valign center_ref<br/>↔ позиция от центра"]
+        MR["halign right_ref<br/>valign center_ref"]
+        BL["halign left_ref<br/>valign bottom_ref<br/>↗ позиция отсюда"]
+        BC["halign center_ref<br/>valign bottom_ref"]
+        BR["halign right_ref<br/>valign bottom_ref<br/>↖ позиция отсюда"]
+    end
+
+    style MC fill:#4A90D9,color:#fff
+    style TL fill:#2D8A4E,color:#fff
+    style BR fill:#D94A4A,color:#fff
+```
+
+В сочетании с пиксельной позицией (`hexactpos 1`) ссылки выравнивания делают центрирование тривиальным:
 
 ```
-// Centered on screen with no offset
+// Центрирован на экране без смещения
 FrameWidgetClass CenteredDialog {
  position 0 0
  size 0.4 0.5
@@ -137,12 +162,12 @@ FrameWidgetClass CenteredDialog {
 }
 ```
 
-With `center_ref`, a position of `0 0` means "centered in parent." A position of `10 0` means "10 pixels right of center."
+С `center_ref` позиция `0 0` означает «в центре родителя». Позиция `10 0` означает «10 пикселей правее центра».
 
-### Right-Aligned Elements
+### Элементы с выравниванием вправо
 
 ```
-// Icon pinned to the right edge, 5px from the edge
+// Иконка, прикреплённая к правому краю, 5px от края
 ImageWidgetClass StatusIcon {
  position 5 5
  size 24 24
@@ -155,10 +180,10 @@ ImageWidgetClass StatusIcon {
 }
 ```
 
-### Bottom-Aligned Elements
+### Элементы с выравниванием вниз
 
 ```
-// Status bar at the bottom of its parent
+// Строка состояния внизу родителя
 FrameWidgetClass StatusBar {
  position 0 0
  size 1 30
@@ -173,17 +198,17 @@ FrameWidgetClass StatusBar {
 
 ---
 
-## CRITICAL: No Negative Size Values
+## КРИТИЧНО: никаких отрицательных значений размера
 
-**Never use negative values for widget size in layout files.** Negative sizes cause undefined behavior -- widgets may become invisible, render incorrectly, or crash the UI system. If you need a widget to be hidden, use `visible 0` instead.
+**Никогда не используйте отрицательные значения для размера виджета в файлах layout.** Отрицательные размеры вызывают неопределённое поведение — виджеты могут стать невидимыми, отображаться некорректно или обрушить систему UI. Если вам нужно скрыть виджет, используйте вместо этого `visible 0`.
 
-This is one of the most common layout mistakes. If your widget is not showing up, check that you have not accidentally set a negative size value.
+Это одна из самых распространённых ошибок в компоновке. Если ваш виджет не отображается, проверьте, не задали ли вы случайно отрицательное значение размера.
 
 ---
 
-## Common Sizing Patterns
+## Типичные паттерны размеров
 
-### Full Screen Overlay
+### Полноэкранный оверлей
 
 ```
 FrameWidgetClass Overlay {
@@ -196,7 +221,7 @@ FrameWidgetClass Overlay {
 }
 ```
 
-### Centered Dialog (60% x 70%)
+### Центрированный диалог (60% x 70%)
 
 ```
 FrameWidgetClass Dialog {
@@ -211,7 +236,7 @@ FrameWidgetClass Dialog {
 }
 ```
 
-### Right-Aligned Side Panel (25% Width)
+### Боковая панель справа (25% ширины)
 
 ```
 FrameWidgetClass SidePanel {
@@ -225,7 +250,7 @@ FrameWidgetClass SidePanel {
 }
 ```
 
-### Top Bar (Full Width, Fixed Height)
+### Верхняя полоса (полная ширина, фиксированная высота)
 
 ```
 FrameWidgetClass TopBar {
@@ -238,7 +263,7 @@ FrameWidgetClass TopBar {
 }
 ```
 
-### Bottom-Right Corner Badge
+### Значок в правом нижнем углу
 
 ```
 FrameWidgetClass Badge {
@@ -253,7 +278,7 @@ FrameWidgetClass Badge {
 }
 ```
 
-### Fixed-Size Centered Icon
+### Иконка фиксированного размера в центре
 
 ```
 ImageWidgetClass Icon {
@@ -270,26 +295,26 @@ ImageWidgetClass Icon {
 
 ---
 
-## Programmatic Position & Size
+## Программная установка позиции и размера
 
-In code, you can read and set position and size using both proportional and pixel (screen) coordinates:
+В коде вы можете читать и устанавливать позицию и размер, используя как пропорциональные, так и пиксельные (экранные) координаты:
 
 ```c
-// Proportional coordinates (0-1 range)
+// Пропорциональные координаты (диапазон 0-1)
 float x, y, w, h;
-widget.GetPos(x, y);           // Read proportional position
-widget.SetPos(0.5, 0.1);      // Set proportional position
-widget.GetSize(w, h);          // Read proportional size
-widget.SetSize(0.3, 0.2);     // Set proportional size
+widget.GetPos(x, y);           // Читать пропорциональную позицию
+widget.SetPos(0.5, 0.1);      // Установить пропорциональную позицию
+widget.GetSize(w, h);          // Читать пропорциональный размер
+widget.SetSize(0.3, 0.2);     // Установить пропорциональный размер
 
-// Pixel/screen coordinates
-widget.GetScreenPos(x, y);     // Read pixel position
-widget.SetScreenPos(100, 50);  // Set pixel position
-widget.GetScreenSize(w, h);    // Read pixel size
-widget.SetScreenSize(400, 300);// Set pixel size
+// Пиксельные/экранные координаты
+widget.GetScreenPos(x, y);     // Читать пиксельную позицию
+widget.SetScreenPos(100, 50);  // Установить пиксельную позицию
+widget.GetScreenSize(w, h);    // Читать пиксельный размер
+widget.SetScreenSize(400, 300);// Установить пиксельный размер
 ```
 
-To center a widget on screen programmatically:
+Для центрирования виджета на экране программно:
 
 ```c
 int screen_w, screen_h;
@@ -302,40 +327,99 @@ widget.SetScreenPos((screen_w - w) / 2, (screen_h - h) / 2);
 
 ---
 
-## The `scaled` Attribute
+## Атрибут `scaled`
 
-When `scaled 1` is set, the widget respects DayZ's UI scaling setting (Options > Video > HUD Size). This is important for HUD elements that should scale with the user's preference.
+Когда установлен `scaled 1`, виджет учитывает настройку масштабирования UI в DayZ (Опции > Видео > Размер HUD). Это важно для элементов HUD, которые должны масштабироваться в соответствии с предпочтениями пользователя.
 
-Without `scaled`, pixel-sized widgets will be the same physical size regardless of the UI scaling option.
-
----
-
-## The `fixaspect` Attribute
-
-Use `fixaspect` to maintain a widget's aspect ratio:
-
-- `fixaspect fixwidth` -- Height adjusts to maintain aspect ratio based on width
-- `fixaspect fixheight` -- Width adjusts to maintain aspect ratio based on height
-
-This is primarily useful for `ImageWidget` to prevent image distortion.
+Без `scaled` виджеты с пиксельными размерами будут одинакового физического размера вне зависимости от настройки масштабирования UI.
 
 ---
 
-## Debugging Sizing Issues
+## Атрибут `fixaspect`
 
-When a widget is not appearing where you expect:
+Используйте `fixaspect` для сохранения соотношения сторон виджета:
 
-1. **Check exact flags** -- Is `hexactsize` set to `0` when you meant pixels? A value of `200` in proportional mode means 200x the parent width (way off screen).
-2. **Check for negative sizes** -- Any negative value in `size` will cause problems.
-3. **Check the parent size** -- A proportional child of a zero-size parent is zero-size.
-4. **Check `visible`** -- Widgets default to visible, but if a parent is hidden, all children are too.
-5. **Check `priority`** -- A widget with lower priority may be hidden behind another.
-6. **Use `clipchildren`** -- If a parent has `clipchildren 1`, children outside its bounds are not visible.
+- `fixaspect fixwidth` — высота подстраивается для сохранения соотношения сторон на основе ширины
+- `fixaspect fixheight` — ширина подстраивается для сохранения соотношения сторон на основе высоты
+
+Это в основном полезно для `ImageWidget`, чтобы предотвратить искажение изображения.
+
+---
+
+## Z-порядок и приоритет
+
+Атрибут `priority` управляет тем, какие виджеты отображаются поверх других при перекрытии. Более высокие значения отображаются поверх более низких.
+
+| Диапазон приоритета | Типичное использование |
+|----------------|-------------|
+| 0-5 | Фоновые элементы, декоративные панели |
+| 10-50 | Обычные элементы UI, компоненты HUD |
+| 50-100 | Элементы наложения, плавающие панели |
+| 100-200 | Уведомления, всплывающие подсказки |
+| 998-999 | Модальные диалоги, блокирующие оверлеи |
+
+```
+FrameWidget myBackground {
+    priority 1
+    // ...
+}
+
+FrameWidget myDialog {
+    priority 999
+    // ...
+}
+```
+
+**Важно:** Приоритет влияет только на порядок отрисовки среди соседних элементов одного родителя. Вложенные дочерние элементы всегда отображаются поверх своего родителя вне зависимости от значений приоритета.
+
+---
+
+## Отладка проблем с размерами
+
+Когда виджет не появляется там, где вы ожидаете:
+
+1. **Проверьте флаги exact** — установлен ли `hexactsize` в `0`, когда вы имели в виду пиксели? Значение `200` в пропорциональном режиме означает 200-кратную ширину родителя (далеко за экраном).
+2. **Проверьте отрицательные размеры** — любое отрицательное значение в `size` вызовет проблемы.
+3. **Проверьте размер родителя** — пропорциональный дочерний элемент родителя нулевого размера имеет нулевой размер.
+4. **Проверьте `visible`** — виджеты по умолчанию видимы, но если родитель скрыт, все дочерние элементы тоже.
+5. **Проверьте `priority`** — виджет с более низким приоритетом может быть скрыт за другим.
+6. **Используйте `clipchildren`** — если у родителя установлен `clipchildren 1`, дочерние элементы за пределами его границ не видны.
+
+---
+
+## Лучшие практики
+
+- Всегда указывайте все четыре флага exact явно (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`). Пропуск приводит к непредсказуемому поведению, поскольку значения по умолчанию различаются между типами виджетов.
+- Используйте паттерн «пропорциональная ширина + пиксельная высота» для строк и полос. Это наиболее безопасная комбинация для разных разрешений и стандарт в профессиональных модах.
+- Центрируйте диалоги с помощью `halign center_ref` + `valign center_ref` + пиксельная позиция `0 0`, а не с пропорциональной позицией `0.5 0.5`. Подход со ссылкой выравнивания остаётся центрированным вне зависимости от размера виджета.
+- Избегайте пиксельных размеров для полноэкранных или почти полноэкранных элементов. Используйте пропорциональные размеры, чтобы UI адаптировался к любому разрешению (1080p, 1440p, 4K).
+- При использовании `SetScreenPos()` / `SetScreenSize()` в коде вызывайте их после прикрепления виджета к родителю. Вызов до прикрепления может дать некорректные координаты.
+
+---
+
+## Теория и практика
+
+> Что говорит документация и как всё работает на самом деле в рантайме.
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| Пропорциональные размеры | Значения 0.0-1.0 масштабируются относительно родителя | Если у родителя пиксельный размер, пропорциональные значения дочернего элемента вычисляются относительно этого пиксельного значения, а не экрана — дочерний элемент родителя шириной 200px при `size 0.5` будет 100px |
+| Выравнивание `center_ref` | Виджет центрируется внутри родителя | Левый верхний угол виджета размещается в центральной точке — виджет выступает вправо и вниз от центра, если позиция не `0 0` с пиксельным режимом |
+| Z-порядок через `priority` | Более высокие значения отображаются поверх | Приоритет влияет только на соседние элементы одного родителя. Дочерний элемент всегда отображается поверх своего родителя вне зависимости от значений приоритета |
+| Атрибут `scaled` | Виджет учитывает настройку размера HUD | Влияет только на размеры в пиксельном режиме. Пропорциональные размеры уже масштабируются с родителем и игнорируют флаг `scaled` |
+| Отрицательные значения позиции | Должны смещать в обратном направлении | Работает для позиции (смещение влево/вверх от точки отсчёта), но отрицательные значения размера вызывают неопределённое поведение отрисовки — никогда не используйте их |
+
+---
+
+## Совместимость и влияние
+
+- **Мультимод:** Размеры и позиционирование задаются для каждого виджета и не могут конфликтовать между модами. Однако моды, использующие полноэкранные оверлеи (`size 1 1` на корневом элементе) с `priority 999`, могут блокировать получение ввода элементами UI других модов.
+- **Производительность:** Пропорциональные размеры требуют перерасчёта относительно родителя каждый кадр для анимированных или динамических виджетов. Для статических компоновок нет измеримой разницы между пропорциональным и пиксельным режимами.
+- **Версия:** Система двойных координат (пропорциональные vs пиксельные) стабильна с DayZ 0.63 Experimental. Поведение атрибута `scaled` было уточнено в DayZ 1.14 для лучшего учёта ползунка «Размер HUD».
 
 ---
 
 ## Следующие шаги
 
-
-- [3.4 Container Widgets](04-containers.md) -- How spacers and scroll widgets handle layout automatically
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Setting size and position from code
+- [3.4 Виджеты-контейнеры](04-containers.md) — Как spacer-ы и ScrollWidget управляют компоновкой автоматически
+- [3.5 Программное создание виджетов](05-programmatic-widgets.md) — Установка размера и позиции из кода

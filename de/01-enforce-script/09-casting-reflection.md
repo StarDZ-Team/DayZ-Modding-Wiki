@@ -1,39 +1,43 @@
-# Chapter 1.9: Casting & Reflection
+# Kapitel 1.9: Casting & Reflexion
 
-[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
+[Startseite](../../README.md) | [<< Zurück: Speicherverwaltung](08-memory-management.md) | **Casting & Reflexion** | [Weiter: Enums & Präprozessor >>](10-enums-preprocessor.md)
+
+---
+
+> **Ziel:** Sicheres Typ-Casting, Laufzeit-Typprüfungen und die Reflexions-API von Enforce Script für dynamischen Eigenschaftszugriff meistern.
 
 ---
 
 ## Inhaltsverzeichnis
 
-- [Why Casting Matters](#why-casting-matters)
-- [Class.CastTo — Safe Downcasting](#classcastto--safe-downcasting)
-- [Type.Cast — Alternative Casting](#typecast--alternative-casting)
-- [CastTo vs Type.Cast — When to Use Which](#castto-vs-typecast--when-to-use-which)
-- [obj.IsInherited — Runtime Type Checking](#obisinherited--runtime-type-checking)
-- [obj.IsKindOf — String-Based Type Checking](#obiskindof--string-based-type-checking)
-- [obj.Type — Get Runtime Type](#objtype--get-runtime-type)
-- [typename — Storing Type References](#typename--storing-type-references)
-- [Reflection API](#reflection-api)
-  - [Inspecting Variables](#inspecting-variables)
+- [Warum Casting wichtig ist](#warum-casting-wichtig-ist)
+- [Class.CastTo -- Sicheres Downcasting](#classcastto--sicheres-downcasting)
+- [Type.Cast -- Alternatives Casting](#typecast--alternatives-casting)
+- [CastTo vs Type.Cast -- Wann was verwenden](#castto-vs-typecast--wann-was-verwenden)
+- [obj.IsInherited -- Laufzeit-Typprüfung](#obisinherited--laufzeit-typprüfung)
+- [obj.IsKindOf -- String-basierte Typprüfung](#obiskindof--string-basierte-typprüfung)
+- [obj.Type -- Laufzeittyp abrufen](#objtype--laufzeittyp-abrufen)
+- [typename -- Typreferenzen speichern](#typename--typreferenzen-speichern)
+- [Reflexions-API](#reflexions-api)
+  - [Variablen inspizieren](#variablen-inspizieren)
   - [EnScript.GetClassVar / SetClassVar](#enscriptgetclassvar--setclassvar)
-- [Real-World Examples](#real-world-examples)
-  - [Finding All Vehicles in the World](#finding-all-vehicles-in-the-world)
-  - [Safe Object Helper With Cast](#safe-object-helper-with-cast)
-  - [Reflection-Based Config System](#reflection-based-config-system)
-  - [Type-Safe Event Dispatch](#type-safe-event-dispatch)
-- [Common Mistakes](#common-mistakes)
-- [Summary](#summary)
+- [Praxisbeispiele](#praxisbeispiele)
+  - [Alle Fahrzeuge in der Welt finden](#alle-fahrzeuge-in-der-welt-finden)
+  - [Sicherer Objekt-Helfer mit Cast](#sicherer-objekt-helfer-mit-cast)
+  - [Reflexionsbasiertes Konfigurationssystem](#reflexionsbasiertes-konfigurationssystem)
+  - [Typsicherer Event-Dispatcher](#typsicherer-event-dispatcher)
+- [Häufige Fehler](#häufige-fehler)
+- [Zusammenfassung](#zusammenfassung)
 - [Navigation](#navigation)
 
 ---
 
 ## Warum Casting wichtig ist
 
-DayZ's entity hierarchy is deep. Most engine APIs return a generic base type (`Object`, `Man`, `Class`), but you need a specific type (`PlayerBase`, `ItemBase`, `CarScript`) to access specialized methods. Casting converts a base reference into a derived reference — safely.
+DayZ's Entity-Hierarchie ist tief. Die meisten Engine-APIs geben einen generischen Basistyp zurück (`Object`, `Man`, `Class`), aber du brauchst einen spezifischen Typ (`PlayerBase`, `ItemBase`, `CarScript`), um auf spezialisierte Methoden zuzugreifen. Casting konvertiert eine Basisreferenz in eine abgeleitete Referenz -- sicher.
 
 ```
-Class (root)
+Class (Wurzel)
   └─ Object
        └─ Entity
             └─ EntityAI
@@ -45,16 +49,16 @@ Class (root)
                       └─ DayZPlayer → PlayerBase
 ```
 
-Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error because Enforce Script resolves virtual calls at runtime.
+Das Aufrufen einer Methode, die auf dem Basistyp nicht existiert, verursacht einen **Laufzeitabsturz** -- es gibt keinen Compilerfehler, weil Enforce Script virtuelle Aufrufe zur Laufzeit auflöst.
 
 ---
 
-## Class.CastTo — Safe Downcasting
+## Class.CastTo -- Sicheres Downcasting
 
-`Class.CastTo` is the **preferred** casting method in DayZ. It is a static method that writes the result to an `out` parameter and returns `bool`.
+`Class.CastTo` ist die **bevorzugte** Casting-Methode in DayZ. Es ist eine statische Methode, die das Ergebnis in einen `out`-Parameter schreibt und `bool` zurückgibt.
 
 ```c
-// Signature:
+// Signatur:
 // static bool Class.CastTo(out Class target, Class source)
 
 Object obj = GetSomeObject();
@@ -62,25 +66,25 @@ PlayerBase player;
 
 if (Class.CastTo(player, obj))
 {
-    // Cast succeeded — player is valid
+    // Cast erfolgreich -- player ist gültig
     string name = player.GetIdentity().GetName();
-    Print("Found player: " + name);
+    Print("Spieler gefunden: " + name);
 }
 else
 {
-    // Cast failed — obj is not a PlayerBase
-    // player is null here
+    // Cast fehlgeschlagen -- obj ist kein PlayerBase
+    // player ist hier null
 }
 ```
 
-**Why preferred:**
-- Returns `false` on failure instead of crashing
-- The `out` parameter is set to `null` on failure — safe to check
-- Works across the entire class hierarchy (not just `Object`)
+**Warum bevorzugt:**
+- Gibt `false` bei Fehlschlag zurück anstatt abzustürzen
+- Der `out`-Parameter wird bei Fehlschlag auf `null` gesetzt -- sicher zu prüfen
+- Funktioniert über die gesamte Klassenhierarchie (nicht nur `Object`)
 
-### Pattern: Cast-and-Continue
+### Muster: Cast-und-Weiter
 
-In loops, use cast failure to skip irrelevant objects:
+In Schleifen verwende Cast-Fehlschlag, um irrelevante Objekte zu überspringen:
 
 ```c
 array<Object> nearObjects = new array<Object>;
@@ -91,24 +95,24 @@ foreach (Object obj : nearObjects)
 {
     EntityAI entity;
     if (!Class.CastTo(entity, obj))
-        continue;  // Skip non-EntityAI objects (buildings, terrain, etc.)
+        continue;  // Nicht-EntityAI-Objekte überspringen (Gebäude, Terrain, etc.)
 
-    // Now safe to call EntityAI methods
+    // Jetzt sicher EntityAI-Methoden aufrufen
     if (entity.IsAlive())
     {
-        Print(entity.GetType() + " is alive at " + entity.GetPosition().ToString());
+        Print(entity.GetType() + " ist lebendig bei " + entity.GetPosition().ToString());
     }
 }
 ```
 
 ---
 
-## Type.Cast — Alternative Casting
+## Type.Cast -- Alternatives Casting
 
-Every class has a static `Cast` method that returns the cast result directly (or `null` on failure).
+Jede Klasse hat eine statische `Cast`-Methode, die das Cast-Ergebnis direkt zurückgibt (oder `null` bei Fehlschlag).
 
 ```c
-// Syntax: TargetType.Cast(source)
+// Syntax: ZielTyp.Cast(quelle)
 
 Object obj = GetSomeObject();
 PlayerBase player = PlayerBase.Cast(obj);
@@ -119,11 +123,11 @@ if (player)
 }
 ```
 
-This is a one-liner that combines cast and assignment, but you **must** still null-check the result.
+Dies ist ein Einzeiler, der Cast und Zuweisung kombiniert, aber du **musst** das Ergebnis trotzdem auf null prüfen.
 
-### Casting Primitives and Params
+### Casting von Primitiven und Params
 
-`Type.Cast` is also used with `Param` classes (used heavily in RPCs and events):
+`Type.Cast` wird auch mit `Param`-Klassen verwendet (stark genutzt in RPCs und Events):
 
 ```c
 override void OnEvent(EventType eventTypeId, Param params)
@@ -142,174 +146,174 @@ override void OnEvent(EventType eventTypeId, Param params)
 
 ---
 
-## CastTo vs Type.Cast — Wann verwenden Which
+## CastTo vs Type.Cast -- Wann was verwenden
 
-| Feature | `Class.CastTo` | `Type.Cast` |
+| Eigenschaft | `Class.CastTo` | `Type.Cast` |
 |---------|----------------|-------------|
-| Return type | `bool` | Target type or `null` |
-| Null on failure | Yes (out param set to null) | Yes (returns null) |
-| Best for | if-blocks with branching logic | One-liner assignments |
-| Used in DayZ vanilla | Everywhere | Everywhere |
-| Works with non-Object | Yes (any `Class`) | Yes (any `Class`) |
+| Rückgabetyp | `bool` | Zieltyp oder `null` |
+| Null bei Fehlschlag | Ja (out-Param wird auf null gesetzt) | Ja (gibt null zurück) |
+| Am besten für | if-Blöcke mit Verzweigungslogik | Einzeilige Zuweisungen |
+| Verwendet in DayZ Vanilla | Überall | Überall |
+| Funktioniert mit Nicht-Object | Ja (jede `Class`) | Ja (jede `Class`) |
 
-**Rule of thumb:** Use `Class.CastTo` when you branch on success/failure. Use `Type.Cast` when you just need the typed reference and will null-check later.
+**Faustregel:** Verwende `Class.CastTo`, wenn du auf Erfolg/Fehlschlag verzweigst. Verwende `Type.Cast`, wenn du nur die typisierte Referenz brauchst und später auf null prüfst.
 
 ```c
-// CastTo — branch on result
+// CastTo -- Verzweigung basierend auf Ergebnis
 PlayerBase player;
 if (Class.CastTo(player, obj))
 {
-    // handle player
+    // Spieler behandeln
 }
 
-// Type.Cast — assign and check later
+// Type.Cast -- Zuweisen und später prüfen
 PlayerBase player = PlayerBase.Cast(obj);
 if (!player) return;
 ```
 
 ---
 
-## obj.IsInherited — Runtime Type Checking
+## obj.IsInherited -- Laufzeit-Typprüfung
 
-`IsInherited` checks if an object is an instance of a given type **without** performing a cast. It takes a `typename` argument.
+`IsInherited` prüft, ob ein Objekt eine Instanz eines gegebenen Typs ist, **ohne** einen Cast durchzuführen. Es nimmt ein `typename`-Argument.
 
 ```c
 Object obj = GetSomeObject();
 
 if (obj.IsInherited(PlayerBase))
 {
-    Print("This is a player!");
+    Print("Das ist ein Spieler!");
 }
 
 if (obj.IsInherited(DayZInfected))
 {
-    Print("This is a zombie!");
+    Print("Das ist ein Zombie!");
 }
 
 if (obj.IsInherited(CarScript))
 {
-    Print("This is a vehicle!");
+    Print("Das ist ein Fahrzeug!");
 }
 ```
 
-`IsInherited` returns `true` for the exact type **and** any parent types in the hierarchy. A `PlayerBase` object returns `true` for `IsInherited(Man)`, `IsInherited(EntityAI)`, `IsInherited(Object)`, etc.
+`IsInherited` gibt `true` für den exakten Typ **und** alle Elterntypen in der Hierarchie zurück. Ein `PlayerBase`-Objekt gibt `true` für `IsInherited(Man)`, `IsInherited(EntityAI)`, `IsInherited(Object)` usw. zurück.
 
 ---
 
-## obj.IsKindOf — String-Based Type Checking
+## obj.IsKindOf -- String-basierte Typprüfung
 
-`IsKindOf` does the same check but with a **string** class name. Useful when you have the type name as data (e.g., from config files).
+`IsKindOf` macht dieselbe Prüfung, aber mit einem **String**-Klassennamen. Nützlich, wenn du den Typnamen als Daten hast (z.B. aus Konfigurationsdateien).
 
 ```c
 Object obj = GetSomeObject();
 
 if (obj.IsKindOf("ItemBase"))
 {
-    Print("This is an item");
+    Print("Das ist ein Item");
 }
 
 if (obj.IsKindOf("DayZAnimal"))
 {
-    Print("This is an animal");
+    Print("Das ist ein Tier");
 }
 ```
 
-**Important:** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
+**Wichtig:** `IsKindOf` prüft die vollständige Vererbungskette, genau wie `IsInherited`. Ein `Mag_STANAG_30Rnd` gibt `true` für `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")` usw. zurück.
 
 ### IsInherited vs IsKindOf
 
-| Feature | `IsInherited(typename)` | `IsKindOf(string)` |
+| Eigenschaft | `IsInherited(typename)` | `IsKindOf(string)` |
 |---------|------------------------|---------------------|
-| Argument | Compile-time type | String name |
-| Speed | Faster (type comparison) | Slower (string lookup) |
-| Use when | You know the type at compile time | Type comes from data/config |
+| Argument | Kompilierzeit-Typ | String-Name |
+| Geschwindigkeit | Schneller (Typvergleich) | Langsamer (String-Lookup) |
+| Verwenden wenn | Du den Typ zur Kompilierzeit kennst | Typ aus Daten/Konfiguration kommt |
 
 ---
 
-## obj.Type — Get Runtime Type
+## obj.Type -- Laufzeittyp abrufen
 
-`Type()` returns the `typename` of an object's actual runtime class — not the declared variable type.
+`Type()` gibt den `typename` der tatsächlichen Laufzeitklasse eines Objekts zurück -- nicht den deklarierten Variablentyp.
 
 ```c
 Object obj = GetSomeObject();
 typename t = obj.Type();
 
-Print(t.ToString());  // e.g., "PlayerBase", "AK101", "LandRover"
+Print(t.ToString());  // z.B. "PlayerBase", "AK101", "LandRover"
 ```
 
-Use this for logging, debugging, or comparing types dynamically:
+Verwende dies für Logging, Debugging oder dynamische Typvergleiche:
 
 ```c
 void ProcessEntity(EntityAI entity)
 {
     typename t = entity.Type();
-    Print("Processing entity of type: " + t.ToString());
+    Print("Verarbeite Entity vom Typ: " + t.ToString());
 
     if (t == PlayerBase)
     {
-        Print("It's a player");
+        Print("Es ist ein Spieler");
     }
 }
 ```
 
 ---
 
-## typename — Storing Type References
+## typename -- Typreferenzen speichern
 
-`typename` is a first-class type in Enforce Script. You can store it in variables, pass it as parameters, and compare it.
+`typename` ist ein erstklassiger Typ in Enforce Script. Du kannst ihn in Variablen speichern, als Parameter übergeben und vergleichen.
 
 ```c
-// Declare a typename variable
+// Eine typename-Variable deklarieren
 typename playerType = PlayerBase;
 typename vehicleType = CarScript;
 
-// Compare
+// Vergleichen
 typename objType = obj.Type();
 if (objType == playerType)
 {
-    Print("Match!");
+    Print("Treffer!");
 }
 
-// Use in collections
+// In Sammlungen verwenden
 array<typename> allowedTypes = new array<typename>;
 allowedTypes.Insert(PlayerBase);
 allowedTypes.Insert(DayZInfected);
 allowedTypes.Insert(DayZAnimal);
 
-// Check membership
+// Zugehörigkeit prüfen
 foreach (typename t : allowedTypes)
 {
     if (obj.IsInherited(t))
     {
-        Print("Object matches allowed type: " + t.ToString());
+        Print("Objekt entspricht erlaubtem Typ: " + t.ToString());
         break;
     }
 }
 ```
 
-### Creating Instances from typename
+### Instanzen aus typename erstellen
 
-You can create objects from a `typename` at runtime:
+Du kannst Objekte aus einem `typename` zur Laufzeit erstellen:
 
 ```c
 typename t = PlayerBase;
-Class instance = t.Spawn();  // Creates a new instance
+Class instance = t.Spawn();  // Erstellt eine neue Instanz
 
-// Or use the string-based approach:
+// Oder verwende den string-basierten Ansatz:
 Class instance2 = GetGame().CreateObjectEx("AK101", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-> **Note:** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
+> **Hinweis:** `typename.Spawn()` funktioniert nur für Klassen mit einem parameterlosen Konstruktor. Für DayZ-Entities verwende `GetGame().CreateObject()` oder `CreateObjectEx()`.
 
 ---
 
-## Reflection-API
+## Reflexions-API
 
-Enforce Script provides basic reflection — the ability to inspect and modify an object's properties at runtime without knowing its type at compile time.
+Enforce Script bietet grundlegende Reflexion -- die Fähigkeit, die Eigenschaften eines Objekts zur Laufzeit zu inspizieren und zu modifizieren, ohne seinen Typ zur Kompilierzeit zu kennen.
 
-### Inspecting Variables
+### Variablen inspizieren
 
-Every object's `Type()` returns a `typename` that exposes variable metadata:
+Der `Type()` jedes Objekts gibt einen `typename` zurück, der Variablen-Metadaten offenlegt:
 
 ```c
 void InspectObject(Class obj)
@@ -317,7 +321,7 @@ void InspectObject(Class obj)
     typename t = obj.Type();
 
     int varCount = t.GetVariableCount();
-    Print("Class: " + t.ToString() + " has " + varCount.ToString() + " variables");
+    Print("Klasse: " + t.ToString() + " hat " + varCount.ToString() + " Variablen");
 
     for (int i = 0; i < varCount; i++)
     {
@@ -329,24 +333,24 @@ void InspectObject(Class obj)
 }
 ```
 
-**Available reflection methods on `typename`:**
+**Verfügbare Reflexionsmethoden auf `typename`:**
 
-| Method | Returns | Description |
+| Methode | Gibt zurück | Beschreibung |
 |--------|---------|-------------|
-| `GetVariableCount()` | `int` | Number of member variables |
-| `GetVariableName(int index)` | `string` | Variable name at index |
-| `GetVariableType(int index)` | `typename` | Variable type at index |
-| `ToString()` | `string` | Class name as string |
+| `GetVariableCount()` | `int` | Anzahl der Membervariablen |
+| `GetVariableName(int index)` | `string` | Variablenname am Index |
+| `GetVariableType(int index)` | `typename` | Variablentyp am Index |
+| `ToString()` | `string` | Klassenname als String |
 
 ### EnScript.GetClassVar / SetClassVar
 
-`EnScript.GetClassVar` and `EnScript.SetClassVar` let you read/write member variables by **name** at runtime. This is Enforce Script's equivalent of dynamic property access.
+`EnScript.GetClassVar` und `EnScript.SetClassVar` ermöglichen es dir, Membervariablen zur Laufzeit per **Name** zu lesen/schreiben. Dies ist Enforce Scripts Äquivalent zum dynamischen Eigenschaftszugriff.
 
 ```c
-// Signature:
+// Signatur:
 // static void EnScript.GetClassVar(Class instance, string varName, int index, out T value)
 // static bool EnScript.SetClassVar(Class instance, string varName, int index, T value)
-// 'index' is the array element index — use 0 for non-array fields.
+// 'index' ist der Array-Element-Index -- verwende 0 für Nicht-Array-Felder.
 
 class MyConfig
 {
@@ -359,7 +363,7 @@ void DemoReflection()
 {
     MyConfig cfg = new MyConfig();
 
-    // Read values by name
+    // Werte nach Namen lesen
     int maxVal;
     EnScript.GetClassVar(cfg, "MaxSpawns", 0, maxVal);
     Print("MaxSpawns = " + maxVal.ToString());  // "MaxSpawns = 10"
@@ -372,20 +376,20 @@ void DemoReflection()
     EnScript.GetClassVar(cfg, "WelcomeMsg", 0, msg);
     Print("WelcomeMsg = " + msg);  // "WelcomeMsg = Hello!"
 
-    // Write values by name
+    // Werte nach Namen schreiben
     EnScript.SetClassVar(cfg, "MaxSpawns", 0, 50);
     EnScript.SetClassVar(cfg, "SpawnRadius", 0, 250.0);
     EnScript.SetClassVar(cfg, "WelcomeMsg", 0, "Welcome!");
 }
 ```
 
-> **Warning:** `GetClassVar`/`SetClassVar` silently fail if the variable name is wrong or the type doesn't match. Always validate variable names before use.
+> **Warnung:** `GetClassVar`/`SetClassVar` schlagen stillschweigend fehl, wenn der Variablenname falsch ist oder der Typ nicht übereinstimmt. Validiere Variablennamen immer vor der Verwendung.
 
 ---
 
 ## Praxisbeispiele
 
-### Finding All Vehicles in the World
+### Alle Fahrzeuge in der Welt finden
 
 ```c
 static array<CarScript> FindAllVehicles()
@@ -394,7 +398,7 @@ static array<CarScript> FindAllVehicles()
     array<Object> allObjects = new array<Object>;
     array<CargoBase> proxyCargos = new array<CargoBase>;
 
-    // Search a large area (or use mission-specific logic)
+    // Einen großen Bereich durchsuchen (oder mission-spezifische Logik verwenden)
     vector center = "7500 0 7500";
     GetGame().GetObjectsAtPosition(center, 15000.0, allObjects, proxyCargos);
 
@@ -407,18 +411,18 @@ static array<CarScript> FindAllVehicles()
         }
     }
 
-    Print("Found " + vehicles.Count().ToString() + " vehicles");
+    Print("Gefunden: " + vehicles.Count().ToString() + " Fahrzeuge");
     return vehicles;
 }
 ```
 
-### Safe Object Helper With Cast
+### Sicherer Objekt-Helfer mit Cast
 
-This pattern is used throughout DayZ modding — a utility function that safely checks if an `Object` is alive by casting to `EntityAI`:
+Dieses Muster wird im gesamten DayZ-Modding verwendet -- eine Hilfsfunktion, die sicher prüft, ob ein `Object` lebendig ist, indem sie auf `EntityAI` castet:
 
 ```c
-// Object.IsAlive() does NOT exist on the base Object class!
-// You must cast to EntityAI first.
+// Object.IsAlive() existiert NICHT auf der Basis-Object-Klasse!
+// Du musst zuerst auf EntityAI casten.
 
 static bool IsObjectAlive(Object obj)
 {
@@ -431,18 +435,18 @@ static bool IsObjectAlive(Object obj)
         return eai.IsAlive();
     }
 
-    return false;  // Non-EntityAI objects (buildings, etc.) — treat as "not alive"
+    return false;  // Nicht-EntityAI-Objekte (Gebäude, etc.) -- als "nicht lebendig" behandeln
 }
 ```
 
-### Reflection-Based Config System
+### Reflexionsbasiertes Konfigurationssystem
 
-This pattern (used in MyFramework) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
+Dieses Muster (verwendet in MyMod Core) baut ein generisches Konfigurationssystem, bei dem Felder nach Namen gelesen/geschrieben werden, was Admin-Panels ermöglicht, jede Konfiguration zu bearbeiten, ohne ihre spezifische Klasse zu kennen:
 
 ```c
 class ConfigBase
 {
-    // Find a member variable index by name
+    // Einen Membervariablen-Index nach Namen finden
     protected int FindVarIndex(string fieldName)
     {
         typename t = Type();
@@ -455,7 +459,7 @@ class ConfigBase
         return -1;
     }
 
-    // Get any field value as string
+    // Jeden Feldwert als String abrufen
     string GetFieldValue(string fieldName)
     {
         if (FindVarIndex(fieldName) == -1)
@@ -466,7 +470,7 @@ class ConfigBase
         return iVal.ToString();
     }
 
-    // Set any field value from string
+    // Jeden Feldwert aus einem String setzen
     void SetFieldValue(string fieldName, string value)
     {
         if (FindVarIndex(fieldName) == -1)
@@ -485,14 +489,14 @@ class MyModConfig : ConfigBase
 
 void AdminPanelSave(ConfigBase config, string fieldName, string newValue)
 {
-    // Works for ANY config subclass — no type-specific code needed
+    // Funktioniert für JEDE Konfig-Unterklasse -- kein typspezifischer Code nötig
     config.SetFieldValue(fieldName, newValue);
 }
 ```
 
-### Type-Safe Event Dispatch
+### Typsicherer Event-Dispatcher
 
-Use `typename` to build a dispatcher that routes events to the correct handler:
+Verwende `typename`, um einen Dispatcher zu bauen, der Events an den korrekten Handler weiterleitet:
 
 ```c
 class EventDispatcher
@@ -532,16 +536,49 @@ class EventDispatcher
 
 ---
 
+## Bewährte Methoden
+
+- Prüfe nach jedem Cast immer auf null -- sowohl `Class.CastTo` als auch `Type.Cast` geben bei Fehlschlag null zurück, und die Verwendung des Ergebnisses ohne Prüfung verursacht Abstürze.
+- Verwende `Class.CastTo`, wenn du auf Erfolg/Fehlschlag verzweigen musst; verwende `Type.Cast` für kompakte Einzeiler-Zuweisungen gefolgt von einer Null-Prüfung.
+- Bevorzuge `IsInherited(typename)` gegenüber `IsKindOf(string)`, wenn der Typ zur Kompilierzeit bekannt ist -- es ist schneller und fängt Tippfehler zur Kompilierzeit ab.
+- Caste auf `EntityAI`, bevor du `IsAlive()` aufrufst -- die Basis-`Object`-Klasse hat diese Methode nicht.
+- Validiere Variablennamen mit `GetVariableCount`/`GetVariableName` vor der Verwendung von `EnScript.GetClassVar` -- es schlägt stillschweigend bei falschen Namen fehl.
+
+---
+
+## In echten Mods beobachtet
+
+> Muster bestätigt durch das Studium professioneller DayZ-Mod-Quellcodes.
+
+| Muster | Mod | Detail |
+|---------|-----|--------|
+| `Class.CastTo` + `continue` in Entity-Schleifen | COT / Expansion | Jede Schleife über `Object`-Arrays verwendet Cast-und-Weiter, um nicht passende Typen zu überspringen |
+| `IsKindOf` für konfigurationsgesteuerte Typprüfungen | Expansion Market | Aus JSON geladene Item-Kategorien verwenden string-basiertes `IsKindOf`, weil Typen Daten sind |
+| `EnScript.GetClassVar`/`SetClassVar` für Admin-Panels | Dabs Framework | Generische Konfigurationseditoren lesen/schreiben Felder nach Namen, damit eine UI für alle Konfigurationsklassen funktioniert |
+| `obj.Type().ToString()` für Logging | VPP Admin | Debug-Logs beinhalten immer `entity.Type().ToString()`, um zu identifizieren, was verarbeitet wurde |
+
+---
+
+## Theorie vs. Praxis
+
+| Konzept | Theorie | Realität |
+|---------|---------|---------|
+| `Object.IsAlive()` | Erwartet, dass es auf `Object` existiert | Nur auf `EntityAI` und Unterklassen verfügbar -- der Aufruf auf `Object` stürzt ab |
+| `EnScript.SetClassVar` gibt `bool` zurück | Sollte Erfolg/Fehlschlag anzeigen | Gibt stillschweigend `false` bei falschem Feldnamen zurück, ohne Fehlermeldung -- leicht zu übersehen |
+| `typename.Spawn()` | Erstellt jede Klasseninstanz | Funktioniert nur für Klassen mit parameterlosem Konstruktor; für Spielentitäten verwende `CreateObject` |
+
+---
+
 ## Häufige Fehler
 
-### 1. Forgetting to null-check after cast
+### 1. Vergessen, nach dem Cast auf null zu prüfen
 
 ```c
-// WRONG — crashes if obj is not a PlayerBase
+// FALSCH -- stürzt ab, wenn obj kein PlayerBase ist
 PlayerBase player = PlayerBase.Cast(obj);
-player.GetIdentity();  // CRASH if cast failed!
+player.GetIdentity();  // ABSTURZ wenn Cast fehlgeschlagen!
 
-// CORRECT
+// RICHTIG
 PlayerBase player = PlayerBase.Cast(obj);
 if (player)
 {
@@ -549,66 +586,66 @@ if (player)
 }
 ```
 
-### 2. Calling IsAlive() on base Object
+### 2. IsAlive() auf Basis-Object aufrufen
 
 ```c
-// WRONG — Object.IsAlive() does not exist
+// FALSCH -- Object.IsAlive() existiert nicht
 Object obj = GetSomeObject();
-if (obj.IsAlive())  // Compile error or runtime crash!
+if (obj.IsAlive())  // Compilerfehler oder Laufzeitabsturz!
 
-// CORRECT
+// RICHTIG
 EntityAI eai;
 if (Class.CastTo(eai, obj) && eai.IsAlive())
 {
-    // Safe
+    // Sicher
 }
 ```
 
-### 3. Using reflection with wrong variable name
+### 3. Reflexion mit falschem Variablennamen verwenden
 
 ```c
-// SILENT FAILURE — no error, just returns zero/empty
+// STILLER FEHLSCHLAG -- kein Fehler, gibt nur Null/leer zurück
 int val;
 EnScript.GetClassVar(obj, "NonExistentField", 0, val);
-// val is 0, no error thrown
+// val ist 0, kein Fehler geworfen
 ```
 
-Always validate with `FindVarIndex` or `GetVariableCount`/`GetVariableName` first.
+Validiere immer zuerst mit `FindVarIndex` oder `GetVariableCount`/`GetVariableName`.
 
-### 4. Confusing Type() with typename literal
+### 4. Type() mit typename-Literal verwechseln
 
 ```c
-// Type() — returns the RUNTIME type of an instance
-typename t = myObj.Type();  // e.g., PlayerBase
+// Type() -- gibt den LAUFZEITTYP einer Instanz zurück
+typename t = myObj.Type();  // z.B. PlayerBase
 
-// typename literal — a compile-time type reference
-typename t = PlayerBase;    // Always PlayerBase
+// typename-Literal -- eine Kompilierzeit-Typreferenz
+typename t = PlayerBase;    // Immer PlayerBase
 
-// They are comparable
-if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
+// Sie sind vergleichbar
+if (myObj.Type() == PlayerBase)  // true wenn myObj EIN PlayerBase IST
 ```
 
 ---
 
 ## Zusammenfassung
 
-| Operation | Syntax | Returns |
+| Operation | Syntax | Gibt zurück |
 |-----------|--------|---------|
-| Safe downcast | `Class.CastTo(out target, source)` | `bool` |
-| Inline cast | `TargetType.Cast(source)` | Target or `null` |
-| Type check (typename) | `obj.IsInherited(typename)` | `bool` |
-| Type check (string) | `obj.IsKindOf("ClassName")` | `bool` |
-| Get runtime type | `obj.Type()` | `typename` |
-| Variable count | `obj.Type().GetVariableCount()` | `int` |
-| Variable name | `obj.Type().GetVariableName(i)` | `string` |
-| Variable type | `obj.Type().GetVariableType(i)` | `typename` |
-| Read property | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
-| Write property | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
+| Sicherer Downcast | `Class.CastTo(out target, source)` | `bool` |
+| Inline-Cast | `TargetType.Cast(source)` | Ziel oder `null` |
+| Typprüfung (typename) | `obj.IsInherited(typename)` | `bool` |
+| Typprüfung (String) | `obj.IsKindOf("ClassName")` | `bool` |
+| Laufzeittyp abrufen | `obj.Type()` | `typename` |
+| Variablenanzahl | `obj.Type().GetVariableCount()` | `int` |
+| Variablenname | `obj.Type().GetVariableName(i)` | `string` |
+| Variablentyp | `obj.Type().GetVariableType(i)` | `typename` |
+| Eigenschaft lesen | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
+| Eigenschaft schreiben | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
 
 ---
 
 ## Navigation
 
-| Previous | Up | Next |
+| Vorheriges | Hoch | Nächstes |
 |----------|----|------|
-| [1.8 Memory Management](08-memory-management.md) | [Part 1: Enforce Script](../README.md) | [1.10 Enums & Preprocessor](10-enums-preprocessor.md) |
+| [1.8 Speicherverwaltung](08-memory-management.md) | [Teil 1: Enforce Script](../README.md) | [1.10 Enums & Präprozessor](10-enums-preprocessor.md) |

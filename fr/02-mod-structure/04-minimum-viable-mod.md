@@ -1,51 +1,51 @@
-# Chapitre 2.4: Your First Mod -- Minimum Viable
+# Chapitre 2.4 : Votre premier mod -- Minimum Viable
 
-[Accueil](../../README.md) | [<< Précédent : mod.cpp & Workshop](03-mod-cpp.md) | **Minimum Viable Mod** | [Suivant : File Organization >>](05-file-organization.md)
+[Accueil](../../README.md) | [<< Précédent : mod.cpp & Workshop](03-mod-cpp.md) | **Mod Minimum Viable** | [Suivant : Organisation des fichiers >>](05-file-organization.md)
 
 ---
 
-> **Résumé :** This chapter walks you through creating the smallest possible DayZ mod from scratch. By the end, you will have a working mod that prints a message to the script log when le jeu starts. Three files, zero dependencies, under five minutes.
+> **Résumé :** Ce chapitre vous guide dans la création du plus petit mod DayZ possible à partir de zéro. À la fin, vous aurez un mod fonctionnel qui affiche un message dans le log de script quand le jeu démarre. Trois fichiers, zéro dépendance, moins de cinq minutes.
 
 ---
 
 ## Table des matières
 
-- [What You Need](#what-you-need)
-- [The Goal](#the-goal)
-- [Step 1: Create the Directory Structure](#step-1-create-the-directory-structure)
-- [Step 2: Create mod.cpp](#step-2-create-modcpp)
-- [Step 3: Create config.cpp](#step-3-create-configcpp)
-- [Step 4: Create Your First Script](#step-4-create-your-first-script)
-- [Step 5: Pack and Test](#step-5-pack-and-test)
-- [Step 6: Verify It Works](#step-6-verify-it-works)
-- [Understanding What Happened](#understanding-what-happened)
-- [Next Steps](#next-steps)
-- [Troubleshooting](#troubleshooting)
+- [Ce dont vous avez besoin](#ce-dont-vous-avez-besoin)
+- [L'objectif](#lobjectif)
+- [Étape 1 : Créer la structure de répertoires](#étape-1--créer-la-structure-de-répertoires)
+- [Étape 2 : Créer mod.cpp](#étape-2--créer-modcpp)
+- [Étape 3 : Créer config.cpp](#étape-3--créer-configcpp)
+- [Étape 4 : Créer votre premier script](#étape-4--créer-votre-premier-script)
+- [Étape 5 : Empaqueter et tester](#étape-5--empaqueter-et-tester)
+- [Étape 6 : Vérifier que ça fonctionne](#étape-6--vérifier-que-ça-fonctionne)
+- [Comprendre ce qui s'est passé](#comprendre-ce-qui-sest-passé)
+- [Prochaines étapes](#prochaines-étapes)
+- [Dépannage](#dépannage)
 
 ---
 
-## What You Need
+## Ce dont vous avez besoin
 
-- DayZ game installed (retail or DayZ Tools/Diag)
-- A text editor (VS Code, Notepad++, or any plain text editor)
-- DayZ Tools installed (for PBO packing) -- OR you can test without packing (see Step 5)
-
----
-
-## The Goal
-
-We will create a mod called **HelloMod** that:
-1. Loads into DayZ without errors
-2. Prints `"[HelloMod] Mission started!"` to the script log
-3. Uses the correct standard structure
-
-This is the DayZ equivalent of "Hello World."
+- Le jeu DayZ installé (version retail ou DayZ Tools/Diag)
+- Un éditeur de texte (VS Code, Notepad++ ou n'importe quel éditeur de texte brut)
+- DayZ Tools installé (pour l'empaquetage PBO) -- OU vous pouvez tester sans empaqueter (voir Étape 5)
 
 ---
 
-## Step 1: Create the Directory Structure
+## L'objectif
 
-Create the following folders and files. You need exactly **3 files**:
+Nous allons créer un mod appelé **HelloMod** qui :
+1. Se charge dans DayZ sans erreurs
+2. Affiche `"[HelloMod] Mission started!"` dans le log de script
+3. Utilise la structure standard correcte
+
+C'est l'équivalent DayZ du « Hello World ».
+
+---
+
+## Étape 1 : Créer la structure de répertoires
+
+Créez les dossiers et fichiers suivants. Vous avez besoin d'exactement **3 fichiers** :
 
 ```
 HelloMod/
@@ -57,13 +57,13 @@ HelloMod/
         HelloMission.c
 ```
 
-That is the complete structure. Let us create each file.
+C'est la structure complète. Créons chaque fichier.
 
 ---
 
-## Step 2: Create mod.cpp
+## Étape 2 : Créer mod.cpp
 
-Create `HelloMod/mod.cpp` with this content:
+Créez `HelloMod/mod.cpp` avec ce contenu :
 
 ```cpp
 name = "Hello Mod";
@@ -72,13 +72,13 @@ version = "1.0";
 overview = "My first DayZ mod - prints a message on mission start.";
 ```
 
-This is the minimum metadata. The DayZ launcher will show "Hello Mod" in the mod list.
+Ce sont les métadonnées minimales. Le lanceur DayZ affichera « Hello Mod » dans la liste des mods.
 
 ---
 
-## Step 3: Create config.cpp
+## Étape 3 : Créer config.cpp
 
-Create `HelloMod/Scripts/config.cpp` with this content:
+Créez `HelloMod/Scripts/config.cpp` avec ce contenu :
 
 ```cpp
 class CfgPatches
@@ -118,17 +118,17 @@ class CfgMods
 };
 ```
 
-Let us break down what each part does:
+Décomposons ce que fait chaque partie :
 
-- **CfgPatches** declares the mod to le moteur. `requiredAddons` says we depend on `DZ_Data` (le DayZ vanilla data), which ensures we load after the base game.
-- **CfgMods** tells le moteur where our scripts live. We only use `5_Mission` because that is where mission lifecycle hooks are available.
-- **dependencies** lists `"Mission"` because our code hooks into the mission script module.
+- **CfgPatches** déclare le mod au moteur. `requiredAddons` dit que nous dépendons de `DZ_Data` (données vanilla DayZ), ce qui garantit que nous nous chargeons après le jeu de base.
+- **CfgMods** dit au moteur où se trouvent nos scripts. Nous utilisons uniquement `5_Mission` car c'est là que les hooks du cycle de vie de la mission sont disponibles.
+- **dependencies** liste `"Mission"` car notre code s'accroche au module de script mission.
 
 ---
 
-## Step 4: Create Your First Script
+## Étape 4 : Créer votre premier script
 
-Create `HelloMod/Scripts/5_Mission/HelloMod/HelloMission.c` with this content:
+Créez `HelloMod/Scripts/5_Mission/HelloMod/HelloMission.c` avec ce contenu :
 
 ```c
 modded class MissionServer
@@ -150,49 +150,49 @@ modded class MissionGameplay
 };
 ```
 
-What this does:
+Ce que ça fait :
 
-- `modded class MissionServer` extends le vanilla server mission class. When le serveur starts a mission, `OnInit()` fires and our message prints.
-- `modded class MissionGameplay` does the same for le client side.
-- `super.OnInit()` calls the original (vanilla) implementation first -- this is critical. Never skip it.
-- `Print()` writes to the DayZ script log file.
+- `modded class MissionServer` étend la classe de mission serveur vanilla. Quand le serveur démarre une mission, `OnInit()` se déclenche et notre message s'affiche.
+- `modded class MissionGameplay` fait la même chose côté client.
+- `super.OnInit()` appelle l'implémentation originale (vanilla) en premier -- c'est critique. Ne la sautez jamais.
+- `Print()` écrit dans le fichier log de script DayZ.
 
 ---
 
-## Step 5: Pack and Test
+## Étape 5 : Empaqueter et tester
 
-You have two options for testing:
+Vous avez deux options pour tester :
 
-### Option A: File Patching (No PBO Required -- Development Only)
+### Option A : File Patching (Pas de PBO requis -- Développement uniquement)
 
-DayZ supports loading unpacked mods during development. This is the fastest way to iterate.
+DayZ supporte le chargement de mods non empaquetés pendant le développement. C'est la façon la plus rapide d'itérer.
 
-1. Place your `HelloMod/` folder inside your DayZ installation directory (or use the P: drive with workbench)
-2. Launch DayZ with the `-filePatching` parameter and load your mod:
+1. Placez votre dossier `HelloMod/` dans le répertoire d'installation de DayZ (ou utilisez le lecteur P: avec le workbench)
+2. Lancez DayZ avec le paramètre `-filePatching` et chargez votre mod :
 
 ```
 DayZDiag_x64.exe -mod=HelloMod -filePatching
 ```
 
-This loads scripts directly from the folder without PBO packing.
+Cela charge les scripts directement depuis le dossier sans empaquetage PBO.
 
-### Option B: PBO Packing (Required for Distribution)
+### Option B : Empaquetage PBO (Requis pour la distribution)
 
-For Workshop publishing or server deployment, you need to pack into a PBO:
+Pour la publication sur le Workshop ou le déploiement serveur, vous devez empaqueter en PBO :
 
-1. Open **DayZ Tools** (from Steam)
-2. Open **Addon Builder**
-3. Set the source directory to `HelloMod/Scripts/`
-4. Set the output to `@HelloMod/Addons/HelloMod_Scripts.pbo`
-5. Click **Pack**
+1. Ouvrez **DayZ Tools** (depuis Steam)
+2. Ouvrez **Addon Builder**
+3. Définissez le répertoire source sur `HelloMod/Scripts/`
+4. Définissez la sortie sur `@HelloMod/Addons/HelloMod_Scripts.pbo`
+5. Cliquez sur **Pack**
 
-Or use a command-line packer like `PBOConsole`:
+Ou utilisez un empaqueteur en ligne de commande comme `PBOConsole` :
 
 ```
 PBOConsole.exe -pack HelloMod/Scripts @HelloMod/Addons/HelloMod_Scripts.pbo
 ```
 
-Place the `mod.cpp` next to the `Addons/` folder:
+Placez le `mod.cpp` à côté du dossier `Addons/` :
 
 ```
 @HelloMod/
@@ -201,7 +201,7 @@ Place the `mod.cpp` next to the `Addons/` folder:
     HelloMod_Scripts.pbo
 ```
 
-Then launch DayZ:
+Puis lancez DayZ :
 
 ```
 DayZDiag_x64.exe -mod=@HelloMod
@@ -209,92 +209,92 @@ DayZDiag_x64.exe -mod=@HelloMod
 
 ---
 
-## Step 6: Verify It Works
+## Étape 6 : Vérifier que ça fonctionne
 
-### Finding the Script Log
+### Trouver le log de script
 
-DayZ writes script output to log files in your profile directory:
-
-```
-Windows: C:\Users\YourName\AppData\Local\DayZ\
-```
-
-Look for the most recent `.RPT` or `.log` file. The script log is typically named:
+DayZ écrit la sortie de script dans des fichiers log dans votre répertoire de profil :
 
 ```
-script_<date>_<time>.log
+Windows : C:\Users\VotreNom\AppData\Local\DayZ\
 ```
 
-### What to Look For
+Cherchez le fichier `.RPT` ou `.log` le plus récent. Le log de script est typiquement nommé :
 
-Open the log file and search for `[HelloMod]`. You should see:
+```
+script_<date>_<heure>.log
+```
+
+### Ce qu'il faut chercher
+
+Ouvrez le fichier log et recherchez `[HelloMod]`. Vous devriez voir :
 
 ```
 [HelloMod] Mission started! Server is running.
 ```
 
-or (if you joined as a client):
+ou (si vous avez rejoint en tant que client) :
 
 ```
 [HelloMod] Mission started! Client is running.
 ```
 
-If you see this message, congratulations -- your mod is working.
+Si vous voyez ce message, félicitations -- votre mod fonctionne.
 
-### If You See Errors
+### Si vous voyez des erreurs
 
-If the log contains lines starting with `SCRIPT (E):`, something went wrong. See the [Troubleshooting](#troubleshooting) section below.
+Si le log contient des lignes commençant par `SCRIPT (E):`, quelque chose s'est mal passé. Voir la section [Dépannage](#dépannage) ci-dessous.
 
 ---
 
-## Understanding What Happened
+## Comprendre ce qui s'est passé
 
-Here is the sequence of events when DayZ loaded your mod:
+Voici la séquence d'événements quand DayZ a chargé votre mod :
 
 ```
-1. Engine starts, reads config.cpp files from all PBOs
-2. CfgPatches "HelloMod_Scripts" is registered
-   --> requiredAddons ensures it loads after DZ_Data
-3. CfgMods "HelloMod" is registered
-   --> Engine knows about the missionScriptModule path
-4. Engine compiles all mods' 5_Mission scripts
-   --> HelloMission.c is compiled
-   --> "modded class MissionServer" patches the vanilla class
-5. Server starts a mission
-   --> MissionServer.OnInit() is called
-   --> Your override runs, calling super.OnInit() first
-   --> Print() writes to the script log
-6. Client connects and loads
-   --> MissionGameplay.OnInit() is called
-   --> Your override runs
-   --> Print() writes to the client log
+1. Le moteur démarre, lit les fichiers config.cpp de tous les PBOs
+2. CfgPatches "HelloMod_Scripts" est enregistré
+   --> requiredAddons garantit le chargement après DZ_Data
+3. CfgMods "HelloMod" est enregistré
+   --> Le moteur connaît le chemin du missionScriptModule
+4. Le moteur compile les scripts 5_Mission de tous les mods
+   --> HelloMission.c est compilé
+   --> "modded class MissionServer" patche la classe vanilla
+5. Le serveur démarre une mission
+   --> MissionServer.OnInit() est appelé
+   --> Votre override s'exécute, appelant super.OnInit() en premier
+   --> Print() écrit dans le log de script
+6. Le client se connecte et charge
+   --> MissionGameplay.OnInit() est appelé
+   --> Votre override s'exécute
+   --> Print() écrit dans le log client
 ```
 
-The `modded` keyword is the key mechanism. It tells le moteur "take the existing class and add my changes on top." This is how every DayZ mod integrates with vanilla code.
+Le mot-clé `modded` est le mécanisme clé. Il dit au moteur « prends la classe existante et ajoute mes modifications par-dessus ». C'est ainsi que chaque mod DayZ s'intègre avec le code vanilla.
 
 ---
 
 ## Prochaines étapes
 
-Now that you have a working mod, here are natural progressions:
+Maintenant que vous avez un mod fonctionnel, voici les progressions naturelles :
 
-### Add a 3_Game Layer
+### Ajouter une couche 3_Game
 
-Add configuration data or constants that do not depend on world entities:
+Ajoutez des données de configuration ou des constantes qui ne dépendent pas des entités du monde :
 
 ```
 HelloMod/
   Scripts/
-    config.cpp              <-- Add gameScriptModule entry
+    config.cpp              <-- Ajoutez l'entrée gameScriptModule
     3_Game/
       HelloMod/
-        HelloConfig.c       <-- Configuration class
+        HelloConfig.c       <-- Classe de configuration
     5_Mission/
       HelloMod/
-        HelloMission.c      <-- Existing file
+        HelloMission.c      <-- Fichier existant
 ```
 
-Update `config.cpp` to include the new layer:
+Mettez à jour `config.cpp` pour inclure la nouvelle couche :
 
 ```cpp
 dependencies[] = { "Game", "Mission" };
@@ -314,133 +314,133 @@ class defs
 };
 ```
 
-### Add a 4_World Layer
+### Ajouter une couche 4_World
 
-Create custom items, extend players, or add world managers:
+Créez des objets personnalisés, étendez les joueurs ou ajoutez des gestionnaires du monde :
 
 ```
 HelloMod/
   Scripts/
-    config.cpp              <-- Add worldScriptModule entry
+    config.cpp              <-- Ajoutez l'entrée worldScriptModule
     3_Game/
       HelloMod/
         HelloConfig.c
     4_World/
       HelloMod/
-        HelloManager.c      <-- World-aware logic
+        HelloManager.c      <-- Logique liée au monde
     5_Mission/
       HelloMod/
         HelloMission.c
 ```
 
-### Add UI
+### Ajouter de l'UI
 
-Create a simple in-game panel (covered in Part 3 of this guide):
+Créez un simple panneau en jeu (couvert dans la Partie 3 de ce guide) :
 
 ```
 HelloMod/
   GUI/
     layouts/
-      hello_panel.layout    <-- UI layout file
+      hello_panel.layout    <-- Fichier de mise en page UI
   Scripts/
     5_Mission/
       HelloMod/
-        HelloPanel.c        <-- UI script
+        HelloPanel.c        <-- Script UI
 ```
 
-### Add a Custom Item
+### Ajouter un objet personnalisé
 
-Define an item in `Data/config.cpp` and create its script behavior in `4_World`:
+Définissez un objet dans `Data/config.cpp` et créez son comportement script dans `4_World` :
 
 ```
 HelloMod/
   Data/
-    config.cpp              <-- CfgVehicles with item definition
+    config.cpp              <-- CfgVehicles avec définition d'objet
     Models/
-      hello_item.p3d        <-- 3D model
+      hello_item.p3d        <-- Modèle 3D
   Scripts/
     4_World/
       HelloMod/
-        HelloItem.c         <-- Item behavior script
+        HelloItem.c         <-- Script de comportement d'objet
 ```
 
-### Depend on a Framework
+### Dépendre d'un framework
 
-If you want to use Community Framework (CF) features, add the dependency:
+Si vous voulez utiliser les fonctionnalités de Community Framework (CF), ajoutez la dépendance :
 
 ```cpp
-// In config.cpp
+// Dans config.cpp
 requiredAddons[] = { "DZ_Data", "JM_CF_Scripts" };
 ```
 
 ---
 
-## Troubleshooting
+## Dépannage
 
 ### "Addon HelloMod_Scripts requires addon DZ_Data which is not loaded"
 
-Your `requiredAddons` references an addon that is not present. Make sure `DZ_Data` is spelled correctly and DayZ base game is loaded.
+Votre `requiredAddons` référence un addon qui n'est pas présent. Assurez-vous que `DZ_Data` est correctement orthographié et que le jeu de base DayZ est chargé.
 
-### No Log Output (Mod Seems to Not Load)
+### Pas de sortie log (le mod semble ne pas se charger)
 
-Check these in order:
+Vérifiez ces points dans l'ordre :
 
-1. **Is the mod in the launch parameter?** Verify `-mod=HelloMod` or `-mod=@HelloMod` is in your launch command.
-2. **Is config.cpp in the right place?** It must be at the root of the PBO (or the root of the `Scripts/` folder when file-patching).
-3. **Are the script paths correct?** The `files[]` paths in `config.cpp` must match the actual directory structure. `"HelloMod/Scripts/5_Mission"` means le moteur looks for that exact path.
-4. **Is there a CfgPatches class?** Without it, the PBO is ignored.
+1. **Le mod est-il dans le paramètre de lancement ?** Vérifiez que `-mod=HelloMod` ou `-mod=@HelloMod` est dans votre commande de lancement.
+2. **config.cpp est-il au bon endroit ?** Il doit être à la racine du PBO (ou à la racine du dossier `Scripts/` en file-patching).
+3. **Les chemins de script sont-ils corrects ?** Les chemins `files[]` dans `config.cpp` doivent correspondre à la structure de répertoires réelle. `"HelloMod/Scripts/5_Mission"` signifie que le moteur cherche exactement ce chemin.
+4. **Y a-t-il une classe CfgPatches ?** Sans elle, le PBO est ignoré.
 
 ### SCRIPT (E): Undefined variable / Undefined type
 
-Your code references something that does not exist at that layer. Common causes:
+Votre code référence quelque chose qui n'existe pas dans cette couche. Causes courantes :
 
-- Referencing `PlayerBase` from `3_Game` (it is defined in `4_World`)
-- Typo in a class or variable name
-- Missing `super.OnInit()` call (causes cascade failures)
+- Référencer `PlayerBase` depuis `3_Game` (il est défini dans `4_World`)
+- Faute de frappe dans un nom de classe ou de variable
+- Appel manquant à `super.OnInit()` (cause des défaillances en cascade)
 
-### SCRIPT (E): Member non trouvé
+### SCRIPT (E): Member not found
 
-The method or property you are calling does not exist on that class. Double-check le vanilla API. Common mistake: calling methods from a newer DayZ version when running an older one.
+La méthode ou propriété que vous appelez n'existe pas sur cette classe. Vérifiez l'API vanilla. Erreur courante : appeler des méthodes d'une version DayZ plus récente en exécutant une version plus ancienne.
 
-### Mod Loads But Script Does Not Run
+### Le mod se charge mais le script ne s'exécute pas
 
-- Check that your `.c` file is inside the directory listed in `files[]`
-- Ensure the file has a `.c` extension (not `.txt` or `.cs`)
-- Verify the `modded class` name matches le vanilla class exactly (case-sensitive)
+- Vérifiez que votre fichier `.c` est dans le répertoire listé dans `files[]`
+- Assurez-vous que le fichier a une extension `.c` (pas `.txt` ou `.cs`)
+- Vérifiez que le nom `modded class` correspond exactement à la classe vanilla (sensible à la casse)
 
-### PBO Packing Errors
+### Erreurs d'empaquetage PBO
 
-- Ensure `config.cpp` is at the root level inside the PBO
-- File paths inside PBOs use forward slashes (`/`), not backslashes
-- Make sure there are no binary files in the Scripts folder (only `.c` and `.cpp`)
+- Assurez-vous que `config.cpp` est au niveau racine dans le PBO
+- Les chemins de fichiers dans les PBOs utilisent des barres obliques (`/`), pas des antislashs
+- Vérifiez qu'il n'y a pas de fichiers binaires dans le dossier Scripts (uniquement `.c` et `.cpp`)
 
 ---
 
 ## Bonnes pratiques
 
-- Always call `super.OnInit()` before your custom code in modded mission classes -- skipping it breaks other mods' initialization.
-- Use a unique prefix in your `Print()` messages (e.g., `[HelloMod]`) so you can grep log files quickly.
-- Start with `5_Mission` only. Add `3_Game` and `4_World` layers incrementally as your mod grows.
-- Use `-filePatching` during development to avoid re-packing PBOs on every change.
-- Keep your first mod under 3 files until it works, then expand. Debugging a minimal structure is far easier.
+- Appelez toujours `super.OnInit()` avant votre code personnalisé dans les classes de mission moddées -- le sauter casse l'initialisation des autres mods.
+- Utilisez un préfixe unique dans vos messages `Print()` (par exemple, `[HelloMod]`) pour pouvoir chercher rapidement dans les fichiers log.
+- Commencez avec `5_Mission` uniquement. Ajoutez les couches `3_Game` et `4_World` progressivement à mesure que votre mod grandit.
+- Utilisez `-filePatching` pendant le développement pour éviter de re-empaqueter les PBOs à chaque modification.
+- Gardez votre premier mod à moins de 3 fichiers jusqu'à ce qu'il fonctionne, puis étendez. Déboguer une structure minimale est bien plus facile.
 
 ---
 
 ## Théorie vs Pratique
 
 | Concept | Théorie | Réalité |
-|---------|--------|---------|
-| `Print()` outputs to log | Messages appear in script log | Output goes to the `.RPT` file, not a separate script log. On dedicated servers, check le serveur RPT in the profile folder |
-| `-filePatching` loads loose files | Unpacked mods work instantly | Some assets (models, textures) still require PBO packing; scripts work loose, but `.layout` files may not load from unpacked folders on all setups |
-| `modded class` patches vanilla | Your override replaces the original | Multiple mods can `modded class` the same class; they chain in load order. If one skips `super.OnInit()`, all later mods break |
-| `DZ_Data` is the only needed dependency | Minimal `requiredAddons` | Works for pure script mods, but if you reference any vanilla weapon/item class, you also need `DZ_Scripts` or the specific vanilla PBO |
-| Three files is enough | Mod loads with mod.cpp + config.cpp + one .c file | True for a script-only mod, but adding items or UI requires additional PBOs (Data, GUI) |
+|---------|---------|---------|
+| `Print()` affiche dans le log | Les messages apparaissent dans le log de script | La sortie va dans le fichier `.RPT`, pas dans un log de script séparé. Sur les serveurs dédiés, vérifiez le RPT du serveur dans le dossier de profil |
+| `-filePatching` charge les fichiers loose | Les mods non empaquetés fonctionnent instantanément | Certains assets (modèles, textures) nécessitent encore l'empaquetage PBO ; les scripts fonctionnent en loose, mais les fichiers `.layout` peuvent ne pas se charger depuis des dossiers non empaquetés sur toutes les configurations |
+| `modded class` patche le vanilla | Votre override remplace l'original | Plusieurs mods peuvent utiliser `modded class` sur la même classe ; ils se chaînent dans l'ordre de chargement. Si un saute `super.OnInit()`, tous les mods suivants sont cassés |
+| `DZ_Data` est la seule dépendance nécessaire | `requiredAddons` minimal | Fonctionne pour les mods purement script, mais si vous référencez une classe d'arme/objet vanilla, vous avez aussi besoin de `DZ_Scripts` ou du PBO vanilla spécifique |
+| Trois fichiers suffisent | Le mod se charge avec mod.cpp + config.cpp + un fichier .c | Vrai pour un mod uniquement script, mais ajouter des objets ou de l'UI nécessite des PBOs supplémentaires (Data, GUI) |
 
 ---
 
-## Complete File Listing
+## Liste complète des fichiers
 
-For reference, here are all three files in their entirety:
+Pour référence, voici les trois fichiers dans leur intégralité :
 
 ### HelloMod/mod.cpp
 
@@ -515,5 +515,5 @@ modded class MissionGameplay
 
 ---
 
-**Précédent :** [Chapter 2.3: mod.cpp & Workshop](03-mod-cpp.md)
-**Suivant :** [Chapter 2.5: File Organization Best Practices](05-file-organization.md)
+**Précédent :** [Chapitre 2.3 : mod.cpp & Workshop](03-mod-cpp.md)
+**Suivant :** [Chapitre 2.5 : Bonnes pratiques d'organisation des fichiers](05-file-organization.md)

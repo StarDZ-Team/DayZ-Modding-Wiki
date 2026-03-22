@@ -1,39 +1,43 @@
-# Chapter 1.9: Casting & Reflection
+# 第1.9章: キャストとリフレクション
 
-[Home](../../README.md) | [<< Previous: Memory Management](08-memory-management.md) | **Casting & Reflection** | [Next: Enums & Preprocessor >>](10-enums-preprocessor.md)
+[ホーム](../../README.md) | [<< 前へ: メモリ管理](08-memory-management.md) | **キャストとリフレクション** | [次へ: 列挙型とプリプロセッサ >>](10-enums-preprocessor.md)
+
+---
+
+> **目標:** 安全な型キャスト、ランタイム型チェック、動的プロパティアクセスのためのEnforce ScriptのリフレクションAPIをマスターします。
 
 ---
 
 ## 目次
 
-- [Why Casting Matters](#why-casting-matters)
-- [Class.CastTo — Safe Downcasting](#classcastto--safe-downcasting)
-- [Type.Cast — Alternative Casting](#typecast--alternative-casting)
-- [CastTo vs Type.Cast — When to Use Which](#castto-vs-typecast--when-to-use-which)
-- [obj.IsInherited — Runtime Type Checking](#obisinherited--runtime-type-checking)
-- [obj.IsKindOf — String-Based Type Checking](#obiskindof--string-based-type-checking)
-- [obj.Type — Get Runtime Type](#objtype--get-runtime-type)
-- [typename — Storing Type References](#typename--storing-type-references)
-- [Reflection API](#reflection-api)
-  - [Inspecting Variables](#inspecting-variables)
+- [キャストが重要な理由](#キャストが重要な理由)
+- [Class.CastTo -- 安全なダウンキャスト](#classcastto----安全なダウンキャスト)
+- [Type.Cast -- 代替キャスト](#typecast----代替キャスト)
+- [CastTo vs Type.Cast -- 使い分け](#castto-vs-typecast----使い分け)
+- [obj.IsInherited -- ランタイム型チェック](#obisinherited----ランタイム型チェック)
+- [obj.IsKindOf -- 文字列ベースの型チェック](#obiskindof----文字列ベースの型チェック)
+- [obj.Type -- ランタイム型の取得](#objtype----ランタイム型の取得)
+- [typename -- 型参照の保存](#typename----型参照の保存)
+- [リフレクションAPI](#リフレクションapi)
+  - [変数の検査](#変数の検査)
   - [EnScript.GetClassVar / SetClassVar](#enscriptgetclassvar--setclassvar)
-- [Real-World Examples](#real-world-examples)
-  - [Finding All Vehicles in the World](#finding-all-vehicles-in-the-world)
-  - [Safe Object Helper With Cast](#safe-object-helper-with-cast)
-  - [Reflection-Based Config System](#reflection-based-config-system)
-  - [Type-Safe Event Dispatch](#type-safe-event-dispatch)
-- [Common Mistakes](#common-mistakes)
-- [Summary](#summary)
-- [Navigation](#navigation)
+- [実践的な例](#実践的な例)
+  - [ワールド内のすべての車両を見つける](#ワールド内のすべての車両を見つける)
+  - [キャスト付き安全オブジェクトヘルパー](#キャスト付き安全オブジェクトヘルパー)
+  - [リフレクションベースの設定システム](#リフレクションベースの設定システム)
+  - [型安全なイベントディスパッチ](#型安全なイベントディスパッチ)
+- [よくある間違い](#よくある間違い)
+- [まとめ](#まとめ)
+- [ナビゲーション](#ナビゲーション)
 
 ---
 
 ## キャストが重要な理由
 
-DayZ のエンティティ階層は深いです。ほとんどのエンジン API は汎用的な基底型（`Object`、`Man`、`Class`）を返しますが、特殊なメソッドにアクセスするには特定の型（`PlayerBase`、`ItemBase`、`CarScript`）が必要です。キャストは基底参照を派生参照に安全に変換します。
+DayZのエンティティ階層は深いです。ほとんどのエンジンAPIは汎用的な基底型（`Object`、`Man`、`Class`）を返しますが、特殊化されたメソッドにアクセスするには特定の型（`PlayerBase`、`ItemBase`、`CarScript`）が必要です。キャストは基底参照を派生参照に安全に変換します。
 
 ```
-Class (root)
+Class (ルート)
   └─ Object
        └─ Entity
             └─ EntityAI
@@ -45,16 +49,16 @@ Class (root)
                       └─ DayZPlayer → PlayerBase
 ```
 
-Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error because Enforce Script resolves virtual calls at runtime.
+基底型に存在しないメソッドを呼び出すと**ランタイムクラッシュ**が発生します -- Enforce Scriptは仮想呼び出しをランタイムで解決するため、コンパイラエラーは出ません。
 
 ---
 
-## Class.CastTo — 安全なダウンキャスト
+## Class.CastTo -- 安全なダウンキャスト
 
-`Class.CastTo` は DayZ で**推奨される**キャスト方法です。 結果を `out` パラメータに書き込み `bool` を返す静的メソッドです。
+`Class.CastTo` はDayZにおける**推奨される**キャスト方法です。結果を `out` パラメータに書き込み、`bool` を返す静的メソッドです。
 
 ```c
-// Signature:
+// シグネチャ:
 // static bool Class.CastTo(out Class target, Class source)
 
 Object obj = GetSomeObject();
@@ -62,25 +66,25 @@ PlayerBase player;
 
 if (Class.CastTo(player, obj))
 {
-    // Cast succeeded — player is valid
+    // キャスト成功 -- playerは有効
     string name = player.GetIdentity().GetName();
     Print("Found player: " + name);
 }
 else
 {
-    // Cast failed — obj is not a PlayerBase
-    // player is null here
+    // キャスト失敗 -- objはPlayerBaseではない
+    // playerはここではnull
 }
 ```
 
 **推奨される理由：**
-- Returns `false` on failure instead of crashing
-- The `out` parameter is set to `null` on failure — safe to check
-- Works across the entire class hierarchy (not just `Object`)
+- クラッシュする代わりに失敗時に `false` を返します
+- 失敗時に `out` パラメータが `null` に設定されます -- チェックが安全です
+- クラス階層全体で動作します（`Object` だけでなく）
 
-### Pattern: Cast-and-Continue
+### パターン: キャストして続行
 
-In loops, use cast failure to skip irrelevant objects:
+ループ内では、キャスト失敗を使って無関係なオブジェクトをスキップします：
 
 ```c
 array<Object> nearObjects = new array<Object>;
@@ -91,9 +95,9 @@ foreach (Object obj : nearObjects)
 {
     EntityAI entity;
     if (!Class.CastTo(entity, obj))
-        continue;  // Skip non-EntityAI objects (buildings, terrain, etc.)
+        continue;  // EntityAI以外のオブジェクト（建物、地形など）をスキップ
 
-    // Now safe to call EntityAI methods
+    // EntityAIメソッドを安全に呼び出せる
     if (entity.IsAlive())
     {
         Print(entity.GetType() + " is alive at " + entity.GetPosition().ToString());
@@ -103,12 +107,12 @@ foreach (Object obj : nearObjects)
 
 ---
 
-## Type.Cast — 代替キャスト
+## Type.Cast -- 代替キャスト
 
-すべてのクラスにはキャスト結果を直接返す（失敗時は `null`）静的 `Cast` メソッドがあります。
+すべてのクラスには、キャスト結果を直接返す静的 `Cast` メソッドがあります（失敗時は `null`）。
 
 ```c
-// Syntax: TargetType.Cast(source)
+// 構文: TargetType.Cast(source)
 
 Object obj = GetSomeObject();
 PlayerBase player = PlayerBase.Cast(obj);
@@ -119,11 +123,11 @@ if (player)
 }
 ```
 
-This is a one-liner that combines cast and assignment, but you **must** still null-check the result.
+これはキャストと代入を1行で行いますが、結果のnullチェックは**必ず**行う必要があります。
 
-### Casting Primitives and Params
+### プリミティブとParamsのキャスト
 
-`Type.Cast` is also used with `Param` classes (used heavily in RPCs and events):
+`Type.Cast` は `Param` クラス（RPCやイベントで多用される）にも使用されます：
 
 ```c
 override void OnEvent(EventType eventTypeId, Param params)
@@ -142,36 +146,36 @@ override void OnEvent(EventType eventTypeId, Param params)
 
 ---
 
-## CastTo と Type.Cast の使い分け
+## CastTo vs Type.Cast -- 使い分け
 
-| Feature | `Class.CastTo` | `Type.Cast` |
+| 機能 | `Class.CastTo` | `Type.Cast` |
 |---------|----------------|-------------|
-| Return type | `bool` | Target type or `null` |
-| Null on failure | Yes (out param set to null) | Yes (returns null) |
-| Best for | if-blocks with branching logic | One-liner assignments |
-| Used in DayZ vanilla | Everywhere | Everywhere |
-| Works with non-Object | Yes (any `Class`) | Yes (any `Class`) |
+| 戻り値の型 | `bool` | ターゲット型または `null` |
+| 失敗時のnull | はい（outパラメータがnullに設定される） | はい（nullを返す） |
+| 最適な用途 | 分岐ロジックを持つifブロック | 1行代入 |
+| DayZバニラでの使用 | 至る所で | 至る所で |
+| Object以外で動作 | はい（任意の `Class`） | はい（任意の `Class`） |
 
-**経験則：** Use `Class.CastTo` when you branch on success/failure. Use `Type.Cast` when you just need the typed reference and will null-check later.
+**経験則:** 成功/失敗で分岐する場合は `Class.CastTo` を使用します。型付き参照が必要で後でnullチェックする場合は `Type.Cast` を使用します。
 
 ```c
-// CastTo — branch on result
+// CastTo -- 結果で分岐
 PlayerBase player;
 if (Class.CastTo(player, obj))
 {
-    // handle player
+    // プレイヤーを処理
 }
 
-// Type.Cast — assign and check later
+// Type.Cast -- 代入して後でチェック
 PlayerBase player = PlayerBase.Cast(obj);
 if (!player) return;
 ```
 
 ---
 
-## obj.IsInherited — Runtime Type Checking
+## obj.IsInherited -- ランタイム型チェック
 
-`IsInherited` はキャストを**行わずに**オブジェクトが指定された型のインスタンスかどうかをチェックします。 It takes a `typename` argument.
+`IsInherited` はキャストを実行**せずに**、オブジェクトが指定された型のインスタンスかどうかをチェックします。`typename` 引数を取ります。
 
 ```c
 Object obj = GetSomeObject();
@@ -192,13 +196,13 @@ if (obj.IsInherited(CarScript))
 }
 ```
 
-`IsInherited` returns `true` for the exact type **and** any parent types in the hierarchy. A `PlayerBase` object returns `true` for `IsInherited(Man)`, `IsInherited(EntityAI)`, `IsInherited(Object)`, etc.
+`IsInherited` は正確な型**および**階層内のすべての親型に対して `true` を返します。`PlayerBase` オブジェクトは `IsInherited(Man)`、`IsInherited(EntityAI)`、`IsInherited(Object)` などに対して `true` を返します。
 
 ---
 
-## obj.IsKindOf — String-Based Type Checking
+## obj.IsKindOf -- 文字列ベースの型チェック
 
-`IsKindOf` は同じチェックを **string** のクラス名で行います。 型名をデータとして持っている場合（設定ファイルからなど）に便利です。
+`IsKindOf` は同じチェックを**文字列**のクラス名で行います。型名をデータとして持っている場合（例：設定ファイルから）に便利です。
 
 ```c
 Object obj = GetSomeObject();
@@ -214,30 +218,30 @@ if (obj.IsKindOf("DayZAnimal"))
 }
 ```
 
-**重要：** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
+**重要:** `IsKindOf` は `IsInherited` と同様に、継承チェーン全体をチェックします。`Mag_STANAG_30Rnd` は `IsKindOf("Magazine_Base")`、`IsKindOf("InventoryItem")`、`IsKindOf("EntityAI")` などに対して `true` を返します。
 
 ### IsInherited vs IsKindOf
 
-| Feature | `IsInherited(typename)` | `IsKindOf(string)` |
+| 機能 | `IsInherited(typename)` | `IsKindOf(string)` |
 |---------|------------------------|---------------------|
-| Argument | Compile-time type | String name |
-| Speed | Faster (type comparison) | Slower (string lookup) |
-| Use when | You know the type at compile time | Type comes from data/config |
+| 引数 | コンパイル時の型 | 文字列名 |
+| 速度 | 高速（型比較） | 低速（文字列検索） |
+| 使用場面 | コンパイル時に型がわかっている場合 | 型がデータ/設定から来る場合 |
 
 ---
 
-## obj.Type — Get Runtime Type
+## obj.Type -- ランタイム型の取得
 
-`Type()` returns the `typename` of an object's actual runtime class — not the declared variable type.
+`Type()` はオブジェクトの実際のランタイムクラスの `typename` を返します -- 宣言された変数の型ではありません。
 
 ```c
 Object obj = GetSomeObject();
 typename t = obj.Type();
 
-Print(t.ToString());  // e.g., "PlayerBase", "AK101", "LandRover"
+Print(t.ToString());  // 例: "PlayerBase", "AK101", "LandRover"
 ```
 
-Use this for logging, debugging, or comparing types dynamically:
+ロギング、デバッグ、または動的な型比較に使用します：
 
 ```c
 void ProcessEntity(EntityAI entity)
@@ -254,29 +258,29 @@ void ProcessEntity(EntityAI entity)
 
 ---
 
-## typename — Storing Type References
+## typename -- 型参照の保存
 
-`typename` は Enforce Script のファーストクラス型です。 変数に格納し、パラメータとして渡し、比較できます。
+`typename` はEnforce Scriptのファーストクラス型です。変数に格納し、パラメータとして渡し、比較することができます。
 
 ```c
-// Declare a typename variable
+// typename変数の宣言
 typename playerType = PlayerBase;
 typename vehicleType = CarScript;
 
-// Compare
+// 比較
 typename objType = obj.Type();
 if (objType == playerType)
 {
     Print("Match!");
 }
 
-// Use in collections
+// コレクションでの使用
 array<typename> allowedTypes = new array<typename>;
 allowedTypes.Insert(PlayerBase);
 allowedTypes.Insert(DayZInfected);
 allowedTypes.Insert(DayZAnimal);
 
-// Check membership
+// メンバーシップのチェック
 foreach (typename t : allowedTypes)
 {
     if (obj.IsInherited(t))
@@ -287,29 +291,29 @@ foreach (typename t : allowedTypes)
 }
 ```
 
-### Creating Instances from typename
+### typenameからインスタンスを作成
 
-You can create objects from a `typename` at runtime:
+ランタイムで `typename` からオブジェクトを作成できます：
 
 ```c
 typename t = PlayerBase;
-Class instance = t.Spawn();  // Creates a new instance
+Class instance = t.Spawn();  // 新しいインスタンスを作成
 
-// Or use the string-based approach:
+// または文字列ベースのアプローチ:
 Class instance2 = GetGame().CreateObjectEx("AK101", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-> **注意：** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
+> **注意:** `typename.Spawn()` はパラメータなしのコンストラクタを持つクラスでのみ動作します。DayZエンティティには `GetGame().CreateObject()` または `CreateObjectEx()` を使用してください。
 
 ---
 
-## リフレクション API
+## リフレクションAPI
 
-Enforce Script は基本的なリフレクション機能を提供します — コンパイル時に型を知らなくても実行時にオブジェクトのプロパティを検査・変更する機能です。
+Enforce Scriptは基本的なリフレクション -- コンパイル時に型を知らなくても、ランタイムでオブジェクトのプロパティを検査および変更する機能を提供します。
 
-### Inspecting Variables
+### 変数の検査
 
-Every object's `Type()` returns a `typename` that exposes variable metadata:
+すべてのオブジェクトの `Type()` は変数メタデータを公開する `typename` を返します：
 
 ```c
 void InspectObject(Class obj)
@@ -329,24 +333,24 @@ void InspectObject(Class obj)
 }
 ```
 
-**Available reflection methods on `typename`:**
+**`typename` で利用可能なリフレクションメソッド：**
 
-| メソッド | 戻り値 | Description |
+| メソッド | 戻り値 | 説明 |
 |--------|---------|-------------|
-| `GetVariableCount()` | `int` | Number of member variables |
-| `GetVariableName(int index)` | `string` | Variable name at index |
-| `GetVariableType(int index)` | `typename` | Variable type at index |
-| `ToString()` | `string` | Class name as string |
+| `GetVariableCount()` | `int` | メンバー変数の数 |
+| `GetVariableName(int index)` | `string` | インデックスの変数名 |
+| `GetVariableType(int index)` | `typename` | インデックスの変数型 |
+| `ToString()` | `string` | クラス名を文字列として |
 
 ### EnScript.GetClassVar / SetClassVar
 
-`EnScript.GetClassVar` and `EnScript.SetClassVar` let you read/write member variables by **name** at runtime. This is Enforce Script's equivalent of dynamic property access.
+`EnScript.GetClassVar` と `EnScript.SetClassVar` はランタイムで**名前**によってメンバー変数を読み書きできます。これはEnforce Scriptの動的プロパティアクセスに相当します。
 
 ```c
-// Signature:
+// シグネチャ:
 // static void EnScript.GetClassVar(Class instance, string varName, int index, out T value)
 // static bool EnScript.SetClassVar(Class instance, string varName, int index, T value)
-// 'index' is the array element index — use 0 for non-array fields.
+// 'index' は配列要素のインデックス -- 非配列フィールドには0を使用
 
 class MyConfig
 {
@@ -359,7 +363,7 @@ void DemoReflection()
 {
     MyConfig cfg = new MyConfig();
 
-    // Read values by name
+    // 名前で値を読み取る
     int maxVal;
     EnScript.GetClassVar(cfg, "MaxSpawns", 0, maxVal);
     Print("MaxSpawns = " + maxVal.ToString());  // "MaxSpawns = 10"
@@ -372,20 +376,20 @@ void DemoReflection()
     EnScript.GetClassVar(cfg, "WelcomeMsg", 0, msg);
     Print("WelcomeMsg = " + msg);  // "WelcomeMsg = Hello!"
 
-    // Write values by name
+    // 名前で値を書き込む
     EnScript.SetClassVar(cfg, "MaxSpawns", 0, 50);
     EnScript.SetClassVar(cfg, "SpawnRadius", 0, 250.0);
     EnScript.SetClassVar(cfg, "WelcomeMsg", 0, "Welcome!");
 }
 ```
 
-> **警告：** `GetClassVar`/`SetClassVar` silently fail if the variable name is wrong or the type doesn't match. Always validate variable names before use.
+> **警告:** `GetClassVar`/`SetClassVar` は変数名が間違っているか型が一致しない場合、暗黙的に失敗します。使用前に常に変数名を検証してください。
 
 ---
 
 ## 実践的な例
 
-### Finding All Vehicles in the World
+### ワールド内のすべての車両を見つける
 
 ```c
 static array<CarScript> FindAllVehicles()
@@ -394,7 +398,7 @@ static array<CarScript> FindAllVehicles()
     array<Object> allObjects = new array<Object>;
     array<CargoBase> proxyCargos = new array<CargoBase>;
 
-    // Search a large area (or use mission-specific logic)
+    // 広いエリアを検索（またはミッション固有のロジックを使用）
     vector center = "7500 0 7500";
     GetGame().GetObjectsAtPosition(center, 15000.0, allObjects, proxyCargos);
 
@@ -412,13 +416,13 @@ static array<CarScript> FindAllVehicles()
 }
 ```
 
-### Safe Object Helper With Cast
+### キャスト付き安全オブジェクトヘルパー
 
-This pattern is used throughout DayZ modding — a utility function that safely checks if an `Object` is alive by casting to `EntityAI`:
+このパターンはDayZモディング全体で使用されています -- `Object` が生存しているかを `EntityAI` にキャストして安全にチェックするユーティリティ関数です：
 
 ```c
-// Object.IsAlive() does NOT exist on the base Object class!
-// You must cast to EntityAI first.
+// Object.IsAlive()は基底Objectクラスには存在しません！
+// 最初にEntityAIにキャストする必要があります。
 
 static bool IsObjectAlive(Object obj)
 {
@@ -431,18 +435,18 @@ static bool IsObjectAlive(Object obj)
         return eai.IsAlive();
     }
 
-    return false;  // Non-EntityAI objects (buildings, etc.) — treat as "not alive"
+    return false;  // EntityAI以外のオブジェクト（建物など） -- 「生存していない」として扱う
 }
 ```
 
-### Reflection-Based Config System
+### リフレクションベースの設定システム
 
-This pattern (used in MyFramework) builds a generic config system where fields are read/written by name, enabling admin panels to edit any config without knowing its specific class:
+このパターン（MyMod Coreで使用）は、フィールドを名前で読み書きする汎用設定システムを構築し、管理パネルが特定のクラスを知らなくても任意の設定を編集できるようにします：
 
 ```c
 class ConfigBase
 {
-    // Find a member variable index by name
+    // 名前でメンバー変数のインデックスを見つける
     protected int FindVarIndex(string fieldName)
     {
         typename t = Type();
@@ -455,7 +459,7 @@ class ConfigBase
         return -1;
     }
 
-    // Get any field value as string
+    // 任意のフィールド値を文字列として取得
     string GetFieldValue(string fieldName)
     {
         if (FindVarIndex(fieldName) == -1)
@@ -466,7 +470,7 @@ class ConfigBase
         return iVal.ToString();
     }
 
-    // Set any field value from string
+    // 文字列から任意のフィールド値を設定
     void SetFieldValue(string fieldName, string value)
     {
         if (FindVarIndex(fieldName) == -1)
@@ -485,14 +489,14 @@ class MyModConfig : ConfigBase
 
 void AdminPanelSave(ConfigBase config, string fieldName, string newValue)
 {
-    // Works for ANY config subclass — no type-specific code needed
+    // 任意のconfigサブクラスで動作 -- 型固有のコード不要
     config.SetFieldValue(fieldName, newValue);
 }
 ```
 
-### Type-Safe Event Dispatch
+### 型安全なイベントディスパッチ
 
-Use `typename` to build a dispatcher that routes events to the correct handler:
+`typename` を使用して、イベントを正しいハンドラにルーティングするディスパッチャーを構築します：
 
 ```c
 class EventDispatcher
@@ -532,16 +536,49 @@ class EventDispatcher
 
 ---
 
+## ベストプラクティス
+
+- すべてのキャスト後に必ずnullチェックを行ってください -- `Class.CastTo` と `Type.Cast` は両方とも失敗時にnullを返し、結果をチェックせずに使用するとクラッシュします。
+- 成功/失敗で分岐する必要がある場合は `Class.CastTo` を使用し、nullチェックが続く簡潔な1行代入には `Type.Cast` を使用してください。
+- コンパイル時に型がわかっている場合は `IsKindOf(string)` よりも `IsInherited(typename)` を優先してください -- 高速で、タイプミスをコンパイル時にキャッチできます。
+- `IsAlive()` を呼び出す前に `EntityAI` にキャストしてください -- 基底 `Object` クラスにはこのメソッドがありません。
+- `EnScript.GetClassVar` を使用する前に `GetVariableCount`/`GetVariableName` で変数名を検証してください -- 間違った名前では暗黙的に失敗します。
+
+---
+
+## 実際のModで確認されたパターン
+
+> プロフェッショナルなDayZ Modのソースコードを調査して確認されたパターンです。
+
+| パターン | Mod | 詳細 |
+|---------|-----|--------|
+| エンティティループでの `Class.CastTo` + `continue` | COT / Expansion | `Object` 配列上のすべてのループがキャストして続行パターンで不一致の型をスキップする |
+| 設定駆動型チェックの `IsKindOf` | Expansion Market | JSONから読み込まれたアイテムカテゴリは型がデータであるため、文字列ベースの `IsKindOf` を使用する |
+| 管理パネルの `EnScript.GetClassVar`/`SetClassVar` | Dabs Framework | 汎用設定エディタが名前でフィールドを読み書きし、1つのUIですべての設定クラスに対応する |
+| ロギングの `obj.Type().ToString()` | VPP Admin | デバッグログには常に `entity.Type().ToString()` が含まれ、処理対象を特定する |
+
+---
+
+## 理論 vs 実践
+
+| 概念 | 理論 | 現実 |
+|---------|--------|---------|
+| `Object.IsAlive()` | `Object` に存在することを期待する | `EntityAI` とサブクラスでのみ利用可能 -- `Object` で呼び出すとクラッシュする |
+| `EnScript.SetClassVar` は `bool` を返す | 成功/失敗を示すはず | 間違ったフィールド名で暗黙的に `false` を返し、エラーメッセージなし -- 見逃しやすい |
+| `typename.Spawn()` | 任意のクラスインスタンスを作成する | パラメータなしのコンストラクタを持つクラスでのみ動作する。ゲームエンティティには `CreateObject` を使用する |
+
+---
+
 ## よくある間違い
 
-### 1. Forgetting to null-check after cast
+### 1. キャスト後のnullチェック忘れ
 
 ```c
-// WRONG — crashes if obj is not a PlayerBase
+// 間違い -- objがPlayerBaseでない場合クラッシュ
 PlayerBase player = PlayerBase.Cast(obj);
-player.GetIdentity();  // CRASH if cast failed!
+player.GetIdentity();  // キャスト失敗時にクラッシュ！
 
-// CORRECT
+// 正しい
 PlayerBase player = PlayerBase.Cast(obj);
 if (player)
 {
@@ -549,43 +586,43 @@ if (player)
 }
 ```
 
-### 2. Calling IsAlive() on base Object
+### 2. 基底ObjectでIsAlive()を呼び出す
 
 ```c
-// WRONG — Object.IsAlive() does not exist
+// 間違い -- Object.IsAlive()は存在しない
 Object obj = GetSomeObject();
-if (obj.IsAlive())  // Compile error or runtime crash!
+if (obj.IsAlive())  // コンパイルエラーまたはランタイムクラッシュ！
 
-// CORRECT
+// 正しい
 EntityAI eai;
 if (Class.CastTo(eai, obj) && eai.IsAlive())
 {
-    // Safe
+    // 安全
 }
 ```
 
-### 3. Using reflection with wrong variable name
+### 3. 間違った変数名でリフレクションを使用
 
 ```c
-// SILENT FAILURE — no error, just returns zero/empty
+// 暗黙的な失敗 -- エラーなし、ゼロ/空が返されるだけ
 int val;
 EnScript.GetClassVar(obj, "NonExistentField", 0, val);
-// val is 0, no error thrown
+// valは0、エラーはスローされない
 ```
 
-Always validate with `FindVarIndex` or `GetVariableCount`/`GetVariableName` first.
+常に `FindVarIndex` または `GetVariableCount`/`GetVariableName` で最初に検証してください。
 
-### 4. Confusing Type() with typename literal
+### 4. Type()とtypenameリテラルの混同
 
 ```c
-// Type() — returns the RUNTIME type of an instance
-typename t = myObj.Type();  // e.g., PlayerBase
+// Type() -- インスタンスのランタイム型を返す
+typename t = myObj.Type();  // 例: PlayerBase
 
-// typename literal — a compile-time type reference
-typename t = PlayerBase;    // Always PlayerBase
+// typenameリテラル -- コンパイル時の型参照
+typename t = PlayerBase;    // 常にPlayerBase
 
-// They are comparable
-if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
+// 比較可能
+if (myObj.Type() == PlayerBase)  // myObjがPlayerBaseの場合true
 ```
 
 ---
@@ -594,21 +631,21 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 
 | 操作 | 構文 | 戻り値 |
 |-----------|--------|---------|
-| Safe downcast | `Class.CastTo(out target, source)` | `bool` |
-| Inline cast | `TargetType.Cast(source)` | Target or `null` |
-| Type check (typename) | `obj.IsInherited(typename)` | `bool` |
-| Type check (string) | `obj.IsKindOf("ClassName")` | `bool` |
-| Get runtime type | `obj.Type()` | `typename` |
-| Variable count | `obj.Type().GetVariableCount()` | `int` |
-| Variable name | `obj.Type().GetVariableName(i)` | `string` |
-| Variable type | `obj.Type().GetVariableType(i)` | `typename` |
-| Read property | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
-| Write property | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
+| 安全なダウンキャスト | `Class.CastTo(out target, source)` | `bool` |
+| インラインキャスト | `TargetType.Cast(source)` | ターゲットまたは `null` |
+| 型チェック（typename） | `obj.IsInherited(typename)` | `bool` |
+| 型チェック（文字列） | `obj.IsKindOf("ClassName")` | `bool` |
+| ランタイム型の取得 | `obj.Type()` | `typename` |
+| 変数の数 | `obj.Type().GetVariableCount()` | `int` |
+| 変数名 | `obj.Type().GetVariableName(i)` | `string` |
+| 変数の型 | `obj.Type().GetVariableType(i)` | `typename` |
+| プロパティの読み取り | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
+| プロパティの書き込み | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
 
 ---
 
 ## ナビゲーション
 
-| 前 | 上 | 次 |
+| 前へ | 上へ | 次へ |
 |----------|----|------|
-| [1.8 Memory Management](08-memory-management.md) | [Part 1: Enforce Script](../README.md) | [1.10 Enums & Preprocessor](10-enums-preprocessor.md) |
+| [1.8 メモリ管理](08-memory-management.md) | [パート1: Enforce Script](../README.md) | [1.10 列挙型とプリプロセッサ](10-enums-preprocessor.md) |
