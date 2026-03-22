@@ -529,37 +529,37 @@ modded class MissionServer
 
 ---
 
-## EventTyp Konstanty Reference
+## Reference konstant EventType
 
-All event constants are defined in `3_Game/gameplay.c` and dispatched through `OnEvent()`.
+Všechny konstanty událostí jsou definovány v `3_Game/gameplay.c` a odesílány přes `OnEvent()`.
 
-| Konstanta | Side | Popis |
-|----------|------|-------------|
-| `ClientPrepareEventTypID` | Server | Player identity received, decide DB vs fresh |
-| `ClientNewEventTypID` | Server | New character being created |
-| `ClientReadyEventTypID` | Server | Existing character loaded from DB |
-| `ClientRespawnEventTypID` | Server | Player requested respawn |
-| `ClientReconnectEventTypID` | Server | Player reconnected to alive character |
-| `ClientDisconnectedEventTypID` | Server | Player disconnecting |
-| `LogoutCancelEventTypID` | Server | Player cancelled logout countdown |
-| `ChatZpravaEventTypID` | Client | Chat message received (`ChatZpravaEventParams`) |
-| `ChatChannelEventTypID` | Client | Chat channel changed (`ChatChannelEventParams`) |
-| `VONStateEventTypID` | Client | Voice-over-network state changed |
-| `VONStartSpeakingEventTypID` | Client | Player started speaking |
-| `VONStopSpeakingEventTypID` | Client | Player stopped speaking |
-| `MPSessionStartEventTypID` | Both | Multiplayer session started |
-| `MPSessionEndEventTypID` | Both | Multiplayer session ended |
-| `MPConnectionLostEventTypID` | Client | Connection to server lost |
-| `PlayerDeathEventTypID` | Both | Player died |
-| `SetFreeCameraEventTypID` | Client | Free camera toggled (debug) |
+| Konstanta | Strana | Popis |
+|----------|--------|-------|
+| `ClientPrepareEventTypeID` | Server | Přijata identita hráče, rozhodnutí DB vs nová postava |
+| `ClientNewEventTypeID` | Server | Nová postava se vytváří |
+| `ClientReadyEventTypeID` | Server | Existující postava načtena z DB |
+| `ClientRespawnEventTypeID` | Server | Hráč požádal o respawn |
+| `ClientReconnectEventTypeID` | Server | Hráč se znovu připojil k živé postavě |
+| `ClientDisconnectedEventTypeID` | Server | Hráč se odpojuje |
+| `LogoutCancelEventTypeID` | Server | Hráč zrušil odpočet odhlášení |
+| `ChatMessageEventTypeID` | Klient | Přijata chatová zpráva (`ChatMessageEventParams`) |
+| `ChatChannelEventTypeID` | Klient | Změněn chatový kanál (`ChatChannelEventParams`) |
+| `VONStateEventTypeID` | Klient | Změněn stav voice-over-network |
+| `VONStartSpeakingEventTypeID` | Klient | Hráč začal mluvit |
+| `VONStopSpeakingEventTypeID` | Klient | Hráč přestal mluvit |
+| `MPSessionStartEventTypeID` | Obě | Zahájena multiplayerová relace |
+| `MPSessionEndEventTypeID` | Obě | Ukončena multiplayerová relace |
+| `MPConnectionLostEventTypeID` | Klient | Ztraceno spojení se serverem |
+| `PlayerDeathEventTypeID` | Obě | Hráč zemřel |
+| `SetFreeCameraEventTypeID` | Klient | Přepnuta volná kamera (debug) |
 
 ---
 
-## Real-World Priklads
+## Příklady z praxe
 
-### Priklad 1: Server Manager Initialization
+### Příklad 1: Inicializace serverového manažera
 
-A typical pattern for initializing a server-side manager that needs to run periodic tasks.
+Typický vzor pro inicializaci serverového manažera, který potřebuje spouštět periodické úlohy.
 
 ```c
 modded class MissionServer
@@ -607,7 +607,7 @@ modded class MissionServer
 }
 ```
 
-### Priklad 2: Player Data Loading on Connect
+### Příklad 2: Načítání dat hráče při připojení
 
 ```c
 modded class MissionServer
@@ -648,9 +648,9 @@ modded class MissionServer
 }
 ```
 
-### Priklad 3: Client HUD Creation
+### Příklad 3: Vytvoření klientského HUD
 
-Creating a custom HUD element that updates every frame.
+Vytvoření vlastního prvku HUD, který se aktualizuje každý snímek.
 
 ```c
 modded class MissionGameplay
@@ -715,9 +715,9 @@ modded class MissionGameplay
 }
 ```
 
-### Priklad 4: Chat Command Interception (Server-Side)
+### Příklad 4: Zachycení chatových příkazů (strana serveru)
 
-Intercepting player connections to implement a ban system. This pattern is used by COT.
+Zachycení připojení hráčů pro implementaci systému banů. Tento vzor používá COT.
 
 ```c
 modded class MissionServer
@@ -750,9 +750,9 @@ modded class MissionServer
 }
 ```
 
-### Priklad 5: Starter Kit via StartingEquipSetup
+### Příklad 5: Startovní vybavení přes StartingEquipSetup
 
-The cleanest way to give new players equipment without touching `OnClientNewEvent`.
+Nejčistší způsob, jak dát novým hráčům vybavení bez zásahu do `OnClientNewEvent`.
 
 ```c
 modded class MissionServer
