@@ -166,7 +166,12 @@ export default withMermaid(
     ],
 
     base: '/DayZ-Modding-Wiki/',
-    srcExclude: ['AGENTS.md', 'CONTRIBUTING.md', 'CLAUDE.md'],
+    srcExclude: [
+      'AGENTS.md', 'CONTRIBUTING.md', 'CLAUDE.md',
+      // Exclude less common languages to keep build under GitHub Actions 7GB RAM limit
+      // These are still available on GitHub as markdown files
+      'cs/**', 'hu/**', 'pl/**', 'it/**', 'ja/**', 'zh-hans/**',
+    ],
     cleanUrls: true,
     lastUpdated: true,
     ignoreDeadLinks: [
@@ -254,21 +259,7 @@ export default withMermaid(
 
     vite: {
       build: {
-        chunkSizeWarningLimit: 1500,
-        rollupOptions: {
-          output: {
-            manualChunks(id) {
-              if (id.includes('node_modules')) {
-                return 'vendor'
-              }
-              const langMatch = id.match(/\/(?:en|pt|de|ru|es|fr|ja|zh-hans|cs|pl|hu|it)\//)
-              if (langMatch) {
-                const lang = langMatch[0].replace(/\//g, '')
-                return `lang-${lang}`
-              }
-            }
-          }
-        }
+        chunkSizeWarningLimit: 3000,
       },
     },
 
