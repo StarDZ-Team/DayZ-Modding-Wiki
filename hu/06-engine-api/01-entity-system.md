@@ -880,15 +880,15 @@ void DamageEntity(EntityAI target, float amount)
 
 | Fogalom | Kulcspont |
 |---------|-----------|
-| Hierarchy | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
-| Position | `GetPosition()` / `SetPosition()` available from `Object` upward |
-| Health | Zone-based: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
-| IsAlive | Use on `EntityAI` or cast first: `EntityAI eai; Class.CastTo(eai, obj)` |
-| Inventory | `eai.GetInventory()` returns `GameInventory` with full CRUD |
-| Creating | `GetGame().CreateObjectEx(type, pos, ECE_flags)` is the preferred API |
-| Deleting | `obj.Delete()` (deferred) or `GetGame().ObjectDelete(obj)` (immediate) |
-| Net Sync | `RegisterNetSyncVariable*()` in constructor, react in `OnVariablesSynchronized()` |
-| Type Check | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
+| Hierarchia | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
+| Pozicio | `GetPosition()` / `SetPosition()` elerheto `Object`-tol felfele |
+| Egeszseg | Zona alapu: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
+| IsAlive | Hasznald `EntityAI`-n vagy elobb kenyszeritsd: `EntityAI eai; Class.CastTo(eai, obj)` |
+| Inventar | `eai.GetInventory()` `GameInventory`-t ad vissza teljes CRUD-dal |
+| Letrehozas | `GetGame().CreateObjectEx(type, pos, ECE_flags)` a preferalt API |
+| Torles | `obj.Delete()` (halasztott) vagy `GetGame().ObjectDelete(obj)` (azonnali) |
+| Halozati szinkron | `RegisterNetSyncVariable*()` a konstruktorban, reagalj az `OnVariablesSynchronized()`-ben |
+| Tipus ellenorzes | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
 
 ---
 

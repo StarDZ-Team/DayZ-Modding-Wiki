@@ -373,16 +373,59 @@ WrapSpacerWidgetClass MyDialog {
 
 ---
 
-## Errori Comuni
+## Errori comuni
 
-1. **Forgetting the `Class` suffix** -- In layouts, write `TextWidgetClass`, not `TextWidget`.
-2. **Mixing proportional and pixel values** -- If `hexactsize 0`, the size values are 0.0-1.0 proportional. If `hexactsize 1`, they are pixel values. Using `300` with proportional mode means 300x the parent width.
-3. **Not quoting multi-word attributes** -- Write `"text halign" center`, not `text halign center`.
-4. **Placing ScriptParamsClass in the wrong block** -- It must be in a separate `{ }` block after the children block, not inside it.
+1. **Dimenticare il suffisso `Class`** -- Nei layout, scrivi `TextWidgetClass`, non `TextWidget`.
+2. **Mescolare valori proporzionali e in pixel** -- Se `hexactsize 0`, i valori di dimensione sono proporzionali 0.0-1.0. Se `hexactsize 1`, sono valori in pixel. Usare `300` in modalita proporzionale significa 300x la larghezza del genitore.
+3. **Non quotare attributi con piu parole** -- Scrivi `"text halign" center`, non `text halign center`.
+4. **Posizionare ScriptParamsClass nel blocco sbagliato** -- Deve essere in un blocco `{ }` separato dopo il blocco dei figli, non al suo interno.
 
 ---
 
-## Prossimi Passi
+## Migliori pratiche
 
-- [3.3 Sizing & Positioning](03-sizing-positioning.md) -- Master the proportional vs. pixel coordinate system
-- [3.4 Container Widgets](04-containers.md) -- Deep dive into spacer and scroll widgets
+- Imposta sempre tutti e quattro i flag exact (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`) esplicitamente su ogni widget. Affidarsi ai valori predefiniti porta a layout ambigui che si rompono quando la struttura del genitore cambia.
+- Usa `scriptclass` con parsimonia -- solo sui widget che necessitano veramente di comportamento guidato dallo script. Il binding eccessivo aggiunge overhead di inizializzazione.
+- Nomina i widget in modo descrittivo (`PlayerListScroll`, `TitleBarClose`) piuttosto che generico (`Frame1`, `btn`). Il codice script usa `FindAnyWidget()` per nome, e le collisioni causano fallimenti silenziosi.
+- Mantieni i file layout sotto le 200 righe. Dividi UI complesse in piu file `.layout` caricati con `CreateWidgets()` e collegati programmaticamente al genitore.
+- Quota sempre i nomi di attributi multi-parola (`"text halign"`, `"Size To Content V"`). Gli attributi multi-parola non quotati falliscono silenziosamente senza errore.
+
+---
+
+## Teoria vs pratica
+
+> Cosa dice la documentazione rispetto a come funzionano realmente le cose a runtime.
+
+| Concetto | Teoria | Realta |
+|----------|--------|--------|
+| Inizializzazione `scriptclass` | `OnWidgetScriptInit` viene chiamata quando il layout si carica | Se la classe non eredita da `Managed` o ha un errore nel costruttore, il widget si carica ma il gestore e silenziosamente null |
+| `ScriptParamsClass` | I parametri passano dati arbitrari alle classi script | Solo valori stringa e numerici funzionano in modo affidabile; oggetti annidati o array non sono supportati |
+| Attributo `color` | Quattro float 0.0-1.0 (RGBA) | Alcuni tipi di widget ignorano il canale alfa o richiedono `inheritalpha 1` sul genitore per la propagazione della trasparenza |
+| Predefiniti degli attributi | Gli attributi non documentati usano i predefiniti del motore | I predefiniti variano per tipo di widget |
+| `"no focus"` | Impedisce il focus della tastiera | Impedisce anche la selezione col gamepad, il che puo interrompere la navigazione con controller se impostato su widget interattivi |
+
+---
+
+## Compatibilita e impatto
+
+- **Multi-Mod:** I file layout sono isolati per mod -- nessun conflitto diretto. Tuttavia, i nomi `scriptclass` devono essere globalmente unici. Due mod che usano `scriptclass "PanelHandler"` causeranno il fallimento silenzioso di uno.
+- **Prestazioni:** Ogni widget in un layout e un vero oggetto del motore. Layout con 500+ widget causano cali di frame misurabili. Per liste grandi, preferisci il pooling programmatico.
+- **Versione:** Il formato layout e stabile da DayZ 1.0. Il blocco `ScriptParamsClass` e la scriptclass `ViewBinding` sono stati aggiunti da DabsFramework e non sono funzionalita vanilla.
+
+---
+
+## Osservato nei mod reali
+
+| Pattern | Mod | Dettaglio |
+|---------|-----|-----------|
+| `scriptclass "ViewBinding"` con `ScriptParamsClass` | DabsFramework / DayZ Editor | Binding dati bidirezionale tra layout e ViewController tramite parametro `Binding_Name` |
+| `WrapSpacerWidgetClass` come root del dialogo | COT, Expansion | Abilita `Size To Content V/H` per il dimensionamento automatico dei dialoghi attorno al contenuto dinamico |
+| `.layout` separato per riga della lista | VPP Admin Tools | Ogni riga giocatore e un layout autonomo caricato in un WrapSpacer, abilitando riuso e pooling |
+| `priority 998-999` per overlay modali | DabsFramework, COT | Assicura che i dialoghi si renderizzino sopra tutti gli altri elementi UI |
+
+---
+
+## Prossimi passi
+
+- [3.3 Dimensionamento e posizionamento](03-sizing-positioning.md) -- Padroneggia il sistema di coordinate proporzionale vs. pixel
+- [3.4 Widget contenitore](04-containers.md) -- Approfondimento sui widget spacer e scroll

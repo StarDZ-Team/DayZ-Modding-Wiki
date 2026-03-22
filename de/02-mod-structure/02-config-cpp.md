@@ -1,100 +1,100 @@
-# Chapter 2.2: config.cpp Deep Dive
+# Kapitel 2.2: config.cpp im Detail
 
-[Home](../../README.md) | [<< Previous: The 5-Layer Script Hierarchy](01-five-layers.md) | **config.cpp Deep Dive** | [Next: mod.cpp & Workshop >>](03-mod-cpp.md)
+[Startseite](../../README.md) | [<< Zurueck: Die 5-Schichten-Skript-Hierarchie](01-five-layers.md) | **config.cpp im Detail** | [Weiter: mod.cpp & Workshop >>](03-mod-cpp.md)
 
 ---
 
 ## Inhaltsverzeichnis
 
-- [Overview](#overview)
-- [Where config.cpp Lives](#where-configcpp-lives)
-- [CfgPatches Block](#cfgpatches-block)
-- [CfgMods Block](#cfgmods-block)
-- [class defs: Script Module Paths](#class-defs-script-module-paths)
-- [class defs: imageSets and widgetStyles](#class-defs-imagesets-and-widgetstyles)
-- [defines Array](#defines-array)
-- [CfgVehicles: Item and Entity Definitions](#cfgvehicles-item-and-entity-definitions)
-- [CfgSoundSets and CfgSoundShaders](#cfgsoundsets-and-cfgsoundshaders)
-- [CfgAddons: Preload Declarations](#cfgaddons-preload-declarations)
-- [Real Examples from Professional Mods](#real-examples-from-professional-mods)
-- [Common Mistakes](#common-mistakes)
-- [Complete Template](#complete-template)
+- [Ueberblick](#ueberblick)
+- [Wo config.cpp liegt](#wo-configcpp-liegt)
+- [CfgPatches-Block](#cfgpatches-block)
+- [CfgMods-Block](#cfgmods-block)
+- [class defs: Skriptmodulpfade](#class-defs-skriptmodulpfade)
+- [class defs: imageSets und widgetStyles](#class-defs-imagesets-und-widgetstyles)
+- [defines-Array](#defines-array)
+- [CfgVehicles: Item- und Entitaets-Definitionen](#cfgvehicles-item--und-entitaets-definitionen)
+- [CfgSoundSets und CfgSoundShaders](#cfgsoundsets-und-cfgsoundshaders)
+- [CfgAddons: Preload-Deklarationen](#cfgaddons-preload-deklarationen)
+- [Praxisbeispiele aus professionellen Mods](#praxisbeispiele-aus-professionellen-mods)
+- [Haeufige Fehler](#haeufige-fehler)
+- [Vollstaendige Vorlage](#vollstaendige-vorlage)
 
 ---
 
 ## Ueberblick
 
-A DayZ mod typically has one or more PBO files, each containing a `config.cpp` at its root. The engine reads these configs during startup to determine:
+Eine DayZ-Mod hat typischerweise eine oder mehrere PBO-Dateien, die jeweils eine `config.cpp` im Stammverzeichnis enthalten. Die Engine liest diese Configs beim Start, um zu bestimmen:
 
-1. **What your mod depends on** (CfgPatches)
-2. **Where your scripts are** (CfgMods class defs)
-3. **What items/entities it adds** (CfgVehicles, CfgWeapons, etc.)
-4. **What sounds it adds** (CfgSoundSets, CfgSoundShaders)
-5. **What preprocessor symbols it defines** (defines[])
+1. **Wovon Ihre Mod abhaengt** (CfgPatches)
+2. **Wo Ihre Skripte sind** (CfgMods class defs)
+3. **Welche Items/Entitaeten sie hinzufuegt** (CfgVehicles, CfgWeapons, etc.)
+4. **Welche Sounds sie hinzufuegt** (CfgSoundSets, CfgSoundShaders)
+5. **Welche Praeprozessor-Symbole sie definiert** (defines[])
 
-A mod usually has separate PBOs for different concerns:
-- `MyMod/Scripts/config.cpp` -- script definitions and module paths
-- `MyMod/Data/config.cpp` -- item/vehicle/weapon definitions
-- `MyMod/GUI/config.cpp` -- imageset and style declarations
+Eine Mod hat normalerweise separate PBOs fuer verschiedene Belange:
+- `MyMod/Scripts/config.cpp` -- Skriptdefinitionen und Modulpfade
+- `MyMod/Data/config.cpp` -- Item-/Fahrzeug-/Waffen-Definitionen
+- `MyMod/GUI/config.cpp` -- ImageSet- und Style-Deklarationen
 
 ---
 
-## Where config.cpp Lives
+## Wo config.cpp liegt
 
 ```
 @MyMod/
   Addons/
-    MyMod_Scripts.pbo         --> contains Scripts/config.cpp
-    MyMod_Data.pbo            --> contains Data/config.cpp (items, vehicles)
-    MyMod_GUI.pbo             --> contains GUI/config.cpp (imagesets, styles)
+    MyMod_Scripts.pbo         --> enthaelt Scripts/config.cpp
+    MyMod_Data.pbo            --> enthaelt Data/config.cpp (Items, Fahrzeuge)
+    MyMod_GUI.pbo             --> enthaelt GUI/config.cpp (ImageSets, Styles)
 ```
 
-Each PBO has its own `config.cpp`. The engine reads them all. Multiple PBOs from the same mod are common -- this is standard practice, not an exception.
+Jedes PBO hat seine eigene `config.cpp`. Die Engine liest sie alle. Mehrere PBOs von derselben Mod sind ueblich -- dies ist Standardpraxis, keine Ausnahme.
 
 ---
 
-## CfgPatches Block
+## CfgPatches-Block
 
-`CfgPatches` is **required** in every config.cpp. It declares a named patch and its dependencies.
+`CfgPatches` ist in jeder config.cpp **erforderlich**. Es deklariert einen benannten Patch und seine Abhaengigkeiten.
 
 ### Syntax
 
 ```cpp
 class CfgPatches
 {
-    class MyMod_Scripts          // Unique patch name (must not collide with other mods)
+    class MyMod_Scripts          // Eindeutiger Patch-Name (darf nicht mit anderen Mods kollidieren)
     {
-        units[] = {};            // Entity classnames this PBO adds (for editor/spawner)
-        weapons[] = {};          // Weapon classnames this PBO adds
-        requiredVersion = 0.1;   // Minimum game version (always 0.1 in practice)
-        requiredAddons[] =       // PBO dependencies -- CONTROLS LOAD ORDER
+        units[] = {};            // Entitaets-Klassennamen die dieses PBO hinzufuegt (fuer Editor/Spawner)
+        weapons[] = {};          // Waffen-Klassennamen die dieses PBO hinzufuegt
+        requiredVersion = 0.1;   // Minimale Spielversion (in der Praxis immer 0.1)
+        requiredAddons[] =       // PBO-Abhaengigkeiten -- STEUERT DIE LADEREIHENFOLGE
         {
-            "DZ_Data"            // Almost always needed
+            "DZ_Data"            // Fast immer benoetigt
         };
     };
 };
 ```
 
-### requiredAddons: The Dependency Chain
+### requiredAddons: Die Abhaengigkeitskette
 
-This is the most critical field in the entire config. `requiredAddons` tells the engine:
+Dies ist das wichtigste Feld in der gesamten Config. `requiredAddons` sagt der Engine:
 
-1. **Load order:** Your PBO's scripts compile AFTER all listed addons
-2. **Hard dependency:** If a listed addon is missing, your mod fails to load
+1. **Ladereihenfolge:** Die Skripte Ihres PBOs werden NACH allen aufgelisteten Addons kompiliert
+2. **Harte Abhaengigkeit:** Wenn ein aufgelistetes Addon fehlt, schlaegt das Laden Ihrer Mod fehl
 
-Each entry must match a `CfgPatches` class name from another mod:
+Jeder Eintrag muss mit einem `CfgPatches`-Klassennamen einer anderen Mod uebereinstimmen:
 
-| Dependency | requiredAddons Entry | When to Use |
+| Abhaengigkeit | requiredAddons-Eintrag | Wann verwenden |
 |-----------|---------------------|-------------|
-| Vanilla DayZ data | `"DZ_Data"` | Almost always (items, configs) |
-| Vanilla DayZ scripts | `"DZ_Scripts"` | When extending vanilla script classes |
-| Vanilla weapons | `"DZ_Weapons_Firearms"` | When adding weapons/attachments |
-| Vanilla magazines | `"DZ_Weapons_Magazines"` | When adding magazines/ammo |
-| Community Framework | `"JM_CF_Scripts"` | When using CF module system |
-| DabsFramework | `"DF_Scripts"` | When using Dabs MVC/framework |
-| MyFramework | `"MyCore_Scripts"` | When building a MyMod mod |
+| Vanilla-DayZ-Daten | `"DZ_Data"` | Fast immer (Items, Configs) |
+| Vanilla-DayZ-Skripte | `"DZ_Scripts"` | Beim Erweitern von Vanilla-Skriptklassen |
+| Vanilla-Waffen | `"DZ_Weapons_Firearms"` | Beim Hinzufuegen von Waffen/Anbauteilen |
+| Vanilla-Magazine | `"DZ_Weapons_Magazines"` | Beim Hinzufuegen von Magazinen/Munition |
+| Community Framework | `"JM_CF_Scripts"` | Bei Verwendung des CF-Modulsystems |
+| DabsFramework | `"DF_Scripts"` | Bei Verwendung von Dabs MVC/Framework |
+| MyFramework | `"MyCore_Scripts"` | Beim Bauen einer MyMod-Mod |
 
-**Example: Multiple dependencies**
+**Beispiel: Mehrere Abhaengigkeiten**
 
 ```cpp
 requiredAddons[] =
@@ -108,92 +108,92 @@ requiredAddons[] =
 };
 ```
 
-### units[] and weapons[]
+### units[] und weapons[]
 
-These arrays list the classnames of entities and weapons defined in this PBO. They serve two purposes:
+Diese Arrays listen die Klassennamen von Entitaeten und Waffen auf, die in diesem PBO definiert sind. Sie dienen zwei Zwecken:
 
-1. The DayZ editor uses them to populate spawn lists
-2. Other tools (like admin panels) use them for item discovery
+1. Der DayZ-Editor verwendet sie, um Spawnlisten zu fuellen
+2. Andere Tools (wie Admin-Panels) verwenden sie zur Item-Erkennung
 
 ```cpp
 units[] = { "MyMod_SomeBuilding", "MyMod_SomeVehicle" };
 weapons[] = { "MyMod_CustomRifle", "MyMod_CustomPistol" };
 ```
 
-For script-only PBOs, leave both empty.
+Fuer reine Skript-PBOs lassen Sie beide leer.
 
 ---
 
-## CfgMods Block
+## CfgMods-Block
 
-`CfgMods` is required when your PBO adds or modifies scripts, inputs, or GUI resources. It defines the mod identity and its script module structure.
+`CfgMods` ist erforderlich, wenn Ihr PBO Skripte, Eingaben oder GUI-Ressourcen hinzufuegt oder modifiziert. Es definiert die Mod-Identitaet und ihre Skriptmodul-Struktur.
 
-### Basic Structure
+### Grundstruktur
 
 ```cpp
 class CfgMods
 {
-    class MyMod                   // Mod identifier (used internally)
+    class MyMod                   // Mod-Identifikator (intern verwendet)
     {
-        dir = "MyMod";            // Root directory of the mod (PBO prefix path)
-        name = "My Mod Name";     // Human-readable name
-        author = "AuthorName";    // Author string
-        credits = "AuthorName";   // Credits string
-        creditsJson = "MyMod/Scripts/Data/Credits.json";  // Path to credits file
-        versionPath = "MyMod/Scripts/Data/Version.hpp";   // Path to version file
-        overview = "Description"; // Mod description
-        picture = "";             // Logo image path
-        action = "";              // URL (website/Discord)
-        type = "mod";             // "mod" for client, "servermod" for server-only
-        extra = 0;                // Reserved, always 0
-        hideName = 0;             // Hide mod name in launcher (0 = show, 1 = hide)
-        hidePicture = 0;          // Hide mod picture in launcher
+        dir = "MyMod";            // Stammverzeichnis der Mod (PBO-Praefixpfad)
+        name = "My Mod Name";     // Menschenlesbarer Name
+        author = "AuthorName";    // Autorenstring
+        credits = "AuthorName";   // Credits-String
+        creditsJson = "MyMod/Scripts/Data/Credits.json";  // Pfad zur Credits-Datei
+        versionPath = "MyMod/Scripts/Data/Version.hpp";   // Pfad zur Versionsdatei
+        overview = "Description"; // Mod-Beschreibung
+        picture = "";             // Logo-Bildpfad
+        action = "";              // URL (Website/Discord)
+        type = "mod";             // "mod" fuer Client, "servermod" fuer nur Server
+        extra = 0;                // Reserviert, immer 0
+        hideName = 0;             // Mod-Name im Launcher verstecken (0 = anzeigen, 1 = verstecken)
+        hidePicture = 0;          // Mod-Bild im Launcher verstecken
 
-        // Keybind definitions (optional)
+        // Tastenbelegungs-Definitionen (optional)
         inputs = "MyMod/Scripts/Data/Inputs.xml";
 
-        // Preprocessor symbols (optional)
+        // Praeprozessor-Symbole (optional)
         defines[] = { "MYMOD_LOADED" };
 
-        // Script module dependencies
+        // Skriptmodul-Abhaengigkeiten
         dependencies[] = { "Game", "World", "Mission" };
 
-        // Script module paths
+        // Skriptmodulpfade
         class defs
         {
-            // ... (covered in next section)
+            // ... (im naechsten Abschnitt behandelt)
         };
     };
 };
 ```
 
-### Key Fields Explained
+### Wichtige Felder erklaert
 
-**`dir`** -- The root path prefix for all file paths in this config. When the engine sees `files[] = { "MyMod/Scripts/3_Game" }`, it uses `dir` as the base.
+**`dir`** -- Der Stammpfad-Praefix fuer alle Dateipfade in dieser Config. Wenn die Engine `files[] = { "MyMod/Scripts/3_Game" }` sieht, verwendet sie `dir` als Basis.
 
-**`type`** -- Either `"mod"` (loaded via `-mod=`) or `"servermod"` (loaded via `-servermod=`). Server mods run only on the dedicated server. This is how you separate server-only logic from client code.
+**`type`** -- Entweder `"mod"` (geladen via `-mod=`) oder `"servermod"` (geladen via `-servermod=`). Server-Mods laufen nur auf dem dedizierten Server. So trennen Sie reine Server-Logik von Client-Code.
 
-**`dependencies`** -- Which vanilla script modules your mod extends. Almost always `{ "Game", "World", "Mission" }`. Possible values: `"Core"`, `"GameLib"`, `"Game"`, `"World"`, `"Mission"`.
+**`dependencies`** -- Welche Vanilla-Skriptmodule Ihre Mod erweitert. Fast immer `{ "Game", "World", "Mission" }`. Moegliche Werte: `"Core"`, `"GameLib"`, `"Game"`, `"World"`, `"Mission"`.
 
-**`inputs`** -- Path to an `Inputs.xml` file that defines custom keybindings. The path is relative to the PBO root.
+**`inputs`** -- Pfad zu einer `Inputs.xml`-Datei, die eigene Tastenbelegungen definiert. Der Pfad ist relativ zum PBO-Stamm.
 
 ---
 
-## class defs: Script Module Paths
+## class defs: Skriptmodulpfade
 
-The `class defs` block inside `CfgMods` is where you tell the engine which folders contain your scripts for each layer.
+Der `class defs`-Block innerhalb von `CfgMods` teilt der Engine mit, welche Ordner Ihre Skripte fuer jede Schicht enthalten.
 
-### All Available Script Modules
+### Alle verfuegbaren Skriptmodule
 
 ```cpp
 class defs
 {
     class engineScriptModule        // 1_Core
     {
-        value = "";                 // Entry function (empty = default)
+        value = "";                 // Einstiegsfunktion (leer = Standard)
         files[] = { "MyMod/Scripts/1_Core" };
     };
-    class gameLibScriptModule       // 2_GameLib (rarely used)
+    class gameLibScriptModule       // 2_GameLib (selten verwendet)
     {
         value = "";
         files[] = { "MyMod/Scripts/2_GameLib" };
@@ -216,25 +216,25 @@ class defs
 };
 ```
 
-### The `value` Field
+### Das `value`-Feld
 
-The `value` field specifies a custom entry function name for that script module. When empty (`""`), the engine uses the default entry point. When set (e.g., `value = "CreateGameMod"`), the engine calls that global function when initializing the module.
+Das `value`-Feld gibt einen eigenen Einstiegsfunktionsnamen fuer dieses Skriptmodul an. Wenn leer (`""`), verwendet die Engine den Standard-Einstiegspunkt. Wenn gesetzt (z.B. `value = "CreateGameMod"`), ruft die Engine diese globale Funktion beim Initialisieren des Moduls auf.
 
-Community Framework uses this:
+Community Framework verwendet dies:
 
 ```cpp
 class gameScriptModule
 {
-    value = "CF_CreateGame";    // Custom entry point
+    value = "CF_CreateGame";    // Eigener Einstiegspunkt
     files[] = { "JM/CF/Scripts/3_Game" };
 };
 ```
 
-For most mods, leave `value` empty.
+Fuer die meisten Mods lassen Sie `value` leer.
 
-### The `files` Array
+### Das `files`-Array
 
-Each entry is a **directory path** (not individual files). The engine recursively compiles all `.c` files in the listed directories:
+Jeder Eintrag ist ein **Verzeichnispfad** (keine einzelnen Dateien). Die Engine kompiliert rekursiv alle `.c`-Dateien in den aufgelisteten Verzeichnissen:
 
 ```cpp
 class gameScriptModule
@@ -242,12 +242,12 @@ class gameScriptModule
     value = "";
     files[] =
     {
-        "MyMod/Scripts/3_Game"      // All .c files in this directory tree
+        "MyMod/Scripts/3_Game"      // Alle .c-Dateien in diesem Verzeichnisbaum
     };
 };
 ```
 
-You can list multiple directories. This is how the "Common folder" pattern works:
+Sie koennen mehrere Verzeichnisse auflisten. So funktioniert das "Common-Ordner"-Muster:
 
 ```cpp
 class gameScriptModule
@@ -255,8 +255,8 @@ class gameScriptModule
     value = "";
     files[] =
     {
-        "MyMod/Scripts/Common",     // Shared code compiled into EVERY module
-        "MyMod/Scripts/3_Game"      // Layer-specific code
+        "MyMod/Scripts/Common",     // Geteilter Code, der in JEDES Modul kompiliert wird
+        "MyMod/Scripts/3_Game"      // Schichtspezifischer Code
     };
 };
 class worldScriptModule
@@ -264,18 +264,18 @@ class worldScriptModule
     value = "";
     files[] =
     {
-        "MyMod/Scripts/Common",     // Same shared code, also available here
+        "MyMod/Scripts/Common",     // Gleicher geteilter Code, auch hier verfuegbar
         "MyMod/Scripts/4_World"
     };
 };
 ```
 
-### Only Define What You Use
+### Nur definieren was Sie verwenden
 
-You do not need to declare all five script modules. Only declare the ones your mod actually uses:
+Sie muessen nicht alle fuenf Skriptmodule deklarieren. Deklarieren Sie nur die, die Ihre Mod tatsaechlich verwendet:
 
 ```cpp
-// A simple mod that only has 3_Game and 5_Mission code
+// Eine einfache Mod die nur 3_Game- und 5_Mission-Code hat
 class defs
 {
     class gameScriptModule
@@ -291,9 +291,9 @@ class defs
 
 ---
 
-## class defs: imageSets and widgetStyles
+## class defs: imageSets und widgetStyles
 
-If your mod uses custom icons or GUI styles, declare them inside `class defs`:
+Wenn Ihre Mod eigene Icons oder GUI-Styles verwendet, deklarieren Sie sie innerhalb von `class defs`:
 
 ### imageSets
 
@@ -308,11 +308,11 @@ class defs
             "MyMod/GUI/imagesets/items.imageset"
         };
     };
-    // ... script modules ...
+    // ... Skriptmodule ...
 };
 ```
 
-ImageSets are XML files that map named regions of a texture atlas to sprite names. Once declared here, any script can reference the icons by name.
+ImageSets sind XML-Dateien, die benannte Bereiche eines Texturatlasses auf Sprite-Namen abbilden. Einmal hier deklariert, kann jedes Skript die Icons nach Namen referenzieren.
 
 ### widgetStyles
 
@@ -326,13 +326,13 @@ class defs
             "MyMod/GUI/looknfeel/custom.styles"
         };
     };
-    // ... script modules ...
+    // ... Skriptmodule ...
 };
 ```
 
-Widget styles define reusable visual properties (colors, fonts, padding) for GUI widgets.
+Widget-Styles definieren wiederverwendbare visuelle Eigenschaften (Farben, Schriftarten, Abstande) fuer GUI-Widgets.
 
-### Real Example: MyFramework
+### Praxisbeispiel: MyFramework
 
 ```cpp
 class defs
@@ -357,51 +357,51 @@ class defs
             "MyFramework/GUI/looknfeel/prefabs.styles"
         };
     };
-    // ... script modules ...
+    // ... Skriptmodule ...
 };
 ```
 
 ---
 
-## defines Array
+## defines-Array
 
-The `defines[]` array in `CfgMods` creates preprocessor symbols that other mods can check with `#ifdef`:
+Das `defines[]`-Array in `CfgMods` erstellt Praeprozessor-Symbole, die andere Mods mit `#ifdef` pruefen koennen:
 
 ```cpp
 defines[] =
 {
-    "MYMOD_CORE",           // Other mods can do: #ifdef MYMOD_CORE
-    // "MYMOD_DEBUG"        // Commented out = disabled in release
+    "MYMOD_CORE",           // Andere Mods koennen: #ifdef MYMOD_CORE
+    // "MYMOD_DEBUG"        // Auskommentiert = im Release deaktiviert
 };
 ```
 
-### Use Cases
+### Anwendungsfaelle
 
-**Feature detection across mods:**
+**Feature-Erkennung zwischen Mods:**
 
 ```c
-// In another mod's code:
+// Im Code einer anderen Mod:
 #ifdef MYMOD_CORE
-    MyLog.Info("MyMod", "MyFramework detected, enabling integration");
+    MyLog.Info("MyMod", "MyFramework erkannt, Integration wird aktiviert");
 #else
-    Print("[MyMod] Running without MyFramework");
+    Print("[MyMod] Laeuft ohne MyFramework");
 #endif
 ```
 
-**Debug/release builds:**
+**Debug-/Release-Builds:**
 
 ```cpp
 defines[] =
 {
     "MYMOD_LOADED",
-    // "MYMOD_DEBUG",        // Uncomment for debug logging
-    // "MYMOD_VERBOSE"       // Uncomment for verbose output
+    // "MYMOD_DEBUG",        // Fuer Debug-Logging einkommentieren
+    // "MYMOD_VERBOSE"       // Fuer ausfuehrliche Ausgabe einkommentieren
 };
 ```
 
 ### Praxisbeispiele
 
-**COT** uses defines extensively for feature flags:
+**COT** verwendet defines umfangreich fuer Feature-Flags:
 
 ```cpp
 defines[] =
@@ -417,7 +417,7 @@ defines[] =
 };
 ```
 
-**CF** uses defines for enabling/disabling subsystems:
+**CF** verwendet defines zum Aktivieren/Deaktivieren von Subsystemen:
 
 ```cpp
 defines[] =
@@ -433,39 +433,39 @@ defines[] =
 
 ---
 
-## CfgVehicles: Item and Entity Definitions
+## CfgVehicles: Item- und Entitaets-Definitionen
 
-`CfgVehicles` is the primary config class for defining in-game items, buildings, vehicles, and other entities. Despite the name "vehicles", it covers ALL entity types.
+`CfgVehicles` ist die primaere Config-Klasse zum Definieren von Ingame-Items, Gebaeuden, Fahrzeugen und anderen Entitaeten. Trotz des Namens "Vehicles" deckt sie ALLE Entitaetstypen ab.
 
-### Basic Item Definition
+### Grundlegende Item-Definition
 
 ```cpp
 class CfgVehicles
 {
-    class ItemBase;                          // Forward-declare the parent class
-    class MyMod_CustomItem : ItemBase        // Inherit from vanilla base
+    class ItemBase;                          // Elternklasse vorwaerts deklarieren
+    class MyMod_CustomItem : ItemBase        // Von Vanilla-Basis erben
     {
-        scope = 2;                           // 0=hidden, 1=editor-only, 2=public
+        scope = 2;                           // 0=versteckt, 1=nur Editor, 2=oeffentlich
         displayName = "Custom Item";
         descriptionShort = "A custom item.";
         model = "MyMod/Data/Models/item.p3d";
-        weight = 500;                        // Grams
-        itemSize[] = { 2, 3 };               // Inventory slots (width, height)
-        rotationFlags = 17;                   // Allowed rotation in inventory
-        inventorySlot[] = {};                 // Which attachment slots it fits
+        weight = 500;                        // Gramm
+        itemSize[] = { 2, 3 };               // Inventarplaetze (Breite, Hoehe)
+        rotationFlags = 17;                   // Erlaubte Rotation im Inventar
+        inventorySlot[] = {};                 // In welche Anbauteil-Slots es passt
     };
 };
 ```
 
-### scope Values
+### scope-Werte
 
-| Value | Meaning | Usage |
+| Wert | Bedeutung | Verwendung |
 |-------|---------|-------|
-| `0` | Hidden | Base classes, abstract parents -- never spawnable |
-| `1` | Editor only | Visible in DayZ Editor but not in normal gameplay |
-| `2` | Public | Fully spawnable, appears in admin tools and spawners |
+| `0` | Versteckt | Basisklassen, abstrakte Eltern -- nie spawnbar |
+| `1` | Nur Editor | Sichtbar im DayZ-Editor, aber nicht im normalen Gameplay |
+| `2` | Oeffentlich | Voll spawnbar, erscheint in Admin-Tools und Spawnern |
 
-### Building/Structure Definition
+### Gebaeude-/Struktur-Definition
 
 ```cpp
 class CfgVehicles
@@ -480,7 +480,7 @@ class CfgVehicles
 };
 ```
 
-### Vehicle Definition (Simplified)
+### Fahrzeug-Definition (vereinfacht)
 
 ```cpp
 class CfgVehicles
@@ -494,13 +494,13 @@ class CfgVehicles
 
         class Cargo
         {
-            itemsCargoSize[] = { 10, 50 };   // Cargo dimensions
+            itemsCargoSize[] = { 10, 50 };   // Fracht-Dimensionen
         };
     };
 };
 ```
 
-### DabsFramework Entity Example
+### DabsFramework-Entitaets-Beispiel
 
 ```cpp
 class CfgVehicles
@@ -523,9 +523,9 @@ class CfgVehicles
 
 ---
 
-## CfgSoundSets and CfgSoundShaders
+## CfgSoundSets und CfgSoundShaders
 
-Custom audio requires two config classes working together: a SoundShader (the audio file reference) and a SoundSet (the playback configuration).
+Eigenes Audio erfordert zwei Config-Klassen, die zusammenarbeiten: einen SoundShader (die Audiodatei-Referenz) und ein SoundSet (die Wiedergabekonfiguration).
 
 ### CfgSoundShaders
 
@@ -534,15 +534,15 @@ class CfgSoundShaders
 {
     class MyMod_Alert_SoundShader
     {
-        samples[] = {{ "MyMod/Sounds/alert", 1 }};  // Path to .ogg file, probability
-        volume = 0.8;                                 // Base volume (0.0 to 1.0)
-        range = 50;                                   // Audible range in meters (3D only)
-        limitation = 0;                               // 0 = no limit on concurrent plays
+        samples[] = {{ "MyMod/Sounds/alert", 1 }};  // Pfad zur .ogg-Datei, Wahrscheinlichkeit
+        volume = 0.8;                                 // Grundlautstaerke (0.0 bis 1.0)
+        range = 50;                                   // Hoerbare Reichweite in Metern (nur 3D)
+        limitation = 0;                               // 0 = keine Beschraenkung gleichzeitiger Wiedergaben
     };
 };
 ```
 
-The `samples` array uses double braces. Each entry is `{ "path_without_extension", probability }`. If you list multiple samples, the engine picks randomly based on probability weights.
+Das `samples`-Array verwendet doppelte Klammern. Jeder Eintrag ist `{ "pfad_ohne_erweiterung", wahrscheinlichkeit }`. Wenn Sie mehrere Samples auflisten, waehlt die Engine zufaellig basierend auf Wahrscheinlichkeitsgewichten.
 
 ### CfgSoundSets
 
@@ -552,24 +552,24 @@ class CfgSoundSets
     class MyMod_Alert_SoundSet
     {
         soundShaders[] = { "MyMod_Alert_SoundShader" };
-        volumeFactor = 1.0;                           // Multiplier on shader volume
-        frequencyFactor = 1.0;                        // Pitch multiplier
-        spatial = 1;                                  // 0 = 2D (UI sounds), 1 = 3D (world)
+        volumeFactor = 1.0;                           // Multiplikator auf Shader-Lautstaerke
+        frequencyFactor = 1.0;                        // Tonhoehen-Multiplikator
+        spatial = 1;                                  // 0 = 2D (UI-Sounds), 1 = 3D (Welt)
     };
 };
 ```
 
-### Playing Sounds in Script
+### Sounds im Skript abspielen
 
 ```c
-// 2D UI sound (spatial = 0)
+// 2D-UI-Sound (spatial = 0)
 SEffectManager.PlaySound("MyMod_Alert_SoundSet", vector.Zero);
 
-// 3D world sound (spatial = 1)
+// 3D-Welt-Sound (spatial = 1)
 SEffectManager.PlaySound("MyMod_Alert_SoundSet", GetPosition());
 ```
 
-### Real Example: MyMissions Mod Radio Beep
+### Praxisbeispiel: MyMissions-Mod Radio-Piepton
 
 ```cpp
 class CfgSoundShaders
@@ -590,16 +590,16 @@ class CfgSoundSets
         soundShaders[] = { "MyBeep_SoundShader" };
         volumeFactor = 1.0;
         frequencyFactor = 1.0;
-        spatial = 0;      // 2D -- plays as UI sound
+        spatial = 0;      // 2D -- wird als UI-Sound abgespielt
     };
 };
 ```
 
 ---
 
-## CfgAddons: Preload Declarations
+## CfgAddons: Preload-Deklarationen
 
-`CfgAddons` is an optional block that hints to the engine about preloading assets:
+`CfgAddons` ist ein optionaler Block, der der Engine Hinweise zum Vorladen von Assets gibt:
 
 ```cpp
 class CfgAddons
@@ -608,19 +608,19 @@ class CfgAddons
     {
         class MyMod
         {
-            list[] = {};       // List of addon names to preload (usually empty)
+            list[] = {};       // Liste von Addon-Namen zum Vorladen (normalerweise leer)
         };
     };
 };
 ```
 
-In practice, most mods declare this with an empty `list[]`. It ensures the engine recognizes the mod during the preload phase. Some mods skip it entirely without issues.
+In der Praxis deklarieren die meisten Mods dies mit einer leeren `list[]`. Es stellt sicher, dass die Engine die Mod waehrend der Preload-Phase erkennt. Einige Mods lassen es komplett weg, ohne Probleme.
 
 ---
 
-## Praxisbeispiele from Professional Mods
+## Praxisbeispiele aus professionellen Mods
 
-### MyFramework (Script-only, Framework)
+### MyFramework (nur Skripte, Framework)
 
 ```cpp
 class CfgPatches
@@ -691,7 +691,7 @@ class CfgMods
 };
 ```
 
-### COT (Depends on CF, Uses Common Folder)
+### COT (Abhaengigkeit von CF, verwendet Common-Ordner)
 
 ```cpp
 class CfgPatches
@@ -727,7 +727,7 @@ class CfgMods
                 value = "";
                 files[] =
                 {
-                    "JM/COT/Scripts/Common",     // Shared code
+                    "JM/COT/Scripts/Common",     // Geteilter Code
                     "JM/COT/Scripts/1_Core"
                 };
             };
@@ -763,7 +763,7 @@ class CfgMods
 };
 ```
 
-### MyMissions Mod Server (Server-Only Mod)
+### MyMissions-Mod Server (nur Server-Mod)
 
 ```cpp
 class CfgPatches
@@ -784,7 +784,7 @@ class CfgMods
         name = "MyMissions Mod Server";
         dir = "MyMissions_Server";
         author = "MyMod";
-        type = "servermod";              // <-- Server-only mod
+        type = "servermod";              // <-- Nur-Server-Mod
         defines[] = { "MYMOD_MISSIONS" };
         dependencies[] = { "Core", "Game", "World", "Mission" };
 
@@ -807,7 +807,7 @@ class CfgMods
 };
 ```
 
-### DabsFramework (Uses gameLibScriptModule + CfgVehicles)
+### DabsFramework (Verwendet gameLibScriptModule + CfgVehicles)
 
 ```cpp
 class CfgPatches
@@ -857,7 +857,7 @@ class CfgMods
                 value = "";
                 files[] = { "DabsFramework/scripts/1_core" };
             };
-            class gameLibScriptModule      // Rare: Dabs uses layer 2
+            class gameLibScriptModule      // Selten: Dabs verwendet Schicht 2
             {
                 value = "";
                 files[] = { "DabsFramework/scripts/2_GameLib" };
@@ -903,19 +903,19 @@ class CfgVehicles
 
 ## Haeufige Fehler
 
-### 1. Wrong requiredAddons -- Mod Loads Before Its Dependency
+### 1. Falsche requiredAddons -- Mod laedt vor ihrer Abhaengigkeit
 
 ```cpp
-// WRONG: Missing dependency on CF, so your mod may load before CF
+// FALSCH: Fehlende Abhaengigkeit von CF, daher laedt Ihre Mod moeglicherweise vor CF
 class CfgPatches
 {
     class MyMod_Scripts
     {
-        requiredAddons[] = { "DZ_Data" };  // CF not listed!
+        requiredAddons[] = { "DZ_Data" };  // CF nicht aufgelistet!
     };
 };
 
-// RIGHT: Declare ALL dependencies
+// RICHTIG: ALLE Abhaengigkeiten deklarieren
 class CfgPatches
 {
     class MyMod_Scripts
@@ -925,22 +925,22 @@ class CfgPatches
 };
 ```
 
-**Symptom:** Undefined type errors for classes from the dependency. The mod loaded before the dependency was compiled.
+**Symptom:** Undefinierte Typfehler fuer Klassen aus der Abhaengigkeit. Die Mod wurde geladen, bevor die Abhaengigkeit kompiliert war.
 
-### 2. Missing Script Module Paths
+### 2. Fehlende Skriptmodul-Pfade
 
 ```cpp
-// WRONG: You have a Scripts/4_World/ folder but forgot to declare it
+// FALSCH: Sie haben einen Scripts/4_World/-Ordner, aber vergessen ihn zu deklarieren
 class defs
 {
     class gameScriptModule
     {
         files[] = { "MyMod/Scripts/3_Game" };
     };
-    // 4_World is missing! All .c files in 4_World/ are ignored.
+    // 4_World fehlt! Alle .c-Dateien in 4_World/ werden ignoriert.
 };
 
-// RIGHT: Declare every layer you use
+// RICHTIG: Jede verwendete Schicht deklarieren
 class defs
 {
     class gameScriptModule
@@ -954,56 +954,56 @@ class defs
 };
 ```
 
-**Symptom:** Classes you defined simply do not exist. No error -- they are silently not compiled.
+**Symptom:** Klassen, die Sie definiert haben, existieren einfach nicht. Kein Fehler -- sie werden stillschweigend nicht kompiliert.
 
-### 3. Wrong File Paths (Case Sensitivity)
+### 3. Falsche Dateipfade (Gross-/Kleinschreibung)
 
-While Windows is case-insensitive, DayZ paths can be case-sensitive in certain contexts (Linux servers, PBO packing):
+Waehrend Windows nicht zwischen Gross- und Kleinschreibung unterscheidet, koennen DayZ-Pfade in bestimmten Kontexten (Linux-Server, PBO-Packing) gross-/kleinschreibungssensitiv sein:
 
 ```cpp
-// RISKY: Mixed case that may fail on Linux
-files[] = { "mymod/scripts/3_game" };   // Folder is actually "MyMod/Scripts/3_Game"
+// RISKANT: Gemischte Gross-/Kleinschreibung die auf Linux fehlschlagen kann
+files[] = { "mymod/scripts/3_game" };   // Ordner ist tatsaechlich "MyMod/Scripts/3_Game"
 
-// SAFE: Match the actual directory case exactly
+// SICHER: Exakt die tatsaechliche Verzeichnis-Schreibweise verwenden
 files[] = { "MyMod/Scripts/3_Game" };
 ```
 
-### 4. CfgPatches Class Name Collision
+### 4. CfgPatches-Klassennamen-Kollision
 
 ```cpp
-// WRONG: Using a common name that might collide with another mod
+// FALSCH: Einen generischen Namen verwenden, der mit einer anderen Mod kollidieren koennte
 class CfgPatches
 {
-    class Scripts              // Too generic! Will collide.
+    class Scripts              // Zu generisch! Wird kollidieren.
     {
         // ...
     };
 };
 
-// RIGHT: Use a unique prefix
+// RICHTIG: Ein eindeutiges Praefix verwenden
 class CfgPatches
 {
-    class MyMod_Scripts        // Unique to your mod
+    class MyMod_Scripts        // Einzigartig fuer Ihre Mod
     {
         // ...
     };
 };
 ```
 
-### 5. Circular requiredAddons
+### 5. Zirkulaere requiredAddons
 
 ```cpp
 // ModA config.cpp
 requiredAddons[] = { "ModB_Scripts" };
 
 // ModB config.cpp
-requiredAddons[] = { "ModA_Scripts" };  // CIRCULAR! Engine fails to resolve.
+requiredAddons[] = { "ModA_Scripts" };  // ZIRKULAER! Engine kann nicht aufloesen.
 ```
 
-### 6. Declaring dependencies[] Without Matching Script Modules
+### 6. dependencies[] ohne passende Skriptmodule deklarieren
 
 ```cpp
-// WRONG: Listed "World" as dependency but have no worldScriptModule
+// FALSCH: "World" als Abhaengigkeit aufgelistet, aber kein worldScriptModule vorhanden
 dependencies[] = { "Game", "World", "Mission" };
 
 class defs
@@ -1012,7 +1012,7 @@ class defs
     {
         files[] = { "MyMod/Scripts/3_Game" };
     };
-    // No worldScriptModule declared -- "World" dependency is misleading
+    // Kein worldScriptModule deklariert -- "World"-Abhaengigkeit ist irrefuehrend
     class missionScriptModule
     {
         files[] = { "MyMod/Scripts/5_Mission" };
@@ -1020,21 +1020,21 @@ class defs
 };
 ```
 
-This does not cause an error, but it is misleading. Only list dependencies you actually use.
+Dies verursacht keinen Fehler, ist aber irrefuehrend. Listen Sie nur Abhaengigkeiten auf, die Sie tatsaechlich verwenden.
 
-### 7. Putting CfgVehicles in the Scripts config.cpp
+### 7. CfgVehicles in die Scripts-config.cpp setzen
 
-It works, but is poor practice. Keep item/entity definitions in a separate PBO (`Data/config.cpp`) and script definitions in `Scripts/config.cpp`.
+Es funktioniert, ist aber schlechte Praxis. Halten Sie Item-/Entitaets-Definitionen in einem separaten PBO (`Data/config.cpp`) und Skript-Definitionen in `Scripts/config.cpp`.
 
 ---
 
 ## Vollstaendige Vorlage
 
-Here is a production-ready `Scripts/config.cpp` template you can copy and modify:
+Hier ist eine produktionsreife `Scripts/config.cpp`-Vorlage, die Sie kopieren und anpassen koennen:
 
 ```cpp
 // ============================================================================
-// Scripts/config.cpp -- MyMod Script Module Definitions
+// Scripts/config.cpp -- MyMod Skriptmodul-Definitionen
 // ============================================================================
 
 class CfgPatches
@@ -1048,7 +1048,7 @@ class CfgPatches
         {
             "DZ_Data",
             "DZ_Scripts"
-            // Add framework dependencies here:
+            // Framework-Abhaengigkeiten hier hinzufuegen:
             // "JM_CF_Scripts",         // Community Framework
             // "MyCore_Scripts",      // MyFramework
         };
@@ -1061,16 +1061,16 @@ class CfgMods
     {
         dir = "MyMod";
         name = "My Mod";
-        author = "YourName";
-        credits = "YourName";
+        author = "IhrName";
+        credits = "IhrName";
         creditsJson = "MyMod/Scripts/Data/Credits.json";
-        overview = "A brief description of what this mod does.";
+        overview = "Eine kurze Beschreibung, was diese Mod tut.";
         type = "mod";
 
         defines[] =
         {
             "MYMOD_LOADED"
-            // "MYMOD_DEBUG"      // Uncomment for debug builds
+            // "MYMOD_DEBUG"      // Fuer Debug-Builds einkommentieren
         };
 
         dependencies[] = { "Game", "World", "Mission" };
@@ -1079,12 +1079,12 @@ class CfgMods
         {
             class imageSets
             {
-                files[] = {};     // Add .imageset paths here
+                files[] = {};     // .imageset-Pfade hier hinzufuegen
             };
 
             class widgetStyles
             {
-                files[] = {};     // Add .styles paths here
+                files[] = {};     // .styles-Pfade hier hinzufuegen
             };
 
             class gameScriptModule
@@ -1111,5 +1111,5 @@ class CfgMods
 
 ---
 
-**Zurueck:** [Chapter 2.1: The 5-Layer Script Hierarchy](01-five-layers.md)
-**Weiter:** [Chapter 2.3: mod.cpp & Workshop](03-mod-cpp.md)
+**Zurueck:** [Kapitel 2.1: Die 5-Schichten-Skript-Hierarchie](01-five-layers.md)
+**Weiter:** [Kapitel 2.3: mod.cpp & Workshop](03-mod-cpp.md)

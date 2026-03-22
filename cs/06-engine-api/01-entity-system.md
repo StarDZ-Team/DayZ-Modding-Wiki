@@ -876,19 +876,19 @@ void DamageEntity(EntityAI target, float amount)
 
 ---
 
-## Summary
+## Shrnutí
 
 | Koncept | Klíčový bod |
 |---------|-----------|
-| Hierarchy | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
-| Position | `GetPosition()` / `SetPosition()` available from `Object` upward |
-| Health | Zone-based: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
-| IsAlive | Use on `EntityAI` or cast first: `EntityAI eai; Class.CastTo(eai, obj)` |
-| Inventory | `eai.GetInventory()` returns `GameInventory` with full CRUD |
-| Creating | `GetGame().CreateObjectEx(type, pos, ECE_flags)` is the preferred API |
-| Deleting | `obj.Delete()` (deferred) or `GetGame().ObjectDelete(obj)` (immediate) |
-| Net Sync | `RegisterNetSyncVariable*()` in constructor, react in `OnVariablesSynchronized()` |
-| Type Check | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
+| Hierarchie | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
+| Pozice | `GetPosition()` / `SetPosition()` dostupné od `Object` výše |
+| Zdraví | Zónové: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
+| IsAlive | Používejte na `EntityAI` nebo nejdříve přetypujte: `EntityAI eai; Class.CastTo(eai, obj)` |
+| Inventář | `eai.GetInventory()` vrací `GameInventory` s plným CRUD |
+| Vytváření | `GetGame().CreateObjectEx(type, pos, ECE_flags)` je preferované API |
+| Mazání | `obj.Delete()` (odložené) nebo `GetGame().ObjectDelete(obj)` (okamžité) |
+| Síťová synchronizace | `RegisterNetSyncVariable*()` v konstruktoru, reagujte v `OnVariablesSynchronized()` |
+| Kontrola typu | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
 
 ---
 

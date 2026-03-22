@@ -375,14 +375,57 @@ WrapSpacerWidgetClass MyDialog {
 
 ## Gyakori hibak
 
-1. **Forgetting the `Class` suffix** -- In layouts, write `TextWidgetClass`, not `TextWidget`.
-2. **Mixing proportional and pixel values** -- If `hexactsize 0`, the size values are 0.0-1.0 proportional. If `hexactsize 1`, they are pixel values. Using `300` with proportional mode means 300x the parent width.
-3. **Not quoting multi-word attributes** -- Write `"text halign" center`, not `text halign center`.
-4. **Placing ScriptParamsClass in the wrong block** -- It must be in a separate `{ }` block after the children block, not inside it.
+1. **A `Class` utotagrol valo megfeledkezes** -- A layoutokban ird: `TextWidgetClass`, ne `TextWidget`.
+2. **Aranyos es pixeles ertekek keverese** -- Ha `hexactsize 0`, a meretertek 0.0-1.0 aranyos. Ha `hexactsize 1`, pixeles ertekek. `300` hasznalata aranyos modban a szulo szelessegenek 300-szorosat jelenti.
+3. **Tobbszovas atributumok idezojel nelkul** -- Ird: `"text halign" center`, ne `text halign center`.
+4. **ScriptParamsClass rossz blokkba helyezese** -- Kulon `{ }` blokkban kell lennie a gyermekblokk utan, nem belul.
+
+---
+
+## Legjobb gyakorlatok
+
+- Mindig allitsd be mind a negy exact flaget (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`) kifejezetten minden widgeten. Az alapertelmezett ertekekre valo tamaszkodas ketseges layoutokhoz vezet, amelyek eltorodnek a szulo struktura valtozasakor.
+- Hasznald a `scriptclass`-t takarekosan -- csak azokon a widgeteken, amelyeknek tenyleg szukseguk van script-vezerelt viselkedesre. A tulzott kottes inicializacios terhelest jelent.
+- Nevezd el a widgeteket leirojon (`PlayerListScroll`, `TitleBarClose`) ahelyett, hogy generikusan (`Frame1`, `btn`). A script kod a `FindAnyWidget()`-et nev alapjan hasznalja, es az utkozesek csendes hibahoz vezetnek.
+- Tartsd a layout fajlokat 200 sor alatt. Oszd fel az osszetett UI-kat tobb `.layout` fajlra, amelyeket `CreateWidgets()`-szel toltesz be es programozan kapcsolsz a szulohoz.
+- Mindig tedd idezowjelbe a tobbszovas attributum neveket (`"text halign"`, `"Size To Content V"`). Az idezet nelkuli tobbszovas attributumok csendben, hiba nelkul kudarcot vallanak.
+
+---
+
+## Elmelet vs gyakorlat
+
+> Mit mond a dokumentacio az okhoz kepest, hogyan mukodnek a dolgok tenylegesen futasi idoben.
+
+| Koncept | Elmelet | Valosag |
+|---------|---------|---------|
+| `scriptclass` inicializalas | `OnWidgetScriptInit` meghivasra kerul a layout betoltesekor | Ha az osztaly nem orokol a `Managed`-bol vagy konstruktor hibaja van, a widget betoltodik, de a kezelo csendben null |
+| `ScriptParamsClass` | A parameterek tetszoleges adatokat adnak at a script osztalyoknak | Csak szoveges es szamertekek mukodnek megbizhatoan; beagyazott objektumok vagy tombok nem tamogatottak |
+| `color` attributum | Negy float 0.0-1.0 (RGBA) | Egyes widget tipusok figyelmen kivul hagyjan az alfa csatornat vagy `inheritalpha 1`-et igenyelnek a szulon az atlatszoság tovabbitasahoz |
+| Attributum alapertelmezesek | A nem dokumentalt attributumok a motor alapertelmezeit hasznaljak | Az alapertelmezesek widget tipusonkent elternek |
+| `"no focus"` | Megakadalyozza a billentyuzet fokuszt | Megakadalyozza a gamepad kivalasztasat is, ami eltomheti a kontroller navigaciot, ha interaktiv widgeteken van beallitva |
+
+---
+
+## Kompatibilitas es hatas
+
+- **Multi-Mod:** A layout fajlok modonkent izoaltak -- nincs kozvetlen utkozos. Azonban a `scriptclass` neveknek globaliasan egyedinek kell lenniuk. Ket mod, amely `scriptclass "PanelHandler"`-t hasznal, az egyiket csendben meghibasitja.
+- **Teljesitmeny:** Minden widget egy layoutban valodi motor objektum. Az 500+ widgetes layoutok merheto FPS csokkenest okoznak. Nagy listakhoz reszesitsd elonyben a programozott poolingot.
+- **Verzio:** A layout formatum stabil a DayZ 1.0 ota. A `ScriptParamsClass` blokkot es a `ViewBinding` scriptclass-t a DabsFramework adta hozza, es nem vanilla funkciok.
+
+---
+
+## Valos modokban megfigyelt mintak
+
+| Minta | Mod | Reszlet |
+|-------|-----|---------|
+| `scriptclass "ViewBinding"` `ScriptParamsClass`-szal | DabsFramework / DayZ Editor | Ketiranyu adat kottes layoutok es ViewControllerek kozott a `Binding_Name` parameteren keresztul |
+| `WrapSpacerWidgetClass` dialogus gyokerkent | COT, Expansion | Lehetove teszi a `Size To Content V/H`-t a dialogusok automatikus meretezesere a dinamikus tartalom korul |
+| Kulon `.layout` lista soronkent | VPP Admin Tools | Minden jatekos sor onallo layout, WrapSpacerbe toltve, lehetove teve az ujrafelhasznalast es poolingot |
+| `priority 998-999` modalis fedvenyekhez | DabsFramework, COT | Biztositja, hogy a dialogusok az osszes tobbi UI elem fole keruljenek |
 
 ---
 
 ## Kovetkezo lepesek
 
-- [3.3 Meretezees es pozicionalas](03-sizing-positioning.md) -- Master the proportional vs. pixel coordinate system
-- [3.4 Kontener widgetek](04-containers.md) -- Deep dive into spacer and scroll widgets
+- [3.3 Meretezees es pozicionalas](03-sizing-positioning.md) -- Sajatitsd el az aranyos vs. pixeles koordinata rendszert
+- [3.4 Kontener widgetek](04-containers.md) -- Melysegu elmerules a spacer es scroll widgetekben

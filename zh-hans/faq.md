@@ -1,108 +1,108 @@
-# Frequently Asked Questions
+# 常见问题
 
-[Home](../README.md) | **FAQ**
+[首页](../README.md) | **FAQ**
 
 ---
 
 ## 入门
 
-### 问：开始DayZ Modding需要什么？
-**答：** 你需要Steam、DayZ（零售版）、DayZ Tools（Steam工具区免费）和文本编辑器（推荐VS Code）。严格来说不需要编程经验 — start with [Chapter 8.1: Your First Mod](08-tutorials/01-first-mod.md). DayZ Tools包含Object Builder、Addon Builder、TexView2和Workbench IDE。
+### 问：开始 DayZ Modding 需要什么？
+**答：** 你需要 Steam、DayZ（零售版）、DayZ Tools（Steam 工具区免费）和文本编辑器（推荐 VS Code）。严格来说不需要编程经验 --- 从 [第 8.1 章：你的第一个 Mod](08-tutorials/01-first-mod.md) 开始。DayZ Tools 包含 Object Builder、Addon Builder、TexView2 和 Workbench IDE。
 
-### 问：DayZ使用什么编程语言？
-**答：** DayZ使用**Enforce Script**，这是Bohemia Interactive的专有语言。 它具有类似C#的C风格语法，但有自己的规则和限制（没有三元运算符、没有try/catch、没有lambda）。 参见[第 1: Enforce Script](01-enforce-script/01-variables-types.md) 获取完整的语言指南。
+### 问：DayZ 使用什么编程语言？
+**答：** DayZ 使用 **Enforce Script**，这是 Bohemia Interactive 的专有语言。它具有类似 C# 的 C 风格语法，但有自己的规则和限制（没有三元运算符、没有 try/catch、没有 lambda）。参见 [第一部分：Enforce Script](01-enforce-script/01-variables-types.md) 获取完整的语言指南。
 
-### 问：如何设置P:驱动器？
-**答：** 从Steam打开DayZ Tools，点击 "Workdrive" or "Setup Workdrive" 来挂载P:驱动器。 这将创建一个指向你的Modding工作区的虚拟驱动器， 引擎 在开发期间在此查找源文件。 你也可以使用 `subst P: "C:\Your\Path"` 从命令行操作。 参见[第 4.5](04-file-formats/05-dayz-tools.md).
+### 问：如何设置 P: 驱动器？
+**答：** 从 Steam 打开 DayZ Tools，点击「Workdrive」或「Setup Workdrive」来挂载 P: 驱动器。这将创建一个指向你的 Modding 工作区的虚拟驱动器，引擎在开发期间在此查找源文件。你也可以从命令行使用 `subst P: "C:\Your\Path"`。参见 [第 4.5 章](04-file-formats/05-dayz-tools.md)。
 
-### 问：可以不用专用服务器测试Mod吗？
-**答：** 可以。使用 `-filePatching` 参数和你的Mod加载启动DayZ。 快速测试请使用Listen Server（从游戏内菜单托管）。 生产测试时，请务必也在专用服务器上验证，因为某些代码路径不同。 参见[第 8.1](08-tutorials/01-first-mod.md).
+### 问：可以不用专用服务器测试 Mod 吗？
+**答：** 可以。使用 `-filePatching` 参数和你的 Mod 加载启动 DayZ。快速测试请使用监听服务器（从游戏内菜单托管）。生产测试时，请务必也在专用服务器上验证，因为某些代码路径不同。参见 [第 8.1 章](08-tutorials/01-first-mod.md)。
 
-### 问：在哪里可以找到原版DayZ脚本文件来学习？
-**答：** 通过DayZ Tools挂载P:驱动器后，原版脚本位于 `P:\DZ\scripts\` 按层级组织 (`3_Game`, `4_World`, `5_Mission`). 这些是每个引擎类、方法和事件的权威参考。 另请参阅 [Cheat Sheet](cheatsheet.md) and [API Quick Reference](06-engine-api/quick-reference.md).
+### 问：在哪里可以找到原版 DayZ 脚本文件？
+**答：** 通过 DayZ Tools 挂载 P: 驱动器后，原版脚本位于 `P:\DZ\scripts\`，按层级组织（`3_Game`、`4_World`、`5_Mission`）。这些是所有引擎类、方法和事件的权威参考。另请参见 [速查表](cheatsheet.md) 和 [API 快速参考](06-engine-api/quick-reference.md)。
 
 ---
 
 ## 常见错误和修复
 
-### 问：我的Mod加载了但什么都没发生。日志中没有错误。
-**答：** 很可能你的 `config.cpp` 有一个不正确的 `requiredAddons[]` 条目，导致你的脚本加载太早或根本没有加载。 Verify that each addon name in `requiredAddons` matches an existing `CfgPatches` class name exactly (case-sensitive). Check the script log at `%localappdata%/DayZ/` for silent warnings. 参见[第 2.2](02-mod-structure/02-config-cpp.md).
+### 问：Mod 加载了但什么都没发生。日志中也没有错误。
+**答：** 最可能的原因是 `config.cpp` 中的 `requiredAddons[]` 条目不正确，导致脚本加载过早或根本没有加载。验证 `requiredAddons` 中的每个插件名称与现有的 `CfgPatches` 类名完全匹配（区分大小写）。检查 `%localappdata%/DayZ/` 的脚本日志中是否有静默警告。参见 [第 2.2 章](02-mod-structure/02-config-cpp.md)。
 
-### Q: I get "Cannot find variable" or "Undefined variable" errors.
-**A:** This usually means you are referencing a class or variable from a higher script layer. Lower layers (`3_Game`) cannot see types defined in higher layers (`4_World`, `5_Mission`). Move your class definition to the correct layer, or use `typename` reflection for loose coupling. 参见[第 2.1](02-mod-structure/01-five-layers.md).
+### 问：我得到「Cannot find variable」或「Undefined variable」错误。
+**答：** 这通常意味着你在引用来自更高脚本层的类或变量。低层（`3_Game`）无法看到高层（`4_World`、`5_Mission`）中定义的类型。将类定义移到正确的层，或使用 `typename` 反射进行松耦合。参见 [第 2.1 章](02-mod-structure/01-five-layers.md)。
 
-### Q: Why does `JsonFileLoader<T>.JsonLoadFile()` not return my data?
-**A:** `JsonLoadFile()` returns `void`, not the loaded object. You must pre-allocate your object and pass it as a reference parameter: `ref MyConfig cfg = new MyConfig(); JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);`. Assigning the return value silently gives you `null`. 参见[第 6.8](06-engine-api/08-file-io.md).
+### 问：为什么 `JsonFileLoader<T>.JsonLoadFile()` 不返回我的数据？
+**答：** `JsonLoadFile()` 返回 `void`，不是加载的对象。你必须预分配对象并作为引用参数传递：`ref MyConfig cfg = new MyConfig(); JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);`。赋值返回值会静默地给你 `null`。参见 [第 6.8 章](06-engine-api/08-file-io.md)。
 
-### Q: My RPC is sent but never received on the other side.
-**A:** Check these common causes: (1) The RPC ID does not match between sender and receiver. (2) You are sending from client but listening on client (or server-to-server). (3) You forgot to register the RPC handler in `OnRPC()` or your custom handler. (4) The target entity is `null` or not network-synced. 参见[第 6.9](06-engine-api/09-networking.md) and [Chapter 7.3](07-patterns/03-rpc-patterns.md).
+### 问：RPC 已发送但另一端从未接收到。
+**答：** 检查以下常见原因：(1) 发送方和接收方之间的 RPC ID 不匹配。(2) 从客户端发送但在客户端监听（或服务器到服务器）。(3) 忘记在 `OnRPC()` 或自定义处理程序中注册 RPC 处理程序。(4) 目标实体为 `null` 或未进行网络同步。参见 [第 6.9 章](06-engine-api/09-networking.md) 和 [第 7.3 章](07-patterns/03-rpc-patterns.md)。
 
-### Q: I get "Error: Member already defined" in an else-if block.
-**A:** Enforce Script does not allow variable redeclaration in sibling `else if` blocks within the same scope. Declare the variable once before the `if` chain, or use separate scopes with braces. 参见[第 1.12](01-enforce-script/12-gotchas.md).
+### 问：在 else-if 块中得到「Error: Member already defined」。
+**答：** Enforce Script 不允许在同一作用域内的兄弟 `else if` 块中重新声明变量。在 `if` 链之前声明一次变量，或使用花括号创建单独的作用域。参见 [第 1.12 章](01-enforce-script/12-gotchas.md)。
 
-### Q: My UI layout shows nothing / widgets are invisible.
-**A:** Common causes: (1) Widget has zero size — check that width/height are set correctly (no negative values). (2) The widget is not `Show(true)`. (3) Text color alpha is 0 (fully transparent). (4) The layout path in `CreateWidgets()` is wrong (no error is thrown, it just returns `null`). 参见[第 3.3](03-gui-system/03-sizing-positioning.md).
+### 问：我的 UI 布局什么都不显示 / 控件不可见。
+**答：** 常见原因：(1) 控件大小为零 --- 检查宽度/高度是否正确设置（不要使用负值）。(2) 控件没有 `Show(true)`。(3) 文本颜色 alpha 为 0（完全透明）。(4) `CreateWidgets()` 中的布局路径错误（不会抛出错误，只是返回 `null`）。参见 [第 3.3 章](03-gui-system/03-sizing-positioning.md)。
 
-### Q: My mod causes a crash on server startup.
-**A:** Check for: (1) Calling client-only methods (`GetGame().GetPlayer()`, UI code) on the server. (2) `null` reference in `OnInit` or `OnMissionStart` before the world is ready. (3) Infinite recursion in a `modded class` override that forgot to call `super`. Always add guard clauses since there is no try/catch. 参见[第 1.11](01-enforce-script/11-error-handling.md).
+### 问：我的 Mod 导致服务器启动时崩溃。
+**答：** 检查：(1) 在服务器上调用仅客户端的方法（`GetGame().GetPlayer()`、UI 代码）。(2) 在世界准备好之前的 `OnInit` 或 `OnMissionStart` 中的 `null` 引用。(3) 忘记调用 `super` 的 `modded class` 重写中的无限递归。由于没有 try/catch，请始终添加保护子句。参见 [第 1.11 章](01-enforce-script/11-error-handling.md)。
 
-### Q: Backslash or quote characters in my strings cause parse errors.
-**A:** Enforce Script's parser (CParser) does not support `\\` or `\"` escape sequences in string literals. Avoid backslashes entirely. For file paths, use forward slashes (`"my/path/file.json"`). For quotes in strings, use single-quote characters or string concatenation. 参见[第 1.12](01-enforce-script/12-gotchas.md).
+### 问：字符串中的反斜杠或引号字符导致解析错误。
+**答：** Enforce Script 的解析器（CParser）不支持字符串字面量中的 `\\` 或 `\"` 转义序列。完全避免使用反斜杠。文件路径请使用正斜杠（`"my/path/file.json"`）。字符串中的引号请使用单引号字符或字符串连接。参见 [第 1.12 章](01-enforce-script/12-gotchas.md)。
 
 ---
 
 ## 架构决策
 
-### Q: What is the 5-layer script hierarchy and why does it matter?
-**A:** DayZ scripts compile in five numbered layers: `1_Core`, `2_GameLib`, `3_Game`, `4_World`, `5_Mission`. Each layer can only reference types from the same or lower-numbered layers. This enforces architectural boundaries — put shared enums and constants in `3_Game`, entity logic in `4_World`, and UI/mission hooks in `5_Mission`. 参见[第 2.1](02-mod-structure/01-five-layers.md).
+### 问：什么是 5 层脚本层次结构，为什么重要？
+**答：** DayZ 脚本在五个编号层中编译：`1_Core`、`2_GameLib`、`3_Game`、`4_World`、`5_Mission`。每层只能引用同一层或更低编号层的类型。这强制了架构边界 --- 将共享枚举和常量放在 `3_Game`，实体逻辑放在 `4_World`，UI/任务钩子放在 `5_Mission`。参见 [第 2.1 章](02-mod-structure/01-five-layers.md)。
 
-### Q: Should I use `modded class` or create new classes?
-**A:** Use `modded class` when you need to change or extend existing vanilla behavior (adding a method to `PlayerBase`, hooking into `MissionServer`). Create new classes for self-contained systems that do not need to override anything. Modded classes chain automatically — always call `super` to avoid breaking other mods. 参见[第 1.4](01-enforce-script/04-modded-classes.md).
+### 问：应该使用 `modded class` 还是创建新类？
+**答：** 当你需要更改或扩展现有的原版行为时（向 `PlayerBase` 添加方法、挂钩 `MissionServer`），使用 `modded class`。对于不需要重写任何内容的自包含系统，创建新类。modded class 会自动链式调用 --- 始终调用 `super` 以避免破坏其他 Mod。参见 [第 1.4 章](01-enforce-script/04-modded-classes.md)。
 
-### Q: How should I organize client vs. server code?
-**A:** Use `#ifdef SERVER` and `#ifdef CLIENT` preprocessor guards for code that must only run on one side. For larger mods, split into separate PBOs: a client mod (UI, rendering, local effects) and a server mod (spawning, logic, persistence). This prevents leaking server logic to clients. 参见[第 2.5](02-mod-structure/05-file-organization.md) and [Chapter 6.9](06-engine-api/09-networking.md).
+### 问：如何组织客户端和服务器端代码？
+**答：** 对于只应在一端运行的代码，使用 `#ifdef SERVER` 和 `#ifdef CLIENT` 预处理器保护。对于较大的 Mod，分成单独的 PBO：客户端 Mod（UI、渲染、本地效果）和服务器 Mod（生成、逻辑、持久化）。这可以防止服务器逻辑泄露给客户端。参见 [第 2.5 章](02-mod-structure/05-file-organization.md) 和 [第 6.9 章](06-engine-api/09-networking.md)。
 
-### Q: When should I use a Singleton vs. a Module/Plugin?
-**A:** Use a Module (registered with CF's `PluginManager` or your own module system) when you need lifecycle management (`OnInit`, `OnUpdate`, `OnMissionFinish`). Use a standalone Singleton for stateless utility services that just need global access. Modules are preferred for anything with state or cleanup needs. 参见[第 7.1](07-patterns/01-singletons.md) and [Chapter 7.2](07-patterns/02-module-systems.md).
+### 问：什么时候应该使用单例模式，什么时候使用模块/插件？
+**答：** 当需要生命周期管理（`OnInit`、`OnUpdate`、`OnMissionFinish`）时使用模块（注册到 CF 的 `PluginManager` 或你自己的模块系统）。对于只需要全局访问的无状态工具服务，使用独立的单例。对于有状态或需要清理的任何东西，优先使用模块。参见 [第 7.1 章](07-patterns/01-singletons.md) 和 [第 7.2 章](07-patterns/02-module-systems.md)。
 
-### Q: How do I safely store per-player data that survives server restarts?
-**A:** Save JSON files to the server's `$profile:` directory using `JsonFileLoader`. Use the player's Steam UID (from `PlayerIdentity.GetId()`) as the filename. Load on player connect, save on disconnect and periodically. Always handle missing/corrupted files gracefully with guard clauses. 参见[第 7.4](07-patterns/04-config-persistence.md) and [Chapter 6.8](06-engine-api/08-file-io.md).
+### 问：如何安全地存储在服务器重启后保留的玩家数据？
+**答：** 使用 `JsonFileLoader` 将 JSON 文件保存到服务器的 `$profile:` 目录。使用玩家的 Steam UID（从 `PlayerIdentity.GetId()` 获取）作为文件名。在玩家连接时加载，在断开连接时和定期保存。由于没有 try/catch，始终使用保护子句优雅地处理缺失/损坏的文件。参见 [第 7.4 章](07-patterns/04-config-persistence.md) 和 [第 6.8 章](06-engine-api/08-file-io.md)。
 
 ---
 
-## 发布和分发
+## 发布与分发
 
-### Q: How do I pack my mod into a PBO?
-**A:** Use Addon Builder (from DayZ Tools) or third-party tools like PBO Manager. Point it at your mod's source folder, set the correct prefix (matching your `config.cpp` addon prefix), and build. The output `.pbo` file goes into your mod's `Addons/` folder. 参见[第 4.6](04-file-formats/06-pbo-packing.md).
+### 问：如何将 Mod 打包为 PBO？
+**答：** 使用 Addon Builder（来自 DayZ Tools）或第三方工具如 PBO Manager。指向你的 Mod 源文件夹，设置正确的前缀（与 `config.cpp` 插件前缀匹配），然后构建。输出的 `.pbo` 文件放入你的 Mod 的 `Addons/` 文件夹。参见 [第 4.6 章](04-file-formats/06-pbo-packing.md)。
 
-### Q: How do I sign my mod for server use?
-**A:** Generate a keypair with DayZ Tools' DSSignFile or DSCreateKey: this produces a `.biprivatekey` and `.bikey`. Sign each PBO with the private key (creates `.bisign` files next to each PBO). Distribute the `.bikey` to server admins for their `keys/` folder. Never share your `.biprivatekey`. 参见[第 4.6](04-file-formats/06-pbo-packing.md).
+### 问：如何为服务器使用签名我的 Mod？
+**答：** 使用 DayZ Tools 的 DSSignFile 或 DSCreateKey 生成密钥对：生成 `.biprivatekey` 和 `.bikey`。用私钥签署每个 PBO（在每个 PBO 旁边创建 `.bisign` 文件）。将 `.bikey` 分发给服务器管理员放入其 `keys/` 文件夹。永远不要分享你的 `.biprivatekey`。参见 [第 4.6 章](04-file-formats/06-pbo-packing.md)。
 
-### Q: How do I publish to the Steam Workshop?
-**A:** Use the DayZ Tools Publisher or the Steam Workshop uploader. You need a `mod.cpp` file in your mod root defining the name, author, and description. The publisher uploads your packed PBOs, and Steam assigns a Workshop ID. Update by re-publishing from the same account. 参见[第 2.3](02-mod-structure/03-mod-cpp.md) and [Chapter 8.7](08-tutorials/07-publishing-workshop.md).
+### 问：如何发布到 Steam 创意工坊？
+**答：** 使用 DayZ Tools Publisher 或 Steam 创意工坊上传器。你需要在 Mod 根目录中有一个定义名称、作者和描述的 `mod.cpp` 文件。发布器上传你打包好的 PBO，Steam 分配一个创意工坊 ID。从同一账户重新发布来更新。参见 [第 2.3 章](02-mod-structure/03-mod-cpp.md) 和 [第 8.7 章](08-tutorials/07-publishing-workshop.md)。
 
-### Q: Can my mod require other mods as dependencies?
-**A:** Yes. In `config.cpp`, add the dependency mod's `CfgPatches` class name to your `requiredAddons[]` array. In `mod.cpp`, there is no formal dependency system — document required mods in your Workshop description. Players must subscribe to and load all required mods. 参见[第 2.2](02-mod-structure/02-config-cpp.md).
+### 问：我的 Mod 可以要求其他 Mod 作为依赖项吗？
+**答：** 可以。在 `config.cpp` 中，将依赖 Mod 的 `CfgPatches` 类名添加到你的 `requiredAddons[]` 数组。`mod.cpp` 中没有正式的依赖系统 --- 在你的创意工坊描述中记录所需的 Mod。玩家必须订阅并加载所有必需的 Mod。参见 [第 2.2 章](02-mod-structure/02-config-cpp.md)。
 
 ---
 
 ## 高级主题
 
-### Q: How do I create custom player actions (interactions)?
-**A:** Extend `ActionBase` (or a subclass like `ActionInteractBase`), define `CreateConditionComponents()` for preconditions, override `OnStart`/`OnExecute`/`OnEnd` for logic, and register it in `SetActions()` on the target entity. Actions support continuous (hold) and instant (click) modes. 参见[第 6.12](06-engine-api/12-action-system.md).
+### 问：如何创建自定义玩家动作（交互）？
+**答：** 扩展 `ActionBase`（或子类如 `ActionInteractBase`），定义 `CreateConditionComponents()` 作为前置条件，重写 `OnStart`/`OnExecute`/`OnEnd` 实现逻辑，并在目标实体的 `SetActions()` 中注册。动作支持持续（按住）和即时（点击）模式。参见 [第 6.12 章](06-engine-api/12-action-system.md)。
 
-### Q: How does the damage system work for custom items?
-**A:** Define a `DamageSystem` class in your item's config.cpp with `DamageZones` (named regions) and `ArmorType` values. Each zone tracks its own health. Override `EEHitBy()` and `EEKilled()` in script for custom damage reactions. The engine maps model Fire Geometry components to zone names. 参见[第 6.1](06-engine-api/01-entity-system.md).
+### 问：自定义物品的伤害系统如何工作？
+**答：** 在物品的 config.cpp 中定义带有 `DamageZones`（命名区域）和 `ArmorType` 值的 `DamageSystem` 类。每个区域跟踪自己的生命值。在脚本中重写 `EEHitBy()` 和 `EEKilled()` 实现自定义伤害反应。引擎将模型的 Fire Geometry 组件映射到区域名称。参见 [第 6.1 章](06-engine-api/01-entity-system.md)。
 
-### Q: How can I add custom keybindings to my mod?
-**A:** Create an `inputs.xml` file defining your input actions with default key assignments. Register them in script via `GetUApi().RegisterInput()`. Query state with `GetUApi().GetInputByName("your_action").LocalPress()`. Add localized names in your `stringtable.csv`. 参见[第 5.2](05-config-files/02-inputs-xml.md) and [Chapter 6.13](06-engine-api/13-input-system.md).
+### 问：如何向 Mod 添加自定义按键绑定？
+**答：** 创建一个定义输入动作和默认按键分配的 `inputs.xml` 文件。通过 `GetUApi().RegisterInput()` 在脚本中注册。使用 `GetUApi().GetInputByName("your_action").LocalPress()` 查询状态。在 `stringtable.csv` 中添加本地化名称。参见 [第 5.2 章](05-config-files/02-inputs-xml.md) 和 [第 6.13 章](06-engine-api/13-input-system.md)。
 
-### Q: How do I make my mod compatible with other mods?
-**A:** Follow these principles: (1) Always call `super` in modded class overrides. (2) Use unique class names with a mod prefix (e.g., `MyMod_Manager`). (3) Use unique RPC IDs. (4) Do not override vanilla methods without calling `super`. (5) Use `#ifdef` to detect optional dependencies. (6) Test with popular mod combinations (CF, Expansion, etc.). 参见[第 7.2](07-patterns/02-module-systems.md).
+### 问：如何使我的 Mod 与其他 Mod 兼容？
+**答：** 遵循以下原则：(1) 在 modded class 重写中始终调用 `super`。(2) 使用带有 Mod 前缀的唯一类名（如 `MyMod_Manager`）。(3) 使用唯一的 RPC ID。(4) 不要在不调用 `super` 的情况下重写原版方法。(5) 使用 `#ifdef` 检测可选依赖项。(6) 与热门 Mod 组合（CF、Expansion 等）一起测试。参见 [第 7.2 章](07-patterns/02-module-systems.md)。
 
-### Q: How do I optimize my mod for server performance?
-**A:** Key strategies: (1) Avoid per-frame (`OnUpdate`) logic — use timers or event-driven design. (2) Cache references instead of calling `GetGame().GetPlayer()` repeatedly. (3) Use `GetGame().IsServer()` / `GetGame().IsClient()` guards to skip unnecessary code. (4) Profile with `int start = TickCount(0);` benchmarks. (5) Limit network traffic — batch RPCs and use Net Sync Variables for frequent small updates. 参见[第 7.7](07-patterns/07-performance.md).
+### 问：如何优化 Mod 的服务器性能？
+**答：** 关键策略：(1) 避免每帧（`OnUpdate`）的逻辑 --- 使用定时器或事件驱动设计。(2) 缓存引用而不是重复调用 `GetGame().GetPlayer()`。(3) 使用 `GetGame().IsServer()` / `GetGame().IsClient()` 保护跳过不必要的代码。(4) 用 `int start = TickCount(0);` 基准测试进行性能分析。(5) 限制网络流量 --- 批量处理 RPC，频繁更新的小数据使用 Net Sync Variables。参见 [第 7.7 章](07-patterns/07-performance.md)。
 
 ---
 
-*有未涵盖的问题？请在仓库中创建 issue。*
+*这里没有涵盖你的问题？在仓库中打开一个 Issue。*

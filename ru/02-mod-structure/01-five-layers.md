@@ -1,6 +1,6 @@
-# Chapter 2.1: The 5-Layer Script Hierarchy
+# Глава 2.1: 5-уровневая иерархия скриптов
 
-[Home](../../README.md) | **The 5-Layer Script Hierarchy** | [Next: config.cpp Deep Dive >>](02-config-cpp.md)
+[Главная](../../README.md) | **5-уровневая иерархия скриптов** | [Следующая: Подробный разбор config.cpp >>](02-config-cpp.md)
 
 ---
 
@@ -9,26 +9,26 @@
 ## Содержание
 
 
-- [Overview](#overview)
-- [The Layer Stack](#the-layer-stack)
-- [Layer 1: 1_Core (engineScriptModule)](#layer-1-1_core-enginescriptmodule)
-- [Layer 2: 2_GameLib (gameLibScriptModule)](#layer-2-2_gamelib-gamelibscriptmodule)
-- [Layer 3: 3_Game (gameScriptModule)](#layer-3-3_game-gamescriptmodule)
-- [Layer 4: 4_World (worldScriptModule)](#layer-4-4_world-worldscriptmodule)
-- [Layer 5: 5_Mission (missionScriptModule)](#layer-5-5_mission-missionscriptmodule)
-- [The Critical Rule](#the-critical-rule)
-- [Load Order and Timing](#load-order-and-timing)
-- [When Each Layer Executes](#when-each-layer-executes)
-- [Practical Guidelines](#practical-guidelines)
-- [Quick Decision Guide](#quick-decision-guide)
-- [Common Mistakes](#common-mistakes)
+- [Обзор](#обзор)
+- [Стек уровней](#стек-уровней)
+- [Уровень 1: 1_Core (engineScriptModule)](#уровень-1-1_core-enginescriptmodule)
+- [Уровень 2: 2_GameLib (gameLibScriptModule)](#уровень-2-2_gamelib-gamelibscriptmodule)
+- [Уровень 3: 3_Game (gameScriptModule)](#уровень-3-3_game-gamescriptmodule)
+- [Уровень 4: 4_World (worldScriptModule)](#уровень-4-4_world-worldscriptmodule)
+- [Уровень 5: 5_Mission (missionScriptModule)](#уровень-5-5_mission-missionscriptmodule)
+- [Критическое правило](#критическое-правило)
+- [Порядок загрузки и тайминг](#порядок-загрузки-и-тайминг)
+- [Когда выполняется код каждого уровня](#когда-выполняется-код-каждого-уровня)
+- [Практические рекомендации](#практические-рекомендации)
+- [Краткое руководство по выбору](#краткое-руководство-по-выбору)
+- [Распространённые ошибки](#распространённые-ошибки)
 
 ---
 
 ## Обзор
 
 
-The DayZ engine compiles scripts in five distinct passes called **script modules**. Each module corresponds to a numbered folder in your mod's `Scripts/` directory:
+Движок DayZ компилирует скрипты за пять отдельных проходов, называемых **модулями скриптов**. Каждый модуль соответствует пронумерованной папке в директории `Scripts/` вашего мода:
 
 ```
 Scripts/
@@ -39,7 +39,7 @@ Scripts/
   5_Mission/       --> missionScriptModule
 ```
 
-Each layer builds on top of the previous ones. The numbers are not arbitrary --- y define a strict compilation and dependency order enforced by the engine.
+Каждый уровень строится поверх предыдущих. Номера не произвольны --- они определяют строгий порядок компиляции и зависимостей, обеспечиваемый движком.
 
 ---
 
@@ -50,37 +50,37 @@ Each layer builds on top of the previous ones. The numbers are not arbitrary ---
 +---------------------------------------------------------------+
 |                                                               |
 |   5_Mission   (missionScriptModule)                           |
-|   UI, HUD, mission lifecycle, menu screens                    |
-|   Can reference: everything below (1-4)                       |
+|   UI, HUD, жизненный цикл миссии, экраны меню                |
+|   Может ссылаться на: всё ниже (1-4)                          |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   4_World     (worldScriptModule)                             |
-|   Entities, items, vehicles, managers, gameplay logic          |
-|   Can reference: 1_Core, 2_GameLib, 3_Game                    |
+|   Сущности, предметы, транспорт, менеджеры, игровая логика    |
+|   Может ссылаться на: 1_Core, 2_GameLib, 3_Game               |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   3_Game      (gameScriptModule)                              |
-|   Configs, RPC registration, data classes, input bindings     |
-|   Can reference: 1_Core, 2_GameLib                            |
+|   Конфиги, регистрация RPC, классы данных, привязки ввода     |
+|   Может ссылаться на: 1_Core, 2_GameLib                       |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   2_GameLib   (gameLibScriptModule)                           |
-|   Low-level engine bindings (rarely used by mods)             |
-|   Can reference: 1_Core only                                  |
+|   Низкоуровневые привязки движка (редко используются модами)   |
+|   Может ссылаться на: только 1_Core                           |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   1_Core      (engineScriptModule)                            |
-|   Fundamental types, constants, pure utility functions         |
-|   Can reference: nothing (this is the foundation)             |
+|   Фундаментальные типы, константы, чистые утилитарные функции |
+|   Может ссылаться на: ничего (это фундамент)                  |
 |                                                               |
 +---------------------------------------------------------------+
 
-        COMPILATION ORDER: 1 --> 2 --> 3 --> 4 --> 5
-        DEPENDENCY DIRECTION: upward only (lower cannot see higher)
+        ПОРЯДОК КОМПИЛЯЦИИ: 1 --> 2 --> 3 --> 4 --> 5
+        НАПРАВЛЕНИЕ ЗАВИСИМОСТЕЙ: только вверх (нижние не видят верхние)
 ```
 
 ---
@@ -91,21 +91,21 @@ Each layer builds on top of the previous ones. The numbers are not arbitrary ---
 ### Назначение
 
 
-The absolute foundation. Code here runs at the engine level before any game systems exist. Это earliest point where mod code can execute.
+Абсолютный фундамент. Код здесь выполняется на уровне движка до существования каких-либо игровых систем. Это самая ранняя точка, где может выполняться код мода.
 
 ### Что размещать здесь
 
 
-- Constants and enums shared across all layers
-- Pure utility functions (math helpers, string utilities)
-- Logging infrastructure (the logger itself, not what logs)
-- Preprocessor defines and typedefs
-- Base class definitions that need to be visible everywhere
+- Константы и перечисления, общие для всех уровней
+- Чистые утилитарные функции (математические хелперы, строковые утилиты)
+- Инфраструктура логирования (сам логгер, а не то, что логируется)
+- Определения препроцессора и typedef
+- Определения базовых классов, которые должны быть видны везде
 
 ### Реальные примеры
 
 
-**Community Framework** places its core module system here:
+**Community Framework** размещает свою базовую систему модулей здесь:
 
 ```c
 // 1_Core/CF_ModuleCoreManager.c
@@ -120,7 +120,7 @@ class CF_ModuleCoreManager
 };
 ```
 
-**MyFramework** places its logging constants here:
+**MyFramework** размещает свои константы логирования здесь:
 
 ```c
 // 1_Core/MyLogLevel.c
@@ -137,7 +137,7 @@ enum MyLogLevel
 ### Когда использовать
 
 
-Use `1_Core` only when you need something available to **all** other layers, and it has zero dependency on game types like `PlayerBase`, `ItemBase`, or `MissionBase`. Most mods do not need this layer at all.
+Используйте `1_Core` только когда вам нужно что-то доступное **всем** другим уровням, и это не имеет зависимостей от игровых типов вроде `PlayerBase`, `ItemBase` или `MissionBase`. Большинству модов этот уровень вообще не нужен.
 
 ---
 
@@ -147,23 +147,23 @@ Use `1_Core` only when you need something available to **all** other layers, and
 ### Назначение
 
 
-Low-level engine library bindings. This layer exists in the vanilla script hierarchy but is **rarely used by mods**. It sits between the raw engine and the game logic.
+Низкоуровневые привязки библиотек движка. Этот уровень существует в ванильной иерархии скриптов, но **редко используется модами**. Он находится между сырым движком и игровой логикой.
 
 ### Что размещать здесь
 
 
-- Engine-level abstractions (rendering, sound engine bindings)
-- Mathematical libraries beyond what `1_Core` provides
-- Base widget/UI engine types
+- Абстракции уровня движка (привязки рендеринга, звукового движка)
+- Математические библиотеки сверх того, что предоставляет `1_Core`
+- Базовые типы виджетов/UI-движка
 
 ### Реальные примеры
 
 
-**DabsFramework** is one of the few mods that uses this layer:
+**DabsFramework** --- один из немногих модов, использующих этот уровень:
 
 ```c
 // 2_GameLib/DabsFramework/MVC/ScriptView.c
-// Low-level view binding infrastructure
+// Низкоуровневая инфраструктура привязки представлений
 class ScriptView : ScriptedWidgetEventHandler
 {
     // ...
@@ -173,7 +173,7 @@ class ScriptView : ScriptedWidgetEventHandler
 ### Когда использовать
 
 
-Almost never. Unless you are building a framework that needs engine-level bindings below the game layer, skip `2_GameLib` entirely. The vast majority of mods use only layers 3, 4, and 5.
+Почти никогда. Если вы не строите фреймворк, которому нужны привязки уровня движка ниже игрового уровня, полностью пропустите `2_GameLib`. Подавляющее большинство модов используют только уровни 3, 4 и 5.
 
 ---
 
@@ -183,36 +183,36 @@ Almost never. Unless you are building a framework that needs engine-level bindin
 ### Назначение
 
 
-The workhorse layer for configuration, data definitions, and systems that do not interact directly with world entities. Это first layer where game types are available.
+Рабочий уровень для конфигурации, определений данных и систем, не взаимодействующих напрямую с мировыми сущностями. Это первый уровень, где доступны игровые типы.
 
 ### Что размещать здесь
 
 
-- Configuration classes (settings that can be loaded/saved)
-- RPC registration and identifiers
-- Data classes and DTOs (data transfer objects)
-- Input binding registration
-- Plugin/module registration systems
-- Shared enums and constants that depend on game types
-- Custom keybind handlers
+- Классы конфигурации (настройки, которые можно загружать/сохранять)
+- Регистрация RPC и идентификаторы
+- Классы данных и DTO (объекты передачи данных)
+- Регистрация привязок ввода
+- Системы регистрации плагинов/модулей
+- Общие перечисления и константы, зависящие от игровых типов
+- Обработчики пользовательских клавиатурных привязок
 
 ### Реальные примеры
 
 
-**MyFramework** configuration system:
+**MyFramework** --- система конфигурации:
 
 ```c
 // 3_Game/MyMod/Config/MyConfigBase.c
 class MyConfigBase
 {
-    // Base configuration with automatic JSON persistence
+    // Базовая конфигурация с автоматической JSON-персистентностью
     void Load();
     void Save();
     string GetConfigPath();
 };
 ```
 
-**COT** defines its RPC identifiers here:
+**COT** определяет свои идентификаторы RPC здесь:
 
 ```c
 // 3_Game/COT/RPCData.c
@@ -224,7 +224,7 @@ class JMRPCData
 };
 ```
 
-**VPP Admin Tools** registers its chat commands:
+**VPP Admin Tools** регистрирует свои чат-команды:
 
 ```c
 // 3_Game/VPPAdminTools/ChatCommands/ChatCommandBase.c
@@ -238,7 +238,7 @@ class ChatCommandBase
 ### Когда использовать
 
 
-**If in doubt, put it in `3_Game`.** Это default layer for most non-entity code. Configuration classes, enums, constants, RPC definitions, data classes --- ll belong here.
+**Если сомневаетесь, размещайте в `3_Game`.** Это уровень по умолчанию для большей части не-сущностного кода. Классы конфигурации, перечисления, константы, определения RPC, классы данных --- всё это принадлежит сюда.
 
 ---
 
@@ -248,23 +248,23 @@ class ChatCommandBase
 ### Назначение
 
 
-Gameplay logic that interacts with the 3D world. This layer has access to entities, items, vehicles, buildings, and all world objects.
+Игровая логика, взаимодействующая с 3D-миром. Этот уровень имеет доступ к сущностям, предметам, транспорту, зданиям и всем мировым объектам.
 
 ### Что размещать здесь
 
 
-- Custom items and weapons (extending `ItemBase`, `Weapon_Base`)
-- Custom entities (extending `Building`, `DayZAnimal`, etc.)
-- World managers (spawn systems, loot managers, AI directors)
-- Player extensions (modded `PlayerBase` behavior)
-- Vehicle customization
-- Action systems (extending `ActionBase`)
-- Trigger zones and area effects
+- Пользовательские предметы и оружие (расширение `ItemBase`, `Weapon_Base`)
+- Пользовательские сущности (расширение `Building`, `DayZAnimal` и т.д.)
+- Мировые менеджеры (системы спавна, менеджеры лута, AI-директоры)
+- Расширения игрока (модифицированное поведение `PlayerBase`)
+- Кастомизация транспорта
+- Системы действий (расширение `ActionBase`)
+- Триггерные зоны и эффекты области
 
 ### Реальные примеры
 
 
-**MyMissions Mod** spawns mission markers in the world:
+**MyMissions Mod** спавнит маркеры миссий в мире:
 
 ```c
 // 4_World/Missions/MyMissionMarker.c
@@ -282,7 +282,7 @@ class MyMissionMarker : House
 };
 ```
 
-**MyAI Mod** implements bot entities here:
+**MyAI Mod** реализует сущности ботов здесь:
 
 ```c
 // 4_World/AI/MyAIBot.c
@@ -298,20 +298,20 @@ class MyAIBot : SurvivorBase
 };
 ```
 
-**Vanilla DayZ** defines all items here:
+**Ванильный DayZ** определяет все предметы здесь:
 
 ```c
 // 4_World/Entities/ItemBase/Edible_Base.c
 class Edible_Base extends ItemBase
 {
-    // All food items inherit from this
+    // Все продукты питания наследуют от этого
 };
 ```
 
 ### Когда использовать
 
 
-Anything that touches the physical game world: creating entities, modifying items, handling player interactions, managing world state. If your class extends `EntityAI`, `ItemBase`, `PlayerBase`, `Building`, or interacts with `GetGame().GetWorld()`, it belongs in `4_World`.
+Всё, что касается физического игрового мира: создание сущностей, модификация предметов, обработка взаимодействий игроков, управление мировым состоянием. Если ваш класс расширяет `EntityAI`, `ItemBase`, `PlayerBase`, `Building` или взаимодействует с `GetGame().GetWorld()`, он принадлежит `4_World`.
 
 ---
 
@@ -321,22 +321,22 @@ Anything that touches the physical game world: creating entities, modifying item
 ### Назначение
 
 
-The highest layer. Mission lifecycle, UI panels, HUD overlays, and the final initialization point. This is where client-side and server-side startup code lives.
+Самый верхний уровень. Жизненный цикл миссии, UI-панели, HUD-оверлеи и финальная точка инициализации. Здесь находится код запуска клиентской и серверной стороны.
 
 ### Что размещать здесь
 
 
-- Mission class hooks (`MissionServer`, `MissionGameplay` overrides)
-- HUD and UI panels
-- Menu screens
-- Mod registration and initialization (the "boot" sequence)
-- Client-side rendering overlays
-- Запуск/остановка сервера handlers
+- Хуки классов миссий (переопределения `MissionServer`, `MissionGameplay`)
+- HUD и UI-панели
+- Экраны меню
+- Регистрация и инициализация модов (последовательность «загрузки»)
+- Клиентские оверлеи рендеринга
+- Обработчики запуска/остановки сервера
 
 ### Реальные примеры
 
 
-**MyFramework** hooks into the mission to initialize all subsystems:
+**MyFramework** подключается к миссии для инициализации всех подсистем:
 
 ```c
 // 5_Mission/MyMod/MyModMissionClient.c
@@ -356,7 +356,7 @@ modded class MissionGameplay
 };
 ```
 
-**COT** adds its admin menu here:
+**COT** добавляет своё меню администратора здесь:
 
 ```c
 // 5_Mission/COT/gui/COT_Menu.c
@@ -364,12 +364,12 @@ class COT_Menu : UIScriptedMenu
 {
     override Widget Init()
     {
-        // Build admin panel UI
+        // Построение UI панели администратора
     }
 };
 ```
 
-**MyMissions Mod** registers itself with Core:
+**MyMissions Mod** регистрируется в Core:
 
 ```c
 // 5_Mission/Missions/MyMissionsRegister.c
@@ -386,60 +386,60 @@ class MyMissionsRegister
 ### Когда использовать
 
 
-UI, HUD, menu screens, and mod initialization that depends on the mission being active. Also the final place where the server hooks into startup/shutdown lifecycle.
+UI, HUD, экраны меню и инициализация мода, зависящая от активной миссии. Также финальное место, где сервер подключается к жизненному циклу запуска/завершения.
 
 ---
 
 ## Критическое правило
 
 
-> **Lower layers CANNOT reference types from higher layers.**
+> **Нижние уровни НЕ МОГУТ ссылаться на типы из верхних уровней.**
 
-Это single most important rule in DayZ script architecture. The engine enforces this at compile time.
+Это самое важное правило в архитектуре скриптов DayZ. Движок обеспечивает его на этапе компиляции.
 
 ```
-ALLOWED:
-  5_Mission code references a class from 4_World       OK
-  4_World code references a class from 3_Game           OK
-  3_Game code references a class from 1_Core            OK
+РАЗРЕШЕНО:
+  Код 5_Mission ссылается на класс из 4_World       OK
+  Код 4_World ссылается на класс из 3_Game           OK
+  Код 3_Game ссылается на класс из 1_Core            OK
 
-FORBIDDEN:
-  3_Game code references a class from 4_World           COMPILE ERROR
-  4_World code references a class from 5_Mission        COMPILE ERROR
-  1_Core code references a class from 3_Game            COMPILE ERROR
+ЗАПРЕЩЕНО:
+  Код 3_Game ссылается на класс из 4_World           ОШИБКА КОМПИЛЯЦИИ
+  Код 4_World ссылается на класс из 5_Mission        ОШИБКА КОМПИЛЯЦИИ
+  Код 1_Core ссылается на класс из 3_Game            ОШИБКА КОМПИЛЯЦИИ
 ```
 
-### Why This Exists
+### Почему это существует
 
-Each layer is compiled separately and sequentially. When `3_Game` is being compiled, `4_World` and `5_Mission` do not exist yet. The compiler has no knowledge of those types.
+Каждый уровень компилируется отдельно и последовательно. Когда компилируется `3_Game`, `4_World` и `5_Mission` ещё не существуют. Компилятор не знает об этих типах.
 
-### What Happens When You Violate It
+### Что происходит при нарушении
 
-The error message is often unhelpful:
+Сообщение об ошибке часто бывает неинформативным:
 
 ```
 SCRIPT (E): Undefined type 'PlayerBase'
 ```
 
-This typically means you placed code in `3_Game` that references `PlayerBase`, which is defined in `4_World`. The fix is to move your code to `4_World` or higher.
+Обычно это означает, что вы разместили код в `3_Game`, который ссылается на `PlayerBase`, определённый в `4_World`. Решение --- переместить ваш код в `4_World` или выше.
 
 ### Обходное решение: приведение через базовые типы
 
 
-When `3_Game` code needs to handle an object that will be a `PlayerBase` at runtime, use the base `Object` or `Man` type (defined in `3_Game`) and cast later:
+Когда коду `3_Game` нужно работать с объектом, который в рантайме будет `PlayerBase`, используйте базовый тип `Object` или `Man` (определённый в `3_Game`) и приведите позже:
 
 ```c
-// In 3_Game -- we cannot reference PlayerBase directly
+// В 3_Game -- мы не можем напрямую ссылаться на PlayerBase
 class MyConfig
 {
     void HandlePlayer(Man player)
     {
-        // 'Man' is available in 3_Game
-        // At runtime, this will be a PlayerBase, but we cannot name it here
+        // 'Man' доступен в 3_Game
+        // В рантайме это будет PlayerBase, но мы не можем назвать его здесь
     }
 };
 
-// In 4_World -- now we can cast safely
+// В 4_World -- теперь можно безопасно привести
 class MyWorldLogic
 {
     void ProcessPlayer(Man player)
@@ -447,7 +447,7 @@ class MyWorldLogic
         PlayerBase pb;
         if (Class.CastTo(pb, player))
         {
-            // Now we have full PlayerBase access
+            // Теперь у нас полный доступ к PlayerBase
         }
     }
 };
@@ -461,36 +461,36 @@ class MyWorldLogic
 ### Порядок компиляции
 
 
-The engine compiles all mods' scripts for each layer before moving to the next layer:
+Движок компилирует скрипты всех модов для каждого уровня перед переходом к следующему:
 
 ```
-Step 1: Compile ALL mods' 1_Core scripts
-Step 2: Compile ALL mods' 2_GameLib scripts
-Step 3: Compile ALL mods' 3_Game scripts
-Step 4: Compile ALL mods' 4_World scripts
-Step 5: Compile ALL mods' 5_Mission scripts
+Шаг 1: Компиляция скриптов 1_Core ВСЕХ модов
+Шаг 2: Компиляция скриптов 2_GameLib ВСЕХ модов
+Шаг 3: Компиляция скриптов 3_Game ВСЕХ модов
+Шаг 4: Компиляция скриптов 4_World ВСЕХ модов
+Шаг 5: Компиляция скриптов 5_Mission ВСЕХ модов
 ```
 
-Within each step, mods are ordered by their `requiredAddons` dependency chain in `config.cpp`. If ModB depends on ModA, ModA's scripts for that layer are compiled first.
+На каждом шаге моды упорядочиваются по цепочке зависимостей `requiredAddons` в `config.cpp`. Если ModB зависит от ModA, скрипты ModA для данного уровня компилируются первыми.
 
 ### Порядок инициализации
 
 
-After compilation, the runtime initialization follows a different sequence:
+После компиляции инициализация в рантайме следует другой последовательности:
 
 ```
-1. Engine boots, loads configs
-2. 1_Core scripts are available (static constructors run)
-3. 2_GameLib scripts are available
-4. 3_Game scripts are available
-   --> CfgMods entry functions run (e.g., "CreateGameMod")
-   --> Input bindings register
-5. 4_World scripts are available
-   --> Entities can be created
-6. Mission loads
-7. 5_Mission scripts are available
-   --> MissionServer.OnInit() / MissionGameplay.OnInit() fire
-   --> UI and HUD become available
+1. Движок загружается, считывает конфиги
+2. Скрипты 1_Core доступны (статические конструкторы выполняются)
+3. Скрипты 2_GameLib доступны
+4. Скрипты 3_Game доступны
+   --> Функции входа CfgMods выполняются (напр., "CreateGameMod")
+   --> Привязки ввода регистрируются
+5. Скрипты 4_World доступны
+   --> Можно создавать сущности
+6. Миссия загружается
+7. Скрипты 5_Mission доступны
+   --> MissionServer.OnInit() / MissionGameplay.OnInit() срабатывают
+   --> UI и HUD становятся доступными
 ```
 
 ---
@@ -498,63 +498,63 @@ After compilation, the runtime initialization follows a different sequence:
 ## Когда выполняется код каждого уровня
 
 
-| Layer | Static Init | Runtime Ready | Key Event |
+| Уровень | Статическая инициализация | Готов в рантайме | Ключевое событие |
 |-------|------------|---------------|-----------|
-| `1_Core` | First | Immediately | Engine boot |
-| `2_GameLib` | Second | After engine init | Engine subsystems ready |
-| `3_Game` | Third | After game init | `CreateGame()` / custom entry function |
-| `4_World` | Fourth | After world loads | Entities start spawning |
-| `5_Mission` | Fifth (last) | After mission starts | `MissionServer.OnInit()` / `MissionGameplay.OnInit()` |
+| `1_Core` | Первый | Немедленно | Загрузка движка |
+| `2_GameLib` | Второй | После инициализации движка | Подсистемы движка готовы |
+| `3_Game` | Третий | После инициализации игры | `CreateGame()` / пользовательская функция входа |
+| `4_World` | Четвёртый | После загрузки мира | Начинается спавн сущностей |
+| `5_Mission` | Пятый (последний) | После старта миссии | `MissionServer.OnInit()` / `MissionGameplay.OnInit()` |
 
-**Важно:** Static variables and global-scope code in each layer execute during the compilation/linking phase, before `OnInit()` is ever called. Do not put complex initialization logic in static initializers.
+**Важно:** Статические переменные и код глобальной области видимости каждого уровня выполняются на этапе компиляции/линковки, до вызова `OnInit()`. Не размещайте сложную логику инициализации в статических инициализаторах.
 
 ---
 
 ## Практические рекомендации
 
 
-### "If in Doubt, Put It in 3_Game"
+### «Если сомневаетесь, размещайте в 3_Game»
 
-Это most common layer for mod code. Unless your code:
-- Needs to be available before game types exist --> `1_Core`
-- Extends an entity/item/vehicle/player --> `4_World`
-- Touches UI, HUD, or mission lifecycle --> `5_Mission`
+Это наиболее распространённый уровень для кода модов. Если только ваш код:
+- Не должен быть доступен до существования игровых типов --> `1_Core`
+- Не расширяет сущность/предмет/транспорт/игрока --> `4_World`
+- Не касается UI, HUD или жизненного цикла миссии --> `5_Mission`
 
-...then it belongs in `3_Game`.
+...то он принадлежит `3_Game`.
 
 ### Чек-лист по уровням
 
 
-Before placing a file, ask these questions:
+Перед размещением файла задайте эти вопросы:
 
-1. **Does it extend `EntityAI`, `ItemBase`, `PlayerBase`, `Building`, or any world entity?**
-   Put it in `4_World`.
+1. **Расширяет ли он `EntityAI`, `ItemBase`, `PlayerBase`, `Building` или другую мировую сущность?**
+   Размещайте в `4_World`.
 
-2. **Does it reference `MissionServer`, `MissionGameplay`, or create UI widgets?**
-   Put it in `5_Mission`.
+2. **Ссылается ли он на `MissionServer`, `MissionGameplay` или создаёт UI-виджеты?**
+   Размещайте в `5_Mission`.
 
-3. **Is it a pure data class, config, enum, or RPC definition?**
-   Put it in `3_Game`.
+3. **Это чистый класс данных, конфиг, перечисление или определение RPC?**
+   Размещайте в `3_Game`.
 
-4. **Is it a fundamental constant or utility with zero game dependencies?**
-   Put it in `1_Core`.
+4. **Это фундаментальная константа или утилита без игровых зависимостей?**
+   Размещайте в `1_Core`.
 
-5. **None of the above?**
-   Default to `3_Game`.
+5. **Ничего из вышеперечисленного?**
+   По умолчанию `3_Game`.
 
 ### Держите уровни тонкими
 
 
-A common mistake is dumping everything into `4_World`. This creates tightly coupled code. Instead:
+Типичная ошибка --- сваливание всего в `4_World`. Это создаёт сильно связанный код. Вместо этого:
 
 ```
-GOOD:
-  3_Game/  --> Config class, enums, RPC IDs, data structs
-  4_World/ --> Manager that uses the config, entity classes
-  5_Mission/ --> UI that displays manager state
+ХОРОШО:
+  3_Game/  --> Класс конфига, перечисления, ID RPC, структуры данных
+  4_World/ --> Менеджер, использующий конфиг, классы сущностей
+  5_Mission/ --> UI, отображающий состояние менеджера
 
-BAD:
-  4_World/ --> Config, enums, RPCs, managers, AND entity classes all mixed together
+ПЛОХО:
+  4_World/ --> Конфиги, перечисления, RPC, менеджеры И классы сущностей вперемешку
 ```
 
 ---
@@ -563,19 +563,19 @@ BAD:
 
 
 ```
-                    Does it extend a world entity?
-                          (EntityAI, ItemBase, etc.)
+                    Расширяет ли мировую сущность?
+                          (EntityAI, ItemBase и т.д.)
                          /                    \
-                       YES                    NO
+                        ДА                    НЕТ
                         |                      |
-                    4_World              Does it touch UI/HUD/Mission?
+                    4_World              Касается UI/HUD/миссии?
                                         /                    \
-                                      YES                    NO
+                                      ДА                    НЕТ
                                        |                      |
-                                   5_Mission          Is it a pure utility
-                                                      with zero game deps?
+                                   5_Mission         Это чистая утилита
+                                                     без игровых зависимостей?
                                                       /                \
-                                                    YES                NO
+                                                    ДА                НЕТ
                                                      |                  |
                                                   1_Core            3_Game
 ```
@@ -585,53 +585,53 @@ BAD:
 ## Распространённые ошибки
 
 
-### 1. Referencing PlayerBase from 3_Game
+### 1. Ссылка на PlayerBase из 3_Game
 
 ```c
-// WRONG: in 3_Game/MyConfig.c
+// НЕПРАВИЛЬНО: в 3_Game/MyConfig.c
 class MyConfig
 {
-    void ApplyToPlayer(PlayerBase player)  // ERROR: PlayerBase not defined yet
+    void ApplyToPlayer(PlayerBase player)  // ОШИБКА: PlayerBase ещё не определён
     {
     }
 };
 
-// RIGHT: in 3_Game/MyConfig.c
+// ПРАВИЛЬНО: в 3_Game/MyConfig.c
 class MyConfig
 {
-    ref array<float> m_Values;  // Pure data, no entity references
+    ref array<float> m_Values;  // Чистые данные, без ссылок на сущности
 };
 
-// RIGHT: in 4_World/MyManager.c
+// ПРАВИЛЬНО: в 4_World/MyManager.c
 class MyManager
 {
     void ApplyConfig(PlayerBase player, MyConfig config)
     {
-        // Now we can use both
+        // Теперь можно использовать оба
     }
 };
 ```
 
-### 2. Putting UI Code in 4_World
+### 2. Размещение UI-кода в 4_World
 
 ```c
-// WRONG: in 4_World/MyPanel.c
-class MyPanel : UIScriptedMenu  // UIScriptedMenu works in 4_World,
-{                                // but MissionGameplay hooks are in 5_Mission
-    // This will cause problems when trying to register the UI
+// НЕПРАВИЛЬНО: в 4_World/MyPanel.c
+class MyPanel : UIScriptedMenu  // UIScriptedMenu работает в 4_World,
+{                                // но хуки MissionGameplay в 5_Mission
+    // Это вызовет проблемы при попытке регистрации UI
 };
 
-// RIGHT: in 5_Mission/MyPanel.c
+// ПРАВИЛЬНО: в 5_Mission/MyPanel.c
 class MyPanel : UIScriptedMenu
 {
-    // UI belongs in 5_Mission where mission lifecycle is available
+    // UI принадлежит 5_Mission, где доступен жизненный цикл миссии
 };
 ```
 
-### 3. Putting Constants in 4_World When 3_Game Needs Them
+### 3. Размещение констант в 4_World, когда они нужны в 3_Game
 
 ```c
-// WRONG: Constants defined in 4_World
+// НЕПРАВИЛЬНО: Константы определены в 4_World
 // 4_World/MyConstants.c
 const int MY_RPC_ID = 12345;
 
@@ -640,34 +640,34 @@ class MyRPCHandler
 {
     void Register()
     {
-        // ERROR: MY_RPC_ID not visible here (defined in higher layer)
+        // ОШИБКА: MY_RPC_ID не виден здесь (определён на верхнем уровне)
     }
 };
 
-// RIGHT: Constants defined in 3_Game (or 1_Core)
+// ПРАВИЛЬНО: Константы определены в 3_Game (или 1_Core)
 // 3_Game/MyConstants.c
-const int MY_RPC_ID = 12345;  // Now visible to 3_Game AND 4_World AND 5_Mission
+const int MY_RPC_ID = 12345;  // Теперь виден и в 3_Game, и в 4_World, и в 5_Mission
 ```
 
-### 4. Overcomplicating with 1_Core
+### 4. Излишнее усложнение с 1_Core
 
-If your "constants" reference any game type, they cannot go in `1_Core`. Even something like `const string PLAYER_CONFIG_PATH` is fine in `1_Core`, but a class that takes a `CGame` parameter is not.
+Если ваши «константы» ссылаются на любой игровой тип, они не могут быть в `1_Core`. Даже такая вещь как `const string PLAYER_CONFIG_PATH` допустима в `1_Core`, но класс, принимающий параметр `CGame` --- нет.
 
 ---
 
 ## Итоги
 
 
-| Layer | Folder | Config Entry | Primary Use | Frequency |
+| Уровень | Папка | Запись в конфиге | Основное назначение | Частота |
 |-------|--------|-------------|-------------|-----------|
-| 1 | `1_Core/` | `engineScriptModule` | Constants, utilities, logging base | Rare |
-| 2 | `2_GameLib/` | `gameLibScriptModule` | Engine bindings | Very rare |
-| 3 | `3_Game/` | `gameScriptModule` | Configs, RPCs, data classes | **Most common** |
-| 4 | `4_World/` | `worldScriptModule` | Entities, items, managers | Common |
-| 5 | `5_Mission/` | `missionScriptModule` | UI, HUD, mission hooks | Common |
+| 1 | `1_Core/` | `engineScriptModule` | Константы, утилиты, база логирования | Редко |
+| 2 | `2_GameLib/` | `gameLibScriptModule` | Привязки движка | Очень редко |
+| 3 | `3_Game/` | `gameScriptModule` | Конфиги, RPC, классы данных | **Наиболее частый** |
+| 4 | `4_World/` | `worldScriptModule` | Сущности, предметы, менеджеры | Часто |
+| 5 | `5_Mission/` | `missionScriptModule` | UI, HUD, хуки миссий | Часто |
 
-**Remember:** Lower layers cannot see higher layers. When in doubt, use `3_Game`. Move code up only when you need access to types defined in a higher layer.
+**Запомните:** Нижние уровни не видят верхние. Если сомневаетесь, используйте `3_Game`. Перемещайте код наверх только когда вам нужен доступ к типам, определённым на верхнем уровне.
 
 ---
 
-**Следующая:** [Chapter 2.2: config.cpp Deep Dive](02-config-cpp.md)
+**Следующая:** [Глава 2.2: Подробный разбор config.cpp](02-config-cpp.md)

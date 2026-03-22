@@ -1,6 +1,6 @@
-# Chapter 1.12: What Does NOT Exist (Gotchas)
+# Глава 1.12: Чего НЕ существует (Ловушки)
 
-[Home](../../README.md) | [<< Previous: Error Handling](11-error-handling.md) | **Gotchas** | [Next: Functions & Methods >>](13-functions-methods.md)
+[Главная](../../README.md) | [<< Предыдущая: Обработка ошибок](11-error-handling.md) | **Ловушки** | [Следующая: Функции и методы >>](13-functions-methods.md)
 
 ---
 
@@ -9,43 +9,43 @@
 ## Содержание
 
 
-- [Complete Gotchas Reference](#complete-gotchas-reference)
-  1. [No Ternary Operator](#1-no-ternary-operator)
-  2. [No do...while Loop](#2-no-dowhile-loop)
-  3. [No try/catch/throw](#3-no-trycatchthrow)
-  4. [No Multiple Inheritance](#4-no-multiple-inheritance)
-  5. [No Operator Overloading (Except Index)](#5-no-operator-overloading-except-index)
-  6. [No Lambdas / Anonymous Functions](#6-no-lambdas--anonymous-functions)
-  7. [No Delegates / Function Pointers (Native)](#7-no-delegates--function-pointers-native)
-  8. [No String Escape for Backslash/Quote](#8-no-string-escape-for-backslashquote)
-  9. [No Variable Redeclaration in else-if Blocks](#9-no-variable-redeclaration-in-else-if-blocks)
-  10. [No Ternary in Variable Declaration](#10-no-ternary-in-variable-declaration)
-  11. [Object.IsAlive() Does NOT Exist on Base Object](#11-objectisalive-does-not-exist-on-base-object)
-  12. [No nullptr — Use NULL or null](#12-no-nullptr--use-null-or-null)
-  13. [switch/case Does NOT Fall Through](#13-switchcase-does-not-fall-through)
-  14. [No Default Parameter Expressions](#14-no-default-parameter-expressions)
-  15. [JsonFileLoader.JsonLoadFile Returns void](#15-jsonfileloaderjsonloadfile-returns-void)
-  16. [No #define Value Substitution](#16-no-define-value-substitution)
-  17. [No Interfaces / Abstract Classes (Enforced)](#17-no-interfaces--abstract-classes-enforced)
-  18. [No Generics Constraints](#18-no-generics-constraints)
-  19. [No Enum Validation](#19-no-enum-validation)
-  20. [No Variadic Parameters](#20-no-variadic-parameters)
-  21. [No Nested Class Declarations](#21-no-nested-class-declarations)
-  22. [Static Arrays Are Fixed-Size](#22-static-arrays-are-fixed-size)
-  23. [array.Remove Is Unordered](#23-arrayremove-is-unordered)
-  24. [No #include — Everything via config.cpp](#24-no-include--everything-via-configcpp)
-  25. [No Namespaces](#25-no-namespaces)
-  26. [String Methods Modify In-Place](#26-string-methods-modify-in-place)
-  27. [ref Cycles Cause Memory Leaks](#27-ref-cycles-cause-memory-leaks)
-  28. [No Destructor Guarantee on Server Shutdown](#28-no-destructor-guarantee-on-server-shutdown)
-  29. [No Scope-Based Resource Management (RAII)](#29-no-scope-based-resource-management-raii)
-  30. [GetGame().GetPlayer() Returns null on Server](#30-getgamegetplayer-returns-null-on-server)
-- [Coming From C++](#coming-from-c)
-- [Coming From C#](#coming-from-c-1)
-- [Coming From Java](#coming-from-java)
-- [Coming From Python](#coming-from-python)
-- [Quick Reference Table](#quick-reference-table)
-- [Navigation](#navigation)
+- [Полный справочник по ловушкам](#полный-справочник-по-ловушкам)
+  1. [Нет тернарного оператора](#1-нет-тернарного-оператора)
+  2. [Нет цикла do...while](#2-нет-цикла-dowhile)
+  3. [Нет try/catch/throw](#3-нет-trycatchthrow)
+  4. [Нет множественного наследования](#4-нет-множественного-наследования)
+  5. [Нет перегрузки операторов (кроме индекса)](#5-нет-перегрузки-операторов-кроме-индекса)
+  6. [Нет лямбд / анонимных функций](#6-нет-лямбд--анонимных-функций)
+  7. [Нет делегатов / указателей на функции (нативных)](#7-нет-делегатов--указателей-на-функции-нативных)
+  8. [Нет escape для обратной косой черты/кавычки](#8-нет-escape-для-обратной-косой-чертыкавычки)
+  9. [Нет переобъявления переменных в блоках else-if](#9-нет-переобъявления-переменных-в-блоках-else-if)
+  10. [Нет тернарного оператора в объявлении переменных](#10-нет-тернарного-оператора-в-объявлении-переменных)
+  11. [Object.IsAlive() НЕ существует у базового Object](#11-objectisalive-не-существует-у-базового-object)
+  12. [Нет nullptr --- используйте NULL или null](#12-нет-nullptr--используйте-null-или-null)
+  13. [switch/case НЕ проваливается](#13-switchcase-не-проваливается)
+  14. [Нет выражений для параметров по умолчанию](#14-нет-выражений-для-параметров-по-умолчанию)
+  15. [JsonFileLoader.JsonLoadFile возвращает void](#15-jsonfileloaderjsonloadfile-возвращает-void)
+  16. [Нет подстановки значений #define](#16-нет-подстановки-значений-define)
+  17. [Нет интерфейсов / абстрактных классов (принудительно)](#17-нет-интерфейсов--абстрактных-классов-принудительно)
+  18. [Нет ограничений для дженериков](#18-нет-ограничений-для-дженериков)
+  19. [Нет валидации enum](#19-нет-валидации-enum)
+  20. [Нет вариативных параметров](#20-нет-вариативных-параметров)
+  21. [Нет вложенных объявлений классов](#21-нет-вложенных-объявлений-классов)
+  22. [Статические массивы фиксированного размера](#22-статические-массивы-фиксированного-размера)
+  23. [array.Remove не сохраняет порядок](#23-arrayremove-не-сохраняет-порядок)
+  24. [Нет #include --- всё через config.cpp](#24-нет-include--всё-через-configcpp)
+  25. [Нет пространств имён](#25-нет-пространств-имён)
+  26. [Методы строк изменяют на месте](#26-методы-строк-изменяют-на-месте)
+  27. [Циклы ref вызывают утечки памяти](#27-циклы-ref-вызывают-утечки-памяти)
+  28. [Нет гарантии деструктора при остановке сервера](#28-нет-гарантии-деструктора-при-остановке-сервера)
+  29. [Нет управления ресурсами на основе области видимости (RAII)](#29-нет-управления-ресурсами-на-основе-области-видимости-raii)
+  30. [GetGame().GetPlayer() возвращает null на сервере](#30-getgamegetplayer-возвращает-null-на-сервере)
+- [Переход с C++](#переход-с-c)
+- [Переход с C#](#переход-с-c-1)
+- [Переход с Java](#переход-с-java)
+- [Переход с Python](#переход-с-python)
+- [Краткая справочная таблица](#краткая-справочная-таблица)
+- [Навигация](#навигация)
 
 ---
 
@@ -55,14 +55,14 @@
 ### 1. Нет тернарного оператора
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 int x = (condition) ? valueA : valueB;
 ```
 
-**What happens:** Compile error. The `? :` operator does not exist.
+**Что происходит:** Ошибка компиляции. Оператор `? :` не существует.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
 int x;
 if (condition)
@@ -76,16 +76,16 @@ else
 ### 2. Нет цикла do...while
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 do {
     Process();
 } while (HasMore());
 ```
 
-**What happens:** Compile error. The `do` keyword does not exist.
+**Что происходит:** Ошибка компиляции. Ключевое слово `do` не существует.
 
-**Correct solution — flag pattern:**
+**Правильное решение --- паттерн с флагом:**
 ```c
 bool first = true;
 while (first || HasMore())
@@ -95,7 +95,7 @@ while (first || HasMore())
 }
 ```
 
-**Correct solution — break pattern:**
+**Правильное решение --- паттерн с break:**
 ```c
 while (true)
 {
@@ -110,7 +110,7 @@ while (true)
 ### 3. Нет try/catch/throw
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 try {
     RiskyOperation();
@@ -119,9 +119,9 @@ try {
 }
 ```
 
-**What happens:** Compile error. These keywords do not exist.
+**Что происходит:** Ошибка компиляции. Эти ключевые слова не существуют.
 
-**Correct solution:** Guard clauses with early return.
+**Правильное решение:** Защитные выражения с ранним возвратом.
 ```c
 void DoOperation()
 {
@@ -131,26 +131,26 @@ void DoOperation()
         return;
     }
 
-    // Proceed safely
+    // Выполнять безопасно
     RiskyOperation();
 }
 ```
 
-См. [Chapter 1.11 — Error Handling](11-error-handling.md) for full patterns.
+См. [Главу 1.11 --- Обработка ошибок](11-error-handling.md) для полных паттернов.
 
 ---
 
 ### 4. Нет множественного наследования
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
-class MyClass extends BaseA, BaseB  // Two base classes
+class MyClass extends BaseA, BaseB  // Два базовых класса
 ```
 
-**What happens:** Compile error. Only single inheritance is supported.
+**Что происходит:** Ошибка компиляции. Поддерживается только одиночное наследование.
 
-**Correct solution:** Inherit from one class, compose the other:
+**Правильное решение:** Наследуйте от одного класса, используйте композицию для другого:
 ```c
 class MyClass extends BaseA
 {
@@ -168,15 +168,15 @@ class MyClass extends BaseA
 ### 5. Нет перегрузки операторов (кроме индекса)
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 Vector3 operator+(Vector3 a, Vector3 b) { ... }
 bool operator==(MyClass other) { ... }
 ```
 
-**What happens:** Compile error. Custom operators cannot be defined.
+**Что происходит:** Ошибка компиляции. Пользовательские операторы не могут быть определены.
 
-**Correct solution:** Use named methods:
+**Правильное решение:** Используйте именованные методы:
 ```c
 class MyVector
 {
@@ -198,7 +198,7 @@ class MyVector
 }
 ```
 
-**Exception:** The index operator `[]` can be overloaded via `Get(index)` and `Set(index, value)` methods:
+**Исключение:** Оператор индекса `[]` может быть перегружен через методы `Get(index)` и `Set(index, value)`:
 ```c
 class MyContainer
 {
@@ -209,8 +209,8 @@ class MyContainer
 }
 
 MyContainer c = new MyContainer();
-c[3] = 42;        // Calls Set(3, 42)
-int v = c[3];     // Calls Get(3)
+c[3] = 42;        // Вызывает Set(3, 42)
+int v = c[3];     // Вызывает Get(3)
 ```
 
 ---
@@ -218,23 +218,23 @@ int v = c[3];     // Calls Get(3)
 ### 6. Нет лямбд / анонимных функций
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 array.Sort((a, b) => a.name.CompareTo(b.name));
 button.OnClick += () => { DoSomething(); };
 ```
 
-**What happens:** Compile error. Lambda syntax does not exist.
+**Что происходит:** Ошибка компиляции. Синтаксис лямбд не существует.
 
-**Correct solution:** Define named methods and pass them as `ScriptCaller` or use string-based callbacks:
+**Правильное решение:** Определите именованные методы и передавайте их как `ScriptCaller` или используйте строковые обратные вызовы:
 ```c
-// Named method
+// Именованный метод
 void OnButtonClick()
 {
     DoSomething();
 }
 
-// String-based callback (used by CallLater, timers, etc.)
+// Строковый обратный вызов (используется CallLater, таймерами и т.д.)
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.OnButtonClick, 1000, false);
 ```
 
@@ -243,24 +243,24 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.OnButtonClick, 100
 ### 7. Нет делегатов / указателей на функции (нативных)
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 delegate void MyCallback(int value);
 MyCallback cb = SomeFunction;
 cb(42);
 ```
 
-**What happens:** Compile error. The `delegate` keyword does not exist.
+**Что происходит:** Ошибка компиляции. Ключевое слово `delegate` не существует.
 
-**Correct solution:** Use `ScriptCaller`, `ScriptInvoker`, or string-based method names:
+**Правильное решение:** Используйте `ScriptCaller`, `ScriptInvoker` или строковые имена методов:
 ```c
-// ScriptCaller (single callback)
+// ScriptCaller (одиночный обратный вызов)
 ScriptCaller caller = ScriptCaller.Create(MyFunction);
 
-// ScriptInvoker (event with multiple subscribers)
+// ScriptInvoker (событие с несколькими подписчиками)
 ref ScriptInvoker m_OnEvent = new ScriptInvoker();
 m_OnEvent.Insert(MyHandler);
-m_OnEvent.Invoke();  // Calls all registered handlers
+m_OnEvent.Invoke();  // Вызывает все зарегистрированные обработчики
 ```
 
 ---
@@ -268,34 +268,34 @@ m_OnEvent.Invoke();  // Calls all registered handlers
 ### 8. Нет escape для обратной косой черты/кавычки
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 string path = "C:\\Users\\folder";
 string quote = "He said \"hello\"";
 ```
 
-**What happens:** CParser crashes or produces garbled output. The `\\` and `\"` escape sequences break the string parser.
+**Что происходит:** CParser крашится или выдаёт искажённый вывод. Escape-последовательности `\\` и `\"` ломают парсер строк.
 
-**Correct solution:** Avoid backslash and quote characters in string literals entirely:
+**Правильное решение:** Полностью избегайте символов обратного слэша и кавычек в строковых литералах:
 ```c
-// Use forward slashes for paths
+// Используйте прямые слэши для путей
 string path = "C:/Users/folder";
 
-// Use single quotes or rephrase to avoid embedded double quotes
+// Используйте одинарные кавычки или перефразируйте, чтобы избежать вложенных двойных кавычек
 string quote = "He said 'hello'";
 
-// Use string concatenation if you absolutely need special chars
-// (still risky — test thoroughly)
+// Используйте конкатенацию строк, если абсолютно необходимы специальные символы
+// (всё равно рискованно --- тестируйте тщательно)
 ```
 
-> **Примечание:** `\n`, `\r`, and `\t` escape sequences DO work. Only `\\` and `\"` are broken.
+> **Примечание:** Escape-последовательности `\n`, `\r` и `\t` РАБОТАЮТ. Только `\\` и `\"` сломаны.
 
 ---
 
 ### 9. Нет переобъявления переменных в блоках else-if
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 if (condA)
 {
@@ -304,14 +304,14 @@ if (condA)
 }
 else if (condB)
 {
-    string msg = "Case B";  // Same variable name in sibling block
+    string msg = "Case B";  // То же имя переменной в смежном блоке
     Print(msg);
 }
 ```
 
-**What happens:** Compile error: "multiple declaration of variable 'msg'". Enforce Script treats variables in sibling `if`/`else if`/`else` blocks as sharing the same scope.
+**Что происходит:** Ошибка компиляции: «multiple declaration of variable 'msg'». Enforce Script считает переменные в смежных блоках `if`/`else if`/`else` принадлежащими одной области видимости.
 
-**Correct solution — unique names:**
+**Правильное решение --- уникальные имена:**
 ```c
 if (condA)
 {
@@ -325,7 +325,7 @@ else if (condB)
 }
 ```
 
-**Correct solution — declare before the if:**
+**Правильное решение --- объявление перед if:**
 ```c
 string msg;
 if (condA)
@@ -344,14 +344,14 @@ Print(msg);
 ### 10. Нет тернарного оператора в объявлении переменных
 
 
-Related to gotcha #1, but specific to declarations:
+Связано с ловушкой #1, но специфично для объявлений:
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 string label = isAdmin ? "Admin" : "Player";
 ```
 
-**Correct solution:**
+**Правильное решение:**
 ```c
 string label;
 if (isAdmin)
@@ -365,41 +365,41 @@ else
 ### 11. Object.IsAlive() НЕ существует у базового Object
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 Object obj = GetSomething();
-if (obj.IsAlive())  // Check if alive
+if (obj.IsAlive())  // Проверка жив ли
 ```
 
-**What happens:** Compile error or runtime crash. `IsAlive()` is defined on `EntityAI`, not on `Object`.
+**Что происходит:** Ошибка компиляции или краш в рантайме. `IsAlive()` определён в `EntityAI`, а не в `Object`.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
 Object obj = GetSomething();
 EntityAI eai;
 if (Class.CastTo(eai, obj) && eai.IsAlive())
 {
-    // Safely alive
+    // Подтверждено --- жив
 }
 ```
 
 ---
 
-### 12. Нет nullptr — используйте NULL или null
+### 12. Нет nullptr --- используйте NULL или null
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 if (obj == nullptr)
 ```
 
-**What happens:** Compile error. The `nullptr` keyword does not exist.
+**Что происходит:** Ошибка компиляции. Ключевое слово `nullptr` не существует.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
-if (obj == null)    // lowercase works
-if (obj == NULL)    // uppercase also works
-if (!obj)           // idiomatic null check (preferred)
+if (obj == null)    // в нижнем регистре работает
+if (obj == NULL)    // в верхнем регистре тоже работает
+if (!obj)           // идиоматическая проверка на null (предпочтительно)
 ```
 
 ---
@@ -407,28 +407,28 @@ if (!obj)           // idiomatic null check (preferred)
 ### 13. switch/case НЕ проваливается
 
 
-**What you would write (expecting C/C++ fall-through):**
+**Что вы бы написали (ожидая поведение C/C++ fall-through):**
 ```c
 switch (value)
 {
     case 1:
     case 2:
     case 3:
-        Print("1, 2, or 3");  // In C++, cases 1 and 2 fall through to here
+        Print("1, 2, or 3");  // В C++ кейсы 1 и 2 проваливаются сюда
         break;
 }
 ```
 
-**What happens:** Only case 3 executes the Print. Cases 1 and 2 are empty — they do nothing and do NOT fall through.
+**Что происходит:** Только case 3 выполняет Print. Кейсы 1 и 2 пусты --- они ничего не делают и НЕ проваливаются.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
 if (value >= 1 && value <= 3)
 {
     Print("1, 2, or 3");
 }
 
-// Or handle each case explicitly:
+// Или обрабатывайте каждый кейс явно:
 switch (value)
 {
     case 1:
@@ -443,38 +443,38 @@ switch (value)
 }
 ```
 
-> **Примечание:** `break` is technically optional in Enforce Script since there is no fall-through, but it is conventional to include it.
+> **Примечание:** `break` технически необязателен в Enforce Script, так как проваливания нет, но его принято включать.
 
 ---
 
 ### 14. Нет выражений для параметров по умолчанию
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
-void Spawn(vector pos = GetDefaultPos())    // Expression as default
-void Spawn(vector pos = Vector(0, 100, 0))  // Constructor as default
+void Spawn(vector pos = GetDefaultPos())    // Выражение как значение по умолчанию
+void Spawn(vector pos = Vector(0, 100, 0))  // Конструктор как значение по умолчанию
 ```
 
-**What happens:** Compile error. Default parameter values must be **literals** or `NULL`.
+**Что происходит:** Ошибка компиляции. Значения параметров по умолчанию должны быть **литералами** или `NULL`.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
-void Spawn(vector pos = "0 100 0")    // String literal for vector — OK
-void Spawn(int count = 5)             // Integer literal — OK
-void Spawn(float radius = 10.0)      // Float literal — OK
-void Spawn(string name = "default")   // String literal — OK
-void Spawn(Object obj = NULL)         // NULL — OK
+void Spawn(vector pos = "0 100 0")    // Строковый литерал для vector --- OK
+void Spawn(int count = 5)             // Целочисленный литерал --- OK
+void Spawn(float radius = 10.0)      // Литерал float --- OK
+void Spawn(string name = "default")   // Строковый литерал --- OK
+void Spawn(Object obj = NULL)         // NULL --- OK
 
-// For complex defaults, use overloads:
+// Для сложных значений по умолчанию используйте перегрузки:
 void Spawn()
 {
-    Spawn(GetDefaultPos());  // Call the parametric version
+    Spawn(GetDefaultPos());  // Вызов параметрической версии
 }
 
 void Spawn(vector pos)
 {
-    // Actual implementation
+    // Фактическая реализация
 }
 ```
 
@@ -483,45 +483,45 @@ void Spawn(vector pos)
 ### 15. JsonFileLoader.JsonLoadFile возвращает void
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 MyConfig cfg = JsonFileLoader<MyConfig>.JsonLoadFile(path);
-// or:
+// или:
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg))
 ```
 
-**What happens:** Compile error. `JsonLoadFile` returns `void`, not the loaded object or a bool.
+**Что происходит:** Ошибка компиляции. `JsonLoadFile` возвращает `void`, а не загруженный объект или bool.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
-MyConfig cfg = new MyConfig();  // Create instance first with defaults
-JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);  // Populates cfg in-place
-// cfg now contains loaded values (or still has defaults if file was invalid)
+MyConfig cfg = new MyConfig();  // Сначала создать экземпляр со значениями по умолчанию
+JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);  // Заполняет cfg на месте
+// cfg теперь содержит загруженные значения (или по-прежнему имеет значения по умолчанию, если файл был невалиден)
 ```
 
-> **Примечание:** The newer `JsonFileLoader<T>.LoadFile()` method returns `bool`, but `JsonLoadFile` (the commonly seen version) does not.
+> **Примечание:** Более новый метод `JsonFileLoader<T>.LoadFile()` возвращает `bool`, но `JsonLoadFile` (часто встречающаяся версия) --- нет.
 
 ---
 
 ### 16. Нет подстановки значений #define
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 #define MAX_PLAYERS 60
 #define VERSION_STRING "1.0.0"
 int max = MAX_PLAYERS;
 ```
 
-**What happens:** Compile error. Enforce Script `#define` only creates existence flags for `#ifdef` checks. It does not support value substitution.
+**Что происходит:** Ошибка компиляции. `#define` в Enforce Script создаёт только флаги существования для проверок `#ifdef`. Подстановка значений не поддерживается.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
-// Use const for values
+// Используйте const для значений
 const int MAX_PLAYERS = 60;
 const string VERSION_STRING = "1.0.0";
 
-// Use #define only for conditional compilation flags
+// Используйте #define только для флагов условной компиляции
 #define MY_MOD_ENABLED
 ```
 
@@ -530,7 +530,7 @@ const string VERSION_STRING = "1.0.0";
 ### 17. Нет интерфейсов / абстрактных классов (принудительно)
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 interface ISerializable
 {
@@ -544,18 +544,18 @@ abstract class BaseProcessor
 }
 ```
 
-**What happens:** The `interface` and `abstract` keywords do not exist.
+**Что происходит:** Ключевые слова `interface` и `abstract` не существуют.
 
-**Correct solution:** Use regular classes with empty base methods:
+**Правильное решение:** Используйте обычные классы с пустыми базовыми методами:
 ```c
-// "Interface" — base class with empty methods
+// «Интерфейс» --- базовый класс с пустыми методами
 class ISerializable
 {
-    void Serialize() {}     // Override in subclass
-    void Deserialize() {}   // Override in subclass
+    void Serialize() {}     // Переопределите в подклассе
+    void Deserialize() {}   // Переопределите в подклассе
 }
 
-// "Abstract" class — same pattern
+// «Абстрактный» класс --- тот же паттерн
 class BaseProcessor
 {
     void Process()
@@ -568,39 +568,39 @@ class ConcreteProcessor extends BaseProcessor
 {
     override void Process()
     {
-        // Actual implementation
+        // Фактическая реализация
     }
 }
 ```
 
-The compiler does NOT enforce that subclasses override the base methods. Forgetting to override silently uses the empty base implementation.
+Компилятор НЕ принуждает подклассы переопределять базовые методы. Если забыть переопределить, молча используется пустая базовая реализация.
 
 ---
 
 ### 18. Нет ограничений для дженериков
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
-class Container<T> where T : EntityAI  // Constrain T to EntityAI
+class Container<T> where T : EntityAI  // Ограничить T до EntityAI
 ```
 
-**What happens:** Compile error. The `where` clause does not exist. Template parameters accept any type.
+**Что происходит:** Ошибка компиляции. Конструкция `where` не существует. Параметры шаблона принимают любой тип.
 
-**Correct solution:** Validate at runtime:
+**Правильное решение:** Валидируйте в рантайме:
 ```c
 class EntityContainer<Class T>
 {
     void Add(T item)
     {
-        // Runtime type check instead of compile-time constraint
+        // Проверка типа в рантайме вместо ограничения на этапе компиляции
         EntityAI eai;
         if (!Class.CastTo(eai, item))
         {
             ErrorEx("EntityContainer only accepts EntityAI subclasses");
             return;
         }
-        // proceed
+        // продолжить
     }
 }
 ```
@@ -610,14 +610,14 @@ class EntityContainer<Class T>
 ### 19. Нет валидации enum
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
-EDamageState state = (EDamageState)999;  // Expect error or exception
+EDamageState state = (EDamageState)999;  // Ожидаете ошибку или исключение
 ```
 
-**What happens:** No error. Any `int` value can be assigned to an enum variable, even values outside the defined range.
+**Что происходит:** Без ошибки. Любое значение `int` может быть присвоено переменной enum, даже значения за пределами определённого диапазона.
 
-**Correct solution:** Validate manually:
+**Правильное решение:** Валидируйте вручную:
 ```c
 bool IsValidDamageState(int value)
 {
@@ -632,7 +632,7 @@ if (IsValidDamageState(rawValue))
 else
 {
     Print("Invalid damage state: " + rawValue.ToString());
-    EDamageState state = EDamageState.PRISTINE;  // fallback
+    EDamageState state = EDamageState.PRISTINE;  // запасное значение
 }
 ```
 
@@ -641,20 +641,20 @@ else
 ### 20. Нет вариативных параметров
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 void Log(string format, params object[] args)
 void Printf(string fmt, ...)
 ```
 
-**What happens:** Compile error. Variadic parameters do not exist.
+**Что происходит:** Ошибка компиляции. Вариативные параметры не существуют.
 
-**Correct solution:** Use `string.Format` with fixed parameter counts, or use `Param` classes:
+**Правильное решение:** Используйте `string.Format` с фиксированным количеством параметров или классы `Param`:
 ```c
-// string.Format supports up to 9 positional arguments
+// string.Format поддерживает до 9 позиционных аргументов
 string msg = string.Format("Player %1 at %2 with %3 HP", name, pos, hp);
 
-// For variable-count data, pass an array
+// Для данных переменной длины передавайте массив
 void LogMultiple(string tag, array<string> messages)
 {
     foreach (string msg : messages)
@@ -669,20 +669,20 @@ void LogMultiple(string tag, array<string> messages)
 ### 21. Нет вложенных объявлений классов
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 class Outer
 {
-    class Inner  // Nested class
+    class Inner  // Вложенный класс
     {
         int value;
     }
 }
 ```
 
-**What happens:** Compile error. Classes cannot be declared inside other classes.
+**Что происходит:** Ошибка компиляции. Классы не могут быть объявлены внутри других классов.
 
-**Correct solution:** Declare all classes at the top level, use naming conventions to show relationships:
+**Правильное решение:** Объявляйте все классы на верхнем уровне, используйте соглашения об именовании для отображения связей:
 ```c
 class MySystem_Config
 {
@@ -700,21 +700,21 @@ class MySystem
 ### 22. Статические массивы фиксированного размера
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 int size = GetCount();
-int arr[size];  // Dynamic size at runtime
+int arr[size];  // Динамический размер в рантайме
 ```
 
-**What happens:** Compile error. Static array sizes must be compile-time constants.
+**Что происходит:** Ошибка компиляции. Размеры статических массивов должны быть константами времени компиляции.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
-// Use a const for static arrays
+// Используйте const для статических массивов
 const int BUFFER_SIZE = 64;
 int arr[BUFFER_SIZE];
 
-// Or use dynamic arrays for runtime sizing
+// Или используйте динамические массивы для задания размера в рантайме
 array<int> arr = new array<int>;
 arr.Resize(GetCount());
 ```
@@ -724,37 +724,37 @@ arr.Resize(GetCount());
 ### 23. array.Remove не сохраняет порядок
 
 
-**What you would write (expecting order preservation):**
+**Что вы бы написали (ожидая сохранение порядка):**
 ```c
 array<string> items = {"A", "B", "C", "D"};
-items.Remove(1);  // Expect: {"A", "C", "D"}
+items.Remove(1);  // Ожидаете: {"A", "C", "D"}
 ```
 
-**What happens:** `Remove(index)` swaps the element with the **last** element, then removes the last. Result: `{"A", "D", "C"}`. Order is NOT preserved.
+**Что происходит:** `Remove(index)` меняет элемент местами с **последним** элементом, затем удаляет последний. Результат: `{"A", "D", "C"}`. Порядок НЕ сохраняется.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
-// Use RemoveOrdered for order preservation (slower — shifts elements)
-items.RemoveOrdered(1);  // {"A", "C", "D"} — correct order
+// Используйте RemoveOrdered для сохранения порядка (медленнее --- сдвигает элементы)
+items.RemoveOrdered(1);  // {"A", "C", "D"} --- правильный порядок
 
-// Use RemoveItem to find and remove by value (also ordered)
+// Используйте RemoveItem для поиска и удаления по значению (тоже упорядоченно)
 items.RemoveItem("B");   // {"A", "C", "D"}
 ```
 
 ---
 
-### 24. Нет #include — всё через config.cpp
+### 24. Нет #include --- всё через config.cpp
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 #include "MyHelper.c"
 #include "Utils/StringUtils.c"
 ```
 
-**What happens:** No effect or compile error. There is no `#include` directive.
+**Что происходит:** Нет эффекта или ошибка компиляции. Директива `#include` не существует.
 
-**Correct solution:** All script files are loaded through `config.cpp` in the mod's `CfgMods` entry. File loading order is determined by the script layer (`3_Game`, `4_World`, `5_Mission`) and alphabetical order within each layer.
+**Правильное решение:** Все файлы скриптов загружаются через `config.cpp` в записи `CfgMods` мода. Порядок загрузки определяется слоем скриптов (`3_Game`, `4_World`, `5_Mission`) и алфавитным порядком внутри каждого слоя.
 
 ```cpp
 // config.cpp
@@ -789,15 +789,15 @@ class CfgMods
 ### 25. Нет пространств имён
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 namespace MyMod { class Config { } }
 namespace MyMod.Utils { class StringHelper { } }
 ```
 
-**What happens:** Compile error. The `namespace` keyword does not exist. All classes share a single global scope.
+**Что происходит:** Ошибка компиляции. Ключевое слово `namespace` не существует. Все классы разделяют единое глобальное пространство.
 
-**Correct solution:** Use naming prefixes to avoid conflicts:
+**Правильное решение:** Используйте префиксы имён для избежания конфликтов:
 ```c
 class MyConfig { }          // MyFramework
 class MyAI_Config { }       // MyAI Mod
@@ -810,21 +810,21 @@ class VPP_AdminConfig { }     // VPP Admin
 ### 26. Методы строк изменяют на месте
 
 
-**What you would write (expecting a return value):**
+**Что вы бы написали (ожидая возвращаемое значение):**
 ```c
-string upper = myString.ToUpper();  // Expect: returns new string
+string upper = myString.ToUpper();  // Ожидаете: возвращает новую строку
 ```
 
-**What happens:** `ToUpper()` and `ToLower()` modify the string **in place** and return `void`.
+**Что происходит:** `ToUpper()` и `ToLower()` изменяют строку **на месте** и возвращают `void`.
 
-**Correct solution:**
+**Правильное решение:**
 ```c
-// Make a copy first if you need the original preserved
+// Сначала сделайте копию, если нужно сохранить оригинал
 string original = "Hello World";
 string upper = original;
-upper.ToUpper();  // upper is now "HELLO WORLD", original unchanged
+upper.ToUpper();  // upper теперь "HELLO WORLD", original не изменён
 
-// Same for TrimInPlace
+// То же самое для TrimInPlace
 string trimmed = "  hello  ";
 trimmed.TrimInPlace();  // "hello"
 ```
@@ -834,7 +834,7 @@ trimmed.TrimInPlace();  // "hello"
 ### 27. Циклы ref вызывают утечки памяти
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 class Parent
 {
@@ -842,21 +842,21 @@ class Parent
 }
 class Child
 {
-    ref Parent m_Parent;  // Circular ref — both ref each other
+    ref Parent m_Parent;  // Циклическая ссылка --- оба ссылаются друг на друга
 }
 ```
 
-**What happens:** Neither object is ever garbage collected. The reference counts never reach zero because each holds a `ref` to the other.
+**Что происходит:** Ни один объект никогда не будет удалён сборщиком мусора. Счётчики ссылок никогда не достигнут нуля, потому что каждый хранит `ref` на другого.
 
-**Correct solution:** One side must use a raw (non-ref) pointer:
+**Правильное решение:** Одна сторона должна использовать сырой (не-ref) указатель:
 ```c
 class Parent
 {
-    ref Child m_Child;  // Parent OWNS the child (ref)
+    ref Child m_Child;  // Родитель ВЛАДЕЕТ дочерним (ref)
 }
 class Child
 {
-    Parent m_Parent;    // Child REFERENCES the parent (raw — no ref)
+    Parent m_Parent;    // Дочерний ССЫЛАЕТСЯ на родителя (сырой --- без ref)
 }
 ```
 
@@ -865,29 +865,29 @@ class Child
 ### 28. Нет гарантии деструктора при остановке сервера
 
 
-**What you would write (expecting cleanup):**
+**Что вы бы написали (ожидая очистку):**
 ```c
 void ~MyManager()
 {
-    SaveData();  // Expect this runs on shutdown
+    SaveData();  // Ожидаете, что это выполнится при завершении работы
 }
 ```
 
-**What happens:** Server shutdown may kill the process before destructors run. Your save never happens.
+**Что происходит:** Завершение работы сервера может убить процесс до вызова деструкторов. Ваше сохранение не происходит.
 
-**Correct solution:** Сохранить proactively at regular intervals and on known lifecycle events:
+**Правильное решение:** Сохраняйте проактивно через регулярные интервалы и при известных событиях жизненного цикла:
 ```c
 class MyManager
 {
-    void OnMissionFinish()  // Called before shutdown
+    void OnMissionFinish()  // Вызывается перед завершением
     {
-        SaveData();  // Reliable save point
+        SaveData();  // Надёжная точка сохранения
     }
 
     void OnUpdate(float dt)
     {
         m_SaveTimer += dt;
-        if (m_SaveTimer > 300.0)  // Every 5 minutes
+        if (m_SaveTimer > 300.0)  // Каждые 5 минут
         {
             SaveData();
             m_SaveTimer = 0;
@@ -901,23 +901,23 @@ class MyManager
 ### 29. Нет управления ресурсами на основе области видимости (RAII)
 
 
-**What you would write (in C++):**
+**Что вы бы написали (в C++):**
 ```c
 {
     FileHandle f = OpenFile("test.txt", FileMode.WRITE);
-    // f automatically closed when scope ends
+    // f автоматически закрывается при выходе из области видимости
 }
 ```
 
-**What happens:** Enforce Script does not close file handles when variables go out of scope (even with `autoptr`).
+**Что происходит:** Enforce Script не закрывает файловые дескрипторы при выходе переменных из области видимости (даже с `autoptr`).
 
-**Correct solution:** Always close resources explicitly:
+**Правильное решение:** Всегда закрывайте ресурсы явно:
 ```c
 FileHandle fh = OpenFile("$profile:MyMod/data.txt", FileMode.WRITE);
 if (fh != 0)
 {
     FPrintln(fh, "data");
-    CloseFile(fh);  // Must close manually!
+    CloseFile(fh);  // Нужно закрыть вручную!
 }
 ```
 
@@ -926,15 +926,15 @@ if (fh != 0)
 ### 30. GetGame().GetPlayer() возвращает null на сервере
 
 
-**What you would write:**
+**Что вы бы написали:**
 ```c
 PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-player.DoSomething();  // CRASH on server!
+player.DoSomething();  // КРАШ на сервере!
 ```
 
-**What happens:** `GetGame().GetPlayer()` returns the **local** player. On a dedicated server, there is no local player — it returns `null`.
+**Что происходит:** `GetGame().GetPlayer()` возвращает **локального** игрока. На выделенном сервере локального игрока нет --- возвращается `null`.
 
-**Correct solution:** On server, iterate the player list:
+**Правильное решение:** На сервере перебирайте список игроков:
 ```c
 #ifdef SERVER
     array<Man> players = new array<Man>;
@@ -961,22 +961,22 @@ player.DoSomething();  // CRASH on server!
 ## Переход с C++
 
 
-If you are a C++ developer, here are the biggest adjustments:
+Если вы разработчик C++, вот самые большие различия:
 
-| C++ Feature | Enforce Script Equivalent |
+| Возможность C++ | Эквивалент в Enforce Script |
 |-------------|--------------------------|
 | `std::vector` | `array<T>` |
 | `std::map` | `map<K,V>` |
 | `std::unique_ptr` | `ref` / `autoptr` |
-| `dynamic_cast<T*>` | `Class.CastTo()` or `T.Cast()` |
-| `try/catch` | Guard clauses |
-| `operator+` | Named methods (`Add()`) |
-| `namespace` | Name prefixes (`My`, `VPP_`) |
+| `dynamic_cast<T*>` | `Class.CastTo()` или `T.Cast()` |
+| `try/catch` | Защитные выражения |
+| `operator+` | Именованные методы (`Add()`) |
+| `namespace` | Префиксы имён (`My`, `VPP_`) |
 | `#include` | config.cpp `files[]` |
-| RAII | Ручное cleanup in lifecycle methods |
-| Multiple inheritance | Single inheritance + composition |
+| RAII | Ручная очистка в методах жизненного цикла |
+| Множественное наследование | Одиночное наследование + композиция |
 | `nullptr` | `null` / `NULL` |
-| Templates with constraints | Templates without constraints + runtime checks |
+| Шаблоны с ограничениями | Шаблоны без ограничений + проверки в рантайме |
 | `do...while` | `while (true) { ... if (!cond) break; }` |
 
 ---
@@ -984,91 +984,91 @@ If you are a C++ developer, here are the biggest adjustments:
 ## Переход с C#
 
 
-| C# Feature | Enforce Script Equivalent |
+| Возможность C# | Эквивалент в Enforce Script |
 |-------------|--------------------------|
-| `interface` | Base class with empty methods |
-| `abstract` | Base class + ErrorEx in base methods |
+| `interface` | Базовый класс с пустыми методами |
+| `abstract` | Базовый класс + ErrorEx в базовых методах |
 | `delegate` / `event` | `ScriptInvoker` |
-| Lambda `=>` | Named methods |
-| `?.` null conditional | Ручное null checks |
+| Лямбда `=>` | Именованные методы |
+| `?.` null conditional | Ручные проверки на null |
 | `??` null coalescing | `if (!x) x = default;` |
-| `try/catch` | Guard clauses |
-| `using` (IDisposable) | Ручное cleanup |
-| Properties `{ get; set; }` | Public fields or explicit getter/setter methods |
-| LINQ | Ручное loops |
-| `nameof()` | Hardcoded strings |
-| `async/await` | CallLater / timers |
+| `try/catch` | Защитные выражения |
+| `using` (IDisposable) | Ручная очистка |
+| Свойства `{ get; set; }` | Публичные поля или явные геттеры/сеттеры |
+| LINQ | Ручные циклы |
+| `nameof()` | Жёстко заданные строки |
+| `async/await` | CallLater / таймеры |
 
 ---
 
 ## Переход с Java
 
 
-| Java Feature | Enforce Script Equivalent |
+| Возможность Java | Эквивалент в Enforce Script |
 |-------------|--------------------------|
-| `interface` | Base class with empty methods |
-| `try/catch/finally` | Guard clauses |
-| Garbage collection | `ref` + reference counting (no GC for cycles) |
-| `@Override` | `override` keyword |
+| `interface` | Базовый класс с пустыми методами |
+| `try/catch/finally` | Защитные выражения |
+| Сборка мусора | `ref` + подсчёт ссылок (нет GC для циклов) |
+| `@Override` | Ключевое слово `override` |
 | `instanceof` | `obj.IsInherited(typename)` |
-| `package` | Name prefixes |
+| `package` | Префиксы имён |
 | `import` | config.cpp `files[]` |
-| `enum` with methods | `enum` (int-only) + helper class |
-| `final` | `const` (for variables only) |
-| Annotations | Not available |
+| `enum` с методами | `enum` (только int) + вспомогательный класс |
+| `final` | `const` (только для переменных) |
+| Аннотации | Не доступны |
 
 ---
 
 ## Переход с Python
 
 
-| Python Feature | Enforce Script Equivalent |
+| Возможность Python | Эквивалент в Enforce Script |
 |-------------|--------------------------|
-| Dynamic typing | Static typing (all variables typed) |
-| `try/except` | Guard clauses |
-| `lambda` | Named methods |
-| List comprehension | Ручное loops |
-| `**kwargs` / `*args` | Fixed parameters |
-| Duck typing | `IsInherited()` / `Class.CastTo()` |
-| `__init__` | Constructor (same name as class) |
-| `__del__` | Destructor (`~ClassName()`) |
+| Динамическая типизация | Статическая типизация (все переменные типизированы) |
+| `try/except` | Защитные выражения |
+| `lambda` | Именованные методы |
+| List comprehension | Ручные циклы |
+| `**kwargs` / `*args` | Фиксированные параметры |
+| Утиная типизация | `IsInherited()` / `Class.CastTo()` |
+| `__init__` | Конструктор (то же имя, что и класс) |
+| `__del__` | Деструктор (`~ClassName()`) |
 | `import` | config.cpp `files[]` |
-| Multiple inheritance | Single inheritance + composition |
+| Множественное наследование | Одиночное наследование + композиция |
 | `None` | `null` / `NULL` |
-| Indentation-based blocks | `{ }` braces |
-| f-strings | `string.Format("text %1 %2", a, b)` |
+| Блоки на основе отступов | Фигурные скобки `{ }` |
+| f-строки | `string.Format("text %1 %2", a, b)` |
 
 ---
 
 ## Краткая справочная таблица
 
 
-| Feature | Exists? | Workaround |
+| Возможность | Есть? | Обходной путь |
 |---------|---------|------------|
-| Ternary `? :` | No | if/else |
-| `do...while` | No | while + break |
-| `try/catch` | No | Guard clauses |
-| Multiple inheritance | No | Composition |
-| Operator overloading | Index only | Named methods |
-| Lambdas | No | Named methods |
-| Delegates | No | `ScriptInvoker` |
-| `\\` / `\"` in strings | Broken | Avoid them |
-| Variable redeclaration | Broken in else-if | Unique names or declare before if |
-| `Object.IsAlive()` | Not on base Object | Cast to `EntityAI` first |
-| `nullptr` | No | `null` / `NULL` |
-| switch fall-through | No | Each case is independent |
-| Default param expressions | No | Literals or NULL only |
-| `#define` values | No | `const` |
-| Interfaces | No | Empty base class |
-| Generic constraints | No | Runtime type checks |
-| Enum validation | No | Ручное range check |
-| Variadic params | No | `string.Format` or arrays |
-| Nested classes | No | Top-level with prefixed names |
-| Variable-size static arrays | No | `array<T>` |
-| `#include` | No | config.cpp `files[]` |
-| Namespaces | No | Name prefixes |
-| RAII | No | Ручное cleanup |
-| `GetGame().GetPlayer()` server | Returns null | Iterate `GetPlayers()` |
+| Тернарный `? :` | Нет | if/else |
+| `do...while` | Нет | while + break |
+| `try/catch` | Нет | Защитные выражения |
+| Множественное наследование | Нет | Композиция |
+| Перегрузка операторов | Только индекс | Именованные методы |
+| Лямбды | Нет | Именованные методы |
+| Делегаты | Нет | `ScriptInvoker` |
+| `\\` / `\"` в строках | Сломано | Избегать |
+| Переобъявление переменных | Сломано в else-if | Уникальные имена или объявление перед if |
+| `Object.IsAlive()` | Нет на базовом Object | Сначала приведение к `EntityAI` |
+| `nullptr` | Нет | `null` / `NULL` |
+| switch fall-through | Нет | Каждый case независим |
+| Выражения в параметрах по умолчанию | Нет | Только литералы или NULL |
+| Значения `#define` | Нет | `const` |
+| Интерфейсы | Нет | Пустой базовый класс |
+| Ограничения дженериков | Нет | Проверки типов в рантайме |
+| Валидация enum | Нет | Ручная проверка диапазона |
+| Вариативные параметры | Нет | `string.Format` или массивы |
+| Вложенные классы | Нет | Верхний уровень с префиксами |
+| Массивы переменного размера | Нет | `array<T>` |
+| `#include` | Нет | config.cpp `files[]` |
+| Пространства имён | Нет | Префиксы имён |
+| RAII | Нет | Ручная очистка |
+| `GetGame().GetPlayer()` на сервере | Возвращает null | Перебор `GetPlayers()` |
 
 ---
 
@@ -1077,4 +1077,4 @@ If you are a C++ developer, here are the biggest adjustments:
 
 | Предыдущая | Вверх | Следующая |
 |----------|----|------|
-| [1.11 Error Handling](11-error-handling.md) | [Part 1: Enforce Script](../README.md) | [Part 2: Mod Structure](../02-mod-structure/01-five-layers.md) |
+| [1.11 Обработка ошибок](11-error-handling.md) | [Часть 1: Enforce Script](../README.md) | [Часть 2: Структура мода](../02-mod-structure/01-five-layers.md) |

@@ -1,19 +1,19 @@
-# Chapter 6.1: Entity System
+# Capitulo 6.1: Sistema de Entidades
 
-[Home](../../README.md) | **Entity System** | [Next: Vehicles >>](02-vehicles.md)
+[Inicio](../../README.md) | **Sistema de Entidades** | [Siguiente: Vehiculos >>](02-vehicles.md)
 
 ---
 
 ## Introduccion
 
-Every object in the DayZ world --- items, players, zombies, animals, buildings, vehicles --- descends from a single class hierarchy rooted at `IEntity`. Understanding this hierarchy and the methods available at each level is the foundation of all DayZ modding. This chapter is an API reference for the core entity classes: what methods exist, what their signatures are, and how to use them correctly.
+Cada objeto en el mundo de DayZ --- items, jugadores, zombies, animales, edificios, vehiculos --- desciende de una unica jerarquia de clases con raiz en `IEntity`. Entender esta jerarquia y los metodos disponibles en cada nivel es la base de todo el modding de DayZ. Este capitulo es una referencia de API para las clases de entidades principales: que metodos existen, cuales son sus firmas y como usarlos correctamente.
 
 ---
 
-## Class Hierarchy
+## Jerarquia de Clases
 
 ```
-Class (root of all Enforce Script classes)
+Class (raiz de todas las clases de Enforce Script)
 └── Managed
     └── IEntity                              // 1_Core/proto/enentity.c
         └── Object                           // 3_Game/entities/object.c
@@ -23,7 +23,7 @@ Class (root of all Enforce Script classes)
                         ├── InventoryItem    // 3_Game/entities/inventoryitem.c
                         │   └── ItemBase     // 4_World/entities/itembase.c
                         │       ├── Weapon_Base, Magazine_Base
-                        │       └── (all inventory items)
+                        │       └── (todos los items de inventario)
                         ├── Man              // 3_Game/entities/man.c
                         │   └── DayZPlayer
                         │       └── DayZPlayerImplement
@@ -37,71 +37,71 @@ Class (root of all Enforce Script classes)
                         └── AdvancedCommunication
 ```
 
-Key points:
+Puntos clave:
 
-- **IEntity** is the engine-level base. It provides transform, physics, and hierarchy methods.
-- **Object** adds position/orientation helpers, health, config access, hidden selections, and type checking (`IsMan()`, `IsBuilding()`, etc.).
-- **EntityAI** adds inventory, damage zones, attachments, energy manager, net sync variables, and lifecycle events (`EEInit`, `EEKilled`, `EEHitBy`).
-- **ItemBase**, **PlayerBase**, **ZombieBase**, and **AnimalBase** are the concrete bases you work with daily.
+- **IEntity** es la base a nivel del motor. Provee metodos de transformacion, fisica y jerarquia.
+- **Object** agrega helpers de posicion/orientacion, salud, acceso a config, selecciones ocultas y verificacion de tipos (`IsMan()`, `IsBuilding()`, etc.).
+- **EntityAI** agrega inventario, zonas de dano, accesorios, administrador de energia, variables de sincronizacion de red y eventos de ciclo de vida (`EEInit`, `EEKilled`, `EEHitBy`).
+- **ItemBase**, **PlayerBase**, **ZombieBase** y **AnimalBase** son las bases concretas con las que trabajas a diario.
 
 ---
 
 ## IEntity
 
-**File:** `1_Core/proto/enentity.c`
+**Archivo:** `1_Core/proto/enentity.c`
 
-The engine-native entity. All proto native methods --- you cannot see their implementation in script.
+La entidad nativa del motor. Todos los metodos son proto native --- no puedes ver su implementacion en script.
 
-### Transform
+### Transformacion
 
-| Metodo | Signature | Descripcion |
+| Metodo | Firma | Descripcion |
 |--------|-----------|-------------|
-| `GetOrigin` | `proto native vector GetOrigin()` | World position of the entity |
-| `SetOrigin` | `proto native external void SetOrigin(vector orig)` | Set world position |
-| `GetYawPitchRoll` | `proto native vector GetYawPitchRoll()` | Rotation as yaw/pitch/roll in degrees |
-| `GetTransform` | `proto native external void GetTransform(out vector mat[4])` | Full 4x3 transform matrix |
-| `SetTransform` | `proto native external void SetTransform(vector mat[4])` | Set full transform |
+| `GetOrigin` | `proto native vector GetOrigin()` | Posicion mundial de la entidad |
+| `SetOrigin` | `proto native external void SetOrigin(vector orig)` | Establecer posicion mundial |
+| `GetYawPitchRoll` | `proto native vector GetYawPitchRoll()` | Rotacion como yaw/pitch/roll en grados |
+| `GetTransform` | `proto native external void GetTransform(out vector mat[4])` | Matriz de transformacion completa 4x3 |
+| `SetTransform` | `proto native external void SetTransform(vector mat[4])` | Establecer transformacion completa |
 
-### Coordinate Conversion
+### Conversion de Coordenadas
 
-| Metodo | Signature | Descripcion |
+| Metodo | Firma | Descripcion |
 |--------|-----------|-------------|
-| `VectorToParent` | `proto native vector VectorToParent(vector vec)` | Transform direction from local to world space |
-| `CoordToParent` | `proto native vector CoordToParent(vector coord)` | Transform point from local to world space |
-| `VectorToLocal` | `proto native vector VectorToLocal(vector vec)` | Transform direction from world to local space |
-| `CoordToLocal` | `proto native vector CoordToLocal(vector coord)` | Transform point from world to local space |
+| `VectorToParent` | `proto native vector VectorToParent(vector vec)` | Transformar direccion de espacio local a mundial |
+| `CoordToParent` | `proto native vector CoordToParent(vector coord)` | Transformar punto de espacio local a mundial |
+| `VectorToLocal` | `proto native vector VectorToLocal(vector vec)` | Transformar direccion de espacio mundial a local |
+| `CoordToLocal` | `proto native vector CoordToLocal(vector coord)` | Transformar punto de espacio mundial a local |
 
-### Hierarchy
+### Jerarquia
 
-| Metodo | Signature | Descripcion |
+| Metodo | Firma | Descripcion |
 |--------|-----------|-------------|
-| `AddChild` | `proto native external void AddChild(IEntity child, int pivot, bool positionOnly = false)` | Attach child entity to a bone pivot |
-| `RemoveChild` | `proto native external void RemoveChild(IEntity child, bool keepTransform = false)` | Detach child entity |
-| `GetParent` | `proto native IEntity GetParent()` | Parent entity (or null) |
-| `GetChildren` | `proto native IEntity GetChildren()` | First child entity |
-| `GetSibling` | `proto native IEntity GetSibling()` | Next sibling entity |
+| `AddChild` | `proto native external void AddChild(IEntity child, int pivot, bool positionOnly = false)` | Adjuntar entidad hija a un pivote de hueso |
+| `RemoveChild` | `proto native external void RemoveChild(IEntity child, bool keepTransform = false)` | Separar entidad hija |
+| `GetParent` | `proto native IEntity GetParent()` | Entidad padre (o null) |
+| `GetChildren` | `proto native IEntity GetChildren()` | Primera entidad hija |
+| `GetSibling` | `proto native IEntity GetSibling()` | Siguiente entidad hermana |
 
 ### Eventos
 
-| Metodo | Signature | Descripcion |
+| Metodo | Firma | Descripcion |
 |--------|-----------|-------------|
-| `SetEventMask` | `proto native external void SetEventMask(EntityEvent e)` | Enable event callbacks |
-| `ClearEventMask` | `proto native external void ClearEventMask(EntityEvent e)` | Disable event callbacks |
-| `SetFlags` | `proto native external EntityFlags SetFlags(EntityFlags flags, bool recursivelyApply)` | Set entity flags (VISIBLE, SOLID, etc.) |
-| `ClearFlags` | `proto native external EntityFlags ClearFlags(EntityFlags flags, bool recursivelyApply)` | Clear entity flags |
+| `SetEventMask` | `proto native external void SetEventMask(EntityEvent e)` | Habilitar callbacks de eventos |
+| `ClearEventMask` | `proto native external void ClearEventMask(EntityEvent e)` | Deshabilitar callbacks de eventos |
+| `SetFlags` | `proto native external EntityFlags SetFlags(EntityFlags flags, bool recursivelyApply)` | Establecer flags de entidad (VISIBLE, SOLID, etc.) |
+| `ClearFlags` | `proto native external EntityFlags ClearFlags(EntityFlags flags, bool recursivelyApply)` | Limpiar flags de entidad |
 
-### Event Callbacks
+### Callbacks de Eventos
 
-These are called by the engine when the corresponding event mask is set:
+Estos son llamados por el motor cuando la mascara de evento correspondiente esta establecida:
 
 ```c
-// Per-frame callback (requires EntityEvent.FRAME)
+// Callback por frame (requiere EntityEvent.FRAME)
 event protected void EOnFrame(IEntity other, float timeSlice);
 
-// Contact callback (requires EntityEvent.CONTACT)
+// Callback de contacto (requiere EntityEvent.CONTACT)
 event protected void EOnContact(IEntity other, Contact extra);
 
-// Trigger callbacks (requires EntityEvent.ENTER / EntityEvent.LEAVE)
+// Callbacks de trigger (requiere EntityEvent.ENTER / EntityEvent.LEAVE)
 event protected void EOnEnter(IEntity other, int extra);
 event protected void EOnLeave(IEntity other, int extra);
 ```
@@ -110,22 +110,22 @@ event protected void EOnLeave(IEntity other, int extra);
 
 ## Object
 
-**File:** `3_Game/entities/object.c` (1455 lines)
+**Archivo:** `3_Game/entities/object.c` (1455 lineas)
 
-Base class for all spatial objects in the game world. This is the first script-accessible level of the hierarchy --- `IEntity` is purely engine-native.
+Clase base para todos los objetos espaciales en el mundo del juego. Este es el primer nivel accesible por script de la jerarquia --- `IEntity` es puramente nativo del motor.
 
-### Position & Orientation
+### Posicion y Orientacion
 
 ```c
 proto native void SetPosition(vector pos);
 proto native vector GetPosition();
-proto native void SetOrientation(vector ori);     // ori = "yaw pitch roll" in degrees
-proto native vector GetOrientation();              // returns "yaw pitch roll"
+proto native void SetOrientation(vector ori);     // ori = "yaw pitch roll" en grados
+proto native vector GetOrientation();              // retorna "yaw pitch roll"
 proto native void SetDirection(vector direction);
-proto native vector GetDirection();                // forward direction vector
+proto native vector GetDirection();                // vector de direccion hacia adelante
 ```
 
-**Example --- teleport an object:**
+**Ejemplo --- teletransportar un objeto:**
 
 ```c
 Object obj = GetSomeObject();
@@ -134,10 +134,10 @@ newPos[1] = GetGame().SurfaceY(newPos[0], newPos[2]);
 obj.SetPosition(newPos);
 ```
 
-### Health & Damage
+### Salud y Dano
 
 ```c
-// Zone-based health system. Use "" for global zone, "Health" for default health type.
+// Sistema de salud basado en zonas. Usa "" para zona global, "Health" para tipo de salud predeterminado.
 proto native float GetHealth(string zoneName, string healthType);
 proto native float GetMaxHealth(string zoneName, string healthType);
 proto native void  SetHealth(string zoneName, string healthType, float value);
@@ -149,12 +149,12 @@ proto native void  SetAllowDamage(bool val);
 proto native bool  GetAllowDamage();
 ```
 
-| Parameter | Significado |
+| Parametro | Significado |
 |-----------|---------|
-| `zoneName` | Damage zone name (e.g., `""` for global, `"Engine"`, `"FuelTank"`, `"LeftArm"`) |
-| `healthType` | Type of health stat (usually `"Health"`, but also `"Blood"`, `"Shock"` for players) |
+| `zoneName` | Nombre de zona de dano (ej., `""` para global, `"Engine"`, `"FuelTank"`, `"LeftArm"`) |
+| `healthType` | Tipo de estadistica de salud (usualmente `"Health"`, pero tambien `"Blood"`, `"Shock"` para jugadores) |
 
-**Example --- set an item to half health:**
+**Ejemplo --- establecer un item a la mitad de salud:**
 
 ```c
 float maxHP = obj.GetMaxHealth("", "Health");
@@ -167,27 +167,27 @@ obj.SetHealth("", "Health", maxHP * 0.5);
 proto native bool IsAlive();
 ```
 
-> **Gotcha:** The vanilla reference shows `IsAlive()` on `Object`, but in practice many modders have found it unreliable on the base `Object` class. The safe pattern is to cast to `EntityAI` first:
+> **Gotcha:** La referencia vanilla muestra `IsAlive()` en `Object`, pero en la practica muchos modders han encontrado que no es confiable en la clase base `Object`. El patron seguro es castear a `EntityAI` primero:
 
 ```c
 EntityAI eai;
 if (Class.CastTo(eai, obj) && eai.IsAlive())
 {
-    // Confirmed alive
+    // Confirmado vivo
 }
 ```
 
-### Type Checking
+### Verificacion de Tipo
 
 ```c
 proto native bool IsMan();
 proto native bool IsDayZCreature();
 proto native bool IsBuilding();
 proto native bool IsTransport();
-proto native bool IsKindOf(string type);     // Check config inheritance
+proto native bool IsKindOf(string type);     // Verificar herencia de config
 ```
 
-**Example:**
+**Ejemplo:**
 
 ```c
 if (obj.IsKindOf("Weapon_Base"))
@@ -196,32 +196,32 @@ if (obj.IsKindOf("Weapon_Base"))
 }
 ```
 
-### Type & Display Name
+### Tipo y Nombre para Mostrar
 
 ```c
-// GetType() returns the config class name (e.g., "AKM", "SurvivorM_Mirek")
+// GetType() retorna el nombre de clase de config (ej., "AKM", "SurvivorM_Mirek")
 string GetType();
 
-// GetDisplayName() returns the localized display name
+// GetDisplayName() retorna el nombre localizado para mostrar
 string GetDisplayName();
 ```
 
-### Scale
+### Escala
 
 ```c
 proto native void  SetScale(float scale);
 proto native float GetScale();
 ```
 
-### Bone Positions
+### Posiciones de Huesos
 
 ```c
-proto native vector GetBonePositionLS(int pivot);   // Local space
-proto native vector GetBonePositionMS(int pivot);   // Model space
-proto native vector GetBonePositionWS(int pivot);   // World space
+proto native vector GetBonePositionLS(int pivot);   // Espacio local
+proto native vector GetBonePositionMS(int pivot);   // Espacio del modelo
+proto native vector GetBonePositionWS(int pivot);   // Espacio mundial
 ```
 
-### Hidden Selections (Texture/Material Swaps)
+### Selecciones Ocultas (Intercambios de Textura/Material)
 
 ```c
 TStringArray GetHiddenSelections();
@@ -229,7 +229,7 @@ TStringArray GetHiddenSelectionsTextures();
 TStringArray GetHiddenSelectionsMaterials();
 ```
 
-### Config Access (on the entity itself)
+### Acceso a Config (en la entidad misma)
 
 ```c
 proto native bool   ConfigGetBool(string entryName);
@@ -242,20 +242,20 @@ proto native void   ConfigGetFloatArray(string entryName, out TFloatArray values
 proto native bool   ConfigIsExisting(string entryName);
 ```
 
-### Network ID
+### ID de Red
 
 ```c
 proto native int GetNetworkID(out int id_low, out int id_high);
 ```
 
-### Deletion
+### Eliminacion
 
 ```c
-void Delete();                    // Deferred delete (next frame, via CallQueue)
-proto native bool ToDelete();     // Is this object marked for deletion?
+void Delete();                    // Eliminacion diferida (proximo frame, via CallQueue)
+proto native bool ToDelete();     // Esta este objeto marcado para eliminacion?
 ```
 
-### Geometry & Components
+### Geometria y Componentes
 
 ```c
 proto native owned string GetActionComponentName(int componentIndex, string geometry = "");
@@ -268,39 +268,39 @@ proto native vector GetBoundingCenter();
 
 ## EntityAI
 
-**File:** `3_Game/entities/entityai.c` (4719 lines)
+**Archivo:** `3_Game/entities/entityai.c` (4719 lineas)
 
-The workhorse base for all interactive game entities. Adds inventory, damage events, temperature, energy management, and network synchronization.
+La base de trabajo para todas las entidades interactivas del juego. Agrega inventario, eventos de dano, temperatura, gestion de energia y sincronizacion de red.
 
-### Inventory Access
+### Acceso al Inventario
 
 ```c
 proto native GameInventory GetInventory();
 ```
 
-Common inventory operations through the returned `GameInventory`:
+Operaciones comunes de inventario a traves del `GameInventory` retornado:
 
 ```c
-// Enumerate all items in this entity's inventory
+// Enumerar todos los items en el inventario de esta entidad
 array<EntityAI> items = new array<EntityAI>;
 eai.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
 
-// Count items
+// Contar items
 int count = eai.GetInventory().CountInventory();
 
-// Check if entity has a specific item
+// Verificar si la entidad tiene un item especifico
 bool has = eai.GetInventory().HasEntityInInventory(someItem);
 
-// Create item in cargo
+// Crear item en cargo
 EntityAI newItem = eai.GetInventory().CreateEntityInCargo("BandageDressing");
 
-// Create item as attachment
+// Crear item como accesorio
 EntityAI attachment = eai.GetInventory().CreateAttachment("ACOGOptic");
 
-// Find attachment by slot name
+// Buscar accesorio por nombre de slot
 EntityAI att = eai.GetInventory().FindAttachmentByName("Hands");
 
-// Get attachment count and iterate
+// Obtener conteo de accesorios e iterar
 int attCount = eai.GetInventory().AttachmentCount();
 for (int i = 0; i < attCount; i++)
 {
@@ -308,7 +308,7 @@ for (int i = 0; i < attCount; i++)
 }
 ```
 
-### Damage System
+### Sistema de Dano
 
 ```c
 proto native void SetHealth(string zoneName, string healthType, float value);
@@ -322,26 +322,26 @@ proto native void ProcessDirectDamage(int damageType, EntityAI source, string co
                                        float damageCoef = 1.0, int flags = 0);
 ```
 
-### Lifecycle Eventos
+### Eventos de Ciclo de Vida
 
-Override these in your subclass to hook into the entity lifecycle:
+Sobreescribe estos en tu subclase para engancharte al ciclo de vida de la entidad:
 
 ```c
-void EEInit();                                    // Called after entity initialization
-void EEDelete(EntityAI parent);                   // Called before deletion
-void EEKilled(Object killer);                     // Called when entity dies
-void EEHitBy(TotalDamageResult damageResult,      // Called when entity takes damage
+void EEInit();                                    // Se llama despues de la inicializacion de la entidad
+void EEDelete(EntityAI parent);                   // Se llama antes de la eliminacion
+void EEKilled(Object killer);                     // Se llama cuando la entidad muere
+void EEHitBy(TotalDamageResult damageResult,      // Se llama cuando la entidad recibe dano
              int damageType, EntityAI source,
              int component, string dmgZone,
              string ammo, vector modelPos,
              float speedCoef);
-void EEItemAttached(EntityAI item, string slot_name);   // Attachment added
-void EEItemDetached(EntityAI item, string slot_name);   // Attachment removed
+void EEItemAttached(EntityAI item, string slot_name);   // Accesorio agregado
+void EEItemDetached(EntityAI item, string slot_name);   // Accesorio removido
 ```
 
-### Network Sync Variables
+### Variables de Sincronizacion de Red
 
-Register variables in the constructor to automatically synchronize them between server and client:
+Registra variables en el constructor para sincronizarlas automaticamente entre servidor y cliente:
 
 ```c
 proto native void RegisterNetSyncVariableBool(string variableName);
@@ -349,13 +349,13 @@ proto native void RegisterNetSyncVariableInt(string variableName, int minValue =
 proto native void RegisterNetSyncVariableFloat(string variableName, float minValue = 0, float maxValue = 0);
 ```
 
-Override `OnVariablesSynchronized()` on the client to react to changes:
+Sobreescribe `OnVariablesSynchronized()` en el cliente para reaccionar a cambios:
 
 ```c
 void OnVariablesSynchronized();
 ```
 
-**Example --- synced state variable:**
+**Ejemplo --- variable de estado sincronizada:**
 
 ```c
 class MyItem extends ItemBase
@@ -370,19 +370,19 @@ class MyItem extends ItemBase
     override void OnVariablesSynchronized()
     {
         super.OnVariablesSynchronized();
-        // Update visuals based on m_State
+        // Actualizar visuales basado en m_State
         UpdateVisualState();
     }
 }
 ```
 
-### Energy Manager
+### Administrador de Energia
 
 ```c
 proto native ComponentEnergyManager GetCompEM();
 ```
 
-Usage:
+Uso:
 
 ```c
 ComponentEnergyManager em = eai.GetCompEM();
@@ -395,7 +395,7 @@ if (em)
 }
 ```
 
-### ScriptInvokers (Event Hooks)
+### ScriptInvokers (Hooks de Eventos)
 
 ```c
 protected ref ScriptInvoker m_OnItemAttached;
@@ -406,7 +406,7 @@ protected ref ScriptInvoker m_OnHitByInvoker;
 protected ref ScriptInvoker m_OnKilledInvoker;
 ```
 
-### Type Checks
+### Verificaciones de Tipo
 
 ```c
 bool IsItemBase();
@@ -418,7 +418,7 @@ bool IsTransport();
 bool IsFood();
 ```
 
-### Spawning Entities
+### Spawnear Entidades
 
 ```c
 EntityAI SpawnEntityOnGroundPos(string object_name, vector pos);
@@ -430,11 +430,11 @@ EntityAI SpawnEntity(string object_name, notnull InventoryLocation inv_loc,
 
 ## ItemBase
 
-**File:** `4_World/entities/itembase.c` (4986 lines)
+**Archivo:** `4_World/entities/itembase.c` (4986 lineas)
 
-Base for all inventory items. `typedef ItemBase Inventory_Base;` is used throughout vanilla code.
+Base para todos los items de inventario. `typedef ItemBase Inventory_Base;` se usa a traves del codigo vanilla.
 
-### Quantity System
+### Sistema de Cantidad
 
 ```c
 void  SetQuantity(float value, bool destroy_config = true, bool destroy_forced = false);
@@ -446,7 +446,7 @@ bool  CanBeSplit();
 void  SplitIntoStackMax(EntityAI destination_entity, int slot_id, PlayerBase player);
 ```
 
-**Example --- fill a canteen:**
+**Ejemplo --- llenar una cantimplora:**
 
 ```c
 ItemBase canteen = ItemBase.Cast(player.GetInventory().CreateInInventory("Canteen"));
@@ -456,31 +456,31 @@ if (canteen)
 }
 ```
 
-### Condition / Wetness / Temperature
+### Condicion / Humedad / Temperatura
 
 ```c
-// Wetness
+// Humedad
 float m_VarWet, m_VarWetMin, m_VarWetMax;
 
-// Temperature
+// Temperatura
 float m_VarTemperature;
 
-// Cleanness
+// Limpieza
 int m_Cleanness;
 
-// Liquid
+// Liquido
 int m_VarLiquidType;
 ```
 
-### Actions
+### Acciones
 
 ```c
-void SetActions();                     // Override to register actions for this item
-void AddAction(typename actionName);   // Register an action
+void SetActions();                     // Sobreescribir para registrar acciones para este item
+void AddAction(typename actionName);   // Registrar una accion
 void RemoveAction(typename actionName);
 ```
 
-**Example --- custom item with action:**
+**Ejemplo --- item personalizado con accion:**
 
 ```c
 class MyItem extends ItemBase
@@ -493,7 +493,7 @@ class MyItem extends ItemBase
 }
 ```
 
-### Sound
+### Sonido
 
 ```c
 void PlaySoundSet(out EffectSound effect_sound, string sound_set,
@@ -503,41 +503,41 @@ void PlaySoundSetLoop(out EffectSound effect_sound, string sound_set,
 void StopSoundSet(EffectSound effect_sound);
 ```
 
-### Economy / Persistence
+### Economia / Persistencia
 
 ```c
-override void InitItemVariables();     // Reads all config values (quantity, wet, etc.)
+override void InitItemVariables();     // Lee todos los valores de config (cantidad, humedad, etc.)
 ```
 
-Items inherit CE (Central Economy) lifetime and persistence from their `types.xml` entry. Use `ECE_NOLIFETIME` flag when creating objects that should never despawn.
+Los items heredan el tiempo de vida y persistencia del CE (Central Economy) de su entrada en `types.xml`. Usa el flag `ECE_NOLIFETIME` al crear objetos que nunca deberian despawnear.
 
 ---
 
 ## PlayerBase
 
-**File:** `4_World/entities/manbase/playerbase.c` (9776 lines)
+**Archivo:** `4_World/entities/manbase/playerbase.c` (9776 lineas)
 
-The player entity. The largest class in the codebase.
+La entidad del jugador. La clase mas grande en el codigo base.
 
-### Identity
+### Identidad
 
 ```c
 PlayerIdentity GetIdentity();
 ```
 
-From `PlayerIdentity`:
+Desde `PlayerIdentity`:
 
 ```c
-string GetName();       // Steam/platform display name
-string GetId();         // Unique player ID (BI ID)
+string GetName();       // Nombre de Steam/plataforma
+string GetId();         // ID unico del jugador (BI ID)
 string GetPlainId();    // Steam64 ID
-int    GetPlayerId();   // Session player ID (int)
+int    GetPlayerId();   // ID de jugador de sesion (int)
 ```
 
-**Example --- get player info on server:**
+**Ejemplo --- obtener info del jugador en el servidor:**
 
 ```c
-PlayerBase player;  // from event
+PlayerBase player;  // desde evento
 PlayerIdentity identity = player.GetIdentity();
 if (identity)
 {
@@ -547,41 +547,41 @@ if (identity)
 }
 ```
 
-### Health / Blood / Shock
+### Salud / Sangre / Shock
 
-Player uses the zone-based health system from EntityAI, with special health types:
+El jugador usa el sistema de salud basado en zonas de EntityAI, con tipos de salud especiales:
 
 ```c
-// Global health (0-100 by default)
+// Salud global (0-100 por defecto)
 float hp = player.GetHealth("", "Health");
 
-// Blood (0-5000)
+// Sangre (0-5000)
 float blood = player.GetHealth("", "Blood");
 
 // Shock (0-100)
 float shock = player.GetHealth("", "Shock");
 
-// Set values
+// Establecer valores
 player.SetHealth("", "Health", 100);
 player.SetHealth("", "Blood", 5000);
 player.SetHealth("", "Shock", 0);
 ```
 
-### Position & Inventory
+### Posicion e Inventario
 
 ```c
 vector pos = player.GetPosition();
 player.SetPosition(newPos);
 
-// Item in hands
+// Item en manos
 EntityAI inHands = player.GetHumanInventory().GetEntityInHands();
 
-// Driving vehicle
+// Vehiculo que conduce
 EntityAI vehicle = player.GetDrivingVehicle();
 bool inVehicle = player.IsInVehicle();
 ```
 
-### State Checks
+### Verificaciones de Estado
 
 ```c
 bool IsAlive();
@@ -592,7 +592,7 @@ bool IsInVehicle();
 
 ### Managers
 
-`PlayerBase` holds references to many gameplay subsystems:
+`PlayerBase` contiene referencias a muchos subsistemas de gameplay:
 
 ```c
 ref ModifiersManager   m_ModifiersManager;
@@ -604,7 +604,7 @@ ref StaminaHandler     m_StaminaHandler;
 ref WeaponManager      m_WeaponManager;
 ```
 
-### Server Lifecycle Eventos
+### Eventos de Ciclo de Vida del Servidor
 
 ```c
 void OnConnect();
@@ -613,7 +613,7 @@ void OnScheduledTick(float deltaTime);
 override void OnRPC(PlayerIdentity sender, int rpc_type, ParamsReadContext ctx);
 ```
 
-### Spawning Items Near Player
+### Spawnear Items Cerca del Jugador
 
 ```c
 EntityAI SpawnEntityOnGroundOnCursorDir(string object_name, float distance);
@@ -623,19 +623,19 @@ EntityAI SpawnEntityOnGroundOnCursorDir(string object_name, float distance);
 
 ## ZombieBase
 
-**File:** `4_World/entities/creatures/infected/zombiebase.c` (1150 lines)
+**Archivo:** `4_World/entities/creatures/infected/zombiebase.c` (1150 lineas)
 
-Base for all infected (zombie) entities.
+Base para todas las entidades infectadas (zombie).
 
-### Key Properties
+### Propiedades Clave
 
 ```c
-protected int   m_MindState;       // AI state (-1 to 4)
-protected float m_MovementSpeed;   // Movement speed (-1 to 3)
-protected bool  m_IsCrawling;      // Crawler zombie
+protected int   m_MindState;       // Estado de AI (-1 a 4)
+protected float m_MovementSpeed;   // Velocidad de movimiento (-1 a 3)
+protected bool  m_IsCrawling;      // Zombie arrastrante
 ```
 
-### Initialization
+### Inicializacion
 
 ```c
 void Init()
@@ -653,15 +653,15 @@ void Init()
 
 ## AnimalBase
 
-**File:** `4_World/entities/creatures/animals/`
+**Archivo:** `4_World/entities/creatures/animals/`
 
-Base for all animal entities. Extends `DayZAnimal` which extends `EntityAI`.
+Base para todas las entidades animales. Extiende `DayZAnimal` que extiende `EntityAI`.
 
-Animals use the same health, position, and damage APIs as other entities. Their behavior is driven by the AI system and CE-configured territory files.
+Los animales usan las mismas APIs de salud, posicion y dano que otras entidades. Su comportamiento es controlado por el sistema de AI y archivos de territorio configurados en el CE.
 
 ---
 
-## Creating Entities
+## Crear Entidades
 
 ### GetGame().CreateObject()
 
@@ -672,15 +672,15 @@ proto native Object CreateObject(string type, vector pos,
                                   bool create_physics = true);
 ```
 
-| Parameter | Descripcion |
+| Parametro | Descripcion |
 |-----------|-------------|
-| `type` | Config class name (e.g., `"AKM"`, `"ZmbF_JournalistNormal_Blue"`) |
-| `pos` | World position |
-| `create_local` | `true` = client-only, not replicated to server |
-| `init_ai` | `true` = initialize AI (for zombies, animals) |
-| `create_physics` | `true` = create collision geometry |
+| `type` | Nombre de clase de config (ej., `"AKM"`, `"ZmbF_JournalistNormal_Blue"`) |
+| `pos` | Posicion mundial |
+| `create_local` | `true` = solo cliente, no replicado al servidor |
+| `init_ai` | `true` = inicializar AI (para zombies, animales) |
+| `create_physics` | `true` = crear geometria de colision |
 
-**Example:**
+**Ejemplo:**
 
 ```c
 Object obj = GetGame().CreateObject("AKM", player.GetPosition(), false, false, true);
@@ -693,55 +693,55 @@ proto native Object CreateObjectEx(string type, vector pos, int iFlags,
                                     int iRotation = RF_DEFAULT);
 ```
 
-This is the preferred API. The `iFlags` parameter uses ECE (Entity Creation Event) flags.
+Esta es la API preferida. El parametro `iFlags` usa flags ECE (Entity Creation Event).
 
-### ECE Flags
+### Flags ECE
 
 | Flag | Valor | Descripcion |
 |------|-------|-------------|
-| `ECE_NONE` | `0` | No special behavior |
-| `ECE_SETUP` | `2` | Full entity setup |
-| `ECE_TRACE` | `4` | Trace placement to surface |
-| `ECE_CENTER` | `8` | Use center from model shape |
-| `ECE_UPDATEPATHGRAPH` | `32` | Update navigation mesh |
-| `ECE_CREATEPHYSICS` | `1024` | Create physics/collision |
-| `ECE_INITAI` | `2048` | Initialize AI |
-| `ECE_EQUIP_ATTACHMENTS` | `8192` | Spawn configured attachments |
-| `ECE_EQUIP_CARGO` | `16384` | Spawn configured cargo |
+| `ECE_NONE` | `0` | Sin comportamiento especial |
+| `ECE_SETUP` | `2` | Setup completo de entidad |
+| `ECE_TRACE` | `4` | Trazar ubicacion a la superficie |
+| `ECE_CENTER` | `8` | Usar centro de la forma del modelo |
+| `ECE_UPDATEPATHGRAPH` | `32` | Actualizar malla de navegacion |
+| `ECE_CREATEPHYSICS` | `1024` | Crear fisica/colision |
+| `ECE_INITAI` | `2048` | Inicializar AI |
+| `ECE_EQUIP_ATTACHMENTS` | `8192` | Spawnear accesorios configurados |
+| `ECE_EQUIP_CARGO` | `16384` | Spawnear cargo configurado |
 | `ECE_EQUIP` | `24576` | `ATTACHMENTS + CARGO` |
-| `ECE_LOCAL` | `1073741824` | Create locally only (not replicated) |
-| `ECE_NOSURFACEALIGN` | `262144` | Do not align to surface normal |
-| `ECE_KEEPHEIGHT` | `524288` | Keep Y position (no trace) |
-| `ECE_NOLIFETIME` | `4194304` | No CE lifetime (will not despawn) |
-| `ECE_DYNAMIC_PERSISTENCY` | `33554432` | Persistent only after player interaction |
+| `ECE_LOCAL` | `1073741824` | Crear solo localmente (no replicado) |
+| `ECE_NOSURFACEALIGN` | `262144` | No alinear a la normal de la superficie |
+| `ECE_KEEPHEIGHT` | `524288` | Mantener posicion Y (sin traza) |
+| `ECE_NOLIFETIME` | `4194304` | Sin tiempo de vida del CE (no despawneara) |
+| `ECE_DYNAMIC_PERSISTENCY` | `33554432` | Persistente solo despues de interaccion del jugador |
 
-### Pre-defined Flag Combinations
+### Combinaciones Predefinidas de Flags
 
 | Constante | Flags | Caso de Uso |
 |----------|-------|----------|
-| `ECE_IN_INVENTORY` | `CREATEPHYSICS \| KEEPHEIGHT \| NOSURFACEALIGN` | Items created in inventory |
-| `ECE_PLACE_ON_SURFACE` | `CREATEPHYSICS \| UPDATEPATHGRAPH \| TRACE` | Items placed on ground |
-| `ECE_FULL` | `SETUP \| TRACE \| ROTATIONFLAGS \| UPDATEPATHGRAPH \| EQUIP` | Full setup with equipment |
+| `ECE_IN_INVENTORY` | `CREATEPHYSICS \| KEEPHEIGHT \| NOSURFACEALIGN` | Items creados en inventario |
+| `ECE_PLACE_ON_SURFACE` | `CREATEPHYSICS \| UPDATEPATHGRAPH \| TRACE` | Items colocados en el suelo |
+| `ECE_FULL` | `SETUP \| TRACE \| ROTATIONFLAGS \| UPDATEPATHGRAPH \| EQUIP` | Setup completo con equipamiento |
 
-### RF (Rotation) Flags
+### Flags RF (Rotacion)
 
 | Flag | Valor | Descripcion |
 |------|-------|-------------|
-| `RF_DEFAULT` | `512` | Use default config placement |
-| `RF_ORIGINAL` | `128` | Use default config placement |
-| `RF_IGNORE` | `64` | Spawn as model was created |
-| `RF_ALL` | `63` | All rotation directions |
+| `RF_DEFAULT` | `512` | Usar ubicacion predeterminada de config |
+| `RF_ORIGINAL` | `128` | Usar ubicacion predeterminada de config |
+| `RF_IGNORE` | `64` | Spawnear tal como fue creado el modelo |
+| `RF_ALL` | `63` | Todas las direcciones de rotacion |
 
-### Common Patterns
+### Patrones Comunes
 
-**Spawn item on ground:**
+**Spawnear item en el suelo:**
 
 ```c
 vector pos = player.GetPosition();
 Object item = GetGame().CreateObjectEx("AKM", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-**Spawn zombie with AI:**
+**Spawnear zombie con AI:**
 
 ```c
 EntityAI zombie = EntityAI.Cast(
@@ -750,20 +750,20 @@ EntityAI zombie = EntityAI.Cast(
 );
 ```
 
-**Spawn persistent building:**
+**Spawnear edificio persistente:**
 
 ```c
 int flags = ECE_SETUP | ECE_UPDATEPATHGRAPH | ECE_CREATEPHYSICS | ECE_NOLIFETIME;
 Object building = GetGame().CreateObjectEx("Land_House", pos, flags, RF_IGNORE);
 ```
 
-**Spawn local-only (client side):**
+**Spawnear solo local (lado del cliente):**
 
 ```c
 Object local = GetGame().CreateObjectEx("HelpDeskItem", pos, ECE_LOCAL | ECE_CREATEPHYSICS);
 ```
 
-**Spawn item directly into player inventory:**
+**Spawnear item directamente en el inventario del jugador:**
 
 ```c
 EntityAI item = player.GetInventory().CreateInInventory("BandageDressing");
@@ -771,7 +771,7 @@ EntityAI item = player.GetInventory().CreateInInventory("BandageDressing");
 
 ---
 
-## Destroying Entities
+## Destruir Entidades
 
 ### Object.Delete()
 
@@ -779,7 +779,7 @@ EntityAI item = player.GetInventory().CreateInInventory("BandageDressing");
 void Delete();
 ```
 
-Deferred deletion --- the object is removed on the next frame via `CallQueue`. This is the safest way to delete objects because it avoids issues with deleting objects while they are being iterated.
+Eliminacion diferida --- el objeto es removido en el proximo frame via `CallQueue`. Esta es la forma mas segura de eliminar objetos porque evita problemas al eliminar objetos mientras se estan iterando.
 
 ### GetGame().ObjectDelete()
 
@@ -787,7 +787,7 @@ Deferred deletion --- the object is removed on the next frame via `CallQueue`. T
 proto native void ObjectDelete(Object obj);
 ```
 
-Immediate server-authoritative deletion. Removes the object from the server and replicates the removal to all clients.
+Eliminacion inmediata autoritativa del servidor. Remueve el objeto del servidor y replica la eliminacion a todos los clientes.
 
 ### GetGame().ObjectDeleteOnClient()
 
@@ -795,23 +795,23 @@ Immediate server-authoritative deletion. Removes the object from the server and 
 proto native void ObjectDeleteOnClient(Object obj);
 ```
 
-Deletes the object only on clients. The server still keeps the object.
+Elimina el objeto solo en los clientes. El servidor aun mantiene el objeto.
 
-**Example --- cleanup spawned objects:**
+**Ejemplo --- limpiar objetos spawneados:**
 
 ```c
-// Preferred: deferred delete
+// Preferido: eliminacion diferida
 obj.Delete();
 
-// Immediate: when you need it gone right now
+// Inmediato: cuando necesitas que desaparezca ahora mismo
 GetGame().ObjectDelete(obj);
 ```
 
 ---
 
-## Practical Examples
+## Ejemplos Practicos
 
-### Find All Players Near a Position
+### Encontrar Todos los Jugadores Cerca de una Posicion
 
 ```c
 void FindNearbyPlayers(vector center, float radius, out array<PlayerBase> result)
@@ -834,7 +834,7 @@ void FindNearbyPlayers(vector center, float radius, out array<PlayerBase> result
 }
 ```
 
-### Spawn a Fully Equipped Weapon
+### Spawnear un Arma Completamente Equipada
 
 ```c
 void SpawnEquippedAKM(vector pos)
@@ -845,16 +845,16 @@ void SpawnEquippedAKM(vector pos)
     if (!weapon)
         return;
 
-    // Add attachments
+    // Agregar accesorios
     weapon.GetInventory().CreateAttachment("AK_WoodBttstck");
     weapon.GetInventory().CreateAttachment("AK_WoodHndgrd");
 
-    // Create a magazine in cargo
+    // Crear un cargador en cargo
     weapon.GetInventory().CreateEntityInCargo("Mag_AKM_30Rnd");
 }
 ```
 
-### Damage and Kill an Entity
+### Danar y Matar una Entidad
 
 ```c
 void DamageEntity(EntityAI target, float amount)
@@ -865,7 +865,7 @@ void DamageEntity(EntityAI target, float amount)
     if (newHP <= 0)
     {
         target.SetHealth("", "Health", 0);
-        // EEKilled will be called automatically by the engine
+        // EEKilled sera llamado automaticamente por el motor
     }
     else
     {
@@ -880,16 +880,16 @@ void DamageEntity(EntityAI target, float amount)
 
 | Concepto | Punto Clave |
 |---------|-----------|
-| Hierarchy | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
-| Position | `GetPosition()` / `SetPosition()` available from `Object` upward |
-| Health | Zone-based: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
-| IsAlive | Use on `EntityAI` or cast first: `EntityAI eai; Class.CastTo(eai, obj)` |
-| Inventory | `eai.GetInventory()` returns `GameInventory` with full CRUD |
-| Creating | `GetGame().CreateObjectEx(type, pos, ECE_flags)` is the preferred API |
-| Deleting | `obj.Delete()` (deferred) or `GetGame().ObjectDelete(obj)` (immediate) |
-| Net Sync | `RegisterNetSyncVariable*()` in constructor, react in `OnVariablesSynchronized()` |
-| Type Check | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
+| Jerarquia | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
+| Posicion | `GetPosition()` / `SetPosition()` disponible desde `Object` hacia arriba |
+| Salud | Basada en zonas: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
+| IsAlive | Usar en `EntityAI` o castear primero: `EntityAI eai; Class.CastTo(eai, obj)` |
+| Inventario | `eai.GetInventory()` retorna `GameInventory` con CRUD completo |
+| Crear | `GetGame().CreateObjectEx(type, pos, ECE_flags)` es la API preferida |
+| Eliminar | `obj.Delete()` (diferido) o `GetGame().ObjectDelete(obj)` (inmediato) |
+| Sync de Red | `RegisterNetSyncVariable*()` en constructor, reaccionar en `OnVariablesSynchronized()` |
+| Verificar Tipo | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
 
 ---
 
-[Inicio](../../README.md) | **Sistema de Entidades** | [Siguiente: Vehicles >>](02-vehicles.md)
+[Inicio](../../README.md) | **Sistema de Entidades** | [Siguiente: Vehiculos >>](02-vehicles.md)

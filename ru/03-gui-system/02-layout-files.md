@@ -1,15 +1,15 @@
-# Chapter 3.2: Layout File Format (.layout)
+# Глава 3.2: Формат файлов макетов (.layout)
 
-[Home](../../README.md) | [<< Previous: Widget Types](01-widget-types.md) | **Layout File Format** | [Next: Sizing & Positioning >>](03-sizing-positioning.md)
+[Главная](../../README.md) | [<< Предыдущая: Типы виджетов](01-widget-types.md) | **Формат файлов макетов** | [Следующая: Размеры и позиционирование >>](03-sizing-positioning.md)
 
 ---
 
-## Basic Structure
+## Базовая структура
 
-A `.layout` file defines a tree of widgets. Every file has exactly one root widget, which contains nested children.
+Файл `.layout` определяет дерево виджетов. Каждый файл имеет ровно один корневой виджет, содержащий вложенные дочерние элементы.
 
 ```
-WidgetTypeClass WidgetName {
+ WidgetTypeClass WidgetName {
  attribute value
  attribute "quoted value"
  {
@@ -20,137 +20,137 @@ WidgetTypeClass WidgetName {
 }
 ```
 
-Key rules:
+Ключевые правила:
 
-1. The root element is always a single widget (typically `FrameWidgetClass`).
-2. Widget type names use the **layout class** name, which always ends with `Class` (e.g., `FrameWidgetClass`, `TextWidgetClass`, `ButtonWidgetClass`).
-3. Each widget has a unique name following its type class.
-4. Attributes are `key value` pairs, one per line.
-5. Attribute names containing spaces must be quoted: `"text halign" center`.
-6. String values are quoted: `text "Hello World"`.
-7. Numeric values are unquoted: `size 0.5 0.3`.
-8. Children are nested inside `{ }` blocks after the parent's attributes.
-
----
-
-## Attribute Reference
-
-### Positioning & Sizing
-
-| Attribute | Values | Description |
-|---|---|---|
-| `position` | `x y` | Widget position (proportional 0-1 or pixel values) |
-| `size` | `w h` | Widget dimensions (proportional 0-1 or pixel values) |
-| `halign` | `left_ref`, `center_ref`, `right_ref` | Horizontal alignment reference point |
-| `valign` | `top_ref`, `center_ref`, `bottom_ref` | Vertical alignment reference point |
-| `hexactpos` | `0` or `1` | 0 = proportional X position, 1 = pixel X position |
-| `vexactpos` | `0` or `1` | 0 = proportional Y position, 1 = pixel Y position |
-| `hexactsize` | `0` or `1` | 0 = proportional width, 1 = pixel width |
-| `vexactsize` | `0` or `1` | 0 = proportional height, 1 = pixel height |
-| `fixaspect` | `fixwidth`, `fixheight` | Maintain aspect ratio by constraining one dimension |
-| `scaled` | `0` or `1` | Scale with DayZ UI scaling setting |
-| `priority` | integer | Z-order (higher values render on top) |
-
-The `hexactpos`, `vexactpos`, `hexactsize`, and `vexactsize` flags are the most important attributes in the entire layout system. They control whether each dimension uses proportional (0.0 - 1.0 relative to parent) or pixel (absolute screen pixels) units. См. [3.3 Sizing & Positioning](03-sizing-positioning.md) for a thorough explanation.
-
-### Visual Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `visible` | `0` or `1` | Initial visibility (0 = hidden) |
-| `color` | `r g b a` | Color as four floats, each 0.0 to 1.0 |
-| `style` | style name | Predefined visual style (e.g., `Default`, `Colorable`) |
-| `draggable` | `0` or `1` | Widget can be dragged by the user |
-| `clipchildren` | `0` or `1` | Clip child widgets to this widget's bounds |
-| `inheritalpha` | `0` or `1` | Children inherit this widget's alpha value |
-| `keepsafezone` | `0` or `1` | Keep widget within screen safe zone |
-
-### Behavioral Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `ignorepointer` | `0` or `1` | Widget ignores mouse input (clicks pass through) |
-| `disabled` | `0` or `1` | Widget is disabled |
-| `"no focus"` | `0` or `1` | Widget cannot receive keyboard focus |
-
-### Text Attributes
-
-These apply to `TextWidgetClass`, `RichTextWidgetClass`, `MultilineTextWidgetClass`, `ButtonWidgetClass`, and other text-bearing widgets.
-
-| Attribute | Values | Description |
-|---|---|---|
-| `text` | `"string"` | Default text content |
-| `font` | `"path/to/font"` | Font file path |
-| `"text halign"` | `left`, `center`, `right` | Horizontal text alignment within the widget |
-| `"text valign"` | `top`, `center`, `bottom` | Vertical text alignment within the widget |
-| `"bold text"` | `0` or `1` | Bold rendering |
-| `"italic text"` | `0` or `1` | Italic rendering |
-| `"exact text"` | `0` or `1` | Use exact pixel font size instead of proportional |
-| `"exact text size"` | integer | Font size in pixels (requires `"exact text" 1`) |
-| `"size to text h"` | `0` or `1` | Resize widget width to fit text |
-| `"size to text v"` | `0` or `1` | Resize widget height to fit text |
-| `"text sharpness"` | float | Text rendering sharpness |
-| `wrap` | `0` or `1` | Enable word wrapping |
-
-### Image Attributes
-
-These apply to `ImageWidgetClass`.
-
-| Attribute | Values | Description |
-|---|---|---|
-| `image0` | `"set:name image:name"` | Primary image from an imageset |
-| `mode` | `blend`, `additive`, `stretch` | Image blend mode |
-| `"src alpha"` | `0` or `1` | Use the source alpha channel |
-| `stretch` | `0` or `1` | Stretch image to fill widget |
-| `filter` | `0` or `1` | Enable texture filtering |
-| `"flip u"` | `0` or `1` | Flip image horizontally |
-| `"flip v"` | `0` or `1` | Flip image vertically |
-| `"clamp mode"` | `clamp`, `wrap` | Texture edge behavior |
-| `"stretch mode"` | `stretch_w_h`, etc. | Stretch mode |
-
-### Spacer Attributes
-
-These apply to `WrapSpacerWidgetClass` and `GridSpacerWidgetClass`.
-
-| Attribute | Values | Description |
-|---|---|---|
-| `Padding` | integer | Inner padding in pixels |
-| `Margin` | integer | Space between child items in pixels |
-| `"Size To Content H"` | `0` or `1` | Resize width to match children |
-| `"Size To Content V"` | `0` or `1` | Resize height to match children |
-| `content_halign` | `left`, `center`, `right` | Child content horizontal alignment |
-| `content_valign` | `top`, `center`, `bottom` | Child content vertical alignment |
-| `Columns` | integer | Grid columns (GridSpacer only) |
-| `Rows` | integer | Grid rows (GridSpacer only) |
-
-### Button Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `switch` | `toggle` | Makes the button a toggle (stays pressed) |
-| `style` | style name | Visual style for the button |
-
-### Slider Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `"fill in"` | `0` or `1` | Show a filled track behind the slider handle |
-| `"listen to input"` | `0` or `1` | Respond to mouse input |
-
-### Scroll Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
-| `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
+1. Корневой элемент --- всегда один виджет (обычно `FrameWidgetClass`).
+2. Имена типов виджетов используют имя **класса макета**, которое всегда заканчивается на `Class` (например, `FrameWidgetClass`, `TextWidgetClass`, `ButtonWidgetClass`).
+3. Каждый виджет имеет уникальное имя после своего типа класса.
+4. Атрибуты --- это пары `ключ значение`, по одному на строку.
+5. Имена атрибутов, содержащие пробелы, должны быть в кавычках: `"text halign" center`.
+6. Строковые значения заключаются в кавычки: `text "Hello World"`.
+7. Числовые значения без кавычек: `size 0.5 0.3`.
+8. Дочерние элементы вложены внутри блоков `{ }` после атрибутов родителя.
 
 ---
 
-## Script Integration
+## Справочник атрибутов
 
-### The `scriptclass` Attribute
+### Позиционирование и размеры
 
-The `scriptclass` attribute binds a widget to an Enforce Script class. When the layout is loaded, the engine creates an instance of that class and calls its `OnWidgetScriptInit(Widget w)` method.
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `position` | `x y` | Позиция виджета (пропорциональная 0-1 или пиксельные значения) |
+| `size` | `w h` | Размеры виджета (пропорциональные 0-1 или пиксельные значения) |
+| `halign` | `left_ref`, `center_ref`, `right_ref` | Горизонтальная точка привязки |
+| `valign` | `top_ref`, `center_ref`, `bottom_ref` | Вертикальная точка привязки |
+| `hexactpos` | `0` или `1` | 0 = пропорциональная позиция X, 1 = пиксельная позиция X |
+| `vexactpos` | `0` или `1` | 0 = пропорциональная позиция Y, 1 = пиксельная позиция Y |
+| `hexactsize` | `0` или `1` | 0 = пропорциональная ширина, 1 = пиксельная ширина |
+| `vexactsize` | `0` или `1` | 0 = пропорциональная высота, 1 = пиксельная высота |
+| `fixaspect` | `fixwidth`, `fixheight` | Сохранять пропорции, ограничивая одно измерение |
+| `scaled` | `0` или `1` | Масштабировать с настройкой масштаба UI DayZ |
+| `priority` | целое число | Z-порядок (более высокие значения отрисовываются поверх) |
+
+Флаги `hexactpos`, `vexactpos`, `hexactsize` и `vexactsize` --- самые важные атрибуты во всей системе макетов. Они контролируют, использует ли каждое измерение пропорциональные (0.0 - 1.0 относительно родителя) или пиксельные (абсолютные пиксели экрана) единицы. См. [3.3 Размеры и позиционирование](03-sizing-positioning.md) для подробного объяснения.
+
+### Визуальные атрибуты
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `visible` | `0` или `1` | Начальная видимость (0 = скрыт) |
+| `color` | `r g b a` | Цвет в виде четырёх float, каждый 0.0 до 1.0 |
+| `style` | имя стиля | Предопределённый визуальный стиль (напр., `Default`, `Colorable`) |
+| `draggable` | `0` или `1` | Виджет может быть перетащен пользователем |
+| `clipchildren` | `0` или `1` | Обрезать дочерние виджеты по границам этого виджета |
+| `inheritalpha` | `0` или `1` | Дочерние наследуют значение альфа этого виджета |
+| `keepsafezone` | `0` или `1` | Удерживать виджет в безопасной зоне экрана |
+
+### Поведенческие атрибуты
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `ignorepointer` | `0` или `1` | Виджет игнорирует ввод мыши (клики проходят сквозь) |
+| `disabled` | `0` или `1` | Виджет отключён |
+| `"no focus"` | `0` или `1` | Виджет не может получить фокус клавиатуры |
+
+### Текстовые атрибуты
+
+Применяются к `TextWidgetClass`, `RichTextWidgetClass`, `MultilineTextWidgetClass`, `ButtonWidgetClass` и другим виджетам с текстом.
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `text` | `"строка"` | Текстовое содержимое по умолчанию |
+| `font` | `"путь/к/шрифту"` | Путь к файлу шрифта |
+| `"text halign"` | `left`, `center`, `right` | Горизонтальное выравнивание текста внутри виджета |
+| `"text valign"` | `top`, `center`, `bottom` | Вертикальное выравнивание текста внутри виджета |
+| `"bold text"` | `0` или `1` | Жирное отображение |
+| `"italic text"` | `0` или `1` | Курсивное отображение |
+| `"exact text"` | `0` или `1` | Использовать точный пиксельный размер шрифта вместо пропорционального |
+| `"exact text size"` | целое число | Размер шрифта в пикселях (требует `"exact text" 1`) |
+| `"size to text h"` | `0` или `1` | Изменить ширину виджета под текст |
+| `"size to text v"` | `0` или `1` | Изменить высоту виджета под текст |
+| `"text sharpness"` | float | Резкость отрисовки текста |
+| `wrap` | `0` или `1` | Включить перенос слов |
+
+### Атрибуты изображения
+
+Применяются к `ImageWidgetClass`.
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `image0` | `"set:имя image:имя"` | Основное изображение из imageset |
+| `mode` | `blend`, `additive`, `stretch` | Режим смешивания изображения |
+| `"src alpha"` | `0` или `1` | Использовать исходный альфа-канал |
+| `stretch` | `0` или `1` | Растянуть изображение для заполнения виджета |
+| `filter` | `0` или `1` | Включить фильтрацию текстур |
+| `"flip u"` | `0` или `1` | Отразить изображение по горизонтали |
+| `"flip v"` | `0` или `1` | Отразить изображение по вертикали |
+| `"clamp mode"` | `clamp`, `wrap` | Поведение краёв текстуры |
+| `"stretch mode"` | `stretch_w_h`, и т.д. | Режим растягивания |
+
+### Атрибуты спейсеров
+
+Применяются к `WrapSpacerWidgetClass` и `GridSpacerWidgetClass`.
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `Padding` | целое число | Внутренний отступ в пикселях |
+| `Margin` | целое число | Расстояние между дочерними элементами в пикселях |
+| `"Size To Content H"` | `0` или `1` | Изменить ширину под содержимое |
+| `"Size To Content V"` | `0` или `1` | Изменить высоту под содержимое |
+| `content_halign` | `left`, `center`, `right` | Горизонтальное выравнивание содержимого |
+| `content_valign` | `top`, `center`, `bottom` | Вертикальное выравнивание содержимого |
+| `Columns` | целое число | Столбцы сетки (только GridSpacer) |
+| `Rows` | целое число | Строки сетки (только GridSpacer) |
+
+### Атрибуты кнопок
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `switch` | `toggle` | Делает кнопку переключаемой (остаётся нажатой) |
+| `style` | имя стиля | Визуальный стиль кнопки |
+
+### Атрибуты ползунков
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `"fill in"` | `0` или `1` | Показывать заполненную дорожку за ручкой ползунка |
+| `"listen to input"` | `0` или `1` | Реагировать на ввод мыши |
+
+### Атрибуты прокрутки
+
+| Атрибут | Значения | Описание |
+|---|---|---|
+| `"Scrollbar V"` | `0` или `1` | Показать вертикальную полосу прокрутки |
+| `"Scrollbar H"` | `0` или `1` | Показать горизонтальную полосу прокрутки |
+
+---
+
+## Интеграция со скриптами
+
+### Атрибут `scriptclass`
+
+Атрибут `scriptclass` привязывает виджет к классу Enforce Script. При загрузке макета движок создаёт экземпляр этого класса и вызывает его метод `OnWidgetScriptInit(Widget w)`.
 
 ```
 FrameWidgetClass MyPanel {
@@ -159,7 +159,7 @@ FrameWidgetClass MyPanel {
 }
 ```
 
-The script class must inherit from `Managed` and implement `OnWidgetScriptInit`:
+Класс скрипта должен наследовать от `Managed` и реализовать `OnWidgetScriptInit`:
 
 ```c
 class MyPanelHandler : Managed
@@ -173,9 +173,9 @@ class MyPanelHandler : Managed
 }
 ```
 
-### The ScriptParamsClass Block
+### Блок ScriptParamsClass
 
-Parameters can be passed from the layout to the `scriptclass` via a `ScriptParamsClass` block. This block appears as a second `{ }` child block after the widget's children.
+Параметры могут быть переданы из макета в `scriptclass` через блок `ScriptParamsClass`. Этот блок появляется как второй дочерний блок `{ }` после дочерних элементов виджета.
 
 ```
 ImageWidgetClass Logo {
@@ -190,11 +190,11 @@ ImageWidgetClass Logo {
 }
 ```
 
-The script class reads these parameters in `OnWidgetScriptInit` by using the widget's script param system.
+Класс скрипта считывает эти параметры в `OnWidgetScriptInit`, используя систему параметров скрипта виджета.
 
-### DabsFramework ViewBinding
+### Привязка ViewBinding в DabsFramework
 
-In mods that use DabsFramework MVC, the `scriptclass "ViewBinding"` pattern connects widgets to a ViewController's data properties:
+В модах, использующих DabsFramework MVC, паттерн `scriptclass "ViewBinding"` подключает виджеты к свойствам данных ViewController:
 
 ```
 TextWidgetClass StatusLabel {
@@ -209,19 +209,19 @@ TextWidgetClass StatusLabel {
 }
 ```
 
-| Param | Description |
+| Параметр | Описание |
 |---|---|
-| `Binding_Name` | Name of the ViewController property to bind to |
-| `Two_Way_Binding` | `1` = UI changes push back to the controller |
-| `Relay_Command` | Function name on the controller to call when the widget is clicked/changed |
-| `Selected_Item` | Property to bind the selected item to (for lists) |
-| `Debug_Logging` | `1` = enable verbose logging for this binding |
+| `Binding_Name` | Имя свойства ViewController для привязки |
+| `Two_Way_Binding` | `1` = изменения UI передаются обратно в контроллер |
+| `Relay_Command` | Имя функции контроллера для вызова при клике/изменении виджета |
+| `Selected_Item` | Свойство для привязки выбранного элемента (для списков) |
+| `Debug_Logging` | `1` = включить подробное логирование для этой привязки |
 
 ---
 
-## Children Nesting
+## Вложение дочерних элементов
 
-Children are placed inside a `{ }` block after the parent's attributes. Multiple children can exist in the same block.
+Дочерние элементы помещаются внутри блока `{ }` после атрибутов родителя. В одном блоке может быть несколько дочерних элементов.
 
 ```
 FrameWidgetClass Parent {
@@ -241,74 +241,74 @@ FrameWidgetClass Parent {
 }
 ```
 
-Children are always positioned relative to their parent. A child with `position 0 0` and `size 1 1` (proportional) fills its parent completely.
+Дочерние элементы всегда позиционируются относительно родителя. Дочерний с `position 0 0` и `size 1 1` (пропорционально) заполняет родителя полностью.
 
 ---
 
-## Complete Annotated Example
+## Полный аннотированный пример
 
-Here is a fully annotated layout file for a notification panel ---  kind of UI you might build for a mod:
+Вот полностью аннотированный файл макета для панели уведомлений --- такого типа UI, который вы можете создать для мода:
 
 ```
-// Root container -- invisible frame that covers 30% of screen width
-// Centered horizontally, positioned at top of screen
+// Корневой контейнер -- невидимый фрейм, занимающий 30% ширины экрана
+// Центрирован по горизонтали, расположен вверху экрана
 FrameWidgetClass NotificationPanel {
 
- // Start hidden (script will show it)
+ // Начать скрытым (скрипт покажет его)
  visible 0
 
- // Don't block mouse clicks on things behind this panel
+ // Не блокировать клики мыши по объектам за этой панелью
  ignorepointer 1
 
- // Blue tint color (R=0.2, G=0.6, B=1.0, A=0.9)
+ // Синий оттенок (R=0.2, G=0.6, B=1.0, A=0.9)
  color 0.2 0.6 1.0 0.9
 
- // Position: 0 pixels from left, 0 pixels from top
+ // Позиция: 0 пикселей от левого, 0 пикселей от верхнего края
  position 0 0
  hexactpos 1
  vexactpos 1
 
- // Size: 30% of parent width, 30 pixels tall
+ // Размер: 30% ширины родителя, 30 пикселей высотой
  size 0.3 30
  hexactsize 0
  vexactsize 1
 
- // Center horizontally within parent
+ // Центрировать по горизонтали внутри родителя
  halign center_ref
 
- // Children block
+ // Блок дочерних элементов
  {
-  // Text label fills the entire notification panel
+  // Текстовая метка заполняет всю панель уведомлений
   TextWidgetClass NotificationText {
 
-   // Also ignore mouse input
+   // Также игнорировать ввод мыши
    ignorepointer 1
 
-   // Position at origin relative to parent
+   // Позиция в начале координат относительно родителя
    position 0 0
    hexactpos 1
    vexactpos 1
 
-   // Fill parent completely (proportional)
+   // Заполнить родителя полностью (пропорционально)
    size 1 1
    hexactsize 0
    vexactsize 0
 
-   // Center the text both ways
+   // Центрировать текст в обоих направлениях
    "text halign" center
    "text valign" center
 
-   // Use a bold font
+   // Использовать жирный шрифт
    font "gui/fonts/Metron-Bold"
 
-   // Default text (will be overridden by script)
+   // Текст по умолчанию (будет переопределён скриптом)
    text "Notification"
   }
  }
 }
 ```
 
-And here is a more complex example ---  dialog with a title bar, scrollable content, and a close button:
+А вот более сложный пример --- диалог с заголовком, прокручиваемым содержимым и кнопкой закрытия:
 
 ```
 WrapSpacerWidgetClass MyDialog {
@@ -324,7 +324,7 @@ WrapSpacerWidgetClass MyDialog {
  "Size To Content V" 1
  content_halign center
  {
-  // Title bar row
+  // Строка заголовка
   FrameWidgetClass TitleBarRow {
    size 1 26
    hexactsize 0
@@ -353,7 +353,7 @@ WrapSpacerWidgetClass MyDialog {
    }
   }
 
-  // Scrollable content area
+  // Прокручиваемая область содержимого
   ScrollWidgetClass ContentScroll {
    size 0.97 235
    hexactsize 0
@@ -376,15 +376,15 @@ WrapSpacerWidgetClass MyDialog {
 ## Распространённые ошибки
 
 
-1. **Forgetting the `Class` suffix** -- In layouts, write `TextWidgetClass`, not `TextWidget`.
-2. **Mixing proportional and pixel values** -- If `hexactsize 0`, the size values are 0.0-1.0 proportional. If `hexactsize 1`, they are pixel values. Using `300` with proportional mode means 300x the parent width.
-3. **Not quoting multi-word attributes** -- Write `"text halign" center`, not `text halign center`.
-4. **Placing ScriptParamsClass in the wrong block** -- It must be in a separate `{ }` block after the children block, not inside it.
+1. **Забыт суффикс `Class`** --- в макетах пишите `TextWidgetClass`, а не `TextWidget`.
+2. **Смешивание пропорциональных и пиксельных значений** --- если `hexactsize 0`, значения размера 0.0-1.0 пропорциональны. Если `hexactsize 1`, они пиксельные. Использование `300` с пропорциональным режимом означает 300x ширины родителя.
+3. **Кавычки не заключены у многословных атрибутов** --- пишите `"text halign" center`, а не `text halign center`.
+4. **Размещение ScriptParamsClass в неправильном блоке** --- он должен быть в отдельном блоке `{ }` после блока дочерних элементов, а не внутри него.
 
 ---
 
 ## Следующие шаги
 
 
-- [3.3 Sizing & Positioning](03-sizing-positioning.md) -- Master the proportional vs. pixel coordinate system
-- [3.4 Container Widgets](04-containers.md) -- Deep dive into spacer and scroll widgets
+- [3.3 Размеры и позиционирование](03-sizing-positioning.md) --- освойте систему пропорциональных и пиксельных координат
+- [3.4 Виджеты-контейнеры](04-containers.md) --- подробный разбор виджетов-спейсеров и прокрутки

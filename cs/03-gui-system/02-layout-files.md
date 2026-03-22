@@ -373,16 +373,59 @@ WrapSpacerWidgetClass MyDialog {
 
 ---
 
-## Common Mistakes
+## Caste chyby
 
-1. **Forgetting the `Class` suffix** -- In layouts, write `TextWidgetClass`, not `TextWidget`.
-2. **Mixing proportional and pixel values** -- If `hexactsize 0`, the size values are 0.0-1.0 proportional. If `hexactsize 1`, they are pixel values. Using `300` with proportional mode means 300x the parent width.
-3. **Not quoting multi-word attributes** -- Write `"text halign" center`, not `text halign center`.
-4. **Placing ScriptParamsClass in the wrong block** -- It must be in a separate `{ }` block after the children block, not inside it.
+1. **Zapomenuti na priponu `Class`** -- V layoutech piste `TextWidgetClass`, ne `TextWidget`.
+2. **Michani proporcionalnich a pixelovych hodnot** -- Pokud `hexactsize 0`, hodnoty velikosti jsou 0.0-1.0 proporcionalne. Pokud `hexactsize 1`, jsou to pixelove hodnoty. Pouziti `300` v proporcionalnim rezimu znamena 300x sirka rodice.
+3. **Neuvozovkovani viceslonnych atributu** -- Piste `"text halign" center`, ne `text halign center`.
+4. **Umisteni ScriptParamsClass do spatneho bloku** -- Musi byt v samostatnem bloku `{ }` za blokem potomku, ne uvnitr nej.
 
 ---
 
-## Next Steps
+## Osvedcene postupy
 
-- [3.3 Sizing & Positioning](03-sizing-positioning.md) -- Master the proportional vs. pixel coordinate system
-- [3.4 Container Widgets](04-containers.md) -- Deep dive into spacer and scroll widgets
+- Vzdy nastavte vsechny ctyri exact flagy (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`) explicitne na kazdem widgetu. Spolihat se na vychozi hodnoty vede k nejednoznacnym layoutum, ktere se rozbiji pri zmene rodicovske struktury.
+- Pouzivejte `scriptclass` strídme -- pouze na widgetech, ktere skutecne potrebuji skriptem rizene chovani. Nadmerne vazani pridava rezie inicializace.
+- Pojmenovavejte widgety popisne (`PlayerListScroll`, `TitleBarClose`) misto genericke (`Frame1`, `btn`). Skriptovy kod pouziva `FindAnyWidget()` podle nazvu a kolize zpusobuji tiche selhani.
+- Udrzujte layout soubory pod 200 radky. Rozdelete slozita UI do vice `.layout` souboru nactavanych pomoci `CreateWidgets()` a programaticky pripojenych k rodici.
+- Vzdy uvozovkujte viceslovna jmena atributu (`"text halign"`, `"Size To Content V"`). Neuvozovkovane viceslonne atributy tise selhavaji bez chyby.
+
+---
+
+## Teorie vs praxe
+
+> Co dokumentace rika versus jak veci skutecne funguji za behu.
+
+| Koncept | Teorie | Realita |
+|---------|--------|---------|
+| Inicializace `scriptclass` | `OnWidgetScriptInit` je volana pri nacteni layoutu | Pokud trida nededi z `Managed` nebo ma chybu v konstruktoru, widget se nacte, ale handler je tise null |
+| `ScriptParamsClass` | Parametry predavaji libovolna data skriptovym tridam | Spolehlive funguji pouze retezcove a ciselne hodnoty; vnorene objekty nebo pole nejsou podporovany |
+| Atribut `color` | Ctyri floaty 0.0-1.0 (RGBA) | Nektere typy widgetu ignoruji alfa kanal nebo vyzaduji `inheritalpha 1` na rodici pro sdruzeni pruhlednosti |
+| Vychozi atributy | Nedokumentovane atributy pouzivaji vychozi hodnoty enginu | Vychozi hodnoty se lisi podle typu widgetu -- `ButtonWidget` ma vychozi `hexactsize` odlisne od `FrameWidget` na nekterych verzich enginu |
+| `"no focus"` | Zabranuje zamirani klavesnici | Zabranuje take vyberu gamepadem, coz muze narusit navigaci ovladacem, pokud je nastaveno na interaktivnich widgetech |
+
+---
+
+## Kompatibilita a dopad
+
+- **Multi-Mod:** Layout soubory jsou izolovane pro kazdy mod -- zadne prime konflikty. Nicmene nazvy `scriptclass` musi byt globalne unikatni. Dva mody pouzivajici `scriptclass "PanelHandler"` zpusobi, ze jeden tise selze.
+- **Vykon:** Kazdy widget v layoutu je skutecny objekt enginu. Layouty s 500+ widgety zpusobuji meritelne poklesy snimkove frekvence. Pro velke seznamy preferujte programaticky pooling.
+- **Verze:** Format layoutu je stabilni od DayZ 1.0. Blok `ScriptParamsClass` a scriptclass `ViewBinding` byly pridany DabsFrameworkem a nejsou vanilla funkce.
+
+---
+
+## Pozorovano v realnuch modech
+
+| Vzor | Mod | Detail |
+|------|-----|--------|
+| `scriptclass "ViewBinding"` s `ScriptParamsClass` | DabsFramework / DayZ Editor | Obousmerna datova vazba mezi layouty a ViewControllery pres parametr `Binding_Name` |
+| `WrapSpacerWidgetClass` jako koren dialogu | COT, Expansion | Umoznuje `Size To Content V/H` pro automatickou velikost dialogu kolem dynamickeho obsahu |
+| Samostatny `.layout` pro radek seznamu | VPP Admin Tools | Kazdy radek hrace je samostatny layout nacteny do WrapSpacer, umoznujici opakovane pouziti a pooling |
+| `priority 998-999` pro modalni prekryvy | DabsFramework, COT | Zajistuje, ze dialogy se vykresluji nad vsemi ostatnimi prvky UI |
+
+---
+
+## Dalsi kroky
+
+- [3.3 Velikost a pozicovani](03-sizing-positioning.md) -- Osvojte si proporcionalni vs. pixelovy souradnicovy system
+- [3.4 Kontejnerove widgety](04-containers.md) -- Hluboka ponor do spacer a scroll widgetu

@@ -1,6 +1,6 @@
-# Chapter 1.1: Variables & Types
+# Глава 1.1: Переменные и типы
 
-[Home](../../README.md) | **Variables & Types** | [Next: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
+[Главная](../../README.md) | **Переменные и типы** | [Следующая: Массивы, Map и Set >>](02-arrays-maps-sets.md)
 
 ---
 ---
@@ -8,41 +8,41 @@
 ## Введение
 
 
-Enforce Script is the scripting language of the Enfusion engine, used by DayZ Standalone. It is an object-oriented language with C-like syntax, similar to C# in many respects but with its own distinct set of types, rules, and limitations. If you have experience with C#, Java, or C++, you will feel at home quickly --- but pay close attention to the differences, because the places where Enforce Script diverges from those languages are exactly the places where bugs hide.
+Enforce Script --- это скриптовый язык движка Enfusion, используемый в DayZ Standalone. Это объектно-ориентированный язык с C-подобным синтаксисом, во многом похожий на C#, но с собственным набором типов, правил и ограничений. Если у вас есть опыт работы с C#, Java или C++, вы быстро освоитесь --- но обратите особое внимание на отличия, потому что именно там, где Enforce Script расходится с этими языками, прячутся ошибки.
 
-Эта глава охватывает the fundamental building blocks: primitive types, how to declare and initialize variables, and how type conversion works. Every line of DayZ mod code starts here.
+Эта глава охватывает фундаментальные строительные блоки: примитивные типы, объявление и инициализацию переменных, а также преобразование типов. Каждая строка кода DayZ-мода начинается именно здесь.
 
 ---
 
 ## Примитивные типы
 
 
-Enforce Script has a small, fixed set of primitive types. You cannot define new value types --- only classes (covered in [Chapter 1.3](03-classes-inheritance.md)).
+В Enforce Script есть небольшой фиксированный набор примитивных типов. Вы не можете определять новые типы-значения --- только классы (рассмотрены в [Главе 1.3](03-classes-inheritance.md)).
 
-| Type | Size | Default Value | Description |
+| Тип | Размер | Значение по умолчанию | Описание |
 |------|------|---------------|-------------|
-| `int` | 32-bit signed | `0` | Whole numbers from -2,147,483,648 to 2,147,483,647 |
-| `float` | 32-bit IEEE 754 | `0.0` | Floating-point numbers |
-| `bool` | 1 bit logical | `false` | `true` or `false` |
-| `string` | Variable | `""` (empty) | Text. Immutable value type --- passed by value, not reference |
-| `vector` | 3x float | `"0 0 0"` | Three-component float (x, y, z). Passed by value |
-| `typename` | Engine ref | `null` | A reference to a type itself, used for reflection |
-| `void` | N/A | N/A | Used only as a return type to indicate "returns nothing" |
+| `int` | 32-битное знаковое | `0` | Целые числа от -2 147 483 648 до 2 147 483 647 |
+| `float` | 32-битное IEEE 754 | `0.0` | Числа с плавающей точкой |
+| `bool` | 1 бит логический | `false` | `true` или `false` |
+| `string` | Переменный | `""` (пустая) | Текст. Неизменяемый тип-значение --- передаётся по значению, не по ссылке |
+| `vector` | 3x float | `"0 0 0"` | Трёхкомпонентное float-значение (x, y, z). Передаётся по значению |
+| `typename` | Ссылка движка | `null` | Ссылка на сам тип, используется для рефлексии |
+| `void` | Н/Д | Н/Д | Используется только как тип возвращаемого значения для обозначения «ничего не возвращает» |
 
 ### Константы типов
 
 
-Several types expose useful constants:
+У некоторых типов есть полезные константы:
 
 ```c
-// int bounds
+// Границы int
 int maxInt = int.MAX;    // 2147483647
 int minInt = int.MIN;    // -2147483648
 
-// float bounds
-float smallest = float.MIN;     // smallest positive float (~1.175e-38)
-float largest  = float.MAX;     // largest float (~3.403e+38)
-float lowest   = float.LOWEST;  // most negative float (-3.403e+38)
+// Границы float
+float smallest = float.MIN;     // наименьшее положительное float (~1.175e-38)
+float largest  = float.MAX;     // наибольшее float (~3.403e+38)
+float lowest   = float.LOWEST;  // самое отрицательное float (-3.403e+38)
 ```
 
 ---
@@ -50,18 +50,18 @@ float lowest   = float.LOWEST;  // most negative float (-3.403e+38)
 ## Объявление переменных
 
 
-Variables are declared by writing the type followed by the name. You can declare and assign in one statement or separately.
+Переменные объявляются указанием типа, за которым следует имя. Можно объявить и присвоить значение в одном выражении или раздельно.
 
 ```c
 void MyFunction()
 {
-    // Declaration only (initialized to default value)
+    // Только объявление (инициализируется значением по умолчанию)
     int health;          // health == 0
     float speed;         // speed == 0.0
     bool isAlive;        // isAlive == false
     string name;         // name == ""
 
-    // Declaration with initialization
+    // Объявление с инициализацией
     int maxPlayers = 60;
     float gravity = 9.81;
     bool debugMode = true;
@@ -69,9 +69,9 @@ void MyFunction()
 }
 ```
 
-### The `auto` Keyword
+### Ключевое слово `auto`
 
-When the type is obvious from the right-hand side, you can use `auto` to let the compiler infer it:
+Когда тип очевиден из правой части выражения, можно использовать `auto`, чтобы компилятор определил тип самостоятельно:
 
 ```c
 void Example()
@@ -79,16 +79,16 @@ void Example()
     auto count = 10;           // int
     auto ratio = 0.75;         // float
     auto label = "Hello";      // string
-    auto player = GetGame().GetPlayer();  // DayZPlayer (or whatever GetPlayer returns)
+    auto player = GetGame().GetPlayer();  // DayZPlayer (или что возвращает GetPlayer)
 }
 ```
 
-This is purely a convenience ----  compiler resolves the type at compile time. There is no performance difference.
+Это исключительно удобство --- компилятор определяет тип на этапе компиляции. Разницы в производительности нет.
 
 ### Константы
 
 
-Use the `const` keyword for values that should never change after initialization:
+Используйте ключевое слово `const` для значений, которые не должны меняться после инициализации:
 
 ```c
 const int MAX_SQUAD_SIZE = 8;
@@ -97,18 +97,18 @@ const string MOD_PREFIX = "[MyMod]";
 
 void Example()
 {
-    int a = MAX_SQUAD_SIZE;  // OK: reading a constant
-    MAX_SQUAD_SIZE = 10;     // ERROR: cannot assign to a constant
+    int a = MAX_SQUAD_SIZE;  // OK: чтение константы
+    MAX_SQUAD_SIZE = 10;     // ОШИБКА: нельзя присвоить значение константе
 }
 ```
 
-Constants are typically declared at file scope (outside any function) or as class members. Naming convention: `UPPER_SNAKE_CASE`.
+Константы обычно объявляются на уровне файла (вне функций) или как члены класса. Соглашение об именовании: `UPPER_SNAKE_CASE`.
 
 ---
 
-## Working with `int`
+## Работа с `int`
 
-Integers are the workhorse type. DayZ uses them for item counts, player IDs, health values (when discretized), enum values, bitflags, and more.
+Целые числа --- это рабочий тип. DayZ использует их для подсчёта предметов, идентификаторов игроков, значений здоровья (когда они дискретные), значений перечислений, битовых флагов и многого другого.
 
 ```c
 void IntExamples()
@@ -116,30 +116,30 @@ void IntExamples()
     int count = 5;
     int total = count + 10;     // 15
     int doubled = count * 2;    // 10
-    int remainder = 17 % 5;     // 2 (modulo)
+    int remainder = 17 % 5;     // 2 (остаток от деления)
 
-    // Increment and decrement
-    count++;    // count is now 6
-    count--;    // count is now 5 again
+    // Инкремент и декремент
+    count++;    // count теперь 6
+    count--;    // count снова 5
 
-    // Compound assignment
-    count += 3;  // count is now 8
-    count -= 2;  // count is now 6
-    count *= 4;  // count is now 24
-    count /= 6;  // count is now 4
+    // Составное присваивание
+    count += 3;  // count теперь 8
+    count -= 2;  // count теперь 6
+    count *= 4;  // count теперь 24
+    count /= 6;  // count теперь 4
 
-    // Integer division truncates (no rounding)
-    int result = 7 / 2;    // result == 3, not 3.5
+    // Целочисленное деление усекает (без округления)
+    int result = 7 / 2;    // result == 3, не 3.5
 
-    // Bitwise operations (used for flags)
+    // Побитовые операции (используются для флагов)
     int flags = 0;
-    flags = flags | 0x01;   // set bit 0
-    flags = flags | 0x04;   // set bit 2
+    flags = flags | 0x01;   // установить бит 0
+    flags = flags | 0x04;   // установить бит 2
     bool hasBit0 = (flags & 0x01) != 0;  // true
 }
 ```
 
-### Пример из практики: Player Count
+### Пример из практики: подсчёт игроков
 
 
 ```c
@@ -154,9 +154,9 @@ void PrintPlayerCount()
 
 ---
 
-## Working with `float`
+## Работа с `float`
 
-Floats represent decimal numbers. DayZ uses them extensively for positions, distances, health percentages, damage values, and timers.
+Числа с плавающей точкой представляют десятичные числа. DayZ активно использует их для позиций, расстояний, процентов здоровья, значений урона и таймеров.
 
 ```c
 void FloatExamples()
@@ -165,14 +165,14 @@ void FloatExamples()
     float damage = 25.5;
     float remaining = health - damage;   // 74.5
 
-    // DayZ-specific: damage multiplier
+    // Специфично для DayZ: множитель урона
     float headMultiplier = 3.0;
     float actualDamage = damage * headMultiplier;  // 76.5
 
-    // Float division gives decimal results
+    // Деление float даёт десятичный результат
     float ratio = 7.0 / 2.0;   // 3.5
 
-    // Useful math
+    // Полезная математика
     float dist = 150.7;
     float rounded = Math.Round(dist);    // 151
     float floored = Math.Floor(dist);    // 150
@@ -181,7 +181,7 @@ void FloatExamples()
 }
 ```
 
-### Пример из практики: Distance Check
+### Пример из практики: проверка расстояния
 
 
 ```c
@@ -198,9 +198,9 @@ bool IsPlayerNearby(PlayerBase player, vector targetPos, float radius)
 
 ---
 
-## Working with `bool`
+## Работа с `bool`
 
-Booleans hold `true` or `false`. They are used in conditions, flags, and state tracking.
+Логические значения хранят `true` или `false`. Они используются в условиях, флагах и отслеживании состояний.
 
 ```c
 void BoolExamples()
@@ -208,14 +208,14 @@ void BoolExamples()
     bool isAdmin = true;
     bool isBanned = false;
 
-    // Logical operators
-    bool canPlay = isAdmin || !isBanned;    // true (OR, NOT)
-    bool isSpecial = isAdmin && !isBanned;  // true (AND)
+    // Логические операторы
+    bool canPlay = isAdmin || !isBanned;    // true (ИЛИ, НЕ)
+    bool isSpecial = isAdmin && !isBanned;  // true (И)
 
-    // Negation
+    // Отрицание
     bool notAdmin = !isAdmin;   // false
 
-    // Comparison results are bool
+    // Результаты сравнения --- bool
     int health = 50;
     bool isLow = health < 25;       // false
     bool isHurt = health < 100;     // true
@@ -224,27 +224,27 @@ void BoolExamples()
 }
 ```
 
-### Truthiness in Conditions
+### Истинность в условиях
 
-In Enforce Script, you can use non-bool values in conditions. The following are considered `false`:
+В Enforce Script можно использовать не-bool значения в условиях. Следующие считаются `false`:
 - `0` (int)
 - `0.0` (float)
-- `""` (empty string)
-- `null` (null object reference)
+- `""` (пустая строка)
+- `null` (нулевая ссылка на объект)
 
-Everything else is `true`. This is commonly used for null checks:
+Всё остальное считается `true`. Это часто используется для проверки на null:
 
 ```c
 void SafeCheck(PlayerBase player)
 {
-    // These two are equivalent:
+    // Эти два выражения эквивалентны:
     if (player != null)
         Print("Player exists");
 
     if (player)
         Print("Player exists");
 
-    // And these two:
+    // И эти два:
     if (player == null)
         Print("No player");
 
@@ -255,9 +255,9 @@ void SafeCheck(PlayerBase player)
 
 ---
 
-## Working with `string`
+## Работа с `string`
 
-Strings in Enforce Script are **value types** ---- y are copied when assigned or passed to functions, just like `int` or `float`. This is different from C# or Java where strings are reference types.
+Строки в Enforce Script являются **типами-значениями** --- они копируются при присваивании или передаче в функции, так же как `int` или `float`. Это отличается от C# или Java, где строки являются ссылочными типами.
 
 ```c
 void StringExamples()
@@ -265,24 +265,24 @@ void StringExamples()
     string greeting = "Hello";
     string name = "Survivor";
 
-    // Concatenation with +
+    // Конкатенация с +
     string message = greeting + ", " + name + "!";  // "Hello, Survivor!"
 
-    // String formatting (1-indexed placeholders)
+    // Форматирование строк (заполнители с индексацией от 1)
     string formatted = string.Format("Player %1 has %2 health", name, 75);
-    // Result: "Player Survivor has 75 health"
+    // Результат: "Player Survivor has 75 health"
 
-    // Length
+    // Длина
     int len = message.Length();    // 17
 
-    // Comparison
+    // Сравнение
     bool same = (greeting == "Hello");  // true
 
-    // Conversion from other types
-    string fromInt = "Score: " + 42;     // does NOT work -- must convert explicitly
+    // Преобразование из других типов
+    string fromInt = "Score: " + 42;     // НЕ работает -- нужно преобразовать явно
     string correct = "Score: " + 42.ToString();  // "Score: 42"
 
-    // Using Format is the preferred approach
+    // Использование Format --- предпочтительный подход
     string best = string.Format("Score: %1", 42);  // "Score: 42"
 }
 ```
@@ -290,19 +290,19 @@ void StringExamples()
 ### Escape-последовательности
 
 
-Strings support standard escape sequences:
+Строки поддерживают стандартные escape-последовательности:
 
-| Sequence | Meaning |
+| Последовательность | Значение |
 |----------|---------|
-| `\n` | Newline |
-| `\r` | Carriage return |
-| `\t` | Tab |
-| `\\` | Literal backslash |
-| `\"` | Literal double quote |
+| `\n` | Новая строка |
+| `\r` | Возврат каретки |
+| `\t` | Табуляция |
+| `\\` | Литеральный обратный слэш |
+| `\"` | Литеральная двойная кавычка |
 
-**Внимание:** While these are documented, backslash (`\\`) and escaped quotes (`\"`) are known to cause issues with the CParser in some contexts, especially in JSON-related operations. When working with file paths or JSON strings, avoid backslashes when possible. Use forward slashes for paths --- DayZ accepts them on all platforms.
+**Внимание:** Хотя они задокументированы, обратный слэш (`\\`) и экранированные кавычки (`\"`) известны проблемами с CParser в некоторых контекстах, особенно в операциях с JSON. При работе с путями файлов или JSON-строками по возможности избегайте обратных слэшей. Используйте прямые слэши для путей --- DayZ принимает их на всех платформах.
 
-### Пример из практики: Chat Message
+### Пример из практики: сообщение чата
 
 
 ```c
@@ -315,55 +315,55 @@ void SendAdminMessage(string adminName, string text)
 
 ---
 
-## Working with `vector`
+## Работа с `vector`
 
-The `vector` type holds three `float` components (x, y, z). It is DayZ's fundamental type for positions, directions, rotations, and velocities. Like strings and primitives, vectors are **value types** ---- y are copied on assignment.
+Тип `vector` содержит три компонента `float` (x, y, z). Это фундаментальный тип DayZ для позиций, направлений, вращений и скоростей. Как строки и примитивы, векторы являются **типами-значениями** --- они копируются при присваивании.
 
-### Initialization
+### Инициализация
 
-Vectors can be initialized in two ways:
+Векторы можно инициализировать двумя способами:
 
 ```c
 void VectorInit()
 {
-    // Method 1: String initialization (three space-separated numbers)
+    // Способ 1: Инициализация строкой (три числа через пробел)
     vector pos1 = "100.5 0 200.3";
 
-    // Method 2: Vector() constructor function
+    // Способ 2: Функция-конструктор Vector()
     vector pos2 = Vector(100.5, 0, 200.3);
 
-    // Default value is "0 0 0"
+    // Значение по умолчанию --- "0 0 0"
     vector empty;   // empty == <0, 0, 0>
 }
 ```
 
-**Важно:** The string initialization format uses **spaces** as separators, not commas. `"1 2 3"` is valid; `"1,2,3"` is not.
+**Важно:** Формат инициализации строкой использует **пробелы** в качестве разделителей, не запятые. `"1 2 3"` --- допустимо; `"1,2,3"` --- нет.
 
-### Component Access
+### Доступ к компонентам
 
-Access individual components using array-style indexing:
+Доступ к отдельным компонентам осуществляется через индексацию в стиле массива:
 
 ```c
 void VectorComponents()
 {
     vector pos = Vector(100.5, 25.0, 200.3);
 
-    // Reading components
-    float x = pos[0];   // 100.5  (East/West)
-    float y = pos[1];   // 25.0   (Up/Down, altitude)
-    float z = pos[2];   // 200.3  (North/South)
+    // Чтение компонентов
+    float x = pos[0];   // 100.5  (Восток/Запад)
+    float y = pos[1];   // 25.0   (Верх/Низ, высота)
+    float z = pos[2];   // 200.3  (Север/Юг)
 
-    // Writing components
-    pos[1] = 50.0;      // Change altitude to 50
+    // Запись компонентов
+    pos[1] = 50.0;      // Изменить высоту на 50
 }
 ```
 
-DayZ coordinate system:
-- `[0]` = X = East(+) / West(-)
-- `[1]` = Y = Up(+) / Down(-) (altitude above sea level)
-- `[2]` = Z = North(+) / South(-)
+Система координат DayZ:
+- `[0]` = X = Восток(+) / Запад(-)
+- `[1]` = Y = Верх(+) / Низ(-) (высота над уровнем моря)
+- `[2]` = Z = Север(+) / Юг(-)
 
-### Static Constants
+### Статические константы
 
 ```c
 vector zero    = vector.Zero;      // "0 0 0"
@@ -372,7 +372,7 @@ vector right   = vector.Aside;     // "1 0 0"
 vector forward = vector.Forward;   // "0 0 1"
 ```
 
-### Common Vector Operations
+### Распространённые операции с векторами
 
 ```c
 void VectorOps()
@@ -380,42 +380,42 @@ void VectorOps()
     vector pos1 = Vector(100, 0, 200);
     vector pos2 = Vector(150, 0, 250);
 
-    // Distance between two points
+    // Расстояние между двумя точками
     float dist = vector.Distance(pos1, pos2);
 
-    // Squared distance (faster, good for comparisons)
+    // Квадрат расстояния (быстрее, подходит для сравнений)
     float distSq = vector.DistanceSq(pos1, pos2);
 
-    // Direction from pos1 to pos2
+    // Направление от pos1 к pos2
     vector dir = vector.Direction(pos1, pos2);
 
-    // Normalize a vector (make length = 1)
+    // Нормализация вектора (сделать длину = 1)
     vector norm = dir.Normalized();
 
-    // Length of a vector
+    // Длина вектора
     float len = dir.Length();
 
-    // Linear interpolation (50% between pos1 and pos2)
+    // Линейная интерполяция (50% между pos1 и pos2)
     vector midpoint = vector.Lerp(pos1, pos2, 0.5);
 
-    // Dot product
+    // Скалярное произведение
     float dot = vector.Dot(dir, vector.Up);
 }
 ```
 
-### Пример из практики: Spawn Position
+### Пример из практики: позиция спавна
 
 
 ```c
-// Get a position on the ground at given X,Z coordinates
+// Получить позицию на земле по заданным координатам X,Z
 vector GetGroundPosition(float x, float z)
 {
     vector pos = Vector(x, 0, z);
-    pos[1] = GetGame().SurfaceY(x, z);  // Set Y to terrain height
+    pos[1] = GetGame().SurfaceY(x, z);  // Установить Y на высоту рельефа
     return pos;
 }
 
-// Get a random position within a radius of a center point
+// Получить случайную позицию в радиусе от центральной точки
 vector GetRandomPositionAround(vector center, float radius)
 {
     float angle = Math.RandomFloat(0, Math.PI2);
@@ -430,40 +430,40 @@ vector GetRandomPositionAround(vector center, float radius)
 
 ---
 
-## Working with `typename`
+## Работа с `typename`
 
-The `typename` type holds a reference to a type itself. It is used for reflection --- inspecting and working with types at runtime. You will encounter it when writing generic systems, config loaders, and factory patterns.
+Тип `typename` хранит ссылку на сам тип. Он используется для рефлексии --- исследования и работы с типами во время выполнения. Вы встретите его при написании универсальных систем, загрузчиков конфигураций и фабричных паттернов.
 
 ```c
 void TypenameExamples()
 {
-    // Get the typename of a class
+    // Получить typename класса
     typename t = PlayerBase;
 
-    // Get typename from a string
+    // Получить typename из строки
     typename t2 = t.StringToEnum(PlayerBase, "PlayerBase");
 
-    // Compare types
+    // Сравнение типов
     if (t == PlayerBase)
         Print("It's PlayerBase!");
 
-    // Get the typename of an object instance
+    // Получить typename экземпляра объекта
     PlayerBase player;
-    // ... assume player is valid ...
+    // ... предположим, player валиден ...
     typename objType = player.Type();
 
-    // Check inheritance
+    // Проверка наследования
     bool isMan = objType.IsInherited(Man);
 
-    // Convert typename to string
+    // Преобразование typename в строку
     string name = t.ToString();  // "PlayerBase"
 
-    // Create an instance from typename (factory pattern)
+    // Создание экземпляра из typename (фабричный паттерн)
     Class instance = t.Spawn();
 }
 ```
 
-### Enum Conversion with typename
+### Преобразование enum с typename
 
 ```c
 enum DamageType
@@ -475,11 +475,11 @@ enum DamageType
 
 void EnumConvert()
 {
-    // Enum to string
+    // Enum в строку
     string name = typename.EnumToString(DamageType, DamageType.BULLET);
     // name == "BULLET"
 
-    // String to enum
+    // Строка в enum
     int value;
     typename.StringToEnum(DamageType, "EXPLOSION", value);
     // value == 2
@@ -491,30 +491,30 @@ void EnumConvert()
 ## Преобразование типов
 
 
-Enforce Script supports both implicit and explicit conversions between types.
+Enforce Script поддерживает как неявные, так и явные преобразования между типами.
 
 ### Неявные преобразования
 
 
-Some conversions happen automatically:
+Некоторые преобразования происходят автоматически:
 
 ```c
 void ImplicitConversions()
 {
-    // int to float (always safe, no data loss)
+    // int в float (всегда безопасно, без потери данных)
     int count = 42;
     float fCount = count;    // 42.0
 
-    // float to int (TRUNCATES, does not round!)
+    // float в int (УСЕКАЕТ, не округляет!)
     float precise = 3.99;
-    int truncated = precise;  // 3, NOT 4
+    int truncated = precise;  // 3, НЕ 4
 
-    // int/float to bool
-    bool fromInt = 5;      // true (non-zero)
+    // int/float в bool
+    bool fromInt = 5;      // true (не ноль)
     bool fromZero = 0;     // false
-    bool fromFloat = 0.1;  // true (non-zero)
+    bool fromFloat = 0.1;  // true (не ноль)
 
-    // bool to int
+    // bool в int
     int fromBool = true;   // 1
     int fromFalse = false; // 0
 }
@@ -523,22 +523,22 @@ void ImplicitConversions()
 ### Явные преобразования (парсинг)
 
 
-To convert between strings and numeric types, use parsing methods:
+Для преобразования между строками и числовыми типами используйте методы парсинга:
 
 ```c
 void ExplicitConversions()
 {
-    // String to int
+    // Строка в int
     int num = "42".ToInt();           // 42
-    int bad = "hello".ToInt();        // 0 (fails silently)
+    int bad = "hello".ToInt();        // 0 (завершается молча)
 
-    // String to float
+    // Строка в float
     float f = "3.14".ToFloat();       // 3.14
 
-    // String to vector
+    // Строка в vector
     vector v = "100 25 200".ToVector();  // <100, 25, 200>
 
-    // Number to string (using Format)
+    // Число в строку (используя Format)
     string s1 = string.Format("%1", 42);       // "42"
     string s2 = string.Format("%1", 3.14);     // "3.14"
 
@@ -550,26 +550,26 @@ void ExplicitConversions()
 ### Приведение типов объектов
 
 
-For class types, use `Class.CastTo()` or `ClassName.Cast()`. This is covered in detail in [Chapter 1.3](03-classes-inheritance.md), but here is the essential pattern:
+Для типов классов используйте `Class.CastTo()` или `ClassName.Cast()`. Подробнее это рассмотрено в [Главе 1.3](03-classes-inheritance.md), но вот основной паттерн:
 
 ```c
 void CastExample()
 {
     Object obj = GetSomeObject();
 
-    // Safe cast (preferred)
+    // Безопасное приведение (предпочтительно)
     PlayerBase player;
     if (Class.CastTo(player, obj))
     {
-        // player is valid and safe to use
+        // player валиден и безопасен для использования
         string name = player.GetIdentity().GetName();
     }
 
-    // Alternative cast syntax
+    // Альтернативный синтаксис приведения
     PlayerBase player2 = PlayerBase.Cast(obj);
     if (player2)
     {
-        // player2 is valid
+        // player2 валиден
     }
 }
 ```
@@ -579,7 +579,7 @@ void CastExample()
 ## Область видимости переменных
 
 
-Variables exist only within the code block (curly braces) where they are declared. Enforce Script does **not** allow redeclaring a variable name within nested or sibling scopes.
+Переменные существуют только в пределах блока кода (фигурных скобок), где они объявлены. Enforce Script **не** позволяет повторно объявлять имя переменной во вложенных или смежных областях видимости.
 
 ```c
 void ScopeExample()
@@ -588,24 +588,24 @@ void ScopeExample()
 
     if (true)
     {
-        // int x = 20;  // ERROR: redeclaration of 'x' in nested scope
-        x = 20;         // OK: modifying the outer x
-        int y = 30;     // OK: new variable in this scope
+        // int x = 20;  // ОШИБКА: повторное объявление 'x' во вложенной области
+        x = 20;         // OK: изменение внешней переменной x
+        int y = 30;     // OK: новая переменная в этой области
     }
 
-    // y is NOT accessible here (declared in inner scope)
-    // Print(y);  // ERROR: undeclared identifier 'y'
+    // y НЕ доступна здесь (объявлена во внутренней области)
+    // Print(y);  // ОШИБКА: необъявленный идентификатор 'y'
 
-    // IMPORTANT: this also applies to for loops
+    // ВАЖНО: это также применяется к циклам for
     for (int i = 0; i < 5; i++)
     {
-        // i exists here
+        // i существует здесь
     }
-    // for (int i = 0; i < 3; i++)  // ERROR in DayZ: 'i' already declared
-    // Use a different name:
+    // for (int i = 0; i < 3; i++)  // ОШИБКА в DayZ: 'i' уже объявлена
+    // Используйте другое имя:
     for (int j = 0; j < 3; j++)
     {
-        // j exists here
+        // j существует здесь
     }
 }
 ```
@@ -613,23 +613,23 @@ void ScopeExample()
 ### Ловушка одноуровневой области видимости
 
 
-This is one of the most notorious Enforce Script quirks. Declaring the same variable name in `if` and `else` blocks causes a compile error:
+Это одна из самых известных особенностей Enforce Script. Объявление переменной с одним и тем же именем в блоках `if` и `else` вызывает ошибку компиляции:
 
 ```c
 void SiblingTrap()
 {
     if (someCondition)
     {
-        int result = 10;    // Declared here
+        int result = 10;    // Объявлена здесь
         Print(result);
     }
     else
     {
-        // int result = 20; // ERROR: multiple declaration of 'result'
-        // Even though this is a sibling scope, not the same scope
+        // int result = 20; // ОШИБКА: множественное объявление 'result'
+        // Несмотря на то, что это смежная область, а не та же самая
     }
 
-    // FIX: declare above the if/else
+    // РЕШЕНИЕ: объявить перед if/else
     int result;
     if (someCondition)
     {
@@ -647,81 +647,81 @@ void SiblingTrap()
 ## Распространённые ошибки
 
 
-### 1. Uninitialized Variables Used in Logic
+### 1. Неинициализированные переменные в логике
 
-Primitives get default values (`0`, `0.0`, `false`, `""`), but relying on this makes code fragile and hard to read. Always initialize explicitly.
+Примитивы получают значения по умолчанию (`0`, `0.0`, `false`, `""`), но полагаться на это делает код хрупким и трудночитаемым. Всегда инициализируйте явно.
 
 ```c
-// BAD: relying on implicit zero
+// ПЛОХО: зависимость от неявного нуля
 int count;
-if (count > 0)  // This works because count == 0, but intent is unclear
+if (count > 0)  // Работает, потому что count == 0, но намерение неясно
     DoThing();
 
-// GOOD: explicit initialization
+// ХОРОШО: явная инициализация
 int count = 0;
 if (count > 0)
     DoThing();
 ```
 
-### 2. Float-to-Int Truncation
+### 2. Усечение float в int
 
-Float-to-int conversion truncates (rounds toward zero), not rounds to nearest:
+Преобразование float в int усекает (округляет к нулю), а не округляет к ближайшему:
 
 ```c
 float f = 3.99;
-int i = f;         // i == 3, NOT 4
+int i = f;         // i == 3, НЕ 4
 
-// If you want rounding:
+// Если нужно округление:
 int rounded = Math.Round(f);  // 4
 ```
 
-### 3. Float Precision in Comparisons
+### 3. Точность float в сравнениях
 
-Never compare floats for exact equality:
+Никогда не сравнивайте float на точное равенство:
 
 ```c
 float a = 0.1 + 0.2;
-// BAD: may fail due to floating-point representation
+// ПЛОХО: может не сработать из-за представления с плавающей точкой
 if (a == 0.3)
     Print("Equal");
 
-// GOOD: use a tolerance (epsilon)
+// ХОРОШО: используйте допуск (эпсилон)
 if (Math.AbsFloat(a - 0.3) < 0.001)
     Print("Close enough");
 ```
 
-### 4. String Concatenation with Numbers
+### 4. Конкатенация строк с числами
 
-You cannot simply concatenate a number onto a string with `+`. Use `string.Format()`:
+Нельзя просто прибавить число к строке с помощью `+`. Используйте `string.Format()`:
 
 ```c
 int kills = 5;
-// Potentially problematic:
+// Потенциально проблематично:
 // string msg = "Kills: " + kills;
 
-// CORRECT: use Format
+// ПРАВИЛЬНО: используйте Format
 string msg = string.Format("Kills: %1", kills);
 ```
 
-### 5. Vector String Format
+### 5. Формат строки vector
 
-Vector string initialization requires spaces, not commas:
+Инициализация вектора строкой требует пробелов, а не запятых:
 
 ```c
-vector good = "100 25 200";     // CORRECT
-// vector bad = "100, 25, 200"; // WRONG: commas are not parsed correctly
-// vector bad2 = "100,25,200";  // WRONG
+vector good = "100 25 200";     // ПРАВИЛЬНО
+// vector bad = "100, 25, 200"; // НЕПРАВИЛЬНО: запятые не обрабатываются корректно
+// vector bad2 = "100,25,200";  // НЕПРАВИЛЬНО
 ```
 
-### 6. Forgetting that Strings and Vectors are Value Types
+### 6. Строки и векторы --- типы-значения
 
-Unlike class objects, strings and vectors are copied on assignment. Modifying a copy does not affect the original:
+В отличие от объектов классов, строки и векторы копируются при присваивании. Изменение копии не влияет на оригинал:
 
 ```c
 vector posA = "10 20 30";
-vector posB = posA;       // posB is a COPY
-posB[1] = 99;             // Only posB changes
-// posA is still "10 20 30"
+vector posB = posA;       // posB --- это КОПИЯ
+posB[1] = 99;             // Изменяется только posB
+// posA по-прежнему "10 20 30"
 ```
 
 ---
@@ -729,57 +729,57 @@ posB[1] = 99;             // Only posB changes
 ## Практические упражнения
 
 
-### Упражнение 1: Variable Basics
+### Упражнение 1: Основы переменных
 
-Declare variables to store:
-- A player's name (string)
-- Their health percentage (float, 0-100)
-- Their kill count (int)
-- Whether they are an admin (bool)
-- Their world position (vector)
+Объявите переменные для хранения:
+- Имени игрока (string)
+- Процента здоровья (float, 0-100)
+- Количества убийств (int)
+- Является ли администратором (bool)
+- Позиции в мире (vector)
 
-Print a formatted summary using `string.Format()`.
+Выведите форматированную сводку с помощью `string.Format()`.
 
-### Упражнение 2: Temperature Converter
+### Упражнение 2: Конвертер температур
 
-Write a function `float CelsiusToFahrenheit(float celsius)` and its inverse `float FahrenheitToCelsius(float fahrenheit)`. Test with boiling point (100C = 212F) and freezing point (0C = 32F).
+Напишите функцию `float CelsiusToFahrenheit(float celsius)` и обратную `float FahrenheitToCelsius(float fahrenheit)`. Проверьте на точке кипения (100C = 212F) и точке замерзания (0C = 32F).
 
-### Упражнение 3: Distance Calculator
+### Упражнение 3: Калькулятор расстояний
 
-Write a function that takes two vectors and returns:
-- The 3D distance between them
-- The 2D distance (ignoring height/Y axis)
-- The height difference
+Напишите функцию, которая принимает два вектора и возвращает:
+- 3D-расстояние между ними
+- 2D-расстояние (без учёта высоты/оси Y)
+- Разницу по высоте
 
-Hint: For 2D distance, create new vectors with `[1]` set to `0` before calculating distance.
+Подсказка: для 2D-расстояния создайте новые векторы с `[1]`, установленным в `0`, перед вычислением расстояния.
 
-### Упражнение 4: Type Juggling
+### Упражнение 4: Манипуляции с типами
 
-Given the string `"42"`, convert it to:
-1. An `int`
-2. A `float`
-3. Back to a `string` using `string.Format()`
-4. A `bool` (should be `true` since the int value is non-zero)
+Дана строка `"42"`, преобразуйте её в:
+1. `int`
+2. `float`
+3. Обратно в `string` с помощью `string.Format()`
+4. `bool` (должно быть `true`, так как значение int не равно нулю)
 
-### Упражнение 5: Ground Position
+### Упражнение 5: Позиция на земле
 
-Write a function `vector SnapToGround(vector pos)` that takes any position and returns it with the Y component set to the terrain height at that X,Z location. Use `GetGame().SurfaceY()`.
+Напишите функцию `vector SnapToGround(vector pos)`, которая принимает любую позицию и возвращает её с компонентом Y, установленным на высоту рельефа в данном месте X,Z. Используйте `GetGame().SurfaceY()`.
 
 ---
 
 ## Итоги
 
 
-| Concept | Key Point |
+| Концепция | Ключевой момент |
 |---------|-----------|
-| Types | `int`, `float`, `bool`, `string`, `vector`, `typename`, `void` |
-| Defaults | `0`, `0.0`, `false`, `""`, `"0 0 0"`, `null` |
-| Constants | `const` keyword, `UPPER_SNAKE_CASE` convention |
-| Vectors | Init with `"x y z"` string or `Vector(x,y,z)`, access with `[0]`, `[1]`, `[2]` |
-| Scope | Variables scoped to `{}` blocks; no redeclaration in nested/sibling blocks |
-| Conversion | `float`-to-`int` truncates; use `.ToInt()`, `.ToFloat()`, `.ToVector()` for string parsing |
-| Formatting | Always use `string.Format()` for building strings from mixed types |
+| Типы | `int`, `float`, `bool`, `string`, `vector`, `typename`, `void` |
+| Значения по умолчанию | `0`, `0.0`, `false`, `""`, `"0 0 0"`, `null` |
+| Константы | Ключевое слово `const`, соглашение `UPPER_SNAKE_CASE` |
+| Векторы | Инициализация строкой `"x y z"` или `Vector(x,y,z)`, доступ через `[0]`, `[1]`, `[2]` |
+| Область видимости | Переменные ограничены блоками `{}`; нет повторного объявления во вложенных/смежных блоках |
+| Преобразование | `float` в `int` усекает; используйте `.ToInt()`, `.ToFloat()`, `.ToVector()` для парсинга строк |
+| Форматирование | Всегда используйте `string.Format()` для построения строк из смешанных типов |
 
 ---
 
-[Главная](../../README.md) | **Переменные и типы** | [Следующая: Arrays, Maps & Sets >>](02-arrays-maps-sets.md)
+[Главная](../../README.md) | **Переменные и типы** | [Следующая: Массивы, Map и Set >>](02-arrays-maps-sets.md)

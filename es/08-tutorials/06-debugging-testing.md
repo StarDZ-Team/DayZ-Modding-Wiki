@@ -1,118 +1,118 @@
-# Chapter 8.6: Debugging & Testing Your Mod
+# Capitulo 8.6: Depuracion y Pruebas de Tu Mod
 
-[Home](../../README.md) | [<< Previous: Using the DayZ Mod Template](05-mod-template.md) | **Debugging & Testing** | [Next: Publishing to the Steam Workshop >>](07-publishing-workshop.md)
+[Inicio](../../README.md) | [<< Anterior: Usar la Plantilla de Mod de DayZ](05-mod-template.md) | **Depuracion y Pruebas** | [Siguiente: Publicar en el Steam Workshop >>](07-publishing-workshop.md)
 
 ---
 
 ## Tabla de Contenidos
 
-- [Introduction](#introduction)
-- [The Script Log -- Your Best Friend](#the-script-log----your-best-friend)
-- [Print Debugging (The Reliable Method)](#print-debugging-the-reliable-method)
-- [DayZDiag -- The Debug Executable](#dayzdiag----the-debug-executable)
-- [File Patching -- Edit Without Rebuilding](#file-patching----edit-without-rebuilding)
-- [Workbench -- Script Editor and Debugger](#workbench----script-editor-and-debugger)
-- [Common Error Patterns and Solutions](#common-error-patterns-and-solutions)
-- [Testing Workflow](#testing-workflow)
-- [In-Game Debug Tools](#in-game-debug-tools)
-- [Pre-Release Checklist](#pre-release-checklist)
-- [Common Mistakes](#common-mistakes)
-- [Next Steps](#next-steps)
+- [Introduccion](#introduccion)
+- [El Script Log -- Tu Mejor Amigo](#el-script-log----tu-mejor-amigo)
+- [Depuracion con Print (El Metodo Confiable)](#depuracion-con-print-el-metodo-confiable)
+- [DayZDiag -- El Ejecutable de Depuracion](#dayzdiag----el-ejecutable-de-depuracion)
+- [File Patching -- Editar Sin Reconstruir](#file-patching----editar-sin-reconstruir)
+- [Workbench -- Editor de Scripts y Depurador](#workbench----editor-de-scripts-y-depurador)
+- [Patrones de Error Comunes y Soluciones](#patrones-de-error-comunes-y-soluciones)
+- [Flujo de Trabajo de Pruebas](#flujo-de-trabajo-de-pruebas)
+- [Herramientas de Depuracion en el Juego](#herramientas-de-depuracion-en-el-juego)
+- [Lista de Verificacion Pre-Release](#lista-de-verificacion-pre-release)
+- [Errores Comunes](#errores-comunes)
+- [Siguientes Pasos](#siguientes-pasos)
 
 ---
 
 ## Introduccion
 
-Unlike Unity or Unreal, the retail DayZ executable does not support attaching a debugger to Enforce Script. Instead, you rely on five tools:
+A diferencia de Unity o Unreal, el ejecutable retail de DayZ no soporta adjuntar un depurador a Enforce Script. En su lugar, dependes de cinco herramientas:
 
-1. **Script logs** -- Text files capturing every error, warning, and Print output
-2. **Print statements** -- Trace execution flow and inspect variable values
-3. **DayZDiag** -- Diagnostic build with enhanced error reporting and debug tools
-4. **File patching** -- Edit scripts without rebuilding your PBO every time
-5. **Workbench** -- Official script editor with syntax checking and a script console
+1. **Script logs** -- Archivos de texto que capturan cada error, advertencia y salida de Print
+2. **Sentencias Print** -- Rastrear el flujo de ejecucion e inspeccionar valores de variables
+3. **DayZDiag** -- Build diagnostico con reporte de errores mejorado y herramientas de depuracion
+4. **File patching** -- Editar scripts sin reconstruir tu PBO cada vez
+5. **Workbench** -- Editor de scripts oficial con verificacion de sintaxis y consola de script
 
-Together they form a powerful toolkit. Este capitulo ensena you how to use each one.
+Juntos forman un toolkit poderoso. Este capitulo te ensena como usar cada uno.
 
 ---
 
-## The Script Log -- Your Best Friend
+## El Script Log -- Tu Mejor Amigo
 
-Every time DayZ runs, it writes a script log file. This file captures every script error, warning, and Print() output. When something goes wrong, the script log is the first place to look.
+Cada vez que DayZ se ejecuta, escribe un archivo de script log. Este archivo captura cada error de script, advertencia y salida de Print(). Cuando algo sale mal, el script log es el primer lugar donde mirar.
 
-### Where to Find Script Logs
+### Donde Encontrar los Script Logs
 
-**Client logs:** `%LocalAppData%\DayZ\` (press `Win+R`, paste, Enter)
+**Logs del cliente:** `%LocalAppData%\DayZ\` (presiona `Win+R`, pega, Enter)
 
-**Server logs:** Inside your server's profile folder (set via `-profiles=serverprofile`)
+**Logs del servidor:** Dentro de la carpeta de perfil de tu servidor (configurada via `-profiles=serverprofile`)
 
-Files are named `script_YYYY-MM-DD_HH-MM-SS.log` -- the most recent timestamp is your latest session.
+Los archivos se nombran `script_YYYY-MM-DD_HH-MM-SS.log` -- la marca de tiempo mas reciente es tu ultima sesion.
 
-### What to Look For
+### Que Buscar
 
-Script logs contain thousands of lines. You need to know what to search for.
+Los script logs contienen miles de lineas. Necesitas saber que buscar.
 
-**Errors** are marked with `SCRIPT (E)`:
+**Los errores** estan marcados con `SCRIPT (E)`:
 
 ```
 SCRIPT (E): MyMod/Scripts/4_World/MyManager.c :: OnInit -- Null pointer access
 ```
 
-This is a hard error. Your code tried to do something invalid and DayZ stopped executing that code path. These must be fixed.
+Esto es un error critico. Tu codigo intento hacer algo invalido y DayZ detuvo la ejecucion de esa ruta de codigo. Estos deben ser corregidos.
 
-**Warnings** are marked with `SCRIPT (W)`:
+**Las advertencias** estan marcadas con `SCRIPT (W)`:
 
 ```
 SCRIPT (W): MyMod/Scripts/4_World/MyManager.c :: Load -- Cannot open file "$profile:MyMod/config.json"
 ```
 
-Warnings do not crash your code, but they often indicate a problem that will cause issues later. Do not ignore them.
+Las advertencias no crashean tu codigo, pero a menudo indican un problema que causara problemas mas adelante. No las ignores.
 
-**Print output** appears as plain text without any prefix:
+**La salida de Print** aparece como texto plano sin ningun prefijo:
 
 ```
 [MyMod] Manager initialized with 5 items
 ```
 
-This is output from your own `Print()` calls. It is the primary way you will trace what your code is doing.
+Esto es salida de tus propias llamadas `Print()`. Es la forma principal en que rastraras lo que tu codigo esta haciendo.
 
-### How to Search Efficiently
+### Como Buscar Eficientemente
 
-Script logs can be tens of thousands of lines. Never read line by line -- search for your mod prefix or error markers:
+Los script logs pueden tener decenas de miles de lineas. Nunca leas linea por linea -- busca tu prefijo de mod o marcadores de error:
 
 ```powershell
-# PowerShell -- find all errors in the latest log
+# PowerShell -- encontrar todos los errores en el log mas reciente
 Select-String -Path "$env:LOCALAPPDATA\DayZ\script*.log" -Pattern "SCRIPT \(E\)" | Select-Object -Last 20
 
-# PowerShell -- find all lines from your mod
+# PowerShell -- encontrar todas las lineas de tu mod
 Select-String -Path "$env:LOCALAPPDATA\DayZ\script*.log" -Pattern "MyMod" | Select-Object -Last 30
 ```
 
 ```cmd
-:: Command Prompt alternative
+:: Alternativa con Command Prompt
 findstr "SCRIPT (E)" "%LocalAppData%\DayZ\script_2026-03-21_14-30-05.log"
 ```
 
-### Understanding Common Log Entries
+### Entender Entradas de Log Comunes
 
-| Log Entry | Significado |
+| Entrada de Log | Significado |
 |-----------|---------|
-| `SCRIPT (E): Cannot convert string to int` | Type mismatch -- passing or assigning the wrong type |
-| `SCRIPT (E): Null pointer access in ... :: Update` | Calling a method on a NULL object (most common error) |
-| `SCRIPT (E): Undefined variable 'manger'` | Typo in a variable name or wrong scope |
-| `SCRIPT (E): Method 'GetHelth' not found in class 'EntityAI'` | Method does not exist -- check spelling and parent class |
+| `SCRIPT (E): Cannot convert string to int` | Desajuste de tipos -- pasando o asignando el tipo incorrecto |
+| `SCRIPT (E): Null pointer access in ... :: Update` | Llamando a un metodo en un objeto NULL (error mas comun) |
+| `SCRIPT (E): Undefined variable 'manger'` | Typo en nombre de variable o ambito incorrecto |
+| `SCRIPT (E): Method 'GetHelth' not found in class 'EntityAI'` | El metodo no existe -- verifica la ortografia y la clase padre |
 
-### Real-Time Log Watching
+### Observacion de Log en Tiempo Real
 
-Watch the log live in a separate PowerShell window while DayZ runs:
+Observa el log en vivo en una ventana separada de PowerShell mientras DayZ se ejecuta:
 
 ```powershell
-# Tail the latest script log in real time
+# Seguir el script log mas reciente en tiempo real
 Get-ChildItem "$env:LOCALAPPDATA\DayZ\script*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object {
     Get-Content $_.FullName -Wait -Tail 50
 }
 ```
 
-Filter to only show errors and your mod output:
+Filtrar para mostrar solo errores y salida de tu mod:
 
 ```powershell
 Get-ChildItem "$env:LOCALAPPDATA\DayZ\script*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object {
@@ -122,11 +122,11 @@ Get-ChildItem "$env:LOCALAPPDATA\DayZ\script*.log" | Sort-Object LastWriteTime -
 
 ---
 
-## Print Debugging (The Reliable Method)
+## Depuracion con Print (El Metodo Confiable)
 
-When you need to know what your code is doing at runtime, `Print()` is your primary tool. It writes a line to the script log that you can read afterward or watch in real time.
+Cuando necesitas saber que esta haciendo tu codigo en runtime, `Print()` es tu herramienta principal. Escribe una linea al script log que puedes leer despues u observar en tiempo real.
 
-### Basic Print Usage
+### Uso Basico de Print
 
 ```c
 class MyManager
@@ -141,16 +141,16 @@ class MyManager
 }
 ```
 
-This produces lines in the script log like:
+Esto produce lineas en el script log como:
 
 ```
 [MyMod] MyManager.Init() called
 [MyMod] Loaded 5 items
 ```
 
-### Formatted Output
+### Salida Formateada
 
-Use string concatenation to build informative messages with enough context to be useful on their own:
+Usa concatenacion de strings para construir mensajes informativos con suficiente contexto para ser utiles por si solos:
 
 ```c
 void ProcessPlayer(PlayerBase player)
@@ -167,9 +167,9 @@ void ProcessPlayer(PlayerBase player)
 }
 ```
 
-### Creating a Debug Logger
+### Crear un Logger de Depuracion
 
-Instead of scattering raw `Print()` calls, create a toggleable logger:
+En lugar de esparcir llamadas crudas de `Print()`, crea un logger activable:
 
 ```c
 class MyModDebug
@@ -184,17 +184,17 @@ class MyModDebug
 
     static void Error(string msg)
     {
-        // Errors always print regardless of debug flag
+        // Los errores siempre se imprimen sin importar el flag de debug
         Print("[MyMod:ERROR] " + msg);
     }
 }
 ```
 
-Use it throughout your code: `MyModDebug.Log("Player connected: " + name);`
+Usalo a lo largo de tu codigo: `MyModDebug.Log("Player connected: " + name);`
 
-### Using Preprocessor Defines for Debug-Only Code
+### Usar Defines de Preprocesador para Codigo Solo de Debug
 
-Enforce Script supports `#ifdef` to include code only in development builds:
+Enforce Script soporta `#ifdef` para incluir codigo solo en builds de desarrollo:
 
 ```c
 void Update()
@@ -203,229 +203,229 @@ void Update()
     Print("[MyMod] Update tick, active items: " + m_Items.Count().ToString());
     #endif
 
-    // Normal code here...
+    // Codigo normal aqui...
 }
 ```
 
-`DEVELOPER` is set in DayZDiag and Workbench but not in retail DayZ. `DIAG_DEVELOPER` is another useful define available only in diagnostic builds. Code inside these guards has zero cost in release builds.
+`DEVELOPER` esta configurado en DayZDiag y Workbench pero no en DayZ retail. `DIAG_DEVELOPER` es otro define util disponible solo en builds diagnosticos. El codigo dentro de estas guardas tiene cero costo en builds de release.
 
-### Removing Debug Prints Before Release
+### Eliminar Debug Prints Antes del Release
 
-If you do not use `#ifdef` guards, remove all `Print()` calls before publishing. Excessive output bloats logs, hurts server performance, and may expose internal information. A consistent prefix like `[MyMod:DEBUG]` makes them easy to find and remove.
+Si no usas guardas `#ifdef`, elimina todas las llamadas `Print()` antes de publicar. La salida excesiva hincha los logs, afecta el rendimiento del servidor y puede exponer informacion interna. Un prefijo consistente como `[MyMod:DEBUG]` los hace faciles de encontrar y eliminar.
 
 ---
 
-## DayZDiag -- The Debug Executable
+## DayZDiag -- El Ejecutable de Depuracion
 
-DayZDiag is a special diagnostic build of DayZ with features the retail version lacks.
+DayZDiag es un build diagnostico especial de DayZ con funciones que la version retail no tiene.
 
-### What Makes DayZDiag Different
+### Que Hace Diferente a DayZDiag
 
-| Caracteristica | Retail DayZ | DayZDiag |
+| Caracteristica | DayZ Retail | DayZDiag |
 |---------|-------------|----------|
-| File patching support | No | Yes |
-| `DEVELOPER` define active | No | Yes |
-| `DIAG_DEVELOPER` define active | No | Yes |
-| Additional error detail in logs | Basic | Verbose |
-| Admin console access | No | Yes |
-| Script console | No | Yes |
-| Free camera | No | Yes |
+| Soporte de file patching | No | Si |
+| Define `DEVELOPER` activo | No | Si |
+| Define `DIAG_DEVELOPER` activo | No | Si |
+| Detalle de error adicional en logs | Basico | Detallado |
+| Acceso a consola de admin | No | Si |
+| Consola de script | No | Si |
+| Camara libre | No | Si |
 
-### How to Get DayZDiag
+### Como Obtener DayZDiag
 
-DayZDiag is included with DayZ Tools (not a separate download). After installing DayZ Tools from Steam, find `DayZDiag_x64.exe` in:
+DayZDiag se incluye con DayZ Tools (no es una descarga separada). Despues de instalar DayZ Tools desde Steam, encuentra `DayZDiag_x64.exe` en:
 
 ```
 C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools\Bin\
 ```
 
-### Launch Parameters
+### Parametros de Lanzamiento
 
-Create a batch file or shortcut with these parameters:
+Crea un archivo batch o acceso directo con estos parametros:
 
-**Client (singleplayer with server):**
+**Cliente (un jugador con servidor):**
 
 ```batch
 DayZDiag_x64.exe -filePatching -mod=P:\MyMod -profiles=clientprofile -server -port=2302
 ```
 
-**Client (connect to separate server):**
+**Cliente (conectar a servidor separado):**
 
 ```batch
 DayZDiag_x64.exe -filePatching -mod=P:\MyMod -connect=127.0.0.1 -port=2302
 ```
 
-**Dedicated server:**
+**Servidor dedicado:**
 
 ```batch
 DayZDiag_x64.exe -filePatching -server -mod=P:\MyMod -config=serverDZ.cfg -port=2302 -profiles=serverprofile
 ```
 
-Key parameters:
+Parametros clave:
 
 | Parametro | Proposito |
 |-----------|---------|
-| `-filePatching` | Enable loading loose files from P: drive (see next section) |
-| `-mod=P:\MyMod` | Load your mod from the P: drive |
-| `-profiles=folder` | Set the profile folder for logs and configs |
-| `-server` | Run as a local listen server (singleplayer testing) |
-| `-connect=IP` | Connect to a server at the given IP |
-| `-port=PORT` | Set the network port (default 2302) |
+| `-filePatching` | Habilitar carga de archivos sueltos desde la unidad P: (ver siguiente seccion) |
+| `-mod=P:\MyMod` | Cargar tu mod desde la unidad P: |
+| `-profiles=folder` | Establecer la carpeta de perfil para logs y configs |
+| `-server` | Ejecutar como listen server local (pruebas de un jugador) |
+| `-connect=IP` | Conectar a un servidor en la IP dada |
+| `-port=PORT` | Establecer el puerto de red (predeterminado 2302) |
 
-### When to Use DayZDiag vs Retail
+### Cuando Usar DayZDiag vs Retail
 
-- **During development:** Always use DayZDiag. It gives you file patching, better errors, and debug tools.
-- **Before release:** Test with the retail DayZ executable to make sure everything works for players. Some behaviors differ between DayZDiag and retail (for example, `#ifdef DEVELOPER` code will not run in retail).
+- **Durante el desarrollo:** Siempre usa DayZDiag. Te da file patching, mejores errores y herramientas de depuracion.
+- **Antes del release:** Prueba con el ejecutable retail de DayZ para asegurarte de que todo funciona para los jugadores. Algunos comportamientos difieren entre DayZDiag y retail (por ejemplo, el codigo con `#ifdef DEVELOPER` no se ejecutara en retail).
 
 ---
 
-## File Patching -- Edit Without Rebuilding
+## File Patching -- Editar Sin Reconstruir
 
-File patching is the single biggest time-saver in DayZ modding. Without it, every script change requires: edit file, rebuild PBO, copy PBO, restart DayZ. With file patching, you can: edit file, restart the mission. That is it.
+El file patching es el mayor ahorro de tiempo en el modding de DayZ. Sin el, cada cambio de script requiere: editar archivo, reconstruir PBO, copiar PBO, reiniciar DayZ. Con file patching puedes: editar archivo, reiniciar la mision. Eso es todo.
 
-### How It Works
+### Como Funciona
 
-When DayZ loads with the `-filePatching` parameter, it checks the P: drive for loose files before loading files from PBOs. If it finds a file on P: that matches a file in a PBO, the loose file takes priority.
+Cuando DayZ carga con el parametro `-filePatching`, verifica la unidad P: buscando archivos sueltos antes de cargar archivos de PBOs. Si encuentra un archivo en P: que coincide con un archivo en un PBO, el archivo suelto tiene prioridad.
 
-This means:
+Esto significa:
 
-1. Your mod is set up on P: drive (via `SetupWorkdrive.bat` or manual junction)
-2. You launch DayZDiag with `-filePatching -mod=P:\MyMod`
-3. DayZ loads your scripts from P: drive directly -- not from the PBO
-4. You edit a `.c` file on P: drive, save it
-5. You reconnect or restart the mission in-game
-6. DayZ picks up your changed file immediately
+1. Tu mod esta configurado en la unidad P: (via `SetupWorkdrive.bat` o junction manual)
+2. Lanzas DayZDiag con `-filePatching -mod=P:\MyMod`
+3. DayZ carga tus scripts desde la unidad P: directamente -- no desde el PBO
+4. Editas un archivo `.c` en la unidad P:, lo guardas
+5. Te reconectas o reinicias la mision en el juego
+6. DayZ recoge tu archivo modificado inmediatamente
 
-No PBO rebuild needed. The edit-test cycle goes from minutes to seconds.
+No se necesita reconstruir PBO. El ciclo de edicion-prueba pasa de minutos a segundos.
 
-### Setting Up File Patching
+### Configurar File Patching
 
-1. Make sure your mod source is on the P: drive (from [Chapter 8.1](01-first-mod.md))
-2. Launch: `DayZDiag_x64.exe -filePatching -mod=P:\MyMod -server -port=2302`
-3. Edit a `.c` file, save, reconnect in-game -- your changes are live
+1. Asegurate de que el codigo fuente de tu mod este en la unidad P: (desde el [Capitulo 8.1](01-first-mod.md))
+2. Lanza: `DayZDiag_x64.exe -filePatching -mod=P:\MyMod -server -port=2302`
+3. Edita un archivo `.c`, guarda, reconecta en el juego -- tus cambios estan en vivo
 
-### What Works With File Patching
+### Que Funciona Con File Patching
 
-| File Type | File Patching Works? |
+| Tipo de Archivo | Funciona File Patching? |
 |-----------|---------------------|
-| Script files (`.c`) | Yes |
-| Layout files (`.layout`) | Yes |
-| Textures (`.edds`, `.paa`) | Yes |
-| Sound files | Yes |
-| `config.cpp` | **No** -- must rebuild PBO |
-| `mod.cpp` | **No** -- must rebuild PBO |
-| New files (not in PBO) | **No** -- must rebuild PBO to register them |
+| Archivos de script (`.c`) | Si |
+| Archivos de layout (`.layout`) | Si |
+| Texturas (`.edds`, `.paa`) | Si |
+| Archivos de sonido | Si |
+| `config.cpp` | **No** -- debe reconstruir PBO |
+| `mod.cpp` | **No** -- debe reconstruir PBO |
+| Archivos nuevos (no en PBO) | **No** -- debe reconstruir PBO para registrarlos |
 
-The key limitation: `config.cpp` changes always require a PBO rebuild. This includes adding new classes, changing `requiredAddons`, or modifying `CfgMods`. If you add a brand new `.c` file, you also need a PBO rebuild so that the `config.cpp` script loading knows about the new file.
+La limitacion clave: los cambios a `config.cpp` siempre requieren reconstruir el PBO. Esto incluye agregar nuevas clases, cambiar `requiredAddons` o modificar `CfgMods`. Si agregas un archivo `.c` completamente nuevo, tambien necesitas reconstruir el PBO para que la carga de scripts de `config.cpp` sepa del nuevo archivo.
 
-### The File Patching Workflow
+### El Flujo de Trabajo de File Patching
 
-Here is the ideal development cycle:
+Aqui esta el ciclo de desarrollo ideal:
 
 ```
-1. Build your PBO once (to establish the file list in config.cpp)
-2. Launch DayZDiag with -filePatching -mod=P:\MyMod
-3. Edit a .c file on P: drive
-4. Save the file
-5. In-game: disconnect and reconnect (or restart mission)
-6. Check the script log for your changes
-7. Repeat from step 3
+1. Construir tu PBO una vez (para establecer la lista de archivos en config.cpp)
+2. Lanzar DayZDiag con -filePatching -mod=P:\MyMod
+3. Editar un archivo .c en la unidad P:
+4. Guardar el archivo
+5. En el juego: desconectar y reconectar (o reiniciar mision)
+6. Verificar el script log buscando tus cambios
+7. Repetir desde el paso 3
 ```
 
-This loop can take under 30 seconds per iteration compared to several minutes when rebuilding PBOs every time.
+Este ciclo puede tomar menos de 30 segundos por iteracion comparado con varios minutos al reconstruir PBOs cada vez.
 
 ---
 
-## Workbench -- Script Editor and Debugger
+## Workbench -- Editor de Scripts y Depurador
 
-Workbench is the official DayZ development environment included with DayZ Tools.
+Workbench es el entorno de desarrollo oficial de DayZ incluido con DayZ Tools.
 
-### Launching and Setup
+### Lanzar y Configurar
 
-1. Open **DayZ Tools** from Steam, click **Workbench**
-2. Go to **File > Open Project** and point it to your mod's script directory on P: drive
-3. Workbench indexes your `.c` files and provides syntax awareness
+1. Abre **DayZ Tools** desde Steam, haz clic en **Workbench**
+2. Ve a **File > Open Project** y apuntalo al directorio de scripts de tu mod en la unidad P:
+3. Workbench indexa tus archivos `.c` y provee awareness de sintaxis
 
-### Key Features
+### Funciones Clave
 
-- **Syntax highlighting** -- Keywords, types, strings, and comments are color-coded
-- **Code completion** -- Type a class name followed by a dot to see available methods
-- **Error highlighting** -- Syntax errors are underlined in red before you run anything
-- **Script Console** -- Run Enforce Script commands live:
+- **Resaltado de sintaxis** -- Palabras clave, tipos, strings y comentarios tienen colores
+- **Completado de codigo** -- Escribe un nombre de clase seguido de un punto para ver los metodos disponibles
+- **Resaltado de errores** -- Los errores de sintaxis se subrayan en rojo antes de ejecutar nada
+- **Consola de Script** -- Ejecuta comandos de Enforce Script en vivo:
 
 ```c
-// Print the player's position
+// Imprimir la posicion del jugador
 Print(GetGame().GetPlayer().GetPosition().ToString());
 
-// Spawn an item at your position
+// Spawnear un item en tu posicion
 GetGame().GetPlayer().SpawnEntityOnGroundPos("AKM", GetGame().GetPlayer().GetPosition());
 ```
 
-### Limitations
+### Limitaciones
 
-- **Not a full game environment:** Some APIs only work in the actual game, not in Workbench's simulation
-- **Separate from game runtime:** You still need to save files and restart the mission to see changes in-game
-- **Incomplete mod context:** Cross-mod references may show as errors even when they work in-game
+- **No es un entorno de juego completo:** Algunas APIs solo funcionan en el juego real, no en la simulacion de Workbench
+- **Separado del runtime del juego:** Aun necesitas guardar archivos y reiniciar la mision para ver cambios en el juego
+- **Contexto de mod incompleto:** Las referencias entre mods pueden mostrarse como errores incluso cuando funcionan en el juego
 
 ---
 
-## Common Error Patterns and Solutions
+## Patrones de Error Comunes y Soluciones
 
-Reference tables of the most common errors and how to fix them. Bookmark this section.
+Tablas de referencia de los errores mas comunes y como corregirlos. Guarda esta seccion en favoritos.
 
 ### Errores de Script
 
-| Error Message | Causa | Solucion |
+| Mensaje de Error | Causa | Solucion |
 |---------------|-------|-----|
-| `Null pointer access` | Calling a method on a variable that is NULL | Add a null check before use: `if (obj) { obj.DoThing(); }` |
-| `Cannot convert X to Y` | Type mismatch in assignment or function call | Check the expected type. Use `Class.CastTo()` for safe casting. |
-| `Undefined variable 'xyz'` | Typo in variable name or wrong scope | Check spelling. Make sure the variable is declared in the current scope. |
-| `Method 'xyz' not found in class 'Abc'` | Calling a method that does not exist on that class | Check the class hierarchy. Look up the correct method name in the API. |
-| `Division by zero` | Dividing by a variable that equals 0 | Add a guard: `if (divisor != 0) { result = value / divisor; }` |
-| `Stack overflow` | Infinite recursion in your code | Check for methods calling themselves without a proper exit condition. |
-| `Type 'MyClass' not found` | The file defining MyClass is not loaded or is in a higher script layer | Check config.cpp script loading order. Lower layers cannot see higher layers. |
+| `Null pointer access` | Llamar a un metodo en una variable que es NULL | Agrega una verificacion de null antes de usar: `if (obj) { obj.DoThing(); }` |
+| `Cannot convert X to Y` | Desajuste de tipos en asignacion o llamada a funcion | Verifica el tipo esperado. Usa `Class.CastTo()` para casteo seguro. |
+| `Undefined variable 'xyz'` | Typo en nombre de variable o ambito incorrecto | Verifica la ortografia. Asegurate de que la variable esta declarada en el ambito actual. |
+| `Method 'xyz' not found in class 'Abc'` | Llamar a un metodo que no existe en esa clase | Verifica la jerarquia de clases. Busca el nombre correcto del metodo en la API. |
+| `Division by zero` | Dividir por una variable que es igual a 0 | Agrega una guarda: `if (divisor != 0) { result = value / divisor; }` |
+| `Stack overflow` | Recursion infinita en tu codigo | Verifica metodos que se llaman a si mismos sin una condicion de salida apropiada. |
+| `Type 'MyClass' not found` | El archivo que define MyClass no esta cargado o esta en una capa de script superior | Verifica el orden de carga de scripts en config.cpp. Las capas inferiores no pueden ver las superiores. |
 
-### Config Errors
+### Errores de Config
 
-| Error Message | Causa | Solucion |
+| Mensaje de Error | Causa | Solucion |
 |---------------|-------|-----|
-| `Config parse error` | Missing semicolon, brace, or quote in config.cpp | Check config.cpp syntax carefully. Every property needs a semicolon. Every class needs opening and closing braces. |
-| `Addon 'X' requires addon 'Y'` | Missing dependency in requiredAddons | Add the required addon to your `requiredAddons[]` array. |
-| `Cannot find mod` | Mod folder name or path is wrong | Verify the `-mod=` parameter matches your mod folder name exactly. |
+| `Config parse error` | Punto y coma, llave o comilla faltante en config.cpp | Verifica la sintaxis de config.cpp cuidadosamente. Cada propiedad necesita un punto y coma. Cada clase necesita llaves de apertura y cierre. |
+| `Addon 'X' requires addon 'Y'` | Dependencia faltante en requiredAddons | Agrega el addon requerido a tu array `requiredAddons[]`. |
+| `Cannot find mod` | Nombre o ruta de la carpeta del mod incorrecto | Verifica que el parametro `-mod=` coincida exactamente con el nombre de tu carpeta de mod. |
 
-### Mod Loading Errors
+### Errores de Carga de Mod
 
 | Sintoma | Causa | Solucion |
 |---------|-------|-----|
-| Mod does not appear in launcher | Missing or invalid `mod.cpp` | Check that `mod.cpp` exists in the mod root and has valid `name` and `dir` fields. |
-| Scripts not executing | config.cpp not registering scripts | Verify `CfgMods` class in config.cpp has correct `Script` path pointing to your script config.cpp. |
-| Mod loads but features missing | Script layer issue | Verify files are in correct layer folders (3_Game, 4_World, 5_Mission). |
+| El mod no aparece en el launcher | `mod.cpp` faltante o invalido | Verifica que `mod.cpp` existe en la raiz del mod y tiene campos `name` y `dir` validos. |
+| Los scripts no se ejecutan | config.cpp no registra scripts | Verifica que la clase `CfgMods` en config.cpp tiene la ruta `Script` correcta apuntando a tu config.cpp de scripts. |
+| El mod carga pero faltan funciones | Problema de capa de script | Verifica que los archivos estan en las carpetas de capa correctas (3_Game, 4_World, 5_Mission). |
 
-### Runtime Issues
+### Problemas de Runtime
 
 | Sintoma | Causa | Solucion |
 |---------|-------|-----|
-| RPC not received on server | Wrong RPC registration or identity mismatch | Check that RPC is registered on both client and server. Verify the RPC ID matches. |
-| RPC not received on client | Server not sending, or client not registered | Add Print() on server side to confirm send. Check client registration code. |
-| UI not showing | Layout path wrong or parent widget is null | Verify the `.layout` file path is correct relative to the mod. Check that the parent widget exists. |
-| JSON config not loading | File path wrong or JSON syntax error | Check the file path. Validate JSON syntax (no trailing commas, proper quoting). |
-| Player data not saving | Profile folder permissions or path issue | Check that the `$profile:` path is accessible and the folder exists. |
+| RPC no recibido en servidor | Registro de RPC incorrecto o desajuste de identidad | Verifica que el RPC esta registrado tanto en cliente como en servidor. Verifica que el ID de RPC coincida. |
+| RPC no recibido en cliente | Servidor no envia, o cliente no registrado | Agrega Print() en el lado del servidor para confirmar el envio. Verifica el codigo de registro del cliente. |
+| UI no se muestra | Ruta de layout incorrecta o widget padre es null | Verifica que la ruta del archivo `.layout` es correcta relativa al mod. Verifica que el widget padre existe. |
+| Config JSON no carga | Ruta de archivo incorrecta o error de sintaxis JSON | Verifica la ruta del archivo. Valida la sintaxis JSON (sin comas al final, comillas apropiadas). |
+| Datos de jugador no se guardan | Permisos de carpeta de perfil o problema de ruta | Verifica que la ruta `$profile:` es accesible y que la carpeta existe. |
 
-### Null Pointers and Safe Casting -- Detailed Examples
+### Null Pointers y Casteo Seguro -- Ejemplos Detallados
 
-These two errors are so common they deserve worked examples.
+Estos dos errores son tan comunes que merecen ejemplos trabajados.
 
-**Unsafe code (crashes if GetPlayer() or GetIdentity() returns NULL):**
+**Codigo inseguro (crashea si GetPlayer() o GetIdentity() retorna NULL):**
 
 ```c
 void DoSomething()
 {
     PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-    string name = player.GetIdentity().GetName();  // crash if player or identity is NULL
+    string name = player.GetIdentity().GetName();  // crash si player o identity es NULL
 }
 ```
 
-**Safe code (guard every potential null):**
+**Codigo seguro (proteger cada potencial null):**
 
 ```c
 void DoSomething()
@@ -446,7 +446,7 @@ void DoSomething()
 }
 ```
 
-**Safe casting pattern with `Class.CastTo()`:**
+**Patron de casteo seguro con `Class.CastTo()`:**
 
 ```c
 void ProcessEntity(Object obj)
@@ -463,120 +463,120 @@ void ProcessEntity(Object obj)
 }
 ```
 
-`Class.CastTo()` returns `true` on success, `false` on failure. Always check the return value.
+`Class.CastTo()` retorna `true` en exito, `false` en fallo. Siempre verifica el valor de retorno.
 
 ---
 
-## Testing Workflow
+## Flujo de Trabajo de Pruebas
 
-DayZ modding has no automated test framework. Testing is manual: build, launch, play, observe, check logs. An efficient workflow is critical.
+El modding de DayZ no tiene un framework de pruebas automatizadas. Las pruebas son manuales: construir, lanzar, jugar, observar, verificar logs. Un flujo de trabajo eficiente es critico.
 
-### The Basic Testing Cycle
+### El Ciclo Basico de Pruebas
 
 ```
-Edit Code --> Build PBO --> Launch DayZ --> Test In-Game --> Check Log --> Fix --> Repeat
+Editar Codigo --> Construir PBO --> Lanzar DayZ --> Probar en el Juego --> Verificar Log --> Corregir --> Repetir
 ```
 
-With file patching, skip the PBO build: edit `.c` on P: drive, reconnect, check log. This reduces iteration from minutes to seconds.
+Con file patching, omite la construccion de PBO: edita `.c` en la unidad P:, reconecta, verifica log. Esto reduce la iteracion de minutos a segundos.
 
-### Testing Server Mods
+### Probar Server Mods
 
-If your mod has server-side logic, you need a local dedicated server.
+Si tu mod tiene logica del lado del servidor, necesitas un servidor dedicado local.
 
-**Option 1: Listen server (simplest)**
+**Opcion 1: Listen server (mas simple)**
 
-Launch DayZDiag with `-server` to run both client and server in a single process:
+Lanza DayZDiag con `-server` para ejecutar tanto cliente como servidor en un solo proceso:
 
 ```batch
 DayZDiag_x64.exe -filePatching -mod=P:\MyMod -server -port=2302
 ```
 
-This is the fastest way to test, but it does not perfectly replicate a dedicated server environment.
+Esta es la forma mas rapida de probar, pero no replica perfectamente un entorno de servidor dedicado.
 
-**Option 2: Local dedicated server (most accurate)**
+**Opcion 2: Servidor dedicado local (mas preciso)**
 
-Run a separate DayZDiag server process, then connect to it with a DayZDiag client:
+Ejecuta un proceso de servidor DayZDiag separado, luego conectate con un cliente DayZDiag:
 
-Server:
+Servidor:
 ```batch
 DayZDiag_x64.exe -filePatching -server -mod=P:\MyMod -config=serverDZ.cfg -port=2302 -profiles=serverprofile
 ```
 
-Client:
+Cliente:
 ```batch
 DayZDiag_x64.exe -filePatching -mod=P:\MyMod -connect=127.0.0.1 -port=2302
 ```
 
-This gives you separate client and server logs, which is essential for debugging RPC communication and client-server split logic.
+Esto te da logs separados de cliente y servidor, lo cual es esencial para depurar comunicacion RPC y logica de division cliente-servidor.
 
-### Testing Client-Only and Multiplayer
+### Probar Solo Cliente y Multijugador
 
-For client-only mods (UI, HUD), a listen server is sufficient: add `-server` to your launch parameters.
+Para mods solo de cliente (UI, HUD), un listen server es suficiente: agrega `-server` a tus parametros de lanzamiento.
 
-For multiplayer testing, you have three options:
-- **Two instances on one machine:** Run DayZDiag server + two clients with different `-profiles` folders
-- **Test with a friend:** Host a DayZDiag server, open firewall port 2302
-- **Cloud server:** Set up a remote dedicated server
+Para pruebas multijugador, tienes tres opciones:
+- **Dos instancias en una maquina:** Ejecuta servidor DayZDiag + dos clientes con diferentes carpetas `-profiles`
+- **Probar con un amigo:** Hostea un servidor DayZDiag, abre el puerto 2302 del firewall
+- **Servidor en la nube:** Configura un servidor dedicado remoto
 
-### Using Build Scripts
+### Usar Scripts de Construccion
 
-If your project has a build script (like `dev.py`), use it to automate the cycle:
+Si tu proyecto tiene un script de construccion (como `dev.py`), usalo para automatizar el ciclo:
 
 ```bash
-python dev.py build     # Build all PBOs
-python dev.py server    # Build + launch server + monitor logs
-python dev.py client    # Launch client (connects localhost:2302)
-python dev.py full      # Build + server + monitor + auto-launch client
-python dev.py check     # Check latest script log for errors (offline)
-python dev.py watch     # Real-time log tail, filtered for errors and mod output
-python dev.py kill      # Kill DayZ processes for restart
+python dev.py build     # Construir todos los PBOs
+python dev.py server    # Construir + lanzar servidor + monitorear logs
+python dev.py client    # Lanzar cliente (conecta a localhost:2302)
+python dev.py full      # Construir + servidor + monitorear + auto-lanzar cliente
+python dev.py check     # Verificar ultimo script log buscando errores (offline)
+python dev.py watch     # Seguimiento de log en tiempo real, filtrado para errores y salida del mod
+python dev.py kill      # Matar procesos de DayZ para reiniciar
 ```
 
-The `watch` command is especially valuable -- it filters the live log to only show relevant output.
+El comando `watch` es especialmente valioso -- filtra el log en vivo para mostrar solo salida relevante.
 
 ---
 
-## In-Game Debug Tools
+## Herramientas de Depuracion en el Juego
 
-DayZDiag provides several in-game tools for testing. These are not available in retail builds.
+DayZDiag provee varias herramientas en el juego para pruebas. Estas no estan disponibles en builds retail.
 
-### Script Console
+### Consola de Script
 
-Open with the backtick key (`` ` ``) or check your keybindings for "Script Console". Run Enforce Script commands live:
+Abre con la tecla de acento grave (`` ` ``) o verifica tus keybindings para "Script Console". Ejecuta comandos de Enforce Script en vivo:
 
 ```c
-// Spawn an item at your position
+// Spawnear un item en tu posicion
 GetGame().GetPlayer().SpawnEntityOnGroundPos("AKM", GetGame().GetPlayer().GetPosition());
 
-// Teleport to coordinates
+// Teletransportar a coordenadas
 GetGame().GetPlayer().SetPosition("8000 0 10000");
 
-// Print your current position
+// Imprimir tu posicion actual
 Print(GetGame().GetPlayer().GetPosition().ToString());
 ```
 
-### Free Camera
+### Camara Libre
 
-Toggle through the admin tools menu. Fly around detached from your character to inspect spawned objects, check placement, or observe AI behavior.
+Activa a traves del menu de herramientas de admin. Vuela alrededor separado de tu personaje para inspeccionar objetos spawneados, verificar ubicacion o observar comportamiento de AI.
 
-### Object Spawning
+### Spawn de Objetos
 
 ```c
-// Spawn a zombie
+// Spawnear un zombie
 GetGame().CreateObjectEx("ZmbM_HermitSkinny_Base", "8000 0 10000", ECE_PLACE_ON_SURFACE);
 
-// Spawn a vehicle
+// Spawnear un vehiculo
 GetGame().CreateObjectEx("OffroadHatchback", "8000 0 10000", ECE_PLACE_ON_SURFACE);
 ```
 
-### Time and Weather Manipulation
+### Manipulacion de Tiempo y Clima
 
 ```c
-// Set to noon / midnight
+// Establecer a mediodia / medianoche
 GetGame().GetWorld().SetDate(2026, 6, 15, 12, 0);
 GetGame().GetWorld().SetDate(2026, 6, 15, 0, 0);
 
-// Override weather
+// Sobreescribir clima
 Weather weather = GetGame().GetWeather();
 weather.GetOvercast().Set(0.8, 0, 0);
 weather.GetRain().Set(1.0, 0, 0);
@@ -585,102 +585,102 @@ weather.GetFog().Set(0.5, 0, 0);
 
 ---
 
-## Pre-Release Checklist
+## Lista de Verificacion Pre-Release
 
-Before publishing to the Steam Workshop, go through every item.
+Antes de publicar en el Steam Workshop, revisa cada punto.
 
-### 1. Remove or Guard All Debug Output
+### 1. Eliminar o Proteger Toda la Salida de Debug
 
-Search for `Print(` and ensure every debug print is removed or wrapped in `#ifdef DEVELOPER`.
+Busca `Print(` y asegurate de que cada print de debug se elimine o se envuelva en `#ifdef DEVELOPER`.
 
-### 2. Test With a Clean Profile
+### 2. Probar Con un Perfil Limpio
 
-Rename `%LocalAppData%\DayZ\` to `DayZ_backup` and test from scratch. This catches assumptions about cached data or existing config files.
+Renombra `%LocalAppData%\DayZ\` a `DayZ_backup` y prueba desde cero. Esto detecta suposiciones sobre datos en cache o archivos de configuracion existentes.
 
-### 3. Test Mod Loading Order
+### 3. Probar el Orden de Carga del Mod
 
-Test your mod loaded before and after other popular mods. Check for class name collisions, RPC ID conflicts, and config.cpp overwrites.
+Prueba tu mod cargado antes y despues de otros mods populares. Verifica colisiones de nombres de clase, conflictos de ID de RPC y sobreescrituras de config.cpp.
 
-### 4. Check for Memory Leaks
+### 4. Verificar Fugas de Memoria
 
-Watch server memory over time. Common leak causes: objects created in loops without cleanup, circular `ref` references (one side must be raw), arrays that grow without bounds.
+Observa la memoria del servidor con el tiempo. Causas comunes de fugas: objetos creados en bucles sin limpieza, referencias `ref` circulares (un lado debe ser crudo), arrays que crecen sin limites.
 
-### 5. Verify Stringtable Entries
+### 5. Verificar Entradas de Stringtable
 
-Every `#key_name` referenced in code needs a matching row in `stringtable.csv`. Missing entries show as raw key strings in-game.
+Cada `#key_name` referenciado en el codigo necesita una fila correspondiente en `stringtable.csv`. Las entradas faltantes se muestran como strings de clave crudos en el juego.
 
-### 6. Test on a Dedicated Server
+### 6. Probar en un Servidor Dedicado
 
-Listen server testing hides RPC timing issues, authority differences, and multi-client sync bugs. Always do a final test on a real dedicated server.
+Las pruebas en listen server ocultan problemas de timing de RPC, diferencias de autoridad y bugs de sincronizacion multi-cliente. Siempre haz una prueba final en un servidor dedicado real.
 
-### 7. Test a Fresh Workshop Install
+### 7. Probar una Instalacion Limpia del Workshop
 
-Unsubscribe, delete the local mod folder, resubscribe, and test. This verifies the Workshop upload is complete.
+Desuscribete, elimina la carpeta del mod local, vuelve a suscribirte y prueba. Esto verifica que la subida al Workshop esta completa.
 
 ---
 
 ## Errores Comunes
 
-Mistakes every DayZ modder makes at least once. Learn from them.
+Errores que todo modder de DayZ comete al menos una vez. Aprende de ellos.
 
-### 1. Leaving Debug Prints in Release Builds
+### 1. Dejar Debug Prints en Builds de Release
 
-Players do not need `[MyMod:DEBUG] Tick count: 14523` in their logs. Wrap in `#ifdef DEVELOPER` or remove entirely.
+Los jugadores no necesitan `[MyMod:DEBUG] Tick count: 14523` en sus logs. Envuelve en `#ifdef DEVELOPER` o elimina completamente.
 
-### 2. Testing Only in Singleplayer
+### 2. Probar Solo en Un Jugador
 
-Listen servers run client and server in one process, hiding RPCs that never cross the network, race conditions, authority check differences, and null identity references. Test with a separate dedicated server.
+Los listen servers ejecutan cliente y servidor en un proceso, ocultando RPCs que nunca cruzan la red, condiciones de carrera, diferencias de verificacion de autoridad y referencias de identidad nulas. Prueba con un servidor dedicado separado.
 
-### 3. Not Testing With Other Mods
+### 3. No Probar Con Otros Mods
 
-Your mod may conflict with CF, Expansion, or other popular mods via duplicate RPC IDs, missing `super` calls in overrides, or config class collisions. Test combinations before release.
+Tu mod puede conflictuar con CF, Expansion u otros mods populares via IDs de RPC duplicados, llamadas a `super` faltantes en overrides, o colisiones de clases de config. Prueba combinaciones antes del release.
 
-### 4. Ignoring Warnings
+### 4. Ignorar Advertencias
 
-`SCRIPT (W)` warnings often predict future crashes. A missing file warning today becomes a null pointer tomorrow.
+Las advertencias `SCRIPT (W)` a menudo predicen crashes futuros. Una advertencia de archivo faltante hoy se convierte en un null pointer manana.
 
-### 5. Not Using File Patching
+### 5. No Usar File Patching
 
-Rebuilding PBOs for every single-line change wastes enormous time. Set up file patching once (see [above](#file-patching----edit-without-rebuilding)).
+Reconstruir PBOs para cada cambio de una sola linea desperdicia un tiempo enorme. Configura file patching una vez (ver [arriba](#file-patching----editar-sin-reconstruir)).
 
-### 6. Not Checking Both Client and Server Logs
+### 6. No Verificar Tanto Logs de Cliente como de Servidor
 
-For RPC/client-server issues, the error is often on one side and the symptom on the other. Check both `%LocalAppData%\DayZ\` (client) and your server's profile folder.
+Para problemas de RPC/cliente-servidor, el error a menudo esta en un lado y el sintoma en el otro. Verifica tanto `%LocalAppData%\DayZ\` (cliente) como la carpeta de perfil de tu servidor.
 
-### 7. Changing config.cpp Without Rebuilding
+### 7. Cambiar config.cpp Sin Reconstruir
 
-File patching does not apply to `config.cpp`. New classes, `requiredAddons` changes, and `CfgMods` edits always require a PBO rebuild.
+El file patching no aplica a `config.cpp`. Nuevas clases, cambios de `requiredAddons` y ediciones de `CfgMods` siempre requieren reconstruir el PBO.
 
-### 8. Wrong Script Layer
+### 8. Capa de Script Incorrecta
 
-Lower layers cannot see higher layers. If `3_Game/` code references `PlayerBase` (defined in `4_World/`), it fails:
+Las capas inferiores no pueden ver las superiores. Si codigo en `3_Game/` referencia `PlayerBase` (definido en `4_World/`), falla:
 
 ```
-3_Game/   -- Cannot reference 4_World or 5_Mission types
-4_World/  -- Can reference 3_Game, cannot reference 5_Mission
-5_Mission/-- Can reference 3_Game and 4_World
+3_Game/   -- No puede referenciar tipos de 4_World o 5_Mission
+4_World/  -- Puede referenciar 3_Game, no puede referenciar 5_Mission
+5_Mission/-- Puede referenciar 3_Game y 4_World
 ```
 
 ---
 
 ## Siguientes Pasos
 
-1. **Set up file patching** if you have not already. It is the single most impactful improvement to your development workflow.
-2. **Create a debug logger class** for your mod with a consistent prefix so you can easily filter log output.
-3. **Practice reading the script log.** Open it after every test session and look for errors and warnings, even if everything seemed to work. Silent errors can cause subtle bugs that surface later.
-4. **Explore Workbench.** Open your mod's scripts in Workbench and try the Script Console. It takes time to get comfortable, but it pays off.
-5. **Build a test scenario.** Create a saved mission or script that sets up a specific test environment (spawns items, sets time of day, teleports to a location) so you can reproduce bugs quickly.
-6. **Read [Chapter 8.1](01-first-mod.md)** if you have not already built your first mod. Debugging is much easier when you understand the full mod structure.
+1. **Configura file patching** si aun no lo has hecho. Es la mejora individual mas impactante para tu flujo de trabajo de desarrollo.
+2. **Crea una clase de debug logger** para tu mod con un prefijo consistente para que puedas filtrar facilmente la salida del log.
+3. **Practica leyendo el script log.** Abrelo despues de cada sesion de prueba y busca errores y advertencias, incluso si todo parecio funcionar. Los errores silenciosos pueden causar bugs sutiles que aparecen despues.
+4. **Explora Workbench.** Abre los scripts de tu mod en Workbench y prueba la Consola de Script. Toma tiempo acostumbrarse, pero vale la pena.
+5. **Construye un escenario de prueba.** Crea una mision guardada o script que configure un entorno de prueba especifico (spawnea items, establece hora del dia, teletransporta a una ubicacion) para que puedas reproducir bugs rapidamente.
+6. **Lee el [Capitulo 8.1](01-first-mod.md)** si aun no has construido tu primer mod. La depuracion es mucho mas facil cuando entiendes la estructura completa del mod.
 
 ---
 
 ## Mejores Practicas
 
-- **Check the script log FIRST before changing code.** Most bugs have a clear error message in the log. Changing code without reading the log leads to blind guessing and new bugs.
-- **Use `#ifdef DEVELOPER` guards for all debug prints.** This ensures zero performance cost in retail builds and prevents log spam for players. Reserve unguarded `Print()` for critical errors only.
-- **Always check both client and server logs for RPC issues.** The error is often on one side and the symptom on the other. A server-side null pointer silently drops the response, and the client just sees "no data received."
-- **Set up file patching on day one.** The edit-restart-check cycle drops from 3-5 minutes (PBO rebuild) to under 30 seconds (save and reconnect). This is the single biggest productivity improvement.
-- **Use a consistent log prefix like `[MyMod]` in every Print call.** Script logs contain output from vanilla code, the engine, and every loaded mod. Without a prefix, your output is invisible in the noise.
+- **Verifica el script log PRIMERO antes de cambiar codigo.** La mayoria de los bugs tienen un mensaje de error claro en el log. Cambiar codigo sin leer el log lleva a adivinanzas ciegas y nuevos bugs.
+- **Usa guardas `#ifdef DEVELOPER` para todos los debug prints.** Esto asegura cero costo de rendimiento en builds retail y previene spam de logs para los jugadores. Reserva los `Print()` sin guarda solo para errores criticos.
+- **Siempre verifica tanto los logs de cliente como de servidor para problemas de RPC.** El error a menudo esta en un lado y el sintoma en el otro. Un null pointer del lado del servidor silenciosamente descarta la respuesta, y el cliente solo ve "no data received."
+- **Configura file patching desde el dia uno.** El ciclo de editar-reiniciar-verificar baja de 3-5 minutos (reconstruir PBO) a menos de 30 segundos (guardar y reconectar). Esta es la mejora de productividad individual mas grande.
+- **Usa un prefijo de log consistente como `[MyMod]` en cada llamada a Print.** Los script logs contienen salida del codigo vanilla, el motor y cada mod cargado. Sin un prefijo, tu salida es invisible en el ruido.
 
 ---
 
@@ -688,22 +688,22 @@ Lower layers cannot see higher layers. If `3_Game/` code references `PlayerBase`
 
 | Concepto | Teoria | Realidad |
 |---------|--------|---------|
-| `SCRIPT (W)` warnings | Warnings are non-fatal and can be safely ignored | Warnings often predict future crashes. A "Cannot open file" warning today becomes a null pointer crash tomorrow when code assumes the file was loaded. |
-| Listen server testing | Good enough to verify scripts work | Listen servers hide entire categories of bugs: RPCs that never cross the network, missing authority checks, null `PlayerIdentity` on the server, and race conditions between client and server init. |
-| File patching | Edit any file and see changes instantly | `config.cpp` is never file-patched. New `.c` files are not picked up either. Both require a PBO rebuild. Only modifications to existing script and layout files are live-reloaded. |
-| Workbench debugger | Full IDE debugging experience | Workbench can syntax-check and run isolated scripts, but it does not replicate the full game environment. Many APIs return null or behave differently outside the game. |
+| Advertencias `SCRIPT (W)` | Las advertencias no son fatales y pueden ignorarse con seguridad | Las advertencias a menudo predicen crashes futuros. Una advertencia "Cannot open file" hoy se convierte en un crash de null pointer manana cuando el codigo asume que el archivo fue cargado. |
+| Pruebas en listen server | Suficientemente bueno para verificar que los scripts funcionan | Los listen servers ocultan categorias enteras de bugs: RPCs que nunca cruzan la red, verificaciones de autoridad faltantes, `PlayerIdentity` null en el servidor, y condiciones de carrera entre el init del cliente y del servidor. |
+| File patching | Editar cualquier archivo y ver cambios instantaneamente | `config.cpp` nunca se aplica file patching. Los archivos `.c` nuevos tampoco se recogen. Ambos requieren reconstruir el PBO. Solo las modificaciones a archivos de script y layout existentes se recargan en vivo. |
+| Depurador de Workbench | Experiencia de depuracion de IDE completa | Workbench puede verificar sintaxis y ejecutar scripts aislados, pero no replica el entorno de juego completo. Muchas APIs retornan null o se comportan diferente fuera del juego. |
 
 ---
 
-## What You Learned
+## Lo que Aprendiste
 
-In this tutorial you learned:
-- How to find and read DayZ script logs, and what `SCRIPT (E)` and `SCRIPT (W)` markers mean
-- How to use `Print()` debugging with prefixes, formatters, and toggleable debug loggers
-- How to set up DayZDiag with file patching for rapid iteration
-- How to diagnose the most common error patterns: null pointers, type mismatches, undefined variables, and script layer violations
-- How to establish a reliable testing workflow from edit to verification
+En este tutorial aprendiste:
+- Como encontrar y leer los script logs de DayZ, y que significan los marcadores `SCRIPT (E)` y `SCRIPT (W)`
+- Como usar depuracion con `Print()` con prefijos, formateadores y loggers de debug activables
+- Como configurar DayZDiag con file patching para iteracion rapida
+- Como diagnosticar los patrones de error mas comunes: null pointers, desajustes de tipo, variables no definidas y violaciones de capas de script
+- Como establecer un flujo de trabajo de pruebas confiable desde la edicion hasta la verificacion
 
-**Next:** [Chapter 8.8: Building a HUD Overlay](08-hud-overlay.md)
+**Siguiente:** [Capitulo 8.8: Construir un HUD Overlay](08-hud-overlay.md)
 
 ---

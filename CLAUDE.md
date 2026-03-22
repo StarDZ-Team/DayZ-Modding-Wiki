@@ -54,11 +54,13 @@ Reference files sit at the root of each language dir: `cheatsheet.md`, `glossary
 
 ### VitePress Configuration
 
-- **Config:** `.vitepress/config.mts` — defines sidebar via `sidebarEN()`, shared across all locales
-- **Mermaid:** Enabled via `vitepress-plugin-mermaid` for diagrams
+- **Config:** `.vitepress/config.mts` — single sidebar definition via `sidebarEN()`, reused for all 12 locales
+- **Sidebar caveat:** All locale sidebars share the same `sidebarEN()` — links point to `/en/` paths regardless of current language. This is a known limitation.
+- **Mermaid:** Enabled via `vitepress-plugin-mermaid` (dark theme)
 - **Search:** Local client-side search (no external provider)
 - **Code blocks:** Line numbers enabled globally
 - **Clean URLs:** Enabled (no `.html` suffixes)
+- **Dead link exceptions:** `ignoreDeadLinks` allows `/LICENCE/` and `/04-scripting-guide/` patterns
 
 ## Content Conventions
 
@@ -107,6 +109,8 @@ Update these when adding a new chapter:
 3. Previous/Next navigation links in adjacent chapters
 4. `.vitepress/config.mts` — sidebar `sidebarEN()` items array
 
+One topic per PR. Reference vanilla script files or tested in-game behavior when correcting API signatures.
+
 ### Writing Style
 
 - Second person ("you"), present tense
@@ -114,3 +118,5 @@ Update these when adding a new chapter:
 - ATX headings only (`#`, `##`, `###`)
 - `---` horizontal rules between major sections
 - One `#` heading per file
+- **Bold** for UI elements and file names in prose; `` `code` `` for class names, methods, paths
+- Ordered lists for sequential steps; unordered (`-`) for non-sequential items

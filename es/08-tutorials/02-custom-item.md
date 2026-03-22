@@ -1,46 +1,46 @@
-# Chapter 8.2: Creating a Custom Item
+# Capitulo 8.2: Crear un Item Personalizado
 
-[Home](../../README.md) | [<< Previous: Your First Mod](01-first-mod.md) | **Creating a Custom Item** | [Next: Building an Admin Panel >>](03-admin-panel.md)
+[Inicio](../../README.md) | [<< Anterior: Tu Primer Mod](01-first-mod.md) | **Crear un Item Personalizado** | [Siguiente: Construir un Panel de Admin >>](03-admin-panel.md)
 
 ---
 
 ## Tabla de Contenidos
 
-- [What We Are Building](#what-we-are-building)
-- [Prerequisites](#prerequisites)
-- [Step 1: Define the Item Class in config.cpp](#step-1-define-the-item-class-in-configcpp)
-- [Step 2: Set Up Hidden Selections for Textures](#step-2-set-up-hidden-selections-for-textures)
-- [Step 3: Create Basic Textures](#step-3-create-basic-textures)
-- [Step 4: Add to types.xml for Server Spawning](#step-4-add-to-typesxml-for-server-spawning)
-- [Step 5: Create a Display Name with Stringtable](#step-5-create-a-display-name-with-stringtable)
-- [Step 6: Test In-Game](#step-6-test-in-game)
-- [Step 7: Polish -- Model, Textures, and Sounds](#step-7-polish----model-textures-and-sounds)
-- [Complete File Reference](#complete-file-reference)
-- [Troubleshooting](#troubleshooting)
-- [Next Steps](#next-steps)
+- [Que Estamos Construyendo](#que-estamos-construyendo)
+- [Requisitos Previos](#requisitos-previos)
+- [Paso 1: Definir la Clase del Item en config.cpp](#paso-1-definir-la-clase-del-item-en-configcpp)
+- [Paso 2: Configurar Hidden Selections para Texturas](#paso-2-configurar-hidden-selections-para-texturas)
+- [Paso 3: Crear Texturas Basicas](#paso-3-crear-texturas-basicas)
+- [Paso 4: Agregar a types.xml para Spawn en Servidor](#paso-4-agregar-a-typesxml-para-spawn-en-servidor)
+- [Paso 5: Crear un Nombre con Stringtable](#paso-5-crear-un-nombre-con-stringtable)
+- [Paso 6: Probar en el Juego](#paso-6-probar-en-el-juego)
+- [Paso 7: Pulir -- Modelo, Texturas y Sonidos](#paso-7-pulir----modelo-texturas-y-sonidos)
+- [Referencia Completa de Archivos](#referencia-completa-de-archivos)
+- [Solucion de Problemas](#solucion-de-problemas)
+- [Siguientes Pasos](#siguientes-pasos)
 
 ---
 
-## What We Are Building
+## Que Estamos Construyendo
 
-We will create an item called **Field Journal** -- a small notebook that players can find in the world, pick up, and store in their inventory. It will:
+Crearemos un item llamado **Field Journal** -- un pequeno cuaderno que los jugadores pueden encontrar en el mundo, recoger y guardar en su inventario. Tendra:
 
-- Use a vanilla model (borrowed from an existing item) so we do not need 3D modeling
-- Have a custom retextured appearance using hidden selections
-- Appear in the server's spawn table
-- Have a proper display name and description
+- Un modelo vanilla (prestado de un item existente) para no necesitar modelado 3D
+- Una apariencia retexturizada personalizada usando hidden selections
+- Aparecera en la tabla de spawn del servidor
+- Un nombre y descripcion apropiados
 
-This is the standard workflow for creating any item in DayZ, whether it is food, tools, clothing, or building materials.
+Este es el flujo de trabajo estandar para crear cualquier item en DayZ, ya sea comida, herramientas, ropa o materiales de construccion.
 
 ---
 
-## Prerequisites
+## Requisitos Previos
 
-- A working mod structure (complete [Chapter 8.1](01-first-mod.md) first)
-- A text editor
-- DayZ Tools installed (for texture conversion, optional)
+- Una estructura de mod funcional (completa primero el [Capitulo 8.1](01-first-mod.md))
+- Un editor de texto
+- DayZ Tools instalado (para conversion de texturas, opcional)
 
-We will build on top of the mod from Chapter 8.1. Your current structure should look like:
+Construiremos sobre el mod del Capitulo 8.1. Tu estructura actual deberia verse asi:
 
 ```
 MyFirstMod/
@@ -54,24 +54,24 @@ MyFirstMod/
 
 ---
 
-## Step 1: Define the Item Class in config.cpp
+## Paso 1: Definir la Clase del Item en config.cpp
 
-Items in DayZ are defined in the `CfgVehicles` config class. Despite the name "Vehicles", this class holds ALL entity types: items, buildings, vehicles, animals, and everything else.
+Los items en DayZ se definen en la clase de config `CfgVehicles`. A pesar del nombre "Vehicles", esta clase contiene TODOS los tipos de entidades: items, edificios, vehiculos, animales y todo lo demas.
 
-### Create a Data config.cpp
+### Crear un config.cpp de Datos
 
-It is best practice to keep item definitions in a separate PBO from your scripts. Create a new folder structure:
+Es buena practica mantener las definiciones de items en un PBO separado de tus scripts. Crea una nueva estructura de carpetas:
 
 ```
 MyFirstMod/
     mod.cpp
     Scripts/
-        config.cpp              <-- Already exists (scripts)
+        config.cpp              <-- Ya existe (scripts)
     Data/
-        config.cpp              <-- NEW (item definitions)
+        config.cpp              <-- NUEVO (definiciones de items)
 ```
 
-Create the file `MyFirstMod/Data/config.cpp` with this content:
+Crea el archivo `MyFirstMod/Data/config.cpp` con este contenido:
 
 ```cpp
 class CfgPatches
@@ -129,98 +129,98 @@ class CfgVehicles
 };
 ```
 
-### What Each Field Does
+### Que Hace Cada Campo
 
-| Field | Valor | Explanation |
+| Campo | Valor | Explicacion |
 |-------|-------|-------------|
-| `scope` | `2` | Makes the item public -- spawnable and visible in admin tools. Use `0` for base classes that should never spawn directly. |
-| `displayName` | `"$STR_MFM_FieldJournal"` | References a string table entry for the item name. The `$STR_` prefix tells the engine to look it up in `stringtable.csv`. |
-| `descriptionShort` | `"$STR_MFM_FieldJournal_Desc"` | Short description shown in the inventory tooltip. |
-| `model` | Path to `.p3d` | The 3D model. We borrow the vanilla Notebook model. The `\DZ\` prefix references vanilla game files. |
-| `rotationFlags` | `17` | Bitmask controlling how the item can rotate in inventory. `17` allows standard rotation. |
-| `weight` | `200` | Weight in grams. |
-| `itemSize[]` | `{ 1, 2 }` | Inventory grid size: 1 column wide, 2 rows tall. |
-| `absorbency` | `0.5` | How much the item absorbs water (0 = none, 1 = fully). Affects item when it rains. |
-| `hiddenSelections[]` | `{ "camoGround" }` | Named texture slots on the model that can be overridden. |
-| `hiddenSelectionsTextures[]` | Path to `.paa` | Your custom texture for each hidden selection. |
+| `scope` | `2` | Hace el item publico -- spawneable y visible en herramientas de admin. Usa `0` para clases base que nunca deberian spawnearse directamente. |
+| `displayName` | `"$STR_MFM_FieldJournal"` | Referencia una entrada de string table para el nombre del item. El prefijo `$STR_` le dice al motor que lo busque en `stringtable.csv`. |
+| `descriptionShort` | `"$STR_MFM_FieldJournal_Desc"` | Descripcion corta mostrada en el tooltip del inventario. |
+| `model` | Ruta a `.p3d` | El modelo 3D. Tomamos prestado el modelo Notebook de vanilla. El prefijo `\DZ\` referencia archivos del juego vanilla. |
+| `rotationFlags` | `17` | Bitmask que controla como el item puede rotar en el inventario. `17` permite rotacion estandar. |
+| `weight` | `200` | Peso en gramos. |
+| `itemSize[]` | `{ 1, 2 }` | Tamano de cuadricula de inventario: 1 columna de ancho, 2 filas de alto. |
+| `absorbency` | `0.5` | Cuanto absorbe agua el item (0 = nada, 1 = completamente). Afecta al item cuando llueve. |
+| `hiddenSelections[]` | `{ "camoGround" }` | Slots de textura nombrados en el modelo que pueden ser sobreescritos. |
+| `hiddenSelectionsTextures[]` | Ruta a `.paa` | Tu textura personalizada para cada hidden selection. |
 
-### About the Parent Class
+### Sobre la Clase Padre
 
 ```cpp
 class Inventory_Base;
 ```
 
-This line is a **forward declaration**. It tells the config parser that `Inventory_Base` exists (it is defined in vanilla DayZ). Your item class then inherits from it:
+Esta linea es una **declaracion anticipada**. Le dice al parser de config que `Inventory_Base` existe (esta definida en DayZ vanilla). Tu clase de item luego hereda de ella:
 
 ```cpp
 class MFM_FieldJournal : Inventory_Base
 ```
 
-`Inventory_Base` is the standard parent for small items that go in the player's inventory. Other common parent classes include:
+`Inventory_Base` es el padre estandar para items pequenos que van en el inventario del jugador. Otras clases padre comunes incluyen:
 
-| Parent Class | Usar Para |
+| Clase Padre | Usar Para |
 |-------------|---------|
-| `Inventory_Base` | Generic inventory items |
-| `Edible_Base` | Food and drink |
-| `Clothing_Base` | Wearable clothing/armor |
-| `Weapon_Base` | Firearms |
-| `Magazine_Base` | Magazines and ammo boxes |
-| `HouseNoDestruct` | Buildings and structures |
+| `Inventory_Base` | Items de inventario genericos |
+| `Edible_Base` | Comida y bebida |
+| `Clothing_Base` | Ropa/armadura usable |
+| `Weapon_Base` | Armas de fuego |
+| `Magazine_Base` | Cargadores y cajas de municion |
+| `HouseNoDestruct` | Edificios y estructuras |
 
-### About DamageSystem
+### Sobre DamageSystem
 
-The `DamageSystem` block defines how the item takes damage and degrades. The `healthLevels` array maps health percentages to texture states:
+El bloque `DamageSystem` define como el item recibe dano y se degrada. El array `healthLevels` mapea porcentajes de salud a estados de textura:
 
-- `1.0` = pristine
-- `0.7` = worn
-- `0.5` = damaged
-- `0.3` = badly damaged
-- `0.0` = ruined
+- `1.0` = pristine (perfecto)
+- `0.7` = worn (usado)
+- `0.5` = damaged (danado)
+- `0.3` = badly damaged (muy danado)
+- `0.0` = ruined (arruinado)
 
-The empty `{}` after each level is where you would specify damage overlay textures. For simplicity, we leave them empty.
+Los `{}` vacios despues de cada nivel son donde especificarias texturas de overlay de dano. Por simplicidad, los dejamos vacios.
 
 ---
 
-## Step 2: Set Up Hidden Selections for Texturas
+## Paso 2: Configurar Hidden Selections para Texturas
 
-Hidden selections are the mechanism DayZ uses to swap textures on a 3D model without modifying the model file itself. The vanilla Notebook model has a hidden selection called `"camoGround"` that controls its main texture.
+Las hidden selections son el mecanismo que DayZ usa para intercambiar texturas en un modelo 3D sin modificar el archivo del modelo. El modelo Notebook de vanilla tiene una hidden selection llamada `"camoGround"` que controla su textura principal.
 
-### How Hidden Selections Work
+### Como Funcionan las Hidden Selections
 
-1. The 3D model (`.p3d`) defines named regions called **selections**
-2. In config.cpp, `hiddenSelections[]` lists which selections you want to override
-3. `hiddenSelectionsTextures[]` provides your replacement textures, in matching order
+1. El modelo 3D (`.p3d`) define regiones nombradas llamadas **selections**
+2. En config.cpp, `hiddenSelections[]` lista que selections quieres sobreescribir
+3. `hiddenSelectionsTextures[]` provee tus texturas de reemplazo, en orden correspondiente
 
 ```cpp
 hiddenSelections[] = { "camoGround" };
 hiddenSelectionsTextures[] = { "MyFirstMod\Data\Textures\field_journal_co.paa" };
 ```
 
-The first entry in `hiddenSelectionsTextures` replaces the first entry in `hiddenSelections`. If you had multiple selections:
+La primera entrada en `hiddenSelectionsTextures` reemplaza la primera entrada en `hiddenSelections`. Si tuvieras multiples selections:
 
 ```cpp
 hiddenSelections[] = { "camoGround", "camoMale", "camoFemale" };
 hiddenSelectionsTextures[] = { "path\tex1.paa", "path\tex2.paa", "path\tex3.paa" };
 ```
 
-### Finding Hidden Selection Names
+### Encontrar Nombres de Hidden Selections
 
-To discover what hidden selections a vanilla model supports:
+Para descubrir que hidden selections soporta un modelo vanilla:
 
-1. Open **Object Builder** (from DayZ Tools)
-2. Load the model `.p3d` file
-3. Look at the **Named Selections** list
-4. Selections starting with `"camo"` are typically the ones you can override
+1. Abre **Object Builder** (desde DayZ Tools)
+2. Carga el archivo `.p3d` del modelo
+3. Mira la lista de **Named Selections**
+4. Las selections que empiezan con `"camo"` son tipicamente las que puedes sobreescribir
 
-Alternatively, look at the vanilla `config.cpp` for the item you are basing your item on. The `hiddenSelections[]` array shows what is available.
+Alternativamente, mira el `config.cpp` vanilla para el item en el que basas tu item. El array `hiddenSelections[]` muestra que esta disponible.
 
 ---
 
-## Step 3: Create Basic Texturas
+## Paso 3: Crear Texturas Basicas
 
-DayZ uses `.paa` format for textures. During development, you can start with a simple colored image and convert it later.
+DayZ usa el formato `.paa` para texturas. Durante el desarrollo, puedes empezar con una imagen coloreada simple y convertirla despues.
 
-### Create the Texture Folder
+### Crear la Carpeta de Texturas
 
 ```
 MyFirstMod/
@@ -230,67 +230,61 @@ MyFirstMod/
             field_journal_co.paa
 ```
 
-### Option A: Use a Placeholder (Fastest)
+### Opcion A: Usar un Placeholder (Lo Mas Rapido)
 
-For initial testing, you can point `hiddenSelectionsTextures` to a vanilla texture instead of creating your own:
+Para pruebas iniciales, puedes apuntar `hiddenSelectionsTextures` a una textura vanilla en lugar de crear la tuya:
 
 ```cpp
 hiddenSelectionsTextures[] = { "\DZ\characters\accessories\data\Notebook\notebook_co.paa" };
 ```
 
-This uses the vanilla notebook texture. Your item will look identical to the vanilla notebook but will function as your custom item. Replace it with your own texture once you confirm everything works.
+Esto usa la textura vanilla del notebook. Tu item se vera identico al notebook vanilla pero funcionara como tu item personalizado. Reemplazala con tu propia textura una vez que confirmes que todo funciona.
 
-### Option B: Create a Custom Texture
+### Opcion B: Crear una Textura Personalizada
 
-1. **Create a source image:**
-   - Open any image editor (GIMP, Photoshop, Paint.NET, or even MS Paint)
-   - Create a new image at **512x512 pixels** (power-of-2 dimensions are required: 256, 512, 1024, 2048)
-   - Fill it with a color or design. For a field journal, try a dark brown or green.
-   - Save as `.tga` (TGA format) or `.png`
+1. **Crea una imagen fuente:**
+   - Abre cualquier editor de imagenes (GIMP, Photoshop, Paint.NET o incluso MS Paint)
+   - Crea una nueva imagen de **512x512 pixeles** (las dimensiones deben ser potencia de 2: 256, 512, 1024, 2048)
+   - Rellenala con un color o diseno. Para un diario de campo, prueba un marron oscuro o verde.
+   - Guarda como `.tga` (formato TGA) o `.png`
 
-2. **Convert to `.paa`:**
-   - Open **TexView2** from DayZ Tools
-   - Go to **File > Open** and select your `.tga` or `.png`
-   - Go to **File > Save As** and save as `.paa` format
-   - Save it to `MyFirstMod/Data/Textures/field_journal_co.paa`
+2. **Convierte a `.paa`:**
+   - Abre **TexView2** desde DayZ Tools
+   - Ve a **File > Open** y selecciona tu `.tga` o `.png`
+   - Ve a **File > Save As** y guarda en formato `.paa`
+   - Guardalo en `MyFirstMod/Data/Textures/field_journal_co.paa`
 
-   The `_co` suffix is a naming convention meaning "color" (the diffuse/albedo texture). Other suffixes include `_nohq` (normal map), `_smdi` (specular), and `_as` (alpha/transparency).
+   El sufijo `_co` es una convencion de nombres que significa "color" (la textura diffuse/albedo). Otros sufijos incluyen `_nohq` (mapa de normales), `_smdi` (especular) y `_as` (alfa/transparencia).
 
 ### Convenciones de Nombres de Texturas
 
 | Sufijo | Tipo | Proposito |
 |--------|------|---------|
-| `_co` | Color (Diffuse) | The main color/appearance texture |
-| `_nohq` | Normal Map | Surface detail and lighting normals |
-| `_smdi` | Specular | Shininess and metallic properties |
-| `_as` | Alpha/Surface | Transparency or surface masking |
-| `_de` | Detalle | Additional detail overlay |
+| `_co` | Color (Diffuse) | La textura principal de color/apariencia |
+| `_nohq` | Mapa de Normales | Detalle de superficie y normales de iluminacion |
+| `_smdi` | Especular | Brillo y propiedades metalicas |
+| `_as` | Alfa/Superficie | Transparencia o mascara de superficie |
+| `_de` | Detalle | Overlay de detalle adicional |
 
-For a first item, you only need the `_co` texture. The model will use default values for the others.
+Para un primer item, solo necesitas la textura `_co`. El modelo usara valores predeterminados para las demas.
 
 ---
 
-## Step 4: Add to types.xml for Server Spawning
+## Paso 4: Agregar a types.xml para Spawn en Servidor
 
-The `types.xml` file controls what items spawn in the world, how many exist at once, and where they appear. This file lives in the server's **mission folder** (not in your mod).
+El archivo `types.xml` controla que items aparecen en el mundo, cuantos existen a la vez y donde aparecen. Este archivo vive en la **carpeta de mision** del servidor (no en tu mod).
 
-### Locate types.xml
+### Localizar types.xml
 
-For a standard DayZ server, `types.xml` is at:
-
-```
-<DayZ Server>\mpmissions\dayzOffline.chernarusplus\db\types.xml
-```
-
-Or for a multiplayer mission:
+Para un servidor DayZ estandar, `types.xml` esta en:
 
 ```
 <DayZ Server>\mpmissions\dayzOffline.chernarusplus\db\types.xml
 ```
 
-### Add Your Item Entry
+### Agregar la Entrada de Tu Item
 
-Open `types.xml` and add this block inside the root `<types>` element:
+Abre `types.xml` y agrega este bloque dentro del elemento raiz `<types>`:
 
 ```xml
 <type name="MFM_FieldJournal">
@@ -310,42 +304,42 @@ Open `types.xml` and add this block inside the root `<types>` element:
 </type>
 ```
 
-### What Each Tag Means
+### Que Significa Cada Tag
 
-| Tag | Valor | Explanation |
+| Tag | Valor | Explicacion |
 |-----|-------|-------------|
-| `name` | `"MFM_FieldJournal"` | Must match your config.cpp class name exactly |
-| `nominal` | `10` | Target number of this item in the world at any time |
-| `lifetime` | `14400` | Seconds before a dropped item despawns (14400 = 4 hours) |
-| `restock` | `1800` | Seconds between respawn checks (1800 = 30 minutes) |
-| `min` | `5` | Minimum number the Central Economy tries to maintain |
-| `quantmin` / `quantmax` | `-1` | Quantity range (-1 = not applicable, used for items with variable quantity like water bottles) |
-| `cost` | `100` | Economy priority weight (higher = spawns more readily) |
-| `flags` | Various | What counts toward the nominal limit |
-| `category` | `"tools"` | Item category for economy balancing |
-| `usage` | `"Town"`, `"Village"` | Where the item spawns (location categories) |
-| `value` | `"Tier1"`, `"Tier2"` | Map tier zones where the item appears |
+| `name` | `"MFM_FieldJournal"` | Debe coincidir exactamente con el nombre de clase de tu config.cpp |
+| `nominal` | `10` | Numero objetivo de este item en el mundo en cualquier momento |
+| `lifetime` | `14400` | Segundos antes de que un item tirado desaparezca (14400 = 4 horas) |
+| `restock` | `1800` | Segundos entre verificaciones de respawn (1800 = 30 minutos) |
+| `min` | `5` | Numero minimo que el Central Economy intenta mantener |
+| `quantmin` / `quantmax` | `-1` | Rango de cantidad (-1 = no aplica, usado para items con cantidad variable como botellas de agua) |
+| `cost` | `100` | Peso de prioridad de economia (mayor = spawnea mas facilmente) |
+| `flags` | Varios | Que cuenta hacia el limite nominal |
+| `category` | `"tools"` | Categoria del item para balanceo de economia |
+| `usage` | `"Town"`, `"Village"` | Donde spawnea el item (categorias de ubicacion) |
+| `value` | `"Tier1"`, `"Tier2"` | Zonas de tier del mapa donde aparece el item |
 
-### Common Usage and Value Tags
+### Tags Comunes de Usage y Value
 
-**Usage (where it spawns):**
+**Usage (donde spawnea):**
 - `Town`, `Village`, `Farm`, `Industrial`, `Military`, `Hunting`, `Medical`, `Coast`, `Firefighter`, `Prison`, `Police`, `School`, `ContaminatedArea`
 
-**Value (map tier):**
-- `Tier1` -- coast/starter areas
-- `Tier2` -- inland towns
-- `Tier3` -- military/northwest
-- `Tier4` -- deepest inland/endgame
+**Value (tier del mapa):**
+- `Tier1` -- costa/areas iniciales
+- `Tier2` -- pueblos del interior
+- `Tier3` -- militar/noroeste
+- `Tier4` -- interior mas profundo/endgame
 
 ---
 
-## Step 5: Create a Display Name with Stringtable
+## Paso 5: Crear un Nombre con Stringtable
 
-The string table provides localized text for item names and descriptions. DayZ reads string tables from `stringtable.csv` files.
+La string table provee texto localizado para nombres y descripciones de items. DayZ lee string tables de archivos `stringtable.csv`.
 
-### Create the Stringtable
+### Crear la Stringtable
 
-Create the file `MyFirstMod/Data/Stringtable.csv` with this content:
+Crea el archivo `MyFirstMod/Data/Stringtable.csv` con este contenido:
 
 ```csv
 "Language","English","Czech","German","Russian","Polish","Hungarian","Italian","Spanish","French","Chinese","Japanese","Portuguese","ChineseSimp","Korean"
@@ -353,119 +347,119 @@ Create the file `MyFirstMod/Data/Stringtable.csv` with this content:
 "STR_MFM_FieldJournal_Desc","A weathered leather journal used to record field notes and observations.","","","","","","","","","","","","",""
 ```
 
-Each row has columns for every supported language. You only need to fill in the `"English"` column. The other columns can be empty strings -- the engine falls back to English when a translation is missing.
+Cada fila tiene columnas para cada idioma soportado. Solo necesitas llenar la columna `"English"`. Las otras columnas pueden ser strings vacios -- el motor recurre al ingles cuando falta una traduccion.
 
-### How String References Work
+### Como Funcionan las Referencias de String
 
-In your config.cpp, you wrote:
+En tu config.cpp, escribiste:
 
 ```cpp
 displayName = "$STR_MFM_FieldJournal";
 ```
 
-The `$STR_` prefix tells the engine: "Look for a string table entry named `STR_MFM_FieldJournal`." The engine searches all loaded `Stringtable.csv` files for a matching row and returns the text for the player's language.
+El prefijo `$STR_` le dice al motor: "Busca una entrada de string table llamada `STR_MFM_FieldJournal`." El motor busca en todos los archivos `Stringtable.csv` cargados una fila que coincida y retorna el texto para el idioma del jugador.
 
-### Formato CSV Rules
+### Reglas del Formato CSV
 
-- The first row must be the header with language names (in the exact order shown above)
-- Each subsequent row is: `"KEY","English text","Czech text",...`
-- All values must be double-quoted
-- Separate values with commas
-- No trailing comma after the last value
-- Save as UTF-8 encoding (important for non-ASCII characters in other languages)
+- La primera fila debe ser el encabezado con nombres de idiomas (en el orden exacto mostrado arriba)
+- Cada fila subsiguiente es: `"CLAVE","Texto en ingles","Texto en checo",...`
+- Todos los valores deben estar entre comillas dobles
+- Los valores se separan con comas
+- Sin coma al final despues del ultimo valor
+- Guardar con codificacion UTF-8 (importante para caracteres no ASCII en otros idiomas)
 
 ---
 
-## Step 6: Test In-Game
+## Paso 6: Probar en el Juego
 
-### Update Your Scripts config.cpp
+### Actualizar Tu Scripts config.cpp
 
-Before testing, you need to update your `Scripts/config.cpp` to also pack the Data folder, OR pack the Data folder as a separate PBO.
+Antes de probar, necesitas actualizar tu `Scripts/config.cpp` para tambien empaquetar la carpeta Data, O empaquetar la carpeta Data como un PBO separado.
 
-**Option A: Separate PBO (Recommended)**
+**Opcion A: PBO Separado (Recomendado)**
 
-Pack `MyFirstMod/Data/` as a second PBO:
+Empaqueta `MyFirstMod/Data/` como un segundo PBO:
 
 ```
 @MyFirstMod/
     mod.cpp
     Addons/
-        Scripts.pbo          <-- Contains Scripts/config.cpp and 5_Mission/
-        Data.pbo             <-- Contains Data/config.cpp, Textures/, Stringtable.csv
+        Scripts.pbo          <-- Contiene Scripts/config.cpp y 5_Mission/
+        Data.pbo             <-- Contiene Data/config.cpp, Textures/, Stringtable.csv
 ```
 
-Use Addon Builder with:
+Usa Addon Builder con:
 - Source: `MyFirstMod/Data/`
 - Prefix: `MyFirstMod/Data`
 
-**Option B: File Patching (Development)**
+**Opcion B: File Patching (Desarrollo)**
 
-During development with `-filePatching`, the engine reads directly from your folders. No additional PBO packing is needed:
+Durante el desarrollo con `-filePatching`, el motor lee directamente de tus carpetas. No se necesita empaquetado PBO adicional:
 
 ```
 DayZDiag_x64.exe -mod=P:\MyFirstMod -filePatching
 ```
 
-### Spawn the Item Using the Script Console
+### Spawnear el Item Usando la Consola de Script
 
-The fastest way to test your item without waiting for it to spawn naturally:
+La forma mas rapida de probar tu item sin esperar a que spawnee naturalmente:
 
-1. Launch DayZ with your mod loaded
-2. Join your local server or start offline mode
-3. Open the **script console** (if using DayZDiag, this is available from the debug menu)
-4. In the script console, type:
+1. Lanza DayZ con tu mod cargado
+2. Unete a tu servidor local o inicia el modo offline
+3. Abre la **consola de script** (si usas DayZDiag, esta disponible desde el menu de debug)
+4. En la consola de script, escribe:
 
 ```c
 GetGame().GetPlayer().GetInventory().CreateInInventory("MFM_FieldJournal");
 ```
 
-5. Press **Execute** (or the run button)
+5. Presiona **Execute** (o el boton de ejecutar)
 
-The item should appear in your character's inventory.
+El item deberia aparecer en el inventario de tu personaje.
 
-### Alternative: Spawn Near Player
+### Alternativa: Spawnear Cerca del Jugador
 
-If your inventory is full, spawn the item on the ground near your character:
+Si tu inventario esta lleno, spawnea el item en el suelo cerca de tu personaje:
 
 ```c
 vector pos = GetGame().GetPlayer().GetPosition();
 GetGame().CreateObject("MFM_FieldJournal", pos, false, false, true);
 ```
 
-### What to Check
+### Que Verificar
 
-1. **Does the item appear?** If yes, the config.cpp class definition is correct.
-2. **Does it have the right name?** Check that "Field Journal" appears (not `$STR_MFM_FieldJournal`). If you see the raw string reference, the stringtable is not loading.
-3. **Does it have the right texture?** If using a custom texture, verify the colors match. If the item appears all white or pink, the texture path is wrong.
-4. **Can you pick it up?** If the item spawns but cannot be picked up, check `itemSize` and `scope`.
-5. **Does the inventory icon look correct?** The size should match your `itemSize[]` definition.
+1. **Aparece el item?** Si es asi, la definicion de clase en config.cpp es correcta.
+2. **Tiene el nombre correcto?** Verifica que "Field Journal" aparezca (no `$STR_MFM_FieldJournal`). Si ves la referencia de string cruda, la stringtable no esta cargando.
+3. **Tiene la textura correcta?** Si usas una textura personalizada, verifica que los colores coincidan. Si el item aparece todo blanco o rosa, la ruta de textura esta mal.
+4. **Puedes recogerlo?** Si el item spawnea pero no puede ser recogido, verifica `itemSize` y `scope`.
+5. **Se ve correcto el icono de inventario?** El tamano deberia coincidir con tu definicion de `itemSize[]`.
 
 ---
 
-## Step 7: Polish -- Model, Texturas, and Sounds
+## Paso 7: Pulir -- Modelo, Texturas y Sonidos
 
-Once your item works with a borrowed model, you can upgrade it with custom assets.
+Una vez que tu item funciona con un modelo prestado, puedes mejorarlo con assets personalizados.
 
-### Custom 3D Model
+### Modelo 3D Personalizado
 
-Creating a custom `.p3d` model requires:
+Crear un modelo `.p3d` personalizado requiere:
 
-1. **Blender or 3DS Max** with the DayZ tools plugin (Blender is free)
-2. Export the model as `.p3d` using Object Builder
-3. Define proper geometry (visual mesh), fire geometry (collision), and view geometry (LODs)
-4. Create UV maps for your textures
-5. Define named selections for hidden selections
+1. **Blender o 3DS Max** con el plugin de herramientas DayZ (Blender es gratuito)
+2. Exportar el modelo como `.p3d` usando Object Builder
+3. Definir geometria adecuada (mesh visual), geometria de fuego (colision) y geometria de vista (LODs)
+4. Crear mapas UV para tus texturas
+5. Definir named selections para hidden selections
 
-This is a significant undertaking. For most items, retexturing a vanilla model (as we did above) is sufficient.
+Esto es un emprendimiento significativo. Para la mayoria de items, retexturizar un modelo vanilla (como hicimos arriba) es suficiente.
 
-### Improved Texturas
+### Texturas Mejoradas
 
-For a professional-looking item:
+Para un item con apariencia profesional:
 
-1. Create a **2048x2048** texture for close-up detail (or 1024x1024 for small items)
-2. Include a **normal map** (`_nohq.paa`) for surface detail without extra polygons
-3. Include a **specular map** (`_smdi.paa`) for material properties (shininess, roughness)
-4. Update your config:
+1. Crea una textura de **2048x2048** para detalle de cerca (o 1024x1024 para items pequenos)
+2. Incluye un **mapa de normales** (`_nohq.paa`) para detalle de superficie sin poligonos extra
+3. Incluye un **mapa especular** (`_smdi.paa`) para propiedades de material (brillo, rugosidad)
+4. Actualiza tu config:
 
 ```cpp
 hiddenSelections[] = { "camoGround" };
@@ -473,7 +467,7 @@ hiddenSelectionsTextures[] = { "MyFirstMod\Data\Textures\field_journal_co.paa" }
 hiddenSelectionsMaterials[] = { "MyFirstMod\Data\Textures\field_journal.rvmat" };
 ```
 
-An `.rvmat` (Rvmat material file) ties all texture maps together:
+Un archivo `.rvmat` (archivo de material Rvmat) une todos los mapas de textura:
 
 ```cpp
 ambient[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -499,12 +493,12 @@ class Stage2
 };
 ```
 
-### Custom Sounds
+### Sonidos Personalizados
 
-To add a sound when the item is used or picked up:
+Para agregar un sonido cuando el item se usa o se recoge:
 
-1. Create a `.ogg` audio file (OGG Vorbis format, the only format DayZ supports for custom sounds)
-2. Define `CfgSoundShaders` and `CfgSoundSets` in your Data config.cpp:
+1. Crea un archivo de audio `.ogg` (formato OGG Vorbis, el unico formato que DayZ soporta para sonidos personalizados)
+2. Define `CfgSoundShaders` y `CfgSoundSets` en tu Data config.cpp:
 
 ```cpp
 class CfgSoundShaders
@@ -530,16 +524,16 @@ class CfgSoundSets
 };
 ```
 
-Note: Sound file paths in `samples[]` do NOT include the `.ogg` extension.
+Nota: Las rutas de archivos de sonido en `samples[]` NO incluyen la extension `.ogg`.
 
-### Adding Script Behavior
+### Agregar Comportamiento con Script
 
-To give your item custom behavior (for example, an action when the player uses it), create a script class in `4_World`:
+Para darle a tu item comportamiento personalizado (por ejemplo, una accion cuando el jugador lo usa), crea una clase de script en `4_World`:
 
 ```
 MyFirstMod/
     Scripts/
-        config.cpp              <-- Add worldScriptModule entry
+        config.cpp              <-- Agregar entrada de worldScriptModule
         4_World/
             MyFirstMod/
                 MFM_FieldJournal.c
@@ -548,7 +542,7 @@ MyFirstMod/
                 MissionHello.c
 ```
 
-Update `Scripts/config.cpp` to include the new layer:
+Actualiza `Scripts/config.cpp` para incluir la nueva capa:
 
 ```cpp
 dependencies[] = { "World", "Mission" };
@@ -568,7 +562,7 @@ class defs
 };
 ```
 
-Create `4_World/MyFirstMod/MFM_FieldJournal.c`:
+Crea `4_World/MyFirstMod/MFM_FieldJournal.c`:
 
 ```c
 class MFM_FieldJournal extends Inventory_Base
@@ -584,7 +578,7 @@ class MFM_FieldJournal extends Inventory_Base
     override void SetActions()
     {
         super.SetActions();
-        // Add custom actions here
+        // Agregar acciones personalizadas aqui
         // AddAction(ActionReadJournal);
     }
 
@@ -604,9 +598,9 @@ class MFM_FieldJournal extends Inventory_Base
 
 ---
 
-## Complete File Reference
+## Referencia Completa de Archivos
 
-### Final Directory Structure
+### Estructura Final de Directorios
 
 ```
 MyFirstMod/
@@ -746,7 +740,7 @@ class CfgVehicles
 "STR_MFM_FieldJournal_Desc","A weathered leather journal used to record field notes and observations.","","","","","","","","","","","","",""
 ```
 
-### types.xml Entry (Server Mission Folder)
+### Entrada de types.xml (Carpeta de Mision del Servidor)
 
 ```xml
 <type name="MFM_FieldJournal">
@@ -770,45 +764,45 @@ class CfgVehicles
 
 ## Solucion de Problemas
 
-### Item Does Not Appear When Spawned via Script Console
+### El Item No Aparece Al Spawnearlo Via Consola de Script
 
-- **Class name mismatch:** The name in the spawn command must match your config.cpp class name exactly: `"MFM_FieldJournal"` (case-sensitive).
-- **config.cpp not loaded:** Check that your Data PBO is packed and loaded, or that file patching is active.
-- **CfgPatches missing:** Every config.cpp must have a valid `CfgPatches` block.
+- **Desajuste de nombre de clase:** El nombre en el comando de spawn debe coincidir exactamente con el nombre de clase de tu config.cpp: `"MFM_FieldJournal"` (distingue mayusculas).
+- **config.cpp no cargado:** Verifica que tu PBO de Data esta empaquetado y cargado, o que el file patching esta activo.
+- **Falta CfgPatches:** Todo config.cpp debe tener un bloque `CfgPatches` valido.
 
-### Item Name Shows as `$STR_MFM_FieldJournal` (Raw String Reference)
+### El Nombre del Item Se Muestra como `$STR_MFM_FieldJournal` (Referencia de String Cruda)
 
-- **Stringtable not found:** Ensure `Stringtable.csv` is in the same PBO as the config that references it, or in the mod root.
-- **Wrong key name:** The key in the CSV must match exactly (without the `$` prefix): `"STR_MFM_FieldJournal"`.
-- **CSV format error:** Make sure all values are double-quoted and the header row is correct.
+- **Stringtable no encontrada:** Asegurate de que `Stringtable.csv` esta en el mismo PBO que la config que la referencia, o en la raiz del mod.
+- **Nombre de clave incorrecto:** La clave en el CSV debe coincidir exactamente (sin el prefijo `$`): `"STR_MFM_FieldJournal"`.
+- **Error de formato CSV:** Asegurate de que todos los valores esten entre comillas dobles y que la fila de encabezado sea correcta.
 
-### Item Appears All White, Pink, or Invisible
+### El Item Aparece Todo Blanco, Rosa o Invisible
 
-- **Texture path wrong:** Verify that `hiddenSelectionsTextures[]` points to the correct `.paa` file path. Paths use backslashes in config.cpp.
-- **Hidden selection name wrong:** The selection name must match what the model defines. Check using Object Builder.
-- **Texture not in PBO:** If using packed PBOs, the texture file must be inside the PBO.
+- **Ruta de textura incorrecta:** Verifica que `hiddenSelectionsTextures[]` apunte al archivo `.paa` correcto. Las rutas usan barras invertidas en config.cpp.
+- **Nombre de hidden selection incorrecto:** El nombre de la selection debe coincidir con lo que el modelo define. Verifica usando Object Builder.
+- **Textura no esta en el PBO:** Si usas PBOs empaquetados, el archivo de textura debe estar dentro del PBO.
 
-### Item Cannot Be Picked Up
+### El Item No Puede Ser Recogido
 
-- **`scope` not set to 2:** Ensure `scope = 2;` is in your item class.
-- **`itemSize` too large:** If the item size exceeds the player's inventory space, they cannot pick it up.
-- **Parent class wrong:** Make sure you are inheriting from `Inventory_Base` or another valid item parent.
+- **`scope` no establecido en 2:** Asegurate de que `scope = 2;` este en tu clase de item.
+- **`itemSize` demasiado grande:** Si el tamano del item excede el espacio de inventario del jugador, no pueden recogerlo.
+- **Clase padre incorrecta:** Asegurate de estar heredando de `Inventory_Base` u otro padre de item valido.
 
-### Item Spawns But Has Wrong Size in Inventory
+### El Item Spawnea Pero Tiene Tamano Incorrecto en el Inventario
 
-- **`itemSize[]`:** The values are `{ columns, rows }`. `{ 1, 2 }` means 1 wide and 2 tall. `{ 2, 3 }` means 2 wide and 3 tall.
+- **`itemSize[]`:** Los valores son `{ columnas, filas }`. `{ 1, 2 }` significa 1 de ancho y 2 de alto. `{ 2, 3 }` significa 2 de ancho y 3 de alto.
 
 ---
 
 ## Siguientes Pasos
 
-1. **[Chapter 8.3: Building an Admin Panel Module](03-admin-panel.md)** -- Create a UI panel with server-client communication.
-2. **Add variants** -- Create color variants of your item using different hidden selection textures.
-3. **Add crafting recipes** -- Define crafting combinations in config.cpp using `CfgRecipes`.
-4. **Create clothing** -- Extend `Clothing_Base` instead of `Inventory_Base` for wearable items.
-5. **Build a weapon** -- Extend `Weapon_Base` for firearms with attachments and animations.
+1. **[Capitulo 8.3: Construir un Modulo de Panel de Admin](03-admin-panel.md)** -- Crear un panel de UI con comunicacion servidor-cliente.
+2. **Agregar variantes** -- Crea variantes de color de tu item usando diferentes texturas de hidden selection.
+3. **Agregar recetas de crafteo** -- Define combinaciones de crafteo en config.cpp usando `CfgRecipes`.
+4. **Crear ropa** -- Extiende `Clothing_Base` en lugar de `Inventory_Base` para items usables.
+5. **Construir un arma** -- Extiende `Weapon_Base` para armas de fuego con accesorios y animaciones.
 
 ---
 
-**Previous:** [Chapter 8.1: Your First Mod (Hello World)](01-first-mod.md)
-**Next:** [Chapter 8.3: Building an Admin Panel Module](03-admin-panel.md)
+**Anterior:** [Capitulo 8.1: Tu Primer Mod (Hello World)](01-first-mod.md)
+**Siguiente:** [Capitulo 8.3: Construir un Modulo de Panel de Admin](03-admin-panel.md)

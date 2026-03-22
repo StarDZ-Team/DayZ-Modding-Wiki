@@ -1,108 +1,112 @@
-# Chapter 8.1: Your First Mod (Hello World)
+# 第 8.1 章: はじめての Mod（Hello World）
 
-[Home](../../README.md) | **Your First Mod** | [Next: Creating a Custom Item >>](02-custom-item.md)
+[ホーム](../../README.md) | **はじめての Mod** | [次: カスタムアイテムの作成 >>](02-custom-item.md)
+
+---
+
+> **概要：** このチュートリアルでは、ゼロから初めての DayZ Mod を作成する手順を解説します。ツールのインストール、ワークスペースの設定、3つのファイルの作成、PBO のパック、DayZ での Mod の読み込み、スクリプトログでの動作確認まで行います。DayZ Modding の経験は必要ありません。
 
 ---
 
 ## 目次
 
-- [Prerequisites](#prerequisites)
-- [Step 1: Install DayZ Tools](#step-1-install-dayz-tools)
-- [Step 2: Set Up the P: Drive (Workdrive)](#step-2-set-up-the-p-drive-workdrive)
-- [Step 3: Create the Mod Directory Structure](#step-3-create-the-mod-directory-structure)
-- [Step 4: Write mod.cpp](#step-4-write-modcpp)
-- [Step 5: Write config.cpp](#step-5-write-configcpp)
-- [Step 6: Write Your First Script](#step-6-write-your-first-script)
-- [Step 7: Pack the PBO with Addon Builder](#step-7-pack-the-pbo-with-addon-builder)
-- [Step 8: Load the Mod in DayZ](#step-8-load-the-mod-in-dayz)
-- [Step 9: Verify in the Script Log](#step-9-verify-in-the-script-log)
-- [Step 10: Troubleshooting Common Issues](#step-10-troubleshooting-common-issues)
-- [Complete File Reference](#complete-file-reference)
-- [Next Steps](#next-steps)
+- [前提条件](#前提条件)
+- [ステップ 1: DayZ Tools のインストール](#ステップ-1-dayz-tools-のインストール)
+- [ステップ 2: P: ドライブ（Workdrive）の設定](#ステップ-2-p-ドライブworkdriveの設定)
+- [ステップ 3: Mod ディレクトリ構造の作成](#ステップ-3-mod-ディレクトリ構造の作成)
+- [ステップ 4: mod.cpp の作成](#ステップ-4-modcpp-の作成)
+- [ステップ 5: config.cpp の作成](#ステップ-5-configcpp-の作成)
+- [ステップ 6: 最初のスクリプトの作成](#ステップ-6-最初のスクリプトの作成)
+- [ステップ 7: Addon Builder で PBO をパック](#ステップ-7-addon-builder-で-pbo-をパック)
+- [ステップ 8: DayZ で Mod を読み込む](#ステップ-8-dayz-で-mod-を読み込む)
+- [ステップ 9: スクリプトログで確認](#ステップ-9-スクリプトログで確認)
+- [ステップ 10: よくある問題のトラブルシューティング](#ステップ-10-よくある問題のトラブルシューティング)
+- [完全なファイルリファレンス](#完全なファイルリファレンス)
+- [次のステップ](#次のステップ)
 
 ---
 
-## Prerequisites
+## 前提条件
 
-Before you begin, make sure you have:
+始める前に、以下を確認してください：
 
-- **Steam** installed and logged in
-- **DayZ** game installed (retail version from Steam)
-- A **text editor** (VS Code, Notepad++, or even Notepad)
-- About **15 GB of free disk space** for DayZ Tools
+- **Steam** がインストールされ、ログインしていること
+- **DayZ** ゲームがインストールされていること（Steam の製品版）
+- **テキストエディタ**（VS Code、Notepad++、またはメモ帳でも可）
+- DayZ Tools 用の約 **15 GB の空きディスク容量**
 
-That is everything. No programming experience is required for this tutorial -- every line of code is explained.
+以上で全てです。このチュートリアルではプログラミング経験は必要ありません --- すべてのコードを解説します。
 
 ---
 
-## Step 1: Install DayZ Tools
+## ステップ 1: DayZ Tools のインストール
 
-DayZ Tools is a free application on Steam that includes everything you need to build mods: the Workbench script editor, Addon Builder for PBO packing, Terrain Builder, and Object Builder.
+DayZ Tools は Steam で無料配布されているアプリケーションで、Mod 作成に必要なすべてが含まれています：Workbench スクリプトエディタ、PBO パック用の Addon Builder、Terrain Builder、Object Builder。
 
-### How to Install
+### インストール方法
 
-1. Open **Steam**
-2. Go to **Library**
-3. In the dropdown filter at the top, change **Games** to **Tools**
-4. Search for **DayZ Tools**
-5. Click **Install**
-6. Wait for the download to complete (it is roughly 12-15 GB)
+1. **Steam** を開く
+2. **ライブラリ** に移動
+3. 上部のドロップダウンフィルターで **ゲーム** を **ツール** に変更
+4. **DayZ Tools** を検索
+5. **インストール** をクリック
+6. ダウンロード完了を待つ（約 12〜15 GB）
 
-Once installed, you will find DayZ Tools in your Steam library under Tools. The default installation path is:
+インストール後、DayZ Tools は Steam ライブラリのツールの下に表示されます。デフォルトのインストールパス：
 
 ```
 C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools\
 ```
 
-### What Gets Installed
+### インストールされるもの
 
-| Tool | Purpose |
+| ツール | 用途 |
 |------|---------|
-| **Addon Builder** | Packs your mod files into `.pbo` archives |
-| **Workbench** | Script editor with syntax highlighting |
-| **Object Builder** | 3D model viewer and editor for `.p3d` files |
-| **Terrain Builder** | Map/terrain editor |
-| **TexView2** | Texture viewer/converter (`.paa`, `.edds`) |
+| **Addon Builder** | Mod ファイルを `.pbo` アーカイブにパック |
+| **Workbench** | シンタックスハイライト付きスクリプトエディタ |
+| **Object Builder** | `.p3d` ファイルの 3D モデルビューア/エディタ |
+| **Terrain Builder** | マップ/地形エディタ |
+| **TexView2** | テクスチャビューア/コンバータ（`.paa`、`.edds`） |
 
-For this tutorial, you only need **Addon Builder**. The others are useful later.
+このチュートリアルでは **Addon Builder** のみ必要です。その他は後で役に立ちます。
 
 ---
 
-## Step 2: Set Up the P: Drive (Workdrive)
+## ステップ 2: P: ドライブ（Workdrive）の設定
 
-DayZ modding uses a virtual drive letter **P:** as a shared workspace. All mods and game data reference paths starting from P:, which keeps paths consistent across different machines.
+DayZ Modding では仮想ドライブレター **P:** を共有ワークスペースとして使用します。すべての Mod とゲームデータは P: から始まるパスを参照するため、異なるマシン間でパスの一貫性を保ちます。
 
-### Creating the P: Drive
+### P: ドライブの作成
 
-1. Open **DayZ Tools** from Steam
-2. In the main DayZ Tools window, click **P: Drive Management** (or look for a button labeled "Mount P drive" / "Setup P drive")
-3. Click **Create/Mount P: Drive**
-4. Choose a location for the P: drive data (default is fine, or pick a drive with enough space)
-5. Wait for the process to complete
+1. Steam から **DayZ Tools** を開く
+2. DayZ Tools のメインウィンドウで **P: Drive Management** をクリック（または「Mount P drive」/「Setup P drive」と表示されたボタンを探す）
+3. **Create/Mount P: Drive** をクリック
+4. P: ドライブデータの保存先を選択（デフォルトで問題ないか、十分な容量のあるドライブを選ぶ）
+5. 処理の完了を待つ
 
-### Verify It Works
+### 動作確認
 
-Open **File Explorer** and navigate to `P:\`. You should see a directory that contains DayZ game data. If the P: drive exists and you can browse it, you are ready to proceed.
+**エクスプローラー** を開き、`P:\` に移動します。DayZ ゲームデータを含むディレクトリが表示されるはずです。P: ドライブが存在し、ブラウズできれば、次に進む準備ができています。
 
-### Alternative: Manual P: Drive
+### 代替方法：手動 P: ドライブ
 
-If the DayZ Tools GUI does not work, you can create a P: drive manually using a Windows command prompt (run as Administrator):
+DayZ Tools の GUI が動作しない場合、Windows コマンドプロンプト（管理者として実行）で手動で P: ドライブを作成できます：
 
 ```batch
 subst P: "C:\DayZWorkdrive"
 ```
 
-Replace `C:\DayZWorkdrive` with any folder you want. This creates a temporary drive mapping that lasts until you reboot. For a permanent mapping, use `net use` or the DayZ Tools GUI.
+`C:\DayZWorkdrive` を任意のフォルダに置き換えてください。これにより再起動まで有効な一時的なドライブマッピングが作成されます。永続的なマッピングには `net use` または DayZ Tools の GUI を使用してください。
 
-### What If I Do Not Want to Use P: Drive?
+### P: ドライブを使いたくない場合は？
 
-You can develop without the P: drive by placing your mod folder directly in the DayZ game directory and using `-filePatching` mode. However, the P: drive is the standard workflow and all official documentation assumes it. We strongly recommend setting it up.
+P: ドライブなしでも、Mod フォルダを DayZ のゲームディレクトリに直接配置し、`-filePatching` モードを使用して開発できます。ただし、P: ドライブは標準的なワークフローであり、すべての公式ドキュメントで前提とされています。設定することを強く推奨します。
 
 ---
 
-## Step 3: Create the Mod Directory Structure
+## ステップ 3: Mod ディレクトリ構造の作成
 
-Every DayZ mod follows a specific folder structure. Create the following directories and files on your P: drive (or in your DayZ game directory if not using P:):
+すべての DayZ Mod は特定のフォルダ構造に従います。P: ドライブ上に以下のディレクトリとファイルを作成してください（P: を使用しない場合は DayZ ゲームディレクトリ内に）：
 
 ```
 P:\MyFirstMod\
@@ -114,33 +118,33 @@ P:\MyFirstMod\
                 MissionHello.c
 ```
 
-### Create the Folders
+### フォルダの作成
 
-1. Open **File Explorer**
-2. Navigate to `P:\`
-3. Create a new folder called `MyFirstMod`
-4. Inside `MyFirstMod`, create a folder called `Scripts`
-5. Inside `Scripts`, create a folder called `5_Mission`
-6. Inside `5_Mission`, create a folder called `MyFirstMod`
+1. **エクスプローラー** を開く
+2. `P:\` に移動
+3. `MyFirstMod` という新しいフォルダを作成
+4. `MyFirstMod` 内に `Scripts` フォルダを作成
+5. `Scripts` 内に `5_Mission` フォルダを作成
+6. `5_Mission` 内に `MyFirstMod` フォルダを作成
 
-### Understanding the Structure
+### 構造の解説
 
-| Path | Purpose |
+| パス | 用途 |
 |------|---------|
-| `MyFirstMod/` | Root of your mod |
-| `mod.cpp` | Metadata (name, author) shown in the DayZ launcher |
-| `Scripts/config.cpp` | Tells the engine what your mod depends on and where scripts live |
-| `Scripts/5_Mission/` | The mission script layer (UI, startup hooks) |
-| `Scripts/5_Mission/MyFirstMod/` | Subfolder for your mod's mission scripts |
-| `Scripts/5_Mission/MyFirstMod/MissionHello.c` | Your actual script file |
+| `MyFirstMod/` | Mod のルート |
+| `mod.cpp` | DayZ ランチャーに表示されるメタデータ（名前、作成者） |
+| `Scripts/config.cpp` | Mod の依存関係とスクリプトの場所をエンジンに伝える |
+| `Scripts/5_Mission/` | ミッションスクリプトレイヤー（UI、起動フック） |
+| `Scripts/5_Mission/MyFirstMod/` | Mod のミッションスクリプト用サブフォルダ |
+| `Scripts/5_Mission/MyFirstMod/MissionHello.c` | 実際のスクリプトファイル |
 
-You need exactly **3 files**. Let us create them one by one.
+必要なファイルは **3つ** だけです。1つずつ作成しましょう。
 
 ---
 
-## Step 4: Write mod.cpp
+## ステップ 4: mod.cpp の作成
 
-Create the file `P:\MyFirstMod\mod.cpp` in your text editor and paste this content:
+テキストエディタで `P:\MyFirstMod\mod.cpp` ファイルを作成し、以下の内容を貼り付けてください：
 
 ```cpp
 name = "My First Mod";
@@ -149,20 +153,20 @@ version = "1.0";
 overview = "My very first DayZ mod. Prints Hello World to the script log.";
 ```
 
-### What Each Line Does
+### 各行の意味
 
-- **`name`** -- The display name shown in the DayZ launcher mod list. Players see this when selecting mods.
-- **`author`** -- Your name or team name.
-- **`version`** -- Any version string you like. The engine does not parse it.
-- **`overview`** -- A description shown when expanding the mod details.
+- **`name`** -- DayZ ランチャーの Mod リストに表示される表示名。プレイヤーが Mod を選択する際に表示されます。
+- **`author`** -- あなたの名前またはチーム名。
+- **`version`** -- 任意のバージョン文字列。エンジンはこれをパースしません。
+- **`overview`** -- Mod の詳細を展開したときに表示される説明。
 
-Save the file. That is your mod's identity card.
+ファイルを保存してください。これが Mod の ID カードです。
 
 ---
 
-## Step 5: Write config.cpp
+## ステップ 5: config.cpp の作成
 
-Create the file `P:\MyFirstMod\Scripts\config.cpp` and paste this content:
+`P:\MyFirstMod\Scripts\config.cpp` ファイルを作成し、以下の内容を貼り付けてください：
 
 ```cpp
 class CfgPatches
@@ -202,29 +206,29 @@ class CfgMods
 };
 ```
 
-### What Each Section Does
+### 各セクションの意味
 
-**CfgPatches** declares your mod to the DayZ engine:
+**CfgPatches** は DayZ エンジンに Mod を宣言します：
 
-- `class MyFirstMod_Scripts` -- A unique identifier for your mod's script package. Must not collide with any other mod.
-- `units[] = {}; weapons[] = {};` -- Lists of entities and weapons your mod adds. Empty for now.
-- `requiredVersion = 0.1;` -- Minimum game version. Always `0.1`.
-- `requiredAddons[] = { "DZ_Data" };` -- Dependencies. `DZ_Data` is the base game data. This ensures your mod loads **after** the base game.
+- `class MyFirstMod_Scripts` -- Mod のスクリプトパッケージの一意の識別子。他の Mod と衝突してはいけません。
+- `units[] = {}; weapons[] = {};` -- Mod が追加するエンティティと武器のリスト。今は空です。
+- `requiredVersion = 0.1;` -- 最低ゲームバージョン。常に `0.1`。
+- `requiredAddons[] = { "DZ_Data" };` -- 依存関係。`DZ_Data` はベースゲームデータです。Mod がベースゲームの**後に**読み込まれることを保証します。
 
-**CfgMods** tells the engine where your scripts live:
+**CfgMods** はエンジンにスクリプトの場所を伝えます：
 
-- `dir = "MyFirstMod";` -- Root directory of the mod.
-- `type = "mod";` -- This is a client+server mod (as opposed to `"servermod"` for server-only).
-- `dependencies[] = { "Mission" };` -- Your code hooks into the Mission script module.
-- `class missionScriptModule` -- Tells the engine to compile all `.c` files found in `MyFirstMod/Scripts/5_Mission/`.
+- `dir = "MyFirstMod";` -- Mod のルートディレクトリ。
+- `type = "mod";` -- これはクライアント+サーバー Mod です（サーバー専用の `"servermod"` とは異なる）。
+- `dependencies[] = { "Mission" };` -- コードが Mission スクリプトモジュールにフックすることを示します。
+- `class missionScriptModule` -- `MyFirstMod/Scripts/5_Mission/` 内のすべての `.c` ファイルをコンパイルするようエンジンに指示します。
 
-**Why only `5_Mission`?** Because our Hello World script hooks into the mission startup event, which lives in the mission layer. Most simple mods start here.
+**なぜ `5_Mission` だけ？** Hello World スクリプトはミッションの起動イベントにフックするためで、これはミッションレイヤーにあります。ほとんどの簡単な Mod はここから始めます。
 
 ---
 
-## Step 6: Write Your First Script
+## ステップ 6: 最初のスクリプトの作成
 
-Create the file `P:\MyFirstMod\Scripts\5_Mission\MyFirstMod\MissionHello.c` and paste this content:
+`P:\MyFirstMod\Scripts\5_Mission\MyFirstMod\MissionHello.c` ファイルを作成し、以下の内容を貼り付けてください：
 
 ```c
 modded class MissionServer
@@ -246,235 +250,235 @@ modded class MissionGameplay
 };
 ```
 
-### Line-by-Line Explanation
+### 行ごとの解説
 
 ```c
 modded class MissionServer
 ```
-The `modded` keyword is the heart of DayZ modding. It says: "Take the existing `MissionServer` class from the vanilla game and add my changes on top." You are not creating a new class -- you are extending the existing one.
+`modded` キーワードは DayZ Modding の核心です。「バニラゲームの既存の `MissionServer` クラスを取得し、その上に変更を追加する」ことを意味します。新しいクラスを作成するのではなく、既存のクラスを拡張しています。
 
 ```c
     override void OnInit()
 ```
-`OnInit()` is called by the engine when a mission starts. `override` tells the compiler that this method already exists in the parent class and we are replacing it with our version.
+`OnInit()` はミッション開始時にエンジンから呼び出されます。`override` は、このメソッドが親クラスに既に存在し、自分のバージョンで置き換えることをコンパイラに伝えます。
 
 ```c
         super.OnInit();
 ```
-**This line is critical.** `super.OnInit()` calls the original vanilla implementation. If you skip this, the vanilla mission initialization code never runs and the game breaks. 常に `super` を呼び出す first.
+**この行は重要です。** `super.OnInit()` はバニラのオリジナル実装を呼び出します。これを省略すると、バニラのミッション初期化コードが実行されず、ゲームが壊れます。常に最初に `super` を呼び出してください。
 
 ```c
         Print("[MyFirstMod] Hello World! The SERVER mission has started.");
 ```
-`Print()` writes a message to the DayZ script log file. The `[MyFirstMod]` prefix makes it easy to find your messages in the log.
+`Print()` は DayZ スクリプトログファイルにメッセージを書き込みます。`[MyFirstMod]` プレフィックスにより、ログ内でメッセージを簡単に見つけることができます。
 
 ```c
 modded class MissionGameplay
 ```
-`MissionGameplay` is the client-side equivalent of `MissionServer`. When a player joins a server, `MissionGameplay.OnInit()` fires on their machine. By modding both classes, your message appears in both server and client logs.
+`MissionGameplay` は `MissionServer` のクライアント側の対応物です。プレイヤーがサーバーに参加すると、そのマシンで `MissionGameplay.OnInit()` が発火します。両方のクラスを Mod することで、サーバーログとクライアントログの両方にメッセージが表示されます。
 
-### About `.c` Files
+### `.c` ファイルについて
 
-DayZ scripts use the `.c` file extension. Despite looking like C, this is **Enforce Script**, DayZ's own scripting language. It has classes, inheritance, arrays, and maps, but it is not C, C++, or C#. Your IDE may show syntax errors -- that is normal and expected.
+DayZ スクリプトは `.c` ファイル拡張子を使用します。C 言語のように見えますが、これは DayZ 独自のスクリプト言語 **Enforce Script** です。クラス、継承、配列、マップがありますが、C、C++、C# ではありません。IDE がシンタックスエラーを表示するかもしれませんが、それは正常で予想されることです。
 
 ---
 
-## Step 7: Pack the PBO with Addon Builder
+## ステップ 7: Addon Builder で PBO をパック
 
-DayZ loads mods from `.pbo` archive files (similar to .zip but in a format the engine understands). You need to pack your `Scripts` folder into a PBO.
+DayZ は `.pbo` アーカイブファイル（.zip に似ていますが、エンジンが理解する形式）から Mod を読み込みます。`Scripts` フォルダを PBO にパックする必要があります。
 
-### Using Addon Builder (GUI)
+### Addon Builder の使用（GUI）
 
-1. Open **DayZ Tools** from Steam
-2. Click **Addon Builder** to launch it
-3. Set **Source directory** to: `P:\MyFirstMod\Scripts\`
-4. Set **Output/Destination directory** to a new folder: `P:\@MyFirstMod\Addons\`
+1. Steam から **DayZ Tools** を開く
+2. **Addon Builder** をクリックして起動
+3. **Source directory** を `P:\MyFirstMod\Scripts\` に設定
+4. **Output/Destination directory** を新しいフォルダ `P:\@MyFirstMod\Addons\` に設定
 
-   Create the `@MyFirstMod\Addons\` folder first if it は存在しません。
+   `@MyFirstMod\Addons\` フォルダが存在しない場合は先に作成してください。
 
-5. In **Addon Builder Options**:
-   - Set **Prefix** to: `MyFirstMod\Scripts`
-   - Leave other options at defaults
-6. Click **Pack**
+5. **Addon Builder Options** で：
+   - **Prefix** を `MyFirstMod\Scripts` に設定
+   - その他のオプションはデフォルトのまま
+6. **Pack** をクリック
 
-If successful, you will see a file at:
+成功すると、以下のファイルが作成されます：
 
 ```
 P:\@MyFirstMod\Addons\Scripts.pbo
 ```
 
-### Set Up the Final Mod Structure
+### 最終的な Mod 構造の設定
 
-Now copy your `mod.cpp` next to the `Addons` folder:
+`mod.cpp` を `Addons` フォルダの横にコピーします：
 
 ```
 P:\@MyFirstMod\
-    mod.cpp                         <-- Copy from P:\MyFirstMod\mod.cpp
+    mod.cpp                         <-- P:\MyFirstMod\mod.cpp からコピー
     Addons\
-        Scripts.pbo                 <-- Created by Addon Builder
+        Scripts.pbo                 <-- Addon Builder で作成
 ```
 
-The `@` prefix on the folder name is a convention for distributable mods. It signals to server administrators and the launcher that this is a mod package.
+フォルダ名の `@` プレフィックスは、配布可能な Mod の慣例です。サーバー管理者やランチャーに、これが Mod パッケージであることを示します。
 
-### Alternative: Test Without Packing (File Patching)
+### 代替方法：パックなしのテスト（File Patching）
 
-During development, you can skip PBO packing entirely using file patching mode. This loads scripts directly from your source folders:
+開発中は、ファイルパッチングモードを使用して PBO パックを完全にスキップできます。これはソースフォルダからスクリプトを直接読み込みます：
 
 ```
 DayZDiag_x64.exe -mod=P:\MyFirstMod -filePatching
 ```
 
-File patching is faster for iteration because you edit a `.c` file, restart the game, and see the changes immediately. No packing step needed. However, file patching only works with the diagnostic executable (`DayZDiag_x64.exe`) and is not suitable for distribution.
+ファイルパッチングは、`.c` ファイルを編集してゲームを再起動するだけで変更が反映されるため、イテレーションが高速です。パック手順は不要です。ただし、ファイルパッチングは診断用実行ファイル（`DayZDiag_x64.exe`）でのみ動作し、配布には適していません。
 
 ---
 
-## Step 8: Load the Mod in DayZ
+## ステップ 8: DayZ で Mod を読み込む
 
-There are two ways to load your mod: through the launcher or via command-line parameters.
+Mod を読み込むには2つの方法があります：ランチャー経由またはコマンドラインパラメータ経由。
 
-### Option A: DayZ Launcher
+### オプション A: DayZ ランチャー
 
-1. Open the **DayZ Launcher** from Steam
-2. Go to the **Mods** tab
-3. Click **Add local mod** (or "Add mod from local storage")
-4. Browse to `P:\@MyFirstMod\`
-5. Enable the mod by checking its checkbox
-6. Click **Play** (make sure you are connecting to a local/offline server, or launching single-player)
+1. Steam から **DayZ ランチャー** を開く
+2. **Mods** タブに移動
+3. **Add local mod**（または「Add mod from local storage」）をクリック
+4. `P:\@MyFirstMod\` を参照
+5. チェックボックスをチェックして Mod を有効化
+6. **Play** をクリック（ローカル/オフラインサーバーに接続するか、シングルプレイヤーを起動していることを確認）
 
-### Option B: Command Line (Recommended for Development)
+### オプション B: コマンドライン（開発推奨）
 
-For faster iteration, launch DayZ directly with command-line parameters. Create a shortcut or batch file:
+より高速なイテレーションのために、コマンドラインパラメータで DayZ を直接起動します。ショートカットまたはバッチファイルを作成してください：
 
-**Using the Diagnostic Executable (with file patching, no PBO needed):**
+**診断用実行ファイルを使用（ファイルパッチング付き、PBO 不要）：**
 
 ```batch
 "C:\Program Files (x86)\Steam\steamapps\common\DayZ\DayZDiag_x64.exe" -mod=P:\MyFirstMod -filePatching -server -config=serverDZ.cfg -port=2302
 ```
 
-**Using the packed PBO:**
+**パック済み PBO を使用：**
 
 ```batch
 "C:\Program Files (x86)\Steam\steamapps\common\DayZ\DayZDiag_x64.exe" -mod=P:\@MyFirstMod -server -config=serverDZ.cfg -port=2302
 ```
 
-The `-server` flag launches a local listen server. The `-filePatching` flag allows loading scripts from unpacked folders.
+`-server` フラグはローカルリッスンサーバーを起動します。`-filePatching` フラグはアンパックされたフォルダからスクリプトを読み込むことを許可します。
 
-### Quick Test: Offline Mode
+### クイックテスト：オフラインモード
 
-The fastest way to test is to launch DayZ in offline mode:
+最も速いテスト方法は、DayZ をオフラインモードで起動することです：
 
 ```batch
 DayZDiag_x64.exe -mod=P:\MyFirstMod -filePatching
 ```
 
-Then in the main menu, click **Play** and select **Offline Mode** (or **Community Offline**). This starts a local single-player session without needing a server.
+メインメニューで **Play** をクリックし、**Offline Mode**（または **Community Offline**）を選択します。サーバーなしでローカルシングルプレイヤーセッションが開始されます。
 
 ---
 
-## Step 9: Verify in the Script Log
+## ステップ 9: スクリプトログで確認
 
-After launching DayZ with your mod, the engine writes all `Print()` output to log files.
+Mod を読み込んで DayZ を起動すると、エンジンはすべての `Print()` 出力をログファイルに書き込みます。
 
-### Finding the Log Files
+### ログファイルの場所
 
-DayZ stores logs in your local AppData directory:
-
-```
-C:\Users\<YourWindowsUsername>\AppData\Local\DayZ\
-```
-
-To get there quickly:
-1. Press **Win + R** to open the Run dialog
-2. Type `%localappdata%\DayZ` and press Enter
-
-Look for the most recent file named like:
+DayZ はローカル AppData ディレクトリにログを保存します：
 
 ```
-script_<date>_<time>.log
+C:\Users\<Windowsユーザー名>\AppData\Local\DayZ\
 ```
 
-For example: `script_2025-01-15_14-30-22.log`
+素早くアクセスするには：
+1. **Win + R** を押して「ファイル名を指定して実行」ダイアログを開く
+2. `%localappdata%\DayZ` と入力して Enter を押す
 
-### What to Search For
+以下のような名前の最新ファイルを探してください：
 
-Open the log file in your text editor and search for `[MyFirstMod]`. You should see one of these messages:
+```
+script_<日付>_<時間>.log
+```
+
+例：`script_2025-01-15_14-30-22.log`
+
+### 検索する内容
+
+テキストエディタでログファイルを開き、`[MyFirstMod]` を検索してください。以下のメッセージのいずれかが表示されるはずです：
 
 ```
 [MyFirstMod] Hello World! The SERVER mission has started.
 ```
 
-or (if you loaded as a client):
+または（クライアントとして読み込んだ場合）：
 
 ```
 [MyFirstMod] Hello World! The CLIENT mission has started.
 ```
 
-**If you see your message: congratulations.** Your first DayZ mod is working. You have successfully:
+**メッセージが表示されたら、おめでとうございます。** 初めての DayZ Mod が動作しています。以下を達成しました：
 
-1. Created a mod directory structure
-2. Written a config that the engine reads
-3. Hooked into vanilla game code with `modded class`
-4. Printed output to the script log
+1. Mod ディレクトリ構造を作成
+2. エンジンが読み取る config を作成
+3. `modded class` でバニラゲームコードにフック
+4. スクリプトログに出力
 
-### What If You See Errors?
+### エラーが表示された場合は？
 
-If the log contains lines starting with `SCRIPT (E):`, something went wrong. Read the next section.
-
----
-
-## Step 10: Troubleshooting Common Issues
-
-### Problem: No Log Output At All (Mod Does Not Seem to Load)
-
-**Check your launch parameters.** The `-mod=` path must point to the correct folder. If using file patching, verify the path points to the folder containing `Scripts/config.cpp` directly (not the `@` folder).
-
-**Check that config.cpp exists at the right level.** It must be at `Scripts/config.cpp` inside your mod root. If it is in the wrong folder, the engine silently ignores your mod.
-
-**Check the CfgPatches class name.** If there is no `CfgPatches` block, or its syntax is wrong, the entire PBO is skipped.
-
-**Look at the main DayZ log** (not just the script log). Check:
-```
-C:\Users\<YourName>\AppData\Local\DayZ\DayZ_<date>_<time>.RPT
-```
-Search for your mod name. You may see messages like "Addon MyFirstMod_Scripts requires addon DZ_Data which is not loaded."
-
-### Problem: `SCRIPT (E): Undefined variable` or `Undefined type`
-
-This means your code references something the engine does not recognize. Common causes:
-
-- **Typo in a class name.** `MisionServer` instead of `MissionServer` (note the double 's').
-- **Wrong script layer.** If you reference `PlayerBase` from `5_Mission`, it should work. But if you accidentally placed your file in `3_Game` and reference mission types, you will get this error.
-- **Missing `super.OnInit()` call.** Omitting it can cause cascading failures.
-
-### Problem: `SCRIPT (E): Member not found`
-
-The method you are calling does not exist on the class. Double-check the method name and make sure you are overriding a real vanilla method. `OnInit` exists on `MissionServer` and `MissionGameplay` -- but not on every class.
-
-### Problem: Mod Loads But Script Never Executes
-
-- **File extension:** Make sure your script file ends in `.c` (not `.c.txt` or `.cs`). Windows may hide extensions by default.
-- **Script path mismatch:** The `files[]` path in `config.cpp` must match your actual directory. `"MyFirstMod/Scripts/5_Mission"` means the engine looks for a folder at that exact path relative to the mod root.
-- **Class name:** `modded class MissionServer` is case-sensitive. It must match the vanilla class name exactly.
-
-### Problem: PBO Packing Errors
-
-- Ensure `config.cpp` is at the root level of what you are packing (the `Scripts/` folder).
-- Check that the prefix in Addon Builder matches your mod path.
-- Make sure there are no non-text files mixed into the Scripts folder (no `.exe`, `.dll`, or binary files).
-
-### Problem: Game Crashes on Startup
-
-- Check for syntax errors in `config.cpp`. A missing semicolon, brace, or quote mark can crash the config parser.
-- Verify that `requiredAddons` lists valid addon names. A misspelled addon name causes a hard failure.
-- Remove your mod from the launch parameters and confirm the game starts without it. Then add it back to isolate the issue.
+ログに `SCRIPT (E):` で始まる行がある場合、何かが間違っています。次のセクションを読んでください。
 
 ---
 
-## Complete File Reference
+## ステップ 10: よくある問題のトラブルシューティング
 
-Here are all three files in their complete form, for easy copy-paste:
+### 問題：ログ出力がまったくない（Mod が読み込まれていないようだ）
 
-### File 1: `MyFirstMod/mod.cpp`
+**起動パラメータを確認してください。** `-mod=` パスが正しいフォルダを指していること。ファイルパッチングを使用する場合、パスが `Scripts/config.cpp` を直接含むフォルダを指していること（`@` フォルダではない）を確認してください。
+
+**config.cpp が正しいレベルにあることを確認してください。** Mod ルート内の `Scripts/config.cpp` にある必要があります。間違ったフォルダにある場合、エンジンは Mod を静かに無視します。
+
+**CfgPatches クラス名を確認してください。** `CfgPatches` ブロックがない場合、または構文が間違っている場合、PBO 全体がスキップされます。
+
+**メインの DayZ ログを確認してください**（スクリプトログだけでなく）。以下を確認：
+```
+C:\Users\<ユーザー名>\AppData\Local\DayZ\DayZ_<日付>_<時間>.RPT
+```
+Mod 名を検索してください。「Addon MyFirstMod_Scripts requires addon DZ_Data which is not loaded.」のようなメッセージが表示される場合があります。
+
+### 問題：`SCRIPT (E): Undefined variable` または `Undefined type`
+
+コードがエンジンが認識しないものを参照しています。一般的な原因：
+
+- **クラス名のタイプミス。** `MisionServer`（`s` が1つ足りない）の代わりに `MissionServer`。
+- **間違ったスクリプトレイヤー。** `5_Mission` から `PlayerBase` を参照する場合は動作するはずです。ただし、ファイルを `3_Game` に配置してミッション型を参照すると、このエラーが発生します。
+- **`super.OnInit()` の呼び出し漏れ。** 省略すると連鎖的な失敗を引き起こす可能性があります。
+
+### 問題：`SCRIPT (E): Member not found`
+
+呼び出しているメソッドがクラスに存在しません。メソッド名を再確認し、バニラの実メソッドをオーバーライドしていることを確認してください。`OnInit` は `MissionServer` と `MissionGameplay` に存在しますが、すべてのクラスに存在するわけではありません。
+
+### 問題：Mod は読み込まれるがスクリプトが実行されない
+
+- **ファイル拡張子：** スクリプトファイルが `.c` で終わっていることを確認（`.c.txt` や `.cs` ではない）。Windows はデフォルトで拡張子を隠す場合があります。
+- **スクリプトパスの不一致：** `config.cpp` の `files[]` パスが実際のディレクトリと一致している必要があります。`"MyFirstMod/Scripts/5_Mission"` は、エンジンが Mod ルートからの相対パスでそのフォルダを探すことを意味します。
+- **クラス名：** `modded class MissionServer` は大文字小文字を区別します。バニラのクラス名と正確に一致する必要があります。
+
+### 問題：PBO パッキングエラー
+
+- `config.cpp` がパック対象（`Scripts/` フォルダ）のルートレベルにあることを確認してください。
+- Addon Builder のプレフィックスが Mod パスと一致していることを確認してください。
+- Scripts フォルダにテキスト以外のファイル（`.exe`、`.dll`、バイナリファイル）が混在していないことを確認してください。
+
+### 問題：起動時にゲームがクラッシュする
+
+- `config.cpp` のシンタックスエラーを確認してください。セミコロン、ブレース、引用符の欠落は config パーサーをクラッシュさせる可能性があります。
+- `requiredAddons` が有効なアドオン名を列挙していることを確認してください。スペルミスのアドオン名はハードエラーを引き起こします。
+- 起動パラメータから Mod を削除し、Mod なしでゲームが起動することを確認してください。次に Mod を戻して問題を分離してください。
+
+---
+
+## 完全なファイルリファレンス
+
+簡単にコピーペーストできるように、3つのファイルすべてを完全な形で示します：
+
+### ファイル 1: `MyFirstMod/mod.cpp`
 
 ```cpp
 name = "My First Mod";
@@ -483,7 +487,7 @@ version = "1.0";
 overview = "My very first DayZ mod. Prints Hello World to the script log.";
 ```
 
-### File 2: `MyFirstMod/Scripts/config.cpp`
+### ファイル 2: `MyFirstMod/Scripts/config.cpp`
 
 ```cpp
 class CfgPatches
@@ -523,7 +527,7 @@ class CfgMods
 };
 ```
 
-### File 3: `MyFirstMod/Scripts/5_Mission/MyFirstMod/MissionHello.c`
+### ファイル 3: `MyFirstMod/Scripts/5_Mission/MyFirstMod/MissionHello.c`
 
 ```c
 modded class MissionServer
@@ -549,14 +553,43 @@ modded class MissionGameplay
 
 ## 次のステップ
 
-Now that you have a working mod, here are the natural progressions:
+Mod が動作したので、以下が自然な進展です：
 
-1. **[Chapter 8.2: Creating a Custom Item](02-custom-item.md)** -- Define a new in-game item with textures and spawning.
-2. **Add more script layers** -- Create `3_Game` and `4_World` folders to organize configuration, data classes, and entity logic. See [Chapter 2.1: The 5-Layer Script Hierarchy](../02-mod-structure/01-five-layers.md).
-3. **Add keybindings** -- Create an `Inputs.xml` file and register custom key actions.
-4. **Create UI** -- Build in-game panels using layout files and `ScriptedWidgetEventHandler`. See [Chapter 3: GUI System](../03-gui-system/01-widget-types.md).
-5. **Use a framework** -- Integrate with Community Framework (CF) or MyFramework for advanced features like RPC, config management, and admin panels.
+1. **[第 8.2 章: カスタムアイテムの作成](02-custom-item.md)** -- テクスチャとスポーンを備えた新しいゲーム内アイテムを定義します。
+2. **スクリプトレイヤーの追加** -- `3_Game` と `4_World` フォルダを作成して、設定、データクラス、エンティティロジックを整理します。[第 2.1 章: 5 レイヤースクリプト階層](../02-mod-structure/01-five-layers.md) を参照してください。
+3. **キーバインドの追加** -- `Inputs.xml` ファイルを作成してカスタムキーアクションを登録します。
+4. **UI の作成** -- レイアウトファイルと `ScriptedWidgetEventHandler` を使用してゲーム内パネルを構築します。[第 3 章: GUI システム](../03-gui-system/01-widget-types.md) を参照してください。
+5. **フレームワークの使用** -- Community Framework (CF) または独自の Mod Core と統合して、RPC、設定管理、管理パネルなどの高度な機能を使用します。
 
 ---
 
-**次：** [Chapter 8.2: Creating a Custom Item](02-custom-item.md)
+## ベストプラクティス
+
+- **PBO を構築する前に、常に `-filePatching` でテストしてください。** パック→コピー→再起動のサイクルを省略し、イテレーション時間を数分から数秒に短縮します。
+- **最速のイテレーションには `5_Mission` レイヤーから始めてください。** `OnInit()` のようなミッションフックは、Mod が読み込まれて実行されることを証明する最も簡単な方法です。実際に必要になったときにのみ `3_Game` と `4_World` を追加してください。
+- **オーバーライドされたメソッドでは常に最初に `super` を呼び出してください。** `super.OnInit()` を省略すると、バニラの動作と同じメソッドにフックする他のすべての Mod が静かに壊れます。
+- **Print 出力に一意のプレフィックスを使用してください**（例：`[MyFirstMod]`）。スクリプトログにはバニラや他の Mod からの数千行が含まれています --- プレフィックスがなければ出力を見つけることは不可能です。
+- **`config.cpp` のシンタックスをシンプルかつ有効に保ってください。** config.cpp のセミコロンやブレースの欠落は、明確なエラーメッセージなしにハードクラッシュや Mod のサイレントスキップを引き起こします。
+
+---
+
+## 理論と実践
+
+| 概念 | 理論 | 現実 |
+|---------|--------|---------|
+| `mod.cpp` フィールド | `version` は依存関係の解決に使用される | エンジンはバージョン文字列を完全に無視する --- ランチャー用の表示のみ。 |
+| CfgPatches `requiredAddons` | Mod が正しい順序で読み込まれるよう依存関係をリスト | アドオン名をスペルミスすると、スクリプトログにエラーなしで PBO 全体が静かにスキップされる。代わりに `.RPT` ファイルを確認。 |
+| ファイルパッチング | `.c` ファイルを編集して再接続すると即座に変更が反映 | `config.cpp` と新しく追加されたファイルはファイルパッチングの対象外。それらには PBO の再構築が必要。 |
+| オフラインモードテスト | Mod の動作を確認する簡単な方法 | 一部の API（`GetGame().GetPlayer().GetIdentity()` など）はオフラインモードで NULL を返し、実サーバーでは発生しないクラッシュを引き起こす。 |
+
+---
+
+## 学んだこと
+
+このチュートリアルで学んだこと：
+- DayZ Tools のインストールと P: ドライブワークスペースの設定方法
+- すべての Mod に必要な3つの必須ファイル：`mod.cpp`、`config.cpp`、少なくとも1つの `.c` スクリプト
+- `modded class` がバニラクラスを置き換えずに拡張する仕組み
+- PBO のパック、Mod の読み込み、スクリプトログの確認による動作検証の方法
+
+**次：** [第 8.2 章: カスタムアイテムの作成](02-custom-item.md)

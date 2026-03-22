@@ -1,15 +1,15 @@
-# Chapter 3.2: Layout File Format (.layout)
+# Capitulo 3.2: Formato de Archivos Layout (.layout)
 
-[Home](../../README.md) | [<< Previous: Widget Types](01-widget-types.md) | **Layout File Format** | [Next: Sizing & Positioning >>](03-sizing-positioning.md)
+[Inicio](../../README.md) | [<< Anterior: Tipos de Widget](01-widget-types.md) | **Formato de Archivos Layout** | [Siguiente: Tamano y Posicionamiento >>](03-sizing-positioning.md)
 
 ---
 
 ## Estructura Basica
 
-A `.layout` file defines a tree of widgets. Every file has exactly one root widget, which contains nested children.
+Un archivo `.layout` define un arbol de widgets. Cada archivo tiene exactamente un widget raiz, que contiene hijos anidados.
 
 ```
-WidgetTypeClass WidgetName {
+ WidgetTypeClass WidgetName {
  attribute value
  attribute "quoted value"
  {
@@ -20,137 +20,137 @@ WidgetTypeClass WidgetName {
 }
 ```
 
-Key rules:
+Reglas clave:
 
-1. The root element is always a single widget (typically `FrameWidgetClass`).
-2. Widget type names use the **layout class** name, which always ends with `Class` (e.g., `FrameWidgetClass`, `TextWidgetClass`, `ButtonWidgetClass`).
-3. Each widget has a unique name following its type class.
-4. Attributes are `key value` pairs, one per line.
-5. Attribute names containing spaces must be quoted: `"text halign" center`.
-6. String values are quoted: `text "Hello World"`.
-7. Numeric values are unquoted: `size 0.5 0.3`.
-8. Children are nested inside `{ }` blocks after the parent's attributes.
+1. El elemento raiz es siempre un unico widget (tipicamente `FrameWidgetClass`).
+2. Los nombres de tipo de widget usan el nombre de **clase de layout**, que siempre termina con `Class` (ej., `FrameWidgetClass`, `TextWidgetClass`, `ButtonWidgetClass`).
+3. Cada widget tiene un nombre unico que sigue a su tipo de clase.
+4. Los atributos son pares `clave valor`, uno por linea.
+5. Los nombres de atributos que contienen espacios deben estar entre comillas: `"text halign" center`.
+6. Los valores de string van entre comillas: `text "Hello World"`.
+7. Los valores numericos no van entre comillas: `size 0.5 0.3`.
+8. Los hijos se anidan dentro de bloques `{ }` despues de los atributos del padre.
 
 ---
 
 ## Referencia de Atributos
 
-### Positioning & Sizing
+### Posicionamiento y Tamano
 
 | Atributo | Valores | Descripcion |
 |---|---|---|
-| `position` | `x y` | Widget position (proportional 0-1 or pixel values) |
-| `size` | `w h` | Widget dimensions (proportional 0-1 or pixel values) |
-| `halign` | `left_ref`, `center_ref`, `right_ref` | Horizontal alignment reference point |
-| `valign` | `top_ref`, `center_ref`, `bottom_ref` | Vertical alignment reference point |
-| `hexactpos` | `0` or `1` | 0 = proportional X position, 1 = pixel X position |
-| `vexactpos` | `0` or `1` | 0 = proportional Y position, 1 = pixel Y position |
-| `hexactsize` | `0` or `1` | 0 = proportional width, 1 = pixel width |
-| `vexactsize` | `0` or `1` | 0 = proportional height, 1 = pixel height |
-| `fixaspect` | `fixwidth`, `fixheight` | Maintain aspect ratio by constraining one dimension |
-| `scaled` | `0` or `1` | Scale with DayZ UI scaling setting |
-| `priority` | integer | Z-order (higher values render on top) |
+| `position` | `x y` | Posicion del widget (proporcional 0-1 o valores en pixeles) |
+| `size` | `w h` | Dimensiones del widget (proporcional 0-1 o valores en pixeles) |
+| `halign` | `left_ref`, `center_ref`, `right_ref` | Punto de referencia de alineacion horizontal |
+| `valign` | `top_ref`, `center_ref`, `bottom_ref` | Punto de referencia de alineacion vertical |
+| `hexactpos` | `0` o `1` | 0 = posicion X proporcional, 1 = posicion X en pixeles |
+| `vexactpos` | `0` o `1` | 0 = posicion Y proporcional, 1 = posicion Y en pixeles |
+| `hexactsize` | `0` o `1` | 0 = ancho proporcional, 1 = ancho en pixeles |
+| `vexactsize` | `0` o `1` | 0 = alto proporcional, 1 = alto en pixeles |
+| `fixaspect` | `fixwidth`, `fixheight` | Mantener la relacion de aspecto restringiendo una dimension |
+| `scaled` | `0` o `1` | Escalar con la configuracion de escala de UI de DayZ |
+| `priority` | entero | Orden Z (valores mas altos se renderizan encima) |
 
-The `hexactpos`, `vexactpos`, `hexactsize`, and `vexactsize` flags are the most important attributes in the entire layout system. They control whether each dimension uses proportional (0.0 - 1.0 relative to parent) or pixel (absolute screen pixels) units. See [3.3 Sizing & Positioning](03-sizing-positioning.md) for a thorough explanation.
+Los flags `hexactpos`, `vexactpos`, `hexactsize` y `vexactsize` son los atributos mas importantes en todo el sistema de layouts. Controlan si cada dimension usa unidades proporcionales (0.0 - 1.0 relativo al padre) o de pixeles (pixeles absolutos de pantalla). Consulta [3.3 Tamano y Posicionamiento](03-sizing-positioning.md) para una explicacion completa.
 
-### Visual Attributes
-
-| Atributo | Valores | Descripcion |
-|---|---|---|
-| `visible` | `0` or `1` | Initial visibility (0 = hidden) |
-| `color` | `r g b a` | Color as four floats, each 0.0 to 1.0 |
-| `style` | style name | Predefined visual style (e.g., `Default`, `Colorable`) |
-| `draggable` | `0` or `1` | Widget can be dragged by the user |
-| `clipchildren` | `0` or `1` | Clip child widgets to this widget's bounds |
-| `inheritalpha` | `0` or `1` | Children inherit this widget's alpha value |
-| `keepsafezone` | `0` or `1` | Keep widget within screen safe zone |
-
-### Behavioral Attributes
+### Atributos Visuales
 
 | Atributo | Valores | Descripcion |
 |---|---|---|
-| `ignorepointer` | `0` or `1` | Widget ignores mouse input (clicks pass through) |
-| `disabled` | `0` or `1` | Widget is disabled |
-| `"no focus"` | `0` or `1` | Widget cannot receive keyboard focus |
+| `visible` | `0` o `1` | Visibilidad inicial (0 = oculto) |
+| `color` | `r g b a` | Color como cuatro floats, cada uno de 0.0 a 1.0 |
+| `style` | nombre de estilo | Estilo visual predefinido (ej., `Default`, `Colorable`) |
+| `draggable` | `0` o `1` | El widget puede ser arrastrado por el usuario |
+| `clipchildren` | `0` o `1` | Recortar widgets hijos a los limites de este widget |
+| `inheritalpha` | `0` o `1` | Los hijos heredan el valor alfa de este widget |
+| `keepsafezone` | `0` o `1` | Mantener el widget dentro de la zona segura de pantalla |
 
-### Text Attributes
-
-These apply to `TextWidgetClass`, `RichTextWidgetClass`, `MultilineTextWidgetClass`, `ButtonWidgetClass`, and other text-bearing widgets.
-
-| Atributo | Valores | Descripcion |
-|---|---|---|
-| `text` | `"string"` | Default text content |
-| `font` | `"path/to/font"` | Font file path |
-| `"text halign"` | `left`, `center`, `right` | Horizontal text alignment within the widget |
-| `"text valign"` | `top`, `center`, `bottom` | Vertical text alignment within the widget |
-| `"bold text"` | `0` or `1` | Bold rendering |
-| `"italic text"` | `0` or `1` | Italic rendering |
-| `"exact text"` | `0` or `1` | Use exact pixel font size instead of proportional |
-| `"exact text size"` | integer | Font size in pixels (requires `"exact text" 1`) |
-| `"size to text h"` | `0` or `1` | Resize widget width to fit text |
-| `"size to text v"` | `0` or `1` | Resize widget height to fit text |
-| `"text sharpness"` | float | Text rendering sharpness |
-| `wrap` | `0` or `1` | Enable word wrapping |
-
-### Image Attributes
-
-These apply to `ImageWidgetClass`.
+### Atributos de Comportamiento
 
 | Atributo | Valores | Descripcion |
 |---|---|---|
-| `image0` | `"set:name image:name"` | Primary image from an imageset |
-| `mode` | `blend`, `additive`, `stretch` | Image blend mode |
-| `"src alpha"` | `0` or `1` | Use the source alpha channel |
-| `stretch` | `0` or `1` | Stretch image to fill widget |
-| `filter` | `0` or `1` | Enable texture filtering |
-| `"flip u"` | `0` or `1` | Flip image horizontally |
-| `"flip v"` | `0` or `1` | Flip image vertically |
-| `"clamp mode"` | `clamp`, `wrap` | Texture edge behavior |
-| `"stretch mode"` | `stretch_w_h`, etc. | Stretch mode |
+| `ignorepointer` | `0` o `1` | El widget ignora la entrada del mouse (los clics pasan a traves) |
+| `disabled` | `0` o `1` | El widget esta deshabilitado |
+| `"no focus"` | `0` o `1` | El widget no puede recibir foco de teclado |
 
-### Spacer Attributes
+### Atributos de Texto
 
-These apply to `WrapSpacerWidgetClass` and `GridSpacerWidgetClass`.
+Estos aplican a `TextWidgetClass`, `RichTextWidgetClass`, `MultilineTextWidgetClass`, `ButtonWidgetClass` y otros widgets que contienen texto.
 
 | Atributo | Valores | Descripcion |
 |---|---|---|
-| `Padding` | integer | Inner padding in pixels |
-| `Margin` | integer | Space between child items in pixels |
-| `"Size To Content H"` | `0` or `1` | Resize width to match children |
-| `"Size To Content V"` | `0` or `1` | Resize height to match children |
-| `content_halign` | `left`, `center`, `right` | Child content horizontal alignment |
-| `content_valign` | `top`, `center`, `bottom` | Child content vertical alignment |
-| `Columns` | integer | Grid columns (GridSpacer only) |
-| `Rows` | integer | Grid rows (GridSpacer only) |
+| `text` | `"string"` | Contenido de texto predeterminado |
+| `font` | `"ruta/a/fuente"` | Ruta del archivo de fuente |
+| `"text halign"` | `left`, `center`, `right` | Alineacion horizontal del texto dentro del widget |
+| `"text valign"` | `top`, `center`, `bottom` | Alineacion vertical del texto dentro del widget |
+| `"bold text"` | `0` o `1` | Renderizado en negrita |
+| `"italic text"` | `0` o `1` | Renderizado en italica |
+| `"exact text"` | `0` o `1` | Usar tamano de fuente exacto en pixeles en lugar de proporcional |
+| `"exact text size"` | entero | Tamano de fuente en pixeles (requiere `"exact text" 1`) |
+| `"size to text h"` | `0` o `1` | Redimensionar ancho del widget para ajustar al texto |
+| `"size to text v"` | `0` o `1` | Redimensionar alto del widget para ajustar al texto |
+| `"text sharpness"` | float | Nitidez de renderizado del texto |
+| `wrap` | `0` o `1` | Habilitar ajuste de palabras |
 
-### Button Attributes
+### Atributos de Imagen
 
-| Atributo | Valores | Descripcion |
-|---|---|---|
-| `switch` | `toggle` | Makes the button a toggle (stays pressed) |
-| `style` | style name | Visual style for the button |
-
-### Slider Attributes
-
-| Atributo | Valores | Descripcion |
-|---|---|---|
-| `"fill in"` | `0` or `1` | Show a filled track behind the slider handle |
-| `"listen to input"` | `0` or `1` | Respond to mouse input |
-
-### Scroll Attributes
+Estos aplican a `ImageWidgetClass`.
 
 | Atributo | Valores | Descripcion |
 |---|---|---|
-| `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
-| `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
+| `image0` | `"set:nombre image:nombre"` | Imagen principal desde un imageset |
+| `mode` | `blend`, `additive`, `stretch` | Modo de mezcla de imagen |
+| `"src alpha"` | `0` o `1` | Usar el canal alfa fuente |
+| `stretch` | `0` o `1` | Estirar imagen para llenar el widget |
+| `filter` | `0` o `1` | Habilitar filtrado de textura |
+| `"flip u"` | `0` o `1` | Voltear imagen horizontalmente |
+| `"flip v"` | `0` o `1` | Voltear imagen verticalmente |
+| `"clamp mode"` | `clamp`, `wrap` | Comportamiento de bordes de textura |
+| `"stretch mode"` | `stretch_w_h`, etc. | Modo de estiramiento |
+
+### Atributos de Espaciador
+
+Estos aplican a `WrapSpacerWidgetClass` y `GridSpacerWidgetClass`.
+
+| Atributo | Valores | Descripcion |
+|---|---|---|
+| `Padding` | entero | Padding interno en pixeles |
+| `Margin` | entero | Espacio entre items hijos en pixeles |
+| `"Size To Content H"` | `0` o `1` | Redimensionar ancho para coincidir con hijos |
+| `"Size To Content V"` | `0` o `1` | Redimensionar alto para coincidir con hijos |
+| `content_halign` | `left`, `center`, `right` | Alineacion horizontal del contenido hijo |
+| `content_valign` | `top`, `center`, `bottom` | Alineacion vertical del contenido hijo |
+| `Columns` | entero | Columnas de grilla (solo GridSpacer) |
+| `Rows` | entero | Filas de grilla (solo GridSpacer) |
+
+### Atributos de Boton
+
+| Atributo | Valores | Descripcion |
+|---|---|---|
+| `switch` | `toggle` | Hace que el boton sea un toggle (permanece presionado) |
+| `style` | nombre de estilo | Estilo visual para el boton |
+
+### Atributos de Slider
+
+| Atributo | Valores | Descripcion |
+|---|---|---|
+| `"fill in"` | `0` o `1` | Mostrar una pista rellena detras del handle del slider |
+| `"listen to input"` | `0` o `1` | Responder a entrada del mouse |
+
+### Atributos de Scroll
+
+| Atributo | Valores | Descripcion |
+|---|---|---|
+| `"Scrollbar V"` | `0` o `1` | Mostrar barra de scroll vertical |
+| `"Scrollbar H"` | `0` o `1` | Mostrar barra de scroll horizontal |
 
 ---
 
 ## Integracion con Scripts
 
-### The `scriptclass` Attribute
+### El Atributo `scriptclass`
 
-The `scriptclass` attribute binds a widget to an Enforce Script class. When the layout is loaded, the engine creates an instance of that class and calls its `OnWidgetScriptInit(Widget w)` method.
+El atributo `scriptclass` vincula un widget a una clase de Enforce Script. Cuando el layout se carga, el motor crea una instancia de esa clase y llama a su metodo `OnWidgetScriptInit(Widget w)`.
 
 ```
 FrameWidgetClass MyPanel {
@@ -159,7 +159,7 @@ FrameWidgetClass MyPanel {
 }
 ```
 
-The script class must inherit from `Managed` and implement `OnWidgetScriptInit`:
+La clase del script debe heredar de `Managed` e implementar `OnWidgetScriptInit`:
 
 ```c
 class MyPanelHandler : Managed
@@ -173,9 +173,9 @@ class MyPanelHandler : Managed
 }
 ```
 
-### The ScriptParamsClass Block
+### El Bloque ScriptParamsClass
 
-Parameters can be passed from the layout to the `scriptclass` via a `ScriptParamsClass` block. This block appears as a second `{ }` child block after the widget's children.
+Los parametros pueden pasarse desde el layout al `scriptclass` via un bloque `ScriptParamsClass`. Este bloque aparece como un segundo bloque hijo `{ }` despues de los hijos del widget.
 
 ```
 ImageWidgetClass Logo {
@@ -190,11 +190,11 @@ ImageWidgetClass Logo {
 }
 ```
 
-The script class reads these parameters in `OnWidgetScriptInit` by using the widget's script param system.
+La clase del script lee estos parametros en `OnWidgetScriptInit` usando el sistema de parametros de script del widget.
 
-### DabsFramework ViewBinding
+### ViewBinding de DabsFramework
 
-In mods that use DabsFramework MVC, the `scriptclass "ViewBinding"` pattern connects widgets to a ViewController's data properties:
+En mods que usan DabsFramework MVC, el patron `scriptclass "ViewBinding"` conecta widgets a las propiedades de datos de un ViewController:
 
 ```
 TextWidgetClass StatusLabel {
@@ -209,19 +209,19 @@ TextWidgetClass StatusLabel {
 }
 ```
 
-| Param | Descripcion |
+| Parametro | Descripcion |
 |---|---|
-| `Binding_Name` | Name of the ViewController property to bind to |
-| `Two_Way_Binding` | `1` = UI changes push back to the controller |
-| `Relay_Command` | Function name on the controller to call when the widget is clicked/changed |
-| `Selected_Item` | Property to bind the selected item to (for lists) |
-| `Debug_Logging` | `1` = enable verbose logging for this binding |
+| `Binding_Name` | Nombre de la propiedad del ViewController a la que vincular |
+| `Two_Way_Binding` | `1` = los cambios en la UI se propagan de vuelta al controlador |
+| `Relay_Command` | Nombre de funcion en el controlador a llamar cuando el widget es clickeado/cambiado |
+| `Selected_Item` | Propiedad a la que vincular el item seleccionado (para listas) |
+| `Debug_Logging` | `1` = habilitar logging detallado para este binding |
 
 ---
 
 ## Anidamiento de Hijos
 
-Children are placed inside a `{ }` block after the parent's attributes. Multiple children can exist in the same block.
+Los hijos se colocan dentro de un bloque `{ }` despues de los atributos del padre. Multiples hijos pueden existir en el mismo bloque.
 
 ```
 FrameWidgetClass Parent {
@@ -241,74 +241,74 @@ FrameWidgetClass Parent {
 }
 ```
 
-Children are always positioned relative to their parent. A child with `position 0 0` and `size 1 1` (proportional) fills its parent completely.
+Los hijos siempre se posicionan relativos a su padre. Un hijo con `position 0 0` y `size 1 1` (proporcional) llena a su padre completamente.
 
 ---
 
 ## Ejemplo Completo Anotado
 
-Here is a fully annotated layout file for a notification panel -- the kind of UI you might build for a mod:
+Aqui hay un archivo layout completamente anotado para un panel de notificaciones --- el tipo de UI que podrias construir para un mod:
 
 ```
-// Root container -- invisible frame that covers 30% of screen width
-// Centered horizontally, positioned at top of screen
+// Contenedor raiz -- frame invisible que cubre 30% del ancho de pantalla
+// Centrado horizontalmente, posicionado en la parte superior de la pantalla
 FrameWidgetClass NotificationPanel {
 
- // Start hidden (script will show it)
+ // Empieza oculto (el script lo mostrara)
  visible 0
 
- // Don't block mouse clicks on things behind this panel
+ // No bloquear clics del mouse en cosas detras de este panel
  ignorepointer 1
 
- // Blue tint color (R=0.2, G=0.6, B=1.0, A=0.9)
+ // Color con tinte azul (R=0.2, G=0.6, B=1.0, A=0.9)
  color 0.2 0.6 1.0 0.9
 
- // Position: 0 pixels from left, 0 pixels from top
+ // Posicion: 0 pixeles desde la izquierda, 0 pixeles desde arriba
  position 0 0
  hexactpos 1
  vexactpos 1
 
- // Size: 30% of parent width, 30 pixels tall
+ // Tamano: 30% del ancho del padre, 30 pixeles de alto
  size 0.3 30
  hexactsize 0
  vexactsize 1
 
- // Center horizontally within parent
+ // Centrar horizontalmente dentro del padre
  halign center_ref
 
- // Children block
+ // Bloque de hijos
  {
-  // Text label fills the entire notification panel
+  // Etiqueta de texto llena todo el panel de notificacion
   TextWidgetClass NotificationText {
 
-   // Also ignore mouse input
+   // Tambien ignorar entrada del mouse
    ignorepointer 1
 
-   // Position at origin relative to parent
+   // Posicion en el origen relativo al padre
    position 0 0
    hexactpos 1
    vexactpos 1
 
-   // Fill parent completely (proportional)
+   // Llenar el padre completamente (proporcional)
    size 1 1
    hexactsize 0
    vexactsize 0
 
-   // Center the text both ways
+   // Centrar el texto en ambas direcciones
    "text halign" center
    "text valign" center
 
-   // Use a bold font
+   // Usar una fuente en negrita
    font "gui/fonts/Metron-Bold"
 
-   // Default text (will be overridden by script)
+   // Texto predeterminado (sera sobreescrito por el script)
    text "Notification"
   }
  }
 }
 ```
 
-And here is a more complex example -- a dialog with a title bar, scrollable content, and a close button:
+Y aqui hay un ejemplo mas complejo --- un dialogo con barra de titulo, contenido con scroll y un boton de cerrar:
 
 ```
 WrapSpacerWidgetClass MyDialog {
@@ -324,7 +324,7 @@ WrapSpacerWidgetClass MyDialog {
  "Size To Content V" 1
  content_halign center
  {
-  // Title bar row
+  // Fila de la barra de titulo
   FrameWidgetClass TitleBarRow {
    size 1 26
    hexactsize 0
@@ -353,7 +353,7 @@ WrapSpacerWidgetClass MyDialog {
    }
   }
 
-  // Scrollable content area
+  // Area de contenido con scroll
   ScrollWidgetClass ContentScroll {
    size 0.97 235
    hexactsize 0
@@ -375,14 +375,14 @@ WrapSpacerWidgetClass MyDialog {
 
 ## Errores Comunes
 
-1. **Forgetting the `Class` suffix** -- In layouts, write `TextWidgetClass`, not `TextWidget`.
-2. **Mixing proportional and pixel values** -- If `hexactsize 0`, the size values are 0.0-1.0 proportional. If `hexactsize 1`, they are pixel values. Using `300` with proportional mode means 300x the parent width.
-3. **Not quoting multi-word attributes** -- Write `"text halign" center`, not `text halign center`.
-4. **Placing ScriptParamsClass in the wrong block** -- It must be in a separate `{ }` block after the children block, not inside it.
+1. **Olvidar el sufijo `Class`** -- En layouts, escribe `TextWidgetClass`, no `TextWidget`.
+2. **Mezclar valores proporcionales y de pixeles** -- Si `hexactsize 0`, los valores de tamano son proporcionales 0.0-1.0. Si `hexactsize 1`, son valores en pixeles. Usar `300` con modo proporcional significa 300 veces el ancho del padre.
+3. **No usar comillas en atributos de multiples palabras** -- Escribe `"text halign" center`, no `text halign center`.
+4. **Colocar ScriptParamsClass en el bloque equivocado** -- Debe estar en un bloque `{ }` separado despues del bloque de hijos, no dentro de el.
 
 ---
 
 ## Siguientes Pasos
 
-- [3.3 Sizing & Positioning](03-sizing-positioning.md) -- Master the proportional vs. pixel coordinate system
-- [3.4 Container Widgets](04-containers.md) -- Deep dive into spacer and scroll widgets
+- [3.3 Tamano y Posicionamiento](03-sizing-positioning.md) -- Dominar el sistema de coordenadas proporcionales vs. pixeles
+- [3.4 Widgets Contenedores](04-containers.md) -- Profundizar en widgets de espaciador y scroll

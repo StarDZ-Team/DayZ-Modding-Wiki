@@ -1,6 +1,6 @@
-# Chapter 1.3: Classes & Inheritance
+# Глава 1.3: Классы и наследование
 
-[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
+[Главная](../../README.md) | [<< Предыдущая: Массивы, Map и Set](02-arrays-maps-sets.md) | **Классы и наследование** | [Следующая: Modded-классы >>](04-modded-classes.md)
 
 ---
 ---
@@ -8,28 +8,28 @@
 ## Введение
 
 
-Everything in DayZ is a class. Every weapon, vehicle, zombie, UI panel, config manager, and player is an instance of a class. Understanding how to declare, extend, and work with classes in Enforce Script is the foundation of all DayZ modding.
+Всё в DayZ --- это класс. Каждое оружие, транспорт, зомби, UI-панель, менеджер конфигурации и игрок является экземпляром класса. Понимание того, как объявлять, расширять и работать с классами в Enforce Script, --- основа всего моддинга DayZ.
 
-Enforce Script's class system is single-inheritance, object-oriented, with access modifiers, constructors, destructors, static members, and method overriding. If you know C# or Java, the concepts are familiar --- but the syntax has its own flavor, and there are important differences covered in this chapter.
+Система классов Enforce Script использует одиночное наследование, объектно-ориентированный подход с модификаторами доступа, конструкторами, деструкторами, статическими членами и переопределением методов. Если вы знаете C# или Java, концепции будут знакомы --- но синтаксис имеет свои особенности, и есть важные отличия, рассмотренные в этой главе.
 
 ---
 
 ## Объявление класса
 
 
-A class groups related data (fields) and behavior (methods) together.
+Класс группирует связанные данные (поля) и поведение (методы) вместе.
 
 ```c
 class ZombieTracker
 {
-    // Fields (member variables)
+    // Поля (переменные-члены)
     int m_ZombieCount;
     float m_SpawnRadius;
     string m_ZoneName;
     bool m_IsActive;
     vector m_CenterPos;
 
-    // Methods (member functions)
+    // Методы (функции-члены)
     void Activate(vector center, float radius)
     {
         m_CenterPos = center;
@@ -52,13 +52,13 @@ class ZombieTracker
 ### Соглашения об именовании классов
 
 
-DayZ modding follows these conventions:
-- Class names: `PascalCase` (e.g., `PlayerTracker`, `LootManager`)
-- Member fields: `m_PascalCase` prefix (e.g., `m_Health`, `m_PlayerList`)
-- Static fields: `s_PascalCase` prefix (e.g., `s_Instance`, `s_Counter`)
-- Constants: `UPPER_SNAKE_CASE` (e.g., `MAX_HEALTH`, `DEFAULT_RADIUS`)
-- Methods: `PascalCase` (e.g., `GetPosition()`, `SetHealth()`)
-- Local variables: `camelCase` (e.g., `playerCount`, `nearestDist`)
+В моддинге DayZ приняты следующие соглашения:
+- Имена классов: `PascalCase` (например, `PlayerTracker`, `LootManager`)
+- Поля-члены: префикс `m_PascalCase` (например, `m_Health`, `m_PlayerList`)
+- Статические поля: префикс `s_PascalCase` (например, `s_Instance`, `s_Counter`)
+- Константы: `UPPER_SNAKE_CASE` (например, `MAX_HEALTH`, `DEFAULT_RADIUS`)
+- Методы: `PascalCase` (например, `GetPosition()`, `SetHealth()`)
+- Локальные переменные: `camelCase` (например, `playerCount`, `nearestDist`)
 
 ### Создание и использование экземпляров
 
@@ -66,10 +66,10 @@ DayZ modding follows these conventions:
 ```c
 void Example()
 {
-    // Create an instance with 'new'
+    // Создание экземпляра с помощью 'new'
     ZombieTracker tracker = new ZombieTracker;
 
-    // Call methods
+    // Вызов методов
     tracker.Activate(Vector(5000, 0, 8000), 200.0);
 
     if (tracker.IsActive())
@@ -78,7 +78,7 @@ void Example()
         Print(string.Format("Distance: %1", dist));
     }
 
-    // Destroy an instance with 'delete' (usually not needed; see Memory section)
+    // Уничтожение экземпляра с помощью 'delete' (обычно не нужно; см. раздел Память)
     delete tracker;
 }
 ```
@@ -88,7 +88,7 @@ void Example()
 ## Конструкторы и деструкторы
 
 
-Constructors initialize an object when it is created. Destructors clean up when it is destroyed. In Enforce Script, both use the class name ----  destructor is prefixed with `~`.
+Конструкторы инициализируют объект при его создании. Деструкторы выполняют очистку при его уничтожении. В Enforce Script оба используют имя класса --- деструктор имеет префикс `~`.
 
 ### Конструктор
 
@@ -101,7 +101,7 @@ class SpawnZone
     protected float m_Radius;
     protected ref array<string> m_AllowedTypes;
 
-    // Constructor: same name as the class
+    // Конструктор: то же имя, что и у класса
     void SpawnZone(string name, vector pos, float radius)
     {
         m_Name = name;
@@ -112,11 +112,11 @@ class SpawnZone
         Print(string.Format("[SpawnZone] Created: %1 at %2, radius %3", m_Name, m_Position, m_Radius));
     }
 
-    // Destructor: ~ prefix
+    // Деструктор: префикс ~
     void ~SpawnZone()
     {
         Print(string.Format("[SpawnZone] Destroyed: %1", m_Name));
-        // m_AllowedTypes is a ref, it will be deleted automatically
+        // m_AllowedTypes --- это ref, он будет удалён автоматически
     }
 
     void AddAllowedType(string typeName)
@@ -129,21 +129,21 @@ class SpawnZone
 ### Конструктор по умолчанию (без параметров)
 
 
-If you do not define a constructor, the class gets an implicit default constructor that initializes all fields to their default values (`0`, `0.0`, `false`, `""`, `null`).
+Если вы не определяете конструктор, класс получает неявный конструктор по умолчанию, который инициализирует все поля значениями по умолчанию (`0`, `0.0`, `false`, `""`, `null`).
 
 ```c
 class SimpleConfig
 {
-    int m_MaxPlayers;      // initialized to 0
-    float m_SpawnDelay;    // initialized to 0.0
-    string m_ServerName;   // initialized to ""
-    bool m_PvPEnabled;     // initialized to false
+    int m_MaxPlayers;      // инициализируется в 0
+    float m_SpawnDelay;    // инициализируется в 0.0
+    string m_ServerName;   // инициализируется в ""
+    bool m_PvPEnabled;     // инициализируется в false
 }
 
 void Test()
 {
     SimpleConfig cfg = new SimpleConfig;
-    // All fields are at their defaults
+    // Все поля имеют значения по умолчанию
     Print(cfg.m_MaxPlayers);  // 0
 }
 ```
@@ -151,7 +151,7 @@ void Test()
 ### Перегрузка конструкторов
 
 
-You can define multiple constructors with different parameter lists:
+Можно определить несколько конструкторов с разными списками параметров:
 
 ```c
 class DamageEvent
@@ -160,7 +160,7 @@ class DamageEvent
     protected string m_Source;
     protected vector m_Position;
 
-    // Constructor with all parameters
+    // Конструктор со всеми параметрами
     void DamageEvent(float amount, string source, vector pos)
     {
         m_Amount = amount;
@@ -168,7 +168,7 @@ class DamageEvent
         m_Position = pos;
     }
 
-    // Simpler constructor with defaults
+    // Упрощённый конструктор со значениями по умолчанию
     void DamageEvent(float amount)
     {
         m_Amount = amount;
@@ -189,27 +189,27 @@ void Test()
 ## Модификаторы доступа
 
 
-Access modifiers control who can see and use fields and methods.
+Модификаторы доступа контролируют, кто может видеть и использовать поля и методы.
 
-| Modifier | Accessible From | Syntax |
+| Модификатор | Доступно из | Синтаксис |
 |----------|----------------|--------|
-| `private` | Only the declaring class | `private int m_Secret;` |
-| `protected` | Declaring class + all subclasses | `protected int m_Health;` |
-| *(none)* | Everywhere (public) | `int m_Value;` |
+| `private` | Только объявляющий класс | `private int m_Secret;` |
+| `protected` | Объявляющий класс + все подклассы | `protected int m_Health;` |
+| *(нет)* | Отовсюду (public) | `int m_Value;` |
 
-There is no explicit `public` keyword --- everything without `private` or `protected` is public by default.
+Явного ключевого слова `public` нет --- всё без `private` или `protected` является публичным по умолчанию.
 
 ```c
 class BaseVehicle
 {
-    // Public: anyone can access
+    // Public: любой может обратиться
     string m_DisplayName;
 
-    // Protected: this class and subclasses only
+    // Protected: только этот класс и подклассы
     protected float m_Fuel;
     protected float m_MaxFuel;
 
-    // Private: only this exact class
+    // Private: только этот конкретный класс
     private int m_InternalState;
 
     void BaseVehicle(string name, float maxFuel)
@@ -220,19 +220,19 @@ class BaseVehicle
         m_InternalState = 0;
     }
 
-    // Public method
+    // Публичный метод
     float GetFuelPercent()
     {
         return (m_Fuel / m_MaxFuel) * 100.0;
     }
 
-    // Protected method: subclasses can call this
+    // Защищённый метод: подклассы могут вызывать
     protected void ConsumeFuel(float amount)
     {
         m_Fuel = Math.Clamp(m_Fuel - amount, 0, m_MaxFuel);
     }
 
-    // Private method: only this class
+    // Приватный метод: только этот класс
     private void UpdateInternalState()
     {
         m_InternalState++;
@@ -243,7 +243,7 @@ class BaseVehicle
 ### Лучшая практика: инкапсуляция
 
 
-Expose fields through methods (getters/setters) rather than making them public. This lets you add validation, logging, or side effects later without breaking code that uses the class.
+Предоставляйте доступ к полям через методы (геттеры/сеттеры), а не делайте их публичными. Это позволяет позже добавить валидацию, логирование или побочные эффекты без нарушения кода, использующего класс.
 
 ```c
 class PlayerStats
@@ -257,19 +257,19 @@ class PlayerStats
         m_Health = maxHealth;
     }
 
-    // Getter
+    // Геттер
     float GetHealth()
     {
         return m_Health;
     }
 
-    // Setter with validation
+    // Сеттер с валидацией
     void SetHealth(float value)
     {
         m_Health = Math.Clamp(value, 0, m_MaxHealth);
     }
 
-    // Convenience methods
+    // Удобные методы
     void TakeDamage(float amount)
     {
         SetHealth(m_Health - amount);
@@ -292,19 +292,19 @@ class PlayerStats
 ## Наследование
 
 
-Inheritance lets you create a new class based on an existing one. The child class inherits all fields and methods from the parent, and can add new ones or override existing behavior.
+Наследование позволяет создавать новый класс на основе существующего. Дочерний класс наследует все поля и методы родителя и может добавлять новые или переопределять существующее поведение.
 
-### Syntax: `extends` or `:`
+### Синтаксис: `extends` или `:`
 
-Enforce Script supports two syntaxes for inheritance. Both are equivalent:
+Enforce Script поддерживает два синтаксиса для наследования. Оба эквивалентны:
 
 ```c
-// Syntax 1: extends keyword (preferred, more readable)
+// Синтаксис 1: ключевое слово extends (предпочтительный, более читаемый)
 class Car extends BaseVehicle
 {
 }
 
-// Syntax 2: colon (C++ style, also common in DayZ code)
+// Синтаксис 2: двоеточие (стиль C++, также распространён в коде DayZ)
 class Truck : BaseVehicle
 {
 }
@@ -342,8 +342,8 @@ class Dog extends Animal
 
     void Dog(string name, string breed)
     {
-        // Note: parent constructor is called automatically with no args,
-        // or you can initialize parent fields directly since they are protected
+        // Примечание: конструктор родителя вызывается автоматически без аргументов,
+        // или можно инициализировать родительские поля напрямую, так как они protected
         m_Name = name;
         m_Health = 100.0;
         m_Breed = breed;
@@ -354,7 +354,7 @@ class Dog extends Animal
         return m_Breed;
     }
 
-    // New method only in Dog
+    // Новый метод только в Dog
     void Fetch()
     {
         Print(m_Name + " fetches the stick!");
@@ -364,23 +364,23 @@ class Dog extends Animal
 void Test()
 {
     Dog rex = new Dog("Rex", "German Shepherd");
-    rex.Speak();         // Inherited from Animal: "Rex makes a sound"
-    rex.Fetch();         // Dog's own method: "Rex fetches the stick!"
-    Print(rex.GetName()); // Inherited: "Rex"
-    Print(rex.GetBreed()); // Dog's own: "German Shepherd"
+    rex.Speak();         // Унаследовано от Animal: "Rex makes a sound"
+    rex.Fetch();         // Собственный метод Dog: "Rex fetches the stick!"
+    Print(rex.GetName()); // Унаследовано: "Rex"
+    Print(rex.GetBreed()); // Собственный метод Dog: "German Shepherd"
 }
 ```
 
 ### Только одиночное наследование
 
 
-Enforce Script supports **single inheritance only**. A class can extend exactly one parent. There is no multiple inheritance, no interfaces, and no mixins.
+Enforce Script поддерживает **только одиночное наследование**. Класс может расширять ровно одного родителя. Множественного наследования, интерфейсов и миксинов нет.
 
 ```c
 class A { }
-class B extends A { }     // OK: single parent
-// class C extends A, B { }  // ERROR: multiple inheritance not supported
-class D extends B { }     // OK: B extends A, D extends B (inheritance chain)
+class B extends A { }     // OK: один родитель
+// class C extends A, B { }  // ОШИБКА: множественное наследование не поддерживается
+class D extends B { }     // OK: B расширяет A, D расширяет B (цепочка наследования)
 ```
 
 ---
@@ -388,7 +388,7 @@ class D extends B { }     // OK: B extends A, D extends B (inheritance chain)
 ## Переопределение методов
 
 
-When a subclass needs to change the behavior of an inherited method, it uses the `override` keyword. The compiler checks that the method signature matches a method in the parent class.
+Когда подкласс должен изменить поведение унаследованного метода, используется ключевое слово `override`. Компилятор проверяет, что сигнатура метода совпадает с методом в родительском классе.
 
 ```c
 class Weapon
@@ -404,7 +404,7 @@ class Weapon
 
     float CalculateDamage(float distance)
     {
-        // Base damage, no falloff
+        // Базовый урон, без падения
         return m_Damage;
     }
 
@@ -425,14 +425,14 @@ class Rifle extends Weapon
         m_MaxRange = maxRange;
     }
 
-    // Override: change damage calculation to include distance falloff
+    // Переопределение: изменение расчёта урона с учётом падения по дистанции
     override float CalculateDamage(float distance)
     {
         float falloff = Math.Clamp(1.0 - (distance / m_MaxRange), 0.1, 1.0);
         return m_Damage * falloff;
     }
 
-    // Override: add range info
+    // Переопределение: добавление информации о дальности
     override string GetInfo()
     {
         return string.Format("%1 (Dmg: %2, Range: %3m)", m_Name, m_Damage, m_MaxRange);
@@ -440,9 +440,9 @@ class Rifle extends Weapon
 }
 ```
 
-### The `super` Keyword
+### Ключевое слово `super`
 
-`super` refers to the parent class. Use it to call the parent's version of a method, then add your own logic on top. This is critical --- especially in [modded classes](04-modded-classes.md).
+`super` ссылается на родительский класс. Используйте его для вызова родительской версии метода, а затем добавляйте свою логику поверх. Это критически важно --- особенно в [modded-классах](04-modded-classes.md).
 
 ```c
 class BaseLogger
@@ -457,10 +457,10 @@ class TimestampLogger extends BaseLogger
 {
     override void Log(string message)
     {
-        // Call parent's Log first
+        // Сначала вызвать Log родителя
         super.Log(message);
 
-        // Then add timestamp logging
+        // Затем добавить логирование с меткой времени
         int hour, minute, second;
         GetHourMinuteSecond(hour, minute, second);
         Print(string.Format("[%1:%2:%3] %4", hour, minute, second, message));
@@ -468,9 +468,9 @@ class TimestampLogger extends BaseLogger
 }
 ```
 
-### `this` Keyword
+### Ключевое слово `this`
 
-`this` refers to the current object instance. It is usually implicit (you do not need to write it), but can be useful for clarity or when passing the current object to another function.
+`this` ссылается на текущий экземпляр объекта. Обычно оно неявно (не нужно его писать), но может быть полезно для ясности или при передаче текущего объекта в другую функцию.
 
 ```c
 class EventManager
@@ -482,7 +482,7 @@ class MyPlugin
 {
     void Init(EventManager mgr)
     {
-        // Pass 'this' (the current MyPlugin instance) to the manager
+        // Передача 'this' (текущего экземпляра MyPlugin) менеджеру
         mgr.Register(this);
     }
 }
@@ -493,7 +493,7 @@ class MyPlugin
 ## Статические методы и поля
 
 
-Static members belong to the class itself, not to any instance. They are accessed using the class name, not an object variable.
+Статические члены принадлежат самому классу, а не какому-либо экземпляру. Доступ к ним осуществляется через имя класса, а не через переменную объекта.
 
 ### Статические поля
 
@@ -501,22 +501,22 @@ Static members belong to the class itself, not to any instance. They are accesse
 ```c
 class GameConfig
 {
-    // Static fields: shared across all instances (and accessible without an instance)
+    // Статические поля: общие для всех экземпляров (и доступные без экземпляра)
     static int s_MaxPlayers = 60;
     static float s_TickRate = 30.0;
     static string s_ServerName = "My Server";
 
-    // Regular (instance) field
+    // Обычное (экземплярное) поле
     protected bool m_IsLoaded;
 }
 
 void UseStaticFields()
 {
-    // Access without creating an instance
+    // Доступ без создания экземпляра
     Print(GameConfig.s_MaxPlayers);     // 60
     Print(GameConfig.s_ServerName);     // "My Server"
 
-    // Modify
+    // Изменение
     GameConfig.s_MaxPlayers = 40;
 }
 ```
@@ -557,12 +557,12 @@ void Test()
 ### Паттерн Singleton
 
 
-The most common use of static fields in DayZ mods is the singleton pattern: a class that has exactly one instance, accessible globally.
+Наиболее распространённое использование статических полей в модах DayZ --- паттерн Singleton: класс, имеющий ровно один экземпляр, доступный глобально.
 
 ```c
 class MyModManager
 {
-    // Static reference to the single instance
+    // Статическая ссылка на единственный экземпляр
     private static ref MyModManager s_Instance;
 
     protected bool m_Initialized;
@@ -574,7 +574,7 @@ class MyModManager
         m_Data = new array<string>;
     }
 
-    // Static getter for the singleton
+    // Статический геттер для синглтона
     static MyModManager GetInstance()
     {
         if (!s_Instance)
@@ -592,14 +592,14 @@ class MyModManager
         Print("[MyMod] Manager initialized");
     }
 
-    // Static cleanup
+    // Статическая очистка
     static void Destroy()
     {
         s_Instance = null;
     }
 }
 
-// Usage from anywhere:
+// Использование из любого места:
 void SomeFunction()
 {
     MyModManager.GetInstance().Init();
@@ -608,17 +608,17 @@ void SomeFunction()
 
 ---
 
-## Пример из практики: Custom Item Class
+## Пример из практики: пользовательский класс предмета
 
 
-Here is a complete example showing a custom item class hierarchy in the style of DayZ modding. This demonstrates everything covered in this chapter.
+Вот полный пример, показывающий иерархию пользовательских классов предметов в стиле моддинга DayZ. Он демонстрирует всё, что было рассмотрено в этой главе.
 
 ```c
-// Base class for all custom medical items
+// Базовый класс для всех пользовательских медицинских предметов
 class CustomMedicalBase extends ItemBase
 {
     protected float m_HealAmount;
-    protected float m_UseTime;      // seconds to use
+    protected float m_UseTime;      // секунды для использования
     protected bool m_RequiresBandage;
 
     void CustomMedicalBase()
@@ -643,7 +643,7 @@ class CustomMedicalBase extends ItemBase
         return m_RequiresBandage;
     }
 
-    // Can be overridden by subclasses
+    // Может быть переопределён подклассами
     void OnApplied(PlayerBase player)
     {
         if (!player)
@@ -654,7 +654,7 @@ class CustomMedicalBase extends ItemBase
     }
 }
 
-// Specific medical item: Bandage
+// Конкретный медицинский предмет: Бинт
 class CustomBandage extends CustomMedicalBase
 {
     void CustomBandage()
@@ -667,13 +667,13 @@ class CustomBandage extends CustomMedicalBase
     {
         super.OnApplied(player);
 
-        // Additional bandage-specific effect: stop bleeding
-        // (simplified example)
+        // Дополнительный эффект, специфичный для бинта: остановка кровотечения
+        // (упрощённый пример)
         Print("[Medical] Bleeding stopped");
     }
 }
 
-// Specific medical item: First Aid Kit (heals more, takes longer)
+// Конкретный медицинский предмет: Аптечка первой помощи (лечит больше, занимает дольше)
 class CustomFirstAidKit extends CustomMedicalBase
 {
     private int m_UsesRemaining;
@@ -706,9 +706,9 @@ class CustomFirstAidKit extends CustomMedicalBase
 }
 ```
 
-### config.cpp for Custom Items
+### config.cpp для пользовательских предметов
 
-The class hierarchy in script must match the `config.cpp` inheritance:
+Иерархия классов в скрипте должна соответствовать наследованию в `config.cpp`:
 
 ```cpp
 class CfgVehicles
@@ -717,13 +717,13 @@ class CfgVehicles
 
     class CustomMedicalBase : ItemBase
     {
-        scope = 0;  // 0 = abstract, cannot be spawned
+        scope = 0;  // 0 = абстрактный, нельзя заспавнить
         displayName = "";
     };
 
     class CustomBandage : CustomMedicalBase
     {
-        scope = 2;  // 2 = public, can be spawned
+        scope = 2;  // 2 = публичный, можно заспавнить
         displayName = "Custom Bandage";
         descriptionShort = "A sterile bandage for wound treatment.";
         model = "\MyMod\data\bandage.p3d";
@@ -746,44 +746,44 @@ class CfgVehicles
 ## Иерархия классов DayZ
 
 
-Understanding the vanilla class hierarchy is essential for modding. Here are the most important classes you will inherit from or interact with:
+Понимание ванильной иерархии классов необходимо для моддинга. Вот наиболее важные классы, от которых вы будете наследовать или с которыми будете взаимодействовать:
 
 ```
-Class                          // Root of all reference types
-  Managed                      // Prevents engine ref-counting (use for pure script classes)
-  IEntity                      // Engine entity base
-    Object                     // Anything with a position in the world
+Class                          // Корень всех ссылочных типов
+  Managed                      // Отключает подсчёт ссылок движком (для чисто скриптовых классов)
+  IEntity                      // Базовая сущность движка
+    Object                     // Всё, что имеет позицию в мире
       Entity
-        EntityAI               // Has inventory, health, actions
+        EntityAI               // Имеет инвентарь, здоровье, действия
           InventoryItem
-            ItemBase           // ALL items (inherit from this for custom items)
-              Weapon_Base      // All weapons
-              Magazine_Base    // All magazines
-              Clothing_Base    // All clothing
+            ItemBase           // ВСЕ предметы (наследуйте от этого для пользовательских предметов)
+              Weapon_Base      // Всё оружие
+              Magazine_Base    // Все магазины
+              Clothing_Base    // Вся одежда
           Transport
-            CarScript          // All vehicles
+            CarScript          // Все транспортные средства
           DayZCreatureAI
-            DayZInfected       // Zombies
-            DayZAnimal         // Animals
+            DayZInfected       // Зомби
+            DayZAnimal         // Животные
           Man
             DayZPlayer
-              PlayerBase       // THE player class (modded constantly)
-                SurvivorBase   // Character appearance
+              PlayerBase       // Класс игрока (постоянно моддится)
+                SurvivorBase   // Внешний вид персонажа
 ```
 
 ### Типичные базовые классы для моддинга
 
 
-| If you want to create... | Extend... |
+| Если вы хотите создать... | Наследуйте от... |
 |--------------------------|-----------|
-| A new item | `ItemBase` |
-| A new weapon | `Weapon_Base` |
-| A new piece of clothing | `Clothing_Base` |
-| A new vehicle | `CarScript` |
-| A UI element | `UIScriptedMenu` or `ScriptedWidgetEventHandler` |
-| A manager/system | `Managed` |
-| A config data class | `Managed` |
-| A mission hook | `MissionServer` or `MissionGameplay` (via `modded class`) |
+| Новый предмет | `ItemBase` |
+| Новое оружие | `Weapon_Base` |
+| Новую одежду | `Clothing_Base` |
+| Новый транспорт | `CarScript` |
+| Элемент UI | `UIScriptedMenu` или `ScriptedWidgetEventHandler` |
+| Менеджер/систему | `Managed` |
+| Класс данных конфигурации | `Managed` |
+| Хук миссии | `MissionServer` или `MissionGameplay` (через `modded class`) |
 
 ---
 
@@ -793,24 +793,24 @@ Class                          // Root of all reference types
 ### 1. Забытый `ref` для принадлежащих объектов
 
 
-When a class owns another object (creates it, responsible for its lifetime), declare the field as `ref`. Without `ref`, the object may be garbage collected unexpectedly.
+Когда класс владеет другим объектом (создаёт его, отвечает за его жизненный цикл), объявляйте поле как `ref`. Без `ref` объект может быть неожиданно удалён сборщиком мусора.
 
 ```c
-// BAD: m_Data might be garbage collected
+// ПЛОХО: m_Data может быть удалён сборщиком мусора
 class BadManager
 {
-    array<string> m_Data;  // raw pointer, no ownership
+    array<string> m_Data;  // сырой указатель, без владения
 
     void BadManager()
     {
-        m_Data = new array<string>;  // object might get collected
+        m_Data = new array<string>;  // объект может быть собран
     }
 }
 
-// GOOD: ref ensures the manager keeps m_Data alive
+// ХОРОШО: ref гарантирует, что менеджер сохраняет m_Data
 class GoodManager
 {
-    ref array<string> m_Data;  // strong reference, owns the object
+    ref array<string> m_Data;  // сильная ссылка, владеет объектом
 
     void GoodManager()
     {
@@ -822,7 +822,7 @@ class GoodManager
 ### 2. Забытое ключевое слово `override`
 
 
-If you intend to override a parent method but forget the `override` keyword, you get a **new** method that hides the parent's method instead of replacing it. The compiler may warn about this.
+Если вы намереваетесь переопределить метод родителя, но забыли ключевое слово `override`, вы получите **новый** метод, который скрывает метод родителя вместо его замены. Компилятор может предупредить об этом.
 
 ```c
 class Parent
@@ -832,10 +832,10 @@ class Parent
 
 class Child extends Parent
 {
-    // BAD: creates a new method, doesn't override
+    // ПЛОХО: создаёт новый метод, не переопределяет
     void DoWork() { Print("Child"); }
 
-    // GOOD: properly overrides
+    // ХОРОШО: правильно переопределяет
     override void DoWork() { Print("Child"); }
 }
 ```
@@ -843,27 +843,27 @@ class Child extends Parent
 ### 3. Отсутствие вызова `super` в переопределениях
 
 
-When you override a method, the parent's code is NOT automatically called. If you skip `super`, you lose the parent's behavior --- which can break functionality, especially in DayZ's deep inheritance chains.
+При переопределении метода код родителя НЕ вызывается автоматически. Если пропустить `super`, вы теряете поведение родителя --- что может нарушить функциональность, особенно в глубоких цепочках наследования DayZ.
 
 ```c
 class Parent
 {
     void Init()
     {
-        // Critical initialization happens here
+        // Критическая инициализация происходит здесь
         Print("Parent.Init()");
     }
 }
 
 class Child extends Parent
 {
-    // BAD: Parent.Init() never runs
+    // ПЛОХО: Parent.Init() никогда не выполняется
     override void Init()
     {
         Print("Child.Init()");
     }
 
-    // GOOD: Parent.Init() runs first, then child adds behavior
+    // ХОРОШО: Parent.Init() выполняется первым, затем дочерний класс добавляет поведение
     override void Init()
     {
         super.Init();
@@ -875,40 +875,40 @@ class Child extends Parent
 ### 4. Циклы ref вызывают утечки памяти
 
 
-If object A holds a `ref` to object B, and object B holds a `ref` to object A, neither can ever be freed. One side must use a raw (non-ref) pointer.
+Если объект A хранит `ref` на объект B, а объект B хранит `ref` на объект A, ни один не может быть освобождён. Одна сторона должна использовать сырой (не-ref) указатель.
 
 ```c
-// BAD: ref cycle, neither object can be freed
+// ПЛОХО: цикл ref, ни один объект не может быть освобождён
 class Parent
 {
     ref Child m_Child;
 }
 class Child
 {
-    ref Parent m_Parent;  // LEAK: circular ref
+    ref Parent m_Parent;  // УТЕЧКА: циклическая ссылка
 }
 
-// GOOD: child holds a raw pointer to parent
+// ХОРОШО: дочерний хранит сырой указатель на родителя
 class Parent2
 {
     ref Child2 m_Child;
 }
 class Child2
 {
-    Parent2 m_Parent;  // raw pointer, no ref -- breaks the cycle
+    Parent2 m_Parent;  // сырой указатель, без ref --- разрывает цикл
 }
 ```
 
 ### 5. Попытка использовать множественное наследование
 
 
-Enforce Script does not support multiple inheritance. If you need to share behavior across unrelated classes, use composition (hold a reference to a helper object) or static utility methods.
+Enforce Script не поддерживает множественное наследование. Если вам нужно разделить поведение между несвязанными классами, используйте композицию (хранение ссылки на вспомогательный объект) или статические утилитарные методы.
 
 ```c
-// CANNOT DO THIS:
-// class FlyingCar extends Car, Aircraft { }  // ERROR
+// ТАК НЕЛЬЗЯ:
+// class FlyingCar extends Car, Aircraft { }  // ОШИБКА
 
-// Instead, use composition:
+// Вместо этого используйте композицию:
 class FlyingCar extends Car
 {
     protected ref FlightController m_Flight;
@@ -930,56 +930,56 @@ class FlyingCar extends Car
 ## Практические упражнения
 
 
-### Упражнение 1: Shape Hierarchy
+### Упражнение 1: Иерархия фигур
 
-Create a base class `Shape` with a method `float GetArea()`. Create subclasses `Circle` (radius), `Rectangle` (width, height), and `Triangle` (base, height) that override `GetArea()`. Print the area of each.
+Создайте базовый класс `Shape` с методом `float GetArea()`. Создайте подклассы `Circle` (радиус), `Rectangle` (ширина, высота) и `Triangle` (основание, высота), которые переопределяют `GetArea()`. Выведите площадь каждой фигуры.
 
-### Упражнение 2: Logger System
+### Упражнение 2: Система логирования
 
-Create a `Logger` class with a `Log(string message)` method that prints to console. Create `FileLogger` that extends it and also writes to a conceptual file (just print with a `[FILE]` prefix). Create `DiscordLogger` that extends `Logger` and adds a `[DISCORD]` prefix. Each should call `super.Log()`.
+Создайте класс `Logger` с методом `Log(string message)`, который выводит в консоль. Создайте `FileLogger`, расширяющий его и дополнительно записывающий в концептуальный файл (просто выводите с префиксом `[FILE]`). Создайте `DiscordLogger`, расширяющий `Logger` и добавляющий префикс `[DISCORD]`. Каждый должен вызывать `super.Log()`.
 
-### Упражнение 3: Inventory Item
+### Упражнение 3: Предмет инвентаря
 
-Create a class `CustomItem` with protected fields for `m_Weight`, `m_Value`, and `m_Condition` (float 0-1). Include:
-- A constructor that takes all three values
-- Getters for each field
-- A method `Degrade(float amount)` that reduces condition (clamped to 0)
-- A method `GetEffectiveValue()` that returns `m_Value * m_Condition`
+Создайте класс `CustomItem` с protected-полями для `m_Weight`, `m_Value` и `m_Condition` (float 0-1). Включите:
+- Конструктор, принимающий все три значения
+- Геттеры для каждого поля
+- Метод `Degrade(float amount)`, уменьшающий состояние (ограничен до 0)
+- Метод `GetEffectiveValue()`, возвращающий `m_Value * m_Condition`
 
-Then create `CustomWeaponItem` that extends it, adding `m_Damage` and an override of `GetEffectiveValue()` that factors in damage.
+Затем создайте `CustomWeaponItem`, расширяющий его, добавляющий `m_Damage` и переопределяющий `GetEffectiveValue()` с учётом урона.
 
-### Упражнение 4: Singleton Manager
+### Упражнение 4: Синглтон-менеджер
 
-Implement a `SessionManager` singleton that tracks player join/leave events. It should store join times in a map and provide methods:
+Реализуйте синглтон `SessionManager`, отслеживающий события подключения/отключения игроков. Он должен хранить время подключения в map и предоставлять методы:
 - `OnPlayerJoin(string uid, string name)`
 - `OnPlayerLeave(string uid)`
 - `int GetOnlineCount()`
-- `float GetSessionDuration(string uid)` (in seconds)
+- `float GetSessionDuration(string uid)` (в секундах)
 
-### Упражнение 5: Chain of Command
+### Упражнение 5: Цепочка обработчиков
 
-Create an abstract `Handler` class with `protected Handler m_Next` and methods `SetNext(Handler next)` and `void Handle(string request)`. Create three concrete handlers (`AuthHandler`, `PermissionHandler`, `ActionHandler`) that either handle the request or pass it to `m_Next`. Demonstrate the chain.
+Создайте абстрактный класс `Handler` с `protected Handler m_Next` и методами `SetNext(Handler next)` и `void Handle(string request)`. Создайте три конкретных обработчика (`AuthHandler`, `PermissionHandler`, `ActionHandler`), которые либо обрабатывают запрос, либо передают его `m_Next`. Продемонстрируйте цепочку.
 
 ---
 
 ## Итоги
 
 
-| Concept | Syntax | Notes |
+| Концепция | Синтаксис | Примечания |
 |---------|--------|-------|
-| Class declaration | `class Name { }` | Public members by default |
-| Inheritance | `class Child extends Parent` | Single inheritance only; also `: Parent` |
-| Constructor | `void ClassName()` | Same name as class |
-| Destructor | `void ~ClassName()` | Called on deletion |
-| Private | `private int m_Field;` | This class only |
-| Protected | `protected int m_Field;` | This class + subclasses |
-| Public | `int m_Field;` | No keyword needed (default) |
-| Override | `override void Method()` | Must match parent signature |
-| Super call | `super.Method()` | Calls parent's version |
-| Static field | `static int s_Count;` | Shared across all instances |
-| Static method | `static void DoThing()` | Called via `ClassName.DoThing()` |
-| `ref` | `ref MyClass m_Obj;` | Strong reference (owns the object) |
+| Объявление класса | `class Name { }` | Публичные члены по умолчанию |
+| Наследование | `class Child extends Parent` | Только одиночное наследование; также `: Parent` |
+| Конструктор | `void ClassName()` | Имя совпадает с именем класса |
+| Деструктор | `void ~ClassName()` | Вызывается при удалении |
+| Private | `private int m_Field;` | Только этот класс |
+| Protected | `protected int m_Field;` | Этот класс + подклассы |
+| Public | `int m_Field;` | Ключевое слово не нужно (по умолчанию) |
+| Override | `override void Method()` | Должна совпадать сигнатура родителя |
+| Вызов super | `super.Method()` | Вызывает версию родителя |
+| Статическое поле | `static int s_Count;` | Общее для всех экземпляров |
+| Статический метод | `static void DoThing()` | Вызывается через `ClassName.DoThing()` |
+| `ref` | `ref MyClass m_Obj;` | Сильная ссылка (владеет объектом) |
 
 ---
 
-[Главная](../../README.md) | [<< Предыдущая: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Следующая: Modded Classes >>](04-modded-classes.md)
+[Главная](../../README.md) | [<< Предыдущая: Массивы, Map и Set](02-arrays-maps-sets.md) | **Классы и наследование** | [Следующая: Modded-классы >>](04-modded-classes.md)

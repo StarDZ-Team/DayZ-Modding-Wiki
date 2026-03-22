@@ -375,14 +375,57 @@ WrapSpacerWidgetClass MyDialog {
 
 ## Najczestsze bledy
 
-1. **Forgetting the `Class` suffix** -- In layouts, write `TextWidgetClass`, not `TextWidget`.
-2. **Mixing proportional and pixel values** -- If `hexactsize 0`, the size values are 0.0-1.0 proportional. If `hexactsize 1`, they are pixel values. Using `300` with proportional mode means 300x the parent width.
-3. **Not quoting multi-word attributes** -- Write `"text halign" center`, not `text halign center`.
-4. **Placing ScriptParamsClass in the wrong block** -- It must be in a separate `{ }` block after the children block, not inside it.
+1. **Zapomnienie o przyrostku `Class`** -- W layoutach pisz `TextWidgetClass`, nie `TextWidget`.
+2. **Mieszanie wartosci proporcjonalnych i pikselowych** -- Jesli `hexactsize 0`, wartosci rozmiaru sa proporcjonalne 0.0-1.0. Jesli `hexactsize 1`, sa to wartosci pikselowe. Uzycie `300` w trybie proporcjonalnym oznacza 300x szerokosc rodzica.
+3. **Brak cudzyslowow w wieloslownych atrybutach** -- Pisz `"text halign" center`, nie `text halign center`.
+4. **Umieszczenie ScriptParamsClass w zlym bloku** -- Musi byc w oddzielnym bloku `{ }` po bloku dzieci, nie wewnatrz niego.
+
+---
+
+## Najlepsze praktyki
+
+- Zawsze ustawiaj wszystkie cztery flagi exact (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`) jawnie na kazdym widgecie. Poleganie na domyslnych wartosciach prowadzi do niejednoznacznych layoutow, ktore sie psuja przy zmianie struktury rodzica.
+- Uzywaj `scriptclass` oszczednie -- tylko na widgetach, ktore naprawde potrzebuja zachowania sterowanego skryptem. Nadmierne wiazanie dodaje narzut inicjalizacji.
+- Nazywaj widgety opisowo (`PlayerListScroll`, `TitleBarClose`) zamiast generycznie (`Frame1`, `btn`). Kod skryptowy uzywa `FindAnyWidget()` po nazwie, a kolizje powoduja ciche awarie.
+- Utrzymuj pliki layout ponizej 200 linii. Dziel zlezone UI na wiele plikow `.layout` ladowanych za pomoca `CreateWidgets()` i laczonych programowo z rodzicem.
+- Zawsze umieszczaj wieloslowne nazwy atrybutow w cudzyslowach (`"text halign"`, `"Size To Content V"`). Niecytowane wieloslowne atrybuty cicho zawodza bez bledu.
+
+---
+
+## Teoria vs praktyka
+
+> Co dokumentacja mowi w porownaniu z tym, jak rzeczy faktycznie dzialaja w czasie wykonania.
+
+| Koncept | Teoria | Rzeczywistosc |
+|---------|--------|---------------|
+| Inicjalizacja `scriptclass` | `OnWidgetScriptInit` jest wywolywana przy ladowaniu layoutu | Jesli klasa nie dziedziczy z `Managed` lub ma blad w konstruktorze, widget sie laduje, ale handler jest cicho null |
+| `ScriptParamsClass` | Parametry przekazuja dowolne dane do klas skryptowych | Niezawodnie dzialaja tylko wartosci tekstowe i liczbowe; zagniezdzone obiekty lub tablice nie sa obslugiwane |
+| Atrybut `color` | Cztery floaty 0.0-1.0 (RGBA) | Niektore typy widgetow ignoruja kanal alfa lub wymagaja `inheritalpha 1` na rodzicu dla propagacji przezroczystosci |
+| Domyslne atrybuty | Nieudokumentowane atrybuty uzywaja domyslnych wartosci silnika | Domyslne wartosci roznia sie w zaleznosci od typu widgetu |
+| `"no focus"` | Zapobiega fokusowi klawiatury | Zapobiega rowniez wyborowi gamepadem, co moze zepsuc nawigacje kontrolerem jesli ustawione na interaktywnych widgetach |
+
+---
+
+## Kompatybilnosc i wplyw
+
+- **Multi-Mod:** Pliki layout sa izolowane per mod -- brak bezposrednich konfliktow. Jednak nazwy `scriptclass` musza byc globalnie unikalne. Dwa mody uzywajace `scriptclass "PanelHandler"` spowoduja ciche niepowodzenie jednego z nich.
+- **Wydajnosc:** Kazdy widget w layoucie jest prawdziwym obiektem silnika. Layouty z 500+ widgetami powoduja mierzalne spadki klatek. Dla duzych list preferuj programowy pooling.
+- **Wersja:** Format layoutu jest stabilny od DayZ 1.0. Blok `ScriptParamsClass` i scriptclass `ViewBinding` zostaly dodane przez DabsFramework i nie sa funkcjami vanilla.
+
+---
+
+## Zaobserwowane w prawdziwych modach
+
+| Wzorzec | Mod | Szczegoly |
+|---------|-----|-----------|
+| `scriptclass "ViewBinding"` z `ScriptParamsClass` | DabsFramework / DayZ Editor | Dwukierunkowe wiazanie danych miedzy layoutami i ViewControllerami przez parametr `Binding_Name` |
+| `WrapSpacerWidgetClass` jako root dialogu | COT, Expansion | Umozliwia `Size To Content V/H` dla automatycznego rozmiaru dialogow wokol dynamicznej zawartosci |
+| Osobny `.layout` na wiersz listy | VPP Admin Tools | Kazdy wiersz gracza jest samodzielnym layoutem ladowanym do WrapSpacer, umozliwiajacym ponowne uzycie i pooling |
+| `priority 998-999` dla nakladek modalnych | DabsFramework, COT | Zapewnia, ze dialogi renderuja sie nad wszystkimi innymi elementami UI |
 
 ---
 
 ## Nastepne kroki
 
-- [3.3 Sizing & Positioning](03-sizing-positioning.md) -- Master the proportional vs. pixel coordinate system
-- [3.4 Container Widgets](04-containers.md) -- Deep dive into spacer and scroll widgets
+- [3.3 Rozmiar i pozycjonowanie](03-sizing-positioning.md) -- Opanuj proporcjonalny vs. pikselowy system wspolrzednych
+- [3.4 Widgety kontenerowe](04-containers.md) -- Glebokie zanurzenie w widgety spacer i scroll

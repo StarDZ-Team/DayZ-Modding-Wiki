@@ -1,108 +1,108 @@
-# Frequently Asked Questions
+# よくある質問
 
-[Home](../README.md) | **FAQ**
+[ホーム](../README.md) | **FAQ**
 
 ---
 
 ## はじめに
 
-### Q: DayZのモッディングを始めるには何が必要ですか？
-**A:** Steam、DayZ（製品版）、DayZ Tools（Steamのツールセクションから無料）、テキストエディタ（VS Code推奨）が必要です。プログラミング経験は厳密には必要ありません — start with [Chapter 8.1: Your First Mod](08-tutorials/01-first-mod.md). DayZ Toolsには、Object Builder、Addon Builder、TexView2、Workbench IDEが含まれています。
+### Q: DayZ のモッディングを始めるには何が必要ですか？
+**A:** Steam、DayZ（製品版）、DayZ Tools（Steam のツールセクションから無料）、テキストエディタ（VS Code 推奨）が必要です。プログラミング経験は厳密には必要ありません --- [第 8.1 章: はじめての Mod](08-tutorials/01-first-mod.md) から始めましょう。DayZ Tools には Object Builder、Addon Builder、TexView2、Workbench IDE が含まれています。
 
-### Q: DayZはどのプログラミング言語を使用していますか？
-**A:** DayZは、Bohemia Interactiveの独自言語である**Enforce Script**を使用しています。 C言語風のC#に似た構文を持ちますが、独自のルールと制限があります（三項演算子なし、try/catchなし、ラムダなし）。 [パート 1: Enforce Script](01-enforce-script/01-variables-types.md) で完全な言語ガイドを参照してください。
+### Q: DayZ はどのプログラミング言語を使用していますか？
+**A:** DayZ は Bohemia Interactive の独自言語である **Enforce Script** を使用しています。C# に似た C 言語風の構文を持ちますが、独自のルールと制限があります（三項演算子なし、try/catch なし、ラムダなし）。完全な言語ガイドは [パート 1: Enforce Script](01-enforce-script/01-variables-types.md) を参照してください。
 
-### Q: P:ドライブはどのように設定しますか？
-**A:** SteamからDayZ Toolsを開き、 "Workdrive" or "Setup Workdrive" をクリックしてP:ドライブをマウントします。 これにより、モッディングワークスペースを指す仮想ドライブが作成され、 エンジン が開発中にソースファイルを検索します。 また、 `subst P: "C:\Your\Path"` をコマンドラインから使用することもできます。 [第 4.5](04-file-formats/05-dayz-tools.md).
+### Q: P: ドライブはどのように設定しますか？
+**A:** Steam から DayZ Tools を開き、「Workdrive」または「Setup Workdrive」をクリックして P: ドライブをマウントします。これにより、エンジンが開発中にソースファイルを検索するモッディングワークスペースを指す仮想ドライブが作成されます。コマンドラインから `subst P: "C:\Your\Path"` を使用することもできます。[第 4.5 章](04-file-formats/05-dayz-tools.md) を参照してください。
 
-### Q: 専用サーバーなしでModをテストできますか？
-**A:** はい。DayZを `-filePatching` パラメータとModを読み込んで起動してください。 簡易テストには、Listen Server（ゲーム内メニューからホスト）を使用してください。 本番テストでは、一部のコードパスが異なるため、必ず専用サーバーでも確認してください。 [第 8.1](08-tutorials/01-first-mod.md).
+### Q: 専用サーバーなしで Mod をテストできますか？
+**A:** はい。DayZ を `-filePatching` パラメータと Mod を読み込んで起動してください。簡易テストにはリッスンサーバー（ゲーム内メニューからホスト）を使用してください。本番テストでは、一部のコードパスが異なるため、必ず専用サーバーでも確認してください。[第 8.1 章](08-tutorials/01-first-mod.md) を参照してください。
 
-### Q: バニラDayZスクリプトファイルはどこにありますか？
-**A:** DayZ ToolsでP:ドライブをマウントした後、バニラスクリプトは `P:\DZ\scripts\` にレイヤー別に整理されています (`3_Game`, `4_World`, `5_Mission`). これらは、すべてのエンジンクラス、メソッド、イベントの権威あるリファレンスです。 こちらも参照してください： [Cheat Sheet](cheatsheet.md) and [API Quick Reference](06-engine-api/quick-reference.md).
-
----
-
-## よくあるエラーと修正方法
-
-### Q: Modは読み込まれますが何も起きません。ログにエラーもありません。
-**A:** おそらく、あなたの `config.cpp` のエントリが不正です。 `requiredAddons[]` そのため、スクリプトが早すぎるタイミングで読み込まれるか、まったく読み込まれません。 Verify that each addon name in `requiredAddons` matches an existing `CfgPatches` class name exactly (case-sensitive). Check the script log at `%localappdata%/DayZ/` for silent warnings. [第 2.2](02-mod-structure/02-config-cpp.md).
-
-### Q: I get "Cannot find variable" or "Undefined variable" errors.
-**A:** This usually means you are referencing a class or variable from a higher script layer. Lower layers (`3_Game`) cannot see types defined in higher layers (`4_World`, `5_Mission`). Move your class definition to the correct layer, or use `typename` reflection for loose coupling. [第 2.1](02-mod-structure/01-five-layers.md).
-
-### Q: Why does `JsonFileLoader<T>.JsonLoadFile()` not return my data?
-**A:** `JsonLoadFile()` returns `void`, not the loaded object. You must pre-allocate your object and pass it as a reference parameter: `ref MyConfig cfg = new MyConfig(); JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);`. Assigning the return value silently gives you `null`. [第 6.8](06-engine-api/08-file-io.md).
-
-### Q: My RPC is sent but never received on the other side.
-**A:** Check these common causes: (1) The RPC ID does not match between sender and receiver. (2) You are sending from client but listening on client (or server-to-server). (3) You forgot to register the RPC handler in `OnRPC()` or your custom handler. (4) The target entity is `null` or not network-synced. [第 6.9](06-engine-api/09-networking.md) and [Chapter 7.3](07-patterns/03-rpc-patterns.md).
-
-### Q: I get "Error: Member already defined" in an else-if block.
-**A:** Enforce Script does not allow variable redeclaration in sibling `else if` blocks within the same scope. Declare the variable once before the `if` chain, or use separate scopes with braces. [第 1.12](01-enforce-script/12-gotchas.md).
-
-### Q: My UI layout shows nothing / widgets are invisible.
-**A:** Common causes: (1) Widget has zero size — check that width/height are set correctly (no negative values). (2) The widget is not `Show(true)`. (3) Text color alpha is 0 (fully transparent). (4) The layout path in `CreateWidgets()` is wrong (no error is thrown, it just returns `null`). [第 3.3](03-gui-system/03-sizing-positioning.md).
-
-### Q: My mod causes a crash on server startup.
-**A:** Check for: (1) Calling client-only methods (`GetGame().GetPlayer()`, UI code) on the server. (2) `null` reference in `OnInit` or `OnMissionStart` before the world is ready. (3) Infinite recursion in a `modded class` override that forgot to call `super`. Always add guard clauses since there is no try/catch. [第 1.11](01-enforce-script/11-error-handling.md).
-
-### Q: Backslash or quote characters in my strings cause parse errors.
-**A:** Enforce Script's parser (CParser) does not support `\\` or `\"` escape sequences in string literals. Avoid backslashes entirely. For file paths, use forward slashes (`"my/path/file.json"`). For quotes in strings, use single-quote characters or string concatenation. [第 1.12](01-enforce-script/12-gotchas.md).
+### Q: バニラの DayZ スクリプトファイルはどこにありますか？
+**A:** DayZ Tools で P: ドライブをマウントした後、バニラスクリプトは `P:\DZ\scripts\` にレイヤー別（`3_Game`、`4_World`、`5_Mission`）で整理されています。これらはすべてのエンジンクラス、メソッド、イベントの権威ある参考資料です。[チートシート](cheatsheet.md) と [API クイックリファレンス](06-engine-api/quick-reference.md) も参照してください。
 
 ---
 
-## アーキテクチャの決定
+## よくあるエラーと修正
 
-### Q: What is the 5-layer script hierarchy and why does it matter?
-**A:** DayZ scripts compile in five numbered layers: `1_Core`, `2_GameLib`, `3_Game`, `4_World`, `5_Mission`. Each layer can only reference types from the same or lower-numbered layers. This enforces architectural boundaries — put shared enums and constants in `3_Game`, entity logic in `4_World`, and UI/mission hooks in `5_Mission`. [第 2.1](02-mod-structure/01-five-layers.md).
+### Q: Mod は読み込まれますが何も起きません。ログにエラーもありません。
+**A:** おそらく `config.cpp` の `requiredAddons[]` エントリが正しくないため、スクリプトの読み込みが早すぎるか、まったく行われていません。`requiredAddons` の各アドオン名が既存の `CfgPatches` クラス名と正確に一致していることを確認してください（大文字小文字を区別します）。`%localappdata%/DayZ/` のスクリプトログで警告がないか確認してください。[第 2.2 章](02-mod-structure/02-config-cpp.md) を参照してください。
 
-### Q: Should I use `modded class` or create new classes?
-**A:** Use `modded class` when you need to change or extend existing vanilla behavior (adding a method to `PlayerBase`, hooking into `MissionServer`). Create new classes for self-contained systems that do not need to override anything. Modded classes chain automatically — always call `super` to avoid breaking other mods. [第 1.4](01-enforce-script/04-modded-classes.md).
+### Q: 「Cannot find variable」や「Undefined variable」エラーが出ます。
+**A:** これは通常、上位スクリプトレイヤーのクラスや変数を参照していることを意味します。下位レイヤー（`3_Game`）は上位レイヤー（`4_World`、`5_Mission`）で定義された型を参照できません。クラス定義を正しいレイヤーに移動するか、`typename` リフレクションを使用して疎結合にしてください。[第 2.1 章](02-mod-structure/01-five-layers.md) を参照してください。
 
-### Q: How should I organize client vs. server code?
-**A:** Use `#ifdef SERVER` and `#ifdef CLIENT` preprocessor guards for code that must only run on one side. For larger mods, split into separate PBOs: a client mod (UI, rendering, local effects) and a server mod (spawning, logic, persistence). This prevents leaking server logic to clients. [第 2.5](02-mod-structure/05-file-organization.md) and [Chapter 6.9](06-engine-api/09-networking.md).
+### Q: `JsonFileLoader<T>.JsonLoadFile()` がデータを返しません。
+**A:** `JsonLoadFile()` は `void` を返し、読み込んだオブジェクトを返しません。オブジェクトを事前に割り当て、参照パラメータとして渡す必要があります：`ref MyConfig cfg = new MyConfig(); JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);`。戻り値を代入すると、静かに `null` になります。[第 6.8 章](06-engine-api/08-file-io.md) を参照してください。
 
-### Q: When should I use a Singleton vs. a Module/Plugin?
-**A:** Use a Module (registered with CF's `PluginManager` or your own module system) when you need lifecycle management (`OnInit`, `OnUpdate`, `OnMissionFinish`). Use a standalone Singleton for stateless utility services that just need global access. Modules are preferred for anything with state or cleanup needs. [第 7.1](07-patterns/01-singletons.md) and [Chapter 7.2](07-patterns/02-module-systems.md).
+### Q: RPC を送信しましたが、反対側で受信されません。
+**A:** 以下の一般的な原因を確認してください：(1) 送信者と受信者の間で RPC ID が一致していない。(2) クライアントから送信しているがクライアントで受信している（またはサーバー間通信になっている）。(3) `OnRPC()` またはカスタムハンドラーで RPC ハンドラーの登録を忘れている。(4) ターゲットエンティティが `null` またはネットワーク同期されていない。[第 6.9 章](06-engine-api/09-networking.md) と [第 7.3 章](07-patterns/03-rpc-patterns.md) を参照してください。
 
-### Q: How do I safely store per-player data that survives server restarts?
-**A:** Save JSON files to the server's `$profile:` directory using `JsonFileLoader`. Use the player's Steam UID (from `PlayerIdentity.GetId()`) as the filename. Load on player connect, save on disconnect and periodically. Always handle missing/corrupted files gracefully with guard clauses. [第 7.4](07-patterns/04-config-persistence.md) and [Chapter 6.8](06-engine-api/08-file-io.md).
+### Q: else-if ブロックで「Error: Member already defined」が出ます。
+**A:** Enforce Script は同じスコープ内の兄弟 `else if` ブロックでの変数の再宣言を許可しません。`if` チェーンの前に変数を1回宣言するか、ブレースで別のスコープを使用してください。[第 1.12 章](01-enforce-script/12-gotchas.md) を参照してください。
+
+### Q: UI レイアウトが何も表示されません / ウィジェットが見えません。
+**A:** 一般的な原因：(1) ウィジェットのサイズがゼロ --- 幅/高さが正しく設定されていることを確認してください（負の値を使用しないこと）。(2) ウィジェットが `Show(true)` されていない。(3) テキストカラーのアルファが 0（完全に透明）。(4) `CreateWidgets()` のレイアウトパスが間違っている（エラーはスローされず、単に `null` を返す）。[第 3.3 章](03-gui-system/03-sizing-positioning.md) を参照してください。
+
+### Q: Mod がサーバー起動時にクラッシュを引き起こします。
+**A:** 以下を確認してください：(1) サーバー上でクライアント専用メソッド（`GetGame().GetPlayer()`、UI コード）を呼び出している。(2) ワールドの準備ができる前の `OnInit` や `OnMissionStart` での `null` 参照。(3) `super` を呼び忘れた `modded class` オーバーライドでの無限再帰。try/catch がないため、常にガード句を追加してください。[第 1.11 章](01-enforce-script/11-error-handling.md) を参照してください。
+
+### Q: 文字列内のバックスラッシュや引用符がパースエラーを引き起こします。
+**A:** Enforce Script のパーサー（CParser）は文字列リテラル内の `\\` や `\"` エスケープシーケンスをサポートしていません。バックスラッシュは完全に避けてください。ファイルパスにはフォワードスラッシュ（`"my/path/file.json"`）を使用してください。文字列内の引用符にはシングルクォート文字または文字列連結を使用してください。[第 1.12 章](01-enforce-script/12-gotchas.md) を参照してください。
+
+---
+
+## アーキテクチャに関する判断
+
+### Q: 5 レイヤースクリプト階層とは何で、なぜ重要ですか？
+**A:** DayZ スクリプトは 5 つの番号付きレイヤーでコンパイルされます：`1_Core`、`2_GameLib`、`3_Game`、`4_World`、`5_Mission`。各レイヤーは同じまたはそれより低い番号のレイヤーの型のみを参照できます。これによりアーキテクチャの境界が強制されます --- 共有 enum と定数は `3_Game` に、エンティティロジックは `4_World` に、UI/ミッションフックは `5_Mission` に配置してください。[第 2.1 章](02-mod-structure/01-five-layers.md) を参照してください。
+
+### Q: `modded class` を使うべきか、新しいクラスを作るべきか？
+**A:** 既存のバニラ動作を変更または拡張する必要がある場合（`PlayerBase` にメソッドを追加、`MissionServer` にフックするなど）は `modded class` を使用してください。何もオーバーライドする必要のない自己完結型システムには新しいクラスを作成してください。modded class は自動的にチェーンされます --- 他の Mod を壊さないよう、常に `super` を呼び出してください。[第 1.4 章](01-enforce-script/04-modded-classes.md) を参照してください。
+
+### Q: クライアントとサーバーのコードはどう整理すべきですか？
+**A:** 一方でのみ実行すべきコードには `#ifdef SERVER` と `#ifdef CLIENT` プリプロセッサガードを使用してください。大規模な Mod では、別々の PBO に分割してください：クライアント Mod（UI、レンダリング、ローカルエフェクト）とサーバー Mod（スポーン、ロジック、永続化）。これによりサーバーロジックがクライアントに漏洩するのを防ぎます。[第 2.5 章](02-mod-structure/05-file-organization.md) と [第 6.9 章](06-engine-api/09-networking.md) を参照してください。
+
+### Q: シングルトンとモジュール/プラグイン、どちらを使うべきですか？
+**A:** ライフサイクル管理（`OnInit`、`OnUpdate`、`OnMissionFinish`）が必要な場合はモジュール（CF の `PluginManager` または独自のモジュールシステムに登録）を使用してください。グローバルアクセスのみが必要なステートレスユーティリティサービスにはスタンドアロンのシングルトンを使用してください。状態やクリーンアップが必要なものにはモジュールが推奨されます。[第 7.1 章](07-patterns/01-singletons.md) と [第 7.2 章](07-patterns/02-module-systems.md) を参照してください。
+
+### Q: サーバー再起動後も残るプレイヤーデータを安全に保存するにはどうすればよいですか？
+**A:** `JsonFileLoader` を使用してサーバーの `$profile:` ディレクトリに JSON ファイルを保存してください。プレイヤーの Steam UID（`PlayerIdentity.GetId()` から取得）をファイル名として使用してください。プレイヤー接続時に読み込み、切断時と定期的に保存してください。try/catch がないため、常にガード句で欠落/破損したファイルを適切に処理してください。[第 7.4 章](07-patterns/04-config-persistence.md) と [第 6.8 章](06-engine-api/08-file-io.md) を参照してください。
 
 ---
 
 ## 公開と配布
 
-### Q: How do I pack my mod into a PBO?
-**A:** Use Addon Builder (from DayZ Tools) or third-party tools like PBO Manager. Point it at your mod's source folder, set the correct prefix (matching your `config.cpp` addon prefix), and build. The output `.pbo` file goes into your mod's `Addons/` folder. [第 4.6](04-file-formats/06-pbo-packing.md).
+### Q: Mod を PBO にパックするにはどうすればよいですか？
+**A:** Addon Builder（DayZ Tools から）またはサードパーティツール（PBO Manager など）を使用してください。Mod のソースフォルダを指定し、正しいプレフィックス（`config.cpp` のアドオンプレフィックスと一致させる）を設定してビルドします。出力された `.pbo` ファイルは Mod の `Addons/` フォルダに配置します。[第 4.6 章](04-file-formats/06-pbo-packing.md) を参照してください。
 
-### Q: How do I sign my mod for server use?
-**A:** Generate a keypair with DayZ Tools' DSSignFile or DSCreateKey: this produces a `.biprivatekey` and `.bikey`. Sign each PBO with the private key (creates `.bisign` files next to each PBO). Distribute the `.bikey` to server admins for their `keys/` folder. Never share your `.biprivatekey`. [第 4.6](04-file-formats/06-pbo-packing.md).
+### Q: サーバーで使用するために Mod に署名するにはどうすればよいですか？
+**A:** DayZ Tools の DSSignFile または DSCreateKey でキーペアを生成します：`.biprivatekey` と `.bikey` が作成されます。秘密鍵で各 PBO に署名します（各 PBO の横に `.bisign` ファイルが作成されます）。`.bikey` をサーバー管理者に配布して `keys/` フォルダに配置してもらいます。`.biprivatekey` は決して共有しないでください。[第 4.6 章](04-file-formats/06-pbo-packing.md) を参照してください。
 
-### Q: How do I publish to the Steam Workshop?
-**A:** Use the DayZ Tools Publisher or the Steam Workshop uploader. You need a `mod.cpp` file in your mod root defining the name, author, and description. The publisher uploads your packed PBOs, and Steam assigns a Workshop ID. Update by re-publishing from the same account. [第 2.3](02-mod-structure/03-mod-cpp.md) and [Chapter 8.7](08-tutorials/07-publishing-workshop.md).
+### Q: Steam Workshop に公開するにはどうすればよいですか？
+**A:** DayZ Tools Publisher または Steam Workshop アップローダーを使用してください。Mod ルートに名前、作成者、説明を定義する `mod.cpp` ファイルが必要です。パブリッシャーがパック済みの PBO をアップロードし、Steam が Workshop ID を割り当てます。同じアカウントから再公開して更新します。[第 2.3 章](02-mod-structure/03-mod-cpp.md) と [第 8.7 章](08-tutorials/07-publishing-workshop.md) を参照してください。
 
-### Q: Can my mod require other mods as dependencies?
-**A:** Yes. In `config.cpp`, add the dependency mod's `CfgPatches` class name to your `requiredAddons[]` array. In `mod.cpp`, there is no formal dependency system — document required mods in your Workshop description. Players must subscribe to and load all required mods. [第 2.2](02-mod-structure/02-config-cpp.md).
+### Q: 自分の Mod が他の Mod を依存関係として要求できますか？
+**A:** はい。`config.cpp` で、依存する Mod の `CfgPatches` クラス名を `requiredAddons[]` 配列に追加してください。`mod.cpp` には正式な依存関係システムがないため、必要な Mod を Workshop の説明に記載してください。プレイヤーは必要な Mod すべてをサブスクライブして読み込む必要があります。[第 2.2 章](02-mod-structure/02-config-cpp.md) を参照してください。
 
 ---
 
 ## 高度なトピック
 
-### Q: How do I create custom player actions (interactions)?
-**A:** Extend `ActionBase` (or a subclass like `ActionInteractBase`), define `CreateConditionComponents()` for preconditions, override `OnStart`/`OnExecute`/`OnEnd` for logic, and register it in `SetActions()` on the target entity. Actions support continuous (hold) and instant (click) modes. [第 6.12](06-engine-api/12-action-system.md).
+### Q: カスタムプレイヤーアクション（インタラクション）はどのように作成しますか？
+**A:** `ActionBase`（またはサブクラスの `ActionInteractBase` など）を拡張し、前提条件として `CreateConditionComponents()` を定義し、ロジックとして `OnStart`/`OnExecute`/`OnEnd` をオーバーライドし、ターゲットエンティティの `SetActions()` で登録します。アクションは継続（ホールド）と即時（クリック）モードをサポートしています。[第 6.12 章](06-engine-api/12-action-system.md) を参照してください。
 
-### Q: How does the damage system work for custom items?
-**A:** Define a `DamageSystem` class in your item's config.cpp with `DamageZones` (named regions) and `ArmorType` values. Each zone tracks its own health. Override `EEHitBy()` and `EEKilled()` in script for custom damage reactions. The engine maps model Fire Geometry components to zone names. [第 6.1](06-engine-api/01-entity-system.md).
+### Q: カスタムアイテムのダメージシステムはどのように機能しますか？
+**A:** アイテムの config.cpp に `DamageZones`（名前付き領域）と `ArmorType` 値を持つ `DamageSystem` クラスを定義します。各ゾーンは独自の体力を追跡します。カスタムダメージの反応にはスクリプトで `EEHitBy()` と `EEKilled()` をオーバーライドしてください。エンジンはモデルの Fire Geometry コンポーネントをゾーン名にマッピングします。[第 6.1 章](06-engine-api/01-entity-system.md) を参照してください。
 
-### Q: How can I add custom keybindings to my mod?
-**A:** Create an `inputs.xml` file defining your input actions with default key assignments. Register them in script via `GetUApi().RegisterInput()`. Query state with `GetUApi().GetInputByName("your_action").LocalPress()`. Add localized names in your `stringtable.csv`. [第 5.2](05-config-files/02-inputs-xml.md) and [Chapter 6.13](06-engine-api/13-input-system.md).
+### Q: Mod にカスタムキーバインドを追加するにはどうすればよいですか？
+**A:** デフォルトのキー割り当てで入力アクションを定義する `inputs.xml` ファイルを作成します。`GetUApi().RegisterInput()` でスクリプトに登録します。`GetUApi().GetInputByName("your_action").LocalPress()` で状態を照会します。`stringtable.csv` にローカライズされた名前を追加してください。[第 5.2 章](05-config-files/02-inputs-xml.md) と [第 6.13 章](06-engine-api/13-input-system.md) を参照してください。
 
-### Q: How do I make my mod compatible with other mods?
-**A:** Follow these principles: (1) Always call `super` in modded class overrides. (2) Use unique class names with a mod prefix (e.g., `MyMod_Manager`). (3) Use unique RPC IDs. (4) Do not override vanilla methods without calling `super`. (5) Use `#ifdef` to detect optional dependencies. (6) Test with popular mod combinations (CF, Expansion, etc.). [第 7.2](07-patterns/02-module-systems.md).
+### Q: 自分の Mod を他の Mod と互換性のあるものにするにはどうすればよいですか？
+**A:** 以下の原則に従ってください：(1) modded class のオーバーライドでは常に `super` を呼び出す。(2) Mod プレフィックス付きのユニークなクラス名を使用する（例：`MyMod_Manager`）。(3) ユニークな RPC ID を使用する。(4) `super` を呼び出さずにバニラメソッドをオーバーライドしない。(5) `#ifdef` を使用してオプションの依存関係を検出する。(6) 人気の Mod の組み合わせ（CF、Expansion など）でテストする。[第 7.2 章](07-patterns/02-module-systems.md) を参照してください。
 
-### Q: How do I optimize my mod for server performance?
-**A:** Key strategies: (1) Avoid per-frame (`OnUpdate`) logic — use timers or event-driven design. (2) Cache references instead of calling `GetGame().GetPlayer()` repeatedly. (3) Use `GetGame().IsServer()` / `GetGame().IsClient()` guards to skip unnecessary code. (4) Profile with `int start = TickCount(0);` benchmarks. (5) Limit network traffic — batch RPCs and use Net Sync Variables for frequent small updates. [第 7.7](07-patterns/07-performance.md).
+### Q: サーバーパフォーマンスのために Mod を最適化するにはどうすればよいですか？
+**A:** 主要な戦略：(1) フレームごと（`OnUpdate`）のロジックを避ける --- タイマーまたはイベント駆動設計を使用。(2) `GetGame().GetPlayer()` を繰り返し呼び出す代わりに参照をキャッシュ。(3) `GetGame().IsServer()` / `GetGame().IsClient()` ガードを使用して不要なコードをスキップ。(4) `int start = TickCount(0);` ベンチマークでプロファイリング。(5) ネットワークトラフィックを制限 --- RPC をバッチ処理し、頻繁な小さな更新には Net Sync Variables を使用。[第 7.7 章](07-patterns/07-performance.md) を参照してください。
 
 ---
 
-*ここで扱われていない質問がありますか？リポジトリでissueを開いてください。*
+*ここで取り上げていない質問がありますか？リポジトリで Issue を開いてください。*

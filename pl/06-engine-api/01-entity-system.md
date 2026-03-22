@@ -878,17 +878,17 @@ void DamageEntity(EntityAI target, float amount)
 
 ## Podsumowanie
 
-| Concept | Key Point |
-|---------|-----------|
-| Hierarchy | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
-| Position | `GetPosition()` / `SetPosition()` available from `Object` upward |
-| Health | Zone-based: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
-| IsAlive | Use on `EntityAI` or cast first: `EntityAI eai; Class.CastTo(eai, obj)` |
-| Inventory | `eai.GetInventory()` returns `GameInventory` with full CRUD |
-| Creating | `GetGame().CreateObjectEx(type, pos, ECE_flags)` is the preferred API |
-| Deleting | `obj.Delete()` (deferred) or `GetGame().ObjectDelete(obj)` (immediate) |
-| Net Sync | `RegisterNetSyncVariable*()` in constructor, react in `OnVariablesSynchronized()` |
-| Type Check | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
+| Koncept | Kluczowy punkt |
+|---------|---------------|
+| Hierarchia | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
+| Pozycja | `GetPosition()` / `SetPosition()` dostepne od `Object` wzwyz |
+| Zdrowie | Strefowe: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
+| IsAlive | Uzywaj na `EntityAI` lub najpierw rzutuj: `EntityAI eai; Class.CastTo(eai, obj)` |
+| Inwentarz | `eai.GetInventory()` zwraca `GameInventory` z pelnym CRUD |
+| Tworzenie | `GetGame().CreateObjectEx(type, pos, ECE_flags)` jest preferowanym API |
+| Usuwanie | `obj.Delete()` (odlozone) lub `GetGame().ObjectDelete(obj)` (natychmiastowe) |
+| Synchronizacja sieciowa | `RegisterNetSyncVariable*()` w konstruktorze, reaguj w `OnVariablesSynchronized()` |
+| Sprawdzanie typu | `obj.IsKindOf("ClassName")`, `obj.IsMan()`, `obj.IsBuilding()` |
 
 ---
 

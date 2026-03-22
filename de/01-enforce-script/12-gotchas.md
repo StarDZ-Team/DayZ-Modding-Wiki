@@ -1,63 +1,63 @@
-# Chapter 1.12: What Does NOT Exist (Gotchas)
+# Kapitel 1.12: Was NICHT existiert (Fallstricke)
 
-[Home](../../README.md) | [<< Previous: Error Handling](11-error-handling.md) | **Gotchas** | [Next: Functions & Methods >>](13-functions-methods.md)
+[Startseite](../../README.md) | [<< Zurueck: Fehlerbehandlung](11-error-handling.md) | **Fallstricke** | [Weiter: Funktionen & Methoden >>](13-functions-methods.md)
 
 ---
 
 ## Inhaltsverzeichnis
 
-- [Complete Gotchas Reference](#complete-gotchas-reference)
-  1. [No Ternary Operator](#1-no-ternary-operator)
-  2. [No do...while Loop](#2-no-dowhile-loop)
-  3. [No try/catch/throw](#3-no-trycatchthrow)
-  4. [No Multiple Inheritance](#4-no-multiple-inheritance)
-  5. [No Operator Overloading (Except Index)](#5-no-operator-overloading-except-index)
-  6. [No Lambdas / Anonymous Functions](#6-no-lambdas--anonymous-functions)
-  7. [No Delegates / Function Pointers (Native)](#7-no-delegates--function-pointers-native)
-  8. [No String Escape for Backslash/Quote](#8-no-string-escape-for-backslashquote)
-  9. [No Variable Redeclaration in else-if Blocks](#9-no-variable-redeclaration-in-else-if-blocks)
-  10. [No Ternary in Variable Declaration](#10-no-ternary-in-variable-declaration)
-  11. [Object.IsAlive() Does NOT Exist on Base Object](#11-objectisalive-does-not-exist-on-base-object)
-  12. [No nullptr — Use NULL or null](#12-no-nullptr--use-null-or-null)
-  13. [switch/case Does NOT Fall Through](#13-switchcase-does-not-fall-through)
-  14. [No Default Parameter Expressions](#14-no-default-parameter-expressions)
-  15. [JsonFileLoader.JsonLoadFile Returns void](#15-jsonfileloaderjsonloadfile-returns-void)
-  16. [No #define Value Substitution](#16-no-define-value-substitution)
-  17. [No Interfaces / Abstract Classes (Enforced)](#17-no-interfaces--abstract-classes-enforced)
-  18. [No Generics Constraints](#18-no-generics-constraints)
-  19. [No Enum Validation](#19-no-enum-validation)
-  20. [No Variadic Parameters](#20-no-variadic-parameters)
-  21. [No Nested Class Declarations](#21-no-nested-class-declarations)
-  22. [Static Arrays Are Fixed-Size](#22-static-arrays-are-fixed-size)
-  23. [array.Remove Is Unordered](#23-arrayremove-is-unordered)
-  24. [No #include — Everything via config.cpp](#24-no-include--everything-via-configcpp)
-  25. [No Namespaces](#25-no-namespaces)
-  26. [String Methods Modify In-Place](#26-string-methods-modify-in-place)
-  27. [ref Cycles Cause Memory Leaks](#27-ref-cycles-cause-memory-leaks)
-  28. [No Destructor Guarantee on Server Shutdown](#28-no-destructor-guarantee-on-server-shutdown)
-  29. [No Scope-Based Resource Management (RAII)](#29-no-scope-based-resource-management-raii)
-  30. [GetGame().GetPlayer() Returns null on Server](#30-getgamegetplayer-returns-null-on-server)
-- [Coming From C++](#coming-from-c)
-- [Coming From C#](#coming-from-c-1)
-- [Coming From Java](#coming-from-java)
-- [Coming From Python](#coming-from-python)
-- [Quick Reference Table](#quick-reference-table)
+- [Vollstaendige Fallstrick-Referenz](#vollstaendige-fallstrick-referenz)
+  1. [Kein ternaerer Operator](#1-kein-ternaerer-operator)
+  2. [Keine do...while-Schleife](#2-keine-dowhile-schleife)
+  3. [Kein try/catch/throw](#3-kein-trycatchthrow)
+  4. [Keine Mehrfachvererbung](#4-keine-mehrfachvererbung)
+  5. [Kein Operator-Overloading (ausser Index)](#5-kein-operator-overloading-ausser-index)
+  6. [Keine Lambdas / anonymen Funktionen](#6-keine-lambdas--anonymen-funktionen)
+  7. [Keine Delegates / Funktionszeiger (nativ)](#7-keine-delegates--funktionszeiger-nativ)
+  8. [Kein String-Escape fuer Backslash/Anfuehrungszeichen](#8-kein-string-escape-fuer-backslashanfuehrungszeichen)
+  9. [Keine Variablen-Neudeklaration in else-if-Bloecken](#9-keine-variablen-neudeklaration-in-else-if-bloecken)
+  10. [Kein Ternaer in Variablendeklaration](#10-kein-ternaer-in-variablendeklaration)
+  11. [Object.IsAlive() existiert NICHT auf Basis-Object](#11-objectisalive-existiert-nicht-auf-basis-object)
+  12. [Kein nullptr — verwenden Sie NULL oder null](#12-kein-nullptr--verwenden-sie-null-oder-null)
+  13. [switch/case hat KEIN Fall-Through](#13-switchcase-hat-kein-fall-through)
+  14. [Keine Standard-Parameter-Ausdruecke](#14-keine-standard-parameter-ausdruecke)
+  15. [JsonFileLoader.JsonLoadFile gibt void zurueck](#15-jsonfileloaderjsonloadfile-gibt-void-zurueck)
+  16. [Kein #define-Wert-Substitution](#16-kein-define-wert-substitution)
+  17. [Keine Interfaces / abstrakte Klassen (erzwungen)](#17-keine-interfaces--abstrakte-klassen-erzwungen)
+  18. [Keine Generics-Einschraenkungen](#18-keine-generics-einschraenkungen)
+  19. [Keine Enum-Validierung](#19-keine-enum-validierung)
+  20. [Keine variadischen Parameter](#20-keine-variadischen-parameter)
+  21. [Keine verschachtelten Klassendeklarationen](#21-keine-verschachtelten-klassendeklarationen)
+  22. [Statische Arrays haben feste Groesse](#22-statische-arrays-haben-feste-groesse)
+  23. [array.Remove ist unsortiert](#23-arrayremove-ist-unsortiert)
+  24. [Kein #include — alles via config.cpp](#24-kein-include--alles-via-configcpp)
+  25. [Keine Namespaces](#25-keine-namespaces)
+  26. [String-Methoden modifizieren in-place](#26-string-methoden-modifizieren-in-place)
+  27. [ref-Zyklen verursachen Speicherlecks](#27-ref-zyklen-verursachen-speicherlecks)
+  28. [Keine Destruktor-Garantie beim Server-Shutdown](#28-keine-destruktor-garantie-beim-server-shutdown)
+  29. [Kein Scope-basiertes Ressourcenmanagement (RAII)](#29-kein-scope-basiertes-ressourcenmanagement-raii)
+  30. [GetGame().GetPlayer() gibt null auf dem Server zurueck](#30-getgamegetplayer-gibt-null-auf-dem-server-zurueck)
+- [Kommend von C++](#kommend-von-c)
+- [Kommend von C#](#kommend-von-c-1)
+- [Kommend von Java](#kommend-von-java)
+- [Kommend von Python](#kommend-von-python)
+- [Schnellreferenz-Tabelle](#schnellreferenz-tabelle)
 - [Navigation](#navigation)
 
 ---
 
 ## Vollstaendige Fallstrick-Referenz
 
-### 1. No Ternary Operator
+### 1. Kein ternaerer Operator
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 int x = (condition) ? valueA : valueB;
 ```
 
-**What happens:** Compile error. The `? :` operator does not exist.
+**Was passiert:** Kompilierfehler. Der `? :`-Operator existiert nicht.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
 int x;
 if (condition)
@@ -68,18 +68,18 @@ else
 
 ---
 
-### 2. No do...while Loop
+### 2. Keine do...while-Schleife
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 do {
     Process();
 } while (HasMore());
 ```
 
-**What happens:** Compile error. The `do` keyword does not exist.
+**Was passiert:** Kompilierfehler. Das `do`-Schluesselwort existiert nicht.
 
-**Correct solution — flag pattern:**
+**Korrekte Loesung — Flag-Muster:**
 ```c
 bool first = true;
 while (first || HasMore())
@@ -89,7 +89,7 @@ while (first || HasMore())
 }
 ```
 
-**Correct solution — break pattern:**
+**Korrekte Loesung — Break-Muster:**
 ```c
 while (true)
 {
@@ -101,9 +101,9 @@ while (true)
 
 ---
 
-### 3. No try/catch/throw
+### 3. Kein try/catch/throw
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 try {
     RiskyOperation();
@@ -112,37 +112,37 @@ try {
 }
 ```
 
-**What happens:** Compile error. These keywords do not exist.
+**Was passiert:** Kompilierfehler. Diese Schluesselwoerter existieren nicht.
 
-**Correct solution:** Guard clauses with early return.
+**Korrekte Loesung:** Guard-Klauseln mit fruehzeitigem Return.
 ```c
 void DoOperation()
 {
     if (!CanDoOperation())
     {
-        ErrorEx("Cannot perform operation", ErrorExSeverity.WARNING);
+        ErrorEx("Kann Operation nicht ausfuehren", ErrorExSeverity.WARNING);
         return;
     }
 
-    // Proceed safely
+    // Sicher fortfahren
     RiskyOperation();
 }
 ```
 
-See [Chapter 1.11 — Error Handling](11-error-handling.md) for full patterns.
+Siehe [Kapitel 1.11 — Fehlerbehandlung](11-error-handling.md) fuer vollstaendige Muster.
 
 ---
 
-### 4. No Multiple Vererbung
+### 4. Keine Mehrfachvererbung
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
-class MyClass extends BaseA, BaseB  // Two base classes
+class MyClass extends BaseA, BaseB  // Zwei Basisklassen
 ```
 
-**What happens:** Compile error. Only single inheritance is supported.
+**Was passiert:** Kompilierfehler. Nur Einfachvererbung wird unterstuetzt.
 
-**Correct solution:** Inherit from one class, compose the other:
+**Korrekte Loesung:** Von einer Klasse erben, die andere zusammensetzen:
 ```c
 class MyClass extends BaseA
 {
@@ -157,17 +157,17 @@ class MyClass extends BaseA
 
 ---
 
-### 5. No Operator Overloading (Except Index)
+### 5. Kein Operator-Overloading (ausser Index)
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 Vector3 operator+(Vector3 a, Vector3 b) { ... }
 bool operator==(MyClass other) { ... }
 ```
 
-**What happens:** Compile error. Custom operators cannot be defined.
+**Was passiert:** Kompilierfehler. Eigene Operatoren koennen nicht definiert werden.
 
-**Correct solution:** Use named methods:
+**Korrekte Loesung:** Benannte Methoden verwenden:
 ```c
 class MyVector
 {
@@ -189,7 +189,7 @@ class MyVector
 }
 ```
 
-**Exception:** The index operator `[]` can be overloaded via `Get(index)` and `Set(index, value)` methods:
+**Ausnahme:** Der Index-Operator `[]` kann ueber `Get(index)`- und `Set(index, value)`-Methoden ueberladen werden:
 ```c
 class MyContainer
 {
@@ -200,144 +200,144 @@ class MyContainer
 }
 
 MyContainer c = new MyContainer();
-c[3] = 42;        // Calls Set(3, 42)
-int v = c[3];     // Calls Get(3)
+c[3] = 42;        // Ruft Set(3, 42) auf
+int v = c[3];     // Ruft Get(3) auf
 ```
 
 ---
 
-### 6. No Lambdas / Anonymous Functions
+### 6. Keine Lambdas / anonymen Funktionen
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 array.Sort((a, b) => a.name.CompareTo(b.name));
 button.OnClick += () => { DoSomething(); };
 ```
 
-**What happens:** Compile error. Lambda syntax does not exist.
+**Was passiert:** Kompilierfehler. Lambda-Syntax existiert nicht.
 
-**Correct solution:** Define named methods and pass them as `ScriptCaller` or use string-based callbacks:
+**Korrekte Loesung:** Benannte Methoden definieren und als `ScriptCaller` uebergeben oder string-basierte Callbacks verwenden:
 ```c
-// Named method
+// Benannte Methode
 void OnButtonClick()
 {
     DoSomething();
 }
 
-// String-based callback (used by CallLater, timers, etc.)
+// String-basierter Callback (von CallLater, Timern etc. verwendet)
 GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(this.OnButtonClick, 1000, false);
 ```
 
 ---
 
-### 7. No Delegates / Function Pointers (Native)
+### 7. Keine Delegates / Funktionszeiger (nativ)
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 delegate void MyCallback(int value);
 MyCallback cb = SomeFunction;
 cb(42);
 ```
 
-**What happens:** Compile error. The `delegate` keyword does not exist.
+**Was passiert:** Kompilierfehler. Das `delegate`-Schluesselwort existiert nicht.
 
-**Correct solution:** Use `ScriptCaller`, `ScriptInvoker`, or string-based method names:
+**Korrekte Loesung:** `ScriptCaller`, `ScriptInvoker` oder string-basierte Methodennamen verwenden:
 ```c
-// ScriptCaller (single callback)
+// ScriptCaller (einzelner Callback)
 ScriptCaller caller = ScriptCaller.Create(MyFunction);
 
-// ScriptInvoker (event with multiple subscribers)
+// ScriptInvoker (Event mit mehreren Abonnenten)
 ref ScriptInvoker m_OnEvent = new ScriptInvoker();
 m_OnEvent.Insert(MyHandler);
-m_OnEvent.Invoke();  // Calls all registered handlers
+m_OnEvent.Invoke();  // Ruft alle registrierten Handler auf
 ```
 
 ---
 
-### 8. No String Escape for Backslash/Quote
+### 8. Kein String-Escape fuer Backslash/Anfuehrungszeichen
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 string path = "C:\\Users\\folder";
 string quote = "He said \"hello\"";
 ```
 
-**What happens:** CParser crashes or produces garbled output. The `\\` and `\"` escape sequences break the string parser.
+**Was passiert:** CParser stuerzt ab oder erzeugt fehlerhaften Output. Die `\\`- und `\"`-Escape-Sequenzen brechen den String-Parser.
 
-**Correct solution:** Avoid backslash and quote characters in string literals entirely:
+**Korrekte Loesung:** Backslash- und Anfuehrungszeichen in String-Literalen vollstaendig vermeiden:
 ```c
-// Use forward slashes for paths
+// Schraegstriche fuer Pfade verwenden
 string path = "C:/Users/folder";
 
-// Use single quotes or rephrase to avoid embedded double quotes
+// Einfache Anfuehrungszeichen verwenden oder umformulieren, um eingebettete doppelte Anfuehrungszeichen zu vermeiden
 string quote = "He said 'hello'";
 
-// Use string concatenation if you absolutely need special chars
-// (still risky — test thoroughly)
+// String-Verkettung verwenden, wenn Sie absolut Sonderzeichen brauchen
+// (immer noch riskant — gruendlich testen)
 ```
 
-> **Note:** `\n`, `\r`, and `\t` escape sequences DO work. Only `\\` and `\"` are broken.
+> **Hinweis:** `\n`-, `\r`- und `\t`-Escape-Sequenzen funktionieren. Nur `\\` und `\"` sind fehlerhaft.
 
 ---
 
-### 9. No Variable Redeclaration in else-if Blocks
+### 9. Keine Variablen-Neudeklaration in else-if-Bloecken
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 if (condA)
 {
-    string msg = "Case A";
+    string msg = "Fall A";
     Print(msg);
 }
 else if (condB)
 {
-    string msg = "Case B";  // Same variable name in sibling block
+    string msg = "Fall B";  // Gleicher Variablenname im Geschwisterblock
     Print(msg);
 }
 ```
 
-**What happens:** Compile error: "multiple declaration of variable 'msg'". Enforce Script treats variables in sibling `if`/`else if`/`else` blocks as sharing the same scope.
+**Was passiert:** Kompilierfehler: "multiple declaration of variable 'msg'". Enforce Script behandelt Variablen in geschwisterlichen `if`/`else if`/`else`-Bloecken als im selben Scope befindlich.
 
-**Correct solution — unique names:**
+**Korrekte Loesung — eindeutige Namen:**
 ```c
 if (condA)
 {
-    string msgA = "Case A";
+    string msgA = "Fall A";
     Print(msgA);
 }
 else if (condB)
 {
-    string msgB = "Case B";
+    string msgB = "Fall B";
     Print(msgB);
 }
 ```
 
-**Correct solution — declare before the if:**
+**Korrekte Loesung — vor dem if deklarieren:**
 ```c
 string msg;
 if (condA)
 {
-    msg = "Case A";
+    msg = "Fall A";
 }
 else if (condB)
 {
-    msg = "Case B";
+    msg = "Fall B";
 }
 Print(msg);
 ```
 
 ---
 
-### 10. No Ternary in Variable Declaration
+### 10. Kein Ternaer in Variablendeklaration
 
-Related to gotcha #1, but specific to declarations:
+Verwandt mit Fallstrick #1, aber spezifisch fuer Deklarationen:
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 string label = isAdmin ? "Admin" : "Player";
 ```
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
 string label;
 if (isAdmin)
@@ -348,168 +348,168 @@ else
 
 ---
 
-### 11. Object.IsAlive() Does NOT Exist on Base Object
+### 11. Object.IsAlive() existiert NICHT auf Basis-Object
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 Object obj = GetSomething();
-if (obj.IsAlive())  // Check if alive
+if (obj.IsAlive())  // Pruefen ob lebendig
 ```
 
-**What happens:** Compile error or runtime crash. `IsAlive()` is defined on `EntityAI`, not on `Object`.
+**Was passiert:** Kompilierfehler oder Laufzeitabsturz. `IsAlive()` ist auf `EntityAI` definiert, nicht auf `Object`.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
 Object obj = GetSomething();
 EntityAI eai;
 if (Class.CastTo(eai, obj) && eai.IsAlive())
 {
-    // Safely alive
+    // Sicher lebendig
 }
 ```
 
 ---
 
-### 12. No nullptr — Use NULL or null
+### 12. Kein nullptr — verwenden Sie NULL oder null
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 if (obj == nullptr)
 ```
 
-**What happens:** Compile error. The `nullptr` keyword does not exist.
+**Was passiert:** Kompilierfehler. Das `nullptr`-Schluesselwort existiert nicht.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
-if (obj == null)    // lowercase works
-if (obj == NULL)    // uppercase also works
-if (!obj)           // idiomatic null check (preferred)
+if (obj == null)    // Kleinbuchstaben funktioniert
+if (obj == NULL)    // Grossbuchstaben funktioniert auch
+if (!obj)           // Idiomatische Null-Pruefung (bevorzugt)
 ```
 
 ---
 
-### 13. switch/case Does NOT Fall Through
+### 13. switch/case hat KEIN Fall-Through
 
-**What you would write (expecting C/C++ fall-through):**
+**Was Sie schreiben wuerden (C/C++-Fall-Through erwartend):**
 ```c
 switch (value)
 {
     case 1:
     case 2:
     case 3:
-        Print("1, 2, or 3");  // In C++, cases 1 and 2 fall through to here
+        Print("1, 2 oder 3");  // In C++ fallen Cases 1 und 2 hierhin durch
         break;
 }
 ```
 
-**What happens:** Only case 3 executes the Print. Cases 1 and 2 are empty — they do nothing and do NOT fall through.
+**Was passiert:** Nur Case 3 fuehrt den Print aus. Cases 1 und 2 sind leer — sie tun nichts und fallen NICHT durch.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
 if (value >= 1 && value <= 3)
 {
-    Print("1, 2, or 3");
+    Print("1, 2 oder 3");
 }
 
-// Or handle each case explicitly:
+// Oder jeden Fall explizit behandeln:
 switch (value)
 {
     case 1:
-        Print("1, 2, or 3");
+        Print("1, 2 oder 3");
         break;
     case 2:
-        Print("1, 2, or 3");
+        Print("1, 2 oder 3");
         break;
     case 3:
-        Print("1, 2, or 3");
+        Print("1, 2 oder 3");
         break;
 }
 ```
 
-> **Note:** `break` is technically optional in Enforce Script since there is no fall-through, but it is conventional to include it.
+> **Hinweis:** `break` ist technisch optional in Enforce Script, da es kein Fall-Through gibt, aber es ist konventionell, es einzufuegen.
 
 ---
 
-### 14. No Default Parameter Expressions
+### 14. Keine Standard-Parameter-Ausdruecke
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
-void Spawn(vector pos = GetDefaultPos())    // Expression as default
-void Spawn(vector pos = Vector(0, 100, 0))  // Constructor as default
+void Spawn(vector pos = GetDefaultPos())    // Ausdruck als Standard
+void Spawn(vector pos = Vector(0, 100, 0))  // Konstruktor als Standard
 ```
 
-**What happens:** Compile error. Default parameter values must be **literals** or `NULL`.
+**Was passiert:** Kompilierfehler. Standardparameterwerte muessen **Literale** oder `NULL` sein.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
-void Spawn(vector pos = "0 100 0")    // String literal for vector — OK
-void Spawn(int count = 5)             // Integer literal — OK
-void Spawn(float radius = 10.0)      // Float literal — OK
-void Spawn(string name = "default")   // String literal — OK
+void Spawn(vector pos = "0 100 0")    // String-Literal fuer Vektor — OK
+void Spawn(int count = 5)             // Integer-Literal — OK
+void Spawn(float radius = 10.0)      // Float-Literal — OK
+void Spawn(string name = "default")   // String-Literal — OK
 void Spawn(Object obj = NULL)         // NULL — OK
 
-// For complex defaults, use overloads:
+// Fuer komplexe Standards, Ueberladungen verwenden:
 void Spawn()
 {
-    Spawn(GetDefaultPos());  // Call the parametric version
+    Spawn(GetDefaultPos());  // Die parametrische Version aufrufen
 }
 
 void Spawn(vector pos)
 {
-    // Actual implementation
+    // Eigentliche Implementierung
 }
 ```
 
 ---
 
-### 15. JsonFileLoader.JsonLoadFile Returns void
+### 15. JsonFileLoader.JsonLoadFile gibt void zurueck
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 MyConfig cfg = JsonFileLoader<MyConfig>.JsonLoadFile(path);
-// or:
+// oder:
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg))
 ```
 
-**What happens:** Compile error. `JsonLoadFile` returns `void`, not the loaded object or a bool.
+**Was passiert:** Kompilierfehler. `JsonLoadFile` gibt `void` zurueck, nicht das geladene Objekt oder einen bool.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
-MyConfig cfg = new MyConfig();  // Create instance first with defaults
-JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);  // Populates cfg in-place
-// cfg now contains loaded values (or still has defaults if file was invalid)
+MyConfig cfg = new MyConfig();  // Zuerst Instanz mit Standardwerten erstellen
+JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);  // Befuellt cfg in-place
+// cfg enthaelt jetzt geladene Werte (oder hat immer noch Standards, wenn die Datei ungueltig war)
 ```
 
-> **Note:** The newer `JsonFileLoader<T>.LoadFile()` method returns `bool`, but `JsonLoadFile` (the commonly seen version) does not.
+> **Hinweis:** Die neuere `JsonFileLoader<T>.LoadFile()`-Methode gibt `bool` zurueck, aber `JsonLoadFile` (die haeufig gesehene Version) tut dies nicht.
 
 ---
 
-### 16. No #define Value Substitution
+### 16. Kein #define-Wert-Substitution
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 #define MAX_PLAYERS 60
 #define VERSION_STRING "1.0.0"
 int max = MAX_PLAYERS;
 ```
 
-**What happens:** Compile error. Enforce Script `#define` only creates existence flags for `#ifdef` checks. It does not support value substitution.
+**Was passiert:** Kompilierfehler. Enforce Script `#define` erstellt nur Existenz-Flags fuer `#ifdef`-Pruefungen. Es unterstuetzt keine Wert-Substitution.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
-// Use const for values
+// const fuer Werte verwenden
 const int MAX_PLAYERS = 60;
 const string VERSION_STRING = "1.0.0";
 
-// Use #define only for conditional compilation flags
+// #define nur fuer bedingte Kompilierungs-Flags verwenden
 #define MY_MOD_ENABLED
 ```
 
 ---
 
-### 17. No Interfaces / Abstract Classes (Enforced)
+### 17. Keine Interfaces / abstrakte Klassen (erzwungen)
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 interface ISerializable
 {
@@ -523,23 +523,23 @@ abstract class BaseProcessor
 }
 ```
 
-**What happens:** The `interface` and `abstract` keywords do not exist.
+**Was passiert:** Die Schluesselwoerter `interface` und `abstract` existieren nicht.
 
-**Correct solution:** Use regular classes with empty base methods:
+**Korrekte Loesung:** Regulaere Klassen mit leeren Basismethoden verwenden:
 ```c
-// "Interface" — base class with empty methods
+// "Interface" — Basisklasse mit leeren Methoden
 class ISerializable
 {
-    void Serialize() {}     // Override in subclass
-    void Deserialize() {}   // Override in subclass
+    void Serialize() {}     // In Unterklasse ueberschreiben
+    void Deserialize() {}   // In Unterklasse ueberschreiben
 }
 
-// "Abstract" class — same pattern
+// "Abstrakte" Klasse — gleiches Muster
 class BaseProcessor
 {
     void Process()
     {
-        ErrorEx("BaseProcessor.Process() must be overridden!", ErrorExSeverity.ERROR);
+        ErrorEx("BaseProcessor.Process() muss ueberschrieben werden!", ErrorExSeverity.ERROR);
     }
 }
 
@@ -547,54 +547,54 @@ class ConcreteProcessor extends BaseProcessor
 {
     override void Process()
     {
-        // Actual implementation
+        // Tatsaechliche Implementierung
     }
 }
 ```
 
-The compiler does NOT enforce that subclasses override the base methods. Forgetting to override silently uses the empty base implementation.
+Der Compiler erzwingt NICHT, dass Unterklassen die Basismethoden ueberschreiben. Das Vergessen des Ueberschreibens verwendet stillschweigend die leere Basisimplementierung.
 
 ---
 
-### 18. No Generics Constraints
+### 18. Keine Generics-Einschraenkungen
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
-class Container<T> where T : EntityAI  // Constrain T to EntityAI
+class Container<T> where T : EntityAI  // T auf EntityAI einschraenken
 ```
 
-**What happens:** Compile error. The `where` clause does not exist. Template parameters accept any type.
+**Was passiert:** Kompilierfehler. Die `where`-Klausel existiert nicht. Template-Parameter akzeptieren jeden Typ.
 
-**Correct solution:** Validate at runtime:
+**Korrekte Loesung:** Zur Laufzeit validieren:
 ```c
 class EntityContainer<Class T>
 {
     void Add(T item)
     {
-        // Runtime type check instead of compile-time constraint
+        // Laufzeit-Typpruefung statt Kompilierzeit-Einschraenkung
         EntityAI eai;
         if (!Class.CastTo(eai, item))
         {
-            ErrorEx("EntityContainer only accepts EntityAI subclasses");
+            ErrorEx("EntityContainer akzeptiert nur EntityAI-Unterklassen");
             return;
         }
-        // proceed
+        // fortfahren
     }
 }
 ```
 
 ---
 
-### 19. No Enum Validation
+### 19. Keine Enum-Validierung
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
-EDamageState state = (EDamageState)999;  // Expect error or exception
+EDamageState state = (EDamageState)999;  // Fehler oder Ausnahme erwarten
 ```
 
-**What happens:** No error. Any `int` value can be assigned to an enum variable, even values outside the defined range.
+**Was passiert:** Kein Fehler. Jeder `int`-Wert kann einer Enum-Variable zugewiesen werden, auch Werte ausserhalb des definierten Bereichs.
 
-**Correct solution:** Validate manually:
+**Korrekte Loesung:** Manuell validieren:
 ```c
 bool IsValidDamageState(int value)
 {
@@ -608,29 +608,29 @@ if (IsValidDamageState(rawValue))
 }
 else
 {
-    Print("Invalid damage state: " + rawValue.ToString());
-    EDamageState state = EDamageState.PRISTINE;  // fallback
+    Print("Ungueltiger Schadenszustand: " + rawValue.ToString());
+    EDamageState state = EDamageState.PRISTINE;  // Fallback
 }
 ```
 
 ---
 
-### 20. No Variadic Parameters
+### 20. Keine variadischen Parameter
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 void Log(string format, params object[] args)
 void Printf(string fmt, ...)
 ```
 
-**What happens:** Compile error. Variadic parameters do not exist.
+**Was passiert:** Kompilierfehler. Variadische Parameter existieren nicht.
 
-**Correct solution:** Use `string.Format` with fixed parameter counts, or use `Param` classes:
+**Korrekte Loesung:** `string.Format` mit fester Parameteranzahl verwenden, oder `Param`-Klassen nutzen:
 ```c
-// string.Format supports up to 9 positional arguments
-string msg = string.Format("Player %1 at %2 with %3 HP", name, pos, hp);
+// string.Format unterstuetzt bis zu 9 Positionsargumente
+string msg = string.Format("Spieler %1 bei %2 mit %3 HP", name, pos, hp);
 
-// For variable-count data, pass an array
+// Fuer variable Datenmenge ein Array uebergeben
 void LogMultiple(string tag, array<string> messages)
 {
     foreach (string msg : messages)
@@ -642,22 +642,22 @@ void LogMultiple(string tag, array<string> messages)
 
 ---
 
-### 21. No Nested Class Declarations
+### 21. Keine verschachtelten Klassendeklarationen
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 class Outer
 {
-    class Inner  // Nested class
+    class Inner  // Verschachtelte Klasse
     {
         int value;
     }
 }
 ```
 
-**What happens:** Compile error. Classes cannot be declared inside other classes.
+**Was passiert:** Kompilierfehler. Klassen koennen nicht innerhalb anderer Klassen deklariert werden.
 
-**Correct solution:** Declare all classes at the top level, use naming conventions to show relationships:
+**Korrekte Loesung:** Alle Klassen auf oberster Ebene deklarieren, Namenskonventionen verwenden, um Beziehungen zu zeigen:
 ```c
 class MySystem_Config
 {
@@ -672,61 +672,61 @@ class MySystem
 
 ---
 
-### 22. Static Arrays Are Fixed-Size
+### 22. Statische Arrays haben feste Groesse
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 int size = GetCount();
-int arr[size];  // Dynamic size at runtime
+int arr[size];  // Dynamische Groesse zur Laufzeit
 ```
 
-**What happens:** Compile error. Static array sizes must be compile-time constants.
+**Was passiert:** Kompilierfehler. Statische Array-Groessen muessen Kompilierzeit-Konstanten sein.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
-// Use a const for static arrays
+// Eine Konstante fuer statische Arrays verwenden
 const int BUFFER_SIZE = 64;
 int arr[BUFFER_SIZE];
 
-// Or use dynamic arrays for runtime sizing
+// Oder dynamische Arrays fuer Laufzeit-Groessenanpassung verwenden
 array<int> arr = new array<int>;
 arr.Resize(GetCount());
 ```
 
 ---
 
-### 23. array.Remove Is Unordered
+### 23. array.Remove ist unsortiert
 
-**What you would write (expecting order preservation):**
+**Was Sie schreiben wuerden (Reihenfolge-Erhaltung erwartend):**
 ```c
 array<string> items = {"A", "B", "C", "D"};
-items.Remove(1);  // Expect: {"A", "C", "D"}
+items.Remove(1);  // Erwartet: {"A", "C", "D"}
 ```
 
-**What happens:** `Remove(index)` swaps the element with the **last** element, then removes the last. Result: `{"A", "D", "C"}`. Order is NOT preserved.
+**Was passiert:** `Remove(index)` tauscht das Element mit dem **letzten** Element und entfernt dann das letzte. Ergebnis: `{"A", "D", "C"}`. Die Reihenfolge wird NICHT beibehalten.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
-// Use RemoveOrdered for order preservation (slower — shifts elements)
-items.RemoveOrdered(1);  // {"A", "C", "D"} — correct order
+// RemoveOrdered fuer Reihenfolge-Erhaltung verwenden (langsamer — verschiebt Elemente)
+items.RemoveOrdered(1);  // {"A", "C", "D"} — korrekte Reihenfolge
 
-// Use RemoveItem to find and remove by value (also ordered)
+// RemoveItem zum Finden und Entfernen nach Wert verwenden (ebenfalls geordnet)
 items.RemoveItem("B");   // {"A", "C", "D"}
 ```
 
 ---
 
-### 24. No #include — Everything via config.cpp
+### 24. Kein #include — alles via config.cpp
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 #include "MyHelper.c"
 #include "Utils/StringUtils.c"
 ```
 
-**What happens:** No effect or compile error. There is no `#include` directive.
+**Was passiert:** Keine Wirkung oder Kompilierfehler. Es gibt keine `#include`-Direktive.
 
-**Correct solution:** All script files are loaded through `config.cpp` in the mod's `CfgMods` entry. File loading order is determined by the script layer (`3_Game`, `4_World`, `5_Mission`) and alphabetical order within each layer.
+**Korrekte Loesung:** Alle Skriptdateien werden ueber `config.cpp` im `CfgMods`-Eintrag der Mod geladen. Die Dateiladereihenfolge wird durch die Skriptschicht (`3_Game`, `4_World`, `5_Mission`) und die alphabetische Reihenfolge innerhalb jeder Schicht bestimmt.
 
 ```cpp
 // config.cpp
@@ -758,52 +758,52 @@ class CfgMods
 
 ---
 
-### 25. No Namespaces
+### 25. Keine Namespaces
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 namespace MyMod { class Config { } }
 namespace MyMod.Utils { class StringHelper { } }
 ```
 
-**What happens:** Compile error. The `namespace` keyword does not exist. All classes share a single global scope.
+**Was passiert:** Kompilierfehler. Das `namespace`-Schluesselwort existiert nicht. Alle Klassen teilen einen einzigen globalen Scope.
 
-**Correct solution:** Use naming prefixes to avoid conflicts:
+**Korrekte Loesung:** Namenspraefixe verwenden, um Konflikte zu vermeiden:
 ```c
 class MyConfig { }          // MyFramework
-class MyAI_Config { }       // MyAI Mod
-class MyM_MissionData { }   // MyMissions Mod
+class MyAI_Config { }       // MyAI-Mod
+class MyM_MissionData { }   // MyMissions-Mod
 class VPP_AdminConfig { }     // VPP Admin
 ```
 
 ---
 
-### 26. String Methods Modify In-Place
+### 26. String-Methoden modifizieren in-place
 
-**What you would write (expecting a return value):**
+**Was Sie schreiben wuerden (einen Rueckgabewert erwartend):**
 ```c
-string upper = myString.ToUpper();  // Expect: returns new string
+string upper = myString.ToUpper();  // Erwartet: gibt neuen String zurueck
 ```
 
-**What happens:** `ToUpper()` and `ToLower()` modify the string **in place** and return `void`.
+**Was passiert:** `ToUpper()` und `ToLower()` modifizieren den String **in-place** und geben `void` zurueck.
 
-**Correct solution:**
+**Korrekte Loesung:**
 ```c
-// Make a copy first if you need the original preserved
+// Zuerst eine Kopie machen, wenn Sie das Original beibehalten muessen
 string original = "Hello World";
 string upper = original;
-upper.ToUpper();  // upper is now "HELLO WORLD", original unchanged
+upper.ToUpper();  // upper ist jetzt "HELLO WORLD", original unveraendert
 
-// Same for TrimInPlace
+// Gleich fuer TrimInPlace
 string trimmed = "  hello  ";
 trimmed.TrimInPlace();  // "hello"
 ```
 
 ---
 
-### 27. ref Cycles Cause Memory Leaks
+### 27. ref-Zyklen verursachen Speicherlecks
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 class Parent
 {
@@ -811,51 +811,51 @@ class Parent
 }
 class Child
 {
-    ref Parent m_Parent;  // Circular ref — both ref each other
+    ref Parent m_Parent;  // Zirkulaere ref — beide referenzieren einander
 }
 ```
 
-**What happens:** Neither object is ever garbage collected. The reference counts never reach zero because each holds a `ref` to the other.
+**Was passiert:** Keines der Objekte wird jemals vom Garbage Collector erfasst. Die Referenzzaehler erreichen nie Null, weil jedes eine `ref` auf das andere haelt.
 
-**Correct solution:** One side must use a raw (non-ref) pointer:
+**Korrekte Loesung:** Eine Seite muss einen rohen (nicht-ref) Zeiger verwenden:
 ```c
 class Parent
 {
-    ref Child m_Child;  // Parent OWNS the child (ref)
+    ref Child m_Child;  // Parent BESITZT das Kind (ref)
 }
 class Child
 {
-    Parent m_Parent;    // Child REFERENCES the parent (raw — no ref)
+    Parent m_Parent;    // Kind REFERENZIERT das Elternteil (roh — kein ref)
 }
 ```
 
 ---
 
-### 28. No Destructor Guarantee on Server Shutdown
+### 28. Keine Destruktor-Garantie beim Server-Shutdown
 
-**What you would write (expecting cleanup):**
+**Was Sie schreiben wuerden (Bereinigung erwartend):**
 ```c
 void ~MyManager()
 {
-    SaveData();  // Expect this runs on shutdown
+    SaveData();  // Erwartet, dass dies beim Shutdown laeuft
 }
 ```
 
-**What happens:** Server shutdown may kill the process before destructors run. Your save never happens.
+**Was passiert:** Server-Shutdown kann den Prozess beenden, bevor Destruktoren laufen. Ihr Speichern geschieht nie.
 
-**Correct solution:** Save proactively at regular intervals and on known lifecycle events:
+**Korrekte Loesung:** Proaktiv in regelmaessigen Abstaenden und bei bekannten Lebenszyklus-Events speichern:
 ```c
 class MyManager
 {
-    void OnMissionFinish()  // Called before shutdown
+    void OnMissionFinish()  // Wird vor dem Shutdown aufgerufen
     {
-        SaveData();  // Reliable save point
+        SaveData();  // Zuverlaessiger Speicherpunkt
     }
 
     void OnUpdate(float dt)
     {
         m_SaveTimer += dt;
-        if (m_SaveTimer > 300.0)  // Every 5 minutes
+        if (m_SaveTimer > 300.0)  // Alle 5 Minuten
         {
             SaveData();
             m_SaveTimer = 0;
@@ -866,41 +866,41 @@ class MyManager
 
 ---
 
-### 29. No Scope-Based Resource Management (RAII)
+### 29. Kein Scope-basiertes Ressourcenmanagement (RAII)
 
-**What you would write (in C++):**
+**Was Sie schreiben wuerden (in C++):**
 ```c
 {
     FileHandle f = OpenFile("test.txt", FileMode.WRITE);
-    // f automatically closed when scope ends
+    // f wird automatisch geschlossen, wenn der Scope endet
 }
 ```
 
-**What happens:** Enforce Script does not close file handles when variables go out of scope (even with `autoptr`).
+**Was passiert:** Enforce Script schliesst Dateihandles nicht, wenn Variablen den Scope verlassen (auch nicht mit `autoptr`).
 
-**Correct solution:** Always close resources explicitly:
+**Korrekte Loesung:** Ressourcen immer explizit schliessen:
 ```c
 FileHandle fh = OpenFile("$profile:MyMod/data.txt", FileMode.WRITE);
 if (fh != 0)
 {
     FPrintln(fh, "data");
-    CloseFile(fh);  // Must close manually!
+    CloseFile(fh);  // Muss manuell geschlossen werden!
 }
 ```
 
 ---
 
-### 30. GetGame().GetPlayer() Returns null on Server
+### 30. GetGame().GetPlayer() gibt null auf dem Server zurueck
 
-**What you would write:**
+**Was Sie schreiben wuerden:**
 ```c
 PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-player.DoSomething();  // CRASH on server!
+player.DoSomething();  // ABSTURZ auf dem Server!
 ```
 
-**What happens:** `GetGame().GetPlayer()` returns the **local** player. On a dedicated server, there is no local player — it returns `null`.
+**Was passiert:** `GetGame().GetPlayer()` gibt den **lokalen** Spieler zurueck. Auf einem dedizierten Server gibt es keinen lokalen Spieler — es gibt `null` zurueck.
 
-**Correct solution:** On server, iterate the player list:
+**Korrekte Loesung:** Auf dem Server die Spielerliste durchiterieren:
 ```c
 #ifdef SERVER
     array<Man> players = new array<Man>;
@@ -924,117 +924,117 @@ player.DoSomething();  // CRASH on server!
 
 ---
 
-## Coming From C++
+## Kommend von C++
 
-If you are a C++ developer, here are the biggest adjustments:
+Wenn Sie C++-Entwickler sind, hier die groessten Umstellungen:
 
-| C++ Feature | Enforce Script Equivalent |
+| C++-Feature | Enforce-Script-Aequivalent |
 |-------------|--------------------------|
 | `std::vector` | `array<T>` |
 | `std::map` | `map<K,V>` |
 | `std::unique_ptr` | `ref` / `autoptr` |
-| `dynamic_cast<T*>` | `Class.CastTo()` or `T.Cast()` |
-| `try/catch` | Guard clauses |
-| `operator+` | Named methods (`Add()`) |
-| `namespace` | Name prefixes (`My`, `VPP_`) |
+| `dynamic_cast<T*>` | `Class.CastTo()` oder `T.Cast()` |
+| `try/catch` | Guard-Klauseln |
+| `operator+` | Benannte Methoden (`Add()`) |
+| `namespace` | Namenspraefixe (`My`, `VPP_`) |
 | `#include` | config.cpp `files[]` |
-| RAII | Manual cleanup in lifecycle methods |
-| Multiple inheritance | Single inheritance + composition |
+| RAII | Manuelle Bereinigung in Lebenszyklus-Methoden |
+| Mehrfachvererbung | Einfachvererbung + Komposition |
 | `nullptr` | `null` / `NULL` |
-| Templates with constraints | Templates without constraints + runtime checks |
+| Templates mit Einschraenkungen | Templates ohne Einschraenkungen + Laufzeitpruefungen |
 | `do...while` | `while (true) { ... if (!cond) break; }` |
 
 ---
 
-## Coming From C#
+## Kommend von C#
 
-| C# Feature | Enforce Script Equivalent |
+| C#-Feature | Enforce-Script-Aequivalent |
 |-------------|--------------------------|
-| `interface` | Base class with empty methods |
-| `abstract` | Base class + ErrorEx in base methods |
+| `interface` | Basisklasse mit leeren Methoden |
+| `abstract` | Basisklasse + ErrorEx in Basismethoden |
 | `delegate` / `event` | `ScriptInvoker` |
-| Lambda `=>` | Named methods |
-| `?.` null conditional | Manual null checks |
-| `??` null coalescing | `if (!x) x = default;` |
-| `try/catch` | Guard clauses |
-| `using` (IDisposable) | Manual cleanup |
-| Properties `{ get; set; }` | Public fields or explicit getter/setter methods |
-| LINQ | Manual loops |
-| `nameof()` | Hardcoded strings |
-| `async/await` | CallLater / timers |
+| Lambda `=>` | Benannte Methoden |
+| `?.` Null-Bedingung | Manuelle Null-Pruefungen |
+| `??` Null-Koaleszenz | `if (!x) x = default;` |
+| `try/catch` | Guard-Klauseln |
+| `using` (IDisposable) | Manuelle Bereinigung |
+| Properties `{ get; set; }` | Oeffentliche Felder oder explizite Getter/Setter-Methoden |
+| LINQ | Manuelle Schleifen |
+| `nameof()` | Fest kodierte Strings |
+| `async/await` | CallLater / Timer |
 
 ---
 
-## Coming From Java
+## Kommend von Java
 
-| Java Feature | Enforce Script Equivalent |
+| Java-Feature | Enforce-Script-Aequivalent |
 |-------------|--------------------------|
-| `interface` | Base class with empty methods |
-| `try/catch/finally` | Guard clauses |
-| Garbage collection | `ref` + reference counting (no GC for cycles) |
-| `@Override` | `override` keyword |
+| `interface` | Basisklasse mit leeren Methoden |
+| `try/catch/finally` | Guard-Klauseln |
+| Garbage Collection | `ref` + Referenzzaehlung (kein GC fuer Zyklen) |
+| `@Override` | `override`-Schluesselwort |
 | `instanceof` | `obj.IsInherited(typename)` |
-| `package` | Name prefixes |
+| `package` | Namenspraefixe |
 | `import` | config.cpp `files[]` |
-| `enum` with methods | `enum` (int-only) + helper class |
-| `final` | `const` (for variables only) |
-| Annotations | Not available |
+| `enum` mit Methoden | `enum` (nur int) + Hilfsklasse |
+| `final` | `const` (nur fuer Variablen) |
+| Annotations | Nicht verfuegbar |
 
 ---
 
-## Coming From Python
+## Kommend von Python
 
-| Python Feature | Enforce Script Equivalent |
+| Python-Feature | Enforce-Script-Aequivalent |
 |-------------|--------------------------|
-| Dynamic typing | Static typing (all variables typed) |
-| `try/except` | Guard clauses |
-| `lambda` | Named methods |
-| List comprehension | Manual loops |
-| `**kwargs` / `*args` | Fixed parameters |
-| Duck typing | `IsInherited()` / `Class.CastTo()` |
-| `__init__` | Constructor (same name as class) |
-| `__del__` | Destructor (`~ClassName()`) |
+| Dynamische Typisierung | Statische Typisierung (alle Variablen typisiert) |
+| `try/except` | Guard-Klauseln |
+| `lambda` | Benannte Methoden |
+| List Comprehension | Manuelle Schleifen |
+| `**kwargs` / `*args` | Feste Parameter |
+| Duck Typing | `IsInherited()` / `Class.CastTo()` |
+| `__init__` | Konstruktor (gleicher Name wie Klasse) |
+| `__del__` | Destruktor (`~ClassName()`) |
 | `import` | config.cpp `files[]` |
-| Multiple inheritance | Single inheritance + composition |
+| Mehrfachvererbung | Einfachvererbung + Komposition |
 | `None` | `null` / `NULL` |
-| Indentation-based blocks | `{ }` braces |
+| Einrueckungsbasierte Bloecke | `{ }`-Klammern |
 | f-strings | `string.Format("text %1 %2", a, b)` |
 
 ---
 
-## Quick Reference Table
+## Schnellreferenz-Tabelle
 
-| Feature | Exists? | Workaround |
+| Feature | Existiert? | Workaround |
 |---------|---------|------------|
-| Ternary `? :` | No | if/else |
-| `do...while` | No | while + break |
-| `try/catch` | No | Guard clauses |
-| Multiple inheritance | No | Composition |
-| Operator overloading | Index only | Named methods |
-| Lambdas | No | Named methods |
-| Delegates | No | `ScriptInvoker` |
-| `\\` / `\"` in strings | Broken | Avoid them |
-| Variable redeclaration | Broken in else-if | Unique names or declare before if |
-| `Object.IsAlive()` | Not on base Object | Cast to `EntityAI` first |
-| `nullptr` | No | `null` / `NULL` |
-| switch fall-through | No | Each case is independent |
-| Default param expressions | No | Literals or NULL only |
-| `#define` values | No | `const` |
-| Interfaces | No | Empty base class |
-| Generic constraints | No | Runtime type checks |
-| Enum validation | No | Manual range check |
-| Variadic params | No | `string.Format` or arrays |
-| Nested classes | No | Top-level with prefixed names |
-| Variable-size static arrays | No | `array<T>` |
-| `#include` | No | config.cpp `files[]` |
-| Namespaces | No | Name prefixes |
-| RAII | No | Manual cleanup |
-| `GetGame().GetPlayer()` server | Returns null | Iterate `GetPlayers()` |
+| Ternaer `? :` | Nein | if/else |
+| `do...while` | Nein | while + break |
+| `try/catch` | Nein | Guard-Klauseln |
+| Mehrfachvererbung | Nein | Komposition |
+| Operator-Overloading | Nur Index | Benannte Methoden |
+| Lambdas | Nein | Benannte Methoden |
+| Delegates | Nein | `ScriptInvoker` |
+| `\\` / `\"` in Strings | Fehlerhaft | Vermeiden |
+| Variablen-Neudeklaration | Fehlerhaft in else-if | Eindeutige Namen oder vor if deklarieren |
+| `Object.IsAlive()` | Nicht auf Basis-Object | Zuerst zu `EntityAI` casten |
+| `nullptr` | Nein | `null` / `NULL` |
+| switch Fall-Through | Nein | Jeder Case ist unabhaengig |
+| Standard-Param-Ausdruecke | Nein | Nur Literale oder NULL |
+| `#define`-Werte | Nein | `const` |
+| Interfaces | Nein | Leere Basisklasse |
+| Generic-Einschraenkungen | Nein | Laufzeit-Typpruefungen |
+| Enum-Validierung | Nein | Manuelle Bereichspruefung |
+| Variadische Params | Nein | `string.Format` oder Arrays |
+| Verschachtelte Klassen | Nein | Oberste Ebene mit Namenspraefixen |
+| Variable statische Arrays | Nein | `array<T>` |
+| `#include` | Nein | config.cpp `files[]` |
+| Namespaces | Nein | Namenspraefixe |
+| RAII | Nein | Manuelle Bereinigung |
+| `GetGame().GetPlayer()` Server | Gibt null zurueck | `GetPlayers()` iterieren |
 
 ---
 
 ## Navigation
 
-| Previous | Up | Next |
+| Zurueck | Hoch | Weiter |
 |----------|----|------|
-| [1.11 Error Handling](11-error-handling.md) | [Part 1: Enforce Script](../README.md) | [Part 2: Mod Structure](../02-mod-structure/01-five-layers.md) |
+| [1.11 Fehlerbehandlung](11-error-handling.md) | [Teil 1: Enforce Script](../README.md) | [Teil 2: Mod-Struktur](../02-mod-structure/01-five-layers.md) |

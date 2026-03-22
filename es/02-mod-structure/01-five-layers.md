@@ -1,30 +1,30 @@
-# Chapter 2.1: The 5-Layer Script Hierarchy
+# Capitulo 2.1: La Jerarquia de 5 Capas de Scripts
 
-[Home](../../README.md) | **The 5-Layer Script Hierarchy** | [Next: config.cpp Deep Dive >>](02-config-cpp.md)
+[Inicio](../../README.md) | **La Jerarquia de 5 Capas de Scripts** | [Siguiente: config.cpp a Fondo >>](02-config-cpp.md)
 
 ---
 
 ## Tabla de Contenidos
 
-- [Overview](#overview)
-- [The Layer Stack](#the-layer-stack)
-- [Layer 1: 1_Core (engineScriptModule)](#layer-1-1_core-enginescriptmodule)
-- [Layer 2: 2_GameLib (gameLibScriptModule)](#layer-2-2_gamelib-gamelibscriptmodule)
-- [Layer 3: 3_Game (gameScriptModule)](#layer-3-3_game-gamescriptmodule)
-- [Layer 4: 4_World (worldScriptModule)](#layer-4-4_world-worldscriptmodule)
-- [Layer 5: 5_Mission (missionScriptModule)](#layer-5-5_mission-missionscriptmodule)
-- [The Critical Rule](#the-critical-rule)
-- [Load Order and Timing](#load-order-and-timing)
-- [When Each Layer Executes](#when-each-layer-executes)
-- [Practical Guidelines](#practical-guidelines)
-- [Quick Decision Guide](#quick-decision-guide)
-- [Common Mistakes](#common-mistakes)
+- [Vision General](#vision-general)
+- [La Pila de Capas](#la-pila-de-capas)
+- [Capa 1: 1_Core (engineScriptModule)](#capa-1-1_core-enginescriptmodule)
+- [Capa 2: 2_GameLib (gameLibScriptModule)](#capa-2-2_gamelib-gamelibscriptmodule)
+- [Capa 3: 3_Game (gameScriptModule)](#capa-3-3_game-gamescriptmodule)
+- [Capa 4: 4_World (worldScriptModule)](#capa-4-4_world-worldscriptmodule)
+- [Capa 5: 5_Mission (missionScriptModule)](#capa-5-5_mission-missionscriptmodule)
+- [La Regla Critica](#la-regla-critica)
+- [Orden de Carga y Sincronizacion](#orden-de-carga-y-sincronizacion)
+- [Cuando se Ejecuta el Codigo de Cada Capa](#cuando-se-ejecuta-el-codigo-de-cada-capa)
+- [Guias Practicas](#guias-practicas)
+- [Guia Rapida de Decision](#guia-rapida-de-decision)
+- [Errores Comunes](#errores-comunes)
 
 ---
 
 ## Vision General
 
-The DayZ engine compiles scripts in five distinct passes called **script modules**. Each module corresponds to a numbered folder in your mod's `Scripts/` directory:
+El motor de DayZ compila los scripts en cinco pasadas distintas llamadas **modulos de script**. Cada modulo corresponde a una carpeta numerada en el directorio `Scripts/` de tu mod:
 
 ```
 Scripts/
@@ -35,68 +35,68 @@ Scripts/
   5_Mission/       --> missionScriptModule
 ```
 
-Each layer builds on top of the previous ones. The numbers are not arbitrary -- they define a strict compilation and dependency order enforced by the engine.
+Cada capa se construye sobre las anteriores. Los numeros no son arbitrarios -- definen un orden estricto de compilacion y dependencia impuesto por el motor.
 
 ---
 
-## The Layer Stack
+## La Pila de Capas
 
 ```
 +---------------------------------------------------------------+
 |                                                               |
 |   5_Mission   (missionScriptModule)                           |
-|   UI, HUD, mission lifecycle, menu screens                    |
-|   Can reference: everything below (1-4)                       |
+|   UI, HUD, ciclo de vida de mision, pantallas de menu         |
+|   Puede referenciar: todo lo de abajo (1-4)                   |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   4_World     (worldScriptModule)                             |
-|   Entities, items, vehicles, managers, gameplay logic          |
-|   Can reference: 1_Core, 2_GameLib, 3_Game                    |
+|   Entidades, items, vehiculos, managers, logica de gameplay   |
+|   Puede referenciar: 1_Core, 2_GameLib, 3_Game                |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   3_Game      (gameScriptModule)                              |
-|   Configs, RPC registration, data classes, input bindings     |
-|   Can reference: 1_Core, 2_GameLib                            |
+|   Configs, registro de RPC, clases de datos, input bindings   |
+|   Puede referenciar: 1_Core, 2_GameLib                        |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   2_GameLib   (gameLibScriptModule)                           |
-|   Low-level engine bindings (rarely used by mods)             |
-|   Can reference: 1_Core only                                  |
+|   Bindings del motor de bajo nivel (raramente usado por mods) |
+|   Puede referenciar: solo 1_Core                              |
 |                                                               |
 +---------------------------------------------------------------+
 |                                                               |
 |   1_Core      (engineScriptModule)                            |
-|   Fundamental types, constants, pure utility functions         |
-|   Can reference: nothing (this is the foundation)             |
+|   Tipos fundamentales, constantes, funciones de utilidad pura |
+|   Puede referenciar: nada (esta es la base)                   |
 |                                                               |
 +---------------------------------------------------------------+
 
-        COMPILATION ORDER: 1 --> 2 --> 3 --> 4 --> 5
-        DEPENDENCY DIRECTION: upward only (lower cannot see higher)
+        ORDEN DE COMPILACION: 1 --> 2 --> 3 --> 4 --> 5
+        DIRECCION DE DEPENDENCIA: solo hacia arriba (las inferiores no pueden ver las superiores)
 ```
 
 ---
 
-## Layer 1: 1_Core (engineScriptModule)
+## Capa 1: 1_Core (engineScriptModule)
 
-### Purpose
+### Proposito
 
-The absolute foundation. Code here runs at the engine level before any game systems exist. This is the earliest point where mod code can execute.
+La base absoluta. El codigo aqui se ejecuta a nivel del motor antes de que exista cualquier sistema del juego. Este es el punto mas temprano donde el codigo de un mod puede ejecutarse.
 
-### What Goes Here
+### Que Va Aqui
 
-- Constants and enums shared across all layers
-- Pure utility functions (math helpers, string utilities)
-- Logging infrastructure (the logger itself, not what logs)
-- Preprocessor defines and typedefs
-- Base class definitions that need to be visible everywhere
+- Constantes y enums compartidos entre todas las capas
+- Funciones de utilidad pura (helpers matematicos, utilidades de strings)
+- Infraestructura de logging (el logger en si, no lo que registra)
+- Defines de preprocesador y typedefs
+- Definiciones de clases base que necesitan ser visibles en todas partes
 
 ### Ejemplos Reales
 
-**Community Framework** places its core module system here:
+**Community Framework** coloca su sistema de modulos central aqui:
 
 ```c
 // 1_Core/CF_ModuleCoreManager.c
@@ -111,7 +111,7 @@ class CF_ModuleCoreManager
 };
 ```
 
-**MyFramework** places its logging constants here:
+**MyFramework** coloca sus constantes de logging aqui:
 
 ```c
 // 1_Core/MyLogLevel.c
@@ -127,29 +127,29 @@ enum MyLogLevel
 
 ### Cuando Usar
 
-Use `1_Core` only when you need something available to **all** other layers, and it has zero dependency on game types like `PlayerBase`, `ItemBase`, or `MissionBase`. Most mods do not need this layer at all.
+Usa `1_Core` solo cuando necesites algo disponible para **todas** las otras capas, y que tenga cero dependencia en tipos del juego como `PlayerBase`, `ItemBase` o `MissionBase`. La mayoria de los mods no necesitan esta capa en absoluto.
 
 ---
 
-## Layer 2: 2_GameLib (gameLibScriptModule)
+## Capa 2: 2_GameLib (gameLibScriptModule)
 
-### Purpose
+### Proposito
 
-Low-level engine library bindings. This layer exists in the vanilla script hierarchy but is **rarely used by mods**. It sits between the raw engine and the game logic.
+Bindings de la biblioteca del motor de bajo nivel. Esta capa existe en la jerarquia de scripts vanilla pero es **raramente usada por mods**. Se ubica entre el motor crudo y la logica del juego.
 
-### What Goes Here
+### Que Va Aqui
 
-- Engine-level abstractions (rendering, sound engine bindings)
-- Mathematical libraries beyond what `1_Core` provides
-- Base widget/UI engine types
+- Abstracciones a nivel de motor (renderizado, bindings del motor de sonido)
+- Bibliotecas matematicas mas alla de lo que provee `1_Core`
+- Tipos base de widgets/UI del motor
 
 ### Ejemplos Reales
 
-**DabsFramework** is one of the few mods that uses this layer:
+**DabsFramework** es uno de los pocos mods que usa esta capa:
 
 ```c
 // 2_GameLib/DabsFramework/MVC/ScriptView.c
-// Low-level view binding infrastructure
+// Infraestructura de binding de vistas de bajo nivel
 class ScriptView : ScriptedWidgetEventHandler
 {
     // ...
@@ -158,42 +158,42 @@ class ScriptView : ScriptedWidgetEventHandler
 
 ### Cuando Usar
 
-Almost never. Unless you are building a framework that needs engine-level bindings below the game layer, skip `2_GameLib` entirely. The vast majority of mods use only layers 3, 4, and 5.
+Casi nunca. A menos que estes construyendo un framework que necesite bindings a nivel de motor por debajo de la capa del juego, omite `2_GameLib` completamente. La gran mayoria de mods usa solo las capas 3, 4 y 5.
 
 ---
 
-## Layer 3: 3_Game (gameScriptModule)
+## Capa 3: 3_Game (gameScriptModule)
 
-### Purpose
+### Proposito
 
-The workhorse layer for configuration, data definitions, and systems that do not interact directly with world entities. This is the first layer where game types are available.
+La capa de trabajo pesado para configuracion, definiciones de datos y sistemas que no interactuan directamente con entidades del mundo. Esta es la primera capa donde los tipos del juego estan disponibles.
 
-### What Goes Here
+### Que Va Aqui
 
-- Configuration classes (settings that can be loaded/saved)
-- RPC registration and identifiers
-- Data classes and DTOs (data transfer objects)
-- Input binding registration
-- Plugin/module registration systems
-- Shared enums and constants that depend on game types
-- Custom keybind handlers
+- Clases de configuracion (settings que se pueden cargar/guardar)
+- Registro de RPC e identificadores
+- Clases de datos y DTOs (objetos de transferencia de datos)
+- Registro de input bindings
+- Sistemas de registro de plugins/modulos
+- Enums y constantes compartidos que dependen de tipos del juego
+- Handlers de keybinds personalizados
 
 ### Ejemplos Reales
 
-**MyFramework** configuration system:
+Sistema de configuracion de **MyFramework**:
 
 ```c
 // 3_Game/MyMod/Config/MyConfigBase.c
 class MyConfigBase
 {
-    // Base configuration with automatic JSON persistence
+    // Configuracion base con persistencia JSON automatica
     void Load();
     void Save();
     string GetConfigPath();
 };
 ```
 
-**COT** defines its RPC identifiers here:
+**COT** define sus identificadores de RPC aqui:
 
 ```c
 // 3_Game/COT/RPCData.c
@@ -205,7 +205,7 @@ class JMRPCData
 };
 ```
 
-**VPP Admin Tools** registers its chat commands:
+**VPP Admin Tools** registra sus comandos de chat:
 
 ```c
 // 3_Game/VPPAdminTools/ChatCommands/ChatCommandBase.c
@@ -218,29 +218,29 @@ class ChatCommandBase
 
 ### Cuando Usar
 
-**If in doubt, put it in `3_Game`.** This is the default layer for most non-entity code. Configuration classes, enums, constants, RPC definitions, data classes -- all belong here.
+**Si tienes dudas, ponlo en `3_Game`.** Esta es la capa predeterminada para la mayoria del codigo que no es de entidades. Clases de configuracion, enums, constantes, definiciones de RPC, clases de datos -- todo pertenece aqui.
 
 ---
 
-## Layer 4: 4_World (worldScriptModule)
+## Capa 4: 4_World (worldScriptModule)
 
-### Purpose
+### Proposito
 
-Gameplay logic that interacts with the 3D world. This layer has access to entities, items, vehicles, buildings, and all world objects.
+Logica de gameplay que interactua con el mundo 3D. Esta capa tiene acceso a entidades, items, vehiculos, edificios y todos los objetos del mundo.
 
-### What Goes Here
+### Que Va Aqui
 
-- Custom items and weapons (extending `ItemBase`, `Weapon_Base`)
-- Custom entities (extending `Building`, `DayZAnimal`, etc.)
-- World managers (spawn systems, loot managers, AI directors)
-- Player extensions (modded `PlayerBase` behavior)
-- Vehicle customization
-- Action systems (extending `ActionBase`)
-- Trigger zones and area effects
+- Items y armas personalizados (extendiendo `ItemBase`, `Weapon_Base`)
+- Entidades personalizadas (extendiendo `Building`, `DayZAnimal`, etc.)
+- Managers del mundo (sistemas de spawn, managers de loot, directores de AI)
+- Extensiones de jugador (comportamiento modded de `PlayerBase`)
+- Personalizacion de vehiculos
+- Sistemas de acciones (extendiendo `ActionBase`)
+- Zonas trigger y efectos de area
 
 ### Ejemplos Reales
 
-**MyMissions Mod** spawns mission markers in the world:
+**MyMissions Mod** spawnea marcadores de mision en el mundo:
 
 ```c
 // 4_World/Missions/MyMissionMarker.c
@@ -258,7 +258,7 @@ class MyMissionMarker : House
 };
 ```
 
-**MyAI Mod** implements bot entities here:
+**MyAI Mod** implementa entidades de bots aqui:
 
 ```c
 // 4_World/AI/MyAIBot.c
@@ -274,40 +274,40 @@ class MyAIBot : SurvivorBase
 };
 ```
 
-**Vanilla DayZ** defines all items here:
+**DayZ Vanilla** define todos los items aqui:
 
 ```c
 // 4_World/Entities/ItemBase/Edible_Base.c
 class Edible_Base extends ItemBase
 {
-    // All food items inherit from this
+    // Todos los items de comida heredan de esto
 };
 ```
 
 ### Cuando Usar
 
-Anything that touches the physical game world: creating entities, modifying items, handling player interactions, managing world state. If your class extends `EntityAI`, `ItemBase`, `PlayerBase`, `Building`, or interacts with `GetGame().GetWorld()`, it belongs in `4_World`.
+Cualquier cosa que toque el mundo fisico del juego: crear entidades, modificar items, manejar interacciones de jugadores, gestionar estado del mundo. Si tu clase extiende `EntityAI`, `ItemBase`, `PlayerBase`, `Building` o interactua con `GetGame().GetWorld()`, pertenece en `4_World`.
 
 ---
 
-## Layer 5: 5_Mission (missionScriptModule)
+## Capa 5: 5_Mission (missionScriptModule)
 
-### Purpose
+### Proposito
 
-The highest layer. Mission lifecycle, UI panels, HUD overlays, and the final initialization point. This is where client-side and server-side startup code lives.
+La capa mas alta. Ciclo de vida de la mision, paneles de UI, overlays de HUD y el punto de inicializacion final. Aqui es donde vive el codigo de arranque del lado del cliente y del servidor.
 
-### What Goes Here
+### Que Va Aqui
 
-- Mission class hooks (`MissionServer`, `MissionGameplay` overrides)
-- HUD and UI panels
-- Menu screens
-- Mod registration and initialization (the "boot" sequence)
-- Client-side rendering overlays
-- Server startup/shutdown handlers
+- Hooks de la clase de mision (overrides de `MissionServer`, `MissionGameplay`)
+- Paneles de HUD y UI
+- Pantallas de menu
+- Registro e inicializacion de mods (la secuencia de "arranque")
+- Overlays de renderizado del lado del cliente
+- Handlers de arranque/apagado del servidor
 
 ### Ejemplos Reales
 
-**MyFramework** hooks into the mission to initialize all subsystems:
+**MyFramework** se engancha a la mision para inicializar todos los subsistemas:
 
 ```c
 // 5_Mission/MyMod/MyModMissionClient.c
@@ -327,7 +327,7 @@ modded class MissionGameplay
 };
 ```
 
-**COT** adds its admin menu here:
+**COT** agrega su menu de admin aqui:
 
 ```c
 // 5_Mission/COT/gui/COT_Menu.c
@@ -335,12 +335,12 @@ class COT_Menu : UIScriptedMenu
 {
     override Widget Init()
     {
-        // Build admin panel UI
+        // Construir UI del panel de admin
     }
 };
 ```
 
-**MyMissions Mod** registers itself with Core:
+**MyMissions Mod** se registra con Core:
 
 ```c
 // 5_Mission/Missions/MyMissionsRegister.c
@@ -356,58 +356,58 @@ class MyMissionsRegister
 
 ### Cuando Usar
 
-UI, HUD, menu screens, and mod initialization that depends on the mission being active. Also the final place where the server hooks into startup/shutdown lifecycle.
+UI, HUD, pantallas de menu e inicializacion de mods que depende de que la mision este activa. Tambien el ultimo lugar donde el servidor se engancha al ciclo de vida de arranque/apagado.
 
 ---
 
 ## La Regla Critica
 
-> **Lower layers CANNOT reference types from higher layers.**
+> **Las capas inferiores NO PUEDEN referenciar tipos de las capas superiores.**
 
-This is the single most important rule in DayZ script architecture. The engine enforces this at compile time.
+Esta es la regla mas importante en la arquitectura de scripts de DayZ. El motor la impone en tiempo de compilacion.
 
 ```
-ALLOWED:
-  5_Mission code references a class from 4_World       OK
-  4_World code references a class from 3_Game           OK
-  3_Game code references a class from 1_Core            OK
+PERMITIDO:
+  Codigo de 5_Mission referencia una clase de 4_World       OK
+  Codigo de 4_World referencia una clase de 3_Game           OK
+  Codigo de 3_Game referencia una clase de 1_Core            OK
 
-FORBIDDEN:
-  3_Game code references a class from 4_World           COMPILE ERROR
-  4_World code references a class from 5_Mission        COMPILE ERROR
-  1_Core code references a class from 3_Game            COMPILE ERROR
+PROHIBIDO:
+  Codigo de 3_Game referencia una clase de 4_World           ERROR DE COMPILACION
+  Codigo de 4_World referencia una clase de 5_Mission        ERROR DE COMPILACION
+  Codigo de 1_Core referencia una clase de 3_Game            ERROR DE COMPILACION
 ```
 
-### Why This Exists
+### Por que Existe
 
-Each layer is compiled separately and sequentially. When `3_Game` is being compiled, `4_World` and `5_Mission` do not exist yet. The compiler has no knowledge of those types.
+Cada capa se compila por separado y secuencialmente. Cuando `3_Game` se esta compilando, `4_World` y `5_Mission` aun no existen. El compilador no tiene conocimiento de esos tipos.
 
-### What Happens When You Violate It
+### Que Pasa Cuando la Violas
 
-The error message is often unhelpful:
+El mensaje de error a menudo no es util:
 
 ```
 SCRIPT (E): Undefined type 'PlayerBase'
 ```
 
-This typically means you placed code in `3_Game` that references `PlayerBase`, which is defined in `4_World`. The fix is to move your code to `4_World` or higher.
+Esto tipicamente significa que colocaste codigo en `3_Game` que referencia `PlayerBase`, que esta definido en `4_World`. La solucion es mover tu codigo a `4_World` o superior.
 
-### The Workaround: Casting Through Base Types
+### La Solucion: Castear a Traves de Tipos Base
 
-When `3_Game` code needs to handle an object that will be a `PlayerBase` at runtime, use the base `Object` or `Man` type (defined in `3_Game`) and cast later:
+Cuando el codigo de `3_Game` necesita manejar un objeto que sera un `PlayerBase` en runtime, usa el tipo base `Object` o `Man` (definido en `3_Game`) y castea despues:
 
 ```c
-// In 3_Game -- we cannot reference PlayerBase directly
+// En 3_Game -- no podemos referenciar PlayerBase directamente
 class MyConfig
 {
     void HandlePlayer(Man player)
     {
-        // 'Man' is available in 3_Game
-        // At runtime, this will be a PlayerBase, but we cannot name it here
+        // 'Man' esta disponible en 3_Game
+        // En runtime, esto sera un PlayerBase, pero no podemos nombrarlo aqui
     }
 };
 
-// In 4_World -- now we can cast safely
+// En 4_World -- ahora podemos castear de forma segura
 class MyWorldLogic
 {
     void ProcessPlayer(Man player)
@@ -415,7 +415,7 @@ class MyWorldLogic
         PlayerBase pb;
         if (Class.CastTo(pb, player))
         {
-            // Now we have full PlayerBase access
+            // Ahora tenemos acceso completo a PlayerBase
         }
     }
 };
@@ -425,37 +425,37 @@ class MyWorldLogic
 
 ## Orden de Carga y Sincronizacion
 
-### Compilation Order
+### Orden de Compilacion
 
-The engine compiles all mods' scripts for each layer before moving to the next layer:
-
-```
-Step 1: Compile ALL mods' 1_Core scripts
-Step 2: Compile ALL mods' 2_GameLib scripts
-Step 3: Compile ALL mods' 3_Game scripts
-Step 4: Compile ALL mods' 4_World scripts
-Step 5: Compile ALL mods' 5_Mission scripts
-```
-
-Within each step, mods are ordered by their `requiredAddons` dependency chain in `config.cpp`. If ModB depends on ModA, ModA's scripts for that layer are compiled first.
-
-### Initialization Order
-
-After compilation, the runtime initialization follows a different sequence:
+El motor compila todos los scripts de los mods para cada capa antes de pasar a la siguiente:
 
 ```
-1. Engine boots, loads configs
-2. 1_Core scripts are available (static constructors run)
-3. 2_GameLib scripts are available
-4. 3_Game scripts are available
-   --> CfgMods entry functions run (e.g., "CreateGameMod")
-   --> Input bindings register
-5. 4_World scripts are available
-   --> Entities can be created
-6. Mission loads
-7. 5_Mission scripts are available
-   --> MissionServer.OnInit() / MissionGameplay.OnInit() fire
-   --> UI and HUD become available
+Paso 1: Compilar scripts de 1_Core de TODOS los mods
+Paso 2: Compilar scripts de 2_GameLib de TODOS los mods
+Paso 3: Compilar scripts de 3_Game de TODOS los mods
+Paso 4: Compilar scripts de 4_World de TODOS los mods
+Paso 5: Compilar scripts de 5_Mission de TODOS los mods
+```
+
+Dentro de cada paso, los mods se ordenan por su cadena de dependencia `requiredAddons` en `config.cpp`. Si ModB depende de ModA, los scripts de ModA para esa capa se compilan primero.
+
+### Orden de Inicializacion
+
+Despues de la compilacion, la inicializacion en runtime sigue una secuencia diferente:
+
+```
+1. El motor arranca, carga configs
+2. Los scripts de 1_Core estan disponibles (constructores estaticos se ejecutan)
+3. Los scripts de 2_GameLib estan disponibles
+4. Los scripts de 3_Game estan disponibles
+   --> Las funciones de entrada de CfgMods se ejecutan (ej., "CreateGameMod")
+   --> Los input bindings se registran
+5. Los scripts de 4_World estan disponibles
+   --> Las entidades pueden ser creadas
+6. La mision se carga
+7. Los scripts de 5_Mission estan disponibles
+   --> MissionServer.OnInit() / MissionGameplay.OnInit() se disparan
+   --> La UI y HUD se vuelven disponibles
 ```
 
 ---
@@ -464,58 +464,58 @@ After compilation, the runtime initialization follows a different sequence:
 
 | Capa | Init Estatico | Listo en Runtime | Evento Clave |
 |-------|------------|---------------|-----------|
-| `1_Core` | First | Immediately | Engine boot |
-| `2_GameLib` | Second | After engine init | Engine subsystems ready |
-| `3_Game` | Third | After game init | `CreateGame()` / custom entry function |
-| `4_World` | Fourth | After world loads | Entities start spawning |
-| `5_Mission` | Fifth (last) | After mission starts | `MissionServer.OnInit()` / `MissionGameplay.OnInit()` |
+| `1_Core` | Primero | Inmediatamente | Arranque del motor |
+| `2_GameLib` | Segundo | Despues del init del motor | Subsistemas del motor listos |
+| `3_Game` | Tercero | Despues del init del juego | `CreateGame()` / funcion de entrada personalizada |
+| `4_World` | Cuarto | Despues de que el mundo carga | Las entidades comienzan a spawnearse |
+| `5_Mission` | Quinto (ultimo) | Despues de que la mision inicia | `MissionServer.OnInit()` / `MissionGameplay.OnInit()` |
 
-**Important:** Static variables and global-scope code in each layer execute during the compilation/linking phase, before `OnInit()` is ever called. Do not put complex initialization logic in static initializers.
+**Importante:** Las variables estaticas y el codigo de ambito global en cada capa se ejecutan durante la fase de compilacion/enlace, antes de que `OnInit()` sea llamado. No pongas logica de inicializacion compleja en inicializadores estaticos.
 
 ---
 
 ## Guias Practicas
 
-### "If in Doubt, Put It in 3_Game"
+### "Si Tienes Dudas, Ponlo en 3_Game"
 
-This is the most common layer for mod code. Unless your code:
-- Needs to be available before game types exist --> `1_Core`
-- Extends an entity/item/vehicle/player --> `4_World`
-- Touches UI, HUD, or mission lifecycle --> `5_Mission`
+Esta es la capa mas comun para codigo de mods. A menos que tu codigo:
+- Necesite estar disponible antes de que existan tipos del juego --> `1_Core`
+- Extienda una entidad/item/vehiculo/jugador --> `4_World`
+- Toque UI, HUD o ciclo de vida de mision --> `5_Mission`
 
-...then it belongs in `3_Game`.
+...entonces pertenece en `3_Game`.
 
-### The Layer Checklist
+### La Lista de Verificacion de Capas
 
-Before placing a file, ask these questions:
+Antes de colocar un archivo, hazte estas preguntas:
 
-1. **Does it extend `EntityAI`, `ItemBase`, `PlayerBase`, `Building`, or any world entity?**
-   Put it in `4_World`.
+1. **Extiende `EntityAI`, `ItemBase`, `PlayerBase`, `Building` o cualquier entidad del mundo?**
+   Ponlo en `4_World`.
 
-2. **Does it reference `MissionServer`, `MissionGameplay`, or create UI widgets?**
-   Put it in `5_Mission`.
+2. **Referencia `MissionServer`, `MissionGameplay` o crea widgets de UI?**
+   Ponlo en `5_Mission`.
 
-3. **Is it a pure data class, config, enum, or RPC definition?**
-   Put it in `3_Game`.
+3. **Es una clase de datos pura, config, enum o definicion de RPC?**
+   Ponlo en `3_Game`.
 
-4. **Is it a fundamental constant or utility with zero game dependencies?**
-   Put it in `1_Core`.
+4. **Es una constante fundamental o utilidad con cero dependencias del juego?**
+   Ponlo en `1_Core`.
 
-5. **None of the above?**
-   Default to `3_Game`.
+5. **Ninguna de las anteriores?**
+   Predeterminado a `3_Game`.
 
-### Keep Your Layers Thin
+### Manten tus Capas Delgadas
 
-A common mistake is dumping everything into `4_World`. This creates tightly coupled code. Instead:
+Un error comun es poner todo en `4_World`. Esto crea codigo fuertemente acoplado. En su lugar:
 
 ```
-GOOD:
-  3_Game/  --> Config class, enums, RPC IDs, data structs
-  4_World/ --> Manager that uses the config, entity classes
-  5_Mission/ --> UI that displays manager state
+BIEN:
+  3_Game/  --> Clase de config, enums, IDs de RPC, structs de datos
+  4_World/ --> Manager que usa la config, clases de entidades
+  5_Mission/ --> UI que muestra el estado del manager
 
-BAD:
-  4_World/ --> Config, enums, RPCs, managers, AND entity classes all mixed together
+MAL:
+  4_World/ --> Config, enums, RPCs, managers Y clases de entidades todo mezclado
 ```
 
 ---
@@ -523,19 +523,19 @@ BAD:
 ## Guia Rapida de Decision
 
 ```
-                    Does it extend a world entity?
+                    Extiende una entidad del mundo?
                           (EntityAI, ItemBase, etc.)
                          /                    \
-                       YES                    NO
+                       SI                     NO
                         |                      |
-                    4_World              Does it touch UI/HUD/Mission?
+                    4_World              Toca UI/HUD/Mission?
                                         /                    \
-                                      YES                    NO
+                                      SI                     NO
                                        |                      |
-                                   5_Mission          Is it a pure utility
-                                                      with zero game deps?
+                                   5_Mission          Es una utilidad pura
+                                                      con cero deps del juego?
                                                       /                \
-                                                    YES                NO
+                                                    SI                 NO
                                                      |                  |
                                                   1_Core            3_Game
 ```
@@ -544,53 +544,53 @@ BAD:
 
 ## Errores Comunes
 
-### 1. Referencing PlayerBase from 3_Game
+### 1. Referenciar PlayerBase desde 3_Game
 
 ```c
-// WRONG: in 3_Game/MyConfig.c
+// INCORRECTO: en 3_Game/MyConfig.c
 class MyConfig
 {
-    void ApplyToPlayer(PlayerBase player)  // ERROR: PlayerBase not defined yet
+    void ApplyToPlayer(PlayerBase player)  // ERROR: PlayerBase no esta definido aun
     {
     }
 };
 
-// RIGHT: in 3_Game/MyConfig.c
+// CORRECTO: en 3_Game/MyConfig.c
 class MyConfig
 {
-    ref array<float> m_Values;  // Pure data, no entity references
+    ref array<float> m_Values;  // Datos puros, sin referencias a entidades
 };
 
-// RIGHT: in 4_World/MyManager.c
+// CORRECTO: en 4_World/MyManager.c
 class MyManager
 {
     void ApplyConfig(PlayerBase player, MyConfig config)
     {
-        // Now we can use both
+        // Ahora podemos usar ambos
     }
 };
 ```
 
-### 2. Putting UI Code in 4_World
+### 2. Poner Codigo de UI en 4_World
 
 ```c
-// WRONG: in 4_World/MyPanel.c
-class MyPanel : UIScriptedMenu  // UIScriptedMenu works in 4_World,
-{                                // but MissionGameplay hooks are in 5_Mission
-    // This will cause problems when trying to register the UI
+// INCORRECTO: en 4_World/MyPanel.c
+class MyPanel : UIScriptedMenu  // UIScriptedMenu funciona en 4_World,
+{                                // pero los hooks de MissionGameplay estan en 5_Mission
+    // Esto causara problemas al intentar registrar la UI
 };
 
-// RIGHT: in 5_Mission/MyPanel.c
+// CORRECTO: en 5_Mission/MyPanel.c
 class MyPanel : UIScriptedMenu
 {
-    // UI belongs in 5_Mission where mission lifecycle is available
+    // La UI pertenece en 5_Mission donde el ciclo de vida de mision esta disponible
 };
 ```
 
-### 3. Putting Constants in 4_World When 3_Game Needs Them
+### 3. Poner Constantes en 4_World Cuando 3_Game las Necesita
 
 ```c
-// WRONG: Constants defined in 4_World
+// INCORRECTO: Constantes definidas en 4_World
 // 4_World/MyConstants.c
 const int MY_RPC_ID = 12345;
 
@@ -599,18 +599,18 @@ class MyRPCHandler
 {
     void Register()
     {
-        // ERROR: MY_RPC_ID not visible here (defined in higher layer)
+        // ERROR: MY_RPC_ID no es visible aqui (definida en capa superior)
     }
 };
 
-// RIGHT: Constants defined in 3_Game (or 1_Core)
+// CORRECTO: Constantes definidas en 3_Game (o 1_Core)
 // 3_Game/MyConstants.c
-const int MY_RPC_ID = 12345;  // Now visible to 3_Game AND 4_World AND 5_Mission
+const int MY_RPC_ID = 12345;  // Ahora visible en 3_Game Y 4_World Y 5_Mission
 ```
 
-### 4. Overcomplicating with 1_Core
+### 4. Sobrecomplicar con 1_Core
 
-If your "constants" reference any game type, they cannot go in `1_Core`. Even something like `const string PLAYER_CONFIG_PATH` is fine in `1_Core`, but a class that takes a `CGame` parameter is not.
+Si tus "constantes" referencian cualquier tipo del juego, no pueden ir en `1_Core`. Incluso algo como `const string PLAYER_CONFIG_PATH` esta bien en `1_Core`, pero una clase que toma un parametro `CGame` no lo esta.
 
 ---
 
@@ -618,14 +618,14 @@ If your "constants" reference any game type, they cannot go in `1_Core`. Even so
 
 | Capa | Carpeta | Entrada de Config | Uso Principal | Frecuencia |
 |-------|--------|-------------|-------------|-----------|
-| 1 | `1_Core/` | `engineScriptModule` | Constants, utilities, logging base | Rare |
-| 2 | `2_GameLib/` | `gameLibScriptModule` | Engine bindings | Very rare |
-| 3 | `3_Game/` | `gameScriptModule` | Configs, RPCs, data classes | **Most common** |
-| 4 | `4_World/` | `worldScriptModule` | Entities, items, managers | Common |
-| 5 | `5_Mission/` | `missionScriptModule` | UI, HUD, mission hooks | Common |
+| 1 | `1_Core/` | `engineScriptModule` | Constantes, utilidades, base de logging | Rara |
+| 2 | `2_GameLib/` | `gameLibScriptModule` | Bindings del motor | Muy rara |
+| 3 | `3_Game/` | `gameScriptModule` | Configs, RPCs, clases de datos | **Mas comun** |
+| 4 | `4_World/` | `worldScriptModule` | Entidades, items, managers | Comun |
+| 5 | `5_Mission/` | `missionScriptModule` | UI, HUD, hooks de mision | Comun |
 
-**Remember:** Lower layers cannot see higher layers. When in doubt, use `3_Game`. Move code up only when you need access to types defined in a higher layer.
+**Recuerda:** Las capas inferiores no pueden ver las superiores. En caso de duda, usa `3_Game`. Mueve el codigo hacia arriba solo cuando necesites acceso a tipos definidos en una capa superior.
 
 ---
 
-**Next:** [Chapter 2.2: config.cpp Deep Dive](02-config-cpp.md)
+**Siguiente:** [Capitulo 2.2: config.cpp a Fondo](02-config-cpp.md)

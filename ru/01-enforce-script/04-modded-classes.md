@@ -1,6 +1,6 @@
-# Chapter 1.4: Modded Classes (The Key to DayZ Modding)
+# Глава 1.4: Modded-классы (Ключ к моддингу DayZ)
 
-[Home](../../README.md) | [<< Previous: Classes & Inheritance](03-classes-inheritance.md) | **Modded Classes** | [Next: Control Flow >>](05-control-flow.md)
+[Главная](../../README.md) | [<< Предыдущая: Классы и наследование](03-classes-inheritance.md) | **Modded-классы** | [Следующая: Поток управления >>](05-control-flow.md)
 
 ---
 ---
@@ -8,11 +8,11 @@
 ## Введение
 
 
-**Modded classes are the single most important concept in DayZ modding.** They are the mechanism that allows your mod to change the behavior of existing game classes without replacing the original files. Without modded classes, DayZ modding as we know it would not exist.
+**Modded-классы --- это самая важная концепция в моддинге DayZ.** Это механизм, позволяющий вашему моду изменять поведение существующих игровых классов без замены исходных файлов. Без modded-классов моддинг DayZ в том виде, в каком мы его знаем, не существовал бы.
 
-Every major DayZ mod --- Community Online Tools, VPP Admin Tools, DayZ Expansion, Trader mods, medical overhauls, building systems --- works by using `modded class` to hook into vanilla classes and add or change behavior. When you mod `PlayerBase`, every player in the game gets your new behavior. When you mod `MissionServer`, your code runs as part of the server's mission lifecycle. When you mod `ItemBase`, every item in the game is affected.
+Каждый крупный мод DayZ --- Community Online Tools, VPP Admin Tools, DayZ Expansion, моды на торговлю, медицинские переработки, строительные системы --- работает с помощью `modded class` для подключения к ванильным классам и добавления или изменения поведения. Когда вы моддите `PlayerBase`, каждый игрок в игре получает ваше новое поведение. Когда вы моддите `MissionServer`, ваш код выполняется как часть жизненного цикла миссии сервера. Когда вы моддите `ItemBase`, затрагивается каждый предмет в игре.
 
-This chapter is intentionally the longest and most detailed in Part 1 because getting modded classes right is what separates a working mod from one that crashes servers or breaks other mods.
+Эта глава намеренно самая длинная и подробная в Части 1, потому что правильная работа с modded-классами --- это то, что отличает рабочий мод от того, который крашит серверы или ломает другие моды.
 
 ---
 
@@ -22,18 +22,18 @@ This chapter is intentionally the longest and most detailed in Part 1 because ge
 ### Основная идея
 
 
-Normally, `class Child extends Parent` creates a new class named `Child` that inherits from `Parent`. But `modded class Parent` does something fundamentally different: it **replaces** the original `Parent` class in the engine's class hierarchy, inserting your code into the inheritance chain.
+Обычно `class Child extends Parent` создаёт новый класс с именем `Child`, наследующий от `Parent`. Но `modded class Parent` делает нечто принципиально иное: он **заменяет** оригинальный класс `Parent` в иерархии классов движка, вставляя ваш код в цепочку наследования.
 
 ```
-Before modding:
-  Parent -> (all code that creates Parent gets the original)
+До моддинга:
+  Parent -> (весь код, создающий Parent, получает оригинал)
 
-After modded class:
-  Original Parent -> Your Modded Parent
-  (all code that creates Parent now gets YOUR version)
+После modded class:
+  Оригинальный Parent -> Ваш Modded Parent
+  (весь код, создающий Parent, теперь получает ВАШУ версию)
 ```
 
-Every `new Parent()` call anywhere in the game --- vanilla code, other mods, everywhere ---- нетw creates an instance of your modded version.
+Каждый вызов `new Parent()` в любом месте игры --- ванильный код, другие моды, везде --- теперь создаёт экземпляр вашей модифицированной версии.
 
 ### Синтаксис
 
@@ -41,17 +41,17 @@ Every `new Parent()` call anywhere in the game --- vanilla code, other mods, eve
 ```c
 modded class ClassName
 {
-    // Your additions and overrides go here
+    // Ваши дополнения и переопределения здесь
 }
 ```
 
-That is it. No `extends`, no new name. The `modded` keyword tells the engine: "I am modifying the existing class `ClassName`."
+Вот и всё. Никакого `extends`, никакого нового имени. Ключевое слово `modded` сообщает движку: «Я модифицирую существующий класс `ClassName`».
 
 ### Каноничный пример
 
 
 ```c
-// === Original vanilla class (in DayZ's scripts) ===
+// === Оригинальный ванильный класс (в скриптах DayZ) ===
 class ModMe
 {
     void Say()
@@ -60,22 +60,22 @@ class ModMe
     }
 }
 
-// === Your mod's script file ===
+// === Скриптовый файл вашего мода ===
 modded class ModMe
 {
     override void Say()
     {
         Print("Hello from the mod");
-        super.Say();  // Call the original
+        super.Say();  // Вызвать оригинал
     }
 }
 
-// === What happens at runtime ===
+// === Что происходит в рантайме ===
 void Test()
 {
     ModMe obj = new ModMe();
     obj.Say();
-    // Output:
+    // Вывод:
     //   "Hello from the mod"
     //   "Hello from the original"
 }
@@ -86,10 +86,10 @@ void Test()
 ## Цепочка: несколько модов модифицируют один класс
 
 
-The real power of modded classes is that **multiple mods can modify the same class**, and they all chain together automatically. The engine processes mods in load order, and each `modded class` inherits from the previous one.
+Настоящая мощь modded-классов в том, что **несколько модов могут модифицировать один и тот же класс**, и они автоматически выстраиваются в цепочку. Движок обрабатывает моды в порядке загрузки, и каждый `modded class` наследует от предыдущего.
 
 ```c
-// === Vanilla ===
+// === Ваниль ===
 class ModMe
 {
     void Say()
@@ -98,51 +98,51 @@ class ModMe
     }
 }
 
-// === Mod A (loaded first) ===
+// === Мод A (загружен первым) ===
 modded class ModMe
 {
     override void Say()
     {
         Print("Mod A");
-        super.Say();  // Calls original
+        super.Say();  // Вызывает оригинал
     }
 }
 
-// === Mod B (loaded second) ===
+// === Мод B (загружен вторым) ===
 modded class ModMe
 {
     override void Say()
     {
         Print("Mod B");
-        super.Say();  // Calls Mod A's version
+        super.Say();  // Вызывает версию Мода A
     }
 }
 
-// === At runtime ===
+// === В рантайме ===
 void Test()
 {
     ModMe obj = new ModMe();
     obj.Say();
-    // Output (reverse load order):
+    // Вывод (обратный порядок загрузки):
     //   "Mod B"
     //   "Mod A"
     //   "Original"
 }
 ```
 
-This is why **always calling `super`** is critical. If Mod A does not call `super.Say()`, then the original `Say()` never runs. If Mod B does not call `super.Say()`, then Mod A's `Say()` never runs. One mod skipping `super` breaks the entire chain.
+Вот почему **обязательный вызов `super`** критически важен. Если Мод A не вызывает `super.Say()`, то оригинальный `Say()` никогда не выполняется. Если Мод B не вызывает `super.Say()`, то `Say()` Мода A никогда не выполняется. Один мод, пропустивший `super`, ломает всю цепочку.
 
 ### Визуальное представление
 
 
 ```
-new ModMe() creates an instance with this inheritance chain:
+new ModMe() создаёт экземпляр с такой цепочкой наследования:
 
-  ModMe (Mod B's version)      <-- Instantiated
+  ModMe (версия Мода B)      <-- Создаётся экземпляр
     |
-    super -> ModMe (Mod A's version)
+    super -> ModMe (версия Мода A)
                |
-               super -> ModMe (Original vanilla)
+               super -> ModMe (Оригинальная ваниль)
 ```
 
 ---
@@ -150,24 +150,24 @@ new ModMe() creates an instance with this inheritance chain:
 ## Что можно делать в modded-классе
 
 
-### 1. Override Existing Methods
+### 1. Переопределение существующих методов
 
-The most common use. Add behavior before or after the vanilla code.
+Наиболее частое использование. Добавление поведения до или после ванильного кода.
 
 ```c
 modded class PlayerBase
 {
     override void Init()
     {
-        super.Init();  // Let vanilla initialization happen first
+        super.Init();  // Позволить ванильной инициализации произойти первой
         Print("[MyMod] Player initialized: " + GetType());
     }
 }
 ```
 
-### 2. Add New Fields (Member Variables)
+### 2. Добавление новых полей (переменных-членов)
 
-Extend the class with new data. Every instance of the modded class will have these fields.
+Расширение класса новыми данными. Каждый экземпляр модифицированного класса будет иметь эти поля.
 
 ```c
 modded class PlayerBase
@@ -186,9 +186,9 @@ modded class PlayerBase
 }
 ```
 
-### 3. Add New Methods
+### 3. Добавление новых методов
 
-Add entirely new functionality that other parts of your mod can call.
+Добавление совершенно новой функциональности, которую могут вызывать другие части вашего мода.
 
 ```c
 modded class PlayerBase
@@ -220,12 +220,12 @@ modded class PlayerBase
 }
 ```
 
-### 4. Access Private Members of the Original Class
+### 4. Доступ к приватным членам оригинального класса
 
-Unlike normal inheritance where `private` members are inaccessible, **modded classes CAN access private members** of the original class. This is a special rule of the `modded` keyword.
+В отличие от обычного наследования, где `private` члены недоступны, **modded-классы МОГУТ обращаться к приватным членам** оригинального класса. Это особое правило ключевого слова `modded`.
 
 ```c
-// Vanilla class
+// Ванильный класс
 class VanillaClass
 {
     private int m_SecretValue;
@@ -236,25 +236,25 @@ class VanillaClass
     }
 }
 
-// Modded class CAN access private members
+// Modded-класс МОЖЕТ обращаться к приватным членам
 modded class VanillaClass
 {
     void ExposeSecret()
     {
-        Print(m_SecretValue);  // OK! Modded classes bypass private
-        DoSecretThing();       // OK! Can call private methods too
+        Print(m_SecretValue);  // OK! Modded-классы обходят private
+        DoSecretThing();       // OK! Можно вызывать приватные методы тоже
     }
 }
 ```
 
-This is powerful but should be used carefully. Private members are private for a reason ---- y may change between DayZ updates.
+Это мощный инструмент, но использовать его следует осторожно. Приватные члены приватны не просто так --- они могут измениться между обновлениями DayZ.
 
-### 5. Override Constants
+### 5. Переопределение констант
 
-Modded classes can redefine constants:
+Modded-классы могут переопределять константы:
 
 ```c
-// Vanilla
+// Ваниль
 class GameSettings
 {
     const int MAX_PLAYERS = 60;
@@ -263,7 +263,7 @@ class GameSettings
 // Modded
 modded class GameSettings
 {
-    const int MAX_PLAYERS = 100;  // Overrides the original value
+    const int MAX_PLAYERS = 100;  // Переопределяет оригинальное значение
 }
 ```
 
@@ -272,12 +272,12 @@ modded class GameSettings
 ## Типичные цели для модификации
 
 
-These are the classes that virtually every DayZ mod hooks into. Understanding what each one offers is essential.
+Это классы, в которые подключается практически каждый мод DayZ. Понимание того, что предлагает каждый из них, необходимо.
 
 ### MissionServer
 
 
-Выполняется on the dedicated server. Handles server startup, player connections, and the game loop.
+Выполняется на выделенном сервере. Управляет запуском сервера, подключениями игроков и игровым циклом.
 
 ```c
 modded class MissionServer
@@ -288,7 +288,7 @@ modded class MissionServer
     {
         super.OnInit();
 
-        // Initialize your server-side systems
+        // Инициализация ваших серверных систем
         m_MyManager = new MyServerManager;
         m_MyManager.Init();
         Print("[MyMod] Server systems initialized");
@@ -302,14 +302,14 @@ modded class MissionServer
 
     override void OnMissionFinish()
     {
-        // Clean up BEFORE super (super may tear down systems we depend on)
+        // Очистка ДО super (super может разрушить системы, от которых мы зависим)
         if (m_MyManager)
             m_MyManager.Shutdown();
 
         super.OnMissionFinish();
     }
 
-    // Called when a player connects
+    // Вызывается при подключении игрока
     override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)
     {
         super.InvokeOnConnect(player, identity);
@@ -318,7 +318,7 @@ modded class MissionServer
             Print("[MyMod] Player connected: " + identity.GetName());
     }
 
-    // Called when a player disconnects
+    // Вызывается при отключении игрока
     override void InvokeOnDisconnect(PlayerBase player)
     {
         if (player && player.GetIdentity())
@@ -327,7 +327,7 @@ modded class MissionServer
         super.InvokeOnDisconnect(player);
     }
 
-    // Called every server tick
+    // Вызывается каждый серверный тик
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
@@ -341,7 +341,7 @@ modded class MissionServer
 ### MissionGameplay
 
 
-Выполняется on the client. Handles client-side UI, input, and rendering hooks.
+Выполняется на клиенте. Управляет клиентским UI, вводом и хуками рендеринга.
 
 ```c
 modded class MissionGameplay
@@ -368,7 +368,7 @@ modded class MissionGameplay
     {
         super.OnKeyPress(key);
 
-        // Open custom menu on F5
+        // Открыть пользовательское меню по F5
         if (key == KeyCode.KC_F5)
         {
             if (m_MyHUD)
@@ -389,7 +389,7 @@ modded class MissionGameplay
 ### PlayerBase
 
 
-The player class. Every living player in the game is an instance of `PlayerBase` (or a subclass like `SurvivorBase`). Modding this class is how you add per-player features.
+Класс игрока. Каждый живой игрок в игре является экземпляром `PlayerBase` (или подкласса вроде `SurvivorBase`). Модификация этого класса --- способ добавления функций для каждого игрока.
 
 ```c
 modded class PlayerBase
@@ -404,16 +404,16 @@ modded class PlayerBase
         m_CustomTimer = 0;
     }
 
-    // Called every frame on the server for this player
+    // Вызывается каждый кадр на сервере для этого игрока
     override void CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
     {
         super.CommandHandler(pDt, pCurrentCommandID, pCurrentCommandFinished);
 
-        // Server-side per-player tick
+        // Серверный тик для каждого игрока
         if (GetGame().IsServer())
         {
             m_CustomTimer += pDt;
-            if (m_CustomTimer >= 60.0)  // Every 60 seconds
+            if (m_CustomTimer >= 60.0)  // Каждые 60 секунд
             {
                 m_CustomTimer = 0;
                 OnMinuteElapsed();
@@ -426,20 +426,20 @@ modded class PlayerBase
         m_IsGodMode = enabled;
     }
 
-    // Override damage to implement god mode
+    // Переопределение урона для реализации режима бога
     override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source,
                           int component, string dmgZone, string ammo,
                           vector modelPos, float speedCoef)
     {
         if (m_IsGodMode)
-            return;  // Skip damage entirely
+            return;  // Полностью пропустить урон
 
         super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
     }
 
     protected void OnMinuteElapsed()
     {
-        // Custom periodic logic
+        // Пользовательская периодическая логика
     }
 }
 ```
@@ -447,7 +447,7 @@ modded class PlayerBase
 ### ItemBase
 
 
-The base class for all items. Modding this affects every item in the game.
+Базовый класс для всех предметов. Модификация затрагивает каждый предмет в игре.
 
 ```c
 modded class ItemBase
@@ -456,7 +456,7 @@ modded class ItemBase
     {
         super.SetActions();
 
-        // Add a custom action to ALL items
+        // Добавить пользовательское действие ко ВСЕМ предметам
         AddAction(MyInspectAction);
     }
 
@@ -464,7 +464,7 @@ modded class ItemBase
     {
         super.EEItemLocationChanged(oldLoc, newLoc);
 
-        // Track when items move
+        // Отслеживание перемещения предметов
         Print(string.Format("[MyMod] %1 moved from %2 to %3",
             GetType(), oldLoc.GetType(), newLoc.GetType()));
     }
@@ -474,14 +474,14 @@ modded class ItemBase
 ### DayZGame
 
 
-The global game class. Available throughout the entire game lifecycle.
+Глобальный класс игры. Доступен на протяжении всего жизненного цикла игры.
 
 ```c
 modded class DayZGame
 {
     void DayZGame()
     {
-        // Constructor: very early initialization
+        // Конструктор: очень ранняя инициализация
         Print("[MyMod] DayZGame constructor - extremely early init");
     }
 
@@ -489,7 +489,7 @@ modded class DayZGame
     {
         super.OnUpdate(doSim, timeslice);
 
-        // Global update tick (both client and server)
+        // Глобальный тик обновления (и клиент, и сервер)
     }
 }
 ```
@@ -497,7 +497,7 @@ modded class DayZGame
 ### CarScript
 
 
-The base vehicle class. Mod it to change all vehicle behavior.
+Базовый класс транспортных средств. Моддинг изменяет поведение всех транспортных средств.
 
 ```c
 modded class CarScript
@@ -521,13 +521,13 @@ modded class CarScript
 
 ---
 
-## `#ifdef` Guards for Optional Dependencies
+## Защита `#ifdef` для опциональных зависимостей
 
-When your mod optionally supports another mod, use preprocessor guards. If the other mod defines a symbol in its `config.cpp` (via `CfgPatches`), you can check for it at compile time.
+Когда ваш мод опционально поддерживает другой мод, используйте защиту препроцессора. Если другой мод определяет символ в своём `config.cpp` (через `CfgPatches`), вы можете проверить его на этапе компиляции.
 
-### How It Works
+### Как это работает
 
-Every mod's `CfgPatches` class name becomes a preprocessor symbol. Например, if a mod has:
+Имя класса `CfgPatches` каждого мода становится символом препроцессора. Например, если мод имеет:
 
 ```cpp
 class CfgPatches
@@ -539,11 +539,11 @@ class CfgPatches
 };
 ```
 
-Then `#ifdef MyAI_Scripts` will be `true` when that mod is loaded.
+Тогда `#ifdef MyAI_Scripts` будет `true`, когда этот мод загружен.
 
-Many mods also define explicit symbols. The convention varies --- check the mod's documentation or `config.cpp`.
+Многие моды также определяют явные символы. Соглашения различаются --- проверяйте документацию мода или `config.cpp`.
 
-### Basic Pattern
+### Базовый паттерн
 
 ```c
 modded class PlayerBase
@@ -552,7 +552,7 @@ modded class PlayerBase
     {
         super.Init();
 
-        // This code ONLY compiles when MyAI is present
+        // Этот код компилируется ТОЛЬКО когда MyAI присутствует
         #ifdef MyAI
             MyAIManager mgr = MyAIManager.GetInstance();
             if (mgr)
@@ -562,7 +562,7 @@ modded class PlayerBase
 }
 ```
 
-### Server vs Client Guards
+### Защита сервер vs клиент
 
 ```c
 modded class MissionBase
@@ -571,12 +571,12 @@ modded class MissionBase
     {
         super.OnInit();
 
-        // Server-only code
+        // Код только для сервера
         #ifdef SERVER
             InitServerSystems();
         #endif
 
-        // Client-only code (also runs on listen-server host)
+        // Код только для клиента (также выполняется на хосте listen-сервера)
         #ifndef SERVER
             InitClientHUD();
         #endif
@@ -598,9 +598,9 @@ modded class MissionBase
 }
 ```
 
-### Multi-Mod Compatibility
+### Совместимость нескольких модов
 
-Here is a real-world pattern for a mod that enhances players, with optional support for two other mods:
+Вот реальный паттерн для мода, который улучшает игроков с опциональной поддержкой двух других модов:
 
 ```c
 modded class PlayerBase
@@ -617,18 +617,18 @@ modded class PlayerBase
     {
         m_BountyPoints += amount;
 
-        // If Expansion Notifications is loaded, show a fancy notification
+        // Если загружены Expansion Notifications, показать красивое уведомление
         #ifdef EXPANSIONMODNOTIFICATION
             ExpansionNotification("Bounty!", string.Format("+%1 points", amount)).Create(GetIdentity());
         #else
-            // Fallback: simple notification
+            // Запасной вариант: простое уведомление
             NotificationSystem.SendNotificationToPlayerExtended(this, 5, "Bounty",
                 string.Format("+%1 points", amount), "");
         #endif
 
-        // If a trader mod is loaded, update the player's balance
+        // Если загружен мод торговца, обновить баланс игрока
         #ifdef TraderPlus
-            // TraderPlus-specific API call
+            // Вызов API TraderPlus
         #endif
     }
 }
@@ -639,44 +639,44 @@ modded class PlayerBase
 ## Профессиональные паттерны из реальных модов
 
 
-### Pattern 1: Non-Destructive Method Wrapping (COT Style)
+### Паттерн 1: Неразрушающее оборачивание метода (стиль COT)
 
-Community Online Tools wraps methods by doing work before and after `super`, never replacing behavior entirely:
+Community Online Tools оборачивает методы, выполняя работу до и после `super`, никогда не заменяя поведение полностью:
 
 ```c
 modded class MissionServer
 {
-    // New field added by COT
+    // Новое поле, добавленное COT
     protected ref JMPlayerModule m_JMPlayerModule;
 
     override void OnInit()
     {
-        super.OnInit();  // All vanilla init happens
+        super.OnInit();  // Вся ванильная инициализация происходит
 
-        // COT adds its own initialization AFTER vanilla
+        // COT добавляет свою инициализацию ПОСЛЕ ванильной
         m_JMPlayerModule = new JMPlayerModule;
         m_JMPlayerModule.Init();
     }
 
     override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)
     {
-        // COT does pre-processing
+        // COT выполняет предобработку
         if (identity)
             m_JMPlayerModule.OnClientConnect(identity);
 
-        // Then lets vanilla (and other mods) handle it
+        // Затем позволяет ванили (и другим модам) обработать
         super.InvokeOnConnect(player, identity);
 
-        // COT does post-processing
+        // COT выполняет постобработку
         if (identity)
             m_JMPlayerModule.OnClientReady(identity);
     }
 }
 ```
 
-### Pattern 2: Conditional Override (VPP Style)
+### Паттерн 2: Условное переопределение (стиль VPP)
 
-VPP Admin Tools checks conditions before deciding whether to modify behavior:
+VPP Admin Tools проверяет условия перед решением, изменять ли поведение:
 
 ```c
 #ifndef VPPNOTIFICATIONS
@@ -701,23 +701,23 @@ modded class MissionGameplay
 #endif
 ```
 
-Note the `#ifndef VPPNOTIFICATIONS` guard ---- это prevents the code from compiling if the standalone notifications mod is already loaded, avoiding conflicts.
+Обратите внимание на защиту `#ifndef VPPNOTIFICATIONS` --- она предотвращает компиляцию кода, если отдельный мод уведомлений уже загружен, избегая конфликтов.
 
-### Pattern 3: Event Injection (Expansion Style)
+### Паттерн 3: Внедрение событий (стиль Expansion)
 
-DayZ Expansion injects events into vanilla classes to broadcast information to its own systems:
+DayZ Expansion внедряет события в ванильные классы для трансляции информации в собственные системы:
 
 ```c
 modded class PlayerBase
 {
     override void EEKilled(Object killer)
     {
-        // Fire Expansion's event system before vanilla death handling
+        // Вызвать систему событий Expansion перед ванильной обработкой смерти
         ExpansionEventBus.Fire("OnPlayerKilled", this, killer);
 
         super.EEKilled(killer);
 
-        // Post-death processing
+        // Постобработка после смерти
         ExpansionEventBus.Fire("OnPlayerKilledPost", this, killer);
     }
 
@@ -729,17 +729,17 @@ modded class PlayerBase
 }
 ```
 
-### Pattern 4: Feature Registration (Community Framework Style)
+### Паттерн 4: Регистрация функций (стиль Community Framework)
 
-CF mods register features in constructors, keeping initialization centralized:
+Моды CF регистрируют функции в конструкторах, централизуя инициализацию:
 
 ```c
 modded class DayZGame
 {
     void DayZGame()
     {
-        // CF registers its systems in the DayZGame constructor
-        // This runs extremely early, before any mission loads
+        // CF регистрирует свои системы в конструкторе DayZGame
+        // Это выполняется очень рано, до загрузки любой миссии
         CF_ModuleManager.RegisterModule(MyCFModule);
     }
 }
@@ -748,8 +748,8 @@ modded class MissionServer
 {
     void MissionServer()
     {
-        // Constructor: runs when MissionServer is first created
-        // Register RPCs here
+        // Конструктор: выполняется при создании MissionServer
+        // Регистрируйте RPC здесь
         GetRPCManager().AddRPC("MyMod", "RPC_HandleRequest", this, SingleplayerExecutionType.Both);
     }
 }
@@ -763,36 +763,36 @@ modded class MissionServer
 ### Правило 1: ВСЕГДА вызывайте `super`
 
 
-Unless you have a deliberate, well-understood reason to completely replace parent behavior, always call `super`. Failing to do so breaks the mod chain and can crash servers.
+Если у вас нет намеренной и хорошо обоснованной причины полностью заменить поведение родителя, всегда вызывайте `super`. Невыполнение этого ломает цепочку модов и может крашить серверы.
 
 ```c
-// The GOLDEN RULE of modded classes
+// ЗОЛОТОЕ ПРАВИЛО modded-классов
 modded class AnyClass
 {
     override void AnyMethod()
     {
-        super.AnyMethod();  // ALWAYS unless you intentionally replace
-        // Your code here
+        super.AnyMethod();  // ВСЕГДА, если вы не заменяете намеренно
+        // Ваш код здесь
     }
 }
 ```
 
-When you do intentionally skip `super`, document why:
+Когда вы намеренно пропускаете `super`, документируйте почему:
 
 ```c
 modded class PlayerBase
 {
-    // Intentionally NOT calling super to completely disable fall damage
-    // WARNING: This will also prevent other mods from running their fall damage code
+    // Намеренно НЕ вызываем super для полного отключения урона от падения
+    // ВНИМАНИЕ: Это также предотвратит выполнение кода урона от падения других модов
     override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source,
                           int component, string dmgZone, string ammo,
                           vector modelPos, float speedCoef)
     {
-        // Check if this is fall damage
+        // Проверить, урон ли это от падения
         if (ammo == "FallDamage")
-            return;  // Silently ignore
+            return;  // Молча игнорировать
 
-        // For all other damage, call the normal chain
+        // Для всего остального урона вызвать обычную цепочку
         super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
     }
 }
@@ -801,21 +801,21 @@ modded class PlayerBase
 ### Правило 2: Инициализируйте новые поля в правильном override
 
 
-When adding fields to a modded class, initialize them in the appropriate lifecycle method, not just anywhere:
+При добавлении полей в modded-класс инициализируйте их в соответствующем методе жизненного цикла, а не где попало:
 
-| Class | Initialize in | Why |
+| Класс | Инициализируйте в | Почему |
 |-------|--------------|-----|
-| `PlayerBase` | `override void Init()` | Called once when the player entity is created |
-| `ItemBase` | constructor or `override void InitItemVariables()` | Item creation |
-| `MissionServer` | `override void OnInit()` | Server mission startup |
-| `MissionGameplay` | `override void OnInit()` | Client mission startup |
-| `DayZGame` | constructor `void DayZGame()` | Earliest possible point |
-| `CarScript` | constructor or `override void EOnInit(IEntity other, int extra)` | Vehicle creation |
+| `PlayerBase` | `override void Init()` | Вызывается один раз при создании сущности игрока |
+| `ItemBase` | конструктор или `override void InitItemVariables()` | Создание предмета |
+| `MissionServer` | `override void OnInit()` | Запуск серверной миссии |
+| `MissionGameplay` | `override void OnInit()` | Запуск клиентской миссии |
+| `DayZGame` | конструктор `void DayZGame()` | Самый ранний возможный момент |
+| `CarScript` | конструктор или `override void EOnInit(IEntity other, int extra)` | Создание транспорта |
 
 ### Правило 3: Защита от null
 
 
-In modded classes, you often work with objects that may not be initialized yet (because you are running before or after other code):
+В modded-классах вы часто работаете с объектами, которые могут быть ещё не инициализированы (потому что вы выполняетесь до или после другого кода):
 
 ```c
 modded class PlayerBase
@@ -824,20 +824,20 @@ modded class PlayerBase
     {
         super.CommandHandler(pDt, pCurrentCommandID, pCurrentCommandFinished);
 
-        // Always check: is this running on the server?
+        // Всегда проверяйте: выполняется ли это на сервере?
         if (!GetGame().IsServer())
             return;
 
-        // Always check: is the player alive?
+        // Всегда проверяйте: жив ли игрок?
         if (!IsAlive())
             return;
 
-        // Always check: does the player have an identity?
+        // Всегда проверяйте: есть ли у игрока identity?
         PlayerIdentity identity = GetIdentity();
         if (!identity)
             return;
 
-        // Now it is safe to use identity
+        // Теперь безопасно использовать identity
         string uid = identity.GetPlainId();
     }
 }
@@ -846,25 +846,25 @@ modded class PlayerBase
 ### Правило 4: Не ломайте другие моды
 
 
-Your modded class is part of a chain. Respect the contract:
+Ваш modded-класс --- часть цепочки. Соблюдайте контракт:
 
-- Do not swallow events silently (always call `super` unless deliberately overriding)
-- Do not overwrite fields that other mods might have set (add your own fields instead)
-- Use `#ifdef` guards for optional dependencies
-- Test with other popular mods loaded
+- Не подавляйте события молча (всегда вызывайте `super`, если только не переопределяете намеренно)
+- Не перезаписывайте поля, которые могли установить другие моды (добавляйте собственные поля)
+- Используйте защиту `#ifdef` для опциональных зависимостей
+- Тестируйте с другими популярными модами
 
 ### Правило 5: Используйте описательные префиксы полей
 
 
-When adding fields to a modded class, prefix them with your mod name to avoid collisions with other mods adding fields to the same class:
+При добавлении полей в modded-класс используйте префикс с именем вашего мода, чтобы избежать коллизий с другими модами, добавляющими поля в тот же класс:
 
 ```c
 modded class PlayerBase
 {
-    // BAD: generic name, might collide with another mod
+    // ПЛОХО: общее имя, может совпасть с другим модом
     protected int m_Points;
 
-    // GOOD: mod-specific prefix
+    // ХОРОШО: префикс, специфичный для мода
     protected int m_MyMod_Points;
     protected float m_MyMod_LastSync;
     protected ref array<string> m_MyMod_Unlocks;
@@ -876,37 +876,37 @@ modded class PlayerBase
 ## Распространённые ошибки
 
 
-### 1. Not Calling `super` (The #1 Mod-Breaking Bug)
+### 1. Невызов `super` (ошибка #1, ломающая моды)
 
-This cannot be emphasized enough. Every time you see a bug report that says "Mod X broke when I added Mod Y," the first thing to check is whether someone forgot to call `super`.
+Это нельзя подчеркнуть достаточно. Каждый раз, когда вы видите баг-репорт «Мод X сломался, когда я добавил Мод Y», первое, что нужно проверить --- не забыл ли кто-то вызвать `super`.
 
 ```c
-// THIS BREAKS EVERYTHING DOWNSTREAM
+// ЭТО ЛОМАЕТ ВСЁ НИЖЕ ПО ЦЕПОЧКЕ
 modded class MissionServer
 {
     override void OnInit()
     {
-        // NO super.OnInit() call!
-        // Every mod loaded before this one has its OnInit skipped
+        // НЕТ вызова super.OnInit()!
+        // OnInit каждого мода, загруженного до этого, пропускается
         Print("My mod started!");
     }
 }
 ```
 
-### 2. Overriding a Method That Does Not Exist
+### 2. Переопределение несуществующего метода
 
-If you try to `override` a method that does not exist in the parent class, you get a compile error. This usually happens when:
-- You misspelled the method name
-- You are overriding a method from the wrong class
-- A DayZ update renamed or removed the method
+Если вы пытаетесь `override` метод, которого нет в родительском классе, вы получите ошибку компиляции. Обычно это происходит, когда:
+- Вы допустили опечатку в имени метода
+- Вы переопределяете метод не того класса
+- Обновление DayZ переименовало или удалило метод
 
 ```c
 modded class PlayerBase
 {
-    // ERROR: no such method in PlayerBase
+    // ОШИБКА: такого метода нет в PlayerBase
     // override void OnPlayerSpawned()
 
-    // CORRECT method name:
+    // ПРАВИЛЬНОЕ имя метода:
     override void OnConnect()
     {
         super.OnConnect();
@@ -914,59 +914,59 @@ modded class PlayerBase
 }
 ```
 
-### 3. Modding the Wrong Class
+### 3. Модификация не того класса
 
-A common beginner mistake is modding a class that seems right by name but is in the wrong script layer:
+Типичная ошибка новичков --- модификация класса, который кажется правильным по имени, но находится не в том скриптовом слое:
 
 ```c
-// WRONG: MissionBase is the abstract base -- your hooks here may not fire
-// when you expect them to
+// НЕПРАВИЛЬНО: MissionBase --- это абстрактная база, ваши хуки здесь могут не сработать,
+// когда вы этого ожидаете
 modded class MissionBase
 {
     override void OnInit()
     {
         super.OnInit();
-        // This runs for ALL mission types -- but is it what you want?
+        // Это выполняется для ВСЕХ типов миссий -- но это ли то, что вам нужно?
     }
 }
 
-// RIGHT: Choose the specific class for your target
-// For server logic:
+// ПРАВИЛЬНО: выберите конкретный класс для вашей цели
+// Для серверной логики:
 modded class MissionServer
 {
-    override void OnInit() { super.OnInit(); /* server code */ }
+    override void OnInit() { super.OnInit(); /* серверный код */ }
 }
 
-// For client UI:
+// Для клиентского UI:
 modded class MissionGameplay
 {
-    override void OnInit() { super.OnInit(); /* client code */ }
+    override void OnInit() { super.OnInit(); /* клиентский код */ }
 }
 ```
 
-### 4. Heavy Processing in Per-Frame Overrides
+### 4. Тяжёлая обработка в покадровых override
 
-Methods like `OnUpdate()` and `CommandHandler()` run every tick or every frame. Adding expensive logic here destroys server/client performance:
+Методы вроде `OnUpdate()` и `CommandHandler()` вызываются каждый тик или каждый кадр. Добавление тяжёлой логики здесь убивает производительность сервера/клиента:
 
 ```c
 modded class PlayerBase
 {
-    // BAD: runs every frame for every player
+    // ПЛОХО: выполняется каждый кадр для каждого игрока
     override void CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
     {
         super.CommandHandler(pDt, pCurrentCommandID, pCurrentCommandFinished);
 
-        // This creates and destroys an array EVERY FRAME for EVERY PLAYER
+        // Создаёт и уничтожает массив КАЖДЫЙ КАДР для КАЖДОГО ИГРОКА
         array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         foreach (Man m : players)
         {
-            // O(n^2) per frame!
+            // O(n^2) за кадр!
         }
     }
 }
 
-// GOOD: use a timer to throttle expensive operations
+// ХОРОШО: используйте таймер для ограничения частоты тяжёлых операций
 modded class PlayerBase
 {
     protected float m_MyMod_Timer;
@@ -979,7 +979,7 @@ modded class PlayerBase
             return;
 
         m_MyMod_Timer += pDt;
-        if (m_MyMod_Timer < 5.0)  // Every 5 seconds, not every frame
+        if (m_MyMod_Timer < 5.0)  // Каждые 5 секунд, а не каждый кадр
             return;
 
         m_MyMod_Timer = 0;
@@ -988,14 +988,14 @@ modded class PlayerBase
 
     protected void DoExpensiveWork()
     {
-        // Periodic logic here
+        // Периодическая логика здесь
     }
 }
 ```
 
-### 5. Forgetting `#ifdef` Guards for Optional Dependencies
+### 5. Отсутствие защиты `#ifdef` для опциональных зависимостей
 
-If your mod references a class from another mod without `#ifdef` guards, it will fail to compile when that mod is not loaded:
+Если ваш мод ссылается на класс другого мода без защиты `#ifdef`, он не скомпилируется, когда тот мод не загружен:
 
 ```c
 modded class PlayerBase
@@ -1004,10 +1004,10 @@ modded class PlayerBase
     {
         super.Init();
 
-        // BAD: compile error if ExpansionMod is not loaded
+        // ПЛОХО: ошибка компиляции, если ExpansionMod не загружен
         // ExpansionHumanity.AddKarma(this, 10);
 
-        // GOOD: guarded with #ifdef
+        // ХОРОШО: защищено с помощью #ifdef
         #ifdef EXPANSIONMODCORE
             ExpansionHumanity.AddKarma(this, 10);
         #endif
@@ -1015,9 +1015,9 @@ modded class PlayerBase
 }
 ```
 
-### 6. Destructors: Clean Up Before `super`
+### 6. Деструкторы: очистка перед `super`
 
-When overriding destructors or cleanup methods, do your cleanup **before** calling `super`, since `super` may destroy resources you depend on:
+При переопределении деструкторов или методов очистки выполняйте свою очистку **перед** вызовом `super`, так как `super` может уничтожить ресурсы, от которых вы зависите:
 
 ```c
 modded class MissionServer
@@ -1026,7 +1026,7 @@ modded class MissionServer
 
     override void OnMissionFinish()
     {
-        // Clean up YOUR stuff first
+        // Сначала очистите СВОИ ресурсы
         if (m_MyManager)
         {
             m_MyManager.Save();
@@ -1034,7 +1034,7 @@ modded class MissionServer
         }
         m_MyManager = null;
 
-        // THEN let vanilla and other mods clean up
+        // ЗАТЕМ позвольте ванили и другим модам выполнить очистку
         super.OnMissionFinish();
     }
 }
@@ -1045,7 +1045,7 @@ modded class MissionServer
 ## Именование и организация файлов
 
 
-Modded class files should follow a clear naming convention so you can tell at a glance what class is being modded and by which mod:
+Файлы modded-классов должны следовать чёткому соглашению об именовании, чтобы с первого взгляда было видно, какой класс модифицируется и каким модом:
 
 ```
 MyMod/
@@ -1068,64 +1068,64 @@ MyMod/
           MyMod_MissionGameplay.c      <-- modded class MissionGameplay
 ```
 
-This mirrors the vanilla DayZ file structure, making it easy to find which file mods which class.
+Это повторяет структуру файлов ванильного DayZ, упрощая поиск того, какой файл модифицирует какой класс.
 
 ---
 
 ## Практические упражнения
 
 
-### Упражнение 1: Player Join Logger
+### Упражнение 1: Логгер подключений игроков
 
-Create a `modded class MissionServer` that prints a message to the server log whenever a player connects or disconnects, including their name and UID. Make sure to call `super`.
+Создайте `modded class MissionServer`, который выводит сообщение в серверный лог при подключении или отключении игрока, включая его имя и UID. Не забудьте вызвать `super`.
 
-### Упражнение 2: Item Inspection
+### Упражнение 2: Осмотр предмета
 
-Create a `modded class ItemBase` that adds a method `string GetInspectInfo()` which returns a formatted string showing the item's class name, health, and whether it is ruined. Override an appropriate method to print this info when the item is placed in a player's hands.
+Создайте `modded class ItemBase`, добавляющий метод `string GetInspectInfo()`, возвращающий форматированную строку с именем класса предмета, его здоровьем и тем, сломан ли он. Переопределите подходящий метод для вывода этой информации, когда предмет берётся в руки игрока.
 
-### Упражнение 3: Admin God Mode
+### Упражнение 3: Режим бога для администратора
 
-Create a `modded class PlayerBase` that:
-1. Adds a `m_IsGodMode` field
-2. Adds `EnableGodMode()` and `DisableGodMode()` methods
-3. Overrides the damage method `EEHitBy` to skip damage when god mode is active
-4. Always calls `super` for normal (non-god-mode) damage
+Создайте `modded class PlayerBase`, который:
+1. Добавляет поле `m_IsGodMode`
+2. Добавляет методы `EnableGodMode()` и `DisableGodMode()`
+3. Переопределяет метод урона `EEHitBy`, чтобы пропускать урон при активном режиме бога
+4. Всегда вызывает `super` для обычного (не в режиме бога) урона
 
-### Упражнение 4: Vehicle Speed Logger
+### Упражнение 4: Логгер скорости транспорта
 
-Create a `modded class CarScript` that tracks the maximum speed reached during each engine session. Override `OnEngineStart()` and `OnEngineОстановить()` to begin/end tracking. Print the max speed when the engine stops.
+Создайте `modded class CarScript`, отслеживающий максимальную достигнутую скорость за каждую сессию двигателя. Переопределите `OnEngineStart()` и `OnEngineStop()` для начала/окончания отслеживания. Выведите максимальную скорость при остановке двигателя.
 
-### Упражнение 5: Optional Mod Integration
+### Упражнение 5: Интеграция с опциональным модом
 
-Create a `modded class PlayerBase` that adds a reputation system. When a player kills a zombie, they gain 1 point. Use `#ifdef` guards to:
-- If Expansion's notification system is available, show a notification
-- If a trader mod is available, add currency
-- If neither is available, fall back to a simple Print() message
+Создайте `modded class PlayerBase`, добавляющий систему репутации. Когда игрок убивает зомби, он получает 1 очко. Используйте защиту `#ifdef` для:
+- Если доступна система уведомлений Expansion, показать уведомление
+- Если доступен мод торговца, добавить валюту
+- Если ничего не доступно, использовать простой Print()
 
 ---
 
 ## Итоги
 
 
-| Concept | Details |
+| Концепция | Подробности |
 |---------|---------|
-| Syntax | `modded class ClassName { }` |
-| Effect | Replaces the original class globally for all `new` calls |
-| Chaining | Multiple mods can mod the same class; they chain in load order |
-| `super` | **Always call it** unless deliberately replacing behavior |
-| New fields | Add with mod-specific prefixes (`m_MyMod_FieldName`) |
-| New methods | Fully supported; callable from anywhere that has a reference |
-| Private access | Modded classes **can** access private members of the original |
-| `#ifdef` guards | Use for optional dependencies on other mods |
-| Common targets | `MissionServer`, `MissionGameplay`, `PlayerBase`, `ItemBase`, `DayZGame`, `CarScript` |
+| Синтаксис | `modded class ClassName { }` |
+| Эффект | Глобально заменяет оригинальный класс для всех вызовов `new` |
+| Цепочка | Несколько модов могут модифицировать один класс; они выстраиваются в порядке загрузки |
+| `super` | **Всегда вызывайте**, если только не заменяете поведение намеренно |
+| Новые поля | Добавляйте с префиксами мода (`m_MyMod_FieldName`) |
+| Новые методы | Полностью поддерживаются; вызываемы из любого места, имеющего ссылку |
+| Доступ к private | Modded-классы **могут** обращаться к приватным членам оригинала |
+| Защита `#ifdef` | Используйте для опциональных зависимостей от других модов |
+| Типичные цели | `MissionServer`, `MissionGameplay`, `PlayerBase`, `ItemBase`, `DayZGame`, `CarScript` |
 
 ### Три заповеди modded-классов
 
 
-1. **Always call `super`** --- unless you have a documented reason not to
-2. **Guard optional dependencies with `#ifdef`** ---- выr mod should work standalone
-3. **Prefix your fields and methods** ---- void name collisions with other mods
+1. **Всегда вызывайте `super`** --- если нет документированной причины не делать этого
+2. **Защищайте опциональные зависимости с помощью `#ifdef`** --- ваш мод должен работать автономно
+3. **Используйте префиксы для полей и методов** --- избегайте коллизий имён с другими модами
 
 ---
 
-[Главная](../../README.md) | [<< Предыдущая: Classes & Inheritance](03-classes-inheritance.md) | **Modded Classes** | [Следующая: Control Flow >>](05-control-flow.md)
+[Главная](../../README.md) | [<< Предыдущая: Классы и наследование](03-classes-inheritance.md) | **Modded-классы** | [Следующая: Поток управления >>](05-control-flow.md)

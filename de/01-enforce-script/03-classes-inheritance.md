@@ -1,32 +1,32 @@
-# Chapter 1.3: Classes & Inheritance
+# Kapitel 1.3: Klassen & Vererbung
 
-[Home](../../README.md) | [<< Previous: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
+[Startseite](../../README.md) | [<< Zurueck: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Klassen & Vererbung** | [Weiter: Modded-Klassen >>](04-modded-classes.md)
 
 ---
 
 ## Einfuehrung
 
-Everything in DayZ is a class. Every weapon, vehicle, zombie, UI panel, config manager, and player is an instance of a class. Understanding how to declare, extend, and work with classes in Enforce Script is the foundation of all DayZ modding.
+Alles in DayZ ist eine Klasse. Jede Waffe, jedes Fahrzeug, jeder Zombie, jedes UI-Panel, jeder Config-Manager und jeder Spieler ist eine Instanz einer Klasse. Zu verstehen, wie man Klassen in Enforce Script deklariert, erweitert und damit arbeitet, ist die Grundlage jedes DayZ-Moddings.
 
-Enforce Script's class system is single-inheritance, object-oriented, with access modifiers, constructors, destructors, static members, and method overriding. If you know C# or Java, the concepts are familiar --- but the syntax has its own flavor, and there are important differences covered in this chapter.
+Das Klassensystem von Enforce Script ist einfachvererbend, objektorientiert, mit Zugriffsmodifikatoren, Konstruktoren, Destruktoren, statischen Mitgliedern und Methoden-Ueberschreibung. Wenn Sie C# oder Java kennen, sind die Konzepte vertraut --- aber die Syntax hat ihren eigenen Charakter, und es gibt wichtige Unterschiede, die in diesem Kapitel behandelt werden.
 
 ---
 
 ## Eine Klasse deklarieren
 
-A class groups related data (fields) and behavior (methods) together.
+Eine Klasse gruppiert zusammengehoerige Daten (Felder) und Verhalten (Methoden).
 
 ```c
 class ZombieTracker
 {
-    // Fields (member variables)
+    // Felder (Mitgliedsvariablen)
     int m_ZombieCount;
     float m_SpawnRadius;
     string m_ZoneName;
     bool m_IsActive;
     vector m_CenterPos;
 
-    // Methods (member functions)
+    // Methoden (Mitgliedsfunktionen)
     void Activate(vector center, float radius)
     {
         m_CenterPos = center;
@@ -48,32 +48,32 @@ class ZombieTracker
 
 ### Namenskonventionen fuer Klassen
 
-DayZ modding follows these conventions:
-- Class names: `PascalCase` (e.g., `PlayerTracker`, `LootManager`)
-- Member fields: `m_PascalCase` prefix (e.g., `m_Health`, `m_PlayerList`)
-- Static fields: `s_PascalCase` prefix (e.g., `s_Instance`, `s_Counter`)
-- Constants: `UPPER_SNAKE_CASE` (e.g., `MAX_HEALTH`, `DEFAULT_RADIUS`)
-- Methods: `PascalCase` (e.g., `GetPosition()`, `SetHealth()`)
-- Local variables: `camelCase` (e.g., `playerCount`, `nearestDist`)
+DayZ-Modding folgt diesen Konventionen:
+- Klassennamen: `PascalCase` (z.B. `PlayerTracker`, `LootManager`)
+- Mitgliedsfelder: `m_PascalCase`-Praefix (z.B. `m_Health`, `m_PlayerList`)
+- Statische Felder: `s_PascalCase`-Praefix (z.B. `s_Instance`, `s_Counter`)
+- Konstanten: `UPPER_SNAKE_CASE` (z.B. `MAX_HEALTH`, `DEFAULT_RADIUS`)
+- Methoden: `PascalCase` (z.B. `GetPosition()`, `SetHealth()`)
+- Lokale Variablen: `camelCase` (z.B. `playerCount`, `nearestDist`)
 
 ### Instanzen erstellen und verwenden
 
 ```c
 void Example()
 {
-    // Create an instance with 'new'
+    // Eine Instanz mit 'new' erstellen
     ZombieTracker tracker = new ZombieTracker;
 
-    // Call methods
+    // Methoden aufrufen
     tracker.Activate(Vector(5000, 0, 8000), 200.0);
 
     if (tracker.IsActive())
     {
         float dist = tracker.GetDistanceToCenter(Vector(5050, 0, 8050));
-        Print(string.Format("Distance: %1", dist));
+        Print(string.Format("Entfernung: %1", dist));
     }
 
-    // Destroy an instance with 'delete' (usually not needed; see Memory section)
+    // Eine Instanz mit 'delete' zerstoeren (normalerweise nicht noetig; siehe Abschnitt Speicher)
     delete tracker;
 }
 ```
@@ -82,9 +82,9 @@ void Example()
 
 ## Konstruktoren und Destruktoren
 
-Constructors initialize an object when it is created. Destructors clean up when it is destroyed. In Enforce Script, both use the class name --- the destructor is prefixed with `~`.
+Konstruktoren initialisieren ein Objekt bei seiner Erstellung. Destruktoren raeumen auf, wenn es zerstoert wird. In Enforce Script verwenden beide den Klassennamen --- der Destruktor hat das Praefix `~`.
 
-### Constructor
+### Konstruktor
 
 ```c
 class SpawnZone
@@ -94,7 +94,7 @@ class SpawnZone
     protected float m_Radius;
     protected ref array<string> m_AllowedTypes;
 
-    // Constructor: same name as the class
+    // Konstruktor: gleicher Name wie die Klasse
     void SpawnZone(string name, vector pos, float radius)
     {
         m_Name = name;
@@ -102,14 +102,14 @@ class SpawnZone
         m_Radius = radius;
         m_AllowedTypes = new array<string>;
 
-        Print(string.Format("[SpawnZone] Created: %1 at %2, radius %3", m_Name, m_Position, m_Radius));
+        Print(string.Format("[SpawnZone] Erstellt: %1 bei %2, Radius %3", m_Name, m_Position, m_Radius));
     }
 
-    // Destructor: ~ prefix
+    // Destruktor: ~-Praefix
     void ~SpawnZone()
     {
-        Print(string.Format("[SpawnZone] Destroyed: %1", m_Name));
-        // m_AllowedTypes is a ref, it will be deleted automatically
+        Print(string.Format("[SpawnZone] Zerstoert: %1", m_Name));
+        // m_AllowedTypes ist ein ref, es wird automatisch geloescht
     }
 
     void AddAllowedType(string typeName)
@@ -119,30 +119,30 @@ class SpawnZone
 }
 ```
 
-### Standardkonstruktor (No Parameters)
+### Standardkonstruktor (ohne Parameter)
 
-If you do not define a constructor, the class gets an implicit default constructor that initializes all fields to their default values (`0`, `0.0`, `false`, `""`, `null`).
+Wenn Sie keinen Konstruktor definieren, erhaelt die Klasse einen impliziten Standardkonstruktor, der alle Felder mit ihren Standardwerten initialisiert (`0`, `0.0`, `false`, `""`, `null`).
 
 ```c
 class SimpleConfig
 {
-    int m_MaxPlayers;      // initialized to 0
-    float m_SpawnDelay;    // initialized to 0.0
-    string m_ServerName;   // initialized to ""
-    bool m_PvPEnabled;     // initialized to false
+    int m_MaxPlayers;      // initialisiert mit 0
+    float m_SpawnDelay;    // initialisiert mit 0.0
+    string m_ServerName;   // initialisiert mit ""
+    bool m_PvPEnabled;     // initialisiert mit false
 }
 
 void Test()
 {
     SimpleConfig cfg = new SimpleConfig;
-    // All fields are at their defaults
+    // Alle Felder haben ihre Standardwerte
     Print(cfg.m_MaxPlayers);  // 0
 }
 ```
 
 ### Konstruktor-Ueberladung
 
-You can define multiple constructors with different parameter lists:
+Sie koennen mehrere Konstruktoren mit unterschiedlichen Parameterlisten definieren:
 
 ```c
 class DamageEvent
@@ -151,7 +151,7 @@ class DamageEvent
     protected string m_Source;
     protected vector m_Position;
 
-    // Constructor with all parameters
+    // Konstruktor mit allen Parametern
     void DamageEvent(float amount, string source, vector pos)
     {
         m_Amount = amount;
@@ -159,11 +159,11 @@ class DamageEvent
         m_Position = pos;
     }
 
-    // Simpler constructor with defaults
+    // Einfacherer Konstruktor mit Standardwerten
     void DamageEvent(float amount)
     {
         m_Amount = amount;
-        m_Source = "Unknown";
+        m_Source = "Unbekannt";
         m_Position = vector.Zero;
     }
 }
@@ -179,27 +179,27 @@ void Test()
 
 ## Zugriffsmodifikatoren
 
-Access modifiers control who can see and use fields and methods.
+Zugriffsmodifikatoren steuern, wer Felder und Methoden sehen und verwenden kann.
 
-| Modifier | Accessible From | Syntax |
+| Modifikator | Zugaenglich von | Syntax |
 |----------|----------------|--------|
-| `private` | Only the declaring class | `private int m_Secret;` |
-| `protected` | Declaring class + all subclasses | `protected int m_Health;` |
-| *(none)* | Everywhere (public) | `int m_Value;` |
+| `private` | Nur der deklarierende Klasse | `private int m_Secret;` |
+| `protected` | Deklarierende Klasse + alle Unterklassen | `protected int m_Health;` |
+| *(keiner)* | Ueberall (oeffentlich) | `int m_Value;` |
 
-There is no explicit `public` keyword --- everything without `private` or `protected` is public by default.
+Es gibt kein explizites `public`-Schluesselwort --- alles ohne `private` oder `protected` ist standardmaessig oeffentlich.
 
 ```c
 class BaseVehicle
 {
-    // Public: anyone can access
+    // Oeffentlich: jeder kann zugreifen
     string m_DisplayName;
 
-    // Protected: this class and subclasses only
+    // Geschuetzt: nur diese Klasse und Unterklassen
     protected float m_Fuel;
     protected float m_MaxFuel;
 
-    // Private: only this exact class
+    // Privat: nur genau diese Klasse
     private int m_InternalState;
 
     void BaseVehicle(string name, float maxFuel)
@@ -210,19 +210,19 @@ class BaseVehicle
         m_InternalState = 0;
     }
 
-    // Public method
+    // Oeffentliche Methode
     float GetFuelPercent()
     {
         return (m_Fuel / m_MaxFuel) * 100.0;
     }
 
-    // Protected method: subclasses can call this
+    // Geschuetzte Methode: Unterklassen koennen diese aufrufen
     protected void ConsumeFuel(float amount)
     {
         m_Fuel = Math.Clamp(m_Fuel - amount, 0, m_MaxFuel);
     }
 
-    // Private method: only this class
+    // Private Methode: nur diese Klasse
     private void UpdateInternalState()
     {
         m_InternalState++;
@@ -232,7 +232,7 @@ class BaseVehicle
 
 ### Best Practice: Kapselung
 
-Expose fields through methods (getters/setters) rather than making them public. This lets you add validation, logging, or side effects later without breaking code that uses the class.
+Stellen Sie Felder ueber Methoden (Getter/Setter) bereit, anstatt sie oeffentlich zu machen. So koennen Sie spaeter Validierung, Protokollierung oder Nebeneffekte hinzufuegen, ohne Code zu brechen, der die Klasse verwendet.
 
 ```c
 class PlayerStats
@@ -252,13 +252,13 @@ class PlayerStats
         return m_Health;
     }
 
-    // Setter with validation
+    // Setter mit Validierung
     void SetHealth(float value)
     {
         m_Health = Math.Clamp(value, 0, m_MaxHealth);
     }
 
-    // Convenience methods
+    // Komfortmethoden
     void TakeDamage(float amount)
     {
         SetHealth(m_Health - amount);
@@ -280,25 +280,25 @@ class PlayerStats
 
 ## Vererbung
 
-Inheritance lets you create a new class based on an existing one. The child class inherits all fields and methods from the parent, and can add new ones or override existing behavior.
+Vererbung ermoeglicht es, eine neue Klasse basierend auf einer bestehenden zu erstellen. Die Kindklasse erbt alle Felder und Methoden der Elternklasse und kann neue hinzufuegen oder bestehendes Verhalten ueberschreiben.
 
-### Syntax: `extends` or `:`
+### Syntax: `extends` oder `:`
 
-Enforce Script supports two syntaxes for inheritance. Both are equivalent:
+Enforce Script unterstuetzt zwei Syntaxen fuer Vererbung. Beide sind aequivalent:
 
 ```c
-// Syntax 1: extends keyword (preferred, more readable)
+// Syntax 1: extends-Schluesselwort (bevorzugt, besser lesbar)
 class Car extends BaseVehicle
 {
 }
 
-// Syntax 2: colon (C++ style, also common in DayZ code)
+// Syntax 2: Doppelpunkt (C++-Stil, auch haeufig in DayZ-Code)
 class Truck : BaseVehicle
 {
 }
 ```
 
-### Basic Vererbung Example
+### Grundlegendes Vererbungsbeispiel
 
 ```c
 class Animal
@@ -319,7 +319,7 @@ class Animal
 
     void Speak()
     {
-        Print(m_Name + " makes a sound");
+        Print(m_Name + " macht ein Geraeusch");
     }
 }
 
@@ -329,8 +329,8 @@ class Dog extends Animal
 
     void Dog(string name, string breed)
     {
-        // Note: parent constructor is called automatically with no args,
-        // or you can initialize parent fields directly since they are protected
+        // Hinweis: der Elternkonstruktor wird automatisch ohne Argumente aufgerufen,
+        // oder Sie koennen Elternfelder direkt initialisieren, da sie protected sind
         m_Name = name;
         m_Health = 100.0;
         m_Breed = breed;
@@ -341,39 +341,39 @@ class Dog extends Animal
         return m_Breed;
     }
 
-    // New method only in Dog
+    // Neue Methode nur in Dog
     void Fetch()
     {
-        Print(m_Name + " fetches the stick!");
+        Print(m_Name + " holt den Stock!");
     }
 }
 
 void Test()
 {
-    Dog rex = new Dog("Rex", "German Shepherd");
-    rex.Speak();         // Inherited from Animal: "Rex makes a sound"
-    rex.Fetch();         // Dog's own method: "Rex fetches the stick!"
-    Print(rex.GetName()); // Inherited: "Rex"
-    Print(rex.GetBreed()); // Dog's own: "German Shepherd"
+    Dog rex = new Dog("Rex", "Deutscher Schaeferhund");
+    rex.Speak();         // Von Animal geerbt: "Rex macht ein Geraeusch"
+    rex.Fetch();         // Dogs eigene Methode: "Rex holt den Stock!"
+    Print(rex.GetName()); // Geerbt: "Rex"
+    Print(rex.GetBreed()); // Dogs eigene: "Deutscher Schaeferhund"
 }
 ```
 
 ### Nur Einfachvererbung
 
-Enforce Script supports **single inheritance only**. A class can extend exactly one parent. There is no multiple inheritance, no interfaces, and no mixins.
+Enforce Script unterstuetzt **nur Einfachvererbung**. Eine Klasse kann genau eine Elternklasse erweitern. Es gibt keine Mehrfachvererbung, keine Interfaces und keine Mixins.
 
 ```c
 class A { }
-class B extends A { }     // OK: single parent
-// class C extends A, B { }  // ERROR: multiple inheritance not supported
-class D extends B { }     // OK: B extends A, D extends B (inheritance chain)
+class B extends A { }     // OK: einzelne Elternklasse
+// class C extends A, B { }  // FEHLER: Mehrfachvererbung nicht unterstuetzt
+class D extends B { }     // OK: B erweitert A, D erweitert B (Vererbungskette)
 ```
 
 ---
 
 ## Methoden ueberschreiben
 
-When a subclass needs to change the behavior of an inherited method, it uses the `override` keyword. The compiler checks that the method signature matches a method in the parent class.
+Wenn eine Unterklasse das Verhalten einer geerbten Methode aendern muss, verwendet sie das `override`-Schluesselwort. Der Compiler prueft, ob die Methodensignatur mit einer Methode in der Elternklasse uebereinstimmt.
 
 ```c
 class Weapon
@@ -389,7 +389,7 @@ class Weapon
 
     float CalculateDamage(float distance)
     {
-        // Base damage, no falloff
+        // Basisschaden, kein Abfall
         return m_Damage;
     }
 
@@ -410,24 +410,24 @@ class Rifle extends Weapon
         m_MaxRange = maxRange;
     }
 
-    // Override: change damage calculation to include distance falloff
+    // Override: Schadensberechnung mit Entfernungsabfall aendern
     override float CalculateDamage(float distance)
     {
         float falloff = Math.Clamp(1.0 - (distance / m_MaxRange), 0.1, 1.0);
         return m_Damage * falloff;
     }
 
-    // Override: add range info
+    // Override: Reichweiteninfo hinzufuegen
     override string GetInfo()
     {
-        return string.Format("%1 (Dmg: %2, Range: %3m)", m_Name, m_Damage, m_MaxRange);
+        return string.Format("%1 (Dmg: %2, Reichweite: %3m)", m_Name, m_Damage, m_MaxRange);
     }
 }
 ```
 
-### The `super` Keyword
+### Das `super`-Schluesselwort
 
-`super` refers to the parent class. Use it to call the parent's version of a method, then add your own logic on top. This is critical --- especially in [modded classes](04-modded-classes.md).
+`super` verweist auf die Elternklasse. Verwenden Sie es, um die Version der Elternmethode aufzurufen und dann Ihre eigene Logik hinzuzufuegen. Dies ist entscheidend --- insbesondere bei [Modded-Klassen](04-modded-classes.md).
 
 ```c
 class BaseLogger
@@ -442,10 +442,10 @@ class TimestampLogger extends BaseLogger
 {
     override void Log(string message)
     {
-        // Call parent's Log first
+        // Zuerst das Log der Elternklasse aufrufen
         super.Log(message);
 
-        // Then add timestamp logging
+        // Dann Zeitstempel-Protokollierung hinzufuegen
         int hour, minute, second;
         GetHourMinuteSecond(hour, minute, second);
         Print(string.Format("[%1:%2:%3] %4", hour, minute, second, message));
@@ -453,9 +453,9 @@ class TimestampLogger extends BaseLogger
 }
 ```
 
-### `this` Keyword
+### Das `this`-Schluesselwort
 
-`this` refers to the current object instance. It is usually implicit (you do not need to write it), but can be useful for clarity or when passing the current object to another function.
+`this` verweist auf die aktuelle Objektinstanz. Es ist normalerweise implizit (Sie muessen es nicht schreiben), kann aber zur Klarheit nuetzlich sein oder wenn Sie das aktuelle Objekt an eine andere Funktion uebergeben.
 
 ```c
 class EventManager
@@ -467,7 +467,7 @@ class MyPlugin
 {
     void Init(EventManager mgr)
     {
-        // Pass 'this' (the current MyPlugin instance) to the manager
+        // 'this' (die aktuelle MyPlugin-Instanz) an den Manager uebergeben
         mgr.Register(this);
     }
 }
@@ -477,34 +477,34 @@ class MyPlugin
 
 ## Statische Methoden und Felder
 
-Static members belong to the class itself, not to any instance. They are accessed using the class name, not an object variable.
+Statische Mitglieder gehoeren zur Klasse selbst, nicht zu einer Instanz. Sie werden ueber den Klassennamen aufgerufen, nicht ueber eine Objektvariable.
 
-### Static Fields
+### Statische Felder
 
 ```c
 class GameConfig
 {
-    // Static fields: shared across all instances (and accessible without an instance)
+    // Statische Felder: werden ueber alle Instanzen geteilt (und ohne Instanz zugaenglich)
     static int s_MaxPlayers = 60;
     static float s_TickRate = 30.0;
     static string s_ServerName = "My Server";
 
-    // Regular (instance) field
+    // Normales (Instanz-) Feld
     protected bool m_IsLoaded;
 }
 
 void UseStaticFields()
 {
-    // Access without creating an instance
+    // Zugriff ohne Instanzerstellung
     Print(GameConfig.s_MaxPlayers);     // 60
     Print(GameConfig.s_ServerName);     // "My Server"
 
-    // Modify
+    // Modifizieren
     GameConfig.s_MaxPlayers = 40;
 }
 ```
 
-### Static Methods
+### Statische Methoden
 
 ```c
 class MathUtils
@@ -538,12 +538,12 @@ void Test()
 
 ### Das Singleton-Muster
 
-The most common use of static fields in DayZ mods is the singleton pattern: a class that has exactly one instance, accessible globally.
+Die haeufigste Verwendung statischer Felder in DayZ-Mods ist das Singleton-Muster: eine Klasse, die genau eine Instanz hat, die global zugaenglich ist.
 
 ```c
 class MyModManager
 {
-    // Static reference to the single instance
+    // Statische Referenz auf die einzelne Instanz
     private static ref MyModManager s_Instance;
 
     protected bool m_Initialized;
@@ -555,7 +555,7 @@ class MyModManager
         m_Data = new array<string>;
     }
 
-    // Static getter for the singleton
+    // Statischer Getter fuer das Singleton
     static MyModManager GetInstance()
     {
         if (!s_Instance)
@@ -570,17 +570,17 @@ class MyModManager
             return;
 
         m_Initialized = true;
-        Print("[MyMod] Manager initialized");
+        Print("[MyMod] Manager initialisiert");
     }
 
-    // Static cleanup
+    // Statische Bereinigung
     static void Destroy()
     {
         s_Instance = null;
     }
 }
 
-// Usage from anywhere:
+// Verwendung von ueberall:
 void SomeFunction()
 {
     MyModManager.GetInstance().Init();
@@ -589,16 +589,16 @@ void SomeFunction()
 
 ---
 
-## Praxisbeispiel: Custom Item Class
+## Praxisbeispiel: Eigene Item-Klasse
 
-Here is a complete example showing a custom item class hierarchy in the style of DayZ modding. This demonstrates everything covered in this chapter.
+Hier ist ein vollstaendiges Beispiel einer eigenen Item-Klassenhierarchie im Stil des DayZ-Moddings. Dies demonstriert alles, was in diesem Kapitel behandelt wurde.
 
 ```c
-// Base class for all custom medical items
+// Basisklasse fuer alle eigenen Medizin-Items
 class CustomMedicalBase extends ItemBase
 {
     protected float m_HealAmount;
-    protected float m_UseTime;      // seconds to use
+    protected float m_UseTime;      // Sekunden bis zur Verwendung
     protected bool m_RequiresBandage;
 
     void CustomMedicalBase()
@@ -623,18 +623,18 @@ class CustomMedicalBase extends ItemBase
         return m_RequiresBandage;
     }
 
-    // Can be overridden by subclasses
+    // Kann von Unterklassen ueberschrieben werden
     void OnApplied(PlayerBase player)
     {
         if (!player)
             return;
 
         player.AddHealth("", "Health", m_HealAmount);
-        Print(string.Format("[Medical] %1 applied, healed %2", GetType(), m_HealAmount));
+        Print(string.Format("[Medical] %1 angewendet, %2 geheilt", GetType(), m_HealAmount));
     }
 }
 
-// Specific medical item: Bandage
+// Spezifisches Medizin-Item: Bandage
 class CustomBandage extends CustomMedicalBase
 {
     void CustomBandage()
@@ -647,13 +647,13 @@ class CustomBandage extends CustomMedicalBase
     {
         super.OnApplied(player);
 
-        // Additional bandage-specific effect: stop bleeding
-        // (simplified example)
-        Print("[Medical] Bleeding stopped");
+        // Zusaetzlicher bandagenspezifischer Effekt: Blutung stoppen
+        // (vereinfachtes Beispiel)
+        Print("[Medical] Blutung gestoppt");
     }
 }
 
-// Specific medical item: First Aid Kit (heals more, takes longer)
+// Spezifisches Medizin-Item: Erste-Hilfe-Kasten (heilt mehr, dauert laenger)
 class CustomFirstAidKit extends CustomMedicalBase
 {
     private int m_UsesRemaining;
@@ -674,21 +674,21 @@ class CustomFirstAidKit extends CustomMedicalBase
     {
         if (m_UsesRemaining <= 0)
         {
-            Print("[Medical] First Aid Kit is empty!");
+            Print("[Medical] Erste-Hilfe-Kasten ist leer!");
             return;
         }
 
         super.OnApplied(player);
         m_UsesRemaining--;
 
-        Print(string.Format("[Medical] Uses remaining: %1", m_UsesRemaining));
+        Print(string.Format("[Medical] Verbleibende Verwendungen: %1", m_UsesRemaining));
     }
 }
 ```
 
-### config.cpp for Custom Items
+### config.cpp fuer eigene Items
 
-The class hierarchy in script must match the `config.cpp` inheritance:
+Die Klassenhierarchie im Script muss mit der `config.cpp`-Vererbung uebereinstimmen:
 
 ```cpp
 class CfgVehicles
@@ -697,13 +697,13 @@ class CfgVehicles
 
     class CustomMedicalBase : ItemBase
     {
-        scope = 0;  // 0 = abstract, cannot be spawned
+        scope = 0;  // 0 = abstrakt, kann nicht gespawnt werden
         displayName = "";
     };
 
     class CustomBandage : CustomMedicalBase
     {
-        scope = 2;  // 2 = public, can be spawned
+        scope = 2;  // 2 = oeffentlich, kann gespawnt werden
         displayName = "Custom Bandage";
         descriptionShort = "A sterile bandage for wound treatment.";
         model = "\MyMod\data\bandage.p3d";
@@ -725,68 +725,68 @@ class CfgVehicles
 
 ## Die DayZ-Klassenhierarchie
 
-Understanding the vanilla class hierarchy is essential for modding. Here are the most important classes you will inherit from or interact with:
+Das Verstaendnis der Vanilla-Klassenhierarchie ist wesentlich fuer das Modding. Hier sind die wichtigsten Klassen, von denen Sie erben oder mit denen Sie interagieren werden:
 
 ```
-Class                          // Root of all reference types
-  Managed                      // Prevents engine ref-counting (use for pure script classes)
-  IEntity                      // Engine entity base
-    Object                     // Anything with a position in the world
+Class                          // Wurzel aller Referenztypen
+  Managed                      // Verhindert Engine-Referenzzaehlung (fuer reine Skriptklassen)
+  IEntity                      // Engine-Entity-Basis
+    Object                     // Alles mit einer Position in der Welt
       Entity
-        EntityAI               // Has inventory, health, actions
+        EntityAI               // Hat Inventar, Gesundheit, Aktionen
           InventoryItem
-            ItemBase           // ALL items (inherit from this for custom items)
-              Weapon_Base      // All weapons
-              Magazine_Base    // All magazines
-              Clothing_Base    // All clothing
+            ItemBase           // ALLE Items (hiervon fuer eigene Items erben)
+              Weapon_Base      // Alle Waffen
+              Magazine_Base    // Alle Magazine
+              Clothing_Base    // Alle Kleidung
           Transport
-            CarScript          // All vehicles
+            CarScript          // Alle Fahrzeuge
           DayZCreatureAI
             DayZInfected       // Zombies
-            DayZAnimal         // Animals
+            DayZAnimal         // Tiere
           Man
             DayZPlayer
-              PlayerBase       // THE player class (modded constantly)
-                SurvivorBase   // Character appearance
+              PlayerBase       // DIE Spielerklasse (wird staendig gemoddet)
+                SurvivorBase   // Charaktererscheinung
 ```
 
 ### Haeufige Basisklassen fuer Modding
 
-| If you want to create... | Extend... |
+| Wenn Sie erstellen moechten... | Erweitern Sie... |
 |--------------------------|-----------|
-| A new item | `ItemBase` |
-| A new weapon | `Weapon_Base` |
-| A new piece of clothing | `Clothing_Base` |
-| A new vehicle | `CarScript` |
-| A UI element | `UIScriptedMenu` or `ScriptedWidgetEventHandler` |
-| A manager/system | `Managed` |
-| A config data class | `Managed` |
-| A mission hook | `MissionServer` or `MissionGameplay` (via `modded class`) |
+| Ein neues Item | `ItemBase` |
+| Eine neue Waffe | `Weapon_Base` |
+| Ein neues Kleidungsstueck | `Clothing_Base` |
+| Ein neues Fahrzeug | `CarScript` |
+| Ein UI-Element | `UIScriptedMenu` oder `ScriptedWidgetEventHandler` |
+| Einen Manager/System | `Managed` |
+| Eine Config-Datenklasse | `Managed` |
+| Einen Mission-Hook | `MissionServer` oder `MissionGameplay` (via `modded class`) |
 
 ---
 
 ## Haeufige Fehler
 
-### 1. Forgetting `ref` for Owned Objects
+### 1. `ref` fuer besessene Objekte vergessen
 
-When a class owns another object (creates it, responsible for its lifetime), declare the field as `ref`. Without `ref`, the object may be garbage collected unexpectedly.
+Wenn eine Klasse ein anderes Objekt besitzt (es erstellt und fuer dessen Lebensdauer verantwortlich ist), deklarieren Sie das Feld als `ref`. Ohne `ref` kann das Objekt unerwartet vom Garbage Collector erfasst werden.
 
 ```c
-// BAD: m_Data might be garbage collected
+// SCHLECHT: m_Data koennte vom Garbage Collector erfasst werden
 class BadManager
 {
-    array<string> m_Data;  // raw pointer, no ownership
+    array<string> m_Data;  // Rohzeiger, kein Besitz
 
     void BadManager()
     {
-        m_Data = new array<string>;  // object might get collected
+        m_Data = new array<string>;  // Objekt koennte erfasst werden
     }
 }
 
-// GOOD: ref ensures the manager keeps m_Data alive
+// GUT: ref stellt sicher, dass der Manager m_Data am Leben haelt
 class GoodManager
 {
-    ref array<string> m_Data;  // strong reference, owns the object
+    ref array<string> m_Data;  // Starke Referenz, besitzt das Objekt
 
     void GoodManager()
     {
@@ -795,9 +795,9 @@ class GoodManager
 }
 ```
 
-### 2. Forgetting `override` Keyword
+### 2. `override`-Schluesselwort vergessen
 
-If you intend to override a parent method but forget the `override` keyword, you get a **new** method that hides the parent's method instead of replacing it. The compiler may warn about this.
+Wenn Sie beabsichtigen, eine Elternmethode zu ueberschreiben, aber das `override`-Schluesselwort vergessen, erhalten Sie eine **neue** Methode, die die Elternmethode verbirgt, anstatt sie zu ersetzen. Der Compiler kann darueber warnen.
 
 ```c
 class Parent
@@ -807,37 +807,37 @@ class Parent
 
 class Child extends Parent
 {
-    // BAD: creates a new method, doesn't override
+    // SCHLECHT: erstellt eine neue Methode, ueberschreibt nicht
     void DoWork() { Print("Child"); }
 
-    // GOOD: properly overrides
+    // GUT: ueberschreibt korrekt
     override void DoWork() { Print("Child"); }
 }
 ```
 
-### 3. Not Calling `super` in Overrides
+### 3. `super` bei Overrides nicht aufrufen
 
-When you override a method, the parent's code is NOT automatically called. If you skip `super`, you lose the parent's behavior --- which can break functionality, especially in DayZ's deep inheritance chains.
+Wenn Sie eine Methode ueberschreiben, wird der Code der Elternklasse NICHT automatisch aufgerufen. Wenn Sie `super` weglassen, verlieren Sie das Verhalten der Elternklasse --- was die Funktionalitaet brechen kann, besonders in den tiefen Vererbungsketten von DayZ.
 
 ```c
 class Parent
 {
     void Init()
     {
-        // Critical initialization happens here
+        // Kritische Initialisierung geschieht hier
         Print("Parent.Init()");
     }
 }
 
 class Child extends Parent
 {
-    // BAD: Parent.Init() never runs
+    // SCHLECHT: Parent.Init() wird nie ausgefuehrt
     override void Init()
     {
         Print("Child.Init()");
     }
 
-    // GOOD: Parent.Init() runs first, then child adds behavior
+    // GUT: Parent.Init() wird zuerst ausgefuehrt, dann fuegt Child Verhalten hinzu
     override void Init()
     {
         super.Init();
@@ -846,41 +846,41 @@ class Child extends Parent
 }
 ```
 
-### 4. Ref Cycles Cause Memory Leaks
+### 4. Ref-Zyklen verursachen Speicherlecks
 
-If object A holds a `ref` to object B, and object B holds a `ref` to object A, neither can ever be freed. One side must use a raw (non-ref) pointer.
+Wenn Objekt A eine `ref` auf Objekt B haelt und Objekt B eine `ref` auf Objekt A haelt, kann keines jemals freigegeben werden. Eine Seite muss einen rohen (nicht-ref) Zeiger verwenden.
 
 ```c
-// BAD: ref cycle, neither object can be freed
+// SCHLECHT: ref-Zyklus, keines der Objekte kann freigegeben werden
 class Parent
 {
     ref Child m_Child;
 }
 class Child
 {
-    ref Parent m_Parent;  // LEAK: circular ref
+    ref Parent m_Parent;  // LECK: zirkulaere ref
 }
 
-// GOOD: child holds a raw pointer to parent
+// GUT: Kind haelt einen Rohzeiger auf das Elternobjekt
 class Parent2
 {
     ref Child2 m_Child;
 }
 class Child2
 {
-    Parent2 m_Parent;  // raw pointer, no ref -- breaks the cycle
+    Parent2 m_Parent;  // Rohzeiger, kein ref -- bricht den Zyklus
 }
 ```
 
-### 5. Trying to Use Multiple Vererbung
+### 5. Versuch, Mehrfachvererbung zu verwenden
 
-Enforce Script does not support multiple inheritance. If you need to share behavior across unrelated classes, use composition (hold a reference to a helper object) or static utility methods.
+Enforce Script unterstuetzt keine Mehrfachvererbung. Wenn Sie Verhalten zwischen unverwandten Klassen teilen muessen, verwenden Sie Komposition (eine Referenz auf ein Hilfsobjekt halten) oder statische Hilfsmethoden.
 
 ```c
-// CANNOT DO THIS:
-// class FlyingCar extends Car, Aircraft { }  // ERROR
+// GEHT NICHT:
+// class FlyingCar extends Car, Aircraft { }  // FEHLER
 
-// Instead, use composition:
+// Stattdessen Komposition verwenden:
 class FlyingCar extends Car
 {
     protected ref FlightController m_Flight;
@@ -901,50 +901,50 @@ class FlyingCar extends Car
 
 ## Uebungsaufgaben
 
-### Uebung 1: Shape Hierarchy
-Create a base class `Shape` with a method `float GetArea()`. Create subclasses `Circle` (radius), `Rectangle` (width, height), and `Triangle` (base, height) that override `GetArea()`. Print the area of each.
+### Uebung 1: Form-Hierarchie
+Erstellen Sie eine Basisklasse `Shape` mit einer Methode `float GetArea()`. Erstellen Sie Unterklassen `Circle` (Radius), `Rectangle` (Breite, Hoehe) und `Triangle` (Basis, Hoehe), die `GetArea()` ueberschreiben. Geben Sie die Flaeche jeder Form aus.
 
-### Uebung 2: Logger System
-Create a `Logger` class with a `Log(string message)` method that prints to console. Create `FileLogger` that extends it and also writes to a conceptual file (just print with a `[FILE]` prefix). Create `DiscordLogger` that extends `Logger` and adds a `[DISCORD]` prefix. Each should call `super.Log()`.
+### Uebung 2: Logger-System
+Erstellen Sie eine `Logger`-Klasse mit einer `Log(string message)`-Methode, die auf die Konsole ausgibt. Erstellen Sie `FileLogger`, der diese erweitert und auch in eine konzeptuelle Datei schreibt (geben Sie einfach mit einem `[FILE]`-Praefix aus). Erstellen Sie `DiscordLogger`, der `Logger` erweitert und ein `[DISCORD]`-Praefix hinzufuegt. Jeder sollte `super.Log()` aufrufen.
 
-### Uebung 3: Inventory Item
-Create a class `CustomItem` with protected fields for `m_Weight`, `m_Value`, and `m_Condition` (float 0-1). Include:
-- A constructor that takes all three values
-- Getters for each field
-- A method `Degrade(float amount)` that reduces condition (clamped to 0)
-- A method `GetEffectiveValue()` that returns `m_Value * m_Condition`
+### Uebung 3: Inventar-Item
+Erstellen Sie eine Klasse `CustomItem` mit geschuetzten Feldern fuer `m_Weight`, `m_Value` und `m_Condition` (float 0-1). Enthalten Sie:
+- Einen Konstruktor, der alle drei Werte annimmt
+- Getter fuer jedes Feld
+- Eine Methode `Degrade(float amount)`, die die Kondition reduziert (auf 0 begrenzt)
+- Eine Methode `GetEffectiveValue()`, die `m_Value * m_Condition` zurueckgibt
 
-Then create `CustomWeaponItem` that extends it, adding `m_Damage` and an override of `GetEffectiveValue()` that factors in damage.
+Erstellen Sie dann `CustomWeaponItem`, das dies erweitert und `m_Damage` hinzufuegt sowie `GetEffectiveValue()` ueberschreibt, um den Schaden einzubeziehen.
 
-### Uebung 4: Singleton Manager
-Implement a `SessionManager` singleton that tracks player join/leave events. It should store join times in a map and provide methods:
+### Uebung 4: Singleton-Manager
+Implementieren Sie einen `SessionManager`-Singleton, der Spieler-Beitreten/Verlassen-Ereignisse verfolgt. Er sollte Beitrittszeiten in einer Map speichern und Methoden bereitstellen:
 - `OnPlayerJoin(string uid, string name)`
 - `OnPlayerLeave(string uid)`
 - `int GetOnlineCount()`
-- `float GetSessionDuration(string uid)` (in seconds)
+- `float GetSessionDuration(string uid)` (in Sekunden)
 
-### Uebung 5: Chain of Command
-Create an abstract `Handler` class with `protected Handler m_Next` and methods `SetNext(Handler next)` and `void Handle(string request)`. Create three concrete handlers (`AuthHandler`, `PermissionHandler`, `ActionHandler`) that either handle the request or pass it to `m_Next`. Demonstrate the chain.
+### Uebung 5: Befehlskette
+Erstellen Sie eine abstrakte `Handler`-Klasse mit `protected Handler m_Next` und Methoden `SetNext(Handler next)` und `void Handle(string request)`. Erstellen Sie drei konkrete Handler (`AuthHandler`, `PermissionHandler`, `ActionHandler`), die entweder die Anfrage bearbeiten oder an `m_Next` weitergeben. Demonstrieren Sie die Kette.
 
 ---
 
 ## Zusammenfassung
 
-| Concept | Syntax | Notes |
+| Konzept | Syntax | Hinweise |
 |---------|--------|-------|
-| Class declaration | `class Name { }` | Public members by default |
-| Inheritance | `class Child extends Parent` | Single inheritance only; also `: Parent` |
-| Constructor | `void ClassName()` | Same name as class |
-| Destructor | `void ~ClassName()` | Called on deletion |
-| Private | `private int m_Field;` | This class only |
-| Protected | `protected int m_Field;` | This class + subclasses |
-| Public | `int m_Field;` | No keyword needed (default) |
-| Override | `override void Method()` | Must match parent signature |
-| Super call | `super.Method()` | Calls parent's version |
-| Static field | `static int s_Count;` | Shared across all instances |
-| Static method | `static void DoThing()` | Called via `ClassName.DoThing()` |
-| `ref` | `ref MyClass m_Obj;` | Strong reference (owns the object) |
+| Klassendeklaration | `class Name { }` | Standardmaessig oeffentliche Mitglieder |
+| Vererbung | `class Child extends Parent` | Nur Einfachvererbung; auch `: Parent` |
+| Konstruktor | `void ClassName()` | Gleicher Name wie die Klasse |
+| Destruktor | `void ~ClassName()` | Wird beim Loeschen aufgerufen |
+| Privat | `private int m_Field;` | Nur diese Klasse |
+| Geschuetzt | `protected int m_Field;` | Diese Klasse + Unterklassen |
+| Oeffentlich | `int m_Field;` | Kein Schluesselwort noetig (Standard) |
+| Override | `override void Method()` | Muss mit Elternsignatur uebereinstimmen |
+| Super-Aufruf | `super.Method()` | Ruft die Version der Elternklasse auf |
+| Statisches Feld | `static int s_Count;` | Wird ueber alle Instanzen geteilt |
+| Statische Methode | `static void DoThing()` | Aufruf ueber `ClassName.DoThing()` |
+| `ref` | `ref MyClass m_Obj;` | Starke Referenz (besitzt das Objekt) |
 
 ---
 
-[Startseite](../../README.md) | [<< Zurueck: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Classes & Inheritance** | [Next: Modded Classes >>](04-modded-classes.md)
+[Startseite](../../README.md) | [<< Zurueck: Arrays, Maps & Sets](02-arrays-maps-sets.md) | **Klassen & Vererbung** | [Weiter: Modded-Klassen >>](04-modded-classes.md)
