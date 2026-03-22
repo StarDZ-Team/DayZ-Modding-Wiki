@@ -1,125 +1,125 @@
-# Chapter 4.4: Audio (.ogg, .wss)
+# Chapter 4.4: オーディオ (.ogg, .wss)
 
-[Home](../../README.md) | [<< Previous: Materials](03-materials.md) | **Audio** | [Next: DayZ Tools Workflow >>](05-dayz-tools.md)
+[Home](../../README.md) | [<< 前: マテリアル](03-materials.md) | **オーディオ** | [次: DayZ Tools ワークフロー >>](05-dayz-tools.md)
 
 ---
 
 ## はじめに
 
-Sound design is one of the most immersive aspects of DayZ modding. From the crack of a rifle to the ambient wind in a forest, audio brings the game world to life. DayZ uses **OGG Vorbis** as its primary audio format and configures sound playback through a layered system of **CfgSoundShaders** and **CfgSoundSets** defined in `config.cpp`. Understanding this pipeline -- from raw audio file to spatialized in-game sound -- is essential for any mod that introduces custom weapons, vehicles, ambient effects, or UI feedback.
+サウンドデザインは、DayZ Moddingにおいて最も没入感を高める要素の一つです。ライフルの発砲音から森の環境風音まで、オーディオはゲームの世界に命を吹き込みます。DayZは主要なオーディオフォーマットとして**OGG Vorbis**を使用し、`config.cpp`で定義された**CfgSoundShaders**と**CfgSoundSets**の階層システムを通じてサウンド再生を設定します。生のオーディオファイルからゲーム内の空間音声化まで、このパイプラインを理解することは、カスタム武器、車両、環境エフェクト、またはUIフィードバックを導入するあらゆるMODにとって不可欠です。
 
-This chapter covers audio formats, the config-driven sound system, 3D positional audio, volume and distance attenuation, looping, and the complete workflow for adding custom sounds to a DayZ mod.
+この章では、オーディオフォーマット、設定駆動型のサウンドシステム、3Dポジショナルオーディオ、音量と距離減衰、ループ、そしてDayZ MODにカスタムサウンドを追加するための完全なワークフローを扱います。
 
 ---
 
 ## 目次
 
-- [Audio Formats](#audio-formats)
-- [CfgSoundShaders and CfgSoundSets](#cfgsoundshaders-and-cfgsoundsets)
-- [Sound Categories](#sound-categories)
-- [3D Positional Audio](#3d-positional-audio)
-- [Volume and Distance Attenuation](#volume-and-distance-attenuation)
-- [Looping Sounds](#looping-sounds)
-- [Adding Custom Sounds to a Mod](#adding-custom-sounds-to-a-mod)
-- [Audio Production Tools](#audio-production-tools)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [オーディオフォーマット](#audio-formats)
+- [CfgSoundShadersとCfgSoundSets](#cfgsoundshaders-and-cfgsoundsets)
+- [サウンドカテゴリ](#sound-categories)
+- [3Dポジショナルオーディオ](#3d-positional-audio)
+- [音量と距離減衰](#volume-and-distance-attenuation)
+- [ループサウンド](#looping-sounds)
+- [MODへのカスタムサウンドの追加](#adding-custom-sounds-to-a-mod)
+- [オーディオ制作ツール](#audio-production-tools)
+- [よくある間違い](#common-mistakes)
+- [ベストプラクティス](#best-practices)
 
 ---
 
-## Audio Formats
+## オーディオフォーマット
 
-### OGG Vorbis (Primary Format)
+### OGG Vorbis（主要フォーマット）
 
-**OGG Vorbis** is DayZ's primary audio format. All custom sounds should be exported as `.ogg` files.
+**OGG Vorbis**はDayZの主要オーディオフォーマットです。すべてのカスタムサウンドは`.ogg`ファイルとしてエクスポートする必要があります。
 
-| Property | Value |
+| プロパティ | 値 |
 |----------|-------|
-| **Extension** | `.ogg` |
-| **Codec** | Vorbis (lossy compression) |
-| **Sample rates** | 44100 Hz (standard), 22050 Hz (acceptable for ambient) |
-| **Bit depth** | Managed by encoder (quality setting) |
-| **Channels** | Mono (for 3D sounds) or Stereo (for music/UI) |
-| **Quality range** | -1 to 10 (5-7 recommended for game audio) |
+| **拡張子** | `.ogg` |
+| **コーデック** | Vorbis（非可逆圧縮） |
+| **サンプルレート** | 44100 Hz（標準）、22050 Hz（環境音には許容範囲） |
+| **ビット深度** | エンコーダーが管理（品質設定） |
+| **チャンネル** | モノラル（3Dサウンド用）またはステレオ（音楽/UI用） |
+| **品質範囲** | -1〜10（ゲームオーディオには5-7を推奨） |
 
-### Key Rules for OGG in DayZ
+### DayZにおけるOGGの主要ルール
 
-- **3D positional sounds MUST be mono.** If you provide a stereo file for a 3D sound, the engine may not spatialize it correctly or may ignore one channel.
-- **UI and music sounds can be stereo.** Non-positional sounds (menus, HUD feedback, background music) work correctly in stereo.
-- **Sample rate should be 44100 Hz** for most sounds. Lower rates (22050 Hz) can be used for distant ambient sounds to save space.
+- **3Dポジショナルサウンドはモノラルである必要があります。** 3Dサウンドにステレオファイルを使用すると、エンジンが正しく空間音声化できない場合や、片方のチャンネルが無視される場合があります。
+- **UIや音楽のサウンドはステレオでも構いません。** 非ポジショナルサウンド（メニュー、HUDフィードバック、BGM）はステレオで正しく動作します。
+- **サンプルレートはほとんどのサウンドで44100 Hzにする必要があります。** 遠方の環境音では容量節約のために低いレート（22050 Hz）を使用できます。
 
-### WSS (Legacy Format)
+### WSS（レガシーフォーマット）
 
-**WSS** is a legacy sound format from older Bohemia titles (Arma series). DayZ can still load WSS files, but new mods should use OGG exclusively.
+**WSS**は旧Bohemiaタイトル（Armaシリーズ）のレガシーサウンドフォーマットです。DayZは引き続きWSSファイルを読み込めますが、新しいMODではOGGのみを使用すべきです。
 
-| Property | Value |
+| プロパティ | 値 |
 |----------|-------|
-| **Extension** | `.wss` |
-| **Status** | Legacy, not recommended for new mods |
-| **Conversion** | WSS files can be converted to OGG with Audacity or similar tools |
+| **拡張子** | `.wss` |
+| **ステータス** | レガシー、新しいMODには非推奨 |
+| **変換** | WSSファイルはAudacityや同様のツールでOGGに変換できます |
 
-You will encounter WSS files when examining vanilla DayZ data or porting content from older Bohemia games.
+バニラDayZのデータを調べたり、旧Bohemiaゲームからコンテンツを移植する際にWSSファイルに遭遇することがあります。
 
 ---
 
-## CfgSoundShaders and CfgSoundSets
+## CfgSoundShadersとCfgSoundSets
 
-DayZ's audio system uses a two-layer configuration approach defined in `config.cpp`. A **SoundShader** defines what audio file to play and how, while a **SoundSet** defines where and how the sound is heard in the world.
+DayZのオーディオシステムは、`config.cpp`で定義される2層の設定アプローチを使用します。**SoundShader**はどのオーディオファイルをどのように再生するかを定義し、**SoundSet**はそのサウンドがワールド内でどこでどのように聞こえるかを定義します。
 
-### The Relationship
+### 関係性
 
 ```
 config.cpp
   |
-  |--> CfgSoundShaders     (WHAT to play: file, volume, frequency)
+  |--> CfgSoundShaders     (何を再生するか: ファイル、音量、周波数)
   |      |
-  |      |--> MyShader      references --> sound\my_sound.ogg
+  |      |--> MyShader      参照 --> sound\my_sound.ogg
   |
-  |--> CfgSoundSets         (HOW to play: 3D position, distance, spatial)
+  |--> CfgSoundSets         (どのように再生するか: 3D位置、距離、空間)
          |
-         |--> MySoundSet    references --> MyShader
+         |--> MySoundSet    参照 --> MyShader
 ```
 
-Game code and other configs reference **SoundSets**, never SoundShaders directly. SoundSets are the public interface; SoundShaders are the implementation detail.
+ゲームコードや他の設定は**SoundSets**を参照し、SoundShadersを直接参照することはありません。SoundSetsはパブリックインターフェースであり、SoundShadersは実装の詳細です。
 
 ### CfgSoundShaders
 
-A SoundShader defines the raw audio content and basic playback parameters:
+SoundShaderは、生のオーディオコンテンツと基本的な再生パラメータを定義します：
 
 ```cpp
 class CfgSoundShaders
 {
     class MyMod_GunShot_SoundShader
     {
-        // Array of audio files -- engine picks one randomly
+        // オーディオファイルの配列 -- エンジンがランダムに1つを選択
         samples[] =
         {
-            {"MyMod\sound\gunshot_01", 1},    // {path (no extension), probability weight}
+            {"MyMod\sound\gunshot_01", 1},    // {パス（拡張子なし）, 確率ウェイト}
             {"MyMod\sound\gunshot_02", 1},
             {"MyMod\sound\gunshot_03", 1}
         };
-        volume = 1.0;                          // Base volume (0.0 - 1.0)
-        range = 300;                           // Maximum audible distance (meters)
-        rangeCurve[] = {{0, 1.0}, {300, 0.0}}; // Volume falloff curve
+        volume = 1.0;                          // 基本音量 (0.0 - 1.0)
+        range = 300;                           // 最大可聴距離（メートル）
+        rangeCurve[] = {{0, 1.0}, {300, 0.0}}; // 音量減衰カーブ
     };
 };
 ```
 
-#### SoundShader Properties
+#### SoundShaderのプロパティ
 
-| Property | Type | Description |
+| プロパティ | 型 | 説明 |
 |----------|------|-------------|
-| `samples[]` | array | List of `{path, weight}` pairs. Path excludes the file extension. |
-| `volume` | float | Base volume multiplier (0.0 to 1.0). |
-| `range` | float | Maximum audible distance in meters. |
-| `rangeCurve[]` | array | Array of `{distance, volume}` points defining attenuation over distance. |
-| `frequency` | float | Playback speed multiplier. 1.0 = normal, 0.5 = half speed (lower pitch), 2.0 = double speed (higher pitch). |
+| `samples[]` | array | `{パス, ウェイト}`ペアのリスト。パスにはファイル拡張子を含めません。 |
+| `volume` | float | 基本音量の乗数（0.0〜1.0）。 |
+| `range` | float | メートル単位の最大可聴距離。 |
+| `rangeCurve[]` | array | 距離に対する減衰を定義する`{距離, 音量}`ポイントの配列。 |
+| `frequency` | float | 再生速度の乗数。1.0 = 通常、0.5 = 半速（低ピッチ）、2.0 = 倍速（高ピッチ）。 |
 
-> **重要：** The `samples[]` path does NOT include the file extension. The engine appends `.ogg` (or `.wss`) automatically based on what it finds on disk.
+> **重要：** `samples[]`のパスにはファイル拡張子を含めません。エンジンはディスク上にあるものに基づいて自動的に`.ogg`（または`.wss`）を追加します。
 
 ### CfgSoundSets
 
-A SoundSet wraps one or more SoundShaders and defines the spatial and behavioral properties:
+SoundSetは1つ以上のSoundShadersをラップし、空間的および動作的なプロパティを定義します：
 
 ```cpp
 class CfgSoundSets
@@ -127,52 +127,52 @@ class CfgSoundSets
     class MyMod_GunShot_SoundSet
     {
         soundShaders[] = {"MyMod_GunShot_SoundShader"};
-        volumeFactor = 1.0;          // Volume scaling (applied on top of shader volume)
-        frequencyFactor = 1.0;       // Frequency scaling
-        volumeCurve = "InverseSquare"; // Predefined attenuation curve name
-        spatial = 1;                  // 1 = 3D positional, 0 = 2D (HUD/menu)
-        doppler = 0;                  // 1 = enable Doppler effect
-        loop = 0;                     // 1 = loop continuously
+        volumeFactor = 1.0;          // 音量スケーリング（シェーダーの音量に加えて適用）
+        frequencyFactor = 1.0;       // 周波数スケーリング
+        volumeCurve = "InverseSquare"; // 定義済み減衰カーブ名
+        spatial = 1;                  // 1 = 3Dポジショナル、0 = 2D (HUD/メニュー)
+        doppler = 0;                  // 1 = ドップラー効果を有効化
+        loop = 0;                     // 1 = 連続ループ
     };
 };
 ```
 
-#### SoundSet Properties
+#### SoundSetのプロパティ
 
-| Property | Type | Description |
+| プロパティ | 型 | 説明 |
 |----------|------|-------------|
-| `soundShaders[]` | array | List of SoundShader class names to combine. |
-| `volumeFactor` | float | Additional volume multiplier applied on top of shader volume. |
-| `frequencyFactor` | float | Additional frequency/pitch multiplier. |
-| `frequencyRandomizer` | float | Random pitch variation (0.0 = none, 0.1 = +/- 10%). |
-| `volumeCurve` | string | Named attenuation curve: `"InverseSquare"`, `"Linear"`, `"Logarithmic"`. |
-| `spatial` | int | `1` for 3D positional audio, `0` for 2D (UI, music). |
-| `doppler` | int | `1` to enable Doppler pitch shift for moving sources. |
-| `loop` | int | `1` for continuous looping, `0` for one-shot. |
-| `distanceFilter` | int | `1` to apply low-pass filter at distance (muffled far-away sounds). |
-| `occlusionFactor` | float | How much walls/terrain muffle the sound (0.0 to 1.0). |
-| `obstructionFactor` | float | How much obstacles between source and listener affect the sound. |
+| `soundShaders[]` | array | 結合するSoundShaderクラス名のリスト。 |
+| `volumeFactor` | float | シェーダーの音量に加えて適用される追加の音量乗数。 |
+| `frequencyFactor` | float | 追加の周波数/ピッチ乗数。 |
+| `frequencyRandomizer` | float | ランダムなピッチ変動（0.0 = なし、0.1 = +/- 10%）。 |
+| `volumeCurve` | string | 名前付き減衰カーブ：`"InverseSquare"`、`"Linear"`、`"Logarithmic"`。 |
+| `spatial` | int | 3Dポジショナルオーディオは`1`、2D（UI、音楽）は`0`。 |
+| `doppler` | int | 移動する音源のドップラーピッチシフトを有効にするには`1`。 |
+| `loop` | int | 連続ループは`1`、ワンショットは`0`。 |
+| `distanceFilter` | int | 距離でのローパスフィルタ適用は`1`（遠くのこもったサウンド）。 |
+| `occlusionFactor` | float | 壁/地形がサウンドをどの程度消すか（0.0〜1.0）。 |
+| `obstructionFactor` | float | 音源とリスナー間の障害物がサウンドにどの程度影響するか。 |
 
 ---
 
-## Sound Categories
+## サウンドカテゴリ
 
-DayZ organizes sounds into categories that affect how they interact with the game's audio mixing system.
+DayZはサウンドをカテゴリに分類し、ゲームのオーディオミキシングシステムとの相互作用に影響を与えます。
 
-### Weapon Sounds
+### 武器サウンド
 
-Weapon sounds are the most complex audio in DayZ, typically involving multiple SoundSets for different aspects of a single gunshot:
+武器サウンドはDayZで最も複雑なオーディオであり、通常、1回の射撃で複数のSoundSetが関与します：
 
 ```
-Shot fired
-  |--> Close shot SoundSet       (the "bang" heard nearby)
-  |--> Distance shot SoundSet    (the rumble/echo heard far away)
-  |--> Tail SoundSet             (reverb/echo that follows)
-  |--> Supersonic crack SoundSet (bullet passing overhead)
-  |--> Mechanical SoundSet       (bolt cycling, magazine insertion)
+射撃
+  |--> 近距離射撃SoundSet       （近くで聞こえる「バン」）
+  |--> 遠距離射撃SoundSet    （遠くで聞こえる低音/エコー）
+  |--> テールSoundSet             （後に続くリバーブ/エコー）
+  |--> 超音速クラックSoundSet （頭上を通過する弾丸）
+  |--> メカニカルSoundSet       （ボルト操作、マガジン装填）
 ```
 
-Example weapon sound config:
+武器サウンド設定の例：
 
 ```cpp
 class CfgSoundShaders
@@ -226,9 +226,9 @@ class CfgSoundSets
 };
 ```
 
-### Ambient Sounds
+### 環境サウンド
 
-Environmental audio for atmosphere:
+雰囲気を作る環境オーディオ：
 
 ```cpp
 class MyMod_Wind_SoundShader
@@ -242,87 +242,87 @@ class MyMod_Wind_SoundSet
 {
     soundShaders[] = {"MyMod_Wind_SoundShader"};
     volumeFactor = 0.6;
-    spatial = 0;           // Non-positional (ambient surround)
-    loop = 1;              // Continuous loop
+    spatial = 0;           // 非ポジショナル（アンビエントサラウンド）
+    loop = 1;              // 連続ループ
 };
 ```
 
-### UI Sounds
+### UIサウンド
 
-Interface feedback sounds (button clicks, notifications):
+インターフェースのフィードバックサウンド（ボタンクリック、通知）：
 
 ```cpp
 class MyMod_ButtonClick_SoundShader
 {
     samples[] = {{"MyMod\sound\ui\click_01", 1}};
     volume = 0.7;
-    range = 0;             // No spatial range needed
+    range = 0;             // 空間範囲は不要
 };
 
 class MyMod_ButtonClick_SoundSet
 {
     soundShaders[] = {"MyMod_ButtonClick_SoundShader"};
     volumeFactor = 0.8;
-    spatial = 0;           // 2D -- plays in the listener's head
+    spatial = 0;           // 2D -- リスナーの頭の中で再生
     loop = 0;
 };
 ```
 
-### Vehicle Sounds
+### 車両サウンド
 
-Vehicles use complex sound configurations with multiple components:
+車両は複数のコンポーネントを持つ複雑なサウンド設定を使用します：
 
-- **Engine idle** -- looping, pitch varies with RPM
-- **Engine acceleration** -- looping, volume and pitch scale with throttle
-- **Tire noise** -- looping, volume scales with speed
-- **Horn** -- triggered, looping while held
-- **Crash** -- one-shot on collision
+- **エンジンアイドル** -- ループ、RPMに応じてピッチが変化
+- **エンジン加速** -- ループ、スロットルに応じて音量とピッチがスケール
+- **タイヤノイズ** -- ループ、速度に応じて音量がスケール
+- **ホーン** -- トリガー、押している間ループ
+- **クラッシュ** -- 衝突時にワンショット
 
-### Character Sounds
+### キャラクターサウンド
 
-Player-related sounds include:
+プレイヤー関連のサウンドには以下が含まれます：
 
-- **Footsteps** -- varies by surface material (concrete, grass, wood, metal)
-- **Breathing** -- stamina-dependent
-- **Voice** -- emotes and commands
-- **Inventory** -- item manipulation sounds
+- **足音** -- 地面の素材によって変化（コンクリート、草、木、金属）
+- **呼吸** -- スタミナ依存
+- **声** -- エモートとコマンド
+- **インベントリ** -- アイテム操作サウンド
 
 ---
 
-## 3D Positional Audio
+## 3Dポジショナルオーディオ
 
-DayZ uses 3D spatial audio to position sounds in the game world. When a gun fires 200 meters to your left, you hear it from your left speaker/headphone with appropriate volume reduction.
+DayZは3D空間オーディオを使用して、ゲームワールド内にサウンドを配置します。200メートル左で銃が発砲されると、適切な音量低減とともに左のスピーカー/ヘッドフォンから聞こえます。
 
-### Requirements for 3D Audio
+### 3Dオーディオの要件
 
-1. **Audio file must be mono.** Stereo files will not spatialize correctly.
-2. **SoundSet `spatial` must be `1`.** This enables the 3D positioning system.
-3. **Sound source must have a world position.** The engine needs coordinates to calculate direction and distance.
+1. **オーディオファイルはモノラルである必要があります。** ステレオファイルは正しく空間音声化されません。
+2. **SoundSetの`spatial`は`1`である必要があります。** これにより3Dポジショニングシステムが有効になります。
+3. **音源にはワールド位置が必要です。** エンジンは方向と距離を計算するための座標が必要です。
 
-### How the Engine Spatializes Sound
+### エンジンのサウンド空間音声化の仕組み
 
 ```
-Sound Source (world position)
+音源（ワールド位置）
   |
-  |--> Calculate distance to listener
-  |--> Calculate direction relative to listener facing
-  |--> Apply distance attenuation (rangeCurve)
-  |--> Apply occlusion (walls, terrain)
-  |--> Apply Doppler effect (if enabled and source is moving)
-  |--> Output to correct speaker channels
+  |--> リスナーまでの距離を計算
+  |--> リスナーの向きに対する方向を計算
+  |--> 距離減衰を適用（rangeCurve）
+  |--> 遮蔽を適用（壁、地形）
+  |--> ドップラー効果を適用（有効かつ音源が移動中の場合）
+  |--> 正しいスピーカーチャンネルに出力
 ```
 
-### Triggering 3D Sounds from Script
+### スクリプトからの3Dサウンドのトリガー
 
 ```c
-// Play a positional sound at a world location
+// ワールド位置でポジショナルサウンドを再生
 void PlaySoundAtPosition(vector position)
 {
     EffectSound sound;
     SEffectManager.PlaySound("MyMod_Rifle_Shot_SoundSet", position);
 }
 
-// Play a sound attached to an object (moves with it)
+// オブジェクトにアタッチされたサウンドを再生（オブジェクトとともに移動）
 void PlaySoundOnObject(Object obj)
 {
     EffectSound sound;
@@ -332,49 +332,49 @@ void PlaySoundOnObject(Object obj)
 
 ---
 
-## Volume and Distance Attenuation
+## 音量と距離減衰
 
-### Range Curve
+### レンジカーブ
 
-The `rangeCurve[]` in a SoundShader defines how volume decreases with distance. It is an array of `{distance, volume}` pairs:
+SoundShaderの`rangeCurve[]`は、距離に応じて音量がどのように減少するかを定義します。`{距離, 音量}`ペアの配列です：
 
 ```cpp
 rangeCurve[] =
 {
-    {0, 1.0},       // At 0m: full volume
-    {50, 0.7},      // At 50m: 70% volume
-    {150, 0.3},     // At 150m: 30% volume
-    {300, 0.0}      // At 300m: silent
+    {0, 1.0},       // 0mで: フルボリューム
+    {50, 0.7},      // 50mで: 70%の音量
+    {150, 0.3},     // 150mで: 30%の音量
+    {300, 0.0}      // 300mで: 無音
 };
 ```
 
-The engine interpolates linearly between defined points. You can create any falloff curve by adding more control points.
+エンジンは定義されたポイント間を線形補間します。より多くの制御ポイントを追加することで、任意の減衰カーブを作成できます。
 
-### Predefined Volume Curves
+### 定義済みボリュームカーブ
 
-SoundSets can reference named curves via the `volumeCurve` property:
+SoundSetsは`volumeCurve`プロパティを通じて名前付きカーブを参照できます：
 
-| Curve Name | Behavior |
+| カーブ名 | 動作 |
 |------------|----------|
-| `"InverseSquare"` | Realistic falloff (volume = 1/distance^2). Natural-sounding. |
-| `"Linear"` | Even falloff from max to zero over the range. |
-| `"Logarithmic"` | Loud up close, drops quickly at medium distance, then tapers slowly. |
+| `"InverseSquare"` | リアリスティックな減衰（音量 = 1/距離^2）。自然な音。 |
+| `"Linear"` | 範囲内で最大からゼロまで均等に減衰。 |
+| `"Logarithmic"` | 近くでは大きく、中距離で急激に低下し、その後ゆっくりと減衰。 |
 
-### Practical Attenuation Examples
+### 実用的な減衰の例
 
-**Gunshot (loud, carries far):**
+**銃声（大きく、遠くまで届く）：**
 ```cpp
 range = 800;
 rangeCurve[] = {{0, 1.0}, {100, 0.6}, {300, 0.3}, {600, 0.1}, {800, 0.0}};
 ```
 
-**Footstep (quiet, close range):**
+**足音（静かで、近距離）：**
 ```cpp
 range = 30;
 rangeCurve[] = {{0, 1.0}, {10, 0.5}, {20, 0.15}, {30, 0.0}};
 ```
 
-**Vehicle engine (medium range, sustained):**
+**車両エンジン（中距離、持続）：**
 ```cpp
 range = 200;
 rangeCurve[] = {{0, 1.0}, {50, 0.7}, {100, 0.4}, {200, 0.0}};
@@ -382,26 +382,26 @@ rangeCurve[] = {{0, 1.0}, {50, 0.7}, {100, 0.4}, {200, 0.0}};
 
 ---
 
-## Looping Sounds
+## ループサウンド
 
-Looping sounds repeat continuously until explicitly stopped. They are used for engines, ambient atmosphere, alarms, and any sustained audio.
+ループサウンドは明示的に停止されるまで繰り返し再生されます。エンジン、環境音、アラーム、その他の持続的なオーディオに使用されます。
 
-### Configuring a Looping Sound
+### ループサウンドの設定
 
-In the SoundSet:
+SoundSetで：
 ```cpp
 class MyMod_Alarm_SoundSet
 {
     soundShaders[] = {"MyMod_Alarm_SoundShader"};
     spatial = 1;
-    loop = 1;              // Enable looping
+    loop = 1;              // ループを有効化
 };
 ```
 
-### Looping from Script
+### スクリプトからのループ
 
 ```c
-// Start a looping sound
+// ループサウンドを開始
 EffectSound m_AlarmSound;
 
 void StartAlarm(vector position)
@@ -412,7 +412,7 @@ void StartAlarm(vector position)
     }
 }
 
-// Stop the looping sound
+// ループサウンドを停止
 void StopAlarm()
 {
     if (m_AlarmSound)
@@ -423,29 +423,29 @@ void StopAlarm()
 }
 ```
 
-### Audio File Preparation for Loops
+### ループ用のオーディオファイル準備
 
-For seamless looping, the audio file itself must loop cleanly:
+シームレスなループのために、オーディオファイル自体がきれいにループする必要があります：
 
-1. **Zero-crossing at start and end.** The waveform should cross zero amplitude at both endpoints to avoid a click/pop at the loop point.
-2. **Matched start and end.** The end of the file should blend seamlessly into the beginning.
-3. **No fade in/out.** Fades would be audible on each loop iteration.
-4. **Test the loop in Audacity.** Select the entire clip, enable loop playback, and listen for clicks or discontinuities.
+1. **開始と終了でゼロクロッシング。** 波形は両端でゼロ振幅を横切り、ループポイントでのクリック/ポップを回避する必要があります。
+2. **開始と終了の一致。** ファイルの終わりが始まりにシームレスにブレンドする必要があります。
+3. **フェードイン/アウトなし。** フェードは各ループ反復で聞こえてしまいます。
+4. **Audacityでループをテスト。** クリップ全体を選択し、ループ再生を有効にして、クリックや不連続がないか聴いてください。
 
 ---
 
-## Adding Custom Sounds to a Mod
+## MODへのカスタムサウンドの追加
 
-### Complete Workflow
+### 完全なワークフロー
 
-**Step 1: Prepare audio files**
-- Record or source your audio.
-- Edit in Audacity (or your preferred audio editor).
-- For 3D sounds: convert to mono.
-- Export as OGG Vorbis (quality 5-7).
-- Name files descriptively: `rifle_shot_01.ogg`, `rifle_shot_02.ogg`.
+**ステップ1: オーディオファイルを準備**
+- オーディオを録音またはソースから入手します。
+- Audacity（またはお好みのオーディオエディタ）で編集します。
+- 3Dサウンドの場合：モノラルに変換します。
+- OGG Vorbis（品質5-7）としてエクスポートします。
+- ファイルにわかりやすい名前をつけます：`rifle_shot_01.ogg`、`rifle_shot_02.ogg`。
 
-**Step 2: Organize in mod directory**
+**ステップ2: MODディレクトリに整理**
 
 ```
 MyMod/
@@ -464,7 +464,7 @@ MyMod/
   config.cpp
 ```
 
-**Step 3: Define SoundShaders in config.cpp**
+**ステップ3: config.cppでSoundShadersを定義**
 
 ```cpp
 class CfgPatches
@@ -508,16 +508,16 @@ class CfgSoundSets
 };
 ```
 
-**Step 4: Reference from weapon/item config**
+**ステップ4: 武器/アイテムの設定から参照**
 
-For weapons, the SoundSet is referenced in the weapon's config class:
+武器の場合、SoundSetは武器の設定クラスで参照されます：
 
 ```cpp
 class CfgWeapons
 {
     class MyMod_Rifle: Rifle_Base
     {
-        // ... other config ...
+        // ... 他の設定 ...
 
         class Sounds
         {
@@ -530,44 +530,44 @@ class CfgWeapons
 };
 ```
 
-**Step 5: Build and test**
-- Pack the PBO (use `-packonly` since OGG files do not need binarization).
-- Launch the game with the mod loaded.
-- Test the sound in-game at various distances.
+**ステップ5: ビルドとテスト**
+- PBOをパックします（OGGファイルはバイナリ化が不要なので`-packonly`を使用します）。
+- MODをロードしてゲームを起動します。
+- さまざまな距離でゲーム内のサウンドをテストします。
 
 ---
 
-## Audio Production Tools
+## オーディオ制作ツール
 
-### Audacity (Free, Open Source)
+### Audacity（無料、オープンソース）
 
-Audacity is the recommended tool for DayZ audio production:
+AudacityはDayZオーディオ制作に推奨されるツールです：
 
-- **Download:** [audacityteam.org](https://www.audacityteam.org/)
-- **OGG export:** File --> Export --> Export as OGG
-- **Mono conversion:** Tracks --> Mix --> Mix Stereo Down to Mono
-- **Normalization:** Effect --> Normalize (set peak to -1 dB to prevent clipping)
-- **Noise removal:** Effect --> Noise Reduction
-- **Loop testing:** Transport --> Loop Play (Shift+Space)
+- **ダウンロード:** [audacityteam.org](https://www.audacityteam.org/)
+- **OGGエクスポート:** ファイル --> エクスポート --> OGGとしてエクスポート
+- **モノラル変換:** トラック --> ミックス --> ステレオをモノラルにミックスダウン
+- **ノーマライゼーション:** エフェクト --> ノーマライズ（ピークを-1 dBに設定してクリッピングを防止）
+- **ノイズ除去:** エフェクト --> ノイズリダクション
+- **ループテスト:** トランスポート --> ループ再生 (Shift+Space)
 
-### OGG Export Settings in Audacity
+### AudacityでのOGGエクスポート設定
 
-1. **File --> Export --> Export as OGG Vorbis**
-2. **Quality:** 5-7 (5 for ambient/UI, 7 for weapon/important sounds)
-3. **Channels:** Mono for 3D sounds, Stereo for UI/music
+1. **ファイル --> エクスポート --> OGG Vorbisとしてエクスポート**
+2. **品質:** 5-7（環境/UIには5、武器/重要なサウンドには7）
+3. **チャンネル:** 3Dサウンドにはモノラル、UI/音楽にはステレオ
 
-### Other Useful Tools
+### その他の便利なツール
 
-| Tool | Purpose | Cost |
+| ツール | 用途 | コスト |
 |------|---------|------|
-| **Audacity** | General audio editing, format conversion | Free |
-| **Reaper** | Professional DAW, advanced editing | $60 (personal license) |
-| **FFmpeg** | Command-line batch audio conversion | Free |
-| **Ocenaudio** | Simple editor with real-time preview | Free |
+| **Audacity** | 一般的なオーディオ編集、フォーマット変換 | 無料 |
+| **Reaper** | プロフェッショナルDAW、高度な編集 | $60（個人ライセンス） |
+| **FFmpeg** | コマンドラインのバッチオーディオ変換 | 無料 |
+| **Ocenaudio** | リアルタイムプレビュー付きのシンプルなエディタ | 無料 |
 
-### Batch Conversion with FFmpeg
+### FFmpegでのバッチ変換
 
-Convert all WAV files in a directory to mono OGG:
+ディレクトリ内のすべてのWAVファイルをモノラルOGGに変換：
 
 ```bash
 for file in *.wav; do
@@ -579,41 +579,41 @@ done
 
 ## よくある間違い
 
-### 1. Stereo File for 3D Sound
+### 1. 3Dサウンドにステレオファイルを使用
 
-**症状：** Sound does not spatialize, plays centered or only in one ear.
-**修正：** Convert to mono before exporting. 3D positional sounds require mono audio files.
+**症状：** サウンドが空間音声化されず、中央で再生されるか片耳でしか聞こえません。
+**修正：** エクスポート前にモノラルに変換してください。3Dポジショナルサウンドにはモノラルオーディオファイルが必要です。
 
-### 2. File Extension in samples[] Path
+### 2. samples[]パスにファイル拡張子を含める
 
-**症状：** Sound does not play, no error in log (engine silently fails to find the file).
-**修正：** Remove the `.ogg` extension from the path in `samples[]`. The engine adds it automatically.
+**症状：** サウンドが再生されず、ログにエラーなし（エンジンがサイレントにファイルを見つけられません）。
+**修正：** `samples[]`のパスから`.ogg`拡張子を削除してください。エンジンが自動的に追加します。
 
 ```cpp
-// WRONG
+// 間違い
 samples[] = {{"MyMod\sound\gunshot_01.ogg", 1}};
 
-// CORRECT
+// 正しい
 samples[] = {{"MyMod\sound\gunshot_01", 1}};
 ```
 
-### 3. Missing CfgPatches requiredAddons
+### 3. CfgPatchesのrequiredAddonsの欠落
 
-**症状：** SoundShaders or SoundSets not recognized, sounds do not play.
-**修正：** Add `"DZ_Sounds_Effects"` to your CfgPatches `requiredAddons[]` to ensure the base sound system loads before your definitions.
+**症状：** SoundShadersやSoundSetsが認識されず、サウンドが再生されません。
+**修正：** CfgPatchesの`requiredAddons[]`に`"DZ_Sounds_Effects"`を追加して、基本サウンドシステムが自分の定義より先にロードされるようにしてください。
 
-### 4. Range Too Short
+### 4. レンジが短すぎる
 
-**症状：** Sound cuts off abruptly at a short distance, feels unnatural.
-**修正：** Set `range` to a realistic value. Gunshots should carry 300-800m, footsteps 20-40m, voices 50-100m.
+**症状：** サウンドが短い距離で突然途切れ、不自然に感じます。
+**修正：** `range`を現実的な値に設定してください。銃声は300-800m、足音は20-40m、声は50-100mにすべきです。
 
-### 5. No Random Variation
+### 5. ランダムなバリエーションがない
 
-**症状：** Sound feels repetitive and artificial after hearing it multiple times.
-**修正：** Provide multiple samples in the SoundShader and add `frequencyRandomizer` to the SoundSet for pitch variation.
+**症状：** 何度も聞いた後、サウンドが繰り返しで人工的に感じます。
+**修正：** SoundShaderに複数のサンプルを提供し、SoundSetに`frequencyRandomizer`を追加してピッチバリエーションを加えてください。
 
 ```cpp
-// Multiple samples for variety
+// バリエーション用の複数サンプル
 samples[] =
 {
     {"MyMod\sound\step_01", 1},
@@ -622,34 +622,34 @@ samples[] =
     {"MyMod\sound\step_04", 1}
 };
 
-// Plus pitch randomization in the SoundSet
-frequencyRandomizer = 0.05;    // +/- 5% pitch variation
+// SoundSetでのピッチランダマイゼーション
+frequencyRandomizer = 0.05;    // +/- 5%のピッチ変動
 ```
 
-### 6. Clipping / Distortion
+### 6. クリッピング/ディストーション
 
-**症状：** Sound crackles or distorts, especially at close range.
-**修正：** Normalize your audio to -1 dB or -3 dB peak in Audacity before exporting. Never set `volume` or `volumeFactor` above 1.0 unless the source audio is very quiet.
+**症状：** サウンドがパチパチしたり歪んだりします。特に近距離で。
+**修正：** エクスポート前にAudacityでオーディオを-1 dBまたは-3 dBピークにノーマライズしてください。ソースオーディオが非常に静かでない限り、`volume`や`volumeFactor`を1.0以上に設定しないでください。
 
 ---
 
-## Best Practices
+## ベストプラクティス
 
-1. **Always export 3D sounds as mono OGG.** This is the single most important rule. Stereo files will not spatialize.
+1. **3DサウンドはMOD常にモノラルOGGとしてエクスポートしてください。** これが最も重要なルールです。ステレオファイルは空間音声化されません。
 
-2. **Provide 3-5 sample variants** for frequently heard sounds (gunshots, footsteps, impacts). Random selection prevents the "machine gun effect" of identical repeated audio.
+2. **頻繁に聞かれるサウンドには3-5個のサンプルバリエーションを提供してください**（銃声、足音、衝撃音）。ランダム選択は同一の繰り返しオーディオの「マシンガン効果」を防ぎます。
 
-3. **Use `frequencyRandomizer`** between 0.03 and 0.08 for natural pitch variation. Even subtle variation significantly improves perceived audio quality.
+3. **自然なピッチバリエーションのために`frequencyRandomizer`を0.03〜0.08の間で使用してください。** わずかな変動でも知覚されるオーディオ品質が大幅に向上します。
 
-4. **Set realistic range values.** Study vanilla DayZ sounds for reference. A rifle shot at 600-800m range, a suppressed shot at 150-200m, footsteps at 20-40m.
+4. **現実的なrange値を設定してください。** 参考としてバニラDayZのサウンドを研究してください。ライフルの射撃は600-800mの範囲、サプレッサー付きの射撃は150-200m、足音は20-40mです。
 
-5. **Layer your sounds.** Complex audio events (gunshots) should use multiple SoundSets: close shot + distant rumble + tail/echo. This creates depth that a single sound file cannot achieve.
+5. **サウンドをレイヤー化してください。** 複雑なオーディオイベント（銃声）は複数のSoundSetを使用すべきです：近距離射撃 + 遠距離の轟音 + テール/エコー。これにより、単一のサウンドファイルでは実現できない深みが生まれます。
 
-6. **Test at multiple distances.** Walk away from the sound source in-game and verify the attenuation curve feels natural. Adjust `rangeCurve[]` control points iteratively.
+6. **複数の距離でテストしてください。** ゲーム内で音源から離れ、減衰カーブが自然に感じられることを確認してください。`rangeCurve[]`の制御ポイントを反復的に調整してください。
 
-7. **Organize your sound directory.** Use subdirectories by category (`weapons/`, `ambient/`, `ui/`, `vehicles/`). A flat directory with 200 OGG files is unmanageable.
+7. **サウンドディレクトリを整理してください。** カテゴリ別のサブディレクトリ（`weapons/`、`ambient/`、`ui/`、`vehicles/`）を使用してください。200個のOGGファイルが平坦なディレクトリにあると管理できません。
 
-8. **Keep file sizes reasonable.** Game audio does not need studio quality. OGG quality 5-7 is sufficient. Most individual sound files should be under 500 KB.
+8. **ファイルサイズを適切に保ってください。** ゲームオーディオにスタジオ品質は不要です。OGG品質5-7で十分です。ほとんどの個別サウンドファイルは500 KB未満にすべきです。
 
 ---
 
@@ -657,4 +657,4 @@ frequencyRandomizer = 0.05;    // +/- 5% pitch variation
 
 | 前 | 上 | 次 |
 |----------|----|------|
-| [4.3 Materials](03-materials.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.5 DayZ Tools Workflow](05-dayz-tools.md) |
+| [4.3 マテリアル](03-materials.md) | [パート4: ファイルフォーマットとDayZ Tools](01-textures.md) | [4.5 DayZ Toolsワークフロー](05-dayz-tools.md) |

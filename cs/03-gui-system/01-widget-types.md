@@ -1,199 +1,203 @@
-# Chapter 3.1: Widget Types
+# Kapitola 3.1: Typy widgetů
 
-[Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
-
----
+[Domů](../../README.md) | **Typy widgetů** | [Další: Soubory layoutů >>](02-layout-files.md)
 
 ---
 
-## How Widgets Work
+GUI systém DayZ je postaven na widgetech -- znovupoužitelných UI komponentách, které sahají od jednoduchých kontejnerů až po složité interaktivní ovládací prvky. Každý viditelný prvek na obrazovce je widget a pochopení celého katalogu je nezbytné pro tvorbu UI modů.
 
-Every widget in DayZ inherits from the `Widget` base class. Widgets are organized in a parent-child tree, where the root is typically a `WorkspaceWidget` obtained via `GetGame().GetWorkspace()`.
+Tato kapitola poskytuje kompletní referenci všech typů widgetů dostupných v Enforce Scriptu.
 
-Each widget type has three associated identifiers:
+---
+
+## Jak widgety fungují
+
+Každý widget v DayZ dědí ze základní třídy `Widget`. Widgety jsou organizovány ve stromové struktuře rodič-potomek, kde kořenem je typicky `WorkspaceWidget` získaný přes `GetGame().GetWorkspace()`.
+
+Každý typ widgetu má tři přidružené identifikátory:
 
 | Identifikátor | Příklad | Použití |
 |---|---|---|
-| **Script class** | `TextWidget` | Code references, casting |
-| **Layout class** | `TextWidgetClass` | `.layout` file declarations |
-| **TypeID constant** | `TextWidgetTypeID` | Programmatic creation with `CreateWidget()` |
+| **Skriptová třída** | `TextWidget` | Reference v kódu, přetypování |
+| **Layoutová třída** | `TextWidgetClass` | Deklarace v `.layout` souborech |
+| **Konstanta TypeID** | `TextWidgetTypeID` | Programatické vytváření pomocí `CreateWidget()` |
 
-In `.layout` files you always use the layout class name (ending in `Class`). In scripts you work with the script class name.
+V `.layout` souborech vždy používáte název layoutové třídy (končící na `Class`). Ve skriptech pracujete s názvem skriptové třídy.
 
 ---
 
-## Container / Layout Widgets
+## Kontejnerové / layoutové widgety
 
-Container widgets hold and organize child widgets. They do not display content themselves (except `PanelWidget`, which draws a colored rectangle).
+Kontejnerové widgety drží a organizují potomkovské widgety. Samy o sobě nezobrazují obsah (s výjimkou `PanelWidget`, který vykresluje barevný obdélník).
 
 | Skriptová třída | Layoutová třída | Účel |
 |---|---|---|
-| `Widget` | `WidgetClass` | Abstract base class for all widgets. Never instantiate directly. |
-| `WorkspaceWidget` | `WorkspaceWidgetClass` | Root workspace. Obtained via `GetGame().GetWorkspace()`. Used to create widgets programmatically. |
-| `FrameWidget` | `FrameWidgetClass` | General-purpose container. The most commonly used widget in DayZ. |
-| `PanelWidget` | `PanelWidgetClass` | Solid colored rectangle. Use for backgrounds, dividers, separators. |
-| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Flow layout. Arranges children sequentially with wrapping, padding, and margins. |
-| `GridSpacerWidget` | `GridSpacerWidgetClass` | Grid layout. Arranges children in a grid defined by `Columns` and `Rows`. |
-| `ScrollWidget` | `ScrollWidgetClass` | Scrollable viewport. Enables vertical/horizontal scrolling of child content. |
-| `SpacerBaseWidget` | -- | Abstract base class for `WrapSpacerWidget` and `GridSpacerWidget`. |
+| `Widget` | `WidgetClass` | Abstraktní základní třída pro všechny widgety. Nikdy neinstancujte přímo. |
+| `WorkspaceWidget` | `WorkspaceWidgetClass` | Kořenový workspace. Získáte přes `GetGame().GetWorkspace()`. Slouží k programatickému vytváření widgetů. |
+| `FrameWidget` | `FrameWidgetClass` | Univerzální kontejner. Nejpoužívanější widget v DayZ. |
+| `PanelWidget` | `PanelWidgetClass` | Jednobarevný obdélník. Používejte pro pozadí, oddělovače, separátory. |
+| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Proudové rozložení. Řadí potomky sekvenčně se zalamováním, odsazením a okraji. |
+| `GridSpacerWidget` | `GridSpacerWidgetClass` | Mřížkové rozložení. Řadí potomky do mřížky definované parametry `Columns` a `Rows`. |
+| `ScrollWidget` | `ScrollWidgetClass` | Posuvný viewport. Umožňuje vertikální/horizontální posouvání obsahu potomků. |
+| `SpacerBaseWidget` | -- | Abstraktní základní třída pro `WrapSpacerWidget` a `GridSpacerWidget`. |
 
 ### FrameWidget
 
-The workhorse of DayZ UI. Use `FrameWidget` as your default container when you need to group widgets together. It has no visual appearance -- it is purely structural.
+Hlavní pracovní nástroj UI DayZ. Používejte `FrameWidget` jako výchozí kontejner, když potřebujete seskupit widgety dohromady. Nemá žádný vizuální vzhled -- je čistě strukturální.
 
 **Klíčové metody:**
-- All base `Widget` methods (position, size, color, children, flags)
+- Všechny základní metody `Widget` (pozice, velikost, barva, potomci, příznaky)
 
-**Kdy použít:** Almost everywhere. Wrap groups of related widgets. Use as the root of dialogs, panels, and HUD elements.
+**Kdy použít:** Téměř všude. Obalujte skupiny souvisejících widgetů. Používejte jako kořen dialogů, panelů a HUD prvků.
 
 ```c
-// Find a frame widget by name
+// Nalezení frame widgetu podle názvu
 FrameWidget panel = FrameWidget.Cast(root.FindAnyWidget("MyPanel"));
 panel.Show(true);
 ```
 
 ### PanelWidget
 
-A visible rectangle with a solid color. Unlike `FrameWidget`, a `PanelWidget` actually draws something on screen.
+Viditelný obdélník s jednobarevnou výplní. Na rozdíl od `FrameWidget` `PanelWidget` skutečně vykresluje něco na obrazovku.
 
 **Klíčové metody:**
-- `SetColor(int argb)` -- Set the background color
-- `SetAlpha(float alpha)` -- Set transparency
+- `SetColor(int argb)` -- Nastavení barvy pozadí
+- `SetAlpha(float alpha)` -- Nastavení průhlednosti
 
-**Kdy použít:** Backgrounds behind text, colored dividers, overlay rectangles, tint layers.
+**Kdy použít:** Pozadí za textem, barevné oddělovače, překryvné obdélníky, tónovací vrstvy.
 
 ```c
 PanelWidget bg = PanelWidget.Cast(root.FindAnyWidget("Background"));
-bg.SetColor(ARGB(200, 0, 0, 0));  // Semi-transparent black
+bg.SetColor(ARGB(200, 0, 0, 0));  // Poloprůhledná černá
 ```
 
 ### WrapSpacerWidget
 
-Automatically arranges children in a flow layout. Children are placed one after another, wrapping to the next line when space runs out.
+Automaticky rozmisťuje potomky v proudovém rozložení. Potomci jsou umísťováni jeden za druhým a při nedostatku místa se zalamují na další řádek.
 
 **Klíčové atributy layoutu:**
-- `Padding` -- Inner padding (pixels)
-- `Margin` -- Outer margin (pixels)
-- `"Size To Content H" 1` -- Resize width to fit children
-- `"Size To Content V" 1` -- Resize height to fit children
-- `content_halign` -- Horizontal alignment of content (`left`, `center`, `right`)
-- `content_valign` -- Vertical alignment of content (`top`, `center`, `bottom`)
+- `Padding` -- Vnitřní odsazení (pixely)
+- `Margin` -- Vnější okraj (pixely)
+- `"Size To Content H" 1` -- Přizpůsobit šířku obsahu potomků
+- `"Size To Content V" 1` -- Přizpůsobit výšku obsahu potomků
+- `content_halign` -- Horizontální zarovnání obsahu (`left`, `center`, `right`)
+- `content_valign` -- Vertikální zarovnání obsahu (`top`, `center`, `bottom`)
 
-**Kdy použít:** Dynamic lists, tag clouds, button rows, any layout where children have varying sizes.
+**Kdy použít:** Dynamické seznamy, oblaky štítků, řady tlačítek, jakékoli rozložení kde potomci mají různé velikosti.
 
 ### GridSpacerWidget
 
-Arranges children in a fixed grid. Each cell has equal size.
+Rozmisťuje potomky do pevné mřížky. Každá buňka má stejnou velikost.
 
 **Klíčové atributy layoutu:**
-- `Columns` -- Number of columns
-- `Rows` -- Number of rows
-- `Margin` -- Space between cells
-- `"Size To Content V" 1` -- Resize height to fit content
+- `Columns` -- Počet sloupců
+- `Rows` -- Počet řádků
+- `Margin` -- Mezera mezi buňkami
+- `"Size To Content V" 1` -- Přizpůsobit výšku obsahu
 
-**Kdy použít:** Inventory grids, icon galleries, settings panels with uniform rows.
+**Kdy použít:** Inventářové mřížky, galerie ikon, panely nastavení s uniformními řádky.
 
 ### ScrollWidget
 
-Provides a scrollable viewport for content that exceeds the visible area.
+Poskytuje posuvný viewport pro obsah, který přesahuje viditelnou oblast.
 
 **Klíčové atributy layoutu:**
-- `"Scrollbar V" 1` -- Enable vertical scrollbar
-- `"Scrollbar H" 1` -- Enable horizontal scrollbar
+- `"Scrollbar V" 1` -- Povolit vertikální posuvník
+- `"Scrollbar H" 1` -- Povolit horizontální posuvník
 
 **Klíčové metody:**
-- `VScrollToPos(float pos)` -- Scroll to a vertical position
-- `GetVScrollPos()` -- Get current vertical scroll position
-- `GetContentHeight()` -- Get total content height
-- `VScrollStep(int step)` -- Scroll by step amount
+- `VScrollToPos(float pos)` -- Posunutí na vertikální pozici
+- `GetVScrollPos()` -- Získání aktuální vertikální pozice posunu
+- `GetContentHeight()` -- Získání celkové výšky obsahu
+- `VScrollStep(int step)` -- Posunutí o krokovou hodnotu
 
-**Kdy použít:** Long lists, configuration panels, chat windows, log viewers.
+**Kdy použít:** Dlouhé seznamy, konfigurační panely, chatová okna, prohlížeče logů.
 
 ---
 
-## Display Widgets
+## Zobrazovací widgety
 
-Display widgets show content to the user but are not interactive.
+Zobrazovací widgety ukazují obsah uživateli, ale nejsou interaktivní.
 
 | Skriptová třída | Layoutová třída | Účel |
 |---|---|---|
-| `TextWidget` | `TextWidgetClass` | Single-line text display |
-| `MultilineTextWidget` | `MultilineTextWidgetClass` | Multi-line read-only text |
-| `RichTextWidget` | `RichTextWidgetClass` | Text with embedded images (`<image>` tags) |
-| `ImageWidget` | `ImageWidgetClass` | Image display (from imagesets or files) |
-| `CanvasWidget` | `CanvasWidgetClass` | Programmable drawing surface |
-| `VideoWidget` | `VideoWidgetClass` | Video file playback |
-| `RTTextureWidget` | `RTTextureWidgetClass` | Render-to-texture surface |
-| `RenderTargetWidget` | `RenderTargetWidgetClass` | 3D scene render target |
-| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D DayZ item preview |
-| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D player character preview |
-| `MapWidget` | `MapWidgetClass` | Interactive world map |
+| `TextWidget` | `TextWidgetClass` | Jednořádkové zobrazení textu |
+| `MultilineTextWidget` | `MultilineTextWidgetClass` | Víceřádkový text pouze pro čtení |
+| `RichTextWidget` | `RichTextWidgetClass` | Text s vloženými obrázky (tagy `<image>`) |
+| `ImageWidget` | `ImageWidgetClass` | Zobrazení obrázku (z imagesetů nebo souborů) |
+| `CanvasWidget` | `CanvasWidgetClass` | Programovatelná kreslicí plocha |
+| `VideoWidget` | `VideoWidgetClass` | Přehrávání video souborů |
+| `RTTextureWidget` | `RTTextureWidgetClass` | Povrch pro vykreslování do textury |
+| `RenderTargetWidget` | `RenderTargetWidgetClass` | Cíl vykreslování 3D scény |
+| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D náhled předmětu DayZ |
+| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D náhled modelu hráče |
+| `MapWidget` | `MapWidgetClass` | Interaktivní mapa světa |
 
 ### TextWidget
 
-The most common display widget. Shows a single line of text.
+Nejběžnější zobrazovací widget. Zobrazuje jeden řádek textu.
 
 **Klíčové metody:**
 ```c
 TextWidget tw;
 tw.SetText("Hello World");
-tw.GetText();                           // Returns string
-tw.GetTextSize(out int w, out int h);   // Pixel dimensions of rendered text
-tw.SetTextExactSize(float size);        // Set font size in pixels
-tw.SetOutline(int size, int color);     // Add text outline
-tw.GetOutlineSize();                    // Returns int
-tw.GetOutlineColor();                   // Returns int (ARGB)
-tw.SetColor(int argb);                  // Text color
+tw.GetText();                           // Vrací string
+tw.GetTextSize(out int w, out int h);   // Rozměry vykreslovaného textu v pixelech
+tw.SetTextExactSize(float size);        // Nastavení velikosti písma v pixelech
+tw.SetOutline(int size, int color);     // Přidání obrysu textu
+tw.GetOutlineSize();                    // Vrací int
+tw.GetOutlineColor();                   // Vrací int (ARGB)
+tw.SetColor(int argb);                  // Barva textu
 ```
 
 **Klíčové atributy layoutu:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
 
 ### MultilineTextWidget
 
-Displays multiple lines of read-only text. Text wraps automatically based on widget width.
+Zobrazuje více řádků textu pouze pro čtení. Text se automaticky zalamuje podle šířky widgetu.
 
-**Kdy použít:** Description panels, help text, log displays.
+**Kdy použít:** Panely s popisem, nápovědný text, zobrazení logů.
 
 ### RichTextWidget
 
-Supports inline images embedded within text using `<image>` tags. Also supports text wrapping.
+Podporuje vložené obrázky v textu pomocí tagů `<image>`. Také podporuje zalamování textu.
 
 **Klíčové atributy layoutu:**
-- `wrap 1` -- Enable word wrapping
+- `wrap 1` -- Povolit zalamování slov
 
-**Usage in text:**
+**Použití v textu:**
 ```
 "Health: <image set:dayz_gui image:iconHealth0 /> OK"
 ```
 
-**Kdy použít:** Status text with icons, formatted messages, chat with inline images.
+**Kdy použít:** Stavový text s ikonami, formátované zprávy, chat s vloženými obrázky.
 
 ### ImageWidget
 
-Displays images from imageset sprite sheets or loaded from file paths.
+Zobrazuje obrázky z imagesetových sprite sheetů nebo načtené ze souborových cest.
 
 **Klíčové metody:**
 ```c
 ImageWidget iw;
-iw.SetImage(int index);                    // Switch between image0, image1, etc.
-iw.LoadImageFile(int slot, string path);   // Load image from file
-iw.LoadMaskTexture(string path);           // Load a mask texture
-iw.SetMaskProgress(float progress);        // 0-1 for wipe/reveal transitions
+iw.SetImage(int index);                    // Přepnutí mezi image0, image1 atd.
+iw.LoadImageFile(int slot, string path);   // Načtení obrázku ze souboru
+iw.LoadMaskTexture(string path);           // Načtení maskové textury
+iw.SetMaskProgress(float progress);        // 0-1 pro přechodové efekty odhalení
 ```
 
 **Klíčové atributy layoutu:**
-- `image0 "set:dayz_gui image:icon_refresh"` -- Image from an imageset
-- `mode blend` -- Blend mode (`blend`, `additive`, `stretch`)
-- `"src alpha" 1` -- Use source alpha channel
-- `stretch 1` -- Stretch image to fill widget
-- `"flip u" 1` -- Flip horizontally
-- `"flip v" 1` -- Flip vertically
+- `image0 "set:dayz_gui image:icon_refresh"` -- Obrázek z imagesetu
+- `mode blend` -- Režim prolínání (`blend`, `additive`, `stretch`)
+- `"src alpha" 1` -- Použít zdrojový alfa kanál
+- `stretch 1` -- Roztáhnout obrázek na celý widget
+- `"flip u" 1` -- Horizontální převrácení
+- `"flip v" 1` -- Vertikální převrácení
 
-**Kdy použít:** Icons, logos, backgrounds, map markers, status indicators.
+**Kdy použít:** Ikony, loga, pozadí, mapové značky, stavové indikátory.
 
 ### CanvasWidget
 
-A drawing surface where you can render lines programmatically.
+Kreslicí plocha, na které můžete programaticky vykreslovat čáry.
 
 **Klíčové metody:**
 ```c
@@ -202,148 +206,148 @@ cw.DrawLine(float x1, float y1, float x2, float y2, float width, int color);
 cw.Clear();
 ```
 
-**Kdy použít:** Custom graphs, connection lines between nodes, debug overlays.
+**Kdy použít:** Vlastní grafy, spojovací čáry mezi uzly, ladící překryvy.
 
 ### MapWidget
 
-The full interactive world map. Supports panning, zooming, and coordinate conversion.
+Kompletní interaktivní mapa světa. Podporuje posouvání, přibližování a konverzi souřadnic.
 
 **Klíčové metody:**
 ```c
 MapWidget mw;
-mw.SetMapPos(vector pos);              // Center on world position
-mw.GetMapPos();                        // Current center position
-mw.SetScale(float scale);             // Zoom level
-mw.GetScale();                        // Current zoom
-mw.MapToScreen(vector world_pos);     // World coords to screen coords
-mw.ScreenToMap(vector screen_pos);    // Screen coords to world coords
+mw.SetMapPos(vector pos);              // Vycentrování na pozici ve světě
+mw.GetMapPos();                        // Aktuální pozice středu
+mw.SetScale(float scale);             // Úroveň přiblížení
+mw.GetScale();                        // Aktuální přiblížení
+mw.MapToScreen(vector world_pos);     // Světové souřadnice na souřadnice obrazovky
+mw.ScreenToMap(vector screen_pos);    // Souřadnice obrazovky na světové souřadnice
 ```
 
-**Kdy použít:** Mission maps, GPS systems, location pickers.
+**Kdy použít:** Mapy misí, GPS systémy, výběr lokací.
 
 ### ItemPreviewWidget
 
-Renders a 3D preview of any DayZ inventory item.
+Vykresluje 3D náhled jakéhokoli inventářového předmětu DayZ.
 
-**Kdy použít:** Inventory screens, loot previews, shop interfaces.
+**Kdy použít:** Inventářové obrazovky, náhledy lupu, obchodní rozhraní.
 
 ### PlayerPreviewWidget
 
-Renders a 3D preview of the player character model.
+Vykresluje 3D náhled modelu postavy hráče.
 
-**Kdy použít:** Character creation screens, equipment preview, wardrobe systems.
+**Kdy použít:** Obrazovky vytváření postavy, náhled vybavení, systémy šatníku.
 
 ### RTTextureWidget
 
-Renders its children to a texture surface rather than directly to the screen.
+Vykresluje své potomky na texturový povrch místo přímo na obrazovku.
 
-**Kdy použít:** Minimap rendering, picture-in-picture effects, offscreen UI composition.
+**Kdy použít:** Vykreslování minimapy, efekty obraz v obraze, mimoscénová kompozice UI.
 
 ---
 
-## Interactive Widgets
+## Interaktivní widgety
 
-Interactive widgets respond to user input and fire events.
+Interaktivní widgety reagují na uživatelský vstup a vyvolávají události.
 
 | Skriptová třída | Layoutová třída | Účel |
 |---|---|---|
-| `ButtonWidget` | `ButtonWidgetClass` | Clickable button |
+| `ButtonWidget` | `ButtonWidgetClass` | Klikací tlačítko |
 | `CheckBoxWidget` | `CheckBoxWidgetClass` | Booleovský checkbox |
-| `EditBoxWidget` | `EditBoxWidgetClass` | Single-line text input |
-| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Multi-line text input |
-| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Masked password input |
-| `SliderWidget` | `SliderWidgetClass` | Horizontal slider control |
-| `XComboBoxWidget` | `XComboBoxWidgetClass` | Dropdown selection |
-| `TextListboxWidget` | `TextListboxWidgetClass` | Selectable row list |
-| `ProgressBarWidget` | `ProgressBarWidgetClass` | Progress indicator |
-| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Minimal progress indicator |
+| `EditBoxWidget` | `EditBoxWidgetClass` | Jednořádkový textový vstup |
+| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Víceřádkový textový vstup |
+| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Maskovaný vstup hesla |
+| `SliderWidget` | `SliderWidgetClass` | Horizontální posuvník |
+| `XComboBoxWidget` | `XComboBoxWidgetClass` | Rozbalovací výběr |
+| `TextListboxWidget` | `TextListboxWidgetClass` | Seznam s volitelnými řádky |
+| `ProgressBarWidget` | `ProgressBarWidgetClass` | Indikátor průběhu |
+| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Minimální indikátor průběhu |
 
 ### ButtonWidget
 
-The primary interactive control. Supports both momentary click and toggle modes.
+Primární interaktivní ovládací prvek. Podporuje jak okamžitý klik, tak přepínací režim.
 
 **Klíčové metody:**
 ```c
 ButtonWidget bw;
 bw.SetText("Click Me");
-bw.GetState();              // Returns bool (toggle buttons only)
-bw.SetState(bool state);    // Set toggle state
+bw.GetState();              // Vrací bool (pouze přepínací tlačítka)
+bw.SetState(bool state);    // Nastavení stavu přepnutí
 ```
 
 **Klíčové atributy layoutu:**
-- `text "Label"` -- Button label text
-- `switch toggle` -- Make it a toggle button
-- `style Default` -- Visual style
+- `text "Label"` -- Text popisku tlačítka
+- `switch toggle` -- Změnit na přepínací tlačítko
+- `style Default` -- Vizuální styl
 
 **Vyvolávané události:** `OnClick(Widget w, int x, int y, int button)`
 
 ### CheckBoxWidget
 
-A boolean toggle control.
+Booleovský přepínací ovládací prvek.
 
 **Klíčové metody:**
 ```c
 CheckBoxWidget cb;
-cb.IsChecked();                 // Returns bool
-cb.SetChecked(bool checked);    // Set state
+cb.IsChecked();                 // Vrací bool
+cb.SetChecked(bool checked);    // Nastavení stavu
 ```
 
 **Vyvolávané události:** `OnChange(Widget w, int x, int y, bool finished)`
 
 ### EditBoxWidget
 
-A single-line text input field.
+Jednořádkové vstupní textové pole.
 
 **Klíčové metody:**
 ```c
 EditBoxWidget eb;
-eb.GetText();               // Returns string
-eb.SetText("default");      // Set text content
+eb.GetText();               // Vrací string
+eb.SetText("default");      // Nastavení textového obsahu
 ```
 
-**Vyvolávané události:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when Enter is pressed.
+**Vyvolávané události:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` je `true` při stisknutí Enter.
 
 ### SliderWidget
 
-A horizontal slider for numeric values.
+Horizontální posuvník pro číselné hodnoty.
 
 **Klíčové metody:**
 ```c
 SliderWidget sw;
-sw.GetCurrent();            // Returns float (0-1)
-sw.SetCurrent(float val);   // Set position
+sw.GetCurrent();            // Vrací float (0-1)
+sw.SetCurrent(float val);   // Nastavení pozice
 ```
 
 **Klíčové atributy layoutu:**
-- `"fill in" 1` -- Show filled track behind handle
-- `"listen to input" 1` -- Respond to mouse input
+- `"fill in" 1` -- Zobrazit vyplněnou dráhu za jezdcem
+- `"listen to input" 1` -- Reagovat na vstup myši
 
-**Vyvolávané události:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when the user releases the slider.
+**Vyvolávané události:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` je `true` když uživatel pustí posuvník.
 
 ### XComboBoxWidget
 
-A dropdown selection list.
+Rozbalovací výběrový seznam.
 
 **Klíčové metody:**
 ```c
 XComboBoxWidget xcb;
 xcb.AddItem("Option A");
 xcb.AddItem("Option B");
-xcb.SetCurrentItem(0);         // Select by index
-xcb.GetCurrentItem();          // Returns selected index
-xcb.ClearAll();                // Remove all items
+xcb.SetCurrentItem(0);         // Výběr podle indexu
+xcb.GetCurrentItem();          // Vrací vybraný index
+xcb.ClearAll();                // Odstranění všech položek
 ```
 
 ### TextListboxWidget
 
-A scrollable list of text rows. Supports selection and multi-column data.
+Posuvný seznam textových řádků. Podporuje výběr a vícesloupcová data.
 
 **Klíčové metody:**
 ```c
 TextListboxWidget tlb;
-tlb.AddItem("Row text", null, 0);   // text, userData, column
-tlb.GetSelectedRow();               // Returns int (-1 if none)
-tlb.SetRow(int row);                // Select a row
+tlb.AddItem("Row text", null, 0);   // text, userData, sloupec
+tlb.GetSelectedRow();               // Vrací int (-1 pokud nic)
+tlb.SetRow(int row);                // Výběr řádku
 tlb.RemoveRow(int row);
 tlb.ClearItems();
 ```
@@ -352,7 +356,7 @@ tlb.ClearItems();
 
 ### ProgressBarWidget
 
-Displays a progress indicator.
+Zobrazuje indikátor průběhu.
 
 **Klíčové metody:**
 ```c
@@ -360,13 +364,13 @@ ProgressBarWidget pb;
 pb.SetCurrent(float value);    // 0-100
 ```
 
-**Kdy použít:** Loading bars, health bars, mission progress, cooldown indicators.
+**Kdy použít:** Ukazatele načítání, ukazatele zdraví, průběh misí, indikátory přebíjení.
 
 ---
 
-## Complete TypeID Reference
+## Kompletní reference TypeID
 
-Use these constants with `GetGame().GetWorkspace().CreateWidget()` for programmatic widget creation:
+Tyto konstanty použijte s `GetGame().GetWorkspace().CreateWidget()` pro programatické vytváření widgetů:
 
 ```
 FrameWidgetTypeID
@@ -394,36 +398,65 @@ ScrollWidgetTypeID
 
 ---
 
-## Choosing the Right Widget
+## Výběr správného widgetu
 
 | Potřebuji... | Použít tento widget |
 |---|---|
-| Group widgets together (invisible) | `FrameWidget` |
-| Draw a colored rectangle | `PanelWidget` |
-| Show text | `TextWidget` |
-| Show multi-line text | `MultilineTextWidget` or `RichTextWidget` with `wrap 1` |
-| Show text with inline icons | `RichTextWidget` |
-| Display an image/icon | `ImageWidget` |
-| Create a clickable button | `ButtonWidget` |
-| Create a toggle (on/off) | `CheckBoxWidget` or `ButtonWidget` with `switch toggle` |
-| Accept text input | `EditBoxWidget` |
-| Accept multi-line text input | `MultilineEditBoxWidget` |
-| Accept a password | `PasswordEditBoxWidget` |
-| Let user pick a number | `SliderWidget` |
-| Let user pick from a list | `XComboBoxWidget` (dropdown) or `TextListboxWidget` (visible list) |
-| Show progress | `ProgressBarWidget` or `SimpleProgressBarWidget` |
-| Arrange children in a flow | `WrapSpacerWidget` |
-| Arrange children in a grid | `GridSpacerWidget` |
-| Make content scrollable | `ScrollWidget` |
-| Show a 3D item model | `ItemPreviewWidget` |
-| Show the player model | `PlayerPreviewWidget` |
-| Show the world map | `MapWidget` |
-| Draw custom lines/shapes | `CanvasWidget` |
-| Render to a texture | `RTTextureWidget` |
+| Seskupit widgety dohromady (neviditelně) | `FrameWidget` |
+| Nakreslit barevný obdélník | `PanelWidget` |
+| Zobrazit text | `TextWidget` |
+| Zobrazit víceřádkový text | `MultilineTextWidget` nebo `RichTextWidget` s `wrap 1` |
+| Zobrazit text s vloženými ikonami | `RichTextWidget` |
+| Zobrazit obrázek/ikonu | `ImageWidget` |
+| Vytvořit klikací tlačítko | `ButtonWidget` |
+| Vytvořit přepínač (zapnuto/vypnuto) | `CheckBoxWidget` nebo `ButtonWidget` s `switch toggle` |
+| Přijmout textový vstup | `EditBoxWidget` |
+| Přijmout víceřádkový textový vstup | `MultilineEditBoxWidget` |
+| Přijmout heslo | `PasswordEditBoxWidget` |
+| Nechat uživatele vybrat číslo | `SliderWidget` |
+| Nechat uživatele vybrat ze seznamu | `XComboBoxWidget` (rozbalovací) nebo `TextListboxWidget` (viditelný seznam) |
+| Zobrazit průběh | `ProgressBarWidget` nebo `SimpleProgressBarWidget` |
+| Uspořádat potomky v proudu | `WrapSpacerWidget` |
+| Uspořádat potomky v mřížce | `GridSpacerWidget` |
+| Umožnit posouvání obsahu | `ScrollWidget` |
+| Zobrazit 3D model předmětu | `ItemPreviewWidget` |
+| Zobrazit model hráče | `PlayerPreviewWidget` |
+| Zobrazit mapu světa | `MapWidget` |
+| Kreslit vlastní čáry/tvary | `CanvasWidget` |
+| Vykreslovat do textury | `RTTextureWidget` |
 
 ---
 
-## Next Steps
+## Další kroky
 
-- [3.2 Layout File Format](02-layout-files.md) -- Learn how to define widget trees in `.layout` files
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code instead of layout files
+- [3.2 Formát souboru layoutu](02-layout-files.md) -- Naučte se definovat stromy widgetů v `.layout` souborech
+- [3.5 Programatické vytváření widgetů](05-programmatic-widgets.md) -- Vytváření widgetů z kódu místo souborů layoutu
+
+---
+
+## Osvědčené postupy
+
+- Používejte `FrameWidget` jako výchozí kontejner. `PanelWidget` používejte pouze tehdy, když potřebujete viditelné barevné pozadí.
+- Upřednostňujte `RichTextWidget` před `TextWidget`, když byste mohli později potřebovat vložené ikony -- přepínání typů v existujícím layoutu je pracné.
+- Vždy kontrolujte null po `FindAnyWidget()` a `Cast()`. Chybějící názvy widgetů tiše vrátí `null` a způsobí pád při dalším volání metody.
+- Používejte `WrapSpacerWidget` pro dynamické seznamy a `GridSpacerWidget` pro pevné mřížky. Nerozesťávejte potomky ručně v proudovém rozložení.
+- Vyhněte se `CanvasWidget` pro produkční UI -- překresluje se každý snímek a nemá dávkování. Používejte ho pouze pro ladící překryvy.
+
+---
+
+## Teorie vs. praxe
+
+| Koncept | Teorie | Realita |
+|---------|--------|---------|
+| `ScrollWidget` automaticky posouvá k obsahu | Posuvník se objeví, když obsah přesáhne hranice | Musíte ručně volat `VScrollToPos()` pro posunutí k novému obsahu; widget se automaticky neposouvá při přidání potomka |
+| `SliderWidget` vyvolává průběžné události | `OnChange` se vyvolá při každém pixelu tažení | Parametr `finished` je `false` během tažení a `true` při uvolnění; aktualizujte náročnou logiku pouze když `finished == true` |
+| `XComboBoxWidget` podporuje mnoho položek | Rozbalovací seznam funguje s jakýmkoli počtem | Výkon se znatelně zhoršuje u 100+ položek; pro dlouhé seznamy místo toho použijte `TextListboxWidget` |
+| `ItemPreviewWidget` zobrazuje jakýkoli předmět | Předejte jakýkoli classname pro 3D náhled | Widget vyžaduje načtený `.p3d` model předmětu; modované předměty potřebují přítomné datové PBO |
+| `MapWidget` je jednoduchý displej | Pouze zobrazuje mapu | Zachycuje veškerý vstup myši ve výchozím nastavení; musíte pečlivě spravovat příznaky `IGNOREPOINTER`, jinak blokuje klikání na překrývající se widgety |
+
+---
+
+## Kompatibilita a dopad
+
+- **Více modů:** ID typů widgetů jsou konstanty enginu sdílené všemi mody. Dva mody vytvářející widgety se stejným názvem pod stejným rodičem budou kolidovat. Používejte unikátní názvy widgetů s prefixem vašeho modu.
+- **Výkon:** `TextListboxWidget` a `ScrollWidget` se stovkami potomků způsobují propady snímkové frekvence. Pro seznamy přesahující 50 položek widgety sdružujte a recyklujte.

@@ -1,196 +1,196 @@
-# Chapter 6.11: Mission Hooks
+# 第 6.11 章：任务钩子
 
-[Home](../../README.md) | [<< Previous: Central Economy](10-central-economy.md) | **Mission Hooks** | [Next: Action System >>](12-action-system.md)
+[首页](../../README.md) | [<< 上一章：中央经济](10-central-economy.md) | **任务钩子** | [下一章：动作系统 >>](12-action-system.md)
 
 ---
 
 ## 简介
 
-Every DayZ mod needs an entry point --- a place where it initializes managers, registers RPC handlers, hooks into player connections, and cleans up on shutdown. That entry point is the **Mission** class. 引擎创建 exactly one Mission instance when a scenario loads: `MissionServer` on a dedicated server, `MissionGameplay` on a client, or both on a listen server. These classes provide lifecycle hooks that fire in a guaranteed order, giving mods a reliable place to inject behavior.
+每个 DayZ 模组都需要一个入口点——一个初始化管理器、注册 RPC 处理器、钩入玩家连接和关闭时清理的地方。这个入口点就是 **Mission** 类。当场景加载时，引擎创建恰好一个 Mission 实例：专用服务器上的 `MissionServer`，客户端上的 `MissionGameplay`，或者在监听服务器上两者都有。这些类提供按保证顺序触发的生命周期钩子，为模组提供可靠的行为注入点。
 
-本章涵盖 the full Mission class hierarchy, every hookable method, the correct `modded class` pattern for extending them, and real-world examples from vanilla DayZ, COT, and Expansion.
+本章涵盖完整的 Mission 类层次结构、每个可钩入的方法、正确的 `modded class` 扩展模式，以及来自原版 DayZ、COT 和 Expansion 的真实案例。
 
 ---
 
 ## 类层次结构
 
 ```
-Mission                      // 3_Game/gameplay.c (base, defines all hook signatures)
-└── MissionBaseWorld         // 4_World/classes/missionbaseworld.c (minimal bridge)
-    └── MissionBase          // 5_Mission/mission/missionbase.c (shared setup: HUD, menus, plugins)
-        ├── MissionServer    // 5_Mission/mission/missionserver.c (server-side)
-        └── MissionGameplay  // 5_Mission/mission/missiongameplay.c (client-side)
+Mission                      // 3_Game/gameplay.c（基类，定义所有钩子签名）
+└── MissionBaseWorld         // 4_World/classes/missionbaseworld.c（最小桥接）
+    └── MissionBase          // 5_Mission/mission/missionbase.c（共享设置：HUD、菜单、插件）
+        ├── MissionServer    // 5_Mission/mission/missionserver.c（服务器端）
+        └── MissionGameplay  // 5_Mission/mission/missiongameplay.c（客户端）
 ```
 
-- **Mission** defines all hook signatures as empty methods: `OnInit()`, `OnUpdate()`, `OnEvent()`, `OnMissionStart()`, `OnMissionFinish()`, `OnKeyPress()`, `OnKeyRelease()`, etc.
-- **MissionBase** initializes the plugin manager, widget event handler, world data, dynamic music, sound sets, and input device tracking. It is the common parent for both server and client.
-- **MissionServer** handles player connections, disconnections, respawns, corpse management, tick scheduling, and artillery.
-- **MissionGameplay** handles HUD creation, chat, action menus, voice-over-network UI, inventory, input exclusion, and client-side player scheduling.
+- **Mission** 定义所有钩子签名为空方法：`OnInit()`、`OnUpdate()`、`OnEvent()`、`OnMissionStart()`、`OnMissionFinish()`、`OnKeyPress()`、`OnKeyRelease()` 等。
+- **MissionBase** 初始化插件管理器、控件事件处理器、世界数据、动态音乐、声音集和输入设备跟踪。它是服务器和客户端的共同父类。
+- **MissionServer** 处理玩家连接、断开连接、重生、尸体管理、定时调度和炮击。
+- **MissionGameplay** 处理 HUD 创建、聊天、动作菜单、语音通信 UI、物品栏、输入排除和客户端玩家调度。
 
 ---
 
-## 生命周期概述
+## 生命周期概览
 
-### MissionServer Lifecycle (Server-Side)
+### MissionServer 生命周期（服务器端）
 
 ```mermaid
 flowchart TD
-    A["Engine creates MissionServer"] --> B["Constructor: MissionServer()"]
+    A["引擎创建 MissionServer"] --> B["构造函数：MissionServer()"]
     B --> C["OnInit()"]
     C --> D["OnGameplayDataHandlerLoad()"]
     D --> E["OnMissionStart()"]
     E --> F["OnMissionLoaded()"]
-    F --> G["OnUpdate(timeslice) loop"]
+    F --> G["OnUpdate(timeslice) 循环"]
     G --> G
     G --> H["OnMissionFinish()"]
-    H --> I["Destructor: ~MissionServer()"]
+    H --> I["析构函数：~MissionServer()"]
 
-    G -.-> J["OnEvent() — player connect/disconnect/respawn"]
+    G -.-> J["OnEvent()——玩家连接/断开/重生"]
     J -.-> K["InvokeOnConnect()"]
     J -.-> L["OnClientReadyEvent()"]
     J -.-> M["InvokeOnDisconnect()"]
 ```
 
-### MissionGameplay Lifecycle (Client-Side)
+### MissionGameplay 生命周期（客户端）
 
 ```mermaid
 flowchart TD
-    A["Engine creates MissionGameplay"] --> B["Constructor: MissionGameplay()"]
-    B --> C["OnInit() — HUD, chat, action menu"]
+    A["引擎创建 MissionGameplay"] --> B["构造函数：MissionGameplay()"]
+    B --> C["OnInit()——HUD、聊天、动作菜单"]
     C --> D["OnMissionStart()"]
     D --> E["OnMissionLoaded()"]
-    E --> F["OnUpdate(timeslice) loop"]
+    E --> F["OnUpdate(timeslice) 循环"]
     F --> F
     F --> G["OnMissionFinish()"]
-    G --> H["Destructor: ~MissionGameplay()"]
+    G --> H["析构函数：~MissionGameplay()"]
 
     F -.-> I["OnKeyPress(key) / OnKeyRelease(key)"]
-    F -.-> J["OnEvent() — chat, VON, window resize"]
+    F -.-> J["OnEvent()——聊天、语音、窗口调整"]
 ```
 
 ---
 
-## Mission Base Class Methods
+## Mission 基类方法
 
-**File:** `3_Game/gameplay.c`
+**文件：**`3_Game/gameplay.c`
 
-The `Mission` 基类 defines every hookable method. All are virtual with empty default implementations unless noted.
+`Mission` 基类定义了每个可钩入的方法。除非另有说明，所有方法都是带空默认实现的虚方法。
 
-### Lifecycle Hooks
+### 生命周期钩子
 
-| Method | Signature | When It Fires |
+| 方法 | 签名 | 触发时机 |
 |--------|-----------|---------------|
-| `OnInit` | `void OnInit()` | After constructor, before mission starts. Primary setup point. |
-| `OnMissionStart` | `void OnMissionStart()` | After OnInit. The mission world is active. |
-| `OnMissionLoaded` | `void OnMissionLoaded()` | After OnMissionStart. All vanilla systems are initialized. |
-| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | Server: after gameplay data (cfggameplay.json) is loaded. |
-| `OnUpdate` | `void OnUpdate(float timeslice)` | Every frame. `timeslice` is seconds since last frame (typically 0.016-0.033). |
-| `OnMissionFinish` | `void OnMissionFinish()` | On shutdown or disconnect. Clean up everything here. |
+| `OnInit` | `void OnInit()` | 构造函数之后，任务启动之前。主要设置点。 |
+| `OnMissionStart` | `void OnMissionStart()` | OnInit 之后。任务世界已激活。 |
+| `OnMissionLoaded` | `void OnMissionLoaded()` | OnMissionStart 之后。所有原版系统已初始化。 |
+| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | 服务器：游戏数据（cfggameplay.json）加载后。 |
+| `OnUpdate` | `void OnUpdate(float timeslice)` | 每帧。`timeslice` 是自上一帧以来的秒数（通常 0.016-0.033）。 |
+| `OnMissionFinish` | `void OnMissionFinish()` | 关闭或断开连接时。在此清理所有内容。 |
 
-### Input Hooks (Client-Side)
+### 输入钩子（客户端）
 
-| Method | Signature | When It Fires |
+| 方法 | 签名 | 触发时机 |
 |--------|-----------|---------------|
-| `OnKeyPress` | `void OnKeyPress(int key)` | Physical key pressed. `key` is a `KeyCode` constant. |
-| `OnKeyRelease` | `void OnKeyRelease(int key)` | Physical key released. |
-| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Mouse button pressed. |
-| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Mouse button released. |
+| `OnKeyPress` | `void OnKeyPress(int key)` | 物理按键按下。`key` 是 `KeyCode` 常量。 |
+| `OnKeyRelease` | `void OnKeyRelease(int key)` | 物理按键释放。 |
+| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | 鼠标按钮按下。 |
+| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | 鼠标按钮释放。 |
 
-### Event Hook
+### 事件钩子
 
-| Method | Signature | When It Fires |
+| 方法 | 签名 | 触发时机 |
 |--------|-----------|---------------|
-| `OnEvent` | `void OnEvent(EventType eventTypeId, Param params)` | Engine events: chat, VON, player connect/disconnect, window resize, etc. |
+| `OnEvent` | `void OnEvent(EventType eventTypeId, Param params)` | 引擎事件：聊天、语音、玩家连接/断开、窗口调整等。 |
 
-### Utility Methods
+### 工具方法
 
-| Method | Signature | 说明 |
+| 方法 | 签名 | 描述 |
 |--------|-----------|-------------|
-| `GetHud` | `Hud GetHud()` | Returns the HUD instance (client only). |
-| `GetWorldData` | `WorldData GetWorldData()` | Returns world-specific data (temperature curves, etc.). |
-| `IsPaused` | `bool IsPaused()` | Whether the game is paused (single player / listen server). |
-| `IsServer` | `bool IsServer()` | `true` for MissionServer, `false` for MissionGameplay. |
-| `IsMissionGameplay` | `bool IsMissionGameplay()` | `true` for MissionGameplay, `false` for MissionServer. |
-| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | Re-enable player input after disabling. |
-| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | Disable player input (e.g., `INPUT_EXCLUDE_ALL`). |
-| `IsControlDisabled` | `bool IsControlDisabled()` | Whether player controls are currently disabled. |
-| `GetControlDisabledMode` | `int GetControlDisabledMode()` | Returns the current input exclusion mode. |
+| `GetHud` | `Hud GetHud()` | 返回 HUD 实例（仅客户端）。 |
+| `GetWorldData` | `WorldData GetWorldData()` | 返回世界特定数据（温度曲线等）。 |
+| `IsPaused` | `bool IsPaused()` | 游戏是否暂停（单人/监听服务器）。 |
+| `IsServer` | `bool IsServer()` | MissionServer 为 `true`，MissionGameplay 为 `false`。 |
+| `IsMissionGameplay` | `bool IsMissionGameplay()` | MissionGameplay 为 `true`，MissionServer 为 `false`。 |
+| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | 禁用后重新启用玩家输入。 |
+| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | 禁用玩家输入（例如 `INPUT_EXCLUDE_ALL`）。 |
+| `IsControlDisabled` | `bool IsControlDisabled()` | 玩家控制是否当前被禁用。 |
+| `GetControlDisabledMode` | `int GetControlDisabledMode()` | 返回当前输入排除模式。 |
 
 ---
 
-## MissionServer Hooks (Server-Side)
+## MissionServer 钩子（服务器端）
 
-**File:** `5_Mission/mission/missionserver.c`
+**文件：**`5_Mission/mission/missionserver.c`
 
-MissionServer is instantiated by 引擎 on dedicated servers. It handles everything related to player lifecycle on the server.
+MissionServer 由引擎在专用服务器上实例化。它处理与服务器上玩家生命周期相关的一切。
 
-### Key Vanilla Behavior
+### 关键原版行为
 
-- **Constructor**: Sets up `CallQueue` for player stats (30-second interval), dead players array, logout tracking maps, rain procurement handler.
-- **OnInit**: Loads `CfgGameplayHandler`, `PlayerSpawnHandler`, `CfgPlayerRestrictedAreaHandler`, `UndergroundAreaLoader`, artillery firing positions.
-- **OnMissionStart**: Creates effect area zones (contaminated zones, etc.).
-- **OnUpdate**: Runs tick scheduler, processes logout timers, updates base environment temperature, rain procurement, random artillery.
+- **构造函数**：设置玩家统计的 `CallQueue`（30 秒间隔）、死亡玩家数组、登出跟踪映射、降雨采购处理器。
+- **OnInit**：加载 `CfgGameplayHandler`、`PlayerSpawnHandler`、`CfgPlayerRestrictedAreaHandler`、`UndergroundAreaLoader`、炮击发射位置。
+- **OnMissionStart**：创建效果区域（污染区域等）。
+- **OnUpdate**：运行定时调度器、处理登出计时器、更新基础环境温度、降雨采购、随机炮击。
 
-### OnEvent --- Player Connection Events
+### OnEvent——玩家连接事件
 
-The server's `OnEvent` is the central dispatcher for all player lifecycle events. The engine sends events with typed `Param` objects. Vanilla handles them via a `switch` block:
+服务器的 `OnEvent` 是所有玩家生命周期事件的中央调度器。引擎发送带有类型化 `Param` 对象的事件。原版通过 `switch` 块处理它们：
 
-| Event | Param Type | What Happens |
+| 事件 | 参数类型 | 发生了什么 |
 |-------|-----------|--------------|
-| `ClientPrepareEventTypeID` | `ClientPrepareEventParams` | Decides DB vs fresh character |
-| `ClientNewEventTypeID` | `ClientNewEventParams` | Creates + equips new character, calls `InvokeOnConnect` |
-| `ClientReadyEventTypeID` | `ClientReadyEventParams` | Existing character loaded, calls `OnClientReadyEvent` + `InvokeOnConnect` |
-| `ClientRespawnEventTypeID` | `ClientRespawnEventParams` | Player respawn request, kills old character if unconscious |
-| `ClientReconnectEventTypeID` | `ClientReconnectEventParams` | Player reconnected to alive character |
-| `ClientDisconnectedEventTypeID` | `ClientDisconnectedEventParams` | Player disconnecting, starts logout timer |
-| `LogoutCancelEventTypeID` | `LogoutCancelEventParams` | Player cancelled logout countdown |
+| `ClientPrepareEventTypeID` | `ClientPrepareEventParams` | 决定使用数据库角色还是新角色 |
+| `ClientNewEventTypeID` | `ClientNewEventParams` | 创建 + 装备新角色，调用 `InvokeOnConnect` |
+| `ClientReadyEventTypeID` | `ClientReadyEventParams` | 已有角色加载，调用 `OnClientReadyEvent` + `InvokeOnConnect` |
+| `ClientRespawnEventTypeID` | `ClientRespawnEventParams` | 玩家重生请求，如果失去意识则杀死旧角色 |
+| `ClientReconnectEventTypeID` | `ClientReconnectEventParams` | 玩家重新连接到存活角色 |
+| `ClientDisconnectedEventTypeID` | `ClientDisconnectedEventParams` | 玩家断开连接，启动登出计时器 |
+| `LogoutCancelEventTypeID` | `LogoutCancelEventParams` | 玩家取消登出倒计时 |
 
-### Player Connection Methods
+### 玩家连接方法
 
-Called from within `OnEvent` when player-related events fire:
+从 `OnEvent` 内部调用，当玩家相关事件触发时：
 
-| Method | Signature | Vanilla Behavior |
+| 方法 | 签名 | 原版行为 |
 |--------|-----------|-----------------|
-| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Calls `player.OnConnect()`. Primary "player joined" hook. |
-| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Calls `player.OnDisconnect()`. Player fully disconnected. |
-| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | Calls `g_Game.SelectPlayer()`. Existing character loaded from DB. |
-| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | Creates + equips new character. Returns `PlayerBase`. |
-| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | Kills old character if unconscious/restrained. |
-| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Calls `player.OnReconnect()`. |
-| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Calls `InvokeOnDisconnect`, saves player, exits hive, handles body, removes from server. |
+| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | 调用 `player.OnConnect()`。主要的"玩家加入"钩子。 |
+| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | 调用 `player.OnDisconnect()`。玩家完全断开连接。 |
+| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | 调用 `g_Game.SelectPlayer()`。已有角色从数据库加载。 |
+| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | 创建 + 装备新角色。返回 `PlayerBase`。 |
+| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | 如果失去意识/被束缚则杀死旧角色。 |
+| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | 调用 `player.OnReconnect()`。 |
+| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | 调用 `InvokeOnDisconnect`，保存玩家，退出 hive，处理尸体，从服务器移除。 |
 
-### Character Setup
+### 角色设置
 
-| Method | Signature | 说明 |
+| 方法 | 签名 | 描述 |
 |--------|-----------|-------------|
-| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Creates player entity via `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()`. |
-| `EquipCharacter` | `void EquipCharacter(MenuDefaultCharacterData char_data)` | Iterates attachment slots, randomizes if custom respawn disabled. Calls `StartingEquipSetup()`. |
-| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **Empty in vanilla** --- your entry point for starter kits. |
+| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | 通过 `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()` 创建玩家实体。 |
+| `EquipCharacter` | `void EquipCharacter(MenuDefaultCharacterData char_data)` | 迭代附件槽位，如果自定义重生被禁用则随机化。调用 `StartingEquipSetup()`。 |
+| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **原版中为空**——你的初始装备入口点。 |
 
 ---
 
-## MissionGameplay Hooks (Client-Side)
+## MissionGameplay 钩子（客户端）
 
-**File:** `5_Mission/mission/missiongameplay.c`
+**文件：**`5_Mission/mission/missiongameplay.c`
 
-MissionGameplay is instantiated on the client when connecting to a server or starting single player. It manages all client-side UI and input.
+MissionGameplay 在客户端连接到服务器或启动单人游戏时实例化。它管理所有客户端 UI 和输入。
 
-### Key Vanilla Behavior
+### 关键原版行为
 
-- **Constructor**: Destroys existing menus, creates Chat, ActionMenu, IngameHud, VoN state, fade timers, SyncEvents registration.
-- **OnInit**: Guards against double init with `m_Initialized`. Creates HUD root widget from `"gui/layouts/day_z_hud.layout"`, chat widget, action menu, microphone icon, VoN voice level widgets, chat channel area. Calls `PPEffects.Init()` and `MapMarkerTypes.Init()`.
-- **OnMissionStart**: Hides cursor, sets mission state to `MISSION_STATE_GAME`, loads effect areas in singleplayer.
-- **OnUpdate**: Tick scheduler for local player, hologram updates, radial quickbar (console), gesture menu, input handling for inventory/chat/VoN, debug monitor, pause behavior.
-- **OnMissionFinish**: Hides dialog, destroys all menus and chat, deletes HUD root widget, stops all PPE effects, re-enables all inputs, sets mission state to `MISSION_STATE_FINNISH`.
+- **构造函数**：销毁现有菜单，创建 Chat、ActionMenu、IngameHud、VoN 状态、淡入淡出计时器、SyncEvents 注册。
+- **OnInit**：使用 `m_Initialized` 防止双重初始化。从 `"gui/layouts/day_z_hud.layout"` 创建 HUD 根控件、聊天控件、动作菜单、麦克风图标、VoN 语音级别控件、聊天频道区域。调用 `PPEffects.Init()` 和 `MapMarkerTypes.Init()`。
+- **OnMissionStart**：隐藏光标，将任务状态设为 `MISSION_STATE_GAME`，在单人游戏中加载效果区域。
+- **OnUpdate**：本地玩家的定时调度器、全息图更新、径向快捷栏（主机）、手势菜单、物品栏/聊天/VoN 的输入处理、调试监视器、暂停行为。
+- **OnMissionFinish**：隐藏对话框，销毁所有菜单和聊天，删除 HUD 根控件，停止所有 PPE 效果，重新启用所有输入，将任务状态设为 `MISSION_STATE_FINNISH`。
 
-### Input Hooks
+### 输入钩子
 
 ```c
 override void OnKeyPress(int key)
 {
     super.OnKeyPress(key);
-    // Vanilla forwards to Hud.KeyPress(key)
-    // key values are KeyCode constants (e.g., KeyCode.KC_F1 = 59)
+    // 原版转发到 Hud.KeyPress(key)
+    // key 值是 KeyCode 常量（例如 KeyCode.KC_F1 = 59）
 }
 
 override void OnKeyRelease(int key)
@@ -199,31 +199,31 @@ override void OnKeyRelease(int key)
 }
 ```
 
-### Event Hook
+### 事件钩子
 
-Vanilla `MissionGameplay.OnEvent()` handles `ChatMessageEventTypeID` (adds to chat widget), `ChatChannelEventTypeID` (updates channel indicator), `WindowsResizeEventTypeID` (rebuilds menus/HUD), `SetFreeCameraEventTypeID` (debug camera), and `VONStateEventTypeID` (voice state). Override it with the same `switch` pattern and always call `super.OnEvent()`.
+原版 `MissionGameplay.OnEvent()` 处理 `ChatMessageEventTypeID`（添加到聊天控件）、`ChatChannelEventTypeID`（更新频道指示器）、`WindowsResizeEventTypeID`（重建菜单/HUD）、`SetFreeCameraEventTypeID`（调试相机）和 `VONStateEventTypeID`（语音状态）。使用相同的 `switch` 模式重写它并始终调用 `super.OnEvent()`。
 
-### Input Control
+### 输入控制
 
-`PlayerControlDisable(int mode)` activates an input exclude group (e.g., `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). `PlayerControlEnable(bool bForceSuppress)` removes it. These map to exclude groups defined in `specific.xml`. Override them if your mod needs custom input exclusion behavior (as Expansion does for its menus).
+`PlayerControlDisable(int mode)` 激活输入排除组（例如 `INPUT_EXCLUDE_ALL`、`INPUT_EXCLUDE_INVENTORY`）。`PlayerControlEnable(bool bForceSuppress)` 移除它。这些映射到 `specific.xml` 中定义的排除组。如果你的模组需要自定义输入排除行为（如 Expansion 为其菜单所做的），请重写它们。
 
 ---
 
-## Server-Side Event Flow: Player Joins
+## 服务器端事件流：玩家加入
 
-Understanding the exact sequence of events when a player connects is critical for knowing where to hook your code.
+理解玩家连接时事件的确切顺序对于知道在哪里钩入代码至关重要。
 
-### New Character (First Join or After Death)
+### 新角色（首次加入或死亡后）
 
 ```mermaid
 sequenceDiagram
-    participant Engine
+    participant Engine as 引擎
     participant MS as MissionServer
     participant Player as PlayerBase
 
     Engine->>MS: OnEvent(ClientPrepareEventTypeID)
     MS->>MS: OnClientPrepareEvent(identity, useDB, pos, yaw, timeout)
-    Note over MS: Decides DB vs fresh character
+    Note over MS: 决定使用数据库角色还是新角色
 
     Engine->>MS: OnEvent(ClientNewEventTypeID)
     MS->>MS: OnClientNewEvent(identity, pos, ctx)
@@ -236,11 +236,11 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Existing Character (Reconnect After Disconnect)
+### 已有角色（断开连接后重新连接）
 
 ```mermaid
 sequenceDiagram
-    participant Engine
+    participant Engine as 引擎
     participant MS as MissionServer
     participant Player as PlayerBase
 
@@ -256,48 +256,48 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Player Disconnect
+### 玩家断开连接
 
 ```mermaid
 sequenceDiagram
-    participant Engine
+    participant Engine as 引擎
     participant MS as MissionServer
     participant Player as PlayerBase
 
     Engine->>MS: OnEvent(ClientDisconnectedEventTypeID)
     MS->>MS: OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)
-    Note over MS: Starts logout timer if alive
+    Note over MS: 如果存活则启动登出计时器
 
-    alt Logout timer expires
+    alt 登出计时器到期
         MS->>MS: PlayerDisconnected(player, identity, uid)
         MS->>MS: InvokeOnDisconnect(player)
         MS->>Player: player.OnDisconnect()
         MS->>Player: player.Save()
         MS->>MS: HandleBody(player)
         MS->>MS: g_Game.DisconnectPlayer(identity, uid)
-    else Player cancels logout
+    else 玩家取消登出
         Engine->>MS: OnEvent(LogoutCancelEventTypeID)
-        Note over MS: Removes from logout queue
+        Note over MS: 从登出队列移除
     end
 ```
 
 ---
 
-## How to Hook: The modded class Pattern
+## 如何钩入：modded class 模式
 
-The correct way to extend Mission classes is the `modded class` pattern. This uses Enforce Script's class inheritance mechanism where `modded class` extends the existing class without replacing it, allowing multiple mods to coexist.
+扩展 Mission 类的正确方式是 `modded class` 模式。这使用 Enforce Script 的类继承机制，其中 `modded class` 扩展现有类而不替换它，允许多个模组共存。
 
-### Basic Server Hook
+### 基本服务器钩子
 
 ```c
-// Your mod: Scripts/5_Mission/YourMod/MissionServer.c
+// 你的模组：Scripts/5_Mission/YourMod/MissionServer.c
 modded class MissionServer
 {
     ref MyServerManager m_MyManager;
 
     override void OnInit()
     {
-        super.OnInit();  // ALWAYS call super first
+        super.OnInit();  // 始终先调用 super
 
         m_MyManager = new MyServerManager();
         m_MyManager.Init();
@@ -312,24 +312,24 @@ modded class MissionServer
             m_MyManager = null;
         }
 
-        super.OnMissionFinish();  // Call super (before or after your cleanup)
+        super.OnMissionFinish();  // 调用 super（在你的清理之前或之后）
     }
 }
 ```
 
-### Basic Client Hook
+### 基本客户端钩子
 
 ```c
-// Your mod: Scripts/5_Mission/YourMod/MissionGameplay.c
+// 你的模组：Scripts/5_Mission/YourMod/MissionGameplay.c
 modded class MissionGameplay
 {
     ref MyHudWidget m_MyHud;
 
     override void OnInit()
     {
-        super.OnInit();  // ALWAYS call super first
+        super.OnInit();  // 始终先调用 super
 
-        // Create custom HUD elements
+        // 创建自定义 HUD 元素
         m_MyHud = new MyHudWidget();
         m_MyHud.Init();
     }
@@ -338,7 +338,7 @@ modded class MissionGameplay
     {
         super.OnUpdate(timeslice);
 
-        // Update custom HUD every frame
+        // 每帧更新自定义 HUD
         if (m_MyHud)
         {
             m_MyHud.Update(timeslice);
@@ -358,7 +358,7 @@ modded class MissionGameplay
 }
 ```
 
-### Hooking Player Connection
+### 钩入玩家连接
 
 ```c
 modded class MissionServer
@@ -367,21 +367,21 @@ modded class MissionServer
     {
         super.InvokeOnConnect(player, identity);
 
-        // Your code runs AFTER vanilla and all earlier mods
+        // 你的代码在原版和所有之前的模组之后运行
         if (player && identity)
         {
             string uid = identity.GetId();
             string name = identity.GetName();
             Print("[MyMod] Player connected: " + name + " (" + uid + ")");
 
-            // Load player data, send settings, etc.
+            // 加载玩家数据、发送设置等
             MyPlayerData.Load(uid);
         }
     }
 
     override void InvokeOnDisconnect(PlayerBase player)
     {
-        // Save data BEFORE super (player may be deleted after)
+        // 在 super 之前保存数据（玩家可能在之后被删除）
         if (player && player.GetIdentity())
         {
             string uid = player.GetIdentity().GetId();
@@ -393,33 +393,7 @@ modded class MissionServer
 }
 ```
 
-### Hooking Chat Messages (Server-Side OnEvent)
-
-```c
-modded class MissionServer
-{
-    override void OnEvent(EventType eventTypeId, Param params)
-    {
-        // Intercept BEFORE super to potentially block events
-        if (eventTypeId == ClientNewEventTypeID)
-        {
-            ClientNewEventParams newParams;
-            Class.CastTo(newParams, params);
-            PlayerIdentity identity = newParams.param1;
-
-            if (IsPlayerBanned(identity))
-            {
-                // Block the connection by not calling super
-                return;
-            }
-        }
-
-        super.OnEvent(eventTypeId, params);
-    }
-}
-```
-
-### Hooking Keyboard Input (Client-Side)
+### 钩入键盘输入（客户端）
 
 ```c
 modded class MissionGameplay
@@ -428,7 +402,7 @@ modded class MissionGameplay
     {
         super.OnKeyPress(key);
 
-        // Open custom menu on F6
+        // 按 F6 打开自定义菜单
         if (key == KeyCode.KC_F6)
         {
             if (!GetGame().GetUIManager().GetMenu())
@@ -440,9 +414,9 @@ modded class MissionGameplay
 }
 ```
 
-### Where to Register RPC Handlers
+### 在哪里注册 RPC 处理器
 
-RPC handlers should be registered in `OnInit`, not in the constructor. By `OnInit` time, all script modules are loaded and the networking layer is ready.
+RPC 处理器应在 `OnInit` 中注册，而不是在构造函数中。到 `OnInit` 时，所有脚本模块已加载，网络层已就绪。
 
 ```c
 modded class MissionServer
@@ -451,7 +425,7 @@ modded class MissionServer
     {
         super.OnInit();
 
-        // Register RPC handlers here
+        // 在这里注册 RPC 处理器
         GetDayZGame().Event_OnRPC.Insert(OnMyRPC);
     }
 
@@ -464,482 +438,154 @@ modded class MissionServer
     void OnMyRPC(PlayerIdentity sender, Object target, int rpc_type,
                  ParamsReadContext ctx)
     {
-        // Handle your RPCs
+        // 处理你的 RPC
     }
 }
 ```
 
 ---
 
-## Common Hooks by Purpose
+## 按用途的常用钩子
 
-| I want to... | Hook this method | On which class |
+| 我想要... | 钩入此方法 | 在哪个类上 |
 |--------------|------------------|----------------|
-| Initialize my mod on server | `OnInit()` | `MissionServer` |
-| Initialize my mod on client | `OnInit()` | `MissionGameplay` |
-| Run code 每帧 (server) | `OnUpdate(float timeslice)` | `MissionServer` |
-| Run code 每帧 (client) | `OnUpdate(float timeslice)` | `MissionGameplay` |
-| React to player join | `InvokeOnConnect(player, identity)` | `MissionServer` |
-| React to player leave | `InvokeOnDisconnect(player)` | `MissionServer` |
-| Send initial data to new client | `OnClientReadyEvent(identity, player)` | `MissionServer` |
-| React to new character spawn | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
-| Give starter equipment | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
-| React to player respawn | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
-| React to player reconnect | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
-| Handle disconnect/logout logic | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
-| Intercept server events (connect, chat) | `OnEvent(eventTypeId, params)` | `MissionServer` |
-| Intercept client events (chat, VON) | `OnEvent(eventTypeId, params)` | `MissionGameplay` |
-| Handle keyboard input | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
-| Create HUD elements | `OnInit()` | `MissionGameplay` |
-| Clean up on server shutdown | `OnMissionFinish()` | `MissionServer` |
-| Clean up on client disconnect | `OnMissionFinish()` | `MissionGameplay` |
-| Run code once after all systems loaded | `OnMissionLoaded()` | Either |
-| Disable/enable player input | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
+| 在服务器初始化我的模组 | `OnInit()` | `MissionServer` |
+| 在客户端初始化我的模组 | `OnInit()` | `MissionGameplay` |
+| 每帧运行代码（服务器） | `OnUpdate(float timeslice)` | `MissionServer` |
+| 每帧运行代码（客户端） | `OnUpdate(float timeslice)` | `MissionGameplay` |
+| 响应玩家加入 | `InvokeOnConnect(player, identity)` | `MissionServer` |
+| 响应玩家离开 | `InvokeOnDisconnect(player)` | `MissionServer` |
+| 向新客户端发送初始数据 | `OnClientReadyEvent(identity, player)` | `MissionServer` |
+| 响应新角色生成 | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
+| 给予初始装备 | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
+| 响应玩家重生 | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
+| 响应玩家重新连接 | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
+| 处理断开连接/登出逻辑 | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
+| 拦截服务器事件（连接、聊天） | `OnEvent(eventTypeId, params)` | `MissionServer` |
+| 拦截客户端事件（聊天、语音） | `OnEvent(eventTypeId, params)` | `MissionGameplay` |
+| 处理键盘输入 | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
+| 创建 HUD 元素 | `OnInit()` | `MissionGameplay` |
+| 服务器关闭时清理 | `OnMissionFinish()` | `MissionServer` |
+| 客户端断开时清理 | `OnMissionFinish()` | `MissionGameplay` |
+| 所有系统加载后运行一次代码 | `OnMissionLoaded()` | 两者均可 |
+| 禁用/启用玩家输入 | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
 
 ---
 
-## Server vs Client: Which Hooks Fire Where
+## 服务器与客户端：哪些钩子在哪里触发
 
-| Hook | Server | Client | 备注 |
+| 钩子 | 服务器 | 客户端 | 备注 |
 |------|--------|--------|-------|
-| Constructor | Yes | Yes | Different class on each side |
-| `OnInit()` | Yes | Yes | |
-| `OnMissionStart()` | Yes | Yes | |
-| `OnMissionLoaded()` | Yes | Yes | |
-| `OnGameplayDataHandlerLoad()` | Yes | No | cfggameplay.json loaded |
-| `OnUpdate(timeslice)` | Yes | Yes | Both run their own frame loop |
-| `OnMissionFinish()` | Yes | Yes | |
-| `OnEvent()` | Yes | Yes | Different event types on each side |
-| `InvokeOnConnect()` | Yes | No | Server only |
-| `InvokeOnDisconnect()` | Yes | No | Server only |
-| `OnClientReadyEvent()` | Yes | No | Server only |
-| `OnClientNewEvent()` | Yes | No | Server only |
-| `OnClientRespawnEvent()` | Yes | No | Server only |
-| `OnClientReconnectEvent()` | Yes | No | Server only |
-| `OnClientDisconnectedEvent()` | Yes | No | Server only |
-| `PlayerDisconnected()` | Yes | No | Server only |
-| `StartingEquipSetup()` | Yes | No | Server only |
-| `EquipCharacter()` | Yes | No | Server only |
-| `OnKeyPress()` | No | Yes | Client only |
-| `OnKeyRelease()` | No | Yes | Client only |
-| `OnMouseButtonPress()` | No | Yes | Client only |
-| `OnMouseButtonRelease()` | No | Yes | Client only |
-| `PlayerControlDisable()` | No | Yes | Client only |
-| `PlayerControlEnable()` | No | Yes | Client only |
+| 构造函数 | 是 | 是 | 每侧不同的类 |
+| `OnInit()` | 是 | 是 | |
+| `OnMissionStart()` | 是 | 是 | |
+| `OnMissionLoaded()` | 是 | 是 | |
+| `OnGameplayDataHandlerLoad()` | 是 | 否 | cfggameplay.json 已加载 |
+| `OnUpdate(timeslice)` | 是 | 是 | 两者运行自己的帧循环 |
+| `OnMissionFinish()` | 是 | 是 | |
+| `OnEvent()` | 是 | 是 | 每侧不同的事件类型 |
+| `InvokeOnConnect()` | 是 | 否 | 仅服务器 |
+| `InvokeOnDisconnect()` | 是 | 否 | 仅服务器 |
+| `OnClientReadyEvent()` | 是 | 否 | 仅服务器 |
+| `OnClientNewEvent()` | 是 | 否 | 仅服务器 |
+| `OnClientRespawnEvent()` | 是 | 否 | 仅服务器 |
+| `OnClientReconnectEvent()` | 是 | 否 | 仅服务器 |
+| `OnClientDisconnectedEvent()` | 是 | 否 | 仅服务器 |
+| `PlayerDisconnected()` | 是 | 否 | 仅服务器 |
+| `StartingEquipSetup()` | 是 | 否 | 仅服务器 |
+| `EquipCharacter()` | 是 | 否 | 仅服务器 |
+| `OnKeyPress()` | 否 | 是 | 仅客户端 |
+| `OnKeyRelease()` | 否 | 是 | 仅客户端 |
+| `OnMouseButtonPress()` | 否 | 是 | 仅客户端 |
+| `OnMouseButtonRelease()` | 否 | 是 | 仅客户端 |
+| `PlayerControlDisable()` | 否 | 是 | 仅客户端 |
+| `PlayerControlEnable()` | 否 | 是 | 仅客户端 |
 
 ---
 
-## EventType Constants Reference
+## OnInit 与 OnMissionStart 与 OnMissionLoaded
 
-All event constants are defined in `3_Game/gameplay.c` and dispatched through `OnEvent()`.
-
-| 常量 | Side | 说明 |
-|----------|------|-------------|
-| `ClientPrepareEventTypeID` | Server | Player identity received, decide DB vs fresh |
-| `ClientNewEventTypeID` | Server | New character being created |
-| `ClientReadyEventTypeID` | Server | Existing character loaded from DB |
-| `ClientRespawnEventTypeID` | Server | Player requested respawn |
-| `ClientReconnectEventTypeID` | Server | Player reconnected to alive character |
-| `ClientDisconnectedEventTypeID` | Server | Player disconnecting |
-| `LogoutCancelEventTypeID` | Server | Player cancelled logout countdown |
-| `ChatMessageEventTypeID` | Client | Chat message received (`ChatMessageEventParams`) |
-| `ChatChannelEventTypeID` | Client | Chat channel changed (`ChatChannelEventParams`) |
-| `VONStateEventTypeID` | Client | Voice-over-network state changed |
-| `VONStartSpeakingEventTypeID` | Client | Player started speaking |
-| `VONStopSpeakingEventTypeID` | Client | Player stopped speaking |
-| `MPSessionStartEventTypeID` | Both | Multiplayer session started |
-| `MPSessionEndEventTypeID` | Both | Multiplayer session ended |
-| `MPConnectionLostEventTypeID` | Client | Connection to server lost |
-| `PlayerDeathEventTypeID` | Both | Player died |
-| `SetFreeCameraEventTypeID` | Client | Free camera toggled (debug) |
-
----
-
-## 实际案例
-
-### Example 1: Server Manager Initialization
-
-A typical pattern for initializing a server-side manager that needs to run periodic tasks.
-
-```c
-modded class MissionServer
-{
-    ref MyTraderManager m_TraderManager;
-    float m_TraderUpdateTimer;
-    const float TRADER_UPDATE_INTERVAL = 5.0; // seconds
-
-    override void OnInit()
-    {
-        super.OnInit();
-
-        m_TraderManager = new MyTraderManager();
-        m_TraderManager.LoadConfig();
-        m_TraderManager.SpawnTraders();
-        m_TraderUpdateTimer = 0;
-
-        Print("[MyMod] Trader manager initialized");
-    }
-
-    override void OnUpdate(float timeslice)
-    {
-        super.OnUpdate(timeslice);
-
-        // Frame-limit the trader update to every 5 seconds
-        m_TraderUpdateTimer += timeslice;
-        if (m_TraderUpdateTimer >= TRADER_UPDATE_INTERVAL)
-        {
-            m_TraderUpdateTimer = 0;
-            m_TraderManager.Update();
-        }
-    }
-
-    override void OnMissionFinish()
-    {
-        if (m_TraderManager)
-        {
-            m_TraderManager.SaveState();
-            m_TraderManager.DespawnTraders();
-            m_TraderManager = null;
-        }
-
-        super.OnMissionFinish();
-    }
-}
-```
-
-### Example 2: Player Data Loading on Connect
-
-```c
-modded class MissionServer
-{
-    override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)
-    {
-        super.InvokeOnConnect(player, identity);
-        if (!player || !identity)
-            return;
-
-        string uid = identity.GetId();
-        string path = "$profile:MyMod/Players/" + uid + ".json";
-        ref MyPlayerStats stats = new MyPlayerStats();
-
-        if (FileExist(path))
-            JsonFileLoader<MyPlayerStats>.JsonLoadFile(path, stats);
-        else
-            stats.SetDefaults();
-
-        player.m_MyStats = stats;
-
-        // Send initial data to client
-        ScriptRPC rpc = new ScriptRPC();
-        rpc.Write(stats.GetKills());
-        rpc.Write(stats.GetDeaths());
-        rpc.Send(player, MY_RPC_SYNC_STATS, true, identity);
-    }
-
-    override void InvokeOnDisconnect(PlayerBase player)
-    {
-        if (player && player.GetIdentity() && player.m_MyStats)
-        {
-            string path = "$profile:MyMod/Players/" + player.GetIdentity().GetId() + ".json";
-            JsonFileLoader<MyPlayerStats>.JsonSaveFile(path, player.m_MyStats);
-        }
-        super.InvokeOnDisconnect(player);
-    }
-}
-```
-
-### Example 3: Client HUD Creation
-
-Creating a custom HUD element that updates 每帧.
-
-```c
-modded class MissionGameplay
-{
-    ref Widget m_MyHudRoot;
-    ref TextWidget m_MyStatusText;
-    float m_HudUpdateTimer;
-
-    override void OnInit()
-    {
-        super.OnInit();
-
-        // Create HUD from layout file
-        m_MyHudRoot = GetGame().GetWorkspace().CreateWidgets(
-            "MyMod/gui/layouts/my_hud.layout"
-        );
-
-        if (m_MyHudRoot)
-        {
-            m_MyStatusText = TextWidget.Cast(
-                m_MyHudRoot.FindAnyWidget("StatusText")
-            );
-            m_MyHudRoot.Show(true);
-        }
-
-        m_HudUpdateTimer = 0;
-    }
-
-    override void OnUpdate(float timeslice)
-    {
-        super.OnUpdate(timeslice);
-
-        // Update HUD text twice per second, not every frame
-        m_HudUpdateTimer += timeslice;
-        if (m_HudUpdateTimer >= 0.5)
-        {
-            m_HudUpdateTimer = 0;
-            UpdateMyHud();
-        }
-    }
-
-    void UpdateMyHud()
-    {
-        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-        if (!player || !m_MyStatusText)
-            return;
-
-        string status = "Health: " + player.GetHealth("", "").ToString();
-        m_MyStatusText.SetText(status);
-    }
-
-    override void OnMissionFinish()
-    {
-        if (m_MyHudRoot)
-        {
-            m_MyHudRoot.Unlink();
-            m_MyHudRoot = null;
-        }
-
-        super.OnMissionFinish();
-    }
-}
-```
-
-### Example 4: Chat Command Interception (Server-Side)
-
-Intercepting player connections to implement a ban system. This pattern is used by COT.
-
-```c
-modded class MissionServer
-{
-    override void OnEvent(EventType eventTypeId, Param params)
-    {
-        // Check bans BEFORE super processes the connection
-        if (eventTypeId == ClientNewEventTypeID)
-        {
-            ClientNewEventParams newParams;
-            Class.CastTo(newParams, params);
-            PlayerIdentity identity = newParams.param1;
-
-            if (identity && IsBanned(identity.GetId()))
-            {
-                Print("[MyMod] Blocked banned player: " + identity.GetId());
-                // Do not call super --- connection is blocked
-                return;
-            }
-        }
-
-        super.OnEvent(eventTypeId, params);
-    }
-
-    bool IsBanned(string uid)
-    {
-        string path = "$profile:MyMod/Bans/" + uid + ".json";
-        return FileExist(path);
-    }
-}
-```
-
-### Example 5: Starter Kit via StartingEquipSetup
-
-The cleanest way to give new players equipment without touching `OnClientNewEvent`.
-
-```c
-modded class MissionServer
-{
-    override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
-    {
-        super.StartingEquipSetup(player, clothesChosen);
-
-        if (!player)
-            return;
-
-        // Give every new character a knife and bandage
-        EntityAI knife = player.GetInventory().CreateInInventory("KitchenKnife");
-        EntityAI bandage = player.GetInventory().CreateInInventory("BandageDressing");
-
-        // Give food in their backpack (if they have one)
-        EntityAI backpack = player.FindAttachmentBySlotName("Back");
-        if (backpack)
-        {
-            backpack.GetInventory().CreateInInventory("SardinesCan");
-            backpack.GetInventory().CreateInInventory("Canteen");
-        }
-    }
-}
-```
-
-### Pattern: Delegate to a Central Manager
-
-Both COT and Expansion follow the same pattern: their mission hooks are thin wrappers that delegate to a singleton manager. COT creates `g_cotBase = new CommunityOnlineTools` in the constructor, then calls `g_cotBase.OnStart()` / `OnUpdate()` / `OnFinish()` from the corresponding hooks. Expansion does the same with `GetDayZExpansion().OnStart()` / `OnLoaded()` / `OnFinish()`. Your mod should follow this pattern --- keep mission hook code thin and push logic into dedicated manager classes.
-
----
-
-## OnInit vs OnMissionStart vs OnMissionLoaded
-
-| Hook | When | Use For |
+| 钩子 | 时机 | 用途 |
 |------|------|---------|
-| `OnInit()` | First. Script modules loaded, world not yet active. | Creating managers, registering RPCs, loading configs. |
-| `OnMissionStart()` | Second. World is active, entities can be spawned. | Spawning entities, starting gameplay systems, creating triggers. |
-| `OnMissionLoaded()` | Third. All vanilla systems fully initialized. | Cross-mod queries, finalization that depends on everything being ready. |
+| `OnInit()` | 第一。脚本模块已加载，世界尚未激活。 | 创建管理器、注册 RPC、加载配置。 |
+| `OnMissionStart()` | 第二。世界已激活，可以生成实体。 | 生成实体、启动游戏系统、创建触发器。 |
+| `OnMissionLoaded()` | 第三。所有原版系统已完全初始化。 | 跨模组查询、依赖于所有内容就绪的最终化。 |
 
-Always call `super` on all three. Use `OnInit` as your primary initialization point. Use `OnMissionLoaded` only when you need to guarantee other mods have already initialized.
-
----
-
-## Accessing the Current Mission
-
-```c
-Mission mission = GetGame().GetMission();                                    // Base class
-MissionServer serverMission = MissionServer.Cast(GetGame().GetMission());   // Server cast
-MissionGameplay clientMission = MissionGameplay.Cast(GetGame().GetMission()); // Client cast
-PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());                  // CLIENT ONLY (null on server)
-```
+始终在所有三个上调用 `super`。使用 `OnInit` 作为主要初始化点。仅当你需要保证其他模组已经初始化时才使用 `OnMissionLoaded`。
 
 ---
 
 ## 常见错误
 
-### 1. Forgetting super.OnInit()
+### 1. 忘记 super.OnInit()
 
-Every `override` **must** call `super`. Forgetting it breaks vanilla and every other mod in the chain. This is the single most common modding mistake.
+每个 `override` **必须**调用 `super`。忘记它会破坏原版和链中每个其他模组。这是最常见的模组开发错误。
 
 ```c
-// WRONG                                    // CORRECT
+// 错误                                    // 正确
 override void OnInit()                      override void OnInit()
 {                                           {
-    m_MyManager = new MyManager();              super.OnInit();  // Always first!
+    m_MyManager = new MyManager();              super.OnInit();  // 始终第一！
 }                                               m_MyManager = new MyManager();
                                             }
 ```
 
-### 2. Using GetGame().GetPlayer() on the Server
+### 2. 在服务器上使用 GetGame().GetPlayer()
 
-`GetGame().GetPlayer()` is **always null** on a dedicated server. There is no "local" player. Use `GetGame().GetPlayers(array)` to iterate all connected players.
+`GetGame().GetPlayer()` 在专用服务器上**始终为 null**。没有"本地"玩家。使用 `GetGame().GetPlayers(array)` 迭代所有已连接的玩家。
 
-```c
-// CORRECT way to iterate players on server
-array<Man> players = new array<Man>();
-GetGame().GetPlayers(players);
-foreach (Man man : players)
-{
-    PlayerBase player = PlayerBase.Cast(man);
-    if (player) { /* process */ }
-}
-```
+### 3. 没有在 OnMissionFinish 中清理
 
-### 3. Not Cleaning Up in OnMissionFinish
+始终在 `OnMissionFinish()` 中清理控件、回调和引用。
 
-Always clean up widgets, callbacks, and references in `OnMissionFinish()`. Without cleanup, widgets leak into the next mission load (client), and stale references persist across server restarts.
+### 4. OnUpdate 没有帧限制
 
-```c
-override void OnMissionFinish()
-{
-    if (m_MyWidget) { m_MyWidget.Unlink(); m_MyWidget = null; }
-    super.OnMissionFinish();
-}
-```
+`OnUpdate` 每帧触发（15-60+ FPS）。对任何非轻量工作使用计时器累加器。
 
-### 4. OnUpdate Without Frame Limiting
+### 5. 在构造函数中注册 RPC
 
-`OnUpdate` fires 每帧 (15-60+ FPS). Use a timer accumulator for any non-trivial work.
-
-```c
-m_Timer += timeslice;
-if (m_Timer >= 10.0)  // Every 10 seconds
-{
-    m_Timer = 0;
-    DoExpensiveWork();
-}
-```
-
-### 5. Registering RPCs in the Constructor
-
-The constructor runs before all script modules are loaded. Register callbacks in `OnInit()` (earliest safe point) and unregister in `OnMissionFinish()`.
-
-### 6. Accessing Identity on a Disconnecting Player
-
-`player.GetIdentity()` can return `null` during disconnect. Always null-check both `player` and `identity` before accessing.
-
-```c
-override void InvokeOnDisconnect(PlayerBase player)
-{
-    if (player)
-    {
-        PlayerIdentity identity = player.GetIdentity();
-        if (identity)
-            Print("[MyMod] Disconnected: " + identity.GetId());
-    }
-    super.InvokeOnDisconnect(player);
-}
-```
+构造函数在所有脚本模块加载之前运行。在 `OnInit()` 中注册回调（最早的安全点），在 `OnMissionFinish()` 中取消注册。
 
 ---
 
 ## 总结
 
-| 概念 | Key Point |
+| 概念 | 关键点 |
 |---------|-----------|
-| Mission hierarchy | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
-| Server class | `MissionServer` --- handles player connections, spawns, tick scheduling |
-| Client class | `MissionGameplay` --- handles HUD, input, chat, menus |
-| Lifecycle order | Constructor > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > `OnUpdate()` loop > `OnMissionFinish()` > Destructor |
-| Player join (server) | `OnEvent(ClientNewEventTypeID/ClientReadyEventTypeID)` > `InvokeOnConnect()` |
-| Player leave (server) | `OnEvent(ClientDisconnectedEventTypeID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
-| Hooking pattern | `modded class MissionServer/MissionGameplay` with `override` and `super` calls |
-| Input handling | `OnKeyPress(key)` / `OnKeyRelease(key)` on `MissionGameplay` (client only) |
-| Event handling | `OnEvent(EventType, Param)` on both sides, different event types per side |
-| super calls | **Always call super** on every override, or you break the entire mod chain |
-| Cleanup | **Always clean up** in `OnMissionFinish()` --- remove RPC handlers, destroy widgets, null references |
-| Frame limiting | Use timer accumulators in `OnUpdate()` for any non-trivial work |
-| GetPlayer() | Only works on client; always returns `null` on dedicated server |
-| RPC registration | Register in `OnInit()`, not constructor; unregister in `OnMissionFinish()` |
+| Mission 层次结构 | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
+| 服务器类 | `MissionServer`——处理玩家连接、生成、定时调度 |
+| 客户端类 | `MissionGameplay`——处理 HUD、输入、聊天、菜单 |
+| 生命周期顺序 | 构造函数 > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > `OnUpdate()` 循环 > `OnMissionFinish()` > 析构函数 |
+| 玩家加入（服务器） | `OnEvent(ClientNewEventTypeID/ClientReadyEventTypeID)` > `InvokeOnConnect()` |
+| 玩家离开（服务器） | `OnEvent(ClientDisconnectedEventTypeID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
+| 钩入模式 | `modded class MissionServer/MissionGameplay` 配合 `override` 和 `super` 调用 |
+| super 调用 | **始终在每个重写上调用 super**，否则你会破坏整个模组链 |
+| 清理 | **始终在 `OnMissionFinish()` 中清理**——移除 RPC 处理器、销毁控件、置空引用 |
 
 ---
 
 ## 最佳实践
 
-- **Always call `super` as the first line in every Mission override.** This is the single most common DayZ modding mistake. Forgetting `super.OnInit()` silently breaks vanilla initialization and every other mod in the chain.
-- **Keep mission hook code thin --- delegate to manager classes.** Create a singleton manager (e.g., `MyModManager`) and call `manager.Init()` / `manager.Update()` / `manager.Cleanup()` from the hooks. This mirrors the pattern used by COT and Expansion.
-- **Use timer accumulators in `OnUpdate()` for any work that does not need to run 每帧.** `OnUpdate` fires 15-60+ times per second. Running database queries, file I/O, or player iteration at frame rate wastes server CPU.
-- **Register RPCs and event handlers in `OnInit()`, not in the constructor.** The constructor runs before all script modules are loaded. The networking layer is not ready until `OnInit()`.
-- **Always clean up in `OnMissionFinish()`.** Destroy widgets, remove `CallLater` registrations, unregister RPC handlers, and null manager references. Failure to clean up causes stale references across mission reloads.
+- **始终在每个 Mission 重写中将 `super` 作为第一行调用。**这是最常见的 DayZ 模组开发错误。忘记 `super.OnInit()` 会静默破坏原版初始化和链中每个其他模组。
+- **保持任务钩子代码精简——委托给管理器类。**创建单例管理器并从钩子调用 `manager.Init()` / `manager.Update()` / `manager.Cleanup()`。这反映了 COT 和 Expansion 使用的模式。
+- **在 `OnUpdate()` 中对不需要每帧运行的工作使用计时器累加器。**`OnUpdate` 每秒触发 15-60+ 次。以帧率运行数据库查询、文件 I/O 或玩家迭代会浪费服务器 CPU。
+- **在 `OnInit()` 中注册 RPC 和事件处理器，而不是在构造函数中。**构造函数在所有脚本模块加载之前运行。网络层直到 `OnInit()` 才就绪。
+- **始终在 `OnMissionFinish()` 中清理。**销毁控件、移除 `CallLater` 注册、取消注册 RPC 处理器、置空管理器引用。不清理会导致任务重载之间的陈旧引用。
 
 ---
 
-## 兼容性与影响
+## 真实模组中的观察
 
-> **Mod Compatibility:** `MissionServer` and `MissionGameplay` are the two most commonly modded classes in DayZ. Every mod that has server logic or client UI hooks into them.
+> 这些模式通过研究专业 DayZ 模组源代码确认。
 
-- **Load Order:** The last-loaded mod's `modded class` override runs outermost in the call chain. If a mod forgets `super`, it silently blocks all mods loaded before it. This is the #1 cause of multi-mod incompatibility.
-- **Modded Class Conflicts:** `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate`, and `OnMissionFinish` are the most contested override points. Conflicts are rare as long as every mod calls `super`.
-- **Performance Impact:** Heavy logic in `OnUpdate()` without frame limiting directly reduces server/client FPS. A single mod doing `GetGame().GetPlayers()` iteration 每帧 on a 60-player server adds measurable overhead.
-- **Server/Client:** `MissionServer` hooks only fire on dedicated servers. `MissionGameplay` hooks only fire on clients. On a listen server, both classes exist. `GetGame().GetPlayer()` is always null on dedicated servers.
-
----
-
-## 在实际Mod中观察到的模式
-
-> These patterns were confirmed by studying the source code of professional DayZ mods.
-
-| 模式 | Mod | File/Location |
+| 模式 | 模组 | 文件/位置 |
 |---------|-----|---------------|
-| Thin `modded class MissionServer.OnInit()` delegating to singleton manager | COT | `CommunityOnlineTools` init in MissionServer |
-| `InvokeOnConnect` override to load per-player JSON data | Expansion | Player settings sync on connect |
-| `StartingEquipSetup` override for custom starter kits | Multiple community mods | MissionServer starter kit hooks |
-| `OnEvent` interception before `super` to block banned players | COT | Ban system in MissionServer |
-| `OnMissionFinish` cleanup with widget `Unlink()` and null assignments | Expansion | HUD and menu cleanup |
+| 精简的 `modded class MissionServer.OnInit()` 委托给单例管理器 | COT | MissionServer 中的 `CommunityOnlineTools` 初始化 |
+| `InvokeOnConnect` 重写加载每玩家 JSON 数据 | Expansion | 连接时的玩家设置同步 |
+| `StartingEquipSetup` 重写用于自定义初始装备 | 多个社区模组 | MissionServer 初始装备钩子 |
+| 在 `super` 之前的 `OnEvent` 拦截以阻止被封禁玩家 | COT | MissionServer 中的封禁系统 |
+| `OnMissionFinish` 清理配合控件 `Unlink()` 和置空赋值 | Expansion | HUD 和菜单清理 |
 
 ---
 
-[<< 上一章: Central Economy](10-central-economy.md) | **Mission Hooks** | [下一章: Action System >>](12-action-system.md)
+[首页](../../README.md) | [<< 上一章：中央经济](10-central-economy.md) | **任务钩子** | [下一章：动作系统 >>](12-action-system.md)

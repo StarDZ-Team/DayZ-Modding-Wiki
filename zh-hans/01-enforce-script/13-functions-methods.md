@@ -1,79 +1,79 @@
-# Chapter 1.13: Functions & Methods
+# 第 1.13 章：函数与方法
 
-[Home](../../README.md) | [<< Previous: Gotchas](12-gotchas.md) | **Functions & Methods**
+[首页](../../README.md) | [<< 上一章：注意事项](12-gotchas.md) | **函数与方法**
 
 ---
 
 ## 简介
 
-函数是 Enforce Script 中行为的基本单元 in Enforce Script. Mod 执行的每个操作 --- spawning an item, checking a player's health, sending an RPC, drawing a UI element --- 都存在于函数中. 理解如何声明它们, pass data in and out, and work with 引擎's special modifiers is essential for writing correct DayZ mods.
+函数是 Enforce Script 中行为的基本单元。模组执行的每个操作——生成物品、检查玩家生命值、发送 RPC、绘制 UI 元素——都存在于函数中。理解如何声明它们、传入和传出数据、以及使用引擎的特殊修饰符对于编写正确的 DayZ 模组至关重要。
 
-本章涵盖 function mechanics in depth: declaration syntax, parameter passing modes, return values, default parameters, proto native bindings, static vs instance methods, overriding, the `thread` keyword, and the `event` keyword. If Chapter 1.3 (Classes) taught you where functions live, this chapter teaches you how they work.
+本章深入涵盖函数机制：声明语法、参数传递模式、返回值、默认参数、proto native 绑定、静态与实例方法、重写、`thread` 关键字和 `event` 关键字。如果第 1.3 章（类）教了你函数在哪里存在，本章教你它们如何工作。
 
 ---
 
 ## 目录
 
-- [Function Declaration Syntax](#function-declaration-syntax)
-  - [Standalone Functions](#standalone-functions)
-  - [Instance Methods](#instance-methods)
-  - [Static Methods](#static-methods)
-- [Parameter Passing Modes](#parameter-passing-modes)
-  - [By Value (Default)](#by-value-default)
-  - [out Parameters](#out-parameters)
-  - [inout Parameters](#inout-parameters)
-  - [notnull Parameters](#notnull-parameters)
-- [Return Values](#return-values)
-- [Default Parameter Values](#default-parameter-values)
-- [Proto Native Methods (Engine Bindings)](#proto-native-methods-engine-bindings)
-- [Static vs Instance Methods](#static-vs-instance-methods)
-- [Method Overriding](#method-overriding)
-- [Method Overloading (Not Supported)](#method-overloading-not-supported)
-- [The event Keyword](#the-event-keyword)
-- [Thread Methods (Coroutines)](#thread-methods-coroutines)
-- [Deferred Calls with CallLater](#deferred-calls-with-calllater)
-- [Best Practices](#best-practices)
-- [Observed in Real Mods](#observed-in-real-mods)
-- [Theory vs Practice](#theory-vs-practice)
-- [Common Mistakes](#common-mistakes)
-- [Quick Reference Table](#quick-reference-table)
+- [函数声明语法](#函数声明语法)
+  - [独立函数](#独立函数)
+  - [实例方法](#实例方法)
+  - [静态方法](#静态方法)
+- [参数传递模式](#参数传递模式)
+  - [按值传递（默认）](#按值传递默认)
+  - [out 参数](#out-参数)
+  - [inout 参数](#inout-参数)
+  - [notnull 参数](#notnull-参数)
+- [返回值](#返回值)
+- [默认参数值](#默认参数值)
+- [Proto Native 方法（引擎绑定）](#proto-native-方法引擎绑定)
+- [静态与实例方法](#静态与实例方法)
+- [方法重写](#方法重写)
+- [方法重载（不支持）](#方法重载不支持)
+- [event 关键字](#event-关键字)
+- [线程方法（协程）](#线程方法协程)
+- [使用 CallLater 延迟调用](#使用-calllater-延迟调用)
+- [最佳实践](#最佳实践)
+- [真实模组中的观察](#真实模组中的观察)
+- [理论与实践](#理论与实践)
+- [常见错误](#常见错误)
+- [快速参考表](#快速参考表)
 
 ---
 
 ## 函数声明语法
 
-每个函数都有 a 返回类型, a name, and a 参数列表. 函数体用大括号括起来.
+每个函数都有返回类型、名称和参数列表。函数体用花括号包围。
 
 ```
 ReturnType FunctionName(ParamType paramName, ...)
 {
-    // body
+    // 函数体
 }
 ```
 
 ### 独立函数
 
-Standalone (global) functions exist outside any class. They are rare 在 DayZ Modding 中 --- nearly all code lives inside classes --- but 你会遇到 a few in the vanilla scripts.
+独立（全局）函数存在于任何类之外。它们在 DayZ 模组开发中很罕见——几乎所有代码都在类内——但你会在原版脚本中遇到一些。
 
 ```c
-// Standalone function (global scope)
+// 独立函数（全局作用域）
 void PrintPlayerCount()
 {
     int count = GetGame().GetPlayers().Count();
     Print(string.Format("Players online: %1", count));
 }
 
-// Standalone function with return value
+// 带返回值的独立函数
 string FormatTimestamp(int hours, int minutes)
 {
     return string.Format("%1:%2", hours.ToStringLen(2), minutes.ToStringLen(2));
 }
 ```
 
-The vanilla engine defines several standalone utility functions:
+原版引擎定义了几个独立的工具函数：
 
 ```c
-// From enscript.c — helper for string expressions
+// 来自 enscript.c——字符串表达式辅助
 string String(string s)
 {
     return s;
@@ -82,7 +82,7 @@ string String(string s)
 
 ### 实例方法
 
-绝大多数 functions 在 DayZ Mod 中 are instance methods --- they belong to a class and operate on that instance's data.
+DayZ 模组中的绝大多数函数是实例方法——它们属于一个类并操作该实例的数据。
 
 ```c
 class LootSpawner
@@ -107,11 +107,11 @@ class LootSpawner
 }
 ```
 
-Instance methods have implicit access to `this` --- a reference to the current object. 你很少需要 write `this.` explicitly, but it can help disambiguate when a parameter has a similar name.
+实例方法可以隐式访问 `this`——对当前对象的引用。你很少需要显式写 `this.`，但当参数有类似名称时，它可以帮助消除歧义。
 
 ### 静态方法
 
-Static methods belong to the class itself, not to any instance. Call them via `ClassName.Method()`. They cannot access instance fields or `this`.
+静态方法属于类本身，而不是任何实例。通过 `ClassName.Method()` 调用它们。它们不能访问实例字段或 `this`。
 
 ```c
 class MathHelper
@@ -129,14 +129,14 @@ class MathHelper
     }
 }
 
-// Usage:
+// 用法：
 float result = MathHelper.Lerp(0, 100, 0.75);  // 75.0
 ```
 
-Static methods are ideal for utility functions, factory methods, and singleton accessors. DayZ's vanilla code uses them extensively:
+静态方法非常适合工具函数、工厂方法和单例访问器。DayZ 的原版代码广泛使用它们：
 
 ```c
-// From DamageSystem (3_game/damagesystem.c)
+// 来自 DamageSystem（3_game/damagesystem.c）
 class DamageSystem
 {
     static bool GetDamageZoneMap(EntityAI entity, out DamageZoneMap zoneMap)
@@ -155,40 +155,40 @@ class DamageSystem
 
 ## 参数传递模式
 
-Enforce Script supports four parameter passing modes. Understanding them is critical because the wrong mode leads to silent bugs where data never reaches 调用者.
+Enforce Script 支持四种参数传递模式。理解它们至关重要，因为错误的模式会导致数据永远无法到达调用者的静默错误。
 
 ### 按值传递（默认）
 
-当未指定修饰符时, the parameter is passed **by value**. For primitives (`int`, `float`, `bool`, `string`, `vector`), 会创建一个副本. 函数内的修改不会影响 调用者's variable.
+当没有指定修饰符时，参数是**按值传递**的。对于原始类型（`int`、`float`、`bool`、`string`、`vector`），会创建一个副本。函数内部的修改不影响调用者的变量。
 
 ```c
 void DoubleValue(int x)
 {
-    x = x * 2;  // modifies local copy only
+    x = x * 2;  // 仅修改本地副本
 }
 
-// Usage:
+// 用法：
 int n = 5;
 DoubleValue(n);
-Print(n);  // still 5 --- the original is unchanged
+Print(n);  // 仍然是 5——原始值未改变
 ```
 
-对于类类型 (objects), by-value passing still passes a **reference to the object** --- but the reference itself is copied. You can modify the object's fields, but you cannot reassign the reference to point to a different object.
+对于类类型（对象），按值传递仍然传递**对象的引用**——但引用本身是复制的。你可以修改对象的字段，但不能重新分配引用指向不同的对象。
 
 ```c
 void RenameZone(SpawnZone zone)
 {
-    zone.SetName("NewName");  // this WORKS --- modifies the same object
-    zone = null;              // this does NOT affect the caller's variable
+    zone.SetName("NewName");  // 这有效——修改同一个对象
+    zone = null;              // 这不影响调用者的变量
 }
 ```
 
 ### out 参数
 
-The `out` keyword marks a parameter as **output-only**. The function writes a value into it, and 调用者接收 that value. The initial value of the parameter is undefined --- do not read it before writing.
+`out` 关键字将参数标记为**仅输出**。函数向其写入值，调用者接收该值。参数的初始值是未定义的——不要在写入之前读取它。
 
 ```c
-// out parameter — function fills the value
+// out 参数——函数填充值
 bool TryFindPlayer(string name, out PlayerBase player)
 {
     array<Man> players = new array<Man>;
@@ -208,7 +208,7 @@ bool TryFindPlayer(string name, out PlayerBase player)
     return false;
 }
 
-// Usage:
+// 用法：
 PlayerBase result;
 if (TryFindPlayer("John", result))
 {
@@ -216,25 +216,25 @@ if (TryFindPlayer("John", result))
 }
 ```
 
-原版脚本使用 `out` extensively for engine-to-script data flow:
+原版脚本广泛使用 `out` 用于引擎到脚本的数据流：
 
 ```c
-// From DayZPlayer (3_game/dayzplayer.c)
+// 来自 DayZPlayer（3_game/dayzplayer.c）
 proto native void GetCurrentCameraTransform(out vector position, out vector direction, out vector rotation);
 
-// From AIWorld (3_game/ai/aiworld.c)
+// 来自 AIWorld（3_game/ai/aiworld.c）
 proto native bool RaycastNavMesh(vector from, vector to, PGFilter pgFilter, out vector hitPos, out vector hitNormal);
 
-// Multiple out parameters for look limits
+// 多个 out 参数用于视角限制
 proto void GetLookLimits(out float pDown, out float pUp, out float pLeft, out float pRight);
 ```
 
 ### inout 参数
 
-The `inout` keyword marks a parameter that is **both read and written** by 函数. The caller's value is available inside 函数, and any modifications are visible to 调用者 afterward.
+`inout` 关键字将参数标记为函数**既读取又写入**的。调用者的值在函数内可用，任何修改在之后对调用者可见。
 
 ```c
-// inout — the function reads the current value and modifies it
+// inout——函数读取当前值并修改它
 void ClampHealth(inout float health)
 {
     if (health < 0)
@@ -243,54 +243,54 @@ void ClampHealth(inout float health)
         health = 100;
 }
 
-// Usage:
+// 用法：
 float hp = 150.0;
 ClampHealth(hp);
 Print(hp);  // 100.0
 ```
 
-原版中的示例： `inout`:
+原版中 `inout` 的示例：
 
 ```c
-// From enmath.c — smoothing function reads and writes velocity
+// 来自 enmath.c——平滑函数读取和写入速度
 proto static float SmoothCD(float val, float target, inout float velocity[],
     float smoothTime, float maxVelocity, float dt);
 
-// From enscript.c — parsing modifies the input string
+// 来自 enscript.c——解析修改输入字符串
 proto int ParseStringEx(inout string input, string token);
 
-// From Pawn (3_game/entities/pawn.c) — transform is read and modified
+// 来自 Pawn（3_game/entities/pawn.c）——变换被读取和修改
 event void GetTransform(inout vector transform[4])
 ```
 
 ### notnull 参数
 
-The `notnull` keyword tells 编译器 (and 引擎) that the parameter must not be `null`. If a null value is passed, the game will crash with an error rather than silently proceeding with invalid data.
+`notnull` 关键字告诉编译器（和引擎）参数不能为 `null`。如果传递了空值，游戏会以错误崩溃，而不是静默地继续处理无效数据。
 
 ```c
 void ProcessEntity(notnull EntityAI entity)
 {
-    // Safe to use entity without null-checking — engine guarantees it
+    // 可以安全使用 entity 而无需空值检查——引擎保证了它
     string name = entity.GetType();
     Print(name);
 }
 ```
 
-Vanilla uses `notnull` heavily in engine-facing functions:
+原版在引擎接口函数中大量使用 `notnull`：
 
 ```c
-// From envisual.c
+// 来自 envisual.c
 proto native void SetBone(notnull IEntity ent, int bone, vector angles, vector trans, float scale);
 proto native bool GetBoneMatrix(notnull IEntity ent, int bone, vector mat[4]);
 
-// From DamageSystem
+// 来自 DamageSystem
 static bool GetDamageZoneFromComponentName(notnull EntityAI entity, string component, out string damageZone);
 ```
 
-You can combine `notnull` with `out`:
+你可以将 `notnull` 与 `out` 组合：
 
 ```c
-// From universaltemperaturesourcelambdabaseimpl.c
+// 来自 universaltemperaturesourcelambdabaseimpl.c
 override void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position,
     out notnull array<EntityAI> nearestObjects);
 ```
@@ -301,7 +301,7 @@ override void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings, v
 
 ### 单一返回值
 
-Functions return a single value. The 返回类型 is declared before 函数 name.
+函数返回单个值。返回类型在函数名之前声明。
 
 ```c
 float GetDistanceBetween(vector a, vector b)
@@ -312,7 +312,7 @@ float GetDistanceBetween(vector a, vector b)
 
 ### void（无返回值）
 
-Use `void` for functions that perform an action without returning data.
+对执行操作但不返回数据的函数使用 `void`。
 
 ```c
 void LogMessage(string msg)
@@ -323,19 +323,19 @@ void LogMessage(string msg)
 
 ### 返回对象
 
-When a function returns an object, it returns a **reference** (不是副本). The caller receives a pointer to the same object in memory.
+当函数返回对象时，它返回一个**引用**（不是副本）。调用者收到指向内存中同一对象的指针。
 
 ```c
 EntityAI SpawnItem(string className, vector pos)
 {
     EntityAI item = EntityAI.Cast(GetGame().CreateObject(className, pos, false, false, true));
-    return item;  // caller gets a reference to the same object
+    return item;  // 调用者获得同一对象的引用
 }
 ```
 
 ### 通过 out 参数返回多个值
 
-When you need to return more than one value, use `out` parameters. This is a universal pattern in DayZ scripting.
+当你需要返回多个值时，使用 `out` 参数。这是 DayZ 脚本中的通用模式。
 
 ```c
 void GetTimeComponents(float totalSeconds, out int hours, out int minutes, out int seconds)
@@ -345,21 +345,21 @@ void GetTimeComponents(float totalSeconds, out int hours, out int minutes, out i
     seconds = (int)(totalSeconds % 60);
 }
 
-// Usage:
+// 用法：
 int h, m, s;
 GetTimeComponents(3725, h, m, s);
 // h == 1, m == 2, s == 5
 ```
 
-### GOTCHA: JsonFileLoader Returns void
+### 注意：JsonFileLoader 返回 void
 
-一个常见的陷阱: `JsonFileLoader<T>.JsonLoadFile()` returns `void`, not the loaded object. You must pass a pre-created object as a `ref` parameter.
+一个常见的陷阱：`JsonFileLoader<T>.JsonLoadFile()` 返回 `void`，而不是加载的对象。你必须传递一个预先创建的对象作为 `ref` 参数。
 
 ```c
-// WRONG — will not compile
+// 错误——不会编译
 MyConfig config = JsonFileLoader<MyConfig>.JsonLoadFile(path);
 
-// CORRECT — pass a ref object
+// 正确——传递 ref 对象
 MyConfig config = new MyConfig;
 JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
 ```
@@ -368,66 +368,66 @@ JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
 
 ## 默认参数值
 
-Enforce Script supports default values for parameters. Parameters with defaults must come **after** all required parameters.
+Enforce Script 支持参数的默认值。带默认值的参数必须在所有必需参数**之后**。
 
 ```c
 void SpawnItem(string className, vector pos, float quantity = -1, bool withAttachments = true)
 {
-    // quantity defaults to -1 (full), withAttachments defaults to true
+    // quantity 默认为 -1（满），withAttachments 默认为 true
     EntityAI item = EntityAI.Cast(GetGame().CreateObject(className, pos, false, false, true));
     if (item && quantity >= 0)
         item.SetQuantity(quantity);
 }
 
-// All of these are valid calls:
-SpawnItem("AKM", myPos);                   // uses both defaults
-SpawnItem("AKM", myPos, 0.5);             // custom quantity, default attachments
-SpawnItem("AKM", myPos, -1, false);        // must specify quantity to reach attachments
+// 以下所有调用都是有效的：
+SpawnItem("AKM", myPos);                   // 使用两个默认值
+SpawnItem("AKM", myPos, 0.5);             // 自定义数量，默认附件
+SpawnItem("AKM", myPos, -1, false);        // 必须指定数量才能到达附件
 ```
 
 ### 原版中的默认值
 
-原版脚本使用 default parameters extensively:
+原版脚本广泛使用默认参数：
 
 ```c
-// From Weather (3_game/weather.c)
+// 来自 Weather（3_game/weather.c）
 proto native void Set(float forecast, float time = 0, float minDuration = 0);
 proto native void SetDynVolFogDistanceDensity(float value, float time = 0);
 
-// From UAInput (3_game/inputapi/uainput.c)
+// 来自 UAInput（3_game/inputapi/uainput.c）
 proto native float SyncedValue_ID(int action, bool check_focus = true);
 proto native bool SyncedPress(string action, bool check_focus = true);
 
-// From DbgUI (1_core/proto/dbgui.c)
+// 来自 DbgUI（1_core/proto/dbgui.c）
 static bool FloatOverride(string id, inout float value, float min, float max,
     int precision = 1000, bool sameLine = true);
 
-// From InputManager (2_gamelib/inputmanager.c)
+// 来自 InputManager（2_gamelib/inputmanager.c）
 proto native external bool ActivateAction(string actionName, int duration = 0);
 ```
 
 ### 限制
 
-1. **Literal values only** --- you cannot use expressions, function calls, or other variables as defaults:
+1. **仅字面值**——你不能使用表达式、函数调用或其他变量作为默认值：
 
 ```c
-// WRONG — no expressions in defaults
-void MyFunc(float speed = Math.PI * 2)  // COMPILE ERROR
+// 错误——默认值中不能有表达式
+void MyFunc(float speed = Math.PI * 2)  // 编译错误
 
-// CORRECT — use a literal
+// 正确——使用字面量
 void MyFunc(float speed = 6.283)
 ```
 
-2. **No named parameters** --- you cannot skip a parameter by name. To set the third default, you must provide all preceding parameters:
+2. **没有命名参数**——你不能按名称跳过参数。要设置第三个默认值，你必须提供所有前面的参数：
 
 ```c
 void Configure(int a = 1, int b = 2, int c = 3) {}
 
-Configure(1, 2, 10);  // must specify a and b to set c
-// There is no syntax like Configure(c: 10)
+Configure(1, 2, 10);  // 必须指定 a 和 b 才能设置 c
+// 没有类似 Configure(c: 10) 的语法
 ```
 
-3. **Default values for class types are restricted to `null` or `NULL`:**
+3. **类类型的默认值限制为 `null` 或 `NULL`：**
 
 ```c
 void DoWork(EntityAI target = null, string name = "")
@@ -441,28 +441,28 @@ void DoWork(EntityAI target = null, string name = "")
 
 ## Proto Native 方法（引擎绑定）
 
-Proto native methods are declared in script but **implemented in the C++ engine**. They form the bridge between your Enforce Script code and the DayZ game engine. You call them like normal methods, but 你无法看到或修改它们的实现.
+Proto native 方法在脚本中声明但**在 C++ 引擎中实现**。它们形成了你的 Enforce Script 代码和 DayZ 游戏引擎之间的桥梁。你像普通方法一样调用它们，但无法看到或修改它们的实现。
 
 ### 修饰符参考
 
 | 修饰符 | 含义 | 示例 |
 |----------|---------|---------|
-| `proto native` | Implemented in C++ engine code | `proto native void SetPosition(vector pos);` |
-| `proto native owned` | Returns a value 调用者 owns (manages memory) | `proto native owned string GetType();` |
-| `proto native external` | Defined in another module | `proto native external bool AddSettings(typename cls);` |
-| `proto volatile` | Has side effects; compiler must not optimize away | `proto volatile int Call(Class inst, string fn, void parm);` |
-| `proto` (without `native`) | Internal function, may or may not be native | `proto int ParseString(string input, out string tokens[]);` |
+| `proto native` | 在 C++ 引擎代码中实现 | `proto native void SetPosition(vector pos);` |
+| `proto native owned` | 返回调用者拥有（管理内存）的值 | `proto native owned string GetType();` |
+| `proto native external` | 在另一个模块中定义 | `proto native external bool AddSettings(typename cls);` |
+| `proto volatile` | 有副作用；编译器不能优化掉 | `proto volatile int Call(Class inst, string fn, void parm);` |
+| `proto`（不带 `native`） | 内部函数，可能是也可能不是原生的 | `proto int ParseString(string input, out string tokens[]);` |
 
 ### proto native
 
-最常见的修饰符. These are straightforward engine calls.
+最常见的修饰符。这些是直接的引擎调用。
 
 ```c
-// Setting/getting position (Object)
+// 设置/获取位置（Object）
 proto native void SetPosition(vector pos);
 proto native vector GetPosition();
 
-// AI pathfinding (AIWorld)
+// AI 寻路（AIWorld）
 proto native bool FindPath(vector from, vector to, PGFilter pgFilter, out TVectorArray waypoints);
 proto native bool SampleNavmeshPosition(vector position, float maxDistance, PGFilter pgFilter,
     out vector sampledPosition);
@@ -470,80 +470,80 @@ proto native bool SampleNavmeshPosition(vector position, float maxDistance, PGFi
 
 ### proto native owned
 
-The `owned` modifier means the return value is allocated by 引擎 and **ownership is transferred to the script**. This is primarily used for `string` returns, where 引擎 creates a new string that the script's garbage collector must later free.
+`owned` 修饰符意味着返回值由引擎分配，**所有权转移给脚本**。这主要用于 `string` 返回值，引擎创建新字符串，脚本的垃圾回收器之后必须释放。
 
 ```c
-// From Class (enscript.c) — returns a string the script now owns
+// 来自 Class（enscript.c）——返回脚本现在拥有的字符串
 proto native owned external string ClassName();
 
-// From Widget (enwidgets.c)
+// 来自 Widget（enwidgets.c）
 proto native owned string GetName();
 proto native owned string GetTypeName();
 proto native owned string GetStyleName();
 
-// From Object (3_game/entities/object.c)
+// 来自 Object（3_game/entities/object.c）
 proto native owned string GetLODName(LOD lod);
 proto native owned string GetActionComponentName(int componentIndex, string geometry = "");
 ```
 
 ### proto native external
 
-The `external` modifier indicates 函数 is defined in a different script module. This allows cross-module method declarations.
+`external` 修饰符表示函数在不同的脚本模块中定义。这允许跨模块方法声明。
 
 ```c
-// From Settings (2_gamelib/settings.c)
+// 来自 Settings（2_gamelib/settings.c）
 proto native external bool AddSettings(typename settingsClass);
 
-// From InputManager (2_gamelib/inputmanager.c)
+// 来自 InputManager（2_gamelib/inputmanager.c）
 proto native external bool RegisterAction(string actionName);
 proto native external float LocalValue(string actionName);
 proto native external bool ActivateAction(string actionName, int duration = 0);
 
-// From Workbench API (1_core/workbenchapi.c)
+// 来自 Workbench API（1_core/workbenchapi.c）
 proto native external bool SetOpenedResource(string filename);
 proto native external bool Save();
 ```
 
 ### proto volatile
 
-The `volatile` modifier tells 编译器 函数 may have **side effects** or may **call back into script** (creating re-entrancy). The compiler must preserve full context when calling these.
+`volatile` 修饰符告诉编译器函数可能有**副作用**或可能**回调脚本**（创建重入）。编译器在调用这些函数时必须保留完整上下文。
 
 ```c
-// From ScriptModule (enscript.c) — dynamic function calls that may invoke script
+// 来自 ScriptModule（enscript.c）——可能调用脚本的动态函数调用
 proto volatile int Call(Class inst, string function, void parm);
 proto volatile int CallFunction(Class inst, string function, out void returnVal, void parm);
 
-// From typename (enconvert.c) — creates a new instance dynamically
+// 来自 typename（enconvert.c）——动态创建新实例
 proto volatile Class Spawn();
 
-// Yielding control
+// 让出控制
 proto volatile void Idle();
 ```
 
 ### 调用 Proto Native 方法
 
-像调用其他方法一样调用它们. 关键规则: **永远不要尝试 override or redefine a proto native method**. They are fixed engine bindings.
+像调用其他方法一样调用它们。关键规则：**永远不要尝试重写或重新定义 proto native 方法**。它们是固定的引擎绑定。
 
 ```c
-// Calling proto native methods — no different from script methods
+// 调用 proto native 方法——与脚本方法没有区别
 Object obj = GetGame().CreateObject("AKM", pos, false, false, true);
 vector position = obj.GetPosition();
-string typeName = obj.GetType();     // owned string — returned to you
-obj.SetPosition(newPos);             // native void — no return
+string typeName = obj.GetType();     // owned 字符串——返回给你
+obj.SetPosition(newPos);             // native void——无返回值
 ```
 
 ---
 
-## 静态方法 vs 实例方法
+## 静态与实例方法
 
-### 何时使用 Static
+### 何时使用静态
 
-Use static methods when 函数 does not need any instance data:
+当函数不需要任何实例数据时使用静态方法：
 
 ```c
 class StringUtils
 {
-    // Pure utility — no state needed
+    // 纯工具——不需要状态
     static bool IsNullOrEmpty(string s)
     {
         return s == "" || s.Length() == 0;
@@ -558,15 +558,15 @@ class StringUtils
 }
 ```
 
-**常见的静态方法使用场景：**
-- **Utility functions** --- math helpers, string formatters, validation checks
-- **Factory methods** --- `Create()` that returns a new configured instance
-- **Singleton accessors** --- `GetInstance()` that returns the single instance
-- **Constants/lookups** --- `Init()` + `Cleanup()` for static data tables
+**常见的静态用途：**
+- **工具函数**——数学辅助、字符串格式化、验证检查
+- **工厂方法**——返回新配置实例的 `Create()`
+- **单例访问器**——返回单个实例的 `GetInstance()`
+- **常量/查找**——用于静态数据表的 `Init()` + `Cleanup()`
 
 ### 单例模式（静态 + 实例）
 
-Many DayZ managers combine static and instance:
+许多 DayZ 管理器结合了静态和实例：
 
 ```c
 class NotificationManager
@@ -580,20 +580,20 @@ class NotificationManager
         return s_Instance;
     }
 
-    // Instance methods for actual work
+    // 实际工作的实例方法
     void ShowNotification(string text, float duration)
     {
         // ...
     }
 }
 
-// Usage:
+// 用法：
 NotificationManager.GetInstance().ShowNotification("Hello", 5.0);
 ```
 
-### 何时使用 Instance
+### 何时使用实例
 
-Use instance methods when 函数 needs access to the object's state:
+当函数需要访问对象状态时使用实例方法：
 
 ```c
 class SupplyDrop
@@ -602,13 +602,13 @@ class SupplyDrop
     protected float m_DropRadius;
     protected ref array<string> m_LootTable;
 
-    // Needs m_DropPosition, m_DropRadius — must be instance
+    // 需要 m_DropPosition、m_DropRadius——必须是实例方法
     bool IsInDropZone(vector testPos)
     {
         return vector.Distance(m_DropPosition, testPos) <= m_DropRadius;
     }
 
-    // Needs m_LootTable — must be instance
+    // 需要 m_LootTable——必须是实例方法
     string GetRandomItem()
     {
         return m_LootTable.GetRandomElement();
@@ -620,7 +620,7 @@ class SupplyDrop
 
 ## 方法重写
 
-When a 子类 needs to change the behavior of a parent method, it uses the `override` keyword.
+当子类需要更改父方法的行为时，使用 `override` 关键字。
 
 ### 基本重写
 
@@ -634,7 +634,7 @@ class BaseModule
 
     void OnUpdate(float dt)
     {
-        // default: do nothing
+        // 默认：不做任何事
     }
 }
 
@@ -642,14 +642,14 @@ class CombatModule extends BaseModule
 {
     override void OnInit()
     {
-        super.OnInit();  // call parent first
+        super.OnInit();  // 先调用父方法
         Print("[CombatModule] Combat system ready");
     }
 
     override void OnUpdate(float dt)
     {
         super.OnUpdate(dt);
-        // custom combat logic
+        // 自定义战斗逻辑
         CheckCombatState();
     }
 }
@@ -657,35 +657,35 @@ class CombatModule extends BaseModule
 
 ### 重写规则
 
-1. **`override` keyword is required** --- without it, you create a new method that hides the parent's, instead of replacing it.
+1. **`override` 关键字是必需的**——没有它，你创建的是隐藏父方法的新方法，而不是替换它。
 
-2. **Signature 必须完全匹配** --- same 返回类型, same parameter types, same parameter count.
+2. **签名必须完全匹配**——相同的返回类型、相同的参数类型、相同的参数数量。
 
-3. **`super.MethodName()` calls the parent** --- use this to extend behavior rather than completely replace it.
+3. **`super.MethodName()` 调用父方法**——用它来扩展行为而不是完全替换。
 
-4. **Private methods 不能被重写** --- they are invisible to 子类es.
+4. **私有方法不能被重写**——子类看不到它们。
 
-5. **Protected methods 可以被重写** --- 子类es see and can override them.
+5. **受保护的方法可以被重写**——子类可以看到并重写它们。
 
 ```c
 class Parent
 {
-    private void SecretMethod() {}    // cannot be overridden
-    protected void InternalWork() {}  // can be overridden by children
-    void PublicWork() {}              // can be overridden by anyone
+    private void SecretMethod() {}    // 不能被重写
+    protected void InternalWork() {}  // 可以被子类重写
+    void PublicWork() {}              // 可以被任何人重写
 }
 
 class Child extends Parent
 {
-    // override void SecretMethod() {}   // COMPILE ERROR — private
-    override void InternalWork() {}      // OK — protected is visible
-    override void PublicWork() {}        // OK — public
+    // override void SecretMethod() {}   // 编译错误——private
+    override void InternalWork() {}      // OK——protected 可见
+    override void PublicWork() {}        // OK——public
 }
 ```
 
-### GOTCHA: Forgetting override
+### 注意：忘记 override
 
-如果省略 `override`, 编译器 may emit a warning but will **not** error. Your method silently becomes a new method instead of replacing the parent's. The parent's version runs whenever the object is referenced through a parent-type variable.
+如果你省略 `override`，编译器可能发出警告但**不会**报错。你的方法静默地变成新方法而不是替换父方法。当通过父类型变量引用对象时，父方法的版本会运行。
 
 ```c
 class Animal
@@ -695,10 +695,10 @@ class Animal
 
 class Dog extends Animal
 {
-    // BAD: Missing override — creates a NEW method
+    // 错误：缺少 override——创建了新方法
     void Speak() { Print("Woof!"); }
 
-    // GOOD: Properly overrides
+    // 好：正确重写
     override void Speak() { Print("Woof!"); }
 }
 ```
@@ -707,20 +707,20 @@ class Dog extends Animal
 
 ## 方法重载（不支持）
 
-**Enforce Script does not support method overloading.** You cannot have two methods with the same name but different 参数列表s. Attempting this 将导致编译错误.
+**Enforce Script 不支持方法重载。**你不能有两个同名但参数列表不同的方法。尝试这样做会导致编译错误。
 
 ```c
 class Calculator
 {
-    // COMPILE ERROR — duplicate method name
+    // 编译错误——方法名重复
     int Add(int a, int b) { return a + b; }
-    float Add(float a, float b) { return a + b; }  // NOT ALLOWED
+    float Add(float a, float b) { return a + b; }  // 不允许
 }
 ```
 
-### 解决方案1：不同的方法名
+### 解决方法 1：不同的方法名
 
-The most common approach is to use descriptive names:
+最常见的方法是使用描述性名称：
 
 ```c
 class Calculator
@@ -730,36 +730,36 @@ class Calculator
 }
 ```
 
-### 解决方案2：Ex() 约定
+### 解决方法 2：Ex() 约定
 
-DayZ vanilla and mods follow a naming convention where an extended version of a method appends `Ex` to the name:
+DayZ 原版和模组遵循一个命名约定，方法的扩展版本在名称后追加 `Ex`：
 
 ```c
-// From vanilla scripts — base version vs extended version
+// 来自原版脚本——基本版本与扩展版本
 void ExplosionEffects(Object source, Object directHit, int componentIndex);
 void ExplosionEffectsEx(Object source, Object directHit, int componentIndex,
     float energyFactor, float explosionFactor, HitInfo hitInfo);
 
-// From EffectManager
+// 来自 EffectManager
 static void EffectUnregister(Effect effect);
 static void EffectUnregisterEx(Effect effect);
 
-// From EntityAI
+// 来自 EntityAI
 void SplitIntoStackMax(EntityAI destination_entity, int slot_id);
 void SplitIntoStackMaxEx(EntityAI destination_entity, int slot_id);
 ```
 
-### 解决方案3：默认参数
+### 解决方法 3：默认参数
 
-If the difference is just optional parameters, use defaults instead:
+如果区别只是可选参数，使用默认值代替：
 
 ```c
 class Spawner
 {
-    // Instead of overloads, use defaults
+    // 不用重载，使用默认值
     void SpawnAt(vector pos, float radius = 0, string filter = "")
     {
-        // one method handles all cases
+        // 一个方法处理所有情况
     }
 }
 ```
@@ -768,56 +768,56 @@ class Spawner
 
 ## event 关键字
 
-The `event` keyword marks a method as an **engine event handler** --- a function that the C++ engine calls at specific moments (entity creation, animation events, physics callbacks, etc.). It is a hint for tooling (like Workbench) that the method should be exposed as a script event.
+`event` 关键字将方法标记为**引擎事件处理器**——C++ 引擎在特定时刻（实体创建、动画事件、物理回调等）调用的函数。它是对工具（如 Workbench）的提示，表明该方法应作为脚本事件公开。
 
 ```c
-// From Pawn (3_game/entities/pawn.c)
+// 来自 Pawn（3_game/entities/pawn.c）
 protected event void OnPossess()
 {
-    // called by engine when a controller possesses this pawn
+    // 当控制器占有此 pawn 时由引擎调用
 }
 
 protected event void OnUnPossess()
 {
-    // called by engine when the controller releases this pawn
+    // 当控制器释放此 pawn 时由引擎调用
 }
 
 event void GetTransform(inout vector transform[4])
 {
-    // engine calls this to get the entity's transform
+    // 引擎调用此方法以获取实体的变换
 }
 
-// Event methods that supply data for networking
+// 为网络提供数据的事件方法
 protected event void ObtainMove(PawnMove pMove)
 {
-    // called by engine to gather movement input
+    // 由引擎调用以收集移动输入
 }
 ```
 
-You typically `override` event methods in 子类es rather than defining them from scratch:
+你通常在子类中 `override` 事件方法而不是从头定义它们：
 
 ```c
 class MyVehicle extends Transport
 {
     override event void GetTransform(inout vector transform[4])
     {
-        // provide custom transform logic
+        // 提供自定义变换逻辑
         super.GetTransform(transform);
     }
 }
 ```
 
-The key takeaway: `event` is a declaration modifier, not something you invoke. 引擎调用 event methods at the appropriate time.
+关键要点：`event` 是声明修饰符，不是你调用的东西。引擎在适当的时候调用事件方法。
 
 ---
 
 ## 线程方法（协程）
 
-The `thread` keyword creates a **coroutine** --- a function that can yield execution and resume later. Despite the name, Enforce Script is **single-threaded**. Thread methods are cooperative coroutines, not OS-level threads.
+`thread` 关键字创建一个**协程**——可以让出执行并稍后恢复的函数。尽管名称如此，Enforce Script 是**单线程**的。线程方法是协作式协程，不是操作系统级线程。
 
 ### 声明和启动线程
 
-You start a thread by calling a function with the `thread` keyword preceding the call:
+通过在调用前加上 `thread` 关键字来启动线程：
 
 ```c
 class Monitor
@@ -832,46 +832,46 @@ class Monitor
         while (true)
         {
             CheckStatus();
-            Sleep(1000);  // yield for 1000 milliseconds
+            Sleep(1000);  // 让出 1000 毫秒
         }
     }
 }
 ```
 
-The `thread` keyword goes on the **call**, not 函数 declaration. The function itself is a normal function --- what makes it a coroutine is how you invoke it.
+`thread` 关键字放在**调用**上，而不是函数声明上。函数本身是普通函数——使它成为协程的是你如何调用它。
 
-### Sleep() 和让步
+### Sleep() 和让出
 
-Inside a thread function, `Sleep(milliseconds)` pauses execution and yields to other code. When the sleep time elapses, the thread resumes from where it left off.
+在线程函数内部，`Sleep(milliseconds)` 暂停执行并让出给其他代码。当睡眠时间到期时，线程从停止的地方恢复。
 
 ### 终止线程
 
-You can terminate a running thread with `KillThread()`:
+你可以用 `KillThread()` 终止正在运行的线程：
 
 ```c
-// From enscript.c
+// 来自 enscript.c
 proto native int KillThread(Class owner, string name);
 
-// Usage:
-KillThread(this, "MonitorLoop");  // stops the MonitorLoop coroutine
+// 用法：
+KillThread(this, "MonitorLoop");  // 停止 MonitorLoop 协程
 ```
 
-The `owner` is the object that started the thread (or `null` for global threads). The `name` is 函数 name.
+`owner` 是启动线程的对象（或全局线程为 `null`）。`name` 是函数名。
 
-### 何时使用 Threads (and When Not To)
+### 何时使用线程（何时不用）
 
-**Prefer `CallLater` and timers over threads.** Thread coroutines have limitations:
-- They are harder to debug (stack traces are less clear)
-- They consume a coroutine slot that persists until completion or kill
-- They cannot be serialized or transferred across network boundaries
+**优先使用 `CallLater` 和计时器而非线程。**线程协程有限制：
+- 更难调试（堆栈跟踪不太清晰）
+- 消耗一个持续到完成或终止的协程槽位
+- 无法跨网络边界序列化或传输
 
-Use threads only when you genuinely need a long-running loop with intermediate yields. For one-shot delayed actions, use `CallLater` (see below).
+仅当你确实需要带有中间让出的长期运行循环时才使用线程。对于一次性延迟操作，使用 `CallLater`（见下文）。
 
 ---
 
-## 使用 CallLater 进行延迟调用
+## 使用 CallLater 延迟调用
 
-`CallLater` schedules a function call to execute after a delay. It is the primary alternative to thread coroutines and is used extensively in vanilla DayZ.
+`CallLater` 安排函数调用在延迟后执行。它是线程协程的主要替代方案，在原版 DayZ 中被广泛使用。
 
 ### 语法
 
@@ -879,40 +879,40 @@ Use threads only when you genuinely need a long-running loop with intermediate y
 g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(FunctionToCall, delayMs, repeat, ...params);
 ```
 
-| 参数 | 类型 | 说明 |
+| 参数 | 类型 | 描述 |
 |-----------|------|-------------|
-| Function | `func` | The method to call |
-| Delay | `int` | Milliseconds before calling |
-| Repeat | `bool` | `true` to repeat at interval, `false` for one-shot |
-| Params | variadic | Parameters to pass to 函数 |
+| Function | `func` | 要调用的方法 |
+| Delay | `int` | 调用前的毫秒数 |
+| Repeat | `bool` | `true` 按间隔重复，`false` 一次性 |
+| Params | 可变参数 | 传递给函数的参数 |
 
 ### 调用类别
 
 | 类别 | 用途 |
 |----------|---------|
-| `CALL_CATEGORY_SYSTEM` | General-purpose, runs 每帧 |
-| `CALL_CATEGORY_GUI` | UI-related callbacks |
-| `CALL_CATEGORY_GAMEPLAY` | Gameplay logic callbacks |
+| `CALL_CATEGORY_SYSTEM` | 通用，每帧运行 |
+| `CALL_CATEGORY_GUI` | UI 相关回调 |
+| `CALL_CATEGORY_GAMEPLAY` | 游戏逻辑回调 |
 
 ### 原版中的示例
 
 ```c
-// One-shot delayed call (3_game/entities/entityai.c)
+// 一次性延迟调用（3_game/entities/entityai.c）
 g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeferredInit, 34);
 
-// Repeated call — login countdown every 1 second (3_game/dayzgame.c)
+// 重复调用——每 1 秒登录倒计时（3_game/dayzgame.c）
 GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this.LoginTimeCountdown, 1000, true);
 
-// Delayed deletion with parameter (4_world/entities/explosivesbase)
+// 带参数的延迟删除（4_world/entities/explosivesbase）
 g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeleteSafe, delayFor * 1000, false);
 
-// UI delayed callback (3_game/gui/hints/uihintpanel.c)
+// UI 延迟回调（3_game/gui/hints/uihintpanel.c）
 m_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(SlideshowThread, m_SlideShowDelay);
 ```
 
-### 移除队列中的调用
+### 移除排队的调用
 
-To cancel a scheduled call before it fires:
+要在触发前取消已安排的调用：
 
 ```c
 g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(FunctionToCall);
@@ -922,9 +922,9 @@ g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(FunctionToCall);
 
 ## 最佳实践
 
-1. **Keep functions short** --- aim for under 50 lines. If a function is longer, extract helper methods.
+1. **保持函数简短**——目标是 50 行以内。如果函数更长，提取辅助方法。
 
-2. **Use guard clauses for early return** --- check preconditions at the top and return early. This reduces nesting and makes the "happy path" easier to read.
+2. **使用守卫子句进行提前返回**——在顶部检查前置条件并提前返回。这减少了嵌套，使"正常路径"更容易阅读。
 
 ```c
 void ProcessPlayer(PlayerBase player)
@@ -933,35 +933,35 @@ void ProcessPlayer(PlayerBase player)
     if (!player.IsAlive()) return;
     if (!player.GetIdentity()) return;
 
-    // actual logic here, unnested
+    // 实际逻辑在这里，不嵌套
     string name = player.GetIdentity().GetName();
     // ...
 }
 ```
 
-3. **Prefer out parameters over complex 返回类型s** --- when a function needs to communicate success/failure plus data, use a `bool` return with `out` parameters.
+3. **优先使用 out 参数而非复杂返回类型**——当函数需要传达成功/失败加上数据时，使用 `bool` 返回值配合 `out` 参数。
 
-4. **Use static for stateless utilities** --- if a method does not access `this`, make it `static`. This documents intent and allows calling without an instance.
+4. **对无状态工具使用 static**——如果方法不访问 `this`，就让它成为 `static`。这记录了意图并允许无需实例即可调用。
 
-5. **Document proto native limitations** --- when wrapping a proto native call, note in comments what 引擎 function can and cannot do.
+5. **记录 proto native 的限制**——当包装 proto native 调用时，在注释中说明引擎函数能做什么和不能做什么。
 
-6. **Prefer CallLater over thread coroutines** --- `CallLater` is simpler, easier to cancel, and less error-prone.
+6. **优先使用 CallLater 而非线程协程**——`CallLater` 更简单、更容易取消且更不容易出错。
 
-7. **Always call super in overrides** --- unless you intentionally want to completely replace the parent behavior. DayZ's deep inheritance chains depend on `super` calls propagating through the hierarchy.
+7. **在重写中始终调用 super**——除非你有意要完全替换父行为。DayZ 的深层继承链依赖 `super` 调用在层次结构中传播。
 
 ---
 
-## 在实际Mod中观察到的模式
+## 真实模组中的观察
 
-> 通过研究专业DayZ Mod源代码确认的模式。
+> 通过研究专业 DayZ 模组源代码确认的模式。
 
-| 模式 | Mod | 详情 |
+| 模式 | 模组 | 细节 |
 |---------|-----|--------|
-| `TryGet___()` returning `bool` with `out` param | COT / Expansion | Consistent pattern for nullable lookups: return `true`/`false`, fill `out` param on success |
-| `MethodEx()` for extended signatures | Vanilla / Expansion Market | When an API needs more parameters, append `Ex` rather than breaking existing callers |
-| Static `Init()` + `Cleanup()` class methods | Expansion / VPP | Manager classes initialize static data in `Init()` and tear down in `Cleanup()`, called from mission lifecycle |
-| Guard clause `if (!GetGame()) return` at method start | COT Admin Tools | Every method that touches 引擎 starts with null checks to avoid crashes during shutdown |
-| Singleton `GetInstance()` with lazy creation | COT / Expansion / Dabs | Managers expose `static ref` instance with `GetInstance()` accessor, created on first access |
+| `TryGet___()` 返回 `bool` 配合 `out` 参数 | COT / Expansion | 可空查找的一致模式：返回 `true`/`false`，成功时填充 `out` 参数 |
+| `MethodEx()` 用于扩展签名 | Vanilla / Expansion Market | 当 API 需要更多参数时，追加 `Ex` 而不是破坏现有调用者 |
+| 静态 `Init()` + `Cleanup()` 类方法 | Expansion / VPP | 管理器类在 `Init()` 中初始化静态数据，在 `Cleanup()` 中拆除，从任务生命周期调用 |
+| 方法开头的守卫子句 `if (!GetGame()) return` | COT Admin Tools | 每个接触引擎的方法都以空值检查开始，以避免关闭期间的崩溃 |
+| 带延迟创建的单例 `GetInstance()` | COT / Expansion / Dabs | 管理器公开 `static ref` 实例配合 `GetInstance()` 访问器，在首次访问时创建 |
 
 ---
 
@@ -969,116 +969,116 @@ void ProcessPlayer(PlayerBase player)
 
 | 概念 | 理论 | 现实 |
 |---------|--------|---------|
-| Method overloading | Standard OOP feature | Not supported; use `Ex()` suffix or default parameters instead |
-| `thread` creates OS threads | Keyword suggests parallelism | Single-threaded coroutines with cooperative yielding via `Sleep()` |
-| `out` parameters are write-only | Should not read initial value | Some vanilla code reads the `out` param before writing; safer to always treat as `inout` defensively |
-| `override` is optional | Could be inferred | Omitting it silently creates a new method instead of overriding; 始终包含它 |
-| 默认值 parameter expressions | Should support function calls | Only literal values (`42`, `true`, `null`, `""`) are allowed; no expressions |
+| 方法重载 | 标准 OOP 特性 | 不支持；改用 `Ex()` 后缀或默认参数 |
+| `thread` 创建操作系统线程 | 关键字暗示并行性 | 单线程协程，通过 `Sleep()` 协作让出 |
+| `out` 参数是只写的 | 不应读取初始值 | 一些原版代码在写入前读取 `out` 参数；更安全的做法是始终当作 `inout` 防御性处理 |
+| `override` 是可选的 | 可以推断 | 省略它会静默创建新方法而不是重写；始终包含它 |
+| 默认参数表达式 | 应支持函数调用 | 只允许字面值（`42`、`true`、`null`、`""`）；不允许表达式 |
 
 ---
 
 ## 常见错误
 
-### 1. Forgetting override When Replacing a Parent Method
+### 1. 替换父方法时忘记 override
 
-Without `override`, your method becomes a new method that hides the parent's. The parent's version will still be called when the object is referenced through a parent type.
+没有 `override`，你的方法变成隐藏父方法的新方法。当通过父类型引用对象时，父方法的版本仍然会被调用。
 
 ```c
-// BAD — silently creates a new method
+// 错误——静默创建新方法
 class CustomPlayer extends PlayerBase
 {
     void OnConnect() { Print("Custom!"); }
 }
 
-// GOOD — properly overrides
+// 好——正确重写
 class CustomPlayer extends PlayerBase
 {
     override void OnConnect() { Print("Custom!"); }
 }
 ```
 
-### 2. Expecting out Parameters to Be Pre-initialized
+### 2. 期望 out 参数被预初始化
 
-An `out` parameter has no guaranteed initial value. Never read it before writing.
+`out` 参数没有保证的初始值。不要在写入前读取它。
 
 ```c
-// BAD — reading out param before it's set
+// 错误——在设置前读取 out 参数
 void GetData(out int value)
 {
-    if (value > 0)  // WRONG — value is undefined here
+    if (value > 0)  // 错误——value 在这里是未定义的
         return;
     value = 42;
 }
 
-// GOOD — always write first, then read
+// 好——始终先写后读
 void GetData(out int value)
 {
     value = 42;
 }
 ```
 
-### 3. Trying to Overload Methods
+### 3. 尝试重载方法
 
-Enforce Script does not support overloading. Two methods with the same name cause a 编译错误.
+Enforce Script 不支持重载。两个同名方法会导致编译错误。
 
 ```c
-// COMPILE ERROR
+// 编译错误
 void Process(int id) {}
 void Process(string name) {}
 
-// CORRECT — use different names
+// 正确——使用不同名称
 void ProcessById(int id) {}
 void ProcessByName(string name) {}
 ```
 
-### 4. Assigning the Return of a void Function
+### 4. 赋值 void 函数的返回值
 
-Some functions (notably `JsonFileLoader.JsonLoadFile`) return `void`. Trying to assign their result causes a 编译错误.
+一些函数（特别是 `JsonFileLoader.JsonLoadFile`）返回 `void`。尝试赋值它们的结果会导致编译错误。
 
 ```c
-// COMPILE ERROR — JsonLoadFile returns void
+// 编译错误——JsonLoadFile 返回 void
 MyConfig cfg = JsonFileLoader<MyConfig>.JsonLoadFile(path);
 
-// CORRECT
+// 正确
 MyConfig cfg = new MyConfig;
 JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);
 ```
 
-### 5. Using Expressions in Default Parameters
+### 5. 在默认参数中使用表达式
 
-Default parameter values must be compile-time literals. Expressions, function calls, and variable references are not allowed.
+默认参数值必须是编译时字面量。不允许表达式、函数调用和变量引用。
 
 ```c
-// COMPILE ERROR — expression in default
+// 编译错误——默认值中有表达式
 void SetTimeout(float seconds = GetDefaultTimeout()) {}
 void SetAngle(float rad = Math.PI) {}
 
-// CORRECT — literal values only
+// 正确——仅字面值
 void SetTimeout(float seconds = 30.0) {}
 void SetAngle(float rad = 3.14159) {}
 ```
 
-### 6. Forgetting super in Override Chains
+### 6. 在重写链中忘记 super
 
-DayZ's class hierarchies are deep. Omitting `super` in an override can break functionality several layers up the chain that you never even knew existed.
+DayZ 的类层次结构很深。在重写中省略 `super` 可能会破坏你甚至不知道存在的几层之上的功能。
 
 ```c
-// BAD — breaks parent initialization
+// 错误——破坏了父类初始化
 class MyMission extends MissionServer
 {
     override void OnInit()
     {
-        // forgot super.OnInit() — vanilla initialization never runs!
+        // 忘记了 super.OnInit()——原版初始化永远不会运行！
         Print("My mission started");
     }
 }
 
-// GOOD
+// 好
 class MyMission extends MissionServer
 {
     override void OnInit()
     {
-        super.OnInit();  // let vanilla + other mods initialize first
+        super.OnInit();  // 让原版 + 其他模组先初始化
         Print("My mission started");
     }
 }
@@ -1086,28 +1086,28 @@ class MyMission extends MissionServer
 
 ---
 
-## 快速参考 Table
+## 快速参考表
 
-| 功能 | 语法 | 备注 |
+| 特性 | 语法 | 备注 |
 |---------|--------|-------|
-| Instance method | `void DoWork()` | Has access to `this` |
-| Static method | `static void DoWork()` | Called via `ClassName.DoWork()` |
-| By-value param | `void Fn(int x)` | Copy for primitives; ref copy for objects |
-| `out` param | `void Fn(out int x)` | Write-only; caller receives value |
-| `inout` param | `void Fn(inout float x)` | Read + write; caller sees changes |
-| `notnull` param | `void Fn(notnull EntityAI e)` | Crashes on null |
-| 默认值 value | `void Fn(int x = 5)` | Literals only, no expressions |
-| Override | `override void Fn()` | Must match parent signature |
-| Call parent | `super.Fn()` | Inside override body |
-| Proto native | `proto native void Fn()` | Implemented in C++ |
-| Owned return | `proto native owned string Fn()` | Script manages returned memory |
-| External | `proto native external void Fn()` | Defined in another module |
-| Volatile | `proto volatile void Fn()` | May callback into script |
-| Event | `event void Fn()` | Engine-invoked callback |
-| Thread start | `thread MyFunc()` | Starts coroutine (not OS thread) |
-| Kill thread | `KillThread(owner, "FnName")` | Stops a running coroutine |
-| Deferred call | `CallLater(Fn, delay, repeat)` | Preferred over threads |
-| `Ex()` convention | `void FnEx(...)` | Extended version of `Fn` |
+| 实例方法 | `void DoWork()` | 可以访问 `this` |
+| 静态方法 | `static void DoWork()` | 通过 `ClassName.DoWork()` 调用 |
+| 按值参数 | `void Fn(int x)` | 原始类型复制；对象引用复制 |
+| `out` 参数 | `void Fn(out int x)` | 只写；调用者接收值 |
+| `inout` 参数 | `void Fn(inout float x)` | 读 + 写；调用者看到变化 |
+| `notnull` 参数 | `void Fn(notnull EntityAI e)` | null 时崩溃 |
+| 默认值 | `void Fn(int x = 5)` | 仅字面量，无表达式 |
+| 重写 | `override void Fn()` | 必须匹配父签名 |
+| 调用父方法 | `super.Fn()` | 在重写体内 |
+| Proto native | `proto native void Fn()` | 在 C++ 中实现 |
+| Owned 返回 | `proto native owned string Fn()` | 脚本管理返回的内存 |
+| External | `proto native external void Fn()` | 在另一个模块中定义 |
+| Volatile | `proto volatile void Fn()` | 可能回调脚本 |
+| Event | `event void Fn()` | 引擎调用的回调 |
+| 启动线程 | `thread MyFunc()` | 启动协程（不是操作系统线程） |
+| 终止线程 | `KillThread(owner, "FnName")` | 停止正在运行的协程 |
+| 延迟调用 | `CallLater(Fn, delay, repeat)` | 优于线程 |
+| `Ex()` 约定 | `void FnEx(...)` | `Fn` 的扩展版本 |
 
 ---
 
@@ -1115,4 +1115,4 @@ class MyMission extends MissionServer
 
 | 上一章 | 上级 | 下一章 |
 |----------|----|------|
-| [1.12 Gotchas](12-gotchas.md) | [Part 1: Enforce Script](../README.md) | -- |
+| [1.12 注意事项](12-gotchas.md) | [第一部分：Enforce Script](../README.md) | -- |

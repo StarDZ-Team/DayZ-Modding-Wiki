@@ -1,372 +1,376 @@
-# Chapter 3.1: Widget Types
+# 3.1. fejezet: Widget típusok
 
-[Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
-
----
+[Kezdőlap](../../README.md) | **Widget típusok** | [Következő: Layout fájlok >>](02-layout-files.md)
 
 ---
 
-## Hogyan mukodnek a widgetek
+A DayZ GUI rendszere widgetekre épül -- újrafelhasználható UI komponensekre, amelyek az egyszerű konténerektől a komplex interaktív vezérlőkig terjednek. Minden képernyőn látható elem egy widget, és a teljes katalógus ismerete elengedhetetlen a mod UI-k építéséhez.
 
-Every widget in DayZ inherits from the `Widget` base class. Widgets are organized in a parent-child tree, where the root is typically a `WorkspaceWidget` obtained via `GetGame().GetWorkspace()`.
+Ez a fejezet az Enforce Scriptben elérhető összes widget típus teljes referenciáját nyújtja.
 
-Each widget type has three associated identifiers:
+---
 
-| Identifier | Pelda | Used For |
+## Hogyan működnek a widgetek
+
+A DayZ minden widgetje a `Widget` alaposztályból öröklődik. A widgetek szülő-gyermek fa struktúrában szerveződnek, ahol a gyökér jellemzően egy `WorkspaceWidget`, amelyet a `GetGame().GetWorkspace()` hívással kapunk meg.
+
+Minden widget típusnak három azonosítója van:
+
+| Azonosító | Példa | Használat |
 |---|---|---|
-| **Script class** | `TextWidget` | Code references, casting |
-| **Layout class** | `TextWidgetClass` | `.layout` file declarations |
-| **TypeID constant** | `TextWidgetTypeID` | Programmatic creation with `CreateWidget()` |
+| **Script osztály** | `TextWidget` | Kódreferenciák, típuskonverzió |
+| **Layout osztály** | `TextWidgetClass` | `.layout` fájl deklarációk |
+| **TypeID konstans** | `TextWidgetTypeID` | Programozott létrehozás a `CreateWidget()` segítségével |
 
-In `.layout` files you always use the layout class name (ending in `Class`). In scripts you work with the script class name.
+A `.layout` fájlokban mindig a layout osztálynevet használjuk (amely `Class` végződésű). A szkriptekben a script osztálynévvel dolgozunk.
 
 ---
 
-## Kontener / Elrendezes widgetek
+## Konténer / Elrendezés widgetek
 
-Container widgets hold and organize child widgets. They do not display content themselves (except `PanelWidget`, which draws a colored rectangle).
+A konténer widgetek gyermek widgeteket tartalmaznak és rendszereznek. Önmagukban nem jelenítenek meg tartalmat (kivéve a `PanelWidget`, amely színes téglalapot rajzol).
 
-| Script Class | Layout Class | Cel |
+| Script osztály | Layout osztály | Cél |
 |---|---|---|
-| `Widget` | `WidgetClass` | Abstract base class for all widgets. Never instantiate directly. |
-| `WorkspaceWidget` | `WorkspaceWidgetClass` | Root workspace. Obtained via `GetGame().GetWorkspace()`. Used to create widgets programmatically. |
-| `FrameWidget` | `FrameWidgetClass` | General-purpose container. The most commonly used widget in DayZ. |
-| `PanelWidget` | `PanelWidgetClass` | Solid colored rectangle. Use for backgrounds, dividers, separators. |
-| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Flow layout. Arranges children sequentially with wrapping, padding, and margins. |
-| `GridSpacerWidget` | `GridSpacerWidgetClass` | Grid layout. Arranges children in a grid defined by `Columns` and `Rows`. |
-| `ScrollWidget` | `ScrollWidgetClass` | Scrollable viewport. Enables vertical/horizontal scrolling of child content. |
-| `SpacerBaseWidget` | -- | Abstract base class for `WrapSpacerWidget` and `GridSpacerWidget`. |
+| `Widget` | `WidgetClass` | Absztrakt alaposztály minden widgethez. Soha ne példányosítsd közvetlenül. |
+| `WorkspaceWidget` | `WorkspaceWidgetClass` | Gyökér munkaterület. A `GetGame().GetWorkspace()` hívással kapható meg. Widgetek programozott létrehozásához használatos. |
+| `FrameWidget` | `FrameWidgetClass` | Általános célú konténer. A DayZ-ben leggyakrabban használt widget. |
+| `PanelWidget` | `PanelWidgetClass` | Egyszínű téglalap. Háttérekhez, elválasztókhoz, szeparátorokhoz. |
+| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Folyam elrendezés. Gyermekeket sorban rendez el tördeléssel, kitöltéssel és margóval. |
+| `GridSpacerWidget` | `GridSpacerWidgetClass` | Rács elrendezés. Gyermekeket `Columns` és `Rows` által meghatározott rácsba rendezi. |
+| `ScrollWidget` | `ScrollWidgetClass` | Görgethető nézet. Függőleges/vízszintes görgetést tesz lehetővé a gyermek tartalom számára. |
+| `SpacerBaseWidget` | -- | Absztrakt alaposztály a `WrapSpacerWidget` és a `GridSpacerWidget` számára. |
 
 ### FrameWidget
 
-The workhorse of DayZ UI. Use `FrameWidget` as your default container when you need to group widgets together. It has no visual appearance -- it is purely structural.
+A DayZ UI munkálója. Használd a `FrameWidget`-et alapértelmezett konténerként, amikor widgeteket kell csoportosítanod. Nincs vizuális megjelenése -- tisztán strukturális.
 
-**Key methods:**
-- All base `Widget` methods (position, size, color, children, flags)
+**Fő metódusok:**
+- Minden alap `Widget` metódus (pozíció, méret, szín, gyermekek, jelzők)
 
-**When to use:** Almost everywhere. Wrap groups of related widgets. Use as the root of dialogs, panels, and HUD elements.
+**Mikor használd:** Szinte mindenhol. Kapcsolódó widgetek csoportosítása. Párbeszédablakok, panelek és HUD elemek gyökereként.
 
 ```c
-// Find a frame widget by name
+// Frame widget keresése név alapján
 FrameWidget panel = FrameWidget.Cast(root.FindAnyWidget("MyPanel"));
 panel.Show(true);
 ```
 
 ### PanelWidget
 
-A visible rectangle with a solid color. Unlike `FrameWidget`, a `PanelWidget` actually draws something on screen.
+Látható téglalap egyszínű kitöltéssel. A `FrameWidget`-tel ellentétben a `PanelWidget` ténylegesen rajzol valamit a képernyőre.
 
-**Key methods:**
-- `SetColor(int argb)` -- Set the background color
-- `SetAlpha(float alpha)` -- Set transparency
+**Fő metódusok:**
+- `SetColor(int argb)` -- Háttérszín beállítása
+- `SetAlpha(float alpha)` -- Átlátszóság beállítása
 
-**When to use:** Backgrounds behind text, colored dividers, overlay rectangles, tint layers.
+**Mikor használd:** Szöveg mögötti háttér, színes elválasztók, fedő téglalapok, színezési rétegek.
 
 ```c
 PanelWidget bg = PanelWidget.Cast(root.FindAnyWidget("Background"));
-bg.SetColor(ARGB(200, 0, 0, 0));  // Semi-transparent black
+bg.SetColor(ARGB(200, 0, 0, 0));  // Félig átlátszó fekete
 ```
 
 ### WrapSpacerWidget
 
-Automatically arranges children in a flow layout. Children are placed one after another, wrapping to the next line when space runs out.
+Automatikusan rendezi a gyermekeket folyam elrendezésben. A gyermekek egymás után kerülnek elhelyezésre, és a következő sorba törnek, amikor a hely elfogy.
 
-**Key layout attributes:**
-- `Padding` -- Inner padding (pixels)
-- `Margin` -- Outer margin (pixels)
-- `"Size To Content H" 1` -- Resize width to fit children
-- `"Size To Content V" 1` -- Resize height to fit children
-- `content_halign` -- Horizontal alignment of content (`left`, `center`, `right`)
-- `content_valign` -- Vertical alignment of content (`top`, `center`, `bottom`)
+**Fő layout attribútumok:**
+- `Padding` -- Belső kitöltés (pixelek)
+- `Margin` -- Külső margó (pixelek)
+- `"Size To Content H" 1` -- Szélesség átméretezése a gyermekekhez igazítva
+- `"Size To Content V" 1` -- Magasság átméretezése a gyermekekhez igazítva
+- `content_halign` -- A tartalom vízszintes igazítása (`left`, `center`, `right`)
+- `content_valign` -- A tartalom függőleges igazítása (`top`, `center`, `bottom`)
 
-**When to use:** Dynamic lists, tag clouds, button rows, any layout where children have varying sizes.
+**Mikor használd:** Dinamikus listák, címkefelhők, gomborsorok, bármilyen elrendezés ahol a gyermekeknek eltérő méretük van.
 
 ### GridSpacerWidget
 
-Arranges children in a fixed grid. Each cell has equal size.
+Gyermekeket fix rácsba rendez. Minden cella egyenlő méretű.
 
-**Key layout attributes:**
-- `Columns` -- Number of columns
-- `Rows` -- Number of rows
-- `Margin` -- Space between cells
-- `"Size To Content V" 1` -- Resize height to fit content
+**Fő layout attribútumok:**
+- `Columns` -- Oszlopok száma
+- `Rows` -- Sorok száma
+- `Margin` -- Cellák közötti távolság
+- `"Size To Content V" 1` -- Magasság átméretezése a tartalomhoz igazítva
 
-**When to use:** Inventory grids, icon galleries, settings panels with uniform rows.
+**Mikor használd:** Tárgyrácsok, ikongalériák, egységes sorokkal rendelkező beállítási panelek.
 
 ### ScrollWidget
 
-Provides a scrollable viewport for content that exceeds the visible area.
+Görgethető nézetet biztosít olyan tartalomhoz, amely meghaladja a látható területet.
 
-**Key layout attributes:**
-- `"Scrollbar V" 1` -- Enable vertical scrollbar
-- `"Scrollbar H" 1` -- Enable horizontal scrollbar
+**Fő layout attribútumok:**
+- `"Scrollbar V" 1` -- Függőleges görgetősáv engedélyezése
+- `"Scrollbar H" 1` -- Vízszintes görgetősáv engedélyezése
 
-**Key methods:**
-- `VScrollToPos(float pos)` -- Scroll to a vertical position
-- `GetVScrollPos()` -- Get current vertical scroll position
-- `GetContentHeight()` -- Get total content height
-- `VScrollStep(int step)` -- Scroll by step amount
+**Fő metódusok:**
+- `VScrollToPos(float pos)` -- Görgetés függőleges pozícióra
+- `GetVScrollPos()` -- Aktuális függőleges görgetési pozíció lekérdezése
+- `GetContentHeight()` -- Teljes tartalom magasságának lekérdezése
+- `VScrollStep(int step)` -- Görgetés lépésértékkel
 
-**When to use:** Long lists, configuration panels, chat windows, log viewers.
+**Mikor használd:** Hosszú listák, konfigurációs panelek, chat ablakok, naplómegjelenítők.
 
 ---
 
-## Megjelenito widgetek
+## Megjelenítő widgetek
 
-Display widgets show content to the user but are not interactive.
+A megjelenítő widgetek tartalmat mutatnak a felhasználónak, de nem interaktívak.
 
-| Script Class | Layout Class | Cel |
+| Script osztály | Layout osztály | Cél |
 |---|---|---|
-| `TextWidget` | `TextWidgetClass` | Single-line text display |
-| `MultilineTextWidget` | `MultilineTextWidgetClass` | Multi-line read-only text |
-| `RichTextWidget` | `RichTextWidgetClass` | Text with embedded images (`<image>` tags) |
-| `ImageWidget` | `ImageWidgetClass` | Image display (from imagesets or files) |
-| `CanvasWidget` | `CanvasWidgetClass` | Programmable drawing surface |
-| `VideoWidget` | `VideoWidgetClass` | Video file playback |
-| `RTTextureWidget` | `RTTextureWidgetClass` | Render-to-texture surface |
-| `RenderTargetWidget` | `RenderTargetWidgetClass` | 3D scene render target |
-| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D DayZ item preview |
-| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D player character preview |
-| `MapWidget` | `MapWidgetClass` | Interactive world map |
+| `TextWidget` | `TextWidgetClass` | Egysoros szövegmegjelenítés |
+| `MultilineTextWidget` | `MultilineTextWidgetClass` | Többsoros, csak olvasható szöveg |
+| `RichTextWidget` | `RichTextWidgetClass` | Szöveg beágyazott képekkel (`<image>` címkék) |
+| `ImageWidget` | `ImageWidgetClass` | Képmegjelenítés (imagesetekből vagy fájlokból) |
+| `CanvasWidget` | `CanvasWidgetClass` | Programozható rajzfelület |
+| `VideoWidget` | `VideoWidgetClass` | Videofájl lejátszás |
+| `RTTextureWidget` | `RTTextureWidgetClass` | Textúrára renderelő felület |
+| `RenderTargetWidget` | `RenderTargetWidgetClass` | 3D jelenet render célpont |
+| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D DayZ tárgy előnézet |
+| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D játékos karakter előnézet |
+| `MapWidget` | `MapWidgetClass` | Interaktív világtérkép |
 
 ### TextWidget
 
-The most common display widget. Shows a single line of text.
+A leggyakoribb megjelenítő widget. Egyetlen sornyi szöveget mutat.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 TextWidget tw;
 tw.SetText("Hello World");
-tw.GetText();                           // Returns string
-tw.GetTextSize(out int w, out int h);   // Pixel dimensions of rendered text
-tw.SetTextExactSize(float size);        // Set font size in pixels
-tw.SetOutline(int size, int color);     // Add text outline
-tw.GetOutlineSize();                    // Returns int
-tw.GetOutlineColor();                   // Returns int (ARGB)
-tw.SetColor(int argb);                  // Text color
+tw.GetText();                           // Stringet ad vissza
+tw.GetTextSize(out int w, out int h);   // A renderelt szöveg pixel méretei
+tw.SetTextExactSize(float size);        // Betűméret beállítása pixelben
+tw.SetOutline(int size, int color);     // Szöveg körvonal hozzáadása
+tw.GetOutlineSize();                    // int-et ad vissza
+tw.GetOutlineColor();                   // int-et ad vissza (ARGB)
+tw.SetColor(int argb);                  // Szöveg színe
 ```
 
-**Key layout attributes:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
+**Fő layout attribútumok:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
 
 ### MultilineTextWidget
 
-Displays multiple lines of read-only text. Text wraps automatically based on widget width.
+Több sor csak olvasható szöveget jelenít meg. A szöveg automatikusan törik a widget szélességének megfelelően.
 
-**When to use:** Description panels, help text, log displays.
+**Mikor használd:** Leíró panelek, súgó szöveg, naplómegjelenítők.
 
 ### RichTextWidget
 
-Supports inline images embedded within text using `<image>` tags. Also supports text wrapping.
+Támogatja a szövegbe ágyazott képeket `<image>` címkékkel. Szintén támogatja a szövegtördelést.
 
-**Key layout attributes:**
-- `wrap 1` -- Enable word wrapping
+**Fő layout attribútumok:**
+- `wrap 1` -- Szótördelés engedélyezése
 
-**Usage in text:**
+**Használat szövegben:**
 ```
 "Health: <image set:dayz_gui image:iconHealth0 /> OK"
 ```
 
-**When to use:** Status text with icons, formatted messages, chat with inline images.
+**Mikor használd:** Ikonos állapotszöveg, formázott üzenetek, beágyazott képekkel ellátott chat.
 
 ### ImageWidget
 
-Displays images from imageset sprite sheets or loaded from file paths.
+Képeket jelenít meg imageset sprite atlaszokból vagy fájlelérési utakról betöltve.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 ImageWidget iw;
-iw.SetImage(int index);                    // Switch between image0, image1, etc.
-iw.LoadImageFile(int slot, string path);   // Load image from file
-iw.LoadMaskTexture(string path);           // Load a mask texture
-iw.SetMaskProgress(float progress);        // 0-1 for wipe/reveal transitions
+iw.SetImage(int index);                    // Váltás image0, image1 stb. között
+iw.LoadImageFile(int slot, string path);   // Kép betöltése fájlból
+iw.LoadMaskTexture(string path);           // Maszk textúra betöltése
+iw.SetMaskProgress(float progress);        // 0-1 az áttörés/feltárás átmenetekhez
 ```
 
-**Key layout attributes:**
-- `image0 "set:dayz_gui image:icon_refresh"` -- Image from an imageset
-- `mode blend` -- Blend mode (`blend`, `additive`, `stretch`)
-- `"src alpha" 1` -- Use source alpha channel
-- `stretch 1` -- Stretch image to fill widget
-- `"flip u" 1` -- Flip horizontally
-- `"flip v" 1` -- Flip vertically
+**Fő layout attribútumok:**
+- `image0 "set:dayz_gui image:icon_refresh"` -- Kép egy imagesetből
+- `mode blend` -- Keverési mód (`blend`, `additive`, `stretch`)
+- `"src alpha" 1` -- Forrás alfa csatorna használata
+- `stretch 1` -- Kép nyújtása a widget kitöltéséhez
+- `"flip u" 1` -- Vízszintes tükrözés
+- `"flip v" 1` -- Függőleges tükrözés
 
-**When to use:** Icons, logos, backgrounds, map markers, status indicators.
+**Mikor használd:** Ikonok, logók, háttérképek, térkép jelölők, állapotjelzők.
 
 ### CanvasWidget
 
-A drawing surface where you can render lines programmatically.
+Rajzfelület, ahol programozottan tudsz vonalakat renderelni.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 CanvasWidget cw;
 cw.DrawLine(float x1, float y1, float x2, float y2, float width, int color);
 cw.Clear();
 ```
 
-**When to use:** Custom graphs, connection lines between nodes, debug overlays.
+**Mikor használd:** Egyéni grafikonok, csomópontok közötti összekötő vonalak, hibakeresési fedőrétegek.
 
 ### MapWidget
 
-The full interactive world map. Supports panning, zooming, and coordinate conversion.
+A teljes interaktív világtérkép. Támogatja a pásztázást, nagyítást és koordináta-konverziót.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 MapWidget mw;
-mw.SetMapPos(vector pos);              // Center on world position
-mw.GetMapPos();                        // Current center position
-mw.SetScale(float scale);             // Zoom level
-mw.GetScale();                        // Current zoom
-mw.MapToScreen(vector world_pos);     // World coords to screen coords
-mw.ScreenToMap(vector screen_pos);    // Screen coords to world coords
+mw.SetMapPos(vector pos);              // Központosítás világ pozícióra
+mw.GetMapPos();                        // Aktuális középpont pozíció
+mw.SetScale(float scale);             // Nagyítási szint
+mw.GetScale();                        // Aktuális nagyítás
+mw.MapToScreen(vector world_pos);     // Világ koordináták képernyő koordinátákká
+mw.ScreenToMap(vector screen_pos);    // Képernyő koordináták világ koordinátákká
 ```
 
-**When to use:** Mission maps, GPS systems, location pickers.
+**Mikor használd:** Küldetés térképek, GPS rendszerek, helyszínválasztók.
 
 ### ItemPreviewWidget
 
-Renders a 3D preview of any DayZ inventory item.
+3D előnézetet renderel bármilyen DayZ leltár tárgyhoz.
 
-**When to use:** Inventory screens, loot previews, shop interfaces.
+**Mikor használd:** Leltár képernyők, zsákmány előnézetek, bolt felületek.
 
 ### PlayerPreviewWidget
 
-Renders a 3D preview of the player character model.
+3D előnézetet renderel a játékos karakter modelljéről.
 
-**When to use:** Character creation screens, equipment preview, wardrobe systems.
+**Mikor használd:** Karakterkészítő képernyők, felszerelés előnézet, öltöztető rendszerek.
 
 ### RTTextureWidget
 
-Renders its children to a texture surface rather than directly to the screen.
+Gyermekeit textúra felületre rendereli, nem közvetlenül a képernyőre.
 
-**When to use:** Minimap rendering, picture-in-picture effects, offscreen UI composition.
+**Mikor használd:** Minitérkép renderelés, kép-a-képben effektek, képernyőn kívüli UI kompozíció.
 
 ---
 
-## Interaktiv widgetek
+## Interaktív widgetek
 
-Interactive widgets respond to user input and fire events.
+Az interaktív widgetek reagálnak a felhasználói bevitelre és eseményeket váltanak ki.
 
-| Script Class | Layout Class | Cel |
+| Script osztály | Layout osztály | Cél |
 |---|---|---|
-| `ButtonWidget` | `ButtonWidgetClass` | Clickable button |
-| `CheckBoxWidget` | `CheckBoxWidgetClass` | Boolean checkbox |
-| `EditBoxWidget` | `EditBoxWidgetClass` | Single-line text input |
-| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Multi-line text input |
-| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Masked password input |
-| `SliderWidget` | `SliderWidgetClass` | Horizontal slider control |
-| `XComboBoxWidget` | `XComboBoxWidgetClass` | Dropdown selection |
-| `TextListboxWidget` | `TextListboxWidgetClass` | Selectable row list |
-| `ProgressBarWidget` | `ProgressBarWidgetClass` | Progress indicator |
-| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Minimal progress indicator |
+| `ButtonWidget` | `ButtonWidgetClass` | Kattintható gomb |
+| `CheckBoxWidget` | `CheckBoxWidgetClass` | Logikai jelölőnégyzet |
+| `EditBoxWidget` | `EditBoxWidgetClass` | Egysoros szövegbevitel |
+| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Többsoros szövegbevitel |
+| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Maszkolt jelszóbevitel |
+| `SliderWidget` | `SliderWidgetClass` | Vízszintes csúszka vezérlő |
+| `XComboBoxWidget` | `XComboBoxWidgetClass` | Legördülő kiválasztás |
+| `TextListboxWidget` | `TextListboxWidgetClass` | Kiválasztható sorok listája |
+| `ProgressBarWidget` | `ProgressBarWidgetClass` | Folyamatjelző |
+| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Minimális folyamatjelző |
 
 ### ButtonWidget
 
-The primary interactive control. Supports both momentary click and toggle modes.
+Az elsődleges interaktív vezérlő. Támogatja mind a pillanatnyi kattintás, mind a kapcsoló módot.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 ButtonWidget bw;
 bw.SetText("Click Me");
-bw.GetState();              // Returns bool (toggle buttons only)
-bw.SetState(bool state);    // Set toggle state
+bw.GetState();              // bool-t ad vissza (csak kapcsoló gomboknál)
+bw.SetState(bool state);    // Kapcsoló állapot beállítása
 ```
 
-**Key layout attributes:**
-- `text "Label"` -- Button label text
-- `switch toggle` -- Make it a toggle button
-- `style Default` -- Visual style
+**Fő layout attribútumok:**
+- `text "Label"` -- Gomb felirat szövege
+- `switch toggle` -- Kapcsoló gombbá teszi
+- `style Default` -- Vizuális stílus
 
-**Esemenyek fired:** `OnClick(Widget w, int x, int y, int button)`
+**Kiváltott események:** `OnClick(Widget w, int x, int y, int button)`
 
 ### CheckBoxWidget
 
-A boolean toggle control.
+Logikai kapcsoló vezérlő.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 CheckBoxWidget cb;
-cb.IsChecked();                 // Returns bool
-cb.SetChecked(bool checked);    // Set state
+cb.IsChecked();                 // bool-t ad vissza
+cb.SetChecked(bool checked);    // Állapot beállítása
 ```
 
-**Esemenyek fired:** `OnChange(Widget w, int x, int y, bool finished)`
+**Kiváltott események:** `OnChange(Widget w, int x, int y, bool finished)`
 
 ### EditBoxWidget
 
-A single-line text input field.
+Egysoros szövegbeviteli mező.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 EditBoxWidget eb;
-eb.GetText();               // Returns string
-eb.SetText("default");      // Set text content
+eb.GetText();               // Stringet ad vissza
+eb.SetText("default");      // Szövegtartalom beállítása
 ```
 
-**Esemenyek fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when Enter is pressed.
+**Kiváltott események:** `OnChange(Widget w, int x, int y, bool finished)` -- a `finished` értéke `true`, amikor az Enter billentyűt megnyomják.
 
 ### SliderWidget
 
-A horizontal slider for numeric values.
+Vízszintes csúszka numerikus értékekhez.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 SliderWidget sw;
-sw.GetCurrent();            // Returns float (0-1)
-sw.SetCurrent(float val);   // Set position
+sw.GetCurrent();            // float-ot ad vissza (0-1)
+sw.SetCurrent(float val);   // Pozíció beállítása
 ```
 
-**Key layout attributes:**
-- `"fill in" 1` -- Show filled track behind handle
-- `"listen to input" 1` -- Respond to mouse input
+**Fő layout attribútumok:**
+- `"fill in" 1` -- Kitöltött sáv megjelenítése a fogantyú mögött
+- `"listen to input" 1` -- Reagálás egér bemenetre
 
-**Esemenyek fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when the user releases the slider.
+**Kiváltott események:** `OnChange(Widget w, int x, int y, bool finished)` -- a `finished` értéke `true`, amikor a felhasználó elengedi a csúszkát.
 
 ### XComboBoxWidget
 
-A dropdown selection list.
+Legördülő kiválasztási lista.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 XComboBoxWidget xcb;
 xcb.AddItem("Option A");
 xcb.AddItem("Option B");
-xcb.SetCurrentItem(0);         // Select by index
-xcb.GetCurrentItem();          // Returns selected index
-xcb.ClearAll();                // Remove all items
+xcb.SetCurrentItem(0);         // Kiválasztás index alapján
+xcb.GetCurrentItem();          // A kiválasztott indexet adja vissza
+xcb.ClearAll();                // Összes elem eltávolítása
 ```
 
 ### TextListboxWidget
 
-A scrollable list of text rows. Supports selection and multi-column data.
+Görgethető szöveges sorok listája. Támogatja a kiválasztást és többoszlopos adatokat.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 TextListboxWidget tlb;
-tlb.AddItem("Row text", null, 0);   // text, userData, column
-tlb.GetSelectedRow();               // Returns int (-1 if none)
-tlb.SetRow(int row);                // Select a row
+tlb.AddItem("Row text", null, 0);   // szöveg, felhasználói adat, oszlop
+tlb.GetSelectedRow();               // int-et ad vissza (-1 ha nincs kiválasztva)
+tlb.SetRow(int row);                // Sor kiválasztása
 tlb.RemoveRow(int row);
 tlb.ClearItems();
 ```
 
-**Esemenyek fired:** `OnItemSelected`
+**Kiváltott események:** `OnItemSelected`
 
 ### ProgressBarWidget
 
-Displays a progress indicator.
+Folyamatjelzőt jelenít meg.
 
-**Key methods:**
+**Fő metódusok:**
 ```c
 ProgressBarWidget pb;
 pb.SetCurrent(float value);    // 0-100
 ```
 
-**When to use:** Loading bars, health bars, mission progress, cooldown indicators.
+**Mikor használd:** Töltőcsíkok, életerő sávok, küldetés folyamat, lehűlési idő jelzők.
 
 ---
 
-## Complete TypeID Reference
+## Teljes TypeID referencia
 
-Use these constants with `GetGame().GetWorkspace().CreateWidget()` for programmatic widget creation:
+Használd ezeket a konstansokat a `GetGame().GetWorkspace().CreateWidget()` függvénnyel a programozott widget létrehozáshoz:
 
 ```
 FrameWidgetTypeID
@@ -394,36 +398,65 @@ ScrollWidgetTypeID
 
 ---
 
-## A megfelelo widget kivalasztasa
+## A megfelelő widget kiválasztása
 
-| I need to... | Use this widget |
+| Szükségem van... | Használd ezt a widgetet |
 |---|---|
-| Group widgets together (invisible) | `FrameWidget` |
-| Draw a colored rectangle | `PanelWidget` |
-| Show text | `TextWidget` |
-| Show multi-line text | `MultilineTextWidget` or `RichTextWidget` with `wrap 1` |
-| Show text with inline icons | `RichTextWidget` |
-| Display an image/icon | `ImageWidget` |
-| Create a clickable button | `ButtonWidget` |
-| Create a toggle (on/off) | `CheckBoxWidget` or `ButtonWidget` with `switch toggle` |
-| Accept text input | `EditBoxWidget` |
-| Accept multi-line text input | `MultilineEditBoxWidget` |
-| Accept a password | `PasswordEditBoxWidget` |
-| Let user pick a number | `SliderWidget` |
-| Let user pick from a list | `XComboBoxWidget` (dropdown) or `TextListboxWidget` (visible list) |
-| Show progress | `ProgressBarWidget` or `SimpleProgressBarWidget` |
-| Arrange children in a flow | `WrapSpacerWidget` |
-| Arrange children in a grid | `GridSpacerWidget` |
-| Make content scrollable | `ScrollWidget` |
-| Show a 3D item model | `ItemPreviewWidget` |
-| Show the player model | `PlayerPreviewWidget` |
-| Show the world map | `MapWidget` |
-| Draw custom lines/shapes | `CanvasWidget` |
-| Render to a texture | `RTTextureWidget` |
+| Widgetek csoportosítása (láthatatlanul) | `FrameWidget` |
+| Színes téglalap rajzolása | `PanelWidget` |
+| Szöveg megjelenítése | `TextWidget` |
+| Többsoros szöveg megjelenítése | `MultilineTextWidget` vagy `RichTextWidget` `wrap 1` beállítással |
+| Szöveg megjelenítése beágyazott ikonokkal | `RichTextWidget` |
+| Kép/ikon megjelenítése | `ImageWidget` |
+| Kattintható gomb létrehozása | `ButtonWidget` |
+| Kapcsoló (be/ki) létrehozása | `CheckBoxWidget` vagy `ButtonWidget` `switch toggle` beállítással |
+| Szövegbevitel elfogadása | `EditBoxWidget` |
+| Többsoros szövegbevitel elfogadása | `MultilineEditBoxWidget` |
+| Jelszó elfogadása | `PasswordEditBoxWidget` |
+| Felhasználó számválasztása | `SliderWidget` |
+| Felhasználó listából való választása | `XComboBoxWidget` (legördülő) vagy `TextListboxWidget` (látható lista) |
+| Folyamat megjelenítése | `ProgressBarWidget` vagy `SimpleProgressBarWidget` |
+| Gyermekek elrendezése folyamban | `WrapSpacerWidget` |
+| Gyermekek elrendezése rácsban | `GridSpacerWidget` |
+| Tartalom görgethetővé tétele | `ScrollWidget` |
+| 3D tárgy modell megjelenítése | `ItemPreviewWidget` |
+| Játékos modell megjelenítése | `PlayerPreviewWidget` |
+| Világtérkép megjelenítése | `MapWidget` |
+| Egyéni vonalak/alakzatok rajzolása | `CanvasWidget` |
+| Textúrára renderelés | `RTTextureWidget` |
 
 ---
 
-## Kovetkezo lepesek
+## Bevált gyakorlatok
 
-- [3.2 Layout fajl formatum](02-layout-files.md) -- Learn how to define widget trees in `.layout` files
-- [3.5 Programozott widget letrehozas](05-programmatic-widgets.md) -- Create widgets from code instead of layout files
+- Használd a `FrameWidget`-et alapértelmezett konténerként. Csak akkor használj `PanelWidget`-et, amikor látható színes háttérre van szükséged.
+- Részesítsd előnyben a `RichTextWidget`-et a `TextWidget`-tel szemben, ha később beágyazott ikonokra lehet szükséged -- a típusváltás egy meglévő layoutban fáradságos.
+- Mindig ellenőrizd a null értéket a `FindAnyWidget()` és a `Cast()` után. A hiányzó widget nevek csendben `null`-t adnak vissza, és összeomlást okoznak a következő metódushívásnál.
+- Használj `WrapSpacerWidget`-et dinamikus listákhoz és `GridSpacerWidget`-et fix rácsokhoz. Ne pozícionáld manuálisan a gyermekeket egy folyam elrendezésben.
+- Kerüld a `CanvasWidget`-et éles UI-ban -- minden képkockánál újrarajzol és nincs kötegelt feldolgozása. Csak hibakeresési fedőrétegekhez használd.
+
+---
+
+## Elmélet vs. gyakorlat
+
+| Fogalom | Elmélet | Valóság |
+|---------|---------|---------|
+| A `ScrollWidget` automatikusan görget a tartalomhoz | A görgetősáv megjelenik, amikor a tartalom meghaladja a határokat | A `VScrollToPos()` függvényt manuálisan kell hívnod az új tartalomhoz görgetéshez; a widget nem görget automatikusan gyermek hozzáadásakor |
+| A `SliderWidget` folyamatos eseményeket vált ki | Az `OnChange` minden egyes pixel húzásnál aktiválódik | A `finished` paraméter `false` húzás közben és `true` elengedéskor; a nehéz logikát csak a `finished == true` esetén frissítsd |
+| Az `XComboBoxWidget` sok elemet támogat | A legördülő bármennyi elemmel működik | A teljesítmény észrevehetően romlik 100+ elemnél; használj inkább `TextListboxWidget`-et hosszú listákhoz |
+| Az `ItemPreviewWidget` bármilyen tárgyat megjelenít | Adj meg bármilyen osztálynevet 3D előnézethez | A widget megköveteli, hogy a tárgy `.p3d` modellje betöltve legyen; moddolt tárgyakhoz az adat PBO-nak jelen kell lennie |
+| A `MapWidget` egyszerű megjelenítő | Csak a térképet mutatja | Alapértelmezés szerint minden egér bemenetet elfog; gondosan kell kezelned az `IGNOREPOINTER` jelzőket, különben blokkolja a kattintásokat az átfedő widgeteken |
+
+---
+
+## Kompatibilitás és hatás
+
+- **Több moddal:** A widget típus azonosítók motorkonstansok, amelyeket minden mod megoszt. Két mod, amely azonos nevű widgeteket hoz létre ugyanazon szülő alatt, ütközni fog. Használj egyedi widget neveket a mod előtagoddal.
+- **Teljesítmény:** A `TextListboxWidget` és a `ScrollWidget` százas nagyságrendű gyermekekkel képkocka-eséseket okoz. Készíts widget készletet és hasznosítsd újra a widgeteket az 50 elemet meghaladó listáknál.
+
+---
+
+## Következő lépések
+
+- [3.2 Layout fájl formátum](02-layout-files.md) -- Tanuld meg, hogyan definiálj widget fákat `.layout` fájlokban
+- [3.5 Programozott widget létrehozás](05-programmatic-widgets.md) -- Widgetek létrehozása kódból layout fájlok helyett

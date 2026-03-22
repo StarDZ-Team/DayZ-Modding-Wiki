@@ -1,372 +1,376 @@
-# Chapter 3.1: Widget Types
+# Capitolo 3.1: Tipi di Widget
 
-[Home](../../README.md) | **Widget Types** | [Next: Layout Files >>](02-layout-files.md)
+[Home](../../README.md) | **Tipi di Widget** | [Successivo: File di Layout >>](02-layout-files.md)
 
 ---
+
+Il sistema GUI di DayZ è costruito su widget -- componenti UI riutilizzabili che vanno da semplici contenitori a complessi controlli interattivi. Ogni elemento visibile sullo schermo è un widget, e comprendere il catalogo completo è essenziale per costruire interfacce per le mod.
+
+Questo capitolo fornisce un riferimento completo di tutti i tipi di widget disponibili in Enforce Script.
 
 ---
 
 ## Come Funzionano i Widget
 
-Every widget in DayZ inherits from the `Widget` classe base. Widgets are organized in a parent-child tree, where the root is typically a `WorkspaceWidget` obtained via `GetGame().GetWorkspace()`.
+Ogni widget in DayZ eredita dalla classe base `Widget`. I widget sono organizzati in un albero padre-figlio, dove la radice è tipicamente un `WorkspaceWidget` ottenuto tramite `GetGame().GetWorkspace()`.
 
-Each widget type has three associated identifiers:
+Ogni tipo di widget ha tre identificatori associati:
 
-| Identifier | Esempio | Used For |
+| Identificatore | Esempio | Utilizzato Per |
 |---|---|---|
-| **Script class** | `TextWidget` | Code references, casting |
-| **Layout class** | `TextWidgetClass` | `.layout` file declarations |
-| **TypeID constant** | `TextWidgetTypeID` | Programmatic creation with `CreateWidget()` |
+| **Classe script** | `TextWidget` | Riferimenti nel codice, casting |
+| **Classe layout** | `TextWidgetClass` | Dichiarazioni nei file `.layout` |
+| **Costante TypeID** | `TextWidgetTypeID` | Creazione programmatica con `CreateWidget()` |
 
-In `.layout` files you always use the layout class name (ending in `Class`). In scripts you work with the script class name.
+Nei file `.layout` si usa sempre il nome della classe layout (che termina con `Class`). Negli script si lavora con il nome della classe script.
 
 ---
 
-## Widget Container / Layout
+## Widget Contenitore / Layout
 
-Container widgets hold and organize child widgets. They do not display content themselves (except `PanelWidget`, which draws a colored rectangle).
+I widget contenitore contengono e organizzano i widget figli. Non visualizzano contenuto direttamente (tranne `PanelWidget`, che disegna un rettangolo colorato).
 
-| Script Class | Layout Class | Scopo |
+| Classe Script | Classe Layout | Scopo |
 |---|---|---|
-| `Widget` | `WidgetClass` | Abstract classe base for all widgets. Mai instantiate directly. |
-| `WorkspaceWidget` | `WorkspaceWidgetClass` | Root workspace. Obtained via `GetGame().GetWorkspace()`. Used to create widgets programmatically. |
-| `FrameWidget` | `FrameWidgetClass` | General-purpose container. The most commonly used widget in DayZ. |
-| `PanelWidget` | `PanelWidgetClass` | Solid colored rectangle. Usa per backgrounds, dividers, separators. |
-| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Flow layout. Arranges children sequentially with wrapping, padding, and margins. |
-| `GridSpacerWidget` | `GridSpacerWidgetClass` | Grid layout. Arranges children in a grid defined by `Columns` and `Rows`. |
-| `ScrollWidget` | `ScrollWidgetClass` | Scrollable viewport. Enables vertical/horizontal scrolling of child content. |
-| `SpacerBaseWidget` | -- | Abstract classe base for `WrapSpacerWidget` and `GridSpacerWidget`. |
+| `Widget` | `WidgetClass` | Classe base astratta per tutti i widget. Non istanziare mai direttamente. |
+| `WorkspaceWidget` | `WorkspaceWidgetClass` | Workspace radice. Ottenuto tramite `GetGame().GetWorkspace()`. Usato per creare widget programmaticamente. |
+| `FrameWidget` | `FrameWidgetClass` | Contenitore generico. Il widget più comunemente usato in DayZ. |
+| `PanelWidget` | `PanelWidgetClass` | Rettangolo colorato pieno. Usare per sfondi, divisori, separatori. |
+| `WrapSpacerWidget` | `WrapSpacerWidgetClass` | Layout a flusso. Dispone i figli sequenzialmente con a capo automatico, padding e margini. |
+| `GridSpacerWidget` | `GridSpacerWidgetClass` | Layout a griglia. Dispone i figli in una griglia definita da `Columns` e `Rows`. |
+| `ScrollWidget` | `ScrollWidgetClass` | Viewport scorrevole. Abilita lo scorrimento verticale/orizzontale del contenuto figlio. |
+| `SpacerBaseWidget` | -- | Classe base astratta per `WrapSpacerWidget` e `GridSpacerWidget`. |
 
 ### FrameWidget
 
-The workhorse of DayZ UI. Use `FrameWidget` as your default container when you need to group widgets together. It has no visual appearance -- it is purely structural.
+Il cavallo di battaglia dell'interfaccia DayZ. Usa `FrameWidget` come contenitore predefinito quando devi raggruppare widget insieme. Non ha aspetto visivo -- è puramente strutturale.
 
-**Key methods:**
-- All base `Widget` methods (position, size, color, children, flags)
+**Metodi principali:**
+- Tutti i metodi base di `Widget` (posizione, dimensione, colore, figli, flag)
 
-**Quando usare:** Almost everywhere. Wrap groups of related widgets. Use as the root of dialogs, panels, and HUD elements.
+**Quando usare:** Quasi ovunque. Raggruppa insiemi di widget correlati. Usa come radice di dialoghi, pannelli ed elementi HUD.
 
 ```c
-// Find a frame widget by name
+// Trova un frame widget per nome
 FrameWidget panel = FrameWidget.Cast(root.FindAnyWidget("MyPanel"));
 panel.Show(true);
 ```
 
 ### PanelWidget
 
-A visible rectangle with a solid color. Unlike `FrameWidget`, a `PanelWidget` actually draws something on screen.
+Un rettangolo visibile con un colore pieno. A differenza di `FrameWidget`, un `PanelWidget` effettivamente disegna qualcosa sullo schermo.
 
-**Key methods:**
-- `SetColor(int argb)` -- Set the background color
-- `SetAlpha(float alpha)` -- Set transparency
+**Metodi principali:**
+- `SetColor(int argb)` -- Imposta il colore di sfondo
+- `SetAlpha(float alpha)` -- Imposta la trasparenza
 
-**Quando usare:** Backgrounds behind text, colored dividers, overlay rectangles, tint layers.
+**Quando usare:** Sfondi dietro al testo, divisori colorati, rettangoli overlay, livelli di tinta.
 
 ```c
 PanelWidget bg = PanelWidget.Cast(root.FindAnyWidget("Background"));
-bg.SetColor(ARGB(200, 0, 0, 0));  // Semi-transparent black
+bg.SetColor(ARGB(200, 0, 0, 0));  // Nero semi-trasparente
 ```
 
 ### WrapSpacerWidget
 
-Automatically arranges children in a flow layout. Children are placed one after another, wrapping to the next line when space runs out.
+Dispone automaticamente i figli in un layout a flusso. I figli vengono posizionati uno dopo l'altro, andando a capo alla riga successiva quando lo spazio si esaurisce.
 
-**Key layout attributes:**
-- `Padding` -- Inner padding (pixels)
-- `Margin` -- Outer margin (pixels)
-- `"Size To Content H" 1` -- Resize width to fit children
-- `"Size To Content V" 1` -- Resize height to fit children
-- `content_halign` -- Horizontal alignment of content (`left`, `center`, `right`)
-- `content_valign` -- Vertical alignment of content (`top`, `center`, `bottom`)
+**Attributi di layout principali:**
+- `Padding` -- Padding interno (pixel)
+- `Margin` -- Margine esterno (pixel)
+- `"Size To Content H" 1` -- Ridimensiona la larghezza per adattarsi ai figli
+- `"Size To Content V" 1` -- Ridimensiona l'altezza per adattarsi ai figli
+- `content_halign` -- Allineamento orizzontale del contenuto (`left`, `center`, `right`)
+- `content_valign` -- Allineamento verticale del contenuto (`top`, `center`, `bottom`)
 
-**Quando usare:** Dynamic lists, tag clouds, button rows, any layout where children have varying sizes.
+**Quando usare:** Liste dinamiche, gruppi di tag, righe di pulsanti, qualsiasi layout dove i figli hanno dimensioni variabili.
 
 ### GridSpacerWidget
 
-Arranges children in a fixed grid. Each cell has equal size.
+Dispone i figli in una griglia fissa. Ogni cella ha la stessa dimensione.
 
-**Key layout attributes:**
-- `Columns` -- Number of columns
-- `Rows` -- Number of rows
-- `Margin` -- Space between cells
-- `"Size To Content V" 1` -- Resize height to fit content
+**Attributi di layout principali:**
+- `Columns` -- Numero di colonne
+- `Rows` -- Numero di righe
+- `Margin` -- Spazio tra le celle
+- `"Size To Content V" 1` -- Ridimensiona l'altezza per adattarsi al contenuto
 
-**Quando usare:** Inventory grids, icon galleries, settings panels with uniform rows.
+**Quando usare:** Griglie inventario, gallerie di icone, pannelli impostazioni con righe uniformi.
 
 ### ScrollWidget
 
-Provides a scrollable viewport for content that exceeds the visible area.
+Fornisce un viewport scorrevole per il contenuto che eccede l'area visibile.
 
-**Key layout attributes:**
-- `"Scrollbar V" 1` -- Enable vertical scrollbar
-- `"Scrollbar H" 1` -- Enable horizontal scrollbar
+**Attributi di layout principali:**
+- `"Scrollbar V" 1` -- Abilita la barra di scorrimento verticale
+- `"Scrollbar H" 1` -- Abilita la barra di scorrimento orizzontale
 
-**Key methods:**
-- `VScrollToPos(float pos)` -- Scroll to a vertical position
-- `GetVScrollPos()` -- Get current vertical scroll position
-- `GetContentHeight()` -- Get total content height
-- `VScrollStep(int step)` -- Scroll by step amount
+**Metodi principali:**
+- `VScrollToPos(float pos)` -- Scorri a una posizione verticale
+- `GetVScrollPos()` -- Ottieni la posizione di scorrimento verticale corrente
+- `GetContentHeight()` -- Ottieni l'altezza totale del contenuto
+- `VScrollStep(int step)` -- Scorri di un valore step
 
-**Quando usare:** Long lists, configuration panels, chat windows, log viewers.
+**Quando usare:** Liste lunghe, pannelli di configurazione, finestre di chat, visualizzatori di log.
 
 ---
 
 ## Widget di Visualizzazione
 
-Display widgets show content to the user but are not interactive.
+I widget di visualizzazione mostrano contenuto all'utente ma non sono interattivi.
 
-| Script Class | Layout Class | Scopo |
+| Classe Script | Classe Layout | Scopo |
 |---|---|---|
-| `TextWidget` | `TextWidgetClass` | Single-line text display |
-| `MultilineTextWidget` | `MultilineTextWidgetClass` | Multi-line read-only text |
-| `RichTextWidget` | `RichTextWidgetClass` | Text with embedded images (`<image>` tags) |
-| `ImageWidget` | `ImageWidgetClass` | Image display (from imagesets or files) |
-| `CanvasWidget` | `CanvasWidgetClass` | Programmable drawing surface |
-| `VideoWidget` | `VideoWidgetClass` | Video file playback |
-| `RTTextureWidget` | `RTTextureWidgetClass` | Render-to-texture surface |
-| `RenderTargetWidget` | `RenderTargetWidgetClass` | 3D scene render target |
-| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | 3D DayZ item preview |
-| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | 3D player character preview |
-| `MapWidget` | `MapWidgetClass` | Interactive world map |
+| `TextWidget` | `TextWidgetClass` | Visualizzazione di testo a riga singola |
+| `MultilineTextWidget` | `MultilineTextWidgetClass` | Testo multilinea di sola lettura |
+| `RichTextWidget` | `RichTextWidgetClass` | Testo con immagini incorporate (tag `<image>`) |
+| `ImageWidget` | `ImageWidgetClass` | Visualizzazione di immagini (da imageset o file) |
+| `CanvasWidget` | `CanvasWidgetClass` | Superficie di disegno programmabile |
+| `VideoWidget` | `VideoWidgetClass` | Riproduzione di file video |
+| `RTTextureWidget` | `RTTextureWidgetClass` | Superficie render-to-texture |
+| `RenderTargetWidget` | `RenderTargetWidgetClass` | Target di rendering scena 3D |
+| `ItemPreviewWidget` | `ItemPreviewWidgetClass` | Anteprima 3D di oggetti DayZ |
+| `PlayerPreviewWidget` | `PlayerPreviewWidgetClass` | Anteprima 3D del personaggio giocatore |
+| `MapWidget` | `MapWidgetClass` | Mappa del mondo interattiva |
 
 ### TextWidget
 
-The most common display widget. Shows a single line of text.
+Il widget di visualizzazione più comune. Mostra una singola riga di testo.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 TextWidget tw;
 tw.SetText("Hello World");
-tw.GetText();                           // Returns string
-tw.GetTextSize(out int w, out int h);   // Pixel dimensions of rendered text
-tw.SetTextExactSize(float size);        // Set font size in pixels
-tw.SetOutline(int size, int color);     // Add text outline
-tw.GetOutlineSize();                    // Returns int
-tw.GetOutlineColor();                   // Returns int (ARGB)
-tw.SetColor(int argb);                  // Text color
+tw.GetText();                           // Restituisce string
+tw.GetTextSize(out int w, out int h);   // Dimensioni in pixel del testo renderizzato
+tw.SetTextExactSize(float size);        // Imposta la dimensione del font in pixel
+tw.SetOutline(int size, int color);     // Aggiunge contorno al testo
+tw.GetOutlineSize();                    // Restituisce int
+tw.GetOutlineColor();                   // Restituisce int (ARGB)
+tw.SetColor(int argb);                  // Colore del testo
 ```
 
-**Key layout attributes:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
+**Attributi di layout principali:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
 
 ### MultilineTextWidget
 
-Displays multiple lines of read-only text. Text wraps automatically based on widget width.
+Visualizza più righe di testo di sola lettura. Il testo va a capo automaticamente in base alla larghezza del widget.
 
-**Quando usare:** Descrizione panels, help text, log displays.
+**Quando usare:** Pannelli di descrizione, testo di aiuto, visualizzazioni di log.
 
 ### RichTextWidget
 
-Supports inline images embedded within text using `<image>` tags. Anche supports text wrapping.
+Supporta immagini inline incorporate nel testo usando i tag `<image>`. Supporta anche l'a capo del testo.
 
-**Key layout attributes:**
-- `wrap 1` -- Enable word wrapping
+**Attributi di layout principali:**
+- `wrap 1` -- Abilita l'a capo delle parole
 
-**Usage in text:**
+**Uso nel testo:**
 ```
 "Health: <image set:dayz_gui image:iconHealth0 /> OK"
 ```
 
-**Quando usare:** Status text with icons, formatted messages, chat with inline images.
+**Quando usare:** Testo di stato con icone, messaggi formattati, chat con immagini inline.
 
 ### ImageWidget
 
-Displays images from imageset sprite sheets or loaded from file paths.
+Visualizza immagini da fogli sprite imageset o caricate da percorsi file.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 ImageWidget iw;
-iw.SetImage(int index);                    // Switch between image0, image1, etc.
-iw.LoadImageFile(int slot, string path);   // Load image from file
-iw.LoadMaskTexture(string path);           // Load a mask texture
-iw.SetMaskProgress(float progress);        // 0-1 for wipe/reveal transitions
+iw.SetImage(int index);                    // Alterna tra image0, image1, ecc.
+iw.LoadImageFile(int slot, string path);   // Carica immagine da file
+iw.LoadMaskTexture(string path);           // Carica una texture maschera
+iw.SetMaskProgress(float progress);        // 0-1 per transizioni wipe/reveal
 ```
 
-**Key layout attributes:**
-- `image0 "set:dayz_gui image:icon_refresh"` -- Image from an imageset
-- `mode blend` -- Blend mode (`blend`, `additive`, `stretch`)
-- `"src alpha" 1` -- Use source alpha channel
-- `stretch 1` -- Stretch image to fill widget
-- `"flip u" 1` -- Flip horizontally
-- `"flip v" 1` -- Flip vertically
+**Attributi di layout principali:**
+- `image0 "set:dayz_gui image:icon_refresh"` -- Immagine da un imageset
+- `mode blend` -- Modalità di fusione (`blend`, `additive`, `stretch`)
+- `"src alpha" 1` -- Usa il canale alfa sorgente
+- `stretch 1` -- Estendi l'immagine per riempire il widget
+- `"flip u" 1` -- Capovolgi orizzontalmente
+- `"flip v" 1` -- Capovolgi verticalmente
 
-**Quando usare:** Icons, logos, backgrounds, map markers, status indicators.
+**Quando usare:** Icone, loghi, sfondi, marcatori mappa, indicatori di stato.
 
 ### CanvasWidget
 
-A drawing surface where you can render lines programmatically.
+Una superficie di disegno dove puoi renderizzare linee programmaticamente.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 CanvasWidget cw;
 cw.DrawLine(float x1, float y1, float x2, float y2, float width, int color);
 cw.Clear();
 ```
 
-**Quando usare:** Custom graphs, connection lines between nodes, debug overlays.
+**Quando usare:** Grafici personalizzati, linee di connessione tra nodi, overlay di debug.
 
 ### MapWidget
 
-The full interactive world map. Supports panning, zooming, and coordinate conversion.
+La mappa del mondo interattiva completa. Supporta panoramica, zoom e conversione di coordinate.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 MapWidget mw;
-mw.SetMapPos(vector pos);              // Center on world position
-mw.GetMapPos();                        // Current center position
-mw.SetScale(float scale);             // Zoom level
-mw.GetScale();                        // Current zoom
-mw.MapToScreen(vector world_pos);     // World coords to screen coords
-mw.ScreenToMap(vector screen_pos);    // Screen coords to world coords
+mw.SetMapPos(vector pos);              // Centra sulla posizione nel mondo
+mw.GetMapPos();                        // Posizione del centro corrente
+mw.SetScale(float scale);             // Livello di zoom
+mw.GetScale();                        // Zoom corrente
+mw.MapToScreen(vector world_pos);     // Coordinate mondo in coordinate schermo
+mw.ScreenToMap(vector screen_pos);    // Coordinate schermo in coordinate mondo
 ```
 
-**Quando usare:** Mission maps, GPS systems, location pickers.
+**Quando usare:** Mappe missione, sistemi GPS, selettori di posizione.
 
 ### ItemPreviewWidget
 
-Renders a 3D preview of any DayZ inventory item.
+Renderizza un'anteprima 3D di qualsiasi oggetto dell'inventario DayZ.
 
-**Quando usare:** Inventory screens, loot previews, shop interfaces.
+**Quando usare:** Schermate inventario, anteprime bottino, interfacce negozio.
 
 ### PlayerPreviewWidget
 
-Renders a 3D preview of the player character model.
+Renderizza un'anteprima 3D del modello del personaggio giocatore.
 
-**Quando usare:** Character creation screens, equipment preview, wardrobe systems.
+**Quando usare:** Schermate di creazione personaggio, anteprima equipaggiamento, sistemi guardaroba.
 
 ### RTTextureWidget
 
-Renders its children to a texture surface rather than directly to the screen.
+Renderizza i suoi figli su una superficie texture anziché direttamente sullo schermo.
 
-**Quando usare:** Minimap rendering, picture-in-picture effects, offscreen UI composition.
+**Quando usare:** Rendering minimappa, effetti picture-in-picture, composizione UI fuori schermo.
 
 ---
 
 ## Widget Interattivi
 
-Interactive widgets respond to user input and fire events.
+I widget interattivi rispondono all'input dell'utente e generano eventi.
 
-| Script Class | Layout Class | Scopo |
+| Classe Script | Classe Layout | Scopo |
 |---|---|---|
-| `ButtonWidget` | `ButtonWidgetClass` | Clickable button |
-| `CheckBoxWidget` | `CheckBoxWidgetClass` | Boolean checkbox |
-| `EditBoxWidget` | `EditBoxWidgetClass` | Single-line text input |
-| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Multi-line text input |
-| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Masked password input |
-| `SliderWidget` | `SliderWidgetClass` | Horizontal slider control |
-| `XComboBoxWidget` | `XComboBoxWidgetClass` | Dropdown selection |
-| `TextListboxWidget` | `TextListboxWidgetClass` | Selectable row list |
-| `ProgressBarWidget` | `ProgressBarWidgetClass` | Progress indicator |
-| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Minimal progress indicator |
+| `ButtonWidget` | `ButtonWidgetClass` | Pulsante cliccabile |
+| `CheckBoxWidget` | `CheckBoxWidgetClass` | Casella di controllo booleana |
+| `EditBoxWidget` | `EditBoxWidgetClass` | Input di testo a riga singola |
+| `MultilineEditBoxWidget` | `MultilineEditBoxWidgetClass` | Input di testo multilinea |
+| `PasswordEditBoxWidget` | `PasswordEditBoxWidgetClass` | Input password mascherato |
+| `SliderWidget` | `SliderWidgetClass` | Controllo a cursore orizzontale |
+| `XComboBoxWidget` | `XComboBoxWidgetClass` | Selezione a tendina |
+| `TextListboxWidget` | `TextListboxWidgetClass` | Lista di righe selezionabili |
+| `ProgressBarWidget` | `ProgressBarWidgetClass` | Indicatore di progresso |
+| `SimpleProgressBarWidget` | `SimpleProgressBarWidgetClass` | Indicatore di progresso minimale |
 
 ### ButtonWidget
 
-The principale interactive control. Supports both momentary click and toggle modes.
+Il controllo interattivo principale. Supporta sia la modalità click momentaneo che la modalità toggle.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 ButtonWidget bw;
 bw.SetText("Click Me");
-bw.GetState();              // Returns bool (toggle buttons only)
-bw.SetState(bool state);    // Set toggle state
+bw.GetState();              // Restituisce bool (solo pulsanti toggle)
+bw.SetState(bool state);    // Imposta lo stato toggle
 ```
 
-**Key layout attributes:**
-- `text "Label"` -- Button label text
-- `switch toggle` -- Make it a toggle button
-- `style Default` -- Visual style
+**Attributi di layout principali:**
+- `text "Label"` -- Testo etichetta del pulsante
+- `switch toggle` -- Rende il pulsante un toggle
+- `style Default` -- Stile visivo
 
-**Events fired:** `OnClick(Widget w, int x, int y, int button)`
+**Eventi generati:** `OnClick(Widget w, int x, int y, int button)`
 
 ### CheckBoxWidget
 
-A boolean toggle control.
+Un controllo toggle booleano.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 CheckBoxWidget cb;
-cb.IsChecked();                 // Returns bool
-cb.SetChecked(bool checked);    // Set state
+cb.IsChecked();                 // Restituisce bool
+cb.SetChecked(bool checked);    // Imposta lo stato
 ```
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)`
+**Eventi generati:** `OnChange(Widget w, int x, int y, bool finished)`
 
 ### EditBoxWidget
 
-A single-line text input field.
+Un campo di input testo a riga singola.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 EditBoxWidget eb;
-eb.GetText();               // Returns string
-eb.SetText("default");      // Set text content
+eb.GetText();               // Restituisce string
+eb.SetText("default");      // Imposta il contenuto testuale
 ```
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when Enter is pressed.
+**Eventi generati:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` è `true` quando viene premuto Invio.
 
 ### SliderWidget
 
-A horizontal slider for numeric values.
+Un cursore orizzontale per valori numerici.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 SliderWidget sw;
-sw.GetCurrent();            // Returns float (0-1)
-sw.SetCurrent(float val);   // Set position
+sw.GetCurrent();            // Restituisce float (0-1)
+sw.SetCurrent(float val);   // Imposta la posizione
 ```
 
-**Key layout attributes:**
-- `"fill in" 1` -- Show filled track behind handle
-- `"listen to input" 1` -- Respond to mouse input
+**Attributi di layout principali:**
+- `"fill in" 1` -- Mostra la traccia riempita dietro la maniglia
+- `"listen to input" 1` -- Rispondi all'input del mouse
 
-**Events fired:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` is `true` when the user releases the slider.
+**Eventi generati:** `OnChange(Widget w, int x, int y, bool finished)` -- `finished` è `true` quando l'utente rilascia il cursore.
 
 ### XComboBoxWidget
 
-A dropdown selection list.
+Una lista di selezione a tendina.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 XComboBoxWidget xcb;
-xcb.AddItem("Option A");
-xcb.AddItem("Option B");
-xcb.SetCurrentItem(0);         // Select by index
-xcb.GetCurrentItem();          // Returns selected index
-xcb.ClearAll();                // Remove all items
+xcb.AddItem("Opzione A");
+xcb.AddItem("Opzione B");
+xcb.SetCurrentItem(0);         // Seleziona per indice
+xcb.GetCurrentItem();          // Restituisce l'indice selezionato
+xcb.ClearAll();                // Rimuovi tutti gli elementi
 ```
 
 ### TextListboxWidget
 
-A scrollable list of text rows. Supports selection and multi-column data.
+Una lista scorrevole di righe di testo. Supporta selezione e dati multi-colonna.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 TextListboxWidget tlb;
-tlb.AddItem("Row text", null, 0);   // text, userData, column
-tlb.GetSelectedRow();               // Returns int (-1 if none)
-tlb.SetRow(int row);                // Select a row
+tlb.AddItem("Testo riga", null, 0);   // testo, userData, colonna
+tlb.GetSelectedRow();               // Restituisce int (-1 se nessuno)
+tlb.SetRow(int row);                // Seleziona una riga
 tlb.RemoveRow(int row);
 tlb.ClearItems();
 ```
 
-**Events fired:** `OnItemSelected`
+**Eventi generati:** `OnItemSelected`
 
 ### ProgressBarWidget
 
-Displays a progress indicator.
+Visualizza un indicatore di progresso.
 
-**Key methods:**
+**Metodi principali:**
 ```c
 ProgressBarWidget pb;
 pb.SetCurrent(float value);    // 0-100
 ```
 
-**Quando usare:** Loading bars, health bars, mission progress, cooldown indicators.
+**Quando usare:** Barre di caricamento, barre salute, progresso missione, indicatori di cooldown.
 
 ---
 
 ## Riferimento Completo dei TypeID
 
-Use these constants with `GetGame().GetWorkspace().CreateWidget()` for programmatic widget creation:
+Usa queste costanti con `GetGame().GetWorkspace().CreateWidget()` per la creazione programmatica dei widget:
 
 ```
 FrameWidgetTypeID
@@ -396,34 +400,63 @@ ScrollWidgetTypeID
 
 ## Scegliere il Widget Giusto
 
-| I need to... | Use this widget |
+| Ho bisogno di... | Usa questo widget |
 |---|---|
-| Group widgets together (invisible) | `FrameWidget` |
-| Draw a colored rectangle | `PanelWidget` |
-| Show text | `TextWidget` |
-| Show multi-line text | `MultilineTextWidget` or `RichTextWidget` with `wrap 1` |
-| Show text with inline icons | `RichTextWidget` |
-| Display an image/icon | `ImageWidget` |
-| Create a clickable button | `ButtonWidget` |
-| Create a toggle (on/off) | `CheckBoxWidget` or `ButtonWidget` with `switch toggle` |
-| Accept text input | `EditBoxWidget` |
-| Accept multi-line text input | `MultilineEditBoxWidget` |
-| Accept a password | `PasswordEditBoxWidget` |
-| Let user pick a number | `SliderWidget` |
-| Let user pick from a list | `XComboBoxWidget` (dropdown) or `TextListboxWidget` (visible list) |
-| Show progress | `ProgressBarWidget` or `SimpleProgressBarWidget` |
-| Arrange children in a flow | `WrapSpacerWidget` |
-| Arrange children in a grid | `GridSpacerWidget` |
-| Make content scrollable | `ScrollWidget` |
-| Show a 3D item model | `ItemPreviewWidget` |
-| Show the player model | `PlayerPreviewWidget` |
-| Show the world map | `MapWidget` |
-| Draw custom lines/shapes | `CanvasWidget` |
-| Render to a texture | `RTTextureWidget` |
+| Raggruppare widget insieme (invisibile) | `FrameWidget` |
+| Disegnare un rettangolo colorato | `PanelWidget` |
+| Mostrare testo | `TextWidget` |
+| Mostrare testo multilinea | `MultilineTextWidget` o `RichTextWidget` con `wrap 1` |
+| Mostrare testo con icone inline | `RichTextWidget` |
+| Visualizzare un'immagine/icona | `ImageWidget` |
+| Creare un pulsante cliccabile | `ButtonWidget` |
+| Creare un toggle (on/off) | `CheckBoxWidget` o `ButtonWidget` con `switch toggle` |
+| Accettare input di testo | `EditBoxWidget` |
+| Accettare input di testo multilinea | `MultilineEditBoxWidget` |
+| Accettare una password | `PasswordEditBoxWidget` |
+| Permettere all'utente di scegliere un numero | `SliderWidget` |
+| Permettere all'utente di scegliere da una lista | `XComboBoxWidget` (tendina) o `TextListboxWidget` (lista visibile) |
+| Mostrare il progresso | `ProgressBarWidget` o `SimpleProgressBarWidget` |
+| Disporre i figli in un flusso | `WrapSpacerWidget` |
+| Disporre i figli in una griglia | `GridSpacerWidget` |
+| Rendere il contenuto scorrevole | `ScrollWidget` |
+| Mostrare un modello 3D di un oggetto | `ItemPreviewWidget` |
+| Mostrare il modello del giocatore | `PlayerPreviewWidget` |
+| Mostrare la mappa del mondo | `MapWidget` |
+| Disegnare linee/forme personalizzate | `CanvasWidget` |
+| Renderizzare su una texture | `RTTextureWidget` |
 
 ---
 
 ## Prossimi Passi
 
-- [3.2 Layout File Format](02-layout-files.md) -- Learn how to define widget trees in `.layout` files
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code invece of layout files
+- [3.2 Formato File di Layout](02-layout-files.md) -- Impara come definire alberi di widget nei file `.layout`
+- [3.5 Creazione Programmatica di Widget](05-programmatic-widgets.md) -- Crea widget da codice invece che da file di layout
+
+---
+
+## Buone Pratiche
+
+- Usa `FrameWidget` come contenitore predefinito. Usa `PanelWidget` solo quando hai bisogno di uno sfondo colorato visibile.
+- Preferisci `RichTextWidget` rispetto a `TextWidget` quando potresti aver bisogno di icone inline in futuro -- cambiare tipo in un layout esistente è laborioso.
+- Controlla sempre la nullità dopo `FindAnyWidget()` e `Cast()`. I nomi di widget mancanti restituiscono silenziosamente `null` e causano crash alla chiamata del metodo successivo.
+- Usa `WrapSpacerWidget` per liste dinamiche e `GridSpacerWidget` per griglie fisse. Non posizionare manualmente i figli in un layout a flusso.
+- Evita `CanvasWidget` per l'interfaccia di produzione -- ridisegna ogni frame e non ha batching. Usalo solo per overlay di debug.
+
+---
+
+## Teoria vs Pratica
+
+| Concetto | Teoria | Realtà |
+|---------|--------|---------|
+| `ScrollWidget` scorre automaticamente al contenuto | La scrollbar appare quando il contenuto eccede i limiti | Devi chiamare `VScrollToPos()` manualmente per scorrere al nuovo contenuto; il widget non scorre automaticamente all'aggiunta di figli |
+| `SliderWidget` genera eventi continui | `OnChange` si attiva ad ogni pixel di trascinamento | Il parametro `finished` è `false` durante il trascinamento e `true` al rilascio; aggiorna la logica pesante solo quando `finished == true` |
+| `XComboBoxWidget` supporta molti elementi | La tendina funziona con qualsiasi quantità | Le prestazioni degradano notevolmente con 100+ elementi; usa `TextListboxWidget` per liste lunghe |
+| `ItemPreviewWidget` mostra qualsiasi oggetto | Passa qualsiasi classname per l'anteprima 3D | Il widget richiede che il modello `.p3d` dell'oggetto sia caricato; gli oggetti moddati necessitano del loro PBO Data presente |
+| `MapWidget` è un semplice display | Mostra solo la mappa | Intercetta tutto l'input del mouse per impostazione predefinita; devi gestire attentamente i flag `IGNOREPOINTER` o blocca i click sui widget sovrapposti |
+
+---
+
+## Compatibilità e Impatto
+
+- **Multi-Mod:** Gli ID tipo dei widget sono costanti del motore condivise tra tutte le mod. Due mod che creano widget con lo stesso nome sotto lo stesso genitore entreranno in conflitto. Usa nomi di widget univoci con il prefisso della tua mod.
+- **Prestazioni:** `TextListboxWidget` e `ScrollWidget` con centinaia di figli causano cali di frame. Raggruppa e ricicla i widget per liste che superano i 50 elementi.
