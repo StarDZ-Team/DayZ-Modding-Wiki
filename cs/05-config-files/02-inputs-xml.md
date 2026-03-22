@@ -1,44 +1,44 @@
-# Chapter 5.2: inputs.xml --- Custom Keybindings
+# Kapitola 5.2: inputs.xml --- Vlastní klávesové zkratky
 
 [Domů](../../README.md) | [<< Předchozí: stringtable.csv](01-stringtable.md) | **inputs.xml** | [Další: Credits.json >>](03-credits-json.md)
 
 ---
 
-> **Shrnutí:** The `inputs.xml` file lets your mod register vlastní keybindings that appear in hráč's Controls settings menu. Players can view, rebind, and toggle these inputs jen like vanilla actions. Toto je standard mechanism for adding hotkeys to DayZ mods.
+> **Shrnutí:** Soubor `inputs.xml` umožňuje vašemu modu registrovat vlastní klávesové zkratky, které se zobrazí v menu Nastavení > Ovládání hráče. Hráči mohou tyto vstupy prohlížet, přebindovat a přepínat stejně jako vanilkové akce. Toto je standardní mechanismus pro přidávání klávesových zkratek do modů DayZ.
 
 ---
 
 ## Obsah
 
-- [Overview](#overview)
-- [File Location](#file-location)
-- [Complete XML Structure](#complete-xml-structure)
-- [Actions Block](#actions-block)
-- [Sorting Block](#sorting-block)
-- [Preset Block (Default Keybindings)](#preset-block-výchozí-keybindings)
-- [Modifier Combos](#modifier-combos)
-- [Hidden Inputs](#hidden-inputs)
-- [Multiple Default Keys](#multiple-výchozí-keys)
-- [Accessing Inputs in Script](#accessing-inputs-in-script)
-- [Input Methods Reference](#input-methods-reference)
-- [Suppressing and Disabling Inputs](#suppressing-and-disabling-inputs)
-- [Key Names Reference](#key-names-reference)
-- [Real Examples](#real-examples)
-- [Běžné Mistakes](#common-mistakes)
+- [Přehled](#přehled)
+- [Umístění souboru](#umístění-souboru)
+- [Kompletní struktura XML](#kompletní-struktura-xml)
+- [Blok Actions](#blok-actions)
+- [Blok Sorting](#blok-sorting)
+- [Blok Preset (výchozí klávesové zkratky)](#blok-preset-výchozí-klávesové-zkratky)
+- [Kombinace s modifikátory](#kombinace-s-modifikátory)
+- [Skryté vstupy](#skryté-vstupy)
+- [Více výchozích kláves](#více-výchozích-kláves)
+- [Přístup ke vstupům ve skriptu](#přístup-ke-vstupům-ve-skriptu)
+- [Reference vstupních metod](#reference-vstupních-metod)
+- [Potlačení a deaktivace vstupů](#potlačení-a-deaktivace-vstupů)
+- [Reference názvů kláves](#reference-názvů-kláves)
+- [Reálné příklady](#reálné-příklady)
+- [Časté chyby](#časté-chyby)
 
 ---
 
 ## Přehled
 
-When your mod needs hráč to press a key --- opening a menu, toggling a feature, commanding an AI unit --- you register a vlastní input action in `inputs.xml`. Engine reads tento soubor při startu and integrates your actions into the universal input system. Players viz your keybindings in the game's Settings > Controls menu, grouped under a heading you define.
+Když váš mod potřebuje, aby hráč stiskl klávesu --- otevření menu, přepnutí funkce, vydání příkazu AI jednotce --- registrujete vlastní vstupní akci v `inputs.xml`. Engine čte tento soubor při startu a integruje vaše akce do univerzálního vstupního systému. Hráči vidí vaše klávesové zkratky v herním menu Nastavení > Ovládání, seskupené pod nadpisem, který definujete.
 
-Custom inputs are identified by a unique action name (conventionally prefixed with `UA` for "User Action") and can have výchozí keybindings that hráči can rebind at will.
+Vlastní vstupy jsou identifikovány unikátním názvem akce (konvenčně s předponou `UA` pro "User Action") a mohou mít výchozí klávesové zkratky, které si hráči mohou přebindovat dle libosti.
 
 ---
 
 ## Umístění souboru
 
-Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
+Umístěte `inputs.xml` do podsložky `data` vašeho adresáře Scripts:
 
 ```
 @MyMod/
@@ -46,47 +46,47 @@ Place `inputs.xml` inside a `data` subfolder of your Scripts directory:
     MyMod_Scripts.pbo
       Scripts/
         data/
-          inputs.xml        <-- Here
+          inputs.xml        <-- Zde
         3_Game/
         4_World/
         5_Mission/
 ```
 
-Some mods place it přímo in the `Scripts/` folder. Obě umístění fungují. Engine discovers soubor automatickýally --- no config.cpp registration is needed.
+Některé mody ho umisťují přímo do složky `Scripts/`. Obě umístění fungují. Engine objeví soubor automaticky --- žádná registrace v config.cpp není potřeba.
 
 ---
 
-## Complete XML Structure
+## Kompletní struktura XML
 
-An `inputs.xml` file has three sections, all wrapped in a `<modded_inputs>` root element:
+Soubor `inputs.xml` má tři sekce, všechny obalené kořenovým elementem `<modded_inputs>`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <modded_inputs>
     <inputs>
         <actions>
-            <!-- Action definitions go here -->
+            <!-- Definice akcí sem -->
         </actions>
 
         <sorting name="mymod" loc="STR_MYMOD_INPUT_GROUP">
-            <!-- Sort order for the settings menu -->
+            <!-- Pořadí řazení pro menu nastavení -->
         </sorting>
     </inputs>
     <preset>
-        <!-- Default keybinding assignments go here -->
+        <!-- Výchozí přiřazení kláves sem -->
     </preset>
 </modded_inputs>
 ```
 
-All three sections --- `<actions>`, `<sorting>`, and `<preset>` --- work together but serve odlišný purposes.
+Všechny tři sekce --- `<actions>`, `<sorting>` a `<preset>` --- spolupracují, ale slouží odlišným účelům.
 
 ---
 
-## Actions Block
+## Blok Actions
 
-The `<actions>` block declares každý input action your mod provides. Each action is a jeden `<input>` element.
+Blok `<actions>` deklaruje každou vstupní akci, kterou váš mod poskytuje. Každá akce je jeden element `<input>`.
 
-### Syntax
+### Syntaxe
 
 ```xml
 <actions>
@@ -95,17 +95,17 @@ The `<actions>` block declares každý input action your mod provides. Each acti
 </actions>
 ```
 
-### Attributes
+### Atributy
 
-| Attribute | Required | Description |
-|-----------|----------|-------------|
-| `name` | Yes | Unique action identifier. Convention: prefix with `UA` (User Action). Used in scripts to poll this input. |
-| `loc` | No | Stringtable key for the display name in the Controls menu. **No `#` prefix** --- systém adds it. |
-| `visible` | No | Nastavte to `"false"` to hide from the Controls menu. Defaults to `true`. |
+| Atribut | Povinný | Popis |
+|---------|---------|-------|
+| `name` | Ano | Unikátní identifikátor akce. Konvence: předpona `UA` (User Action). Používá se ve skriptech pro dotazování tohoto vstupu. |
+| `loc` | Ne | Klíč stringtable pro zobrazovaný název v menu Ovládání. **Bez předpony `#`** --- systém ji přidává sám. |
+| `visible` | Ne | Nastavte na `"false"` pro skrytí z menu Ovládání. Výchozí hodnota je `true`. |
 
-### Naming Convention
+### Konvence pojmenování
 
-Action names must be globálníly unique across all loaded mods. Use your mod prefix:
+Názvy akcí musí být globálně unikátní napříč všemi načtenými mody. Používejte předponu svého modu:
 
 ```xml
 <input name="UAMyModAdminPanel" loc="STR_MYMOD_INPUT_ADMIN_PANEL" />
@@ -113,15 +113,15 @@ Action names must be globálníly unique across all loaded mods. Use your mod pr
 <input name="eAICommandMenu" loc="STR_EXPANSION_AI_COMMAND_MENU" />
 ```
 
-The `UA` prefix is conventional but not enforced. Expansion AI uses `eAI` as its prefix, which také works.
+Předpona `UA` je konvenční, ale není vynucená. Expansion AI používá `eAI` jako svou předponu, což také funguje.
 
 ---
 
-## Sorting Block
+## Blok Sorting
 
-The `<sorting>` block controls how your inputs appear in hráč's Controls settings. It defines a named group (which becomes a section header) and lists the inputs in display order.
+Blok `<sorting>` řídí, jak se vaše vstupy zobrazují v nastavení Ovládání hráče. Definuje pojmenovanou skupinu (která se stane záhlavím sekce) a vypisuje vstupy v pořadí zobrazení.
 
-### Syntax
+### Syntaxe
 
 ```xml
 <sorting name="mymod" loc="STR_MYMOD_INPUT_GROUP">
@@ -131,32 +131,32 @@ The `<sorting>` block controls how your inputs appear in hráč's Controls setti
 </sorting>
 ```
 
-### Attributes
+### Atributy
 
-| Attribute | Required | Description |
-|-----------|----------|-------------|
-| `name` | Yes | Internal identifier for this sorting group |
-| `loc` | Yes | Stringtable key for the group header displayed in Settings > Controls |
+| Atribut | Povinný | Popis |
+|---------|---------|-------|
+| `name` | Ano | Interní identifikátor pro tuto skupinu řazení |
+| `loc` | Ano | Klíč stringtable pro záhlaví skupiny zobrazené v Nastavení > Ovládání |
 
-### How It Appears
+### Jak to vypadá
 
-In the Controls settings, hráč sees:
+V nastavení Ovládání hráč vidí:
 
 ```
-[MyMod]                          <-- from the sorting loc
-  Open Menu .............. [Y]   <-- from the input loc + preset
-  Toggle HUD ............. [H]   <-- from the input loc + preset
+[MyMod]                          <-- z loc v sorting
+  Open Menu .............. [Y]   <-- z loc ve vstupu + preset
+  Toggle HUD ............. [H]   <-- z loc ve vstupu + preset
 ```
 
-Only inputs listed in the `<sorting>` block appear in the settings menu. Inputs defined in `<actions>` but not listed in `<sorting>` are tiše registered but invisible to hráč (even if `visible` is not explicitly set to `false`).
+Pouze vstupy uvedené v bloku `<sorting>` se zobrazí v menu nastavení. Vstupy definované v `<actions>`, ale neuvedené v `<sorting>`, jsou tiše zaregistrovány, ale pro hráče neviditelné (i když `visible` není explicitně nastaveno na `false`).
 
 ---
 
-## Preset Block (Default Keybindings)
+## Blok Preset (výchozí klávesové zkratky)
 
-The `<preset>` block assigns výchozí keys to your actions. These are klíčs hráč starts with before jakýkoli vlastníization.
+Blok `<preset>` přiřazuje výchozí klávesy vašim akcím. Toto jsou klávesy, se kterými hráč začíná před jakýmkoli přizpůsobením.
 
-### Simple Key Binding
+### Jednoduché přiřazení klávesy
 
 ```xml
 <preset>
@@ -166,19 +166,19 @@ The `<preset>` block assigns výchozí keys to your actions. These are klíčs h
 </preset>
 ```
 
-This binds the `Y` key as the výchozí for `UAMyModOpenMenu`.
+Toto přiřadí klávesu `Y` jako výchozí pro `UAMyModOpenMenu`.
 
-### No Default Key
+### Bez výchozí klávesy
 
-Pokud omit an action from the `<preset>` block, it has no výchozí binding. The player must ručně assign a key in Settings > Controls. This is appropriate for volitelný or advanced bindings.
+Pokud vynecháte akci z bloku `<preset>`, nemá žádné výchozí přiřazení. Hráč musí ručně přiřadit klávesu v Nastavení > Ovládání. To je vhodné pro volitelné nebo pokročilé zkratky.
 
 ---
 
-## Modifier Combos
+## Kombinace s modifikátory
 
-To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
+Pro vyžadování modifikační klávesy (Ctrl, Shift, Alt) vnořte elementy `<btn>`:
 
-### Ctrl + Left Mouse Button
+### Ctrl + levé tlačítko myši
 
 ```xml
 <input name="eAISetWaypoint">
@@ -188,9 +188,9 @@ To require a modifier key (Ctrl, Shift, Alt), nest `<btn>` elements:
 </input>
 ```
 
-The outer `<btn>` is the modifier; the inner `<btn>` is the primary key. The player must hold the modifier and then press the primary key.
+Vnější `<btn>` je modifikátor; vnitřní `<btn>` je primární klávesa. Hráč musí podržet modifikátor a pak stisknout primární klávesu.
 
-### Shift + Key
+### Shift + klávesa
 
 ```xml
 <input name="UAMyModQuickAction">
@@ -200,17 +200,17 @@ The outer `<btn>` is the modifier; the inner `<btn>` is the primary key. The pla
 </input>
 ```
 
-### Nesting Rules
+### Pravidla vnořování
 
-- The **outer** `<btn>` is vždy the modifier (held down)
-- The **inner** `<btn>` is the trigger (pressed while modifier is held)
-- Only one level of nesting is typical; deeper nesting is untested and not doporučený
+- **Vnější** `<btn>` je vždy modifikátor (podržený)
+- **Vnitřní** `<btn>` je spouštěč (stisknutý při podržení modifikátoru)
+- Typická je pouze jedna úroveň vnořování; hlubší vnořování je netestované a nedoporučované
 
 ---
 
-## Hidden Inputs
+## Skryté vstupy
 
-Use `visible="false"` to register an input that hráč cannot viz or rebind in the Controls menu. This is užitečný for interní inputs used by your mod's code that should not be player-configurable.
+Použijte `visible="false"` k registraci vstupu, který hráč nemůže vidět ani přebindovat v menu Ovládání. To je užitečné pro interní vstupy používané kódem vašeho modu, které by neměly být konfigurovatelné hráčem.
 
 ```xml
 <actions>
@@ -219,7 +219,7 @@ Use `visible="false"` to register an input that hráč cannot viz or rebind in t
 </actions>
 ```
 
-Hidden inputs can stále have výchozí key assignments in the `<preset>` block:
+Skryté vstupy mohou stále mít výchozí přiřazení kláves v bloku `<preset>`:
 
 ```xml
 <preset>
@@ -231,9 +231,9 @@ Hidden inputs can stále have výchozí key assignments in the `<preset>` block:
 
 ---
 
-## Multiple Default Keys
+## Více výchozích kláves
 
-An action can have více výchozí keys. List více `<btn>` elements as siblings:
+Akce může mít více výchozích kláves. Uveďte více elementů `<btn>` jako sourozence:
 
 ```xml
 <input name="UAExpansionConfirm">
@@ -242,23 +242,23 @@ An action can have více výchozí keys. List více `<btn>` elements as siblings
 </input>
 ```
 
-Oba `Enter` and `Numpad Enter` will trigger `UAExpansionConfirm`. This is užitečný for actions where více physical keys should map to the stejný logical action.
+Obě klávesy `Enter` a `Numpad Enter` budou spouštět `UAExpansionConfirm`. To je užitečné pro akce, kde by více fyzických kláves mělo odpovídat stejné logické akci.
 
 ---
 
-## Accessing Inputs in Script
+## Přístup ke vstupům ve skriptu
 
-### Getting the Input API
+### Získání vstupního API
 
-All input access goes through `GetUApi()`, which vrací globální User Action API:
+Veškerý přístup ke vstupům prochází přes `GetUApi()`, které vrací globální User Action API:
 
 ```c
 UAInput input = GetUApi().GetInputByName("UAMyModOpenMenu");
 ```
 
-### Polling in OnUpdate
+### Dotazování v OnUpdate
 
-Custom inputs are typicky polled in `MissionGameplay.OnUpdate()` or similar per-frame zpětné volánís:
+Vlastní vstupy se typicky dotazují v `MissionGameplay.OnUpdate()` nebo podobných zpětných voláních po snímcích:
 
 ```c
 modded class MissionGameplay
@@ -271,16 +271,16 @@ modded class MissionGameplay
 
         if (input.LocalPress())
         {
-            // Key was just pressed this frame
+            // Klávesa byla právě stisknuta v tomto snímku
             OpenMyModMenu();
         }
     }
 }
 ```
 
-### Alternative: Using the Input Name Directly
+### Alternativa: přímé použití názvu vstupu
 
-Many mods check inputs inline using the `UAInputAPI` methods with string names:
+Mnoho modů kontroluje vstupy inline pomocí metod `UAInputAPI` s řetězcovými názvy:
 
 ```c
 override void OnUpdate(float timeslice)
@@ -296,26 +296,26 @@ override void OnUpdate(float timeslice)
 }
 ```
 
-The `false` parameter in `LocalPress("name", false)` indicates that the check should not consume the input dokoncet.
+Parametr `false` v `LocalPress("name", false)` znamená, že kontrola nemá vstup konzumovat.
 
 ---
 
-## Input Methods Reference
+## Reference vstupních metod
 
-Once you have a `UAInput` reference (from `GetUApi().GetInputByName()`), or are using the `Input` class přímo, these methods detect odlišný input states:
+Jakmile máte referenci `UAInput` (z `GetUApi().GetInputByName()`), nebo používáte třídu `Input` přímo, tyto metody detekují různé stavy vstupu:
 
-| Method | Returns | When True |
-|--------|---------|-----------|
-| `LocalPress()` | `bool` | The key was pressed **this frame** (single trigger on key-down) |
-| `LocalRelease()` | `bool` | The key was released **this frame** (single trigger on key-up) |
-| `LocalClick()` | `bool` | The key was pressed and released quickly (tap) |
-| `LocalHold()` | `bool` | The key has been held down for a threshold duration |
-| `LocalDoubleClick()` | `bool` | The key was tapped twice quickly |
-| `LocalValue()` | `float` | Current analog value (0.0 or 1.0 for digital keys; variable for analog axes) |
+| Metoda | Vrací | Kdy je True |
+|--------|-------|-------------|
+| `LocalPress()` | `bool` | Klávesa byla stisknuta **v tomto snímku** (jednorázový trigger při stisknutí) |
+| `LocalRelease()` | `bool` | Klávesa byla uvolněna **v tomto snímku** (jednorázový trigger při uvolnění) |
+| `LocalClick()` | `bool` | Klávesa byla stisknuta a rychle uvolněna (ťuknutí) |
+| `LocalHold()` | `bool` | Klávesa byla podržena po prahovou dobu |
+| `LocalDoubleClick()` | `bool` | Klávesa byla rychle dvakrát ťuknuta |
+| `LocalValue()` | `float` | Aktuální analogová hodnota (0.0 nebo 1.0 pro digitální klávesy; proměnná pro analogové osy) |
 
-### Usage Patterns
+### Vzory použití
 
-**Toggle on press:**
+**Přepnutí při stisku:**
 ```c
 if (input.LocalPress("UAMyModToggle", false))
 {
@@ -323,7 +323,7 @@ if (input.LocalPress("UAMyModToggle", false))
 }
 ```
 
-**Hold to activate, release to deactivate:**
+**Podržení k aktivaci, uvolnění k deaktivaci:**
 ```c
 if (input.LocalPress("eAICommandMenu", false))
 {
@@ -336,7 +336,7 @@ if (input.LocalRelease("eAICommandMenu", false) || input.LocalValue("eAICommandM
 }
 ```
 
-**Double-tap action:**
+**Akce dvojitým ťuknutím:**
 ```c
 if (input.LocalDoubleClick("UAMyModSpecial", false))
 {
@@ -344,7 +344,7 @@ if (input.LocalDoubleClick("UAMyModSpecial", false))
 }
 ```
 
-**Hold for extended action:**
+**Podržení pro rozšířenou akci:**
 ```c
 if (input.LocalHold("UAExpansionGPSToggle"))
 {
@@ -354,23 +354,23 @@ if (input.LocalHold("UAExpansionGPSToggle"))
 
 ---
 
-## Suppressing and Disabling Inputs
+## Potlačení a deaktivace vstupů
 
 ### ForceDisable
 
-Temporarily disables a specifický input. Commonly used when opening menus to prevent game actions from firing while a UI is active:
+Dočasně deaktivuje konkrétní vstup. Běžně se používá při otevření menu, aby se zabránilo herním akcím při aktivním UI:
 
 ```c
-// Disable the input while menu is open
+// Deaktivace vstupu při otevřeném menu
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(true);
 
-// Re-enable when menu closes
+// Opětovná aktivace při zavření menu
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(false);
 ```
 
 ### SupressNextFrame
 
-Suppresses all input processing for the next frame. Used during input context transitions (e.g., closing menus) to prevent one-frame input bleed:
+Potlačí veškeré zpracování vstupů pro příští snímek. Používá se během přechodů kontextu vstupů (např. zavírání menu) k prevenci jednosnímkového "prosakování" vstupů:
 
 ```c
 GetUApi().SupressNextFrame(true);
@@ -378,69 +378,69 @@ GetUApi().SupressNextFrame(true);
 
 ### UpdateControls
 
-Po modifying input states, call `UpdateControls()` to apply changes okamžitě:
+Po úpravě stavů vstupů zavolejte `UpdateControls()` pro okamžité uplatnění změn:
 
 ```c
 GetUApi().GetInputByName("UAExpansionBookToggle").ForceDisable(false);
 GetUApi().UpdateControls();
 ```
 
-### Input Excludes
+### Vylučovací skupiny vstupů
 
-The vanilla mission system provides exclude groups. Když menu is active, můžete exclude categories of inputs:
+Vanilkový misijní systém poskytuje vylučovací skupiny. Když je aktivní menu, můžete vyloučit kategorie vstupů:
 
 ```c
-// Suppress gameplay inputs while inventory is open
+// Potlačení herních vstupů při otevřeném inventáři
 AddActiveInputExcludes({"inventory"});
 
-// Restore when closing
+// Obnovení při zavření
 RemoveActiveInputExcludes({"inventory"});
 ```
 
 ---
 
-## Key Names Reference
+## Reference názvů kláves
 
-Key names used in the `<btn name="">` attribute follow a specifický naming convention. Here is the complete reference.
+Názvy kláves používané v atributu `<btn name="">` sledují specifickou konvenci pojmenování. Zde je kompletní reference.
 
-### Keyboard Keys
+### Klávesy klávesnice
 
-| Category | Key Names |
-|----------|-----------|
-| Letters | `kA`, `kB`, `kC`, `kD`, `kE`, `kF`, `kG`, `kH`, `kI`, `kJ`, `kK`, `kL`, `kM`, `kN`, `kO`, `kP`, `kQ`, `kR`, `kS`, `kT`, `kU`, `kV`, `kW`, `kX`, `kY`, `kZ` |
-| Numbers (top row) | `k0`, `k1`, `k2`, `k3`, `k4`, `k5`, `k6`, `k7`, `k8`, `k9` |
-| Function keys | `kF1`, `kF2`, `kF3`, `kF4`, `kF5`, `kF6`, `kF7`, `kF8`, `kF9`, `kF10`, `kF11`, `kF12` |
-| Modifiers | `kLControl`, `kRControl`, `kLShift`, `kRShift`, `kLAlt`, `kRAlt` |
-| Navigation | `kUp`, `kDown`, `kLeft`, `kRight`, `kHome`, `kEnd`, `kPageUp`, `kPageDown` |
-| Editing | `kReturn`, `kBackspace`, `kDelete`, `kInsert`, `kSpace`, `kTab`, `kEscape` |
-| Numpad | `kNumpad0` ... `kNumpad9`, `kNumpadEnter`, `kNumpadPlus`, `kNumpadMinus`, `kNumpadMultiply`, `kNumpadDivide`, `kNumpadDecimal` |
-| Punctuation | `kMinus`, `kEquals`, `kLBracket`, `kRBracket`, `kBackslash`, `kSemicolon`, `kApostrophe`, `kComma`, `kPeriod`, `kSlash`, `kGrave` |
-| Locks | `kCapsLock`, `kNumLock`, `kScrollLock` |
+| Kategorie | Názvy kláves |
+|-----------|--------------|
+| Písmena | `kA`, `kB`, `kC`, `kD`, `kE`, `kF`, `kG`, `kH`, `kI`, `kJ`, `kK`, `kL`, `kM`, `kN`, `kO`, `kP`, `kQ`, `kR`, `kS`, `kT`, `kU`, `kV`, `kW`, `kX`, `kY`, `kZ` |
+| Čísla (horní řada) | `k0`, `k1`, `k2`, `k3`, `k4`, `k5`, `k6`, `k7`, `k8`, `k9` |
+| Funkční klávesy | `kF1`, `kF2`, `kF3`, `kF4`, `kF5`, `kF6`, `kF7`, `kF8`, `kF9`, `kF10`, `kF11`, `kF12` |
+| Modifikátory | `kLControl`, `kRControl`, `kLShift`, `kRShift`, `kLAlt`, `kRAlt` |
+| Navigace | `kUp`, `kDown`, `kLeft`, `kRight`, `kHome`, `kEnd`, `kPageUp`, `kPageDown` |
+| Editační | `kReturn`, `kBackspace`, `kDelete`, `kInsert`, `kSpace`, `kTab`, `kEscape` |
+| Numerická klávesnice | `kNumpad0` ... `kNumpad9`, `kNumpadEnter`, `kNumpadPlus`, `kNumpadMinus`, `kNumpadMultiply`, `kNumpadDivide`, `kNumpadDecimal` |
+| Interpunkce | `kMinus`, `kEquals`, `kLBracket`, `kRBracket`, `kBackslash`, `kSemicolon`, `kApostrophe`, `kComma`, `kPeriod`, `kSlash`, `kGrave` |
+| Zámky | `kCapsLock`, `kNumLock`, `kScrollLock` |
 
-### Mouse Buttons
+### Tlačítka myši
 
-| Name | Button |
-|------|--------|
-| `mBLeft` | Left mouse button |
-| `mBRight` | Right mouse button |
-| `mBMiddle` | Middle mouse button (scroll wheel click) |
-| `mBExtra1` | Mouse button 4 (side button back) |
-| `mBExtra2` | Mouse button 5 (side button forward) |
+| Název | Tlačítko |
+|-------|----------|
+| `mBLeft` | Levé tlačítko myši |
+| `mBRight` | Pravé tlačítko myši |
+| `mBMiddle` | Prostřední tlačítko myši (klik kolečkem) |
+| `mBExtra1` | Tlačítko myši 4 (boční tlačítko vzad) |
+| `mBExtra2` | Tlačítko myši 5 (boční tlačítko vpřed) |
 
-### Mouse Axes
+### Osy myši
 
-| Name | Axis |
-|------|------|
-| `mAxisX` | Mouse horizontal movement |
-| `mAxisY` | Mouse vertical movement |
-| `mWheelUp` | Scroll wheel up |
-| `mWheelDown` | Scroll wheel down |
+| Název | Osa |
+|-------|-----|
+| `mAxisX` | Horizontální pohyb myši |
+| `mAxisY` | Vertikální pohyb myši |
+| `mWheelUp` | Kolečko nahoru |
+| `mWheelDown` | Kolečko dolů |
 
-### Naming Pattern
+### Vzor pojmenování
 
-- **Keyboard**: `k` prefix + key name (e.g., `kT`, `kF5`, `kLControl`)
-- **Mouse buttons**: `mB` prefix + button name (e.g., `mBLeft`, `mBRight`)
-- **Mouse axes**: `m` prefix + axis name (e.g., `mAxisX`, `mWheelUp`)
+- **Klávesnice**: předpona `k` + název klávesy (např. `kT`, `kF5`, `kLControl`)
+- **Tlačítka myši**: předpona `mB` + název tlačítka (např. `mBLeft`, `mBRight`)
+- **Osy myši**: předpona `m` + název osy (např. `mAxisX`, `mWheelUp`)
 
 ---
 
@@ -448,7 +448,7 @@ Key names used in the `<btn name="">` attribute follow a specifický naming conv
 
 ### DayZ Expansion AI
 
-A well-structured inputs.xml with visible keybindings, hidden debug inputs, and modifier combos:
+Dobře strukturovaný inputs.xml s viditelnými klávesovými zkratkami, skrytými ladicími vstupy a kombinacemi s modifikátory:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -502,14 +502,14 @@ A well-structured inputs.xml with visible keybindings, hidden debug inputs, and 
 </modded_inputs>
 ```
 
-Key observations:
-- `eAICommandMenu` bound to `T` --- visible in settings, player can rebind
-- `eAISetWaypoint` uses a **Ctrl + Left Click** modifier combo
-- Testujte inputs are `visible="false"` --- hidden from hráči but accessible in code
+Klíčová pozorování:
+- `eAICommandMenu` přiřazeno na `T` --- viditelné v nastavení, hráč může přebindovat
+- `eAISetWaypoint` používá kombinaci **Ctrl + levý klik** s modifikátorem
+- Testovací vstupy jsou `visible="false"` --- skryté před hráči, ale přístupné v kódu
 
 ### DayZ Expansion Market
 
-A minimal inputs.xml for a hidden utility input with více výchozí keys:
+Minimální inputs.xml pro skrytý pomocný vstup s více výchozími klávesami:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -528,14 +528,14 @@ A minimal inputs.xml for a hidden utility input with více výchozí keys:
 </modded_inputs>
 ```
 
-Key observations:
-- Hidden input (`visible="false"`) with prázdný `loc` --- nikdy shown in settings
-- Two výchozí keys: oba Enter and Numpad Enter trigger the stejný action
-- No `<sorting>` block --- not needed since the input is hidden
+Klíčová pozorování:
+- Skrytý vstup (`visible="false"`) s prázdným `loc` --- nikdy se nezobrazí v nastavení
+- Dvě výchozí klávesy: obě Enter a Numpad Enter spouštějí stejnou akci
+- Žádný blok `<sorting>` --- není potřeba, protože vstup je skrytý
 
-### Complete Starter Template
+### Kompletní startovací šablona
 
-A minimal but complete template for a nový mod:
+Minimální, ale kompletní šablona pro nový mod:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -555,12 +555,12 @@ A minimal but complete template for a nový mod:
         <input name="UAMyModOpenMenu">
             <btn name="kF6"/>
         </input>
-        <!-- UAMyModQuickAction has no default key; player must bind it -->
+        <!-- UAMyModQuickAction nemá výchozí klávesu; hráč si ji musí přiřadit -->
     </preset>
 </modded_inputs>
 ```
 
-With a corresponding stringtable.csv:
+S odpovídající stringtable.csv:
 
 ```csv
 "Language","original","english"
@@ -573,78 +573,78 @@ With a corresponding stringtable.csv:
 
 ## Časté chyby
 
-### Using `#` in the loc Attribute
+### Použití `#` v atributu loc
 
 ```xml
-<!-- WRONG -->
+<!-- ŠPATNĚ -->
 <input name="UAMyAction" loc="#STR_MYMOD_ACTION" />
 
-<!-- CORRECT -->
+<!-- SPRÁVNĚ -->
 <input name="UAMyAction" loc="STR_MYMOD_ACTION" />
 ```
 
-The input system prepends `#` interníly. Adding it yourself causes a double-prefix and the lookup fails.
+Vstupní systém interně přidává předponu `#`. Přidáním sami způsobíte dvojitou předponu a vyhledávání selže.
 
-### Action Name Collisions
+### Kolize názvů akcí
 
-Pokud dva mods define `UAOpenMenu`, pouze one will work. Vždy use your mod prefix:
+Pokud dva mody definují `UAOpenMenu`, bude fungovat pouze jeden. Vždy používejte předponu svého modu:
 
 ```xml
-<input name="UAMyModOpenMenu" />     <!-- Good -->
-<input name="UAOpenMenu" />          <!-- Risky -->
+<input name="UAMyModOpenMenu" />     <!-- Dobře -->
+<input name="UAOpenMenu" />          <!-- Riskantní -->
 ```
 
-### Missing Sorting Entry
+### Chybějící záznam v Sorting
 
-Pokud define an action in `<actions>` but forget to list it in `<sorting>`, the action works in code but is invisible in the Controls menu. The player has no way to rebind it.
+Pokud definujete akci v `<actions>`, ale zapomenete ji uvést v `<sorting>`, akce funguje v kódu, ale je neviditelná v menu Ovládání. Hráč nemá možnost ji přebindovat.
 
-### Forgetting to Define in Actions
+### Zapomenutí definice v Actions
 
-Pokud list an input in `<sorting>` or `<preset>` but nikdy define it in `<actions>`, engine tiše ignores it.
+Pokud uvedete vstup v `<sorting>` nebo `<preset>`, ale nikdy ho nedefinujete v `<actions>`, engine ho tiše ignoruje.
 
-### Binding Conflicting Keys
+### Přiřazení kolidujících kláves
 
-Choosing keys that conflict with vanilla bindings (like `W`, `A`, `S`, `D`, `Tab`, `I`) causes oba your action and the vanilla action to fire současně. Use less common keys (F5-F12, numpad keys) or modifier combos for safety.
+Výběr kláves, které kolidují s vanilkovými přiřazeními (jako `W`, `A`, `S`, `D`, `Tab`, `I`), způsobí, že se vaše akce i vanilková akce spustí současně. Pro bezpečnost používejte méně běžné klávesy (F5-F12, klávesy numerické klávesnice) nebo kombinace s modifikátory.
 
 ---
 
 ## Osvědčené postupy
 
-- Vždy prefix action names with `UA` + your mod name (e.g., `UAMyModOpenMenu`). Generic names like `UAOpenMenu` will collide with jiný mods.
-- Provide a `loc` attribute for každý visible input and define the corresponding stringtable key. Bez it, the Controls menu shows the raw action name.
-- Choose uncommon výchozí keys (F5-F12, numpad) or modifier combos (Ctrl+key) to minimize conflicts with vanilla and popular mod keybindings.
-- Vždy list visible inputs in the `<sorting>` block. An input defined in `<actions>` but chybějící from `<sorting>` is invisible to hráč and nemůže být rebound.
-- Cache the `UAInput` reference from `GetUApi().GetInputByName()` in a member variable spíše než calling it každý frame in `OnUpdate`. The string lookup has overhead.
+- Vždy přidávejte předponu `UA` + název modu k názvům akcí (např. `UAMyModOpenMenu`). Obecné názvy jako `UAOpenMenu` budou kolidovat s jinými mody.
+- Poskytněte atribut `loc` pro každý viditelný vstup a definujte odpovídající klíč stringtable. Bez něj menu Ovládání zobrazí holý název akce.
+- Zvolte méně běžné výchozí klávesy (F5-F12, numerická klávesnice) nebo kombinace s modifikátory (Ctrl+klávesa) pro minimalizaci konfliktů s vanilkovými a populárními klávesovými zkratkami modů.
+- Vždy uveďte viditelné vstupy v bloku `<sorting>`. Vstup definovaný v `<actions>`, ale chybějící v `<sorting>`, je neviditelný pro hráče a nemůže být přebindován.
+- Ukládejte referenci `UAInput` z `GetUApi().GetInputByName()` do členské proměnné místo volání každý snímek v `OnUpdate`. Vyhledávání řetězce má režii.
 
 ---
 
 ## Teorie vs praxe
 
-> What the documentation says versus how things actually work za běhu.
+> Co říká dokumentace versus jak věci skutečně fungují za běhu.
 
-| Concept | Theory | Reality |
+| Koncept | Teorie | Realita |
 |---------|--------|---------|
-| `visible="false"` hides from Controls menu | Input is registered but invisible | Hidden inputs stále appear in the `<sorting>` block listing in některé DayZ versions. Omitting from `<sorting>` is the reliable way to hide inputs |
-| `LocalPress()` fires once per key-down | Single trigger on the frame klíč is pressed | Pokud game hitches (low FPS), `LocalPress()` can be missed celýly. For critical actions, také check `LocalValue() > 0` as a fallback |
-| Modifier combos via nested `<btn>` | Outer is modifier, inner is trigger | The modifier key alone také registers as a press on its own input (e.g., `kLControl` is také vanilla crouch). Players holding Ctrl+Klikněte will také crouch |
-| `ForceDisable(true)` suppresses input | Input is zcela ignored | `ForceDisable` persists until explicitly re-enabled. Pokud váš mod crashes or the UI closes without calling `ForceDisable(false)`, the input stays disabled until game restart |
-| Multiple `<btn>` siblings | Oba keys trigger the stejný action | Works správně, but the Controls menu pouze displays the first key. The player can viz and rebind the first key but may not realize the second výchozí exists |
+| `visible="false"` skryje z menu Ovládání | Vstup je registrován, ale neviditelný | Skryté vstupy se stále mohou objevit ve výpisu bloku `<sorting>` v některých verzích DayZ. Vynechání z `<sorting>` je spolehlivý způsob skrytí vstupů |
+| `LocalPress()` se spustí jednou za stisk klávesy | Jednorázový trigger ve snímku stisku klávesy | Pokud hra zakolísá (nízké FPS), `LocalPress()` může být zcela vynechán. Pro kritické akce kontrolujte také `LocalValue() > 0` jako zálohu |
+| Kombinace s modifikátory přes vnořené `<btn>` | Vnější je modifikátor, vnitřní je spouštěč | Samotná modifikační klávesa se také zaregistruje jako stisk na svém vlastním vstupu (např. `kLControl` je také vanilkový dřep). Hráči podržící Ctrl+klik budou také dřepat |
+| `ForceDisable(true)` potlačí vstup | Vstup je zcela ignorován | `ForceDisable` přetrvává, dokud není explicitně znovu povolen. Pokud váš mod spadne nebo se UI zavře bez volání `ForceDisable(false)`, vstup zůstane deaktivován do restartu hry |
+| Více sourozeneckých `<btn>` | Obě klávesy spouštějí stejnou akci | Funguje správně, ale menu Ovládání zobrazí pouze první klávesu. Hráč může vidět a přebindovat první klávesu, ale nemusí si uvědomovat, že existuje druhá výchozí |
 
 ---
 
 ## Kompatibilita a dopad
 
-- **Více modů:** Action name collisions are the primary risk. Pokud dva mods define `UAOpenMenu`, pouze one works and the conflict is silent. There is no engine warning for duplicate action names across mods.
-- **Výkon:** Input polling via `GetUApi().GetInputByName()` involves řetězec hash lookup. Polling 5-10 inputs per frame is negligible, but caching the `UAInput` reference is stále doporučený for mods with mnoho inputs.
-- **Verze:** The `inputs.xml` format and `<modded_inputs>` structure have been stable since DayZ 1.0. The `visible` attribute was added later (around 1.08) -- on older versions, all inputs are vždy visible in the Controls menu.
+- **Více modů:** Kolize názvů akcí jsou hlavním rizikem. Pokud dva mody definují `UAOpenMenu`, bude fungovat pouze jeden a konflikt je tichý. Engine nevydává žádné varování pro duplicitní názvy akcí napříč mody.
+- **Výkon:** Dotazování vstupů přes `GetUApi().GetInputByName()` zahrnuje vyhledávání hash řetězce. Dotazování 5-10 vstupů za snímek je zanedbatelné, ale ukládání reference `UAInput` do mezipaměti je stále doporučeno pro mody s mnoha vstupy.
+- **Verze:** Formát `inputs.xml` a struktura `<modded_inputs>` jsou stabilní od DayZ 1.0. Atribut `visible` byl přidán později (kolem verze 1.08) --- na starších verzích jsou všechny vstupy vždy viditelné v menu Ovládání.
 
 ---
 
 ## Pozorováno v reálných modech
 
 | Vzor | Mod | Detail |
-|---------|-----|--------|
-| Modifier combo `Ctrl+Click` | Expansion AI | `eAISetWaypoint` uses nested `<btn name="kLControl"><btn name="mBLeft"/>` for Ctrl+Left Klikněte to place AI waypoints |
-| Hidden utility inputs | Expansion Market | `UAExpansionConfirm` is `visible="false"` with dual keys (Enter + Numpad Enter) for interní confirmation logic |
-| `ForceDisable` during menu open | COT, VPP | Admin panels call `ForceDisable(true)` on gameplay inputs when the panel opens, and `ForceDisable(false)` on close to prevent character movement while typing |
-| Cached `UAInput` in member variable | DabsFramework | Stores `GetUApi().GetInputByName()` result in a class field during init, polls the cached reference in `OnUpdate` to avoid per-frame string lookup |
+|------|-----|--------|
+| Kombinace s modifikátorem `Ctrl+klik` | Expansion AI | `eAISetWaypoint` používá vnořené `<btn name="kLControl"><btn name="mBLeft"/>` pro Ctrl+levý klik k umístění AI waypointů |
+| Skryté pomocné vstupy | Expansion Market | `UAExpansionConfirm` je `visible="false"` se dvěma klávesami (Enter + Numpad Enter) pro interní potvrzovací logiku |
+| `ForceDisable` při otevření menu | COT, VPP | Admin panely volají `ForceDisable(true)` na herní vstupy při otevření panelu a `ForceDisable(false)` při zavření, aby se zabránilo pohybu postavy při psaní |
+| Uložená `UAInput` v členské proměnné | DabsFramework | Ukládá výsledek `GetUApi().GetInputByName()` do pole třídy během inicializace, dotazuje uloženou referenci v `OnUpdate` pro zamezení vyhledávání řetězce každý snímek |

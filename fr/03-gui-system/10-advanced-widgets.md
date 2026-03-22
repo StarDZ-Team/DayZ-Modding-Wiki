@@ -1,20 +1,20 @@
-# Chapitre 3.10: Advanced Widgets
+# Chapitre 3.10 : Widgets avancés
 
-[Accueil](../../README.md) | [<< Précédent : Real Mod UI Patterns](09-real-mod-patterns.md) | **Advanced Widgets**
-
----
-
-Beyond the standard containers, text, and image widgets covered in earlier chapters, DayZ provides specialized widget types for rich text formatting, 2D canvas drawing, map display, 3D item previews, video playback, and render-to-texture. These widgets unlock capabilities that simple layouts cannot achieve.
-
-Ce chapitre couvre every advanced widget type with confirmed API signatures extracted from vanilla source code and real mod usage.
+[Accueil](../../README.md) | [<< Précédent : Patrons d'interface des vrais mods](09-real-mod-patterns.md) | **Widgets avancés**
 
 ---
 
-## RichTextWidget Formatting
+Au-delà des conteneurs standard, des widgets texte et image couverts dans les chapitres précédents, DayZ fournit des types de widgets spécialisés pour le formatage de texte riche, le dessin 2D sur canvas, l'affichage de carte, les prévisualisations 3D d'items, la lecture vidéo et le rendu vers texture. Ces widgets débloquent des capacités que les layouts simples ne peuvent pas atteindre.
 
-`RichTextWidget` extends `TextWidget` and supports inline markup tags within its text content. It is the primary way to display formatted text with embedded images, variable font sizes, and line breaks.
+Ce chapitre couvre chaque type de widget avancé avec des signatures d'API confirmées extraites du code source vanilla et de l'utilisation réelle dans les mods.
 
-### Class Definition
+---
+
+## Formatage RichTextWidget
+
+`RichTextWidget` étend `TextWidget` et supporte des balises de markup en ligne dans son contenu texte. C'est le principal moyen d'afficher du texte formaté avec des images intégrées, des tailles de police variables et des sauts de ligne.
+
+### Définition de classe
 
 ```
 // From scripts/1_core/proto/enwidgets.c
@@ -31,27 +31,27 @@ class RichTextWidget extends TextWidget
 };
 ```
 
-`RichTextWidget` inherits all `TextWidget` methods -- `SetText()`, `SetTextExactSize()`, `SetOutline()`, `SetShadow()`, `SetTextFormat()`, and the rest. The key difference is that `SetText()` on a `RichTextWidget` parses inline markup tags.
+`RichTextWidget` hérite de toutes les méthodes de `TextWidget` -- `SetText()`, `SetTextExactSize()`, `SetOutline()`, `SetShadow()`, `SetTextFormat()`, et le reste. La différence clé est que `SetText()` sur un `RichTextWidget` parse les balises de markup en ligne.
 
-### Supported Inline Tags
+### Balises en ligne supportées
 
-These tags are confirmed through le DayZ vanilla usage in `news_feed.txt`, `InputUtils.c`, and multiple menu scripts.
+Ces balises sont confirmées par l'utilisation vanilla DayZ dans `news_feed.txt`, `InputUtils.c`, et plusieurs scripts de menus.
 
-#### Inline Image
+#### Image en ligne
 
 ```
 <image set="IMAGESET_NAME" name="IMAGE_NAME" />
 <image set="IMAGESET_NAME" name="IMAGE_NAME" scale="1.5" />
 ```
 
-Embeds an image from a named imageset directly into the text flow. The `scale` attribute controls the image size relative to the text line height.
+Intègre une image depuis un jeu d'images nommé directement dans le flux du texte. L'attribut `scale` contrôle la taille de l'image relative à la hauteur de ligne du texte.
 
-Vanilla example from `scripts/data/news_feed.txt`:
+Exemple vanilla depuis `scripts/data/news_feed.txt` :
 ```
 <image set="dayz_gui" name="icon_pin" />  Welcome to DayZ!
 ```
 
-Vanilla example from `scripts/3_game/tools/inpututils.c` -- building controller button icons:
+Exemple vanilla depuis `scripts/3_game/tools/inpututils.c` -- construction d'icônes de boutons de manette :
 ```c
 string icon = string.Format(
     "<image set=\"%1\" name=\"%2\" scale=\"%3\" />",
@@ -62,30 +62,30 @@ string icon = string.Format(
 richTextWidget.SetText(icon + " Press to confirm");
 ```
 
-Common imagesets in le DayZ vanilla:
-- `dayz_gui` -- general UI icons (pin, notifications)
-- `dayz_inventory` -- inventory slot icons (shoulderleft, hands, vest, etc.)
-- `xbox_buttons` -- Xbox controller button images (A, B, X, Y)
-- `playstation_buttons` -- PlayStation controller button images
+Jeux d'images courants dans DayZ vanilla :
+- `dayz_gui` -- icônes UI générales (pin, notifications)
+- `dayz_inventory` -- icônes de slots d'inventaire (shoulderleft, hands, vest, etc.)
+- `xbox_buttons` -- images des boutons de manette Xbox (A, B, X, Y)
+- `playstation_buttons` -- images des boutons de manette PlayStation
 
-#### Line Break
+#### Saut de ligne
 
 ```
 </br>
 ```
 
-Forces a line break within the rich text content. Note the closing-tag syntax -- this is how DayZ's parser expects it.
+Force un saut de ligne dans le contenu du texte riche. Notez la syntaxe de balise fermante -- c'est ainsi que le parser de DayZ l'attend.
 
-#### Font Size / Heading
+#### Taille de police / Titre
 
 ```
-<h scale="0.8">Text content here</h>
-<h scale="0.6">Smaller text content</h>
+<h scale="0.8">Contenu texte ici</h>
+<h scale="0.6">Contenu texte plus petit</h>
 ```
 
-Wraps text in a heading block with a scale multiplier. The `scale` attribute is a float that controls the font size relative to the widget's base font. Larger values produce bigger text.
+Encapsule le texte dans un bloc titre avec un multiplicateur d'échelle. L'attribut `scale` est un float qui contrôle la taille de la police relative à la police de base du widget. Des valeurs plus grandes produisent un texte plus gros.
 
-Vanilla example from `scripts/data/news_feed.txt`:
+Exemple vanilla depuis `scripts/data/news_feed.txt` :
 ```
 <h scale="0.8">
 <image set="dayz_gui" name="icon_pin" />  Section Title
@@ -96,18 +96,18 @@ Body text at smaller size goes here.
 </br>
 ```
 
-### Practical Usage Patterns
+### Patrons d'utilisation pratiques
 
-#### Getting a RichTextWidget reference
+#### Obtenir une référence RichTextWidget
 
-In scripts, cast from the layout exactly like any other widget:
+Dans les scripts, castez depuis le layout exactement comme tout autre widget :
 
 ```c
 RichTextWidget m_Label;
 m_Label = RichTextWidget.Cast(root.FindAnyWidget("MyRichLabel"));
 ```
 
-In `.layout` files, use the layout class name:
+Dans les fichiers `.layout`, utilisez le nom de classe du layout :
 
 ```
 RichTextWidgetClass MyRichLabel {
@@ -117,19 +117,19 @@ RichTextWidgetClass MyRichLabel {
 }
 ```
 
-#### Setting rich content with controller icons
+#### Définir du contenu riche avec des icônes de manette
 
-The vanilla `InputUtils` class provides a helper that generates the `<image>` tag string for any input action:
+La classe vanilla `InputUtils` fournit un helper qui génère la chaîne de balise `<image>` pour n'importe quelle action de saisie :
 
 ```c
 // From scripts/3_game/tools/inpututils.c
 string buttonIcon = InputUtils.GetRichtextButtonIconFromInputAction(
-    "UAUISelect",              // input action name
-    "#menu_select",            // localized label
+    "UAUISelect",              // nom de l'action de saisie
+    "#menu_select",            // libellé localisé
     EUAINPUT_DEVICE_CONTROLLER,
-    InputUtils.ICON_SCALE_TOOLBAR  // 1.81 scale
+    InputUtils.ICON_SCALE_TOOLBAR  // échelle 1.81
 );
-// Result: '<image set="xbox_buttons" name="A" scale="1.81" /> Select'
+// Résultat : '<image set="xbox_buttons" name="A" scale="1.81" /> Select'
 
 RichTextWidget toolbar = RichTextWidget.Cast(
     layoutRoot.FindAnyWidget("ToolbarText")
@@ -137,48 +137,48 @@ RichTextWidget toolbar = RichTextWidget.Cast(
 toolbar.SetText(buttonIcon);
 ```
 
-The two predefined scale constants:
+Les deux constantes d'échelle prédéfinies :
 - `InputUtils.ICON_SCALE_NORMAL` = 1.21
 - `InputUtils.ICON_SCALE_TOOLBAR` = 1.81
 
-#### Scrollable rich text content
+#### Contenu de texte riche défilant
 
-`RichTextWidget` exposes content height and offset methods for paging or scrolling:
+`RichTextWidget` expose des méthodes de hauteur de contenu et d'offset pour la pagination ou le défilement :
 
 ```c
 // From scripts/5_mission/gui/bookmenu.c
-HtmlWidget m_content;  // HtmlWidget extends RichTextWidget
+HtmlWidget m_content;  // HtmlWidget étend RichTextWidget
 m_content.LoadFile(book.ConfigGetString("file"));
 
 float totalHeight = m_content.GetContentHeight();
-// Page through content:
+// Naviguer dans le contenu :
 m_content.SetContentOffset(pageOffset, true);  // snapToLine = true
 ```
 
-#### Text elision
+#### Élision de texte
 
-When text overflows a fixed-width area, you can elide (truncate with an indicator):
+Quand le texte déborde d'une zone de largeur fixe, vous pouvez élider (tronquer avec un indicateur) :
 
 ```c
-// Truncate line 0 to maxWidth pixels, appending "..."
+// Tronquer la ligne 0 à maxWidth pixels, en ajoutant "..."
 richText.ElideText(0, maxWidth, "...");
 ```
 
-#### Line visibility control
+#### Contrôle de visibilité des lignes
 
-Show or hide specific line ranges within the content:
+Afficher ou masquer des plages de lignes spécifiques dans le contenu :
 
 ```c
 int lineCount = richText.GetNumLines();
-// Hide all lines after the 5th
+// Masquer toutes les lignes après la 5ème
 richText.SetLinesVisibility(5, lineCount - 1, false);
-// Get the pixel width of a specific line
+// Obtenir la largeur en pixels d'une ligne spécifique
 float width = richText.GetLineWidth(2);
 ```
 
-### HtmlWidget -- Extended RichTextWidget
+### HtmlWidget -- RichTextWidget étendu
 
-`HtmlWidget` extends `RichTextWidget` with a single additional method:
+`HtmlWidget` étend `RichTextWidget` avec une seule méthode supplémentaire :
 
 ```
 class HtmlWidget extends RichTextWidget
@@ -187,7 +187,7 @@ class HtmlWidget extends RichTextWidget
 };
 ```
 
-Used by le vanilla book system to load `.html` text files:
+Utilisé par le système de livres vanilla pour charger des fichiers texte `.html` :
 
 ```c
 // From scripts/5_mission/gui/bookmenu.c
@@ -196,25 +196,25 @@ Class.CastTo(content, layoutRoot.FindAnyWidget("HtmlWidget"));
 content.LoadFile(book.ConfigGetString("file"));
 ```
 
-### RichTextWidget vs TextWidget -- Key Differences
+### RichTextWidget vs TextWidget -- différences clés
 
-| Feature | TextWidget | RichTextWidget |
-|---------|-----------|---------------|
-| Inline `<image>` tags | No | Yes |
-| `<h>` heading tags | No | Yes |
-| `</br>` line breaks | No (use `\n`) | Yes |
-| Content scrolling | No | Yes (via offset) |
-| Line visibility | No | Yes |
-| Text elision | No | Yes |
-| Performance | Faster | Slower (tag parsing) |
+| Fonctionnalité | TextWidget | RichTextWidget |
+|---------------|-----------|---------------|
+| Balises `<image>` en ligne | Non | Oui |
+| Balises de titre `<h>` | Non | Oui |
+| Sauts de ligne `</br>` | Non (utiliser `\n`) | Oui |
+| Défilement du contenu | Non | Oui (via offset) |
+| Visibilité des lignes | Non | Oui |
+| Élision de texte | Non | Oui |
+| Performance | Plus rapide | Plus lent (parsing des balises) |
 
-Use `TextWidget` for simple labels. Use `RichTextWidget` only when you need inline images, formatted headings, or content scrolling.
+Utilisez `TextWidget` pour les libellés simples. Utilisez `RichTextWidget` uniquement quand vous avez besoin d'images en ligne, de titres formatés ou de défilement de contenu.
 
 ---
 
-## CanvasWidget Drawing
+## Dessin avec CanvasWidget
 
-`CanvasWidget` provides immediate-mode 2D drawing on screen. It has exactly two native methods:
+`CanvasWidget` fournit du dessin 2D en mode immédiat à l'écran. Il possède exactement deux méthodes natives :
 
 ```
 // From scripts/1_core/proto/enwidgets.c
@@ -226,17 +226,17 @@ class CanvasWidget extends Widget
 };
 ```
 
-That is the entire API. All complex shapes -- rectangles, circles, grids -- must be built from line segments.
+C'est l'intégralité de l'API. Toutes les formes complexes -- rectangles, cercles, grilles -- doivent être construites à partir de segments de ligne.
 
-### Coordinate System
+### Système de coordonnées
 
-`CanvasWidget` uses **screen-space pixel coordinates** relative to the canvas widget's own bounds. The origin `(0, 0)` is the top-left corner of the canvas widget.
+`CanvasWidget` utilise des **coordonnées en pixels dans l'espace écran** relatives aux propres limites du widget canvas. L'origine `(0, 0)` est le coin supérieur gauche du widget canvas.
 
-If the canvas fills the full screen (position 0,0 size 1,1 in relative mode), then coordinates map directly to screen pixels after converting from the widget's internal size.
+Si le canvas remplit l'écran entier (position 0,0 taille 1,1 en mode relatif), alors les coordonnées correspondent directement aux pixels de l'écran après conversion depuis la taille interne du widget.
 
-### Layout Setup
+### Configuration du layout
 
-In a `.layout` file:
+Dans un fichier `.layout` :
 
 ```
 CanvasWidgetClass MyCanvas {
@@ -250,11 +250,11 @@ CanvasWidgetClass MyCanvas {
 }
 ```
 
-Key flags:
-- `ignorepointer 1` -- the canvas does not block mouse input to widgets beneath it
-- The size `1 1` in relative mode means "fill the parent"
+Flags clés :
+- `ignorepointer 1` -- le canvas ne bloque pas les entrées souris vers les widgets en dessous
+- La taille `1 1` en mode relatif signifie « remplir le parent »
 
-In script:
+En script :
 
 ```c
 CanvasWidget m_Canvas;
@@ -263,7 +263,7 @@ m_Canvas = CanvasWidget.Cast(
 );
 ```
 
-Or create from a layout file:
+Ou créer depuis un fichier layout :
 
 ```c
 // From COT: JM/COT/GUI/layouts/esp_canvas.layout
@@ -272,36 +272,36 @@ m_Canvas = CanvasWidget.Cast(
 );
 ```
 
-### Drawing Primitives
+### Primitives de dessin
 
-#### Lines
+#### Lignes
 
 ```c
-// Draw a red horizontal line
+// Dessiner une ligne horizontale rouge
 m_Canvas.DrawLine(10, 50, 200, 50, 2, ARGB(255, 255, 0, 0));
 
-// Draw a white diagonal line, 3 pixels wide
+// Dessiner une ligne diagonale blanche, 3 pixels de large
 m_Canvas.DrawLine(0, 0, 100, 100, 3, COLOR_WHITE);
 ```
 
-The `color` parameter uses ARGB format: `ARGB(alpha, red, green, blue)`.
+Le paramètre `color` utilise le format ARGB : `ARGB(alpha, rouge, vert, bleu)`.
 
-#### Rectangles (from lines)
+#### Rectangles (à partir de lignes)
 
 ```c
 void DrawRectangle(CanvasWidget canvas, float x, float y,
                    float w, float h, float lineWidth, int color)
 {
-    canvas.DrawLine(x, y, x + w, y, lineWidth, color);         // top
-    canvas.DrawLine(x + w, y, x + w, y + h, lineWidth, color); // right
-    canvas.DrawLine(x + w, y + h, x, y + h, lineWidth, color); // bottom
-    canvas.DrawLine(x, y + h, x, y, lineWidth, color);         // left
+    canvas.DrawLine(x, y, x + w, y, lineWidth, color);         // haut
+    canvas.DrawLine(x + w, y, x + w, y + h, lineWidth, color); // droite
+    canvas.DrawLine(x + w, y + h, x, y + h, lineWidth, color); // bas
+    canvas.DrawLine(x, y + h, x, y, lineWidth, color);         // gauche
 }
 ```
 
-#### Circles (from line segments)
+#### Cercles (à partir de segments de ligne)
 
-COT implements this pattern in `JMESPCanvas`:
+COT implémente ce patron dans `JMESPCanvas` :
 
 ```c
 // From DayZ-CommunityOnlineTools/.../JMESPModule.c
@@ -325,21 +325,21 @@ void DrawCircle(float cx, float cy, float radius,
 }
 ```
 
-More segments produce a smoother circle. 36 segments is a common default.
+Plus de segments produisent un cercle plus lisse. 36 segments est une valeur par défaut courante.
 
-### Per-Frame Redrawing Pattern
+### Patron de redessin par frame
 
-`CanvasWidget` is immediate-mode: you must `Clear()` and redraw every frame. This is typically done in an `Update()` or `OnUpdate()` callback.
+`CanvasWidget` est en mode immédiat : vous devez appeler `Clear()` et redessiner à chaque frame. Cela se fait typiquement dans un callback `Update()` ou `OnUpdate()`.
 
-Vanilla example from `scripts/5_mission/gui/mapmenu.c`:
+Exemple vanilla depuis `scripts/5_mission/gui/mapmenu.c` :
 
 ```c
 override void Update(float timeslice)
 {
     super.Update(timeslice);
-    m_ToolsScaleCellSizeCanvas.Clear();  // clear previous frame
+    m_ToolsScaleCellSizeCanvas.Clear();  // effacer la frame précédente
 
-    // ... draw scale ruler segments ...
+    // ... dessiner les segments de la règle d'échelle ...
     RenderScaleRuler();
 }
 
@@ -366,18 +366,18 @@ protected void RenderScaleRuler()
 }
 ```
 
-### ESP Overlay Pattern (from COT)
+### Patron de superposition ESP (de COT)
 
-COT (Community Online Tools) uses `CanvasWidget` as a full-screen overlay to draw skeleton wireframes on players and objects. This is one of the most sophisticated canvas usage patterns in any DayZ mod.
+COT (Community Online Tools) utilise `CanvasWidget` comme une superposition plein écran pour dessiner des filaires de squelettes sur les joueurs et les objets. C'est l'un des patrons d'utilisation de canvas les plus sophistiqués de tous les mods DayZ.
 
-**Architecture:**
+**Architecture :**
 
-1. A full-screen `CanvasWidget` is created from a layout file
-2. Every frame, `Clear()` is called
-3. World-space positions are converted to screen coordinates
-4. Lines are drawn between bone positions to render skeletons
+1. Un `CanvasWidget` plein écran est créé depuis un fichier layout
+2. À chaque frame, `Clear()` est appelé
+3. Les positions en espace monde sont converties en coordonnées écran
+4. Des lignes sont dessinées entre les positions des os pour rendre les squelettes
 
-**World-to-screen conversion** (from COT's `JMESPCanvas`):
+**Conversion monde-vers-écran** (depuis le `JMESPCanvas` de COT) :
 
 ```c
 // From DayZ-CommunityOnlineTools/.../JMESPModule.c
@@ -386,15 +386,15 @@ vector TransformToScreenPos(vector worldPos, out bool isInBounds)
     float parentW, parentH;
     vector screenPos;
 
-    // Get relative screen position (0..1 range)
+    // Obtenir la position écran relative (plage 0..1)
     screenPos = g_Game.GetScreenPosRelative(worldPos);
 
-    // Check if the position is visible on screen
+    // Vérifier si la position est visible à l'écran
     isInBounds = screenPos[0] >= 0 && screenPos[0] <= 1
               && screenPos[1] >= 0 && screenPos[1] <= 1
               && screenPos[2] >= 0;
 
-    // Convert to canvas pixel coordinates
+    // Convertir en coordonnées pixels du canvas
     m_Canvas.GetScreenSize(parentW, parentH);
     screenPos[0] = screenPos[0] * parentW;
     screenPos[1] = screenPos[1] * parentH;
@@ -403,7 +403,7 @@ vector TransformToScreenPos(vector worldPos, out bool isInBounds)
 }
 ```
 
-**Drawing a line from world position A to world position B:**
+**Dessiner une ligne de la position monde A à la position monde B :**
 
 ```c
 void DrawWorldLine(vector from, vector to, int width, int color)
@@ -419,40 +419,40 @@ void DrawWorldLine(vector from, vector to, int width, int color)
 }
 ```
 
-**Drawing a player skeleton:**
+**Dessiner un squelette de joueur :**
 
 ```c
-// Simplified from COT's JMESPSkeleton.Draw()
+// Simplifié depuis JMESPSkeleton.Draw() de COT
 static void DrawSkeleton(Human human, CanvasWidget canvas)
 {
-    // Define limb connections (bone pairs)
-    // neck->spine3, spine3->pelvis, neck->leftarm, etc.
+    // Définir les connexions de membres (paires d'os)
+    // cou->spine3, spine3->bassin, cou->brasgauche, etc.
 
     int color = COLOR_WHITE;
     switch (human.GetHealthLevel())
     {
         case GameConstants.STATE_DAMAGED:
-            color = 0xFFDCDC00;  // yellow
+            color = 0xFFDCDC00;  // jaune
             break;
         case GameConstants.STATE_BADLY_DAMAGED:
-            color = 0xFFDC0000;  // red
+            color = 0xFFDC0000;  // rouge
             break;
     }
 
-    // Draw each limb as a line between two bone positions
+    // Dessiner chaque membre comme une ligne entre deux positions d'os
     vector bone1Pos = human.GetBonePositionWS(
         human.GetBoneIndexByName("neck")
     );
     vector bone2Pos = human.GetBonePositionWS(
         human.GetBoneIndexByName("spine3")
     );
-    // ... convert to screen coords, then DrawLine ...
+    // ... convertir en coordonnées écran, puis DrawLine ...
 }
 ```
 
-### Vanilla Debug Canvas
+### Canvas de débogage vanilla
 
-Le moteur provides a built-in debug canvas through the `Debug` class:
+Le moteur fournit un canvas de débogage intégré via la classe `Debug` :
 
 ```c
 // From scripts/3_game/tools/debug.c
@@ -488,21 +488,21 @@ static void ClearCanvas()
 }
 ```
 
-### Performance Considerations
+### Considérations de performance
 
-- **Clear and redraw every frame.** `CanvasWidget` does not retain state between frames in most use cases where the view changes (camera movement, etc.). Call `Clear()` at the start of each update.
-- **Minimize line count.** Each `DrawLine()` call has overhead. For complex shapes like circles, use fewer segments (12-18) for distant objects, more (36) for close ones.
-- **Check screen bounds first.** Convert world positions to screen coordinates and skip objects that are off-screen or behind the camera (`screenPos[2] < 0`).
-- **Use `ignorepointer 1`.** Always set this flag on canvas overlays so they do not intercept mouse events.
-- **One canvas is enough.** Use a single full-screen canvas for all overlay drawing rather than creating multiple canvas widgets.
+- **Effacer et redessiner à chaque frame.** `CanvasWidget` ne conserve pas l'état entre les frames dans la plupart des cas d'utilisation où la vue change (mouvement de caméra, etc.). Appelez `Clear()` au début de chaque mise à jour.
+- **Minimiser le nombre de lignes.** Chaque appel `DrawLine()` a un surcoût. Pour les formes complexes comme les cercles, utilisez moins de segments (12-18) pour les objets distants, plus (36) pour les proches.
+- **Vérifier les limites d'écran d'abord.** Convertissez les positions monde en coordonnées écran et ignorez les objets hors écran ou derrière la caméra (`screenPos[2] < 0`).
+- **Utilisez `ignorepointer 1`.** Toujours définir ce flag sur les superpositions canvas pour qu'elles n'interceptent pas les événements souris.
+- **Un seul canvas suffit.** Utilisez un seul canvas plein écran pour tout le dessin de superposition plutôt que de créer plusieurs widgets canvas.
 
 ---
 
 ## MapWidget
 
-`MapWidget` displays the DayZ terrain map and provides methods for placing markers, coordinate conversion, and zoom control.
+`MapWidget` affiche la carte de terrain DayZ et fournit des méthodes pour placer des marqueurs, convertir des coordonnées et contrôler le zoom.
 
-### Class Definition
+### Définition de classe
 
 ```
 // From scripts/3_game/gameplay.c
@@ -522,68 +522,68 @@ class MapWidget: Widget
 };
 ```
 
-### Getting the Map Widget
+### Obtenir le widget de carte
 
-In a `.layout` file, place the map using the `MapWidgetClass` type. In script, obtain the reference by casting:
+Dans un fichier `.layout`, placez la carte en utilisant le type `MapWidgetClass`. En script, obtenez la référence par cast :
 
 ```c
 MapWidget m_Map;
 m_Map = MapWidget.Cast(layoutRoot.FindAnyWidget("Map"));
 ```
 
-### Map Coordinates vs World Coordinates
+### Coordonnées de carte vs coordonnées monde
 
-DayZ uses two coordinate spaces:
+DayZ utilise deux espaces de coordonnées :
 
-- **World coordinates**: 3D vectors in meters. `x` = east/west, `y` = altitude, `z` = north/south. Chernarus ranges roughly 0-15360 on x and z axes.
-- **Screen coordinates**: Pixel positions on the map widget. These change as the user pans and zooms.
+- **Coordonnées monde** : vecteurs 3D en mètres. `x` = est/ouest, `y` = altitude, `z` = nord/sud. Chernarus s'étend approximativement de 0 à 15360 sur les axes x et z.
+- **Coordonnées écran** : positions en pixels sur le widget de carte. Elles changent quand l'utilisateur déplace et zoome.
 
-The `MapWidget` provides conversion between these:
+Le `MapWidget` fournit la conversion entre les deux :
 
 ```c
-// World position to screen pixel on the map
+// Position monde vers pixel d'écran sur la carte
 vector screenPos = m_Map.MapToScreen(worldPosition);
 
-// Screen pixel on the map to world position
+// Pixel d'écran sur la carte vers position monde
 vector worldPos = m_Map.ScreenToMap(Vector(screenX, screenY, 0));
 ```
 
-### Adding Markers
+### Ajouter des marqueurs
 
-`AddUserMark()` places a marker at a world position with a label, color, and icon texture:
+`AddUserMark()` place un marqueur à une position monde avec un libellé, une couleur et une icône de texture :
 
 ```c
 m_Map.AddUserMark(
-    playerPos,                                   // vector: world position
-    "You",                                       // string: label text
-    COLOR_RED,                                   // int: ARGB color
-    "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"  // string: icon texture
+    playerPos,                                   // vector : position monde
+    "You",                                       // string : texte du libellé
+    COLOR_RED,                                   // int : couleur ARGB
+    "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"  // string : texture de l'icône
 );
 ```
 
-Vanilla example from `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
+Exemple vanilla depuis `scripts/5_mission/gui/scriptconsolegeneraltab.c` :
 
 ```c
-// Mark player position
+// Marquer la position du joueur
 m_DebugMapWidget.AddUserMark(
     playerPos, "You", COLOR_RED,
     "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
 );
 
-// Mark other players
+// Marquer les autres joueurs
 m_DebugMapWidget.AddUserMark(
     rpd.m_Pos, rpd.m_Name + " " + dist + "m", COLOR_BLUE,
     "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
 );
 
-// Mark camera position
+// Marquer la position de la caméra
 m_DebugMapWidget.AddUserMark(
     cameraPos, "Camera", COLOR_GREEN,
     "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
 );
 ```
 
-Another vanilla example from `scripts/5_mission/gui/mapmenu.c` (commented out but shows the API):
+Autre exemple vanilla depuis `scripts/5_mission/gui/mapmenu.c` (commenté mais montrant l'API) :
 
 ```c
 m.AddUserMark("2681 4.7 1751", "Label1", ARGB(255,255,0,0),
@@ -594,25 +594,25 @@ m.AddUserMark("2670 4.7 1651", "Label3", ARGB(255,0,0,255),
     "\\dz\\gear\\navigation\\data\\map_busstop_ca.paa");
 ```
 
-### Clearing Markers
+### Effacer les marqueurs
 
-`ClearUserMarks()` removes all user-placed markers at once. There is no method to remove a single marker by reference. The standard pattern is to clear all markers and re-add the ones you want each frame.
+`ClearUserMarks()` supprime tous les marqueurs placés par l'utilisateur d'un coup. Il n'y a pas de méthode pour supprimer un seul marqueur par référence. Le patron standard est d'effacer tous les marqueurs et de ré-ajouter ceux que vous voulez à chaque frame.
 
 ```c
 // From scripts/5_mission/gui/scriptconsolesoundstab.c
 override void Update(float timeslice)
 {
     m_DebugMapWidget.ClearUserMarks();
-    // Re-add all current markers
+    // Ré-ajouter tous les marqueurs actuels
     m_DebugMapWidget.AddUserMark(playerPos, "You", COLOR_RED, iconPath);
 }
 ```
 
-### Available Map Marker Icons
+### Icônes de marqueurs de carte disponibles
 
-The vanilla game registers these marker icon textures in `scripts/5_mission/gui/mapmarkersinfo.c`:
+Le jeu vanilla enregistre ces textures d'icônes de marqueurs dans `scripts/5_mission/gui/mapmarkersinfo.c` :
 
-| Enum Constant | Texture Path |
+| Constante d'enum | Chemin de texture |
 |---|---|
 | `MARKERTYPE_MAP_BORDER_CROSS` | `\dz\gear\navigation\data\map_border_cross_ca.paa` |
 | `MARKERTYPE_MAP_BROADLEAF` | `\dz\gear\navigation\data\map_broadleaf_ca.paa` |
@@ -632,28 +632,28 @@ The vanilla game registers these marker icon textures in `scripts/5_mission/gui/
 | `MARKERTYPE_MAP_VIEWPOINT` | `\dz\gear\navigation\data\map_viewpoint_ca.paa` |
 | `MARKERTYPE_MAP_WATERPUMP` | `\dz\gear\navigation\data\map_waterpump_ca.paa` |
 
-Access these by enum via `MapMarkerTypes.GetMarkerTypeFromID(eMapMarkerTypes.MARKERTYPE_MAP_CAMP)`.
+Accédez-y par enum via `MapMarkerTypes.GetMarkerTypeFromID(eMapMarkerTypes.MARKERTYPE_MAP_CAMP)`.
 
-### Zoom and Pan Control
+### Contrôle du zoom et du déplacement
 
 ```c
-// Set the map center to a world position
+// Centrer la carte sur une position monde
 m_Map.SetMapPos(playerWorldPos);
 
-// Get/set zoom level (0.0 = fully zoomed out, 1.0 = fully zoomed in)
+// Obtenir/définir le niveau de zoom (0.0 = entièrement dézoomé, 1.0 = entièrement zoomé)
 float currentScale = m_Map.GetScale();
-m_Map.SetScale(0.33);  // moderate zoom level
+m_Map.SetScale(0.33);  // niveau de zoom modéré
 
-// Get map info
-float contourInterval = m_Map.GetContourInterval();  // meters between contour lines
-float cellSize = m_Map.GetCellSize(legendWidth);      // cell size for scale ruler
+// Obtenir les infos de la carte
+float contourInterval = m_Map.GetContourInterval();  // mètres entre les courbes de niveau
+float cellSize = m_Map.GetCellSize(legendWidth);      // taille de cellule pour la règle d'échelle
 ```
 
-### Map Click Handling
+### Gestion des clics sur la carte
 
-Handle mouse clicks on the map via the `OnDoubleClick` or `OnMouseButtonDown` callbacks on a `ScriptedWidgetEventHandler` or `UIScriptedMenu`. Convert the click position to world coordinates using `ScreenToMap()`.
+Gérez les clics souris sur la carte via les callbacks `OnDoubleClick` ou `OnMouseButtonDown` sur un `ScriptedWidgetEventHandler` ou `UIScriptedMenu`. Convertissez la position du clic en coordonnées monde en utilisant `ScreenToMap()`.
 
-Vanilla example from `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
+Exemple vanilla depuis `scripts/5_mission/gui/scriptconsolegeneraltab.c` :
 
 ```c
 override bool OnDoubleClick(Widget w, int x, int y, int button)
@@ -662,21 +662,21 @@ override bool OnDoubleClick(Widget w, int x, int y, int button)
 
     if (w == m_DebugMapWidget)
     {
-        // Convert screen click to world coordinates
+        // Convertir le clic écran en coordonnées monde
         vector worldPos = m_DebugMapWidget.ScreenToMap(Vector(x, y, 0));
 
-        // Get terrain height at that position
+        // Obtenir la hauteur du terrain à cette position
         float surfaceY = g_Game.SurfaceY(worldPos[0], worldPos[2]);
         float roadY = g_Game.SurfaceRoadY(worldPos[0], worldPos[2]);
         worldPos[1] = Math.Max(surfaceY, roadY);
 
-        // Use the world position (e.g., teleport player)
+        // Utiliser la position monde (ex. téléporter le joueur)
     }
     return false;
 }
 ```
 
-From `scripts/5_mission/gui/maphandler.c`:
+Depuis `scripts/5_mission/gui/maphandler.c` :
 
 ```c
 class MapHandler : ScriptedWidgetEventHandler
@@ -684,30 +684,30 @@ class MapHandler : ScriptedWidgetEventHandler
     override bool OnDoubleClick(Widget w, int x, int y, int button)
     {
         vector worldPos = MapWidget.Cast(w).ScreenToMap(Vector(x, y, 0));
-        // Place a marker, teleport, etc.
+        // Placer un marqueur, téléporter, etc.
         return true;
     }
 }
 ```
 
-### Expansion Map Marker System
+### Système de marqueurs de carte Expansion
 
-The Expansion mod builds a full marker system on top of le vanilla `MapWidget`. Key patterns:
+Le mod Expansion construit un système de marqueurs complet par-dessus le `MapWidget` vanilla. Patrons clés :
 
-- Maintains separate dictionaries for personal, server, party, and player markers
-- Limits per-frame marker updates (`m_MaxMarkerUpdatesPerFrame = 3`) for performance
-- Draws scale ruler lines using a `CanvasWidget` alongside the map
-- Uses custom marker widget overlays positioned via `MapToScreen()` for richer marker visuals than `AddUserMark()` supports
+- Maintient des dictionnaires séparés pour les marqueurs personnels, serveur, groupe et joueur
+- Limite les mises à jour de marqueurs par frame (`m_MaxMarkerUpdatesPerFrame = 3`) pour la performance
+- Dessine des lignes de règle d'échelle en utilisant un `CanvasWidget` à côté de la carte
+- Utilise des superpositions de widgets de marqueurs personnalisés positionnés via `MapToScreen()` pour des visuels de marqueurs plus riches que ce que `AddUserMark()` supporte
 
-This approach demonstrates that for complex marker UIs (icons with tooltips, editable labels, colored categories), you should overlay custom widgets positioned via `MapToScreen()` rather than relying solely on `AddUserMark()`.
+Cette approche démontre que pour des interfaces de marqueurs complexes (icônes avec infobulles, libellés éditables, catégories colorées), vous devriez superposer des widgets personnalisés positionnés via `MapToScreen()` plutôt que de vous reposer uniquement sur `AddUserMark()`.
 
 ---
 
 ## ItemPreviewWidget
 
-`ItemPreviewWidget` renders a 3D preview of any `EntityAI` (item, weapon, vehicle) inside a UI panel.
+`ItemPreviewWidget` rend une prévisualisation 3D de n'importe quel `EntityAI` (item, arme, véhicule) dans un panneau UI.
 
-### Class Definition
+### Définition de classe
 
 ```
 // From scripts/3_game/gameplay.c
@@ -726,19 +726,19 @@ class ItemPreviewWidget: Widget
 };
 ```
 
-### View Indices
+### Indices de vue
 
-The `viewIndex` parameter selects which bounding box and camera angle to use. These are defined per item in the item's config:
+Le paramètre `viewIndex` sélectionne quelle boîte englobante et quel angle de caméra utiliser. Ceux-ci sont définis par item dans la config de l'item :
 
-- View 0: default (`boundingbox_min` + `boundingbox_max` + `invView`)
-- View 1: alternate (`boundingbox_min2` + `boundingbox_max2` + `invView2`)
-- View 2+: additional views if defined
+- Vue 0 : par défaut (`boundingbox_min` + `boundingbox_max` + `invView`)
+- Vue 1 : alternative (`boundingbox_min2` + `boundingbox_max2` + `invView2`)
+- Vue 2+ : vues additionnelles si définies
 
-Use `item.GetViewIndex()` to get the item's preferred view.
+Utilisez `item.GetViewIndex()` pour obtenir la vue préférée de l'item.
 
-### Usage Pattern -- Item Inspection
+### Patron d'utilisation -- inspection d'item
 
-From `scripts/5_mission/gui/inspectmenunew.c`:
+Depuis `scripts/5_mission/gui/inspectmenunew.c` :
 
 ```c
 class InspectMenuNew extends UIScriptedMenu
@@ -761,9 +761,9 @@ class InspectMenuNew extends UIScriptedMenu
 }
 ```
 
-### Rotation Control (Mouse Drag)
+### Contrôle de rotation (glisser souris)
 
-The standard pattern for interactive rotation:
+Le patron standard pour la rotation interactive :
 
 ```c
 private int m_RotationX;
@@ -784,8 +784,8 @@ override bool OnMouseButtonDown(Widget w, int x, int y, int button)
 void UpdateRotation(int mouse_x, int mouse_y, bool is_dragging)
 {
     vector o = m_Orientation;
-    o[0] = o[0] + (m_RotationY - mouse_y);  // pitch
-    o[1] = o[1] - (m_RotationX - mouse_x);  // yaw
+    o[0] = o[0] + (m_RotationY - mouse_y);  // tangage
+    o[1] = o[1] - (m_RotationX - mouse_x);  // lacet
     m_item_widget.SetModelOrientation(o);
 
     if (!is_dragging)
@@ -793,7 +793,7 @@ void UpdateRotation(int mouse_x, int mouse_y, bool is_dragging)
 }
 ```
 
-### Zoom Control (Mouse Wheel)
+### Contrôle du zoom (molette souris)
 
 ```c
 override bool OnMouseWheel(Widget w, int x, int y, int wheel)
@@ -817,9 +817,9 @@ override bool OnMouseWheel(Widget w, int x, int y, int wheel)
 
 ## PlayerPreviewWidget
 
-`PlayerPreviewWidget` renders a full 3D player character model in the UI, complete with equipped items and animations.
+`PlayerPreviewWidget` rend un modèle 3D complet de personnage joueur dans l'interface, avec les items équipés et les animations.
 
-### Class Definition
+### Définition de classe
 
 ```
 // From scripts/3_game/gameplay.c
@@ -836,9 +836,9 @@ class PlayerPreviewWidget: Widget
 };
 ```
 
-### Usage Pattern -- Inventory Character Preview
+### Patron d'utilisation -- prévisualisation du personnage dans l'inventaire
 
-From `scripts/5_mission/gui/inventorynew/playerpreview.c`:
+Depuis `scripts/5_mission/gui/inventorynew/playerpreview.c` :
 
 ```c
 class PlayerPreview: LayoutHolder
@@ -865,19 +865,19 @@ class PlayerPreview: LayoutHolder
 }
 ```
 
-### Keeping Equipment Updated
+### Garder l'équipement à jour
 
-The `UpdateInterval()` method keeps the preview in sync with the actual player's equipment:
+La méthode `UpdateInterval()` maintient la prévisualisation synchronisée avec l'équipement réel du joueur :
 
 ```c
 override void UpdateInterval()
 {
-    // Update held item
+    // Mettre à jour l'item tenu
     m_CharacterPanelWidget.UpdateItemInHands(
         g_Game.GetPlayer().GetEntityInHands()
     );
 
-    // Access the dummy player for animation sync
+    // Accéder au joueur factice pour la synchronisation des animations
     DayZPlayer dummyPlayer = m_CharacterPanelWidget.GetDummyPlayer();
     if (dummyPlayer)
     {
@@ -894,17 +894,17 @@ override void UpdateInterval()
 }
 ```
 
-### Rotation and Zoom
+### Rotation et zoom
 
-The rotation and zoom patterns are identical to `ItemPreviewWidget` -- use `SetModelOrientation()` with mouse drag, and `SetSize()` with mouse wheel. See the previous section for the full code.
+Les patrons de rotation et de zoom sont identiques à ceux de `ItemPreviewWidget` -- utilisez `SetModelOrientation()` avec le glisser souris, et `SetSize()` avec la molette souris. Voir la section précédente pour le code complet.
 
 ---
 
 ## VideoWidget
 
-`VideoWidget` plays video files in the UI. It supports playback control, looping, seeking, state queries, subtitles, and event callbacks.
+`VideoWidget` lit des fichiers vidéo dans l'interface. Il supporte le contrôle de lecture, la boucle, la recherche, les requêtes d'état, les sous-titres et les callbacks d'événements.
 
-### Class Definition
+### Définition de classe
 
 ```
 // From scripts/1_core/proto/enwidgets.c
@@ -936,9 +936,9 @@ class VideoWidget extends Widget
 };
 ```
 
-### Usage Pattern -- Menu Video
+### Patron d'utilisation -- vidéo de menu
 
-From `scripts/5_mission/gui/newui/mainmenu/mainmenuvideo.c`:
+Depuis `scripts/5_mission/gui/newui/mainmenu/mainmenuvideo.c` :
 
 ```c
 protected VideoWidget m_Video;
@@ -953,7 +953,7 @@ override Widget Init()
     m_Video.Load("video\\DayZ_onboarding_MASTER.mp4");
     m_Video.Play();
 
-    // Register callback for when video ends
+    // Enregistrer un callback pour la fin de la vidéo
     m_Video.SetCallback(VideoCallback.ON_END, StopVideo);
 
     return layoutRoot;
@@ -961,31 +961,31 @@ override Widget Init()
 
 void StopVideo()
 {
-    // Handle video completion
+    // Gérer la fin de la vidéo
     Close();
 }
 ```
 
-### Subtitles
+### Sous-titres
 
-Subtitles require a font assigned to the `VideoWidget` in the layout. Subtitle files use the naming convention `videoName_Language.srt`, with the English version named `videoName.srt` (no language suffix).
+Les sous-titres nécessitent une police assignée au `VideoWidget` dans le layout. Les fichiers de sous-titres utilisent la convention de nommage `nomVideo_Langue.srt`, la version anglaise étant nommée `nomVideo.srt` (sans suffixe de langue).
 
 ```c
-// Subtitles are enabled by default
-m_Video.DisableSubtitles(false);  // explicitly enable
+// Les sous-titres sont activés par défaut
+m_Video.DisableSubtitles(false);  // activer explicitement
 ```
 
-### Return Values
+### Valeurs de retour
 
-The `Load()`, `Play()`, `Pause()`, and `Stop()` methods return `bool`, but this return value is **deprecated**. Use `VideoCallback.ON_ERROR` to detect failures instead.
+Les méthodes `Load()`, `Play()`, `Pause()` et `Stop()` retournent un `bool`, mais cette valeur de retour est **dépréciée**. Utilisez `VideoCallback.ON_ERROR` pour détecter les échecs à la place.
 
 ---
 
-## RenderTargetWidget and RTTextureWidget
+## RenderTargetWidget et RTTextureWidget
 
-These widgets enable rendering a 3D world view into a UI widget.
+Ces widgets permettent de rendre une vue 3D du monde dans un widget UI.
 
-### Class Definitions
+### Définitions de classes
 
 ```
 // From scripts/1_core/proto/enwidgets.c
@@ -997,11 +997,11 @@ class RenderTargetWidget extends Widget
 
 class RTTextureWidget extends Widget
 {
-    // No additional methods -- serves as a texture target for children
+    // Pas de méthodes supplémentaires -- sert de cible de texture pour les enfants
 };
 ```
 
-The global function `SetWidgetWorld` binds a render target to a world and camera:
+La fonction globale `SetWidgetWorld` lie une cible de rendu à un monde et une caméra :
 
 ```
 proto native void SetWidgetWorld(
@@ -1013,12 +1013,12 @@ proto native void SetWidgetWorld(
 
 ### RenderTargetWidget
 
-Renders a camera view from a `BaseWorld` into the widget area. Used for security cameras, rear-view mirrors, or picture-in-picture displays.
+Rend une vue de caméra depuis un `BaseWorld` dans la zone du widget. Utilisé pour les caméras de sécurité, les rétroviseurs ou les affichages image-dans-l'image.
 
-From `scripts/2_gamelib/entities/rendertarget.c`:
+Depuis `scripts/2_gamelib/entities/rendertarget.c` :
 
 ```c
-// Create render target programmatically
+// Créer une cible de rendu programmatiquement
 RenderTargetWidget m_RenderWidget;
 
 int screenW, screenH;
@@ -1038,23 +1038,23 @@ Class.CastTo(m_RenderWidget, g_Game.GetWorkspace().CreateWidget(
     sortOrder
 ));
 
-// Bind to the game world with camera index 0
+// Lier au monde du jeu avec l'index de caméra 0
 SetWidgetWorld(m_RenderWidget, g_Game.GetWorldEntity(), 0);
 ```
 
-**Refresh control:**
+**Contrôle du rafraîchissement :**
 
 ```c
-// Render every 2nd frame (period=2, offset=0)
+// Rendre toutes les 2 frames (period=2, offset=0)
 m_RenderWidget.SetRefresh(2, 0);
 
-// Render at half resolution for performance
+// Rendre à la moitié de la résolution pour la performance
 m_RenderWidget.SetResolutionScale(0.5, 0.5);
 ```
 
 ### RTTextureWidget
 
-`RTTextureWidget` has no script-side methods beyond those inherited from `Widget`. It serves as a render target texture that child widgets can be rendered into. An `ImageWidget` can reference an `RTTextureWidget` as its texture source via `SetImageTexture()`:
+`RTTextureWidget` n'a pas de méthodes côté script au-delà de celles héritées de `Widget`. Il sert de texture de cible de rendu dans laquelle les widgets enfants peuvent être rendus. Un `ImageWidget` peut référencer un `RTTextureWidget` comme source de texture via `SetImageTexture()` :
 
 ```c
 ImageWidget imgWidget;
@@ -1066,51 +1066,51 @@ imgWidget.SetImageTexture(0, rtTexture);
 
 ## Bonnes pratiques
 
-1. **Use the right widget for the job.** `TextWidget` for simple labels, `RichTextWidget` only when you need inline images or formatted content. `CanvasWidget` for dynamic 2D overlays, not static graphics (use `ImageWidget` for those).
+1. **Utilisez le bon widget pour le travail.** `TextWidget` pour les libellés simples, `RichTextWidget` uniquement quand vous avez besoin d'images en ligne ou de contenu formaté. `CanvasWidget` pour les superpositions 2D dynamiques, pas pour les graphiques statiques (utilisez `ImageWidget` pour ceux-là).
 
-2. **Clear canvas every frame.** Always call `Clear()` before redrawing. Failing to clear causes drawings to accumulate and creates visual artifacts.
+2. **Effacez le canvas à chaque frame.** Appelez toujours `Clear()` avant de redessiner. Ne pas effacer cause l'accumulation des dessins et crée des artefacts visuels.
 
-3. **Check screen bounds for ESP/overlay drawing.** Before calling `DrawLine()`, verify both endpoints are on screen. Off-screen draws are wasted work.
+3. **Vérifiez les limites d'écran pour le dessin ESP/superposition.** Avant d'appeler `DrawLine()`, vérifiez que les deux extrémités sont à l'écran. Les dessins hors écran sont du travail gaspillé.
 
-4. **Map markers: clear-and-rebuild pattern.** There is no `RemoveUserMark()` method. Call `ClearUserMarks()` then re-add all active markers each update. This is the pattern used by every vanilla and mod implementation.
+4. **Marqueurs de carte : patron effacer-et-reconstruire.** Il n'y a pas de méthode `RemoveUserMark()`. Appelez `ClearUserMarks()` puis ré-ajoutez tous les marqueurs actifs à chaque mise à jour. C'est le patron utilisé par chaque implémentation vanilla et mod.
 
-5. **ItemPreviewWidget needs a real EntityAI.** You cannot preview a classname string -- you need a apparitioned entity reference. For inventory previews, use the actual inventory item.
+5. **ItemPreviewWidget a besoin d'un vrai EntityAI.** Vous ne pouvez pas prévisualiser un nom de classe en chaîne -- vous avez besoin d'une référence d'entité apparue. Pour les prévisualisations d'inventaire, utilisez l'item d'inventaire réel.
 
-6. **PlayerPreviewWidget owns a dummy player.** The widget creates an internal dummy `DayZPlayer`. Access it via `GetDummyPlayer()` to sync animations, but do not destroy it yourself.
+6. **PlayerPreviewWidget possède un joueur factice.** Le widget crée un `DayZPlayer` factice interne. Accédez-y via `GetDummyPlayer()` pour synchroniser les animations, mais ne le détruisez pas vous-même.
 
-7. **VideoWidget: use callbacks, not return values.** The bool returns from `Load()`, `Play()`, etc. are deprecated. Use `SetCallback(VideoCallback.ON_ERROR, handler)`.
+7. **VideoWidget : utilisez les callbacks, pas les valeurs de retour.** Les retours bool de `Load()`, `Play()`, etc. sont dépréciés. Utilisez `SetCallback(VideoCallback.ON_ERROR, handler)`.
 
-8. **RenderTargetWidget performance.** Use `SetRefresh()` with period > 1 to skip frames. Use `SetResolutionScale()` to reduce resolution. These widgets are expensive -- use sparingly.
+8. **Performance de RenderTargetWidget.** Utilisez `SetRefresh()` avec period > 1 pour sauter des frames. Utilisez `SetResolutionScale()` pour réduire la résolution. Ces widgets sont coûteux -- utilisez-les avec parcimonie.
 
 ---
 
 ## Observé dans les mods réels
 
-| Mod | Widget | Usage |
-|-----|--------|-------|
-| **COT** | `CanvasWidget` | Full-screen ESP overlay with skeleton drawing, world-to-screen projection, circle and line primitives |
-| **COT** | `MapWidget` | Admin teleport via `ScreenToMap()` on double-click |
-| **Expansion** | `MapWidget` | Custom marker system with personal/server/party categories, per-frame update throttling |
-| **Expansion** | `CanvasWidget` | Map scale ruler drawing alongside `MapWidget` |
-| **Vanilla Map** | `MapWidget` + `CanvasWidget` | Scale ruler rendered with alternating black/grey line segments |
-| **Vanilla Inspect** | `ItemPreviewWidget` | 3D item inspection with drag rotation and scroll zoom |
-| **Vanilla Inventory** | `PlayerPreviewWidget` | Character preview with equipment sync and injury animations |
-| **Vanilla Hints** | `RichTextWidget` | In-game hint panel with formatted description text |
-| **Vanilla Menus** | `RichTextWidget` | Controller button icons via `InputUtils.GetRichtextButtonIconFromInputAction()` |
-| **Vanilla Books** | `HtmlWidget` | Loading and paging through `.html` text files |
-| **Vanilla Main Menu** | `VideoWidget` | Onboarding video with end callback |
-| **Vanilla Render Target** | `RenderTargetWidget` | Camera-to-widget rendering with configurable refresh rate |
+| Mod | Widget | Utilisation |
+|-----|--------|-------------|
+| **COT** | `CanvasWidget` | Superposition ESP plein écran avec dessin de squelettes, projection monde-vers-écran, primitives de cercles et de lignes |
+| **COT** | `MapWidget` | Téléportation admin via `ScreenToMap()` au double-clic |
+| **Expansion** | `MapWidget` | Système de marqueurs personnalisé avec catégories personnel/serveur/groupe, limitation de mises à jour par frame |
+| **Expansion** | `CanvasWidget` | Dessin de règle d'échelle de carte à côté du `MapWidget` |
+| **Carte vanilla** | `MapWidget` + `CanvasWidget` | Règle d'échelle rendue avec des segments de ligne noir/gris alternés |
+| **Inspection vanilla** | `ItemPreviewWidget` | Inspection 3D d'items avec rotation par glisser et zoom par défilement |
+| **Inventaire vanilla** | `PlayerPreviewWidget` | Prévisualisation du personnage avec synchronisation d'équipement et animations de blessure |
+| **Astuces vanilla** | `RichTextWidget` | Panneau d'astuces en jeu avec texte de description formaté |
+| **Menus vanilla** | `RichTextWidget` | Icônes de boutons de manette via `InputUtils.GetRichtextButtonIconFromInputAction()` |
+| **Livres vanilla** | `HtmlWidget` | Chargement et pagination de fichiers texte `.html` |
+| **Menu principal vanilla** | `VideoWidget` | Vidéo d'accueil avec callback de fin |
+| **Cible de rendu vanilla** | `RenderTargetWidget` | Rendu caméra-vers-widget avec taux de rafraîchissement configurable |
 
 ---
 
 ## Erreurs courantes
 
-**1. Using RichTextWidget where TextWidget suffices.**
-Rich text parsing has overhead. If you only need plain text, use `TextWidget`.
+**1. Utiliser RichTextWidget là où TextWidget suffit.**
+Le parsing de texte riche a un surcoût. Si vous n'avez besoin que de texte simple, utilisez `TextWidget`.
 
-**2. Forgetting to Clear() the canvas.**
+**2. Oublier de Clear() le canvas.**
 ```c
-// INCORRECT - drawings accumulate, filling the screen
+// INCORRECT - les dessins s'accumulent, remplissant l'écran
 void Update(float dt)
 {
     m_Canvas.DrawLine(0, 0, 100, 100, 1, COLOR_RED);
@@ -1124,70 +1124,70 @@ void Update(float dt)
 }
 ```
 
-**3. Drawing behind the camera.**
+**3. Dessiner derrière la caméra.**
 ```c
-// INCORRECT - draws lines to objects behind you
+// INCORRECT - dessine des lignes vers des objets derrière vous
 vector screenPos = g_Game.GetScreenPosRelative(worldPos);
-// No bounds check!
+// Pas de vérification des limites !
 
 // CORRECT
 vector screenPos = g_Game.GetScreenPosRelative(worldPos);
 if (screenPos[2] < 0)
-    return;  // behind camera
+    return;  // derrière la caméra
 if (screenPos[0] < 0 || screenPos[0] > 1 || screenPos[1] < 0 || screenPos[1] > 1)
-    return;  // off screen
+    return;  // hors écran
 ```
 
-**4. Trying to remove a single map marker.**
-There is no `RemoveUserMark()`. You must `ClearUserMarks()` and re-add all markers you want to keep.
+**4. Essayer de supprimer un seul marqueur de carte.**
+Il n'y a pas de `RemoveUserMark()`. Vous devez appeler `ClearUserMarks()` et ré-ajouter tous les marqueurs que vous voulez garder.
 
-**5. Setting ItemPreviewWidget item to null without checking.**
-Always guard against null entity references before calling `SetItem()`.
+**5. Définir l'item de ItemPreviewWidget à null sans vérification.**
+Protégez toujours contre les références d'entités null avant d'appeler `SetItem()`.
 
-**6. Not setting ignorepointer on overlay canvases.**
-A canvas without `ignorepointer 1` will intercept all mouse events, making the UI beneath it unresponsive.
+**6. Ne pas définir ignorepointer sur les canvas de superposition.**
+Un canvas sans `ignorepointer 1` interceptera tous les événements souris, rendant l'interface en dessous non réactive.
 
-**7. Using backslashes in texture paths without doubling.**
-In Enforce Script strings, backslashes must be doubled:
+**7. Utiliser des backslashes dans les chemins de textures sans les doubler.**
+Dans les chaînes Enforce Script, les backslashes doivent être doublés :
 ```c
 // INCORRECT
 "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
-// This is actually CORRECT in Enforce Script -- each \\ produces one \
+// C'est en fait CORRECT en Enforce Script -- chaque \\ produit un seul \
 ```
 
 ---
 
-## Compatibility and Impact
+## Compatibilité et impact
 
-| Widget | Client-Only | Performance Cost | Mod Compatibility |
-|--------|------------|-----------------|-------------------|
-| `RichTextWidget` | Yes | Low (tag parsing) | Safe, no conflicts |
-| `CanvasWidget` | Yes | Medium (per-frame) | Safe if `ignorepointer` set |
-| `MapWidget` | Yes | Low-Medium | Multiple mods can add markers |
-| `ItemPreviewWidget` | Yes | Medium (3D render) | Safe, widget-scoped |
-| `PlayerPreviewWidget` | Yes | Medium (3D render) | Safe, creates dummy player |
-| `VideoWidget` | Yes | High (video decode) | One video at a time |
-| `RenderTargetWidget` | Yes | High (3D render) | Camera conflicts possible |
-| `RTTextureWidget` | Yes | Low (texture target) | Safe |
+| Widget | Côté client uniquement | Coût en performance | Compatibilité multi-mods |
+|--------|----------------------|--------------------|-----------------------|
+| `RichTextWidget` | Oui | Faible (parsing des balises) | Sûr, pas de conflits |
+| `CanvasWidget` | Oui | Moyen (par frame) | Sûr si `ignorepointer` défini |
+| `MapWidget` | Oui | Faible-Moyen | Plusieurs mods peuvent ajouter des marqueurs |
+| `ItemPreviewWidget` | Oui | Moyen (rendu 3D) | Sûr, portée widget |
+| `PlayerPreviewWidget` | Oui | Moyen (rendu 3D) | Sûr, crée un joueur factice |
+| `VideoWidget` | Oui | Élevé (décodage vidéo) | Une vidéo à la fois |
+| `RenderTargetWidget` | Oui | Élevé (rendu 3D) | Conflits de caméra possibles |
+| `RTTextureWidget` | Oui | Faible (cible de texture) | Sûr |
 
-All these widgets are côté client only. They have no côté serveur representation and cannot be created or manipulated from server scripts.
+Tous ces widgets sont côté client uniquement. Ils n'ont pas de représentation côté serveur et ne peuvent pas être créés ou manipulés depuis des scripts serveur.
 
 ---
 
 ## Résumé
 
-| Widget | Primary Use | Key Methods |
-|--------|-----------|-------------|
-| `RichTextWidget` | Formatted text with inline images | `SetText()`, `GetContentHeight()`, `SetContentOffset()` |
-| `HtmlWidget` | Loading formatted text files | `LoadFile()` |
-| `CanvasWidget` | 2D drawing overlay | `DrawLine()`, `Clear()` |
-| `MapWidget` | Terrain map with markers | `AddUserMark()`, `ClearUserMarks()`, `ScreenToMap()`, `MapToScreen()` |
-| `ItemPreviewWidget` | 3D item display | `SetItem()`, `SetView()`, `SetModelOrientation()` |
-| `PlayerPreviewWidget` | 3D player character display | `SetPlayer()`, `Refresh()`, `UpdateItemInHands()` |
-| `VideoWidget` | Video playback | `Load()`, `Play()`, `Pause()`, `SetCallback()` |
-| `RenderTargetWidget` | Real-time 3D camera view | `SetRefresh()`, `SetResolutionScale()` + `SetWidgetWorld()` |
-| `RTTextureWidget` | Render-to-texture target | Serves as texture source for `ImageWidget.SetImageTexture()` |
+| Widget | Utilisation principale | Méthodes clés |
+|--------|----------------------|---------------|
+| `RichTextWidget` | Texte formaté avec images en ligne | `SetText()`, `GetContentHeight()`, `SetContentOffset()` |
+| `HtmlWidget` | Chargement de fichiers texte formatés | `LoadFile()` |
+| `CanvasWidget` | Superposition de dessin 2D | `DrawLine()`, `Clear()` |
+| `MapWidget` | Carte de terrain avec marqueurs | `AddUserMark()`, `ClearUserMarks()`, `ScreenToMap()`, `MapToScreen()` |
+| `ItemPreviewWidget` | Affichage 3D d'items | `SetItem()`, `SetView()`, `SetModelOrientation()` |
+| `PlayerPreviewWidget` | Affichage 3D du personnage joueur | `SetPlayer()`, `Refresh()`, `UpdateItemInHands()` |
+| `VideoWidget` | Lecture vidéo | `Load()`, `Play()`, `Pause()`, `SetCallback()` |
+| `RenderTargetWidget` | Vue caméra 3D en temps réel | `SetRefresh()`, `SetResolutionScale()` + `SetWidgetWorld()` |
+| `RTTextureWidget` | Cible de rendu vers texture | Sert de source de texture pour `ImageWidget.SetImageTexture()` |
 
 ---
 
-*This chapter completes the GUI system section. All API signatures and patterns are confirmed from le DayZ vanilla scripts and real mod source code.*
+*Ce chapitre complète la section du système GUI. Toutes les signatures d'API et les patrons sont confirmés depuis les scripts vanilla DayZ et le code source de vrais mods.*
