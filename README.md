@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DayZ-Modding_Wiki-black?style=for-the-badge&logo=steam&logoColor=white" alt="DayZ Modding Wiki" />
+  <img src="./images/logo.png" alt="DayZ Modding Wiki" />
 </p>
 
 <h1 align="center">DayZ Modding Complete Guide</h1>
@@ -155,4 +155,5 @@ See [LICENCE](LICENCE) for full text.
 <p align="center">
   <strong>Built with reverse engineering, coffee, and the DayZ modding community.</strong><br/>
   <sub>If this wiki helped you, consider giving it a star and sharing it with fellow modders.</sub>
+    <img src="https://img.shields.io/badge/DayZ-Modding_Wiki-black?style=for-the-badge&logo=steam&logoColor=white" alt="DayZ Modding Wiki" />
 </p>

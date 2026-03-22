@@ -1,88 +1,90 @@
-# Chapter 5.6: Spawning Gear Configuration
+# Rozdział 5.6: Konfiguracja ekwipunku startowego
 
-[Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
-
----
+[Strona główna](../../README.md) | [<< Poprzedni: Pliki konfiguracyjne serwera](05-server-configs.md) | **Konfiguracja ekwipunku startowego**
 
 ---
 
-## Spis tresci
+> **Podsumowanie:** DayZ posiada dwa uzupełniające się systemy kontrolujące sposób, w jaki gracze pojawiają się w świecie: **punkty spawnu** określają *gdzie* postać pojawia się na mapie, a **ekwipunek startowy** określa *jakie wyposażenie* niesie. Ten rozdział szczegółowo omawia oba systemy, w tym strukturę plików, referencję pól, praktyczne presety i integrację z modami.
 
-- [Przeglad](#overview)
-- [The Two Systems](#the-two-systems)
-- [Spawn Gear: cfgPlayerSpawnGear.json](#spawn-gear-cfgplayerspawngearjson)
-  - [Enabling Spawn Gear Presets](#enabling-spawn-gear-presets)
-  - [Preset Structure](#preset-structure)
+---
+
+## Spis treści
+
+- [Przegląd](#przegląd)
+- [Dwa systemy](#dwa-systemy)
+- [Ekwipunek startowy: cfgPlayerSpawnGear.json](#ekwipunek-startowy-cfgplayerspawngearjson)
+  - [Włączanie presetów ekwipunku startowego](#włączanie-presetów-ekwipunku-startowego)
+  - [Struktura presetu](#struktura-presetu)
   - [attachmentSlotItemSets](#attachmentslotitemsets)
   - [DiscreteItemSets](#discreteitemsets)
   - [discreteUnsortedItemSets](#discreteunsorteditemsets)
-  - [ComplexChildrenTyps](#complexchildrentypes)
-  - [SimpleChildrenTyps](#simplechildrentypes)
-  - [Attributes](#attributes)
-- [Spawn Points: cfgplayerspawnpoints.xml](#spawn-points-cfgplayerspawnpointsxml)
-  - [File Structure](#file-structure)
+  - [ComplexChildrenTypes](#complexchildrentypes)
+  - [SimpleChildrenTypes](#simplechildrentypes)
+  - [Atrybuty](#atrybuty)
+- [Punkty spawnu: cfgplayerspawnpoints.xml](#punkty-spawnu-cfgplayerspawnpointsxml)
+  - [Struktura pliku](#struktura-pliku)
   - [spawn_params](#spawn_params)
   - [generator_params](#generator_params)
-  - [Spawning Groups](#spawning-groups)
-  - [Map-Specific Configs](#map-specific-configs)
-- [Practical Przyklads](#practical-examples)
-  - [Domyslny Survivor Loadout](#default-survivor-loadout)
-  - [Military Spawn Kit](#military-spawn-kit)
-  - [Medical Spawn Kit](#medical-spawn-kit)
-  - [Random Gear Selection](#random-gear-selection)
-- [Integration with Mods](#integration-with-mods)
-- [Najlepsze praktyki](#best-practices)
-- [Czeste bledy](#common-mistakes)
+  - [Grupy spawnu](#grupy-spawnu)
+  - [Konfiguracje per mapa](#konfiguracje-per-mapa)
+- [Praktyczne przykłady](#praktyczne-przykłady)
+  - [Domyślny ekwipunek ocalałego](#domyślny-ekwipunek-ocalałego)
+  - [Zestaw startowy wojskowy](#zestaw-startowy-wojskowy)
+  - [Zestaw startowy medyczny](#zestaw-startowy-medyczny)
+  - [Losowy wybór ekwipunku](#losowy-wybór-ekwipunku)
+- [Integracja z modami](#integracja-z-modami)
+- [Najlepsze praktyki](#najlepsze-praktyki)
+- [Częste błędy](#częste-błędy)
 
 ---
 
-## Przeglad
+## Przegląd
 
 ```mermaid
 flowchart TD
-    A[Player connects] --> B{cfgGameplay.json enabled?}
-    B -->|Yes| C[Load cfgPlayerSpawnGear.json]
-    B -->|No| D[Use StartingEquipSetup in init.c]
-    C --> E[Select preset by spawnWeight]
-    E --> F[Select characterType]
-    F --> G[Apply attachmentSlotItemSets]
-    G --> H[Apply discreteItemSets to cargo]
-    H --> I[Set item attributes - health, quantity]
-    I --> J[Player spawns with gear]
+    A[Gracz łączy się] --> B{cfgGameplay.json włączony?}
+    B -->|Tak| C[Załaduj cfgPlayerSpawnGear.json]
+    B -->|Nie| D[Użyj StartingEquipSetup w init.c]
+    C --> E[Wybierz preset wg spawnWeight]
+    E --> F[Wybierz characterType]
+    F --> G[Zastosuj attachmentSlotItemSets]
+    G --> H[Zastosuj discreteItemSets do cargo]
+    H --> I[Ustaw atrybuty przedmiotów - zdrowie, ilość]
+    I --> J[Gracz pojawia się z ekwipunkiem]
     D --> J
 ```
 
-When a player spawns as a fresh character in DayZ, two questions are answered by the server:
+Gdy gracz pojawia się jako świeża postać w DayZ, serwer odpowiada na dwa pytania:
 
-1. **Where does the character appear?** --- Controlled by `cfgplayerspawnpoints.xml`.
-2. **What does the character carry?** --- Controlled by spawn gear preset JSON files, registered through `cfggameplay.json`.
+1. **Gdzie pojawia się postać?** --- Kontrolowane przez `cfgplayerspawnpoints.xml`.
+2. **Co postać niesie?** --- Kontrolowane przez pliki JSON presetów ekwipunku startowego, zarejestrowane w `cfggameplay.json`.
 
-Both systems are server-side only. Clients never see these configuration files and cannot tamper with them. The spawn gear system was introduced as an alternative to scripting loadouts in `init.c`, allowing server admins to define multiple weighted presets in JSON without writing any Enforce Script code.
+Oba systemy działają wyłącznie po stronie serwera. Klienci nigdy nie widzą tych plików konfiguracyjnych i nie mogą ich modyfikować. System ekwipunku startowego został wprowadzony jako alternatywa dla skryptowania loadoutów w `init.c`, pozwalając administratorom serwera definiować wiele ważonych presetów w JSON bez pisania jakiegokolwiek kodu Enforce Script.
 
-> **Wazne:** The spawn gear preset system **completely overrides** the `StartingEquipSetup()` method in your mission `init.c`. If you enable spawn gear presets in `cfggameplay.json`, your scripted loadout code will be ignored. Similarly, character types defined in the presets override the character model chosen in the main menu.
+> **Ważne:** System presetów ekwipunku startowego **całkowicie zastępuje** metodę `StartingEquipSetup()` w pliku misji `init.c`. Jeśli włączysz presety ekwipunku startowego w `cfggameplay.json`, twój skryptowy kod loadoutu zostanie zignorowany. Podobnie, typy postaci zdefiniowane w presetach zastępują model postaci wybrany w menu głównym.
 
 ---
 
-## The Two Systems
+## Dwa systemy
 
-| System | File | Format | Controls |
+| System | Plik | Format | Kontroluje |
 |--------|------|--------|----------|
-| Spawn Points | `cfgplayerspawnpoints.xml` | XML | **Where** --- map positions, distance scoring, spawn groups |
-| Spawn Gear | Custom preset JSON files | JSON | **What** --- character model, clothing, weapons, cargo, quickbar |
+| Punkty spawnu | `cfgplayerspawnpoints.xml` | XML | **Gdzie** --- pozycje na mapie, punktacja dystansu, grupy spawnu |
+| Ekwipunek startowy | Własne pliki JSON presetów | JSON | **Co** --- model postaci, ubrania, broń, cargo, pasek szybkiego dostępu |
 
-The two systems are independent. You can use custom spawn points with vanilla gear, custom gear with vanilla spawn points, or customize both.
+Oba systemy są niezależne. Możesz używać własnych punktów spawnu z vanillowym ekwipunkiem, własnego ekwipunku z vanillowymi punktami spawnu, lub dostosować oba.
 
 ---
 
-## Spawn Gear: cfgPlayerSpawnGear.json
+## Ekwipunek startowy: cfgPlayerSpawnGear.json
 
-### Enabling Spawn Gear Presets
+### Włączanie presetów ekwipunku startowego
 
-Spawn gear presets are **not** enabled by default. To use them, you must:
+Presety ekwipunku startowego **nie** są domyślnie włączone. Aby ich użyć, musisz:
 
-1. Create one or more JSON preset files in your mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`).
-2. Register them in `cfggameplay.json` under `PlayerData.spawnGearPresetFiles`.
-3. Ensure `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+1. Utworzyć jeden lub więcej plików JSON presetów w folderze misji (np. `mpmissions/dayzOffline.chernarusplus/`).
+2. Zarejestrować je w `cfggameplay.json` w sekcji `PlayerData.spawnGearPresetFiles`.
+3. Upewnić się, że `enableCfgGameplayFile = 1` jest ustawione w `serverDZ.cfg`.
 
 ```json
 {
@@ -97,7 +99,7 @@ Spawn gear presets are **not** enabled by default. To use them, you must:
 }
 ```
 
-Preset files can be nested in subdirectories under the mission folder:
+Pliki presetów mogą być zagnieżdżone w podkatalogach w folderze misji:
 
 ```json
 "spawnGearPresetFiles": [
@@ -107,23 +109,23 @@ Preset files can be nested in subdirectories under the mission folder:
 ]
 ```
 
-Each JSON file contains a single preset object. All registered presets are pooled together, and the server selects one based on `spawnWeight` each time a fresh character spawns.
+Każdy plik JSON zawiera jeden obiekt presetu. Wszystkie zarejestrowane presety są łączone w pulę, a serwer wybiera jeden na podstawie `spawnWeight` za każdym razem, gdy pojawia się świeża postać.
 
-### Preset Structure
+### Struktura presetu
 
-A preset is the top-level JSON object with these fields:
+Preset to obiekt JSON najwyższego poziomu z następującymi polami:
 
 | Pole | Typ | Opis |
 |-------|------|-------------|
-| `name` | string | Human-readable name for the preset (any string, used for identification only) |
-| `spawnWeight` | integer | Weight for random selection. Minimum is `1`. Higher values make this preset more likely to be chosen |
-| `characterTyps` | array | Array of character type classnames (e.g., `"SurvivorM_Mirek"`). One is picked at random when this preset spawns |
-| `attachmentSlotItemSets` | array | Array of `AttachmentSlots` structures defining what the character wears (clothing, weapons on shoulders, etc.) |
-| `discreteUnsortedItemSets` | array | Array of `DiscreteUnsortedItemSets` structures defining cargo items placed into any available inventory space |
+| `name` | string | Czytelna dla człowieka nazwa presetu (dowolny ciąg znaków, używany tylko do identyfikacji) |
+| `spawnWeight` | integer | Waga dla losowego wyboru. Minimum to `1`. Wyższe wartości zwiększają prawdopodobieństwo wybrania tego presetu |
+| `characterTypes` | array | Tablica nazw klas typów postaci (np. `"SurvivorM_Mirek"`). Jeden jest losowo wybierany, gdy ten preset zostaje użyty |
+| `attachmentSlotItemSets` | array | Tablica struktur `AttachmentSlots` definiujących, co postać nosi (ubrania, broń na ramionach itp.) |
+| `discreteUnsortedItemSets` | array | Tablica struktur `DiscreteUnsortedItemSets` definiujących przedmioty cargo umieszczane w dowolnej dostępnej przestrzeni inwentarza |
 
-> **Uwaga:** If `characterTyps` is empty or omitted, the character model last selected in the main menu character creation screen will be used for that preset.
+> **Uwaga:** Jeśli `characterTypes` jest puste lub pominięte, dla tego presetu zostanie użyty model postaci ostatnio wybrany w ekranie tworzenia postaci w menu głównym.
 
-Minimal example:
+Minimalny przykład:
 
 ```json
 {
@@ -140,16 +142,16 @@ Minimal example:
 
 ### attachmentSlotItemSets
 
-This array defines items that go into specific character attachment slots --- body, legs, feet, head, back, vest, shoulders, eyewear, etc.
+Ta tablica definiuje przedmioty trafiające do konkretnych slotów załączników postaci --- ciało, nogi, stopy, głowa, plecy, kamizelka, ramiona, okulary itp.
 
-Each entry targets one slot:
+Każdy wpis celuje w jeden slot:
 
 | Pole | Typ | Opis |
 |-------|------|-------------|
-| `slotName` | string | The attachment slot name. Derived from CfgSlots. Common values: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
-| `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `spawnWeight`) |
+| `slotName` | string | Nazwa slotu załącznika. Pochodzi z CfgSlots. Typowe wartości: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
+| `discreteItemSets` | array | Tablica wariantów przedmiotów, które mogą wypełnić ten slot (jeden jest wybierany na podstawie `spawnWeight`) |
 
-> **Shoulder shortcuts:** You can use `"shoulderL"` and `"shoulderR"` as slot names. The engine automatically translates these to the correct internal CfgSlots names.
+> **Skróty dla ramion:** Możesz używać `"shoulderL"` i `"shoulderR"` jako nazw slotów. Silnik automatycznie tłumaczy je na prawidłowe wewnętrzne nazwy CfgSlots.
 
 ```json
 {
@@ -183,19 +185,19 @@ Each entry targets one slot:
 
 ### DiscreteItemSets
 
-Each entry in `discreteItemSets` represents one possible item for that slot. The server picks one entry at random, weighted by `spawnWeight`. This structure is used inside both `attachmentSlotItemSets` (for slot-based items) and is the mechanism for random selection.
+Każdy wpis w `discreteItemSets` reprezentuje jedną możliwą opcję przedmiotu dla danego slotu. Serwer losowo wybiera jeden wpis, ważony przez `spawnWeight`. Ta struktura jest używana zarówno wewnątrz `attachmentSlotItemSets` (dla przedmiotów opartych na slotach), jak i stanowi mechanizm losowego wyboru.
 
 | Pole | Typ | Opis |
 |-------|------|-------------|
-| `itemTyp` | string | Item classname (typename). Use `""` (empty string) to represent "nothing" --- the slot remains empty |
-| `spawnWeight` | integer | Weight for selection. Minimum `1`. Higher = more likely |
-| `attributes` | object | Health and quantity ranges for this item. See [Attributes](#attributes) |
-| `quickBarSlot` | integer | Quick bar slot assignment (0-based). Use `-1` for no quickbar assignment |
-| `complexChildrenTyps` | array | Items to spawn nested inside this item. See [ComplexChildrenTyps](#complexchildrentypes) |
-| `simpleChildrenTyps` | array | Item classnames to spawn inside this item using default or parent attributes |
-| `simpleChildrenUseDomyslnyAttributes` | bool | If `true`, simple children use the parent's `attributes`. If `false`, they use configuration defaults |
+| `itemType` | string | Nazwa klasy przedmiotu (typename). Użyj `""` (pusty ciąg), aby reprezentować "nic" --- slot pozostaje pusty |
+| `spawnWeight` | integer | Waga dla wyboru. Minimum `1`. Wyższa = bardziej prawdopodobna |
+| `attributes` | object | Zakresy zdrowia i ilości dla tego przedmiotu. Zobacz [Atrybuty](#atrybuty) |
+| `quickBarSlot` | integer | Przypisanie do slotu paska szybkiego dostępu (indeks od 0). Użyj `-1`, aby nie przypisywać do paska |
+| `complexChildrenTypes` | array | Przedmioty do stworzenia wewnątrz tego przedmiotu. Zobacz [ComplexChildrenTypes](#complexchildrentypes) |
+| `simpleChildrenTypes` | array | Nazwy klas przedmiotów do stworzenia wewnątrz tego przedmiotu z domyślnymi lub rodzicielskimi atrybutami |
+| `simpleChildrenUseDefaultAttributes` | bool | Jeśli `true`, proste dzieci używają `attributes` rodzica. Jeśli `false`, używają domyślnych wartości konfiguracji |
 
-**Empty item trick:** To make a slot have a 50/50 chance of being empty or filled, use an empty `itemTyp`:
+**Sztuczka z pustym przedmiotem:** Aby slot miał 50/50 szans na bycie pustym lub wypełnionym, użyj pustego `itemType`:
 
 ```json
 {
@@ -220,18 +222,18 @@ Each entry in `discreteItemSets` represents one possible item for that slot. The
 
 ### discreteUnsortedItemSets
 
-This top-level array defines items that go into the character's **cargo** --- any available inventory space across all attached clothing and containers. Unlike `attachmentSlotItemSets`, these items are not placed into a specific slot; the engine finds room automatically.
+Ta tablica najwyższego poziomu definiuje przedmioty trafiające do **cargo** postaci --- dowolnej dostępnej przestrzeni inwentarza we wszystkich założonych ubraniach i kontenerach. W przeciwieństwie do `attachmentSlotItemSets`, te przedmioty nie są umieszczane w konkretnym slocie; silnik automatycznie znajduje miejsce.
 
-Each entry represents one cargo variant, and the server selects one based on `spawnWeight`.
+Każdy wpis reprezentuje jeden wariant cargo, a serwer wybiera jeden na podstawie `spawnWeight`.
 
 | Pole | Typ | Opis |
 |-------|------|-------------|
-| `name` | string | Human-readable name (for identification only) |
-| `spawnWeight` | integer | Weight for selection. Minimum `1` |
-| `attributes` | object | Domyslny health/quantity ranges. Used by children when `simpleChildrenUseDomyslnyAttributes` is `true` |
-| `complexChildrenTyps` | array | Items to spawn into cargo, each with their own attributes and nesting |
-| `simpleChildrenTyps` | array | Item classnames to spawn into cargo |
-| `simpleChildrenUseDomyslnyAttributes` | bool | If `true`, simple children use this structure's `attributes`. If `false`, they use configuration defaults |
+| `name` | string | Czytelna nazwa (tylko do identyfikacji) |
+| `spawnWeight` | integer | Waga dla wyboru. Minimum `1` |
+| `attributes` | object | Domyślne zakresy zdrowia/ilości. Używane przez dzieci gdy `simpleChildrenUseDefaultAttributes` jest `true` |
+| `complexChildrenTypes` | array | Przedmioty do stworzenia w cargo, każdy z własnymi atrybutami i zagnieżdżeniem |
+| `simpleChildrenTypes` | array | Nazwy klas przedmiotów do stworzenia w cargo |
+| `simpleChildrenUseDefaultAttributes` | bool | Jeśli `true`, proste dzieci używają `attributes` tej struktury. Jeśli `false`, używają domyślnych wartości konfiguracji |
 
 ```json
 {
@@ -263,19 +265,19 @@ Each entry represents one cargo variant, and the server selects one based on `sp
 }
 ```
 
-### ComplexChildrenTyps
+### ComplexChildrenTypes
 
-Complex children are items spawned **inside** a parent item with full control over their attributes, quickbar assignment, and their own nested children. The primary use case is spawning items with contents --- for example, a weapon with attachments, or a cooking pot with food inside.
+Złożone dzieci to przedmioty tworzone **wewnątrz** przedmiotu nadrzędnego z pełną kontrolą nad ich atrybutami, przypisaniem do paska szybkiego dostępu i ich własnymi zagnieżdżonymi dziećmi. Głównym przypadkiem użycia jest tworzenie przedmiotów z zawartością --- na przykład broni z akcesoriami lub garnka z jedzeniem w środku.
 
 | Pole | Typ | Opis |
 |-------|------|-------------|
-| `itemTyp` | string | Item classname |
-| `attributes` | object | Health/quantity ranges for this specific item |
-| `quickBarSlot` | integer | Quick bar slot assignment. `-1` = don't assign |
-| `simpleChildrenUseDomyslnyAttributes` | bool | Whether simple children inherit these attributes |
-| `simpleChildrenTyps` | array | Item classnames to spawn inside this item |
+| `itemType` | string | Nazwa klasy przedmiotu |
+| `attributes` | object | Zakresy zdrowia/ilości dla tego konkretnego przedmiotu |
+| `quickBarSlot` | integer | Przypisanie do slotu paska szybkiego dostępu. `-1` = nie przypisuj |
+| `simpleChildrenUseDefaultAttributes` | bool | Czy proste dzieci dziedziczą te atrybuty |
+| `simpleChildrenTypes` | array | Nazwy klas przedmiotów do stworzenia wewnątrz tego przedmiotu |
 
-Przyklad --- a weapon with attachments and magazine:
+Przykład --- broń z akcesoriami i magazynkiem:
 
 ```json
 {
@@ -327,31 +329,31 @@ Przyklad --- a weapon with attachments and magazine:
 }
 ```
 
-In this example, the AKM spawns with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseDomyslnyAttributes` is `false`.
+W tym przykładzie AKM pojawia się z kolbą, celownikiem (z baterią w środku) i załadowanym magazynkiem jako złożone dzieci, plus chwyt i bagnet jako proste dzieci. Proste dzieci używają domyślnych wartości konfiguracji, ponieważ `simpleChildrenUseDefaultAttributes` jest ustawione na `false`.
 
-### SimpleChildrenTyps
+### SimpleChildrenTypes
 
-Simple children are a shorthand for spawning items inside a parent without specifying individual attributes. They are an array of item classnames (strings).
+Proste dzieci to skrócony zapis tworzenia przedmiotów wewnątrz rodzica bez określania indywidualnych atrybutów. Są tablicą nazw klas przedmiotów (ciągów znaków).
 
-Their attributes are determined by the `simpleChildrenUseDomyslnyAttributes` flag:
+Ich atrybuty są określane przez flagę `simpleChildrenUseDefaultAttributes`:
 
-- **`true`** --- Items use the `attributes` defined on the parent structure.
-- **`false`** --- Items use the engine's configuration defaults (typically full health and quantity).
+- **`true`** --- Przedmioty używają `attributes` zdefiniowanych w strukturze nadrzędnej.
+- **`false`** --- Przedmioty używają domyślnych wartości konfiguracji silnika (zwykle pełne zdrowie i ilość).
 
-Simple children cannot have their own nested children or quickbar assignments. For those capabilities, use `complexChildrenTyps` instead.
+Proste dzieci nie mogą mieć własnych zagnieżdżonych dzieci ani przypisań do paska szybkiego dostępu. Dla tych możliwości użyj zamiast tego `complexChildrenTypes`.
 
-### Attributes
+### Atrybuty
 
-Attributes control the condition and quantity of spawned items. All values are floating point between `0.0` and `1.0`:
+Atrybuty kontrolują stan i ilość tworzonych przedmiotów. Wszystkie wartości są liczbami zmiennoprzecinkowymi między `0.0` a `1.0`:
 
 | Pole | Typ | Opis |
 |-------|------|-------------|
-| `healthMin` | float | Minimum health percentage. `1.0` = pristine, `0.0` = ruined |
-| `healthMax` | float | Maximum health percentage. A random value between min and max is applied |
-| `quantityMin` | float | Minimum quantity percentage. For magazines: fill level. For food: remaining bites |
-| `quantityMax` | float | Maximum quantity percentage |
+| `healthMin` | float | Minimalny procent zdrowia. `1.0` = nieskazitelny, `0.0` = zniszczony |
+| `healthMax` | float | Maksymalny procent zdrowia. Losowa wartość między min a max jest stosowana |
+| `quantityMin` | float | Minimalny procent ilości. Dla magazynków: poziom napełnienia. Dla jedzenia: pozostałe porcje |
+| `quantityMax` | float | Maksymalny procent ilości |
 
-When both min and max are specified, the engine picks a random value in that range. This creates natural variation --- for example, health between `0.45` and `0.65` means items spawn in worn to damaged condition.
+Gdy zarówno min, jak i max są określone, silnik wybiera losową wartość z tego zakresu. To tworzy naturalną wariację --- na przykład zdrowie między `0.45` a `0.65` oznacza, że przedmioty pojawiają się w stanie zużytym do uszkodzonego.
 
 ```json
 "attributes": {
@@ -364,21 +366,21 @@ When both min and max are specified, the engine picks a random value in that ran
 
 ---
 
-## Spawn Points: cfgplayerspawnpoints.xml
+## Punkty spawnu: cfgplayerspawnpoints.xml
 
-This XML file defines where players appear on the map. It is located in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
+Ten plik XML definiuje, gdzie gracze pojawiają się na mapie. Znajduje się w folderze misji (np. `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
 
-### File Structure
+### Struktura pliku
 
-The root element contains up to three sections:
+Element główny zawiera do trzech sekcji:
 
-| Section | Przeznaczenie |
+| Sekcja | Przeznaczenie |
 |---------|---------|
-| `<fresh>` | **Required.** Spawn points for newly created characters |
-| `<hop>` | Spawn points for players hopping from another server on the same map (official servers only) |
-| `<travel>` | Spawn points for players traveling from a different map (official servers only) |
+| `<fresh>` | **Wymagana.** Punkty spawnu dla nowo utworzonych postaci |
+| `<hop>` | Punkty spawnu dla graczy przeskakujących z innego serwera na tej samej mapie (tylko serwery oficjalne) |
+| `<travel>` | Punkty spawnu dla graczy podróżujących z innej mapy (tylko serwery oficjalne) |
 
-Each section contains the same three sub-elements: `<spawn_params>`, `<generator_params>`, and `<generator_posbubbles>`.
+Każda sekcja zawiera te same trzy podementy: `<spawn_params>`, `<generator_params>` i `<generator_posbubbles>`.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -403,7 +405,7 @@ Each section contains the same three sub-elements: `<spawn_params>`, `<generator
 
 ### spawn_params
 
-Runtime parameters that score candidate spawn points against nearby entities. Points below `min_dist` are invalidated. Points between `min_dist` and `max_dist` are preferred over points beyond `max_dist`.
+Parametry uruchomieniowe oceniające kandydackie punkty spawnu względem pobliskich obiektów. Punkty bliżej niż `min_dist` są odrzucane. Punkty między `min_dist` a `max_dist` są preferowane nad punktami poza `max_dist`.
 
 ```xml
 <spawn_params>
@@ -418,20 +420,20 @@ Runtime parameters that score candidate spawn points against nearby entities. Po
 
 | Parametr | Opis |
 |-----------|-------------|
-| `min_dist_infected` | Minimum meters from infected. Points closer than this are penalized |
-| `max_dist_infected` | Maximum scoring distance from infected |
-| `min_dist_player` | Minimum meters from other players. Keeps fresh spawns from appearing on top of existing players |
-| `max_dist_player` | Maximum scoring distance from other players |
-| `min_dist_static` | Minimum meters from buildings/objects |
-| `max_dist_static` | Maximum scoring distance from buildings/objects |
+| `min_dist_infected` | Minimalna odległość od zainfekowanych w metrach. Punkty bliżej niż ta wartość są penalizowane |
+| `max_dist_infected` | Maksymalna odległość punktacji od zainfekowanych |
+| `min_dist_player` | Minimalna odległość od innych graczy w metrach. Zapobiega pojawianiu się świeżych spawników na istniejących graczach |
+| `max_dist_player` | Maksymalna odległość punktacji od innych graczy |
+| `min_dist_static` | Minimalna odległość od budynków/obiektów w metrach |
+| `max_dist_static` | Maksymalna odległość punktacji od budynków/obiektów |
 
-The Sakhal map also adds `min_dist_trigger` and `max_dist_trigger` parameters with a 6x weight multiplier for trigger zone distances.
+Mapa Sakhal dodaje również parametry `min_dist_trigger` i `max_dist_trigger` z 6-krotnym mnożnikiem wagi dla odległości stref wyzwalacza.
 
-**Scoring logic:** The engine calculates a score for each candidate point. Distance `0` to `min_dist` scores `-1` (nearly invalidated). Distance `min_dist` to midpoint scores up to `1.1`. Distance midpoint to `max_dist` scores down from `1.1` to `0.1`. Beyond `max_dist` scores `0`. Higher total score = more likely spawn location.
+**Logika punktacji:** Silnik oblicza wynik dla każdego punktu kandydackiego. Odległość od `0` do `min_dist` daje wynik `-1` (prawie odrzucony). Odległość od `min_dist` do punktu środkowego daje wynik do `1.1`. Odległość od punktu środkowego do `max_dist` daje wynik malejący od `1.1` do `0.1`. Poza `max_dist` wynik wynosi `0`. Wyższy łączny wynik = bardziej prawdopodobna lokalizacja spawnu.
 
 ### generator_params
 
-Controls how the grid of candidate spawn points is generated around each position bubble:
+Kontroluje sposób generowania siatki kandydackich punktów spawnu wokół każdego bąbla pozycji:
 
 ```xml
 <generator_params>
@@ -447,21 +449,21 @@ Controls how the grid of candidate spawn points is generated around each positio
 
 | Parametr | Opis |
 |-----------|-------------|
-| `grid_density` | Sample frequency. `4` means a 4x4 grid of candidate points. Higher = more candidates, more CPU cost. Must be at least `1`. When `0`, only the center point is used |
-| `grid_width` | Total width of the sampling rectangle in meters |
-| `grid_height` | Total height of the sampling rectangle in meters |
-| `min_dist_static` | Minimum distance from buildings for a valid candidate |
-| `max_dist_static` | Maximum distance from buildings used for scoring |
-| `min_steepness` | Minimum terrain slope in degrees. Points on steeper terrain are discarded |
-| `max_steepness` | Maximum terrain slope in degrees |
+| `grid_density` | Częstotliwość próbkowania. `4` oznacza siatkę 4x4 punktów kandydackich. Wyższa = więcej kandydatów, większy koszt CPU. Musi wynosić co najmniej `1`. Gdy `0`, używany jest tylko punkt środkowy |
+| `grid_width` | Całkowita szerokość prostokąta próbkowania w metrach |
+| `grid_height` | Całkowita wysokość prostokąta próbkowania w metrach |
+| `min_dist_static` | Minimalna odległość od budynków dla prawidłowego kandydata |
+| `max_dist_static` | Maksymalna odległość od budynków używana do punktacji |
+| `min_steepness` | Minimalne nachylenie terenu w stopniach. Punkty na bardziej stromym terenie są odrzucane |
+| `max_steepness` | Maksymalne nachylenie terenu w stopniach |
 
-Around every `<pos>` defined in `generator_posbubbles`, the engine creates a rectangle of `grid_width` x `grid_height` meters, samples it at `grid_density` frequency, and discards points that overlap with objects, water, or exceed slope limits.
+Wokół każdego `<pos>` zdefiniowanego w `generator_posbubbles` silnik tworzy prostokąt o wymiarach `grid_width` x `grid_height` metrów, próbkuje go z częstotliwością `grid_density` i odrzuca punkty pokrywające się z obiektami, wodą lub przekraczające limity nachylenia.
 
-### Spawning Groups
+### Grupy spawnu
 
-Groups allow you to cluster spawn points and rotate through them over time. This prevents all players from always spawning at the same locations.
+Grupy pozwalają na klasterowanie punktów spawnu i rotację między nimi w czasie. Zapobiega to ciągłemu pojawianiu się wszystkich graczy w tych samych lokalizacjach.
 
-Groups are enabled through `<group_params>` inside each section:
+Grupy są włączane przez `<group_params>` wewnątrz każdej sekcji:
 
 ```xml
 <group_params>
@@ -474,12 +476,12 @@ Groups are enabled through `<group_params>` inside each section:
 
 | Parametr | Opis |
 |-----------|-------------|
-| `enablegroups` | `true` to enable group rotation, `false` for a flat list of points |
-| `groups_as_regular` | When `enablegroups` is `false`, treat group points as regular spawn points instead of ignoring them. Domyslny: `true` |
-| `lifetime` | Seconds a group stays active before rotating to another. Use `-1` to disable the timer |
-| `counter` | Number of spawns that reset the lifetime. Each player spawning in the group resets the timer. Use `-1` to disable the counter |
+| `enablegroups` | `true` aby włączyć rotację grup, `false` dla płaskiej listy punktów |
+| `groups_as_regular` | Gdy `enablegroups` jest `false`, traktuj punkty grup jako zwykłe punkty spawnu zamiast je ignorować. Domyślnie: `true` |
+| `lifetime` | Sekundy, przez które grupa pozostaje aktywna przed rotacją do innej. Użyj `-1`, aby wyłączyć timer |
+| `counter` | Liczba spawnów resetujących czas życia. Każdy gracz pojawiający się w grupie resetuje timer. Użyj `-1`, aby wyłączyć licznik |
 
-Positions are organized into named groups within `<generator_posbubbles>`:
+Pozycje są organizowane w nazwane grupy wewnątrz `<generator_posbubbles>`:
 
 ```xml
 <generator_posbubbles>
@@ -495,7 +497,7 @@ Positions are organized into named groups within `<generator_posbubbles>`:
 </generator_posbubbles>
 ```
 
-Individual groups can override global lifetime and counter values:
+Poszczególne grupy mogą nadpisywać globalne wartości czasu życia i licznika:
 
 ```xml
 <group name="Tents" lifetime="300" counter="25">
@@ -503,7 +505,7 @@ Individual groups can override global lifetime and counter values:
 </group>
 ```
 
-**Without groups**, positions are listed directly under `<generator_posbubbles>`:
+**Bez grup** pozycje są wylistowane bezpośrednio pod `<generator_posbubbles>`:
 
 ```xml
 <generator_posbubbles>
@@ -513,27 +515,27 @@ Individual groups can override global lifetime and counter values:
 </generator_posbubbles>
 ```
 
-> **Position format:** The `x` and `z` attributes use DayZ world coordinates. `x` is east-west, `z` is north-south. The `y` (height) coordinate is not specified --- the engine places the point on the terrain surface. You can find coordinates using the in-game debug monitor or the DayZ Editor mod.
+> **Format pozycji:** Atrybuty `x` i `z` używają współrzędnych świata DayZ. `x` to wschód-zachód, `z` to północ-południe. Współrzędna `y` (wysokość) nie jest określana --- silnik umieszcza punkt na powierzchni terenu. Współrzędne możesz znaleźć za pomocą monitora debugowania w grze lub moda DayZ Editor.
 
-### Map-Specific Configs
+### Konfiguracje per mapa
 
-Each map has its own `cfgplayerspawnpoints.xml` in its mission folder:
+Każda mapa ma własny `cfgplayerspawnpoints.xml` w swoim folderze misji:
 
-| Map | Mission Folder | Uwagi |
+| Mapa | Folder misji | Uwagi |
 |-----|----------------|-------|
-| Chernarus | `dayzOffline.chernarusplus/` | Coastal spawns: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
-| Livonia | `dayzOffline.enoch/` | Spread across map with different group names |
-| Sakhal | `dayzOffline.sakhal/` | Added `min_dist_trigger`/`max_dist_trigger` params, more detailed comments |
+| Chernarus | `dayzOffline.chernarusplus/` | Spawny na wybrzeżu: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
+| Livonia | `dayzOffline.enoch/` | Rozrzucone po mapie z różnymi nazwami grup |
+| Sakhal | `dayzOffline.sakhal/` | Dodano parametry `min_dist_trigger`/`max_dist_trigger`, bardziej szczegółowe komentarze |
 
-When creating a custom map or modifying spawn locations, always work from the vanilla file as a starting point and adjust positions to match your map's geography.
+Tworząc niestandardową mapę lub modyfikując lokalizacje spawnu, zawsze pracuj od pliku vanilla jako punktu wyjścia i dostosuj pozycje do geografii twojej mapy.
 
 ---
 
-## Practical Przyklads
+## Praktyczne przykłady
 
-### Domyslny Survivor Loadout
+### Domyślny ekwipunek ocalałego
 
-The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic shoes, plus cargo containing a bandage, chemlight (random color), and a fruit (random between pear, plum, or apple). All items spawn in worn-to-damaged condition.
+Vanillowy preset daje świeżym spawnom losowy t-shirt, płócienne spodnie, buty sportowe, plus cargo zawierające bandaż, chemlight (losowy kolor) i owoc (losowo gruszka, śliwka lub jabłko). Wszystkie przedmioty pojawiają się w stanie zużytym do uszkodzonego.
 
 ```json
 {
@@ -655,9 +657,9 @@ The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic s
 }
 ```
 
-### Military Spawn Kit
+### Zestaw startowy wojskowy
 
-A heavily equipped preset with an AKM (with attachments), plate carrier, gorka uniform, backpack with extra magazines, and unsorted cargo including a sidearm and food. This uses multiple `spawnWeight` values to create rarity tiers for weapon variants.
+Bogato wyposażony preset z AKM (z akcesoriami), kamizelką kuloodporną, mundurem gorka, plecakiem z dodatkowymi magazynkami i nieposortowanym cargo zawierającym pistolet boczny i jedzenie. Używa wielu wartości `spawnWeight` do tworzenia poziomów rzadkości wariantów broni.
 
 ```json
 {
@@ -843,15 +845,15 @@ A heavily equipped preset with an AKM (with attachments), plate carrier, gorka u
 }
 ```
 
-Key points about this example:
+Kluczowe punkty tego przykładu:
 
-- **Two weapon variants** for the same shoulder slot: the `spawnWeight: 3` variant (plastic furniture, PSO1 optic) spawns 3x more often than the `spawnWeight: 1` variant (wood furniture, no optic).
-- **Nested children**: the PSO1Optic has `simpleChildrenTyps: ["Battery9V"]` so the optic spawns with a battery inside.
-- **Backpack contents**: the blue backpack gets a drum magazine while the orange one gets two standard magazines.
+- **Dwa warianty broni** dla tego samego slotu ramienia: wariant z `spawnWeight: 3` (plastikowe elementy, celownik PSO1) pojawia się 3x częściej niż wariant z `spawnWeight: 1` (drewniane elementy, bez celownika).
+- **Zagnieżdżone dzieci**: celownik PSO1 ma `simpleChildrenTypes: ["Battery9V"]`, więc celownik pojawia się z baterią w środku.
+- **Zawartość plecaka**: niebieski plecak dostaje magazynek bębnowy, a pomarańczowy dwa standardowe magazynki.
 
-### Medical Spawn Kit
+### Zestaw startowy medyczny
 
-A medic-themed preset with scrubs, first aid kit containing medical supplies, and a melee weapon for defense.
+Preset o tematyce medyka ze skrabami, apteczką zawierającą zaopatrzenie medyczne i bronią białą do obrony.
 
 ```json
 {
@@ -994,13 +996,13 @@ A medic-themed preset with scrubs, first aid kit containing medical supplies, an
 }
 ```
 
-Note how `characterTyps` is omitted --- this preset uses whatever character the player selected in the main menu. Two cargo variants offer different first aid kit contents (blood bag vs. antibiotics), selected by `spawnWeight`.
+Zwróć uwagę, że `characterTypes` jest pominięte --- ten preset używa postaci wybranej przez gracza w menu głównym. Dwa warianty cargo oferują różną zawartość apteczki (worek krwi vs. antybiotyki), wybieranych przez `spawnWeight`.
 
-### Random Gear Selection
+### Losowy wybór ekwipunku
 
-You can create randomized loadouts by using multiple presets with different weights, and within each preset using multiple `discreteItemSets` per slot:
+Możesz tworzyć losowe loadouty używając wielu presetów z różnymi wagami, a wewnątrz każdego presetu wielu `discreteItemSets` na slot:
 
-**File: `cfggameplay.json`**
+**Plik: `cfggameplay.json`**
 
 ```json
 "spawnGearPresetFiles": [
@@ -1010,31 +1012,31 @@ You can create randomized loadouts by using multiple presets with different weig
 ]
 ```
 
-**Probability calculation example:**
+**Przykład obliczenia prawdopodobieństwa:**
 
-| Preset File | spawnWeight | Chance |
+| Plik presetu | spawnWeight | Szansa |
 |-------------|------------|--------|
-| `common_survivor.json` | 5 | 5/8 = 62.5% |
-| `uncommon_hunter.json` | 2 | 2/8 = 25.0% |
-| `rare_military.json` | 1 | 1/8 = 12.5% |
+| `common_survivor.json` | 5 | 5/8 = 62,5% |
+| `uncommon_hunter.json` | 2 | 2/8 = 25,0% |
+| `rare_military.json` | 1 | 1/8 = 12,5% |
 
-Within each preset, each slot also has its own randomization. If the Body slot has three t-shirt options with `spawnWeight: 1` each, each has a 33% chance. A shirt with `spawnWeight: 3` in a pool with two `spawnWeight: 1` items would have a 60% chance (3/5).
+W ramach każdego presetu, każdy slot również ma własną randomizację. Jeśli slot Body ma trzy opcje t-shirtów z `spawnWeight: 1` każdy, każdy ma 33% szans. Koszulka z `spawnWeight: 3` w puli z dwoma przedmiotami `spawnWeight: 1` miałaby 60% szans (3/5).
 
 ---
 
-## Integration with Mods
+## Integracja z modami
 
-### Using the JSON Preset System from Mods
+### Używanie systemu presetów JSON z modów
 
-The spawn gear preset system is designed for mission-level configuration. Mods that want to provide custom loadouts should:
+System presetów ekwipunku startowego jest zaprojektowany do konfiguracji na poziomie misji. Mody chcące zapewnić niestandardowe loadouty powinny:
 
-1. **Ship a template JSON** file with the mod's documentation, not embedded in the PBO.
-2. **Document the classnames** so server admins can add mod items to their own preset files.
-3. Let server admins register the preset file through their `cfggameplay.json`.
+1. **Dostarczyć szablon JSON** z dokumentacją moda, nie osadzony w PBO.
+2. **Udokumentować nazwy klas**, aby administratorzy serwerów mogli dodać przedmioty z moda do własnych plików presetów.
+3. Pozwolić administratorom serwerów zarejestrować plik presetu przez ich `cfggameplay.json`.
 
-### Overriding with init.c
+### Nadpisywanie przez init.c
 
-If you need programmatic control over spawning (e.g., role selection, database-driven loadouts, or conditional gear based on player state), override `StartingEquipSetup()` in `init.c` instead:
+Jeśli potrzebujesz programowej kontroli nad spawnem (np. wybór roli, loadouty z bazy danych lub warunkowy ekwipunek oparty na stanie gracza), nadpisz `StartingEquipSetup()` w `init.c`:
 
 ```c
 override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
@@ -1061,11 +1063,11 @@ override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 }
 ```
 
-> **Remember:** If `spawnGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
+> **Pamiętaj:** Jeśli `spawnGearPresetFiles` jest skonfigurowane w `cfggameplay.json`, presety JSON mają priorytet i `StartingEquipSetup()` nie zostanie wywołane.
 
-### Mod Items in Presets
+### Przedmioty z modów w presetach
 
-Modded items work identically to vanilla items in preset files. Use the item's classname as defined in the mod's `config.cpp`:
+Zmodowane przedmioty działają identycznie jak vanillowe w plikach presetów. Użyj nazwy klasy przedmiotu zdefiniowanej w `config.cpp` moda:
 
 ```json
 {
@@ -1084,76 +1086,76 @@ Modded items work identically to vanilla items in preset files. Use the item's c
 }
 ```
 
-If the mod is not loaded on the server, items with unknown classnames will silently fail to spawn. The rest of the preset still applies.
+Jeśli mod nie jest załadowany na serwerze, przedmioty z nieznanymi nazwami klas po cichu nie zostaną utworzone. Reszta presetu nadal działa.
 
 ---
 
 ## Najlepsze praktyki
 
-1. **Start from vanilla.** Copy the vanilla preset from the official documentation as your base and modify it, rather than writing from scratch.
+1. **Zacznij od vanilla.** Skopiuj vanillowy preset z oficjalnej dokumentacji jako bazę i go modyfikuj, zamiast pisać od zera.
 
-2. **Use multiple preset files.** Separate presets by theme (survivor, military, medic) in individual JSON files. This makes maintenance easier than a single monolithic file.
+2. **Używaj wielu plików presetów.** Oddzielaj presety tematycznie (ocalały, wojskowy, medyk) w indywidualnych plikach JSON. Ułatwia to utrzymanie w porównaniu z jednym monolitycznym plikiem.
 
-3. **Test incrementally.** Add one preset at a time and verify in-game. A JSON syntax error in any preset file will cause all presets to fail silently.
+3. **Testuj przyrostowo.** Dodawaj jeden preset na raz i weryfikuj w grze. Błąd składni JSON w jakimkolwiek pliku presetu spowoduje ciche niepowodzenie wszystkich presetów.
 
-4. **Use weighted probabilities deliberately.** Plan your spawn weight distribution on paper. With 5 presets, a `spawnWeight: 10` on one will dominate all others.
+4. **Używaj ważonego prawdopodobieństwa świadomie.** Zaplanuj dystrybucję wag spawnu na papierze. Przy 5 presetach, `spawnWeight: 10` na jednym zdominuje wszystkie pozostałe.
 
-5. **Validate JSON syntax.** Use a JSON validator before deploying. The DayZ engine does not provide helpful error messages for malformed JSON --- it simply ignores the file.
+5. **Waliduj składnię JSON.** Użyj walidatora JSON przed wdrożeniem. Silnik DayZ nie zapewnia pomocnych komunikatów o błędach dla nieprawidłowego JSON --- po prostu ignoruje plik.
 
-6. **Assign quickbar slots intentionally.** Quickbar slots are 0-indexed. Assigning multiple items to the same slot will overwrite. Use `-1` for items that should not be on the quickbar.
+6. **Przypisuj sloty paska szybkiego dostępu celowo.** Sloty paska szybkiego dostępu są indeksowane od 0. Przypisanie wielu przedmiotów do tego samego slotu spowoduje nadpisanie. Użyj `-1` dla przedmiotów, które nie powinny być na pasku.
 
-7. **Keep spawn points away from water.** The generator discards points in water, but points very close to the shoreline can place players in awkward positions. Move position bubbles a few meters inland.
+7. **Trzymaj punkty spawnu z dala od wody.** Generator odrzuca punkty w wodzie, ale punkty bardzo blisko linii brzegowej mogą umieścić graczy w niewygodnych pozycjach. Przesuń bąble pozycji kilka metrów w głąb lądu.
 
-8. **Use groups for coastal maps.** Spawning groups on Chernarus spread fresh spawns across the coast, preventing overcrowding at popular locations like Elektro.
+8. **Używaj grup dla map nadmorskich.** Grupy spawnu na Chernarusie rozpraszają świeże spawny wzdłuż wybrzeża, zapobiegając zatłoczeniu w popularnych lokalizacjach jak Elektro.
 
-9. **Match clothing and cargo capacity.** Unsorted cargo items can only spawn if the player has inventory space. If you define too many cargo items but only give the player a t-shirt (small inventory), excess items will not spawn.
+9. **Dopasuj ubrania do pojemności cargo.** Nieposortowane przedmioty cargo mogą się pojawić tylko jeśli gracz ma miejsce w inwentarzu. Jeśli zdefiniujesz zbyt wiele przedmiotów cargo, ale dasz graczowi tylko t-shirt (mały inwentarz), nadmiarowe przedmioty nie pojawią się.
 
 ---
 
-## Czeste bledy
+## Częste błędy
 
-| Blad | Konsekwencja | Rozwiazanie |
+| Błąd | Konsekwencja | Rozwiązanie |
 |---------|-------------|-----|
-| Forgetting `enableCfgGameplayFile = 1` in `serverDZ.cfg` | `cfggameplay.json` is not loaded, presets are ignored | Add the flag and restart the server |
-| Invalid JSON syntax (trailing comma, missing bracket) | All presets in that file silently fail | Validate JSON with an external tool before deploying |
-| Using `spawnGearPresetFiles` without removing `StartingEquipSetup()` code | The scripted loadout is silently overridden by the JSON preset. The init.c code runs but its items are replaced | This is expected behavior, not a bug. Remove or comment out the init.c loadout code to avoid confusion |
-| Setting `spawnWeight: 0` | Wartosc below minimum. Behavior is undefined | Always use `spawnWeight: 1` or higher |
-| Referencing a classname that does not exist | That specific item silently fails to spawn, but the rest of the preset works | Double-check classnames against the mod's `config.cpp` or types.xml |
-| Assigning an item to a slot it cannot occupy | Item does not spawn. No error logged | Verify the item's `inventorySlot[]` in config.cpp matches the `slotName` |
-| Spawning too many cargo items for available inventory space | Excess items are silently dropped (not spawned) | Ensure clothing has enough capacity, or reduce the number of cargo items |
-| Using `characterTyps` classnames that do not exist | Character creation fails, player may spawn as default model | Use only valid survivor classnames from CfgVehicles |
-| Placing spawn points in water or on steep cliffs | Points are discarded, reducing available spawns. If too many are invalid, players may fail to spawn | Test coordinates in-game with the debug monitor |
-| Mixing up `x`/`z` coordinates in spawn points | Players spawn at wrong map locations | `x` = east-west, `z` = north-south. There is no `y` (vertical) in spawn point definitions |
+| Zapomnienie `enableCfgGameplayFile = 1` w `serverDZ.cfg` | `cfggameplay.json` nie jest ładowane, presety są ignorowane | Dodaj flagę i zrestartuj serwer |
+| Nieprawidłowa składnia JSON (końcowy przecinek, brakujący nawias) | Wszystkie presety w tym pliku po cichu nie działają | Zwaliduj JSON zewnętrznym narzędziem przed wdrożeniem |
+| Używanie `spawnGearPresetFiles` bez usunięcia kodu `StartingEquipSetup()` | Skryptowy loadout jest po cichu nadpisywany przez preset JSON. Kod init.c działa, ale jego przedmioty są zastępowane | To oczekiwane zachowanie, nie błąd. Usuń lub zakomentuj kod loadoutu w init.c, aby uniknąć zamieszania |
+| Ustawienie `spawnWeight: 0` | Wartość poniżej minimum. Zachowanie jest niezdefiniowane | Zawsze używaj `spawnWeight: 1` lub wyższego |
+| Odwołanie do nazwy klasy, która nie istnieje | Ten konkretny przedmiot po cichu nie pojawi się, ale reszta presetu działa | Sprawdź dwukrotnie nazwy klas z `config.cpp` moda lub types.xml |
+| Przypisanie przedmiotu do slotu, którego nie może zajmować | Przedmiot nie pojawia się. Brak zalogowanego błędu | Sprawdź, czy `inventorySlot[]` przedmiotu w config.cpp odpowiada `slotName` |
+| Tworzenie zbyt wielu przedmiotów cargo dla dostępnej przestrzeni inwentarza | Nadmiarowe przedmioty są po cichu pomijane (nie tworzone) | Upewnij się, że ubrania mają wystarczającą pojemność, lub zmniejsz liczbę przedmiotów cargo |
+| Używanie nazw klas `characterTypes`, które nie istnieją | Tworzenie postaci nie powiedzie się, gracz może pojawić się jako domyślny model | Używaj tylko prawidłowych nazw klas ocalałych z CfgVehicles |
+| Umieszczanie punktów spawnu w wodzie lub na stromych klifach | Punkty są odrzucane, zmniejszając dostępne spawny. Jeśli zbyt wiele jest nieprawidłowych, gracze mogą nie móc się pojawić | Przetestuj współrzędne w grze z monitorem debugowania |
+| Pomylenie współrzędnych `x`/`z` w punktach spawnu | Gracze pojawiają się w złych lokalizacjach na mapie | `x` = wschód-zachód, `z` = północ-południe. Nie ma `y` (pionowej) w definicjach punktów spawnu |
 
 ---
 
-## Data Flow Podsumowanie
+## Podsumowanie przepływu danych
 
 ```
 serverDZ.cfg
   └─ enableCfgGameplayFile = 1
        └─ cfggameplay.json
             └─ PlayerData.spawnGearPresetFiles: ["preset1.json", "preset2.json"]
-                 ├─ preset1.json  (spawnWeight: 3)  ── 75% chance
-                 └─ preset2.json  (spawnWeight: 1)  ── 25% chance
-                      ├─ characterTypes[]         → random character model
-                      ├─ attachmentSlotItemSets[] → slot-based equipment
-                      │    └─ discreteItemSets[]  → weighted random per slot
-                      │         ├─ complexChildrenTypes[] → nested items with attributes
-                      │         └─ simpleChildrenTypes[]  → nested items, simple
-                      └─ discreteUnsortedItemSets[] → cargo items
+                 ├─ preset1.json  (spawnWeight: 3)  ── 75% szans
+                 └─ preset2.json  (spawnWeight: 1)  ── 25% szans
+                      ├─ characterTypes[]         → losowy model postaci
+                      ├─ attachmentSlotItemSets[] → ekwipunek oparty na slotach
+                      │    └─ discreteItemSets[]  → ważony losowy na slot
+                      │         ├─ complexChildrenTypes[] → zagnieżdżone przedmioty z atrybutami
+                      │         └─ simpleChildrenTypes[]  → zagnieżdżone przedmioty, proste
+                      └─ discreteUnsortedItemSets[] → przedmioty cargo
                            ├─ complexChildrenTypes[]
                            └─ simpleChildrenTypes[]
 
 cfgplayerspawnpoints.xml
-  ├─ <fresh>   → new characters (required)
-  ├─ <hop>     → server hoppers (official only)
-  └─ <travel>  → map travelers (official only)
-       ├─ spawn_params   → scoring vs infected/players/buildings
-       ├─ generator_params → grid density, size, slope limits
-       └─ generator_posbubbles → positions (optionally in named groups)
+  ├─ <fresh>   → nowe postacie (wymagane)
+  ├─ <hop>     → przeskakujący między serwerami (tylko oficjalne)
+  └─ <travel>  → podróżujący między mapami (tylko oficjalne)
+       ├─ spawn_params   → punktacja vs zainfekowane/gracze/budynki
+       ├─ generator_params → gęstość siatki, rozmiar, limity nachylenia
+       └─ generator_posbubbles → pozycje (opcjonalnie w nazwanych grupach)
 ```
 
 ---
 
-[Strona glowna](../../README.md) | [<< Poprzedni: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
+[Strona główna](../../README.md) | [<< Poprzedni: Pliki konfiguracyjne serwera](05-server-configs.md) | **Konfiguracja ekwipunku startowego**

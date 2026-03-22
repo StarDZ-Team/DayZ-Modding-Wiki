@@ -779,25 +779,25 @@ modded class MissionServer
 }
 ```
 
-### Vzor: Delegate to a Central Manager
+### Vzor: Delegování na centrálního manažera
 
-Both COT and Expansion follow the same pattern: their mission hooks are thin wrappers that delegate to a singleton manager. COT creates `g_cotBase = new CommunityOnlineTools` in the constructor, then calls `g_cotBase.OnStart()` / `OnUpdate()` / `OnFinish()` from the corresponding hooks. Expansion does the same with `GetDayZExpansion().OnStart()` / `OnLoaded()` / `OnFinish()`. Your mod should follow this pattern --- keep mission hook code thin and push logic into dedicated manager classes.
+COT i Expansion používají stejný vzor: jejich mission hooky jsou tenké obálky, které delegují na singleton manažera. COT vytváří `g_cotBase = new CommunityOnlineTools` v konstruktoru, pak volá `g_cotBase.OnStart()` / `OnUpdate()` / `OnFinish()` z odpovídajících hooků. Expansion dělá totéž s `GetDayZExpansion().OnStart()` / `OnLoaded()` / `OnFinish()`. Váš mod by měl sledovat tento vzor --- udržujte kód mission hooků tenký a přesuňte logiku do dedikovaných manažerských tříd.
 
 ---
 
 ## OnInit vs OnMissionStart vs OnMissionLoaded
 
-| Hook | When | Use For |
-|------|------|---------|
-| `OnInit()` | First. Script modules loaded, world not yet active. | Creating managers, registering RPCs, loading configs. |
-| `OnMissionStart()` | Second. World is active, entities can be spawned. | Spawning entities, starting gameplay systems, creating triggers. |
-| `OnMissionLoaded()` | Third. All vanilla systems fully initialized. | Cross-mod queries, finalization that depends on everything being ready. |
+| Hook | Kdy | Použití |
+|------|-----|---------|
+| `OnInit()` | Jako první. Skriptové moduly načteny, svět ještě není aktivní. | Vytváření manažerů, registrace RPC, načítání konfigurací. |
+| `OnMissionStart()` | Jako druhý. Svět je aktivní, entity lze spawnovat. | Spawnování entit, spouštění herních systémů, vytváření triggerů. |
+| `OnMissionLoaded()` | Jako třetí. Všechny vanilla systémy plně inicializovány. | Cross-mod dotazy, finalizace závislá na tom, že je vše připraveno. |
 
-Always call `super` on all three. Use `OnInit` as your primary initialization point. Use `OnMissionLoaded` only when you need to guarantee other mods have already initialized.
+Vždy volejte `super` na všech třech. Používejte `OnInit` jako primární bod inicializace. `OnMissionLoaded` používejte jen když potřebujete zaručit, že ostatní mody jsou již inicializovány.
 
 ---
 
-## Accessing the Current Mission
+## Přístup k aktuální misi
 
 ```c
 Mission mission = GetGame().GetMission();                                    // Base class
@@ -808,11 +808,11 @@ PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());                  // 
 
 ---
 
-## Caste chyby
+## Časté chyby
 
-### 1. Forgetting super.OnInit()
+### 1. Zapomenutí super.OnInit()
 
-Every `override` **must** call `super`. Forgetting it breaks vanilla and every other mod in the chain. This is the single most common modding mistake.
+Každý `override` **musí** volat `super`. Zapomenutí rozbije vanilla a každý další mod v řetězci. Toto je nejčastější chyba při moddingu.
 
 ```c
 // WRONG                                    // CORRECT
@@ -823,9 +823,9 @@ override void OnInit()                      override void OnInit()
                                             }
 ```
 
-### 2. Using GetGame().GetPlayer() on the Server
+### 2. Použití GetGame().GetPlayer() na serveru
 
-`GetGame().GetPlayer()` is **always null** on a dedicated server. There is no "local" player. Use `GetGame().GetPlayers(array)` to iterate all connected players.
+`GetGame().GetPlayer()` je **vždy null** na dedikovaném serveru. Neexistuje žádný „lokální" hráč. Použijte `GetGame().GetPlayers(array)` pro iteraci všech připojených hráčů.
 
 ```c
 // CORRECT way to iterate players on server
@@ -838,9 +838,9 @@ foreach (Man man : players)
 }
 ```
 
-### 3. Not Cleaning Up in OnMissionFinish
+### 3. Neuklízení v OnMissionFinish
 
-Always clean up widgets, callbacks, and references in `OnMissionFinish()`. Without cleanup, widgets leak into the next mission load (client), and stale references persist across server restarts.
+Vždy ukliďte widgety, callbacky a reference v `OnMissionFinish()`. Bez úklidu widgety prosakují do dalšího načtení mise (klient) a zastaralé reference přetrvávají přes restarty serveru.
 
 ```c
 override void OnMissionFinish()
@@ -850,9 +850,9 @@ override void OnMissionFinish()
 }
 ```
 
-### 4. OnUpdate Without Frame Limiting
+### 4. OnUpdate bez omezení snímků
 
-`OnUpdate` fires every frame (15-60+ FPS). Use a timer accumulator for any non-trivial work.
+`OnUpdate` se spouští každý snímek (15–60+ FPS). Použijte akumulátor časovače pro jakoukoli netriviální práci.
 
 ```c
 m_Timer += timeslice;
@@ -863,13 +863,13 @@ if (m_Timer >= 10.0)  // Every 10 seconds
 }
 ```
 
-### 5. Registering RPCs in the Constructor
+### 5. Registrace RPC v konstruktoru
 
-The constructor runs before all script modules are loaded. Register callbacks in `OnInit()` (earliest safe point) and unregister in `OnMissionFinish()`.
+Konstruktor se spouští před načtením všech skriptových modulů. Registrujte callbacky v `OnInit()` (nejdříve bezpečný bod) a odregistrujte v `OnMissionFinish()`.
 
-### 6. Accessing Identity on a Disconnecting Player
+### 6. Přístup k identitě odpojujícího se hráče
 
-`player.GetIdentity()` can return `null` during disconnect. Always null-check both `player` and `identity` before accessing.
+`player.GetIdentity()` může vrátit `null` během odpojení. Vždy kontrolujte na null jak `player`, tak `identity` před přístupem.
 
 ```c
 override void InvokeOnDisconnect(PlayerBase player)
@@ -886,60 +886,60 @@ override void InvokeOnDisconnect(PlayerBase player)
 
 ---
 
-## Shrnuti
+## Shrnutí
 
-| Koncept | Key Point |
-|---------|-----------|
-| Mission hierarchy | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
-| Server class | `MissionServer` --- handles player connections, spawns, tick scheduling |
-| Client class | `MissionGameplay` --- handles HUD, input, chat, menus |
-| Lifecycle order | Constructor > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > `OnUpdate()` loop > `OnMissionFinish()` > Destructor |
-| Player join (server) | `OnEvent(ClientNewEventTypID/ClientReadyEventTypID)` > `InvokeOnConnect()` |
-| Player leave (server) | `OnEvent(ClientDisconnectedEventTypID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
-| Hooking pattern | `modded class MissionServer/MissionGameplay` with `override` and `super` calls |
-| Input handling | `OnKeyPress(key)` / `OnKeyRelease(key)` on `MissionGameplay` (client only) |
-| Event handling | `OnEvent(EventTyp, Param)` on both sides, different event types per side |
-| super calls | **Always call super** on every override, or you break the entire mod chain |
-| Cleanup | **Always clean up** in `OnMissionFinish()` --- remove RPC handlers, destroy widgets, null references |
-| Frame limiting | Use timer accumulators in `OnUpdate()` for any non-trivial work |
-| GetPlayer() | Only works on client; always returns `null` on dedicated server |
-| RPC registration | Register in `OnInit()`, not constructor; unregister in `OnMissionFinish()` |
+| Koncept | Klíčový bod |
+|---------|-------------|
+| Hierarchie Mission | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
+| Třída serveru | `MissionServer` --- zpracovává připojení hráčů, spawny, plánování ticků |
+| Třída klienta | `MissionGameplay` --- zpracovává HUD, vstup, chat, menu |
+| Pořadí životního cyklu | Konstruktor > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > smyčka `OnUpdate()` > `OnMissionFinish()` > Destruktor |
+| Připojení hráče (server) | `OnEvent(ClientNewEventTypeID/ClientReadyEventTypeID)` > `InvokeOnConnect()` |
+| Odchod hráče (server) | `OnEvent(ClientDisconnectedEventTypeID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
+| Vzor hookování | `modded class MissionServer/MissionGameplay` s voláním `override` a `super` |
+| Zpracování vstupu | `OnKeyPress(key)` / `OnKeyRelease(key)` na `MissionGameplay` (pouze klient) |
+| Zpracování událostí | `OnEvent(EventType, Param)` na obou stranách, různé typy událostí na každé straně |
+| Volání super | **Vždy volejte super** v každém override, jinak rozbijete celý řetězec modů |
+| Úklid | **Vždy ukliďte** v `OnMissionFinish()` --- odeberte RPC handlery, zničte widgety, vynulujte reference |
+| Omezení snímků | Používejte akumulátory časovačů v `OnUpdate()` pro jakoukoli netriviální práci |
+| GetPlayer() | Funguje pouze na klientovi; na dedikovaném serveru vždy vrací `null` |
+| Registrace RPC | Registrujte v `OnInit()`, ne v konstruktoru; odregistrujte v `OnMissionFinish()` |
 
 ---
 
-## Doporucene postupy
+## Doporučené postupy
 
-- **Always call `super` as the first line in every Mission override.** This is the single most common DayZ modding mistake. Forgetting `super.OnInit()` silently breaks vanilla initialization and every other mod in the chain.
-- **Keep mission hook code thin --- delegate to manager classes.** Create a singleton manager (e.g., `MyModManager`) and call `manager.Init()` / `manager.Update()` / `manager.Cleanup()` from the hooks. This mirrors the pattern used by COT and Expansion.
-- **Use timer accumulators in `OnUpdate()` for any work that does not need to run every frame.** `OnUpdate` fires 15-60+ times per second. Running database queries, file I/O, or player iteration at frame rate wastes server CPU.
-- **Register RPCs and event handlers in `OnInit()`, not in the constructor.** The constructor runs before all script modules are loaded. The networking layer is not ready until `OnInit()`.
-- **Always clean up in `OnMissionFinish()`.** Destroy widgets, remove `CallLater` registrations, unregister RPC handlers, and null manager references. Failure to clean up causes stale references across mission reloads.
+- **Vždy volejte `super` jako první řádek v každém override Mission.** Toto je nejčastější chyba při moddingu DayZ. Zapomenutí `super.OnInit()` tiše rozbije vanilla inicializaci a každý další mod v řetězci.
+- **Udržujte kód mission hooků tenký --- delegujte na manažerské třídy.** Vytvořte singleton manažera (např. `MyModManager`) a volejte `manager.Init()` / `manager.Update()` / `manager.Cleanup()` z hooků. Toto zrcadlí vzor používaný COT a Expansion.
+- **Používejte akumulátory časovačů v `OnUpdate()` pro jakoukoli práci, která nemusí běžet každý snímek.** `OnUpdate` se spouští 15–60+ krát za sekundu. Spouštění databázových dotazů, souborového I/O nebo iterace hráčů při snímkové frekvenci plýtvá CPU serveru.
+- **Registrujte RPC a event handlery v `OnInit()`, ne v konstruktoru.** Konstruktor se spouští před načtením všech skriptových modulů. Síťová vrstva není připravena do `OnInit()`.
+- **Vždy ukliďte v `OnMissionFinish()`.** Zničte widgety, odeberte registrace `CallLater`, odregistrujte RPC handlery a vynulujte reference manažerů. Neúklid způsobuje zastaralé reference přes přenačtení misí.
 
 ---
 
 ## Kompatibilita a dopad
 
-> **Mod Compatibility:** `MissionServer` and `MissionGameplay` are the two most commonly modded classes in DayZ. Every mod that has server logic or client UI hooks into them.
+> **Kompatibilita modů:** `MissionServer` a `MissionGameplay` jsou dvě nejčastěji moddované třídy v DayZ. Každý mod, který má serverovou logiku nebo klientské UI, se do nich napojuje.
 
-- **Load Order:** The last-loaded mod's `modded class` override runs outermost in the call chain. If a mod forgets `super`, it silently blocks all mods loaded before it. This is the #1 cause of multi-mod incompatibility.
-- **Modded Class Conflicts:** `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate`, and `OnMissionFinish` are the most contested override points. Conflicts are rare as long as every mod calls `super`.
-- **Performance Impact:** Heavy logic in `OnUpdate()` without frame limiting directly reduces server/client FPS. A single mod doing `GetGame().GetPlayers()` iteration every frame on a 60-player server adds measurable overhead.
-- **Server/Client:** `MissionServer` hooks only fire on dedicated servers. `MissionGameplay` hooks only fire on clients. On a listen server, both classes exist. `GetGame().GetPlayer()` is always null on dedicated servers.
-
----
-
-## Pozorovano ve skutecnych modech
-
-> These patterns were confirmed by studying the source code of professional DayZ mods.
-
-| Vzor | Mod | File/Location |
-|---------|-----|---------------|
-| Thin `modded class MissionServer.OnInit()` delegating to singleton manager | COT | `CommunityOnlineTools` init in MissionServer |
-| `InvokeOnConnect` override to load per-player JSON data | Expansion | Player settings sync on connect |
-| `StartingEquipSetup` override for custom starter kits | Multiple community mods | MissionServer starter kit hooks |
-| `OnEvent` interception before `super` to block banned players | COT | Ban system in MissionServer |
-| `OnMissionFinish` cleanup with widget `Unlink()` and null assignments | Expansion | HUD and menu cleanup |
+- **Pořadí načítání:** Override `modded class` naposledy načteného modu běží jako nejvnější v řetězci volání. Pokud mod zapomene `super`, tiše zablokuje všechny mody načtené před ním. Toto je příčina č. 1 nekompatibility více modů.
+- **Konflikty modded class:** `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate` a `OnMissionFinish` jsou nejčastěji přepisované body. Konflikty jsou vzácné, pokud každý mod volá `super`.
+- **Dopad na výkon:** Těžká logika v `OnUpdate()` bez omezení snímků přímo snižuje FPS serveru/klienta. Jediný mod provádějící iteraci `GetGame().GetPlayers()` každý snímek na 60hráčovém serveru přidává měřitelnou zátěž.
+- **Server/Klient:** Hooky `MissionServer` se spouštějí pouze na dedikovaných serverech. Hooky `MissionGameplay` se spouštějí pouze na klientech. Na listen serveru existují obě třídy. `GetGame().GetPlayer()` je vždy null na dedikovaných serverech.
 
 ---
 
-[<< Predchozi: Central Economy](10-central-economy.md) | **Mission Hooks** | [Dalsi: Akce System >>](12-action-system.md)
+## Pozorováno ve skutečných modech
+
+> Tyto vzory byly potvrzeny studiem zdrojového kódu profesionálních DayZ modů.
+
+| Vzor | Mod | Soubor/Umístění |
+|------|-----|-----------------|
+| Tenký `modded class MissionServer.OnInit()` delegující na singleton manažera | COT | Inicializace `CommunityOnlineTools` v MissionServer |
+| Override `InvokeOnConnect` pro načtení JSON dat per-hráč | Expansion | Synchronizace nastavení hráče při připojení |
+| Override `StartingEquipSetup` pro vlastní startovní vybavení | Více komunitních modů | Hooky startovního vybavení v MissionServer |
+| Zachycení `OnEvent` před `super` pro blokování zabanovaných hráčů | COT | Systém banů v MissionServer |
+| Úklid v `OnMissionFinish` s `Unlink()` widgetů a nulovými přiřazeními | Expansion | Úklid HUD a menu |
+
+---
+
+[<< Předchozí: Central Economy](10-central-economy.md) | **Mission Hooks** | [Další: Action System >>](12-action-system.md)

@@ -1,62 +1,62 @@
-# Chapter 7.4: Config Persistence
+# 7.4. fejezet: Konfiguráció perzisztencia
 
-[Home](../../README.md) | [<< Previous: RPC Patterns](03-rpc-patterns.md) | **Config Persistence** | [Next: Permission Systems >>](05-permissions.md)
-
----
-
-## Bevezetes
-
-Almost every DayZ mod needs to save and load configuration data: server settings, spawn tables, ban lists, player data, teleport locations. The engine provides `JsonFileLoader` for simple JSON serialization and raw file I/O (`FileHandle`, `FPrintln`) for everything else. Professional mods layer config versioning and auto-migration on top.
-
-This chapter covers the standard patterns for config persistence, from basic JSON load/save through versioned migration systems, directory management, and auto-save timers.
+[Kezdőlap](../../README.md) | [<< Előző: RPC minták](03-rpc-patterns.md) | **Konfiguráció perzisztencia** | [Következő: Jogosultsági rendszerek >>](05-permissions.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [JsonFileLoader Pattern](#jsonfileloader-pattern)
-- [Manual JSON Writing (FPrintln)](#manual-json-writing-fprintln)
-- [The $profile Path](#the-profile-path)
-- [Directory Creation](#directory-creation)
-- [Config Data Classes](#config-data-classes)
-- [Config Versioning and Migration](#config-versioning-and-migration)
-- [Auto-Save Idozitok](#auto-save-timers)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+Szinte minden DayZ modnak szüksége van konfigurációs adatok mentésére és betöltésére: szerver beállítások, spawn táblák, tiltólisták, játékosadatok, teleport helyszínek. A motor a `JsonFileLoader`-t biztosítja egyszerű JSON szerializációhoz és nyers fájl I/O-t (`FileHandle`, `FPrintln`) minden máshoz. A professzionális modok konfiguráció-verziózást és automatikus migrációt építenek erre.
+
+Ez a fejezet az alap JSON mentés/betöltéstől a verziózott migrációs rendszereken, könyvtárkezelésen és automatikus mentési időzítőkön át tárgyalja a standard konfigurációperzisztencia-mintákat.
 
 ---
 
-## JsonFileLoader Pattern
+## Tartalomjegyzék
 
-`JsonFileLoader` is the engine's built-in serializer. It converts between Enforce Script objects and JSON files using reflection --- it reads the public fields of your class and maps them to JSON keys automatically.
+- [JsonFileLoader minta](#jsonfileloader-minta)
+- [Kézi JSON írás (FPrintln)](#kézi-json-írás-fprintln)
+- [A $profile útvonal](#a-profile-útvonal)
+- [Könyvtár létrehozása](#könyvtár-létrehozása)
+- [Konfigurációs adatosztályok](#konfigurációs-adatosztályok)
+- [Konfiguráció verziózás és migráció](#konfiguráció-verziózás-és-migráció)
+- [Automatikus mentési időzítők](#automatikus-mentési-időzítők)
+- [Gyakori hibák](#gyakori-hibák)
+- [Bevált gyakorlatok](#bevált-gyakorlatok)
 
-### Critical Gotcha
+---
 
-**`JsonFileLoader<T>.JsonLoadFile()` and `JsonFileLoader<T>.JsonSaveFile()` return `void`.** You cannot check their return value. You cannot assign them to a `bool`. You cannot use them in an `if` condition. This is one of the most common mistakes in DayZ modding.
+## JsonFileLoader minta
+
+A `JsonFileLoader` a motor beépített szerializálója. Enforce Script objektumok és JSON fájlok közötti konverzióra szolgál reflexió használatával --- beolvassa az osztályod publikus mezőit és automatikusan JSON kulcsokra képezi le őket.
+
+### Kritikus buktató
+
+**A `JsonFileLoader<T>.JsonLoadFile()` és a `JsonFileLoader<T>.JsonSaveFile()` `void`-ot ad vissza.** Nem ellenőrizheted a visszatérési értéküket. Nem rendelheted `bool`-hoz. Nem használhatod `if` feltételben. Ez az egyik leggyakoribb hiba a DayZ moddingban.
 
 ```c
-// WRONG — will not compile
+// HIBÁS — nem fordul le
 bool success = JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
 
-// WRONG — will not compile
+// HIBÁS — nem fordul le
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config))
 {
     // ...
 }
 
-// RIGHT — call and then check the object state
+// HELYES — hívd meg, majd ellenőrizd az objektum állapotát
 JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
-// Check if the data was actually populated
+// Ellenőrizd, hogy az adatok valóban feltöltődtek-e
 if (config.m_ServerName != "")
 {
-    // Data loaded successfully
+    // Adatok sikeresen betöltve
 }
 ```
 
-### Basic Load/Save
+### Alap mentés/betöltés
 
 ```c
-// Data class — public fields are serialized to/from JSON
+// Adatosztály — a publikus mezők szerializálódnak JSON-ba/-ból
 class ServerSettings
 {
     string ServerName = "My DayZ Server";
@@ -80,7 +80,7 @@ class SettingsManager
         }
         else
         {
-            // First run: save defaults
+            // Első futtatás: alapértelmezések mentése
             Save();
         }
     }
@@ -92,15 +92,15 @@ class SettingsManager
 };
 ```
 
-### What Gets Serialized
+### Mi szerializálódik
 
-`JsonFileLoader` serializes **all public fields** of the object. It does not serialize:
-- Private or protected fields
-- Methods
-- Static fields
-- Transient/runtime-only fields (there is no `[NonSerialized]` attribute --- use access modifiers)
+A `JsonFileLoader` **minden publikus mezőt** szerializál az objektumon. Nem szerializálja:
+- Privát vagy védett mezőket
+- Metódusokat
+- Statikus mezőket
+- Tranziens/csak futásidejű mezőket (nincs `[NonSerialized]` attribútum --- használj hozzáférés-módosítókat)
 
-The resulting JSON looks like:
+Az eredményül kapott JSON így néz ki:
 
 ```json
 {
@@ -111,20 +111,20 @@ The resulting JSON looks like:
 }
 ```
 
-### Supported Field Types
+### Támogatott mezőtípusok
 
-| Tipus | JSON Representation |
+| Típus | JSON ábrázolás |
 |------|-------------------|
-| `int` | Number |
-| `float` | Number |
+| `int` | Szám |
+| `float` | Szám |
 | `bool` | `true` / `false` |
-| `string` | String |
-| `vector` | Array of 3 numbers |
-| `array<T>` | JSON array |
-| `map<string, T>` | JSON object (string keys only) |
-| Nested class | Nested JSON object |
+| `string` | Szöveg |
+| `vector` | 3 számból álló tömb |
+| `array<T>` | JSON tömb |
+| `map<string, T>` | JSON objektum (csak szöveg kulcsokkal) |
+| Beágyazott osztály | Beágyazott JSON objektum |
 
-### Nested Objects
+### Beágyazott objektumok
 
 ```c
 class SpawnPoint
@@ -140,7 +140,7 @@ class SpawnConfig
 };
 ```
 
-Produces:
+Eredménye:
 
 ```json
 {
@@ -161,11 +161,11 @@ Produces:
 
 ---
 
-## Manual JSON Writing (FPrintln)
+## Kézi JSON írás (FPrintln)
 
-Sometimes `JsonFileLoader` is not flexible enough: it cannot handle arrays of mixed types, custom formatting, or non-class data structures. In those cases, use raw file I/O.
+Néha a `JsonFileLoader` nem elég rugalmas: nem kezeli a vegyes típusú tömböket, az egyéni formázást vagy a nem osztály típusú adatszerkezeteket. Ilyen esetekben használj nyers fájl I/O-t.
 
-### Basic Pattern
+### Alap minta
 
 ```c
 void WriteCustomData(string path, array<string> lines)
@@ -190,7 +190,7 @@ void WriteCustomData(string path, array<string> lines)
 }
 ```
 
-### Reading Raw Files
+### Nyers fájlok olvasása
 
 ```c
 void ReadCustomData(string path)
@@ -203,60 +203,60 @@ void ReadCustomData(string path)
     {
         line = line.Trim();
         if (line == "") continue;
-        // Process line...
+        // Sor feldolgozása...
     }
 
     CloseFile(file);
 }
 ```
 
-### Mikor hasznaljuk Manual I/O
+### Mikor használj kézi I/O-t
 
-- Writing log files (append mode)
-- Writing CSV or plain-text exports
-- Custom JSON formatting that `JsonFileLoader` cannot produce
-- Parsing non-JSON file formats (e.g., DayZ's `.map` or `.xml` files)
+- Naplófájlok írása (hozzáfűzés módban)
+- CSV vagy egyszerű szöveges exportok írása
+- Egyéni JSON formázás, amit a `JsonFileLoader` nem tud előállítani
+- Nem-JSON fájlformátumok elemzése (pl. DayZ `.map` vagy `.xml` fájlok)
 
-For standard config files, prefer `JsonFileLoader`. It is faster to implement, less error-prone, and automatically handles nested objects.
+Standard konfigurációs fájlokhoz használd inkább a `JsonFileLoader`-t. Gyorsabb implementálni, kevésbé hibára hajlamos, és automatikusan kezeli a beágyazott objektumokat.
 
 ---
 
-## The $profile Path
+## A $profile útvonal
 
-DayZ provides the `$profile:` path prefix, which resolves to the server's profile directory (typically the folder containing `DayZServer_x64.exe`, or the profile path specified with `-profiles=`).
+A DayZ a `$profile:` útvonal-előtagot biztosítja, amely a szerver profil könyvtárára oldódik fel (általában a `DayZServer_x64.exe`-t tartalmazó mappa, vagy a `-profiles=` kapcsolóval megadott profil útvonal).
 
 ```c
-// These resolve to the profile directory:
+// Ezek a profil könyvtárra oldódnak fel:
 "$profile:MyMod/config.json"       // → C:/DayZServer/MyMod/config.json
 "$profile:MyMod/Players/data.json" // → C:/DayZServer/MyMod/Players/data.json
 ```
 
-### Always Use $profile
+### Mindig használd a $profile-t
 
-Never use absolute paths. Never use relative paths. Always use `$profile:` for any file your mod creates or reads at runtime:
+Soha ne használj abszolút útvonalakat. Soha ne használj relatív útvonalakat. Mindig a `$profile:`-t használd minden fájlhoz, amit a mod futásidőben létrehoz vagy olvas:
 
 ```c
-// BAD: Absolute path — breaks on any other machine
+// ROSSZ: Abszolút útvonal — más gépen nem működik
 const string CONFIG_PATH = "C:/DayZServer/MyMod/config.json";
 
-// BAD: Relative path — depends on working directory, which varies
+// ROSSZ: Relatív útvonal — a munkakönyvtártól függ, ami változó
 const string CONFIG_PATH = "MyMod/config.json";
 
-// GOOD: $profile resolves correctly everywhere
+// JÓ: $profile mindenhol helyesen oldódik fel
 const string CONFIG_PATH = "$profile:MyMod/config.json";
 ```
 
-### Conventional Directory Structure
+### Szokásos könyvtárszerkezet
 
-Most mods follow this convention:
+A legtöbb mod ezt a konvenciót követi:
 
 ```
 $profile:
   └── YourModName/
-      ├── Config.json          (main server config)
-      ├── Permissions.json     (admin permissions)
+      ├── Config.json          (fő szerver konfiguráció)
+      ├── Permissions.json     (admin jogosultságok)
       ├── Logs/
-      │   └── 2025-01-15.log   (daily log files)
+      │   └── 2025-01-15.log   (napi naplófájlok)
       └── Players/
           ├── 76561198xxxxx.json
           └── 76561198yyyyy.json
@@ -264,9 +264,9 @@ $profile:
 
 ---
 
-## Directory Creation
+## Könyvtár létrehozása
 
-Before writing a file, you must ensure its parent directory exists. DayZ does not auto-create directories.
+Fájl írása előtt biztosítanod kell, hogy a szülő könyvtár létezik. A DayZ nem hozza létre automatikusan a könyvtárakat.
 
 ### MakeDirectory
 
@@ -293,23 +293,23 @@ void EnsureDirectories()
 }
 ```
 
-### Important: MakeDirectory Is Not Recursive
+### Fontos: A MakeDirectory nem rekurzív
 
-`MakeDirectory` creates only the final directory in the path. If the parent does not exist, it fails silently. You must create each level:
+A `MakeDirectory` csak az útvonal utolsó könyvtárát hozza létre. Ha a szülő nem létezik, csendben kudarcot vall. Minden szintet külön kell létrehoznod:
 
 ```c
-// WRONG: Parent "MyMod" doesn't exist yet
-MakeDirectory("$profile:MyMod/Data/Players");  // Fails silently
+// HIBÁS: A "MyMod" szülő még nem létezik
+MakeDirectory("$profile:MyMod/Data/Players");  // Csendben kudarcot vall
 
-// RIGHT: Create each level
+// HELYES: Minden szint létrehozása
 MakeDirectory("$profile:MyMod");
 MakeDirectory("$profile:MyMod/Data");
 MakeDirectory("$profile:MyMod/Data/Players");
 ```
 
-### MyMod Pattern: Constants for Paths
+### Útvonal-konstansok minta
 
-MyMod defines all paths as constants in a dedicated class:
+Egy keretrendszer mod az összes útvonalat konstansként definiálja egy dedikált osztályban:
 
 ```c
 class MyModConst
@@ -322,35 +322,35 @@ class MyModConst
 };
 ```
 
-This avoids path string duplication across the codebase and makes it easy to find every file your mod touches.
+Ez elkerüli az útvonal-szövegek duplikálását a kódbázisban és megkönnyíti minden fájl megtalálását, amit a mod érint.
 
 ---
 
-## Config Data Classes
+## Konfigurációs adatosztályok
 
-A well-designed config data class provides default values, version tracking, and clear documentation of each field.
+Egy jól tervezett konfigurációs adatosztály alapértelmezett értékeket, verziókövetést és az egyes mezők világos dokumentációját biztosítja.
 
-### Basic Pattern
+### Alap minta
 
 ```c
 class MyModConfig
 {
-    // Version tracking for migrations
+    // Verziókövetés a migrációkhoz
     int ConfigVersion = 3;
 
-    // Gameplay settings with sensible defaults
+    // Játékmenet beállítások ésszerű alapértelmezésekkel
     bool EnableFeatureX = true;
     int MaxEntities = 50;
     float SpawnRadius = 500.0;
     string WelcomeMessage = "Welcome to the server!";
 
-    // Complex settings
+    // Összetett beállítások
     ref array<string> AllowedWeapons = new array<string>();
     ref map<string, float> ZoneRadii = new map<string, float>();
 
     void MyModConfig()
     {
-        // Initialize collections with defaults
+        // Gyűjtemények inicializálása alapértelmezésekkel
         AllowedWeapons.Insert("AK74");
         AllowedWeapons.Insert("M4A1");
 
@@ -360,43 +360,43 @@ class MyModConfig
 };
 ```
 
-### MyMod ConfigBase Pattern
+### Reflektív ConfigBase minta
 
-MyMod uses a reflective config system where each config class declares its fields as descriptors. This allows the admin panel to auto-generate UI for any config without hardcoded field names:
+Ez a minta reflektív konfigurációs rendszert használ, ahol minden konfigurációs osztály leíróként deklarálja a mezőit. Ez lehetővé teszi, hogy az admin panel automatikusan generáljon UI-t bármely konfigurációhoz beégetett mezőnevek nélkül:
 
 ```c
-// Conceptual pattern (simplified from MyMod):
+// Koncepcionális minta (reflektív konfiguráció):
 class MyConfigBase
 {
-    // Each config declares its version
+    // Minden konfiguráció deklarálja a verzióját
     int ConfigVersion;
     string ModId;
 
-    // Subclasses override to declare their fields
+    // Az alosztályok felülírják a mezőik deklarálásához
     void Init(string modId)
     {
         ModId = modId;
     }
 
-    // Reflection: get all configurable fields
-    array<ref MyModConfigField> GetFields();
+    // Reflexió: összes konfigurálható mező lekérése
+    array<ref MyConfigField> GetFields();
 
-    // Dynamic get/set by field name (for admin panel sync)
+    // Dinamikus get/set mezőnév alapján (admin panel szinkronizációhoz)
     string GetFieldValue(string fieldName);
     void SetFieldValue(string fieldName, string value);
 
-    // Hooks for custom logic on load/save
+    // Hookok egyéni logikához betöltés/mentés során
     void OnAfterLoad() {}
     void OnBeforeSave() {}
 };
 ```
 
-### VPP ConfigurablePlugin Pattern
+### VPP ConfigurablePlugin minta
 
-VPP merges config management directly into the plugin lifecycle:
+A VPP a konfigurációkezelést közvetlenül a plugin életciklusba integrálja:
 
 ```c
-// VPP pattern (simplified):
+// VPP minta (egyszerűsítve):
 class VPPESPConfig
 {
     bool EnableESP = true;
@@ -411,7 +411,7 @@ class VPPESPPlugin : ConfigurablePlugin
     override void OnInit()
     {
         m_ESPConfig = new VPPESPConfig();
-        // ConfigurablePlugin.LoadConfig() handles the JSON load
+        // A ConfigurablePlugin.LoadConfig() kezeli a JSON betöltést
         super.OnInit();
     }
 };
@@ -419,30 +419,30 @@ class VPPESPPlugin : ConfigurablePlugin
 
 ---
 
-## Config Versioning and Migration
+## Konfiguráció verziózás és migráció
 
-As your mod evolves, config structures change. You add fields, remove fields, rename fields, change defaults. Without versioning, users with old config files will silently get wrong values or crash.
+Ahogy a modod fejlődik, a konfigurációs struktúrák változnak. Mezőket adsz hozzá, távolítasz el, nevezel át, alapértelmezéseket változtatsz. Verziózás nélkül a régi konfigurációs fájlokkal rendelkező felhasználók csendben rossz értékeket kapnak vagy összeomlást tapasztalnak.
 
-### The Version Field
+### A verziómező
 
-Every config class should have an integer version field:
+Minden konfigurációs osztálynak kell legyen egy egész szám verziómezője:
 
 ```c
 class MyModConfig
 {
-    int ConfigVersion = 5;  // Increment when the structure changes
+    int ConfigVersion = 5;  // Növeld, amikor a struktúra változik
     // ...
 };
 ```
 
-### Migration on Load
+### Migráció betöltéskor
 
-When loading a config, compare the on-disk version with the current code version. If they differ, run migrations:
+Konfiguráció betöltésekor hasonlítsd össze a lemezen lévő verziót az aktuális kódverzióval. Ha különböznek, futtass migrációkat:
 
 ```c
 void LoadConfig()
 {
-    MyModConfig config = new MyModConfig();  // Has current defaults
+    MyModConfig config = new MyModConfig();  // Aktuális alapértelmezésekkel
 
     if (FileExist(CONFIG_PATH))
     {
@@ -452,52 +452,52 @@ void LoadConfig()
         {
             MigrateConfig(config);
             config.ConfigVersion = CURRENT_VERSION;
-            SaveConfig(config);  // Re-save with updated version
+            SaveConfig(config);  // Újramentés frissített verzióval
         }
     }
     else
     {
-        SaveConfig(config);  // First run: write defaults
+        SaveConfig(config);  // Első futtatás: alapértelmezések írása
     }
 
     m_Config = config;
 }
 ```
 
-### Migration Functions
+### Migrációs függvények
 
 ```c
 static const int CURRENT_VERSION = 5;
 
 void MigrateConfig(MyModConfig config)
 {
-    // Run each migration step sequentially
+    // Minden migrációs lépés sorrendben fut
     if (config.ConfigVersion < 2)
     {
-        // v1 → v2: "SpawnDelay" was renamed to "RespawnInterval"
-        // Old field is lost on load; set new default
+        // v1 → v2: A "SpawnDelay" átnevezve "RespawnInterval"-ra
+        // A régi mező betöltéskor elveszik; állítsd be az új alapértelmezést
         config.RespawnInterval = 300.0;
     }
 
     if (config.ConfigVersion < 3)
     {
-        // v2 → v3: Added "EnableNotifications" field
+        // v2 → v3: "EnableNotifications" mező hozzáadva
         config.EnableNotifications = true;
     }
 
     if (config.ConfigVersion < 4)
     {
-        // v3 → v4: "MaxZombies" default changed from 100 to 200
+        // v3 → v4: "MaxZombies" alapértelmezés 100-ról 200-ra változott
         if (config.MaxZombies == 100)
         {
-            config.MaxZombies = 200;  // Only update if user hadn't changed it
+            config.MaxZombies = 200;  // Csak akkor frissítsd, ha a felhasználó nem változtatta meg
         }
     }
 
     if (config.ConfigVersion < 5)
     {
-        // v4 → v5: "DifficultyMode" changed from int to string
-        // config.DifficultyMode = "Normal"; // Set new default
+        // v4 → v5: "DifficultyMode" int-ről string-re változott
+        // config.DifficultyMode = "Normal"; // Új alapértelmezés beállítása
     }
 
     MyLog.Info("Config", "Migrated config from v"
@@ -505,30 +505,30 @@ void MigrateConfig(MyModConfig config)
 }
 ```
 
-### Expansion's Migration Example
+### Expansion migrációs példa
 
-Expansion is known for aggressive config evolution. Some Expansion configs have gone through 17+ versions. Their pattern:
-1. Each version bump has a dedicated migration function
-2. Migrations run in order (1 to 2, then 2 to 3, then 3 to 4, etc.)
-3. Each migration only changes what is necessary for that version step
-4. The final version number is written to disk after all migrations complete
+Az Expansion ismert az agresszív konfiguráció-fejlődésről. Néhány Expansion konfiguráció 17+ verzión ment keresztül. A mintájuk:
+1. Minden verzióugrásnak dedikált migrációs függvénye van
+2. A migrációk sorrendben futnak (1-ről 2-re, majd 2-ről 3-ra, majd 3-ról 4-re stb.)
+3. Minden migráció csak az adott verziólépéshez szükséges dolgokat változtatja
+4. A végső verziószám az összes migráció befejezése után íródik lemezre
 
-This is the gold standard for config versioning in DayZ mods.
+Ez a DayZ modok konfiguráció-verziózásának arany standardja.
 
 ---
 
-## Auto-Save Idozitok
+## Automatikus mentési időzítők
 
-For configs that change at runtime (admin edits, player data accumulation), implement an auto-save timer to prevent data loss on crashes.
+A futásidőben változó konfigurációkhoz (admin szerkesztések, játékosadatok felhalmozódása) valósíts meg automatikus mentési időzítőt az adatvesztés megelőzéséhez összeomlás esetén.
 
-### Timer-Based Auto-Save
+### Időzítő-alapú automatikus mentés
 
 ```c
 class MyDataManager
 {
-    protected const float AUTOSAVE_INTERVAL = 300.0;  // 5 minutes
+    protected const float AUTOSAVE_INTERVAL = 300.0;  // 5 perc
     protected float m_AutosaveTimer;
-    protected bool m_Dirty;  // Has data changed since last save?
+    protected bool m_Dirty;  // Változtak-e adatok az utolsó mentés óta?
 
     void MarkDirty()
     {
@@ -552,7 +552,7 @@ class MyDataManager
 
     void OnMissionFinish()
     {
-        // Always save on shutdown, even if timer hasn't fired
+        // Mindig ments leálláskor, még ha az időzítő nem is járt le
         if (m_Dirty)
         {
             Save();
@@ -562,52 +562,52 @@ class MyDataManager
 };
 ```
 
-### Dirty Flag Optimization
+### Dirty flag optimalizáció
 
-Only write to disk when data has actually changed. Fajl I/O is expensive. If nothing changed, skip the save:
+Csak akkor írj lemezre, amikor az adatok ténylegesen változtak. A fájl I/O költséges. Ha semmi nem változott, hagyd ki a mentést:
 
 ```c
 void UpdateSetting(string key, string value)
 {
-    if (m_Settings.Get(key) == value) return;  // No change, no save
+    if (m_Settings.Get(key) == value) return;  // Nincs változás, nincs mentés
 
     m_Settings.Set(key, value);
     MarkDirty();
 }
 ```
 
-### Save on Critical Esemenyek
+### Mentés kritikus eseményekkor
 
-In addition to timed saves, save immediately after critical operations:
+Az időzített mentések mellett ments azonnal a kritikus műveletek után:
 
 ```c
 void BanPlayer(string uid, string reason)
 {
     m_BanList.Insert(uid);
-    Save();  // Immediate save — bans must survive crashes
+    Save();  // Azonnali mentés — a tiltásoknak túl kell élniük az összeomlást
 }
 ```
 
 ---
 
-## Gyakori hibak
+## Gyakori hibák
 
-### 1. Treating JsonLoadFile as if It Returns a Value
+### 1. A JsonLoadFile kezelése, mintha értéket adna vissza
 
 ```c
-// WRONG — does not compile
+// HIBÁS — nem fordul le
 if (JsonFileLoader<MyConfig>.JsonLoadFile(path, config)) { ... }
 ```
 
-`JsonLoadFile` returns `void`. Call it, then check the object's state.
+A `JsonLoadFile` `void`-ot ad vissza. Hívd meg, majd ellenőrizd az objektum állapotát.
 
-### 2. Not Checking FileExist Before Loading
+### 2. FileExist ellenőrzés hiánya betöltés előtt
 
 ```c
-// WRONG — crashes or produces empty object with no diagnostic
+// HIBÁS — összeomlik vagy üres objektumot ad diagnosztika nélkül
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 
-// RIGHT — check first, create defaults if missing
+// HELYES — először ellenőrizd, hozd létre az alapértelmezéseket ha hiányzik
 if (!FileExist("$profile:MyMod/Config.json"))
 {
     SaveDefaults();
@@ -616,63 +616,83 @@ if (!FileExist("$profile:MyMod/Config.json"))
 JsonFileLoader<MyConfig>.JsonLoadFile("$profile:MyMod/Config.json", config);
 ```
 
-### 3. Forgetting to Create Directories
+### 3. Könyvtárak létrehozásának elfelejtése
 
-`JsonSaveFile` fails silently if the directory does not exist. Always ensure directories before saving.
+A `JsonSaveFile` csendben kudarcot vall, ha a könyvtár nem létezik. Mindig biztosítsd a könyvtárakat mentés előtt.
 
-### 4. Public Fields You Did Not Intend to Serialize
+### 4. Nem kívánt publikus mezők szerializálódnak
 
-Every `public` field on a config class ends up in the JSON. If you have runtime-only fields, make them `protected` or `private`:
+Minden `public` mező a konfigurációs osztályon bekerül a JSON-ba. Ha vannak csak futásidejű mezőid, tedd `protected` vagy `private` elérésűre:
 
 ```c
 class MyConfig
 {
-    // These go to JSON:
+    // Ezek a JSON-ba kerülnek:
     int MaxPlayers = 60;
     string ServerName = "My Server";
 
-    // This does NOT go to JSON (protected):
+    // Ez NEM kerül a JSON-ba (protected):
     protected bool m_Loaded;
     protected float m_LastSaveTime;
 };
 ```
 
-### 5. Backslash and Quote Characters in JSON Values
+### 5. Fordított perjel és idézőjel karakterek JSON értékekben
 
-Enforce Script's CParser has trouble with `\\` and `\"` in string literals. Avoid storing file paths with backslashes in configs. Use forward slashes:
+Az Enforce Script CParser-je problémás a `\\` és `\"` karakterekkel a szöveg literálokban. Kerüld a fordított perjeles fájl-útvonalak tárolását a konfigurációkban. Használj perjelet:
 
 ```c
-// BAD — backslashes may break parsing
+// ROSSZ — a fordított perjelek eltörhetik az elemzést
 string LogPath = "C:\\DayZ\\Logs\\server.log";
 
-// GOOD — forward slashes work everywhere
+// JÓ — a perjelek mindenhol működnek
 string LogPath = "$profile:MyMod/Logs/server.log";
 ```
 
 ---
 
-## Bevalt gyakorlatok
+## Bevált gyakorlatok
 
-1. **Use `$profile:` for all file paths.** Never hardcode absolute paths.
+1. **Használd a `$profile:`-t minden fájl-útvonalhoz.** Soha ne égesd be az abszolút útvonalakat.
 
-2. **Create directories before writing files.** Check with `FileExist()`, create with `MakeDirectory()`, one level at a time.
+2. **Hozd létre a könyvtárakat fájlok írása előtt.** Ellenőrizd a `FileExist()`-tel, hozd létre a `MakeDirectory()`-vel, egyszerre egy szintet.
 
-3. **Always provide default values in your config class constructor or field initializers.** This ensures first-run configs are sensible.
+3. **Mindig adj meg alapértelmezett értékeket a konfigurációs osztályod konstruktorában vagy mező inicializálóiban.** Ez biztosítja, hogy az első futtatás konfigurációi ésszerűek legyenek.
 
-4. **Version your configs from day one.** Adding a `ConfigVersion` field costs nothing and saves hours of debugging later.
+4. **Verziózd a konfigurációidat az első naptól.** Egy `ConfigVersion` mező hozzáadása nem kerül semmibe és órákat takarít meg később a hibakeresésben.
 
-5. **Separate config data classes from manager classes.** The data class is a dumb container; the manager handles load/save/sync logic.
+5. **Válaszd szét a konfigurációs adatosztályokat a menedzser osztályoktól.** Az adatosztály egy egyszerű tároló; a menedzser kezeli a betöltés/mentés/szinkronizálás logikát.
 
-6. **Use auto-save with a dirty flag.** Do not write to disk every time a value changes --- batch writes on a timer.
+6. **Használj automatikus mentést dirty flag-gel.** Ne írj lemezre minden egyes értékváltozáskor --- kötegelve ments időzítővel.
 
-7. **Save on mission finish.** The auto-save timer is a safety net, not the primary save. Always save during `OnMissionFinish()`.
+7. **Ments a küldetés befejezésekor.** Az automatikus mentési időzítő biztonsági háló, nem az elsődleges mentés. Mindig ments az `OnMissionFinish()` során.
 
-8. **Define path constants in one place.** A `MyModConst` class with all paths prevents string duplication and makes path changes trivial.
+8. **Definiáld az útvonal-konstansokat egy helyen.** Egy `MyModConst` osztály az összes útvonallal megelőzi a szöveg-duplikációt és megkönnyíti az útvonalváltoztatásokat.
 
-9. **Log load/save operations.** When debugging config issues, a log line saying "Loaded config v3 from $profile:MyMod/Config.json" is invaluable.
+9. **Naplózd a betöltési/mentési műveleteket.** Konfigurációs problémák hibakeresésekor egy naplósor, amely azt mondja "Loaded config v3 from $profile:MyMod/Config.json", felbecsülhetetlen értékű.
 
-10. **Test with a deleted config file.** Your mod should handle first-run gracefully: create directories, write defaults, log what it did.
+10. **Tesztelj törölt konfigurációs fájllal.** A mododnak kecsesen kell kezelnie az első futtatást: könyvtárak létrehozása, alapértelmezések írása, naplózás, mit csinált.
 
 ---
 
-[<< Elozo: RPC mintak](03-rpc-patterns.md) | [Kezdolap](../../README.md) | [Kovetkezo: Permission Systems >>](05-permissions.md)
+## Kompatibilitás és hatás
+
+- **Multi-Mod:** Minden mod a saját `$profile:ModName/` könyvtárába ír. Ütközések csak akkor fordulnak elő, ha két mod ugyanazt a könyvtárnevet használja. Használj egyedi, felismerhető előtagot a mod mappájához.
+- **Betöltési sorrend:** A konfiguráció betöltése az `OnInit`-ben vagy az `OnMissionStart`-ban történik, mindkettő a mod saját életciklusával vezérelt. Nincs mod-közi betöltési sorrend probléma, hacsak két mod nem próbálja ugyanazt a fájlt olvasni/írni (amit soha nem kellene tenniük).
+- **Listen szerver:** A konfigurációs fájlok csak szerver oldaliak (a `$profile:` a szerveren oldódik fel). Listen szervereken a kliens oldali kód technikailag hozzáférhet a `$profile:`-hoz, de a konfigurációkat csak szerver moduloknak kellene betölteniük a kétértelműség elkerülése érdekében.
+- **Teljesítmény:** A `JsonFileLoader` szinkron és blokkolja a fő szálat. Nagy konfigurációkhoz (100+ KB) az `OnInit` során töltsd be (a játékmenet megkezdése előtt). Az automatikus mentési időzítők megelőzik az ismételt írásokat; a dirty flag minta biztosítja, hogy a lemez I/O csak akkor történik, amikor az adatok ténylegesen változtak.
+- **Migráció:** Új mezők hozzáadása egy konfigurációs osztályhoz biztonságos --- a `JsonFileLoader` figyelmen kívül hagyja a hiányzó JSON kulcsokat és meghagyja az osztály alapértelmezett értékét. Mezők eltávolítása vagy átnevezése verziózott migrációs lépést igényel a csendes adatvesztés elkerülése érdekében.
+
+---
+
+## Elmélet vs gyakorlat
+
+| Az elmélet azt mondja | DayZ valóság |
+|---------------|-------------|
+| Használj aszinkron fájl I/O-t a blokkolás elkerüléséhez | Az Enforce Scriptben nincs aszinkron fájl I/O; minden olvasás/írás szinkron. Indításkor töltsd be, időzítőkkel ments. |
+| Validáld a JSON-t sémával | Nem létezik JSON séma validáció; mezők validálása az `OnAfterLoad()`-ban vagy betöltés utáni őrfeltételekkel. |
+| Használj adatbázist strukturált adatokhoz | Nincs adatbázis-hozzáférés az Enforce Scriptből; JSON fájlok a `$profile:`-ban az egyetlen perzisztencia mechanizmus. |
+
+---
+
+[Kezdőlap](../../README.md) | [<< Előző: RPC minták](03-rpc-patterns.md) | **Konfiguráció perzisztencia** | [Következő: Jogosultsági rendszerek >>](05-permissions.md)
