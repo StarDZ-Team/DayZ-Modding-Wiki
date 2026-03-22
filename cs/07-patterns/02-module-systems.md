@@ -1,36 +1,36 @@
-# Chapter 7.2: Module / Plugin Systems
+# Kapitola 7.2: Systémy modulů / pluginů
 
-[Domů](../../README.md) | [<< Předchozí: Vzor Singleton](01-singletons.md) | **Module / Plugin Systems** | [Další: Vzory RPC >>](03-rpc-patterns.md)
+[Domů](../../README.md) | [<< Předchozí: Vzor Singleton](01-singletons.md) | **Systémy modulů / pluginů** | [Další: Vzory RPC >>](03-rpc-patterns.md)
 
 ---
 
 ## Úvod
 
-Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle dokoncets --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- to každý module in a predictable order.
+Každý seriózní DayZ modový framework používá systém modulů nebo pluginů pro organizaci kódu do samostatných jednotek s definovanými hooky životního cyklu. Místo rozptylování inicializační logiky napříč moddovanými třídami misí se moduly registrují u centrálního manažera, který dispečuje události životního cyklu --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- každému modulu v předvídatelném pořadí.
 
-This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and a vlastní statická module manager. Each solves the stejný problem odlišnýly; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
+Tato kapitola zkoumá čtyři přístupy z praxe: `CF_ModuleCore` od Community Frameworku, `PluginBase` / `ConfigurablePlugin` od VPP, registraci založenou na atributech od Dabs Frameworku a vlastní statický manažer modulů. Každý řeší stejný problém odlišně; pochopení všech čtyř vám pomůže vybrat správný vzor pro váš vlastní mod nebo se čistě integrovat s existujícím frameworkem.
 
 ---
 
 ## Obsah
 
-- [Why Modules?](#why-modules)
+- [Proč moduly?](#proč-moduly)
 - [CF_ModuleCore (COT / Expansion)](#cf_modulecore-cot--expansion)
 - [VPP PluginBase / ConfigurablePlugin](#vpp-pluginbase--configurableplugin)
-- [Dabs Attribute-Based Registration](#dabs-attribute-based-registration)
-- [Custom Static Module Manager](#vlastní-statická-module-manager)
-- [Module Lifecycle: The Universal Contract](#module-lifecycle-the-universal-contract)
-- [Best Practices for Module Design](#best-practices-for-module-design)
-- [Comparison Table](#comparison-table)
+- [Registrace založená na atributech (Dabs)](#registrace-založená-na-atributech-dabs)
+- [Vlastní statický manažer modulů](#vlastní-statický-manažer-modulů)
+- [Životní cyklus modulu: Univerzální kontrakt](#životní-cyklus-modulu-univerzální-kontrakt)
+- [Doporučené postupy pro návrh modulů](#doporučené-postupy-pro-návrh-modulů)
+- [Srovnávací tabulka](#srovnávací-tabulka)
 
 ---
 
-## Why Modules?
+## Proč moduly?
 
-Bez a module system, a DayZ mod typicky ends up with a monolithic modded `MissionServer` or `MissionGameplay` class that grows until it becomes unmanageable:
+Bez systému modulů DayZ mod typicky skončí s monolitickou moddovanou třídou `MissionServer` nebo `MissionGameplay`, která roste, dokud se nestane nezvladatelnou:
 
 ```c
-// BAD: Everything crammed into one modded class
+// ŠPATNĚ: Všechno nacpané do jedné moddované třídy
 modded class MissionServer
 {
     override void OnInit()
@@ -42,7 +42,7 @@ modded class MissionServer
         InitWeatherController();
         InitAdminPanel();
         InitKillfeedHUD();
-        // ... 20 more systems
+        // ... dalších 20 systémů
     }
 
     override void OnUpdate(float timeslice)
@@ -51,12 +51,12 @@ modded class MissionServer
         TickLootSystem(timeslice);
         TickVehicleTracker(timeslice);
         TickWeatherController(timeslice);
-        // ... 20 more ticks
+        // ... dalších 20 tiků
     }
 };
 ```
 
-A module system replaces this with a jeden, stable hook point:
+Systém modulů toto nahrazuje jediným stabilním bodem napojení:
 
 ```c
 modded class MissionServer
@@ -72,81 +72,81 @@ modded class MissionServer
     override void OnMissionStart()
     {
         super.OnMissionStart();
-        MyModuleManager.OnMissionStart();  // Dispatches to all modules
+        MyModuleManager.OnMissionStart();  // Dispečuje všem modulům
     }
 
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
-        MyModuleManager.OnServerUpdate(timeslice);  // Dispatches to all modules
+        MyModuleManager.OnServerUpdate(timeslice);  // Dispečuje všem modulům
     }
 };
 ```
 
-Each module is an nezávislý class with its own file, its own state, and its own lifecycle hooks. Adding a nový feature means adding a nový module --- not editing a 3000-line mission class.
+Každý modul je nezávislá třída se svým vlastním souborem, svým vlastním stavem a svými vlastními hooky životního cyklu. Přidání nové funkce znamená přidání nového modulu --- ne editaci 3000řádkové třídy mise.
 
 ---
 
 ## CF_ModuleCore (COT / Expansion)
 
-Community Framework (CF) provides the většina widely-used module system in the DayZ modding ecosystem. Oba COT and Expansion build on it.
+Community Framework (CF) poskytuje nejrozšířenější systém modulů v ekosystému moddingu DayZ. COT i Expansion na něm staví.
 
 ### Jak to funguje
 
-1. You declare a module class that extends one of CF's module base classes
-2. You register it in `config.cpp` under `CfgPatches` / `CfgMods`
-3. CF's `CF_ModuleCoreManager` auto-discovers and instantiates all registered module classes při startu
-4. Lifecycle dokoncets are dispatched automatickýally
+1. Deklarujete třídu modulu, která rozšiřuje jednu ze základních tříd modulů CF
+2. Zaregistrujete ji v `config.cpp` pod `CfgPatches` / `CfgMods`
+3. `CF_ModuleCoreManager` od CF automaticky objeví a instanciuje všechny registrované třídy modulů při startu
+4. Události životního cyklu se dispečují automaticky
 
-### Module Base Classes
+### Základní třídy modulů
 
-CF provides three base classes corresponding to DayZ's script layers:
+CF poskytuje tři základní třídy odpovídající skriptovým vrstvám DayZ:
 
-| Base Class | Layer | Typical Use |
+| Základní třída | Vrstva | Typické použití |
 |-----------|-------|-------------|
-| `CF_ModuleGame` | 3_Game | Early init, RPC registration, data classes |
-| `CF_ModuleWorld` | 4_World | Entity interaction, gameplay systems |
-| `CF_ModuleMission` | 5_Mission | UI, HUD, mission-level hooks |
+| `CF_ModuleGame` | 3_Game | Raná inicializace, registrace RPC, datové třídy |
+| `CF_ModuleWorld` | 4_World | Interakce s entitami, herní systémy |
+| `CF_ModuleMission` | 5_Mission | UI, HUD, hooky na úrovni mise |
 
-### Example: A CF Module
+### Příklad: CF modul
 
 ```c
 class MyLootModule : CF_ModuleWorld
 {
-    // CF calls this once during module initialization
+    // CF zavolá toto jednou během inicializace modulu
     override void OnInit()
     {
         super.OnInit();
-        // Register RPC handlers, allocate data structures
+        // Registrace RPC handlerů, alokace datových struktur
     }
 
-    // CF calls this when the mission starts
+    // CF zavolá toto při startu mise
     override void OnMissionStart(Class sender, CF_EventArgs args)
     {
         super.OnMissionStart(sender, args);
-        // Load configs, spawn initial loot
+        // Načtení konfigurací, spawn počátečního lootu
     }
 
-    // CF calls this every frame on the server
+    // CF zavolá toto každý snímek na serveru
     override void OnUpdate(Class sender, CF_EventArgs args)
     {
         super.OnUpdate(sender, args);
-        // Tick loot respawn timers
+        // Tikání časovačů respawnu lootu
     }
 
-    // CF calls this when the mission ends
+    // CF zavolá toto při ukončení mise
     override void OnMissionFinish(Class sender, CF_EventArgs args)
     {
         super.OnMissionFinish(sender, args);
-        // Save state, release resources
+        // Uložení stavu, uvolnění zdrojů
     }
 };
 ```
 
-### Accessing a CF Module
+### Přístup k CF modulu
 
 ```c
-// Get a reference to a running module by type
+// Získání reference na běžící modul podle typu
 MyLootModule lootMod;
 CF_Modules<MyLootModule>.Get(lootMod);
 if (lootMod)
@@ -155,30 +155,30 @@ if (lootMod)
 }
 ```
 
-### Key Characteristics
+### Klíčové charakteristiky
 
-- **Auto-discovery**: modules are instantiated by CF based on `config.cpp` declarations --- no manual `new` calls
-- **Event args**: lifecycle hooks receive `CF_EventArgs` with context data
-- **Dependency on CF**: your mod requires Community Framework as a dependency
-- **Widely podporovaný**: if your mod targets servers that již run COT or Expansion, CF is již present
+- **Automatické objevování**: moduly jsou instanciovány CF na základě deklarací v `config.cpp` --- bez manuálních volání `new`
+- **Argumenty událostí**: hooky životního cyklu přijímají `CF_EventArgs` s kontextovými daty
+- **Závislost na CF**: váš mod vyžaduje Community Framework jako závislost
+- **Široká podpora**: pokud váš mod cílí na servery, které již provozují COT nebo Expansion, CF je již přítomen
 
 ---
 
 ## VPP PluginBase / ConfigurablePlugin
 
-VPP Admin Tools uses a plugin architecture where každý admin přílišl is a plugin class registered with a central manager.
+VPP Admin Tools používá pluginovou architekturu, kde každý administrátorský nástroj je pluginová třída registrovaná u centrálního manažera.
 
-### Plugin Base
+### Základ pluginu
 
 ```c
-// VPP pattern (simplified)
+// Vzor VPP (zjednodušený)
 class PluginBase : Managed
 {
     void OnInit();
     void OnUpdate(float dt);
     void OnDestroy();
 
-    // Plugin identity
+    // Identita pluginu
     string GetPluginName();
     bool IsServerOnly();
 };
@@ -186,12 +186,12 @@ class PluginBase : Managed
 
 ### ConfigurablePlugin
 
-VPP extends the base with a config-aware variant that automatickýally loads/saves settings:
+VPP rozšiřuje základ o variantu s povědomím o konfiguraci, která automaticky načítá/ukládá nastavení:
 
 ```c
 class ConfigurablePlugin : PluginBase
 {
-    // VPP auto-loads this from JSON on init
+    // VPP automaticky načte toto z JSON při inicializaci
     ref PluginConfigBase m_Config;
 
     override void OnInit()
@@ -217,36 +217,36 @@ class ConfigurablePlugin : PluginBase
 };
 ```
 
-### Registration
+### Registrace
 
-VPP registers plugins in the modded `MissionServer.OnInit()`:
+VPP registruje pluginy v moddovaném `MissionServer.OnInit()`:
 
 ```c
-// VPP pattern
+// Vzor VPP
 GetPluginManager().RegisterPlugin(new VPPESPPlugin());
 GetPluginManager().RegisterPlugin(new VPPTeleportPlugin());
 GetPluginManager().RegisterPlugin(new VPPWeatherPlugin());
 ```
 
-### Key Characteristics
+### Klíčové charakteristiky
 
-- **Manual registration**: každý plugin is explicitly `new`-ed and registered
-- **Config integration**: `ConfigurablePlugin` merges config management with the module lifecycle
-- **Self-contained**: no dependency on CF; VPP's plugin manager is its own system
-- **Clear ownership**: the plugin manager holds `ref` to all plugins, controlling their lifetime
+- **Manuální registrace**: každý plugin je explicitně instanciován pomocí `new` a registrován
+- **Integrace konfigurace**: `ConfigurablePlugin` slučuje správu konfigurace s životním cyklem modulu
+- **Samostatný**: žádná závislost na CF; manažer pluginů VPP je vlastní systém
+- **Jasné vlastnictví**: manažer pluginů drží `ref` na všechny pluginy, čímž kontroluje jejich životnost
 
 ---
 
-## Dabs Attribute-Based Registration
+## Registrace založená na atributech (Dabs)
 
-The Dabs Framework (used in Dabs Framework Admin Tools) uses a more modern approach: C#-style attributes for auto-registration.
+Dabs Framework (používaný v Dabs Framework Admin Tools) používá modernější přístup: atributy ve stylu C# pro automatickou registraci.
 
-### The Concept
+### Koncept
 
-Instead of ručně registering modules, you annotate a class with an attribute, and the framework discovers it při startu using reflection:
+Místo manuální registrace modulů anotujete třídu atributem a framework ji objeví při startu pomocí reflexe:
 
 ```c
-// Dabs pattern (conceptual)
+// Vzor Dabs (koncepční)
 [CF_RegisterModule(DabsAdminESP)]
 class DabsAdminESP : CF_ModuleWorld
 {
@@ -258,40 +258,40 @@ class DabsAdminESP : CF_ModuleWorld
 };
 ```
 
-The `CF_RegisterModule` attribute tells CF's module manager to instantiate tato třída automatickýally. No manual `Register()` call needed.
+Atribut `CF_RegisterModule` říká manažeru modulů CF, aby tuto třídu automaticky instancioval. Žádné manuální volání `Register()` není potřeba.
 
-### How Discovery Works
+### Jak funguje objevování
 
-At startup, CF scans all loaded script classes for the registration attribute. For každý match, it creates an instance and adds it to the module manager. This happens before `OnInit()` is called on jakýkoli module.
+Při startu CF prohledá všechny načtené třídy skriptů pro registrační atribut. Pro každou shodu vytvoří instanci a přidá ji do manažeru modulů. To se děje před tím, než je `OnInit()` zavolán na jakémkoli modulu.
 
-### Key Characteristics
+### Klíčové charakteristiky
 
-- **Zero boilerplate**: no registration code in mission classes
-- **Declarative**: třída itself declares that it is a module
-- **Relies on CF**: pouze works with Community Framework's attribute processing
-- **Discoverability**: můžete find all modules by searching for the attribute in the codebase
+- **Nulový boilerplate**: žádný registrační kód ve třídách mise
+- **Deklarativní**: třída sama deklaruje, že je modulem
+- **Závisí na CF**: funguje pouze se zpracováním atributů Community Frameworku
+- **Nalezitelnost**: všechny moduly můžete najít vyhledáním atributu v kódové bázi
 
 ---
 
-## Custom Static Module Manager
+## Vlastní statický manažer modulů
 
-This approach uses an explicit registration pattern with a statická manager class. There is no instance of the manager --- it is celýly statická methods and statická storage. This is užitečný when chcete zero dependencies on externí frameworks.
+Tento přístup používá explicitní registrační vzor se statickou manažerskou třídou. Neexistuje žádná instance manažera --- jsou to čistě statické metody a statické úložiště. To je užitečné, když chcete nulové závislosti na externích frameworcích.
 
-### Module Base Classes
+### Základní třídy modulů
 
 ```c
-// Base: lifecycle hooks
+// Základ: hooky životního cyklu
 class MyModuleBase : Managed
 {
-    bool IsServer();       // Override in subclass
-    bool IsClient();       // Override in subclass
+    bool IsServer();       // Přepište v podtřídě
+    bool IsClient();       // Přepište v podtřídě
     string GetModuleName();
     void OnInit();
     void OnMissionStart();
     void OnMissionFinish();
 };
 
-// Server-side module: adds OnUpdate + player events
+// Serverový modul: přidává OnUpdate + události hráčů
 class MyServerModule : MyModuleBase
 {
     void OnUpdate(float dt);
@@ -299,26 +299,26 @@ class MyServerModule : MyModuleBase
     void OnPlayerDisconnect(PlayerIdentity identity, string uid);
 };
 
-// Client-side module: adds OnUpdate
+// Klientský modul: přidává OnUpdate
 class MyClientModule : MyModuleBase
 {
     void OnUpdate(float dt);
 };
 ```
 
-### Registration
+### Registrace
 
-Modules register themselves explicitly, typicky from modded mission classes:
+Moduly se registrují explicitně, typicky z moddovaných tříd mise:
 
 ```c
-// In modded MissionServer.OnInit():
+// V moddovaném MissionServer.OnInit():
 MyModuleManager.Register(new MyMissionServerModule());
 MyModuleManager.Register(new MyAIServerModule());
 ```
 
-### Lifecycle Dispatch
+### Dispečování životního cyklu
 
-The modded mission classes call into `MyModuleManager` at každý lifecycle point:
+Moddované třídy mise volají do `MyModuleManager` v každém bodě životního cyklu:
 
 ```c
 modded class MissionServer
@@ -344,95 +344,95 @@ modded class MissionServer
 };
 ```
 
-### Listen-Server Safety
+### Bezpečnost na listen serveru
 
-The vlastní module system's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle dokoncets twice on listen servers (where oba `MissionServer` and `MissionGameplay` run in the stejný process).
+Základní třídy modulů vlastního systému vynucují kritický invariant: `MyServerModule` vrací `true` z `IsServer()` a `false` z `IsClient()`, zatímco `MyClientModule` dělá opak. Manažer používá tyto příznaky, aby se vyhnul dvojitému dispečování událostí životního cyklu na listen serverech (kde `MissionServer` i `MissionGameplay` běží ve stejném procesu).
 
-The base `MyModuleBase` returns `true` from oba --- which is why the codebase warns against subclassing it přímo.
+Základní `MyModuleBase` vrací `true` z obou --- proto kódová báze varuje před přímým rozšířením této třídy.
 
-### Key Characteristics
+### Klíčové charakteristiky
 
-- **Zero dependencies**: no CF, no externí frameworks
-- **Static manager**: no `GetInstance()` needed; purely statická API
-- **Explicit registration**: plný control over what gets registered and when
-- **Listen-server safe**: typed subclasses prevent double-dispatch
-- **Centralized cleanup**: `MyModuleManager.Cleanup()` tears down all modules and core timers
+- **Nulové závislosti**: žádné CF, žádné externí frameworky
+- **Statický manažer**: žádný `GetInstance()` není potřeba; čistě statické API
+- **Explicitní registrace**: plná kontrola nad tím, co se registruje a kdy
+- **Bezpečné pro listen server**: typované podtřídy zabraňují dvojitému dispečování
+- **Centralizovaný úklid**: `MyModuleManager.Cleanup()` zruší všechny moduly a základní časovače
 
 ---
 
-## Module Lifecycle: The Universal Contract
+## Životní cyklus modulu: Univerzální kontrakt
 
-Despite implementation differences, all four frameworks follow the stejný lifecycle contract:
+Navzdory rozdílům v implementaci všechny čtyři frameworky následují stejný kontrakt životního cyklu:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Registration / Discovery                            │
-│  Module instance is created and registered            │
+│  Registrace / Objevení                               │
+│  Instance modulu je vytvořena a registrována          │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnInit()                                            │
-│  One-time setup: allocate collections, register RPCs │
-│  Called once per module after registration            │
+│  Jednorázové nastavení: alokace kolekcí, registrace  │
+│  RPC. Voláno jednou na modul po registraci.          │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionStart()                                    │
-│  Mission is live: load configs, start timers,        │
-│  subscribe to events, spawn initial entities         │
+│  Mise je aktivní: načtení konfigurací, spuštění      │
+│  časovačů, přihlášení k událostem, spawn entit       │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
-│  OnUpdate(float dt)         [repeating every frame]  │
-│  Per-frame tick: process queues, update timers,      │
-│  check conditions, advance state machines            │
+│  OnUpdate(float dt)         [opakuje se každý snímek] │
+│  Tik na snímek: zpracování front, aktualizace        │
+│  časovačů, kontrola podmínek, posun stavových automatů│
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionFinish()                                   │
-│  Teardown: save state, unsubscribe events,           │
-│  clear collections, null out references              │
+│  Úklid: uložení stavu, odhlášení událostí,           │
+│  vyčištění kolekcí, vynulování referencí              │
 └─────────────────────────────────────────────────────┘
 ```
 
 ### Pravidla
 
-1. **OnInit comes before OnMissionStart.** Nikdy load configs or spawn entities in `OnInit()` --- the world may not be ready yet.
-2. **OnAktualizujte receives delta time.** Vždy use `dt` for time-based logic, nikdy assume a fixed snímková frekvence.
-3. **OnMissionFinish must clean up každýthing.** Every `ref` collection must be cleared. Every dokoncet subscription must be removed. Every jedenton must be destroyed. Toto je pouze reliable teardown point.
-4. **Modules should not depend on každý jiný's initialization order.** If Module A needs Module B, use lazy access (`GetModule()`) spíše než assuming B was registered first.
+1. **OnInit přichází před OnMissionStart.** Nikdy nenačítejte konfigurace ani nespawnujte entity v `OnInit()` --- svět ještě nemusí být připraven.
+2. **OnUpdate přijímá delta čas.** Vždy používejte `dt` pro logiku založenou na čase, nikdy nepředpokládejte fixní snímkovou frekvenci.
+3. **OnMissionFinish musí uklidit všechno.** Každá `ref` kolekce musí být vyčištěna. Každé přihlášení k události musí být odebráno. Každý singleton musí být zničen. Toto je jediný spolehlivý bod úklidu.
+4. **Moduly by neměly záviset na pořadí inicializace jiných modulů.** Pokud modul A potřebuje modul B, použijte líný přístup (`GetModule()`) místo předpokladu, že B byl registrován jako první.
 
 ---
 
-## Osvědčené postupy for Module Design
+## Doporučené postupy pro návrh modulů
 
-### 1. One Module, One Responsibility
+### 1. Jeden modul, jedna zodpovědnost
 
-A module should own exactly one domain. Pokud find yourself writing `VehicleAndWeatherAndLootModule`, split it.
+Modul by měl vlastnit právě jednu doménu. Pokud zjistíte, že píšete `VehicleAndWeatherAndLootModule`, rozdělte ho.
 
 ```c
-// GOOD: Focused modules
+// SPRÁVNĚ: Zaměřené moduly
 class MyLootModule : MyServerModule { ... }
 class MyVehicleModule : MyServerModule { ... }
 class MyWeatherModule : MyServerModule { ... }
 
-// BAD: God module
+// ŠPATNĚ: God modul
 class MyEverythingModule : MyServerModule { ... }
 ```
 
-### 2. Udržujte OnAktualizujte Cheap
+### 2. Udržujte OnUpdate levný
 
-`OnUpdate` runs každý frame. Pokud váš module does expensive work (file I/O, world scans, pathfinding), do it on a timer or batch it across frames:
+`OnUpdate` běží každý snímek. Pokud váš modul dělá náročnou práci (souborové I/O, prohledávání světa, hledání cest), dělejte to na časovači nebo to rozložte mezi snímky:
 
 ```c
 class MyCleanupModule : MyServerModule
 {
     protected float m_CleanupTimer;
-    protected const float CLEANUP_INTERVAL = 300.0;  // Every 5 minutes
+    protected const float CLEANUP_INTERVAL = 300.0;  // Každých 5 minut
 
     override void OnUpdate(float dt)
     {
@@ -446,9 +446,9 @@ class MyCleanupModule : MyServerModule
 };
 ```
 
-### 3. Register RPCs in OnInit, Not OnMissionStart
+### 3. Registrujte RPC v OnInit, ne v OnMissionStart
 
-RPC handlers must be in place before jakýkoli client can send a message. `OnInit()` runs during module registration, which happens early in the mission setup. `OnMissionStart()` may be příliš late if clients connect fast.
+RPC handlery musí být na místě dříve, než jakýkoli klient může odeslat zprávu. `OnInit()` běží během registrace modulu, což se děje brzy v nastavení mise. `OnMissionStart()` může být příliš pozdě, pokud se klienti připojí rychle.
 
 ```c
 class MyModule : MyServerModule
@@ -461,17 +461,17 @@ class MyModule : MyServerModule
 
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // Handle RPC
+        // Zpracování RPC
     }
 };
 ```
 
-### 4. Use the Module Manager for Cross-Module Access
+### 4. Používejte manažer modulů pro přístup mezi moduly
 
-Do not hold direct references to jiný modules. Use the manager's lookup:
+Nedržte přímé reference na jiné moduly. Používejte vyhledávání manažera:
 
 ```c
-// GOOD: Loose coupling through the manager
+// SPRÁVNĚ: Volná vazba přes manažer
 MyModuleBase mod = MyModuleManager.GetModule("MyAIServerModule");
 MyAIServerModule aiMod;
 if (Class.CastTo(aiMod, mod))
@@ -479,13 +479,13 @@ if (Class.CastTo(aiMod, mod))
     aiMod.PauseSpawning();
 }
 
-// BAD: Direct static reference creates hard coupling
+// ŠPATNĚ: Přímá statická reference vytváří pevnou vazbu
 MyAIServerModule.s_Instance.PauseSpawning();
 ```
 
-### 5. Guard Against Missing Dependencies
+### 5. Chraňte se před chybějícími závislostmi
 
-Not každý server runs každý mod. Pokud váš module volitelnýly integrates with další mod, use preprocessor checks:
+Ne každý server provozuje každý mod. Pokud se váš modul volitelně integruje s jiným modem, použijte kontroly preprocesoru:
 
 ```c
 override void OnMissionStart()
@@ -498,74 +498,74 @@ override void OnMissionStart()
 }
 ```
 
-### 6. Log Module Lifecycle Events
+### 6. Logujte události životního cyklu modulu
 
-Logging makes debugging straightforward. Every module should log when it initializes and shuts down:
+Logování zjednodušuje ladění. Každý modul by měl logovat, kdy se inicializuje a ukončuje:
 
 ```c
 override void OnInit()
 {
     super.OnInit();
-    MyLog.Info("MyModule", "Initialized");
+    MyLog.Info("MyModule", "Inicializován");
 }
 
 override void OnMissionFinish()
 {
-    MyLog.Info("MyModule", "Shutting down");
-    // Cleanup...
+    MyLog.Info("MyModule", "Ukončování");
+    // Úklid...
 }
 ```
 
 ---
 
-## Comparison Table
+## Srovnávací tabulka
 
-| Feature | CF_ModuleCore | VPP Plugin | Dabs Attribute | Custom Module |
+| Vlastnost | CF_ModuleCore | VPP Plugin | Dabs Atribut | Vlastní modul |
 |---------|--------------|------------|----------------|---------------|
-| **Discovery** | config.cpp + auto | Manual `Register()` | Attribute scan | Manual `Register()` |
-| **Base classes** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribute | ServerModule / ClientModule |
-| **Dependencies** | Requires CF | Self-contained | Requires CF | Self-contained |
-| **Listen-server safe** | CF handles it | Manual check | CF handles it | Typed subclasses |
-| **Config integration** | Separate | Built into ConfigurablePlugin | Separate | Via MyConfigManager |
-| **Aktualizujte dispatch** | Automatic | Manager calls `OnUpdate` | Automatic | Manager calls `OnUpdate` |
-| **Cleanup** | CF handles it | Manual `OnDestroy` | CF handles it | `MyModuleManager.Cleanup()` |
-| **Cross-mod access** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
+| **Objevení** | config.cpp + auto | Manuální `Register()` | Skenování atributů | Manuální `Register()` |
+| **Základní třídy** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + atribut | ServerModule / ClientModule |
+| **Závislosti** | Vyžaduje CF | Samostatný | Vyžaduje CF | Samostatný |
+| **Bezpečné pro listen server** | CF to řeší | Manuální kontrola | CF to řeší | Typované podtřídy |
+| **Integrace konfigurace** | Oddělená | Vestavěna v ConfigurablePlugin | Oddělená | Přes MyConfigManager |
+| **Dispečování update** | Automatické | Manažer volá `OnUpdate` | Automatické | Manažer volá `OnUpdate` |
+| **Úklid** | CF to řeší | Manuální `OnDestroy` | CF to řeší | `MyModuleManager.Cleanup()` |
+| **Přístup mezi mody** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
 
-Choose the approach that matches your mod's dependency profile. Pokud již depend on CF, use `CF_ModuleCore`. If chcete zero externí dependencies, build your own system following the vlastní manager or VPP pattern.
+Zvolte přístup, který odpovídá profilu závislostí vašeho modu. Pokud již závisíte na CF, použijte `CF_ModuleCore`. Pokud chcete nulové externí závislosti, vytvořte vlastní systém podle vzoru vlastního manažera nebo VPP.
 
 ---
 
 ## Kompatibilita a dopad
 
-- **Více modů:** Multiple mods can každý register their own modules with the stejný manager (CF, VPP, or vlastní). Name collisions pouze happen if two mods register the stejný class type --- use unique class names prefixed with your mod tag.
-- **Pořadí načítání:** CF auto-discovers modules from `config.cpp`, so load order follows `requiredAddons`. Custom managers register modules in `OnInit()`, where the `modded class` chain determines order. Modules should not depend on registration order --- use lazy access patterns.
-- **Listen Server:** On listen servers, oba `MissionServer` and `MissionGameplay` run in the stejný process. Pokud váš module manager dispatches `OnUpdate` from oba, modules receive double ticks. Use typed subclasses (`ServerModule` / `ClientModule`) that return `IsServer()` or `IsClient()` to prevent this.
-- **Výkon:** Module dispatch adds one loop iteration per registered module per lifecycle call. With 10--20 modules this is negligible. Zajistěte individual module `OnUpdate` methods are cheap (viz Chapter 7.7).
-- **Migration:** When upgrading DayZ versions, module systems are stable as long as the base class API (`CF_ModuleWorld`, `PluginBase`, etc.) ne change. Pin your CF dependency version to avoid breakage.
+- **Více modů:** Více modů může každý registrovat vlastní moduly u stejného manažera (CF, VPP nebo vlastní). Kolize názvů nastanou pouze tehdy, když dva mody registrují stejný typ třídy --- používejte unikátní názvy tříd s prefixem vašeho modu.
+- **Pořadí načítání:** CF automaticky objevuje moduly z `config.cpp`, takže pořadí načítání se řídí `requiredAddons`. Vlastní manažeři registrují moduly v `OnInit()`, kde řetězec `modded class` určuje pořadí. Moduly by neměly záviset na pořadí registrace --- používejte vzory líného přístupu.
+- **Listen Server:** Na listen serverech `MissionServer` i `MissionGameplay` běží ve stejném procesu. Pokud váš manažer modulů dispečuje `OnUpdate` z obou, moduly dostanou dvojité tiky. Použijte typované podtřídy (`ServerModule` / `ClientModule`), které vracejí `IsServer()` nebo `IsClient()`, abyste tomu zabránili.
+- **Výkon:** Dispečování modulů přidává jednu iteraci smyčky na registrovaný modul na volání životního cyklu. S 10--20 moduly je to zanedbatelné. Zajistěte, aby individuální metody `OnUpdate` modulů byly levné (viz Kapitola 7.7).
+- **Migrace:** Při upgradu verzí DayZ jsou systémy modulů stabilní, dokud se API základní třídy (`CF_ModuleWorld`, `PluginBase` atd.) nezmění. Připněte verzi závislosti CF, abyste se vyhnuli poruchám.
 
 ---
 
 ## Časté chyby
 
-| Mistake | Impact | Fix |
+| Chyba | Dopad | Oprava |
 |---------|--------|-----|
-| Missing `OnMissionFinish` cleanup in a module | Collections, timers, and dokoncet subscriptions survive across mission restarts, causing stale data or crashes | Override `OnMissionFinish`, clear all `ref` collections, unsubscribe all dokoncets |
-| Dispatching lifecycle dokoncets twice on listen servers | Server modules run client logic and vice versa; duplicate spawns, double RPC sends | Use `IsServer()` / `IsClient()` guards or typed module subclasses that enforce the split |
-| Registering RPCs in `OnMissionStart` místo `OnInit` | Clients that connect during mission setup can send RPCs before handlers are ready --- messages are tiše dropped | Vždy register RPC handlers in `OnInit()`, which runs during module registration before jakýkoli client connects |
-| One "God module" handling každýthing | Impossible to debug, test, or extend; merge conflicts when více developers work on it | Split into focused modules with a jeden responsibility každý |
-| Holding direct `ref` to další module instance | Creates hard coupling and potential ref-cycle memory leaks | Use the module manager's lookup (`GetModule()`, `CF_Modules<T>.Get()`) for cross-module access |
+| Chybějící úklid `OnMissionFinish` v modulu | Kolekce, časovače a přihlášení k událostem přežijí restarty misí, což způsobuje zastaralá data nebo pády | Přepište `OnMissionFinish`, vyčistěte všechny `ref` kolekce, odhlaste všechny události |
+| Dvojité dispečování událostí životního cyklu na listen serverech | Serverové moduly spouštějí klientskou logiku a naopak; duplicitní spawny, dvojité odesílání RPC | Použijte ochrany `IsServer()` / `IsClient()` nebo typované podtřídy modulů, které vynucují rozdělení |
+| Registrace RPC v `OnMissionStart` místo `OnInit` | Klienti, kteří se připojí během nastavení mise, mohou odesílat RPC dříve, než jsou handlery připraveny --- zprávy jsou tiše zahozeny | Vždy registrujte RPC handlery v `OnInit()`, který běží během registrace modulu před připojením jakéhokoli klienta |
+| Jeden "God modul" zpracovávající všechno | Nelze ladit, testovat ani rozšiřovat; konflikty při slučování, když na tom pracuje více vývojářů | Rozdělte na zaměřené moduly s jedinou zodpovědností |
+| Držení přímého `ref` na jinou instanci modulu | Vytváří pevnou vazbu a potenciální úniky paměti z ref-cyklů | Použijte vyhledávání manažera modulů (`GetModule()`, `CF_Modules<T>.Get()`) pro přístup mezi moduly |
 
 ---
 
 ## Teorie vs praxe
 
-| Textbook Says | DayZ Reality |
+| Učebnice říká | Realita DayZ |
 |---------------|-------------|
-| Module discovery should be automatický via reflection | Enforce Script reflection is limited; `config.cpp`-based discovery (CF) or explicit `Register()` calls are the pouze reliable approaches |
-| Modules should be hot-swappable za běhu | DayZ ne support hot-reloading scripts; modules live for the celý mission lifecycle |
-| Use interfaces for module contracts | Enforce Script has no `interface` keyword; use base class virtual methods (`override`) místo toho |
-| Dependency injection decouples modules | No DI framework exists; use manager lookups and `#ifdef` guards for volitelný cross-mod dependencies |
+| Objevování modulů by mělo být automatické přes reflexi | Reflexe Enforce Scriptu je omezená; objevování založené na `config.cpp` (CF) nebo explicitní volání `Register()` jsou jediné spolehlivé přístupy |
+| Moduly by měly být za provozu vyměnitelné | DayZ nepodporuje hot-reloading skriptů; moduly žijí po celý životní cyklus mise |
+| Používejte rozhraní pro kontrakty modulů | Enforce Script nemá klíčové slovo `interface`; místo toho použijte virtuální metody bázové třídy (`override`) |
+| Dependency injection odděluje moduly | Žádný DI framework neexistuje; použijte vyhledávání manažerů a `#ifdef` ochrany pro volitelné závislosti mezi mody |
 
 ---
 
-[Domů](../../README.md) | [<< Předchozí: Vzor Singleton](01-singletons.md) | **Module / Plugin Systems** | [Další: Vzory RPC >>](03-rpc-patterns.md)
+[Domů](../../README.md) | [<< Předchozí: Vzor Singleton](01-singletons.md) | **Systémy modulů / pluginů** | [Další: Vzory RPC >>](03-rpc-patterns.md)

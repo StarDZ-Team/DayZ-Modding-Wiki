@@ -1,77 +1,77 @@
-# Chapter 4.7: Workbench Guide
+# 4.7. fejezet: Workbench útmutató
 
-[Home](../../README.md) | [<< Previous: PBO Packing](06-pbo-packing.md) | **Workbench Guide** | [Next: Building Modeling >>](08-building-modeling.md)
-
----
-
-## Bevezetes
-
-Workbench is Bohemia Interactive's integrated development environment for the Enfusion engine. It ships with DayZ Tools and is the only official tool that understands Enforce Script at a language level. While many modders write code in VS Code or other editors, Workbench remains indispensable for tasks no other tool can perform: attaching a debugger to a running DayZ instance, setting breakpoints, stepping through code, inspecting variables at runtime, previewing `.layout` UI files, browsing game resources, and running live script commands through the built-in console.
+[Főoldal](../../README.md) | [<< Előző: PBO csomagolás](06-pbo-packing.md) | **Workbench útmutató** | [Következő: Épület modellezés >>](08-building-modeling.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [What is Workbench?](#what-is-workbench)
-- [Telepites es beallitas](#installation-and-setup)
-- [Projekt fajlok (.gproj)](#project-files-gproj)
-- [A Workbench felulet](#the-workbench-interface)
-- [Szkript szerkesztes](#script-editing)
-- [Szkriptek debugolasa](#debugging-scripts)
-- [Script Console -- Live Testing](#script-console----live-testing)
-- [UI / Layout Preview](#ui--layout-preview)
-- [Eroforras bongeszp](#resource-browser)
-- [Teljesitmeny profilozas](#performance-profiling)
-- [Integration with File Patching](#integration-with-file-patching)
-- [Gyakori Workbench problemak](#common-workbench-issues)
-- [Tippek es legjobb gyakorlatok](#tips-and-best-practices)
+A Workbench a Bohemia Interactive integrált fejlesztői környezete az Enfusion motorhoz. A DayZ Tools-szal szállítják, és ez az egyetlen hivatalos eszköz, amely nyelvi szinten érti az Enforce Scriptet. Bár sok modder VS Code-ban vagy más szerkesztőkben ír kódot, a Workbench nélkülözhetetlen marad olyan feladatokhoz, amelyeket más eszköz nem tud elvégezni: hibakereső csatlakoztatása egy futó DayZ példányhoz, töréspontok beállítása, kódon való lépkedés, változók vizsgálata futásidőben, `.layout` UI fájlok előnézete, játék erőforrások böngészése, és élő szkript parancsok futtatása a beépített konzolon keresztül.
 
 ---
 
-## What is Workbench?
+## Tartalomjegyzék
 
-Workbench is Bohemia's IDE for Enfusion engine development. It is the only tool in the DayZ Tools suite that can compile, analyze, and debug Enforce Script. It serves six purposes:
+- [Mi az a Workbench?](#what-is-workbench)
+- [Telepítés és beállítás](#installation-and-setup)
+- [Projekt fájlok (.gproj)](#project-files-gproj)
+- [A Workbench felület](#the-workbench-interface)
+- [Szkript szerkesztés](#script-editing)
+- [Szkriptek debugolása](#debugging-scripts)
+- [Script Console -- élő tesztelés](#script-console----live-testing)
+- [UI / Layout előnézet](#ui--layout-preview)
+- [Erőforrás böngésző](#resource-browser)
+- [Teljesítmény profilozás](#performance-profiling)
+- [Integráció a File Patching-gel](#integration-with-file-patching)
+- [Gyakori Workbench problémák](#common-workbench-issues)
+- [Tippek és bevált gyakorlatok](#tips-and-best-practices)
 
-| Cel | Leiras |
-|---------|-------------|
-| **Script editing** | Szintaxis highlighting, code completion, and error checking for `.c` files |
-| **Script debugging** | Breakpoints, variable inspection, call stack, step-through execution |
-| **Resource browsing** | Navigate and preview game assets -- models, textures, configs, layouts |
-| **UI / layout preview** | Visual preview of `.layout` widget hierarchies with property inspection |
-| **Performance profiling** | Script profiling, frame time analysis, memory monitoring |
-| **Script console** | Execute Enforce Script commands live against a running game instance |
+---
 
-Workbench uses the same Enfusion script compiler as DayZ itself. When Workbench reports a compile error, that error will also occur in-game -- making it a reliable pre-flight check before launching.
+## Mi az a Workbench?
+
+A Workbench a Bohemia IDE-je az Enfusion motor fejlesztéséhez. Ez az egyetlen eszköz a DayZ Tools csomagban, amely képes Enforce Scriptet fordítani, elemezni és debugolni. Hat célt szolgál:
+
+| Cél | Leírás |
+|-----|--------|
+| **Szkript szerkesztés** | Szintaxis kiemelés, kódkiegészítés és hibaellenőrzés `.c` fájlokhoz |
+| **Szkript hibakeresés** | Töréspontok, változó vizsgálat, hívási verem, lépésenkénti végrehajtás |
+| **Erőforrás böngészés** | Játék assetek navigálása és előnézete -- modellek, textúrák, konfigok, layout-ok |
+| **UI / layout előnézet** | `.layout` widget hierarchiák vizuális előnézete tulajdonság vizsgálattal |
+| **Teljesítmény profilozás** | Szkript profilozás, képkocka idő elemzés, memória figyelés |
+| **Szkript konzol** | Enforce Script parancsok élő végrehajtása egy futó játék példány ellen |
+
+A Workbench ugyanazt az Enfusion szkript fordítót használja, mint maga a DayZ. Amikor a Workbench fordítási hibát jelent, az a hiba a játékban is bekövetkezik -- megbízható előzetes ellenőrzéssé téve az indítás előtt.
 
 ### Mi NEM a Workbench
 
-- **Not a general-purpose code editor.** It lacks refactoring tools, Git integration, multi-cursor editing, and the extension ecosystem of VS Code.
-- **Not a game launcher.** You still run `DayZDiag_x64.exe` separately; Workbench connects to it.
-- **Not required for building PBOs.** AddonBuilder and build scripts handle PBO packing independently.
+- **Nem általános célú kódszerkesztő.** Hiányoznak belőle a refaktorálási eszközök, Git integráció, többkurzoros szerkesztés és a VS Code bővítmény ökoszisztémája.
+- **Nem játékindító.** Továbbra is külön kell futtatnod a `DayZDiag_x64.exe`-t; a Workbench csatlakozik hozzá.
+- **Nem szükséges PBO-k építéséhez.** Az AddonBuilder és a build szkriptek függetlenül kezelik a PBO csomagolást.
 
 ---
 
-## Telepites es beallitas
+## Telepítés és beállítás
 
-### Step 1: Install DayZ Tools
+### 1. lépés: DayZ Tools telepítése
 
-Workbench is included with DayZ Tools, distributed free through Steam. Open Steam Library, enable the **Tools** filter, search for **DayZ Tools**, and install (~2 GB).
+A Workbench a DayZ Tools-szal érkezik, amely ingyenesen terjesztve van a Steamen. Nyisd meg a Steam Könyvtárat, engedélyezd az **Eszközök** szűrőt, keress rá a **DayZ Tools**-ra és telepítsd (~2 GB).
 
-### Step 2: Locate Workbench
+### 2. lépés: Workbench megkeresése
 
 ```
 Steam\steamapps\common\DayZ Tools\Bin\Workbench\
-  workbenchApp.exe          <-- The Workbench executable
-  dayz.gproj                <-- Default project file
+  workbenchApp.exe          <-- A Workbench futtatható fájl
+  dayz.gproj                <-- Alapértelmezett projekt fájl
 ```
 
-### Step 3: Mount the P: Drive
+### 3. lépés: P: meghajtó csatolása
 
-Workbench requires the P: drive (workdrive) to be mounted. Without it, Workbench fails to start or shows an empty resource browser. Mount via DayZ Tools Launcher, your project's `SetupWorkdrive.bat`, or manually: `subst P: "D:\YourWorkDir"`.
+A Workbench megköveteli a P: meghajtó (workdrive) csatolását. Enélkül a Workbench nem indul el, vagy üres erőforrás böngészőt mutat. Csatold a DayZ Tools Launchen keresztül, a projekted `SetupWorkdrive.bat`-jával, vagy kézzel: `subst P: "D:\YourWorkDir"`.
 
-### Step 4: Extract Vanilla Scripts
+### 4. lépés: Vanilla szkriptek kicsomagolása
 
-Workbench needs vanilla DayZ scripts on P: to compile your mod (since your code extends vanilla classes):
+A Workbench-nek szüksége van a vanilla DayZ szkriptekre a P:-n a mod fordításához (mivel a kódod vanilla osztályokat bővít):
 
 ```
 P:\scripts\
@@ -82,38 +82,38 @@ P:\scripts\
   5_Mission\
 ```
 
-Extract these via the DayZ Tools Launcher, or create a symbolic link to the extracted scripts directory.
+Csomagold ki ezeket a DayZ Tools Launcheren keresztül, vagy hozz létre szimbolikus linket a kicsomagolt szkriptek könyvtárára.
 
-### Step 4b: Link Game Install to Project Drive (for Live Hotloading)
+### 4b. lépés: Játék telepítés összekapcsolása a projekt meghajtóval (élő hotloading-hoz)
 
-To allow DayZDiag to load scripts directly from your Project Drive (enabling live editing without PBO rebuilds), create a symbolic link from the DayZ installation folder to `P:\scripts`:
+Ahhoz, hogy a DayZDiag közvetlenül a projekt meghajtóról töltse be a szkripteket (lehetővé téve az élő szerkesztést PBO újraépítések nélkül), hozz létre szimbolikus linket a DayZ telepítési mappából a `P:\scripts`-re:
 
-1. Navigate to your DayZ installation folder (typically `Steam\steamapps\common\DayZ`).
-2. Delete any existing `scripts` folder inside it.
-3. Open a command prompt **as Administrator** and run:
+1. Navigálj a DayZ telepítési mappájához (jellemzően `Steam\steamapps\common\DayZ`).
+2. Töröld a benne lévő meglévő `scripts` mappát.
+3. Nyiss meg egy parancssort **rendszergazdaként** és futtasd:
 
 ```batch
 mklink /J "C:\...\steamapps\common\DayZ\scripts" "P:\scripts"
 ```
 
-Replace the first path with your actual DayZ installation path. After this, the DayZ install folder will contain a `scripts` junction that points to `P:\scripts`. Any changes you make on the Project Drive are immediately visible to the game.
+Cseréld ki az első elérési utat a tényleges DayZ telepítési útvonalra. Ezután a DayZ telepítési mappa egy `scripts` junction-t fog tartalmazni, amely a `P:\scripts`-re mutat. A projekt meghajtón végrehajtott bármely módosítás azonnal látható a játék számára.
 
-### Step 5: Configure Source Data Directory
+### 5. lépés: Forrás adat könyvtár konfigurálása
 
-1. Launch `workbenchApp.exe`.
-2. Click **Workbench > Options** in the menu bar.
-3. Set **Source data directory** to `P:\`.
-4. Click **OK** and allow Workbench to restart.
+1. Indítsd el a `workbenchApp.exe`-t.
+2. Kattints a **Workbench > Options** menüpontra a menüsávban.
+3. Állítsd a **Source data directory**-t `P:\`-re.
+4. Kattints az **OK**-ra és engedd a Workbench-et újraindulni.
 
 ---
 
-## Projekt fajlok (.gproj)
+## Projekt fájlok (.gproj)
 
-The `.gproj` file is Workbench's project configuration. It tells Workbench where to find scripts, which image sets to load for layout preview, and which widget styles are available.
+A `.gproj` fájl a Workbench projekt konfigurációja. Megmondja a Workbench-nek, hol találja a szkripteket, milyen imageset-eket töltsön be a layout előnézethez, és milyen widget stílusok érhetők el.
 
-### File Location
+### Fájl helye
 
-Convention is to place it in a `Workbench/` directory inside your mod:
+A konvenció szerint a mod egy `Workbench/` könyvtárába kell helyezni:
 
 ```
 P:\MyMod\
@@ -126,9 +126,9 @@ P:\MyMod\
   config.cpp
 ```
 
-### Structure Attekintes
+### Struktúra áttekintés
 
-A `.gproj` uses a proprietary text format (not JSON, not XML):
+A `.gproj` saját szövegformátumot használ (nem JSON, nem XML):
 
 ```
 GameProjectClass {
@@ -150,7 +150,7 @@ GameProjectClass {
                 "gui/imagesets/ccgui_enforce.imageset"
                 "gui/imagesets/dayz_gui.imageset"
                 "gui/imagesets/dayz_inventory.imageset"
-                // ... other vanilla image sets ...
+                // ... egyéb vanilla imageset-ek ...
                 "MyMod/gui/imagesets/my_imageset.imageset"
             }
 
@@ -211,22 +211,22 @@ GameProjectClass {
 }
 ```
 
-### Fo szekciok magyarazata
+### Fő szekciók magyarázata
 
-**FileSystem** -- Root directories where Workbench searches for files. At minimum, include `P:/`. You can add additional paths (e.g., Steam DayZ install directory) if files live outside the workdrive.
+**FileSystem** -- Gyökér könyvtárak, ahol a Workbench fájlokat keres. Minimum a `P:/`-t tartalmazza. Hozzáadhatsz további elérési utakat (pl. a Steam DayZ telepítési könyvtárat), ha fájlok a workdrive-on kívül vannak.
 
-**ScriptModules** -- The most important section. Maps each engine layer to script directories:
+**ScriptModules** -- A legfontosabb szekció. Minden motor réteget szkript könyvtárakhoz rendel:
 
-| Module | Layer | EntryPoint | Cel |
-|--------|-------|------------|---------|
-| `core` | `1_Core` | `""` | Engine core, basic types |
-| `gameLib` | `2_GameLib` | `""` | Game library utilities |
-| `game` | `3_Game` | `"CreateGame"` | Enums, constants, game init |
-| `world` | `4_World` | `""` | Entities, managers |
-| `mission` | `5_Mission` | `"CreateMission"` | Mission hooks, UI panels |
-| `workbench` | (tools) | `""` | Workbench plugins |
+| Modul | Réteg | EntryPoint | Cél |
+|-------|-------|------------|-----|
+| `core` | `1_Core` | `""` | Motor mag, alaptípusok |
+| `gameLib` | `2_GameLib` | `""` | Játék könyvtár segédprogramok |
+| `game` | `3_Game` | `"CreateGame"` | Felsorolások, konstansok, játék inicializálás |
+| `world` | `4_World` | `""` | Entitások, menedzserek |
+| `mission` | `5_Mission` | `"CreateMission"` | Küldetés hook-ok, UI panelek |
+| `workbench` | (eszközök) | `""` | Workbench bővítmények |
 
-Vanilla paths come first, then your mod paths. If your mod depends on other mods (like Community Framework), add their paths too:
+A vanilla elérési utak jönnek először, majd a mod elérési útjai. Ha a modod más modoktól függ (mint a Community Framework), add hozzá azok elérési útjait is:
 
 ```
 ScriptModulePathClass {
@@ -234,193 +234,189 @@ ScriptModulePathClass {
     Paths {
         "scripts/3_Game"              // Vanilla
         "JM/CF/Scripts/3_Game"        // Community Framework
-        "MyMod/Scripts/3_Game"        // Your mod
+        "MyMod/Scripts/3_Game"        // A te modod
     }
     EntryPoint "CreateGame"
 }
 ```
 
-Some frameworks override entry points (CF uses `"CF_CreateGame"`).
+Egyes keretrendszerek felülírják a belépési pontokat (a CF a `"CF_CreateGame"`-t használja).
 
-**imageSets / widgetStyles** -- Required for layout preview. Without vanilla image sets, layout files show missing images. Always include the standard 14 vanilla image sets listed in the example above.
+**imageSets / widgetStyles** -- Szükségesek a layout előnézethez. Vanilla imageset-ek nélkül a layout fájlok hiányzó képeket mutatnak. Mindig tartalmazza a fenti példában felsorolt 14 szabványos vanilla imageset-et.
 
-### Path Prefix Resolution
+### Létrehozás és indítás
 
-When Workbench auto-resolves script paths from a mod's `config.cpp`, the FileSystem path is prepended. If your mod is at `P:\OtherMods\MyMod` and config.cpp declares `MyMod/scripts/3_Game`, the FileSystem must include `P:\OtherMods` for correct resolution.
+**Hozz létre egy .gproj-t:** Másold az alapértelmezett `dayz.gproj`-t a `DayZ Tools\Bin\Workbench\`-ből, frissítsd az `ID`/`TITLE` mezőket, és add hozzá a mod szkript elérési útjait minden modulhoz.
 
-### Letrehozas es inditas
-
-**Create a .gproj:** Copy the default `dayz.gproj` from `DayZ Tools\Bin\Workbench\`, update `ID`/`TITLE`, and add your mod's script paths to each module.
-
-**Launch with custom project:**
+**Indítás egyéni projekttel:**
 ```batch
 workbenchApp.exe -project="P:\MyMod\Workbench\dayz.gproj"
 ```
 
-**Launch with -mod (auto-configure from config.cpp):**
+**Indítás -mod-dal (automatikus konfiguráció a config.cpp-ből):**
 ```batch
 workbenchApp.exe -mod=P:\MyMod
 workbenchApp.exe -mod=P:\CommunityFramework;P:\MyMod
 ```
 
-The `-mod` approach is simpler but gives less control. For complex multi-mod setups, a custom `.gproj` is more reliable.
+A `-mod` megközelítés egyszerűbb, de kevesebb kontrollt ad. Összetett több-modos beállításokhoz egy egyéni `.gproj` megbízhatóbb.
 
 ---
 
-## A Workbench felulet
+## A Workbench felület
 
-### Main Menu Bar
+### Fő menüsor
 
-| Menu | Fo elemek |
+| Menü | Fő elemek |
 |------|-----------|
-| **File** | Open project, recent projects, save |
-| **Edit** | Cut, copy, paste, find, replace |
-| **View** | Toggle panels on/off, reset layout |
-| **Workbench** | Options (source data directory, preferences) |
-| **Debug** | Start/stop debugging, client/server toggle, breakpoint management |
-| **Plugins** | Installed Workbench plugins and tool addons |
+| **File** | Projekt megnyitása, legutóbbi projektek, mentés |
+| **Edit** | Kivágás, másolás, beillesztés, keresés, csere |
+| **View** | Panelek be/kikapcsolása, elrendezés visszaállítása |
+| **Workbench** | Opciók (forrás adat könyvtár, beállítások) |
+| **Debug** | Hibakeresés indítása/leállítása, kliens/szerver váltás, töréspont kezelés |
+| **Plugins** | Telepített Workbench bővítmények és eszköz kiegészítők |
 
-### Panels
+### Panelek
 
-- **Eroforras bongeszp** (left) -- File tree of the P: drive. Double-click `.c` files to edit, `.layout` files to preview, `.p3d` to view models, `.paa` to view textures.
-- **Script Editor** (center) -- Code editing area with syntax highlighting, code completion, error underlines, line numbers, breakpoint markers, and tabbed multi-file editing.
-- **Output** (bottom) -- Compiler errors/warnings, `Print()` output from a connected game, debug messages. When connected to DayZDiag, this window streams all text that the diagnostic executable prints for debug purposes in real time -- the same output you would see in script logs. Double-click errors to navigate to the source line.
-- **Properties** (right) -- Properties of the selected object. Most useful in the Layout Editor for widget inspection.
-- **Console** -- Live Enforce Script command execution.
-- **Debug panels** (when debugging) -- **Locals** (current scope variables), **Watch** (user expressions), **Call Stack** (function chain), **Breakpoints** (list with enable/disable toggles).
+- **Erőforrás böngésző** (bal) -- A P: meghajtó fájlfája. Dupla kattintás `.c` fájlokra a szerkesztéshez, `.layout` fájlokra az előnézethez, `.p3d`-re a modellek megtekintéséhez, `.paa`-ra a textúrák megtekintéséhez.
+- **Szkript szerkesztő** (közép) -- Kódszerkesztő terület szintaxis kiemeléssel, kódkiegészítéssel, hiba aláhúzásokkal, sorszámokkal, töréspont jelölőkkel és lapfüles többfájlos szerkesztéssel.
+- **Kimenet** (alul) -- Fordítói hibák/figyelmeztetések, `Print()` kimenet egy csatlakozott játékból, hibakeresési üzenetek. Ha DayZDiag-hoz csatlakozik, ez az ablak valós időben továbbítja az összes szöveget, amelyet a diagnosztikai futtatható fájl hibakeresési célból kiír -- ugyanaz a kimenet, amelyet a szkript naplókban látnál. Dupla kattintás a hibákra a forrás sorhoz navigáláshoz.
+- **Tulajdonságok** (jobb) -- A kiválasztott objektum tulajdonságai. Leginkább a Layout szerkesztőben hasznos widget vizsgálathoz.
+- **Konzol** -- Élő Enforce Script parancs végrehajtás.
+- **Hibakeresési panelek** (hibakeresés közben) -- **Locals** (aktuális hatókör változók), **Watch** (felhasználói kifejezések), **Call Stack** (függvénylánc), **Breakpoints** (lista engedélyezés/letiltás kapcsolókkal).
 
 ---
 
-## Szkript szerkesztes
+## Szkript szerkesztés
 
-### Opening Files
+### Fájlok megnyitása
 
-1. **Eroforras bongeszp:** Double-click a `.c` file. This automatically opens the Script Editor module and loads the file.
-2. **Script Editor Eroforras bongeszp:** The Script Editor has its own built-in Eroforras bongeszp panel, separate from the main Workbench Eroforras bongeszp. You can use either to navigate and open script files.
-3. **File > Open:** Standard file dialog.
-4. **Error output:** Double-click a compiler error to jump to the file and line.
+1. **Erőforrás böngésző:** Dupla kattintás egy `.c` fájlra. Ez automatikusan megnyitja a Szkript szerkesztő modult és betölti a fájlt.
+2. **Szkript szerkesztő erőforrás böngészője:** A Szkript szerkesztőnek saját beépített erőforrás böngésző panelja van, amely különálló a fő Workbench erőforrás böngészőtől. Bármelyiket használhatod szkript fájlok navigálásához és megnyitásához.
+3. **File > Open:** Szabványos fájl dialógus.
+4. **Hiba kimenet:** Dupla kattintás egy fordítói hibára a fájlhoz és sorhoz ugráshoz.
 
-### Szintaxis Highlighting
+### Szintaxis kiemelés
 
 | Elem | Kiemelt |
-|---------|-------------|
-| Keywords (`class`, `if`, `while`, `return`, `modded`, `override`) | Bold / keyword color |
-| Tipuss (`int`, `float`, `string`, `bool`, `vector`, `void`) | Tipus color |
-| Strings, comments, preprocessor directives | Distinct colors |
+|------|---------|
+| Kulcsszavak (`class`, `if`, `while`, `return`, `modded`, `override`) | Félkövér / kulcsszó szín |
+| Típusok (`int`, `float`, `string`, `bool`, `vector`, `void`) | Típus szín |
+| Sztringek, megjegyzések, preprocesszor direktívák | Különálló színek |
 
-### Code Completion
+### Kódkiegészítés
 
-Tipus a class name followed by `.` to see methods and fields, or press `Ctrl+Space` for suggestions. Completion is based on the compiled script context. It is functional but limited compared to VS Code -- best for quick API lookups.
+Gépelj egy osztálynevet, amelyet `.` követ a metódusok és mezők megtekintéséhez, vagy nyomd meg a `Ctrl+Space`-t a javaslatokhoz. A kiegészítés a fordított szkript kontextuson alapul. Működik, de korlátozott a VS Code-hoz képest -- legjobb gyors API keresésekhez.
 
-### Compiler Feedback
+### Fordítói visszajelzés
 
-Workbench compiles on save. Common errors:
+A Workbench mentéskor fordít. Gyakori hibák:
 
-| Uzenet | Jelentes |
-|---------|---------|
-| `Undefined variable 'xyz'` | Not declared or typo |
-| `Metodus 'Foo' not found in class 'Bar'` | Wrong method name or class |
-| `Cannot convert 'string' to 'int'` | Tipus mismatch |
-| `Tipus 'MyClass' not found` | File not in project |
+| Üzenet | Jelentés |
+|--------|---------|
+| `Undefined variable 'xyz'` | Nincs deklarálva vagy elgépelés |
+| `Method 'Foo' not found in class 'Bar'` | Rossz metódusnév vagy osztály |
+| `Cannot convert 'string' to 'int'` | Típus eltérés |
+| `Type 'MyClass' not found` | A fájl nincs a projektben |
 
-### Find, Replace, and Go-to-Definition
+### Keresés, csere és definícióra ugrás
 
-- `Ctrl+F` / `Ctrl+H` -- find/replace in current file.
-- `Ctrl+Shift+F` -- search across all project files.
-- Right-click a symbol and select **Go to Definition** to jump to its declaration, even into vanilla scripts.
+- `Ctrl+F` / `Ctrl+H` -- keresés/csere az aktuális fájlban.
+- `Ctrl+Shift+F` -- keresés az összes projekt fájlban.
+- Jobb kattintás egy szimbólumon és **Go to Definition** kiválasztása a deklarációjához ugráshoz, akár vanilla szkriptekbe is.
 
 ---
 
-## Szkriptek debugolasa
+## Szkriptek debugolása
 
-Debugging is Workbench's most powerful feature -- pause a running DayZ instance, inspect every variable, and step through code line by line.
+A hibakeresés a Workbench legerősebb funkciója -- megállíthatsz egy futó DayZ példányt, megvizsgálhatsz minden változót, és soronként léphetsz végig a kódon.
 
-### Elofeletelek
+### Előfeltételek
 
-- **DayZDiag_x64.exe** (not retail DayZ) -- only the Diag build supports debugging.
-- **P: drive mounted** with vanilla scripts extracted.
-- **Scripts must match** -- if you edit after game loads, line numbers will not align.
+- **DayZDiag_x64.exe** (nem a kereskedelmi DayZ) -- csak a Diag build támogatja a hibakeresést.
+- **P: meghajtó csatolva** vanilla szkriptek kicsomagolva.
+- **A szkripteknek egyezniük kell** -- ha a játék betöltése után szerkesztesz, a sorszámok nem fognak egyezni.
 
-### Setting Up a Debug Session
+### Hibakeresési munkamenet beállítása
 
-1. Open Workbench and load your project.
-2. Open the **Script Editor** module (from the menu bar or by double-clicking any `.c` file in the Eroforras bongeszp -- this automatically opens the Script Editor and loads the file).
-3. Launch DayZDiag separately:
+1. Nyisd meg a Workbench-et és töltsd be a projektedet.
+2. Nyisd meg a **Szkript szerkesztő** modult (a menüsávból vagy bármely `.c` fájlra dupla kattintva az erőforrás böngészőben -- ez automatikusan megnyitja a Szkript szerkesztőt és betölti a fájlt).
+3. Indítsd el a DayZDiag-ot külön:
 
 ```batch
 DayZDiag_x64.exe -filePatching -mod=P:\MyMod -connect=127.0.0.1 -port=2302
 ```
 
-4. Workbench auto-detects DayZDiag and connects. A brief popup appears in the lower-right corner of the screen confirming the connection.
+4. A Workbench automatikusan észleli a DayZDiag-ot és csatlakozik. Egy rövid felugró ablak jelenik meg a képernyő jobb alsó sarkában, megerősítve a csatlakozást.
 
-> **Tipp:** If you only need to see console output (no breakpoints or stepping), you do not need to extract PBOs or load scripts into Workbench. The Script Editor will still connect to DayZDiag and display the Output stream. However, breakpoints and code navigation require the matching script files to be loaded in the project.
+> **Tipp:** Ha csak a konzol kimenetet kell látnod (nincs szükség töréspontokra vagy lépkedésre), nem kell PBO-kat kicsomagolnod vagy szkripteket betöltened a Workbench-be. A Szkript szerkesztő továbbra is csatlakozik a DayZDiag-hoz és megjeleníti a kimeneti adatfolyamot. Azonban a töréspontok és kód navigáció megkövetelik, hogy a megfelelő szkript fájlok be legyenek töltve a projektben.
 
-### Breakpoints
+### Töréspontok
 
-Click the left margin next to a line number. A red dot appears.
+Kattints a bal margóra egy sorszám mellett. Piros pont jelenik meg.
 
-| Jelolo | Jelentes |
+| Jelölő | Jelentés |
 |--------|---------|
-| Red dot | Active breakpoint -- execution pauses here |
-| Yellow exclamation | Invalid -- this line never executes |
-| Blue dot | Bookmark -- navigation marker only |
+| Piros pont | Aktív töréspont -- a végrehajtás itt megáll |
+| Sárga felkiáltójel | Érvénytelen -- ez a sor soha nem hajtódik végre |
+| Kék pont | Könyvjelző -- csak navigációs jelölő |
 
-Toggle with `F9`. You can also left-click directly in the margin area (where the red dots appear) to add or remove breakpoints. Right-clicking in the margin adds a blue **Bookmark** instead -- bookmarks have no effect on execution but mark places you want to revisit. Right-click a breakpoint to set a **condition** (e.g., `i == 10` or `player.GetIdentity().GetName() == "TestPlayer"`).
+Kapcsolás az `F9` billentyűvel. A margó területen (ahol a piros pontok megjelennek) bal kattintással is hozzáadhatsz vagy eltávolíthatsz töréspontokat. A margón jobb kattintás kék **Könyvjelzőt** ad hozzá -- a könyvjelzők nem befolyásolják a végrehajtást, de megjelölik a visszalátogatni kívánt helyeket. Jobb kattintás egy töréspontra **feltétel** beállításához (pl. `i == 10` vagy `player.GetIdentity().GetName() == "TestPlayer"`).
 
-### Stepping Through Code
+### Lépkedés a kódon
 
-| Akcio | Gyorsbillentyu | Leiras |
-|--------|----------|-------------|
-| Continue | `F5` | Run until next breakpoint |
-| Step Over | `F10` | Execute current line, move to next |
-| Step Into | `F11` | Enter the called function |
-| Step Out | `Shift+F11` | Run until current function returns |
-| Stop | `Shift+F5` | Disconnect and resume game |
+| Akció | Gyorsbillentyű | Leírás |
+|-------|---------------|--------|
+| Folytatás | `F5` | Futás a következő töréspontig |
+| Átlépés | `F10` | Aktuális sor végrehajtása, ugrás a következőre |
+| Belépés | `F11` | Belépés a hívott függvénybe |
+| Kilépés | `Shift+F11` | Futás az aktuális függvény visszatéréséig |
+| Leállítás | `Shift+F5` | Lecsatlakozás és játék folytatása |
 
-### Variable Inspection
+### Változó vizsgálat
 
-The **Locals** panel shows all variables in scope -- primitives with values, objects with class names (expandable), arrays with lengths, and NULL references clearly marked. The **Watch** panel evaluates custom expressions at each pause. The **Call Stack** shows the function chain; click entries to navigate.
+A **Locals** panel megjeleníti a hatókörben lévő összes változót -- primitíveket értékekkel, objektumokat osztálynevekkel (kibontható), tömböket hosszakkal, és NULL referenciákat világosan megjelölve. A **Watch** panel egyéni kifejezéseket értékel ki minden megállásnál. A **Call Stack** a függvényláncot mutatja; kattints a bejegyzésekre a navigáláshoz.
 
-### Client vs Server Debugging
+### Kliens vs. szerver hibakeresés
 
-`DayZDiag_x64.exe` can act as either a client or a server (by adding the `-server` launch parameter). It accepts all the same parameters as the retail executable. Workbench can connect to either instance.
+A `DayZDiag_x64.exe` működhet kliensként vagy szerverként (a `-server` indítási paraméter hozzáadásával). Elfogadja ugyanazokat a paramétereket, mint a kereskedelmi futtatható fájl. A Workbench bármelyik példányhoz csatlakozhat.
 
-Use **Debug > Debug Client** or **Debug > Debug Server** in the Script Editor menu to choose which side to debug. On a listen server, you can switch freely. The stepping controls, breakpoints, and variable inspection all apply to whichever side is currently selected.
+Használd a **Debug > Debug Client** vagy **Debug > Debug Server** menüpontot a Szkript szerkesztő menüjében, hogy kiválaszd, melyik oldalt debugolod. Listen szerveren szabadon válthatsz. A lépkedési vezérlők, töréspontok és változó vizsgálat mind az aktuálisan kiválasztott oldalra vonatkoznak.
 
-### Korlatozasok
+### Korlátozások
 
-- Only `DayZDiag_x64.exe` supports debugging, not retail builds.
-- Engine-internal C++ functions cannot be stepped into.
-- Many breakpoints in high-frequency functions (`OnUpdate`) cause severe lag.
-- Large mod projects may slow Workbench indexing.
+- Csak a `DayZDiag_x64.exe` támogatja a hibakeresést, a kereskedelmi buildek nem.
+- A motor belső C++ függvényeibe nem lehet belépni.
+- Sok töréspont nagy frekvenciájú függvényekben (`OnUpdate`) súlyos késleltetést okoz.
+- A nagy mod projektek lassíthatják a Workbench indexelést.
 
 ---
 
-## Script Console -- Live Testing
+## Script Console -- élő tesztelés
 
-The Script Console lets you execute Enforce Script commands against a running game instance -- invaluable for API experimentation without editing files.
+A Script Console lehetővé teszi Enforce Script parancsok végrehajtását egy futó játék példány ellen -- felbecsülhetetlen az API kísérletezéshez fájlok szerkesztése nélkül.
 
-### Opening
+### Megnyitás
 
-Look for the **Console** tab in the bottom panel, or enable via **View > Console**.
+Keresd a **Console** fület az alsó panelben, vagy engedélyezd a **View > Console** menüponton keresztül.
 
-### Common Commands
+### Gyakori parancsok
 
 ```c
-// Print player position
+// Játékos pozíció kiírása
 Print(GetGame().GetPlayer().GetPosition().ToString());
 
-// Spawn an item at player feet
+// Tárgy megjelenítése a játékos lábánál
 GetGame().CreateObject("AKM", GetGame().GetPlayer().GetPosition(), false, false, true);
 
-// Test math
+// Matematikai teszt
 float dist = vector.Distance("0 0 0", "100 0 100");
 Print("Distance: " + dist.ToString());
 
-// Teleport player
+// Játékos teleportálása
 GetGame().GetPlayer().SetPosition("6737 0 2505");
 
-// Spawn zombies nearby
+// Zombik megjelenítése a közelben
 vector pos = GetGame().GetPlayer().GetPosition();
 for (int i = 0; i < 5; i++)
 {
@@ -429,212 +425,212 @@ for (int i = 0; i < 5; i++)
 }
 ```
 
-### Korlatozasok
+### Korlátozások
 
-- **Client-side only** by default (server-side code needs a listen server).
-- **No persistent state** -- variables do not carry between executions.
-- **Some APIs unavailable** until the game reaches a specific state (player spawned, mission loaded).
-- **No error recovery** -- null pointers simply fail silently.
-
----
-
-## UI / Layout Preview
-
-Workbench can open `.layout` files for visual inspection.
-
-### Mit tudsz csinalni
-
-- **View widget hierarchy** -- see parent-child nesting and widget names.
-- **Inspect properties** -- position, size, color, alpha, alignment, image source, text, font.
-- **Find widget names** used by `FindAnyWidget()` in script code.
-- **Check image references** -- which image set entries or textures a widget uses.
-
-### Mit nem tudsz csinalni
-
-- **No runtime behavior** -- ScriptClass handlers and dynamic content do not execute.
-- **Rendering differences** -- transparency, layering, and resolution may differ from in-game.
-- **Limited editing** -- Workbench is primarily a viewer, not a visual designer.
-
-**Best practice:** Use the Layout Editor for inspection. Build and edit `.layout` files in a text editor. Test in-game with file patching.
+- Alapértelmezés szerint **csak kliens oldali** (szerver oldali kód listen szerverre van szükség).
+- **Nincs állandó állapot** -- a változók nem maradnak meg a végrehajtások között.
+- **Egyes API-k nem elérhetők**, amíg a játék nem ér el egy meghatározott állapotot (játékos megjelent, küldetés betöltve).
+- **Nincs hiba helyreállítás** -- a null pointerek egyszerűen csendben kudarcot vallanak.
 
 ---
 
-## Eroforras bongeszp
+## UI / Layout előnézet
 
-The Eroforras bongeszp navigates the P: drive with game-aware file previews.
+A Workbench meg tudja nyitni a `.layout` fájlokat vizuális vizsgálathoz.
 
-### Capabilities
+### Amit megtehetsz
 
-| Fajltipus | Akcio on Double-Click |
-|-----------|----------------------|
-| `.c` | Opens in Script Editor |
-| `.layout` | Opens in Layout Editor |
-| `.p3d` | 3D model preview (rotate, zoom, inspect LODs) |
-| `.paa` / `.edds` | Texture viewer with channel inspection (R, G, B, A) |
-| Config classes | Browse parsed CfgVehicles, CfgWeapons hierarchies |
+- **Widget hierarchia megtekintése** -- szülő-gyermek beágyazás és widget nevek megjelenítése.
+- **Tulajdonságok vizsgálata** -- pozíció, méret, szín, alfa, igazítás, képforrás, szöveg, betűtípus.
+- **Widget nevek keresése**, amelyeket a `FindAnyWidget()` használ a szkript kódban.
+- **Kép hivatkozások ellenőrzése** -- melyik imageset bejegyzéseket vagy textúrákat használ egy widget.
 
-### Finding Vanilla Resources
+### Amit nem tehetsz meg
 
-One of the most valuable uses -- study how Bohemia structures assets:
+- **Nincs futásidejű viselkedés** -- a ScriptClass kezelők és a dinamikus tartalom nem hajtódik végre.
+- **Renderelési különbségek** -- az átlátszóság, rétegezés és felbontás eltérhet a játékon belülitől.
+- **Korlátozott szerkesztés** -- a Workbench elsősorban megjelenítő, nem vizuális tervező.
+
+**Bevált gyakorlat:** Használd a Layout szerkesztőt vizsgálathoz. Építsd és szerkeszd a `.layout` fájlokat szövegszerkesztőben. Tesztelj játékon belül file patching-gel.
+
+---
+
+## Erőforrás böngésző
+
+Az erőforrás böngésző a P: meghajtón navigál játék-tudatos fájl előnézetekkel.
+
+### Képességek
+
+| Fájltípus | Akció dupla kattintásra |
+|-----------|------------------------|
+| `.c` | Megnyitás a Szkript szerkesztőben |
+| `.layout` | Megnyitás a Layout szerkesztőben |
+| `.p3d` | 3D modell előnézet (forgatás, nagyítás, LOD-ok vizsgálata) |
+| `.paa` / `.edds` | Textúra megjelenítő csatorna vizsgálattal (R, G, B, A) |
+| Konfig osztályok | Elemzett CfgVehicles, CfgWeapons hierarchiák böngészése |
+
+### Vanilla erőforrások keresése
+
+Az egyik legértékesebb felhasználás -- tanulmányozd, hogyan strukturálja a Bohemia az asseteket:
 
 ```
-P:\DZ\weapons\        <-- Vanilla weapon models and textures
-P:\DZ\characters\     <-- Character models and clothing
-P:\scripts\4_World\   <-- Vanilla world scripts
-P:\scripts\5_Mission\  <-- Vanilla mission scripts
+P:\DZ\weapons\        <-- Vanilla fegyver modellek és textúrák
+P:\DZ\characters\     <-- Karakter modellek és ruházat
+P:\scripts\4_World\   <-- Vanilla világ szkriptek
+P:\scripts\5_Mission\  <-- Vanilla küldetés szkriptek
 ```
 
 ---
 
-## Teljesitmeny profilozas
+## Teljesítmény profilozás
 
-When connected to DayZDiag, Workbench can profile script execution.
+Ha DayZDiag-hoz csatlakozik, a Workbench képes profilozni a szkript végrehajtást.
 
-### What the Profiler Shows
+### Amit a profilozó mutat
 
-- **Function call counts** -- how often each function runs per frame.
-- **Execution time** -- milliseconds per function.
-- **Call hierarchy** -- which functions call which, with time attribution.
-- **Frame time breakdown** -- script time vs engine time. At 60 FPS, each frame has ~16.6ms budget.
-- **Memory** -- allocation counts by class, detection of ref-cycle leaks.
+- **Függvényhívás számok** -- milyen gyakran fut minden függvény képkockánként.
+- **Végrehajtási idő** -- ezredmásodpercek függvényenként.
+- **Hívási hierarchia** -- melyik függvények hívják melyikeket, idő hozzárendeléssel.
+- **Képkocka idő bontás** -- szkript idő vs. motor idő. 60 FPS-nél minden képkockának ~16.6ms kerete van.
+- **Memória** -- osztályonkénti allokáció számok, ref-ciklus szivárgások észlelése.
 
-### In-Game Script Profiler (Diag Menu)
+### Játékon belüli szkript profilozó (Diag menü)
 
-In addition to Workbench's profiler, `DayZDiag_x64.exe` has a built-in Script Profiler accessible through the Diag Menu (under Statistics). It shows top-20 lists for time per class, time per function, class allocations, count per function, and class instance counts. Use the `-profile` launch parameter to enable profiling from startup. The profiler only measures Enforce Script -- proto (engine) methods are not measured as separate entries, but their execution time is included in the total time of the script method that calls them. See `EnProfiler.c` in vanilla scripts for the programmatic API (`EnProfiler.Enable`, `EnProfiler.SetModule`, flag constants).
+A Workbench profilozójának kiegészítéseként a `DayZDiag_x64.exe` rendelkezik beépített szkript profilozóval, amely a Diag menüből érhető el (a Statistics alatt). Top-20 listákat mutat az osztályonkénti időhöz, függvényenkénti időhöz, osztály allokációkhoz, függvényenkénti darabszámhoz és osztálypéldány számokhoz. Használd a `-profile` indítási paramétert a profilozás indítástól való engedélyezéséhez. A profilozó csak az Enforce Scriptet méri -- a proto (motor) metódusok nem külön bejegyzésekként mérődnek, de végrehajtási idejük beleszámít az őket meghívó szkript metódus teljes idejébe. Lásd az `EnProfiler.c`-t a vanilla szkriptekben a programozási API-hoz (`EnProfiler.Enable`, `EnProfiler.SetModule`, jelző konstansok).
 
-### Gyakori szuk keresztmetszetek
+### Gyakori szűk keresztmetszetek
 
-| Problema | Profilozoi tunet | Javitas |
-|---------|-----------------|-----|
-| Expensive per-frame code | High time in `OnUpdate` | Move to timers, reduce frequency |
-| Excessive iteration | Loop with thousands of calls | Cache results, use spatial queries |
-| String concatenation in loops | High allocation count | Reduce logging, batch strings |
+| Probléma | Profilozói tünet | Javítás |
+|----------|-----------------|---------|
+| Drága képkockánkénti kód | Magas idő az `OnUpdate`-ben | Áthelyezés időzítőkre, frekvencia csökkentése |
+| Túlzott iteráció | Ciklus több ezer hívással | Eredmények gyorsítótárazása, térbeli lekérdezések használata |
+| Sztring összefűzés ciklusokban | Magas allokáció szám | Naplózás csökkentése, sztringek kötegelése |
 
 ---
 
-## Integration with File Patching
+## Integráció a File Patching-gel
 
-The fastest development workflow combines Workbench with file patching, eliminating PBO rebuilds for script changes.
+A leggyorsabb fejlesztési munkafolyamat a Workbench-et a file patching-gel kombinálja, kiküszöbölve a PBO újraépítéseket a szkript módosításokhoz.
 
-### Setup
+### Beállítás
 
-1. Scripts on P: drive as loose files (not in PBOs).
-2. Symlink DayZ install scripts: `mklink /J "...\DayZ\scripts" "P:\scripts"`
-3. Launch with `-filePatching`: both client and server use `DayZDiag_x64.exe`.
+1. Szkriptek a P: meghajtón különálló fájlokként (nem PBO-kban).
+2. DayZ telepítés szkriptek szimbolikus linkje: `mklink /J "...\DayZ\scripts" "P:\scripts"`
+3. Indítás `-filePatching`-gel: mind a kliens, mind a szerver `DayZDiag_x64.exe`-t használ.
 
-### The Rapid Iteration Loop
+### A gyors iterációs ciklus
 
 ```
-1. Edit .c file in your editor
-2. Save (file is already on P: drive)
-3. Restart mission in DayZDiag (no PBO rebuild)
-4. Test in-game
-5. Set breakpoints in Workbench if needed
-6. Repeat
+1. .c fájl szerkesztése a szerkesztődben
+2. Mentés (a fájl már a P: meghajtón van)
+3. Küldetés újraindítása a DayZDiag-ban (nincs PBO újraépítés)
+4. Tesztelés játékon belül
+5. Töréspontok beállítása a Workbench-ben, ha szükséges
+6. Ismétlés
 ```
 
-### What Needs Rebuilding?
+### Mi igényel újraépítést?
 
-| Valtozas | Ujraepites? |
-|--------|----------|
-| Script logic (`.c`) | No -- restart mission |
-| Layout files (`.layout`) | No -- restart mission |
-| Config.cpp (script-only) | No -- restart mission |
-| Config.cpp (with CfgVehicles) | Yes -- binarized configs require PBO |
-| Textures (`.paa`) | No -- engine reloads from P: |
-| Models (`.p3d`) | Maybe -- unbinarized MLOD only |
-
----
-
-## Gyakori Workbench problemak
-
-### Workbench Crashes on Startup
-
-**Ok:** P: drive not mounted or `.gproj` references nonexistent paths.
-**Javitas:** Mount P: first. Check **Workbench > Options** source directory. Verify `.gproj` FileSystem paths exist.
-
-### No Code Completion
-
-**Ok:** Project misconfigured -- Workbench cannot compile scripts.
-**Javitas:** Verify `.gproj` ScriptModules include vanilla paths (`scripts/1_Core`, etc.). Check Output for compiler errors. Ensure vanilla scripts are on P:.
-
-### Scripts Do Not Compile
-
-**Javitas:** Check Output panel for exact errors. Verify all dependency mod paths are in ScriptModules. Ensure no cross-layer references (3_Game cannot use 4_World types).
-
-### Breakpoints Not Hitting
-
-**Ellenorzo lista:**
-1. Connected to DayZDiag (not retail)?
-2. Red dot (valid) or yellow exclamation (invalid)?
-3. Scripts match between Workbench and game?
-4. Debugging the right side (client vs server)?
-5. Code path actually reached? (Add `Print()` to verify.)
-
-### Cannot Find Files in Eroforras bongeszp
-
-**Javitas:** Check `.gproj` FileSystem includes the directory where your files live. Restart Workbench after modifying `.gproj`.
-
-### "Plugin Not Found" Errors
-
-**Javitas:** Verify DayZ Tools integrity via Steam (right-click > Properties > Installed Files > Verify). Reinstall if needed.
-
-### Connection to DayZDiag Fails
-
-**Javitas:** Both processes must be on the same machine. Check firewalls. Ensure Script Editor module is open before launching DayZDiag. Try restarting both.
+| Változás | Újraépítés? |
+|----------|------------|
+| Szkript logika (`.c`) | Nem -- küldetés újraindítás |
+| Layout fájlok (`.layout`) | Nem -- küldetés újraindítás |
+| Config.cpp (csak szkript) | Nem -- küldetés újraindítás |
+| Config.cpp (CfgVehicles-szel) | Igen -- binarizált konfigok PBO-t igényelnek |
+| Textúrák (`.paa`) | Nem -- a motor újratölti a P:-ről |
+| Modellek (`.p3d`) | Talán -- csak binarizálatlan MLOD |
 
 ---
 
-## Tippek es legjobb gyakorlatok
+## Gyakori Workbench problémák
 
-1. **Use Workbench for debugging, VS Code for writing.** Workbench's editor is basic. Use external editors for daily coding; switch to Workbench for debugging and layout preview.
+### Workbench összeomlik indításkor
 
-2. **Keep a .gproj per mod.** Each mod should have its own project file to compile exactly the right script context without indexing unrelated mods.
+**Ok:** P: meghajtó nincs csatolva, vagy a `.gproj` nem létező elérési utakra hivatkozik.
+**Javítás:** Csatold előbb a P:-t. Ellenőrizd a **Workbench > Options** forrás könyvtárat. Ellenőrizd, hogy a `.gproj` FileSystem elérési útjai léteznek.
 
-3. **Use the console for API experimentation.** Test API calls in the console before writing them into files. Faster than edit-restart-test cycles.
+### Nincs kódkiegészítés
 
-4. **Profile before optimizing.** Do not guess bottlenecks. The profiler shows where time is actually spent.
+**Ok:** Projekt rosszul konfigurálva -- a Workbench nem tudja fordítani a szkripteket.
+**Javítás:** Ellenőrizd, hogy a `.gproj` ScriptModules tartalmazza a vanilla elérési utakat (`scripts/1_Core`, stb.). Ellenőrizd a kimenetet fordítói hibákért. Győződj meg, hogy a vanilla szkriptek a P:-n vannak.
 
-5. **Set breakpoints strategically.** Avoid `OnUpdate()` breakpoints unless conditional. They fire every frame and freeze the game constantly.
+### Szkriptek nem fordulnak
 
-6. **Use bookmarks for navigation.** Blue bookmark dots mark interesting vanilla script locations you reference frequently.
+**Javítás:** Ellenőrizd a kimeneti panelt a pontos hibákért. Ellenőrizd, hogy minden függőségi mod elérési útja a ScriptModules-ban van. Győződj meg, hogy nincsenek rétegek közötti hivatkozások (a 3_Game nem használhat 4_World típusokat).
 
-7. **Check compiler output before launching.** If Workbench reports errors, the game will fail too. Javitas errors in Workbench first -- faster than waiting for game boot.
+### Töréspontok nem aktiválódnak
 
-8. **Use -mod for simple setups, .gproj for complex.** Single-mod with no dependencies: `-mod=P:\MyMod`. Multi-mod with CF/Dabs: custom `.gproj`.
+**Ellenőrző lista:**
+1. Csatlakozva a DayZDiag-hoz (nem a kereskedelmi verzióhoz)?
+2. Piros pont (érvényes) vagy sárga felkiáltójel (érvénytelen)?
+3. A szkriptek egyeznek a Workbench és a játék között?
+4. A megfelelő oldalt (kliens vs. szerver) debugolod?
+5. A kód útvonal valóban elérhető? (Adj hozzá `Print()`-et az ellenőrzéshez.)
 
-9. **Keep Workbench updated.** Update DayZ Tools through Steam when DayZ updates. Mismatched versions cause compilation failures.
+### Fájlok nem találhatók az erőforrás böngészőben
 
----
+**Javítás:** Ellenőrizd, hogy a `.gproj` FileSystem tartalmazza azt a könyvtárat, ahol a fájljaid vannak. Indítsd újra a Workbench-et a `.gproj` módosítása után.
 
-## Gyors referencia: Keyboard Gyorsbillentyus
+### "Plugin Not Found" hibák
 
-| Gyorsbillentyu | Akcio |
-|----------|--------|
-| `F5` | Start / Continue debugging |
-| `Shift+F5` | Stop debugging |
-| `F9` | Toggle breakpoint |
-| `F10` | Step Over |
-| `F11` | Step Into |
-| `Shift+F11` | Step Out |
-| `Ctrl+F` | Find in file |
-| `Ctrl+H` | Find and replace |
-| `Ctrl+Shift+F` | Find in project |
-| `Ctrl+S` | Save |
-| `Ctrl+Space` | Code completion |
+**Javítás:** Ellenőrizd a DayZ Tools integritását a Steamen keresztül (jobb kattintás > Tulajdonságok > Telepített fájlok > Ellenőrzés). Szükség esetén telepítsd újra.
 
-## Gyors referencia: Launch Parameterek
+### DayZDiag csatlakozás sikertelen
 
-| Parameter | Leiras |
-|-----------|-------------|
-| `-project="path/dayz.gproj"` | Load specific project file |
-| `-mod=P:\MyMod` | Auto-configure from mod's config.cpp |
-| `-mod=P:\ModA;P:\ModB` | Multiple mods (semicolon-separated) |
+**Javítás:** Mindkét folyamatnak ugyanazon a gépen kell lennie. Ellenőrizd a tűzfalakat. Győződj meg, hogy a Szkript szerkesztő modul nyitva van a DayZDiag indítása előtt. Próbáld újraindítani mindkettőt.
 
 ---
 
-## Navigacio
+## Tippek és bevált gyakorlatok
 
-| Elozo | Up | Kovetkezo |
-|----------|----|------|
-| [4.6 PBO Packing](06-pbo-packing.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.8 Building Modeling](08-building-modeling.md) |
+1. **Használd a Workbench-et hibakereséshez, a VS Code-ot íráshoz.** A Workbench szerkesztője egyszerű. Használj külső szerkesztőket a napi kódoláshoz; válts a Workbench-re hibakereséshez és layout előnézethez.
+
+2. **Tarts fenn egy .gproj-t modonként.** Minden modnak legyen saját projekt fájlja, hogy pontosan a megfelelő szkript kontextust fordítsa a nem kapcsolódó modok indexelése nélkül.
+
+3. **Használd a konzolt API kísérletezéshez.** Teszteld az API hívásokat a konzolban, mielőtt fájlokba írnád őket. Gyorsabb, mint a szerkesztés-újraindítás-teszt ciklusok.
+
+4. **Profilozz az optimalizálás előtt.** Ne találgasd a szűk keresztmetszeteket. A profilozó megmutatja, hol tölti a rendszer ténylegesen az időt.
+
+5. **Állíts be töréspontokat stratégiailag.** Kerüld az `OnUpdate()` töréspontokat, hacsak nem feltételesek. Minden képkockában aktiválódnak és folyamatosan lefagyasztják a játékot.
+
+6. **Használj könyvjelzőket a navigációhoz.** A kék könyvjelző pontok megjelölik az érdekesebb vanilla szkript helyeket, amelyekre gyakran hivatkozol.
+
+7. **Ellenőrizd a fordítói kimenetet az indítás előtt.** Ha a Workbench hibákat jelent, a játék is hibázni fog. Javítsd a hibákat először a Workbench-ben -- gyorsabb, mint a játék indulására várni.
+
+8. **Használj -mod-ot egyszerű beállításokhoz, .gproj-t összetettekhez.** Egyetlen mod függőségek nélkül: `-mod=P:\MyMod`. Több mod CF/Dabs-szal: egyéni `.gproj`.
+
+9. **Tartsd frissítve a Workbench-et.** Frissítsd a DayZ Tools-t a Steamen keresztül, amikor a DayZ frissül. Eltérő verziók fordítási hibákat okoznak.
+
+---
+
+## Gyors referencia: billentyűparancsok
+
+| Gyorsbillentyű | Akció |
+|----------------|-------|
+| `F5` | Hibakeresés indítása / Folytatás |
+| `Shift+F5` | Hibakeresés leállítása |
+| `F9` | Töréspont kapcsolása |
+| `F10` | Átlépés |
+| `F11` | Belépés |
+| `Shift+F11` | Kilépés |
+| `Ctrl+F` | Keresés a fájlban |
+| `Ctrl+H` | Keresés és csere |
+| `Ctrl+Shift+F` | Keresés a projektben |
+| `Ctrl+S` | Mentés |
+| `Ctrl+Space` | Kódkiegészítés |
+
+## Gyors referencia: indítási paraméterek
+
+| Paraméter | Leírás |
+|-----------|--------|
+| `-project="path/dayz.gproj"` | Meghatározott projekt fájl betöltése |
+| `-mod=P:\MyMod` | Automatikus konfiguráció a mod config.cpp-jéből |
+| `-mod=P:\ModA;P:\ModB` | Több mod (pontosvesszővel elválasztva) |
+
+---
+
+## Navigáció
+
+| Előző | Fel | Következő |
+|-------|-----|-----------|
+| [4.6 PBO csomagolás](06-pbo-packing.md) | [4. rész: Fájlformátumok és DayZ Tools](01-textures.md) | [4.8 Épület modellezés](08-building-modeling.md) |

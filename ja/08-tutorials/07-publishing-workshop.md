@@ -1,60 +1,64 @@
-# Chapter 8.7: Publishing to the Steam Workshop
+# Chapter 8.7: Steam Workshopへの公開
 
-[Home](../../README.md) | [<< Previous: Debugging & Testing](06-debugging-testing.md) | **Publishing to the Steam Workshop** | [Next: Building a HUD Overlay >>](08-hud-overlay.md)
+[Home](../../README.md) | [<< 前へ: デバッグとテスト](06-debugging-testing.md) | **Steam Workshopへの公開** | [次へ: HUDオーバーレイの構築 >>](08-hud-overlay.md)
+
+---
+
+> **概要:** Modのビルド、テストが完了し、世界に公開する準備が整いました。このチュートリアルでは、公開プロセスの全工程を最初から最後まで説明します：Modフォルダの準備、マルチプレイヤー互換性のためのPBO署名、Steam Workshopアイテムの作成、DayZ Toolsまたはコマンドラインを使用したアップロード、そして長期的なアップデートのメンテナンスです。最終的に、ModはWorkshop上でライブとなり、誰でもプレイ可能になります。
 
 ---
 
 ## 目次
 
-- [Introduction](#introduction)
-- [Pre-Publishing Checklist](#pre-publishing-checklist)
-- [Step 1: Prepare Your Mod Folder](#step-1-prepare-your-mod-folder)
-- [Step 2: Write a Complete mod.cpp](#step-2-write-a-complete-modcpp)
-- [Step 3: Prepare Logo and Preview Images](#step-3-prepare-logo-and-preview-images)
-- [Step 4: Generate a Key Pair](#step-4-generate-a-key-pair)
-- [Step 5: Sign Your PBOs](#step-5-sign-your-pbos)
-- [Step 6: Publish via DayZ Tools Publisher](#step-6-publish-via-dayz-tools-publisher)
-- [Publishing via Command Line (Alternative)](#publishing-via-command-line-alternative)
-- [Updating Your Mod](#updating-your-mod)
-- [Version Management Best Practices](#version-management-best-practices)
-- [Workshop Page Best Practices](#workshop-page-best-practices)
-- [Guide for Server Operators](#guide-for-server-operators)
-- [Distribution Without the Workshop](#distribution-without-the-workshop)
-- [Common Problems and Solutions](#common-problems-and-solutions)
-- [The Complete Mod Lifecycle](#the-complete-mod-lifecycle)
-- [Next Steps](#next-steps)
+- [はじめに](#introduction)
+- [公開前チェックリスト](#pre-publishing-checklist)
+- [Step 1: Modフォルダの準備](#step-1-prepare-your-mod-folder)
+- [Step 2: 完全なmod.cppの作成](#step-2-write-a-complete-modcpp)
+- [Step 3: ロゴとプレビュー画像の準備](#step-3-prepare-logo-and-preview-images)
+- [Step 4: キーペアの生成](#step-4-generate-a-key-pair)
+- [Step 5: PBOの署名](#step-5-sign-your-pbos)
+- [Step 6: DayZ Tools Publisherでの公開](#step-6-publish-via-dayz-tools-publisher)
+- [コマンドラインでの公開（代替方法）](#publishing-via-command-line-alternative)
+- [Modのアップデート](#updating-your-mod)
+- [バージョン管理のベストプラクティス](#version-management-best-practices)
+- [Workshopページのベストプラクティス](#workshop-page-best-practices)
+- [サーバー管理者向けガイド](#guide-for-server-operators)
+- [Workshopを使用しない配布](#distribution-without-the-workshop)
+- [よくある問題と解決策](#common-problems-and-solutions)
+- [完全なModライフサイクル](#the-complete-mod-lifecycle)
+- [次のステップ](#next-steps)
 
 ---
 
 ## はじめに
 
-Publishing to the Steam Workshop is the final step in the DayZ modding journey. Everything you have learned in previous chapters culminates here. Once your mod is on the Workshop, any DayZ player can subscribe, download, and play with it. この章では the complete process: preparing your mod, signing PBOs, uploading, and maintaining updates.
+Steam Workshopへの公開は、DayZモッディングの最終ステップです。これまでの章で学んだすべてがここに集約されます。ModがWorkshop上に公開されると、あらゆるDayZプレイヤーがサブスクライブ、ダウンロード、プレイできるようになります。この章では、Modの準備、PBOの署名、アップロード、アップデートのメンテナンスまでの完全なプロセスを説明します。
 
 ---
 
-## Pre-Publishing Checklist
+## 公開前チェックリスト
 
-Before you upload anything, go through this list. Skipping items here causes the most common post-publish headaches.
+アップロードする前に、このリストを確認してください。ここの項目をスキップすると、公開後の最も一般的な問題が発生します。
 
-- [ ] All features tested on a **dedicated server** (not just single-player)
-- [ ] Multiplayer tested: another client can join and use mod features
-- [ ] No game-breaking errors in script logs (`DayZDiag_x64.RPT` or `script_*.log`)
-- [ ] All `Print()` debug statements removed or wrapped in `#ifdef DEVELOPER`
-- [ ] No hardcoded test values or leftover experimental code
-- [ ] `stringtable.csv` contains all user-facing strings with translations
-- [ ] `credits.json` filled out with author and contributor information
-- [ ] Logo image prepared (see [Step 3](#step-3-prepare-logo-and-preview-images) for sizes)
-- [ ] All textures converted to `.paa` format (not raw `.png`/`.tga` in PBOs)
-- [ ] Workshop description and installation instructions written
-- [ ] Changelog started (even if just "1.0.0 - Initial release")
+- [ ] すべての機能を**専用サーバー**でテスト済み（シングルプレイヤーだけでなく）
+- [ ] マルチプレイヤーテスト済み：別のクライアントが参加してMod機能を使用可能
+- [ ] スクリプトログ（`DayZDiag_x64.RPT` または `script_*.log`）にゲームブレイクエラーなし
+- [ ] すべての `Print()` デバッグ文を削除、または `#ifdef DEVELOPER` でラップ済み
+- [ ] ハードコードされたテスト値や残余の実験コードなし
+- [ ] `stringtable.csv` にすべてのユーザー向け文字列と翻訳を含む
+- [ ] `credits.json` に著者と貢献者情報を記入済み
+- [ ] ロゴ画像の準備完了（サイズは [Step 3](#step-3-prepare-logo-and-preview-images) を参照）
+- [ ] すべてのテクスチャを `.paa` フォーマットに変換済み（PBO内に生の `.png`/`.tga` はなし）
+- [ ] Workshopの説明とインストール手順を作成済み
+- [ ] 変更ログの作成開始（「1.0.0 - Initial release」だけでも可）
 
 ---
 
-## Step 1: Prepare Your Mod Folder
+## Step 1: Modフォルダの準備
 
-Your final mod folder must follow DayZ's expected structure exactly.
+最終的なModフォルダはDayZの期待する構造に正確に従う必要があります。
 
-### Required Structure
+### 必要な構成
 
 ```
 @MyMod/
@@ -66,32 +70,32 @@ Your final mod folder must follow DayZ's expected structure exactly.
 ├── keys/
 │   └── MyMod.bikey
 ├── mod.cpp
-└── meta.cpp  (auto-generated by the DayZ Launcher on first load)
+└── meta.cpp  （DayZ Launcherが初回読み込み時に自動生成）
 ```
 
-### Folder Breakdown
+### フォルダの内訳
 
-| Folder / File | 目的 |
+| フォルダ / ファイル | 目的 |
 |---------------|---------|
-| `addons/` | 内容 all `.pbo` files (packed mod content) and their `.bisign` signature files |
-| `keys/` | 内容 the public key (`.bikey`) that servers use to verify your PBOs |
-| `mod.cpp` | Mod metadata: name, author, version, description, icon paths |
-| `meta.cpp` | Auto-generated by DayZ Launcher; contains the Workshop ID after publishing |
+| `addons/` | すべての `.pbo` ファイル（パックされたModコンテンツ）とその `.bisign` 署名ファイルを含む |
+| `keys/` | サーバーがPBOを検証するために使用する公開鍵（`.bikey`）を含む |
+| `mod.cpp` | Modメタデータ：名前、著者、バージョン、説明、アイコンパス |
+| `meta.cpp` | DayZ Launcherが自動生成；公開後のWorkshop IDを含む |
 
-### Important Rules
+### 重要なルール
 
-- The folder name **must** start with `@`. This is how DayZ identifies mod directories.
-- Every `.pbo` in `addons/` must have a matching `.bisign` file next to it.
-- The `.bikey` file in `keys/` must correspond to the private key used to create the `.bisign` files.
-- Do **not** include source files (`.c` scripts, raw textures, Workbench projects) in the upload folder. Only packed PBOs belong here.
+- フォルダ名は `@` で**始まる必要があります**。DayZはこの方法でModディレクトリを識別します。
+- `addons/` 内のすべての `.pbo` には、対応する `.bisign` ファイルが隣にある必要があります。
+- `keys/` 内の `.bikey` ファイルは、`.bisign` ファイルの作成に使用された秘密鍵に対応している必要があります。
+- アップロードフォルダにソースファイル（`.c` スクリプト、生テクスチャ、Workbenchプロジェクト）を**含めないでください**。パックされたPBOのみがここに属します。
 
 ---
 
-## Step 2: Write a Complete mod.cpp
+## Step 2: 完全なmod.cppの作成
 
-The `mod.cpp` file tells DayZ and the launcher everything about your mod. An incomplete `mod.cpp` causes missing icons, blank descriptions, and display issues.
+`mod.cpp` ファイルは、DayZとランチャーにModに関するすべてを伝えます。不完全な `mod.cpp` はアイコンの欠落、空白の説明、表示問題を引き起こします。
 
-### Full mod.cpp Example
+### 完全なmod.cppの例
 
 ```cpp
 name         = "My Awesome Mod";
@@ -110,118 +114,118 @@ versionPath  = "MyMod/Data/version.txt";
 
 ### フィールドリファレンス
 
-| フィールド | Required | 説明 |
+| フィールド | 必須 | 説明 |
 |-------|----------|-------------|
-| `name` | Yes | Display name shown in the DayZ Launcher mod list |
-| `picture` | Yes | Path to the main logo image (displayed in launcher). Relative to the P: drive or mod root |
-| `logo` | Yes | Same as picture in most cases; used in some UI contexts |
-| `logoSmall` | No | Smaller version of the logo for compact views |
-| `logoOver` | No | Hover state of the logo (often same as `logo`) |
-| `tooltip` | Yes | Short one-line description shown on hover in the launcher |
-| `overview` | Yes | Longer description shown in the mod details panel |
-| `author` | Yes | Your name or team name |
-| `overviewPicture` | No | Large image shown in the mod overview panel |
-| `action` | No | URL opened when the player clicks "Website" (typically your Workshop page or GitHub) |
-| `version` | Yes | Current version string (e.g., `"1.0.0"`) |
-| `versionPath` | No | Path to a text file containing the version number (for automated builds) |
+| `name` | はい | DayZ LauncherのModリストに表示される表示名 |
+| `picture` | はい | メインロゴ画像へのパス（ランチャーに表示）。P:ドライブまたはModルートからの相対パス |
+| `logo` | はい | ほとんどの場合pictureと同じ；一部のUIコンテキストで使用 |
+| `logoSmall` | いいえ | コンパクト表示用のロゴの小型版 |
+| `logoOver` | いいえ | ロゴのホバー状態（多くの場合 `logo` と同じ） |
+| `tooltip` | はい | ランチャーでホバー時に表示される短い一行の説明 |
+| `overview` | はい | Mod詳細パネルに表示される長い説明 |
+| `author` | はい | あなたの名前またはチーム名 |
+| `overviewPicture` | いいえ | Mod概要パネルに表示される大きな画像 |
+| `action` | いいえ | プレイヤーが「Website」をクリックしたときに開くURL（通常Workshopページまたは GitHub） |
+| `version` | はい | 現在のバージョン文字列（例：`"1.0.0"`） |
+| `versionPath` | いいえ | バージョン番号を含むテキストファイルへのパス（自動ビルド用） |
 
 ### よくある間違い
 
-- **Missing semicolons** at the end of each line. Every line must end with `;`.
-- **Wrong image paths.** Paths are relative to the P: drive root when building. After packing, the path should reflect the PBO prefix. Test by loading the mod locally before uploading.
-- **Forgetting to update the version** before re-uploading. Always increment the version string.
+- **行末のセミコロンの欠落。** すべての行は `;` で終わる必要があります。
+- **間違った画像パス。** ビルド時、パスはP:ドライブルートからの相対パスです。パッキング後は、パスがPBOプレフィックスを反映する必要があります。アップロード前にModをローカルで読み込んでテストしてください。
+- **再アップロード前のバージョン更新忘れ。** 常にバージョン文字列をインクリメントしてください。
 
 ---
 
-## Step 3: Prepare Logo and Preview Images
+## Step 3: ロゴとプレビュー画像の準備
 
-### Image Requirements
+### 画像要件
 
-| Image | Size | Format | Used For |
+| 画像 | サイズ | フォーマット | 用途 |
 |-------|------|--------|----------|
-| Mod logo (`picture` / `logo`) | 512 x 512 px | `.paa` (in-game) | DayZ Launcher mod list |
-| Small logo (`logoSmall`) | 128 x 128 px | `.paa` (in-game) | Compact launcher views |
-| Steam Workshop preview | 512 x 512 px | `.png` or `.jpg` | Workshop page thumbnail |
-| Overview picture | 1024 x 512 px | `.paa` (in-game) | Mod details panel |
+| Modロゴ（`picture` / `logo`） | 512 x 512 px | `.paa`（ゲーム内） | DayZ LauncherのModリスト |
+| 小型ロゴ（`logoSmall`） | 128 x 128 px | `.paa`（ゲーム内） | ランチャーのコンパクト表示 |
+| Steam Workshopプレビュー | 512 x 512 px | `.png` or `.jpg` | Workshopページのサムネイル |
+| 概要画像 | 1024 x 512 px | `.paa`（ゲーム内） | Mod詳細パネル |
 
-### Converting Images to PAA
+### 画像のPAA変換
 
-DayZ uses `.paa` textures internally. To convert PNG/TGA images:
+DayZは内部的に `.paa` テクスチャを使用します。PNG/TGA画像を変換するには：
 
-1. Open **TexView2** (included with DayZ Tools)
-2. File > Open your `.png` or `.tga` image
-3. File > Save As > choose `.paa` format
-4. Save to your mod's `Data/Textures/` directory
+1. **TexView2**（DayZ Toolsに含まれる）を開く
+2. File > Open で `.png` または `.tga` 画像を開く
+3. File > Save As > `.paa` フォーマットを選択
+4. Modの `Data/Textures/` ディレクトリに保存
 
-Addon Builder can also auto-convert textures when packing PBOs if configured to binarize.
+Addon Builderもバイナライズ設定がされていれば、PBOパッキング時にテクスチャを自動変換できます。
 
-### Tips
+### ヒント
 
-- Use a clear, recognizable icon that reads well at small sizes.
-- Keep text on logos to a minimum -- it becomes unreadable at 128x128.
-- The Steam Workshop preview image (`.png`/`.jpg`) is separate from the in-game logo (`.paa`). You upload it through the Publisher.
+- 小さいサイズでも読みやすい、明確で認識しやすいアイコンを使用してください。
+- ロゴのテキストは最小限に -- 128x128では読めなくなります。
+- Steam Workshopのプレビュー画像（`.png`/`.jpg`）はゲーム内ロゴ（`.paa`）とは別です。Publisherを通じてアップロードします。
 
 ---
 
-## Step 4: Generate a Key Pair
+## Step 4: キーペアの生成
 
-Key signing is **essential** for multiplayer. Almost all public servers enable signature verification, so without proper signatures players will be kicked when joining with your mod.
+キー署名はマルチプレイヤーに**不可欠**です。ほぼすべての公開サーバーが署名検証を有効にしているため、適切な署名がないとプレイヤーはModを使用してサーバーに参加した際にキックされます。
 
-### How Key Signing Works
+### キー署名の仕組み
 
-- You create a **key pair**: a `.biprivatekey` (private) and a `.bikey` (public)
-- You sign each `.pbo` with the private key, producing a `.bisign` file
-- You distribute the `.bikey` with your mod; server operators place it in their `keys/` folder
-- When a player joins, the server checks each `.pbo` against its `.bisign` using the `.bikey`
+- **キーペア**を作成します：`.biprivatekey`（秘密鍵）と `.bikey`（公開鍵）
+- 各 `.pbo` を秘密鍵で署名し、`.bisign` ファイルを生成します
+- `.bikey` をModと一緒に配布します；サーバー管理者はそれを `keys/` フォルダに配置します
+- プレイヤーが参加すると、サーバーは `.bikey` を使用して各 `.pbo` を `.bisign` に照合します
 
-### Generating Keys with DayZ Tools
+### DayZ Toolsでのキー生成
 
-1. Open **DayZ Tools** from Steam
-2. In the main window, find and click **DS Create Key** (sometimes listed under Tools or Utilities)
-3. Enter a **key name** -- use your mod name (e.g., `MyMod`)
-4. Choose where to save the files
-5. Two files are created:
-   - `MyMod.bikey` -- the **public key** (distribute this)
-   - `MyMod.biprivatekey` -- the **private key** (keep this secret)
+1. Steamから **DayZ Tools** を開く
+2. メインウィンドウで **DS Create Key** を見つけてクリック（ToolsまたはUtilitiesの下にリストされている場合あり）
+3. **キー名**を入力 -- Mod名を使用します（例：`MyMod`）
+4. ファイルの保存先を選択
+5. 2つのファイルが作成されます：
+   - `MyMod.bikey` -- **公開鍵**（これを配布します）
+   - `MyMod.biprivatekey` -- **秘密鍵**（これは秘密にしてください）
 
-### Generating Keys via Command Line
+### コマンドラインでのキー生成
 
-また、 the `DSCreateKey` tool directly from a terminal:
+ターミナルから `DSCreateKey` ツールを直接使用することもできます：
 
 ```batch
 "C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools\Bin\DsUtils\DSCreateKey.exe" MyMod
 ```
 
-This creates `MyMod.bikey` and `MyMod.biprivatekey` in the current directory.
+これにより、カレントディレクトリに `MyMod.bikey` と `MyMod.biprivatekey` が作成されます。
 
-### Critical Security Rule
+### 重要なセキュリティルール
 
-> **NEVER share your `.biprivatekey` file.** Anyone who has your private key can sign modified PBOs that servers will accept as legitimate. Store it securely and back it up. If you lose it, you must generate a new key pair, re-sign everything, and server operators must update their keys.
+> **`.biprivatekey` ファイルは決して共有しないでください。** 秘密鍵を持つ人は誰でも、サーバーが正当と認識する改変されたPBOに署名できます。安全に保管し、バックアップしてください。紛失した場合、新しいキーペアを生成し、すべてを再署名し、サーバー管理者はキーを更新する必要があります。
 
 ---
 
-## Step 5: Sign Your PBOs
+## Step 5: PBOの署名
 
-Every `.pbo` file in your mod must be signed with your private key. This produces `.bisign` files that sit alongside the PBOs.
+Mod内のすべての `.pbo` ファイルを秘密鍵で署名する必要があります。これにより、PBOの横に配置される `.bisign` ファイルが生成されます。
 
-### Signing with DayZ Tools
+### DayZ Toolsでの署名
 
-1. Open **DayZ Tools**
-2. Find and click **DS Sign File** (under Tools or Utilities)
-3. Select your `.biprivatekey` file
-4. Select the `.pbo` file to sign
-5. A `.bisign` file is created next to the PBO (e.g., `MyMod_Scripts.pbo.MyMod.bisign`)
-6. Repeat for every `.pbo` in your `addons/` folder
+1. **DayZ Tools** を開く
+2. **DS Sign File** を見つけてクリック（ToolsまたはUtilitiesの下）
+3. `.biprivatekey` ファイルを選択
+4. 署名する `.pbo` ファイルを選択
+5. `.bisign` ファイルがPBOの隣に作成されます（例：`MyMod_Scripts.pbo.MyMod.bisign`）
+6. `addons/` フォルダ内のすべての `.pbo` に対して繰り返す
 
-### Signing via Command Line
+### コマンドラインでの署名
 
-For automation or multiple PBOs, use the command line:
+自動化や複数PBOの場合、コマンドラインを使用します：
 
 ```batch
 "C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools\Bin\DsUtils\DSSignFile.exe" MyMod.biprivatekey MyMod_Scripts.pbo
 ```
 
-To sign all PBOs in a folder with a batch script:
+バッチスクリプトでフォルダ内のすべてのPBOを署名するには：
 
 ```batch
 @echo off
@@ -237,9 +241,9 @@ echo All PBOs signed.
 pause
 ```
 
-### After Signing: Verify Your Folder
+### 署名後：フォルダの確認
 
-Your `addons/` folder should look like this:
+`addons/` フォルダは次のようになるはずです：
 
 ```
 addons/
@@ -249,38 +253,38 @@ addons/
 └── MyMod_Data.pbo.MyMod.bisign
 ```
 
-Every `.pbo` must have a corresponding `.bisign`. If any `.bisign` is missing, players will be kicked from signature-verified servers.
+すべての `.pbo` には対応する `.bisign` が必要です。`.bisign` が欠落していると、プレイヤーは署名検証サーバーからキックされます。
 
-### Place the Public Key
+### 公開鍵の配置
 
-Copy `MyMod.bikey` into your `@MyMod/keys/` folder. This is what server operators will copy into their server's `keys/` directory to allow your mod.
+`MyMod.bikey` を `@MyMod/keys/` フォルダにコピーします。これはサーバー管理者がModを許可するためにサーバーの `keys/` ディレクトリにコピーするものです。
 
 ---
 
-## Step 6: Publish via DayZ Tools Publisher
+## Step 6: DayZ Tools Publisherでの公開
 
-DayZ Tools includes a built-in Workshop publisher -- the easiest way to get your mod onto Steam.
+DayZ ToolsにはビルトインのWorkshop Publisherが含まれています -- ModをSteamに公開する最も簡単な方法です。
 
-### Open the Publisher
+### Publisherを開く
 
-1. Open **DayZ Tools** from Steam
-2. Click **Publisher** in the main window (may also be labeled "Workshop Tool")
-3. The Publisher window opens with fields for your mod details
+1. Steamから **DayZ Tools** を開く
+2. メインウィンドウで **Publisher** をクリック（「Workshop Tool」とラベル付けされている場合もあり）
+3. Mod詳細のフィールドを含むPublisherウィンドウが開く
 
-### Fill In the Details
+### 詳細の入力
 
-| フィールド | What to Enter |
+| フィールド | 入力内容 |
 |-------|---------------|
-| **Title** | Your mod's display name (e.g., "My Awesome Mod") |
-| **Description** | Detailed overview of what your mod does. Supports Steam's BB code formatting (see below) |
-| **Preview Image** | Browse to your 512 x 512 `.png` or `.jpg` preview image |
-| **Mod Folder** | Browse to your complete `@MyMod` folder |
-| **Tags** | Select relevant tags (e.g., Weapons, Vehicles, UI, Server, Gear, Maps) |
-| **Visibility** | **Public** (anyone can find it), **Friends Only**, or **Unlisted** (only accessible via direct link) |
+| **Title** | Modの表示名（例：「My Awesome Mod」） |
+| **Description** | Modの詳細な概要。SteamのBBコードフォーマットをサポート（以下参照） |
+| **Preview Image** | 512 x 512の `.png` または `.jpg` プレビュー画像を参照 |
+| **Mod Folder** | 完全な `@MyMod` フォルダを参照 |
+| **Tags** | 関連タグを選択（例：Weapons, Vehicles, UI, Server, Gear, Maps） |
+| **Visibility** | **Public**（誰でも検索可能）、**Friends Only**、または **Unlisted**（直接リンクでのみアクセス可能） |
 
-### Steam BB Code Quick Reference
+### Steam BBコードクイックリファレンス
 
-The Workshop description supports BB code:
+Workshopの説明はBBコードをサポートします：
 
 ```
 [h1]Features[/h1]
@@ -294,40 +298,40 @@ The Workshop description supports BB code:
 [img]https://example.com/image.png[/img]
 ```
 
-### Publish
+### 公開
 
-1. Review all fields one final time
-2. Click **Publish** (or **Upload**)
-3. Wait for the upload to complete. Large mods may take several minutes depending on your connection.
-4. Once complete, you will see a confirmation with your **Workshop ID** (a long numeric ID like `2345678901`)
-5. **Save this Workshop ID.** You need it to push updates later.
+1. すべてのフィールドを最終確認
+2. **Publish**（または **Upload**）をクリック
+3. アップロードの完了を待つ。大きなModは接続速度によっては数分かかる場合があります。
+4. 完了すると、**Workshop ID**（`2345678901` のような長い数値ID）を含む確認が表示されます
+5. **このWorkshop IDを保存してください。** 後でアップデートをプッシュする際に必要です。
 
-### After Publishing: Verify
+### 公開後：確認
 
-Do not skip this. Test your mod as a regular player would:
+これをスキップしないでください。通常のプレイヤーと同じようにModをテストします：
 
-1. Visit `https://steamcommunity.com/sharedfiles/filedetails/?id=YOUR_ID` and verify title, description, preview image
-2. **Subscribe** to your own mod on the Workshop
-3. Launch DayZ, confirm the mod appears in the launcher
-4. Enable it, launch the game, join a server (or run your own test server)
-5. Confirm all features work
-6. Update the `action` field in `mod.cpp` to point to your Workshop page URL
+1. `https://steamcommunity.com/sharedfiles/filedetails/?id=YOUR_ID` にアクセスし、タイトル、説明、プレビュー画像を確認
+2. Workshop上で自分のModに**サブスクライブ**
+3. DayZを起動し、ランチャーにModが表示されることを確認
+4. 有効にし、ゲームを起動し、サーバーに参加（または自分のテストサーバーを実行）
+5. すべての機能が動作することを確認
+6. `mod.cpp` の `action` フィールドをWorkshopページのURLに更新
 
-If anything is broken, update and re-upload before announcing publicly.
+何か問題がある場合は、公開発表前にアップデートして再アップロードしてください。
 
 ---
 
-## Publishing via Command Line (Alternative)
+## コマンドラインでの公開（代替方法）
 
-For automation, CI/CD, or batch uploads, SteamCMD provides a command-line alternative.
+自動化、CI/CD、バッチアップロードの場合、SteamCMDがコマンドライン代替手段を提供します。
 
-### Install SteamCMD
+### SteamCMDのインストール
 
-Download from [Valve's developer site](https://developer.valvesoftware.com/wiki/SteamCMD) and extract to a folder like `C:\SteamCMD\`.
+[Valveのデベロッパーサイト](https://developer.valvesoftware.com/wiki/SteamCMD)からダウンロードし、`C:\SteamCMD\` のようなフォルダに展開します。
 
-### Create a VDF File
+### VDFファイルの作成
 
-SteamCMD uses a `.vdf` file to describe what to upload. Create a file called `workshop_publish.vdf`:
+SteamCMDは `.vdf` ファイルを使用してアップロード内容を記述します。`workshop_publish.vdf` というファイルを作成します：
 
 ```
 "workshopitem"
@@ -347,49 +351,49 @@ SteamCMD uses a `.vdf` file to describe what to upload. Create a file called `wo
 
 | フィールド | 値 |
 |-------|-------|
-| `appid` | Always `221100` for DayZ |
-| `publishedfileid` | `0` for a new item; use the Workshop ID for updates |
-| `contentfolder` | Absolute path to your `@MyMod` folder |
-| `previewfile` | Absolute path to your preview image |
-| `visibility` | `0` = Public, `1` = Friends Only, `2` = Unlisted, `3` = Private |
-| `title` | Mod name |
-| `description` | Mod description (plain text) |
-| `changenote` | Text shown in the change history on the Workshop page |
+| `appid` | DayZの場合は常に `221100` |
+| `publishedfileid` | 新規アイテムの場合は `0`；アップデートの場合はWorkshop IDを使用 |
+| `contentfolder` | `@MyMod` フォルダへの絶対パス |
+| `previewfile` | プレビュー画像への絶対パス |
+| `visibility` | `0` = 公開、`1` = フレンドのみ、`2` = 非公開リスト、`3` = プライベート |
+| `title` | Mod名 |
+| `description` | Modの説明（プレーンテキスト） |
+| `changenote` | Workshopページの変更履歴に表示されるテキスト |
 
-### Run SteamCMD
+### SteamCMDの実行
 
 ```batch
 C:\SteamCMD\steamcmd.exe +login YourSteamUsername +workshop_build_item "C:\Path\To\workshop_publish.vdf" +quit
 ```
 
-SteamCMD will prompt for your password and Steam Guard code on first use. After authentication, it uploads the mod and prints the Workshop ID.
+SteamCMDは初回使用時にパスワードとSteam Guardコードの入力を求めます。認証後、ModがアップロードされWorkshop IDが表示されます。
 
-### 使用するタイミング Command Line
+### コマンドラインを使用するタイミング
 
-- **Automated builds:** integrate into a build script that packs PBOs, signs them, and uploads in one step
-- **Batch operations:** uploading multiple mods at once
-- **Headless servers:** environments without a GUI
-- **CI/CD pipelines:** GitHub Actions or similar can call SteamCMD
+- **自動ビルド：** PBOのパック、署名、アップロードを一つのステップで行うビルドスクリプトに統合
+- **バッチ操作：** 複数のModを一度にアップロード
+- **ヘッドレスサーバー：** GUIのない環境
+- **CI/CDパイプライン：** GitHub Actionsなどから SteamCMDを呼び出し
 
 ---
 
-## Updating Your Mod
+## Modのアップデート
 
-### Step-by-Step Update Process
+### ステップバイステップのアップデートプロセス
 
-1. **Make your code changes** and test thoroughly
-2. **Increment the version** in `mod.cpp` (e.g., `"1.0.0"` becomes `"1.0.1"`)
-3. **Rebuild all PBOs** using Addon Builder or your build script
-4. **Re-sign all PBOs** with the **same private key** you used originally
-5. **Open the DayZ Tools Publisher**
-6. Enter your existing **Workshop ID** (or select the existing item)
-7. Point to your updated `@MyMod` folder
-8. Write a **change note** describing what changed
-9. Click **Publish / Update**
+1. **コード変更を行い**、徹底的にテスト
+2. `mod.cpp` の**バージョンをインクリメント**（例：`"1.0.0"` を `"1.0.1"` に）
+3. Addon Builderまたはビルドスクリプトを使用して**すべてのPBOを再ビルド**
+4. 最初に使用したのと**同じ秘密鍵**で**すべてのPBOを再署名**
+5. **DayZ Tools Publisherを開く**
+6. 既存の **Workshop ID** を入力（または既存アイテムを選択）
+7. 更新された `@MyMod` フォルダを指定
+8. 変更内容を記述した**変更ノート**を書く
+9. **Publish / Update** をクリック
 
-### Using SteamCMD for Updates
+### SteamCMDでのアップデート
 
-Update the VDF file with your Workshop ID and a new change note:
+Workshop IDと新しい変更ノートでVDFファイルを更新します：
 
 ```
 "workshopitem"
@@ -401,29 +405,29 @@ Update the VDF file with your Workshop ID and a new change note:
 }
 ```
 
-Then run SteamCMD as before. The `publishedfileid` tells Steam to update the existing item instead of creating a new one.
+その後、以前と同様にSteamCMDを実行します。`publishedfileid` がSteamに新規作成ではなく既存アイテムの更新を指示します。
 
-### Important: Use the Same Key
+### 重要：同じキーを使用する
 
-Always sign updates with the **same private key** you used for the original release. If you sign with a different key, server operators must replace the old `.bikey` with your new one -- which means downtime and confusion. Only generate a new key pair if your private key is compromised.
+常にオリジナルリリースで使用した**同じ秘密鍵**でアップデートに署名してください。異なるキーで署名すると、サーバー管理者は古い `.bikey` を新しいものに置き換える必要があります -- つまりダウンタイムと混乱が生じます。秘密鍵が漏洩した場合のみ、新しいキーペアを生成してください。
 
 ---
 
-## Version Management Best Practices
+## バージョン管理のベストプラクティス
 
-### Semantic Versioning
+### セマンティックバージョニング
 
-Use **MAJOR.MINOR.PATCH** format:
+**MAJOR.MINOR.PATCH** フォーマットを使用します：
 
-| Component | When to Increment | 例 |
+| コンポーネント | インクリメントするタイミング | 例 |
 |-----------|-------------------|---------|
-| **MAJOR** | Breaking changes: config format changes, removed features, API overhauls | `1.0.0` to `2.0.0` |
-| **MINOR** | New features that are backwards-compatible | `1.0.0` to `1.1.0` |
-| **PATCH** | Bug fixes, small tweaks, translation updates | `1.0.0` to `1.0.1` |
+| **MAJOR** | 破壊的変更：configフォーマット変更、機能削除、APIオーバーホール | `1.0.0` から `2.0.0` |
+| **MINOR** | 後方互換性のある新機能 | `1.0.0` から `1.1.0` |
+| **PATCH** | バグ修正、小さな調整、翻訳の更新 | `1.0.0` から `1.0.1` |
 
-### Changelog Format
+### 変更ログフォーマット
 
-Maintain a changelog in your Workshop description or a separate file. A clean format:
+Workshopの説明または別ファイルに変更ログを維持します。きれいなフォーマット：
 
 ```
 v1.2.0 (2025-06-15)
@@ -440,21 +444,21 @@ v1.0.0 (2025-04-01)
 - Initial release
 ```
 
-### Backwards Compatibility
+### 後方互換性
 
-When your mod saves persistent data (JSON configs, player data files), think carefully before changing the format:
+Modが永続データ（JSON config、プレイヤーデータファイル）を保存する場合、フォーマット変更前に慎重に検討してください：
 
-- **Adding new fields** is safe. Use default values for missing fields when loading old files.
-- **Renaming or removing fields** is a breaking change. Increment MAJOR version.
-- **Consider a migration pattern:** detect the old format, convert to new format, save.
+- **新しいフィールドの追加**は安全です。古いファイルの読み込み時に欠落フィールドにはデフォルト値を使用します。
+- **フィールドの名前変更や削除**は破壊的変更です。MAJORバージョンをインクリメントしてください。
+- **マイグレーションパターンを検討してください：** 古いフォーマットを検出し、新しいフォーマットに変換し、保存します。
 
-Example migration check in Enforce Script:
+Enforce Scriptでのマイグレーションチェックの例：
 
 ```csharp
-// In your config load function
+// config読み込み関数内で
 if (config.configVersion < 2)
 {
-    // Migrate from v1 to v2: rename "oldField" to "newField"
+    // v1からv2へマイグレーション：「oldField」を「newField」にリネーム
     config.newField = config.oldField;
     config.configVersion = 2;
     SaveConfig(config);
@@ -462,106 +466,106 @@ if (config.configVersion < 2)
 }
 ```
 
-### Git Tagging
+### Gitタグ付け
 
-If you use Git for version control (and you should), tag each release:
+バージョン管理にGitを使用している場合（そうすべきです）、各リリースにタグを付けてください：
 
 ```bash
 git tag -a v1.0.0 -m "Initial release"
 git push origin v1.0.0
 ```
 
-This creates a permanent reference point so you can always go back to the exact code of any published version.
+これにより、公開されたどのバージョンの正確なコードにもいつでも戻れる永続的な参照ポイントが作成されます。
 
 ---
 
-## Workshop Page Best Practices
+## Workshopページのベストプラクティス
 
-### Description Structure
+### 説明の構成
 
-Organize your description with these sections:
+以下のセクションで説明を整理します：
 
-1. **Overview** -- what the mod does, in 2-3 sentences
-2. **Features** -- bullet list of key features
-3. **Requirements** -- list all dependency mods with Workshop links
-4. **Installation** -- step-by-step for players (usually just "subscribe and enable")
-5. **Server Setup** -- instructions for server operators (key placement, config files)
-6. **FAQ** -- common questions answered preemptively
-7. **Known Issues** -- be honest about current limitations
-8. **Support** -- link to your Discord, GitHub issues, or forum thread
-9. **Changelog** -- recent version history
-10. **License** -- how others can (or cannot) use your work
+1. **概要** -- Modの機能を2〜3文で
+2. **機能** -- 主要機能の箇条書きリスト
+3. **要件** -- WorkshopリンクとともにすべてのMod依存関係をリスト
+4. **インストール** -- プレイヤー向けステップバイステップ（通常「サブスクライブして有効化」のみ）
+5. **サーバーセットアップ** -- サーバー管理者向けの手順（キー配置、configファイル）
+6. **FAQ** -- よくある質問に事前に回答
+7. **既知の問題** -- 現在の制限について正直に
+8. **サポート** -- Discord、GitHub issues、またはフォーラムスレッドへのリンク
+9. **変更ログ** -- 最近のバージョン履歴
+10. **ライセンス** -- 他者がどのようにあなたの作品を使用できるか（またはできないか）
 
-### Screenshots and Media
+### スクリーンショットとメディア
 
-- Include **3-5 in-game screenshots** showing your mod in action
-- If your mod adds UI, show the UI panels clearly
-- If your mod adds items, show them in-game (not just in the editor)
-- A short gameplay video dramatically increases subscriptions
+- Modの動作を示す **3〜5枚のゲーム内スクリーンショット** を含める
+- ModがUIを追加する場合、UIパネルを明確に表示
+- Modがアイテムを追加する場合、ゲーム内で表示（エディターだけでなく）
+- 短いゲームプレイ動画はサブスクリプション数を大幅に増加させる
 
-### Dependencies
+### 依存関係
 
-If your mod requires other mods, list them clearly with Workshop links. Use the Steam Workshop "Required Items" feature so the launcher automatically loads dependencies.
+Modが他のModを必要とする場合、Workshopリンクとともに明確にリストしてください。Steam Workshopの「Required Items」機能を使用して、ランチャーが依存関係を自動的に読み込むようにします。
 
-### Update Schedule
+### アップデートスケジュール
 
-Set expectations. If you update weekly, say so. If updates are occasional, say "updates as needed." Players are more understanding when they know what to expect.
+期待値を設定してください。毎週アップデートする場合はそう伝え、不定期の場合は「必要に応じてアップデート」と伝えてください。プレイヤーは何を期待すべきかがわかると、より理解を示します。
 
 ---
 
-## Guide for Server Operators
+## サーバー管理者向けガイド
 
-Include this information in your Workshop description for server admins.
+Workshop説明にサーバー管理者向けのこの情報を含めてください。
 
-### Installing a Workshop Mod on a Dedicated Server
+### 専用サーバーへのWorkshop Modのインストール
 
-1. **Download the mod** using SteamCMD or the Steam client:
+1. SteamCMDまたはSteamクライアントを使用して**Modをダウンロード**：
    ```batch
    steamcmd +login anonymous +workshop_download_item 221100 WORKSHOP_ID +quit
    ```
-2. **Copy** (or symlink) the `@ModName` folder to the DayZ Server directory
-3. **Copy the `.bikey` file** from `@ModName/keys/` to the server's `keys/` folder
-4. **Add the mod** to the `-mod=` launch parameter
+2. `@ModName` フォルダをDayZ Serverディレクトリに**コピー**（またはシンボリックリンク）
+3. `@ModName/keys/` からサーバーの `keys/` フォルダに **`.bikey` ファイルをコピー**
+4. `-mod=` 起動パラメータに**Modを追加**
 
-### Launch Parameter Syntax
+### 起動パラメータの構文
 
-Mods are loaded via the `-mod=` parameter, separated by semicolons:
+Modは `-mod=` パラメータを通じて読み込まれ、セミコロンで区切ります：
 
 ```
 -mod=@CF;@VPPAdminTools;@MyMod
 ```
 
-Use the **full relative path** from the server root. On Linux, paths are case-sensitive.
+サーバールートからの**完全な相対パス**を使用します。Linuxではパスは大文字小文字を区別します。
 
-### Load Order
+### 読み込み順序
 
-Mods load in the order listed in `-mod=`. This matters when mods depend on each other:
+Modは `-mod=` にリストされた順序で読み込まれます。Modが互いに依存している場合、これは重要です：
 
-- **Dependencies first.** If `@MyMod` requires `@CF`, list `@CF` before `@MyMod`.
-- **General rule:** frameworks first, content mods last.
-- If your mod declares `requiredAddons` in `config.cpp`, DayZ will attempt to resolve load order automatically, but explicit ordering in `-mod=` is safer.
+- **依存関係を先に。** `@MyMod` が `@CF` を必要とする場合、`@CF` を `@MyMod` の前にリストします。
+- **一般的なルール：** フレームワークが先、コンテンツModが後。
+- Modが `config.cpp` で `requiredAddons` を宣言している場合、DayZは読み込み順序を自動的に解決しようとしますが、`-mod=` での明示的な順序指定がより安全です。
 
-### Key Management
+### キー管理
 
-- Place **one `.bikey` per mod** in the server's `keys/` directory
-- When a mod updates with the same key, no action needed -- existing `.bikey` still works
-- If a mod author changes keys, you must replace the old `.bikey` with the new one
-- The `keys/` folder path is relative to the server root (e.g., `DayZServer/keys/`)
+- サーバーの `keys/` ディレクトリに**Modごとに1つの `.bikey`** を配置
+- Modが同じキーでアップデートされた場合、アクション不要 -- 既存の `.bikey` は引き続き機能
+- Mod作者がキーを変更した場合、古い `.bikey` を新しいものに置き換える必要あり
+- `keys/` フォルダパスはサーバールートからの相対パス（例：`DayZServer/keys/`）
 
 ---
 
-## Distribution Without the Workshop
+## Workshopを使用しない配布
 
-### When to Skip the Workshop
+### Workshopをスキップするタイミング
 
-- **Private mods** for your own server community
-- **Beta testing** with a small group before public release
-- **Commercial or licensed mods** distributed through other channels
-- **Rapid iteration** during development (faster than re-uploading each time)
+- 自分のサーバーコミュニティ向けの**プライベートMod**
+- 公開リリース前の少人数での**ベータテスト**
+- 他のチャネルで配布される**商用またはライセンスMod**
+- 開発中の**迅速な反復**（毎回再アップロードするよりも高速）
 
-### Creating a Release ZIP
+### リリースZIPの作成
 
-Package your mod for manual distribution:
+手動配布用にModをパッケージ化します：
 
 ```
 MyMod_v1.0.0.zip
@@ -576,7 +580,7 @@ MyMod_v1.0.0.zip
     └── mod.cpp
 ```
 
-Include a `README.txt` with installation instructions:
+インストール手順を含む `README.txt` を含めます：
 
 ```
 INSTALLATION:
@@ -587,33 +591,33 @@ INSTALLATION:
 
 ### GitHub Releases
 
-If your mod is open source, use GitHub Releases to host versioned downloads:
+Modがオープンソースの場合、GitHub Releasesを使用してバージョン付きダウンロードをホストします：
 
-1. Tag the release in Git (`git tag v1.0.0`)
-2. Build and sign PBOs
-3. Create a ZIP of the `@MyMod` folder
-4. Create a GitHub Release and attach the ZIP
-5. Write release notes in the release description
+1. Gitでリリースにタグ付け（`git tag v1.0.0`）
+2. PBOをビルド・署名
+3. `@MyMod` フォルダのZIPを作成
+4. GitHub Releaseを作成しZIPを添付
+5. リリース説明にリリースノートを記述
 
-This gives you version history, download counts, and a stable URL for each release.
+これにより、バージョン履歴、ダウンロード数、各リリースの安定したURLが得られます。
 
 ---
 
-## Common Problems and Solutions
+## よくある問題と解決策
 
 | 問題 | 原因 | 修正方法 |
 |---------|-------|-----|
-| "Addon rejected by server" | Server missing `.bikey`, or `.bisign` does not match `.pbo` | Confirm `.bikey` is in server `keys/` folder. Re-sign PBOs with the correct `.biprivatekey`. |
-| "Signature check failed" | PBO modified after signing, or signed with wrong key | Rebuild PBO from clean source. Re-sign with the **same key** that generated the server's `.bikey`. |
-| Mod not in DayZ Launcher | Malformed `mod.cpp` or wrong folder structure | Check `mod.cpp` for syntax errors (missing `;`). Ensure folder starts with `@`. Restart launcher. |
-| Upload fails in Publisher | Auth, connection, or file lock issue | Verify Steam login. Close Workbench/Addon Builder. Try running DayZ Tools as Administrator. |
-| Wrong/missing Workshop icon | Bad path in `mod.cpp` or wrong image format | Verify `picture`/`logo` paths point to actual `.paa` files. Workshop preview (`.png`) is separate. |
-| Conflicts with other mods | Redefining vanilla classes instead of modding them | Use `modded class`, call `super` in overrides, set `requiredAddons` for load order. |
-| Players crash on load | Script errors, corrupt PBOs, or missing dependencies | Check `.RPT` logs. Rebuild PBOs from clean source. Verify dependencies load first. |
+| 「Addon rejected by server」 | サーバーに `.bikey` がない、または `.bisign` が `.pbo` と一致しない | サーバーの `keys/` フォルダに `.bikey` があることを確認。正しい `.biprivatekey` でPBOを再署名。 |
+| 「Signature check failed」 | 署名後にPBOが変更された、または間違ったキーで署名 | クリーンソースからPBOを再ビルド。サーバーの `.bikey` を生成した**同じキー**で再署名。 |
+| DayZ LauncherにModが表示されない | 不正な `mod.cpp` またはフォルダ構造の誤り | `mod.cpp` の構文エラー（`;` の欠落）を確認。フォルダが `@` で始まることを確認。ランチャーを再起動。 |
+| Publisherでアップロード失敗 | 認証、接続、またはファイルロックの問題 | Steamログインを確認。Workbench/Addon Builderを閉じる。DayZ Toolsを管理者として実行してみる。 |
+| Workshop アイコンが間違い/欠落 | `mod.cpp` のパスが不正または画像フォーマットが間違い | `picture`/`logo` パスが実際の `.paa` ファイルを指していることを確認。Workshopプレビュー（`.png`）は別。 |
+| 他のModとの競合 | バニラクラスをモッドではなく再定義している | `modded class` を使用し、オーバーライドで `super` を呼び出し、読み込み順序に `requiredAddons` を設定。 |
+| プレイヤーが読み込み時にクラッシュ | スクリプトエラー、PBOの破損、または依存関係の欠落 | `.RPT` ログを確認。クリーンソースからPBOを再ビルド。依存関係が先に読み込まれることを確認。 |
 
 ---
 
-## The Complete Mod Lifecycle
+## 完全なModライフサイクル
 
 ```
 IDEA → SETUP (8.1) → STRUCTURE (8.1, 8.5) → CODE (8.2, 8.3, 8.4) → BUILD (8.1)
@@ -622,17 +626,17 @@ IDEA → SETUP (8.1) → STRUCTURE (8.1, 8.5) → CODE (8.2, 8.3, 8.4) → BUILD
                                     └────── feedback loop ───────────────┘
 ```
 
-After publishing, player feedback sends you back to CODE, TEST, and DEBUG. That cycle of publish-feedback-improve is how great mods are built.
+公開後、プレイヤーのフィードバックがCODE、TEST、DEBUGに戻ります。公開→フィードバック→改善のサイクルが、優れたModの作り方です。
 
 ---
 
 ## 次のステップ
 
-You have completed the full DayZ modding tutorial series -- from a blank workspace to a published, signed, and maintained mod on the Steam Workshop. From here:
+DayZモッディングチュートリアルシリーズの全工程を完了しました -- 空白のワークスペースからSteam Workshop上で公開、署名、メンテナンスされるModまで。ここからは：
 
-- **Explore the reference chapters** (Chapters 1-7) for deeper knowledge on the GUI system, config.cpp, and Enforce Script
-- **Study open-source mods** like CF, Community Online Tools, and Expansion for advanced patterns
-- **Join the DayZ modding community** on Discord and the Bohemia Interactive forums
-- **Build bigger.** Your first mod was Hello World. Your next one could be a complete gameplay overhaul.
+- **リファレンス章**（Chapters 1-7）を探索し、GUIシステム、config.cpp、Enforce Scriptの深い知識を得る
+- CF、Community Online Tools、Expansionなどの**オープンソースMod**を研究し、高度なパターンを学ぶ
+- DiscordやBohemia Interactiveフォーラムの **DayZモッディングコミュニティ**に参加する
+- **もっと大きく作る。** 最初のModはHello Worldでした。次のModは完全なゲームプレイオーバーホールかもしれません。
 
-The tools are in your hands. Build something great.
+ツールはあなたの手の中にあります。素晴らしいものを作ってください。

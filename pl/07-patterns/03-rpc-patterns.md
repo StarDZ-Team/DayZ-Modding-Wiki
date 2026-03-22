@@ -1,110 +1,110 @@
-# Chapter 7.3: RPC Communication Patterns
+# Rozdział 7.3: Wzorce komunikacji RPC
 
-[Home](../../README.md) | [<< Previous: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Next: Config Persistence >>](04-config-persistence.md)
+[Strona główna](../../README.md) | [<< Poprzedni: Systemy modułów](02-module-systems.md) | **Wzorce komunikacji RPC** | [Dalej: Trwałość konfiguracji >>](04-config-persistence.md)
 
 ---
 
 ## Wprowadzenie
 
-Remote Procedure Calls (RPCs) are the only way to send data between client and server in DayZ. Every admin panel, every synced UI, every server-to-client notification, and every client-to-server action request flows through RPCs. Understanding how to build them correctly --- with proper serialization order, permission checks, and error handling --- is essential for any mod that does more than add items to CfgVehicles.
+Zdalne wywoływanie procedur (RPC) to jedyny sposób przesyłania danych między klientem a serwerem w DayZ. Każdy panel administracyjny, każde zsynchronizowane UI, każde powiadomienie serwer-klient i każde żądanie akcji klient-serwer przepływa przez RPC. Zrozumienie jak je poprawnie budować --- z właściwą kolejnością serializacji, sprawdzaniem uprawnień i obsługą błędów --- jest niezbędne dla każdego moda, który robi więcej niż dodaje przedmioty do CfgVehicles.
 
-This chapter covers the fundamental `ScriptRPC` pattern, the client-server roundtrip lifecycle, error handling, and then compares the three major RPC routing approaches used in the DayZ modding community.
-
----
-
-## Spis tresci
-
-- [ScriptRPC Fundamentals](#scriptrpc-fundamentals)
-- [Client to Server to Client Roundtrip](#client-to-server-to-client-roundtrip)
-- [Permission Checking Before Execution](#permission-checking-before-execution)
-- [Error Handling and Notifications](#error-handling-and-notifications)
-- [Serialization: The Read/Write Contract](#serialization-the-readwrite-contract)
-- [Three RPC Approaches Compared](#three-rpc-approaches-compared)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+Ten rozdział obejmuje fundamentalny wzorzec `ScriptRPC`, cykl życia komunikacji klient-serwer, obsługę błędów, a następnie porównuje trzy główne podejścia do routingu RPC stosowane w społeczności moddingu DayZ.
 
 ---
 
-## ScriptRPC Fundamentals
+## Spis treści
 
-Every RPC in DayZ uses the `ScriptRPC` class. The pattern is always the same: create, write data, send.
+- [Podstawy ScriptRPC](#podstawy-scriptrpc)
+- [Podróż w obie strony klient-serwer-klient](#podróż-w-obie-strony-klient-serwer-klient)
+- [Sprawdzanie uprawnień przed wykonaniem](#sprawdzanie-uprawnień-przed-wykonaniem)
+- [Obsługa błędów i powiadomienia](#obsługa-błędów-i-powiadomienia)
+- [Serializacja: kontrakt Read/Write](#serializacja-kontrakt-readwrite)
+- [Porównanie trzech podejść RPC](#porównanie-trzech-podejść-rpc)
+- [Częste błędy](#częste-błędy)
+- [Dobre praktyki](#dobre-praktyki)
 
-### Sending Side
+---
+
+## Podstawy ScriptRPC
+
+Każdy RPC w DayZ używa klasy `ScriptRPC`. Wzorzec jest zawsze taki sam: utwórz, zapisz dane, wyślij.
+
+### Strona wysyłająca
 
 ```c
 void SendDamageReport(PlayerIdentity target, string weaponName, float damage)
 {
     ScriptRPC rpc = new ScriptRPC();
 
-    // Write fields in a specific order
-    rpc.Write(weaponName);    // field 1: string
-    rpc.Write(damage);        // field 2: float
+    // Zapisz pola w określonej kolejności
+    rpc.Write(weaponName);    // pole 1: string
+    rpc.Write(damage);        // pole 2: float
 
-    // Send through the engine
-    // Parameters: target object, RPC ID, guaranteed delivery, recipient
+    // Wyślij przez silnik
+    // Parametry: obiekt docelowy, ID RPC, gwarantowana dostawa, odbiorca
     rpc.Send(null, MY_RPC_ID, true, target);
 }
 ```
 
-### Receiving Side
+### Strona odbierająca
 
-The receiver reads fields in the **exact same order** they were written:
+Odbiorca czyta pola w **dokładnie tej samej kolejności** w jakiej zostały zapisane:
 
 ```c
 void OnRPC_DamageReport(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     string weaponName;
-    if (!ctx.Read(weaponName)) return;  // field 1: string
+    if (!ctx.Read(weaponName)) return;  // pole 1: string
 
     float damage;
-    if (!ctx.Read(damage)) return;      // field 2: float
+    if (!ctx.Read(damage)) return;      // pole 2: float
 
-    // Use the data
+    // Użyj danych
     Print("Hit by " + weaponName + " for " + damage.ToString() + " damage");
 }
 ```
 
-### Send Parameters Explained
+### Wyjaśnienie parametrów Send
 
 ```c
 rpc.Send(object, rpcId, guaranteed, identity);
 ```
 
-| Parameter | Type | Description |
+| Parametr | Typ | Opis |
 |-----------|------|-------------|
-| `object` | `Object` | The target entity (e.g., a player or vehicle). Use `null` for global RPCs. |
-| `rpcId` | `int` | Integer identifying this RPC type. Must match on both sides. |
-| `guaranteed` | `bool` | `true` = reliable (TCP-like, retransmits on loss). `false` = unreliable (fire-and-forget). |
-| `identity` | `PlayerIdentity` | Recipient. `null` from client = send to server. `null` from server = broadcast to all clients. Specific identity = send to that client only. |
+| `object` | `Object` | Encja docelowa (np. gracz lub pojazd). Użyj `null` dla globalnych RPC. |
+| `rpcId` | `int` | Liczba całkowita identyfikująca ten typ RPC. Musi pasować po obu stronach. |
+| `guaranteed` | `bool` | `true` = niezawodna (TCP-like, retransmituje przy utracie). `false` = zawodna (wyślij i zapomnij). |
+| `identity` | `PlayerIdentity` | Odbiorca. `null` od klienta = wyślij do serwera. `null` od serwera = rozgłoś do wszystkich klientów. Konkretna tożsamość = wyślij do tego klienta. |
 
-### When to Use `guaranteed`
+### Kiedy używać `guaranteed`
 
-- **`true` (reliable):** Config changes, permission grants, teleport commands, ban actions --- anything where a dropped packet would leave client and server out of sync.
-- **`false` (unreliable):** Rapid position updates, visual effects, HUD state that refreshes every few seconds anyway. Lower overhead, no retransmit queue.
+- **`true` (niezawodna):** Zmiany konfiguracji, nadawanie uprawnień, komendy teleportacji, akcje banowania --- wszystko gdzie utracony pakiet pozostawiłby klienta i serwer niesynchronizowane.
+- **`false` (zawodna):** Szybkie aktualizacje pozycji, efekty wizualne, stan HUD który odświeża się co kilka sekund. Mniejszy narzut, brak kolejki retransmisji.
 
 ---
 
-## Client to Server to Client Roundtrip
+## Podróż w obie strony klient-serwer-klient
 
-The most common RPC pattern is the roundtrip: client requests an action, server validates and executes, server sends back the result.
+Najczęstszy wzorzec RPC to podróż w obie strony: klient żąda akcji, serwer waliduje i wykonuje, serwer odsyła wynik.
 
 ```
-CLIENT                          SERVER
+KLIENT                          SERWER
   │                               │
-  │  1. Request RPC ───────────►  │
-  │     (action + params)         │
-  │                               │  2. Validate permission
-  │                               │  3. Execute action
-  │                               │  4. Prepare response
-  │  ◄─────────── 5. Response RPC │
-  │     (result + data)           │
+  │  1. RPC żądania ───────────►  │
+  │     (akcja + parametry)       │
+  │                               │  2. Walidacja uprawnień
+  │                               │  3. Wykonanie akcji
+  │                               │  4. Przygotowanie odpowiedzi
+  │  ◄─────────── 5. RPC odpowiedzi │
+  │     (wynik + dane)            │
   │                               │
-  │  6. Update UI                 │
+  │  6. Aktualizacja UI           │
 ```
 
-### Complete Example: Teleport Request
+### Pełny przykład: żądanie teleportacji
 
-**Client sends the request:**
+**Klient wysyła żądanie:**
 
 ```c
 class TeleportClient
@@ -113,52 +113,52 @@ class TeleportClient
     {
         ScriptRPC rpc = new ScriptRPC();
         rpc.Write(position);
-        rpc.Send(null, MYMOD_RPC_TELEPORT, true, null);  // null identity = send to server
+        rpc.Send(null, MY_RPC_TELEPORT, true, null);  // null identity = wyślij do serwera
     }
 };
 ```
 
-**Server receives, validates, executes, responds:**
+**Serwer odbiera, waliduje, wykonuje, odpowiada:**
 
 ```c
 class TeleportServer
 {
     void OnRPC_TeleportRequest(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // 1. Read the request data
+        // 1. Odczytaj dane żądania
         vector position;
         if (!ctx.Read(position)) return;
 
-        // 2. Validate permission
+        // 2. Sprawdź uprawnienia
         if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Teleport"))
         {
             SendError(sender, "No permission to teleport");
             return;
         }
 
-        // 3. Validate the data
+        // 3. Zwaliduj dane
         if (position[1] < 0 || position[1] > 1000)
         {
             SendError(sender, "Invalid teleport height");
             return;
         }
 
-        // 4. Execute the action
+        // 4. Wykonaj akcję
         PlayerBase player = PlayerBase.Cast(sender.GetPlayer());
         if (!player) return;
 
         player.SetPosition(position);
 
-        // 5. Send success response
+        // 5. Wyślij odpowiedź sukcesu
         ScriptRPC response = new ScriptRPC();
-        response.Write(true);           // success flag
-        response.Write(position);       // echo back the position
-        response.Send(null, MYMOD_RPC_TELEPORT_RESULT, true, sender);
+        response.Write(true);           // flaga sukcesu
+        response.Write(position);       // odeślij pozycję
+        response.Send(null, MY_RPC_TELEPORT_RESULT, true, sender);
     }
 };
 ```
 
-**Client receives the response:**
+**Klient odbiera odpowiedź:**
 
 ```c
 class TeleportClient
@@ -173,7 +173,7 @@ class TeleportClient
 
         if (success)
         {
-            // Update UI: "Teleported to X, Y, Z"
+            // Aktualizacja UI: "Teleportowano do X, Y, Z"
         }
     }
 };
@@ -181,40 +181,40 @@ class TeleportClient
 
 ---
 
-## Permission Checking Before Execution
+## Sprawdzanie uprawnień przed wykonaniem
 
-Every server-side RPC handler that performs a privileged action **must** check permissions before executing. Never trust the client.
+Każdy serwerowy handler RPC wykonujący uprzywilejowaną akcję **musi** sprawdzać uprawnienia przed wykonaniem. Nigdy nie ufaj klientowi.
 
-### The Pattern
+### Wzorzec
 
 ```c
 void OnRPC_AdminAction(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
-    // RULE 1: Always validate the sender exists
+    // ZASADA 1: Zawsze waliduj czy nadawca istnieje
     if (!sender) return;
 
-    // RULE 2: Check permission before reading data
+    // ZASADA 2: Sprawdź uprawnienia przed odczytem danych
     if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Ban"))
     {
         MyLog.Warning("BanRPC", "Unauthorized ban attempt from " + sender.GetName());
         return;
     }
 
-    // RULE 3: Only now read and execute
+    // ZASADA 3: Dopiero teraz odczytaj i wykonaj
     string targetUid;
     if (!ctx.Read(targetUid)) return;
 
-    // ... execute ban
+    // ... wykonaj bana
 }
 ```
 
-### Why Check Before Reading?
+### Dlaczego sprawdzać przed odczytem?
 
-Reading data from an unauthorized client wastes server cycles. More importantly, malformed data from a malicious client could cause parsing errors. Checking permission first is a cheap guard that rejects bad actors immediately.
+Odczytywanie danych od nieautoryzowanego klienta marnuje cykle serwera. Co ważniejsze, zniekształcone dane od złośliwego klienta mogą powodować błędy parsowania. Sprawdzenie uprawnień najpierw jest tanim zabezpieczeniem, które natychmiast odrzuca złych aktorów.
 
-### Log Unauthorized Attempts
+### Loguj nieautoryzowane próby
 
-Always log failed permission checks. This creates an audit trail and helps server owners detect exploit attempts:
+Zawsze loguj nieudane sprawdzenia uprawnień. Tworzy to ścieżkę audytu i pomaga właścicielom serwerów wykrywać próby exploitów:
 
 ```c
 if (!HasPermission(sender, "MyMod.Spawn"))
@@ -227,43 +227,43 @@ if (!HasPermission(sender, "MyMod.Spawn"))
 
 ---
 
-## Error Handling and Notifications
+## Obsługa błędów i powiadomienia
 
-RPCs can fail in multiple ways: network drops, malformed data, server-side validation failures. Robust mods handle all of these.
+RPC mogą zawieść na wiele sposobów: utrata sieci, zniekształcone dane, błędy walidacji po stronie serwera. Solidne mody obsługują wszystkie te przypadki.
 
-### Read Failures
+### Błędy odczytu
 
-Every `ctx.Read()` can fail. Always check the return value:
+Każdy `ctx.Read()` może się nie powieść. Zawsze sprawdzaj wartość zwrotną:
 
 ```c
-// BAD: Ignoring read failures
+// ŹLE: Ignorowanie błędów odczytu
 string name;
-ctx.Read(name);     // If this fails, name is "" — silent corruption
+ctx.Read(name);     // Jeśli to zawiedzie, name to "" — cicha korupcja
 int count;
-ctx.Read(count);    // This reads the wrong bytes — everything after is garbage
+ctx.Read(count);    // To czyta złe bajty — wszystko po jest śmieciami
 
-// GOOD: Early return on any read failure
+// DOBRZE: Wczesny powrót przy każdym błędzie odczytu
 string name;
 if (!ctx.Read(name)) return;
 int count;
 if (!ctx.Read(count)) return;
 ```
 
-### Error Response Pattern
+### Wzorzec odpowiedzi błędu
 
-When the server rejects a request, send a structured error back to the client so the UI can display it:
+Gdy serwer odrzuca żądanie, wyślij strukturalny błąd z powrotem do klienta, aby UI mógł go wyświetlić:
 
 ```c
-// Server: send error
+// Serwer: wyślij błąd
 void SendError(PlayerIdentity target, string errorMsg)
 {
     ScriptRPC rpc = new ScriptRPC();
     rpc.Write(false);        // success = false
-    rpc.Write(errorMsg);     // reason
+    rpc.Write(errorMsg);     // powód
     rpc.Send(null, MY_RPC_RESPONSE_ID, true, target);
 }
 
-// Client: handle error
+// Klient: obsłuż błąd
 void OnRPC_Response(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     bool success;
@@ -274,72 +274,72 @@ void OnRPC_Response(PlayerIdentity sender, Object target, ParamsReadContext ctx)
         string errorMsg;
         if (!ctx.Read(errorMsg)) return;
 
-        // Show error in UI
+        // Pokaż błąd w UI
         MyLog.Warning("MyMod", "Server error: " + errorMsg);
         return;
     }
 
-    // Handle success...
+    // Obsłuż sukces...
 }
 ```
 
-### Notification Broadcasts
+### Rozgłaszanie powiadomień
 
-For events that all clients should see (killfeed, announcements, weather changes), the server broadcasts with `identity = null`:
+Dla zdarzeń, które powinni widzieć wszyscy klienci (killfeed, ogłoszenia, zmiany pogody), serwer rozgłasza z `identity = null`:
 
 ```c
-// Server: broadcast to all clients
+// Serwer: rozgłoś do wszystkich klientów
 void BroadcastAnnouncement(string message)
 {
     ScriptRPC rpc = new ScriptRPC();
     rpc.Write(message);
-    rpc.Send(null, RPC_ANNOUNCEMENT, true, null);  // null = all clients
+    rpc.Send(null, RPC_ANNOUNCEMENT, true, null);  // null = wszyscy klienci
 }
 ```
 
 ---
 
-## Serialization: The Read/Write Contract
+## Serializacja: kontrakt Read/Write
 
-The single most important rule of DayZ RPCs: **the Read order must exactly match the Write order, type for type.**
+Najważniejsza zasada RPC w DayZ: **kolejność Read musi dokładnie odpowiadać kolejności Write, typ po typie.**
 
-### The Contract
+### Kontrakt
 
 ```c
-// SENDER writes:
+// NADAWCA zapisuje:
 rpc.Write("hello");      // 1. string
 rpc.Write(42);           // 2. int
 rpc.Write(3.14);         // 3. float
 rpc.Write(true);         // 4. bool
 
-// RECEIVER reads in the SAME order:
+// ODBIORCA czyta w TEJ SAMEJ kolejności:
 string s;   ctx.Read(s);     // 1. string
 int i;      ctx.Read(i);     // 2. int
 float f;    ctx.Read(f);     // 3. float
 bool b;     ctx.Read(b);     // 4. bool
 ```
 
-### What Goes Wrong When Order Mismatches
+### Co się dzieje gdy kolejność nie pasuje
 
-If you swap the read order, the deserializer interprets bytes intended for one type as another. An `int` read where a `string` was written will produce garbage, and every subsequent read will be offset --- corrupting all remaining fields. The engine does not throw an exception; it silently returns wrong data or causes `Read()` to return `false`.
+Jeśli zamienisz kolejność odczytu, deserializator interpretuje bajty przeznaczone dla jednego typu jako inny. Odczyt `int` gdzie zapisano `string` zwróci śmieci, a każdy kolejny odczyt będzie przesunięty --- korupcja wszystkich pozostałych pól. Silnik nie rzuca wyjątku; cicho zwraca złe dane lub powoduje, że `Read()` zwraca `false`.
 
-### Supported Types
+### Obsługiwane typy
 
-| Type | Notes |
+| Typ | Uwagi |
 |------|-------|
-| `int` | 32-bit signed |
-| `float` | 32-bit IEEE 754 |
-| `bool` | Single byte |
-| `string` | Length-prefixed UTF-8 |
-| `vector` | Three floats (x, y, z) |
-| `Object` (as target parameter) | Entity reference, resolved by engine |
+| `int` | 32-bitowy ze znakiem |
+| `float` | 32-bitowy IEEE 754 |
+| `bool` | Pojedynczy bajt |
+| `string` | UTF-8 z prefiksem długości |
+| `vector` | Trzy floaty (x, y, z) |
+| `Object` (jako parametr target) | Referencja encji, rozwiązywana przez silnik |
 
-### Serializing Collections
+### Serializacja kolekcji
 
-There is no built-in array serialization. Write the count first, then each element:
+Nie ma wbudowanej serializacji tablic. Zapisz najpierw liczbę, potem każdy element:
 
 ```c
-// SENDER
+// NADAWCA
 array<string> names = {"Alice", "Bob", "Charlie"};
 rpc.Write(names.Count());
 for (int i = 0; i < names.Count(); i++)
@@ -347,7 +347,7 @@ for (int i = 0; i < names.Count(); i++)
     rpc.Write(names[i]);
 }
 
-// RECEIVER
+// ODBIORCA
 int count;
 if (!ctx.Read(count)) return;
 
@@ -360,17 +360,17 @@ for (int i = 0; i < count; i++)
 }
 ```
 
-### Serializing Complex Objects
+### Serializacja złożonych obiektów
 
-For complex data, serialize field by field. Do not try to pass objects directly through `Write()`:
+Dla złożonych danych serializuj pole po polu. Nie próbuj przekazywać obiektów bezpośrednio przez `Write()`:
 
 ```c
-// SENDER: flatten the object into primitives
+// NADAWCA: spłaszcz obiekt do prymitywów
 rpc.Write(player.GetName());
 rpc.Write(player.GetHealth());
 rpc.Write(player.GetPosition());
 
-// RECEIVER: reconstruct
+// ODBIORCA: zrekonstruuj
 string name;    ctx.Read(name);
 float health;   ctx.Read(health);
 vector pos;     ctx.Read(pos);
@@ -378,22 +378,22 @@ vector pos;     ctx.Read(pos);
 
 ---
 
-## Three RPC Approaches Compared
+## Porównanie trzech podejść RPC
 
-The DayZ modding community uses three fundamentally different approaches to RPC routing. Each has trade-offs.
+Społeczność moddingu DayZ używa trzech fundamentalnie różnych podejść do routingu RPC. Każde ma swoje kompromisy.
 
-### 1. CF Named RPCs
+### 1. Nazwane RPC w CF
 
-Community Framework provides `GetRPCManager()` which routes RPCs by string names grouped by mod namespace.
+Community Framework dostarcza `GetRPCManager()`, który routuje RPC po nazwach stringowych pogrupowanych według przestrzeni nazw moda.
 
 ```c
-// Registration (in OnInit):
+// Rejestracja (w OnInit):
 GetRPCManager().AddRPC("MyMod", "RPC_SpawnItem", this, SingleplayerExecutionType.Server);
 
-// Sending from client:
+// Wysyłanie z klienta:
 GetRPCManager().SendRPC("MyMod", "RPC_SpawnItem", new Param1<string>("AK74"), true);
 
-// Handler receives:
+// Handler odbiera:
 void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
 {
     if (type != CallType.Server) return;
@@ -402,36 +402,36 @@ void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, 
     if (!ctx.Read(data)) return;
 
     string className = data.param1;
-    // ... spawn the item
+    // ... spawnuj przedmiot
 }
 ```
 
-**Pros:**
-- String-based routing is human-readable and collision-free
-- Namespace grouping (`"MyMod"`) prevents name clashes between mods
-- Widely used --- if you integrate with COT/Expansion, you use this
+**Zalety:**
+- Routing stringowy jest czytelny i wolny od kolizji
+- Grupowanie przestrzenią nazw (`"MyMod"`) zapobiega konfliktom nazw między modami
+- Szeroko używane --- jeśli integrujesz się z COT/Expansion, tego używasz
 
-**Cons:**
-- Requires CF as a dependency
-- Uses `Param` wrappers which are verbose for complex payloads
-- String comparison on every dispatch (minor overhead)
+**Wady:**
+- Wymaga CF jako zależności
+- Używa wrapperów `Param` które są rozwlekłe dla złożonych danych
+- Porównanie stringów przy każdym rozsyłaniu (minimalny narzut)
 
-### 2. COT / Vanilla Integer-Range RPCs
+### 2. RPC z zakresem Integer (COT / Vanilla)
 
-Vanilla DayZ and some parts of COT use raw integer RPC IDs. Each mod claims a range of integers and dispatches in a modded `OnRPC` override.
+Vanilla DayZ i niektóre części COT używają surowych integerowych ID RPC. Każdy mod rezerwuje zakres integerów i rozsyła w zmoddowanym nadpisaniu `OnRPC`.
 
 ```c
-// Define your RPC IDs (pick a unique range to avoid collisions)
+// Zdefiniuj swoje ID RPC (wybierz unikalny zakres aby uniknąć kolizji)
 const int MY_RPC_SPAWN_ITEM     = 90001;
 const int MY_RPC_DELETE_ITEM    = 90002;
 const int MY_RPC_TELEPORT       = 90003;
 
-// Sending:
+// Wysyłanie:
 ScriptRPC rpc = new ScriptRPC();
 rpc.Write("AK74");
 rpc.Send(null, MY_RPC_SPAWN_ITEM, true, null);
 
-// Receiving (in modded DayZGame or entity):
+// Odbieranie (w zmoddowanym DayZGame lub encji):
 modded class DayZGame
 {
     override void OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)
@@ -451,33 +451,33 @@ modded class DayZGame
 };
 ```
 
-**Pros:**
-- No dependencies --- works with vanilla DayZ
-- Integer comparison is fast
-- Full control over the RPC pipeline
+**Zalety:**
+- Brak zależności --- działa z vanilla DayZ
+- Porównanie integerów jest szybkie
+- Pełna kontrola nad pipeline'em RPC
 
-**Cons:**
-- **ID collision risk**: two mods picking the same integer range will silently intercept each other's RPCs
-- Manual dispatch logic (switch/case) gets unwieldy with many RPCs
-- No namespace isolation
-- No built-in registry or discoverability
+**Wady:**
+- **Ryzyko kolizji ID**: dwa mody wybierające ten sam zakres integerów cicho przechwytują nawzajem swoje RPC
+- Ręczna logika rozsyłania (switch/case) staje się nieporęczna przy wielu RPC
+- Brak izolacji przestrzeni nazw
+- Brak wbudowanego rejestru ani odkrywalności
 
-### 3. MyMod String-Routed RPCs
+### 3. Własne RPC routowane po stringach
 
-MyMod uses a single engine RPC ID (83722) and multiplexes by writing a mod name + function name as a string header in every RPC. All routing happens inside `MyRPC`.
+Własny system routowany po stringach używa jednego ID RPC silnika i multipleksuje zapisując nazwę moda + nazwę funkcji jako nagłówek stringowy w każdym RPC. Cały routing odbywa się wewnątrz statycznej klasy managera (`MyRPC` w tym przykładzie).
 
 ```c
-// Registration:
+// Rejestracja:
 MyRPC.Register("MyMod", "RPC_SpawnItem", this, MyRPCSide.SERVER);
 
-// Sending (header-only, no payload):
+// Wysyłanie (tylko nagłówek, bez danych):
 MyRPC.Send("MyMod", "RPC_SpawnItem", null, true, null);
 
-// Sending (with payload):
+// Wysyłanie (z danymi):
 ScriptRPC rpc = MyRPC.CreateRPC("MyMod", "RPC_SpawnItem");
 rpc.Write("AK74");
-rpc.Write(5);    // quantity
-rpc.Send(null, MyRPC.MyFRAMEWORK_RPC_ID, true, null);
+rpc.Write(5);    // ilość
+rpc.Send(null, MyRPC.FRAMEWORK_RPC_ID, true, null);
 
 // Handler:
 void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
@@ -488,57 +488,57 @@ void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     int quantity;
     if (!ctx.Read(quantity)) return;
 
-    // ... spawn items
+    // ... spawnuj przedmioty
 }
 ```
 
-**Pros:**
-- Zero collision risk --- string namespace + function name is globally unique
-- Zero dependency on CF (but optionally bridges to CF's `GetRPCManager()` when CF is present)
-- Single engine ID means minimal hook footprint
-- `CreateRPC()` helper pre-writes the routing header so you only write payload
-- Clean handler signature: `(PlayerIdentity, Object, ParamsReadContext)`
+**Zalety:**
+- Zero ryzyka kolizji --- stringowa przestrzeń nazw + nazwa funkcji jest globalnie unikalna
+- Zero zależności od CF (ale opcjonalnie mostuje do `GetRPCManager()` CF gdy CF jest obecny)
+- Jedno ID silnika oznacza minimalny ślad hooków
+- Helper `CreateRPC()` wstępnie zapisuje nagłówek routingu więc piszesz tylko dane
+- Czysta sygnatura handlera: `(PlayerIdentity, Object, ParamsReadContext)`
 
-**Cons:**
-- Two extra string reads per RPC (the routing header) --- minimal overhead in practice
-- Custom system means other mods cannot discover your RPCs through CF's registry
-- Only dispatches via `CallFunctionParams` reflection, which is slightly slower than a direct method call
+**Wady:**
+- Dwa dodatkowe odczyty stringów na RPC (nagłówek routingu) --- minimalny narzut w praktyce
+- Własny system oznacza, że inne mody nie mogą odkryć twoich RPC przez rejestr CF
+- Rozsyła tylko przez refleksję `CallFunctionParams`, która jest nieco wolniejsza od bezpośredniego wywołania metody
 
-### Comparison Table
+### Tabela porównawcza
 
-| Feature | CF Named | Integer-Range | MyMod String-Routed |
+| Cecha | Nazwane CF | Zakres Integer | Własne routowanie po stringach |
 |---------|----------|---------------|---------------------|
-| **Collision risk** | None (namespaced) | High | None (namespaced) |
-| **Dependencies** | Requires CF | None | None |
-| **Handler signature** | `(CallType, ctx, sender, target)` | Custom | `(sender, target, ctx)` |
-| **Discoverability** | CF registry | None | `MyRPC.s_Handlers` |
-| **Dispatch overhead** | String lookup | Integer switch | String lookup |
-| **Payload style** | Param wrappers | Raw Write/Read | Raw Write/Read |
-| **CF bridge** | Native | Manual | Automatic (`#ifdef`) |
+| **Ryzyko kolizji** | Brak (przestrzenie nazw) | Wysokie | Brak (przestrzenie nazw) |
+| **Zależności** | Wymaga CF | Brak | Brak |
+| **Sygnatura handlera** | `(CallType, ctx, sender, target)` | Własna | `(sender, target, ctx)` |
+| **Odkrywalność** | Rejestr CF | Brak | `MyRPC.s_Handlers` |
+| **Narzut rozsyłania** | Wyszukiwanie stringowe | Switch integerowy | Wyszukiwanie stringowe |
+| **Styl danych** | Wrappery Param | Surowe Write/Read | Surowe Write/Read |
+| **Mostek CF** | Natywny | Ręczny | Automatyczny (`#ifdef`) |
 
-### Which Should You Use?
+### Którego użyć?
 
-- **Your mod depends on CF anyway** (COT/Expansion integration): use CF Named RPCs
-- **Standalone mod, minimal dependencies**: use integer-range or build a string-routed system
-- **MyMod ecosystem mod**: use `MyRPC.Register()` / `MyRPC.CreateRPC()`
-- **Learning / prototyping**: integer-range is the simplest to understand
+- **Twój mod i tak zależy od CF** (integracja COT/Expansion): użyj nazwanych RPC CF
+- **Samodzielny mod, minimalne zależności**: użyj zakresu integerów lub zbuduj system routowany po stringach
+- **Budujesz framework**: rozważ system routowany po stringach jak wzorzec własnego `MyRPC` powyżej
+- **Nauka / prototypowanie**: zakres integerów jest najprostszy do zrozumienia
 
 ---
 
-## Najczestsze bledy
+## Częste błędy
 
-### 1. Forgetting to Register the Handler
+### 1. Zapomnienie o rejestracji handlera
 
-You send an RPC but nothing happens on the other side. The handler was never registered.
+Wysyłasz RPC ale nic się nie dzieje po drugiej stronie. Handler nigdy nie został zarejestrowany.
 
 ```c
-// WRONG: No registration — the server never knows about this handler
+// ŹŁLE: Brak rejestracji — serwer nigdy nie wie o tym handlerze
 class MyModule
 {
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx) { ... }
 };
 
-// RIGHT: Register in OnInit
+// DOBRZE: Zarejestruj w OnInit
 class MyModule
 {
     void OnInit()
@@ -550,35 +550,35 @@ class MyModule
 };
 ```
 
-### 2. Read/Write Order Mismatch
+### 2. Niezgodność kolejności Read/Write
 
-The most common RPC bug. The sender writes `(string, int, float)` but the receiver reads `(string, float, int)`. No error message --- just garbage data.
+Najczęstszy błąd RPC. Nadawca zapisuje `(string, int, float)` ale odbiorca czyta `(string, float, int)`. Brak komunikatu o błędzie --- po prostu śmieciowe dane.
 
-**Fix:** Write a comment block documenting the field order at both the send and receive sites:
+**Rozwiązanie:** Napisz blok komentarza dokumentujący kolejność pól zarówno po stronie wysyłania jak i odbierania:
 
 ```c
 // Wire format: [string weaponName] [int damage] [float distance]
 ```
 
-### 3. Sending Client-Only Data to the Server
+### 3. Wysyłanie danych tylko klienckich do serwera
 
-The server cannot read client-side widget state, input state, or local variables. If you need to send a UI selection to the server, serialize the relevant value (a string, an index, an ID) --- not the widget object itself.
+Serwer nie może czytać stanu widgetów po stronie klienta, stanu wejścia ani zmiennych lokalnych. Jeśli musisz wysłać selekcję UI do serwera, serializuj odpowiednią wartość (string, indeks, ID) --- nie sam obiekt widgetu.
 
-### 4. Broadcasting When You Meant Unicast
+### 4. Rozgłaszanie gdy miałeś na myśli unicast
 
 ```c
-// WRONG: Sends to ALL clients when you meant to send to one
+// ŹŁLE: Wysyła do WSZYSTKICH klientów gdy chciałeś wysłać do jednego
 rpc.Send(null, MY_RPC_ID, true, null);
 
-// RIGHT: Send to the specific client
+// DOBRZE: Wyślij do konkretnego klienta
 rpc.Send(null, MY_RPC_ID, true, targetIdentity);
 ```
 
-### 5. Not Handling Stale Handlers Across Mission Restarts
+### 5. Nieobsługiwanie nieaktualnych handlerów przez restarty misji
 
-If a module registers an RPC handler and is then destroyed on mission end, the handler still points to the dead object. The next RPC dispatch will crash.
+Jeśli moduł rejestruje handler RPC, a potem jest niszczony przy końcu misji, handler wciąż wskazuje na martwy obiekt. Następne rozsyłanie RPC spowoduje crash.
 
-**Fix:** Always unregister or clean up handlers on mission finish:
+**Rozwiązanie:** Zawsze wyrejestruj lub wyczyść handlery przy końcu misji:
 
 ```c
 override void OnMissionFinish()
@@ -587,28 +587,48 @@ override void OnMissionFinish()
 }
 ```
 
-Or use a centralized `Cleanup()` that clears the entire handler map (as `MyRPC.Cleanup()` does).
+Lub użyj scentralizowanego `Cleanup()` który czyści całą mapę handlerów (jak robi `MyRPC.Cleanup()`).
 
 ---
 
 ## Dobre praktyki
 
-1. **Always check `ctx.Read()` return values.** Every read can fail. Return immediately on failure.
+1. **Zawsze sprawdzaj wartości zwrotne `ctx.Read()`.** Każdy odczyt może się nie powieść. Natychmiast wracaj przy niepowodzeniu.
 
-2. **Always validate the sender on the server.** Check that `sender` is non-null and has the required permission before doing anything.
+2. **Zawsze waliduj nadawcę na serwerze.** Sprawdź czy `sender` jest nie-null i ma wymagane uprawnienie przed zrobieniem czegokolwiek.
 
-3. **Document the wire format.** At both the send and receive sites, write a comment listing the fields in order with their types.
+3. **Dokumentuj format danych.** Zarówno po stronie wysyłania jak i odbierania, napisz komentarz wymieniający pola w kolejności z ich typami.
 
-4. **Use reliable delivery for state changes.** Unreliable delivery is only appropriate for rapid, ephemeral updates (position, effects).
+4. **Używaj niezawodnej dostawy dla zmian stanu.** Zawodna dostawa jest odpowiednia tylko dla szybkich, ulotnych aktualizacji (pozycja, efekty).
 
-5. **Keep payloads small.** DayZ has a practical per-RPC size limit. For large data (config sync, player lists), split into multiple RPCs or use pagination.
+5. **Utrzymuj małe dane.** DayZ ma praktyczny limit rozmiaru na RPC. Dla dużych danych (synchronizacja konfiguracji, listy graczy), podziel na wiele RPC lub użyj paginacji.
 
-6. **Register handlers early.** `OnInit()` is the safest place. Clients can connect before `OnMissionStart()` completes.
+6. **Rejestruj handlery wcześnie.** `OnInit()` jest najbezpieczniejszym miejscem. Klienci mogą się połączyć zanim `OnMissionStart()` się zakończy.
 
-7. **Clean up handlers on shutdown.** Either unregister individually or clear the entire registry in `OnMissionFinish()`.
+7. **Czyść handlery przy zamykaniu.** Wyrejestruj indywidualnie lub wyczyść cały rejestr w `OnMissionFinish()`.
 
-8. **Use `CreateRPC()` for payloads, `Send()` for signals.** If you have no data to send (just a "do it" signal), use the header-only `Send()`. If you have data, use `CreateRPC()` + manual writes + manual `rpc.Send()`.
+8. **Używaj `CreateRPC()` dla danych, `Send()` dla sygnałów.** Jeśli nie masz danych do wysłania (tylko sygnał "zrób to"), użyj `Send()` z samym nagłówkiem. Jeśli masz dane, użyj `CreateRPC()` + ręczne zapisy + ręczne `rpc.Send()`.
 
 ---
 
-[<< Previous: Module Systems](02-module-systems.md) | [Home](../../README.md) | [Next: Config Persistence >>](04-config-persistence.md)
+## Kompatybilność i wpływ
+
+- **Wielomodowość:** RPC z zakresem integerów są podatne na kolizje --- dwa mody wybierające to samo ID cicho przechwytują nawzajem wiadomości. RPC routowane po stringach lub nazwane CF unikają tego używając przestrzeni nazw + nazwy funkcji jako klucza.
+- **Kolejność ładowania:** Kolejność rejestracji handlerów RPC ma znaczenie tylko gdy wiele modów robi `modded class DayZGame` i nadpisuje `OnRPC`. Każdy musi wywołać `super.OnRPC()` dla nieobsłużonych ID, inaczej dalsze mody nigdy nie otrzymają swoich RPC. Systemy routowane po stringach unikają tego używając jednego ID silnika.
+- **Listen Server:** Na listen serwerach zarówno klient jak i serwer działają w tym samym procesie. RPC wysłane z `identity = null` ze strony serwera będzie też odebrane lokalnie. Zabezpiecz handlery sprawdzeniem `if (type != CallType.Server) return;` lub sprawdź `GetGame().IsServer()` / `GetGame().IsClient()` odpowiednio.
+- **Wydajność:** Narzut rozsyłania RPC jest minimalny (wyszukiwanie stringowe lub switch integerowy). Wąskim gardłem jest rozmiar danych --- DayZ ma praktyczny limit na RPC (~64 KB). Dla dużych danych (synchronizacja konfiguracji), paginuj na wiele RPC.
+- **Migracja:** ID RPC są wewnętrznym szczegółem moda i nie są dotknięte aktualizacjami wersji DayZ. Jeśli zmienisz format danych RPC (dodasz/usuniesz pola), starzy klienci rozmawiający z nowym serwerem cicho się zdesynchronizują. Wersjonuj dane RPC lub wymuś aktualizacje klientów.
+
+---
+
+## Teoria vs praktyka
+
+| Podręcznik mówi | Rzeczywistość DayZ |
+|---------------|-------------|
+| Używaj protocol buffers lub serializacji opartej na schemacie | Enforce Script nie wspiera protobuf; ręcznie `Write`/`Read` prymitywów w dopasowanej kolejności |
+| Waliduj wszystkie wejścia z wymuszaniem schematu | Nie istnieje walidacja schematu; każda wartość zwrotna `ctx.Read()` musi być sprawdzana indywidualnie |
+| RPC powinny być idempotentne | Praktyczne w DayZ tylko dla RPC zapytań; mutujące RPC (spawn, usunięcie, teleportacja) są z natury nieidempotentne --- zabezpiecz sprawdzeniami uprawnień |
+
+---
+
+[Strona główna](../../README.md) | [<< Poprzedni: Systemy modułów](02-module-systems.md) | **Wzorce komunikacji RPC** | [Dalej: Trwałość konfiguracji >>](04-config-persistence.md)
