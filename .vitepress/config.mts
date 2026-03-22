@@ -233,9 +233,26 @@ export default withMermaid(
         text: 'Edit this page on GitHub'
       },
 
-      // Search disabled — 1107 files causes OOM/timeout on GitHub Actions runner (7GB RAM)
-      // TODO: Re-enable with Algolia DocSearch when traffic justifies it
-      // search: { provider: 'local' },
+      // Algolia DocSearch — apply at https://docsearch.algolia.com/apply/
+      // Once approved, replace the placeholder values below with your credentials
+      search: {
+        provider: 'algolia',
+        options: {
+          appId: 'YOUR_APP_ID',
+          apiKey: 'YOUR_SEARCH_API_KEY',
+          indexName: 'dayz-modding-wiki',
+          locales: {
+            '/en/': { placeholder: 'Search docs...', translations: { button: { buttonText: 'Search' } } },
+            '/pt/': { placeholder: 'Buscar...', translations: { button: { buttonText: 'Buscar' } } },
+            '/de/': { placeholder: 'Suchen...', translations: { button: { buttonText: 'Suchen' } } },
+            '/es/': { placeholder: 'Buscar...', translations: { button: { buttonText: 'Buscar' } } },
+            '/fr/': { placeholder: 'Rechercher...', translations: { button: { buttonText: 'Rechercher' } } },
+            '/ru/': { placeholder: 'Поиск...', translations: { button: { buttonText: 'Поиск' } } },
+            '/ja/': { placeholder: '検索...', translations: { button: { buttonText: '検索' } } },
+            '/zh-hans/': { placeholder: '搜索...', translations: { button: { buttonText: '搜索' } } },
+          }
+        }
+      },
 
       footer: {
         message: 'Released under CC BY-SA 4.0 | Code examples under MIT License',
