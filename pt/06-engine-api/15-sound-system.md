@@ -1,20 +1,20 @@
-# Chapter 6.15: Sound System
+# Capítulo 6.15: Sistema de Som
 
-[Home](../../README.md) | [<< Previous: Player System](14-player-system.md) | **Sound System** | [Next: Crafting System >>](16-crafting-system.md)
+[Início](../../README.md) | [<< Anterior: Sistema do Jogador](14-player-system.md) | **Sistema de Som** | [Próximo: Sistema de Crafting >>](16-crafting-system.md)
 
 ---
 
 ## Introdução
 
-DayZ provides two main approaches for playing sounds from scripts: a **high-level API** built around `EffectSound` and `SEffectManager`, and a **config-driven shortcut** via `PlaySoundSet` / `StopSoundSet` on entities. Both ultimately rely on engine-level `CfgSoundSets` and `CfgSoundShaders` definitions in `config.cpp`.
+O DayZ fornece duas abordagens principais para reproduzir sons a partir de scripts: uma **API de alto nível** construída em torno de `EffectSound` e `SEffectManager`, e um **atalho orientado a config** via `PlaySoundSet` / `StopSoundSet` em entidades. Ambas dependem, em última instância, das definições de `CfgSoundSets` e `CfgSoundShaders` em nível de motor no `config.cpp`.
 
-All scripted sound playback is **client-side only**. Dedicated servers have no audio output device --- calling sound methods on a headless server wastes resources and can trigger warnings. Always guard sound calls behind `!GetGame().IsDedicatedServer()` or use the built-in guards provided by the API.
+Toda reprodução de som via script é **apenas do lado do cliente**. Servidores dedicados não têm dispositivo de saída de áudio --- chamar métodos de som em um servidor headless desperdiça recursos e pode disparar avisos. Sempre proteja chamadas de som com `!GetGame().IsDedicatedServer()` ou use as proteções embutidas fornecidas pela API.
 
-This chapter covers the complete sound pipeline: config definitions, the `SEffectManager` API, the entity convenience methods, the `EffectSound` class, spatial vs UI sounds, looping, and common patterns found in vanilla and community mods.
+Este capítulo cobre o pipeline completo de som: definições de config, a API `SEffectManager`, os métodos de conveniência de entidades, a classe `EffectSound`, sons espaciais vs UI, looping e padrões comuns encontrados em mods vanilla e da comunidade.
 
 ---
 
-## Sound Architecture Visão Geral
+## Visão Geral da Arquitetura de Som
 
 ```
 config.cpp                         Script
@@ -34,62 +34,62 @@ CfgSoundSets                      EffectSound
                                                                             |
                                                                             v
                                                                       AbstractWave
-                                                                  (the live sound handle)
+                                                                  (o handle do som ao vivo)
 ```
 
-**Flow summary:**
+**Resumo do fluxo:**
 
-1. You define audio samples in `CfgSoundShaders` (which `.ogg` files, volume, range).
-2. You group shaders into `CfgSoundSets` (spatial mode, looping, doppler, attenuation curve).
-3. From script, you reference the **SoundSet name** (e.g. `"MyMod_Alert_SoundSet"`).
-4. The engine loads the config, builds a `SoundObject`, and plays it through the `AbstractSoundScene`.
+1. Você define amostras de áudio em `CfgSoundShaders` (quais arquivos `.ogg`, volume, alcance).
+2. Você agrupa shaders em `CfgSoundSets` (modo espacial, looping, doppler, curva de atenuação).
+3. Do script, você referencia o **nome do SoundSet** (ex.: `"MyMod_Alert_SoundSet"`).
+4. O motor carrega a config, constrói um `SoundObject` e o reproduz através do `AbstractSoundScene`.
 
 ---
 
-## Config Setup
+## Configuração no Config
 
-Before any sound can be played from script, it must be defined in `config.cpp`. Two config classes are required: `CfgSoundShaders` and `CfgSoundSets`.
+Antes de qualquer som poder ser reproduzido do script, ele deve ser definido no `config.cpp`. Duas classes de config são necessárias: `CfgSoundShaders` e `CfgSoundSets`.
 
 ### CfgSoundShaders
 
-A sound shader maps audio sample files to playback parameters.
+Um sound shader mapeia arquivos de amostras de áudio para parâmetros de reprodução.
 
 ```cpp
 class CfgSoundShaders
 {
     class MyMod_Alert_SoundShader
     {
-        // Array of {path, probability} pairs
-        // Path is relative to mod root, WITHOUT file extension
-        // The engine expects .ogg format
+        // Array de pares {caminho, probabilidade}
+        // Caminho é relativo à raiz do mod, SEM extensão de arquivo
+        // O motor espera formato .ogg
         samples[] =
         {
             {"MyMod\Sounds\data\alert_01", 1},
             {"MyMod\Sounds\data\alert_02", 1}
         };
-        volume = 0.8;       // Base volume (0.0 - 1.0)
-        frequency = 1;      // Playback speed multiplier
-        range = 100;         // Maximum audible distance in meters
-        radius = 50;         // Distance at which attenuation begins
-        limitation = 0;      // Max simultaneous instances (0 = unlimited)
+        volume = 0.8;       // Volume base (0.0 - 1.0)
+        frequency = 1;      // Multiplicador de velocidade de reprodução
+        range = 100;         // Distância máxima audível em metros
+        radius = 50;         // Distância em que a atenuação começa
+        limitation = 0;      // Máximo de instâncias simultâneas (0 = ilimitado)
     };
 };
 ```
 
-**Key properties:**
+**Propriedades chave:**
 
-| Propriedade | Type | Descrição |
-|----------|------|-------------|
-| `samples[]` | array | Pairs of `{path, probability}`. Multiple entries for random variation. |
-| `volume` | float | Base volume multiplier, 0.0 to 1.0. |
-| `frequency` | float | Pitch multiplier. 1.0 = normal, 2.0 = double speed. |
-| `range` | float | Maximum distance (meters) at which the sound can be heard. |
-| `radius` | float | Distance (meters) at which volume attenuation begins. |
-| `limitation` | int | Maximum concurrent instances of this shader. 0 = no limit. |
+| Propriedade | Tipo | Descrição |
+|-------------|------|-----------|
+| `samples[]` | array | Pares de `{caminho, probabilidade}`. Múltiplas entradas para variação aleatória. |
+| `volume` | float | Multiplicador de volume base, 0.0 a 1.0. |
+| `frequency` | float | Multiplicador de pitch. 1.0 = normal, 2.0 = velocidade dobrada. |
+| `range` | float | Distância máxima (metros) em que o som pode ser ouvido. |
+| `radius` | float | Distância (metros) em que a atenuação de volume começa. |
+| `limitation` | int | Máximo de instâncias concorrentes deste shader. 0 = sem limite. |
 
 ### CfgSoundSets
 
-A sound set combines one or more shaders with spatial and processing settings. This is what scripts reference by name.
+Um sound set combina um ou mais shaders com configurações espaciais e de processamento. É o que os scripts referenciam pelo nome.
 
 ```cpp
 class CfgSoundSets
@@ -100,37 +100,37 @@ class CfgSoundSets
         {
             "MyMod_Alert_SoundShader"
         };
-        // 3D processing type (use engine-provided types)
+        // Tipo de processamento 3D (usar tipos fornecidos pelo motor)
         sound3DProcessingType = "character3DProcessingType";
-        // Volume attenuation curve
+        // Curva de atenuação de volume
         volumeCurve = "characterAttenuationCurve";
-        // Distance filter preset
+        // Preset de filtro de distância
         distanceFilter = "defaultDistanceFilter";
-        // 1 = 3D positional sound, 0 = 2D (UI/HUD)
+        // 1 = som posicional 3D, 0 = 2D (UI/HUD)
         spatial = 1;
-        // 1 = loops continuously, 0 = plays once
+        // 1 = repete continuamente, 0 = toca uma vez
         loop = 0;
-        // 1 = doppler effect enabled, 0 = disabled
+        // 1 = efeito doppler habilitado, 0 = desabilitado
         doppler = 0;
     };
 };
 ```
 
-**Key properties:**
+**Propriedades chave:**
 
-| Propriedade | Type | Descrição |
-|----------|------|-------------|
-| `soundShaders[]` | array | List of `CfgSoundShaders` class names to use. |
-| `spatial` | int | `1` for 3D positional audio, `0` for 2D (flat, no position). |
-| `loop` | int | `1` to loop, `0` to play once. |
-| `doppler` | int | `1` to enable doppler pitch shifting for moving sources. |
-| `sound3DProcessingType` | string | Engine processing preset for 3D sounds. |
-| `volumeCurve` | string | Attenuation curve name controlling volume over distance. |
-| `distanceFilter` | string | Low-pass filter preset applied with distance. |
+| Propriedade | Tipo | Descrição |
+|-------------|------|-----------|
+| `soundShaders[]` | array | Lista de nomes de classes `CfgSoundShaders` a usar. |
+| `spatial` | int | `1` para áudio posicional 3D, `0` para 2D (plano, sem posição). |
+| `loop` | int | `1` para repetir, `0` para tocar uma vez. |
+| `doppler` | int | `1` para habilitar mudança de pitch doppler para fontes em movimento. |
+| `sound3DProcessingType` | string | Preset de processamento do motor para sons 3D. |
+| `volumeCurve` | string | Nome da curva de atenuação controlando volume por distância. |
+| `distanceFilter` | string | Preset de filtro passa-baixa aplicado com distância. |
 
-### CfgPatches Dependency
+### Dependência de CfgPatches
 
-Your sound config must declare a dependency on `DZ_Sounds_Effects` (or another appropriate base) so the engine's base sound shaders and processing types are available:
+Sua config de som deve declarar uma dependência de `DZ_Sounds_Effects` (ou outra base apropriada) para que os shaders de som base e tipos de processamento do motor estejam disponíveis:
 
 ```cpp
 class CfgPatches
@@ -149,14 +149,14 @@ class CfgPatches
 };
 ```
 
-### Inheritance for Cleaner Configs
+### Herança para Configs Mais Limpas
 
-Define a base sound set and inherit from it to avoid repeating common properties:
+Defina um sound set base e herde dele para evitar repetir propriedades comuns:
 
 ```cpp
 class CfgSoundSets
 {
-    // Base class with shared settings
+    // Classe base com configurações compartilhadas
     class MyMod_Base_SoundSet
     {
         sound3DProcessingType = "character3DProcessingType";
@@ -167,13 +167,13 @@ class CfgSoundSets
         distanceFilter = "defaultDistanceFilter";
     };
 
-    // One-shot alert inherits the base
+    // Alerta único herda a base
     class MyMod_Alert_SoundSet : MyMod_Base_SoundSet
     {
         soundShaders[] = { "MyMod_Alert_SoundShader" };
     };
 
-    // Looping ambient inherits and overrides loop
+    // Ambiente em loop herda e sobrescreve loop
     class MyMod_Ambient_SoundSet : MyMod_Base_SoundSet
     {
         soundShaders[] = { "MyMod_Ambient_SoundShader" };
@@ -184,48 +184,48 @@ class CfgSoundSets
 
 ---
 
-## SEffectManager --- Playing Sounds from Anywhere
+## SEffectManager --- Reproduzindo Sons de Qualquer Lugar
 
-`SEffectManager` is a static manager class (`scripts/3_game/effectmanager.c`) that handles creation, registration, and lifetime of all `Effect` objects, including `EffectSound`. It is the primary API for playing sounds from arbitrary script code.
+`SEffectManager` é uma classe gerenciadora estática (`scripts/3_game/effectmanager.c`) que lida com criação, registro e tempo de vida de todos os objetos `Effect`, incluindo `EffectSound`. É a API principal para reproduzir sons de código de script arbitrário.
 
-### Play a One-Shot Sound at a Position
+### Reproduzir um Som Único em uma Posição
 
 ```c
 EffectSound sound = SEffectManager.PlaySound("MyMod_Alert_SoundSet", position);
 sound.SetAutodestroy(true);
 ```
 
-`PlaySound` creates an `EffectSound`, registers it in the manager, and immediately starts playback. Setting `SetAutodestroy(true)` ensures the effect is automatically cleaned up and unregistered when the sound finishes.
+`PlaySound` cria um `EffectSound`, o registra no gerenciador e imediatamente inicia a reprodução. Definir `SetAutodestroy(true)` garante que o efeito seja automaticamente limpo e desregistrado quando o som terminar.
 
-### Full Assinatura
+### Assinatura Completa
 
 ```c
 static EffectSound PlaySound(
-    string sound_set,         // CfgSoundSets class name
-    vector position,          // World position
-    float play_fade_in = 0,   // Fade-in duration (seconds)
-    float stop_fade_out = 0,  // Fade-out duration (seconds)
-    bool loop = false         // Loop playback
+    string sound_set,         // nome da classe CfgSoundSets
+    vector position,          // posição no mundo
+    float play_fade_in = 0,   // duração do fade-in (segundos)
+    float stop_fade_out = 0,  // duração do fade-out (segundos)
+    bool loop = false         // reprodução em loop
 );
 ```
 
-### Play a Sound Attached to an Object
+### Reproduzir um Som Anexado a um Objeto
 
 ```c
 EffectSound sound = SEffectManager.PlaySoundOnObject(
     "MyMod_EngineLoop_SoundSet",
-    vehicle,    // The parent Object to follow
-    0.5,        // Fade-in duration
-    0.5,        // Fade-out duration
-    true        // Loop
+    vehicle,    // o Object pai a seguir
+    0.5,        // duração do fade-in
+    0.5,        // duração do fade-out
+    true        // loop
 );
 ```
 
-The sound will track the object's position automatically. When the object moves, the sound follows.
+O som vai acompanhar a posição do objeto automaticamente. Quando o objeto se mover, o som o segue.
 
-### Play with Cached SoundParams
+### Reproduzir com SoundParams em Cache
 
-For sounds played frequently (e.g. UI clicks, footsteps), use cached params to avoid re-parsing the config every time:
+Para sons reproduzidos frequentemente (ex.: cliques de UI, passos), use params em cache para evitar re-parsear a config toda vez:
 
 ```c
 EffectSound sound = SEffectManager.PlaySoundCachedParams(
@@ -235,9 +235,9 @@ EffectSound sound = SEffectManager.PlaySoundCachedParams(
 sound.SetAutodestroy(true);
 ```
 
-Internally, `SEffectManager` maintains a `map<string, ref SoundParams>` cache. The first call for a given sound set creates the `SoundParams`; subsequent calls reuse it.
+Internamente, `SEffectManager` mantém um cache `map<string, ref SoundParams>`. A primeira chamada para um dado sound set cria o `SoundParams`; chamadas subsequentes o reutilizam.
 
-### Play with Environment Variávels
+### Reproduzir com Variáveis de Ambiente
 
 ```c
 EffectSound sound = SEffectManager.PlaySoundEnviroment(
@@ -246,9 +246,9 @@ EffectSound sound = SEffectManager.PlaySoundEnviroment(
 );
 ```
 
-This variant calls `AddEnvSoundVariávels` on the `SoundObjectBuilder`, which updates environment-related sound controllers (rain, wind, forest, etc.) based on the position. Use this for ambient or environmental sounds that should react to surroundings.
+Esta variante chama `AddEnvSoundVariables` no `SoundObjectBuilder`, que atualiza controladores de som relacionados ao ambiente (chuva, vento, floresta, etc.) baseados na posição. Use isso para sons ambientais que devem reagir aos arredores.
 
-### Create Without Playing
+### Criar Sem Reproduzir
 
 ```c
 EffectSound sound = SEffectManager.CreateSound(
@@ -257,34 +257,34 @@ EffectSound sound = SEffectManager.CreateSound(
     0.3,    // fade in
     0.3,    // fade out
     false,  // loop
-    false   // environment variables
+    false   // variáveis de ambiente
 );
 
-// Configure before playing
+// Configurar antes de reproduzir
 sound.SetSoundMaxVolume(0.5);
 
-// Play when ready
+// Reproduzir quando pronto
 sound.SoundPlay();
 ```
 
-### Stopping and Destroying
+### Parando e Destruindo
 
 ```c
-// Stop a sound (respects fade-out if configured)
+// Parar um som (respeita fade-out se configurado)
 sound.SoundStop();
 
-// Or destroy it entirely (unregisters from manager)
+// Ou destruí-lo inteiramente (desregistra do gerenciador)
 SEffectManager.DestroyEffect(sound);
 
-// Legacy helper (returns true always)
+// Helper legado (sempre retorna true)
 SEffectManager.DestroySound(sound);
 ```
 
 ---
 
-## PlaySoundSet / StopSoundSet --- Entity Convenience Métodos
+## PlaySoundSet / StopSoundSet --- Métodos de Conveniência de Entidade
 
-The `Object` class provides convenience methods that wrap `SEffectManager`. These are the most common way to play sounds on entities (items, buildings, vehicles, players).
+A classe `Object` fornece métodos de conveniência que envolvem `SEffectManager`. Estes são a maneira mais comum de reproduzir sons em entidades (itens, edifícios, veículos, jogadores).
 
 ### PlaySoundSet
 
@@ -306,34 +306,34 @@ class MyItem : ItemBase
 }
 ```
 
-**Método signature on Object:**
+**Assinatura do método em Object:**
 
 ```c
 bool PlaySoundSet(
-    out EffectSound sound,    // Output: the created EffectSound
-    string sound_set,         // CfgSoundSets class name
-    float fade_in,            // Fade-in duration (seconds)
-    float fade_out,           // Fade-out duration (seconds)
-    bool loop = false         // Loop playback
+    out EffectSound sound,    // Saída: o EffectSound criado
+    string sound_set,         // nome da classe CfgSoundSets
+    float fade_in,            // duração do fade-in (segundos)
+    float fade_out,           // duração do fade-out (segundos)
+    bool loop = false         // reprodução em loop
 );
 ```
 
-**Behavior details:**
+**Detalhes de comportamento:**
 
-- Automatically guards against dedicated server (returns `false` on server).
-- If the `sound` reference already holds a playing sound and `loop` is `false`, it calls `StopSoundSet` first.
-- If `loop` is `true` and `sound` is already set, it returns `true` without creating a duplicate.
-- Calls `SetAutodestroy(true)` on the created sound.
-- The sound is parented to `this` object, so it follows the entity's position.
+- Automaticamente protege contra servidor dedicado (retorna `false` no servidor).
+- Se a referência `sound` já contém um som sendo reproduzido e `loop` é `false`, chama `StopSoundSet` primeiro.
+- Se `loop` é `true` e `sound` já está definido, retorna `true` sem criar um duplicado.
+- Chama `SetAutodestroy(true)` no som criado.
+- O som é vinculado ao objeto `this`, então segue a posição da entidade.
 
 ### PlaySoundSetLoop
 
-Shorthand for looping:
+Atalho para looping:
 
 ```c
 ref EffectSound m_EngineSound;
 
-// Equivalent to PlaySoundSet(m_EngineSound, "Engine_SoundSet", 0.5, 0.5, true)
+// Equivalente a PlaySoundSet(m_EngineSound, "Engine_SoundSet", 0.5, 0.5, true)
 PlaySoundSetLoop(m_EngineSound, "Engine_SoundSet", 0.5, 0.5);
 ```
 
@@ -343,130 +343,130 @@ PlaySoundSetLoop(m_EngineSound, "Engine_SoundSet", 0.5, 0.5);
 bool StopSoundSet(out EffectSound sound);
 ```
 
-Calls `SoundStop()` on the effect and sets the reference to `null`. Retorna `false` if the sound was already null or on a dedicated server.
+Chama `SoundStop()` no efeito e define a referência como `null`. Retorna `false` se o som já era null ou em um servidor dedicado.
 
 ### PlaySoundSetAtMemoryPoint
 
-Play a sound at a specific model memory point (defined in the object's P3D model):
+Reproduz um som em um ponto de memória específico do modelo (definido no modelo P3D do objeto):
 
 ```c
 ref EffectSound m_MuzzleSound;
 
-// Play at the "usti hlavne" (muzzle) memory point
+// Reproduzir no ponto de memória "usti hlavne" (boca do cano)
 PlaySoundSetAtMemoryPoint(m_MuzzleSound, "MyMod_Shot_SoundSet", "usti hlavne");
 
-// Looped variant
+// Variante em loop
 PlaySoundSetAtMemoryPointLooped(m_MuzzleSound, "MyMod_Flame_SoundSet", "usti hlavne", 0.3, 0.3);
 
-// Safe variant: stops existing sound before playing new one
+// Variante segura: para som existente antes de reproduzir novo
 PlaySoundSetAtMemoryPointLoopedSafe(m_MuzzleSound, "MyMod_Flame_SoundSet", "usti hlavne", 0.3, 0.3);
 ```
 
-The "Safe" variant is useful when a sound set might change dynamically (e.g. switching between fire intensities). It explicitly stops any currently playing sound before starting the new one.
+A variante "Safe" é útil quando um sound set pode mudar dinamicamente (ex.: alternando entre intensidades de fogo). Ela explicitamente para qualquer som em reprodução antes de iniciar o novo.
 
 ---
 
-## The EffectSound Class
+## A Classe EffectSound
 
-`EffectSound` (`scripts/3_game/effects/effectsound.c`) extends `Effect` and wraps the lower-level `SoundParams`, `SoundObjectBuilder`, `SoundObject`, and `AbstractWave` types. It is the primary handle you interact with after creating a sound.
+`EffectSound` (`scripts/3_game/effects/effectsound.c`) estende `Effect` e envolve os tipos de nível inferior `SoundParams`, `SoundObjectBuilder`, `SoundObject` e `AbstractWave`. É o handle principal com o qual você interage após criar um som.
 
-### Key Métodos
+### Métodos Chave
 
 | Método | Descrição |
-|--------|-------------|
-| `SoundPlay()` | Start playback. Retorna `bool` (success). |
-| `SoundStop()` | Stop playback. Respects fade-out duration if set. |
-| `IsPlaying()` | Retorna `true` if the sound is currently playing. |
-| `IsSoundPlaying()` | Same as `IsPlaying()`. Legacy name. |
-| `SetSoundSet(string name)` | Set the CfgSoundSets name. Must be called before playing. |
-| `GetSoundSet()` | Get the current sound set name. |
-| `SetSoundLoop(bool loop)` | Enable or disable looping. Can be called during playback. |
-| `SetSoundVolume(float vol)` | Set relative volume (0.0 to 1.0). |
-| `GetSoundVolume()` | Get the current relative volume. |
-| `SetSoundMaxVolume(float vol)` | Set maximum volume ceiling (used for fade-in target). |
-| `SetSoundFadeIn(float sec)` | Set fade-in duration in seconds. |
-| `SetSoundFadeOut(float sec)` | Set fade-out duration in seconds. |
-| `SetDoppler(bool enabled)` | Enable or disable doppler effect. |
-| `SetSoundWaveKind(WaveKind kind)` | Set the wave channel. Must be called before playing. |
-| `GetSoundWaveLength()` | Get the total length of the sound in seconds. |
-| `GetSoundWaveTime()` | Get elapsed playback time in seconds. |
-| `SetAutodestroy(bool auto)` | If `true`, effect auto-cleans on stop. |
-| `IsAutodestroy()` | Check autodestroy setting. |
-| `SetParent(Object obj, int pivot)` | Attach sound to follow an entity. |
-| `SetPosition(vector pos)` | Set world position. |
-| `SetCurrentLocalPosition(vector pos)` | Set position relative to parent. |
+|--------|-----------|
+| `SoundPlay()` | Iniciar reprodução. Retorna `bool` (sucesso). |
+| `SoundStop()` | Parar reprodução. Respeita duração de fade-out se definida. |
+| `IsPlaying()` | Retorna `true` se o som está sendo reproduzido. |
+| `IsSoundPlaying()` | Igual a `IsPlaying()`. Nome legado. |
+| `SetSoundSet(string name)` | Definir o nome do CfgSoundSets. Deve ser chamado antes de reproduzir. |
+| `GetSoundSet()` | Obter o nome do sound set atual. |
+| `SetSoundLoop(bool loop)` | Habilitar ou desabilitar looping. Pode ser chamado durante a reprodução. |
+| `SetSoundVolume(float vol)` | Definir volume relativo (0.0 a 1.0). |
+| `GetSoundVolume()` | Obter o volume relativo atual. |
+| `SetSoundMaxVolume(float vol)` | Definir teto máximo de volume (usado como alvo de fade-in). |
+| `SetSoundFadeIn(float sec)` | Definir duração do fade-in em segundos. |
+| `SetSoundFadeOut(float sec)` | Definir duração do fade-out em segundos. |
+| `SetDoppler(bool enabled)` | Habilitar ou desabilitar efeito doppler. |
+| `SetSoundWaveKind(WaveKind kind)` | Definir o canal da wave. Deve ser chamado antes de reproduzir. |
+| `GetSoundWaveLength()` | Obter o comprimento total do som em segundos. |
+| `GetSoundWaveTime()` | Obter tempo de reprodução decorrido em segundos. |
+| `SetAutodestroy(bool auto)` | Se `true`, efeito auto-limpa ao parar. |
+| `IsAutodestroy()` | Verificar configuração de autodestroy. |
+| `SetParent(Object obj, int pivot)` | Anexar som para seguir uma entidade. |
+| `SetPosition(vector pos)` | Definir posição no mundo. |
+| `SetCurrentLocalPosition(vector pos)` | Definir posição relativa ao pai. |
 
-### Position Métodos
+### Métodos de Posição
 
 ```c
-// Set world position
+// Definir posição no mundo
 sound.SetCurrentPosition("1000 200 5000");
 
-// Set position relative to parent object
-sound.SetCurrentLocalPosition("0 1.5 0");  // 1.5m above parent origin
+// Definir posição relativa ao objeto pai
+sound.SetCurrentLocalPosition("0 1.5 0");  // 1.5m acima da origem do pai
 
-// Get current world position
+// Obter posição atual no mundo
 vector pos = sound.GetCurrentPosition();
 
-// Get local position relative to parent
+// Obter posição local relativa ao pai
 vector localPos = sound.GetCurrentLocalPosition();
 ```
 
-### Events
+### Eventos
 
-`EffectSound` exposes `ScriptInvoker` events for sound lifecycle callbacks:
+`EffectSound` expõe eventos `ScriptInvoker` para callbacks do ciclo de vida do som:
 
 ```c
 EffectSound sound = SEffectManager.CreateSound("MyMod_Alert_SoundSet", position);
 
-// Called when the sound wave actually starts playing
+// Chamado quando a wave de som realmente começa a tocar
 sound.Event_OnSoundWaveStarted.Insert(OnMyAlertStarted);
 
-// Called when the sound wave finishes (or is stopped)
+// Chamado quando a wave de som termina (ou é parada)
 sound.Event_OnSoundWaveEnded.Insert(OnMyAlertEnded);
 
-// Called when fade-in completes
+// Chamado quando o fade-in completa
 sound.Event_OnSoundFadeInStopped.Insert(OnMyAlertFadedIn);
 
-// Called when fade-out begins
+// Chamado quando o fade-out começa
 sound.Event_OnSoundFadeOutStarted.Insert(OnMyAlertFadeOutStarted);
 
 sound.SoundPlay();
 
-// Event handler signatures
+// Assinaturas dos handlers de evento
 void OnMyAlertStarted(EffectSound sound)
 {
-    // Sound has begun playing
+    // Som começou a tocar
 }
 
 void OnMyAlertEnded(EffectSound sound)
 {
-    // Sound has finished
+    // Som terminou
 }
 ```
 
-### WaveKind Enum
+### Enum WaveKind
 
-The `WaveKind` enum determines which audio channel/bus the sound uses:
+O enum `WaveKind` determina qual canal/barramento de áudio o som usa:
 
 ```c
 enum WaveKind
 {
-    WAVEEFFECT,           // Standard effect
-    WAVEEFFECTEX,         // Extended effect (DEFAULT for EffectSound)
-    WAVESPEECH,           // Speech/voice
-    WAVEMUSIC,            // Music
-    WAVESPEECHEX,         // Extended speech
-    WAVEENVIRONMENT,      // Environment/ambient
-    WAVEENVIRONMENTEX,    // Extended environment
-    WAVEWEAPONS,          // Weapon sounds
-    WAVEWEAPONSEX,        // Extended weapon sounds
-    WAVEATTALWAYS,        // Always-attenuated
-    WAVEUI                // UI sounds (no spatial processing)
+    WAVEEFFECT,           // Efeito padrão
+    WAVEEFFECTEX,         // Efeito estendido (PADRÃO para EffectSound)
+    WAVESPEECH,           // Fala/voz
+    WAVEMUSIC,            // Música
+    WAVESPEECHEX,         // Fala estendida
+    WAVEENVIRONMENT,      // Ambiente
+    WAVEENVIRONMENTEX,    // Ambiente estendido
+    WAVEWEAPONS,          // Sons de armas
+    WAVEWEAPONSEX,        // Sons de armas estendido
+    WAVEATTALWAYS,        // Sempre atenuado
+    WAVEUI                // Sons de UI (sem processamento espacial)
 }
 ```
 
-For UI sounds that should ignore 3D positioning, set `WAVEUI`:
+Para sons de UI que devem ignorar posicionamento 3D, defina `WAVEUI`:
 
 ```c
 EffectSound uiSound = SEffectManager.CreateSound("MyMod_Click_SoundSet", vector.Zero);
@@ -477,54 +477,54 @@ uiSound.SoundPlay();
 
 ---
 
-## 3D Positional vs UI Sounds
+## Sons Posicionais 3D vs Sons de UI
 
-### 3D Positional Sounds
+### Sons Posicionais 3D
 
-3D sounds exist in world space. Their volume attenuates with distance, and they are affected by occlusion, obstruction, and optionally doppler shift.
+Sons 3D existem no espaço do mundo. Seu volume atenua com a distância e são afetados por oclusão, obstrução e opcionalmente mudança de pitch doppler.
 
-**Config requirements:**
-- `spatial = 1` in `CfgSoundSets`
-- Audio file **must be mono** (single channel). Stereo files will not spatialize correctly.
-- Set appropriate `range` and `radius` in `CfgSoundShaders`.
+**Requisitos de config:**
+- `spatial = 1` em `CfgSoundSets`
+- O arquivo de áudio **deve ser mono** (canal único). Arquivos estéreo não serão espacializados corretamente.
+- Defina `range` e `radius` apropriados em `CfgSoundShaders`.
 
 ```c
-// 3D sound at a specific world position
+// Som 3D em uma posição específica do mundo
 EffectSound sound = SEffectManager.PlaySound("MyMod_Explosion_SoundSet", explosionPos);
 sound.SetAutodestroy(true);
 ```
 
-### UI / HUD Sounds
+### Sons de UI / HUD
 
-UI sounds play at constant volume regardless of player position. They are not spatialized.
+Sons de UI tocam em volume constante independentemente da posição do jogador. Eles não são espacializados.
 
-**Config requirements:**
-- `spatial = 0` in `CfgSoundSets`
-- Audio file can be stereo.
+**Requisitos de config:**
+- `spatial = 0` em `CfgSoundSets`
+- O arquivo de áudio pode ser estéreo.
 
 ```c
-// UI sound (position is irrelevant but required by API)
+// Som de UI (posição é irrelevante mas necessária pela API)
 EffectSound sound = SEffectManager.CreateSound("MyMod_ButtonClick_SoundSet", vector.Zero);
 sound.SetSoundWaveKind(WaveKind.WAVEUI);
 sound.SetAutodestroy(true);
 sound.SoundPlay();
 ```
 
-### Distance Attenuation
+### Atenuação por Distância
 
-Distance attenuation is controlled by the `volumeCurve` property in `CfgSoundSets` and the `radius`/`range` properties in `CfgSoundShaders`:
+A atenuação por distância é controlada pela propriedade `volumeCurve` em `CfgSoundSets` e pelas propriedades `radius`/`range` em `CfgSoundShaders`:
 
-- From 0 to `radius`: full volume.
-- From `radius` to `range`: volume attenuates according to `volumeCurve`.
-- Beyond `range`: silent.
+- De 0 a `radius`: volume total.
+- De `radius` a `range`: volume atenua de acordo com `volumeCurve`.
+- Além de `range`: silêncio.
 
 ---
 
-## Looping Sounds
+## Sons em Loop
 
-### Config-Based Looping
+### Looping Baseado em Config
 
-Set `loop = 1` in your `CfgSoundSets` definition:
+Defina `loop = 1` na sua definição de `CfgSoundSets`:
 
 ```cpp
 class CfgSoundSets
@@ -535,16 +535,16 @@ class CfgSoundSets
         sound3DProcessingType = "character3DProcessingType";
         volumeCurve = "characterAttenuationCurve";
         spatial = 1;
-        loop = 1;   // <-- loops continuously
+        loop = 1;   // <-- repete continuamente
         doppler = 0;
         distanceFilter = "defaultDistanceFilter";
     };
 };
 ```
 
-### Script-Based Looping
+### Looping Baseado em Script
 
-You can also enable looping from script, overriding the config:
+Você também pode habilitar looping do script, sobrescrevendo a config:
 
 ```c
 EffectSound sound = SEffectManager.CreateSound("MyMod_Generator_SoundSet", position);
@@ -552,7 +552,7 @@ sound.SetSoundLoop(true);
 sound.SoundPlay();
 ```
 
-Or with the `SEffectManager` shorthand:
+Ou com o atalho do `SEffectManager`:
 
 ```c
 EffectSound sound = SEffectManager.PlaySound(
@@ -564,9 +564,9 @@ EffectSound sound = SEffectManager.PlaySound(
 );
 ```
 
-### Starting and Stopping Loops on Entities
+### Iniciando e Parando Loops em Entidades
 
-The entity convenience methods are the cleanest approach for looping sounds:
+Os métodos de conveniência de entidade são a abordagem mais limpa para sons em loop:
 
 ```c
 class MyGenerator : ItemBase
@@ -575,7 +575,7 @@ class MyGenerator : ItemBase
 
     void StartEngine()
     {
-        // PlaySoundSetLoop handles the guard against duplicate playback
+        // PlaySoundSetLoop lida com a proteção contra reprodução duplicada
         PlaySoundSetLoop(m_EngineLoop, "MyMod_Generator_SoundSet", 0.5, 0.5);
     }
 
@@ -586,15 +586,15 @@ class MyGenerator : ItemBase
 
     void ~MyGenerator()
     {
-        // Always clean up in destructor
+        // Sempre limpar no destrutor
         StopSoundSet(m_EngineLoop);
     }
 }
 ```
 
-### Crossfade Padrão
+### Padrão de Crossfade
 
-To smoothly transition between two sound states (e.g. idle engine to revving engine):
+Para transicionar suavemente entre dois estados de som (ex.: motor parado para motor acelerando):
 
 ```c
 class MyVehicleSound
@@ -604,20 +604,20 @@ class MyVehicleSound
 
     void TransitionToRev()
     {
-        // Stop idle with fade-out
+        // Parar idle com fade-out
         if (m_IdleSound && m_IdleSound.IsPlaying())
         {
-            m_IdleSound.SoundStop();  // Uses the fade-out set during creation
+            m_IdleSound.SoundStop();  // Usa o fade-out definido durante a criação
         }
 
-        // Start rev with fade-in
+        // Iniciar aceleração com fade-in
         if (!m_RevSound || !m_RevSound.IsPlaying())
         {
             m_RevSound = SEffectManager.PlaySound(
                 "MyMod_EngineRev_SoundSet",
                 m_Vehicle.GetPosition(),
-                0.5,    // 0.5s fade-in
-                0.5,    // 0.5s fade-out (for when we stop it later)
+                0.5,    // 0.5s de fade-in
+                0.5,    // 0.5s de fade-out (para quando pararmos depois)
                 true    // loop
             );
         }
@@ -627,63 +627,63 @@ class MyVehicleSound
 
 ---
 
-## Lower-Level API: AbstractSoundScene
+## API de Nível Inferior: AbstractSoundScene
 
-For advanced use cases, you can bypass `SEffectManager` and use the engine's `AbstractSoundScene` directly. This is rarely needed but is how `EffectSound` works internally.
+Para casos de uso avançados, você pode contornar `SEffectManager` e usar o `AbstractSoundScene` do motor diretamente. Isso raramente é necessário, mas é como `EffectSound` funciona internamente.
 
 ```c
-// Build sound params from a sound set name
+// Construir sound params a partir de um nome de sound set
 SoundParams params = new SoundParams("MyMod_Alert_SoundSet");
 if (!params.IsValid())
-    return;  // Sound set not found in config
+    return;  // Sound set não encontrado na config
 
-// Create a builder and optionally add environment variables
+// Criar um builder e opcionalmente adicionar variáveis de ambiente
 SoundObjectBuilder builder = new SoundObjectBuilder(params);
 builder.AddEnvSoundVariables(position);
 
-// Add custom variables referenced by the sound config
+// Adicionar variáveis personalizadas referenciadas pela config de som
 builder.AddVariable("speed", 0.5);
 
-// Build the sound object
+// Construir o objeto de som
 SoundObject soundObj = builder.BuildSoundObject();
 soundObj.SetPosition(position);
 soundObj.SetKind(WaveKind.WAVEEFFECTEX);
 
-// Play through the sound scene
+// Reproduzir através da cena de som
 AbstractSoundScene soundScene = GetGame().GetSoundScene();
 AbstractWave wave = soundScene.Play3D(soundObj, builder);
 
-// Control the live wave
+// Controlar a wave ao vivo
 wave.SetVolume(0.8);
 wave.Loop(false);
 ```
 
-### AbstractWave Métodos
+### Métodos de AbstractWave
 
-The `AbstractWave` is the live handle to a playing sound:
+O `AbstractWave` é o handle ao vivo para um som em reprodução:
 
 | Método | Descrição |
-|--------|-------------|
-| `Play()` | Start playback. |
-| `Stop()` | Stop playback. |
-| `Restart()` | Restart from beginning. |
-| `Loop(bool)` | Enable/disable looping. |
-| `SetVolume(float)` | Set absolute volume. |
-| `SetVolumeRelative(float)` | Set volume relative to base (0.0 - 1.0). |
-| `SetFrequency(float)` | Set pitch/speed multiplier. |
-| `SetPosition(vector pos, vector vel)` | Set 3D position and velocity. |
-| `SetDoppler(bool)` | Enable/disable doppler. |
-| `SetFadeInFactor(float)` | Set fade-in volume factor. |
-| `SetFadeOutFactor(float)` | Set fade-out volume factor. |
-| `SetStartOffset(float)` | Start playback at offset (seconds). |
-| `Skip(float)` | Skip forward by seconds. |
-| `GetLength()` | Get total length in seconds. **Blocking if header not loaded.** |
-| `GetCurrPosition()` | Get current position as percentage (0.0 - 1.0). |
-| `GetVolume()` | Get current volume. |
-| `GetFrequency()` | Get current frequency/pitch. |
-| `IsHeaderLoaded()` | Check if audio header is loaded (non-blocking). |
+|--------|-----------|
+| `Play()` | Iniciar reprodução. |
+| `Stop()` | Parar reprodução. |
+| `Restart()` | Reiniciar do início. |
+| `Loop(bool)` | Habilitar/desabilitar looping. |
+| `SetVolume(float)` | Definir volume absoluto. |
+| `SetVolumeRelative(float)` | Definir volume relativo à base (0.0 - 1.0). |
+| `SetFrequency(float)` | Definir multiplicador de pitch/velocidade. |
+| `SetPosition(vector pos, vector vel)` | Definir posição 3D e velocidade. |
+| `SetDoppler(bool)` | Habilitar/desabilitar doppler. |
+| `SetFadeInFactor(float)` | Definir fator de volume de fade-in. |
+| `SetFadeOutFactor(float)` | Definir fator de volume de fade-out. |
+| `SetStartOffset(float)` | Iniciar reprodução em offset (segundos). |
+| `Skip(float)` | Avançar em segundos. |
+| `GetLength()` | Obter comprimento total em segundos. **Bloqueante se header não carregado.** |
+| `GetCurrPosition()` | Obter posição atual como porcentagem (0.0 - 1.0). |
+| `GetVolume()` | Obter volume atual. |
+| `GetFrequency()` | Obter frequência/pitch atual. |
+| `IsHeaderLoaded()` | Verificar se o header de áudio está carregado (não-bloqueante). |
 
-### AbstractWave Events
+### Eventos de AbstractWave
 
 ```c
 AbstractWaveEvents events = wave.GetEvents();
@@ -694,21 +694,21 @@ events.Event_OnSoundWaveHeaderLoaded.Insert(MyOnHeaderCallback);
 events.Event_OnSoundWaveStopped.Insert(MyOnStopCallback);
 ```
 
-### SoundObject Parenting
+### Vinculação de SoundObject a Pai
 
-You can parent a `SoundObject` to an entity so it follows that entity's movement:
+Você pode vincular um `SoundObject` a uma entidade para que ele acompanhe o movimento dessa entidade:
 
 ```c
 SoundObject soundObj = builder.BuildSoundObject();
-soundObj.SetParent(parentEntity, -1);  // -1 = no specific pivot point
-soundObj.SetPosition("0 1 0");        // Local offset: 1m above entity origin
+soundObj.SetParent(parentEntity, -1);  // -1 = sem ponto pivot específico
+soundObj.SetPosition("0 1 0");        // Offset local: 1m acima da origem da entidade
 ```
 
 ---
 
 ## Padrões Comuns
 
-### 1. Button Click Sound (UI)
+### 1. Som de Clique de Botão (UI)
 
 ```c
 class MyMenu : UIScriptedMenu
@@ -747,7 +747,7 @@ class CfgSoundSets
 };
 ```
 
-### 2. Alert / Notification Sound
+### 2. Som de Alerta / Notificação
 
 ```c
 void PlayAlertSound()
@@ -767,7 +767,7 @@ void PlayAlertSound()
 }
 ```
 
-### 3. Ambient Loop with Distance Falloff
+### 3. Loop Ambiente com Atenuação por Distância
 
 ```c
 class MyAmbientSource : BuildingSuper
@@ -789,7 +789,7 @@ class MyAmbientSource : BuildingSuper
 }
 ```
 
-Config with large range:
+Config com alcance grande:
 
 ```cpp
 class CfgSoundShaders
@@ -818,9 +818,9 @@ class CfgSoundSets
 };
 ```
 
-### 4. Weapon Custom Sound (Fire Mode Switch)
+### 4. Som Personalizado de Arma (Troca de Modo de Tiro)
 
-From vanilla `weapon_base.c`:
+Do vanilla `weapon_base.c`:
 
 ```c
 void PlayFireModeSound()
@@ -836,9 +836,9 @@ void PlayFireModeSound()
 }
 ```
 
-### 5. Expansion-Style Sound with Delayed Stop
+### 5. Som Estilo Expansion com Parada Atrasada
 
-From Expansion's engine start sounds, where sounds are created manually and stopped on a timer:
+Dos sons de partida de motor do Expansion, onde sons são criados manualmente e parados em um timer:
 
 ```c
 void PlayEngineStartSound(CarScript vehicle, string soundSet, float stopDelay)
@@ -850,13 +850,13 @@ void PlayEngineStartSound(CarScript vehicle, string soundSet, float stopDelay)
 
     if (stopDelay > 0)
     {
-        // Stop after delay (milliseconds)
+        // Parar após atraso (milissegundos)
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(sound.Stop, stopDelay * 1000);
     }
 }
 ```
 
-### 6. Sound at a Memory Point
+### 6. Som em um Ponto de Memória
 
 ```c
 class MyExplosiveBarrel : BuildingSuper
@@ -865,7 +865,7 @@ class MyExplosiveBarrel : BuildingSuper
 
     void LightFuse()
     {
-        // "fuse_point" must exist as a memory point in the P3D model
+        // "fuse_point" deve existir como ponto de memória no modelo P3D
         PlaySoundSetAtMemoryPointLooped(
             m_FuseSound,
             "MyMod_Fuse_SoundSet",
@@ -886,16 +886,16 @@ class MyExplosiveBarrel : BuildingSuper
 
 ## Erros Comuns
 
-### 1. Using Stereo Files for 3D Sounds
+### 1. Usar Arquivos Estéreo para Sons 3D
 
-Audio files used with `spatial = 1` **must be mono** (single channel). Stereo files will not be spatialized correctly by the engine --- the sound will appear to come from everywhere or only one side. Always convert your audio to mono `.ogg` for any 3D positional sound.
+Arquivos de áudio usados com `spatial = 1` **devem ser mono** (canal único). Arquivos estéreo não serão espacializados corretamente pelo motor --- o som parecerá vir de todos os lugares ou apenas de um lado. Sempre converta seu áudio para `.ogg` mono para qualquer som posicional 3D.
 
-### 2. Not Stopping Sounds in Destructor
+### 2. Não Parar Sons no Destrutor
 
-If you store an `EffectSound` reference and the owning object is destroyed without stopping the sound, the sound may continue playing orphaned, or worse, cause a memory leak in `SEffectManager`'s internal map.
+Se você armazena uma referência `EffectSound` e o objeto proprietário é destruído sem parar o som, o som pode continuar tocando como órfão, ou pior, causar um vazamento de memória no mapa interno do `SEffectManager`.
 
 ```c
-// WRONG: no cleanup
+// ERRADO: sem limpeza
 class MyObject : ItemBase
 {
     ref EffectSound m_Loop;
@@ -904,10 +904,10 @@ class MyObject : ItemBase
     {
         PlaySoundSetLoop(m_Loop, "MyMod_Loop_SoundSet", 0, 0);
     }
-    // Missing destructor cleanup!
+    // Limpeza no destrutor faltando!
 }
 
-// CORRECT: always stop in destructor
+// CORRETO: sempre parar no destrutor
 class MyObject : ItemBase
 {
     ref EffectSound m_Loop;
@@ -924,18 +924,18 @@ class MyObject : ItemBase
 }
 ```
 
-### 3. Playing Sounds on a Dedicated Server
+### 3. Reproduzir Sons em um Servidor Dedicado
 
-Dedicated servers have no audio device. Sound calls on server waste CPU and can log warnings. Always guard:
+Servidores dedicados não têm dispositivo de áudio. Chamadas de som no servidor desperdiçam CPU e podem registrar avisos. Sempre proteja:
 
 ```c
-// WRONG
+// ERRADO
 void OnActivated()
 {
     SEffectManager.PlaySound("MyMod_Activate_SoundSet", GetPosition());
 }
 
-// CORRECT
+// CORRETO
 void OnActivated()
 {
     if (!GetGame().IsDedicatedServer())
@@ -946,39 +946,39 @@ void OnActivated()
 }
 ```
 
-Note: `PlaySoundSet` / `StopSoundSet` on `Object` already include this guard internally, so you do not need to check when using those methods.
+Nota: `PlaySoundSet` / `StopSoundSet` em `Object` já incluem essa proteção internamente, então você não precisa verificar ao usar esses métodos.
 
-### 4. Missing CfgSoundSets Definition
+### 4. Definição de CfgSoundSets Ausente
 
-If the sound set name passed to `SEffectManager.PlaySound()` does not match any class in `CfgSoundSets`, the engine will fail to create a valid `SoundParams` and the sound will not play. You will see errors like `"Invalid sound set"` in the script log.
+Se o nome do sound set passado para `SEffectManager.PlaySound()` não corresponder a nenhuma classe em `CfgSoundSets`, o motor falhará ao criar um `SoundParams` válido e o som não tocará. Você verá erros como `"Invalid sound set"` no log de script.
 
-Always verify:
-- The sound set name in script matches the class name in config **exactly** (case-sensitive).
-- The config is properly loaded via `CfgPatches` with correct `requiredAddons`.
-- The `.ogg` file path in `CfgSoundShaders` is correct and the file exists.
+Sempre verifique:
+- O nome do sound set no script corresponde ao nome da classe na config **exatamente** (sensível a maiúsculas/minúsculas).
+- A config está devidamente carregada via `CfgPatches` com `requiredAddons` corretos.
+- O caminho do arquivo `.ogg` em `CfgSoundShaders` está correto e o arquivo existe.
 
-### 5. Forgetting SetAutodestroy on One-Shot Sounds
+### 5. Esquecer SetAutodestroy em Sons Únicos
 
-One-shot sounds created via `SEffectManager.PlaySound()` remain registered in the effects map even after they finish playing. Without `SetAutodestroy(true)`, they accumulate and are only cleaned up when `SEffectManager.Cleanup()` runs (on mission end).
+Sons únicos criados via `SEffectManager.PlaySound()` permanecem registrados no mapa de efeitos mesmo após terminarem de tocar. Sem `SetAutodestroy(true)`, eles se acumulam e só são limpos quando `SEffectManager.Cleanup()` roda (no fim da missão).
 
 ```c
-// WRONG: sound stays registered forever
+// ERRADO: som fica registrado para sempre
 SEffectManager.PlaySound("MyMod_Beep_SoundSet", pos);
 
-// CORRECT: auto-cleanup when sound finishes
+// CORRETO: auto-limpeza quando o som terminar
 EffectSound snd = SEffectManager.PlaySound("MyMod_Beep_SoundSet", pos);
 snd.SetAutodestroy(true);
 ```
 
-### 6. Calling GetLength() Before Header Is Loaded
+### 6. Chamar GetLength() Antes do Header Estar Carregado
 
-`AbstractWave.GetLength()` is a blocking call that waits for the audio header to load. If called immediately after playback starts, it can stall the main thread. Check `IsHeaderLoaded()` first or use the header-loaded event:
+`AbstractWave.GetLength()` é uma chamada bloqueante que espera o header de áudio carregar. Se chamada imediatamente após o início da reprodução, pode travar a thread principal. Verifique `IsHeaderLoaded()` primeiro ou use o evento de header-carregado:
 
 ```c
-// WRONG: potentially blocking
+// ERRADO: potencialmente bloqueante
 float len = wave.GetLength();
 
-// CORRECT: wait for header
+// CORRETO: esperar pelo header
 if (wave.IsHeaderLoaded())
 {
     float len = wave.GetLength();
@@ -991,76 +991,76 @@ else
 
 ---
 
-## Sound Controller Overrides
+## Sobrescritas de Controlador de Som
 
-The engine exposes global sound controllers for environmental audio. You can override these from script:
+O motor expõe controladores de som globais para áudio ambiental. Você pode sobrescrevê-los do script:
 
 ```c
-// Override a controller value
+// Sobrescrever um valor de controlador
 SetSoundControllerOverride("rain", 1.0, SoundControllerAction.Overwrite);
 
-// Limit a controller to a maximum value
+// Limitar um controlador a um valor máximo
 SetSoundControllerOverride("wind", 0.5, SoundControllerAction.Limit);
 
-// Mute all environment controllers
+// Silenciar todos os controladores de ambiente
 MuteAllSoundControllers();
 
-// Reset all overrides back to normal
+// Resetar todas as sobrescritas de volta ao normal
 ResetAllSoundControllers();
 ```
 
-Available controller names include: `rain`, `night`, `meadow`, `trees`, `hills`, `houses`, `windy`, `deadBody`, `sea`, `forest`, `altitudeGround`, `altitudeSea`, `altitudeSurface`, `daytime`, `shooting`, `coast`, `waterDepth`, `overcast`, `fog`, `snowfall`, `caveSmall`, `caveBig`.
+Nomes de controladores disponíveis incluem: `rain`, `night`, `meadow`, `trees`, `hills`, `houses`, `windy`, `deadBody`, `sea`, `forest`, `altitudeGround`, `altitudeSea`, `altitudeSurface`, `daytime`, `shooting`, `coast`, `waterDepth`, `overcast`, `fog`, `snowfall`, `caveSmall`, `caveBig`.
 
 ---
 
 ## Referência Rápida
 
 | Tarefa | Método |
-|------|--------|
-| Play one-shot at position | `SEffectManager.PlaySound(soundSet, pos)` |
-| Play attached to entity | `SEffectManager.PlaySoundOnObject(soundSet, obj)` |
-| Play on entity (convenience) | `PlaySoundSet(m_Sound, soundSet, fadeIn, fadeOut)` |
-| Play loop on entity | `PlaySoundSetLoop(m_Sound, soundSet, fadeIn, fadeOut)` |
-| Stop entity sound | `StopSoundSet(m_Sound)` |
-| Play with cached params | `SEffectManager.PlaySoundCachedParams(soundSet, pos)` |
-| Create without playing | `SEffectManager.CreateSound(soundSet, pos, ...)` |
-| Destroy effect | `SEffectManager.DestroyEffect(sound)` |
-| Check if playing | `sound.IsPlaying()` or `sound.IsSoundPlaying()` |
-| Set volume | `sound.SetSoundVolume(0.5)` |
-| Set loop from script | `sound.SetSoundLoop(true)` |
-| Enable autodestroy | `sound.SetAutodestroy(true)` |
+|--------|--------|
+| Reproduzir único na posição | `SEffectManager.PlaySound(soundSet, pos)` |
+| Reproduzir anexado a entidade | `SEffectManager.PlaySoundOnObject(soundSet, obj)` |
+| Reproduzir na entidade (conveniência) | `PlaySoundSet(m_Sound, soundSet, fadeIn, fadeOut)` |
+| Reproduzir loop na entidade | `PlaySoundSetLoop(m_Sound, soundSet, fadeIn, fadeOut)` |
+| Parar som da entidade | `StopSoundSet(m_Sound)` |
+| Reproduzir com params em cache | `SEffectManager.PlaySoundCachedParams(soundSet, pos)` |
+| Criar sem reproduzir | `SEffectManager.CreateSound(soundSet, pos, ...)` |
+| Destruir efeito | `SEffectManager.DestroyEffect(sound)` |
+| Verificar se está tocando | `sound.IsPlaying()` ou `sound.IsSoundPlaying()` |
+| Definir volume | `sound.SetSoundVolume(0.5)` |
+| Definir loop do script | `sound.SetSoundLoop(true)` |
+| Habilitar autodestroy | `sound.SetAutodestroy(true)` |
 
 ---
 
-## Source Files
+## Arquivos de Código-Fonte
 
-| File | Descrição |
-|------|-------------|
-| `scripts/3_game/effects/effectsound.c` | `EffectSound` class --- the main sound wrapper |
-| `scripts/3_game/effectmanager.c` | `SEffectManager` --- static manager for all effects |
+| Arquivo | Descrição |
+|---------|-----------|
+| `scripts/3_game/effects/effectsound.c` | Classe `EffectSound` --- o wrapper principal de som |
+| `scripts/3_game/effectmanager.c` | `SEffectManager` --- gerenciador estático para todos os efeitos |
 | `scripts/3_game/sound.c` | `AbstractSoundScene`, `SoundObjectBuilder`, `SoundObject`, `SoundParams`, `AbstractWave` |
-| `scripts/3_game/entities/object.c` | `PlaySoundSet`, `StopSoundSet`, `PlaySoundLoop` on `Object` |
-| `scripts/3_game/entities/soundonvehicle.c` | `SoundOnVehicle` entity class |
-| `scripts/4_world/static/betasound.c` | `BetaSound.SaySound()` --- legacy action sound helper |
+| `scripts/3_game/entities/object.c` | `PlaySoundSet`, `StopSoundSet`, `PlaySoundLoop` em `Object` |
+| `scripts/3_game/entities/soundonvehicle.c` | Classe de entidade `SoundOnVehicle` |
+| `scripts/4_world/static/betasound.c` | `BetaSound.SaySound()` --- helper legado de som de ação |
 
 ---
 
 ## Boas Práticas
 
-- **Always call `SetAutodestroy(true)` on one-shot sounds.** Without it, `EffectSound` instances accumulate in `SEffectManager`'s internal registry and are only cleaned on mission end, causing a memory leak over long play sessions.
-- **Guard all sound playback with `!GetGame().IsDedicatedServer()`.** Dedicated servers have no audio device. Calling sound methods on the server wastes CPU cycles and may log warnings. The `PlaySoundSet` convenience methods include this guard internally, but `SEffectManager.PlaySound()` does not.
-- **Use mono OGG files for all 3D positional sounds.** Stereo files will not spatialize correctly -- the engine cannot determine left/right panning from a stereo source. Reserve stereo for UI sounds with `spatial = 0`.
-- **Stop looping sounds in your object's destructor.** If the owning entity is deleted without stopping the loop, the sound plays indefinitely as an orphaned effect with no way to stop it.
-- **Prefix CfgSoundShaders and CfgSoundSets class names with your mod identifier.** Sound config classes are global. Two mods using the same class name (e.g., `Alert_SoundSet`) will collide silently, with the last-loaded mod's definition winning.
+- **Sempre chame `SetAutodestroy(true)` em sons únicos.** Sem isso, instâncias de `EffectSound` se acumulam no registro interno do `SEffectManager` e só são limpas no fim da missão, causando um vazamento de memória em sessões longas.
+- **Proteja toda reprodução de som com `!GetGame().IsDedicatedServer()`.** Servidores dedicados não têm dispositivo de áudio. Chamar métodos de som no servidor desperdiça ciclos de CPU e pode registrar avisos. Os métodos de conveniência `PlaySoundSet` incluem essa proteção internamente, mas `SEffectManager.PlaySound()` não.
+- **Use arquivos OGG mono para todos os sons posicionais 3D.** Arquivos estéreo não serão espacializados corretamente -- o motor não pode determinar panning esquerda/direita de uma fonte estéreo. Reserve estéreo para sons de UI com `spatial = 0`.
+- **Pare sons em loop no destrutor do seu objeto.** Se a entidade proprietária for deletada sem parar o loop, o som toca indefinidamente como um efeito órfão sem maneira de pará-lo.
+- **Prefixe nomes de classes CfgSoundShaders e CfgSoundSets com o identificador do seu mod.** Classes de config de som são globais. Dois mods usando o mesmo nome de classe (ex.: `Alert_SoundSet`) vão colidir silenciosamente, com a definição do último mod carregado prevalecendo.
 
 ---
 
-## Compatibility & Impact
+## Compatibilidade e Impacto
 
-- **Multi-Mod:** CfgSoundShaders and CfgSoundSets class names share a global namespace across all loaded mods. Name collisions cause one mod's sounds to silently replace another's. Always use a unique mod prefix.
-- **Performance:** Each active `EffectSound` consumes an audio channel. The engine has a limited channel pool -- excessive simultaneous sounds (50+) can cause newer sounds to fail silently. Use `limitation` in CfgSoundShaders to cap concurrent instances of frequent sounds.
-- **Server/Client:** All sound playback is client-side only. The server has no audio output. Entity convenience methods (`PlaySoundSet`, `StopSoundSet`) include server guards internally, but direct `SEffectManager` calls do not.
+- **Multi-Mod:** Nomes de classes CfgSoundShaders e CfgSoundSets compartilham um namespace global entre todos os mods carregados. Colisões de nomes fazem os sons de um mod silenciosamente substituírem os de outro. Sempre use um prefixo de mod único.
+- **Desempenho:** Cada `EffectSound` ativo consome um canal de áudio. O motor tem um pool limitado de canais -- sons simultâneos excessivos (50+) podem fazer sons mais novos falharem silenciosamente. Use `limitation` em CfgSoundShaders para limitar instâncias concorrentes de sons frequentes.
+- **Servidor/Cliente:** Toda reprodução de som é apenas do lado do cliente. O servidor não tem saída de áudio. Métodos de conveniência de entidade (`PlaySoundSet`, `StopSoundSet`) incluem proteções de servidor internamente, mas chamadas diretas a `SEffectManager` não.
 
 ---
 
-[Home](../../README.md) | [<< Anterior: Sistema do Jogador](14-player-system.md) | **Sistema de Som**
+[Início](../../README.md) | [<< Anterior: Sistema do Jogador](14-player-system.md) | **Sistema de Som** | [Próximo: Sistema de Crafting >>](16-crafting-system.md)

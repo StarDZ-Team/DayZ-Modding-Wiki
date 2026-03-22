@@ -1,160 +1,164 @@
-# Chapter 2.5: File Organization Best Practices
+# 第2.5章: ファイル構成のベストプラクティス
 
-[Home](../../README.md) | [<< Previous: Minimum Viable Mod](04-minimum-viable-mod.md) | **File Organization** | [Next: Server vs Client Architecture >>](06-server-client-split.md)
+[ホーム](../../README.md) | [<< 前へ: 最小限のMOD](04-minimum-viable-mod.md) | **ファイル構成** | [次へ: サーバーvsクライアントアーキテクチャ >>](06-server-client-split.md)
+
+---
+
+> **要約:** ファイルの構成方法は、10ファイルでも1,000ファイルでもMODが保守可能かどうかを決定します。この章では、標準的なディレクトリ構造、命名規則、コンテンツ型/スクリプト型/フレームワーク型MOD、クライアント-サーバー分割、プロフェッショナルなDayZ MODからの教訓をカバーします。
 
 ---
 
 ## 目次
 
-- [The Canonical Directory Structure](#the-canonical-directory-structure)
-- [Naming Conventions](#naming-conventions)
-- [Three Types of Mods](#three-types-of-mods)
-- [Client-Server Split Mods](#client-server-split-mods)
-- [What Goes Where](#what-goes-where)
-- [PBO Naming and @mod Folder Naming](#pbo-naming-and-mod-folder-naming)
-- [Real Examples from Professional Mods](#real-examples-from-professional-mods)
-- [Anti-Patterns](#anti-patterns)
+- [標準的なディレクトリ構造](#標準的なディレクトリ構造)
+- [命名規則](#命名規則)
+- [3つのMODタイプ](#3つのmodタイプ)
+- [クライアント-サーバー分割MOD](#クライアント-サーバー分割mod)
+- [どこに何を置くか](#どこに何を置くか)
+- [PBO命名と@modフォルダ命名](#pbo命名とmodフォルダ命名)
+- [プロフェッショナルMODの実例](#プロフェッショナルmodの実例)
+- [アンチパターン](#アンチパターン)
 
 ---
 
-## 標準的なディレクトリ構成
+## 標準的なディレクトリ構造
 
-This is the standard layout used by professional DayZ mods. Not every folder is required -- only create what you need.
+これはプロフェッショナルなDayZ MODが使用する標準的なレイアウトです。すべてのフォルダが必須ではありません -- 必要なものだけ作成してください。
 
 ```
-MyMod/                                    <-- Project root (development)
-  mod.cpp                                 <-- Launcher metadata
-  stringtable.csv                         <-- Localization (at mod root, NOT in Scripts/)
+MyMod/                                    <-- プロジェクトルート（開発）
+  mod.cpp                                 <-- ランチャーメタデータ
+  stringtable.csv                         <-- ローカライゼーション（MODルートに配置、Scripts/内ではない）
 
-  Scripts/                                <-- Script PBO root
-    config.cpp                            <-- CfgPatches + CfgMods + script module defs
-    Inputs.xml                            <-- Custom keybindings (optional)
+  Scripts/                                <-- スクリプトPBOルート
+    config.cpp                            <-- CfgPatches + CfgMods + スクリプトモジュール定義
+    Inputs.xml                            <-- カスタムキーバインド（オプション）
     Data/
-      Credits.json                        <-- Author credits
-      Version.hpp                         <-- Version string (optional)
+      Credits.json                        <-- 著者クレジット
+      Version.hpp                         <-- バージョン文字列（オプション）
 
-    1_Core/                               <-- engineScriptModule (rare)
+    1_Core/                               <-- engineScriptModule（まれ）
       MyMod/
         Constants.c
 
     3_Game/                               <-- gameScriptModule
       MyMod/
-        MyModConfig.c                     <-- Configuration class
-        MyModRPCs.c                       <-- RPC identifiers / registration
+        MyModConfig.c                     <-- 設定クラス
+        MyModRPCs.c                       <-- RPC識別子 / 登録
         Data/
-          SomeDataClass.c                 <-- Pure data structures
+          SomeDataClass.c                 <-- 純粋なデータ構造
 
     4_World/                              <-- worldScriptModule
       MyMod/
         Entities/
-          MyCustomItem.c                  <-- Custom items
+          MyCustomItem.c                  <-- カスタムアイテム
           MyCustomVehicle.c
         Managers/
-          MyModManager.c                  <-- World-aware managers
+          MyModManager.c                  <-- ワールド対応マネージャー
         Actions/
-          ActionMyCustom.c                <-- Custom player actions
+          ActionMyCustom.c                <-- カスタムプレイヤーアクション
 
     5_Mission/                            <-- missionScriptModule
       MyMod/
-        MyModRegister.c                   <-- Mod registration (startup hook)
+        MyModRegister.c                   <-- MOD登録（起動フック）
         GUI/
-          MyModPanel.c                    <-- UI panel scripts
-          MyModHUD.c                      <-- HUD overlay scripts
+          MyModPanel.c                    <-- UIパネルスクリプト
+          MyModHUD.c                      <-- HUDオーバーレイスクリプト
 
-  GUI/                                    <-- GUI PBO root (separate from Scripts)
-    config.cpp                            <-- GUI-specific config (imageSets, styles)
-    layouts/                              <-- .layout files
+  GUI/                                    <-- GUI PBOルート（Scriptsとは別）
+    config.cpp                            <-- GUI固有の設定（imageSet、スタイル）
+    layouts/                              <-- .layoutファイル
       mymod_panel.layout
       mymod_hud.layout
-    imagesets/                            <-- .imageset files + texture atlases
+    imagesets/                            <-- .imagesetファイル + テクスチャアトラス
       mymod_icons.imageset
       mymod_icons.edds
-    looknfeel/                            <-- .styles files
+    looknfeel/                            <-- .stylesファイル
       mymod.styles
 
-  Data/                                   <-- Data PBO root (models, textures, items)
-    config.cpp                            <-- CfgVehicles, CfgWeapons, etc.
+  Data/                                   <-- データPBOルート（モデル、テクスチャ、アイテム）
+    config.cpp                            <-- CfgVehicles、CfgWeaponsなど
     Models/
-      my_item.p3d                         <-- 3D models
+      my_item.p3d                         <-- 3Dモデル
     Textures/
-      my_item_co.paa                      <-- Color textures
-      my_item_nohq.paa                    <-- Normal maps
+      my_item_co.paa                      <-- カラーテクスチャ
+      my_item_nohq.paa                    <-- ノーマルマップ
     Materials/
-      my_item.rvmat                       <-- Material definitions
+      my_item.rvmat                       <-- マテリアル定義
 
-  Sounds/                                 <-- Sound files
-    alert.ogg                             <-- Audio files (always .ogg)
+  Sounds/                                 <-- サウンドファイル
+    alert.ogg                             <-- オーディオファイル（常に.ogg）
     ambient.ogg
 
-  ServerFiles/                            <-- Files for server admins to copy
-    types.xml                             <-- Central Economy spawn definitions
-    cfgspawnabletypes.xml                 <-- Attachment presets
-    README.md                             <-- Installation guide
+  ServerFiles/                            <-- サーバー管理者がコピーするファイル
+    types.xml                             <-- Central Economyスポーン定義
+    cfgspawnabletypes.xml                 <-- アタッチメントプリセット
+    README.md                             <-- インストールガイド
 
-  Keys/                                   <-- Signature keys
-    MyMod.bikey                           <-- Public key for server verification
+  Keys/                                   <-- 署名キー
+    MyMod.bikey                           <-- サーバー検証用公開キー
 ```
 
 ---
 
 ## 命名規則
 
-### Mod/Project Names
+### MOD/プロジェクト名
 
-Use PascalCase with a clear prefix:
+PascalCaseで明確なプレフィックスを使用します:
 
 ```
-MyFramework          <-- Framework, prefix: MyMod_
-MyMissions      <-- Feature mod
-MyWeapons       <-- Content mod
-VPPAdminTools        <-- Some mods skip underscores
-DabsFramework        <-- PascalCase without separator
+MyFramework          <-- フレームワーク、プレフィックス: MyFW_
+MyMod_Missions      <-- 機能MOD
+MyMod_Weapons       <-- コンテンツMOD
+VPPAdminTools        <-- アンダースコアを省略するMODもある
+DabsFramework        <-- セパレータなしのPascalCase
 ```
 
-### Class Names
+### クラス名
 
-Use a short prefix unique to your mod, followed by an underscore and the class purpose:
+MODに固有の短いプレフィックスの後にアンダースコアとクラスの目的を続けます:
 
 ```c
-// MyMod pattern: My[Subsystem]_[Name]
-class MyLog             // Core logging
-class MyRPC             // Core RPC
-class MyW_Config        // Weapons config
-class MyM_MissionBase   // Missions base
+// MyModパターン: MyMod_[サブシステム]_[名前]
+class MyLog             // コアログ
+class MyRPC             // コアRPC
+class MyW_Config        // 武器設定
+class MyM_MissionBase   // ミッションベース
 
-// CF pattern: CF_[Name]
+// CFパターン: CF_[名前]
 class CF_ModuleWorld
 class CF_EventArgs
 
-// COT pattern: JM_COT_[Name]
+// COTパターン: JM_COT_[名前]
 class JM_COT_Menu
 
-// VPP pattern: [Name] (no prefix)
+// VPPパターン: [名前]（プレフィックスなし）
 class ChatCommandBase
 class WebhookManager
 ```
 
-**ルール：**
-- Prefix prevents collisions with other mods
-- Keep it short (2-4 characters)
-- Be consistent within your mod
+**ルール:**
+- プレフィックスは他のMODとの衝突を防止
+- 短く保つ（2-4文字）
+- MOD内で一貫性を保つ
 
-### File Names
+### ファイル名
 
-Name each file after the primary class it contains:
+各ファイルはそれが含む主要なクラスにちなんで命名します:
 
 ```
-MyLog.c            <-- Contains class MyLog
-MyRPC.c            <-- Contains class MyRPC
-MyModConfig.c        <-- Contains class MyModConfig
-ActionMyCustom.c     <-- Contains class ActionMyCustom
+MyLog.c            <-- class MyLogを含む
+MyRPC.c            <-- class MyRPCを含む
+MyModConfig.c        <-- class MyModConfigを含む
+ActionMyCustom.c     <-- class ActionMyCustomを含む
 ```
 
-One class per file is the ideal. Multiple small helper classes in one file is acceptable when they are tightly coupled.
+1ファイル1クラスが理想です。密に結合された複数の小さなヘルパークラスを1ファイルに含めることは許容されます。
 
-### Layout Files
+### レイアウトファイル
 
-Use lowercase with your mod prefix:
+MODプレフィックス付きの小文字を使用します:
 
 ```
 my_admin_panel.layout
@@ -162,47 +166,47 @@ my_killfeed_overlay.layout
 mymod_settings_dialog.layout
 ```
 
-### Variable Names
+### 変数名
 
 ```c
-// Member variables: m_ prefix
+// メンバー変数: m_プレフィックス
 protected int m_Count;
 protected ref array<string> m_Items;
 protected ref MyConfig m_Config;
 
-// Static variables: s_ prefix
+// 静的変数: s_プレフィックス
 static int s_InstanceCount;
 static ref MyLog s_Logger;
 
-// Constants: ALL_CAPS
+// 定数: ALL_CAPS
 const int MAX_PLAYERS = 60;
 const float UPDATE_INTERVAL = 0.5;
 const string MOD_NAME = "MyMod";
 
-// Local variables: camelCase (no prefix)
+// ローカル変数: camelCase（プレフィックスなし）
 int count = 0;
 string playerName = identity.GetName();
 float deltaTime = timeArgs.DeltaTime;
 
-// Parameters: camelCase (no prefix)
+// パラメータ: camelCase（プレフィックスなし）
 void SetConfig(MyConfig config, bool forceReload)
 ```
 
 ---
 
-## 3種類の Mod
+## 3つのMODタイプ
 
-DayZ mods fall into three categories. Each has a different structure emphasis.
+DayZ MODは3つのカテゴリに分類されます。それぞれ異なる構造の重点があります。
 
-### 1. Content Mod
+### 1. コンテンツMOD
 
-Adds items, weapons, vehicles, buildings -- primarily 3D assets with minimal scripting.
+アイテム、武器、車両、建物を追加します -- 主に3Dアセットで、スクリプトは最小限です。
 
 ```
 MyWeaponPack/
   mod.cpp
   Data/
-    config.cpp                <-- CfgVehicles, CfgWeapons, CfgMagazines, CfgAmmo
+    config.cpp                <-- CfgVehicles、CfgWeapons、CfgMagazines、CfgAmmo
     Weapons/
       MyRifle/
         MyRifle.p3d
@@ -212,24 +216,24 @@ MyWeaponPack/
     Ammo/
       MyAmmo/
         MyAmmo.p3d
-  Scripts/                    <-- Minimal (may not even exist)
+  Scripts/                    <-- 最小限（存在しない場合もある）
     config.cpp
     4_World/
       MyWeaponPack/
-        MyRifle.c             <-- Only if the weapon needs custom behavior
+        MyRifle.c             <-- 武器にカスタム動作が必要な場合のみ
   ServerFiles/
     types.xml
 ```
 
-**特徴：**
-- Heavy on `Data/` (models, textures, materials)
-- Heavy on `Data/config.cpp` (CfgVehicles, CfgWeapons definitions)
-- Minimal or no scripting
-- Scripts only when items need custom behavior beyond what config defines
+**特徴:**
+- `Data/`（モデル、テクスチャ、マテリアル）が大部分
+- `Data/config.cpp`（CfgVehicles、CfgWeapons定義）が重い
+- スクリプトは最小限またはなし
+- 設定で定義された以上のカスタム動作が必要な場合のみスクリプトを使用
 
-### 2. Script Mod
+### 2. スクリプトMOD
 
-Adds gameplay features, admin tools, systems -- primarily code with minimal assets.
+ゲームプレイ機能、管理ツール、システムを追加します -- 主にコードで、アセットは最小限です。
 
 ```
 MyAdminTools/
@@ -258,15 +262,15 @@ MyAdminTools/
       admin_icons.imageset
 ```
 
-**特徴：**
-- Heavy on `Scripts/` (most code in 3_Game, 4_World, 5_Mission)
-- GUI layouts and imagesets for UI
-- Little or no `Data/` (no 3D models)
-- Usually depends on a framework (CF, DabsFramework, MyFramework)
+**特徴:**
+- `Scripts/`（3_Game、4_World、5_Missionのコードが大部分）が重い
+- UI用のGUIレイアウトとimagesets
+- `Data/`はほとんどまたはまったくなし（3Dモデルなし）
+- 通常フレームワーク（CF、DabsFramework、またはカスタムフレームワーク）に依存
 
-### 3. Framework Mod
+### 3. フレームワークMOD
 
-Provides shared infrastructure for other mods -- logging, RPC, configuration, UI systems.
+他のMODに共有インフラストラクチャを提供します -- ログ、RPC、設定、UIシステムなど。
 
 ```
 MyFramework/
@@ -276,7 +280,7 @@ MyFramework/
     config.cpp
     Data/
       Credits.json
-    1_Core/                     <-- Frameworks often use 1_Core
+    1_Core/                     <-- フレームワークは1_Coreをよく使用
       MyFramework/
         Constants.c
         LogLevel.c
@@ -315,305 +319,184 @@ MyFramework/
     looknfeel/
 ```
 
-**特徴：**
-- Uses all script layers (1_Core through 5_Mission)
-- Deep subdirectory hierarchy in each layer
-- Defines `defines[]` for feature detection
-- Other mods depend on it via `requiredAddons`
-- Provides base classes that other mods extend
+**特徴:**
+- すべてのスクリプトレイヤー（1_Coreから5_Mission）を使用
+- 各レイヤーに深いサブディレクトリ階層
+- 機能検出用の `defines[]` を定義
+- 他のMODが `requiredAddons` 経由で依存
+- 他のMODが拡張する基底クラスを提供
 
 ---
 
-## クライアント・サーバー分離 Mod
+## クライアント-サーバー分割MOD
 
-When a mod has both client-visible behavior (UI, entity rendering) and server-only logic (spawning, AI brains, secure state), it should split into two packages.
+MODがクライアント可視の動作（UI、エンティティレンダリング）とサーバー専用のロジック（スポーン、AIブレイン、セキュアな状態）の両方を持つ場合、2つのパッケージに分割すべきです。
 
-### Directory Structure
+### ディレクトリ構造
 
 ```
-MyMod/                                    <-- Project root (development repo)
-  MyMod_MyMod/                           <-- Client package (loaded via -mod=)
+MyMod/                                    <-- プロジェクトルート（開発リポジトリ）
+  MyMod_Sub/                           <-- クライアントパッケージ（-mod=で読み込み）
     mod.cpp
     stringtable.csv
     Scripts/
       config.cpp                          <-- type = "mod"
-      3_Game/MyMod/                       <-- Shared data classes, RPCs
-      4_World/MyMod/                      <-- Client-side entity rendering
-      5_Mission/MyMod/                    <-- Client UI, HUD
+      3_Game/MyMod/                       <-- 共有データクラス、RPC
+      4_World/MyMod/                      <-- クライアントサイドエンティティレンダリング
+      5_Mission/MyMod/                    <-- クライアントUI、HUD
     GUI/
       layouts/
     Sounds/
 
-  MyMod_MyModServer/                     <-- Server package (loaded via -servermod=)
+  MyMod_SubServer/                     <-- サーバーパッケージ（-servermod=で読み込み）
     mod.cpp
     Scripts/
       config.cpp                          <-- type = "servermod"
-      3_Game/MyModServer/                 <-- Server-side data classes
-      4_World/MyModServer/                <-- Spawning, AI logic, state management
-      5_Mission/MyModServer/              <-- Server startup/shutdown hooks
+      3_Game/MyModServer/                 <-- サーバーサイドデータクラス
+      4_World/MyModServer/                <-- スポーン、AIロジック、状態管理
+      5_Mission/MyModServer/              <-- サーバー起動/シャットダウンフック
 ```
 
-### Key Rules for Split Mods
+### 分割MODの主要ルール
 
-1. **The client package is loaded by everyone** (server and all clients via `-mod=`)
-2. **The server package is loaded only by the server** (via `-servermod=`)
-3. **The server package depends on the client package** (via `requiredAddons`)
-4. **Never put UI code in the server package** -- clients will not receive it
-5. **Keep secure/private logic in the server package** -- it is never sent to clients
+1. **クライアントパッケージは全員が読み込む**（サーバーとすべてのクライアントが `-mod=` 経由で）
+2. **サーバーパッケージはサーバーのみが読み込む**（`-servermod=` 経由で）
+3. **サーバーパッケージはクライアントパッケージに依存**（`requiredAddons` 経由で）
+4. **サーバーパッケージにUIコードを入れない** -- クライアントはそれを受け取らない
+5. **セキュア/プライベートなロジックはサーバーパッケージに** -- クライアントには送信されない
 
-### Dependency Chain
+### 依存チェーン
 
 ```cpp
-// Client package config.cpp
+// クライアントパッケージ config.cpp
 class CfgPatches
 {
-    class MyMyMod_Scripts
+    class MyMod_Sub_Scripts
     {
-        requiredAddons[] = { "DZ_Scripts", "MyCore_Scripts" };
+        requiredAddons[] = { "DZ_Scripts", "MyMod_Core_Scripts" };
     };
 };
 
-// Server package config.cpp
+// サーバーパッケージ config.cpp
 class CfgPatches
 {
-    class MyMyModServer_Scripts
+    class MyMod_SubServer_Scripts
     {
-        requiredAddons[] = { "DZ_Scripts", "MyMyMod_Scripts", "MyCore_Scripts" };
-        //                                  ^^^ depends on client package
+        requiredAddons[] = { "DZ_Scripts", "MyMod_Sub_Scripts", "MyMod_Core_Scripts" };
+        //                                  ^^^ クライアントパッケージに依存
     };
 };
-```
-
-### Real Example: MyMissions Mod
-
-```
-MyMissions/
-  MyMissions/                        <-- Client (-mod=)
-    mod.cpp                               type = "mod"
-    Scripts/
-      config.cpp                          requiredAddons: MyCore_Scripts
-      3_Game/MyMissions/             Shared enums, config, RPC IDs
-      4_World/MyMissions/            Mission markers (client rendering)
-      5_Mission/MyMissions/          Mission UI, radio HUD
-    GUI/layouts/                          Mission panel layouts
-    Sounds/                               Radio beep sounds
-
-  MyMissions_Server/                 <-- Server (-servermod=)
-    mod.cpp                               type = "servermod"
-    Scripts/
-      config.cpp                          requiredAddons: MyScripts, MyCore_Scripts
-      3_Game/MyMissionsServer/       Server config extensions
-      4_World/MyMissionsServer/      Mission spawner, loot manager
-      5_Mission/MyMissionsServer/    Server mission lifecycle
 ```
 
 ---
 
-## 何をどこに置くか
+## どこに何を置くか
 
-### Data/ Directory
+### Data/ ディレクトリ
 
-Physical assets and item definitions:
+物理アセットとアイテム定義:
 
 ```
 Data/
-  config.cpp          <-- CfgVehicles, CfgWeapons, CfgMagazines, CfgAmmo
-  Models/             <-- .p3d 3D model files
-  Textures/           <-- .paa, .edds texture files
-  Materials/          <-- .rvmat material definitions
-  Animations/         <-- .anim animation files (rare)
+  config.cpp          <-- CfgVehicles、CfgWeapons、CfgMagazines、CfgAmmo
+  Models/             <-- .p3d 3Dモデルファイル
+  Textures/           <-- .paa、.eddsテクスチャファイル
+  Materials/          <-- .rvmatマテリアル定義
+  Animations/         <-- .animアニメーションファイル（まれ）
 ```
 
-### Scripts/ Directory
+### Scripts/ ディレクトリ
 
-All Enforce Script code:
+すべてのEnforce Scriptコード:
 
 ```
 Scripts/
-  config.cpp          <-- CfgPatches, CfgMods, script module definitions
-  Inputs.xml          <-- Keybinding definitions
+  config.cpp          <-- CfgPatches、CfgMods、スクリプトモジュール定義
+  Inputs.xml          <-- キーバインド定義
   Data/
-    Credits.json      <-- Author credits
-    Version.hpp       <-- Version string
-  1_Core/             <-- Fundamental constants and utilities
-  3_Game/             <-- Configs, RPCs, data classes
-  4_World/            <-- Entities, managers, gameplay logic
-  5_Mission/          <-- UI, HUD, mission lifecycle
+    Credits.json      <-- 著者クレジット
+    Version.hpp       <-- バージョン文字列
+  1_Core/             <-- 基本定数とユーティリティ
+  3_Game/             <-- 設定、RPC、データクラス
+  4_World/            <-- エンティティ、マネージャー、ゲームプレイロジック
+  5_Mission/          <-- UI、HUD、ミッションライフサイクル
 ```
 
-### GUI/ Directory
+### GUI/ ディレクトリ
 
-User interface resources:
+ユーザーインターフェースリソース:
 
 ```
 GUI/
-  config.cpp          <-- GUI-specific CfgPatches (for imageset/style registration)
-  layouts/            <-- .layout files (widget trees)
-  imagesets/          <-- .imageset XML + .edds texture atlases
-  icons/              <-- Icon imagesets (may be separate from general imagesets)
-  looknfeel/          <-- .styles files (widget visual properties)
-  fonts/              <-- Custom font files (rare)
-  sounds/             <-- UI sound files (click, hover, etc.)
+  config.cpp          <-- GUI固有のCfgPatches（imageset/スタイル登録用）
+  layouts/            <-- .layoutファイル（ウィジェットツリー）
+  imagesets/          <-- .imageset XML + .eddsテクスチャアトラス
+  icons/              <-- アイコンimagesets（一般imagesetとは別の場合もある）
+  looknfeel/          <-- .stylesファイル（ウィジェットの視覚プロパティ）
+  fonts/              <-- カスタムフォントファイル（まれ）
+  sounds/             <-- UIサウンドファイル（クリック、ホバーなど）
 ```
 
-### Sounds/ Directory
+### Sounds/ ディレクトリ
 
-Audio files:
+オーディオファイル:
 
 ```
 Sounds/
-  alert.ogg           <-- Always .ogg format
+  alert.ogg           <-- 常に.ogg形式
   ambient.ogg
   click.ogg
 ```
 
-Sound config (CfgSoundSets, CfgSoundShaders) goes in `Scripts/config.cpp`, not in a separate Sounds config.
+サウンド設定（CfgSoundSets、CfgSoundShaders）は `Scripts/config.cpp` に入れます。別のSounds設定には入れません。
 
-### ServerFiles/ Directory
+### ServerFiles/ ディレクトリ
 
-Files that server administrators copy to their server's mission folder:
+サーバー管理者がサーバーのミッションフォルダにコピーするファイル:
 
 ```
 ServerFiles/
-  types.xml                   <-- Item spawn definitions for Central Economy
-  cfgspawnabletypes.xml       <-- Attachment/cargo presets
-  cfgeventspawns.xml          <-- Event spawn positions (rare)
-  README.md                   <-- Installation instructions
+  types.xml                   <-- Central Economy用アイテムスポーン定義
+  cfgspawnabletypes.xml       <-- アタッチメント/カーゴプリセット
+  cfgeventspawns.xml          <-- イベントスポーン位置（まれ）
+  README.md                   <-- インストール手順
 ```
 
 ---
 
-## PBO の命名と @mod フォルダの命名
+## PBO命名と@modフォルダ命名
 
-### PBO Names
+### PBO名
 
-Each PBO gets a descriptive name with the mod prefix:
+各PBOにはMODプレフィックス付きの説明的な名前を付けます:
 
 ```
 @MyMod/
   Addons/
-    MyMod_Scripts.pbo         <-- Script code
-    MyMod_Data.pbo            <-- Models, textures, items
-    MyMod_GUI.pbo             <-- Layouts, imagesets, styles
-    MyMod_Sounds.pbo          <-- Audio (sometimes bundled with Data)
+    MyMod_Scripts.pbo         <-- スクリプトコード
+    MyMod_Data.pbo            <-- モデル、テクスチャ、アイテム
+    MyMod_GUI.pbo             <-- レイアウト、imagesets、スタイル
+    MyMod_Sounds.pbo          <-- オーディオ（Dataにバンドルされることもある）
 ```
 
-The PBO name does not need to match the CfgPatches class name, but keeping them aligned prevents confusion.
+PBO名はCfgPatchesクラス名と一致する必要はありませんが、揃えておくと混乱を防げます。
 
-### @mod Folder Name
+### @modフォルダ名
 
-The `@` prefix is a Steam Workshop convention. During development, you may omit it:
-
-```
-Development:    MyMod/           <-- No @ prefix
-Workshop:       @MyMod/          <-- With @ prefix
-```
-
-The `@` has no technical meaning to the engine. It is purely organizational convention.
-
-### Multiple PBOs Per Mod
-
-Large mods split into multiple PBOs for several reasons:
-
-1. **Separate update cycles** -- update scripts without re-downloading 3D models
-2. **Optional components** -- GUI PBO is optional if mod works headless
-3. **Build pipeline** -- different PBOs built by different tools
+`@` プレフィックスはSteam Workshop規則です。開発中は省略できます:
 
 ```
-@MyWeapons/
-  Addons/
-    MyWeapons_Scripts.pbo    <-- Script behavior
-    MyWeapons_Data.pbo       <-- 268 weapon models, textures, configs
+開発中:    MyMod/           <-- @プレフィックスなし
+Workshop:  @MyMod/          <-- @プレフィックスあり
 ```
 
-Each PBO has its own `config.cpp` with its own `CfgPatches` entry. The `requiredAddons` between them controls the load order:
-
-```cpp
-// Scripts/config.cpp
-class CfgPatches
-{
-    class MyWeapons_Scripts
-    {
-        requiredAddons[] = { "DZ_Scripts", "DZ_Weapons_Firearms" };
-    };
-};
-
-// Data/config.cpp
-class CfgPatches
-{
-    class MyWeapons_Data
-    {
-        requiredAddons[] = { "DZ_Data", "DZ_Weapons_Firearms" };
-    };
-};
-```
+`@` はエンジンにとって技術的な意味はありません。純粋に組織的な規則です。
 
 ---
 
-## 実際の例 from Professional Mods
+## プロフェッショナルMODの実例
 
-### MyFramework -- Framework Mod
-
-```
-MyFramework/
-  MyFramework/                            <-- Client package
-    mod.cpp
-    stringtable.csv
-    GUI/
-      config.cpp
-      fonts/
-      icons/                              <-- 5 icon weight imagesets
-      imagesets/
-      layouts/
-        dialogs/
-        options/
-        prefabs/
-        MyMod/loading/hints/
-        MyFramework/AdminPanel/
-        MyFramework/Dialogs/
-        MyFramework/Modules/
-        MyFramework/Options/
-        MyFramework/Prefabs/
-        MyFramework/Tooltip/
-      looknfeel/
-      sounds/
-    Scripts/
-      config.cpp
-      Inputs.xml
-      1_Core/MyMod/                      <-- Log levels, constants
-      2_GameLib/MyMod/UI/                <-- MVC attribute system
-      3_Game/MyMod/                      <-- 15+ subsystem folders
-        Animation/
-        Branding/
-        Chat/
-        Collections/
-        Config/
-        Core/
-        Events/
-        Hints/
-        Killfeed/
-        Logging/
-        Module/
-        MVC/
-        Notifications/
-        Permissions/
-        PlayerData/
-        RPC/
-        Settings/
-        Theme/
-        Timer/
-        UI/
-      4_World/MyMod/                     <-- Player data, world managers
-      5_Mission/MyMod/                   <-- Admin panel, mod registration
-
-  MyFramework_Server/                     <-- Server package
-    mod.cpp
-    Scripts/
-      config.cpp
-      ...
-```
-
-### Community Online Tools (COT) -- Admin Tool
+### Community Online Tools (COT) -- 管理ツール
 
 ```
 JM/COT/
@@ -626,51 +509,25 @@ JM/COT/
       vehicles/
     textures/
   Objects/Debug/
-    config.cpp                            <-- Debug entity definitions
+    config.cpp                            <-- デバッグエンティティ定義
   Scripts/
     config.cpp
     Data/
       Credits.json
       Version.hpp
       Inputs.xml
-    Common/                               <-- Shared across all layers
+    Common/                               <-- すべてのレイヤーで共有
     1_Core/
     3_Game/
     4_World/
     5_Mission/
   languagecore/
-    config.cpp                            <-- String table config
+    config.cpp                            <-- 文字列テーブル設定
 ```
 
-Note the `Common/` folder pattern: included in every script module via `files[]`, allowing shared types across all layers.
+`Common/` フォルダパターンに注目してください: すべてのスクリプトモジュールの `files[]` に含まれ、すべてのレイヤーで共有型を可能にします。
 
-### MyWeapons Mod -- Content Mod
-
-```
-MyWeapons/
-  MyWeapons/
-    mod.cpp
-    Data/
-      config.cpp                          <-- Merged config: 268 weapon definitions
-      Ammo/                               <-- Organized by source/caliber
-        BC/12.7x55/
-        BC/338/
-        BC/50Cal/
-        GCGN/3006/
-        GCGN/300AAC/
-      Attachments/                        <-- Scopes, suppressors, grips
-      Magazines/
-      Weapons/                            <-- Weapon models organized by source
-    Scripts/
-      config.cpp                          <-- Script module definitions
-      3_Game/                             <-- Weapon config, stat system
-      4_World/                            <-- Weapon behavior overrides
-      5_Mission/                          <-- Registration, UI
-```
-
-Content mods have a massive `Data/` directory and relatively small `Scripts/`.
-
-### DabsFramework -- UI Framework
+### DabsFramework -- UIフレームワーク
 
 ```
 DabsFramework/
@@ -690,52 +547,52 @@ DabsFramework/
     Credits.json
     Version.hpp
     1_core/
-    2_GameLib/                            <-- One of few mods using layer 2
+    2_GameLib/                            <-- レイヤー2を使用するまれなMODの1つ
     3_Game/
     4_World/
     5_Mission/
 ```
 
-Note: DabsFramework uses lowercase folder names (`scripts/`, `gui/`). This works because Windows is case-insensitive, but may cause issues on Linux. The convention is to use the canonical casing (`Scripts/`, `GUI/`).
+注: DabsFrameworkは小文字のフォルダ名（`scripts/`、`gui/`）を使用します。これはWindowsでは大文字小文字を区別しないため動作しますが、Linuxでは問題を引き起こす可能性があります。規則では標準的な大文字（`Scripts/`、`GUI/`）を使用します。
 
 ---
 
 ## アンチパターン
 
-### 1. Flat Script Dump
+### 1. フラットなスクリプトダンプ
 
 ```
 Scripts/
   3_Game/
-    AllMyStuff.c            <-- 2000 lines, 15 classes
-    MoreStuff.c             <-- 1500 lines, 12 classes
+    AllMyStuff.c            <-- 2000行、15クラス
+    MoreStuff.c             <-- 1500行、12クラス
 ```
 
-**修正：** One file per class, organized in subdirectories by subsystem.
+**修正:** 1ファイル1クラス、サブシステムごとのサブディレクトリで整理。
 
-### 2. Wrong Layer Placement
+### 2. 間違ったレイヤー配置
 
 ```
 Scripts/
   3_Game/
     MyMod/
-      PlayerManager.c       <-- References PlayerBase (defined in 4_World)
-      MyPanel.c             <-- UI code (belongs in 5_Mission)
-      MyItem.c              <-- Extends ItemBase (belongs in 4_World)
+      PlayerManager.c       <-- PlayerBase（4_Worldで定義）を参照
+      MyPanel.c             <-- UIコード（5_Missionに属する）
+      MyItem.c              <-- ItemBaseを拡張（4_Worldに属する）
 ```
 
-**修正：** Follow the layer rules from Chapter 2.1. Move entity code to `4_World` and UI code to `5_Mission`.
+**修正:** 第2.1章のレイヤールールに従ってください。エンティティコードを `4_World` に、UIコードを `5_Mission` に移動。
 
-### 3. No Mod Subdirectory in Script Layers
+### 3. スクリプトレイヤーにMODサブディレクトリがない
 
 ```
 Scripts/
   3_Game/
-    Config.c                <-- Name collision risk with other mods!
+    Config.c                <-- 他のMODとの名前衝突リスク!
     RPCs.c
 ```
 
-**修正：** Always namespace with a subdirectory:
+**修正:** 常にサブディレクトリで名前空間化:
 
 ```
 Scripts/
@@ -745,69 +602,43 @@ Scripts/
       RPCs.c
 ```
 
-### 4. stringtable.csv Inside Scripts/
+### 4. Scripts/内のstringtable.csv
 
 ```
 Scripts/
-  stringtable.csv           <-- WRONG LOCATION
+  stringtable.csv           <-- 間違った場所
   config.cpp
 ```
 
-**修正：** `stringtable.csv` goes at the mod root (next to `mod.cpp`):
+**修正:** `stringtable.csv` はMODルート（`mod.cpp` の横）に配置:
 
 ```
 MyMod/
   mod.cpp
-  stringtable.csv           <-- Correct
+  stringtable.csv           <-- 正しい
   Scripts/
     config.cpp
 ```
 
-### 5. Mixed Assets and Scripts in One PBO
+### 5. 1つのPBOにアセットとスクリプトが混在
 
-```
-MyMod/
-  config.cpp
-  Scripts/3_Game/...
-  Models/weapon.p3d
-  Textures/weapon_co.paa
-```
+**修正:** 複数のPBOに分割してください。
 
-**修正：** Separate into multiple PBOs:
-
-```
-MyMod/
-  Scripts/
-    config.cpp
-    3_Game/...
-  Data/
-    config.cpp
-    Models/weapon.p3d
-    Textures/weapon_co.paa
-```
-
-### 6. Deeply Nested Subdirectories
+### 6. 過度に深いサブディレクトリ
 
 ```
 Scripts/3_Game/MyMod/Systems/Core/Config/Managers/Settings/PlayerSettings.c
 ```
 
-**修正：** Keep nesting to 2-3 levels maximum. Flatten when possible:
+**修正:** ネストは最大2-3レベルに保ってください。可能な場合はフラットに:
 
 ```
 Scripts/3_Game/MyMod/Config/PlayerSettings.c
 ```
 
-### 7. Inconsistent Naming
+### 7. 一貫性のない命名
 
-```
-mymod_Config.c
-MyMod_rpc.c
-MYMOD_Manager.c
-my_mod_panel.c
-```
-
-**修正：** Pick one convention and stick with it:
+**修正:** 1つの規則を選んで一貫して使用:
 
 ```
 MyModConfig.c
@@ -818,22 +649,53 @@ MyModPanel.c
 
 ---
 
-## まとめチェックリスト
+## サマリーチェックリスト
 
-Before publishing your mod, verify:
+MODを公開する前に確認してください:
 
-- [ ] `mod.cpp` is at the mod root (next to `Addons/` or `Scripts/`)
-- [ ] `stringtable.csv` is at the mod root (NOT inside `Scripts/`)
-- [ ] `config.cpp` exists in every PBO root
-- [ ] `requiredAddons[]` lists ALL dependencies
-- [ ] Script module `files[]` paths match the actual directory structure
-- [ ] Every `.c` file is inside a mod-namespaced subdirectory (e.g., `3_Game/MyMod/`)
-- [ ] Class names have a unique prefix to avoid collisions
-- [ ] Entity classes are in `4_World`, UI classes are in `5_Mission`, data classes are in `3_Game`
-- [ ] No secrets or debug code in the published PBOs
-- [ ] Server-only logic is in a separate `-servermod` package (if applicable)
+- [ ] `mod.cpp` がMODルートにある（`Addons/` または `Scripts/` の横）
+- [ ] `stringtable.csv` がMODルートにある（`Scripts/` 内ではない）
+- [ ] すべてのPBOルートに `config.cpp` が存在
+- [ ] `requiredAddons[]` がすべての依存関係をリスト
+- [ ] スクリプトモジュールの `files[]` パスが実際のディレクトリ構造と一致
+- [ ] すべての `.c` ファイルがMOD名前空間サブディレクトリ内にある（例: `3_Game/MyMod/`）
+- [ ] クラス名に衝突を避けるユニークなプレフィックスがある
+- [ ] エンティティクラスは `4_World`、UIクラスは `5_Mission`、データクラスは `3_Game` にある
+- [ ] 公開PBOにシークレットやデバッグコードがない
+- [ ] サーバー専用ロジックが別の `-servermod` パッケージにある（該当する場合）
 
 ---
 
-**前：** [Chapter 2.4: Your First Mod -- Minimum Viable](04-minimum-viable-mod.md)
-**次：** [Part 3: GUI & Layout System](../03-gui-system/01-widget-types.md)
+## 実際のMODで確認されたパターン
+
+| パターン | MOD | 詳細 |
+|---------|-----|--------|
+| `3_Game` の深いサブシステムフォルダ | StarDZ Core | `3_Game/` 下に15以上のフォルダ（Config、RPC、Events、Logging、Permissionsなど） |
+| `Common/` 共有フォルダ | COT | すべてのスクリプトモジュールの `files[]` に含まれ、レイヤー横断のユーティリティ型を提供 |
+| 小文字のフォルダ名 | DabsFramework | `Scripts/`、`GUI/` の代わりに `scripts/`、`gui/` を使用 -- Windowsでは動作するがLinuxでは問題のリスク |
+| 別のGUI PBO | Expansion、COT | GUIリソース（レイアウト、imagesets、スタイル）を独自のconfig.cppを持つ専用PBOにパック |
+| コンテンツMODの最小限のScripts | 武器パック | `Data/` ディレクトリが支配的。`Scripts/` には薄いconfig.cppとオプションの動作オーバーライドのみ |
+
+---
+
+## 理論と実践
+
+| 概念 | 理論 | 実際 |
+|---------|--------|---------|
+| 1ファイル1クラス | 各 `.c` ファイルに1つのクラスを含む | 小さなヘルパークラスと列挙型は、利便性のため親クラスと同じファイルに配置されることが多い |
+| Scripts/Data/GUIの別PBO | 関心ごとのクリーンな分離 | 小さなMODはすべてを1つのPBOに統合して配布を簡素化することが多い |
+| MODサブフォルダが衝突を防止 | `3_Game/MyMod/` がファイルを名前空間化 | 正しいが、クラス名は依然としてグローバルに衝突する -- サブフォルダはファイルレベルの競合のみを防止 |
+| MODルートの `stringtable.csv` | エンジンが自動的に検出 | 読み込まれるPBOルートに配置する必要がある。`Scripts/` 内に配置すると静かに無視される |
+| MODに同梱される ServerFiles/ | サーバー管理者がtypes.xmlをコピー | 多くのMOD作者がServerFilesの同梱を忘れ、管理者がtypes.xmlエントリを手動で作成する必要がある |
+
+---
+
+## 互換性と影響
+
+- **マルチMOD:** ファイル構成自体は競合を引き起こしません。ただし、2つのMODがPBO内に同じパスのファイルを配置すると（例: 両方がMODサブフォルダなしで `3_Game/Config.c` を使用）、エンジンレベルで衝突し、一方が静かに他方を上書きします。
+- **パフォーマンス:** ディレクトリの深さとファイル数は、スクリプトのコンパイル時間に測定可能な影響を与えません。エンジンはネストに関係なく、リストされたすべての `files[]` ディレクトリを再帰的にスキャンします。
+
+---
+
+**前へ:** [第2.4章: 最初のMOD -- 最小限のMOD](04-minimum-viable-mod.md)
+**次へ:** [第2.6章: サーバーvsクライアントアーキテクチャ](06-server-client-split.md)
