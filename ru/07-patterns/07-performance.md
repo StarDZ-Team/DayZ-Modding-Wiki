@@ -1,41 +1,39 @@
-# Chapter 7.7: Performance Optimization
+# Глава 7.7: Оптимизация производительности
 
-[Home](../../README.md) | [<< Previous: Event-Driven Architecture](06-events.md) | **Performance Optimization**
+[Главная](../../README.md) | [<< Предыдущая: Событийно-ориентированная архитектура](06-events.md) | **Оптимизация производительности**
 
 ---
 
 ## Введение
 
+DayZ работает при 10--60 серверных FPS в зависимости от количества игроков, нагрузки сущностей и сложности модов. Каждый цикл скриптов, который занимает слишком много времени, съедает бюджет кадра. Один плохо написанный `OnUpdate`, который сканирует все транспортные средства на карте или пересоздаёт список UI с нуля, может заметно снизить производительность сервера. Профессиональные моды зарабатывают свою репутацию тем, что работают быстро --- не тем, что имеют больше возможностей, а тем, что реализуют те же возможности с меньшими затратами.
 
-DayZ runs at 10--60 server FPS depending on player count, entity load, and mod complexity. Every script cycle that takes too long eats into that frame budget. A single poorly-written `OnUpdate` that scans every vehicle on the map or rebuilds a UI list from scratch can drop server performance noticeably. Professional mods earn their reputation by running fast ---- нетt by having more features, but by implementing the same features with less waste.
-
-Эта глава охватывает the battle-tested optimization patterns used by COT, VPP, Expansion, Dabs Framework, and MyMod. These are not premature optimizations ---- y are standard engineering practices that every DayZ modder should know from the start.
+Эта глава охватывает проверенные временем паттерны оптимизации, используемые в COT, VPP, Expansion и Dabs Framework. Это не преждевременные оптимизации --- это стандартные инженерные практики, которые каждый моддер DayZ должен знать с самого начала.
 
 ---
 
 ## Содержание
 
-
-- [Lazy Loading and Batched Processing](#lazy-loading-and-batched-processing)
-- [Widget Pooling](#widget-pooling)
-- [Search Debouncing](#search-debouncing)
-- [Update Rate Limiting](#update-rate-limiting)
-- [Caching](#caching)
-- [Vehicle Registry Pattern](#vehicle-registry-pattern)
-- [Sort Algorithm Choice](#sort-algorithm-choice)
-- [Things to Avoid](#things-to-avoid)
-- [Profiling](#profiling)
-- [Checklist](#checklist)
+- [Ленивая загрузка и пакетная обработка](#ленивая-загрузка-и-пакетная-обработка)
+- [Пулинг виджетов](#пулинг-виджетов)
+- [Дебаунсинг поиска](#дебаунсинг-поиска)
+- [Ограничение частоты обновлений](#ограничение-частоты-обновлений)
+- [Кэширование](#кэширование)
+- [Паттерн реестра транспортных средств](#паттерн-реестра-транспортных-средств)
+- [Выбор алгоритма сортировки](#выбор-алгоритма-сортировки)
+- [Чего следует избегать](#чего-следует-избегать)
+- [Профилирование](#профилирование)
+- [Чек-лист](#чек-лист)
 
 ---
 
-## Lazy Loading and Batched Processing
+## Ленивая загрузка и пакетная обработка
 
-The most impactful optimization in DayZ modding is **not doing work until it is needed** and **spreading work across multiple frames** when it must be done.
+Самая эффективная оптимизация в моддинге DayZ --- это **не выполнять работу до тех пор, пока она не понадобится** и **распределять работу по нескольким кадрам**, когда она должна быть выполнена.
 
-### Lazy Loading
+### Ленивая загрузка
 
-Never pre-compute or pre-load data that the user might not need:
+Никогда не вычисляйте и не загружайте заранее данные, которые пользователю могут не понадобиться:
 
 ```c
 class ItemDatabase
@@ -43,13 +41,13 @@ class ItemDatabase
     protected ref map<string, ref ItemData> m_Cache;
     protected bool m_Loaded;
 
-    // BAD: Load everything at startup
+    // ПЛОХО: Загрузка всего при запуске
     void OnInit()
     {
-        LoadAllItems();  // 5000 items, 200ms stall on startup
+        LoadAllItems();  // 5000 предметов, задержка 200мс при запуске
     }
 
-    // GOOD: Load on first access
+    // ХОРОШО: Загрузка при первом доступе
     ItemData GetItem(string className)
     {
         if (!m_Loaded)
@@ -65,9 +63,9 @@ class ItemDatabase
 };
 ```
 
-### Batched Processing (N Items Per Frame)
+### Пакетная обработка (N элементов за кадр)
 
-When you must process a large collection, process a fixed batch per frame instead of the entire collection at once:
+Когда вам необходимо обработать большую коллекцию, обрабатывайте фиксированную порцию за кадр вместо всей коллекции сразу:
 
 ```c
 class LootCleanup : MyServerModule
@@ -75,7 +73,7 @@ class LootCleanup : MyServerModule
     protected ref array<Object> m_DirtyItems;
     protected int m_ProcessIndex;
 
-    static const int BATCH_SIZE = 50;  // Process 50 items per frame
+    static const int BATCH_SIZE = 50;  // Обрабатываем 50 элементов за кадр
 
     override void OnUpdate(float dt)
     {
@@ -93,7 +91,7 @@ class LootCleanup : MyServerModule
             processed++;
         }
 
-        // Reset when done
+        // Сброс после завершения
         if (m_ProcessIndex >= m_DirtyItems.Count())
         {
             m_DirtyItems.Clear();
@@ -105,32 +103,32 @@ class LootCleanup : MyServerModule
 };
 ```
 
-### Why 50?
+### Почему 50?
 
-The batch size depends on how expensive each item is to process. For lightweight operations (null checks, position reads), 100--200 per frame is fine. For heavy operations (entity spawning, pathfinding queries, file I/O), 5--10 per frame may be the limit. Start with 50 and adjust based on observed frame time impact.
+Размер пакета зависит от того, насколько дорого обрабатывать каждый элемент. Для лёгких операций (проверки null, чтение позиций) 100--200 за кадр вполне допустимо. Для тяжёлых операций (спавн сущностей, запросы поиска пути, файловый ввод/вывод) предел может составлять 5--10 за кадр. Начните с 50 и корректируйте на основе наблюдаемого влияния на время кадра.
 
 ---
 
-## Widget Pooling
+## Пулинг виджетов
 
-Creating and destroying UI widgets is expensive. The engine must allocate memory, build the widget tree, apply styles, and calculate layout. If you have a scrollable list with 500 entries, creating 500 widgets, destroying them, and creating 500 new ones every time the list refreshes is a guaranteed frame drop.
+Создание и уничтожение виджетов UI затратно. Движок должен выделить память, построить дерево виджетов, применить стили и рассчитать компоновку. Если у вас прокручиваемый список с 500 записями, создание 500 виджетов, их уничтожение и создание 500 новых каждый раз при обновлении списка --- это гарантированное проседание кадров.
 
-### The Problem
+### Проблема
 
 ```c
-// BAD: Destroy and recreate on every refresh
+// ПЛОХО: Уничтожаем и пересоздаём при каждом обновлении
 void RefreshPlayerList(array<string> players)
 {
-    // Destroy all existing widgets
+    // Уничтожаем все существующие виджеты
     Widget child = m_ListPanel.GetChildren();
     while (child)
     {
         Widget next = child.GetSibling();
-        child.Unlink();  // Destroy
+        child.Unlink();  // Уничтожить
         child = next;
     }
 
-    // Create new widgets for every player
+    // Создаём новые виджеты для каждого игрока
     for (int i = 0; i < players.Count(); i++)
     {
         Widget row = GetGame().GetWorkspace().CreateWidgets("MyMod/layouts/PlayerRow.layout", m_ListPanel);
@@ -140,9 +138,9 @@ void RefreshPlayerList(array<string> players)
 }
 ```
 
-### The Pool Pattern
+### Паттерн пула
 
-Pre-create a pool of widget rows. When refreshing, reuse existing rows. Show rows that have data; hide rows that do not.
+Предварительно создайте пул строк виджетов. При обновлении переиспользуйте существующие строки. Показывайте строки с данными; скрывайте строки без данных.
 
 ```c
 class WidgetPool
@@ -159,7 +157,7 @@ class WidgetPool
         m_Pool = new array<Widget>();
         m_ActiveCount = 0;
 
-        // Pre-create the pool
+        // Предварительное создание пула
         for (int i = 0; i < initialSize; i++)
         {
             Widget w = GetGame().GetWorkspace().CreateWidgets(m_LayoutPath, m_Parent);
@@ -168,7 +166,7 @@ class WidgetPool
         }
     }
 
-    // Get a widget from the pool, creating new ones if needed
+    // Получить виджет из пула, создавая новые при необходимости
     Widget Acquire()
     {
         if (m_ActiveCount < m_Pool.Count())
@@ -179,14 +177,14 @@ class WidgetPool
             return w;
         }
 
-        // Pool exhausted — grow it
+        // Пул исчерпан — расширяем его
         Widget newWidget = GetGame().GetWorkspace().CreateWidgets(m_LayoutPath, m_Parent);
         m_Pool.Insert(newWidget);
         m_ActiveCount++;
         return newWidget;
     }
 
-    // Hide all active widgets (but do not destroy them)
+    // Скрыть все активные виджеты (но не уничтожать их)
     void ReleaseAll()
     {
         for (int i = 0; i < m_ActiveCount; i++)
@@ -196,7 +194,7 @@ class WidgetPool
         m_ActiveCount = 0;
     }
 
-    // Destroy the entire pool (call on cleanup)
+    // Уничтожить весь пул (вызывать при очистке)
     void Destroy()
     {
         for (int i = 0; i < m_Pool.Count(); i++)
@@ -209,49 +207,49 @@ class WidgetPool
 };
 ```
 
-### Usage
+### Использование
 
 ```c
 void RefreshPlayerList(array<string> players)
 {
-    m_WidgetPool.ReleaseAll();  // Hide all — no destruction
+    m_WidgetPool.ReleaseAll();  // Скрываем все — без уничтожения
 
     for (int i = 0; i < players.Count(); i++)
     {
-        Widget row = m_WidgetPool.Acquire();  // Reuse or create
+        Widget row = m_WidgetPool.Acquire();  // Переиспользуем или создаём
         TextWidget nameText = TextWidget.Cast(row.FindAnyWidget("NameText"));
         nameText.SetText(players[i]);
     }
 }
 ```
 
-The first `RefreshPlayerList` call creates widgets. Every subsequent call reuses them. No destruction, no re-creation, no frame drop.
+Первый вызов `RefreshPlayerList` создаёт виджеты. Каждый последующий вызов переиспользует их. Никакого уничтожения, никакого пересоздания, никакого проседания кадров.
 
 ---
 
-## Search Debouncing
+## Дебаунсинг поиска
 
-When a user types into a search box, the `OnChange` event fires on every keystroke. Rebuilding a filtered list on every keystroke is wasteful ----  user is still typing. Instead, delay the search until the user pauses.
+Когда пользователь вводит текст в поле поиска, событие `OnChange` срабатывает при каждом нажатии клавиши. Перестраивать отфильтрованный список при каждом нажатии --- расточительно, ведь пользователь ещё продолжает печатать. Вместо этого задерживайте поиск до тех пор, пока пользователь не сделает паузу.
 
-### The Debounce Pattern
+### Паттерн дебаунсинга
 
 ```c
 class SearchableList
 {
-    protected const float DEBOUNCE_DELAY = 0.15;  // 150ms
+    protected const float DEBOUNCE_DELAY = 0.15;  // 150мс
     protected float m_SearchTimer;
     protected bool m_SearchPending;
     protected string m_PendingQuery;
 
-    // Called on every keystroke
+    // Вызывается при каждом нажатии клавиши
     void OnSearchTextChanged(string text)
     {
         m_PendingQuery = text;
         m_SearchPending = true;
-        m_SearchTimer = 0;  // Reset the timer on each keystroke
+        m_SearchTimer = 0;  // Сбрасываем таймер при каждом нажатии
     }
 
-    // Called every frame from OnUpdate
+    // Вызывается каждый кадр из OnUpdate
     void Tick(float dt)
     {
         if (!m_SearchPending) return;
@@ -266,28 +264,28 @@ class SearchableList
 
     void ExecuteSearch(string query)
     {
-        // Now do the actual filtering
-        // This runs once after the user stops typing, not on every keystroke
+        // Теперь выполняем фактическую фильтрацию
+        // Это выполняется один раз после того, как пользователь перестаёт печатать, а не при каждом нажатии
     }
 };
 ```
 
-### Why 150ms?
+### Почему 150мс?
 
-150ms is a good default. It is long enough that most keystrokes during continuous typing are batched into a single search, but short enough that the UI feels responsive. Adjust if your search is particularly expensive (longer delay) or your users expect instant feedback (shorter delay).
+150мс --- хорошее значение по умолчанию. Оно достаточно большое, чтобы большинство нажатий при непрерывном наборе группировались в один поиск, но достаточно маленькое, чтобы интерфейс ощущался отзывчивым. Корректируйте, если ваш поиск особенно затратный (больше задержка) или пользователи ожидают мгновенный отклик (меньше задержка).
 
 ---
 
-## Update Rate Limiting
+## Ограничение частоты обновлений
 
-Not everything needs to run every frame. Many systems can update at a lower frequency without any noticeable impact.
+Не всё нужно выполнять каждый кадр. Многие системы могут обновляться с меньшей частотой без какого-либо заметного влияния.
 
-### Timer-Based Throttling
+### Ограничение на основе таймера
 
 ```c
 class EntityScanner : MyServerModule
 {
-    protected const float SCAN_INTERVAL = 5.0;  // Every 5 seconds
+    protected const float SCAN_INTERVAL = 5.0;  // Каждые 5 секунд
     protected float m_ScanTimer;
 
     override void OnUpdate(float dt)
@@ -296,21 +294,21 @@ class EntityScanner : MyServerModule
         if (m_ScanTimer < SCAN_INTERVAL) return;
         m_ScanTimer = 0;
 
-        // Expensive scan runs every 5 seconds, not every frame
+        // Затратное сканирование выполняется каждые 5 секунд, а не каждый кадр
         ScanEntities();
     }
 };
 ```
 
-### Frame-Count Throttling
+### Ограничение по счётчику кадров
 
-For operations that should run every N frames:
+Для операций, которые должны выполняться каждые N кадров:
 
 ```c
 class PositionSync
 {
     protected int m_FrameCounter;
-    protected const int SYNC_EVERY_N_FRAMES = 10;  // Every 10th frame
+    protected const int SYNC_EVERY_N_FRAMES = 10;  // Каждый 10-й кадр
 
     void OnUpdate(float dt)
     {
@@ -322,23 +320,23 @@ class PositionSync
 };
 ```
 
-### Staggered Processing
+### Распределённая обработка
 
-When multiple systems need periodic updates, stagger their timers so they do not all fire on the same frame:
+Когда нескольким системам нужны периодические обновления, смещайте их таймеры, чтобы они не срабатывали все в одном кадре:
 
 ```c
-// BAD: All three fire at t=5.0, t=10.0, t=15.0 — frame spike
+// ПЛОХО: Все три срабатывают при t=5.0, t=10.0, t=15.0 — пик нагрузки на кадр
 m_LootTimer   = 5.0;
 m_VehicleTimer = 5.0;
 m_WeatherTimer = 5.0;
 
-// GOOD: Staggered — work is distributed
+// ХОРОШО: Со смещением — работа распределяется
 m_LootTimer    = 5.0;
-m_VehicleTimer = 5.0 + 1.6;  // Fires ~1.6s after loot
-m_WeatherTimer = 5.0 + 3.3;  // Fires ~3.3s after loot
+m_VehicleTimer = 5.0 + 1.6;  // Срабатывает ~1.6с после лута
+m_WeatherTimer = 5.0 + 3.3;  // Срабатывает ~3.3с после лута
 ```
 
-Or start the timers at different offsets:
+Или запускайте таймеры с разными начальными смещениями:
 
 ```c
 m_LootTimer    = 0;
@@ -348,20 +346,20 @@ m_WeatherTimer = 3.3;
 
 ---
 
-## Caching
+## Кэширование
 
-Repeated lookups of the same data are a common performance drain. Cache the results.
+Повторные поиски одних и тех же данных --- распространённая причина потери производительности. Кэшируйте результаты.
 
-### CfgVehicles Scan Cache
+### Кэш сканирования CfgVehicles
 
-Scanning `CfgVehicles` (the global config database of all item/vehicle classes) is expensive. It involves iterating thousands of config entries. Never do it more than once:
+Сканирование `CfgVehicles` (глобальная конфигурационная база всех классов предметов/транспортных средств) затратно. Оно включает перебор тысяч записей конфигурации. Никогда не делайте это более одного раза:
 
 ```c
 class WeaponRegistry
 {
     private static ref array<string> s_AllWeapons;
 
-    // Build once, use forever
+    // Строим один раз, используем постоянно
     static array<string> GetAllWeapons()
     {
         if (s_AllWeapons) return s_AllWeapons;
@@ -389,28 +387,28 @@ class WeaponRegistry
 };
 ```
 
-### String Operation Cache
+### Кэш строковых операций
 
-If you compute the same string transformation repeatedly (e.g., lowercasing for case-insensitive search), cache the result:
+Если вы многократно вычисляете одно и то же строковое преобразование (например, приведение к нижнему регистру для поиска без учёта регистра), кэшируйте результат:
 
 ```c
 class ItemEntry
 {
     string DisplayName;
-    string SearchName;  // Pre-computed lowercase for search matching
+    string SearchName;  // Предвычисленная строка в нижнем регистре для поиска
 
     void ItemEntry(string displayName)
     {
         DisplayName = displayName;
         SearchName = displayName;
-        SearchName.ToLower();  // Compute once
+        SearchName.ToLower();  // Вычисляем один раз
     }
 };
 ```
 
-### Position Cache
+### Кэш позиций
 
-If you frequently check "is player near X?", cache the player's position and update it periodically rather than calling `GetPosition()` every check:
+Если вы часто проверяете "находится ли игрок рядом с X?", кэшируйте позицию игрока и обновляйте её периодически, вместо вызова `GetPosition()` при каждой проверке:
 
 ```c
 class ProximityChecker
@@ -421,7 +419,7 @@ class ProximityChecker
     vector GetCachedPosition(EntityAI entity, float dt)
     {
         m_PositionAge += dt;
-        if (m_PositionAge > 1.0)  // Refresh every second
+        if (m_PositionAge > 1.0)  // Обновляем каждую секунду
         {
             m_CachedPosition = entity.GetPosition();
             m_PositionAge = 0;
@@ -433,14 +431,14 @@ class ProximityChecker
 
 ---
 
-## Vehicle Registry Pattern
+## Паттерн реестра транспортных средств
 
-A common need is to track all vehicles (or all entities of a specific type) on the map. The naive approach is to call `GetGame().GetObjectsAtPosition3D()` with a huge radius. This is catastrophically expensive.
+Частая задача --- отслеживать все транспортные средства (или все сущности определённого типа) на карте. Наивный подход --- вызвать `GetGame().GetObjectsAtPosition3D()` с огромным радиусом. Это катастрофически затратно.
 
-### Bad: World Scan
+### Плохо: Сканирование мира
 
 ```c
-// TERRIBLE: Scans every object in a 50km radius every frame
+// УЖАСНО: Сканирует каждый объект в радиусе 50 км каждый кадр
 void FindAllVehicles()
 {
     array<Object> objects = new array<Object>();
@@ -454,9 +452,9 @@ void FindAllVehicles()
 }
 ```
 
-### Good: Registration-Based Registry
+### Хорошо: Реестр на основе регистрации
 
-Track entities as they are created and destroyed:
+Отслеживайте сущности по мере их создания и уничтожения:
 
 ```c
 class VehicleRegistry
@@ -488,7 +486,7 @@ class VehicleRegistry
     }
 };
 
-// Hook into vehicle construction/destruction:
+// Встраиваемся в создание/уничтожение транспортных средств:
 modded class CarScript
 {
     override void EEInit()
@@ -511,14 +509,14 @@ modded class CarScript
 };
 ```
 
-Now `VehicleRegistry.GetAll()` returns all vehicles instantly ---- нет world scan needed.
+Теперь `VehicleRegistry.GetAll()` мгновенно возвращает все транспортные средства --- сканирование мира не требуется.
 
-### Expansion's Linked-List Pattern
+### Паттерн связного списка Expansion
 
-Expansion takes this further with a doubly-linked list on the entity class itself, avoiding the cost of array operations:
+Expansion развивает эту идею дальше с двусвязным списком на самом классе сущности, избегая затрат на операции с массивами:
 
 ```c
-// Expansion pattern (conceptual):
+// Паттерн Expansion (концептуальный):
 class ExpansionVehicle
 {
     ExpansionVehicle m_Next;
@@ -544,30 +542,30 @@ class ExpansionVehicle
 };
 ```
 
-This gives O(1) insertion and removal with zero memory allocation per operation. Iteration is a simple pointer walk from `s_Head`.
+Это даёт O(1) вставку и удаление с нулевым выделением памяти на операцию. Итерация --- простой обход указателей от `s_Head`.
 
 ---
 
-## Sort Algorithm Choice
+## Выбор алгоритма сортировки
 
-Enforce Script arrays have a built-in `.Sort()` method, but it only works for basic types and uses the default comparison. For custom sort orders, you need a comparison function.
+Массивы Enforce Script имеют встроенный метод `.Sort()`, но он работает только для базовых типов и использует сравнение по умолчанию. Для пользовательских порядков сортировки вам нужна функция сравнения.
 
-### Built-in Sort
+### Встроенная сортировка
 
 ```c
 array<int> numbers = {5, 2, 8, 1, 9, 3};
 numbers.Sort();  // {1, 2, 3, 5, 8, 9}
 
 array<string> names = {"Charlie", "Alice", "Bob"};
-names.Sort();  // {"Alice", "Bob", "Charlie"} — lexicographic
+names.Sort();  // {"Alice", "Bob", "Charlie"} — лексикографическая
 ```
 
-### Custom Sort with Comparison
+### Пользовательская сортировка с функцией сравнения
 
-For sorting arrays of objects by a specific field, implement your own sort. Insertion sort is good for small arrays (under ~100 elements); for larger arrays, quicksort performs better.
+Для сортировки массивов объектов по конкретному полю реализуйте свою сортировку. Сортировка вставками хороша для небольших массивов (менее ~100 элементов); для больших массивов быстрая сортировка работает лучше.
 
 ```c
-// Simple insertion sort — good for small arrays
+// Простая сортировка вставками — хороша для небольших массивов
 void SortPlayersByScore(array<ref PlayerData> players)
 {
     for (int i = 1; i < players.Count(); i++)
@@ -585,19 +583,19 @@ void SortPlayersByScore(array<ref PlayerData> players)
 }
 ```
 
-### Avoid Sorting Per Frame
+### Избегайте сортировки каждый кадр
 
-If a sorted list is displayed in the UI, sort it once when the data changes, not every frame:
+Если отсортированный список отображается в UI, сортируйте его один раз при изменении данных, а не каждый кадр:
 
 ```c
-// BAD: Sort every frame
+// ПЛОХО: Сортировка каждый кадр
 void OnUpdate(float dt)
 {
     SortPlayersByScore(m_Players);
     RefreshUI();
 }
 
-// GOOD: Sort only when data changes
+// ХОРОШО: Сортировка только при изменении данных
 void OnPlayerScoreChanged()
 {
     SortPlayersByScore(m_Players);
@@ -607,23 +605,23 @@ void OnPlayerScoreChanged()
 
 ---
 
-## Things to Avoid
+## Чего следует избегать
 
-### 1. `GetObjectsAtPosition3D` with Huge Radius
+### 1. `GetObjectsAtPosition3D` с огромным радиусом
 
-This scans every physical object in the world within the given radius. At `50000` meters (the entire map), it iterates every tree, rock, building, item, zombie, and player. One call can take 50ms+.
+Эта функция сканирует каждый физический объект в мире в заданном радиусе. При `50000` метрах (вся карта) она перебирает каждое дерево, камень, здание, предмет, зомби и игрока. Один вызов может занять 50мс+.
 
 ```c
-// NEVER DO THIS
+// НИКОГДА НЕ ДЕЛАЙТЕ ТАК
 GetGame().GetObjectsAtPosition3D(Vector(7500, 0, 7500), 50000, results);
 ```
 
-Use a registration-based registry instead (см. [Vehicle Registry Pattern](#vehicle-registry-pattern)).
+Используйте реестр на основе регистрации (см. [Паттерн реестра транспортных средств](#паттерн-реестра-транспортных-средств)).
 
-### 2. Full List Rebuild on Every Keystroke
+### 2. Полная пересборка списка при каждом нажатии клавиши
 
 ```c
-// BAD: Rebuilding 5000 widget rows on every keystroke
+// ПЛОХО: Пересборка 5000 строк виджетов при каждом нажатии
 void OnSearchChanged(string text)
 {
     DestroyAllRows();
@@ -637,39 +635,39 @@ void OnSearchChanged(string text)
 }
 ```
 
-Use [search debouncing](#search-debouncing) and [widget pooling](#widget-pooling) instead.
+Используйте [дебаунсинг поиска](#дебаунсинг-поиска) и [пулинг виджетов](#пулинг-виджетов) вместо этого.
 
-### 3. Per-Frame String Allocations
+### 3. Аллокации строк каждый кадр
 
-String concatenation creates new string objects. In a per-frame function, this generates garbage every frame:
+Конкатенация строк создаёт новые строковые объекты. В покадровой функции это генерирует мусор каждый кадр:
 
 ```c
-// BAD: Two new string allocations per frame per entity
+// ПЛОХО: Две новые аллокации строк за кадр на сущность
 void OnUpdate(float dt)
 {
     for (int i = 0; i < m_Entities.Count(); i++)
     {
-        string label = "Entity_" + i.ToString();  // New string every frame
-        string info = label + " at " + m_Entities[i].GetPosition().ToString();  // Another new string
+        string label = "Entity_" + i.ToString();  // Новая строка каждый кадр
+        string info = label + " at " + m_Entities[i].GetPosition().ToString();  // Ещё одна новая строка
     }
 }
 ```
 
-If you need formatted strings for logging or UI, do it on state change, not per frame.
+Если вам нужны форматированные строки для логирования или UI, делайте это при изменении состояния, а не каждый кадр.
 
-### 4. Redundant FileExist Checks in Loops
+### 4. Избыточные проверки FileExist в циклах
 
 ```c
-// BAD: Checking FileExist for the same path 500 times
+// ПЛОХО: Проверка FileExist для одного и того же пути 500 раз
 for (int i = 0; i < m_Players.Count(); i++)
 {
-    if (FileExist("$profile:MyMod/Config.json"))  // Same file, 500 checks
+    if (FileExist("$profile:MyMod/Config.json"))  // Один и тот же файл, 500 проверок
     {
         // ...
     }
 }
 
-// GOOD: Check once
+// ХОРОШО: Проверяем один раз
 bool configExists = FileExist("$profile:MyMod/Config.json");
 for (int i = 0; i < m_Players.Count(); i++)
 {
@@ -680,15 +678,15 @@ for (int i = 0; i < m_Players.Count(); i++)
 }
 ```
 
-### 5. Calling GetGame() Repeatedly
+### 5. Многократный вызов GetGame()
 
-`GetGame()` is a global function call. In tight loops, cache the result:
+`GetGame()` --- это вызов глобальной функции. В плотных циклах кэшируйте результат:
 
 ```c
-// Acceptable for occasional use
+// Допустимо для разового использования
 if (GetGame().IsServer()) { ... }
 
-// In a tight loop, cache it:
+// В плотном цикле кэшируйте:
 CGame game = GetGame();
 for (int i = 0; i < 1000; i++)
 {
@@ -696,78 +694,110 @@ for (int i = 0; i < 1000; i++)
 }
 ```
 
-### 6. Spawning Entities in a Tight Loop
+### 6. Спавн сущностей в плотном цикле
 
-Entity spawning is expensive (physics setup, network replication, etc.). Never spawn dozens of entities in a single frame:
+Спавн сущностей затратен (настройка физики, сетевая репликация и т.д.). Никогда не спавните десятки сущностей в одном кадре:
 
 ```c
-// BAD: 100 entity spawns in one frame — massive frame spike
+// ПЛОХО: 100 спавнов сущностей за один кадр — массивный пик нагрузки
 for (int i = 0; i < 100; i++)
 {
     GetGame().CreateObjectEx("Zombie", randomPos, ECE_PLACE_ON_SURFACE);
 }
 ```
 
-Use batched processing: spawn 5 per frame across 20 frames.
+Используйте пакетную обработку: спавните по 5 за кадр на протяжении 20 кадров.
 
 ---
 
-## Profiling
+## Профилирование
 
-### Server FPS Monitoring
+### Мониторинг серверного FPS
 
-The most basic metric is server FPS. If your mod drops server FPS, something is wrong:
+Самая базовая метрика --- серверный FPS. Если ваш мод роняет серверный FPS, что-то не так:
 
 ```c
-// In your OnUpdate, measure elapsed time:
+// В вашем OnUpdate измеряйте затраченное время:
 void OnUpdate(float dt)
 {
     float startTime = GetGame().GetTickTime();
 
-    // ... your logic ...
+    // ... ваша логика ...
 
     float elapsed = GetGame().GetTickTime() - startTime;
-    if (elapsed > 0.005)  // More than 5ms
+    if (elapsed > 0.005)  // Больше 5мс
     {
         MyLog.Warning("Perf", "OnUpdate took " + elapsed.ToString() + "s");
     }
 }
 ```
 
-### Script Log Indicators
+### Индикаторы в логе скриптов
 
-Watch the DayZ server script log for these performance warnings:
+Следите за логом скриптов сервера DayZ на предмет этих предупреждений о производительности:
 
-- `SCRIPT (W): Exceeded X ms` ----  script execution exceeded the engine's time budget
-- Long pauses in log timestamps --- something blocked the main thread
+- `SCRIPT (W): Exceeded X ms` --- выполнение скрипта превысило временной бюджет движка
+- Длительные паузы во временных метках лога --- что-то заблокировало основной поток
 
-### Empirical Testing
+### Эмпирическое тестирование
 
-The only reliable way to know if an optimization matters is to measure before and after:
+Единственный надёжный способ узнать, имеет ли оптимизация значение --- это замерить до и после:
 
-1. Add timing around the suspect code
-2. Run a reproducible test (e.g., 50 players, 1000 entities)
-3. Compare frame times
-4. If the change is less than 1ms per frame, it probably does not matter
-
----
-
-## Checklist
-
-Before shipping performance-sensitive code, verify:
-
-- [ ] No `GetObjectsAtPosition3D` calls with radius > 100m in per-frame code
-- [ ] All expensive scans (CfgVehicles, entity searches) are cached
-- [ ] UI lists use widget pooling, not destroy/recreate
-- [ ] Search inputs use debouncing (150ms+)
-- [ ] OnUpdate operations are throttled by timer or batch size
-- [ ] Large collections are processed in batches (50 items/frame default)
-- [ ] Entity spawning is batched across frames, not done in a tight loop
-- [ ] String concatenation is not done per-frame in tight loops
-- [ ] Sort operations run on data change, not per frame
-- [ ] Multiple periodic systems have staggered timers
-- [ ] Entity tracking uses registration, not world scanning
+1. Добавьте замеры времени вокруг подозрительного кода
+2. Запустите воспроизводимый тест (например, 50 игроков, 1000 сущностей)
+3. Сравните время кадров
+4. Если разница менее 1мс за кадр, она, вероятно, не имеет значения
 
 ---
 
-[<< Предыдущая: Event-Driven Architecture](06-events.md) | [Главная](../../README.md)
+## Чек-лист
+
+Перед выпуском производительно-критичного кода проверьте:
+
+- [ ] Нет вызовов `GetObjectsAtPosition3D` с радиусом > 100м в покадровом коде
+- [ ] Все затратные сканирования (CfgVehicles, поиск сущностей) кэшированы
+- [ ] Списки UI используют пулинг виджетов, а не уничтожение/пересоздание
+- [ ] Поисковые поля ввода используют дебаунсинг (150мс+)
+- [ ] Операции OnUpdate ограничены таймером или размером пакета
+- [ ] Большие коллекции обрабатываются пакетами (50 элементов/кадр по умолчанию)
+- [ ] Спавн сущностей пакетирован по кадрам, а не выполняется в плотном цикле
+- [ ] Конкатенация строк не выполняется покадрово в плотных циклах
+- [ ] Операции сортировки выполняются при изменении данных, а не каждый кадр
+- [ ] Несколько периодических систем имеют смещённые таймеры
+- [ ] Отслеживание сущностей использует регистрацию, а не сканирование мира
+
+---
+
+## Совместимость и влияние
+
+- **Мульти-мод:** Затраты на производительность кумулятивны. `OnUpdate` каждого мода выполняется каждый кадр. Пять модов, каждый из которых занимает 2мс --- это 10мс за кадр только от скриптов. Координируйтесь с другими авторами модов для смещения таймеров и избежания дублирующего сканирования мира.
+- **Порядок загрузки:** Порядок загрузки напрямую не влияет на производительность. Однако если несколько модов используют `modded class` для одной и той же сущности (например, `CarScript.EEInit`), каждое переопределение добавляет к стоимости цепочки вызовов. Минимизируйте modded-переопределения.
+- **Listen-сервер:** Listen-серверы выполняют и клиентские, и серверные скрипты в одном процессе. Пулинг виджетов, обновления UI и затраты на рендеринг суммируются с серверными тиками. Бюджеты производительности на listen-серверах жёстче, чем на выделенных серверах.
+- **Производительность:** Бюджет кадра сервера DayZ при 60 FPS составляет ~16мс. При 20 FPS (типично на загруженных серверах) --- ~50мс. Один мод должен стремиться оставаться в пределах 2мс за кадр. Профилируйте с помощью `GetGame().GetTickTime()` для проверки.
+- **Миграция:** Паттерны производительности не зависят от движка и переживают обновления DayZ. Конкретные стоимости API (например, `GetObjectsAtPosition3D`) могут меняться между версиями движка, поэтому перепрофилируйте после крупных обновлений DayZ.
+
+---
+
+## Типичные ошибки
+
+| Ошибка | Влияние | Исправление |
+|---------|--------|-----|
+| Преждевременная оптимизация (микрооптимизация кода, который выполняется один раз при запуске) | Потрачено время разработки; нет измеримого улучшения; код труднее читать | Сначала профилируйте. Оптимизируйте только код, который выполняется каждый кадр или обрабатывает большие коллекции. Стоимость запуска платится один раз. |
+| Использование `GetObjectsAtPosition3D` с радиусом на всю карту в `OnUpdate` | Задержка 50--200мс на вызов, сканирование каждого физического объекта на карте; серверный FPS падает до единиц | Используйте реестр на основе регистрации (регистрация в `EEInit`, отмена регистрации в `EEDelete`). Никогда не сканируйте мир покадрово. |
+| Пересборка деревьев виджетов UI при каждом изменении данных | Пики нагрузки от создания/уничтожения виджетов; видимые подёргивания для игрока | Используйте пулинг виджетов: скрывайте/показывайте существующие виджеты вместо уничтожения и пересоздания |
+| Сортировка больших массивов каждый кадр | O(n log n) каждый кадр для данных, которые редко меняются; ненужная трата CPU | Сортируйте один раз при изменении данных (флаг изменений), кэшируйте отсортированный результат, пересортировывайте только при мутации |
+| Выполнение затратного файлового ввода/вывода (JsonSaveFile) в каждом тике `OnUpdate` | Запись на диск блокирует основной поток; 5--20мс за сохранение в зависимости от размера файла | Используйте таймеры автосохранения (300с по умолчанию) с флагом изменений. Записывайте только когда данные фактически изменились. |
+
+---
+
+## Теория и практика
+
+| В учебнике написано | Реальность DayZ |
+|---------------|-------------|
+| Используйте асинхронную обработку для затратных операций | Enforce Script однопоточный без асинхронных примитивов; распределяйте работу по кадрам используя обработку на основе индексов |
+| Пулинг объектов --- это преждевременная оптимизация | Создание виджетов в Enfusion действительно затратно; пулинг --- стандартная практика в каждом крупном моде (COT, VPP, Expansion) |
+| Профилируйте перед оптимизацией | Верно, но некоторые паттерны (сканирование мира, аллокация строк каждый кадр, пересборка при каждом нажатии) *всегда* ошибочны в DayZ. Избегайте их с самого начала. |
+
+---
+
+[Главная](../../README.md) | [<< Предыдущая: Событийно-ориентированная архитектура](06-events.md) | **Оптимизация производительности**

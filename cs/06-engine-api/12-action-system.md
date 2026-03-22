@@ -1,32 +1,32 @@
-# Chapter 6.12: Action System
+# Kapitola 6.12: Systém akcí
 
-[Home](../../README.md) | [<< Previous: Mission Hooks](11-mission-hooks.md) | **Action System** | [Next: Input System >>](13-input-system.md)
-
----
-
-## Uvod
-
-The Akce System is how DayZ handles all player interactions with items and the world. Every time a player eats food, opens a door, bandages a wound, repairs a wall, or turns on a flashlight, the engine runs through the action pipeline. Understanding this pipeline --- from condition checks to animation callbacks to server execution --- is fundamental to creating any interactive gameplay mod.
-
-The system lives primarily in `4_World/classes/useractionscomponent/` and is built around three pillars:
-
-1. **Akce classes** that define what happens (logic, conditions, animations)
-2. **Condition components** that gate when an action can appear (distance, item state, target type)
-3. **Akce components** that control how the action progresses (time, quantity, repeating cycles)
-
-This chapter covers the full API, class hierarchy, lifecycle, and practical patterns for creating custom actions.
+[Domů](../../README.md) | [<< Předchozí: Háčky mise](11-mission-hooks.md) | **Systém akcí** | [Další: Vstupní systém >>](13-input-system.md)
 
 ---
 
-## Hierarchie trid
+## Úvod
+
+Systém akcí je způsob, jakým DayZ zpracovává všechny interakce hráče s předměty a světem. Pokaždé, když hráč sní jídlo, otevře dveře, obváže ránu, opraví zeď nebo zapne baterku, engine projde pipeline akcí. Pochopení tohoto pipeline --- od kontroly podmínek přes callbacky animací po vykonání na serveru --- je zásadní pro vytváření jakéhokoliv interaktivního herního modu.
+
+Systém se nachází primárně v `4_World/classes/useractionscomponent/` a je postaven na třech pilířích:
+
+1. **Třídy akcí**, které definují, co se stane (logika, podmínky, animace)
+2. **Komponenty podmínek**, které brání, kdy se akce může objevit (vzdálenost, stav předmětu, typ cíle)
+3. **Komponenty akcí**, které řídí, jak akce postupuje (čas, množství, opakující se cykly)
+
+Tato kapitola pokrývá kompletní API, hierarchii tříd, životní cyklus a praktické vzory pro vytváření vlastních akcí.
+
+---
+
+## Hierarchie tříd
 
 ```
-ActionBase_Basic                         // 3_Game — empty shell, compilation anchor
-└── ActionBase                           // 4_World — core logic, conditions, events
-    └── AnimatedActionBase               // 4_World — animation callbacks, OnExecute
-        ├── ActionSingleUseBase          // instant actions (eat pill, turn on light)
-        ├── ActionContinuousBase         // progress bar actions (bandage, repair, eat)
-        └── ActionInteractBase           // world interactions (open door, toggle switch)
+ActionBase_Basic                         // 3_Game — prázdný shell, kotva kompilace
+└── ActionBase                           // 4_World — jádro logiky, podmínky, události
+    └── AnimatedActionBase               // 4_World — callbacky animací, OnExecute
+        ├── ActionSingleUseBase          // okamžité akce (spolknout pilulku, zapnout světlo)
+        ├── ActionContinuousBase         // akce s progress barem (obvázat, opravit, jíst)
+        └── ActionInteractBase           // interakce se světem (otevřít dveře, přepnout přepínač)
 ```
 
 ```mermaid
@@ -83,50 +83,50 @@ classDiagram
     }
 ```
 
-### Key Differences Between Akce Typs
+### Klíčové rozdíly mezi typy akcí
 
-| Property | SingleUse | Continuous | Interact |
+| Vlastnost | SingleUse | Continuous | Interact |
 |----------|-----------|------------|----------|
-| Kategorie constant | `AC_SINGLE_USE` | `AC_CONTINUOUS` | `AC_INTERACT` |
-| Input type | `VychoziAkceInput` | `ContinuousVychoziAkceInput` | `InteractAkceInput` |
-| Progress bar | No | Yes | No |
-| Uses main item | Yes | Yes | No (default) |
-| Has target | Varies | Varies | Yes (default) |
-| Typical use | Eat pill, toggle flashlight | Bandage, repair, eat food | Open door, turn on generator |
-| Callback class | `AkceSingleUseBaseCB` | `AkceContinuousBaseCB` | `AkceInteractBaseCB` |
+| Konstanta kategorie | `AC_SINGLE_USE` | `AC_CONTINUOUS` | `AC_INTERACT` |
+| Typ vstupu | `DefaultActionInput` | `ContinuousDefaultActionInput` | `InteractActionInput` |
+| Progress bar | Ne | Ano | Ne |
+| Používá hlavní předmět | Ano | Ano | Ne (výchozí) |
+| Má cíl | Záleží | Záleží | Ano (výchozí) |
+| Typické použití | Spolknout pilulku, přepnout baterku | Obvázat, opravit, jíst jídlo | Otevřít dveře, zapnout generátor |
+| Třída callbacku | `ActionSingleUseBaseCB` | `ActionContinuousBaseCB` | `ActionInteractBaseCB` |
 
 ---
 
-## Akce Lifecycle
+## Životní cyklus akce
 
-### State Konstanty
+### Konstanty stavů
 
-The action state machine uses these constants defined in `3_Game/constants.c`:
+Stavový automat akce používá tyto konstanty definované v `3_Game/constants.c`:
 
-| Konstanta | Hodnota | Vyznam |
+| Konstanta | Hodnota | Význam |
 |----------|-------|---------|
-| `UA_NONE` | 0 | No action running |
-| `UA_PROCESSING` | 2 | Akce in progress |
-| `UA_FINISHED` | 4 | Akce completed successfully |
-| `UA_CANCEL` | 5 | Akce cancelled by player |
-| `UA_INTERRUPT` | 6 | Akce interrupted externally |
-| `UA_INITIALIZE` | 12 | Continuous action initializing |
-| `UA_ERROR` | 24 | Error state --- action aborted |
-| `UA_ANIM_EVENT` | 11 | Animation execute event fired |
-| `UA_IN_START` | 17 | Animation loop start event |
-| `UA_IN_END` | 18 | Animation loop end event |
+| `UA_NONE` | 0 | Žádná akce neběží |
+| `UA_PROCESSING` | 2 | Akce probíhá |
+| `UA_FINISHED` | 4 | Akce úspěšně dokončena |
+| `UA_CANCEL` | 5 | Akce zrušena hráčem |
+| `UA_INTERRUPT` | 6 | Akce přerušena externě |
+| `UA_INITIALIZE` | 12 | Kontinuální akce se inicializuje |
+| `UA_ERROR` | 24 | Chybový stav --- akce přerušena |
+| `UA_ANIM_EVENT` | 11 | Vyvolána událost vykonání animace |
+| `UA_IN_START` | 17 | Událost začátku smyčky animace |
+| `UA_IN_END` | 18 | Událost konce smyčky animace |
 
-### SingleUse Akce Flow
+### Tok akce SingleUse
 
 ```mermaid
 flowchart TD
-    A[Player presses action key] --> B{Condition Components}
+    A[Hráč stiskne klávesu akce] --> B{Komponenty podmínek}
     B -->|CCIBase.Can + CCTBase.Can| C{ActionCondition}
-    C -->|false| D[Action not shown]
+    C -->|false| D[Akce se nezobrazí]
     C -->|true| E[SetupAction]
     E --> F[OnStart / OnStartServer / OnStartClient]
-    F --> G[Animation plays]
-    G --> H[UA_ANIM_EVENT fires]
+    F --> G[Animace se přehraje]
+    G --> H[UA_ANIM_EVENT se vyvolá]
     H --> I[OnExecute]
     I --> J[OnExecuteServer]
     I --> K[OnExecuteClient]
@@ -134,93 +134,93 @@ flowchart TD
     K --> L
 ```
 
-### Continuous Akce Flow
+### Tok kontinuální akce
 
 ```mermaid
 flowchart TD
-    A[Player holds action key] --> B{Condition Components}
+    A[Hráč drží klávesu akce] --> B{Komponenty podmínek}
     B -->|CCIBase.Can + CCTBase.Can| C{ActionCondition}
-    C -->|false| D[Action not shown]
+    C -->|false| D[Akce se nezobrazí]
     C -->|true| E[SetupAction]
     E --> F[OnStart / OnStartServer / OnStartClient]
     F --> G[UA_IN_START: OnStartAnimationLoop]
-    G --> H[Animation loop begins]
+    G --> H[Smyčka animace začíná]
     H --> I{ActionComponent.Execute}
-    I -->|UA_PROCESSING| J[Do - loop continues]
+    I -->|UA_PROCESSING| J[Provádění - smyčka pokračuje]
     J --> K{ActionConditionContinue?}
     K -->|true| I
-    K -->|false| M[Interrupt]
+    K -->|false| M[Přerušení]
     I -->|UA_FINISHED| L[OnFinishProgress]
     L --> N[UA_IN_END: OnEndAnimationLoop]
     N --> O[OnEnd / OnEndServer / OnEndClient]
     M --> O
-    P[Player releases key] --> Q[OnEndInput - UserEndsAction]
+    P[Hráč uvolní klávesu] --> Q[OnEndInput - UserEndsAction]
     Q --> R[ActionComponent.Cancel]
     R --> O
 ```
 
-### Interact Akce Flow
+### Tok interaktivní akce
 
 ```mermaid
 flowchart TD
-    A[Player presses interact key] --> B{Condition Components}
+    A[Hráč stiskne klávesu interakce] --> B{Komponenty podmínek}
     B -->|CCIBase.Can + CCTBase.Can| C{ActionCondition}
-    C -->|false| D[Action not shown]
+    C -->|false| D[Akce se nezobrazí]
     C -->|true| E[SetupAction]
     E --> F[OnStart / OnStartServer / OnStartClient]
-    F --> G[Animation plays]
-    G --> H[UA_ANIM_EVENT fires]
+    F --> G[Animace se přehraje]
+    G --> H[UA_ANIM_EVENT se vyvolá]
     H --> I[OnExecute / OnExecuteServer / OnExecuteClient]
     I --> J[OnEnd / OnEndServer / OnEndClient]
 ```
 
-### Lifecycle Metodas Reference
+### Reference metod životního cyklu
 
-These methods are called in order during an action's lifetime. Override them in your custom actions:
+Tyto metody jsou volány v pořadí během životnosti akce. Přepište je ve svých vlastních akcích:
 
-| Metoda | Called on | Ucel |
+| Metoda | Volá se na | Účel |
 |--------|-----------|---------|
-| `CreateConditionComponents()` | Both | Set `m_ConditionItem` and `m_ConditionTarget` |
-| `AkceCondition()` | Both | Custom validation (distance, state, type checks) |
-| `AkceConditionContinue()` | Both | Continuous-only: re-checked each frame during progress |
-| `SetupAkce()` | Both | Internal: builds `AkceData`, reserves inventory |
-| `OnStart()` | Both | Akce begins (cancels placing if active) |
-| `OnStartServer()` | Server | Server-side start logic |
-| `OnStartClient()` | Client | Client-side start effects |
-| `OnExecute()` | Both | Animation event fired --- main execution |
-| `OnExecuteServer()` | Server | Server-side execution logic |
-| `OnExecuteClient()` | Client | Client-side execution effects |
-| `OnFinishProgress()` | Both | Continuous-only: one cycle completed |
-| `OnFinishProgressServer()` | Server | Continuous-only: server cycle complete |
-| `OnFinishProgressClient()` | Client | Continuous-only: client cycle complete |
-| `OnStartAnimationLoop()` | Both | Continuous-only: loop animation begins |
-| `OnEndAnimationLoop()` | Both | Continuous-only: loop animation ends |
-| `OnEnd()` | Both | Akce finished (success or cancel) |
-| `OnEndServer()` | Server | Server-side cleanup |
-| `OnEndClient()` | Client | Client-side cleanup |
+| `CreateConditionComponents()` | Obou | Nastavit `m_ConditionItem` a `m_ConditionTarget` |
+| `ActionCondition()` | Obou | Vlastní validace (vzdálenost, stav, kontroly typů) |
+| `ActionConditionContinue()` | Obou | Pouze kontinuální: přezkoumaná každý snímek během postupu |
+| `SetupAction()` | Obou | Interní: sestaví `ActionData`, rezervuje inventář |
+| `OnStart()` | Obou | Akce začíná (zruší umísťování, pokud je aktivní) |
+| `OnStartServer()` | Server | Logika startu na straně serveru |
+| `OnStartClient()` | Klient | Efekty startu na straně klienta |
+| `OnExecute()` | Obou | Vyvolána událost animace --- hlavní vykonání |
+| `OnExecuteServer()` | Server | Logika vykonání na straně serveru |
+| `OnExecuteClient()` | Klient | Efekty vykonání na straně klienta |
+| `OnFinishProgress()` | Obou | Pouze kontinuální: jeden cyklus dokončen |
+| `OnFinishProgressServer()` | Server | Pouze kontinuální: cyklus dokončen na serveru |
+| `OnFinishProgressClient()` | Klient | Pouze kontinuální: cyklus dokončen na klientu |
+| `OnStartAnimationLoop()` | Obou | Pouze kontinuální: smyčka animace začíná |
+| `OnEndAnimationLoop()` | Obou | Pouze kontinuální: smyčka animace končí |
+| `OnEnd()` | Obou | Akce dokončena (úspěch nebo zrušení) |
+| `OnEndServer()` | Server | Čištění na straně serveru |
+| `OnEndClient()` | Klient | Čištění na straně klienta |
 
 ---
 
-## AkceData
+## ActionData
 
-Every running action carries an `AkceData` instance that holds the runtime context. This is passed to every lifecycle method:
+Každá běžící akce nese instanci `ActionData`, která drží kontext za běhu. Ta je předávána každé metodě životního cyklu:
 
 ```c
 class ActionData
 {
-    ref ActionBase       m_Action;          // the action class being performed
-    ItemBase             m_MainItem;        // item in player's hands (or null)
-    ActionBaseCB         m_Callback;        // animation callback handler
-    ref CABase           m_ActionComponent;  // progress component (time, quantity)
-    int                  m_State;           // current state (UA_PROCESSING, etc.)
-    ref ActionTarget     m_Target;          // target object + hit info
-    PlayerBase           m_Player;          // player performing the action
-    bool                 m_WasExecuted;     // true after OnExecute fires
-    bool                 m_WasActionStarted; // true after action loop starts
+    ref ActionBase       m_Action;          // třída akce, která se provádí
+    ItemBase             m_MainItem;        // předmět v rukou hráče (nebo null)
+    ActionBaseCB         m_Callback;        // handler callbacku animace
+    ref CABase           m_ActionComponent;  // komponenta postupu (čas, množství)
+    int                  m_State;           // aktuální stav (UA_PROCESSING atd.)
+    ref ActionTarget     m_Target;          // cílový objekt + informace o zásahu
+    PlayerBase           m_Player;          // hráč provádějící akci
+    bool                 m_WasExecuted;     // true po vyvolání OnExecute
+    bool                 m_WasActionStarted; // true po startu smyčky akce
 }
 ```
 
-You can extend `AkceData` for custom data. Override `CreateAkceData()` in your action:
+Můžete rozšířit `ActionData` pro vlastní data. Přepište `CreateActionData()` ve své akci:
 
 ```c
 class MyCustomActionData : ActionData
@@ -239,76 +239,76 @@ class MyCustomAction : ActionContinuousBase
     {
         MyCustomActionData data = MyCustomActionData.Cast(action_data);
         data.m_CustomValue = data.m_CustomValue + 1;
-        // ... use custom data
+        // ... použít vlastní data
     }
 }
 ```
 
 ---
 
-## AkceTarget
+## ActionTarget
 
-The `AkceTarget` class represents what the player is aiming at:
+Třída `ActionTarget` reprezentuje, na co hráč míří:
 
-**File:** `4_World/classes/useractionscomponent/actiontargets.c`
+**Soubor:** `4_World/classes/useractionscomponent/actiontargets.c`
 
 ```c
 class ActionTarget
 {
-    Object GetObject();         // the direct object under cursor (or proxy child)
-    Object GetParent();         // parent object (if target is a proxy/attachment)
-    bool   IsProxy();           // true if target has a parent
-    int    GetComponentIndex(); // geometry component (named selection) index
-    float  GetUtility();        // priority score
-    vector GetCursorHitPos();   // exact world position of cursor hit
+    Object GetObject();         // přímý objekt pod kurzorem (nebo proxy potomek)
+    Object GetParent();         // rodičovský objekt (pokud je cíl proxy/příslušenství)
+    bool   IsProxy();           // true pokud má cíl rodiče
+    int    GetComponentIndex(); // index geometrické komponenty (pojmenované selekce)
+    float  GetUtility();        // skóre priority
+    vector GetCursorHitPos();   // přesná světová pozice zásahu kurzorem
 }
 ```
 
-### How Targets Are Selected
+### Jak se vybírají cíle
 
-The `AkceTargets` class runs each frame on the client, gathering potential targets:
+Třída `ActionTargets` se spouští každý snímek na klientu a sbírá potenciální cíle:
 
-1. **Raycast** from camera position along camera direction (`c_RayDistance`)
-2. **Vicinity scan** for nearby objects around the player
-3. For each candidate, the engine calls `GetAkces()` on the object to find registered actions
-4. Each action's condition components (`CCIBase.Can()`, `CCTBase.Can()`) and `AkceCondition()` are tested
-5. Valid actions are ranked by utility and displayed in the HUD
+1. **Raycast** z pozice kamery ve směru kamery (`c_RayDistance`)
+2. **Skenování okolí** pro blízké objekty kolem hráče
+3. Pro každého kandidáta engine zavolá `GetActions()` na objektu pro nalezení registrovaných akcí
+4. Komponenty podmínek každé akce (`CCIBase.Can()`, `CCTBase.Can()`) a `ActionCondition()` jsou otestovány
+5. Platné akce jsou seřazeny podle užitku a zobrazeny v HUD
 
 ---
 
-## Condition Components
+## Komponenty podmínek
 
-Every action has two condition components set in `CreateConditionComponents()`. These are checked **before** `AkceCondition()` and determine whether the action can appear in the player's HUD at all.
+Každá akce má dvě komponenty podmínek nastavené v `CreateConditionComponents()`. Ty jsou kontrolovány **před** `ActionCondition()` a určují, zda se akce může vůbec objevit v HUD hráče.
 
-### Item Conditions (CCIBase)
+### Podmínky předmětu (CCIBase)
 
-Controls whether the item in the player's hand qualifies for this action.
+Řídí, zda předmět v ruce hráče kvalifikuje pro tuto akci.
 
-**File:** `4_World/classes/useractionscomponent/itemconditioncomponents/`
+**Soubor:** `4_World/classes/useractionscomponent/itemconditioncomponents/`
 
-| Class | Behavior |
+| Třída | Chování |
 |-------|----------|
-| `CCINone` | Always passes --- no item requirement |
-| `CCIDummy` | Passes if item is not null (item must exist) |
-| `CCINonRuined` | Passes if item exists AND is not ruined |
-| `CCINotPresent` | Passes if item is null (hands must be empty) |
-| `CCINotRuinedAndEmpty` | Passes if item exists, not ruined, and not empty |
+| `CCINone` | Vždy projde --- žádný požadavek na předmět |
+| `CCIDummy` | Projde, pokud předmět není null (předmět musí existovat) |
+| `CCINonRuined` | Projde, pokud předmět existuje A není zničený |
+| `CCINotPresent` | Projde, pokud předmět je null (ruce musí být prázdné) |
+| `CCINotRuinedAndEmpty` | Projde, pokud předmět existuje, není zničený a není prázdný |
 
 ```c
-// CCINone — no item needed, always true
+// CCINone — žádný předmět není potřeba, vždy true
 class CCINone : CCIBase
 {
     override bool Can(PlayerBase player, ItemBase item) { return true; }
     override bool CanContinue(PlayerBase player, ItemBase item) { return true; }
 }
 
-// CCINotPresent — hands must be empty
+// CCINotPresent — ruce musí být prázdné
 class CCINotPresent : CCIBase
 {
     override bool Can(PlayerBase player, ItemBase item) { return !item; }
 }
 
-// CCINonRuined — item must exist and not be destroyed
+// CCINonRuined — předmět musí existovat a nesmí být zničený
 class CCINonRuined : CCIBase
 {
     override bool Can(PlayerBase player, ItemBase item)
@@ -318,23 +318,23 @@ class CCINonRuined : CCIBase
 }
 ```
 
-### Target Conditions (CCTBase)
+### Podmínky cíle (CCTBase)
 
-Controls whether the target object (what the player is looking at) qualifies.
+Řídí, zda cílový objekt (na co se hráč dívá) kvalifikuje.
 
-**File:** `4_World/classes/useractionscomponent/targetconditionscomponents/`
+**Soubor:** `4_World/classes/useractionscomponent/targetconditionscomponents/`
 
-| Class | Constructor | Behavior |
+| Třída | Konstruktor | Chování |
 |-------|-------------|----------|
-| `CCTNone` | `CCTNone()` | Always passes --- no target needed |
-| `CCTDummy` | `CCTDummy()` | Passes if target object exists |
-| `CCTSelf` | `CCTSelf()` | Passes if player exists and is alive |
-| `CCTObject` | `CCTObject(float dist)` | Target object within distance |
-| `CCTCursor` | `CCTCursor(float dist)` | Cursor hit position within distance |
-| `CCTNonRuined` | `CCTNonRuined(float dist)` | Target within distance AND not ruined |
-| `CCTCursorParent` | `CCTCursorParent(float dist)` | Cursor on parent object within distance |
+| `CCTNone` | `CCTNone()` | Vždy projde --- žádný cíl není potřeba |
+| `CCTDummy` | `CCTDummy()` | Projde, pokud cílový objekt existuje |
+| `CCTSelf` | `CCTSelf()` | Projde, pokud hráč existuje a je naživu |
+| `CCTObject` | `CCTObject(float dist)` | Cílový objekt v dosahu vzdálenosti |
+| `CCTCursor` | `CCTCursor(float dist)` | Pozice zásahu kurzorem v dosahu vzdálenosti |
+| `CCTNonRuined` | `CCTNonRuined(float dist)` | Cíl v dosahu vzdálenosti A není zničený |
+| `CCTCursorParent` | `CCTCursorParent(float dist)` | Kurzor na rodičovském objektu v dosahu vzdálenosti |
 
-Distance is measured from **both** the player's root position and head bone position (whichever is closer). The `CCTObject` check:
+Vzdálenost se měří od **obou** kořenové pozice hráče a pozice kosti hlavy (která je bližší). Kontrola `CCTObject`:
 
 ```c
 class CCTObject : CCTBase
@@ -363,41 +363,41 @@ class CCTObject : CCTBase
 }
 ```
 
-### Distance Konstanty
+### Konstanty vzdáleností
 
-**File:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
+**Soubor:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
 
-| Konstanta | Hodnota (meters) | Typical use |
+| Konstanta | Hodnota (metry) | Typické použití |
 |----------|---------------|-------------|
-| `UAMaxDistances.SMALL` | 1.3 | Close interactions, ladders |
-| `UAMaxDistances.DEFAULT` | 2.0 | Standard actions |
-| `UAMaxDistances.REPAIR` | 3.0 | Repair actions |
-| `UAMaxDistances.LARGE` | 8.0 | Large area actions |
-| `UAMaxDistances.BASEBUILDING` | 20.0 | Base building |
-| `UAMaxDistances.EXPLOSIVE_REMOTE_ACTIVATION` | 100.0 | Remote detonation |
+| `UAMaxDistances.SMALL` | 1.3 | Blízké interakce, žebříky |
+| `UAMaxDistances.DEFAULT` | 2.0 | Standardní akce |
+| `UAMaxDistances.REPAIR` | 3.0 | Opravné akce |
+| `UAMaxDistances.LARGE` | 8.0 | Akce na velkou vzdálenost |
+| `UAMaxDistances.BASEBUILDING` | 20.0 | Stavění základny |
+| `UAMaxDistances.EXPLOSIVE_REMOTE_ACTIVATION` | 100.0 | Dálkové odpálení |
 
 ---
 
-## Registering Akces on Items
+## Registrace akcí na předmětech
 
-Akces are registered on entities through the `SetAkces()` / `AddAkce()` / `RemoveAkce()` pattern. The engine calls `GetAkces()` on an entity to retrieve its action list; the first time this happens, `InitializeAkces()` builds the map via `SetAkces()`.
+Akce se registrují na entitách přes vzor `SetActions()` / `AddAction()` / `RemoveAction()`. Engine volá `GetActions()` na entitě pro získání jejího seznamu akcí; poprvé, kdy k tomu dojde, `InitializeActions()` sestaví mapu přes `SetActions()`.
 
-### On ItemBase (Inventory Items)
+### Na ItemBase (předměty inventáře)
 
-The most common pattern. Override `SetAkces()` in a `modded class`:
+Nejběžnější vzor. Přepište `SetActions()` v `modded class`:
 
 ```c
 modded class MyCustomItem extends ItemBase
 {
     override void SetActions()
     {
-        super.SetActions();          // CRITICAL: keep all vanilla actions
-        AddAction(MyCustomAction);   // add your action
+        super.SetActions();          // KRITICKÉ: zachovat všechny vanilla akce
+        AddAction(MyCustomAction);   // přidat vaši akci
     }
 }
 ```
 
-To remove a vanilla action and add your own replacement:
+Pro odstranění vanilla akce a přidání vlastní náhrady:
 
 ```c
 modded class Bandage_Basic extends ItemBase
@@ -405,18 +405,18 @@ modded class Bandage_Basic extends ItemBase
     override void SetActions()
     {
         super.SetActions();
-        RemoveAction(ActionBandageTarget);       // remove vanilla
-        AddAction(MyImprovedBandageAction);      // add replacement
+        RemoveAction(ActionBandageTarget);       // odstranit vanilla
+        AddAction(MyImprovedBandageAction);      // přidat náhradu
     }
 }
 ```
 
-### On BuildingBase (World Buildings)
+### Na BuildingBase (budovy světa)
 
-Buildings use the same pattern but through `BuildingBase`:
+Budovy používají stejný vzor, ale přes `BuildingBase`:
 
 ```c
-// Vanilla example: Well registers water actions
+// Vanilla příklad: Studna registruje akce s vodou
 class Well extends BuildingSuper
 {
     override void SetActions()
@@ -428,12 +428,12 @@ class Well extends BuildingSuper
 }
 ```
 
-### On PlayerBase (Player Akces)
+### Na PlayerBase (akce hráče)
 
-Player-level actions (drinking from ponds, opening doors, etc.) are registered in `PlayerBase.SetAkces()`. There are two signatures:
+Akce na úrovni hráče (pití z kaluží, otevírání dveří atd.) jsou registrovány v `PlayerBase.SetActions()`. Existují dvě signatury:
 
 ```c
-// Modern approach (recommended) — uses InputActionMap parameter
+// Moderní přístup (doporučený) — používá parametr InputActionMap
 void SetActions(out TInputActionMap InputActionMap)
 {
     AddAction(ActionOpenDoors, InputActionMap);
@@ -441,14 +441,14 @@ void SetActions(out TInputActionMap InputActionMap)
     // ...
 }
 
-// Legacy approach (backwards compatibility) — not recommended
+// Starší přístup (zpětná kompatibilita) — nedoporučený
 void SetActions()
 {
     // ...
 }
 ```
 
-Player also has `SetAkcesRemoteTarget()` for actions performed **on** a player by another player (CPR, checking pulse, etc.):
+Hráč má také `SetActionsRemoteTarget()` pro akce prováděné **na** hráči jiným hráčem (CPR, kontrola pulzu atd.):
 
 ```c
 void SetActionsRemoteTarget(out TInputActionMap InputActionMap)
@@ -458,27 +458,27 @@ void SetActionsRemoteTarget(out TInputActionMap InputActionMap)
 }
 ```
 
-### How the Registration System Works Internally
+### Jak registrační systém funguje interně
 
-Each entity type maintains a static `TInputAkceMap` (a `map<typename, ref array<AkceBase_Basic>>`) keyed by input type. When `AddAkce()` is called:
+Každý typ entity udržuje statickou `TInputActionMap` (`map<typename, ref array<ActionBase_Basic>>`) klíčovanou typem vstupu. Když se zavolá `AddAction()`:
 
-1. The action singleton is fetched from `AkceManagerBase.GetAkce()`
-2. The action's input type is queried (`GetInputTyp()`)
-3. The action is inserted into the array for that input type
-4. At runtime, the engine queries all actions for the matching input type
+1. Singleton akce je načten z `ActionManagerBase.GetAction()`
+2. Typ vstupu akce je dotázán (`GetInputType()`)
+3. Akce je vložena do pole pro daný typ vstupu
+4. Za běhu engine dotazuje všechny akce pro odpovídající typ vstupu
 
-This means actions are shared per **type** (class), not per instance. All items of the same class share the same action list.
+To znamená, že akce jsou sdíleny podle **typu** (třídy), ne podle instance. Všechny předměty stejné třídy sdílejí stejný seznam akcí.
 
 ---
 
-## Creating a Custom Akce --- Step by Step
+## Vytvoření vlastní akce --- krok za krokem
 
-### Priklad 1: Simple Single-Use Akce
+### Příklad 1: Jednoduchá jednorázová akce
 
-A custom action that instantly heals the player when they use a special item:
+Vlastní akce, která okamžitě vyléčí hráče, když použije speciální předmět:
 
 ```c
-// File: 4_World/actions/ActionHealInstant.c
+// Soubor: 4_World/actions/ActionHealInstant.c
 
 class ActionHealInstant : ActionSingleUseBase
 {
@@ -486,28 +486,28 @@ class ActionHealInstant : ActionSingleUseBase
     {
         m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_EAT_PILL;
         m_CommandUIDProne = DayZPlayerConstants.CMD_ACTIONFB_EAT_PILL;
-        m_Text = "#heal";  // stringtable key, or plain text: "Heal"
+        m_Text = "#heal";  // klíč stringtable, nebo prostý text: "Heal"
     }
 
     override void CreateConditionComponents()
     {
-        m_ConditionItem = new CCINonRuined;    // item must not be ruined
-        m_ConditionTarget = new CCTSelf;       // self-action
+        m_ConditionItem = new CCINonRuined;    // předmět nesmí být zničený
+        m_ConditionTarget = new CCTSelf;       // akce na sebe
     }
 
     override bool HasTarget()
     {
-        return false;  // no external target needed
+        return false;  // žádný externí cíl není potřeba
     }
 
     override bool HasProneException()
     {
-        return true;  // allow different animation when prone
+        return true;  // povolit jinou animaci vleže
     }
 
     override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
     {
-        // Only show if player is actually hurt
+        // Zobrazit pouze pokud je hráč skutečně zraněný
         if (player.GetHealth("GlobalHealth", "Health") >= player.GetMaxHealth("GlobalHealth", "Health"))
             return false;
 
@@ -516,11 +516,11 @@ class ActionHealInstant : ActionSingleUseBase
 
     override void OnExecuteServer(ActionData action_data)
     {
-        // Heal the player on server
+        // Vyléčit hráče na serveru
         PlayerBase player = action_data.m_Player;
         player.SetHealth("GlobalHealth", "Health", player.GetMaxHealth("GlobalHealth", "Health"));
 
-        // Consume the item (reduce quantity by 1)
+        // Spotřebovat předmět (snížit množství o 1)
         ItemBase item = action_data.m_MainItem;
         if (item)
         {
@@ -530,15 +530,15 @@ class ActionHealInstant : ActionSingleUseBase
 
     override void OnExecuteClient(ActionData action_data)
     {
-        // Optional: play a client-side effect, sound, or notification
+        // Volitelné: přehrát efekt na straně klienta, zvuk nebo notifikaci
     }
 }
 ```
 
-Register it on an item:
+Registrace na předmětu:
 
 ```c
-// File: 4_World/entities/HealingKit.c
+// Soubor: 4_World/entities/HealingKit.c
 
 modded class HealingKit extends ItemBase
 {
@@ -550,31 +550,31 @@ modded class HealingKit extends ItemBase
 }
 ```
 
-### Priklad 2: Continuous Akce with Progress Bar
+### Příklad 2: Kontinuální akce s progress barem
 
-A custom repair action that takes time and consumes item durability:
+Vlastní opravná akce, která trvá čas a spotřebovává odolnost předmětu:
 
 ```c
-// File: 4_World/actions/ActionRepairCustom.c
+// Soubor: 4_World/actions/ActionRepairCustom.c
 
-// Step 1: Define the callback with an action component
+// Krok 1: Definovat callback s komponentou akce
 class ActionRepairCustomCB : ActionContinuousBaseCB
 {
     override void CreateActionComponent()
     {
-        // CAContinuousTime(seconds) — single progress bar that completes once
+        // CAContinuousTime(sekundy) — jednoduchý progress bar, který se dokončí jednou
         m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_REPAIR_CYCLE);
     }
 }
 
-// Step 2: Define the action
+// Krok 2: Definovat akci
 class ActionRepairCustom : ActionContinuousBase
 {
     void ActionRepairCustom()
     {
         m_CallbackClass = ActionRepairCustomCB;
         m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_ASSEMBLE;
-        m_FullBody = true;  // full body animation (player cannot move)
+        m_FullBody = true;  // celotelová animace (hráč se nemůže hýbat)
         m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
         m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
         m_Text = "#repair";
@@ -592,7 +592,7 @@ class ActionRepairCustom : ActionContinuousBase
         if (!obj)
             return false;
 
-        // Only allow repairing damaged (but not ruined) objects
+        // Povolit opravu pouze poškozených (ale ne zničených) objektů
         EntityAI entity = EntityAI.Cast(obj);
         if (!entity)
             return false;
@@ -600,7 +600,7 @@ class ActionRepairCustom : ActionContinuousBase
         float health = entity.GetHealth("", "Health");
         float maxHealth = entity.GetMaxHealth("", "Health");
 
-        // Must be damaged but not ruined
+        // Musí být poškozený, ale ne zničený
         if (health >= maxHealth || entity.IsDamageDestroyed())
             return false;
 
@@ -609,31 +609,31 @@ class ActionRepairCustom : ActionContinuousBase
 
     override void OnFinishProgressServer(ActionData action_data)
     {
-        // Called when the progress bar completes
+        // Volá se, když se progress bar dokončí
         Object target = action_data.m_Target.GetObject();
         if (target)
         {
             EntityAI entity = EntityAI.Cast(target);
             if (entity)
             {
-                // Restore some health
+                // Obnovit trochu zdraví
                 float currentHealth = entity.GetHealth("", "Health");
                 entity.SetHealth("", "Health", currentHealth + 25);
             }
         }
 
-        // Damage the tool
+        // Poškodit nástroj
         action_data.m_MainItem.DecreaseHealth(UADamageApplied.REPAIR, false);
     }
 }
 ```
 
-### Priklad 3: Interact Akce (World Object Toggle)
+### Příklad 3: Interaktivní akce (přepínání objektu světa)
 
-An interact action for toggling a custom device on/off:
+Interaktivní akce pro přepínání vlastního zařízení zapnuto/vypnuto:
 
 ```c
-// File: 4_World/actions/ActionToggleMyDevice.c
+// Soubor: 4_World/actions/ActionToggleMyDevice.c
 
 class ActionToggleMyDevice : ActionInteractBase
 {
@@ -646,7 +646,7 @@ class ActionToggleMyDevice : ActionInteractBase
 
     override void CreateConditionComponents()
     {
-        m_ConditionItem = new CCINone;     // no item needed in hands
+        m_ConditionItem = new CCINone;     // žádný předmět v ruce není potřeba
         m_ConditionTarget = new CCTCursor(UAMaxDistances.DEFAULT);
     }
 
@@ -656,12 +656,12 @@ class ActionToggleMyDevice : ActionInteractBase
         if (!obj)
             return false;
 
-        // Check if target is our custom device type
+        // Zkontrolovat, zda je cíl náš vlastní typ zařízení
         MyCustomDevice device = MyCustomDevice.Cast(obj);
         if (!device)
             return false;
 
-        // Update display text based on current state
+        // Aktualizovat zobrazovaný text podle aktuálního stavu
         if (device.IsActive())
             m_Text = "#switch_off";
         else
@@ -684,7 +684,7 @@ class ActionToggleMyDevice : ActionInteractBase
 }
 ```
 
-Register it on the building/device:
+Registrace na budově/zařízení:
 
 ```c
 class MyCustomDevice extends BuildingBase
@@ -697,9 +697,9 @@ class MyCustomDevice extends BuildingBase
 }
 ```
 
-### Priklad 4: Akce with Specific Item Requirement
+### Příklad 4: Akce s požadavkem na specifický předmět
 
-An action that requires the player to hold a specific tool type while targeting a specific object:
+Akce, která vyžaduje, aby hráč držel specifický typ nástroje při mířením na specifický objekt:
 
 ```c
 class ActionUnlockWithKey : ActionInteractBase
@@ -712,27 +712,27 @@ class ActionUnlockWithKey : ActionInteractBase
 
     override void CreateConditionComponents()
     {
-        m_ConditionItem = new CCINonRuined;   // must hold a non-ruined item
+        m_ConditionItem = new CCINonRuined;   // musí držet nezničený předmět
         m_ConditionTarget = new CCTObject(UAMaxDistances.DEFAULT);
     }
 
     override bool UseMainItem()
     {
-        return true;  // action requires an item in hand
+        return true;  // akce vyžaduje předmět v ruce
     }
 
     override bool MainItemAlwaysInHands()
     {
-        return true;  // item must be in hands, not just inventory
+        return true;  // předmět musí být v rukou, ne jen v inventáři
     }
 
     override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
     {
-        // Item must be a key
+        // Předmět musí být klíč
         if (!item || !item.IsInherited(MyKeyItem))
             return false;
 
-        // Target must be a locked container
+        // Cíl musí být zamčený kontejner
         MyLockedContainer container = MyLockedContainer.Cast(target.GetObject());
         if (!container || !container.IsLocked())
             return false;
@@ -753,33 +753,33 @@ class ActionUnlockWithKey : ActionInteractBase
 
 ---
 
-## Akce Components (Progress Control)
+## Komponenty akcí (řízení postupu)
 
-Akce components control _how_ the action progresses over time. They are created in the callback's `CreateAkceComponent()` method.
+Komponenty akcí řídí _jak_ akce postupuje v čase. Vytvářejí se v metodě `CreateActionComponent()` callbacku.
 
-**File:** `4_World/classes/useractionscomponent/actioncomponents/`
+**Soubor:** `4_World/classes/useractionscomponent/actioncomponents/`
 
-### Available Components
+### Dostupné komponenty
 
-| Component | Parametry | Behavior |
+| Komponenta | Parametry | Chování |
 |-----------|------------|----------|
-| `CASingleUse` | none | Instant execution, no progress |
-| `CAInteract` | none | Instant execution for interact actions |
-| `CAContinuousTime` | `float time` | Progress bar, completes after `time` seconds |
-| `CAContinuousRepeat` | `float time` | Repeating cycles, fires `OnFinishProgress` each cycle |
-| `CAContinuousQuantity` | `float quantity, float time` | Consumes quantity over time |
-| `CAContinuousQuantityEdible` | `float quantity, float time` | Like Quantity but applies food/drink modifiers |
+| `CASingleUse` | žádné | Okamžité vykonání, žádný postup |
+| `CAInteract` | žádné | Okamžité vykonání pro interaktivní akce |
+| `CAContinuousTime` | `float time` | Progress bar, dokončí se po `time` sekundách |
+| `CAContinuousRepeat` | `float time` | Opakující se cykly, vyvolá `OnFinishProgress` každý cyklus |
+| `CAContinuousQuantity` | `float quantity, float time` | Spotřebovává množství v čase |
+| `CAContinuousQuantityEdible` | `float quantity, float time` | Jako Quantity, ale aplikuje modifikátory jídla/pití |
 
 ### CAContinuousTime
 
-Single progress bar that completes once:
+Jednoduchý progress bar, který se dokončí jednou:
 
 ```c
 class MyActionCB : ActionContinuousBaseCB
 {
     override void CreateActionComponent()
     {
-        // 5-second progress bar
+        // 5sekundový progress bar
         m_ActionData.m_ActionComponent = new CAContinuousTime(UATimeSpent.DEFAULT_CONSTRUCT);
     }
 }
@@ -787,42 +787,42 @@ class MyActionCB : ActionContinuousBaseCB
 
 ### CAContinuousRepeat
 
-Repeating cycles --- `OnFinishProgressServer()` is called each time a cycle completes, and the action continues until the player releases the key:
+Opakující se cykly --- `OnFinishProgressServer()` je volán pokaždé, když se cyklus dokončí, a akce pokračuje, dokud hráč neuvolní klávesu:
 
 ```c
 class MyRepeatActionCB : ActionContinuousBaseCB
 {
     override void CreateActionComponent()
     {
-        // Each cycle takes 5 seconds, repeats until player stops
+        // Každý cyklus trvá 5 sekund, opakuje se, dokud hráč nepřestane
         m_ActionData.m_ActionComponent = new CAContinuousRepeat(UATimeSpent.DEFAULT_REPAIR_CYCLE);
     }
 }
 ```
 
-### Time Konstanty
+### Časové konstanty
 
-**File:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
+**Soubor:** `4_World/classes/useractionscomponent/actions/actionconstants.c`
 
-| Konstanta | Hodnota (seconds) | Use |
+| Konstanta | Hodnota (sekundy) | Použití |
 |----------|----------------|-----|
-| `UATimeSpent.DEFAULT` | 1.0 | General |
-| `UATimeSpent.DEFAULT_CONSTRUCT` | 5.0 | Construction |
-| `UATimeSpent.DEFAULT_REPAIR_CYCLE` | 5.0 | Repair per cycle |
-| `UATimeSpent.DEFAULT_DEPLOY` | 5.0 | Deploying items |
-| `UATimeSpent.BANDAGE` | 4.0 | Bandaging |
-| `UATimeSpent.RESTRAIN` | 10.0 | Restraining |
-| `UATimeSpent.SHAVE` | 12.75 | Shaving |
-| `UATimeSpent.SKIN` | 10.0 | Skinning animals |
-| `UATimeSpent.DIG_STASH` | 10.0 | Digging stash |
+| `UATimeSpent.DEFAULT` | 1.0 | Obecné |
+| `UATimeSpent.DEFAULT_CONSTRUCT` | 5.0 | Stavění |
+| `UATimeSpent.DEFAULT_REPAIR_CYCLE` | 5.0 | Oprava za cyklus |
+| `UATimeSpent.DEFAULT_DEPLOY` | 5.0 | Rozmisťování předmětů |
+| `UATimeSpent.BANDAGE` | 4.0 | Obvazování |
+| `UATimeSpent.RESTRAIN` | 10.0 | Spoutání |
+| `UATimeSpent.SHAVE` | 12.75 | Holení |
+| `UATimeSpent.SKIN` | 10.0 | Stahování zvířat |
+| `UATimeSpent.DIG_STASH` | 10.0 | Kopání úkrytu |
 
 ---
 
-## Vanilla Priklads Annotated
+## Anotované vanilla příklady
 
-### AkceOpenDoors (Interact)
+### ActionOpenDoors (interaktivní)
 
-**File:** `4_World/classes/useractionscomponent/actions/interact/actionopendoors.c`
+**Soubor:** `4_World/classes/useractionscomponent/actions/interact/actionopendoors.c`
 
 ```c
 class ActionOpenDoors : ActionInteractBase
@@ -831,13 +831,13 @@ class ActionOpenDoors : ActionInteractBase
     {
         m_CommandUID  = DayZPlayerConstants.CMD_ACTIONMOD_OPENDOORFW;
         m_StanceMask  = DayZPlayerConstants.STANCEMASK_CROUCH | DayZPlayerConstants.STANCEMASK_ERECT;
-        m_Text        = "#open";   // stringtable reference
+        m_Text        = "#open";   // reference na stringtable
     }
 
     override void CreateConditionComponents()
     {
-        m_ConditionItem   = new CCINone();      // no item needed
-        m_ConditionTarget = new CCTCursor();     // cursor must be on something
+        m_ConditionItem   = new CCINone();      // žádný předmět není potřeba
+        m_ConditionTarget = new CCTCursor();     // kurzor musí být na něčem
     }
 
     override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
@@ -873,14 +873,14 @@ class ActionOpenDoors : ActionInteractBase
 }
 ```
 
-Key takeaways:
-- Uses `OnStartServer()` (not `OnExecuteServer()`) because interact actions fire immediately
-- `GetComponentIndex()` retrieves which door the player is looking at
-- Distance check done manually with `IsInReach()` as well as via `CCTCursor`
+Klíčové poznatky:
+- Používá `OnStartServer()` (ne `OnExecuteServer()`), protože interaktivní akce se vyvolají okamžitě
+- `GetComponentIndex()` získává, na které dveře se hráč dívá
+- Kontrola vzdálenosti provedena ručně pomocí `IsInReach()` i přes `CCTCursor`
 
-### AkceTurnOnPowerGenerator (Interact)
+### ActionTurnOnPowerGenerator (interaktivní)
 
-**File:** `4_World/classes/useractionscomponent/actions/interact/actionturnonpowergenerator.c`
+**Soubor:** `4_World/classes/useractionscomponent/actions/interact/actionturnonpowergenerator.c`
 
 ```c
 class ActionTurnOnPowerGenerator : ActionInteractBase
@@ -916,14 +916,14 @@ class ActionTurnOnPowerGenerator : ActionInteractBase
 }
 ```
 
-Key takeaways:
-- Inherits default `CreateConditionComponents()` from `AkceInteractBase` (`CCINone` + `CCTObject(DEFAULT)`)
-- Uses `OnExecuteServer()` for the actual toggle --- this fires on the animation event
-- Multiple condition checks chained in `AkceCondition()`
+Klíčové poznatky:
+- Dědí výchozí `CreateConditionComponents()` z `ActionInteractBase` (`CCINone` + `CCTObject(DEFAULT)`)
+- Používá `OnExecuteServer()` pro skutečné přepnutí --- to se vyvolá při události animace
+- Více kontrol podmínek řetězených v `ActionCondition()`
 
-### AkceEat (Continuous)
+### ActionEat (kontinuální)
 
-**File:** `4_World/classes/useractionscomponent/actions/continuous/actioneat.c`
+**Soubor:** `4_World/classes/useractionscomponent/actions/continuous/actioneat.c`
 
 ```c
 class ActionEatBigCB : ActionContinuousBaseCB
@@ -931,8 +931,8 @@ class ActionEatBigCB : ActionContinuousBaseCB
     override void CreateActionComponent()
     {
         m_ActionData.m_ActionComponent = new CAContinuousQuantityEdible(
-            UAQuantityConsumed.EAT_BIG,   // 25 units consumed per cycle
-            UATimeSpent.DEFAULT            // 1 second per cycle
+            UAQuantityConsumed.EAT_BIG,   // 25 jednotek spotřebovaných za cyklus
+            UATimeSpent.DEFAULT            // 1 sekunda za cyklus
         );
     }
 }
@@ -958,38 +958,38 @@ class ActionEatBig : ActionConsume
 }
 ```
 
-Key takeaways:
-- The callback class controls the pacing (`CAContinuousQuantityEdible`)
-- `AkceConsume` (the parent) handles all the food consumption logic
-- `HasTarget()` returns false --- eating is a self-action
-- Different eat sizes just swap the callback class with different `UAQuantityConsumed` values
+Klíčové poznatky:
+- Třída callbacku řídí tempo (`CAContinuousQuantityEdible`)
+- `ActionConsume` (rodič) zpracovává veškerou logiku konzumace jídla
+- `HasTarget()` vrací false --- jedení je akce na sebe
+- Různé velikosti jídla pouze vyměňují třídu callbacku s různými hodnotami `UAQuantityConsumed`
 
 ---
 
-## Advanced Topics
+## Pokročilá témata
 
-### Akce Condition Masks
+### Masky podmínek akcí
 
-Akces can be restricted to specific player states using `AkceConditionMask`:
+Akce mohou být omezeny na specifické stavy hráče pomocí `ActionConditionMask`:
 
 ```c
 enum ActionConditionMask
 {
-    ACM_NO_EXEPTION    = 0,     // no special conditions
-    ACM_IN_VEHICLE     = 1,     // can use in vehicle
-    ACM_ON_LADDER      = 2,     // can use on ladder
-    ACM_SWIMMING       = 4,     // can use while swimming
-    ACM_RESTRAIN       = 8,     // can use while restrained
-    ACM_RAISED         = 16,    // can use with weapon raised
-    ACM_ON_BACK        = 32,    // can use while on back
-    ACM_THROWING       = 64,    // can use while throwing
-    ACM_LEANING        = 128,   // can use while leaning
-    ACM_BROKEN_LEGS    = 256,   // can use with broken legs
-    ACM_IN_FREELOOK    = 512,   // can use in freelook
+    ACM_NO_EXEPTION    = 0,     // žádné speciální podmínky
+    ACM_IN_VEHICLE     = 1,     // lze použít ve vozidle
+    ACM_ON_LADDER      = 2,     // lze použít na žebříku
+    ACM_SWIMMING       = 4,     // lze použít při plavání
+    ACM_RESTRAIN       = 8,     // lze použít při spoutání
+    ACM_RAISED         = 16,    // lze použít se zdviženou zbraní
+    ACM_ON_BACK        = 32,    // lze použít na zádech
+    ACM_THROWING       = 64,    // lze použít při házení
+    ACM_LEANING        = 128,   // lze použít při naklonění
+    ACM_BROKEN_LEGS    = 256,   // lze použít se zlomenými nohami
+    ACM_IN_FREELOOK    = 512,   // lze použít ve volném pohledu
 }
 ```
 
-Override the corresponding methods in your action to enable these:
+Přepište odpovídající metody ve své akci pro povolení:
 
 ```c
 class MyVehicleAction : ActionSingleUseBase
@@ -1001,46 +1001,46 @@ class MyVehicleAction : ActionSingleUseBase
 }
 ```
 
-### Full Body vs Additive Animations
+### Celotelové vs aditivní animace
 
-Akces can be **additive** (player can walk) or **full body** (player is locked in place):
+Akce mohou být **aditivní** (hráč se může pohybovat) nebo **celotelové** (hráč je zafixován na místě):
 
 ```c
 class MyFullBodyAction : ActionContinuousBase
 {
     void MyFullBodyAction()
     {
-        m_FullBody = true;   // player cannot move during action
+        m_FullBody = true;   // hráč se nemůže hýbat během akce
         m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_ASSEMBLE;
         m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT;
     }
 }
 ```
 
-- **Additive** (`m_FullBody = false`): Uses `CMD_ACTIONMOD_*` command UIDs. Player can walk.
-- **Full body** (`m_FullBody = true`): Uses `CMD_ACTIONFB_*` command UIDs. Player is stationary.
+- **Aditivní** (`m_FullBody = false`): Používá `CMD_ACTIONMOD_*` command UID. Hráč se může pohybovat.
+- **Celotelová** (`m_FullBody = true`): Používá `CMD_ACTIONFB_*` command UID. Hráč je stacionární.
 
-### Prone Exception
+### Výjimka pro ležení
 
-Some actions need different animations when prone vs standing:
+Některé akce potřebují jiné animace vleže oproti stání:
 
 ```c
 override bool HasProneException()
 {
-    return true;  // uses m_CommandUIDProne when player is prone
+    return true;  // používá m_CommandUIDProne, když je hráč vleže
 }
 ```
 
-When `HasProneException()` returns true, the engine uses `m_CommandUIDProne` instead of `m_CommandUID` if the player is in prone stance.
+Když `HasProneException()` vrací true, engine používá `m_CommandUIDProne` místo `m_CommandUID`, pokud je hráč v poloze vleže.
 
-### Akce Interruption
+### Přerušení akce
 
-Akces can be interrupted server-side through the callback:
+Akce mohou být přerušeny na straně serveru přes callback:
 
 ```c
 override void OnFinishProgressServer(ActionData action_data)
 {
-    // Check if action should be interrupted
+    // Zkontrolovat, zda by měla být akce přerušena
     if (SomeConditionFailed())
     {
         if (action_data.m_Callback)
@@ -1048,96 +1048,96 @@ override void OnFinishProgressServer(ActionData action_data)
         return;
     }
 
-    // Normal execution...
+    // Normální vykonání...
 }
 ```
 
-### Inventory and Quickbar Execution
+### Vykonání z inventáře a quickbaru
 
-Akces can be configured to run from the inventory screen or quickbar:
+Akce mohou být nakonfigurovány pro spuštění z obrazovky inventáře nebo quickbaru:
 
 ```c
 override bool CanBePerformedFromInventory()
 {
-    return true;   // action appears in inventory item context menu
+    return true;   // akce se objeví v kontextovém menu předmětu v inventáři
 }
 
 override bool CanBePerformedFromQuickbar()
 {
-    return true;   // action can be triggered via quickbar
+    return true;   // akce může být spuštěna přes quickbar
 }
 ```
 
-### Lock Target On Use
+### Uzamčení cíle při použití
 
-By default, actions with targets lock the target so only one player can interact at a time:
+Ve výchozím nastavení akce s cíli uzamknou cíl, takže s ním může interagovat pouze jeden hráč:
 
 ```c
 override bool IsLockTargetOnUse()
 {
-    return false;  // allow multiple players to interact simultaneously
+    return false;  // povolit více hráčům interagovat současně
 }
 ```
 
 ---
 
-## Akce Kategorie Konstanty
+## Konstanty kategorií akcí
 
-**File:** `4_World/classes/useractionscomponent/_constants.c`
+**Soubor:** `4_World/classes/useractionscomponent/_constants.c`
 
 | Konstanta | Hodnota | Popis |
 |----------|-------|-------------|
-| `AC_UNCATEGORIZED` | 0 | Vychozi --- should not be used |
-| `AC_SINGLE_USE` | 1 | Single-use actions |
-| `AC_CONTINUOUS` | 2 | Continuous (progress bar) actions |
-| `AC_INTERACT` | 3 | Interact actions |
+| `AC_UNCATEGORIZED` | 0 | Výchozí --- nemělo by se používat |
+| `AC_SINGLE_USE` | 1 | Jednorázové akce |
+| `AC_CONTINUOUS` | 2 | Kontinuální (s progress barem) akce |
+| `AC_INTERACT` | 3 | Interaktivní akce |
 
 ---
 
-## Caste chyby
+## Časté chyby
 
-### 1. Forgetting `super.SetAkces()`
+### 1. Zapomenutí `super.SetActions()`
 
-**Wrong:**
+**Špatně:**
 ```c
 modded class Apple extends ItemBase
 {
     override void SetActions()
     {
-        // Missing super.SetActions()!
+        // Chybí super.SetActions()!
         AddAction(MyCustomEatAction);
     }
 }
 ```
 
-This **removes all vanilla actions** from the item. The player will no longer be able to eat, drop, or otherwise interact with apples through standard actions.
+Toto **odstraní všechny vanilla akce** z předmětu. Hráč už nebude moci jíst, zahodit nebo jinak interagovat s jablky přes standardní akce.
 
-**Correct:**
+**Správně:**
 ```c
 modded class Apple extends ItemBase
 {
     override void SetActions()
     {
-        super.SetActions();          // preserve vanilla actions
+        super.SetActions();          // zachovat vanilla akce
         AddAction(MyCustomEatAction);
     }
 }
 ```
 
-### 2. Putting Server Logic in OnExecuteClient
+### 2. Umístění serverové logiky do OnExecuteClient
 
-**Wrong:**
+**Špatně:**
 ```c
 override void OnExecuteClient(ActionData action_data)
 {
-    action_data.m_Player.SetHealth("GlobalHealth", "Health", 100);  // NO EFFECT
-    action_data.m_MainItem.Delete();  // client-side only, will desync
+    action_data.m_Player.SetHealth("GlobalHealth", "Health", 100);  // ŽÁDNÝ EFEKT
+    action_data.m_MainItem.Delete();  // pouze na straně klienta, způsobí desync
 }
 ```
 
-Health changes and inventory operations must happen on the server. `OnExecuteClient` is only for visual feedback (sounds, particle effects, UI updates).
+Změny zdraví a inventářové operace se musí odehrávat na serveru. `OnExecuteClient` je pouze pro vizuální zpětnou vazbu (zvuky, částicové efekty, aktualizace UI).
 
-**Correct:**
+**Správně:**
 ```c
 override void OnExecuteServer(ActionData action_data)
 {
@@ -1147,21 +1147,21 @@ override void OnExecuteServer(ActionData action_data)
 
 override void OnExecuteClient(ActionData action_data)
 {
-    // Visual feedback only
+    // Pouze vizuální zpětná vazba
 }
 ```
 
-### 3. Not Checking for Null in AkceCondition
+### 3. Nekontrolování null v ActionCondition
 
-**Wrong:**
+**Špatně:**
 ```c
 override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 {
-    return target.GetObject().IsInherited(MyClass);  // CRASH if target or object is null
+    return target.GetObject().IsInherited(MyClass);  // PÁD pokud je target nebo objekt null
 }
 ```
 
-**Correct:**
+**Správně:**
 ```c
 override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase item)
 {
@@ -1176,44 +1176,44 @@ override bool ActionCondition(PlayerBase player, ActionTarget target, ItemBase i
 }
 ```
 
-### 4. Wrong Condition Components (Akce Never Appears)
+### 4. Špatné komponenty podmínek (akce se nikdy neobjeví)
 
-**Problem:** Akce does not show up in the HUD.
+**Problém:** Akce se nezobrazí v HUD.
 
-Common causes:
-- `CCIDummy` requires an item in hand, but the action should work with empty hands --- use `CCINone` instead
-- `CCTDummy` requires a target object, but the action is a self-action --- use `CCTSelf` or `CCTNone`
-- `CCTObject` distance too small for the target type --- increase distance parameter
-- `HasTarget()` returns true but there is no valid target condition --- either add `CCTCursor`/`CCTObject` or set `HasTarget()` to false
+Běžné příčiny:
+- `CCIDummy` vyžaduje předmět v ruce, ale akce by měla fungovat s prázdnými rukama --- použijte místo toho `CCINone`
+- `CCTDummy` vyžaduje cílový objekt, ale akce je akce na sebe --- použijte `CCTSelf` nebo `CCTNone`
+- Vzdálenost `CCTObject` příliš malá pro typ cíle --- zvyšte parametr vzdálenosti
+- `HasTarget()` vrací true, ale neexistuje platná podmínka cíle --- buď přidejte `CCTCursor`/`CCTObject`, nebo nastavte `HasTarget()` na false
 
-### 5. Mixing Up OnStart vs OnExecute
+### 5. Záměna OnStart a OnExecute
 
-- `OnStart` / `OnStartServer`: Called when the action **begins** (animation starts). Use for setup, reserving items.
-- `OnExecute` / `OnExecuteServer`: Called when the animation **event fires** (the "do" moment). Use for the actual effect.
+- `OnStart` / `OnStartServer`: Volá se, když akce **začíná** (animace startuje). Použijte pro nastavení, rezervaci předmětů.
+- `OnExecute` / `OnExecuteServer`: Volá se, když se **vyvolá událost animace** (okamžik "provedení"). Použijte pro skutečný efekt.
 
-For interact actions, `OnStartServer` is commonly used because the action is instantaneous. For single-use actions, `OnExecuteServer` fires at the animation event. Choose the right one based on when you need the effect to happen.
+Pro interaktivní akce se běžně používá `OnStartServer`, protože akce je okamžitá. Pro jednorázové akce se `OnExecuteServer` vyvolá při události animace. Vyberte správnou metodu podle toho, kdy potřebujete, aby efekt nastal.
 
-### 6. Continuous Akce Not Repeating
+### 6. Kontinuální akce se neopakuje
 
-If your continuous action completes once and stops instead of repeating, you are using `CAContinuousTime` (single completion). Switch to `CAContinuousRepeat` for repeating cycles:
+Pokud se vaše kontinuální akce dokončí jednou a zastaví se místo opakování, používáte `CAContinuousTime` (jedno dokončení). Přepněte na `CAContinuousRepeat` pro opakující se cykly:
 
 ```c
-// Single completion — progress bar fills once then action ends
+// Jedno dokončení — progress bar se naplní jednou, pak akce skončí
 m_ActionData.m_ActionComponent = new CAContinuousTime(5.0);
 
-// Repeating — progress bar fills, fires OnFinishProgress, resets, continues
+// Opakování — progress bar se naplní, vyvolá OnFinishProgress, resetuje se, pokračuje
 m_ActionData.m_ActionComponent = new CAContinuousRepeat(5.0);
 ```
 
-### 7. Akce Shows on Wrong Items
+### 7. Akce se zobrazuje na špatných předmětech
 
-Remember: `SetAkces()` is called per **class type**, not per instance. If you add an action in a parent class, all children inherit it. If you only want the action on specific subclasses, either:
-- Add it only in the specific subclass's `SetAkces()`
-- Add a type check in `AkceCondition()` as a guard
+Pamatujte: `SetActions()` se volá podle **typu třídy**, ne podle instance. Pokud přidáte akci v rodičovské třídě, všechny potomky ji zdědí. Pokud chcete akci pouze na specifických podtřídách, buď:
+- Přidejte ji pouze v `SetActions()` specifické podtřídy
+- Přidejte kontrolu typu v `ActionCondition()` jako ochranu
 
-### 8. Forgetting HasTarget() Override
+### 8. Zapomenutí přepsání HasTarget()
 
-If your action is a self-action (eating, healing, toggling held item), you must override:
+Pokud je vaše akce akce na sebe (jedení, léčení, přepínání drženého předmětu), musíte přepsat:
 
 ```c
 override bool HasTarget()
@@ -1222,56 +1222,56 @@ override bool HasTarget()
 }
 ```
 
-Without this, the engine expects a target object and may not show the action, or will try to sync a non-existent target to the server.
+Bez toho engine očekává cílový objekt a nemusí akci zobrazit, nebo se pokusí synchronizovat neexistující cíl na server.
 
 ---
 
-## File Locations Rychla reference
+## Rychlá reference umístění souborů
 
-| File | Ucel |
+| Soubor | Účel |
 |------|---------|
-| `4_World/classes/useractionscomponent/actionbase.c` | `AkceBase` --- core action class |
-| `4_World/classes/useractionscomponent/animatedactionbase.c` | `AnimatedAkceBase` + `AkceBaseCB` |
-| `4_World/classes/useractionscomponent/actions/actionsingleusebase.c` | `AkceSingleUseBase` |
-| `4_World/classes/useractionscomponent/actions/actioncontinuousbase.c` | `AkceContinuousBase` |
-| `4_World/classes/useractionscomponent/actions/actioninteractbase.c` | `AkceInteractBase` |
+| `4_World/classes/useractionscomponent/actionbase.c` | `ActionBase` --- jádro třídy akce |
+| `4_World/classes/useractionscomponent/animatedactionbase.c` | `AnimatedActionBase` + `ActionBaseCB` |
+| `4_World/classes/useractionscomponent/actions/actionsingleusebase.c` | `ActionSingleUseBase` |
+| `4_World/classes/useractionscomponent/actions/actioncontinuousbase.c` | `ActionContinuousBase` |
+| `4_World/classes/useractionscomponent/actions/actioninteractbase.c` | `ActionInteractBase` |
 | `4_World/classes/useractionscomponent/actions/actionconstants.c` | `UATimeSpent`, `UAMaxDistances`, `UAQuantityConsumed` |
 | `4_World/classes/useractionscomponent/_constants.c` | `AC_SINGLE_USE`, `AC_CONTINUOUS`, `AC_INTERACT` |
-| `4_World/classes/useractionscomponent/actiontargets.c` | `AkceTarget`, `AkceTargets` |
-| `4_World/classes/useractionscomponent/itemconditioncomponents/` | `CCI*` classes |
-| `4_World/classes/useractionscomponent/targetconditionscomponents/` | `CCT*` classes |
-| `4_World/classes/useractionscomponent/actioncomponents/` | `CA*` progress components |
-| `3_Game/constants.c` | `UA_NONE`, `UA_PROCESSING`, `UA_FINISHED`, etc. |
+| `4_World/classes/useractionscomponent/actiontargets.c` | `ActionTarget`, `ActionTargets` |
+| `4_World/classes/useractionscomponent/itemconditioncomponents/` | Třídy `CCI*` |
+| `4_World/classes/useractionscomponent/targetconditionscomponents/` | Třídy `CCT*` |
+| `4_World/classes/useractionscomponent/actioncomponents/` | Komponenty postupu `CA*` |
+| `3_Game/constants.c` | `UA_NONE`, `UA_PROCESSING`, `UA_FINISHED` atd. |
 
 ---
 
-## Shrnuti
+## Shrnutí
 
-The DayZ Akce System follows a consistent pattern:
+Systém akcí DayZ sleduje konzistentní vzor:
 
-1. **Choose your base class**: `AkceSingleUseBase` for instant, `AkceContinuousBase` for timed, `AkceInteractBase` for world toggles
-2. **Set condition components** in `CreateConditionComponents()`: CCI for item requirements, CCT for target requirements
-3. **Add custom validation** in `AkceCondition()`: type checks, state checks, distance checks
-4. **Implement server logic** in `OnExecuteServer()` or `OnFinishProgressServer()`
-5. **Register the action** via `AddAkce()` in the appropriate entity's `SetAkces()`
-6. **Always call `super.SetAkces()`** to preserve vanilla actions
+1. **Vyberte si základní třídu**: `ActionSingleUseBase` pro okamžité, `ActionContinuousBase` pro časované, `ActionInteractBase` pro přepínání ve světě
+2. **Nastavte komponenty podmínek** v `CreateConditionComponents()`: CCI pro požadavky na předmět, CCT pro požadavky na cíl
+3. **Přidejte vlastní validaci** v `ActionCondition()`: kontroly typu, stavu, vzdálenosti
+4. **Implementujte serverovou logiku** v `OnExecuteServer()` nebo `OnFinishProgressServer()`
+5. **Zaregistrujte akci** přes `AddAction()` v `SetActions()` příslušné entity
+6. **Vždy volejte `super.SetActions()`** pro zachování vanilla akcí
 
-The system is designed to be modular: condition components handle "can this happen?", action components handle "how long does it take?", and your overrides handle "what does it do?". Keep server logic on the server, visual feedback on the client, and always null-check your targets.
+Systém je navržen jako modulární: komponenty podmínek zpracovávají "může se to stát?", komponenty akcí zpracovávají "jak dlouho to trvá?", a vaše přepsání zpracovávají "co to dělá?". Udržujte serverovou logiku na serveru, vizuální zpětnou vazbu na klientu a vždy kontrolujte null u svých cílů.
 
 ---
 
-## Doporucene postupy
+## Doporučené postupy
 
-- **Always call `super.SetAkces()` when modding existing items.** Omitting it removes all vanilla actions (eat, drop, inspect) from the item, breaking core gameplay.
-- **Put all state-changing logic in `OnExecuteServer` or `OnFinishProgressServer`.** Health changes, item deletion, and inventory manipulation must run server-side. `OnExecuteClient` is only for visual feedback.
-- **Use `CCTObject` with appropriate distance constants.** Hardcoding distance checks in `AkceCondition()` is fragile. The built-in condition components handle distance gating, cursor alignment, and item state checks consistently.
-- **Null-check every object in `AkceCondition()`.** The method is called frequently with potentially null targets. Accessing `.GetObject()` without a guard causes crashes that are hard to diagnose.
-- **Prefer `CAContinuousRepeat` over `CAContinuousTime` for repair-style actions.** Repeat fires `OnFinishProgressServer` each cycle and continues until the player releases the key, which feels more natural for ongoing tasks.
+- **Vždy volejte `super.SetActions()` při modování existujících předmětů.** Vynechání odstraní všechny vanilla akce (jíst, zahodit, prozkoumat) z předmětu, čímž naruší základní hratelnost.
+- **Umístěte veškerou logiku měnící stav do `OnExecuteServer` nebo `OnFinishProgressServer`.** Změny zdraví, mazání předmětů a manipulace s inventářem se musí provádět na straně serveru. `OnExecuteClient` je pouze pro vizuální zpětnou vazbu.
+- **Používejte `CCTObject` s příslušnými konstantami vzdálenosti.** Natvrdo kódovat kontroly vzdálenosti v `ActionCondition()` je křehké. Vestavěné komponenty podmínek zpracovávají brání vzdálenosti, zarovnání kurzoru a kontroly stavu předmětů konzistentně.
+- **Kontrolujte null u každého objektu v `ActionCondition()`.** Metoda je volána často s potenciálně nulovými cíli. Přístup k `.GetObject()` bez ochrany způsobuje pády, které se těžko diagnostikují.
+- **Preferujte `CAContinuousRepeat` před `CAContinuousTime` pro akce typu opravy.** Repeat vyvolá `OnFinishProgressServer` každý cyklus a pokračuje, dokud hráč neuvolní klávesu, což působí přirozeněji pro probíhající úkoly.
 
 ---
 
 ## Kompatibilita a dopad
 
-- **Multi-Mod:** Akces are registered per class type via `SetAkces()`. Two mods adding different actions to the same item class both work -- actions accumulate. However, if both mods override `SetAkces()` without calling `super`, only the last-loaded mod's actions survive.
-- **Performance:** `AkceCondition()` is evaluated every frame for every candidate action on the player's current target. Keep it lightweight -- avoid expensive raycasts, config lookups, or array iterations inside condition checks.
-- **Server/Client:** The action pipeline is split: condition checks and UI display run on the client, execution callbacks run on the server. The engine handles synchronization via internal RPCs. Never rely on client-side state for authoritative game logic.
+- **Multi-mod:** Akce jsou registrovány podle typu třídy přes `SetActions()`. Dva mody přidávající různé akce ke stejné třídě předmětu oba fungují --- akce se hromadí. Pokud však oba mody přepíší `SetActions()` bez volání `super`, přežijí pouze akce posledně načteného modu.
+- **Výkon:** `ActionCondition()` je vyhodnocován každý snímek pro každou kandidátní akci na aktuálním cíli hráče. Udržujte ho lehký --- vyhněte se drahým raycastům, vyhledáváním v konfigu nebo iteracím polí uvnitř kontrol podmínek.
+- **Server/klient:** Pipeline akce je rozdělen: kontroly podmínek a zobrazení UI běží na klientu, callbacky vykonání běží na serveru. Engine zpracovává synchronizaci přes interní RPC. Nikdy se nespoléhejte na stav klienta pro autoritativní herní logiku.

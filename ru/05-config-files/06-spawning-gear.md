@@ -1,38 +1,40 @@
-# Chapter 5.6: Spawning Gear Configuration
+# Глава 5.6: Конфигурация снаряжения при спавне
 
-[Home](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
+[Главная](../../README.md) | [<< Предыдущая: Конфигурационные файлы сервера](05-server-configs.md) | **Конфигурация снаряжения при спавне**
 
 ---
+
+> **Краткое описание:** В DayZ есть две взаимодополняющие системы, которые контролируют появление игроков в мире: **точки спавна** определяют, *где* на карте появляется персонаж, а **снаряжение спавна** определяет, *какое оборудование* он несёт. Эта глава подробно охватывает обе системы, включая структуру файлов, справочник по полям, практические пресеты и интеграцию с модами.
 
 ---
 
 ## Содержание
 
-- [Overview](#overview)
-- [The Two Systems](#the-two-systems)
-- [Spawn Gear: cfgPlayerSpawnGear.json](#spawn-gear-cfgplayerspawngearjson)
-  - [Enabling Spawn Gear Presets](#enabling-spawn-gear-presets)
-  - [Preset Structure](#preset-structure)
+- [Обзор](#обзор)
+- [Две системы](#две-системы)
+- [Снаряжение спавна: cfgPlayerSpawnGear.json](#снаряжение-спавна-cfgplayerspawngearjson)
+  - [Включение пресетов снаряжения](#включение-пресетов-снаряжения)
+  - [Структура пресета](#структура-пресета)
   - [attachmentSlotItemSets](#attachmentslotitemsets)
   - [DiscreteItemSets](#discreteitemsets)
   - [discreteUnsortedItemSets](#discreteunsorteditemsets)
   - [ComplexChildrenTypes](#complexchildrentypes)
   - [SimpleChildrenTypes](#simplechildrentypes)
-  - [Attributes](#attributes)
-- [Spawn Points: cfgplayerspawnpoints.xml](#spawn-points-cfgplayerspawnpointsxml)
-  - [File Structure](#file-structure)
+  - [Атрибуты](#атрибуты)
+- [Точки спавна: cfgplayerspawnpoints.xml](#точки-спавна-cfgplayerspawnpointsxml)
+  - [Структура файла](#структура-файла)
   - [spawn_params](#spawn_params)
   - [generator_params](#generator_params)
-  - [Spawning Groups](#spawning-groups)
-  - [Map-Specific Configs](#map-specific-configs)
-- [Practical Examples](#practical-examples)
-  - [Default Survivor Loadout](#default-survivor-loadout)
-  - [Military Spawn Kit](#military-spawn-kit)
-  - [Medical Spawn Kit](#medical-spawn-kit)
-  - [Random Gear Selection](#random-gear-selection)
-- [Integration with Mods](#integration-with-mods)
-- [Best Practices](#best-practices)
-- [Common Mistakes](#common-mistakes)
+  - [Группы спавна](#группы-спавна)
+  - [Конфигурации для конкретных карт](#конфигурации-для-конкретных-карт)
+- [Практические примеры](#практические-примеры)
+  - [Стандартный набор выжившего](#стандартный-набор-выжившего)
+  - [Военный набор спавна](#военный-набор-спавна)
+  - [Медицинский набор спавна](#медицинский-набор-спавна)
+  - [Случайный выбор снаряжения](#случайный-выбор-снаряжения)
+- [Интеграция с модами](#интеграция-с-модами)
+- [Лучшие практики](#лучшие-практики)
+- [Типичные ошибки](#типичные-ошибки)
 
 ---
 
@@ -40,37 +42,37 @@
 
 ```mermaid
 flowchart TD
-    A[Player connects] --> B{cfgGameplay.json enabled?}
-    B -->|Yes| C[Load cfgPlayerSpawnGear.json]
-    B -->|No| D[Use StartingEquipSetup in init.c]
-    C --> E[Select preset by spawnWeight]
-    E --> F[Select characterType]
-    F --> G[Apply attachmentSlotItemSets]
-    G --> H[Apply discreteItemSets to cargo]
-    H --> I[Set item attributes - health, quantity]
-    I --> J[Player spawns with gear]
+    A[Игрок подключается] --> B{cfgGameplay.json включён?}
+    B -->|Да| C[Загрузить cfgPlayerSpawnGear.json]
+    B -->|Нет| D[Использовать StartingEquipSetup в init.c]
+    C --> E[Выбрать пресет по spawnWeight]
+    E --> F[Выбрать characterType]
+    F --> G[Применить attachmentSlotItemSets]
+    G --> H[Применить discreteItemSets к грузу]
+    H --> I[Установить атрибуты предметов - здоровье, количество]
+    I --> J[Игрок спавнится со снаряжением]
     D --> J
 ```
 
-When a player spawns as a fresh character in DayZ, two questions are answered by the server:
+Когда игрок спавнится как новый персонаж в DayZ, сервер отвечает на два вопроса:
 
-1. **Where does the character appear?** --- Controlled by `cfgplayerspawnpoints.xml`.
-2. **What does the character carry?** --- Controlled by spawn gear preset JSON files, registered through `cfggameplay.json`.
+1. **Где появляется персонаж?** --- Контролируется файлом `cfgplayerspawnpoints.xml`.
+2. **Что несёт персонаж?** --- Контролируется JSON-файлами пресетов снаряжения, зарегистрированными через `cfggameplay.json`.
 
-Both systems are server-side only. Clients never см.se configuration files and cannot tamper with them. The spawn gear system was introduced as an alternative to scripting loadouts in `init.c`, allowing server admins to define multiple weighted presets in JSON without writing any Enforce Script code.
+Обе системы работают только на стороне сервера. Клиенты никогда не видят эти конфигурационные файлы и не могут их изменить. Система снаряжения спавна была введена как альтернатива скриптовым загрузкам в `init.c`, позволяя администраторам серверов определять несколько взвешенных пресетов в JSON без написания какого-либо кода Enforce Script.
 
-> **Важно:** The spawn gear preset system **completely overrides** the `StartingEquipSetup()` method in your mission `init.c`. If you enable spawn gear presets in `cfggameplay.json`, your scripted loadout code will be ignored. Similarly, character types defined in the presets override the character model chosen in the main menu.
+> **Важно:** Система пресетов снаряжения при спавне **полностью переопределяет** метод `StartingEquipSetup()` в вашем файле миссии `init.c`. Если вы включите пресеты снаряжения в `cfggameplay.json`, ваш скриптовый код загрузки будет проигнорирован. Аналогично, типы персонажей, определённые в пресетах, переопределяют модель персонажа, выбранную в главном меню.
 
 ---
 
 ## Две системы
 
-| Система | Файл | Формат | Управляет |
+| Система | Файл | Формат | Контролирует |
 |--------|------|--------|----------|
-| Spawn Points | `cfgplayerspawnpoints.xml` | XML | **Where** --- map positions, distance scoring, spawn groups |
-| Spawn Gear | Custom preset JSON files | JSON | **What** --- character model, clothing, weapons, cargo, quickbar |
+| Точки спавна | `cfgplayerspawnpoints.xml` | XML | **Где** --- позиции на карте, оценка расстояний, группы спавна |
+| Снаряжение спавна | Пользовательские JSON-файлы пресетов | JSON | **Что** --- модель персонажа, одежда, оружие, груз, быстрая панель |
 
-The two systems are independent. You can use custom spawn points with vanilla gear, custom gear with vanilla spawn points, or customize both.
+Две системы независимы. Вы можете использовать пользовательские точки спавна с ванильным снаряжением, пользовательское снаряжение с ванильными точками спавна или настроить оба варианта.
 
 ---
 
@@ -78,11 +80,11 @@ The two systems are independent. You can use custom spawn points with vanilla ge
 
 ### Включение пресетов снаряжения
 
-Spawn gear presets are **not** enabled by default. To use them, you must:
+Пресеты снаряжения при спавне **не** включены по умолчанию. Чтобы их использовать, вы должны:
 
-1. Create one or more JSON preset files in your mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`).
-2. Register them in `cfggameplay.json` under `PlayerData.spawnGearPresetFiles`.
-3. Ensure `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+1. Создать один или несколько JSON-файлов пресетов в папке вашей миссии (например, `mpmissions/dayzOffline.chernarusplus/`).
+2. Зарегистрировать их в `cfggameplay.json` в секции `PlayerData.spawnGearPresetFiles`.
+3. Убедиться, что `enableCfgGameplayFile = 1` установлено в `serverDZ.cfg`.
 
 ```json
 {
@@ -97,7 +99,7 @@ Spawn gear presets are **not** enabled by default. To use them, you must:
 }
 ```
 
-Preset files can be nested in subdirectories under the mission folder:
+Файлы пресетов могут быть вложены в поддиректории внутри папки миссии:
 
 ```json
 "spawnGearPresetFiles": [
@@ -107,23 +109,23 @@ Preset files can be nested in subdirectories under the mission folder:
 ]
 ```
 
-Each JSON file contains a single preset object. All registered presets are pooled together, and the server selects one based on `spawnWeight` each time a fresh character spawns.
+Каждый JSON-файл содержит один объект пресета. Все зарегистрированные пресеты объединяются, и сервер выбирает один на основе `spawnWeight` каждый раз, когда спавнится новый персонаж.
 
 ### Структура пресета
 
-A preset is the top-level JSON object with these fields:
+Пресет --- это JSON-объект верхнего уровня со следующими полями:
 
-| Field | Тип | Описание |
+| Поле | Тип | Описание |
 |-------|------|-------------|
-| `name` | string | Human-readable name for the preset (any string, used for identification only) |
-| `spawnWeight` | integer | Weight for random selection. Minimum is `1`. Higher values make this preset more likely to be chosen |
-| `characterTypes` | array | Array of character type classnames (e.g., `"SurvivorM_Mirek"`). One is picked at random when this preset spawns |
-| `attachmentSlotItemSets` | array | Array of `AttachmentSlots` structures defining what the character wears (clothing, weapons on shoulders, etc.) |
-| `discreteUnsortedItemSets` | array | Array of `DiscreteUnsortedItemSets` structures defining cargo items placed into any available inventory space |
+| `name` | string | Человекочитаемое имя пресета (любая строка, используется только для идентификации) |
+| `spawnWeight` | integer | Вес для случайного выбора. Минимум `1`. Более высокие значения повышают вероятность выбора этого пресета |
+| `characterTypes` | array | Массив имён классов типов персонажей (например, `"SurvivorM_Mirek"`). Один выбирается случайно при спавне этого пресета |
+| `attachmentSlotItemSets` | array | Массив структур `AttachmentSlots`, определяющих что носит персонаж (одежда, оружие на плечах и т.д.) |
+| `discreteUnsortedItemSets` | array | Массив структур `DiscreteUnsortedItemSets`, определяющих грузовые предметы, размещаемые в любое доступное пространство инвентаря |
 
-> **Примечание:** If `characterTypes` is empty or omitted, the character model last selected in the main menu character creation screen will be used for that preset.
+> **Примечание:** Если `characterTypes` пуст или опущен, будет использована модель персонажа, последний раз выбранная на экране создания персонажа в главном меню.
 
-Minimal example:
+Минимальный пример:
 
 ```json
 {
@@ -140,16 +142,16 @@ Minimal example:
 
 ### attachmentSlotItemSets
 
-This array defines items that go into specific character attachment slots --- body, legs, feet, head, back, vest, shoulders, eyewear, etc.
+Этот массив определяет предметы, которые помещаются в конкретные слоты прикреплений персонажа --- тело, ноги, ступни, голова, спина, жилет, плечи, очки и т.д.
 
-Each entry targets one slot:
+Каждая запись нацелена на один слот:
 
-| Field | Тип | Описание |
+| Поле | Тип | Описание |
 |-------|------|-------------|
-| `slotName` | string | The attachment slot name. Derived from CfgSlots. Common values: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
-| `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `spawnWeight`) |
+| `slotName` | string | Имя слота прикрепления. Берётся из CfgSlots. Распространённые значения: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
+| `discreteItemSets` | array | Массив вариантов предметов, которые могут заполнить этот слот (один выбирается на основе `spawnWeight`) |
 
-> **Shoulder shortcuts:** You can use `"shoulderL"` and `"shoulderR"` as slot names. The engine automatically translates these to the correct internal CfgSlots names.
+> **Сокращения для плеч:** Вы можете использовать `"shoulderL"` и `"shoulderR"` в качестве имён слотов. Движок автоматически преобразует их в правильные внутренние имена CfgSlots.
 
 ```json
 {
@@ -183,19 +185,19 @@ Each entry targets one slot:
 
 ### DiscreteItemSets
 
-Each entry in `discreteItemSets` represents one possible item for that slot. The server picks one entry at random, weighted by `spawnWeight`. This structure is used inside both `attachmentSlotItemSets` (for slot-based items) and is the mechanism for random selection.
+Каждая запись в `discreteItemSets` представляет один возможный предмет для данного слота. Сервер выбирает одну запись случайно, взвешенную по `spawnWeight`. Эта структура используется внутри `attachmentSlotItemSets` (для предметов в слотах) и является механизмом случайного выбора.
 
-| Field | Тип | Описание |
+| Поле | Тип | Описание |
 |-------|------|-------------|
-| `itemType` | string | Item classname (typename). Use `""` (empty string) to represent "nothing" ----  slot remains empty |
-| `spawnWeight` | integer | Weight for selection. Minimum `1`. Higher = more likely |
-| `attributes` | object | Health and quantity ranges for this item. См. [Attributes](#attributes) |
-| `quickBarSlot` | integer | Quick bar slot assignment (0-based). Use `-1` for no quickbar assignment |
-| `complexChildrenTypes` | array | Items to spawn nested inside this item. См. [ComplexChildrenTypes](#complexchildrentypes) |
-| `simpleChildrenTypes` | array | Item classnames to spawn inside this item using default or parent attributes |
-| `simpleChildrenUseDefaultAttributes` | bool | If `true`, simple children use the parent's `attributes`. If `false`, they use configuration defaults |
+| `itemType` | string | Имя класса предмета (typename). Используйте `""` (пустую строку) для обозначения "ничего" --- слот остаётся пустым |
+| `spawnWeight` | integer | Вес для выбора. Минимум `1`. Больше = вероятнее |
+| `attributes` | object | Диапазоны здоровья и количества для этого предмета. См. [Атрибуты](#атрибуты) |
+| `quickBarSlot` | integer | Назначение слота быстрой панели (с нуля). Используйте `-1` для отсутствия назначения |
+| `complexChildrenTypes` | array | Предметы для спавна внутри этого предмета. См. [ComplexChildrenTypes](#complexchildrentypes) |
+| `simpleChildrenTypes` | array | Имена классов предметов для спавна внутри этого предмета с атрибутами по умолчанию или родительскими |
+| `simpleChildrenUseDefaultAttributes` | bool | Если `true`, простые дочерние элементы используют `attributes` родителя. Если `false`, они используют значения по умолчанию конфигурации |
 
-**Empty item trick:** To make a slot have a 50/50 chance of being empty or filled, use an empty `itemType`:
+**Трюк с пустым предметом:** Чтобы слот имел шанс 50/50 быть пустым или заполненным, используйте пустой `itemType`:
 
 ```json
 {
@@ -220,18 +222,18 @@ Each entry in `discreteItemSets` represents one possible item for that slot. The
 
 ### discreteUnsortedItemSets
 
-This top-level array defines items that go into the character's **cargo** ---- ny available inventory space across all attached clothing and containers. Unlike `attachmentSlotItemSets`, these items are not placed into a specific slot; the engine finds room automatically.
+Этот массив верхнего уровня определяет предметы, которые помещаются в **груз** персонажа --- любое доступное пространство инвентаря во всей прикреплённой одежде и контейнерах. В отличие от `attachmentSlotItemSets`, эти предметы не помещаются в конкретный слот; движок находит место автоматически.
 
-Each entry represents one cargo variant, and the server selects one based on `spawnWeight`.
+Каждая запись представляет один вариант груза, и сервер выбирает один на основе `spawnWeight`.
 
-| Field | Тип | Описание |
+| Поле | Тип | Описание |
 |-------|------|-------------|
-| `name` | string | Human-readable name (for identification only) |
-| `spawnWeight` | integer | Weight for selection. Minimum `1` |
-| `attributes` | object | Default health/quantity ranges. Used by children when `simpleChildrenUseDefaultAttributes` is `true` |
-| `complexChildrenTypes` | array | Items to spawn into cargo, each with their own attributes and nesting |
-| `simpleChildrenTypes` | array | Item classnames to spawn into cargo |
-| `simpleChildrenUseDefaultAttributes` | bool | If `true`, simple children use this structure's `attributes`. If `false`, they use configuration defaults |
+| `name` | string | Человекочитаемое имя (только для идентификации) |
+| `spawnWeight` | integer | Вес для выбора. Минимум `1` |
+| `attributes` | object | Диапазоны здоровья/количества по умолчанию. Используются дочерними элементами, когда `simpleChildrenUseDefaultAttributes` равно `true` |
+| `complexChildrenTypes` | array | Предметы для спавна в груз, каждый со своими атрибутами и вложенностью |
+| `simpleChildrenTypes` | array | Имена классов предметов для спавна в груз |
+| `simpleChildrenUseDefaultAttributes` | bool | Если `true`, простые дочерние элементы используют `attributes` этой структуры. Если `false`, они используют значения по умолчанию конфигурации |
 
 ```json
 {
@@ -265,17 +267,17 @@ Each entry represents one cargo variant, and the server selects one based on `sp
 
 ### ComplexChildrenTypes
 
-Complex children are items spawned **inside** a parent item with full control over their attributes, quickbar assignment, and their own nested children. The primary use case is spawning items with contents --- for example, a weapon with attachments, or a cooking pot with food inside.
+Сложные дочерние элементы --- это предметы, спавнящиеся **внутри** родительского предмета с полным контролем над их атрибутами, назначением быстрой панели и собственными вложенными дочерними элементами. Основной вариант использования --- спавн предметов с содержимым, например, оружие с обвесами или кастрюля с едой внутри.
 
-| Field | Тип | Описание |
+| Поле | Тип | Описание |
 |-------|------|-------------|
-| `itemType` | string | Item classname |
-| `attributes` | object | Health/quantity ranges for this specific item |
-| `quickBarSlot` | integer | Quick bar slot assignment. `-1` = don't assign |
-| `simpleChildrenUseDefaultAttributes` | bool | Whether simple children inherit these attributes |
-| `simpleChildrenTypes` | array | Item classnames to spawn inside this item |
+| `itemType` | string | Имя класса предмета |
+| `attributes` | object | Диапазоны здоровья/количества для данного конкретного предмета |
+| `quickBarSlot` | integer | Назначение слота быстрой панели. `-1` = не назначать |
+| `simpleChildrenUseDefaultAttributes` | bool | Наследуют ли простые дочерние элементы эти атрибуты |
+| `simpleChildrenTypes` | array | Имена классов предметов для спавна внутри этого предмета |
 
-Example ----  weapon with attachments and magazine:
+Пример --- оружие с обвесами и магазином:
 
 ```json
 {
@@ -327,31 +329,31 @@ Example ----  weapon with attachments and magazine:
 }
 ```
 
-In this example, the AKM spawns with a buttstock, optic (with battery inside), and a loaded magazine as complex children, plus a handguard and bayonet as simple children. The simple children use configuration defaults because `simpleChildrenUseDefaultAttributes` is `false`.
+В этом примере АКМ спавнится с прикладом, прицелом (с батарейкой внутри) и заряженным магазином в качестве сложных дочерних элементов, а также с цевьём и штыком в качестве простых дочерних элементов. Простые дочерние элементы используют значения по умолчанию конфигурации, поскольку `simpleChildrenUseDefaultAttributes` установлено в `false`.
 
 ### SimpleChildrenTypes
 
-Simple children are a shorthand for spawning items inside a parent without specifying individual attributes. They are an array of item classnames (strings).
+Простые дочерние элементы --- это сокращённый способ спавна предметов внутри родителя без указания индивидуальных атрибутов. Они представляют собой массив имён классов предметов (строк).
 
-Their attributes are determined by the `simpleChildrenUseDefaultAttributes` flag:
+Их атрибуты определяются флагом `simpleChildrenUseDefaultAttributes`:
 
-- **`true`** --- Items use the `attributes` defined on the parent structure.
-- **`false`** --- Items use the engine's configuration defaults (typically full health and quantity).
+- **`true`** --- Предметы используют `attributes`, определённые в родительской структуре.
+- **`false`** --- Предметы используют значения по умолчанию конфигурации движка (обычно полное здоровье и количество).
 
-Simple children cannot have their own nested children or quickbar assignments. For those capabilities, use `complexChildrenTypes` instead.
+Простые дочерние элементы не могут иметь собственных вложенных дочерних элементов или назначений быстрой панели. Для этих возможностей используйте `complexChildrenTypes`.
 
 ### Атрибуты
 
-Attributes control the condition and quantity of spawned items. All values are floating point between `0.0` and `1.0`:
+Атрибуты контролируют состояние и количество предметов при спавне. Все значения --- числа с плавающей запятой от `0.0` до `1.0`:
 
-| Field | Тип | Описание |
+| Поле | Тип | Описание |
 |-------|------|-------------|
-| `healthMin` | float | Minimum health percentage. `1.0` = pristine, `0.0` = ruined |
-| `healthMax` | float | Maximum health percentage. A random value between min and max is applied |
-| `quantityMin` | float | Minimum quantity percentage. For magazines: fill level. For food: remaining bites |
-| `quantityMax` | float | Maximum quantity percentage |
+| `healthMin` | float | Минимальный процент здоровья. `1.0` = безупречное, `0.0` = уничтоженное |
+| `healthMax` | float | Максимальный процент здоровья. Применяется случайное значение между min и max |
+| `quantityMin` | float | Минимальный процент количества. Для магазинов: уровень заполнения. Для еды: оставшиеся порции |
+| `quantityMax` | float | Максимальный процент количества |
 
-When both min and max are specified, the engine picks a random value in that range. This creates natural variation --- for example, health between `0.45` and `0.65` means items spawn in worn to damaged condition.
+Когда указаны оба значения min и max, движок выбирает случайное значение в этом диапазоне. Это создаёт естественную вариативность --- например, здоровье между `0.45` и `0.65` означает, что предметы спавнятся в изношенном или повреждённом состоянии.
 
 ```json
 "attributes": {
@@ -366,19 +368,19 @@ When both min and max are specified, the engine picks a random value in that ran
 
 ## Точки спавна: cfgplayerspawnpoints.xml
 
-This XML file defines where players appear on the map. It is located in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
+Этот XML-файл определяет, где на карте появляются игроки. Он расположен в папке миссии (например, `mpmissions/dayzOffline.chernarusplus/cfgplayerspawnpoints.xml`).
 
-### File Structure
+### Структура файла
 
-The root element contains up to three sections:
+Корневой элемент содержит до трёх секций:
 
-| Section | Purpose |
+| Секция | Назначение |
 |---------|---------|
-| `<fresh>` | **Required.** Spawn points for newly created characters |
-| `<hop>` | Spawn points for players hopping from another server on the same map (official servers only) |
-| `<travel>` | Spawn points for players traveling from a different map (official servers only) |
+| `<fresh>` | **Обязательная.** Точки спавна для вновь созданных персонажей |
+| `<hop>` | Точки спавна для игроков, перепрыгивающих с другого сервера на той же карте (только для официальных серверов) |
+| `<travel>` | Точки спавна для игроков, путешествующих с другой карты (только для официальных серверов) |
 
-Each section contains the same three sub-elements: `<spawn_params>`, `<generator_params>`, and `<generator_posbubbles>`.
+Каждая секция содержит одни и те же три подэлемента: `<spawn_params>`, `<generator_params>` и `<generator_posbubbles>`.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
@@ -403,7 +405,7 @@ Each section contains the same three sub-elements: `<spawn_params>`, `<generator
 
 ### spawn_params
 
-Runtime parameters that score candidate spawn points against nearby entities. Points below `min_dist` are invalidated. Points between `min_dist` and `max_dist` are preferred over points beyond `max_dist`.
+Параметры времени выполнения, которые оценивают кандидатные точки спавна относительно близлежащих сущностей. Точки ближе `min_dist` отклоняются. Точки между `min_dist` и `max_dist` предпочтительнее точек за пределами `max_dist`.
 
 ```xml
 <spawn_params>
@@ -418,20 +420,20 @@ Runtime parameters that score candidate spawn points against nearby entities. Po
 
 | Параметр | Описание |
 |-----------|-------------|
-| `min_dist_infected` | Minimum meters from infected. Points closer than this are penalized |
-| `max_dist_infected` | Maximum scoring distance from infected |
-| `min_dist_player` | Minimum meters from other players. Keeps fresh spawns from appearing on top of existing players |
-| `max_dist_player` | Maximum scoring distance from other players |
-| `min_dist_static` | Minimum meters from buildings/objects |
-| `max_dist_static` | Maximum scoring distance from buildings/objects |
+| `min_dist_infected` | Минимальное расстояние в метрах от заражённых. Более близкие точки штрафуются |
+| `max_dist_infected` | Максимальное расстояние оценки от заражённых |
+| `min_dist_player` | Минимальное расстояние в метрах от других игроков. Предотвращает появление свежих спавнов поверх существующих игроков |
+| `max_dist_player` | Максимальное расстояние оценки от других игроков |
+| `min_dist_static` | Минимальное расстояние в метрах от зданий/объектов |
+| `max_dist_static` | Максимальное расстояние оценки от зданий/объектов |
 
-The Sakhal map also adds `min_dist_trigger` and `max_dist_trigger` parameters with a 6x weight multiplier for trigger zone distances.
+Карта Сахалин также добавляет параметры `min_dist_trigger` и `max_dist_trigger` с 6-кратным множителем веса для расстояний до триггерных зон.
 
-**Scoring logic:** The engine calculates a score for each candidate point. Distance `0` to `min_dist` scores `-1` (nearly invalidated). Distance `min_dist` to midpoint scores up to `1.1`. Distance midpoint to `max_dist` scores down from `1.1` to `0.1`. Beyond `max_dist` scores `0`. Higher total score = more likely spawn location.
+**Логика оценки:** Движок рассчитывает оценку для каждой кандидатной точки. Расстояние от `0` до `min_dist` оценивается как `-1` (практически отклоняется). Расстояние от `min_dist` до середины оценивается до `1.1`. Расстояние от середины до `max_dist` оценивается от `1.1` до `0.1`. За пределами `max_dist` оценка `0`. Более высокая общая оценка = более вероятное место спавна.
 
 ### generator_params
 
-Controls how the grid of candidate spawn points is generated around each position bubble:
+Контролирует генерацию сетки кандидатных точек спавна вокруг каждого пузыря позиции:
 
 ```xml
 <generator_params>
@@ -447,21 +449,21 @@ Controls how the grid of candidate spawn points is generated around each positio
 
 | Параметр | Описание |
 |-----------|-------------|
-| `grid_density` | Sample frequency. `4` means a 4x4 grid of candidate points. Higher = more candidates, more CPU cost. Must be at least `1`. When `0`, only the center point is used |
-| `grid_width` | Total width of the sampling rectangle in meters |
-| `grid_height` | Total height of the sampling rectangle in meters |
-| `min_dist_static` | Minimum distance from buildings for a valid candidate |
-| `max_dist_static` | Maximum distance from buildings used for scoring |
-| `min_steepness` | Minimum terrain slope in degrees. Points on steeper terrain are discarded |
-| `max_steepness` | Maximum terrain slope in degrees |
+| `grid_density` | Частота выборки. `4` означает сетку 4x4 кандидатных точек. Больше = больше кандидатов, больше нагрузка на CPU. Должно быть не менее `1`. При `0` используется только центральная точка |
+| `grid_width` | Общая ширина прямоугольника выборки в метрах |
+| `grid_height` | Общая высота прямоугольника выборки в метрах |
+| `min_dist_static` | Минимальное расстояние от зданий для допустимого кандидата |
+| `max_dist_static` | Максимальное расстояние от зданий, используемое для оценки |
+| `min_steepness` | Минимальный уклон местности в градусах. Точки на более крутой местности отбрасываются |
+| `max_steepness` | Максимальный уклон местности в градусах |
 
-Around every `<pos>` defined in `generator_posbubbles`, the engine creates a rectangle of `grid_width` x `grid_height` meters, samples it at `grid_density` frequency, and discards points that overlap with objects, water, or exceed slope limits.
+Вокруг каждого `<pos>`, определённого в `generator_posbubbles`, движок создаёт прямоугольник размером `grid_width` x `grid_height` метров, выбирает его с частотой `grid_density` и отбрасывает точки, пересекающиеся с объектами, водой или превышающие допустимый уклон.
 
-### Spawning Groups
+### Группы спавна
 
-Groups allow you to cluster spawn points and rotate through them over time. This prevents all players from always spawning at the same locations.
+Группы позволяют кластеризовать точки спавна и чередовать их с течением времени. Это предотвращает постоянный спавн всех игроков в одних и тех же местах.
 
-Groups are enabled through `<group_params>` inside each section:
+Группы включаются через `<group_params>` внутри каждой секции:
 
 ```xml
 <group_params>
@@ -474,12 +476,12 @@ Groups are enabled through `<group_params>` inside each section:
 
 | Параметр | Описание |
 |-----------|-------------|
-| `enablegroups` | `true` to enable group rotation, `false` for a flat list of points |
-| `groups_as_regular` | When `enablegroups` is `false`, treat group points as regular spawn points instead of ignoring them. Default: `true` |
-| `lifetime` | Seconds a group stays active before rotating to another. Use `-1` to disable the timer |
-| `counter` | Number of spawns that reset the lifetime. Each player spawning in the group resets the timer. Use `-1` to disable the counter |
+| `enablegroups` | `true` для включения ротации групп, `false` для плоского списка точек |
+| `groups_as_regular` | Когда `enablegroups` равно `false`, рассматривать точки групп как обычные точки спавна вместо их игнорирования. По умолчанию: `true` |
+| `lifetime` | Секунды, в течение которых группа остаётся активной перед переключением на другую. Используйте `-1` для отключения таймера |
+| `counter` | Количество спавнов, которое сбрасывает время жизни. Каждый спавн игрока в группе сбрасывает таймер. Используйте `-1` для отключения счётчика |
 
-Positions are organized into named groups within `<generator_posbubbles>`:
+Позиции организованы в именованные группы внутри `<generator_posbubbles>`:
 
 ```xml
 <generator_posbubbles>
@@ -495,7 +497,7 @@ Positions are organized into named groups within `<generator_posbubbles>`:
 </generator_posbubbles>
 ```
 
-Individual groups can override global lifetime and counter values:
+Отдельные группы могут переопределять глобальные значения lifetime и counter:
 
 ```xml
 <group name="Tents" lifetime="300" counter="25">
@@ -503,7 +505,7 @@ Individual groups can override global lifetime and counter values:
 </group>
 ```
 
-**Without groups**, positions are listed directly under `<generator_posbubbles>`:
+**Без групп** позиции перечисляются непосредственно внутри `<generator_posbubbles>`:
 
 ```xml
 <generator_posbubbles>
@@ -513,27 +515,27 @@ Individual groups can override global lifetime and counter values:
 </generator_posbubbles>
 ```
 
-> **Position format:** The `x` and `z` attributes use DayZ world coordinates. `x` is east-west, `z` is north-south. The `y` (height) coordinate is not specified ----  engine places the point on the terrain surface. You can find coordinates using the in-game debug monitor or the DayZ Editor mod.
+> **Формат позиций:** Атрибуты `x` и `z` используют мировые координаты DayZ. `x` --- это восток-запад, `z` --- это север-юг. Координата `y` (высота) не указывается --- движок размещает точку на поверхности местности. Вы можете найти координаты с помощью внутриигрового отладочного монитора или мода DayZ Editor.
 
-### Map-Specific Configs
+### Конфигурации для конкретных карт
 
-Each map has its own `cfgplayerspawnpoints.xml` in its mission folder:
+У каждой карты есть свой `cfgplayerspawnpoints.xml` в папке миссии:
 
-| Map | Mission Folder | Notes |
+| Карта | Папка миссии | Примечания |
 |-----|----------------|-------|
-| Chernarus | `dayzOffline.chernarusplus/` | Coastal spawns: Cherno, Elektro, Kamyshovo, Berezino, Svetlojarsk |
-| Livonia | `dayzOffline.enoch/` | Spread across map with different group names |
-| Sakhal | `dayzOffline.sakhal/` | Added `min_dist_trigger`/`max_dist_trigger` params, more detailed comments |
+| Chernarus | `dayzOffline.chernarusplus/` | Прибрежные спавны: Черно, Электро, Камышово, Березино, Светлоярск |
+| Livonia | `dayzOffline.enoch/` | Распределены по карте с разными именами групп |
+| Sakhal | `dayzOffline.sakhal/` | Добавлены параметры `min_dist_trigger`/`max_dist_trigger`, более подробные комментарии |
 
-When creating a custom map or modifying spawn locations, always work from the vanilla file as a starting point and adjust positions to match your map's geography.
+При создании пользовательской карты или изменении мест спавна всегда отталкивайтесь от ванильного файла и корректируйте позиции в соответствии с географией вашей карты.
 
 ---
 
 ## Практические примеры
 
-### Default Survivor Loadout
+### Стандартный набор выжившего
 
-The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic shoes, plus cargo containing a bandage, chemlight (random color), and a fruit (random between pear, plum, or apple). All items spawn in worn-to-damaged condition.
+Ванильный пресет выдаёт свежим спавнам случайную футболку, парусиновые штаны, спортивные кроссовки, а также груз, содержащий бинт, химсвет (случайного цвета) и фрукт (случайный между грушей, сливой или яблоком). Все предметы спавнятся в изношенном или повреждённом состоянии.
 
 ```json
 {
@@ -655,9 +657,9 @@ The vanilla preset gives fresh spawns a random t-shirt, canvas pants, athletic s
 }
 ```
 
-### Military Spawn Kit
+### Военный набор спавна
 
-A heavily equipped preset with an AKM (with attachments), plate carrier, gorka uniform, backpack with extra magazines, and unsorted cargo including a sidearm and food. This uses multiple `spawnWeight` values to create rarity tiers for weapon variants.
+Тяжело экипированный пресет с АКМ (с обвесами), бронежилетом, формой горка, рюкзаком с дополнительными магазинами и несортированным грузом, включающим пистолет и еду. Здесь используются различные значения `spawnWeight` для создания уровней редкости вариантов оружия.
 
 ```json
 {
@@ -843,15 +845,15 @@ A heavily equipped preset with an AKM (with attachments), plate carrier, gorka u
 }
 ```
 
-Key points about this example:
+Ключевые моменты этого примера:
 
-- **Two weapon variants** for the same shoulder slot: the `spawnWeight: 3` variant (plastic furniture, PSO1 optic) spawns 3x more often than the `spawnWeight: 1` variant (wood furniture, no optic).
-- **Nested children**: the PSO1Optic has `simpleChildrenTypes: ["Battery9V"]` so the optic spawns with a battery inside.
-- **Backpack contents**: the blue backpack gets a drum magazine while the orange one gets two standard magazines.
+- **Два варианта оружия** для одного плечевого слота: вариант с `spawnWeight: 3` (пластиковая фурнитура, прицел ПСО-1) спавнится в 3 раза чаще, чем вариант с `spawnWeight: 1` (деревянная фурнитура, без прицела).
+- **Вложенные дочерние элементы**: у PSO1Optic есть `simpleChildrenTypes: ["Battery9V"]`, поэтому прицел спавнится с батарейкой внутри.
+- **Содержимое рюкзака**: синий рюкзак получает барабанный магазин, а оранжевый --- два стандартных магазина.
 
-### Medical Spawn Kit
+### Медицинский набор спавна
 
-A medic-themed preset with scrubs, first aid kit containing medical supplies, and a melee weapon for defense.
+Пресет на медицинскую тематику с медицинской формой, аптечкой с медикаментами и оружием ближнего боя для защиты.
 
 ```json
 {
@@ -994,13 +996,13 @@ A medic-themed preset with scrubs, first aid kit containing medical supplies, an
 }
 ```
 
-Note how `characterTypes` is omitted ---- это preset uses whatever character the player selected in the main menu. Two cargo variants offer different first aid kit contents (blood bag vs. antibiotics), selected by `spawnWeight`.
+Обратите внимание, что `characterTypes` опущен --- этот пресет использует любого персонажа, выбранного игроком в главном меню. Два варианта груза предлагают разное содержимое аптечки (пакет крови или антибиотики), выбираемое по `spawnWeight`.
 
-### Random Gear Selection
+### Случайный выбор снаряжения
 
-You can create randomized loadouts by using multiple presets with different weights, and within each preset using multiple `discreteItemSets` per slot:
+Вы можете создавать рандомизированные наборы, используя несколько пресетов с разными весами, а внутри каждого пресета --- несколько `discreteItemSets` для каждого слота:
 
-**File: `cfggameplay.json`**
+**Файл: `cfggameplay.json`**
 
 ```json
 "spawnGearPresetFiles": [
@@ -1010,31 +1012,31 @@ You can create randomized loadouts by using multiple presets with different weig
 ]
 ```
 
-**Probability calculation example:**
+**Пример расчёта вероятности:**
 
-| Preset File | spawnWeight | Chance |
+| Файл пресета | spawnWeight | Вероятность |
 |-------------|------------|--------|
 | `common_survivor.json` | 5 | 5/8 = 62.5% |
 | `uncommon_hunter.json` | 2 | 2/8 = 25.0% |
 | `rare_military.json` | 1 | 1/8 = 12.5% |
 
-Within each preset, each slot also has its own randomization. If the Body slot has three t-shirt options with `spawnWeight: 1` each, each has a 33% chance. A shirt with `spawnWeight: 3` in a pool with two `spawnWeight: 1` items would have a 60% chance (3/5).
+Внутри каждого пресета каждый слот также имеет свою собственную рандомизацию. Если слот Body имеет три варианта футболок с `spawnWeight: 1` каждый, каждый имеет 33% шанс. Футболка с `spawnWeight: 3` в пуле с двумя предметами `spawnWeight: 1` имела бы 60% шанс (3/5).
 
 ---
 
 ## Интеграция с модами
 
-### Using the JSON Preset System from Mods
+### Использование системы JSON-пресетов из модов
 
-The spawn gear preset system is designed for mission-level configuration. Mods that want to provide custom loadouts should:
+Система пресетов снаряжения при спавне предназначена для настройки на уровне миссии. Моды, которые хотят предоставить пользовательские наборы, должны:
 
-1. **Ship a template JSON** file with the mod's documentation, not embedded in the PBO.
-2. **Document the classnames** so server admins can add mod items to their own preset files.
-3. Let server admins register the preset file through their `cfggameplay.json`.
+1. **Поставлять шаблонный JSON-файл** с документацией мода, не встроенный в PBO.
+2. **Документировать имена классов**, чтобы администраторы серверов могли добавить предметы мода в свои собственные файлы пресетов.
+3. Позволить администраторам серверов зарегистрировать файл пресета через их `cfggameplay.json`.
 
-### Overriding with init.c
+### Переопределение через init.c
 
-If you need programmatic control over spawning (e.g., role selection, database-driven loadouts, or conditional gear based on player state), override `StartingEquipSetup()` in `init.c` instead:
+Если вам нужен программный контроль над спавном (например, выбор роли, наборы на основе базы данных или условное снаряжение на основе состояния игрока), переопределите `StartingEquipSetup()` в `init.c`:
 
 ```c
 override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
@@ -1061,11 +1063,11 @@ override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 }
 ```
 
-> **Remember:** If `spawnGearPresetFiles` is configured in `cfggameplay.json`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
+> **Помните:** Если `spawnGearPresetFiles` настроен в `cfggameplay.json`, JSON-пресеты имеют приоритет и `StartingEquipSetup()` не будет вызван.
 
-### Mod Items in Presets
+### Предметы модов в пресетах
 
-Modded items work identically to vanilla items in preset files. Use the item's classname as defined in the mod's `config.cpp`:
+Предметы модов работают идентично ванильным предметам в файлах пресетов. Используйте имя класса предмета, определённое в `config.cpp` мода:
 
 ```json
 {
@@ -1084,76 +1086,76 @@ Modded items work identically to vanilla items in preset files. Use the item's c
 }
 ```
 
-If the mod is not loaded on the server, items with unknown classnames will silently fail to spawn. The rest of the preset still applies.
+Если мод не загружен на сервере, предметы с неизвестными именами классов молча не спавнятся. Остальная часть пресета продолжает работать.
 
 ---
 
 ## Лучшие практики
 
-1. **Start from vanilla.** Copy the vanilla preset from the official documentation as your base and modify it, rather than writing from scratch.
+1. **Начинайте с ванильных файлов.** Скопируйте ванильный пресет из официальной документации в качестве основы и модифицируйте его, вместо написания с нуля.
 
-2. **Use multiple preset files.** Separate presets by theme (survivor, military, medic) in individual JSON files. This makes maintenance easier than a single monolithic file.
+2. **Используйте несколько файлов пресетов.** Разделяйте пресеты по тематике (выживший, военный, медик) в отдельных JSON-файлах. Это упрощает обслуживание по сравнению с одним монолитным файлом.
 
-3. **Test incrementally.** Add one preset at a time and verify in-game. A JSON syntax error in any preset file will cause all presets to fail silently.
+3. **Тестируйте пошагово.** Добавляйте по одному пресету за раз и проверяйте в игре. Ошибка синтаксиса JSON в любом файле пресета приведёт к тихому отказу всех пресетов.
 
-4. **Use weighted probabilities deliberately.** Plan your spawn weight distribution on paper. With 5 presets, a `spawnWeight: 10` on one will dominate all others.
+4. **Используйте взвешенные вероятности осознанно.** Спланируйте распределение весов спавна на бумаге. При 5 пресетах `spawnWeight: 10` на одном будет доминировать над всеми остальными.
 
-5. **Validate JSON syntax.** Use a JSON validator before deploying. The DayZ engine does not provide helpful error messages for malformed JSON ---- он simply ignores the file.
+5. **Проверяйте синтаксис JSON.** Используйте валидатор JSON перед развёртыванием. Движок DayZ не предоставляет полезных сообщений об ошибках для некорректного JSON --- он просто игнорирует файл.
 
-6. **Assign quickbar slots intentionally.** Quickbar slots are 0-indexed. Assigning multiple items to the same slot will overwrite. Use `-1` for items that should not be on the quickbar.
+6. **Назначайте слоты быстрой панели осознанно.** Слоты быстрой панели нумеруются с 0. Назначение нескольких предметов на один и тот же слот приведёт к перезаписи. Используйте `-1` для предметов, которые не должны быть на быстрой панели.
 
-7. **Keep spawn points away from water.** The generator discards points in water, but points very close to the shoreline can place players in awkward positions. Move position bubbles a few meters inland.
+7. **Располагайте точки спавна подальше от воды.** Генератор отбрасывает точки в воде, но точки очень близко к береговой линии могут поставить игроков в неудобные позиции. Переместите пузыри позиций на несколько метров вглубь суши.
 
-8. **Use groups for coastal maps.** Spawning groups on Chernarus spread fresh spawns across the coast, preventing overcrowding at popular locations like Elektro.
+8. **Используйте группы для прибрежных карт.** Группы спавна на Черноруссии распределяют свежие спавны вдоль побережья, предотвращая столпотворение в популярных местах вроде Электро.
 
-9. **Match clothing and cargo capacity.** Unsorted cargo items can only spawn if the player has inventory space. If you define too many cargo items but only give the player a t-shirt (small inventory), excess items will not spawn.
+9. **Согласуйте одежду и ёмкость груза.** Несортированные грузовые предметы могут спавниться только при наличии места в инвентаре у игрока. Если вы определите слишком много грузовых предметов, но дадите игроку только футболку (маленький инвентарь), лишние предметы не заспавнятся.
 
 ---
 
 ## Типичные ошибки
 
-| Mistake | Consequence | Fix |
+| Ошибка | Последствие | Исправление |
 |---------|-------------|-----|
-| Forgetting `enableCfgGameplayFile = 1` in `serverDZ.cfg` | `cfggameplay.json` is not loaded, presets are ignored | Add the flag and restart the server |
-| Недействительная JSON syntax (trailing comma, missing bracket) | All presets in that file silently fail | Validate JSON with an external tool before deploying |
-| Using `spawnGearPresetFiles` without removing `StartingEquipSetup()` code | The scripted loadout is silently overridden by the JSON preset. The init.c code runs but its items are replaced | This is expected behavior, not a bug. Remove or comment out the init.c loadout code to avoid confusion |
-| Setting `spawnWeight: 0` | Value below minimum. Behavior is undefined | Always use `spawnWeight: 1` or higher |
-| Referencing a classname that does not exist | That specific item silently fails to spawn, but the rest of the preset works | Double-check classnames against the mod's `config.cpp` or types.xml |
-| Assigning an item to a slot it cannot occupy | Item does not spawn. No error logged | Verify the item's `inventorySlot[]` in config.cpp matches the `slotName` |
-| Spawning too many cargo items for available inventory space | Excess items are silently dropped (not spawned) | Ensure clothing has enough capacity, or reduce the number of cargo items |
-| Using `characterTypes` classnames that do not exist | Character creation fails, player may spawn as default model | Use only valid survivor classnames from CfgVehicles |
-| Placing spawn points in water or on steep cliffs | Points are discarded, reducing available spawns. If too many are invalid, players may fail to spawn | Test coordinates in-game with the debug monitor |
-| Mixing up `x`/`z` coordinates in spawn points | Players spawn at wrong map locations | `x` = east-west, `z` = north-south. There is no `y` (vertical) in spawn point definitions |
+| Забыли `enableCfgGameplayFile = 1` в `serverDZ.cfg` | `cfggameplay.json` не загружается, пресеты игнорируются | Добавьте флаг и перезапустите сервер |
+| Некорректный синтаксис JSON (лишняя запятая, пропущенная скобка) | Все пресеты в этом файле молча не работают | Проверяйте JSON внешним инструментом перед развёртыванием |
+| Использование `spawnGearPresetFiles` без удаления кода `StartingEquipSetup()` | Скриптовый набор молча переопределяется JSON-пресетом. Код init.c выполняется, но его предметы заменяются | Это ожидаемое поведение, не баг. Удалите или закомментируйте код загрузки в init.c во избежание путаницы |
+| Установка `spawnWeight: 0` | Значение ниже минимума. Поведение не определено | Всегда используйте `spawnWeight: 1` или выше |
+| Ссылка на несуществующее имя класса | Этот конкретный предмет молча не спавнится, но остальной пресет работает | Перепроверьте имена классов по `config.cpp` мода или types.xml |
+| Назначение предмета в слот, который он не может занять | Предмет не спавнится. Ошибка не логируется | Проверьте, что `inventorySlot[]` предмета в config.cpp совпадает со `slotName` |
+| Спавн слишком большого количества грузовых предметов для доступного инвентаря | Лишние предметы молча отбрасываются (не спавнятся) | Убедитесь, что одежда имеет достаточную ёмкость, или уменьшите количество грузовых предметов |
+| Использование несуществующих имён классов `characterTypes` | Создание персонажа не удаётся, игрок может заспавниться с моделью по умолчанию | Используйте только валидные имена классов выживших из CfgVehicles |
+| Размещение точек спавна в воде или на крутых обрывах | Точки отбрасываются, уменьшая доступные спавны. Если слишком многие невалидны, игроки могут не заспавниться | Тестируйте координаты в игре с отладочным монитором |
+| Путаница координат `x`/`z` в точках спавна | Игроки спавнятся в неправильных местах на карте | `x` = восток-запад, `z` = север-юг. Координаты `y` (вертикаль) в определениях точек спавна отсутствуют |
 
 ---
 
-## Data Flow Summary
+## Сводка потока данных
 
 ```
 serverDZ.cfg
   └─ enableCfgGameplayFile = 1
        └─ cfggameplay.json
             └─ PlayerData.spawnGearPresetFiles: ["preset1.json", "preset2.json"]
-                 ├─ preset1.json  (spawnWeight: 3)  ── 75% chance
-                 └─ preset2.json  (spawnWeight: 1)  ── 25% chance
-                      ├─ characterTypes[]         → random character model
-                      ├─ attachmentSlotItemSets[] → slot-based equipment
-                      │    └─ discreteItemSets[]  → weighted random per slot
-                      │         ├─ complexChildrenTypes[] → nested items with attributes
-                      │         └─ simpleChildrenTypes[]  → nested items, simple
-                      └─ discreteUnsortedItemSets[] → cargo items
+                 ├─ preset1.json  (spawnWeight: 3)  ── 75% шанс
+                 └─ preset2.json  (spawnWeight: 1)  ── 25% шанс
+                      ├─ characterTypes[]         → случайная модель персонажа
+                      ├─ attachmentSlotItemSets[] → экипировка по слотам
+                      │    └─ discreteItemSets[]  → взвешенный случайный выбор по слоту
+                      │         ├─ complexChildrenTypes[] → вложенные предметы с атрибутами
+                      │         └─ simpleChildrenTypes[]  → вложенные предметы, простые
+                      └─ discreteUnsortedItemSets[] → грузовые предметы
                            ├─ complexChildrenTypes[]
                            └─ simpleChildrenTypes[]
 
 cfgplayerspawnpoints.xml
-  ├─ <fresh>   → new characters (required)
-  ├─ <hop>     → server hoppers (official only)
-  └─ <travel>  → map travelers (official only)
-       ├─ spawn_params   → scoring vs infected/players/buildings
-       ├─ generator_params → grid density, size, slope limits
-       └─ generator_posbubbles → positions (optionally in named groups)
+  ├─ <fresh>   → новые персонажи (обязательно)
+  ├─ <hop>     → перебежчики серверов (только официальные)
+  └─ <travel>  → путешественники с карт (только официальные)
+       ├─ spawn_params   → оценка относительно заражённых/игроков/зданий
+       ├─ generator_params → плотность сетки, размер, ограничения уклона
+       └─ generator_posbubbles → позиции (опционально в именованных группах)
 ```
 
 ---
 
-[Главная](../../README.md) | [<< Previous: Server Configuration Files](05-server-configs.md) | **Spawning Gear Configuration**
+[Главная](../../README.md) | [<< Предыдущая: Конфигурационные файлы сервера](05-server-configs.md) | **Конфигурация снаряжения при спавне**

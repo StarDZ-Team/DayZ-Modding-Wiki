@@ -1,134 +1,138 @@
-# Chapter 8.9: Professional Mod Template
+# チャプター 8.9: プロフェッショナルModテンプレート
 
-[Home](../../README.md) | [<< Previous: Building a HUD Overlay](08-hud-overlay.md) | **Professional Mod Template** | [Next: Creating a Custom Vehicle >>](10-vehicle-mod.md)
+[ホーム](../../README.md) | [<< 前へ: HUDオーバーレイの構築](08-hud-overlay.md) | **プロフェッショナルModテンプレート** | [次へ: カスタム車両の作成 >>](10-vehicle-mod.md)
+
+---
+
+> **概要:** このチャプターでは、プロフェッショナルなDayZ Modに必要なすべてのファイルを含む、完全なプロダクション対応のModテンプレートを提供します。スターターの骨格を紹介する [チャプター 8.5](05-mod-template.md) のInclementDabのテンプレートとは異なり、これは設定システム、シングルトンマネージャー、クライアント-サーバーRPC、UIパネル、キーバインド、ローカライゼーション、ビルド自動化を備えた本格的なテンプレートです。すべてのファイルはコピー&ペーストで使用でき、各行の存在理由を説明する詳細なコメント付きです。
 
 ---
 
 ## 目次
 
-- [Overview](#overview)
-- [Complete Directory Structure](#complete-directory-structure)
+- [概要](#概要)
+- [完全なディレクトリ構造](#完全なディレクトリ構造)
 - [mod.cpp](#modcpp)
 - [config.cpp](#configcpp)
-- [Constants File (3_Game)](#constants-file-3_game)
-- [Config Data Class (3_Game)](#config-data-class-3_game)
-- [RPC Definitions (3_Game)](#rpc-definitions-3_game)
-- [Manager Singleton (4_World)](#manager-singleton-4_world)
-- [Player Event Handler (4_World)](#player-event-handler-4_world)
-- [Mission Hook: Server (5_Mission)](#mission-hook-server-5_mission)
-- [Mission Hook: Client (5_Mission)](#mission-hook-client-5_mission)
-- [UI Panel Script (5_Mission)](#ui-panel-script-5_mission)
-- [Layout File](#layout-file)
+- [定数ファイル (3_Game)](#定数ファイル-3_game)
+- [設定データクラス (3_Game)](#設定データクラス-3_game)
+- [RPC定義 (3_Game)](#rpc定義-3_game)
+- [マネージャーシングルトン (4_World)](#マネージャーシングルトン-4_world)
+- [プレイヤーイベントハンドラー (4_World)](#プレイヤーイベントハンドラー-4_world)
+- [ミッションフック: サーバー (5_Mission)](#ミッションフック-サーバー-5_mission)
+- [ミッションフック: クライアント (5_Mission)](#ミッションフック-クライアント-5_mission)
+- [UIパネルスクリプト (5_Mission)](#uiパネルスクリプト-5_mission)
+- [レイアウトファイル](#レイアウトファイル)
 - [stringtable.csv](#stringtablecsv)
 - [Inputs.xml](#inputsxml)
-- [Build Script](#build-script)
-- [Customization Guide](#customization-guide)
-- [Feature Expansion Guide](#feature-expansion-guide)
-- [Next Steps](#next-steps)
+- [ビルドスクリプト](#ビルドスクリプト)
+- [カスタマイズガイド](#カスタマイズガイド)
+- [機能拡張ガイド](#機能拡張ガイド)
+- [次のステップ](#次のステップ)
 
 ---
 
 ## 概要
 
-A "Hello World" mod proves the toolchain works. A professional mod needs much more:
+「Hello World」Modはツールチェーンの動作を証明するものです。プロフェッショナルなModにはさらに多くのものが必要です：
 
-| Concern | Hello World | Professional Template |
+| 関心事 | Hello World | プロフェッショナルテンプレート |
 |---------|-------------|----------------------|
-| Configuration | Hardcoded values | JSON config with load/save/defaults |
-| Communication | Print statements | String-routed RPC (client to server and back) |
-| Architecture | One file, one function | Singleton manager, layered scripts, clean lifecycle |
-| User interface | None | Layout-driven UI panel with open/close |
-| Input binding | None | Custom keybind in Options > Controls |
-| Localization | None | stringtable.csv with 13 languages |
-| Build pipeline | Manual Addon Builder | One-click batch script |
-| Cleanup | None | Proper shutdown on mission end, no leaks |
+| 設定 | ハードコードされた値 | ロード/保存/デフォルト付きのJSON設定 |
+| 通信 | Print文 | 文字列ルーティングRPC（クライアントからサーバーへ、およびその逆） |
+| アーキテクチャ | 1ファイル、1関数 | シングルトンマネージャー、レイヤードスクリプト、クリーンなライフサイクル |
+| ユーザーインターフェース | なし | 開閉機能付きのレイアウト駆動UIパネル |
+| 入力バインド | なし | オプション > コントロールのカスタムキーバインド |
+| ローカライゼーション | なし | 13言語対応のstringtable.csv |
+| ビルドパイプライン | 手動のAddon Builder | ワンクリックバッチスクリプト |
+| クリーンアップ | なし | ミッション終了時の適切なシャットダウン、リークなし |
 
-This template gives you all of these out of the box. You rename the identifiers, delete the systems you do not need, and start building your actual feature on a solid foundation.
+このテンプレートはこれらすべてをすぐに使える状態で提供します。識別子を名前変更し、不要なシステムを削除して、堅実な基盤の上に実際の機能の構築を開始できます。
 
 ---
 
-## Complete Directory Structure
+## 完全なディレクトリ構造
 
-This is the full source layout. Every file listed below is provided as a complete template in this chapter.
+これは完全なソースレイアウトです。以下に記載されているすべてのファイルは、このチャプターで完全なテンプレートとして提供されます。
 
 ```
-MyProfessionalMod/                          <-- Source root (lives on P: drive)
-    mod.cpp                                 <-- Launcher metadata
+MyProfessionalMod/                          <-- ソースルート（P:ドライブに配置）
+    mod.cpp                                 <-- ランチャーメタデータ
     Scripts/
-        config.cpp                          <-- Engine registration (CfgPatches + CfgMods)
-        Inputs.xml                          <-- Keybind definitions
-        stringtable.csv                     <-- Localized strings (13 languages)
+        config.cpp                          <-- エンジン登録（CfgPatches + CfgMods）
+        Inputs.xml                          <-- キーバインド定義
+        stringtable.csv                     <-- ローカライズされた文字列（13言語）
         3_Game/
             MyMod/
-                MyModConstants.c            <-- Enums, version string, shared constants
-                MyModConfig.c               <-- JSON-serializable config with defaults
-                MyModRPC.c                  <-- RPC route names and registration
+                MyModConstants.c            <-- 列挙型、バージョン文字列、共有定数
+                MyModConfig.c               <-- デフォルト付きのJSONシリアライズ可能な設定
+                MyModRPC.c                  <-- RPCルート名と登録
         4_World/
             MyMod/
-                MyModManager.c              <-- Singleton manager (lifecycle, config, state)
-                MyModPlayerHandler.c        <-- Player connect/disconnect hooks
+                MyModManager.c              <-- シングルトンマネージャー（ライフサイクル、設定、状態）
+                MyModPlayerHandler.c        <-- プレイヤー接続/切断フック
         5_Mission/
             MyMod/
-                MyModMissionServer.c        <-- modded MissionServer (server init/shutdown)
-                MyModMissionClient.c        <-- modded MissionGameplay (client init/shutdown)
-                MyModUI.c                   <-- UI panel script (open/close/populate)
+                MyModMissionServer.c        <-- modded MissionServer（サーバー初期化/シャットダウン）
+                MyModMissionClient.c        <-- modded MissionGameplay（クライアント初期化/シャットダウン）
+                MyModUI.c                   <-- UIパネルスクリプト（開閉/データ投入）
         GUI/
             layouts/
-                MyModPanel.layout           <-- UI layout definition
-    build.bat                               <-- PBO packing automation
+                MyModPanel.layout           <-- UIレイアウト定義
+    build.bat                               <-- PBOパッキング自動化
 
-After building, the distributable mod folder looks like this:
+ビルド後の配布可能なModフォルダは以下のようになります：
 
-@MyProfessionalMod/                         <-- What goes on the server / Workshop
+@MyProfessionalMod/                         <-- サーバー / Workshopに配置するもの
     mod.cpp
     addons/
-        MyProfessionalMod_Scripts.pbo       <-- Packed from Scripts/
+        MyProfessionalMod_Scripts.pbo       <-- Scripts/ からパッキング
     keys/
-        MyMod.bikey                         <-- Key for signed servers
-    meta.cpp                                <-- Workshop metadata (auto-generated)
+        MyMod.bikey                         <-- 署名サーバー用のキー
+    meta.cpp                                <-- Workshopメタデータ（自動生成）
 ```
 
 ---
 
 ## mod.cpp
 
-This file controls what players see in the DayZ launcher. It is placed at the mod root, **not** inside `Scripts/`.
+このファイルはDayZランチャーでプレイヤーに表示される内容を制御します。Modルートに配置し、`Scripts/` 内には**配置しません**。
 
 ```cpp
 // ==========================================================================
-// mod.cpp - Mod identity for the DayZ launcher
-// This file is read by the launcher to display mod info in the mod list.
-// It is NOT compiled by the script engine -- it is pure metadata.
+// mod.cpp - DayZランチャー用のMod識別情報
+// このファイルはランチャーがModリストにMod情報を表示するために読み取ります。
+// スクリプトエンジンではコンパイルされません -- 純粋なメタデータです。
 // ==========================================================================
 
-// Display name shown in the launcher mod list and in-game mod screen.
+// ランチャーのModリストとゲーム内Mod画面に表示される表示名。
 name         = "My Professional Mod";
 
-// Your name or team name. Shows in the "Author" column.
+// あなたの名前またはチーム名。「Author」列に表示されます。
 author       = "YourName";
 
-// Semantic version string. Update this with every release.
-// The launcher displays this so players know which version they have.
+// セマンティックバージョン文字列。リリースごとに更新してください。
+// ランチャーはこれを表示し、プレイヤーがどのバージョンを持っているかを確認できます。
 version      = "1.0.0";
 
-// Short description shown when hovering over the mod in the launcher.
-// Keep it under 200 characters for readability.
+// ランチャーでModにカーソルを合わせたときに表示される短い説明。
+// 読みやすさのため200文字以内に収めてください。
 overview     = "A professional mod template with config, RPC, UI, and keybinds.";
 
-// Tooltip shown on hover. Usually matches the mod name.
+// ホバー時に表示されるツールチップ。通常はMod名と一致させます。
 tooltipOwned = "My Professional Mod";
 
-// Optional: path to a preview image (relative to mod root).
-// Recommended size: 256x256 or 512x512, PAA or EDDS format.
-// Leave empty if you have no image yet.
+// オプション: プレビュー画像のパス（Modルートからの相対パス）。
+// 推奨サイズ: 256x256 または 512x512、PAAまたはEDDS形式。
+// 画像がまだない場合は空にしておきます。
 picture      = "";
 
-// Optional: logo displayed in the mod details panel.
+// オプション: Mod詳細パネルに表示されるロゴ。
 logo         = "";
 logoSmall    = "";
 logoOver     = "";
 
-// Optional: URL opened when the player clicks "Website" in the launcher.
+// オプション: プレイヤーがランチャーで「Website」をクリックしたときに開かれるURL。
 action       = "";
 actionURL    = "";
 ```
@@ -137,41 +141,41 @@ actionURL    = "";
 
 ## config.cpp
 
-This is the most critical file. It registers your mod with エンジン, declares dependencies, wires up script layers, and optionally sets preprocessor defines and image sets.
+これは最も重要なファイルです。エンジンにModを登録し、依存関係を宣言し、スクリプトレイヤーを接続し、オプションでプリプロセッサ定義とイメージセットを設定します。
 
-Place this at `Scripts/config.cpp`.
+`Scripts/config.cpp` に配置します。
 
 ```cpp
 // ==========================================================================
-// config.cpp - Engine registration
-// The DayZ engine reads this to know what your mod provides.
-// Two sections matter: CfgPatches (dependency graph) and CfgMods (script loading).
+// config.cpp - エンジン登録
+// DayZエンジンはこれを読み取り、Modが提供するものを把握します。
+// 2つのセクションが重要: CfgPatches（依存関係グラフ）と CfgMods（スクリプトの読み込み）。
 // ==========================================================================
 
 // --------------------------------------------------------------------------
-// CfgPatches - Dependency Declaration
-// The engine uses this to determine load order. If your mod depends on
-// another mod, list that mod's CfgPatches class in requiredAddons[].
+// CfgPatches - 依存関係宣言
+// エンジンはこれを使用してロード順序を決定します。Modが他のModに
+// 依存する場合、そのModのCfgPatchesクラスをrequiredAddons[]に記載します。
 // --------------------------------------------------------------------------
 class CfgPatches
 {
-    // Class name MUST be globally unique across all mods.
-    // Convention: ModName_Scripts (matches the PBO name).
+    // クラス名はすべてのMod間でグローバルに一意でなければなりません。
+    // 規約: ModName_Scripts（PBO名と一致させる）。
     class MyMod_Scripts
     {
-        // units[] and weapons[] declare config classes defined by this addon.
-        // For script-only mods, leave these empty. They are used by mods
-        // that define new items, weapons, or vehicles in config.cpp.
+        // units[] と weapons[] はこのアドオンが定義する設定クラスを宣言します。
+        // スクリプトのみのModでは、これらを空にしておきます。新しいアイテム、
+        // 武器、車両をconfig.cppで定義するModで使用されます。
         units[] = {};
         weapons[] = {};
 
-        // Minimum engine version. 0.1 works for all current DayZ versions.
+        // 最小エンジンバージョン。0.1は現在のすべてのDayZバージョンで動作します。
         requiredVersion = 0.1;
 
-        // Dependencies: list CfgPatches class names from other mods.
-        // "DZ_Data" is the base game -- every mod should depend on it.
-        // Add "CF_Scripts" if you use Community Framework.
-        // Add other mod patches if you extend them.
+        // 依存関係: 他のModのCfgPatchesクラス名を記載します。
+        // "DZ_Data" はベースゲーム -- すべてのModがこれに依存すべきです。
+        // Community Frameworkを使用する場合は "CF_Scripts" を追加します。
+        // 他のModを拡張する場合はそのModのパッチを追加します。
         requiredAddons[] =
         {
             "DZ_Data"
@@ -180,58 +184,58 @@ class CfgPatches
 };
 
 // --------------------------------------------------------------------------
-// CfgMods - Script Module Registration
-// Tells the engine where each script layer lives and what defines to set.
+// CfgMods - スクリプトモジュール登録
+// 各スクリプトレイヤーの場所と設定する定義をエンジンに伝えます。
 // --------------------------------------------------------------------------
 class CfgMods
 {
-    // Class name here is your mod's internal identifier.
-    // It does NOT need to match CfgPatches -- but keeping them related
-    // makes the codebase easier to navigate.
+    // ここのクラス名はModの内部識別子です。
+    // CfgPatchesと一致させる必要はありませんが、関連させておくと
+    // コードベースの移動が容易になります。
     class MyMod
     {
-        // dir: the folder name on the P: drive (or in the PBO).
-        // Must match your actual root folder name exactly.
+        // dir: P:ドライブ上のフォルダ名（またはPBO内）。
+        // 実際のルートフォルダ名と正確に一致する必要があります。
         dir = "MyProfessionalMod";
 
-        // Display name (shown in Workbench and some engine logs).
+        // 表示名（WorkbenchおよびエンジンログのI一部に表示されます）。
         name = "My Professional Mod";
 
-        // Author and description for engine metadata.
+        // エンジンメタデータ用の作者と説明。
         author = "YourName";
         overview = "Professional mod template";
 
-        // Mod type. Always "mod" for script mods.
+        // Modタイプ。スクリプトModでは常に "mod" です。
         type = "mod";
 
-        // credits: optional path to a Credits.json file.
+        // credits: オプションのCredits.jsonファイルへのパス。
         // creditsJson = "MyProfessionalMod/Scripts/Credits.json";
 
-        // inputs: path to your Inputs.xml for custom keybinds.
-        // This MUST be set here for the engine to load your keybinds.
+        // inputs: カスタムキーバインド用のInputs.xmlへのパス。
+        // エンジンがキーバインドを読み込むためにはここで設定が必要です。
         inputs = "MyProfessionalMod/Scripts/Inputs.xml";
 
-        // defines: preprocessor symbols set when your mod is loaded.
-        // Other mods can use #ifdef MYMOD to detect your mod's presence
-        // and conditionally compile integration code.
+        // defines: Modがロードされたときに設定されるプリプロセッサシンボル。
+        // 他のModは #ifdef MYMOD を使用してModの存在を検出し、
+        // 条件付きでインテグレーションコードをコンパイルできます。
         defines[] = { "MYMOD" };
 
-        // dependencies: which vanilla script modules your mod hooks into.
-        // "Game" = 3_Game, "World" = 4_World, "Mission" = 5_Mission.
-        // Most mods need all three. Add "Core" only if you use 1_Core.
+        // dependencies: Modがフックするバニラスクリプトモジュール。
+        // "Game" = 3_Game, "World" = 4_World, "Mission" = 5_Mission。
+        // ほとんどのModは3つすべてが必要です。1_Coreを使用する場合のみ "Core" を追加します。
         dependencies[] =
         {
             "Game", "World", "Mission"
         };
 
-        // defs: maps each script module to its folder on disk.
-        // The engine compiles all .c files found recursively in these paths.
-        // There is no #include in Enforce Script -- this is how files are loaded.
+        // defs: 各スクリプトモジュールをディスク上のフォルダにマッピングします。
+        // エンジンはこれらのパス内で再帰的に見つかったすべての.cファイルをコンパイルします。
+        // Enforce Scriptには#includeがありません -- これがファイルの読み込み方法です。
         class defs
         {
-            // imageSets: register .imageset files for use in layouts.
-            // Only needed if you have custom icons/textures for UI.
-            // Uncomment and update paths if you add an imageset.
+            // imageSets: レイアウトで使用する.imagesetファイルを登録します。
+            // UI用のカスタムアイコン/テクスチャがある場合にのみ必要です。
+            // imagesetを追加する場合はコメント解除してパスを更新してください。
             //
             // class imageSets
             // {
@@ -241,27 +245,27 @@ class CfgMods
             //     };
             // };
 
-            // Game layer (3_Game): loads first.
-            // Place enums, constants, config classes, RPC definitions here.
-            // CANNOT reference types from 4_World or 5_Mission.
+            // Gameレイヤー（3_Game）: 最初にロードされます。
+            // 列挙型、定数、設定クラス、RPC定義をここに配置します。
+            // 4_World や 5_Mission の型を参照できません。
             class gameScriptModule
             {
                 value = "";
                 files[] = { "MyProfessionalMod/Scripts/3_Game" };
             };
 
-            // World layer (4_World): loads second.
-            // Place managers, entity modifications, world interactions here.
-            // CAN reference 3_Game types. CANNOT reference 5_Mission types.
+            // Worldレイヤー（4_World）: 2番目にロードされます。
+            // マネージャー、エンティティ変更、ワールドインタラクションをここに配置します。
+            // 3_Game の型を参照できます。5_Mission の型を参照できません。
             class worldScriptModule
             {
                 value = "";
                 files[] = { "MyProfessionalMod/Scripts/4_World" };
             };
 
-            // Mission layer (5_Mission): loads last.
-            // Place mission hooks, UI panels, startup/shutdown logic here.
-            // CAN reference types from all lower layers.
+            // Missionレイヤー（5_Mission）: 最後にロードされます。
+            // ミッションフック、UIパネル、起動/シャットダウンロジックをここに配置します。
+            // すべての下位レイヤーの型を参照できます。
             class missionScriptModule
             {
                 value = "";
@@ -274,54 +278,54 @@ class CfgMods
 
 ---
 
-## Constants File (3_Game)
+## 定数ファイル (3_Game)
 
-Place at `Scripts/3_Game/MyMod/MyModConstants.c`.
+`Scripts/3_Game/MyMod/MyModConstants.c` に配置します。
 
-This file defines all shared constants, enums, and the version string. It lives in `3_Game` so every higher layer can access these values.
+このファイルはすべての共有定数、列挙型、バージョン文字列を定義します。すべての上位レイヤーがこれらの値にアクセスできるよう `3_Game` に配置します。
 
 ```c
 // ==========================================================================
-// MyModConstants.c - Shared constants and enums
-// 3_Game layer: available to all higher layers (4_World, 5_Mission).
+// MyModConstants.c - 共有定数と列挙型
+// 3_Gameレイヤー: すべての上位レイヤー（4_World、5_Mission）で利用可能。
 //
-// WHY this file exists:
-//   Centralizing constants prevents magic numbers scattered across files.
-//   Enums give compile-time safety instead of raw int comparisons.
-//   The version string is defined once and used in logs and UI.
+// このファイルが存在する理由:
+//   定数を集中化することで、ファイル全体に散らばるマジックナンバーを防ぎます。
+//   列挙型は生のint比較の代わりにコンパイル時の安全性を提供します。
+//   バージョン文字列は一度だけ定義され、ログとUIで使用されます。
 // ==========================================================================
 
 // ---------------------------------------------------------------------------
-// Version - update this with every release
+// バージョン - リリースごとに更新する
 // ---------------------------------------------------------------------------
 const string MYMOD_VERSION = "1.0.0";
 
 // ---------------------------------------------------------------------------
-// Log tag - prefix for all Print/log messages from this mod
-// Using a consistent tag makes it easy to filter the script log.
+// ログタグ - このModからのすべてのPrint/ログメッセージのプレフィックス
+// 一貫したタグを使用することで、スクリプトログのフィルタリングが容易になります。
 // ---------------------------------------------------------------------------
 const string MYMOD_TAG = "[MyMod]";
 
 // ---------------------------------------------------------------------------
-// File paths - centralized so typos are caught in one place
-// $profile: resolves to the server's profile directory at runtime.
+// ファイルパス - タイプミスが1箇所で検出されるよう集中化
+// $profile: は実行時にサーバーのプロファイルディレクトリに解決されます。
 // ---------------------------------------------------------------------------
 const string MYMOD_CONFIG_DIR  = "$profile:MyMod";
 const string MYMOD_CONFIG_PATH = "$profile:MyMod/config.json";
 
 // ---------------------------------------------------------------------------
-// Enum: Feature modes
-// Use enums instead of raw ints for readability and compile-time checks.
+// 列挙型: 機能モード
+// 可読性とコンパイル時チェックのため、生のintの代わりに列挙型を使用します。
 // ---------------------------------------------------------------------------
 enum MyModMode
 {
-    DISABLED = 0,    // Feature is off
-    PASSIVE  = 1,    // Feature runs but does not interfere
-    ACTIVE   = 2     // Feature is fully enabled
+    DISABLED = 0,    // 機能はオフ
+    PASSIVE  = 1,    // 機能は動作するが干渉しない
+    ACTIVE   = 2     // 機能は完全に有効
 };
 
 // ---------------------------------------------------------------------------
-// Enum: Notification types (used by UI to pick icon/color)
+// 列挙型: 通知タイプ（UIがアイコン/色を選択するために使用）
 // ---------------------------------------------------------------------------
 enum MyModNotifyType
 {
@@ -334,82 +338,82 @@ enum MyModNotifyType
 
 ---
 
-## Config Data Class (3_Game)
+## 設定データクラス (3_Game)
 
-Place at `Scripts/3_Game/MyMod/MyModConfig.c`.
+`Scripts/3_Game/MyMod/MyModConfig.c` に配置します。
 
-This is a JSON-serializable settings class. The server loads it on startup. If no file exists, defaults are used and a fresh config is saved to disk.
+これはJSONシリアライズ可能な設定クラスです。サーバーは起動時にこれを読み込みます。ファイルが存在しない場合、デフォルト値が使用され、新しい設定がディスクに保存されます。
 
 ```c
 // ==========================================================================
-// MyModConfig.c - JSON configuration with defaults
-// 3_Game layer so both 4_World managers and 5_Mission hooks can read it.
+// MyModConfig.c - デフォルト付きのJSON設定
+// 3_Gameレイヤー: 4_Worldのマネージャーと5_Missionのフックの両方が読み取れるように。
 //
-// HOW IT WORKS:
-//   JsonFileLoader<MyModConfig> uses Enforce Script's built-in JSON
-//   serializer. Every field with a default value is written to / read from
-//   the JSON file. Adding a new field is safe -- old config files simply
-//   get the default value for any missing fields.
+// 仕組み:
+//   JsonFileLoader<MyModConfig> はEnforce Script組み込みのJSON
+//   シリアライザーを使用します。デフォルト値を持つすべてのフィールドが
+//   JSONファイルに書き込み/読み取りされます。新しいフィールドの追加は安全です
+//   -- 古い設定ファイルでは不足フィールドにデフォルト値が使用されます。
 //
-// ENFORCE SCRIPT GOTCHA:
-//   JsonFileLoader<T>.JsonLoadFile(path, obj) returns VOID.
-//   You CANNOT do: if (JsonFileLoader<T>.JsonLoadFile(...)) -- it will not compile.
-//   Always pass a pre-created object by reference.
+// ENFORCE SCRIPTの注意点:
+//   JsonFileLoader<T>.JsonLoadFile(path, obj) はVOIDを返します。
+//   if (JsonFileLoader<T>.JsonLoadFile(...)) とすることはできません -- コンパイルできません。
+//   必ず事前作成されたオブジェクトを参照で渡してください。
 // ==========================================================================
 
 class MyModConfig
 {
-    // --- General Settings ---
+    // --- 一般設定 ---
 
-    // Master switch: if false, the entire mod is disabled.
+    // マスタースイッチ: falseの場合、Mod全体が無効になります。
     bool Enabled = true;
 
-    // How often (in seconds) the manager runs its update tick.
-    // Lower values = more responsive but higher CPU cost.
+    // マネージャーが更新ティックを実行する頻度（秒）。
+    // 低い値 = より応答性が高いがCPUコストが高くなります。
     float UpdateInterval = 5.0;
 
-    // Maximum number of items/entities this mod manages simultaneously.
+    // このModが同時に管理するアイテム/エンティティの最大数。
     int MaxItems = 100;
 
-    // Mode: 0 = DISABLED, 1 = PASSIVE, 2 = ACTIVE (see MyModMode enum).
+    // モード: 0 = DISABLED, 1 = PASSIVE, 2 = ACTIVE（MyModMode列挙型を参照）。
     int Mode = 2;
 
-    // --- Messages ---
+    // --- メッセージ ---
 
-    // Welcome message shown to players when they connect.
-    // Empty string = no message.
+    // プレイヤーが接続したときに表示されるウェルカムメッセージ。
+    // 空文字列 = メッセージなし。
     string WelcomeMessage = "Welcome to the server!";
 
-    // Whether to show the welcome message as a notification or chat message.
+    // ウェルカムメッセージを通知として表示するかチャットメッセージとして表示するか。
     bool WelcomeAsNotification = true;
 
-    // --- Logging ---
+    // --- ロギング ---
 
-    // Enable verbose debug logging. Turn off for production servers.
+    // 詳細なデバッグログを有効にする。本番サーバーではオフにしてください。
     bool DebugLogging = false;
 
     // -----------------------------------------------------------------------
-    // Load - reads config from disk, returns instance with defaults if missing
+    // Load - ディスクから設定を読み取り、存在しない場合はデフォルトのインスタンスを返す
     // -----------------------------------------------------------------------
     static MyModConfig Load()
     {
-        // Always create a fresh instance first. This ensures all defaults
-        // are set even if the JSON file is missing fields (e.g., after
-        // an update that added new settings).
+        // まず新しいインスタンスを作成します。JSONファイルにフィールドが
+        // 不足している場合（例: 新しい設定を追加したアップデート後）でも
+        // すべてのデフォルトが設定されることを保証します。
         MyModConfig cfg = new MyModConfig();
 
-        // Check if the config file exists before trying to load.
-        // On first run, it will not exist -- we use defaults and save.
+        // 読み込みを試みる前に設定ファイルが存在するか確認します。
+        // 初回実行時には存在しないため、デフォルトを使用して保存します。
         if (FileExist(MYMOD_CONFIG_PATH))
         {
-            // JsonLoadFile populates the existing object. It does NOT return
-            // a new object. Fields present in the JSON overwrite defaults;
-            // fields missing from the JSON keep their default values.
+            // JsonLoadFileは既存のオブジェクトにデータを投入します。
+            // 新しいオブジェクトを返すものではありません。JSONに存在するフィールドは
+            // デフォルトを上書きし、JSONにないフィールドはデフォルト値を保持します。
             JsonFileLoader<MyModConfig>.JsonLoadFile(MYMOD_CONFIG_PATH, cfg);
         }
         else
         {
-            // First run: save defaults so the admin has a file to edit.
+            // 初回実行: 管理者が編集できるファイルとしてデフォルトを保存します。
             cfg.Save();
             Print(MYMOD_TAG + " No config found, created default at: " + MYMOD_CONFIG_PATH);
         }
@@ -418,25 +422,25 @@ class MyModConfig
     }
 
     // -----------------------------------------------------------------------
-    // Save - writes current values to disk as formatted JSON
+    // Save - 現在の値をフォーマット済みJSONとしてディスクに書き込む
     // -----------------------------------------------------------------------
     void Save()
     {
-        // Ensure the directory exists. MakeDirectory is safe to call
-        // even if the directory already exists.
+        // ディレクトリが存在することを確認します。MakeDirectoryは
+        // ディレクトリが既に存在しても安全に呼び出せます。
         if (!FileExist(MYMOD_CONFIG_DIR))
         {
             MakeDirectory(MYMOD_CONFIG_DIR);
         }
 
-        // JsonSaveFile writes all fields as a JSON object.
-        // The file is overwritten entirely -- there is no merge.
+        // JsonSaveFileはすべてのフィールドをJSONオブジェクトとして書き込みます。
+        // ファイルは完全に上書きされます -- マージはありません。
         JsonFileLoader<MyModConfig>.JsonSaveFile(MYMOD_CONFIG_PATH, this);
     }
 };
 ```
 
-The resulting `config.json` on disk looks like this:
+ディスク上の `config.json` は以下のようになります：
 
 ```json
 {
@@ -450,48 +454,48 @@ The resulting `config.json` on disk looks like this:
 }
 ```
 
-Admins edit this file, restart the server, and the new values take effect.
+管理者はこのファイルを編集し、サーバーを再起動すると新しい値が反映されます。
 
 ---
 
-## RPC Definitions (3_Game)
+## RPC定義 (3_Game)
 
-Place at `Scripts/3_Game/MyMod/MyModRPC.c`.
+`Scripts/3_Game/MyMod/MyModRPC.c` に配置します。
 
-RPC (Remote Procedure Call) is how the client and server communicate in DayZ. This file defines route names and provides helper methods for registration.
+RPC（Remote Procedure Call）はDayZでクライアントとサーバーが通信する方法です。このファイルはルート名を定義し、登録用のヘルパーメソッドを提供します。
 
 ```c
 // ==========================================================================
-// MyModRPC.c - RPC route definitions and helpers
-// 3_Game layer: route name constants must be available everywhere.
+// MyModRPC.c - RPCルート定義とヘルパー
+// 3_Gameレイヤー: ルート名の定数はどこからでも利用可能でなければなりません。
 //
-// HOW RPC WORKS IN DAYZ:
-//   The engine provides ScriptRPC and OnRPC for sending/receiving data.
-//   You call GetGame().RPCSingleParam() or create a ScriptRPC, write
-//   data into it, and send it. The receiver reads data in the same order.
+// DAYZにおけるRPCの仕組み:
+//   エンジンはデータの送受信にScriptRPCとOnRPCを提供します。
+//   GetGame().RPCSingleParam() を呼び出すか、ScriptRPCを作成して
+//   データを書き込み、送信します。受信側は同じ順序でデータを読み取ります。
 //
-//   DayZ uses integer RPC IDs. To avoid collisions between mods, each
-//   mod should pick a unique ID range or use a string-routing system.
-//   This template uses a single unique int ID with a string prefix
-//   to identify which handler should process each message.
+//   DayZは整数のRPC IDを使用します。Mod間の衝突を避けるため、各Modは
+//   一意のID範囲を選択するか、文字列ルーティングシステムを使用すべきです。
+//   このテンプレートでは、各メッセージを処理するハンドラーを特定するために
+//   文字列プレフィックスと一意のint IDを使用します。
 //
-// PATTERN:
-//   1. Client wants data -> sends request RPC to server
-//   2. Server processes  -> sends response RPC back to client
-//   3. Client receives   -> updates UI or state
+// パターン:
+//   1. クライアントがデータを要求 -> サーバーにリクエストRPCを送信
+//   2. サーバーが処理 -> クライアントにレスポンスRPCを返送
+//   3. クライアントが受信 -> UIまたは状態を更新
 // ==========================================================================
 
 // ---------------------------------------------------------------------------
-// RPC ID - pick a unique number unlikely to collide with other mods.
-// Check the DayZ community wiki for commonly used ranges.
-// Engine built-in RPCs use low numbers (0-1000).
-// Convention: use a 5-digit number based on your mod name's hash.
+// RPC ID - 他のModと衝突しにくい一意の番号を選択します。
+// よく使用される範囲についてはDayZコミュニティWikiを確認してください。
+// エンジン組み込みRPCは小さな番号（0-1000）を使用します。
+// 規約: Mod名のハッシュに基づく5桁の番号を使用します。
 // ---------------------------------------------------------------------------
 const int MYMOD_RPC_ID = 74291;
 
 // ---------------------------------------------------------------------------
-// RPC Route Names - string identifiers for each RPC endpoint.
-// Using constants prevents typos and enables IDE search.
+// RPCルート名 - 各RPCエンドポイントの文字列識別子。
+// 定数を使用することでタイプミスを防ぎ、IDE検索を可能にします。
 // ---------------------------------------------------------------------------
 const string MYMOD_RPC_CONFIG_SYNC     = "MyMod:ConfigSync";
 const string MYMOD_RPC_WELCOME         = "MyMod:Welcome";
@@ -500,43 +504,43 @@ const string MYMOD_RPC_UI_REQUEST      = "MyMod:UIRequest";
 const string MYMOD_RPC_UI_RESPONSE     = "MyMod:UIResponse";
 
 // ---------------------------------------------------------------------------
-// MyModRPCHelper - static utility class for sending RPCs
-// Wraps the boilerplate of creating a ScriptRPC, writing the route
-// string, writing payload, and calling Send().
+// MyModRPCHelper - RPC送信用の静的ユーティリティクラス
+// ScriptRPCの作成、ルート文字列の書き込み、ペイロードの書き込み、
+// Send()の呼び出しというボイラープレートをラップします。
 // ---------------------------------------------------------------------------
 class MyModRPCHelper
 {
-    // Send a string message from server to a specific client.
-    // identity: the target player. null = broadcast to all.
-    // routeName: which handler should process this (e.g., MYMOD_RPC_WELCOME).
-    // message: the string payload.
+    // サーバーから特定のクライアントに文字列メッセージを送信します。
+    // identity: ターゲットプレイヤー。null = すべてにブロードキャスト。
+    // routeName: 処理するハンドラーを指定（例: MYMOD_RPC_WELCOME）。
+    // message: 文字列ペイロード。
     static void SendStringToClient(PlayerIdentity identity, string routeName, string message)
     {
-        // Create the RPC object. This is the envelope.
+        // RPCオブジェクトを作成します。これはエンベロープです。
         ScriptRPC rpc = new ScriptRPC();
 
-        // Write the route name first. The receiver reads this to decide
-        // which handler to call. Always write/read in the same order.
+        // 最初にルート名を書き込みます。受信側はこれを読み取り、
+        // どのハンドラーを呼び出すかを決定します。常に同じ順序で書き込み/読み取りします。
         rpc.Write(routeName);
 
-        // Write the payload data.
+        // ペイロードデータを書き込みます。
         rpc.Write(message);
 
-        // Send to the client. Parameters:
-        //   null    = no target object (player entity not needed for custom RPCs)
-        //   MYMOD_RPC_ID = our unique RPC channel
-        //   true    = guaranteed delivery (TCP-like). Use false for frequent updates.
-        //   identity = target client. null would broadcast to ALL clients.
+        // クライアントに送信します。パラメータ:
+        //   null    = ターゲットオブジェクトなし（カスタムRPCにはプレイヤーエンティティ不要）
+        //   MYMOD_RPC_ID = 一意のRPCチャンネル
+        //   true    = 確実な配信（TCP的）。頻繁な更新にはfalseを使用。
+        //   identity = ターゲットクライアント。nullはすべてのクライアントにブロードキャスト。
         rpc.Send(null, MYMOD_RPC_ID, true, identity);
     }
 
-    // Send a request from client to server (no payload, just the route).
+    // クライアントからサーバーにリクエストを送信する（ペイロードなし、ルートのみ）。
     static void SendRequestToServer(string routeName)
     {
         ScriptRPC rpc = new ScriptRPC();
         rpc.Write(routeName);
-        // When sending TO the server, identity is null (server has no PlayerIdentity).
-        // guaranteed = true ensures the message arrives.
+        // サーバーへの送信時、identityはnullです（サーバーにはPlayerIdentityがありません）。
+        // guaranteed = true でメッセージの到着を保証します。
         rpc.Send(null, MYMOD_RPC_ID, true, null);
     }
 };
@@ -544,49 +548,49 @@ class MyModRPCHelper
 
 ---
 
-## Manager Singleton (4_World)
+## マネージャーシングルトン (4_World)
 
-Place at `Scripts/4_World/MyMod/MyModManager.c`.
+`Scripts/4_World/MyMod/MyModManager.c` に配置します。
 
-This is the central brain of your mod on the server side. It owns the config, processes RPC, and runs periodic updates.
+これはサーバーサイドにおけるModの中枢です。設定を所有し、RPCを処理し、定期更新を実行します。
 
 ```c
 // ==========================================================================
-// MyModManager.c - Server-side singleton manager
-// 4_World layer: can reference 3_Game types (config, constants, RPC).
+// MyModManager.c - サーバーサイドのシングルトンマネージャー
+// 4_Worldレイヤー: 3_Gameの型（設定、定数、RPC）を参照できます。
 //
-// WHY a singleton:
-//   The manager needs exactly one instance that persists for the entire
-//   mission. Multiple instances would cause duplicate processing and
-//   conflicting state. The singleton pattern guarantees one instance
-//   and provides global access via GetInstance().
+// なぜシングルトンなのか:
+//   マネージャーはミッション全体を通じて存続する正確に1つのインスタンスが必要です。
+//   複数のインスタンスは重複処理と競合する状態を引き起こします。
+//   シングルトンパターンは1つのインスタンスを保証し、
+//   GetInstance()を通じてグローバルアクセスを提供します。
 //
-// LIFECYCLE:
-//   1. MissionServer.OnInit() calls MyModManager.GetInstance().Init()
-//   2. Manager loads config, registers RPCs, starts timers
-//   3. Manager processes events during gameplay
-//   4. MissionServer.OnMissionFinish() calls MyModManager.Cleanup()
-//   5. Singleton is destroyed, all references are released
+// ライフサイクル:
+//   1. MissionServer.OnInit() が MyModManager.GetInstance().Init() を呼び出す
+//   2. マネージャーが設定を読み込み、RPCを登録し、タイマーを開始する
+//   3. マネージャーがゲームプレイ中にイベントを処理する
+//   4. MissionServer.OnMissionFinish() が MyModManager.Cleanup() を呼び出す
+//   5. シングルトンが破棄され、すべての参照が解放される
 // ==========================================================================
 
 class MyModManager
 {
-    // The single instance. 'ref' means this class OWNS the object.
-    // When s_Instance is set to null, the object is destroyed.
+    // 単一インスタンス。'ref' はこのクラスがオブジェクトを所有することを意味します。
+    // s_Instanceがnullに設定されると、オブジェクトが破棄されます。
     private static ref MyModManager s_Instance;
 
-    // Configuration loaded from disk.
-    // 'ref' because the manager owns the config object's lifetime.
+    // ディスクから読み込まれた設定。
+    // 'ref' はマネージャーが設定オブジェクトの生存期間を所有するためです。
     protected ref MyModConfig m_Config;
 
-    // Accumulated time since last update tick (seconds).
+    // 前回の更新ティックからの累積時間（秒）。
     protected float m_TimeSinceUpdate;
 
-    // Tracks whether Init() has been called successfully.
+    // Init()が正常に呼び出されたかを追跡します。
     protected bool m_Initialized;
 
     // -----------------------------------------------------------------------
-    // Singleton access
+    // シングルトンアクセス
     // -----------------------------------------------------------------------
 
     static MyModManager GetInstance()
@@ -598,23 +602,23 @@ class MyModManager
         return s_Instance;
     }
 
-    // Call this on mission end to destroy the singleton and free memory.
-    // Setting s_Instance to null triggers the destructor.
+    // ミッション終了時にこれを呼び出してシングルトンを破棄しメモリを解放します。
+    // s_Instanceをnullに設定するとデストラクタがトリガーされます。
     static void Cleanup()
     {
         s_Instance = null;
     }
 
     // -----------------------------------------------------------------------
-    // Lifecycle
+    // ライフサイクル
     // -----------------------------------------------------------------------
 
-    // Called once from MissionServer.OnInit().
+    // MissionServer.OnInit()から一度だけ呼び出されます。
     void Init()
     {
         if (m_Initialized) return;
 
-        // Load config from disk (or create defaults on first run).
+        // ディスクから設定を読み込みます（初回実行時はデフォルトを作成）。
         m_Config = MyModConfig.Load();
 
         if (!m_Config.Enabled)
@@ -623,7 +627,7 @@ class MyModManager
             return;
         }
 
-        // Reset the update timer.
+        // 更新タイマーをリセットします。
         m_TimeSinceUpdate = 0;
 
         m_Initialized = true;
@@ -638,46 +642,46 @@ class MyModManager
         }
     }
 
-    // Called every frame from MissionServer.OnUpdate().
-    // timeslice is the seconds elapsed since the last frame.
+    // MissionServer.OnUpdate()から毎フレーム呼び出されます。
+    // timesliceは前回のフレームからの経過秒数です。
     void OnUpdate(float timeslice)
     {
         if (!m_Initialized || !m_Config.Enabled) return;
 
-        // Accumulate time and only process at the configured interval.
-        // This prevents running expensive logic every single frame.
+        // 時間を蓄積し、設定されたインターバルでのみ処理します。
+        // これにより毎フレームでの高コストなロジックの実行を防ぎます。
         m_TimeSinceUpdate += timeslice;
         if (m_TimeSinceUpdate < m_Config.UpdateInterval) return;
         m_TimeSinceUpdate = 0;
 
-        // --- Periodic update logic goes here ---
-        // Example: iterate tracked entities, check conditions, etc.
+        // --- 定期更新ロジックをここに記述 ---
+        // 例: 追跡対象のエンティティを反復処理、条件の確認など。
         if (m_Config.DebugLogging)
         {
             Print(MYMOD_TAG + " Periodic update tick");
         }
     }
 
-    // Called when the mission ends (server shutdown or restart).
+    // ミッション終了時に呼び出されます（サーバーシャットダウンまたは再起動）。
     void Shutdown()
     {
         if (!m_Initialized) return;
 
         Print(MYMOD_TAG + " Manager shutting down");
 
-        // Save any runtime state if needed.
+        // 必要に応じてランタイム状態を保存します。
         // m_Config.Save();
 
         m_Initialized = false;
     }
 
     // -----------------------------------------------------------------------
-    // RPC Handlers
+    // RPCハンドラー
     // -----------------------------------------------------------------------
 
-    // Called when a client requests UI data.
-    // sender: the player who sent the request.
-    // ctx: the data stream (already past the route name).
+    // クライアントがUIデータを要求したときに呼び出されます。
+    // sender: リクエストを送信したプレイヤー。
+    // ctx: データストリーム（ルート名の後の部分）。
     void OnUIRequest(PlayerIdentity sender, ParamsReadContext ctx)
     {
         if (!sender) return;
@@ -687,19 +691,19 @@ class MyModManager
             Print(MYMOD_TAG + " UI data requested by: " + sender.GetName());
         }
 
-        // Build response data and send it back.
-        // In a real mod, you would gather actual data here.
+        // レスポンスデータを構築して返送します。
+        // 実際のModでは、ここで実際のデータを収集します。
         string responseData = "Items: " + m_Config.MaxItems.ToString();
         MyModRPCHelper.SendStringToClient(sender, MYMOD_RPC_UI_RESPONSE, responseData);
     }
 
-    // Called when a player connects. Sends welcome message if configured.
+    // プレイヤーが接続したときに呼び出されます。設定されている場合はウェルカムメッセージを送信します。
     void OnPlayerConnected(PlayerIdentity identity)
     {
         if (!m_Initialized || !m_Config.Enabled) return;
         if (!identity) return;
 
-        // Send welcome message if configured.
+        // 設定されている場合はウェルカムメッセージを送信します。
         if (m_Config.WelcomeMessage != "")
         {
             MyModRPCHelper.SendStringToClient(identity, MYMOD_RPC_WELCOME, m_Config.WelcomeMessage);
@@ -712,7 +716,7 @@ class MyModManager
     }
 
     // -----------------------------------------------------------------------
-    // Accessors
+    // アクセサ
     // -----------------------------------------------------------------------
 
     MyModConfig GetConfig()
@@ -729,58 +733,58 @@ class MyModManager
 
 ---
 
-## Player Event Handler (4_World)
+## プレイヤーイベントハンドラー (4_World)
 
-Place at `Scripts/4_World/MyMod/MyModPlayerHandler.c`.
+`Scripts/4_World/MyMod/MyModPlayerHandler.c` に配置します。
 
-This uses the `modded class` pattern to hook into the vanilla `PlayerBase` entity and detect connect/disconnect events.
+`modded class` パターンを使用してバニラの `PlayerBase` エンティティにフックし、接続/切断イベントを検出します。
 
 ```c
 // ==========================================================================
-// MyModPlayerHandler.c - Player lifecycle hooks
-// 4_World layer: modded PlayerBase to intercept connect/disconnect.
+// MyModPlayerHandler.c - プレイヤーライフサイクルフック
+// 4_Worldレイヤー: 接続/切断を傍受するためにPlayerBaseをmod。
 //
-// WHY modded class:
-//   DayZ does not have a "player connected" event callback. The standard
-//   pattern is to override methods on MissionServer (for new connections)
-//   or hook into PlayerBase (for entity-level events like death).
-//   We use modded PlayerBase here to demonstrate entity-level hooks.
+// なぜ modded class なのか:
+//   DayZには「プレイヤー接続」イベントのコールバックがありません。標準的な
+//   パターンは、MissionServerのメソッドをオーバーライドする（新しい接続用）か、
+//   PlayerBaseにフックする（死亡などのエンティティレベルイベント用）ことです。
+//   ここではエンティティレベルのフックを示すためにmodded PlayerBaseを使用します。
 //
-// IMPORTANT:
-//   Always call super.MethodName() first in overrides. Failing to do so
-//   breaks the vanilla behavior chain and other mods that also override
-//   the same method.
+// 重要:
+//   オーバーライドでは必ず最初にsuper.MethodName()を呼び出してください。
+//   これを怠ると、バニラの動作チェーンと同じメソッドをオーバーライドしている
+//   他のModが壊れます。
 // ==========================================================================
 
 modded class PlayerBase
 {
-    // Track whether we have sent the init event for this player.
-    // This prevents duplicate processing if Init() is called multiple times.
+    // このプレイヤーの初期化イベントを送信したかを追跡します。
+    // Init()が複数回呼び出された場合の重複処理を防ぎます。
     protected bool m_MyModPlayerReady;
 
     // -----------------------------------------------------------------------
-    // Called after the player entity is fully created and replicated.
-    // On the server, this is where the player is "ready" to receive RPCs.
+    // プレイヤーエンティティが完全に作成されてレプリケートされた後に呼び出されます。
+    // サーバー上では、プレイヤーがRPCを受信する「準備完了」となるタイミングです。
     // -----------------------------------------------------------------------
     override void Init()
     {
         super.Init();
 
-        // Only run on the server. GetGame().IsServer() returns true on
-        // dedicated servers and on the host of a listen server.
+        // サーバー上でのみ実行します。GetGame().IsServer() は専用サーバーと
+        // リッスンサーバーのホストでtrueを返します。
         if (!GetGame().IsServer()) return;
 
-        // Guard against double-init.
+        // 二重初期化のガード。
         if (m_MyModPlayerReady) return;
         m_MyModPlayerReady = true;
 
-        // Get the player's network identity.
-        // On the server, GetIdentity() returns the PlayerIdentity object
-        // containing the player's name, Steam ID (PlainId), and UID.
+        // プレイヤーのネットワークIDを取得します。
+        // サーバー上では、GetIdentity() はプレイヤーの名前、Steam ID（PlainId）、
+        // UIDを含むPlayerIdentityオブジェクトを返します。
         PlayerIdentity identity = GetIdentity();
         if (!identity) return;
 
-        // Notify the manager that a player has connected.
+        // プレイヤーが接続したことをマネージャーに通知します。
         MyModManager mgr = MyModManager.GetInstance();
         if (mgr)
         {
@@ -792,58 +796,58 @@ modded class PlayerBase
 
 ---
 
-## Mission Hook: Server (5_Mission)
+## ミッションフック: サーバー (5_Mission)
 
-Place at `Scripts/5_Mission/MyMod/MyModMissionServer.c`.
+`Scripts/5_Mission/MyMod/MyModMissionServer.c` に配置します。
 
-This hooks into `MissionServer` to initialize and shut down the mod on the server side.
+`MissionServer` にフックして、サーバーサイドでModの初期化とシャットダウンを行います。
 
 ```c
 // ==========================================================================
-// MyModMissionServer.c - Server-side mission hooks
-// 5_Mission layer: last to load, can reference all lower layers.
+// MyModMissionServer.c - サーバーサイドのミッションフック
+// 5_Missionレイヤー: 最後にロードされ、すべての下位レイヤーを参照できます。
 //
-// WHY modded MissionServer:
-//   MissionServer is the entry point for server-side logic. Its OnInit()
-//   runs once when the mission starts (server boot). OnMissionFinish()
-//   runs when the server shuts down or restarts. These are the correct
-//   places to set up and tear down your mod's systems.
+// なぜ modded MissionServer なのか:
+//   MissionServerはサーバーサイドロジックのエントリポイントです。OnInit()は
+//   ミッション開始時（サーバー起動時）に一度だけ実行されます。OnMissionFinish()は
+//   サーバーのシャットダウンまたは再起動時に実行されます。これらがModのシステムの
+//   セットアップとティアダウンの正しい場所です。
 //
-// LIFECYCLE ORDER:
-//   1. Engine loads all script layers (3_Game -> 4_World -> 5_Mission)
-//   2. Engine creates MissionServer instance
-//   3. OnInit() is called -> initialize your systems here
-//   4. OnMissionStart() is called -> world is ready, players can join
-//   5. OnUpdate() is called every frame
-//   6. OnMissionFinish() is called -> server is shutting down
+// ライフサイクルの順序:
+//   1. エンジンがすべてのスクリプトレイヤーをロード（3_Game -> 4_World -> 5_Mission）
+//   2. エンジンがMissionServerインスタンスを作成
+//   3. OnInit()が呼び出される -> ここでシステムを初期化
+//   4. OnMissionStart()が呼び出される -> ワールドが準備完了、プレイヤーが参加可能
+//   5. OnUpdate()が毎フレーム呼び出される
+//   6. OnMissionFinish()が呼び出される -> サーバーがシャットダウン中
 // ==========================================================================
 
 modded class MissionServer
 {
     // -----------------------------------------------------------------------
-    // Initialization
+    // 初期化
     // -----------------------------------------------------------------------
     override void OnInit()
     {
-        // ALWAYS call super first. Other mods in the chain depend on this.
+        // 常にsuperを最初に呼び出します。チェーン内の他のModがこれに依存しています。
         super.OnInit();
 
-        // Initialize the manager singleton. This loads config from disk,
-        // registers RPC handlers, and prepares the mod for operation.
+        // マネージャーシングルトンを初期化します。ディスクから設定を読み込み、
+        // RPCハンドラーを登録し、Modの動作を準備します。
         MyModManager.GetInstance().Init();
 
         Print(MYMOD_TAG + " Server mission initialized");
     }
 
     // -----------------------------------------------------------------------
-    // Per-frame update
+    // フレームごとの更新
     // -----------------------------------------------------------------------
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
 
-        // Delegate to the manager. The manager handles its own rate
-        // limiting (UpdateInterval from config) so this is cheap.
+        // マネージャーに委譲します。マネージャーは独自のレート
+        // 制限（設定のUpdateInterval）を処理するため、これは軽量です。
         MyModManager mgr = MyModManager.GetInstance();
         if (mgr)
         {
@@ -852,21 +856,21 @@ modded class MissionServer
     }
 
     // -----------------------------------------------------------------------
-    // Player connection - server RPC dispatch
-    // Called by the engine when a client sends an RPC to the server.
+    // プレイヤー接続 - サーバーRPCディスパッチ
+    // クライアントがサーバーにRPCを送信したときにエンジンから呼び出されます。
     // -----------------------------------------------------------------------
     override void OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)
     {
         super.OnRPC(sender, target, rpc_type, ctx);
 
-        // Only handle our RPC ID. All other RPCs pass through.
+        // 自分のRPC IDのみを処理します。他のRPCはすべてパススルーします。
         if (rpc_type != MYMOD_RPC_ID) return;
 
-        // Read the route name (first string written by the sender).
+        // ルート名を読み取ります（送信側が最初に書き込んだ文字列）。
         string routeName;
         if (!ctx.Read(routeName)) return;
 
-        // Dispatch to the correct handler based on route name.
+        // ルート名に基づいて正しいハンドラーにディスパッチします。
         MyModManager mgr = MyModManager.GetInstance();
         if (!mgr) return;
 
@@ -874,7 +878,7 @@ modded class MissionServer
         {
             mgr.OnUIRequest(sender, ctx);
         }
-        // Add more routes here as your mod grows:
+        // Modが成長するにつれてここにルートを追加します:
         // else if (routeName == MYMOD_RPC_SOME_OTHER)
         // {
         //     mgr.OnSomeOther(sender, ctx);
@@ -882,21 +886,21 @@ modded class MissionServer
     }
 
     // -----------------------------------------------------------------------
-    // Shutdown
+    // シャットダウン
     // -----------------------------------------------------------------------
     override void OnMissionFinish()
     {
-        // Shut down the manager before calling super.
-        // This ensures our cleanup runs before the engine tears down
-        // the mission infrastructure.
+        // superを呼ぶ前にマネージャーをシャットダウンします。
+        // これにより、エンジンがミッションインフラストラクチャを
+        // ティアダウンする前にクリーンアップが実行されることを保証します。
         MyModManager mgr = MyModManager.GetInstance();
         if (mgr)
         {
             mgr.Shutdown();
         }
 
-        // Destroy the singleton to free memory and prevent stale state
-        // if the mission restarts (e.g., server restart without process exit).
+        // シングルトンを破棄してメモリを解放し、ミッンが再起動した場合
+        // （プロセス終了なしのサーバー再起動など）の古い状態を防ぎます。
         MyModManager.Cleanup();
 
         Print(MYMOD_TAG + " Server mission finished");
@@ -908,39 +912,39 @@ modded class MissionServer
 
 ---
 
-## Mission Hook: Client (5_Mission)
+## ミッションフック: クライアント (5_Mission)
 
-Place at `Scripts/5_Mission/MyMod/MyModMissionClient.c`.
+`Scripts/5_Mission/MyMod/MyModMissionClient.c` に配置します。
 
-This hooks into `MissionGameplay` for client-side initialization, input handling, and RPC receiving.
+クライアントサイドの初期化、入力処理、RPC受信のために `MissionGameplay` にフックします。
 
 ```c
 // ==========================================================================
-// MyModMissionClient.c - Client-side mission hooks
-// 5_Mission layer.
+// MyModMissionClient.c - クライアントサイドのミッションフック
+// 5_Missionレイヤー。
 //
-// WHY MissionGameplay:
-//   On the client, MissionGameplay is the active mission class during
-//   gameplay. It receives OnUpdate() every frame (for input polling)
-//   and OnRPC() for incoming server messages.
+// なぜ MissionGameplay なのか:
+//   クライアント上では、MissionGameplayがゲームプレイ中のアクティブなミッションクラスです。
+//   毎フレームOnUpdate()を受信し（入力ポーリング用）、
+//   受信サーバーメッセージ用のOnRPC()も受信します。
 //
-// NOTE ON LISTEN SERVERS:
-//   On a listen server (host + play), BOTH MissionServer and
-//   MissionGameplay are active. Your client code will run alongside
-//   server code. Guard with GetGame().IsClient() or GetGame().IsServer()
-//   if you need side-specific logic.
+// リッスンサーバーに関する注意:
+//   リッスンサーバー（ホスト + プレイ）では、MissionServerと
+//   MissionGameplayの両方がアクティブです。クライアントコードは
+//   サーバーコードと並行して実行されます。サイド固有のロジックが
+//   必要な場合は GetGame().IsClient() または GetGame().IsServer() でガードします。
 // ==========================================================================
 
 modded class MissionGameplay
 {
-    // Reference to the UI panel. null when closed.
+    // UIパネルへの参照。閉じているときはnull。
     protected ref MyModUI m_MyModPanel;
 
-    // Track initialization state.
+    // 初期化状態の追跡。
     protected bool m_MyModInitialized;
 
     // -----------------------------------------------------------------------
-    // Initialization
+    // 初期化
     // -----------------------------------------------------------------------
     override void OnInit()
     {
@@ -952,7 +956,7 @@ modded class MissionGameplay
     }
 
     // -----------------------------------------------------------------------
-    // Per-frame update: input polling and UI management
+    // フレームごとの更新: 入力ポーリングとUI管理
     // -----------------------------------------------------------------------
     override void OnUpdate(float timeslice)
     {
@@ -960,10 +964,10 @@ modded class MissionGameplay
 
         if (!m_MyModInitialized) return;
 
-        // Poll for the keybind defined in Inputs.xml.
-        // GetUApi() returns the UserActions API.
-        // GetInputByName() looks up the action by the name in Inputs.xml.
-        // LocalPress() returns true on the frame the key is pressed down.
+        // Inputs.xmlで定義されたキーバインドをポーリングします。
+        // GetUApi() はUserActions APIを返します。
+        // GetInputByName() はInputs.xmlの名前でアクションを検索します。
+        // LocalPress() はキーが押下されたフレームでtrueを返します。
         UAInput panelInput = GetUApi().GetInputByName("UAMyModPanel");
         if (panelInput && panelInput.LocalPress())
         {
@@ -972,28 +976,28 @@ modded class MissionGameplay
     }
 
     // -----------------------------------------------------------------------
-    // RPC receiver: handles messages from the server
+    // RPCレシーバー: サーバーからのメッセージを処理する
     // -----------------------------------------------------------------------
     override void OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)
     {
         super.OnRPC(sender, target, rpc_type, ctx);
 
-        // Only handle our RPC ID.
+        // 自分のRPC IDのみを処理します。
         if (rpc_type != MYMOD_RPC_ID) return;
 
-        // Read the route name.
+        // ルート名を読み取ります。
         string routeName;
         if (!ctx.Read(routeName)) return;
 
-        // Dispatch based on route.
+        // ルートに基づいてディスパッチします。
         if (routeName == MYMOD_RPC_WELCOME)
         {
             string welcomeMsg;
             if (ctx.Read(welcomeMsg))
             {
-                // Display the welcome message to the player.
-                // GetGame().GetMission().OnEvent() can show notifications,
-                // or you can use a custom UI. For simplicity, we use chat.
+                // プレイヤーにウェルカムメッセージを表示します。
+                // GetGame().GetMission().OnEvent() で通知を表示できますが、
+                // カスタムUIも使用できます。簡単のため、ここではチャットを使用します。
                 GetGame().Chat(welcomeMsg, "");
                 Print(MYMOD_TAG + " Welcome message: " + welcomeMsg);
             }
@@ -1003,7 +1007,7 @@ modded class MissionGameplay
             string responseData;
             if (ctx.Read(responseData))
             {
-                // Update the UI panel with received data.
+                // 受信したデータでUIパネルを更新します。
                 if (m_MyModPanel)
                 {
                     m_MyModPanel.SetData(responseData);
@@ -1013,7 +1017,7 @@ modded class MissionGameplay
     }
 
     // -----------------------------------------------------------------------
-    // UI Panel toggle
+    // UIパネルのトグル
     // -----------------------------------------------------------------------
     protected void TogglePanel()
     {
@@ -1024,7 +1028,7 @@ modded class MissionGameplay
         }
         else
         {
-            // Only open if the player is alive and no other menu is showing.
+            // プレイヤーが生存中で他のメニューが表示されていない場合のみ開きます。
             PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
             if (!player || !player.IsAlive()) return;
 
@@ -1034,17 +1038,17 @@ modded class MissionGameplay
             m_MyModPanel = new MyModUI();
             m_MyModPanel.Open();
 
-            // Request fresh data from the server.
+            // サーバーに最新データを要求します。
             MyModRPCHelper.SendRequestToServer(MYMOD_RPC_UI_REQUEST);
         }
     }
 
     // -----------------------------------------------------------------------
-    // Shutdown
+    // シャットダウン
     // -----------------------------------------------------------------------
     override void OnMissionFinish()
     {
-        // Close and destroy the UI panel if open.
+        // UIパネルが開いている場合は閉じて破棄します。
         if (m_MyModPanel)
         {
             m_MyModPanel.Close();
@@ -1062,68 +1066,68 @@ modded class MissionGameplay
 
 ---
 
-## UI Panel Script (5_Mission)
+## UIパネルスクリプト (5_Mission)
 
-Place at `Scripts/5_Mission/MyMod/MyModUI.c`.
+`Scripts/5_Mission/MyMod/MyModUI.c` に配置します。
 
-This script drives the UI panel defined in the `.layout` file. It finds widget references, populates them with data, and handles open/close.
+このスクリプトは `.layout` ファイルで定義されたUIパネルを制御します。ウィジェット参照を検索し、データで投入し、開閉を処理します。
 
 ```c
 // ==========================================================================
-// MyModUI.c - UI panel controller
-// 5_Mission layer: can reference all lower layers.
+// MyModUI.c - UIパネルコントローラー
+// 5_Missionレイヤー: すべての下位レイヤーを参照できます。
 //
-// HOW DayZ UI WORKS:
-//   1. A .layout file defines the widget hierarchy (like HTML).
-//   2. A script class loads the layout, finds widgets by name, and
-//      manipulates them (set text, show/hide, respond to clicks).
-//   3. The script shows/hides the root widget and manages input focus.
+// DayZ UIの仕組み:
+//   1. .layoutファイルがウィジェット階層を定義する（HTMLのように）。
+//   2. スクリプトクラスがレイアウトを読み込み、名前でウィジェットを見つけ、
+//      操作する（テキスト設定、表示/非表示、クリックへの応答）。
+//   3. スクリプトがルートウィジェットの表示/非表示と入力フォーカスを管理する。
 //
-// WIDGET LIFECYCLE:
-//   GetGame().GetWorkspace().CreateWidgets() loads the layout file and
-//   returns the root widget. You then use FindAnyWidget() to get
-//   references to named child widgets. When done, call widget.Unlink()
-//   to destroy the entire widget tree.
+// ウィジェットのライフサイクル:
+//   GetGame().GetWorkspace().CreateWidgets() がレイアウトファイルを読み込み、
+//   ルートウィジェットを返します。その後 FindAnyWidget() を使用して
+//   名前付きの子ウィジェットへの参照を取得します。完了したら widget.Unlink()
+//   を呼び出してウィジェットツリー全体を破棄します。
 // ==========================================================================
 
 class MyModUI
 {
-    // Root widget of the panel (loaded from .layout).
+    // パネルのルートウィジェット（.layoutから読み込まれる）。
     protected ref Widget m_Root;
 
-    // Named child widgets.
+    // 名前付きの子ウィジェット。
     protected TextWidget m_TitleText;
     protected TextWidget m_DataText;
     protected TextWidget m_VersionText;
     protected ButtonWidget m_CloseButton;
 
-    // State tracking.
+    // 状態追跡。
     protected bool m_IsOpen;
 
     // -----------------------------------------------------------------------
-    // Constructor: load the layout and find widget references
+    // コンストラクタ: レイアウトを読み込みウィジェット参照を検索する
     // -----------------------------------------------------------------------
     void MyModUI()
     {
-        // CreateWidgets loads the .layout file and instantiates all widgets.
-        // The path is relative to the mod root (same as config.cpp paths).
+        // CreateWidgetsは.layoutファイルを読み込み、すべてのウィジェットをインスタンス化します。
+        // パスはModルートからの相対パスです（config.cppのパスと同じ）。
         m_Root = GetGame().GetWorkspace().CreateWidgets(
             "MyProfessionalMod/Scripts/GUI/layouts/MyModPanel.layout"
         );
 
-        // Initially hidden until Open() is called.
+        // Open()が呼ばれるまで初期状態は非表示。
         if (m_Root)
         {
             m_Root.Show(false);
 
-            // Find named widgets. These names MUST match the widget names
-            // in the .layout file exactly (case-sensitive).
+            // 名前付きウィジェットを検索します。これらの名前は.layoutファイルの
+            // ウィジェット名と正確に一致する必要があります（大文字小文字区別）。
             m_TitleText   = TextWidget.Cast(m_Root.FindAnyWidget("TitleText"));
             m_DataText    = TextWidget.Cast(m_Root.FindAnyWidget("DataText"));
             m_VersionText = TextWidget.Cast(m_Root.FindAnyWidget("VersionText"));
             m_CloseButton = ButtonWidget.Cast(m_Root.FindAnyWidget("CloseButton"));
 
-            // Set static content.
+            // 静的コンテンツを設定します。
             if (m_TitleText)
                 m_TitleText.SetText("My Professional Mod");
 
@@ -1133,7 +1137,7 @@ class MyModUI
     }
 
     // -----------------------------------------------------------------------
-    // Open: show the panel and capture input
+    // Open: パネルを表示し入力をキャプチャする
     // -----------------------------------------------------------------------
     void Open()
     {
@@ -1142,8 +1146,8 @@ class MyModUI
         m_Root.Show(true);
         m_IsOpen = true;
 
-        // Lock player controls so WASD does not move the character
-        // while the panel is open. This shows a cursor.
+        // パネルが開いている間、WASDがキャラクターを移動しないよう
+        // プレイヤーコントロールをロックします。カーソルが表示されます。
         GetGame().GetMission().PlayerControlDisable(INPUT_EXCLUDE_ALL);
         GetGame().GetUIManager().ShowUICursor(true);
 
@@ -1151,7 +1155,7 @@ class MyModUI
     }
 
     // -----------------------------------------------------------------------
-    // Close: hide the panel and release input
+    // Close: パネルを非表示にし入力を解放する
     // -----------------------------------------------------------------------
     void Close()
     {
@@ -1160,7 +1164,7 @@ class MyModUI
         m_Root.Show(false);
         m_IsOpen = false;
 
-        // Re-enable player controls.
+        // プレイヤーコントロールを再有効化します。
         GetGame().GetMission().PlayerControlEnable(true);
         GetGame().GetUIManager().ShowUICursor(false);
 
@@ -1168,7 +1172,7 @@ class MyModUI
     }
 
     // -----------------------------------------------------------------------
-    // Data update: called when the server sends UI data
+    // データ更新: サーバーがUIデータを送信したときに呼び出される
     // -----------------------------------------------------------------------
     void SetData(string data)
     {
@@ -1179,7 +1183,7 @@ class MyModUI
     }
 
     // -----------------------------------------------------------------------
-    // State query
+    // 状態クエリ
     // -----------------------------------------------------------------------
     bool IsOpen()
     {
@@ -1187,12 +1191,12 @@ class MyModUI
     }
 
     // -----------------------------------------------------------------------
-    // Destructor: clean up the widget tree
+    // デストラクタ: ウィジェットツリーをクリーンアップする
     // -----------------------------------------------------------------------
     void ~MyModUI()
     {
-        // Unlink destroys the root widget and all its children.
-        // This frees the memory used by the widget tree.
+        // Unlinkはルートウィジェットとそのすべての子を破棄します。
+        // ウィジェットツリーが使用するメモリを解放します。
         if (m_Root)
         {
             m_Root.Unlink();
@@ -1203,32 +1207,32 @@ class MyModUI
 
 ---
 
-## Layout File
+## レイアウトファイル
 
-Place at `Scripts/GUI/layouts/MyModPanel.layout`.
+`Scripts/GUI/layouts/MyModPanel.layout` に配置します。
 
-This defines the visual structure of the UI panel. DayZ layouts use a custom text format (not XML).
+UIパネルの視覚的な構造を定義します。DayZのレイアウトはカスタムテキスト形式（XMLではない）を使用します。
 
 ```
 // ==========================================================================
-// MyModPanel.layout - UI panel structure
+// MyModPanel.layout - UIパネル構造
 //
-// SIZING RULES:
-//   hexactsize 1 + vexactsize 1 = size is in pixels (e.g., size 400 300)
-//   hexactsize 0 + vexactsize 0 = size is proportional (0.0 to 1.0)
-//   halign/valign control anchor point:
-//     left_ref/top_ref     = anchored to parent's left/top edge
-//     center_ref           = centered in parent
-//     right_ref/bottom_ref = anchored to parent's right/bottom edge
+// サイジングルール:
+//   hexactsize 1 + vexactsize 1 = サイズはピクセル単位（例: size 400 300）
+//   hexactsize 0 + vexactsize 0 = サイズは比率（0.0から1.0）
+//   halign/valign はアンカーポイントを制御:
+//     left_ref/top_ref     = 親の左/上端に固定
+//     center_ref           = 親の中央
+//     right_ref/bottom_ref = 親の右/下端に固定
 //
-// IMPORTANT:
-//   - Never use negative sizes. Use alignment and position instead.
-//   - Widget names must match FindAnyWidget() calls in the script exactly.
-//   - 'ignorepointer 1' means the widget does not receive mouse clicks.
-//   - 'scriptclass' links a widget to a script class for event handling.
+// 重要:
+//   - 負のサイズは絶対に使用しないでください。代わりに配置と位置を使用します。
+//   - ウィジェット名はスクリプトのFindAnyWidget()呼び出しと正確に一致する必要があります。
+//   - 'ignorepointer 1' はウィジェットがマウスクリックを受信しないことを意味します。
+//   - 'scriptclass' はイベント処理のためにウィジェットをスクリプトクラスにリンクします。
 // ==========================================================================
 
-// Root panel: centered on screen, 400x300 pixels, semi-transparent background.
+// ルートパネル: 画面中央、400x300ピクセル、半透明の背景。
 PanelWidgetClass MyModPanelRoot {
  position 0 0
  size 400 300
@@ -1241,7 +1245,7 @@ PanelWidgetClass MyModPanelRoot {
  color 0.1 0.1 0.12 0.92
  priority 100
  {
-  // Title bar: full width, 36px tall, at the top.
+  // タイトルバー: 全幅、36px高、上端。
   PanelWidgetClass TitleBar {
    position 0 0
    size 1 36
@@ -1251,7 +1255,7 @@ PanelWidgetClass MyModPanelRoot {
    vexactsize 1
    color 0.15 0.15 0.18 1
    {
-    // Title text: left-aligned with padding.
+    // タイトルテキスト: パディング付きで左揃え。
     TextWidgetClass TitleText {
      position 12 0
      size 300 36
@@ -1266,7 +1270,7 @@ PanelWidgetClass MyModPanelRoot {
      "exact size" 16
      color 1 1 1 0.9
     }
-    // Version text: right side of title bar.
+    // バージョンテキスト: タイトルバーの右側。
     TextWidgetClass VersionText {
      position 0 0
      size 80 36
@@ -1284,7 +1288,7 @@ PanelWidgetClass MyModPanelRoot {
     }
    }
   }
-  // Content area: below title bar, fills remaining space.
+  // コンテンツエリア: タイトルバーの下、残りのスペースを埋める。
   PanelWidgetClass ContentArea {
    position 0 40
    size 380 200
@@ -1295,7 +1299,7 @@ PanelWidgetClass MyModPanelRoot {
    vexactsize 1
    color 0 0 0 0
    {
-    // Data text: where server data is displayed.
+    // データテキスト: サーバーデータが表示される場所。
     TextWidgetClass DataText {
      position 12 12
      size 356 160
@@ -1311,7 +1315,7 @@ PanelWidgetClass MyModPanelRoot {
     }
    }
   }
-  // Close button: bottom-right corner.
+  // 閉じるボタン: 右下隅。
   ButtonWidgetClass CloseButton {
    position 0 0
    size 100 32
@@ -1333,11 +1337,11 @@ PanelWidgetClass MyModPanelRoot {
 
 ## stringtable.csv
 
-Place at `Scripts/stringtable.csv`.
+`Scripts/stringtable.csv` に配置します。
 
-This provides localization for all player-facing text. The engine reads the column matching the player's game language. The `original` column is the fallback.
+プレイヤーに表示されるすべてのテキストのローカライゼーションを提供します。エンジンはプレイヤーのゲーム言語に一致する列を読み取ります。`original` 列がフォールバックです。
 
-DayZ supports 13 language columns. Every row must have all 13 columns (use the English text as placeholder for languages you do not translate).
+DayZは13の言語列をサポートしています。すべての行に13列すべてが必要です（翻訳していない言語には英語テキストをプレースホルダーとして使用します）。
 
 ```csv
 "Language","original","english","czech","german","russian","polish","hungarian","italian","spanish","french","chinese","japanese","portuguese","chinesesimp",
@@ -1348,61 +1352,61 @@ DayZ supports 13 language columns. Every row must have all 13 columns (use the E
 "STR_MYMOD_WELCOME","Welcome!","Welcome!","Vitejte!","Willkommen!","Dobro pozhalovat!","Witaj!","Udvozoljuk!","Benvenuto!","Bienvenido!","Bienvenue!","Welcome!","Welcome!","Bem-vindo!","Welcome!",
 ```
 
-**Important:** Each line must end with a trailing comma after the last language column. This is a requirement of DayZ's CSV parser.
+**重要:** 各行は最後の言語列の後に末尾のカンマが必要です。これはDayZのCSVパーサーの要件です。
 
 ---
 
 ## Inputs.xml
 
-Place at `Scripts/Inputs.xml`.
+`Scripts/Inputs.xml` に配置します。
 
-This defines custom keybinds that appear in the game's Options > Controls menu. The `inputs` field in `config.cpp` CfgMods must point to this file.
+ゲームのオプション > コントロールメニューに表示されるカスタムキーバインドを定義します。`config.cpp` CfgModsの `inputs` フィールドがこのファイルを指す必要があります。
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <!--
-    Inputs.xml - Custom keybind definitions
+    Inputs.xml - カスタムキーバインド定義
 
-    STRUCTURE:
-    - <actions>:  declares input action names and their display strings
-    - <sorting>:  groups actions under a category in the Controls menu
-    - <preset>:   sets the default key binding
+    構造:
+    - <actions>:  入力アクション名とその表示文字列を宣言する
+    - <sorting>:  コントロールメニューでアクションをカテゴリの下にグループ化する
+    - <preset>:   デフォルトのキーバインドを設定する
 
-    NAMING CONVENTION:
-    - Action names start with "UA" (User Action) followed by your mod prefix.
-    - The "loc" attribute references a string key from stringtable.csv.
+    命名規約:
+    - アクション名は "UA"（User Action）で始まり、その後にModプレフィックスが続きます。
+    - "loc" 属性はstringtable.csvの文字列キーを参照します。
 
-    KEY NAMES:
-    - Keyboard: kA through kZ, k0-k9, kInsert, kHome, kEnd, kDelete,
-      kNumpad0-kNumpad9, kF1-kF12, kLControl, kRControl, kLShift, kRShift,
-      kLAlt, kRAlt, kSpace, kReturn, kBack, kTab, kEscape
-    - Mouse: mouse1 (left), mouse2 (right), mouse3 (middle)
-    - Combo keys: use <combo> element with multiple <btn> children
+    キー名:
+    - キーボード: kA から kZ、k0-k9、kInsert、kHome、kEnd、kDelete、
+      kNumpad0-kNumpad9、kF1-kF12、kLControl、kRControl、kLShift、kRShift、
+      kLAlt、kRAlt、kSpace、kReturn、kBack、kTab、kEscape
+    - マウス: mouse1（左）、mouse2（右）、mouse3（中央）
+    - コンボキー: 複数の <btn> 子要素を持つ <combo> 要素を使用
 -->
 <modded_inputs>
     <inputs>
-        <!-- Declare the input action. -->
+        <!-- 入力アクションを宣言する。 -->
         <actions>
             <input name="UAMyModPanel" loc="STR_MYMOD_INPUT_PANEL" />
         </actions>
 
-        <!-- Group under a category in Options > Controls. -->
-        <!-- The "name" is an internal ID; "loc" is the display name from stringtable. -->
+        <!-- オプション > コントロールでカテゴリの下にグループ化する。 -->
+        <!-- "name" は内部ID、"loc" はstringtableからの表示名。 -->
         <sorting name="mymod" loc="STR_MYMOD_INPUT_GROUP">
             <input name="UAMyModPanel"/>
         </sorting>
     </inputs>
 
-    <!-- Default key preset. Players can rebind in Options > Controls. -->
+    <!-- デフォルトのキープリセット。プレイヤーはオプション > コントロールで再バインドできます。 -->
     <preset>
-        <!-- Bind to the Home key by default. -->
+        <!-- デフォルトでHomeキーにバインドする。 -->
         <input name="UAMyModPanel">
             <btn name="kHome"/>
         </input>
 
         <!--
-        COMBO KEY EXAMPLE (uncomment to use):
-        This would bind to Ctrl+H instead of a single key.
+        コンボキーの例（使用するにはコメントを解除）:
+        単一のキーの代わりにCtrl+Hにバインドします。
         <input name="UAMyModPanel">
             <combo>
                 <btn name="kLControl"/>
@@ -1416,61 +1420,61 @@ This defines custom keybinds that appear in the game's Options > Controls menu. 
 
 ---
 
-## Build Script
+## ビルドスクリプト
 
-Place at `build.bat` in the mod root.
+Modルートの `build.bat` に配置します。
 
-This batch file automates PBO packing using Addon Builder from DayZ Tools.
+このバッチファイルはDayZ ToolsのAddon Builderを使用してPBOパッキングを自動化します。
 
 ```batch
 @echo off
 REM ==========================================================================
-REM build.bat - Automated PBO packing for MyProfessionalMod
+REM build.bat - MyProfessionalModの自動PBOパッキング
 REM
-REM WHAT THIS DOES:
-REM   1. Packs the Scripts/ folder into a PBO file
-REM   2. Places the PBO in the distributable @mod folder
-REM   3. Copies mod.cpp to the distributable folder
+REM このスクリプトが行うこと:
+REM   1. Scripts/ フォルダをPBOファイルにパッキング
+REM   2. PBOを配布可能な@modフォルダに配置
+REM   3. mod.cppを配布可能なフォルダにコピー
 REM
-REM PREREQUISITES:
-REM   - DayZ Tools installed via Steam
-REM   - Mod source at P:\MyProfessionalMod\
+REM 前提条件:
+REM   - Steam経由でDayZ Toolsがインストール済み
+REM   - Modソースが P:\MyProfessionalMod\ に存在
 REM
-REM USAGE:
-REM   Double-click this file or run from command line: build.bat
+REM 使用方法:
+REM   このファイルをダブルクリックするか、コマンドラインから実行: build.bat
 REM ==========================================================================
 
-REM --- Configuration: update these paths to match your setup ---
+REM --- 設定: あなたの環境に合わせてこれらのパスを更新してください ---
 
-REM Path to DayZ Tools (check your Steam library path).
+REM DayZ Toolsへのパス（Steamライブラリのパスを確認してください）。
 set DAYZ_TOOLS=C:\Program Files (x86)\Steam\steamapps\common\DayZ Tools
 
-REM Source folder: the Scripts directory that gets packed into the PBO.
+REM ソースフォルダ: PBOにパッキングされるScriptsディレクトリ。
 set SOURCE=P:\MyProfessionalMod\Scripts
 
-REM Output folder: where the packed PBO goes.
+REM 出力フォルダ: パッキングされたPBOの配置先。
 set OUTPUT=P:\@MyProfessionalMod\addons
 
-REM Prefix: the virtual path inside the PBO. Must match the paths
-REM in config.cpp (e.g., "MyProfessionalMod/Scripts/3_Game" must resolve).
+REM プレフィックス: PBO内の仮想パス。config.cppのパスと一致する必要があります
+REM （例: "MyProfessionalMod/Scripts/3_Game" が解決可能であること）。
 set PREFIX=MyProfessionalMod\Scripts
 
-REM --- Build Steps ---
+REM --- ビルドステップ ---
 
 echo ============================================
 echo  Building MyProfessionalMod
 echo ============================================
 
-REM Create output directory if it does not exist.
+REM 出力ディレクトリが存在しない場合は作成。
 if not exist "%OUTPUT%" mkdir "%OUTPUT%"
 
-REM Run Addon Builder.
-REM   -clear  = remove old PBO before packing
-REM   -prefix = set the PBO prefix (required for script paths to resolve)
+REM Addon Builderを実行。
+REM   -clear  = パッキング前に古いPBOを削除
+REM   -prefix = PBOプレフィックスを設定（スクリプトパスの解決に必要）
 echo Packing PBO...
 "%DAYZ_TOOLS%\Bin\AddonBuilder\AddonBuilder.exe" "%SOURCE%" "%OUTPUT%" -prefix=%PREFIX% -clear
 
-REM Check if Addon Builder succeeded.
+REM Addon Builderが成功したか確認。
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo ERROR: PBO packing failed! Check the output above for details.
@@ -1482,7 +1486,7 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-REM Copy mod.cpp to the distributable folder.
+REM mod.cppを配布可能なフォルダにコピー。
 echo Copying mod.cpp...
 copy /Y "P:\MyProfessionalMod\mod.cpp" "P:\@MyProfessionalMod\mod.cpp" >nul
 
@@ -1503,29 +1507,29 @@ pause
 
 ---
 
-## Customization Guide
+## カスタマイズガイド
 
-When you use this template for your own mod, you need to rename every occurrence of the placeholder names. Here is a complete checklist.
+このテンプレートを自分のModに使用する場合、プレースホルダー名のすべての出現箇所を名前変更する必要があります。以下に完全なチェックリストを示します。
 
-### Step 1: Choose Your Names
+### ステップ1: 名前を決定する
 
-Decide on these identifiers before making any edits:
+編集を行う前に、以下の識別子を決定します：
 
-| Identifier | 例 | Rules |
+| 識別子 | 例 | ルール |
 |------------|---------|-------|
-| **Mod folder name** | `MyBountySystem` | No spaces, PascalCase or underscores |
-| **Display name** | `"My Bounty System"` | Human-readable, for mod.cpp and config.cpp |
-| **CfgPatches class** | `MyBountySystem_Scripts` | Must be globally unique across all mods |
-| **CfgMods class** | `MyBountySystem` | Internal engine identifier |
-| **Script prefix** | `MyBounty` | Short prefix for classes: `MyBountyManager`, `MyBountyConfig` |
-| **Tag constant** | `MYBOUNTY_TAG` | For log messages: `"[MyBounty]"` |
-| **Preprocessor define** | `MYBOUNTYSYSTEM` | For `#ifdef` cross-mod detection |
-| **RPC ID** | `58432` | Unique 5-digit number, not used by other mods |
-| **Input action name** | `UAMyBountyPanel` | Starts with `UA`, unique |
+| **Modフォルダ名** | `MyBountySystem` | スペースなし、PascalCaseまたはアンダースコア |
+| **表示名** | `"My Bounty System"` | 人間が読める形式、mod.cppとconfig.cpp用 |
+| **CfgPatchesクラス** | `MyBountySystem_Scripts` | すべてのMod間でグローバルに一意 |
+| **CfgModsクラス** | `MyBountySystem` | エンジン内部識別子 |
+| **スクリプトプレフィックス** | `MyBounty` | クラスの短いプレフィックス: `MyBountyManager`、`MyBountyConfig` |
+| **タグ定数** | `MYBOUNTY_TAG` | ログメッセージ用: `"[MyBounty]"` |
+| **プリプロセッサ定義** | `MYBOUNTYSYSTEM` | `#ifdef` によるクロスMod検出用 |
+| **RPC ID** | `58432` | 他のModに使用されていない一意の5桁の番号 |
+| **入力アクション名** | `UAMyBountyPanel` | `UA` で始まる一意の名前 |
 
-### Step 2: Rename Files and Folders
+### ステップ2: ファイルとフォルダの名前変更
 
-Rename every file and folder that contains "MyMod" or "MyProfessionalMod":
+"MyMod" または "MyProfessionalMod" を含むすべてのファイルとフォルダの名前を変更します：
 
 ```
 MyProfessionalMod/           -> MyBountySystem/
@@ -1544,75 +1548,75 @@ MyProfessionalMod/           -> MyBountySystem/
     MyModPanel.layout          -> MyBountyPanel.layout
 ```
 
-### Step 3: Find-and-Replace in Every File
+### ステップ3: すべてのファイルで検索と置換
 
-Perform these replacements **in order** (longest strings first to avoid partial matches):
+**順番に**（部分一致を避けるため最も長い文字列から）以下の置換を行います：
 
-| Find | Replace | Files Affected |
+| 検索 | 置換 | 影響を受けるファイル |
 |------|---------|----------------|
-| `MyProfessionalMod` | `MyBountySystem` | config.cpp, mod.cpp, build.bat, UI script |
-| `MyModManager` | `MyBountyManager` | Manager, mission hooks, player handler |
-| `MyModConfig` | `MyBountyConfig` | Config class, manager |
-| `MyModConstants` | `MyBountyConstants` | (filename only) |
-| `MyModRPCHelper` | `MyBountyRPCHelper` | RPC helper, mission hooks |
-| `MyModUI` | `MyBountyUI` | UI script, client mission hook |
-| `MyModPanel` | `MyBountyPanel` | Layout file, UI script |
+| `MyProfessionalMod` | `MyBountySystem` | config.cpp、mod.cpp、build.bat、UIスクリプト |
+| `MyModManager` | `MyBountyManager` | マネージャー、ミッションフック、プレイヤーハンドラー |
+| `MyModConfig` | `MyBountyConfig` | 設定クラス、マネージャー |
+| `MyModConstants` | `MyBountyConstants` | （ファイル名のみ） |
+| `MyModRPCHelper` | `MyBountyRPCHelper` | RPCヘルパー、ミッションフック |
+| `MyModUI` | `MyBountyUI` | UIスクリプト、クライアントミッションフック |
+| `MyModPanel` | `MyBountyPanel` | レイアウトファイル、UIスクリプト |
 | `MyMod_Scripts` | `MyBountySystem_Scripts` | config.cpp CfgPatches |
-| `MYMOD_RPC_ID` | `MYBOUNTY_RPC_ID` | Constants, RPC, mission hooks |
-| `MYMOD_RPC_` | `MYBOUNTY_RPC_` | All RPC route constants |
-| `MYMOD_TAG` | `MYBOUNTY_TAG` | Constants, all files using the log tag |
-| `MYMOD_CONFIG` | `MYBOUNTY_CONFIG` | Constants, config class |
-| `MYMOD_VERSION` | `MYBOUNTY_VERSION` | Constants, UI script |
+| `MYMOD_RPC_ID` | `MYBOUNTY_RPC_ID` | 定数、RPC、ミッションフック |
+| `MYMOD_RPC_` | `MYBOUNTY_RPC_` | すべてのRPCルート定数 |
+| `MYMOD_TAG` | `MYBOUNTY_TAG` | 定数、ログタグを使用するすべてのファイル |
+| `MYMOD_CONFIG` | `MYBOUNTY_CONFIG` | 定数、設定クラス |
+| `MYMOD_VERSION` | `MYBOUNTY_VERSION` | 定数、UIスクリプト |
 | `MYMOD` | `MYBOUNTYSYSTEM` | config.cpp defines[] |
-| `MyMod` | `MyBounty` | config.cpp CfgMods class, RPC route strings |
-| `My Mod` | `My Bounty System` | Strings in layouts, stringtable |
-| `mymod` | `mybounty` | Inputs.xml sorting name |
-| `STR_MYMOD_` | `STR_MYBOUNTY_` | stringtable.csv, Inputs.xml |
-| `UAMyMod` | `UAMyBounty` | Inputs.xml, client mission hook |
-| `m_MyMod` | `m_MyBounty` | Client mission hook member variables |
-| `74291` | `58432` | RPC ID (your chosen unique number) |
+| `MyMod` | `MyBounty` | config.cpp CfgModsクラス、RPCルート文字列 |
+| `My Mod` | `My Bounty System` | レイアウト内の文字列、stringtable |
+| `mymod` | `mybounty` | Inputs.xmlソーティング名 |
+| `STR_MYMOD_` | `STR_MYBOUNTY_` | stringtable.csv、Inputs.xml |
+| `UAMyMod` | `UAMyBounty` | Inputs.xml、クライアントミッションフック |
+| `m_MyMod` | `m_MyBounty` | クライアントミッションフックのメンバー変数 |
+| `74291` | `58432` | RPC ID（選択した一意の番号） |
 
-### Step 4: Verify
+### ステップ4: 検証
 
-After renaming, do a project-wide search for "MyMod" and "MyProfessionalMod" to catch anything you missed. Then build and test:
+名前変更後、プロジェクト全体で "MyMod" と "MyProfessionalMod" を検索して、見落としがないか確認します。その後ビルドしてテストします：
 
 ```batch
 DayZDiag_x64.exe -mod=P:\MyBountySystem -filePatching
 ```
 
-Check the script log for your tag (e.g., `[MyBounty]`) to confirm everything loaded.
+スクリプトログでタグ（例: `[MyBounty]`）を確認して、すべてが正常にロードされたことを確認します。
 
 ---
 
-## Feature Expansion Guide
+## 機能拡張ガイド
 
-Once your mod is running, here is how to add common features.
+Modが動作するようになったら、一般的な機能の追加方法を以下に示します。
 
-### Adding a New RPC Endpoint
+### 新しいRPCエンドポイントの追加
 
-**1. Define the route constant** in `MyModRPC.c` (3_Game):
+**1. ルート定数を定義する** - `MyModRPC.c`（3_Game）：
 
 ```c
 const string MYMOD_RPC_BOUNTY_SET = "MyMod:BountySet";
 ```
 
-**2. Add the server handler** in `MyModManager.c` (4_World):
+**2. サーバーハンドラーを追加する** - `MyModManager.c`（4_World）：
 
 ```c
 void OnBountySet(PlayerIdentity sender, ParamsReadContext ctx)
 {
-    // Read parameters written by the client.
+    // クライアントが書き込んだパラメータを読み取る。
     string targetName;
     int bountyAmount;
     if (!ctx.Read(targetName)) return;
     if (!ctx.Read(bountyAmount)) return;
 
     Print(MYMOD_TAG + " Bounty set on " + targetName + ": " + bountyAmount.ToString());
-    // ... your logic here ...
+    // ... ロジックをここに記述 ...
 }
 ```
 
-**3. Add the dispatch case** in `MyModMissionServer.c` (5_Mission), inside `OnRPC()`:
+**3. ディスパッチケースを追加する** - `MyModMissionServer.c`（5_Mission）の `OnRPC()` 内：
 
 ```c
 else if (routeName == MYMOD_RPC_BOUNTY_SET)
@@ -1621,7 +1625,7 @@ else if (routeName == MYMOD_RPC_BOUNTY_SET)
 }
 ```
 
-**4. Send from the client** (wherever the action is triggered):
+**4. クライアントから送信する**（アクションがトリガーされる場所で）：
 
 ```c
 ScriptRPC rpc = new ScriptRPC();
@@ -1631,30 +1635,30 @@ rpc.Write(5000);
 rpc.Send(null, MYMOD_RPC_ID, true, null);
 ```
 
-### Adding a New Config Field
+### 新しい設定フィールドの追加
 
-**1. Add the field** in `MyModConfig.c` with a default value:
+**1. フィールドを追加する** - `MyModConfig.c` にデフォルト値とともに：
 
 ```c
-// Minimum bounty amount players can set.
+// プレイヤーが設定できる最小賞金額。
 int MinBountyAmount = 100;
 ```
 
-That is all. The JSON serializer picks up public fields automatically. Existing config files on disk will use the default value for the new field until the admin edits and saves.
+これだけです。JSONシリアライザーはパブリックフィールドを自動的に取得します。ディスク上の既存の設定ファイルは、管理者が編集して保存するまで新しいフィールドにデフォルト値を使用します。
 
-**2. Reference it** from the manager:
+**2. マネージャーから参照する**：
 
 ```c
 if (bountyAmount < m_Config.MinBountyAmount)
 {
-    // Reject: too low.
+    // 拒否: 金額が低すぎる。
     return;
 }
 ```
 
-### Adding a New UI Panel
+### 新しいUIパネルの追加
 
-**1. Create the layout** at `Scripts/GUI/layouts/MyModBountyList.layout`:
+**1. レイアウトを作成する** - `Scripts/GUI/layouts/MyModBountyList.layout`：
 
 ```
 PanelWidgetClass BountyListRoot {
@@ -1684,7 +1688,7 @@ PanelWidgetClass BountyListRoot {
 }
 ```
 
-**2. Create the script** at `Scripts/5_Mission/MyMod/MyModBountyListUI.c`:
+**2. スクリプトを作成する** - `Scripts/5_Mission/MyMod/MyModBountyListUI.c`：
 
 ```c
 class MyModBountyListUI
@@ -1712,9 +1716,9 @@ class MyModBountyListUI
 };
 ```
 
-### Adding a New Keybind
+### 新しいキーバインドの追加
 
-**1. Add the action** in `Inputs.xml`:
+**1. アクションを追加する** - `Inputs.xml`：
 
 ```xml
 <actions>
@@ -1728,7 +1732,7 @@ class MyModBountyListUI
 </sorting>
 ```
 
-**2. Add the default binding** in the `<preset>` section:
+**2. デフォルトバインドを追加する** - `<preset>` セクション内：
 
 ```xml
 <input name="UAMyModBountyList">
@@ -1736,13 +1740,13 @@ class MyModBountyListUI
 </input>
 ```
 
-**3. Add the localization** in `stringtable.csv`:
+**3. ローカライゼーションを追加する** - `stringtable.csv`：
 
 ```csv
 "STR_MYMOD_INPUT_BOUNTYLIST","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List","Bounty List",
 ```
 
-**4. Poll for the input** in `MyModMissionClient.c`:
+**4. 入力をポーリングする** - `MyModMissionClient.c`：
 
 ```c
 UAInput bountyInput = GetUApi().GetInputByName("UAMyModBountyList");
@@ -1752,24 +1756,24 @@ if (bountyInput && bountyInput.LocalPress())
 }
 ```
 
-### Adding a New stringtable Entry
+### 新しいstringtableエントリの追加
 
-**1. Add the row** in `stringtable.csv`. Every row needs all 13 language columns plus a trailing comma:
+**1. 行を追加する** - `stringtable.csv`。すべての行に13の言語列と末尾のカンマが必要です：
 
 ```csv
 "STR_MYMOD_BOUNTY_PLACED","Bounty placed!","Bounty placed!","Odměna vypsána!","Kopfgeld gesetzt!","Награда назначена!","Nagroda wyznaczona!","Fejpénz kiírva!","Taglia piazzata!","Recompensa puesta!","Prime placée!","Bounty placed!","Bounty placed!","Recompensa colocada!","Bounty placed!",
 ```
 
-**2. Use it** in script code:
+**2. スクリプトコードで使用する**：
 
 ```c
-// Widget.SetText() does NOT auto-resolve stringtable keys.
-// You must use Widget.SetText() with the resolved string:
+// Widget.SetText() はstringtableキーを自動解決しません。
+// 解決された文字列を使用して Widget.SetText() を呼び出す必要があります:
 string localizedText = Widget.TranslateString("#STR_MYMOD_BOUNTY_PLACED");
 myTextWidget.SetText(localizedText);
 ```
 
-Or in a `.layout` file, エンジン resolves `#STR_` keys automatically:
+または `.layout` ファイルでは、エンジンが `#STR_` キーを自動的に解決します：
 
 ```
 text "#STR_MYMOD_BOUNTY_PLACED"
@@ -1779,15 +1783,15 @@ text "#STR_MYMOD_BOUNTY_PLACED"
 
 ## 次のステップ
 
-With this professional template running, you can:
+このプロフェッショナルテンプレートが動作するようになったら、以下のことができます：
 
-1. **Study production mods** -- Read [DayZ Expansion](https://github.com/salutesh/DayZ-Expansion-Scripts) and the `StarDZ_Core` source for real-world patterns at scale.
-2. **Add custom items** -- Follow [Chapter 8.2: Creating a Custom Item](02-custom-item.md) and integrate them with your manager.
-3. **Build an admin panel** -- Follow [Chapter 8.3: Building an Admin Panel](03-admin-panel.md) using your config system.
-4. **Add a HUD overlay** -- Follow [Chapter 8.8: Building a HUD Overlay](08-hud-overlay.md) for always-visible UI elements.
-5. **Publish to the Workshop** -- Follow [Chapter 8.7: Publishing to Workshop](07-publishing-workshop.md) when your mod is ready.
-6. **Learn debugging** -- Read [Chapter 8.6: Debugging & Testing](06-debugging-testing.md) for log analysis and troubleshooting.
+1. **プロダクションModを研究する** -- [DayZ Expansion](https://github.com/salutesh/DayZ-Expansion-Scripts) と `StarDZ_Core` ソースを読み、大規模な実世界のパターンを学びます。
+2. **カスタムアイテムを追加する** -- [チャプター 8.2: カスタムアイテムの作成](02-custom-item.md) に従い、マネージャーと統合します。
+3. **管理パネルを構築する** -- 設定システムを使用して [チャプター 8.3: 管理パネルの構築](03-admin-panel.md) に従います。
+4. **HUDオーバーレイを追加する** -- 常時表示のUI要素のために [チャプター 8.8: HUDオーバーレイの構築](08-hud-overlay.md) に従います。
+5. **Workshopに公開する** -- Modの準備ができたら [チャプター 8.7: Workshopへの公開](07-publishing-workshop.md) に従います。
+6. **デバッグを学ぶ** -- ログ分析とトラブルシューティングのために [チャプター 8.6: デバッグとテスト](06-debugging-testing.md) を読みます。
 
 ---
 
-**Previous:** [Chapter 8.8: Building a HUD Overlay](08-hud-overlay.md) | [Home](../../README.md)
+**前へ:** [チャプター 8.8: HUDオーバーレイの構築](08-hud-overlay.md) | [ホーム](../../README.md)

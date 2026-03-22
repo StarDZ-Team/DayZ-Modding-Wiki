@@ -1,21 +1,23 @@
-# Chapter 3.10: Advanced Widgets
+# Kapitola 3.10: Pokročilé widgety
 
-[Home](../../README.md) | [<< Previous: Real Mod UI Patterns](09-real-mod-patterns.md) | **Advanced Widgets**
-
----
-
-This chapter covers every advanced widget type with confirmed API signatures extracted from vanilla source code and real mod usage.
+[Domů](../../README.md) | [<< Předchozí: Vzory UI ve skutečných modech](09-real-mod-patterns.md) | **Pokročilé widgety**
 
 ---
 
-## RichTextWidget Formatting
+Mimo standardní kontejnery, textové a obrázkové widgety pokryté v dřívějších kapitolách poskytuje DayZ specializované typy widgetů pro formátování bohatého textu, 2D kreslení na plátno, zobrazení mapy, 3D náhledy předmětů, přehrávání videa a vykreslování do textury. Tyto widgety odemykají schopnosti, kterých jednoduché layouty nemohou dosáhnout.
 
-`RichTextWidget` extends `TextWidget` and supports inline markup tags within its text content. It is the primary way to display formatted text with embedded images, variable font sizes, and line breaks.
+Tato kapitola pokrývá každý pokročilý typ widgetu s potvrzenými signaturami API extrahovanými z vanilla zdrojového kódu a skutečného použití v modech.
 
-### Class Definition
+---
+
+## Formátování RichTextWidget
+
+`RichTextWidget` rozšiřuje `TextWidget` a podporuje inline značkovací tagy v textovém obsahu. Je to primární způsob zobrazení formátovaného textu s vloženými obrázky, proměnlivými velikostmi písma a zalomením řádků.
+
+### Definice třídy
 
 ```
-// From scripts/1_core/proto/enwidgets.c
+// Ze scripts/1_core/proto/enwidgets.c
 class RichTextWidget extends TextWidget
 {
     proto native float GetContentHeight();
@@ -29,27 +31,27 @@ class RichTextWidget extends TextWidget
 };
 ```
 
-`RichTextWidget` inherits all `TextWidget` methods -- `SetText()`, `SetTextExactSize()`, `SetOutline()`, `SetShadow()`, `SetTextFormat()`, and the rest. The key difference is that `SetText()` on a `RichTextWidget` parses inline markup tags.
+`RichTextWidget` dědí všechny metody `TextWidget` -- `SetText()`, `SetTextExactSize()`, `SetOutline()`, `SetShadow()`, `SetTextFormat()` a další. Klíčový rozdíl je, že `SetText()` na `RichTextWidget` parsuje inline značkovací tagy.
 
-### Supported Inline Tags
+### Podporované inline tagy
 
-These tags are confirmed through vanilla DayZ usage in `news_feed.txt`, `InputUtils.c`, and multiple menu scripts.
+Tyto tagy jsou potvrzeny prostřednictvím vanilla DayZ použití v `news_feed.txt`, `InputUtils.c` a několika skriptech menu.
 
-#### Inline Image
+#### Inline obrázek
 
 ```
 <image set="IMAGESET_NAME" name="IMAGE_NAME" />
 <image set="IMAGESET_NAME" name="IMAGE_NAME" scale="1.5" />
 ```
 
-Embeds an image from a named imageset directly into the text flow. The `scale` attribute controls the image size relative to the text line height.
+Vloží obrázek z pojmenovaného imagesetu přímo do textového toku. Atribut `scale` řídí velikost obrázku relativně k výšce řádku textu.
 
-Vanilla example from `scripts/data/news_feed.txt`:
+Vanilla příklad ze `scripts/data/news_feed.txt`:
 ```
 <image set="dayz_gui" name="icon_pin" />  Welcome to DayZ!
 ```
 
-Vanilla example from `scripts/3_game/tools/inpututils.c` -- building controller button icons:
+Vanilla příklad ze `scripts/3_game/tools/inpututils.c` -- sestavení ikon tlačítek ovladače:
 ```c
 string icon = string.Format(
     "<image set=\"%1\" name=\"%2\" scale=\"%3\" />",
@@ -60,30 +62,30 @@ string icon = string.Format(
 richTextWidget.SetText(icon + " Press to confirm");
 ```
 
-Common imagesets in vanilla DayZ:
-- `dayz_gui` -- general UI icons (pin, notifications)
-- `dayz_inventory` -- inventory slot icons (shoulderleft, hands, vest, etc.)
-- `xbox_buttons` -- Xbox controller button images (A, B, X, Y)
-- `playstation_buttons` -- PlayStation controller button images
+Běžné imagesety ve vanilla DayZ:
+- `dayz_gui` -- obecné ikony UI (pin, notifikace)
+- `dayz_inventory` -- ikony slotů inventáře (shoulderleft, hands, vest atd.)
+- `xbox_buttons` -- obrázky tlačítek Xbox ovladače (A, B, X, Y)
+- `playstation_buttons` -- obrázky tlačítek PlayStation ovladače
 
-#### Line Break
+#### Zalomení řádku
 
 ```
 </br>
 ```
 
-Forces a line break within the rich text content. Note the closing-tag syntax -- this is how DayZ's parser expects it.
+Vynutí zalomení řádku uvnitř obsahu bohatého textu. Všimněte si syntaxe uzavíracího tagu -- takto to DayZ parser očekává.
 
-#### Font Size / Heading
+#### Velikost písma / nadpis
 
 ```
-<h scale="0.8">Text content here</h>
-<h scale="0.6">Smaller text content</h>
+<h scale="0.8">Textový obsah zde</h>
+<h scale="0.6">Menší textový obsah</h>
 ```
 
-Wraps text in a heading block with a scale multiplier. The `scale` attribute is a float that controls the font size relative to the widget's base font. Larger values produce bigger text.
+Obalí text do bloku nadpisu s multiplikátorem měřítka. Atribut `scale` je float, který řídí velikost písma relativně k základnímu písmu widgetu. Větší hodnoty produkují větší text.
 
-Vanilla example from `scripts/data/news_feed.txt`:
+Vanilla příklad ze `scripts/data/news_feed.txt`:
 ```
 <h scale="0.8">
 <image set="dayz_gui" name="icon_pin" />  Section Title
@@ -94,18 +96,18 @@ Body text at smaller size goes here.
 </br>
 ```
 
-### Practical Pouziti Vzors
+### Praktické vzory použití
 
-#### Getting a RichTextWidget reference
+#### Získání reference na RichTextWidget
 
-In scripts, cast from the layout exactly like any other widget:
+Ve skriptech přetypujte z layoutu přesně jako jakýkoliv jiný widget:
 
 ```c
 RichTextWidget m_Label;
 m_Label = RichTextWidget.Cast(root.FindAnyWidget("MyRichLabel"));
 ```
 
-In `.layout` files, use the layout class name:
+V souborech `.layout` použijte název třídy layoutu:
 
 ```
 RichTextWidgetClass MyRichLabel {
@@ -115,19 +117,19 @@ RichTextWidgetClass MyRichLabel {
 }
 ```
 
-#### Setting rich content with controller icons
+#### Nastavení bohatého obsahu s ikonami ovladače
 
-The vanilla `InputUtils` class provides a helper that generates the `<image>` tag string for any input action:
+Vanilla třída `InputUtils` poskytuje helper, který generuje řetězec tagu `<image>` pro jakoukoli vstupní akci:
 
 ```c
-// From scripts/3_game/tools/inpututils.c
+// Ze scripts/3_game/tools/inpututils.c
 string buttonIcon = InputUtils.GetRichtextButtonIconFromInputAction(
-    "UAUISelect",              // input action name
-    "#menu_select",            // localized label
+    "UAUISelect",              // název vstupní akce
+    "#menu_select",            // lokalizovaný popisek
     EUAINPUT_DEVICE_CONTROLLER,
-    InputUtils.ICON_SCALE_TOOLBAR  // 1.81 scale
+    InputUtils.ICON_SCALE_TOOLBAR  // měřítko 1.81
 );
-// Result: '<image set="xbox_buttons" name="A" scale="1.81" /> Select'
+// Výsledek: '<image set="xbox_buttons" name="A" scale="1.81" /> Select'
 
 RichTextWidget toolbar = RichTextWidget.Cast(
     layoutRoot.FindAnyWidget("ToolbarText")
@@ -135,48 +137,48 @@ RichTextWidget toolbar = RichTextWidget.Cast(
 toolbar.SetText(buttonIcon);
 ```
 
-The two predefined scale constants:
+Dvě předdefinované konstanty měřítka:
 - `InputUtils.ICON_SCALE_NORMAL` = 1.21
 - `InputUtils.ICON_SCALE_TOOLBAR` = 1.81
 
-#### Scrollable rich text content
+#### Posuvný obsah bohatého textu
 
-`RichTextWidget` exposes content height and offset methods for paging or scrolling:
+`RichTextWidget` vystavuje metody výšky obsahu a offsetu pro stránkování nebo posouvání:
 
 ```c
-// From scripts/5_mission/gui/bookmenu.c
-HtmlWidget m_content;  // HtmlWidget extends RichTextWidget
+// Ze scripts/5_mission/gui/bookmenu.c
+HtmlWidget m_content;  // HtmlWidget rozšiřuje RichTextWidget
 m_content.LoadFile(book.ConfigGetString("file"));
 
 float totalHeight = m_content.GetContentHeight();
-// Page through content:
+// Stránkování obsahu:
 m_content.SetContentOffset(pageOffset, true);  // snapToLine = true
 ```
 
-#### Text elision
+#### Oříznutí textu
 
-When text overflows a fixed-width area, you can elide (truncate with an indicator):
+Když text přetéká oblast s pevnou šířkou, můžete jej oříznout (zkrátit s indikátorem):
 
 ```c
-// Truncate line 0 to maxWidth pixels, appending "..."
+// Oříznout řádek 0 na maxWidth pixelů, přidáním "..."
 richText.ElideText(0, maxWidth, "...");
 ```
 
-#### Line visibility control
+#### Řízení viditelnosti řádků
 
-Show or hide specific line ranges within the content:
+Zobrazení nebo skrytí specifických rozsahů řádků v obsahu:
 
 ```c
 int lineCount = richText.GetNumLines();
-// Hide all lines after the 5th
+// Skrýt všechny řádky po 5. řádku
 richText.SetLinesVisibility(5, lineCount - 1, false);
-// Get the pixel width of a specific line
+// Získat šířku v pixelech specifického řádku
 float width = richText.GetLineWidth(2);
 ```
 
-### HtmlWidget -- Extended RichTextWidget
+### HtmlWidget -- Rozšířený RichTextWidget
 
-`HtmlWidget` extends `RichTextWidget` with a single additional method:
+`HtmlWidget` rozšiřuje `RichTextWidget` o jednu další metodu:
 
 ```
 class HtmlWidget extends RichTextWidget
@@ -185,37 +187,37 @@ class HtmlWidget extends RichTextWidget
 };
 ```
 
-Used by the vanilla book system to load `.html` text files:
+Používán vanilla systémem knih pro načítání `.html` textových souborů:
 
 ```c
-// From scripts/5_mission/gui/bookmenu.c
+// Ze scripts/5_mission/gui/bookmenu.c
 HtmlWidget content;
 Class.CastTo(content, layoutRoot.FindAnyWidget("HtmlWidget"));
 content.LoadFile(book.ConfigGetString("file"));
 ```
 
-### RichTextWidget vs TextWidget -- Key Differences
+### RichTextWidget vs TextWidget -- Klíčové rozdíly
 
 | Funkce | TextWidget | RichTextWidget |
 |---------|-----------|---------------|
-| Inline `<image>` tags | No | Yes |
-| `<h>` heading tags | No | Yes |
-| `</br>` line breaks | No (use `\n`) | Yes |
-| Content scrolling | No | Yes (via offset) |
-| Line visibility | No | Yes |
-| Text elision | No | Yes |
-| Performance | Faster | Slower (tag parsing) |
+| Inline tagy `<image>` | Ne | Ano |
+| Tagy nadpisu `<h>` | Ne | Ano |
+| Zalomení řádku `</br>` | Ne (použijte `\n`) | Ano |
+| Posouvání obsahu | Ne | Ano (přes offset) |
+| Viditelnost řádků | Ne | Ano |
+| Oříznutí textu | Ne | Ano |
+| Výkon | Rychlejší | Pomalejší (parsování tagů) |
 
-Use `TextWidget` for simple labels. Use `RichTextWidget` only when you need inline images, formatted headings, or content scrolling.
+Používejte `TextWidget` pro jednoduché popisky. `RichTextWidget` používejte pouze tehdy, když potřebujete inline obrázky, formátované nadpisy nebo posouvání obsahu.
 
 ---
 
-## CanvasWidget Drawing
+## Kreslení na CanvasWidget
 
-`CanvasWidget` provides immediate-mode 2D drawing on screen. It has exactly two native methods:
+`CanvasWidget` poskytuje 2D kreslení v okamžitém režimu na obrazovku. Má přesně dvě nativní metody:
 
 ```
-// From scripts/1_core/proto/enwidgets.c
+// Ze scripts/1_core/proto/enwidgets.c
 class CanvasWidget extends Widget
 {
     proto native void DrawLine(float x1, float y1, float x2, float y2,
@@ -224,17 +226,17 @@ class CanvasWidget extends Widget
 };
 ```
 
-That is the entire API. All complex shapes -- rectangles, circles, grids -- must be built from line segments.
+To je celé API. Všechny složité tvary -- obdélníky, kruhy, mřížky -- musí být sestaveny z úseček.
 
-### Coordinate System
+### Souřadnicový systém
 
-`CanvasWidget` uses **screen-space pixel coordinates** relative to the canvas widget's own bounds. The origin `(0, 0)` is the top-left corner of the canvas widget.
+`CanvasWidget` používá **pixelové souřadnice obrazovky** relativní k vlastním hranicím widgetu plátna. Počátek `(0, 0)` je levý horní roh widgetu plátna.
 
-If the canvas fills the full screen (position 0,0 size 1,1 in relative mode), then coordinates map directly to screen pixels after converting from the widget's internal size.
+Pokud plátno vyplňuje celou obrazovku (position 0,0 size 1,1 v relativním režimu), pak se souřadnice mapují přímo na pixely obrazovky po konverzi z interní velikosti widgetu.
 
-### Layout Setup
+### Nastavení layoutu
 
-In a `.layout` file:
+V souboru `.layout`:
 
 ```
 CanvasWidgetClass MyCanvas {
@@ -248,11 +250,11 @@ CanvasWidgetClass MyCanvas {
 }
 ```
 
-Key flags:
-- `ignorepointer 1` -- the canvas does not block mouse input to widgets beneath it
-- The size `1 1` in relative mode means "fill the parent"
+Klíčové příznaky:
+- `ignorepointer 1` -- plátno neblokuje vstup myší pro widgety pod ním
+- Velikost `1 1` v relativním režimu znamená "vyplnit rodiče"
 
-In script:
+Ve skriptu:
 
 ```c
 CanvasWidget m_Canvas;
@@ -261,48 +263,48 @@ m_Canvas = CanvasWidget.Cast(
 );
 ```
 
-Or create from a layout file:
+Nebo vytvoření ze souboru layoutu:
 
 ```c
-// From COT: JM/COT/GUI/layouts/esp_canvas.layout
+// Z COT: JM/COT/GUI/layouts/esp_canvas.layout
 m_Canvas = CanvasWidget.Cast(
     g_Game.GetWorkspace().CreateWidgets("path/to/canvas.layout")
 );
 ```
 
-### Drawing Primitives
+### Kreslicí primitiva
 
-#### Lines
+#### Čáry
 
 ```c
-// Draw a red horizontal line
+// Nakreslit červenou horizontální čáru
 m_Canvas.DrawLine(10, 50, 200, 50, 2, ARGB(255, 255, 0, 0));
 
-// Draw a white diagonal line, 3 pixels wide
+// Nakreslit bílou diagonální čáru, 3 pixely širokou
 m_Canvas.DrawLine(0, 0, 100, 100, 3, COLOR_WHITE);
 ```
 
-The `color` parameter uses ARGB format: `ARGB(alpha, red, green, blue)`.
+Parametr `color` používá formát ARGB: `ARGB(alfa, červená, zelená, modrá)`.
 
-#### Rectangles (from lines)
+#### Obdélníky (z čar)
 
 ```c
 void DrawRectangle(CanvasWidget canvas, float x, float y,
                    float w, float h, float lineWidth, int color)
 {
-    canvas.DrawLine(x, y, x + w, y, lineWidth, color);         // top
-    canvas.DrawLine(x + w, y, x + w, y + h, lineWidth, color); // right
-    canvas.DrawLine(x + w, y + h, x, y + h, lineWidth, color); // bottom
-    canvas.DrawLine(x, y + h, x, y, lineWidth, color);         // left
+    canvas.DrawLine(x, y, x + w, y, lineWidth, color);         // horní
+    canvas.DrawLine(x + w, y, x + w, y + h, lineWidth, color); // pravá
+    canvas.DrawLine(x + w, y + h, x, y + h, lineWidth, color); // dolní
+    canvas.DrawLine(x, y + h, x, y, lineWidth, color);         // levá
 }
 ```
 
-#### Circles (from line segments)
+#### Kruhy (ze segmentů čar)
 
-COT implements this pattern in `JMESPCanvas`:
+COT implementuje tento vzor v `JMESPCanvas`:
 
 ```c
-// From DayZ-CommunityOnlineTools/.../JMESPModule.c
+// Z DayZ-CommunityOnlineTools/.../JMESPModule.c
 void DrawCircle(float cx, float cy, float radius,
                 int lineWidth, int color, int segments)
 {
@@ -323,21 +325,21 @@ void DrawCircle(float cx, float cy, float radius,
 }
 ```
 
-More segments produce a smoother circle. 36 segments is a common default.
+Více segmentů produkuje hladší kruh. 36 segmentů je běžné výchozí nastavení.
 
-### Per-Frame Redrawing Vzor
+### Vzor překreslení každý snímek
 
-`CanvasWidget` is immediate-mode: you must `Clear()` and redraw every frame. This is typically done in an `Update()` or `OnUpdate()` callback.
+`CanvasWidget` je v okamžitém režimu: musíte zavolat `Clear()` a překreslit každý snímek. To se typicky dělá v callbacku `Update()` nebo `OnUpdate()`.
 
-Vanilla example from `scripts/5_mission/gui/mapmenu.c`:
+Vanilla příklad ze `scripts/5_mission/gui/mapmenu.c`:
 
 ```c
 override void Update(float timeslice)
 {
     super.Update(timeslice);
-    m_ToolsScaleCellSizeCanvas.Clear();  // clear previous frame
+    m_ToolsScaleCellSizeCanvas.Clear();  // vyčistit předchozí snímek
 
-    // ... draw scale ruler segments ...
+    // ... nakreslit segmenty měřítkového pravítka ...
     RenderScaleRuler();
 }
 
@@ -364,35 +366,35 @@ protected void RenderScaleRuler()
 }
 ```
 
-### ESP Overlay Vzor (from COT)
+### Vzor ESP překrytí (z COT)
 
-COT (Community Online Tools) uses `CanvasWidget` as a full-screen overlay to draw skeleton wireframes on players and objects. This is one of the most sophisticated canvas usage patterns in any DayZ mod.
+COT (Community Online Tools) používá `CanvasWidget` jako celoobrazovkové překrytí pro kreslení drátěných modelů koster na hráčích a objektech. Jedná se o jeden z nejsofistikovanějších vzorů použití plátna v jakémkoliv modu DayZ.
 
-**Architecture:**
+**Architektura:**
 
-1. A full-screen `CanvasWidget` is created from a layout file
-2. Every frame, `Clear()` is called
-3. World-space positions are converted to screen coordinates
-4. Lines are drawn between bone positions to render skeletons
+1. Celoobrazovkový `CanvasWidget` je vytvořen ze souboru layoutu
+2. Každý snímek je zavoláno `Clear()`
+3. Pozice ve světovém prostoru jsou konvertovány na souřadnice obrazovky
+4. Čáry jsou kresleny mezi pozicemi kostí pro vykreslení koster
 
-**World-to-screen conversion** (from COT's `JMESPCanvas`):
+**Konverze ze světa na obrazovku** (z `JMESPCanvas` v COT):
 
 ```c
-// From DayZ-CommunityOnlineTools/.../JMESPModule.c
+// Z DayZ-CommunityOnlineTools/.../JMESPModule.c
 vector TransformToScreenPos(vector worldPos, out bool isInBounds)
 {
     float parentW, parentH;
     vector screenPos;
 
-    // Get relative screen position (0..1 range)
+    // Získat relativní pozici na obrazovce (rozsah 0..1)
     screenPos = g_Game.GetScreenPosRelative(worldPos);
 
-    // Check if the position is visible on screen
+    // Zkontrolovat, zda je pozice viditelná na obrazovce
     isInBounds = screenPos[0] >= 0 && screenPos[0] <= 1
               && screenPos[1] >= 0 && screenPos[1] <= 1
               && screenPos[2] >= 0;
 
-    // Convert to canvas pixel coordinates
+    // Konvertovat na pixelové souřadnice plátna
     m_Canvas.GetScreenSize(parentW, parentH);
     screenPos[0] = screenPos[0] * parentW;
     screenPos[1] = screenPos[1] * parentH;
@@ -401,7 +403,7 @@ vector TransformToScreenPos(vector worldPos, out bool isInBounds)
 }
 ```
 
-**Drawing a line from world position A to world position B:**
+**Nakreslení čáry ze světové pozice A do světové pozice B:**
 
 ```c
 void DrawWorldLine(vector from, vector to, int width, int color)
@@ -417,43 +419,43 @@ void DrawWorldLine(vector from, vector to, int width, int color)
 }
 ```
 
-**Drawing a player skeleton:**
+**Nakreslení kostry hráče:**
 
 ```c
-// Simplified from COT's JMESPSkeleton.Draw()
+// Zjednodušeno z JMESPSkeleton.Draw() v COT
 static void DrawSkeleton(Human human, CanvasWidget canvas)
 {
-    // Define limb connections (bone pairs)
-    // neck->spine3, spine3->pelvis, neck->leftarm, etc.
+    // Definovat spojení končetin (páry kostí)
+    // krk->spine3, spine3->pánev, krk->levá ruka atd.
 
     int color = COLOR_WHITE;
     switch (human.GetHealthLevel())
     {
         case GameConstants.STATE_DAMAGED:
-            color = 0xFFDCDC00;  // yellow
+            color = 0xFFDCDC00;  // žlutá
             break;
         case GameConstants.STATE_BADLY_DAMAGED:
-            color = 0xFFDC0000;  // red
+            color = 0xFFDC0000;  // červená
             break;
     }
 
-    // Draw each limb as a line between two bone positions
+    // Nakreslit každou končetinu jako čáru mezi dvěma pozicemi kostí
     vector bone1Pos = human.GetBonePositionWS(
         human.GetBoneIndexByName("neck")
     );
     vector bone2Pos = human.GetBonePositionWS(
         human.GetBoneIndexByName("spine3")
     );
-    // ... convert to screen coords, then DrawLine ...
+    // ... konvertovat na souřadnice obrazovky, pak DrawLine ...
 }
 ```
 
-### Vanilla Debug Canvas
+### Vanilla debug plátno
 
-The engine provides a built-in debug canvas through the `Debug` class:
+Engine poskytuje vestavěné debug plátno přes třídu `Debug`:
 
 ```c
-// From scripts/3_game/tools/debug.c
+// Ze scripts/3_game/tools/debug.c
 static void InitCanvas()
 {
     if (!m_DebugLayoutCanvas)
@@ -486,24 +488,24 @@ static void ClearCanvas()
 }
 ```
 
-### Performance Considerations
+### Úvahy o výkonu
 
-- **Clear and redraw every frame.** `CanvasWidget` does not retain state between frames in most use cases where the view changes (camera movement, etc.). Call `Clear()` at the start of each update.
-- **Minimize line count.** Each `DrawLine()` call has overhead. For complex shapes like circles, use fewer segments (12-18) for distant objects, more (36) for close ones.
-- **Check screen bounds first.** Convert world positions to screen coordinates and skip objects that are off-screen or behind the camera (`screenPos[2] < 0`).
-- **Use `ignorepointer 1`.** Always set this flag on canvas overlays so they do not intercept mouse events.
-- **One canvas is enough.** Use a single full-screen canvas for all overlay drawing rather than creating multiple canvas widgets.
+- **Vyčistěte a překreslete každý snímek.** `CanvasWidget` neuchovává stav mezi snímky ve většině případů, kdy se mění pohled (pohyb kamery atd.). Volejte `Clear()` na začátku každé aktualizace.
+- **Minimalizujte počet čar.** Každé volání `DrawLine()` má režii. Pro složité tvary jako kruhy použijte méně segmentů (12-18) pro vzdálené objekty, více (36) pro blízké.
+- **Nejdříve kontrolujte hranice obrazovky.** Konvertujte světové pozice na souřadnice obrazovky a přeskočte objekty, které jsou mimo obrazovku nebo za kamerou (`screenPos[2] < 0`).
+- **Použijte `ignorepointer 1`.** Vždy nastavte tento příznak na překrytích plátna, aby nezachycovala události myši.
+- **Jedno plátno stačí.** Použijte jedno celoobrazovkové plátno pro veškeré kreslení překrytí místo vytváření více widgetů plátna.
 
 ---
 
 ## MapWidget
 
-`MapWidget` displays the DayZ terrain map and provides methods for placing markers, coordinate conversion, and zoom control.
+`MapWidget` zobrazuje mapu terénu DayZ a poskytuje metody pro umísťování značek, konverzi souřadnic a řízení přiblížení.
 
-### Class Definition
+### Definice třídy
 
 ```
-// From scripts/3_game/gameplay.c
+// Ze scripts/3_game/gameplay.c
 class MapWidget: Widget
 {
     proto native void    ClearUserMarks();
@@ -520,68 +522,68 @@ class MapWidget: Widget
 };
 ```
 
-### Getting the Map Widget
+### Získání widgetu mapy
 
-In a `.layout` file, place the map using the `MapWidgetClass` type. In script, obtain the reference by casting:
+V souboru `.layout` umístěte mapu pomocí typu `MapWidgetClass`. Ve skriptu získejte referenci přetypováním:
 
 ```c
 MapWidget m_Map;
 m_Map = MapWidget.Cast(layoutRoot.FindAnyWidget("Map"));
 ```
 
-### Map Coordinates vs World Coordinates
+### Souřadnice mapy vs světové souřadnice
 
-DayZ uses two coordinate spaces:
+DayZ používá dva souřadnicové prostory:
 
-- **World coordinates**: 3D vectors in meters. `x` = east/west, `y` = altitude, `z` = north/south. Chernarus ranges roughly 0-15360 on x and z axes.
-- **Screen coordinates**: Pixel positions on the map widget. These change as the user pans and zooms.
+- **Světové souřadnice**: 3D vektory v metrech. `x` = východ/západ, `y` = nadmořská výška, `z` = sever/jih. Chernarus sahá přibližně od 0 do 15360 na osách x a z.
+- **Souřadnice obrazovky**: Pixelové pozice na widgetu mapy. Ty se mění při posouvání a přibližování uživatelem.
 
-The `MapWidget` provides conversion between these:
+`MapWidget` poskytuje konverzi mezi nimi:
 
 ```c
-// World position to screen pixel on the map
+// Světová pozice na pixel obrazovky na mapě
 vector screenPos = m_Map.MapToScreen(worldPosition);
 
-// Screen pixel on the map to world position
+// Pixel obrazovky na mapě na světovou pozici
 vector worldPos = m_Map.ScreenToMap(Vector(screenX, screenY, 0));
 ```
 
-### Adding Znackas
+### Přidávání značek
 
-`AddUserMark()` places a marker at a world position with a label, color, and icon texture:
+`AddUserMark()` umístí značku na světovou pozici s popiskem, barvou a texturou ikony:
 
 ```c
 m_Map.AddUserMark(
-    playerPos,                                   // vector: world position
-    "You",                                       // string: label text
-    COLOR_RED,                                   // int: ARGB color
-    "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"  // string: icon texture
+    playerPos,                                   // vector: světová pozice
+    "You",                                       // string: text popisku
+    COLOR_RED,                                   // int: barva ARGB
+    "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"  // string: textura ikony
 );
 ```
 
-Vanilla example from `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
+Vanilla příklad ze `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
 
 ```c
-// Mark player position
+// Označit pozici hráče
 m_DebugMapWidget.AddUserMark(
     playerPos, "You", COLOR_RED,
     "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
 );
 
-// Mark other players
+// Označit ostatní hráče
 m_DebugMapWidget.AddUserMark(
     rpd.m_Pos, rpd.m_Name + " " + dist + "m", COLOR_BLUE,
     "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
 );
 
-// Mark camera position
+// Označit pozici kamery
 m_DebugMapWidget.AddUserMark(
     cameraPos, "Camera", COLOR_GREEN,
     "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
 );
 ```
 
-Another vanilla example from `scripts/5_mission/gui/mapmenu.c` (commented out but shows the API):
+Další vanilla příklad ze `scripts/5_mission/gui/mapmenu.c` (zakomentovaný, ale ukazuje API):
 
 ```c
 m.AddUserMark("2681 4.7 1751", "Label1", ARGB(255,255,0,0),
@@ -592,25 +594,25 @@ m.AddUserMark("2670 4.7 1651", "Label3", ARGB(255,0,0,255),
     "\\dz\\gear\\navigation\\data\\map_busstop_ca.paa");
 ```
 
-### Clearing Znackas
+### Vymazání značek
 
-`ClearUserMarks()` removes all user-placed markers at once. There is no method to remove a single marker by reference. The standard pattern is to clear all markers and re-add the ones you want each frame.
+`ClearUserMarks()` odstraní všechny uživatelem umístěné značky najednou. Neexistuje metoda pro odstranění jedné značky podle reference. Standardní vzor je vymazat všechny značky a znovu přidat ty požadované každý snímek.
 
 ```c
-// From scripts/5_mission/gui/scriptconsolesoundstab.c
+// Ze scripts/5_mission/gui/scriptconsolesoundstab.c
 override void Update(float timeslice)
 {
     m_DebugMapWidget.ClearUserMarks();
-    // Re-add all current markers
+    // Znovu přidat všechny aktuální značky
     m_DebugMapWidget.AddUserMark(playerPos, "You", COLOR_RED, iconPath);
 }
 ```
 
-### Available Map Znacka Ikonas
+### Dostupné ikony značek mapy
 
-The vanilla game registers these marker icon textures in `scripts/5_mission/gui/mapmarkersinfo.c`:
+Vanilla hra registruje tyto textury ikon značek v `scripts/5_mission/gui/mapmarkersinfo.c`:
 
-| Enum Konstanta | Texture Path |
+| Enum konstanta | Cesta k textuře |
 |---|---|
 | `MARKERTYPE_MAP_BORDER_CROSS` | `\dz\gear\navigation\data\map_border_cross_ca.paa` |
 | `MARKERTYPE_MAP_BROADLEAF` | `\dz\gear\navigation\data\map_broadleaf_ca.paa` |
@@ -630,28 +632,28 @@ The vanilla game registers these marker icon textures in `scripts/5_mission/gui/
 | `MARKERTYPE_MAP_VIEWPOINT` | `\dz\gear\navigation\data\map_viewpoint_ca.paa` |
 | `MARKERTYPE_MAP_WATERPUMP` | `\dz\gear\navigation\data\map_waterpump_ca.paa` |
 
-Access these by enum via `MapZnackaTyps.GetZnackaTypFromID(eMapZnackaTyps.MARKERTYPE_MAP_CAMP)`.
+Přístup přes enum: `MapMarkerTypes.GetMarkerTypeFromID(eMapMarkerTypes.MARKERTYPE_MAP_CAMP)`.
 
-### Zoom and Pan Control
+### Řízení přiblížení a posouvání
 
 ```c
-// Set the map center to a world position
+// Nastavit střed mapy na světovou pozici
 m_Map.SetMapPos(playerWorldPos);
 
-// Get/set zoom level (0.0 = fully zoomed out, 1.0 = fully zoomed in)
+// Získat/nastavit úroveň přiblížení (0.0 = plně oddáleno, 1.0 = plně přiblíženo)
 float currentScale = m_Map.GetScale();
-m_Map.SetScale(0.33);  // moderate zoom level
+m_Map.SetScale(0.33);  // střední úroveň přiblížení
 
-// Get map info
-float contourInterval = m_Map.GetContourInterval();  // meters between contour lines
-float cellSize = m_Map.GetCellSize(legendWidth);      // cell size for scale ruler
+// Získat informace o mapě
+float contourInterval = m_Map.GetContourInterval();  // metry mezi vrstevnicemi
+float cellSize = m_Map.GetCellSize(legendWidth);      // velikost buňky pro měřítkové pravítko
 ```
 
-### Map Click Handling
+### Zpracování kliknutí na mapu
 
-Handle mouse clicks on the map via the `OnDoubleClick` or `OnMouseButtonDown` callbacks on a `ScriptedWidgetEventHandler` or `UIScriptedMenu`. Convert the click position to world coordinates using `ScreenToMap()`.
+Zpracovávejte kliknutí myší na mapě přes callbacky `OnDoubleClick` nebo `OnMouseButtonDown` na `ScriptedWidgetEventHandler` nebo `UIScriptedMenu`. Konvertujte pozici kliknutí na světové souřadnice pomocí `ScreenToMap()`.
 
-Vanilla example from `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
+Vanilla příklad ze `scripts/5_mission/gui/scriptconsolegeneraltab.c`:
 
 ```c
 override bool OnDoubleClick(Widget w, int x, int y, int button)
@@ -660,21 +662,21 @@ override bool OnDoubleClick(Widget w, int x, int y, int button)
 
     if (w == m_DebugMapWidget)
     {
-        // Convert screen click to world coordinates
+        // Konvertovat kliknutí na obrazovce na světové souřadnice
         vector worldPos = m_DebugMapWidget.ScreenToMap(Vector(x, y, 0));
 
-        // Get terrain height at that position
+        // Získat výšku terénu na dané pozici
         float surfaceY = g_Game.SurfaceY(worldPos[0], worldPos[2]);
         float roadY = g_Game.SurfaceRoadY(worldPos[0], worldPos[2]);
         worldPos[1] = Math.Max(surfaceY, roadY);
 
-        // Use the world position (e.g., teleport player)
+        // Použít světovou pozici (např. teleportovat hráče)
     }
     return false;
 }
 ```
 
-From `scripts/5_mission/gui/maphandler.c`:
+Ze `scripts/5_mission/gui/maphandler.c`:
 
 ```c
 class MapHandler : ScriptedWidgetEventHandler
@@ -682,33 +684,33 @@ class MapHandler : ScriptedWidgetEventHandler
     override bool OnDoubleClick(Widget w, int x, int y, int button)
     {
         vector worldPos = MapWidget.Cast(w).ScreenToMap(Vector(x, y, 0));
-        // Place a marker, teleport, etc.
+        // Umístit značku, teleportovat atd.
         return true;
     }
 }
 ```
 
-### Expansion Map Znacka System
+### Systém značek mapy v Expansion
 
-The Expansion mod builds a full marker system on top of the vanilla `MapWidget`. Key patterns:
+Mod Expansion staví plný systém značek nad vanilla `MapWidget`. Klíčové vzory:
 
-- Maintains separate dictionaries for personal, server, party, and player markers
-- Limits per-frame marker updates (`m_MaxZnackaUpdatesPerFrame = 3`) for performance
-- Draws scale ruler lines using a `CanvasWidget` alongside the map
-- Uses custom marker widget overlays positioned via `MapToScreen()` for richer marker visuals than `AddUserMark()` supports
+- Udržuje oddělené slovníky pro osobní, serverové, party a hráčské značky
+- Omezuje aktualizace značek na snímek (`m_MaxMarkerUpdatesPerFrame = 3`) pro výkon
+- Kreslí čáry měřítkového pravítka pomocí `CanvasWidget` vedle mapy
+- Používá vlastní překryvné widgety značek pozicované přes `MapToScreen()` pro bohatší vizuály značek, než podporuje `AddUserMark()`
 
-This approach demonstrates that for complex marker UIs (icons with tooltips, editable labels, colored categories), you should overlay custom widgets positioned via `MapToScreen()` rather than relying solely on `AddUserMark()`.
+Tento přístup ukazuje, že pro složitá UI značek (ikony s tooltipem, editovatelné popisky, barevné kategorie) byste měli překrývat vlastní widgety pozicované přes `MapToScreen()` místo spoléhání se pouze na `AddUserMark()`.
 
 ---
 
 ## ItemPreviewWidget
 
-`ItemPreviewWidget` renders a 3D preview of any `EntityAI` (item, weapon, vehicle) inside a UI panel.
+`ItemPreviewWidget` vykresluje 3D náhled jakéhokoliv `EntityAI` (předmět, zbraň, vozidlo) uvnitř panelu UI.
 
-### Class Definition
+### Definice třídy
 
 ```
-// From scripts/3_game/gameplay.c
+// Ze scripts/3_game/gameplay.c
 class ItemPreviewWidget: Widget
 {
     proto native void    SetItem(EntityAI object);
@@ -724,19 +726,19 @@ class ItemPreviewWidget: Widget
 };
 ```
 
-### View Indices
+### Indexy pohledů
 
-The `viewIndex` parameter selects which bounding box and camera angle to use. These are defined per item in the item's config:
+Parametr `viewIndex` vybírá, který ohraničující box a úhel kamery použít. Ty jsou definovány pro každý předmět v konfiguraci předmětu:
 
-- View 0: default (`boundingbox_min` + `boundingbox_max` + `invView`)
-- View 1: alternate (`boundingbox_min2` + `boundingbox_max2` + `invView2`)
-- View 2+: additional views if defined
+- Pohled 0: výchozí (`boundingbox_min` + `boundingbox_max` + `invView`)
+- Pohled 1: alternativní (`boundingbox_min2` + `boundingbox_max2` + `invView2`)
+- Pohled 2+: další pohledy, pokud jsou definovány
 
-Use `item.GetViewIndex()` to get the item's preferred view.
+Použijte `item.GetViewIndex()` pro získání preferovaného pohledu předmětu.
 
-### Pouziti Vzor -- Item Inspection
+### Vzor použití -- Prohlížení předmětů
 
-From `scripts/5_mission/gui/inspectmenunew.c`:
+Ze `scripts/5_mission/gui/inspectmenunew.c`:
 
 ```c
 class InspectMenuNew extends UIScriptedMenu
@@ -759,9 +761,9 @@ class InspectMenuNew extends UIScriptedMenu
 }
 ```
 
-### Rotation Control (Mouse Drag)
+### Řízení rotace (tažení myší)
 
-The standard pattern for interactive rotation:
+Standardní vzor pro interaktivní rotaci:
 
 ```c
 private int m_RotationX;
@@ -782,8 +784,8 @@ override bool OnMouseButtonDown(Widget w, int x, int y, int button)
 void UpdateRotation(int mouse_x, int mouse_y, bool is_dragging)
 {
     vector o = m_Orientation;
-    o[0] = o[0] + (m_RotationY - mouse_y);  // pitch
-    o[1] = o[1] - (m_RotationX - mouse_x);  // yaw
+    o[0] = o[0] + (m_RotationY - mouse_y);  // náklon
+    o[1] = o[1] - (m_RotationX - mouse_x);  // otáčení
     m_item_widget.SetModelOrientation(o);
 
     if (!is_dragging)
@@ -791,7 +793,7 @@ void UpdateRotation(int mouse_x, int mouse_y, bool is_dragging)
 }
 ```
 
-### Zoom Control (Mouse Wheel)
+### Řízení přiblížení (kolečko myši)
 
 ```c
 override bool OnMouseWheel(Widget w, int x, int y, int wheel)
@@ -815,12 +817,12 @@ override bool OnMouseWheel(Widget w, int x, int y, int wheel)
 
 ## PlayerPreviewWidget
 
-`PlayerPreviewWidget` renders a full 3D player character model in the UI, complete with equipped items and animations.
+`PlayerPreviewWidget` vykresluje plný 3D model hráčské postavy v UI, kompletně s nasazenými předměty a animacemi.
 
-### Class Definition
+### Definice třídy
 
 ```
-// From scripts/3_game/gameplay.c
+// Ze scripts/3_game/gameplay.c
 class PlayerPreviewWidget: Widget
 {
     proto native void       UpdateItemInHands(EntityAI object);
@@ -834,9 +836,9 @@ class PlayerPreviewWidget: Widget
 };
 ```
 
-### Pouziti Vzor -- Inventory Character Preview
+### Vzor použití -- Náhled postavy v inventáři
 
-From `scripts/5_mission/gui/inventorynew/playerpreview.c`:
+Ze `scripts/5_mission/gui/inventorynew/playerpreview.c`:
 
 ```c
 class PlayerPreview: LayoutHolder
@@ -863,19 +865,19 @@ class PlayerPreview: LayoutHolder
 }
 ```
 
-### Keeping Equipment Updated
+### Udržování aktuální výbavy
 
-The `UpdateInterval()` method keeps the preview in sync with the actual player's equipment:
+Metoda `UpdateInterval()` udržuje náhled synchronizovaný se skutečnou výbavou hráče:
 
 ```c
 override void UpdateInterval()
 {
-    // Update held item
+    // Aktualizovat držený předmět
     m_CharacterPanelWidget.UpdateItemInHands(
         g_Game.GetPlayer().GetEntityInHands()
     );
 
-    // Access the dummy player for animation sync
+    // Přístup k dummy hráči pro synchronizaci animací
     DayZPlayer dummyPlayer = m_CharacterPanelWidget.GetDummyPlayer();
     if (dummyPlayer)
     {
@@ -892,20 +894,20 @@ override void UpdateInterval()
 }
 ```
 
-### Rotation and Zoom
+### Rotace a přiblížení
 
-The rotation and zoom patterns are identical to `ItemPreviewWidget` -- use `SetModelOrientation()` with mouse drag, and `SetSize()` with mouse wheel. See the previous section for the full code.
+Vzory rotace a přiblížení jsou identické s `ItemPreviewWidget` -- použijte `SetModelOrientation()` s tažením myší a `SetSize()` s kolečkem myši. Viz předchozí sekce pro úplný kód.
 
 ---
 
 ## VideoWidget
 
-`VideoWidget` plays video files in the UI. It supports playback control, looping, seeking, state queries, subtitles, and event callbacks.
+`VideoWidget` přehrává video soubory v UI. Podporuje řízení přehrávání, opakování, hledání, dotazy na stav, titulky a callbacky událostí.
 
-### Class Definition
+### Definice třídy
 
 ```
-// From scripts/1_core/proto/enwidgets.c
+// Ze scripts/1_core/proto/enwidgets.c
 enum VideoState { NONE, PLAYING, PAUSED, STOPPED, FINISHED };
 
 enum VideoCallback
@@ -934,9 +936,9 @@ class VideoWidget extends Widget
 };
 ```
 
-### Pouziti Vzor -- Menu Video
+### Vzor použití -- Video v menu
 
-From `scripts/5_mission/gui/newui/mainmenu/mainmenuvideo.c`:
+Ze `scripts/5_mission/gui/newui/mainmenu/mainmenuvideo.c`:
 
 ```c
 protected VideoWidget m_Video;
@@ -951,7 +953,7 @@ override Widget Init()
     m_Video.Load("video\\DayZ_onboarding_MASTER.mp4");
     m_Video.Play();
 
-    // Register callback for when video ends
+    // Zaregistrovat callback pro konec videa
     m_Video.SetCallback(VideoCallback.ON_END, StopVideo);
 
     return layoutRoot;
@@ -959,34 +961,34 @@ override Widget Init()
 
 void StopVideo()
 {
-    // Handle video completion
+    // Zpracovat dokončení videa
     Close();
 }
 ```
 
-### Subtitles
+### Titulky
 
-Subtitles require a font assigned to the `VideoWidget` in the layout. Subtitle files use the naming convention `videoName_Language.srt`, with the English version named `videoName.srt` (no language suffix).
+Titulky vyžadují font přiřazený k `VideoWidget` v layoutu. Soubory titulků používají konvenci pojmenování `videoName_Language.srt`, přičemž anglická verze se jmenuje `videoName.srt` (bez přípony jazyka).
 
 ```c
-// Subtitles are enabled by default
-m_Video.DisableSubtitles(false);  // explicitly enable
+// Titulky jsou ve výchozím nastavení povoleny
+m_Video.DisableSubtitles(false);  // explicitně povolit
 ```
 
-### Return Hodnotas
+### Návratové hodnoty
 
-The `Load()`, `Play()`, `Pause()`, and `Stop()` methods return `bool`, but this return value is **deprecated**. Use `VideoCallback.ON_ERROR` to detect failures instead.
+Metody `Load()`, `Play()`, `Pause()` a `Stop()` vracejí `bool`, ale tato návratová hodnota je **zastaralá**. Pro detekci selhání používejte místo toho `VideoCallback.ON_ERROR`.
 
 ---
 
-## RenderTargetWidget and RTTextureWidget
+## RenderTargetWidget a RTTextureWidget
 
-These widgets enable rendering a 3D world view into a UI widget.
+Tyto widgety umožňují vykreslení 3D pohledu na svět do widgetu UI.
 
-### Class Definitions
+### Definice tříd
 
 ```
-// From scripts/1_core/proto/enwidgets.c
+// Ze scripts/1_core/proto/enwidgets.c
 class RenderTargetWidget extends Widget
 {
     proto native void SetRefresh(int period, int offset);
@@ -995,11 +997,11 @@ class RenderTargetWidget extends Widget
 
 class RTTextureWidget extends Widget
 {
-    // No additional methods -- serves as a texture target for children
+    // Žádné další metody -- slouží jako texturový cíl pro potomky
 };
 ```
 
-The global function `SetWidgetWorld` binds a render target to a world and camera:
+Globální funkce `SetWidgetWorld` navazuje render target na svět a kameru:
 
 ```
 proto native void SetWidgetWorld(
@@ -1011,12 +1013,12 @@ proto native void SetWidgetWorld(
 
 ### RenderTargetWidget
 
-Renders a camera view from a `BaseWorld` into the widget area. Used for security cameras, rear-view mirrors, or picture-in-picture displays.
+Vykresluje pohled kamery ze `BaseWorld` do oblasti widgetu. Používá se pro bezpečnostní kamery, zpětná zrcátka nebo picture-in-picture zobrazení.
 
-From `scripts/2_gamelib/entities/rendertarget.c`:
+Ze `scripts/2_gamelib/entities/rendertarget.c`:
 
 ```c
-// Create render target programmatically
+// Vytvoření render targetu programaticky
 RenderTargetWidget m_RenderWidget;
 
 int screenW, screenH;
@@ -1036,23 +1038,23 @@ Class.CastTo(m_RenderWidget, g_Game.GetWorkspace().CreateWidget(
     sortOrder
 ));
 
-// Bind to the game world with camera index 0
+// Navázat na herní svět s indexem kamery 0
 SetWidgetWorld(m_RenderWidget, g_Game.GetWorldEntity(), 0);
 ```
 
-**Refresh control:**
+**Řízení obnovování:**
 
 ```c
-// Render every 2nd frame (period=2, offset=0)
+// Vykreslovat každý 2. snímek (period=2, offset=0)
 m_RenderWidget.SetRefresh(2, 0);
 
-// Render at half resolution for performance
+// Vykreslovat v polovičním rozlišení pro výkon
 m_RenderWidget.SetResolutionScale(0.5, 0.5);
 ```
 
 ### RTTextureWidget
 
-`RTTextureWidget` has no script-side methods beyond those inherited from `Widget`. It serves as a render target texture that child widgets can be rendered into. An `ImageWidget` can reference an `RTTextureWidget` as its texture source via `SetImageTexture()`:
+`RTTextureWidget` nemá žádné skriptové metody mimo ty zděděné z `Widget`. Slouží jako textura render targetu, do které mohou být vykresleny podřízené widgety. `ImageWidget` může odkazovat na `RTTextureWidget` jako svůj zdroj textury přes `SetImageTexture()`:
 
 ```c
 ImageWidget imgWidget;
@@ -1062,59 +1064,59 @@ imgWidget.SetImageTexture(0, rtTexture);
 
 ---
 
-## Doporucene postupy
+## Doporučené postupy
 
-1. **Use the right widget for the job.** `TextWidget` for simple labels, `RichTextWidget` only when you need inline images or formatted content. `CanvasWidget` for dynamic 2D overlays, not static graphics (use `ImageWidget` for those).
+1. **Používejte správný widget pro daný úkol.** `TextWidget` pro jednoduché popisky, `RichTextWidget` pouze tehdy, když potřebujete inline obrázky nebo formátovaný obsah. `CanvasWidget` pro dynamická 2D překrytí, ne pro statickou grafiku (pro tu použijte `ImageWidget`).
 
-2. **Clear canvas every frame.** Always call `Clear()` before redrawing. Failing to clear causes drawings to accumulate and creates visual artifacts.
+2. **Vyčistěte plátno každý snímek.** Vždy volejte `Clear()` před překreslením. Opomenutí čištění způsobuje hromadění kreseb a vizuální artefakty.
 
-3. **Check screen bounds for ESP/overlay drawing.** Before calling `DrawLine()`, verify both endpoints are on screen. Off-screen draws are wasted work.
+3. **Kontrolujte hranice obrazovky pro ESP/překryvné kreslení.** Před voláním `DrawLine()` ověřte, že oba koncové body jsou na obrazovce. Kreslení mimo obrazovku je zbytečná práce.
 
-4. **Map markers: clear-and-rebuild pattern.** There is no `RemoveUserMark()` method. Call `ClearUserMarks()` then re-add all active markers each update. This is the pattern used by every vanilla and mod implementation.
+4. **Značky mapy: vzor vyčistit a znovu sestavit.** Neexistuje metoda `RemoveUserMark()`. Volejte `ClearUserMarks()` a poté znovu přidejte všechny aktivní značky při každé aktualizaci. Toto je vzor používaný každou vanilla a mod implementací.
 
-5. **ItemPreviewWidget needs a real EntityAI.** You cannot preview a classname string -- you need a spawned entity reference. For inventory previews, use the actual inventory item.
+5. **ItemPreviewWidget potřebuje skutečné EntityAI.** Nemůžete zobrazit náhled řetězce classname -- potřebujete referenci na spawnutou entitu. Pro náhledy inventáře použijte skutečný předmět z inventáře.
 
-6. **PlayerPreviewWidget owns a dummy player.** The widget creates an internal dummy `DayZPlayer`. Access it via `GetDummyPlayer()` to sync animations, but do not destroy it yourself.
+6. **PlayerPreviewWidget vlastní dummy hráče.** Widget vytvoří interního dummy `DayZPlayer`. Přistupujte k němu přes `GetDummyPlayer()` pro synchronizaci animací, ale neničte ho sami.
 
-7. **VideoWidget: use callbacks, not return values.** The bool returns from `Load()`, `Play()`, etc. are deprecated. Use `SetCallback(VideoCallback.ON_ERROR, handler)`.
+7. **VideoWidget: používejte callbacky, ne návratové hodnoty.** Návratové bool z `Load()`, `Play()` atd. jsou zastaralé. Použijte `SetCallback(VideoCallback.ON_ERROR, handler)`.
 
-8. **RenderTargetWidget performance.** Use `SetRefresh()` with period > 1 to skip frames. Use `SetResolutionScale()` to reduce resolution. These widgets are expensive -- use sparingly.
+8. **Výkon RenderTargetWidget.** Použijte `SetRefresh()` s periodou > 1 pro přeskočení snímků. Použijte `SetResolutionScale()` pro snížení rozlišení. Tyto widgety jsou nákladné -- používejte je střídmě.
 
 ---
 
-## Pozorovano ve skutecnych modech
+## Pozorováno ve skutečných modech
 
-| Mod | Widget | Pouziti |
+| Mod | Widget | Použití |
 |-----|--------|-------|
-| **COT** | `CanvasWidget` | Full-screen ESP overlay with skeleton drawing, world-to-screen projection, circle and line primitives |
-| **COT** | `MapWidget` | Admin teleport via `ScreenToMap()` on double-click |
-| **Expansion** | `MapWidget` | Custom marker system with personal/server/party categories, per-frame update throttling |
-| **Expansion** | `CanvasWidget` | Map scale ruler drawing alongside `MapWidget` |
-| **Vanilla Map** | `MapWidget` + `CanvasWidget` | Scale ruler rendered with alternating black/grey line segments |
-| **Vanilla Inspect** | `ItemPreviewWidget` | 3D item inspection with drag rotation and scroll zoom |
-| **Vanilla Inventory** | `PlayerPreviewWidget` | Character preview with equipment sync and injury animations |
-| **Vanilla Hints** | `RichTextWidget` | In-game hint panel with formatted description text |
-| **Vanilla Menus** | `RichTextWidget` | Controller button icons via `InputUtils.GetRichtextButtonIkonaFromInputAkce()` |
-| **Vanilla Books** | `HtmlWidget` | Loading and paging through `.html` text files |
-| **Vanilla Main Menu** | `VideoWidget` | Onboarding video with end callback |
-| **Vanilla Render Target** | `RenderTargetWidget` | Camera-to-widget rendering with configurable refresh rate |
+| **COT** | `CanvasWidget` | Celoobrazovkové ESP překrytí s kreslením koster, projekcí ze světa na obrazovku, primitiva kruhů a čar |
+| **COT** | `MapWidget` | Admin teleport přes `ScreenToMap()` při dvojkliku |
+| **Expansion** | `MapWidget` | Vlastní systém značek s osobními/serverovými/party kategoriemi, omezení aktualizací na snímek |
+| **Expansion** | `CanvasWidget` | Kreslení měřítkového pravítka vedle `MapWidget` |
+| **Vanilla mapa** | `MapWidget` + `CanvasWidget` | Měřítkové pravítko vykreslené střídavými černými/šedými segmenty čar |
+| **Vanilla prohlížení** | `ItemPreviewWidget` | 3D prohlížení předmětů s rotací tažením a přiblížením scrollem |
+| **Vanilla inventář** | `PlayerPreviewWidget` | Náhled postavy se synchronizací výbavy a animacemi zranění |
+| **Vanilla nápovědy** | `RichTextWidget` | Herní panel nápovědy s formátovaným textem popisu |
+| **Vanilla menu** | `RichTextWidget` | Ikony tlačítek ovladače přes `InputUtils.GetRichtextButtonIconFromInputAction()` |
+| **Vanilla knihy** | `HtmlWidget` | Načítání a stránkování `.html` textových souborů |
+| **Vanilla hlavní menu** | `VideoWidget` | Onboarding video s callbackem při ukončení |
+| **Vanilla render target** | `RenderTargetWidget` | Vykreslování kamery do widgetu s konfigurovatelnou obnovovací frekvencí |
 
 ---
 
-## Caste chyby
+## Časté chyby
 
-**1. Using RichTextWidget where TextWidget suffices.**
-Rich text parsing has overhead. If you only need plain text, use `TextWidget`.
+**1. Použití RichTextWidget tam, kde stačí TextWidget.**
+Parsování bohatého textu má režii. Pokud potřebujete pouze prostý text, použijte `TextWidget`.
 
-**2. Forgetting to Clear() the canvas.**
+**2. Zapomenutí volání Clear() na plátně.**
 ```c
-// WRONG - drawings accumulate, filling the screen
+// ŠPATNĚ - kresby se hromadí, zaplňují obrazovku
 void Update(float dt)
 {
     m_Canvas.DrawLine(0, 0, 100, 100, 1, COLOR_RED);
 }
 
-// CORRECT
+// SPRÁVNĚ
 void Update(float dt)
 {
     m_Canvas.Clear();
@@ -1122,70 +1124,70 @@ void Update(float dt)
 }
 ```
 
-**3. Drawing behind the camera.**
+**3. Kreslení za kamerou.**
 ```c
-// WRONG - draws lines to objects behind you
+// ŠPATNĚ - kreslí čáry k objektům za vámi
 vector screenPos = g_Game.GetScreenPosRelative(worldPos);
-// No bounds check!
+// Žádná kontrola hranic!
 
-// CORRECT
+// SPRÁVNĚ
 vector screenPos = g_Game.GetScreenPosRelative(worldPos);
 if (screenPos[2] < 0)
-    return;  // behind camera
+    return;  // za kamerou
 if (screenPos[0] < 0 || screenPos[0] > 1 || screenPos[1] < 0 || screenPos[1] > 1)
-    return;  // off screen
+    return;  // mimo obrazovku
 ```
 
-**4. Trying to remove a single map marker.**
-There is no `RemoveUserMark()`. You must `ClearUserMarks()` and re-add all markers you want to keep.
+**4. Pokus o odstranění jedné značky mapy.**
+Neexistuje `RemoveUserMark()`. Musíte zavolat `ClearUserMarks()` a znovu přidat všechny značky, které chcete zachovat.
 
-**5. Setting ItemPreviewWidget item to null without checking.**
-Always guard against null entity references before calling `SetItem()`.
+**5. Nastavení předmětu ItemPreviewWidget na null bez kontroly.**
+Vždy chraňte proti nulovým referencím entit před voláním `SetItem()`.
 
-**6. Not setting ignorepointer on overlay canvases.**
-A canvas without `ignorepointer 1` will intercept all mouse events, making the UI beneath it unresponsive.
+**6. Nenastavení ignorepointer na překryvných plátnech.**
+Plátno bez `ignorepointer 1` zachytí všechny události myši, čímž udělá UI pod ním nereagující.
 
-**7. Using backslashes in texture paths without doubling.**
-In Enforce Script strings, backslashes must be doubled:
+**7. Použití zpětných lomítek v cestách textur bez zdvojení.**
+V řetězcích Enforce Scriptu musí být zpětná lomítka zdvojená:
 ```c
-// WRONG
+// ŠPATNĚ
 "\\dz\\gear\\navigation\\data\\map_tree_ca.paa"
-// This is actually CORRECT in Enforce Script -- each \\ produces one \
+// Toto je vlastně SPRÁVNĚ v Enforce Scriptu -- každé \\ produkuje jedno \
 ```
 
 ---
 
 ## Kompatibilita a dopad
 
-| Widget | Client-Only | Performance Cost | Mod Compatibility |
+| Widget | Pouze klient | Náklady na výkon | Kompatibilita modů |
 |--------|------------|-----------------|-------------------|
-| `RichTextWidget` | Yes | Low (tag parsing) | Safe, no conflicts |
-| `CanvasWidget` | Yes | Medium (per-frame) | Safe if `ignorepointer` set |
-| `MapWidget` | Yes | Low-Medium | Multiple mods can add markers |
-| `ItemPreviewWidget` | Yes | Medium (3D render) | Safe, widget-scoped |
-| `PlayerPreviewWidget` | Yes | Medium (3D render) | Safe, creates dummy player |
-| `VideoWidget` | Yes | High (video decode) | One video at a time |
-| `RenderTargetWidget` | Yes | High (3D render) | Camera conflicts possible |
-| `RTTextureWidget` | Yes | Low (texture target) | Safe |
+| `RichTextWidget` | Ano | Nízké (parsování tagů) | Bezpečný, bez konfliktů |
+| `CanvasWidget` | Ano | Střední (každý snímek) | Bezpečný pokud je nastaveno `ignorepointer` |
+| `MapWidget` | Ano | Nízké-střední | Více modů může přidávat značky |
+| `ItemPreviewWidget` | Ano | Střední (3D vykreslení) | Bezpečný, omezeno na widget |
+| `PlayerPreviewWidget` | Ano | Střední (3D vykreslení) | Bezpečný, vytváří dummy hráče |
+| `VideoWidget` | Ano | Vysoké (dekódování videa) | Jedno video najednou |
+| `RenderTargetWidget` | Ano | Vysoké (3D vykreslení) | Možné konflikty kamer |
+| `RTTextureWidget` | Ano | Nízké (texturový cíl) | Bezpečný |
 
-All these widgets are client-side only. They have no server-side representation and cannot be created or manipulated from server scripts.
+Všechny tyto widgety jsou pouze na straně klienta. Nemají žádnou serverovou reprezentaci a nemohou být vytvořeny ani manipulovány ze serverových skriptů.
 
 ---
 
-## Shrnuti
+## Shrnutí
 
-| Widget | Primary Use | Key Metodas |
+| Widget | Primární použití | Klíčové metody |
 |--------|-----------|-------------|
-| `RichTextWidget` | Formatted text with inline images | `SetText()`, `GetContentHeight()`, `SetContentOffset()` |
-| `HtmlWidget` | Loading formatted text files | `LoadFile()` |
-| `CanvasWidget` | 2D drawing overlay | `DrawLine()`, `Clear()` |
-| `MapWidget` | Terrain map with markers | `AddUserMark()`, `ClearUserMarks()`, `ScreenToMap()`, `MapToScreen()` |
-| `ItemPreviewWidget` | 3D item display | `SetItem()`, `SetView()`, `SetModelOrientation()` |
-| `PlayerPreviewWidget` | 3D player character display | `SetPlayer()`, `Refresh()`, `UpdateItemInHands()` |
-| `VideoWidget` | Video playback | `Load()`, `Play()`, `Pause()`, `SetCallback()` |
-| `RenderTargetWidget` | Real-time 3D camera view | `SetRefresh()`, `SetResolutionScale()` + `SetWidgetWorld()` |
-| `RTTextureWidget` | Render-to-texture target | Serves as texture source for `ImageWidget.SetImageTexture()` |
+| `RichTextWidget` | Formátovaný text s inline obrázky | `SetText()`, `GetContentHeight()`, `SetContentOffset()` |
+| `HtmlWidget` | Načítání formátovaných textových souborů | `LoadFile()` |
+| `CanvasWidget` | 2D překryvné kreslení | `DrawLine()`, `Clear()` |
+| `MapWidget` | Mapa terénu se značkami | `AddUserMark()`, `ClearUserMarks()`, `ScreenToMap()`, `MapToScreen()` |
+| `ItemPreviewWidget` | 3D zobrazení předmětu | `SetItem()`, `SetView()`, `SetModelOrientation()` |
+| `PlayerPreviewWidget` | 3D zobrazení hráčské postavy | `SetPlayer()`, `Refresh()`, `UpdateItemInHands()` |
+| `VideoWidget` | Přehrávání videa | `Load()`, `Play()`, `Pause()`, `SetCallback()` |
+| `RenderTargetWidget` | Pohled 3D kamery v reálném čase | `SetRefresh()`, `SetResolutionScale()` + `SetWidgetWorld()` |
+| `RTTextureWidget` | Cíl vykreslování do textury | Slouží jako zdroj textury pro `ImageWidget.SetImageTexture()` |
 
 ---
 
-*This chapter completes the GUI system section. All API signatures and patterns are confirmed from vanilla DayZ scripts and real mod source code.*
+*Tato kapitola uzavírá sekci GUI systému. Všechny signatury API a vzory jsou potvrzeny z vanilla DayZ skriptů a zdrojového kódu skutečných modů.*

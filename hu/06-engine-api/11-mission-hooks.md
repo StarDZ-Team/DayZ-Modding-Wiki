@@ -1,196 +1,196 @@
-# Chapter 6.11: Mission Hooks
+# 6.11. fejezet: Mission Hookok
 
-[Home](../../README.md) | [<< Previous: Central Economy](10-central-economy.md) | **Mission Hooks** | [Next: Action System >>](12-action-system.md)
-
----
-
-## Bevezetes
-
-Every DayZ mod needs an entry point --- a place where it initializes managers, registers RPC handlers, hooks into player connections, and cleans up on shutdown. That entry point is the **Mission** class. The engine creates exactly one Mission instance when a scenario loads: `MissionServer` on a dedicated server, `MissionGameplay` on a client, or both on a listen server. These classes provide lifecycle hooks that fire in a guaranteed order, giving mods a reliable place to inject behavior.
-
-This chapter covers the full Mission class hierarchy, every hookable method, the correct `modded class` pattern for extending them, and real-world examples from vanilla DayZ, COT, and Expansion.
+[Főoldal](../../README.md) | [<< Előző: Központi gazdaság](10-central-economy.md) | **Mission Hookok** | [Következő: Akció rendszer >>](12-action-system.md)
 
 ---
 
-## Osztalyhierarchia
+## Bevezetés
+
+Minden DayZ modnak szüksége van egy belépési pontra --- egy helyre, ahol inicializálja a menedzsereket, regisztrálja az RPC kezelőket, becsatlakozik a játékos-csatlakozási eseményekbe, és leállításkor mindent eltakarít. Ez a belépési pont a **Mission** osztály. A motor pontosan egy Mission példányt hoz létre, amikor egy szcenárió betöltődik: `MissionServer`-t dedikált szerveren, `MissionGameplay`-t kliens oldalon, vagy mindkettőt listen szerveren. Ezek az osztályok garantált sorrendben aktiválódó életciklus-hookokat biztosítanak, így a modoknak megbízható helyet adnak a viselkedés beillesztéséhez.
+
+Ez a fejezet a teljes Mission osztályhierarchiát, minden hookelhető metódust, a helyes `modded class` kiterjesztési mintát, valamint valós példákat mutat be a vanilla DayZ-ből, a COT-ból és az Expansionből.
+
+---
+
+## Osztályhierarchia
 
 ```
-Mission                      // 3_Game/gameplay.c (base, defines all hook signatures)
-└── MissionBaseWorld         // 4_World/classes/missionbaseworld.c (minimal bridge)
-    └── MissionBase          // 5_Mission/mission/missionbase.c (shared setup: HUD, menus, plugins)
-        ├── MissionServer    // 5_Mission/mission/missionserver.c (server-side)
-        └── MissionGameplay  // 5_Mission/mission/missiongameplay.c (client-side)
+Mission                      // 3_Game/gameplay.c (alap, definiálja az összes hook szignatúrát)
+└── MissionBaseWorld         // 4_World/classes/missionbaseworld.c (minimális híd)
+    └── MissionBase          // 5_Mission/mission/missionbase.c (közös beállítás: HUD, menük, pluginek)
+        ├── MissionServer    // 5_Mission/mission/missionserver.c (szerver oldali)
+        └── MissionGameplay  // 5_Mission/mission/missiongameplay.c (kliens oldali)
 ```
 
-- **Mission** defines all hook signatures as empty methods: `OnInit()`, `OnUpdate()`, `OnEvent()`, `OnMissionStart()`, `OnMissionFinish()`, `OnKeyPress()`, `OnKeyRelease()`, etc.
-- **MissionBase** initializes the plugin manager, widget event handler, world data, dynamic music, sound sets, and input device tracking. It is the common parent for both server and client.
-- **MissionServer** handles player connections, disconnections, respawns, corpse management, tick scheduling, and artillery.
-- **MissionGameplay** handles HUD creation, chat, action menus, voice-over-network UI, inventory, input exclusion, and client-side player scheduling.
+- A **Mission** definiálja az összes hook szignatúrát üres metódusokként: `OnInit()`, `OnUpdate()`, `OnEvent()`, `OnMissionStart()`, `OnMissionFinish()`, `OnKeyPress()`, `OnKeyRelease()`, stb.
+- A **MissionBase** inicializálja a plugin menedzsert, a widget eseménykezelőt, a világ adatokat, a dinamikus zenét, a hang készleteket és a beviteli eszköz követést. Ez a közös szülője mind a szerver, mind a kliens oldalnak.
+- A **MissionServer** kezeli a játékos csatlakozásokat, lekapcsolódásokat, újraszületéseket, holttestek kezelését, tick ütemezést és a tüzérséget.
+- A **MissionGameplay** kezeli a HUD létrehozást, a csevegést, az akció menüket, a voice-over-network felületet, a felszerelés kezelőt, a bemenet kizárást és a kliens oldali játékos ütemezést.
 
 ---
 
-## Lifecycle Attekintes
+## Életciklus áttekintés
 
-### MissionServer Lifecycle (Server-Side)
+### MissionServer életciklus (szerver oldal)
 
 ```mermaid
 flowchart TD
-    A["Engine creates MissionServer"] --> B["Constructor: MissionServer()"]
+    A["A motor létrehozza a MissionServer-t"] --> B["Konstruktor: MissionServer()"]
     B --> C["OnInit()"]
     C --> D["OnGameplayDataHandlerLoad()"]
     D --> E["OnMissionStart()"]
     E --> F["OnMissionLoaded()"]
-    F --> G["OnUpdate(timeslice) loop"]
+    F --> G["OnUpdate(timeslice) ciklus"]
     G --> G
     G --> H["OnMissionFinish()"]
-    H --> I["Destructor: ~MissionServer()"]
+    H --> I["Destruktor: ~MissionServer()"]
 
-    G -.-> J["OnEvent() — player connect/disconnect/respawn"]
+    G -.-> J["OnEvent() — játékos csatlakozás/lekapcsolódás/újraszületés"]
     J -.-> K["InvokeOnConnect()"]
     J -.-> L["OnClientReadyEvent()"]
     J -.-> M["InvokeOnDisconnect()"]
 ```
 
-### MissionGameplay Lifecycle (Client-Side)
+### MissionGameplay életciklus (kliens oldal)
 
 ```mermaid
 flowchart TD
-    A["Engine creates MissionGameplay"] --> B["Constructor: MissionGameplay()"]
-    B --> C["OnInit() — HUD, chat, action menu"]
+    A["A motor létrehozza a MissionGameplay-t"] --> B["Konstruktor: MissionGameplay()"]
+    B --> C["OnInit() — HUD, csevegés, akció menü"]
     C --> D["OnMissionStart()"]
     D --> E["OnMissionLoaded()"]
-    E --> F["OnUpdate(timeslice) loop"]
+    E --> F["OnUpdate(timeslice) ciklus"]
     F --> F
     F --> G["OnMissionFinish()"]
-    G --> H["Destructor: ~MissionGameplay()"]
+    G --> H["Destruktor: ~MissionGameplay()"]
 
     F -.-> I["OnKeyPress(key) / OnKeyRelease(key)"]
-    F -.-> J["OnEvent() — chat, VON, window resize"]
+    F -.-> J["OnEvent() — csevegés, VON, ablak átméretezés"]
 ```
 
 ---
 
-## Mission Alaposztaly Metoduss
+## Mission alaposztály metódusai
 
-**File:** `3_Game/gameplay.c`
+**Fájl:** `3_Game/gameplay.c`
 
-The `Mission` base class defines every hookable method. All are virtual with empty default implementations unless noted.
+A `Mission` alaposztály definiálja az összes hookelhető metódust. Mindegyik virtuális, üres alapértelmezett implementációval, hacsak nincs másként jelölve.
 
-### Lifecycle Hooks
+### Életciklus hookok
 
-| Metodus | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnInit` | `void OnInit()` | After constructor, before mission starts. Primary setup point. |
-| `OnMissionStart` | `void OnMissionStart()` | After OnInit. The mission world is active. |
-| `OnMissionLoaded` | `void OnMissionLoaded()` | After OnMissionStart. All vanilla systems are initialized. |
-| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | Server: after gameplay data (cfggameplay.json) is loaded. |
-| `OnUpdate` | `void OnUpdate(float timeslice)` | Every frame. `timeslice` is seconds since last frame (typically 0.016-0.033). |
-| `OnMissionFinish` | `void OnMissionFinish()` | On shutdown or disconnect. Clean up everything here. |
+| Metódus | Szignatúra | Mikor aktiválódik |
+|---------|-----------|-------------------|
+| `OnInit` | `void OnInit()` | A konstruktor után, a misszió indulása előtt. Elsődleges beállítási pont. |
+| `OnMissionStart` | `void OnMissionStart()` | Az OnInit után. A misszió világ aktív. |
+| `OnMissionLoaded` | `void OnMissionLoaded()` | Az OnMissionStart után. Minden vanilla rendszer inicializálva van. |
+| `OnGameplayDataHandlerLoad` | `void OnGameplayDataHandlerLoad()` | Szerver: a gameplay adatok (cfggameplay.json) betöltése után. |
+| `OnUpdate` | `void OnUpdate(float timeslice)` | Minden képkockánál. A `timeslice` az előző képkocka óta eltelt idő másodpercben (jellemzően 0.016-0.033). |
+| `OnMissionFinish` | `void OnMissionFinish()` | Leállításkor vagy lekapcsolódáskor. Mindent itt kell eltakarítani. |
 
-### Input Hooks (Client-Side)
+### Beviteli hookok (kliens oldal)
 
-| Metodus | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnKeyPress` | `void OnKeyPress(int key)` | Physical key pressed. `key` is a `KeyCode` constant. |
-| `OnKeyRelease` | `void OnKeyRelease(int key)` | Physical key released. |
-| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Mouse button pressed. |
-| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Mouse button released. |
+| Metódus | Szignatúra | Mikor aktiválódik |
+|---------|-----------|-------------------|
+| `OnKeyPress` | `void OnKeyPress(int key)` | Fizikai billentyű lenyomva. A `key` egy `KeyCode` konstans. |
+| `OnKeyRelease` | `void OnKeyRelease(int key)` | Fizikai billentyű elengedve. |
+| `OnMouseButtonPress` | `void OnMouseButtonPress(int button)` | Egérgomb lenyomva. |
+| `OnMouseButtonRelease` | `void OnMouseButtonRelease(int button)` | Egérgomb elengedve. |
 
-### Event Hook
+### Esemény hook
 
-| Metodus | Signature | When It Fires |
-|--------|-----------|---------------|
-| `OnEvent` | `void OnEvent(EventTipus eventTipusId, Param params)` | Engine events: chat, VON, player connect/disconnect, window resize, etc. |
+| Metódus | Szignatúra | Mikor aktiválódik |
+|---------|-----------|-------------------|
+| `OnEvent` | `void OnEvent(EventType eventTypeId, Param params)` | Motor események: csevegés, VON, játékos csatlakozás/lekapcsolódás, ablak átméretezés, stb. |
 
-### Utility Metoduss
+### Segéd metódusok
 
-| Metodus | Signature | Leiras |
-|--------|-----------|-------------|
-| `GetHud` | `Hud GetHud()` | Visszaad the HUD instance (client only). |
-| `GetWorldData` | `WorldData GetWorldData()` | Visszaad world-specific data (temperature curves, etc.). |
-| `IsPaused` | `bool IsPaused()` | Whether the game is paused (single player / listen server). |
-| `IsServer` | `bool IsServer()` | `true` for MissionServer, `false` for MissionGameplay. |
-| `IsMissionGameplay` | `bool IsMissionGameplay()` | `true` for MissionGameplay, `false` for MissionServer. |
-| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | Re-enable player input after disabling. |
-| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | Disable player input (e.g., `INPUT_EXCLUDE_ALL`). |
-| `IsControlDisabled` | `bool IsControlDisabled()` | Whether player controls are currently disabled. |
-| `GetControlDisabledMode` | `int GetControlDisabledMode()` | Visszaad the current input exclusion mode. |
-
----
-
-## MissionServer Hooks (Server-Side)
-
-**File:** `5_Mission/mission/missionserver.c`
-
-MissionServer is instantiated by the engine on dedicated servers. It handles everything related to player lifecycle on the server.
-
-### Key Vanilla Behavior
-
-- **Constructor**: Sets up `CallQueue` for player stats (30-second interval), dead players array, logout tracking maps, rain procurement handler.
-- **OnInit**: Loads `CfgGameplayHandler`, `PlayerSpawnHandler`, `CfgPlayerRestrictedAreaHandler`, `UndergroundAreaLoader`, artillery firing positions.
-- **OnMissionStart**: Creates effect area zones (contaminated zones, etc.).
-- **OnUpdate**: Runs tick scheduler, processes logout timers, updates base environment temperature, rain procurement, random artillery.
-
-### OnEvent --- Player Connection Events
-
-The server's `OnEvent` is the central dispatcher for all player lifecycle events. The engine sends events with typed `Param` objects. Vanilla handles them via a `switch` block:
-
-| Event | Param Tipus | What Happens |
-|-------|-----------|--------------|
-| `ClientPrepareEventTipusID` | `ClientPrepareEventParams` | Decides DB vs fresh character |
-| `ClientNewEventTipusID` | `ClientNewEventParams` | Creates + equips new character, calls `InvokeOnConnect` |
-| `ClientReadyEventTipusID` | `ClientReadyEventParams` | Existing character loaded, calls `OnClientReadyEvent` + `InvokeOnConnect` |
-| `ClientRespawnEventTipusID` | `ClientRespawnEventParams` | Player respawn request, kills old character if unconscious |
-| `ClientReconnectEventTipusID` | `ClientReconnectEventParams` | Player reconnected to alive character |
-| `ClientDisconnectedEventTipusID` | `ClientDisconnectedEventParams` | Player disconnecting, starts logout timer |
-| `LogoutCancelEventTipusID` | `LogoutCancelEventParams` | Player cancelled logout countdown |
-
-### Player Connection Metoduss
-
-Called from within `OnEvent` when player-related events fire:
-
-| Metodus | Signature | Vanilla Behavior |
-|--------|-----------|-----------------|
-| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Calls `player.OnConnect()`. Primary "player joined" hook. |
-| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Calls `player.OnDisconnect()`. Player fully disconnected. |
-| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | Calls `g_Game.SelectPlayer()`. Existing character loaded from DB. |
-| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | Creates + equips new character. Visszaad `PlayerBase`. |
-| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | Kills old character if unconscious/restrained. |
-| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Calls `player.OnReconnect()`. |
-| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Calls `InvokeOnDisconnect`, saves player, exits hive, handles body, removes from server. |
-
-### Character Setup
-
-| Metodus | Signature | Leiras |
-|--------|-----------|-------------|
-| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Creates player entity via `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()`. |
-| `EquipCharacter` | `void EquipCharacter(MenuAlapertelmezettCharacterData char_data)` | Iterates attachment slots, randomizes if custom respawn disabled. Calls `StartingEquipSetup()`. |
-| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **Empty in vanilla** --- your entry point for starter kits. |
+| Metódus | Szignatúra | Leírás |
+|---------|-----------|--------|
+| `GetHud` | `Hud GetHud()` | Visszaadja a HUD példányt (csak kliens). |
+| `GetWorldData` | `WorldData GetWorldData()` | Visszaadja a világ-specifikus adatokat (hőmérsékleti görbék, stb.). |
+| `IsPaused` | `bool IsPaused()` | Szünetel-e a játék (egyjátékos / listen szerver). |
+| `IsServer` | `bool IsServer()` | `true` MissionServer esetén, `false` MissionGameplay esetén. |
+| `IsMissionGameplay` | `bool IsMissionGameplay()` | `true` MissionGameplay esetén, `false` MissionServer esetén. |
+| `PlayerControlEnable` | `void PlayerControlEnable(bool bForceSuppress)` | Játékos bemenet újra engedélyezése letiltás után. |
+| `PlayerControlDisable` | `void PlayerControlDisable(int mode)` | Játékos bemenet letiltása (pl. `INPUT_EXCLUDE_ALL`). |
+| `IsControlDisabled` | `bool IsControlDisabled()` | Le van-e tiltva jelenleg a játékos vezérlés. |
+| `GetControlDisabledMode` | `int GetControlDisabledMode()` | Visszaadja az aktuális bemenet kizárási módot. |
 
 ---
 
-## MissionGameplay Hooks (Client-Side)
+## MissionServer hookok (szerver oldal)
 
-**File:** `5_Mission/mission/missiongameplay.c`
+**Fájl:** `5_Mission/mission/missionserver.c`
 
-MissionGameplay is instantiated on the client when connecting to a server or starting single player. It manages all client-side UI and input.
+A `MissionServer`-t a motor hozza létre a dedikált szervereken. Mindent kezel, ami a szerver oldali játékos életciklussal kapcsolatos.
 
-### Key Vanilla Behavior
+### Alapvető vanilla viselkedés
 
-- **Constructor**: Destroys existing menus, creates Chat, AkcioMenu, IngameHud, VoN state, fade timers, SyncEvents registration.
-- **OnInit**: Guards against double init with `m_Initialized`. Creates HUD root widget from `"gui/layouts/day_z_hud.layout"`, chat widget, action menu, microphone icon, VoN voice level widgets, chat channel area. Calls `PPEffects.Init()` and `MapJeloloTipuss.Init()`.
-- **OnMissionStart**: Hides cursor, sets mission state to `MISSION_STATE_GAME`, loads effect areas in singleplayer.
-- **OnUpdate**: Tick scheduler for local player, hologram updates, radial quickbar (console), gesture menu, input handling for inventory/chat/VoN, debug monitor, pause behavior.
-- **OnMissionFinish**: Hides dialog, destroys all menus and chat, deletes HUD root widget, stops all PPE effects, re-enables all inputs, sets mission state to `MISSION_STATE_FINNISH`.
+- **Konstruktor**: Beállítja a `CallQueue`-t a játékos statisztikákhoz (30 másodperces intervallum), a halott játékosok tömbjét, a kijelentkezés-követő map-eket és az eső kezelőt.
+- **OnInit**: Betölti a `CfgGameplayHandler`-t, `PlayerSpawnHandler`-t, `CfgPlayerRestrictedAreaHandler`-t, `UndergroundAreaLoader`-t és a tüzérségi tüzelési pozíciókat.
+- **OnMissionStart**: Létrehozza a hatás terület zónákat (szennyezett zónák, stb.).
+- **OnUpdate**: Futtatja a tick ütemezőt, feldolgozza a kijelentkezési időzítőket, frissíti az alap környezeti hőmérsékletet, az eső kezelőt és a véletlenszerű tüzérséget.
 
-### Input Hooks
+### OnEvent --- Játékos csatlakozási események
+
+A szerver `OnEvent` metódusa a központi diszpécser minden játékos életciklus eseményhez. A motor típusos `Param` objektumokkal küld eseményeket. A vanilla egy `switch` blokkal kezeli őket:
+
+| Esemény | Param típus | Mi történik |
+|---------|------------|-------------|
+| `ClientPrepareEventTypeID` | `ClientPrepareEventParams` | Eldönti: adatbázisból vagy friss karakter |
+| `ClientNewEventTypeID` | `ClientNewEventParams` | Létrehozza és felszereli az új karaktert, meghívja az `InvokeOnConnect`-et |
+| `ClientReadyEventTypeID` | `ClientReadyEventParams` | Meglévő karakter betöltve, meghívja az `OnClientReadyEvent`-et + `InvokeOnConnect`-et |
+| `ClientRespawnEventTypeID` | `ClientRespawnEventParams` | Játékos újraszületési kérelem, megöli a régi karaktert, ha eszméletlen |
+| `ClientReconnectEventTypeID` | `ClientReconnectEventParams` | Játékos újracsatlakozott az élő karakteréhez |
+| `ClientDisconnectedEventTypeID` | `ClientDisconnectedEventParams` | Játékos lekapcsolódik, elindítja a kijelentkezési időzítőt |
+| `LogoutCancelEventTypeID` | `LogoutCancelEventParams` | Játékos megszakította a kijelentkezési visszaszámlálást |
+
+### Játékos csatlakozási metódusok
+
+Az `OnEvent`-ből hívódnak meg, amikor játékos-kapcsolódási események aktiválódnak:
+
+| Metódus | Szignatúra | Vanilla viselkedés |
+|---------|-----------|-------------------|
+| `InvokeOnConnect` | `void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)` | Meghívja a `player.OnConnect()` metódust. Az elsődleges "játékos csatlakozott" hook. |
+| `InvokeOnDisconnect` | `void InvokeOnDisconnect(PlayerBase player)` | Meghívja a `player.OnDisconnect()` metódust. A játékos teljesen lekapcsolódott. |
+| `OnClientReadyEvent` | `void OnClientReadyEvent(PlayerIdentity identity, PlayerBase player)` | Meghívja a `g_Game.SelectPlayer()` metódust. Meglévő karakter betöltve az adatbázisból. |
+| `OnClientNewEvent` | `PlayerBase OnClientNewEvent(PlayerIdentity identity, vector pos, ParamsReadContext ctx)` | Létrehozza és felszereli az új karaktert. `PlayerBase`-t ad vissza. |
+| `OnClientRespawnEvent` | `void OnClientRespawnEvent(PlayerIdentity identity, PlayerBase player)` | Megöli a régi karaktert, ha eszméletlen/megkötözött. |
+| `OnClientReconnectEvent` | `void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)` | Meghívja a `player.OnReconnect()` metódust. |
+| `PlayerDisconnected` | `void PlayerDisconnected(PlayerBase player, PlayerIdentity identity, string uid)` | Meghívja az `InvokeOnDisconnect`-et, elmenti a játékost, kilép a hive-ból, kezeli a testet, eltávolítja a szerverről. |
+
+### Karakter beállítás
+
+| Metódus | Szignatúra | Leírás |
+|---------|-----------|--------|
+| `CreateCharacter` | `PlayerBase CreateCharacter(PlayerIdentity identity, vector pos, ParamsReadContext ctx, string characterName)` | Létrehozza a játékos entitást a `g_Game.CreatePlayer()` + `g_Game.SelectPlayer()` segítségével. |
+| `EquipCharacter` | `void EquipCharacter(MenuDefaultCharacterData char_data)` | Végigmegy az attachment slotokon, véletlenszerűsít, ha az egyéni újraszületés le van tiltva. Meghívja a `StartingEquipSetup()` metódust. |
+| `StartingEquipSetup` | `void StartingEquipSetup(PlayerBase player, bool clothesChosen)` | **Üres a vanillában** --- ez a te belépési pontod a kezdő készletekhez. |
+
+---
+
+## MissionGameplay hookok (kliens oldal)
+
+**Fájl:** `5_Mission/mission/missiongameplay.c`
+
+A `MissionGameplay` a kliensen jön létre, amikor egy szerverhez csatlakozik vagy egyjátékos módot indít. Minden kliens oldali felületet és bemenetet kezel.
+
+### Alapvető vanilla viselkedés
+
+- **Konstruktor**: Megsemmisíti a meglévő menüket, létrehozza a Chat-et, ActionMenu-t, IngameHud-ot, VoN állapotot, halványítási időzítőket és a SyncEvents regisztrációt.
+- **OnInit**: Dupla inicializálás elleni védelem az `m_Initialized` változóval. Létrehozza a HUD gyökér widgetet a `"gui/layouts/day_z_hud.layout"` fájlból, a csevegés widgetet, az akció menüt, a mikrofon ikont, a VoN hangerő szint widgeteket és a csevegés csatorna területet. Meghívja a `PPEffects.Init()` és `MapMarkerTypes.Init()` metódusokat.
+- **OnMissionStart**: Elrejti a kurzort, beállítja a misszió állapotát `MISSION_STATE_GAME`-re, betölti a hatás területeket egyjátékos módban.
+- **OnUpdate**: Tick ütemező a helyi játékoshoz, hologram frissítések, radiális gyorselérés (konzol), gesztus menü, bemenetkezelés a felszereléshez/csevegéshez/VoN-hoz, debug monitor, szüneteltetés viselkedése.
+- **OnMissionFinish**: Elrejti a párbeszédablakot, megsemmisíti az összes menüt és csevegést, törli a HUD gyökér widgetet, leállítja az összes PPE effektet, újra engedélyezi az összes bemenetet, beállítja a misszió állapotát `MISSION_STATE_FINNISH`-re.
+
+### Beviteli hookok
 
 ```c
 override void OnKeyPress(int key)
 {
     super.OnKeyPress(key);
-    // Vanilla forwards to Hud.KeyPress(key)
-    // key values are KeyCode constants (e.g., KeyCode.KC_F1 = 59)
+    // A vanilla továbbítja a Hud.KeyPress(key) metódusnak
+    // a key értékek KeyCode konstansok (pl. KeyCode.KC_F1 = 59)
 }
 
 override void OnKeyRelease(int key)
@@ -199,21 +199,21 @@ override void OnKeyRelease(int key)
 }
 ```
 
-### Event Hook
+### Esemény hook
 
-Vanilla `MissionGameplay.OnEvent()` handles `ChatUzenetEventTipusID` (adds to chat widget), `ChatChannelEventTipusID` (updates channel indicator), `WindowsResizeEventTipusID` (rebuilds menus/HUD), `SetFreeCameraEventTipusID` (debug camera), and `VONStateEventTipusID` (voice state). Override it with the same `switch` pattern and always call `super.OnEvent()`.
+A vanilla `MissionGameplay.OnEvent()` kezeli a `ChatMessageEventTypeID`-t (hozzáadja a csevegés widgethez), `ChatChannelEventTypeID`-t (frissíti a csatorna jelzőt), `WindowsResizeEventTypeID`-t (újraépíti a menüket/HUD-ot), `SetFreeCameraEventTypeID`-t (debug kamera) és `VONStateEventTypeID`-t (hang állapot). Felülírásnál ugyanazt a `switch` mintát használd, és mindig hívd meg a `super.OnEvent()` metódust.
 
-### Input Control
+### Beviteli vezérlés
 
-`PlayerControlDisable(int mode)` activates an input exclude group (e.g., `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). `PlayerControlEnable(bool bForceSuppress)` removes it. These map to exclude groups defined in `specific.xml`. Override them if your mod needs custom input exclusion behavior (as Expansion does for its menus).
+A `PlayerControlDisable(int mode)` aktivál egy bemenet kizárási csoportot (pl. `INPUT_EXCLUDE_ALL`, `INPUT_EXCLUDE_INVENTORY`). A `PlayerControlEnable(bool bForceSuppress)` eltávolítja azt. Ezek a `specific.xml`-ben definiált kizárási csoportokra térképeződnek. Írd felül, ha a modod egyéni bemenet kizárási viselkedést igényel (ahogy az Expansion teszi a menüinél).
 
 ---
 
-## Server-Side Event Flow: Player Joins
+## Szerver oldali eseményfolyam: Játékos csatlakozik
 
-Understanding the exact sequence of events when a player connects is critical for knowing where to hook your code.
+A pontos eseménysorrend ismerete, amikor egy játékos csatlakozik, kritikus ahhoz, hogy tudd, hova kell a kódodat hookol ni.
 
-### New Character (First Join or After Death)
+### Új karakter (első csatlakozás vagy halál után)
 
 ```mermaid
 sequenceDiagram
@@ -223,7 +223,7 @@ sequenceDiagram
 
     Engine->>MS: OnEvent(ClientPrepareEventTypeID)
     MS->>MS: OnClientPrepareEvent(identity, useDB, pos, yaw, timeout)
-    Note over MS: Decides DB vs fresh character
+    Note over MS: Eldönti: adatbázisból vagy friss karakter
 
     Engine->>MS: OnEvent(ClientNewEventTypeID)
     MS->>MS: OnClientNewEvent(identity, pos, ctx)
@@ -236,7 +236,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Existing Character (Reconnect After Disconnect)
+### Meglévő karakter (újracsatlakozás lekapcsolódás után)
 
 ```mermaid
 sequenceDiagram
@@ -256,7 +256,7 @@ sequenceDiagram
     MS->>MS: SyncEvents.SendPlayerList()
 ```
 
-### Player Disconnect
+### Játékos lekapcsolódás
 
 ```mermaid
 sequenceDiagram
@@ -266,38 +266,38 @@ sequenceDiagram
 
     Engine->>MS: OnEvent(ClientDisconnectedEventTypeID)
     MS->>MS: OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)
-    Note over MS: Starts logout timer if alive
+    Note over MS: Elindítja a kijelentkezési időzítőt, ha él
 
-    alt Logout timer expires
+    alt A kijelentkezési időzítő lejár
         MS->>MS: PlayerDisconnected(player, identity, uid)
         MS->>MS: InvokeOnDisconnect(player)
         MS->>Player: player.OnDisconnect()
         MS->>Player: player.Save()
         MS->>MS: HandleBody(player)
         MS->>MS: g_Game.DisconnectPlayer(identity, uid)
-    else Player cancels logout
+    else A játékos megszakítja a kijelentkezést
         Engine->>MS: OnEvent(LogoutCancelEventTypeID)
-        Note over MS: Removes from logout queue
+        Note over MS: Eltávolítja a kijelentkezési sorból
     end
 ```
 
 ---
 
-## How to Hook: The modded class Minta
+## Hookolás módja: A modded class minta
 
-The correct way to extend Mission classes is the `modded class` pattern. This uses Enforce Script's class inheritance mechanism where `modded class` extends the existing class without replacing it, allowing multiple mods to coexist.
+A Mission osztályok kiterjesztésének helyes módja a `modded class` minta. Ez az Enforce Script osztályöröklődési mechanizmusát használja, ahol a `modded class` kiterjeszti a meglévő osztályt anélkül, hogy lecserélné, így több mod is együtt tud élni.
 
-### Basic Server Hook
+### Alapvető szerver hook
 
 ```c
-// Your mod: Scripts/5_Mission/YourMod/MissionServer.c
+// A te modod: Scripts/5_Mission/YourMod/MissionServer.c
 modded class MissionServer
 {
     ref MyServerManager m_MyManager;
 
     override void OnInit()
     {
-        super.OnInit();  // ALWAYS call super first
+        super.OnInit();  // MINDIG hívd meg először a super-t
 
         m_MyManager = new MyServerManager();
         m_MyManager.Init();
@@ -312,24 +312,24 @@ modded class MissionServer
             m_MyManager = null;
         }
 
-        super.OnMissionFinish();  // Call super (before or after your cleanup)
+        super.OnMissionFinish();  // Hívd meg a super-t (a takarítás előtt vagy után)
     }
 }
 ```
 
-### Basic Client Hook
+### Alapvető kliens hook
 
 ```c
-// Your mod: Scripts/5_Mission/YourMod/MissionGameplay.c
+// A te modod: Scripts/5_Mission/YourMod/MissionGameplay.c
 modded class MissionGameplay
 {
     ref MyHudWidget m_MyHud;
 
     override void OnInit()
     {
-        super.OnInit();  // ALWAYS call super first
+        super.OnInit();  // MINDIG hívd meg először a super-t
 
-        // Create custom HUD elements
+        // Egyéni HUD elemek létrehozása
         m_MyHud = new MyHudWidget();
         m_MyHud.Init();
     }
@@ -338,7 +338,7 @@ modded class MissionGameplay
     {
         super.OnUpdate(timeslice);
 
-        // Update custom HUD every frame
+        // Egyéni HUD frissítése minden képkockánál
         if (m_MyHud)
         {
             m_MyHud.Update(timeslice);
@@ -358,7 +358,7 @@ modded class MissionGameplay
 }
 ```
 
-### Hooking Player Connection
+### Játékos csatlakozás hookolása
 
 ```c
 modded class MissionServer
@@ -367,21 +367,21 @@ modded class MissionServer
     {
         super.InvokeOnConnect(player, identity);
 
-        // Your code runs AFTER vanilla and all earlier mods
+        // A kódod a vanilla és az összes korábbi mod UTÁN fut le
         if (player && identity)
         {
             string uid = identity.GetId();
             string name = identity.GetName();
             Print("[MyMod] Player connected: " + name + " (" + uid + ")");
 
-            // Load player data, send settings, etc.
+            // Játékos adat betöltése, beállítások küldése, stb.
             MyPlayerData.Load(uid);
         }
     }
 
     override void InvokeOnDisconnect(PlayerBase player)
     {
-        // Save data BEFORE super (player may be deleted after)
+        // Mentsd az adatokat a super ELŐTT (a játékos utána törlődhet)
         if (player && player.GetIdentity())
         {
             string uid = player.GetIdentity().GetId();
@@ -393,14 +393,14 @@ modded class MissionServer
 }
 ```
 
-### Hooking Chat Uzenets (Server-Side OnEvent)
+### Csevegés üzenetek hookolása (szerver oldali OnEvent)
 
 ```c
 modded class MissionServer
 {
     override void OnEvent(EventType eventTypeId, Param params)
     {
-        // Intercept BEFORE super to potentially block events
+        // Elfogás a super ELŐTT az események esetleges blokkolásához
         if (eventTypeId == ClientNewEventTypeID)
         {
             ClientNewEventParams newParams;
@@ -409,7 +409,7 @@ modded class MissionServer
 
             if (IsPlayerBanned(identity))
             {
-                // Block the connection by not calling super
+                // A csatlakozás blokkolása a super meghívásának kihagyásával
                 return;
             }
         }
@@ -419,7 +419,7 @@ modded class MissionServer
 }
 ```
 
-### Hooking Keyboard Input (Client-Side)
+### Billentyűzet bemenet hookolása (kliens oldal)
 
 ```c
 modded class MissionGameplay
@@ -428,7 +428,7 @@ modded class MissionGameplay
     {
         super.OnKeyPress(key);
 
-        // Open custom menu on F6
+        // Egyéni menü megnyitása F6-ra
         if (key == KeyCode.KC_F6)
         {
             if (!GetGame().GetUIManager().GetMenu())
@@ -440,9 +440,9 @@ modded class MissionGameplay
 }
 ```
 
-### Where to Register RPC Handlers
+### Hol regisztráld az RPC kezelőket
 
-RPC handlers should be registered in `OnInit`, not in the constructor. By `OnInit` time, all script modules are loaded and the networking layer is ready.
+Az RPC kezelőket az `OnInit`-ben kell regisztrálni, nem a konstruktorban. Az `OnInit` idejére már minden script modul betöltődött és a hálózati réteg kész.
 
 ```c
 modded class MissionServer
@@ -451,7 +451,7 @@ modded class MissionServer
     {
         super.OnInit();
 
-        // Register RPC handlers here
+        // RPC kezelők regisztrálása itt
         GetDayZGame().Event_OnRPC.Insert(OnMyRPC);
     }
 
@@ -464,109 +464,109 @@ modded class MissionServer
     void OnMyRPC(PlayerIdentity sender, Object target, int rpc_type,
                  ParamsReadContext ctx)
     {
-        // Handle your RPCs
+        // Az RPC-id kezelése
     }
 }
 ```
 
 ---
 
-## Common Hooks by Cel
+## Gyakori hookok cél szerint
 
-| I want to... | Hook this method | On which class |
-|--------------|------------------|----------------|
-| Initialize my mod on server | `OnInit()` | `MissionServer` |
-| Initialize my mod on client | `OnInit()` | `MissionGameplay` |
-| Run code every frame (server) | `OnUpdate(float timeslice)` | `MissionServer` |
-| Run code every frame (client) | `OnUpdate(float timeslice)` | `MissionGameplay` |
-| React to player join | `InvokeOnConnect(player, identity)` | `MissionServer` |
-| React to player leave | `InvokeOnDisconnect(player)` | `MissionServer` |
-| Send initial data to new client | `OnClientReadyEvent(identity, player)` | `MissionServer` |
-| React to new character spawn | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
-| Give starter equipment | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
-| React to player respawn | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
-| React to player reconnect | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
-| Handle disconnect/logout logic | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
-| Intercept server events (connect, chat) | `OnEvent(eventTipusId, params)` | `MissionServer` |
-| Intercept client events (chat, VON) | `OnEvent(eventTipusId, params)` | `MissionGameplay` |
-| Handle keyboard input | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
-| Create HUD elements | `OnInit()` | `MissionGameplay` |
-| Clean up on server shutdown | `OnMissionFinish()` | `MissionServer` |
-| Clean up on client disconnect | `OnMissionFinish()` | `MissionGameplay` |
-| Run code once after all systems loaded | `OnMissionLoaded()` | Either |
-| Disable/enable player input | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
-
----
-
-## Server vs Client: Which Hooks Fire Where
-
-| Hook | Server | Client | Megjegyzesek |
-|------|--------|--------|-------|
-| Constructor | Yes | Yes | Different class on each side |
-| `OnInit()` | Yes | Yes | |
-| `OnMissionStart()` | Yes | Yes | |
-| `OnMissionLoaded()` | Yes | Yes | |
-| `OnGameplayDataHandlerLoad()` | Yes | No | cfggameplay.json loaded |
-| `OnUpdate(timeslice)` | Yes | Yes | Both run their own frame loop |
-| `OnMissionFinish()` | Yes | Yes | |
-| `OnEvent()` | Yes | Yes | Different event types on each side |
-| `InvokeOnConnect()` | Yes | No | Server only |
-| `InvokeOnDisconnect()` | Yes | No | Server only |
-| `OnClientReadyEvent()` | Yes | No | Server only |
-| `OnClientNewEvent()` | Yes | No | Server only |
-| `OnClientRespawnEvent()` | Yes | No | Server only |
-| `OnClientReconnectEvent()` | Yes | No | Server only |
-| `OnClientDisconnectedEvent()` | Yes | No | Server only |
-| `PlayerDisconnected()` | Yes | No | Server only |
-| `StartingEquipSetup()` | Yes | No | Server only |
-| `EquipCharacter()` | Yes | No | Server only |
-| `OnKeyPress()` | No | Yes | Client only |
-| `OnKeyRelease()` | No | Yes | Client only |
-| `OnMouseButtonPress()` | No | Yes | Client only |
-| `OnMouseButtonRelease()` | No | Yes | Client only |
-| `PlayerControlDisable()` | No | Yes | Client only |
-| `PlayerControlEnable()` | No | Yes | Client only |
+| Ezt szeretném... | Ezt a metódust hookold | Melyik osztályon |
+|-----------------|----------------------|-----------------|
+| Mod inicializálása szerveren | `OnInit()` | `MissionServer` |
+| Mod inicializálása kliensen | `OnInit()` | `MissionGameplay` |
+| Kód futtatása minden képkockánál (szerver) | `OnUpdate(float timeslice)` | `MissionServer` |
+| Kód futtatása minden képkockánál (kliens) | `OnUpdate(float timeslice)` | `MissionGameplay` |
+| Reagálás játékos csatlakozásra | `InvokeOnConnect(player, identity)` | `MissionServer` |
+| Reagálás játékos távozásra | `InvokeOnDisconnect(player)` | `MissionServer` |
+| Kezdeti adatok küldése új kliensnek | `OnClientReadyEvent(identity, player)` | `MissionServer` |
+| Reagálás új karakter születésére | `OnClientNewEvent(identity, pos, ctx)` | `MissionServer` |
+| Kezdő felszerelés adása | `StartingEquipSetup(player, clothesChosen)` | `MissionServer` |
+| Reagálás játékos újraszületésre | `OnClientRespawnEvent(identity, player)` | `MissionServer` |
+| Reagálás játékos újracsatlakozásra | `OnClientReconnectEvent(identity, player)` | `MissionServer` |
+| Lekapcsolódás/kijelentkezés logika kezelése | `OnClientDisconnectedEvent(identity, player, logoutTime, authFailed)` | `MissionServer` |
+| Szerver események elfogása (csatlakozás, csevegés) | `OnEvent(eventTypeId, params)` | `MissionServer` |
+| Kliens események elfogása (csevegés, VON) | `OnEvent(eventTypeId, params)` | `MissionGameplay` |
+| Billentyűzet bemenet kezelése | `OnKeyPress(key)` / `OnKeyRelease(key)` | `MissionGameplay` |
+| HUD elemek létrehozása | `OnInit()` | `MissionGameplay` |
+| Takarítás szerver leállításkor | `OnMissionFinish()` | `MissionServer` |
+| Takarítás kliens lekapcsolódáskor | `OnMissionFinish()` | `MissionGameplay` |
+| Kód futtatása egyszer, miután minden rendszer betöltődött | `OnMissionLoaded()` | Bármelyik |
+| Játékos bemenet letiltása/engedélyezése | `PlayerControlDisable(mode)` / `PlayerControlEnable(bForceSuppress)` | `MissionGameplay` |
 
 ---
 
-## EventTipus Konstansok Reference
+## Szerver vs kliens: Melyik hookok aktiválódnak hol
 
-All event constants are defined in `3_Game/gameplay.c` and dispatched through `OnEvent()`.
-
-| Konstans | Side | Leiras |
-|----------|------|-------------|
-| `ClientPrepareEventTipusID` | Server | Player identity received, decide DB vs fresh |
-| `ClientNewEventTipusID` | Server | New character being created |
-| `ClientReadyEventTipusID` | Server | Existing character loaded from DB |
-| `ClientRespawnEventTipusID` | Server | Player requested respawn |
-| `ClientReconnectEventTipusID` | Server | Player reconnected to alive character |
-| `ClientDisconnectedEventTipusID` | Server | Player disconnecting |
-| `LogoutCancelEventTipusID` | Server | Player cancelled logout countdown |
-| `ChatUzenetEventTipusID` | Client | Chat message received (`ChatUzenetEventParams`) |
-| `ChatChannelEventTipusID` | Client | Chat channel changed (`ChatChannelEventParams`) |
-| `VONStateEventTipusID` | Client | Voice-over-network state changed |
-| `VONStartSpeakingEventTipusID` | Client | Player started speaking |
-| `VONStopSpeakingEventTipusID` | Client | Player stopped speaking |
-| `MPSessionStartEventTipusID` | Both | Multiplayer session started |
-| `MPSessionEndEventTipusID` | Both | Multiplayer session ended |
-| `MPConnectionLostEventTipusID` | Client | Connection to server lost |
-| `PlayerDeathEventTipusID` | Both | Player died |
-| `SetFreeCameraEventTipusID` | Client | Free camera toggled (debug) |
+| Hook | Szerver | Kliens | Megjegyzések |
+|------|---------|--------|-------------|
+| Konstruktor | Igen | Igen | Különböző osztály mindkét oldalon |
+| `OnInit()` | Igen | Igen | |
+| `OnMissionStart()` | Igen | Igen | |
+| `OnMissionLoaded()` | Igen | Igen | |
+| `OnGameplayDataHandlerLoad()` | Igen | Nem | cfggameplay.json betöltve |
+| `OnUpdate(timeslice)` | Igen | Igen | Mindkettő a saját képkocka ciklusát futtatja |
+| `OnMissionFinish()` | Igen | Igen | |
+| `OnEvent()` | Igen | Igen | Különböző eseménytípusok mindkét oldalon |
+| `InvokeOnConnect()` | Igen | Nem | Csak szerver |
+| `InvokeOnDisconnect()` | Igen | Nem | Csak szerver |
+| `OnClientReadyEvent()` | Igen | Nem | Csak szerver |
+| `OnClientNewEvent()` | Igen | Nem | Csak szerver |
+| `OnClientRespawnEvent()` | Igen | Nem | Csak szerver |
+| `OnClientReconnectEvent()` | Igen | Nem | Csak szerver |
+| `OnClientDisconnectedEvent()` | Igen | Nem | Csak szerver |
+| `PlayerDisconnected()` | Igen | Nem | Csak szerver |
+| `StartingEquipSetup()` | Igen | Nem | Csak szerver |
+| `EquipCharacter()` | Igen | Nem | Csak szerver |
+| `OnKeyPress()` | Nem | Igen | Csak kliens |
+| `OnKeyRelease()` | Nem | Igen | Csak kliens |
+| `OnMouseButtonPress()` | Nem | Igen | Csak kliens |
+| `OnMouseButtonRelease()` | Nem | Igen | Csak kliens |
+| `PlayerControlDisable()` | Nem | Igen | Csak kliens |
+| `PlayerControlEnable()` | Nem | Igen | Csak kliens |
 
 ---
 
-## Real-World Peldas
+## EventType konstansok referencia
 
-### Pelda 1: Server Manager Initialization
+Minden esemény konstans a `3_Game/gameplay.c`-ben van definiálva, és az `OnEvent()`-en keresztül kerül diszpécselésre.
 
-A typical pattern for initializing a server-side manager that needs to run periodic tasks.
+| Konstans | Oldal | Leírás |
+|----------|-------|--------|
+| `ClientPrepareEventTypeID` | Szerver | Játékos identitás megérkezett, döntés adatbázisból vagy friss karakter |
+| `ClientNewEventTypeID` | Szerver | Új karakter létrehozása folyamatban |
+| `ClientReadyEventTypeID` | Szerver | Meglévő karakter betöltve az adatbázisból |
+| `ClientRespawnEventTypeID` | Szerver | Játékos újraszületést kért |
+| `ClientReconnectEventTypeID` | Szerver | Játékos újracsatlakozott az élő karakteréhez |
+| `ClientDisconnectedEventTypeID` | Szerver | Játékos lekapcsolódik |
+| `LogoutCancelEventTypeID` | Szerver | Játékos megszakította a kijelentkezési visszaszámlálást |
+| `ChatMessageEventTypeID` | Kliens | Csevegés üzenet érkezett (`ChatMessageEventParams`) |
+| `ChatChannelEventTypeID` | Kliens | Csevegés csatorna megváltozott (`ChatChannelEventParams`) |
+| `VONStateEventTypeID` | Kliens | Hang-hálózat állapot megváltozott |
+| `VONStartSpeakingEventTypeID` | Kliens | A játékos elkezdett beszélni |
+| `VONStopSpeakingEventTypeID` | Kliens | A játékos abbahagyta a beszédet |
+| `MPSessionStartEventTypeID` | Mindkettő | Többjátékos munkamenet elindult |
+| `MPSessionEndEventTypeID` | Mindkettő | Többjátékos munkamenet véget ért |
+| `MPConnectionLostEventTypeID` | Kliens | Kapcsolat megszakadt a szerverrel |
+| `PlayerDeathEventTypeID` | Mindkettő | A játékos meghalt |
+| `SetFreeCameraEventTypeID` | Kliens | Szabad kamera átkapcsolva (debug) |
+
+---
+
+## Valós példák
+
+### 1. példa: Szerver menedzser inicializálás
+
+Egy tipikus minta egy szerver oldali menedzser inicializálásához, amelynek periodikus feladatokat kell futtatnia.
 
 ```c
 modded class MissionServer
 {
     ref MyTraderManager m_TraderManager;
     float m_TraderUpdateTimer;
-    const float TRADER_UPDATE_INTERVAL = 5.0; // seconds
+    const float TRADER_UPDATE_INTERVAL = 5.0; // másodperc
 
     override void OnInit()
     {
@@ -584,7 +584,7 @@ modded class MissionServer
     {
         super.OnUpdate(timeslice);
 
-        // Frame-limit the trader update to every 5 seconds
+        // A kereskedő frissítés korlátozása 5 másodpercenként
         m_TraderUpdateTimer += timeslice;
         if (m_TraderUpdateTimer >= TRADER_UPDATE_INTERVAL)
         {
@@ -607,7 +607,7 @@ modded class MissionServer
 }
 ```
 
-### Pelda 2: Player Data Loading on Connect
+### 2. példa: Játékos adat betöltés csatlakozáskor
 
 ```c
 modded class MissionServer
@@ -629,7 +629,7 @@ modded class MissionServer
 
         player.m_MyStats = stats;
 
-        // Send initial data to client
+        // Kezdeti adatok küldése a kliensnek
         ScriptRPC rpc = new ScriptRPC();
         rpc.Write(stats.GetKills());
         rpc.Write(stats.GetDeaths());
@@ -648,9 +648,9 @@ modded class MissionServer
 }
 ```
 
-### Pelda 3: Client HUD Creation
+### 3. példa: Kliens HUD létrehozás
 
-Creating a custom HUD element that updates every frame.
+Egyéni HUD elem létrehozása, amely minden képkockánál frissül.
 
 ```c
 modded class MissionGameplay
@@ -663,7 +663,7 @@ modded class MissionGameplay
     {
         super.OnInit();
 
-        // Create HUD from layout file
+        // HUD létrehozása layout fájlból
         m_MyHudRoot = GetGame().GetWorkspace().CreateWidgets(
             "MyMod/gui/layouts/my_hud.layout"
         );
@@ -683,7 +683,7 @@ modded class MissionGameplay
     {
         super.OnUpdate(timeslice);
 
-        // Update HUD text twice per second, not every frame
+        // HUD szöveg frissítése másodpercenként kétszer, nem minden képkockánál
         m_HudUpdateTimer += timeslice;
         if (m_HudUpdateTimer >= 0.5)
         {
@@ -715,16 +715,16 @@ modded class MissionGameplay
 }
 ```
 
-### Pelda 4: Chat Command Interception (Server-Side)
+### 4. példa: Csevegés parancs elfogás (szerver oldal)
 
-Intercepting player connections to implement a ban system. This pattern is used by COT.
+Játékos csatlakozások elfogása egy kitiltási rendszer megvalósításához. Ezt a mintát a COT használja.
 
 ```c
 modded class MissionServer
 {
     override void OnEvent(EventType eventTypeId, Param params)
     {
-        // Check bans BEFORE super processes the connection
+        // Kitiltás ellenőrzése a super ELŐTT a csatlakozás feldolgozásánál
         if (eventTypeId == ClientNewEventTypeID)
         {
             ClientNewEventParams newParams;
@@ -734,7 +734,7 @@ modded class MissionServer
             if (identity && IsBanned(identity.GetId()))
             {
                 Print("[MyMod] Blocked banned player: " + identity.GetId());
-                // Do not call super --- connection is blocked
+                // Ne hívd meg a super-t --- a csatlakozás blokkolva
                 return;
             }
         }
@@ -750,9 +750,9 @@ modded class MissionServer
 }
 ```
 
-### Pelda 5: Starter Kit via StartingEquipSetup
+### 5. példa: Kezdő készlet a StartingEquipSetup-pal
 
-The cleanest way to give new players equipment without touching `OnClientNewEvent`.
+A legtisztább módja az új játékosok felszerelésének az `OnClientNewEvent` érintése nélkül.
 
 ```c
 modded class MissionServer
@@ -764,11 +764,11 @@ modded class MissionServer
         if (!player)
             return;
 
-        // Give every new character a knife and bandage
+        // Minden új karakternek kést és kötszert adunk
         EntityAI knife = player.GetInventory().CreateInInventory("KitchenKnife");
         EntityAI bandage = player.GetInventory().CreateInInventory("BandageDressing");
 
-        // Give food in their backpack (if they have one)
+        // Ételt adunk a hátizsákjába (ha van neki)
         EntityAI backpack = player.FindAttachmentBySlotName("Back");
         if (backpack)
         {
@@ -779,68 +779,68 @@ modded class MissionServer
 }
 ```
 
-### Minta: Delegate to a Central Manager
+### Minta: Delegálás központi menedzserhez
 
-Both COT and Expansion follow the same pattern: their mission hooks are thin wrappers that delegate to a singleton manager. COT creates `g_cotBase = new CommunityOnlineTools` in the constructor, then calls `g_cotBase.OnStart()` / `OnUpdate()` / `OnFinish()` from the corresponding hooks. Expansion does the same with `GetDayZExpansion().OnStart()` / `OnLoaded()` / `OnFinish()`. Your mod should follow this pattern --- keep mission hook code thin and push logic into dedicated manager classes.
+Mind a COT, mind az Expansion ugyanazt a mintát követi: a mission hookjaik vékony csomagolók, amelyek egy singleton menedzserhez delegálnak. A COT létrehozza a `g_cotBase = new CommunityOnlineTools` példányt a konstruktorban, majd a megfelelő hookokból hívja a `g_cotBase.OnStart()` / `OnUpdate()` / `OnFinish()` metódusokat. Az Expansion ugyanezt teszi a `GetDayZExpansion().OnStart()` / `OnLoaded()` / `OnFinish()` metódusokkal. A te modod is kövesse ezt a mintát --- tartsd vékonynak a mission hook kódot, és a logikát tedd dedikált menedzser osztályokba.
 
 ---
 
 ## OnInit vs OnMissionStart vs OnMissionLoaded
 
-| Hook | When | Use For |
-|------|------|---------|
-| `OnInit()` | First. Script modules loaded, world not yet active. | Creating managers, registering RPCs, loading configs. |
-| `OnMissionStart()` | Second. World is active, entities can be spawned. | Spawning entities, starting gameplay systems, creating triggers. |
-| `OnMissionLoaded()` | Third. All vanilla systems fully initialized. | Cross-mod queries, finalization that depends on everything being ready. |
+| Hook | Mikor | Mire használd |
+|------|-------|--------------|
+| `OnInit()` | Először. A script modulok betöltődtek, a világ még nem aktív. | Menedzserek létrehozása, RPC-k regisztrálása, konfigurációk betöltése. |
+| `OnMissionStart()` | Másodszor. A világ aktív, entitások spawnolhatók. | Entitások spawnolása, gameplay rendszerek indítása, triggerek létrehozása. |
+| `OnMissionLoaded()` | Harmadszor. Minden vanilla rendszer teljesen inicializálva. | Modok közötti lekérdezések, véglegesítés, ami attól függ, hogy minden kész legyen. |
 
-Always call `super` on all three. Use `OnInit` as your primary initialization point. Use `OnMissionLoaded` only when you need to guarantee other mods have already initialized.
+Mindig hívd meg a `super`-t mind a háromnál. Használd az `OnInit`-et elsődleges inicializálási pontként. Az `OnMissionLoaded`-ot csak akkor használd, ha garantálnod kell, hogy más modok már inicializálódtak.
 
 ---
 
-## Accessing the Current Mission
+## Az aktuális misszió elérése
 
 ```c
-Mission mission = GetGame().GetMission();                                    // Base class
-MissionServer serverMission = MissionServer.Cast(GetGame().GetMission());   // Server cast
-MissionGameplay clientMission = MissionGameplay.Cast(GetGame().GetMission()); // Client cast
-PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());                  // CLIENT ONLY (null on server)
+Mission mission = GetGame().GetMission();                                    // Alaposztály
+MissionServer serverMission = MissionServer.Cast(GetGame().GetMission());   // Szerver cast
+MissionGameplay clientMission = MissionGameplay.Cast(GetGame().GetMission()); // Kliens cast
+PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());                  // CSAK KLIENS (null a szerveren)
 ```
 
 ---
 
-## Gyakori hibak
+## Gyakori hibák
 
-### 1. Forgetting super.OnInit()
+### 1. A super.OnInit() elfelejtése
 
-Every `override` **must** call `super`. Forgetting it breaks vanilla and every other mod in the chain. This is the single most common modding mistake.
+Minden `override`-nak **kötelezően** meg kell hívnia a `super`-t. Ennek elfelejtése elrontja a vanillát és minden más modot a láncban. Ez az egyetlen leggyakoribb modolási hiba.
 
 ```c
-// WRONG                                    // CORRECT
+// HELYTELEN                                 // HELYES
 override void OnInit()                      override void OnInit()
 {                                           {
-    m_MyManager = new MyManager();              super.OnInit();  // Always first!
+    m_MyManager = new MyManager();              super.OnInit();  // Mindig először!
 }                                               m_MyManager = new MyManager();
                                             }
 ```
 
-### 2. Using GetGame().GetPlayer() on the Server
+### 2. A GetGame().GetPlayer() használata a szerveren
 
-`GetGame().GetPlayer()` is **always null** on a dedicated server. There is no "local" player. Use `GetGame().GetPlayers(array)` to iterate all connected players.
+A `GetGame().GetPlayer()` **mindig null** dedikált szerveren. Nincs "helyi" játékos. Használd a `GetGame().GetPlayers(array)` metódust az összes csatlakozott játékos iterálásához.
 
 ```c
-// CORRECT way to iterate players on server
+// HELYES módja a játékosok iterálásának a szerveren
 array<Man> players = new array<Man>();
 GetGame().GetPlayers(players);
 foreach (Man man : players)
 {
     PlayerBase player = PlayerBase.Cast(man);
-    if (player) { /* process */ }
+    if (player) { /* feldolgozás */ }
 }
 ```
 
-### 3. Not Cleaning Up in OnMissionFinish
+### 3. Takarítás hiánya az OnMissionFinish-ben
 
-Always clean up widgets, callbacks, and references in `OnMissionFinish()`. Without cleanup, widgets leak into the next mission load (client), and stale references persist across server restarts.
+Mindig takaríts el widgeteket, callbackeket és referenciákat az `OnMissionFinish()`-ben. Takarítás nélkül a widgetek átszivárognak a következő misszió betöltésébe (kliens), és az elavult referenciák megmaradnak a szerver újraindítások között.
 
 ```c
 override void OnMissionFinish()
@@ -850,26 +850,26 @@ override void OnMissionFinish()
 }
 ```
 
-### 4. OnUpdate Without Frame Limiting
+### 4. OnUpdate képkocka-korlátozás nélkül
 
-`OnUpdate` fires every frame (15-60+ FPS). Use a timer accumulator for any non-trivial work.
+Az `OnUpdate` minden képkockánál aktiválódik (15-60+ FPS). Használj időzítő akkumulátort minden nem triviális munkához.
 
 ```c
 m_Timer += timeslice;
-if (m_Timer >= 10.0)  // Every 10 seconds
+if (m_Timer >= 10.0)  // 10 másodpercenként
 {
     m_Timer = 0;
     DoExpensiveWork();
 }
 ```
 
-### 5. Registering RPCs in the Constructor
+### 5. RPC-k regisztrálása a konstruktorban
 
-The constructor runs before all script modules are loaded. Register callbacks in `OnInit()` (earliest safe point) and unregister in `OnMissionFinish()`.
+A konstruktor az összes script modul betöltése előtt fut. Regisztráld a callbackeket az `OnInit()`-ben (a legkorábbi biztonságos pont) és távolítsd el őket az `OnMissionFinish()`-ben.
 
-### 6. Accessing Identity on a Disconnecting Player
+### 6. Identity elérése lekapcsolódó játékosnál
 
-`player.GetIdentity()` can return `null` during disconnect. Always null-check both `player` and `identity` before accessing.
+A `player.GetIdentity()` `null`-t adhat vissza lekapcsolódás közben. Mindig ellenőrizd null-ra mind a `player`-t, mind az `identity`-t hozzáférés előtt.
 
 ```c
 override void InvokeOnDisconnect(PlayerBase player)
@@ -886,60 +886,60 @@ override void InvokeOnDisconnect(PlayerBase player)
 
 ---
 
-## Osszefoglalas
+## Összefoglalás
 
-| Fogalom | Key Point |
-|---------|-----------|
-| Mission hierarchy | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
-| Server class | `MissionServer` --- handles player connections, spawns, tick scheduling |
-| Client class | `MissionGameplay` --- handles HUD, input, chat, menus |
-| Lifecycle order | Constructor > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > `OnUpdate()` loop > `OnMissionFinish()` > Destructor |
-| Player join (server) | `OnEvent(ClientNewEventTipusID/ClientReadyEventTipusID)` > `InvokeOnConnect()` |
-| Player leave (server) | `OnEvent(ClientDisconnectedEventTipusID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
-| Hooking pattern | `modded class MissionServer/MissionGameplay` with `override` and `super` calls |
-| Input handling | `OnKeyPress(key)` / `OnKeyRelease(key)` on `MissionGameplay` (client only) |
-| Event handling | `OnEvent(EventTipus, Param)` on both sides, different event types per side |
-| super calls | **Always call super** on every override, or you break the entire mod chain |
-| Cleanup | **Always clean up** in `OnMissionFinish()` --- remove RPC handlers, destroy widgets, null references |
-| Frame limiting | Use timer accumulators in `OnUpdate()` for any non-trivial work |
-| GetPlayer() | Only works on client; always returns `null` on dedicated server |
-| RPC registration | Register in `OnInit()`, not constructor; unregister in `OnMissionFinish()` |
+| Fogalom | Lényeg |
+|---------|--------|
+| Mission hierarchia | `Mission` > `MissionBaseWorld` > `MissionBase` > `MissionServer` / `MissionGameplay` |
+| Szerver osztály | `MissionServer` --- kezeli a játékos csatlakozásokat, spawnokat, tick ütemezést |
+| Kliens osztály | `MissionGameplay` --- kezeli a HUD-ot, bemenetet, csevegést, menüket |
+| Életciklus sorrend | Konstruktor > `OnInit()` > `OnMissionStart()` > `OnMissionLoaded()` > `OnUpdate()` ciklus > `OnMissionFinish()` > Destruktor |
+| Játékos csatlakozás (szerver) | `OnEvent(ClientNewEventTypeID/ClientReadyEventTypeID)` > `InvokeOnConnect()` |
+| Játékos távozás (szerver) | `OnEvent(ClientDisconnectedEventTypeID)` > `PlayerDisconnected()` > `InvokeOnDisconnect()` |
+| Hookolási minta | `modded class MissionServer/MissionGameplay` az `override` és `super` hívásokkal |
+| Bemenetkezelés | `OnKeyPress(key)` / `OnKeyRelease(key)` a `MissionGameplay`-en (csak kliens) |
+| Eseménykezelés | `OnEvent(EventType, Param)` mindkét oldalon, különböző eseménytípusok oldalanként |
+| super hívások | **Mindig hívd meg a super-t** minden felülírásnál, különben az egész mod lánc elromlik |
+| Takarítás | **Mindig takaríts** az `OnMissionFinish()`-ben --- távolítsd el az RPC kezelőket, semmisítsd meg a widgeteket, nullázd a referenciákat |
+| Képkocka-korlátozás | Használj időzítő akkumulátorokat az `OnUpdate()`-ben minden nem triviális munkához |
+| GetPlayer() | Csak kliensen működik; mindig `null`-t ad vissza dedikált szerveren |
+| RPC regisztráció | Regisztrálj az `OnInit()`-ben, ne a konstruktorban; regisztráld ki az `OnMissionFinish()`-ben |
 
 ---
 
 ## Legjobb gyakorlatok
 
-- **Always call `super` as the first line in every Mission override.** This is the single most common DayZ modding mistake. Forgetting `super.OnInit()` silently breaks vanilla initialization and every other mod in the chain.
-- **Keep mission hook code thin --- delegate to manager classes.** Create a singleton manager (e.g., `MyModManager`) and call `manager.Init()` / `manager.Update()` / `manager.Cleanup()` from the hooks. This mirrors the pattern used by COT and Expansion.
-- **Use timer accumulators in `OnUpdate()` for any work that does not need to run every frame.** `OnUpdate` fires 15-60+ times per second. Running database queries, file I/O, or player iteration at frame rate wastes server CPU.
-- **Register RPCs and event handlers in `OnInit()`, not in the constructor.** The constructor runs before all script modules are loaded. The networking layer is not ready until `OnInit()`.
-- **Always clean up in `OnMissionFinish()`.** Destroy widgets, remove `CallLater` registrations, unregister RPC handlers, and null manager references. Failure to clean up causes stale references across mission reloads.
+- **Mindig hívd meg a `super`-t első sorként minden Mission felülírásban.** Ez az egyetlen leggyakoribb DayZ modolási hiba. A `super.OnInit()` elfelejtése csendben elrontja a vanilla inicializációt és minden más modot a láncban.
+- **Tartsd vékonynak a mission hook kódot --- delegálj menedzser osztályokhoz.** Hozz létre egy singleton menedzsert (pl. `MyModManager`) és hívd a `manager.Init()` / `manager.Update()` / `manager.Cleanup()` metódusokat a hookokból. Ez tükrözi a COT és az Expansion által használt mintát.
+- **Használj időzítő akkumulátorokat az `OnUpdate()`-ben minden munkához, aminek nem kell minden képkockánál futnia.** Az `OnUpdate` másodpercenként 15-60+ alkalommal aktiválódik. Adatbázis lekérdezések, fájl I/O vagy játékos iteráció képkocka-sebességen futtatása pazarolja a szerver CPU-t.
+- **Regisztráld az RPC-ket és eseménykezelőket az `OnInit()`-ben, ne a konstruktorban.** A konstruktor az összes script modul betöltése előtt fut. A hálózati réteg nem áll készen az `OnInit()` előtt.
+- **Mindig takaríts az `OnMissionFinish()`-ben.** Semmisítsd meg a widgeteket, távolítsd el a `CallLater` regisztrációkat, regisztráld ki az RPC kezelőket, és nullázd a menedzser referenciákat. A takarítás elmulasztása elavult referenciákat okoz a misszió újratöltések között.
 
 ---
 
-## Kompatibilitas es hatas
+## Kompatibilitás és hatás
 
-> **Mod Compatibility:** `MissionServer` and `MissionGameplay` are the two most commonly modded classes in DayZ. Every mod that has server logic or client UI hooks into them.
+> **Mod kompatibilitás:** A `MissionServer` és a `MissionGameplay` a két leggyakrabban modolt osztály a DayZ-ben. Minden mod, amelynek szerver logikája vagy kliens felülete van, ezekbe hookol.
 
-- **Load Order:** The last-loaded mod's `modded class` override runs outermost in the call chain. If a mod forgets `super`, it silently blocks all mods loaded before it. This is the #1 cause of multi-mod incompatibility.
-- **Modded Class Conflicts:** `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate`, and `OnMissionFinish` are the most contested override points. Conflicts are rare as long as every mod calls `super`.
-- **Performance Impact:** Heavy logic in `OnUpdate()` without frame limiting directly reduces server/client FPS. A single mod doing `GetGame().GetPlayers()` iteration every frame on a 60-player server adds measurable overhead.
-- **Server/Client:** `MissionServer` hooks only fire on dedicated servers. `MissionGameplay` hooks only fire on clients. On a listen server, both classes exist. `GetGame().GetPlayer()` is always null on dedicated servers.
-
----
-
-## Valos modokban megfigyelt
-
-> These patterns were confirmed by studying the source code of professional DayZ mods.
-
-| Minta | Mod | File/Location |
-|---------|-----|---------------|
-| Thin `modded class MissionServer.OnInit()` delegating to singleton manager | COT | `CommunityOnlineTools` init in MissionServer |
-| `InvokeOnConnect` override to load per-player JSON data | Expansion | Player settings sync on connect |
-| `StartingEquipSetup` override for custom starter kits | Multiple community mods | MissionServer starter kit hooks |
-| `OnEvent` interception before `super` to block banned players | COT | Ban system in MissionServer |
-| `OnMissionFinish` cleanup with widget `Unlink()` and null assignments | Expansion | HUD and menu cleanup |
+- **Betöltési sorrend:** Az utolsónak betöltött mod `modded class` felülírása fut a legtávolabb a hívási láncban. Ha egy mod elfelejti a `super`-t, az csendben blokkolja az előtte betöltött összes modot. Ez a több-modos inkompatibilitás #1 oka.
+- **Modded Class ütközések:** Az `InvokeOnConnect`, `InvokeOnDisconnect`, `OnInit`, `OnUpdate` és `OnMissionFinish` a legvitatottabb felülírási pontok. Az ütközések ritkák, amíg minden mod meghívja a `super`-t.
+- **Teljesítmény hatás:** Nehéz logika az `OnUpdate()`-ben képkocka-korlátozás nélkül közvetlenül csökkenti a szerver/kliens FPS-t. Egyetlen mod, amely `GetGame().GetPlayers()` iterációt végez minden képkockánál egy 60 játékosos szerveren, mérhető többletterhelést ad.
+- **Szerver/Kliens:** A `MissionServer` hookok csak dedikált szervereken aktiválódnak. A `MissionGameplay` hookok csak klienseken aktiválódnak. Listen szerveren mindkét osztály létezik. A `GetGame().GetPlayer()` mindig null dedikált szerveren.
 
 ---
 
-[<< Elozo: Central Economy](10-central-economy.md) | **Mission Hooks** | [Kovetkezo: Akcio System >>](12-action-system.md)
+## Valós modokban megfigyelt minták
+
+> Ezeket a mintákat professzionális DayZ modok forráskódjának tanulmányozásával erősítettük meg.
+
+| Minta | Mod | Fájl/Hely |
+|-------|-----|-----------|
+| Vékony `modded class MissionServer.OnInit()` delegálás singleton menedzserhez | COT | `CommunityOnlineTools` init a MissionServer-ben |
+| `InvokeOnConnect` felülírás játékosonkénti JSON adat betöltéséhez | Expansion | Játékos beállítások szinkronizálása csatlakozáskor |
+| `StartingEquipSetup` felülírás egyéni kezdő készletekhez | Több közösségi mod | MissionServer kezdő készlet hookok |
+| `OnEvent` elfogás a `super` előtt kitiltott játékosok blokkolásához | COT | Kitiltási rendszer a MissionServer-ben |
+| `OnMissionFinish` takarítás widget `Unlink()`-kel és null hozzárendeléssel | Expansion | HUD és menü takarítás |
+
+---
+
+[<< Előző: Központi gazdaság](10-central-economy.md) | **Mission Hookok** | [Következő: Akció rendszer >>](12-action-system.md)

@@ -27,10 +27,10 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/DayZ-1.29-black?style=flat-square&logo=steam&logoColor=white" alt="DayZ 1.29" />
   <img src="https://img.shields.io/badge/chapters-92-blue?style=flat-square" alt="92 chapters" />
   <img src="https://img.shields.io/badge/languages-12-green?style=flat-square" alt="12 languages" />
   <img src="https://img.shields.io/badge/files-1,107-orange?style=flat-square" alt="1,107 files" />
-  <img src="https://img.shields.io/badge/license-CC_BY--SA_4.0-lightgrey?style=flat-square" alt="CC BY-SA 4.0" />
 </p>
 
 ---

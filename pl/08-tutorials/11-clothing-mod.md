@@ -1,69 +1,73 @@
-# Chapter 8.11: Creating Custom Clothing
+# Rozdział 8.11: Tworzenie niestandardowej odzieży
 
-[Home](../../README.md) | [<< Previous: Creating a Custom Vehicle](10-vehicle-mod.md) | **Creating Custom Clothing** | [Next: Building a Trading System >>](12-trading-system.md)
+[Strona główna](../../README.md) | [<< Poprzedni: Tworzenie niestandardowego pojazdu](10-vehicle-mod.md) | **Tworzenie niestandardowej odzieży** | [Następny: Budowanie systemu handlowego >>](12-trading-system.md)
 
 ---
 
-## Spis tresci
+> **Podsumowanie:** Ten poradnik przeprowadzi Cię przez proces tworzenia niestandardowej kurtki taktycznej dla DayZ. Wybierzesz klasę bazową, zdefiniujesz odzież w config.cpp z właściwościami izolacji cieplnej i ładowności, nałożysz reteksturę z wzorem kamuflażu za pomocą ukrytych selekcji, dodasz lokalizację i spawnowanie, a opcjonalnie rozszerzysz ją o zachowanie skryptowe. Na końcu będziesz mieć noszalną kurtkę, która ogrzewa graczy, przechowuje przedmioty i pojawia się na świecie.
 
-- [What We Are Building](#what-we-are-building)
-- [Step 1: Choose a Klasa bazowa](#step-1-choose-a-base-class)
-- [Step 2: config.cpp for Clothing](#step-2-configcpp-for-clothing)
-- [Step 3: Create Textures](#step-3-create-textures)
-- [Step 4: Add Cargo Space](#step-4-add-cargo-space)
-- [Step 5: Localization and Spawning](#step-5-localization-and-spawning)
-- [Step 6: Script Behavior (Optional)](#step-6-script-behavior-optional)
-- [Step 7: Build, Test, Polish](#step-7-build-test-polish)
-- [Complete Code Reference](#complete-code-reference)
-- [Czeste bledy](#common-mistakes)
+---
+
+## Spis treści
+
+- [Co budujemy](#what-we-are-building)
+- [Krok 1: Wybierz klasę bazową](#step-1-choose-a-base-class)
+- [Krok 2: config.cpp dla odzieży](#step-2-configcpp-for-clothing)
+- [Krok 3: Tworzenie tekstur](#step-3-create-textures)
+- [Krok 4: Dodanie miejsca na ładunek](#step-4-add-cargo-space)
+- [Krok 5: Lokalizacja i spawnowanie](#step-5-localization-and-spawning)
+- [Krok 6: Zachowanie skryptowe (opcjonalne)](#step-6-script-behavior-optional)
+- [Krok 7: Budowanie, testowanie, dopracowanie](#step-7-build-test-polish)
+- [Kompletna dokumentacja kodu](#complete-code-reference)
+- [Częste błędy](#common-mistakes)
 - [Najlepsze praktyki](#best-practices)
-- [Teoria vs praktyka](#theory-vs-practice)
-- [What You Learned](#what-you-learned)
+- [Teoria a praktyka](#theory-vs-practice)
+- [Czego się nauczyłeś](#what-you-learned)
 
 ---
 
-## What We Are Building
+## Co budujemy
 
-We will create a **Tactical Camo Jacket** -- a military-style jacket with woodland camouflage that players can find and wear. It will:
+Stworzymy **Taktyczną kurtkę kamuflażową** -- kurtkę w stylu wojskowym z leśnym kamuflażem, którą gracze mogą znaleźć i nosić. Będzie ona:
 
-- Extend the vanilla Gorka jacket model (no 3D modeling required)
-- Have a custom camo retexture using hidden selections
-- Provide warmth through `heatIsolation` values
-- Carry items in its pockets (cargo space)
-- Take damage with visual degradation across health states
-- Spawn at military locations in the world
+- Rozszerzać waniliowy model kurtki Gorka (bez konieczności modelowania 3D)
+- Mieć niestandardową reteksturę kamuflażową z użyciem ukrytych selekcji
+- Zapewniać ciepło poprzez wartości `heatIsolation`
+- Przechowywać przedmioty w kieszeniach (miejsce na ładunek)
+- Ulegać uszkodzeniom z wizualną degradacją w zależności od stanu zdrowia
+- Pojawiać się w lokalizacjach wojskowych na świecie
 
-**Wymagania wstepne:** A working mod structure (complete [Chapter 8.1](01-first-mod.md) and [Chapter 8.2](02-custom-item.md) first), a text editor, DayZ Tools installed (for TexView2), and an image editor for creating camo textures.
+**Wymagania wstępne:** Działająca struktura moda (najpierw ukończ [Rozdział 8.1](01-first-mod.md) i [Rozdział 8.2](02-custom-item.md)), edytor tekstu, zainstalowane DayZ Tools (dla TexView2) oraz edytor graficzny do tworzenia tekstur kamuflażu.
 
 ---
 
-## Step 1: Choose a Klasa bazowa
+## Krok 1: Wybierz klasę bazową
 
-Clothing in DayZ inherits from `Clothing_Base`, but you almost never extend that directly. DayZ provides intermediate base classes for each body slot:
+Odzież w DayZ dziedziczy po `Clothing_Base`, ale prawie nigdy nie rozszerzasz tej klasy bezpośrednio. DayZ udostępnia pośrednie klasy bazowe dla każdego slotu na ciele:
 
-| Klasa bazowa | Body Slot | Przyklads |
+| Klasa bazowa | Slot na ciele | Przykłady |
 |------------|-----------|----------|
-| `Top_Base` | Body (torso) | Jackets, shirts, hoodies |
-| `Pants_Base` | Legs | Jeans, cargo pants |
-| `Shoes_Base` | Feet | Boots, sneakers |
-| `HeadGear_Base` | Head | Helmets, hats |
-| `Mask_Base` | Face | Gas masks, balaclavas |
-| `Gloves_Base` | Hands | Tactical gloves |
-| `Vest_Base` | Vest slot | Plate carriers, chest rigs |
-| `Glasses_Base` | Eyewear | Sunglasses |
-| `Backpack_Base` | Back | Backpacks, bags |
+| `Top_Base` | Ciało (tułów) | Kurtki, koszule, bluzy |
+| `Pants_Base` | Nogi | Dżinsy, spodnie cargo |
+| `Shoes_Base` | Stopy | Buty, trampki |
+| `HeadGear_Base` | Głowa | Hełmy, czapki |
+| `Mask_Base` | Twarz | Maski przeciwgazowe, kominiarki |
+| `Gloves_Base` | Ręce | Rękawice taktyczne |
+| `Vest_Base` | Slot na kamizelkę | Kamizelki kuloodporne, rigsy |
+| `Glasses_Base` | Okulary | Okulary przeciwsłoneczne |
+| `Backpack_Base` | Plecy | Plecaki, torby |
 
-The full inheritance chain is: `Clothing_Base -> Clothing -> Top_Base -> GorkaEJacket_ColorBase -> YourJacket`
+Pełny łańcuch dziedziczenia to: `Clothing_Base -> Clothing -> Top_Base -> GorkaEJacket_ColorBase -> TwojaKurtka`
 
-### Why Extend an Existing Vanilla Item
+### Dlaczego warto rozszerzać istniejący waniliowy przedmiot
 
-You can extend at different levels:
+Możesz rozszerzać na różnych poziomach:
 
-1. **Extend a specific item** (like `GorkaEJacket_ColorBase`) -- easiest. You inherit the model, animations, slot, and all properties. Only change textures and tweak values. This is what Bohemia's `Test_ClothingRetexture` sample does.
-2. **Extend a slot base** (like `Top_Base`) -- clean starting point, but you must specify a model and all properties.
-3. **Extend `Clothing` directly** -- only for completely custom slot behavior. Rarely needed.
+1. **Rozszerz konkretny przedmiot** (jak `GorkaEJacket_ColorBase`) -- najłatwiejsze. Dziedziczysz model, animacje, slot i wszystkie właściwości. Wystarczy zmienić tekstury i dostroić wartości. Tak właśnie robi przykład Bohemii `Test_ClothingRetexture`.
+2. **Rozszerz bazę slotu** (jak `Top_Base`) -- czysty punkt wyjścia, ale musisz określić model i wszystkie właściwości.
+3. **Rozszerz bezpośrednio `Clothing`** -- tylko dla całkowicie niestandardowego zachowania slotu. Rzadko potrzebne.
 
-For our tactical jacket, we will extend `GorkaEJacket_ColorBase`. Looking at the vanilla script:
+Dla naszej kurtki taktycznej rozszerzymy `GorkaEJacket_ColorBase`. Spójrzmy na waniliowy skrypt:
 
 ```c
 class GorkaEJacket_ColorBase extends Top_Base
@@ -78,15 +82,15 @@ class GorkaEJacket_Summer extends GorkaEJacket_ColorBase {};
 class GorkaEJacket_Flat extends GorkaEJacket_ColorBase {};
 ```
 
-Notice the pattern: a `_ColorBase` class handles shared behavior, and individual color variants extend it with no additional code. Their config.cpp entries provide different textures. We will follow the same pattern.
+Zwróć uwagę na wzorzec: klasa `_ColorBase` obsługuje wspólne zachowanie, a poszczególne warianty kolorystyczne rozszerzają ją bez dodatkowego kodu. Ich wpisy w config.cpp dostarczają różne tekstury. Będziemy podążać tym samym wzorcem.
 
-To find base classes, look in `scripts/4_world/entities/itembase/clothing_base.c` (defines all slot bases) and `scripts/4_world/entities/itembase/clothing/` (one file per clothing family).
+Aby znaleźć klasy bazowe, zajrzyj do `scripts/4_world/entities/itembase/clothing_base.c` (definiuje wszystkie bazy slotów) i `scripts/4_world/entities/itembase/clothing/` (jeden plik na rodzinę odzieży).
 
 ---
 
-## Step 2: config.cpp for Clothing
+## Krok 2: config.cpp dla odzieży
 
-Create `MyClothingMod/Data/config.cpp`:
+Utwórz `MyClothingMod/Data/config.cpp`:
 
 ```cpp
 class CfgPatches
@@ -184,73 +188,73 @@ class CfgVehicles
 };
 ```
 
-### Clothing-Specific Poles Explained
+### Wyjaśnienie pól specyficznych dla odzieży
 
-**Thermal and stealth:**
+**Właściwości termiczne i ukrycia:**
 
-| Pole | Wartosc | Explanation |
+| Pole | Wartość | Wyjaśnienie |
 |-------|-------|-------------|
-| `heatIsolation` | `0.8` | Warmth provided (0.0-1.0 range). The engine multiplies this by health and wetness factors. A pristine dry jacket gives full warmth; a ruined, soaked one gives almost none. |
-| `visibilityModyfikator` | `0.7` | Player visibility to AI (lower = harder to detect). |
-| `absorbency` | `0.3` | Water absorption (0 = waterproof, 1 = sponge). Lower is better for rain resistance. |
+| `heatIsolation` | `0.8` | Zapewniane ciepło (zakres 0.0-1.0). Silnik mnoży tę wartość przez współczynniki zdrowia i wilgotności. Nieskazitelna sucha kurtka daje pełne ciepło; zniszczona, przemoczona -- prawie żadnego. |
+| `visibilityModifier` | `0.7` | Widoczność gracza dla SI (niższe = trudniejszy do wykrycia). |
+| `absorbency` | `0.3` | Absorpcja wody (0 = wodoodporne, 1 = gąbka). Niższe jest lepsze dla ochrony przed deszczem. |
 
-**Vanilla heatIsolation reference:** T-shirt 0.2, Hoodie 0.5, Gorka Jacket 0.7, Pole Jacket 0.8, Wool Coat 0.9.
+**Waniliowe wartości referencyjne heatIsolation:** T-shirt 0.2, Bluza 0.5, Kurtka Gorka 0.7, Kurtka polowa 0.8, Płaszcz wełniany 0.9.
 
-**Repair:** `repairableWithKits[] = { 5, 2 }` lists kit types (5=Sewing Kit, 2=Leather Sewing Kit). `repairCosts[]` gives material consumed per repair, in matching order.
+**Naprawa:** `repairableWithKits[] = { 5, 2 }` wymienia typy zestawów (5=Zestaw do szycia, 2=Skórzany zestaw do szycia). `repairCosts[]` podaje zużyty materiał na naprawę, w odpowiedniej kolejności.
 
-**Armor:** A `damage` value of 0.8 means the player receives 80% of incoming damage (20% absorbed). Lower values = more protection.
+**Pancerz:** Wartość `damage` 0.8 oznacza, że gracz otrzymuje 80% przychodzących obrażeń (20% pochłoniętych). Niższe wartości = większa ochrona.
 
-**Wetness:** `Soaking` controls how fast rain/water soaks the item. `Drying` negative values represent moisture loss from body heat, fires, and wringing.
+**Wilgotność:** `Soaking` kontroluje, jak szybko deszcz/woda moczy przedmiot. Ujemne wartości `Drying` reprezentują utratę wilgoci z ciepła ciała, ognisk i wykręcania.
 
-**Hidden selections:** The Gorka model has 3 selections -- index 0 is the ground model, indices 1 and 2 are the worn model. You override `hiddenSelectionsTextures[]` with your custom PAA paths.
+**Ukryte selekcje:** Model Gorka ma 3 selekcje -- indeks 0 to model naziemny, indeksy 1 i 2 to model noszony. Nadpisujesz `hiddenSelectionsTextures[]` swoimi niestandardowymi ścieżkami PAA.
 
-**Health levels:** Each entry is `{ healthThreshold, { materialPath } }`. When health drops below a threshold, the engine swaps the material. Vanilla damage rvmats add wear marks and tears.
+**Poziomy zdrowia:** Każdy wpis to `{ prógZdrowia, { ścieżkaMateriału } }`. Gdy zdrowie spadnie poniżej progu, silnik zamienia materiał. Waniliowe rvmaty uszkodzeń dodają ślady zużycia i rozdarcia.
 
 ---
 
-## Step 3: Create Textures
+## Krok 3: Tworzenie tekstur
 
-### Finding and Creating Textures
+### Znajdowanie i tworzenie tekstur
 
-The Gorka jacket textures live at `DZ\characters\tops\data\` -- extract the `gorka_upper_summer_co.paa` (color), `gorka_upper_nohq.paa` (normal), and `gorka_upper_smdi.paa` (specular) from the P: drive to use as templates.
+Tekstury kurtki Gorka znajdują się w `DZ\characters\tops\data\` -- wyodrębnij `gorka_upper_summer_co.paa` (kolor), `gorka_upper_nohq.paa` (normalna) i `gorka_upper_smdi.paa` (specular) z dysku P:, aby użyć ich jako szablonów.
 
-**Creating the camo pattern:**
+**Tworzenie wzoru kamuflażu:**
 
-1. Open the vanilla `_co` texture in TexView2, export as TGA/PNG
-2. Paint your woodland camo in your image editor, following the UV layout
-3. Keep the same dimensions (typically 2048x2048 or 1024x1024)
-4. Save as TGA, convert to PAA using TexView2 (File > Save As > .paa)
+1. Otwórz waniliową teksturę `_co` w TexView2, wyeksportuj jako TGA/PNG
+2. Namaluj swój leśny kamuflaż w edytorze graficznym, podążając za układem UV
+3. Zachowaj te same wymiary (zazwyczaj 2048x2048 lub 1024x1024)
+4. Zapisz jako TGA, przekonwertuj na PAA za pomocą TexView2 (File > Save As > .paa)
 
-### Texture Typs
+### Typy tekstur
 
-| Suffix | Przeznaczenie | Required? |
+| Sufiks | Przeznaczenie | Wymagane? |
 |--------|---------|-----------|
-| `_co` | Main color/pattern | Yes |
-| `_nohq` | Normal map (fabric detail) | No -- uses vanilla default |
-| `_smdi` | Specular (shininess) | No -- uses vanilla default |
-| `_as` | Alpha/surface mask | No |
+| `_co` | Główny kolor/wzór | Tak |
+| `_nohq` | Mapa normalnych (detale tkaniny) | Nie -- używa waniliowej domyślnej |
+| `_smdi` | Specular (połysk) | Nie -- używa waniliowej domyślnej |
+| `_as` | Maska alfa/powierzchni | Nie |
 
-For a retexture, you only need `_co` textures. The normal and specular maps from the vanilla model continue to work.
+Dla retekstury potrzebujesz tylko tekstur `_co`. Mapy normalnych i specular z waniliowego modelu nadal działają.
 
-For full material control, create `.rvmat` files and reference them in `hiddenSelectionsMaterials[]`. See Bohemia's `Test_ClothingRetexture` sample for working rvmat examples with damage and destruct variants.
-
----
-
-## Step 4: Add Cargo Space
-
-When extending `GorkaEJacket_ColorBase`, you inherit its cargo grid (4x3) and inventory slot (`"Body"`) automatically. The `itemSize[] = { 3, 4 }` property defines how large the jacket is when stored as loot -- NOT its cargo capacity.
-
-Common clothing slots: `"Body"` (jackets), `"Legs"` (pants), `"Feet"` (boots), `"Headgear"` (hats), `"Vest"` (chest rigs), `"Gloves"`, `"Mask"`, `"Back"` (backpacks).
-
-Some clothing accepts attachments (like Plate Carrier pouches). Add them with `attachments[] = { "Shoulder", "Armband" };`. For a basic jacket, the inherited cargo is sufficient.
+Aby uzyskać pełną kontrolę nad materiałem, utwórz pliki `.rvmat` i odwołaj się do nich w `hiddenSelectionsMaterials[]`. Zobacz przykład Bohemii `Test_ClothingRetexture` dla działających przykładów rvmat z wariantami uszkodzeń i zniszczeń.
 
 ---
 
-## Step 5: Localization and Spawning
+## Krok 4: Dodanie miejsca na ładunek
+
+Rozszerzając `GorkaEJacket_ColorBase`, dziedziczysz automatycznie jego siatkę ładunku (4x3) i slot ekwipunku (`"Body"`). Właściwość `itemSize[] = { 3, 4 }` definiuje, jak duża jest kurtka przechowywana jako łup -- NIE jej pojemność ładunku.
+
+Typowe sloty odzieży: `"Body"` (kurtki), `"Legs"` (spodnie), `"Feet"` (buty), `"Headgear"` (czapki), `"Vest"` (rigsy), `"Gloves"`, `"Mask"`, `"Back"` (plecaki).
+
+Niektóra odzież przyjmuje załączniki (jak kieszenie kamizelki kuloodpornej). Dodaj je za pomocą `attachments[] = { "Shoulder", "Armband" };`. Dla podstawowej kurtki dziedziczony ładunek jest wystarczający.
+
+---
+
+## Krok 5: Lokalizacja i spawnowanie
 
 ### Stringtable
 
-Create `MyClothingMod/Data/Stringtable.csv`:
+Utwórz `MyClothingMod/Data/Stringtable.csv`:
 
 ```csv
 "Language","English","Czech","German","Russian","Polish","Hungarian","Italian","Spanish","French","Chinese","Japanese","Portuguese","ChineseSimp","Korean"
@@ -258,9 +262,9 @@ Create `MyClothingMod/Data/Stringtable.csv`:
 "STR_MCM_TacticalJacket_Woodland_Desc","A rugged tactical jacket with woodland camouflage. Provides good insulation and has multiple pockets.","","","","","","","","","","","","",""
 ```
 
-### Spawning (types.xml)
+### Spawnowanie (types.xml)
 
-Add to your server's mission folder `types.xml`:
+Dodaj do pliku `types.xml` w folderze misji serwera:
 
 ```xml
 <type name="MCM_TacticalJacket_Woodland">
@@ -279,13 +283,13 @@ Add to your server's mission folder `types.xml`:
 </type>
 ```
 
-Use `category name="clothes"` for all clothing. Set `usage` to match where the item should spawn (Military, Town, Police, etc.) and `value` for the map tier (Tier1=coast through Tier4=deep inland).
+Użyj `category name="clothes"` dla całej odzieży. Ustaw `usage` tak, aby odpowiadało miejscu spawnu przedmiotu (Military, Town, Police itp.) oraz `value` dla strefy mapy (Tier1=wybrzeże przez Tier4=głębokie wnętrze lądu).
 
 ---
 
-## Step 6: Script Behavior (Optional)
+## Krok 6: Zachowanie skryptowe (opcjonalne)
 
-For a simple retexture, you do not need scripts. But to add behavior when the jacket is worn, create a script class.
+Dla prostej retekstury nie potrzebujesz skryptów. Ale aby dodać zachowanie po założeniu kurtki, utwórz klasę skryptową.
 
 ### Scripts config.cpp
 
@@ -322,9 +326,9 @@ class CfgMods
 };
 ```
 
-### Custom Jacket Script
+### Skrypt niestandardowej kurtki
 
-Create `Scripts/4_World/MyClothingMod/MCM_TacticalJacket.c`:
+Utwórz `Scripts/4_World/MyClothingMod/MCM_TacticalJacket.c`:
 
 ```c
 class MCM_TacticalJacket_ColorBase extends GorkaEJacket_ColorBase
@@ -357,42 +361,42 @@ class MCM_TacticalJacket_ColorBase extends GorkaEJacket_ColorBase
 };
 ```
 
-### Key Clothing Events
+### Kluczowe zdarzenia odzieży
 
-| Event | When It Fires | Common Use |
+| Zdarzenie | Kiedy się wyzwala | Typowe zastosowanie |
 |-------|---------------|------------|
-| `OnWasAttached(parent, slot_id)` | Player equips the item | Apply buffs, show effects |
-| `OnWasDetached(parent, slot_id)` | Player unequips the item | Remove buffs, clean up |
-| `EEItemAttached(item, slot_name)` | Item attached to this clothing | Show/hide model selections |
-| `EEItemDetached(item, slot_name)` | Item detached from this clothing | Reverse visual changes |
-| `EEHealthLevelZmianad(old, new, zone)` | Health crosses a threshold | Update visual state |
+| `OnWasAttached(parent, slot_id)` | Gracz zakłada przedmiot | Zastosuj bonusy, pokaż efekty |
+| `OnWasDetached(parent, slot_id)` | Gracz zdejmuje przedmiot | Usuń bonusy, posprzątaj |
+| `EEItemAttached(item, slot_name)` | Przedmiot dołączony do tej odzieży | Pokaż/ukryj selekcje modelu |
+| `EEItemDetached(item, slot_name)` | Przedmiot odłączony od tej odzieży | Odwróć zmiany wizualne |
+| `EEHealthLevelChanged(old, new, zone)` | Zdrowie przekracza próg | Zaktualizuj stan wizualny |
 
-**Wazne:** Always call `super` at the start of every override. The parent class handles critical engine behavior.
+**Ważne:** Zawsze wywołuj `super` na początku każdego nadpisania. Klasa nadrzędna obsługuje krytyczne zachowanie silnika.
 
 ---
 
-## Step 7: Build, Test, Polish
+## Krok 7: Budowanie, testowanie, dopracowanie
 
-### Build and Spawn
+### Budowanie i spawnowanie
 
-Pack `Data/` and `Scripts/` as separate PBOs. Launch DayZ with your mod and spawn the jacket:
+Spakuj `Data/` i `Scripts/` jako osobne PBO. Uruchom DayZ ze swoim modem i zaspawnuj kurtkę:
 
 ```c
 GetGame().GetPlayer().GetInventory().CreateInInventory("MCM_TacticalJacket_Woodland");
 ```
 
-### Verification Checklist
+### Lista kontrolna weryfikacji
 
-1. **Does it appear in inventory?** If not, check `scope=2` and class name match.
-2. **Correct texture?** Domyslny Gorka texture = wrong paths. White/pink = missing texture file.
-3. **Can you equip it?** Should go to Body slot. If not, check the parent class chain.
-4. **Display name shows?** If you see raw `$STR_` text, the stringtable is not loading.
-5. **Provides warmth?** Check `heatIsolation` in the debug/inspect menu.
-6. **Damage degrades visuals?** Test with: `ItemBase.Cast(GetGame().GetPlayer().GetItemOnSlot("Body")).SetHealth("", "", 40);`
+1. **Czy pojawia się w ekwipunku?** Jeśli nie, sprawdź `scope=2` i dopasowanie nazwy klasy.
+2. **Prawidłowa tekstura?** Domyślna tekstura Gorka = złe ścieżki. Biała/różowa = brakujący plik tekstury.
+3. **Czy można ją założyć?** Powinna trafić do slotu Body. Jeśli nie, sprawdź łańcuch klas nadrzędnych.
+4. **Wyświetla się nazwa?** Jeśli widzisz surowy tekst `$STR_`, tabela stringów się nie ładuje.
+5. **Zapewnia ciepło?** Sprawdź `heatIsolation` w menu debug/inspect.
+6. **Uszkodzenia degradują wygląd?** Przetestuj za pomocą: `ItemBase.Cast(GetGame().GetPlayer().GetItemOnSlot("Body")).SetHealth("", "", 40);`
 
-### Adding Color Variants
+### Dodawanie wariantów kolorystycznych
 
-Follow the `_ColorBase` pattern -- add sibling classes that only differ in textures:
+Podążaj za wzorcem `_ColorBase` -- dodaj klasy rodzeństwa, które różnią się tylko teksturami:
 
 ```cpp
 class MCM_TacticalJacket_Desert : MCM_TacticalJacket_ColorBase
@@ -409,25 +413,25 @@ class MCM_TacticalJacket_Desert : MCM_TacticalJacket_ColorBase
 };
 ```
 
-Each variant needs its own `scope=2`, display name, textures, stringtable entries, and types.xml entry.
+Każdy wariant potrzebuje własnego `scope=2`, nazwy wyświetlanej, tekstur, wpisów w tabeli stringów i wpisu w types.xml.
 
 ---
 
-## Complete Code Reference
+## Kompletna dokumentacja kodu
 
-### Directory Structure
+### Struktura katalogów
 
 ```
 MyClothingMod/
     mod.cpp
     Data/
-        config.cpp              <-- Item definitions (see Step 2)
-        Stringtable.csv         <-- Display names (see Step 5)
+        config.cpp              <-- Definicje przedmiotów (patrz Krok 2)
+        Stringtable.csv         <-- Nazwy wyświetlane (patrz Krok 5)
         Textures/
             tactical_jacket_woodland_co.paa
             tactical_jacket_g_woodland_co.paa
-    Scripts/                    <-- Only needed for script behavior
-        config.cpp              <-- CfgMods entry (see Step 6)
+    Scripts/                    <-- Potrzebne tylko dla zachowania skryptowego
+        config.cpp              <-- Wpis CfgMods (patrz Krok 6)
         4_World/
             MyClothingMod/
                 MCM_TacticalJacket.c
@@ -442,64 +446,64 @@ version = "1.0";
 overview = "Adds a tactical jacket with camo variants to DayZ.";
 ```
 
-All other files are shown in full in their respective steps above.
+Wszystkie pozostałe pliki są pokazane w pełni w odpowiednich krokach powyżej.
 
 ---
 
-## Czeste bledy
+## Częste błędy
 
-| Blad | Konsekwencja | Rozwiazanie |
+| Błąd | Konsekwencja | Rozwiązanie |
 |---------|-------------|-----|
-| Forgetting `scope=2` on variants | Item does not spawn or appear in admin tools | Set `scope=0` on base, `scope=2` on each spawnable variant |
-| Wrong texture array count | White/pink textures on some parts | Match `hiddenSelectionsTextures` count to the model's hidden selections (Gorka has 3) |
-| Forward slashes in texture paths | Textures fail to load silently | Use backslashes: `"MyMod\Data\tex.paa"` |
-| Missing `requiredAddons` | Config parser cannot resolve parent class | Include `"DZ_Characters_Tops"` for tops |
-| `heatIsolation` above 1.0 | Player overheats in warm weather | Keep values in 0.0-1.0 range |
-| Empty `healthLevels` materials | No visual damage degradation | Always reference at least vanilla rvmats |
-| Skipping `super` in overrides | Broken inventory, damage, or attachment behavior | Always call `super.MetodaName()` first |
+| Zapomnienie o `scope=2` na wariantach | Przedmiot się nie spawnuje ani nie pojawia w narzędziach admina | Ustaw `scope=0` na bazie, `scope=2` na każdym spawnowalnym wariancie |
+| Zła liczba elementów tablicy tekstur | Białe/różowe tekstury na niektórych częściach | Dopasuj liczbę `hiddenSelectionsTextures` do ukrytych selekcji modelu (Gorka ma 3) |
+| Ukośniki w przód w ścieżkach tekstur | Tekstury nie ładują się cicho | Używaj ukośników wstecznych: `"MyMod\Data\tex.paa"` |
+| Brakujące `requiredAddons` | Parser konfiguracji nie może rozwiązać klasy nadrzędnej | Dołącz `"DZ_Characters_Tops"` dla topów |
+| `heatIsolation` powyżej 1.0 | Gracz przegrzewa się w ciepłej pogodzie | Trzymaj wartości w zakresie 0.0-1.0 |
+| Puste materiały `healthLevels` | Brak wizualnej degradacji uszkodzeń | Zawsze odwołuj się przynajmniej do waniliowych rvmatów |
+| Pomijanie `super` w nadpisaniach | Zepsute zachowanie ekwipunku, obrażeń lub załączników | Zawsze wywołuj `super.NazwaMetody()` jako pierwsze |
 
 ---
 
 ## Najlepsze praktyki
 
-- **Start with a simple retexture.** Get a working mod with a texture swap before adding custom properties or scripts. This isolates config issues from texture issues.
-- **Use the _ColorBase pattern.** Shared properties in `scope=0` base, only textures and names in `scope=2` variants. No duplication.
-- **Keep insulation values realistic.** Reference vanilla items with similar real-world equivalents.
-- **Test with script console before types.xml.** Confirm the item works before debugging spawn tables.
-- **Use `$STR_` references for all player-facing text.** Enables future localization without config changes.
-- **Pack Data and Scripts as separate PBOs.** Update textures without rebuilding scripts.
-- **Provide ground textures.** The `_g_` texture makes dropped items look correct.
+- **Zacznij od prostej retekstury.** Uzyskaj działający mod z zamianą tekstury, zanim dodasz niestandardowe właściwości lub skrypty. To izoluje problemy konfiguracji od problemów z teksturami.
+- **Używaj wzorca _ColorBase.** Wspólne właściwości w bazie `scope=0`, tylko tekstury i nazwy w wariantach `scope=2`. Bez duplikacji.
+- **Utrzymuj realistyczne wartości izolacji.** Odwołuj się do waniliowych przedmiotów o podobnych odpowiednikach w rzeczywistości.
+- **Testuj za pomocą konsoli skryptowej przed types.xml.** Potwierdź, że przedmiot działa, zanim zaczniesz debugować tabele spawnów.
+- **Używaj odwołań `$STR_` dla całego tekstu skierowanego do gracza.** Umożliwia przyszłą lokalizację bez zmian w konfiguracji.
+- **Pakuj Data i Scripts jako osobne PBO.** Aktualizuj tekstury bez przebudowywania skryptów.
+- **Dostarczaj tekstury naziemne.** Tekstura `_g_` sprawia, że upuszczone przedmioty wyglądają poprawnie.
 
 ---
 
-## Teoria vs praktyka
+## Teoria a praktyka
 
-| Koncepcja | Teoria | Rzeczywistosc |
+| Koncepcja | Teoria | Rzeczywistość |
 |---------|--------|---------|
-| `heatIsolation` | A simple warmth number | Effective warmth depends on health and wetness. The engine multiplies it by factors in `MiscGameplayFunctions.GetCurrentItemHeatIsolation()`. |
-| Armor `damage` values | Lower = more protection | A value of 0.8 means the player receives 80% damage (only 20% absorbed). Many modders read 0.9 as "90% protection" when it is actually 10%. |
-| `scope` inheritance | Children inherit parent scope | They do NOT. Each class must explicitly set `scope`. Parent `scope=0` defaults all children to `scope=0`. |
-| `absorbency` | Controls rain protection | It controls moisture absorption, which REDUCES warmth. Waterproof = LOW absorbency (0.1). High absorbency (0.8+) = soaks like a sponge. |
-| Hidden selections | Work on any model | Not all models expose the same selections. Check with Object Builder or vanilla config before choosing a base model. |
+| `heatIsolation` | Prosta liczba ciepła | Efektywne ciepło zależy od zdrowia i wilgotności. Silnik mnoży ją przez czynniki w `MiscGameplayFunctions.GetCurrentItemHeatIsolation()`. |
+| Wartości `damage` pancerza | Niższe = większa ochrona | Wartość 0.8 oznacza, że gracz otrzymuje 80% obrażeń (tylko 20% pochłoniętych). Wielu modderów odczytuje 0.9 jako "90% ochrony", podczas gdy w rzeczywistości jest to 10%. |
+| Dziedziczenie `scope` | Klasy potomne dziedziczą scope rodzica | NIE dziedziczą. Każda klasa musi jawnie ustawić `scope`. Rodzic z `scope=0` domyślnie ustawia wszystkie klasy potomne na `scope=0`. |
+| `absorbency` | Kontroluje ochronę przed deszczem | Kontroluje absorpcję wilgoci, która ZMNIEJSZA ciepło. Wodoodporne = NISKA absorpcja (0.1). Wysoka absorpcja (0.8+) = nasiąka jak gąbka. |
+| Ukryte selekcje | Działają na każdym modelu | Nie wszystkie modele eksponują te same selekcje. Sprawdź w Object Builder lub waniliowej konfiguracji przed wyborem modelu bazowego. |
 
 ---
 
-## What You Learned
+## Czego się nauczyłeś
 
-In this tutorial you learned:
+W tym poradniku nauczyłeś się:
 
-- How DayZ clothing inherits from slot-specific base classes (`Top_Base`, `Pants_Base`, etc.)
-- How to define a clothing item in config.cpp with thermal, armor, and wetness properties
-- How hidden selections allow retexturing vanilla models with custom camo patterns
-- How `heatIsolation`, `visibilityModyfikator`, and `absorbency` affect gameplay
-- How the `DamageSystem` controls visual degradation and armor protection
-- How to create color variants using the `_ColorBase` pattern
-- How to add spawn entries with `types.xml` and display names with `Stringtable.csv`
-- How to optionally add script behavior with `OnWasAttached` and `OnWasDetached` events
+- Jak odzież DayZ dziedziczy po klasach bazowych specyficznych dla slotów (`Top_Base`, `Pants_Base` itp.)
+- Jak zdefiniować element odzieży w config.cpp z właściwościami termicznymi, pancerza i wilgotności
+- Jak ukryte selekcje umożliwiają reteksturowanie waniliowych modeli niestandardowymi wzorami kamuflażu
+- Jak `heatIsolation`, `visibilityModifier` i `absorbency` wpływają na rozgrywkę
+- Jak `DamageSystem` kontroluje wizualną degradację i ochronę pancerza
+- Jak tworzyć warianty kolorystyczne za pomocą wzorca `_ColorBase`
+- Jak dodawać wpisy spawnów za pomocą `types.xml` i nazwy wyświetlane za pomocą `Stringtable.csv`
+- Jak opcjonalnie dodać zachowanie skryptowe za pomocą zdarzeń `OnWasAttached` i `OnWasDetached`
 
-**Nastepny:** Apply the same techniques to create pants (`Pants_Base`), boots (`Shoes_Base`), or a vest (`Vest_Base`). The config structure is identical -- only the parent class and inventory slot change.
+**Następny:** Zastosuj te same techniki do tworzenia spodni (`Pants_Base`), butów (`Shoes_Base`) lub kamizelki (`Vest_Base`). Struktura konfiguracji jest identyczna -- zmienia się tylko klasa nadrzędna i slot ekwipunku.
 
 ---
 
-**Poprzedni:** [Chapter 8.8: HUD Overlay](08-hud-overlay.md)
-**Nastepny:** Coming soon
+**Poprzedni:** [Rozdział 8.8: Nakładka HUD](08-hud-overlay.md)
+**Następny:** Wkrótce
