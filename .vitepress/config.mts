@@ -166,12 +166,7 @@ export default withMermaid(
     ],
 
     base: '/DayZ-Modding-Wiki/',
-    srcExclude: [
-      'AGENTS.md', 'CONTRIBUTING.md', 'CLAUDE.md',
-      // Exclude less common languages to keep build under GitHub Actions 7GB RAM limit
-      // These are still available on GitHub as markdown files
-      'cs/**', 'hu/**', 'pl/**', 'it/**', 'ja/**', 'zh-hans/**',
-    ],
+    srcExclude: ['AGENTS.md', 'CONTRIBUTING.md', 'CLAUDE.md'],
     cleanUrls: true,
     lastUpdated: true,
     ignoreDeadLinks: [
