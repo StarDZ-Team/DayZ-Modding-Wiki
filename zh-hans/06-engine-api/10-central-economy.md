@@ -1,50 +1,71 @@
-# Chapter 6.10: Central Economy
+# 第 6.10 章：中央经济系统
 
-[Home](../../README.md) | [<< Previous: Networking & RPC](09-networking.md) | **Central Economy** | [Next: Mission Hooks >>](11-mission-hooks.md)
+[首页](../../README.md) | [<< 上一章：网络与 RPC](09-networking.md) | **中央经济系统** | [下一章：任务钩子 >>](11-mission-hooks.md)
 
 ---
 
 ## 简介
 
-The Central Economy (CE) is DayZ's server-side system for managing all spawnable entities in the world: loot, vehicles, infected, animals, and dynamic events. It is configured entirely through XML files in the mission folder. While the CE itself is an engine system (not directly scriptable), understanding its configuration files is essential for any server mod. This chapter covers all CE configuration files, their structure, key parameters, and how they interact.
+中央经济系统（CE）是 DayZ 的服务器端系统，用于管理世界中所有可生成的实体：战利品、车辆、感染者、动物和动态事件。它完全通过任务文件夹中的 XML 文件进行配置。虽然 CE 本身是引擎系统（不能直接通过脚本操作），但理解其配置文件对于任何服务器模组都是必不可少的。本章涵盖所有 CE 配置文件、它们的结构、关键参数以及它们之间的交互方式。
 
 ---
 
-## How the CE Works
+## CE 的工作原理
 
-1. The server reads `types.xml` to learn every item's **nominal** (target count) and **min** (minimum before restock).
-2. Items are assigned **usage flags** (e.g., `Military`, `Town`) that map to building/location types.
-3. Items are assigned **value flags** (e.g., `Tier1` through `Tier4`) that restrict them to map zones.
-4. The CE periodically scans the world, counts existing items, and spawns new ones when counts fall below `min`.
-5. Items untouched for their `lifetime` (seconds) are cleaned up.
-6. Dynamic events (`events.xml`) spawn vehicles, helicopter crashes, and infected groups on their own schedule.
+1. 服务器读取 `types.xml` 以了解每个物品的 **nominal**（目标数量）和 **min**（补货前的最低数量）。
+2. 物品被分配 **usage 标志**（例如 `Military`、`Town`），映射到建筑/位置类型。
+3. 物品被分配 **value 标志**（例如 `Tier1` 到 `Tier4`），将它们限制在地图区域。
+4. CE 定期扫描世界，统计现有物品，当数量低于 `min` 时生成新物品。
+5. 超过其 `lifetime`（秒）未被触碰的物品会被清理。
+6. 动态事件（`events.xml`）按自己的时间表生成车辆、直升机坠毁点和感染者群体。
 
 ---
 
-## File Overview
+## 文件概览
 
-All CE files live in the mission folder (e.g., `dayzOffline.chernarusplus/`).
+所有 CE 文件位于任务文件夹中（例如 `dayzOffline.chernarusplus/`）。
 
-| File | Purpose |
+| 文件 | 用途 |
 |------|---------|
-| `db/types.xml` | Every spawnable item's parameters |
-| `db/events.xml` | Dynamic event definitions (vehicles, crashes, infected) |
-| `db/globals.xml` | Global CE parameters (timers, limits) |
-| `db/economy.xml` | Subsystem toggle switches |
-| `cfgeconomycore.xml` | Root classes, defaults, CE logging |
-| `cfgspawnabletypes.xml` | Per-item attachment and cargo rules |
-| `cfgrandompresets.xml` | Random loot preset pools |
-| `cfgeventspawns.xml` | World coordinates for event spawn positions |
-| `cfglimitsdefinition.xml` | All valid category, usage, and value flag names |
-| `cfgplayerspawnpoints.xml` | Fresh spawn locations |
+| `db/types.xml` | 每个可生成物品的参数 |
+| `db/events.xml` | 动态事件定义（车辆、坠毁、感染者） |
+| `db/globals.xml` | 全局 CE 参数（计时器、限制） |
+| `db/economy.xml` | 子系统开关 |
+| `cfgeconomycore.xml` | 根类、默认值、CE 日志 |
+| `cfgspawnabletypes.xml` | 每个物品的附件和货物规则 |
+| `cfgrandompresets.xml` | 随机战利品预设池 |
+| `cfgeventspawns.xml` | 事件生成位置的世界坐标 |
+| `cfglimitsdefinition.xml` | 所有有效的类别、用途和值标志名称 |
+| `cfgplayerspawnpoints.xml` | 新生位置 |
+
+---
+
+## 生成周期
+
+```mermaid
+flowchart TD
+    A[CE 启动] --> B[加载 types.xml]
+    B --> C[对于每种物品类型]
+    C --> D{当前数量 < nominal？}
+    D -->|是| E{补货计时器已过？}
+    E -->|是| F[在有效位置生成物品]
+    E -->|否| G[等待补货间隔]
+    D -->|否| H{当前数量 > nominal？}
+    H -->|是| I[标记多余物品进行清理]
+    H -->|否| J[物品数量平衡]
+    F --> K{生命周期已过？}
+    K -->|是| L[删除物品]
+    K -->|否| M[物品持续存在]
+    L --> C
+```
 
 ---
 
 ## types.xml
 
-The most critical CE file. Every item that can exist in the world must have an entry here.
+最关键的 CE 文件。世界中可以存在的每个物品都必须在此有条目。
 
-### Structure
+### 结构
 
 ```xml
 <types>
@@ -66,38 +87,38 @@ The most critical CE file. Every item that can exist in the world must have an e
 </types>
 ```
 
-### Parameters
+### 参数
 
-| Parameter | Description | Typical Values |
+| 参数 | 描述 | 典型值 |
 |-----------|-------------|----------------|
-| `nominal` | Target count on the entire map | 1 - 200 |
-| `lifetime` | Seconds before untouched items despawn | 3600 (1h) - 14400 (4h) |
-| `restock` | Seconds before CE attempts to respawn after item is taken | 0 (immediate) - 1800 |
-| `min` | Minimum count before CE spawns more | Usually `nominal / 2` |
-| `quantmin` | Minimum quantity % (ammo, liquids); -1 = not applicable | -1, 0 - 100 |
-| `quantmax` | Maximum quantity %; -1 = not applicable | -1, 0 - 100 |
-| `cost` | Priority cost (always 100 in vanilla) | 100 |
+| `nominal` | 整个地图上的目标数量 | 1 - 200 |
+| `lifetime` | 未触碰物品消失前的秒数 | 3600（1小时）- 14400（4小时） |
+| `restock` | 物品被拾取后 CE 尝试重新生成的等待秒数 | 0（立即）- 1800 |
+| `min` | CE 生成更多之前的最低数量 | 通常为 `nominal / 2` |
+| `quantmin` | 最低数量百分比（弹药、液体）；-1 = 不适用 | -1、0 - 100 |
+| `quantmax` | 最高数量百分比；-1 = 不适用 | -1、0 - 100 |
+| `cost` | 优先级成本（原版中始终为 100） | 100 |
 
-### Flags
+### 标志
 
-| Flag | Description |
+| 标志 | 描述 |
 |------|-------------|
-| `count_in_cargo` | Count items inside player/container cargo toward nominal |
-| `count_in_hoarder` | Count items in storage (tents, barrels, buried stashes) |
-| `count_in_map` | Count items on the ground and in buildings |
-| `count_in_player` | Count items on player characters |
-| `crafted` | Item is craftable (CE does not spawn it naturally) |
-| `deloot` | Dynamic event loot (spawned by events, not CE) |
+| `count_in_cargo` | 将玩家/容器货物中的物品计入 nominal |
+| `count_in_hoarder` | 将存储（帐篷、桶、掩埋藏匿处）中的物品计入 |
+| `count_in_map` | 将地面和建筑中的物品计入 |
+| `count_in_player` | 将玩家角色身上的物品计入 |
+| `crafted` | 物品可制作（CE 不会自然生成它） |
+| `deloot` | 动态事件战利品（由事件生成，而非 CE） |
 
-### Category, Usage, and Value
+### Category、Usage 和 Value
 
-- **category**: Item category (e.g., `weapons`, `tools`, `food`, `clothes`, `containers`)
-- **usage**: Where the item spawns (e.g., `Military`, `Police`, `Town`, `Village`, `Farm`, `Hunting`, `Coast`)
-- **value**: Map tier restriction (e.g., `Tier1` = coast, `Tier2` = inland, `Tier3` = military, `Tier4` = deep inland)
+- **category**：物品类别（例如 `weapons`、`tools`、`food`、`clothes`、`containers`）
+- **usage**：物品生成的位置（例如 `Military`、`Police`、`Town`、`Village`、`Farm`、`Hunting`、`Coast`）
+- **value**：地图层级限制（例如 `Tier1` = 海岸、`Tier2` = 内陆、`Tier3` = 军事区、`Tier4` = 深内陆）
 
-An item can have multiple `<usage>` and `<value>` tags to spawn in multiple locations and tiers.
+一个物品可以有多个 `<usage>` 和 `<value>` 标签，以便在多个位置和层级生成。
 
-**Example --- add a custom item to the economy:**
+**示例 --- 将自定义物品添加到经济系统：**
 
 ```xml
 <type name="MyCustomRifle">
@@ -121,7 +142,7 @@ An item can have multiple `<usage>` and `<value>` tags to spawn in multiple loca
 
 ## globals.xml
 
-Global CE parameters that affect all items.
+影响所有物品的全局 CE 参数。
 
 ```xml
 <variables>
@@ -154,28 +175,28 @@ Global CE parameters that affect all items.
 </variables>
 ```
 
-### Key Parameters
+### 关键参数
 
-| Variable | Description |
+| 变量 | 描述 |
 |----------|-------------|
-| `AnimalMaxCount` | Maximum animals alive simultaneously |
-| `ZombieMaxCount` | Maximum infected alive simultaneously |
-| `CleanupLifetimeDeadPlayer` | Seconds before dead player body despawns |
-| `CleanupLifetimeDeadInfected` | Seconds before dead zombie despawns |
-| `InitialSpawn` | Number of items to spawn on server startup |
-| `SpawnInitial` | Number of spawn attempts on startup |
-| `LootDamageMin` / `LootDamageMax` | Damage range applied to spawned loot (0-4: Pristine to Ruined) |
-| `RespawnAttempt` | Seconds between respawn checks |
-| `FlagRefreshFrequency` | Territory flag refresh interval (seconds) |
-| `TimeLogin` / `TimeLogout` | Login/logout timer (seconds) |
+| `AnimalMaxCount` | 同时存活的最大动物数量 |
+| `ZombieMaxCount` | 同时存活的最大感染者数量 |
+| `CleanupLifetimeDeadPlayer` | 死亡玩家尸体消失前的秒数 |
+| `CleanupLifetimeDeadInfected` | 死亡僵尸消失前的秒数 |
+| `InitialSpawn` | 服务器启动时生成的物品数量 |
+| `SpawnInitial` | 启动时的生成尝试次数 |
+| `LootDamageMin` / `LootDamageMax` | 应用于生成战利品的损伤范围（0-4：崭新到损坏） |
+| `RespawnAttempt` | 重生检查之间的秒数 |
+| `FlagRefreshFrequency` | 领地旗帜刷新间隔（秒） |
+| `TimeLogin` / `TimeLogout` | 登录/登出计时器（秒） |
 
 ---
 
 ## events.xml
 
-Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes, and other world events.
+定义动态事件：感染者生成区域、车辆生成、直升机坠毁和其他世界事件。
 
-### Structure
+### 结构
 
 ```xml
 <events>
@@ -200,34 +221,34 @@ Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes
 </events>
 ```
 
-### Event Parameters
+### 事件参数
 
-| Parameter | Description |
+| 参数 | 描述 |
 |-----------|-------------|
-| `nominal` | Target number of active events |
-| `min` / `max` | Minimum and maximum active at once |
-| `lifetime` | Seconds before event despawns |
-| `saferadius` | Minimum distance from players when spawning |
-| `distanceradius` | Minimum distance between event instances |
-| `cleanupradius` | Radius for cleanup checks |
-| `position` | `"fixed"` (from cfgeventspawns.xml) or `"player"` (near players) |
-| `active` | `1` = enabled, `0` = disabled |
+| `nominal` | 活动事件的目标数量 |
+| `min` / `max` | 同时活动的最小和最大数量 |
+| `lifetime` | 事件消失前的秒数 |
+| `saferadius` | 生成时距离玩家的最小距离 |
+| `distanceradius` | 事件实例之间的最小距离 |
+| `cleanupradius` | 清理检查的半径 |
+| `position` | `"fixed"`（来自 cfgeventspawns.xml）或 `"player"`（靠近玩家） |
+| `active` | `1` = 启用、`0` = 禁用 |
 
-### Children (Event Objects)
+### Children（事件对象）
 
-Each event can spawn one or more child objects:
+每个事件可以生成一个或多个子对象：
 
-| Attribute | Description |
+| 属性 | 描述 |
 |-----------|-------------|
-| `type` | Class name of the object to spawn |
-| `min` / `max` | Count range for this child |
-| `lootmin` / `lootmax` | Number of loot items spawned with this child |
+| `type` | 要生成的对象的类名 |
+| `min` / `max` | 此子对象的数量范围 |
+| `lootmin` / `lootmax` | 与此子对象一起生成的战利品物品数量 |
 
 ---
 
 ## cfgspawnabletypes.xml
 
-Defines what attachments and cargo spawn with specific items.
+定义特定物品生成时附带什么附件和货物。
 
 ```xml
 <spawnabletypes>
@@ -251,16 +272,16 @@ Defines what attachments and cargo spawn with specific items.
 
 ### 工作原理
 
-- Each `<attachments>` block has a `chance` (0.0 - 1.0) of being applied.
-- Within a block, items are selected by their individual `chance` values (normalized to 100% within the block).
-- Multiple `<attachments>` blocks allow different attachment slots to be independently rolled.
-- `<cargo>` blocks work the same way for items placed in the entity's cargo.
+- 每个 `<attachments>` 块有一个被应用的 `chance`（0.0 - 1.0）。
+- 在一个块内，物品按其各自的 `chance` 值选择（在块内归一化为 100%）。
+- 多个 `<attachments>` 块允许不同的附件槽位独立进行随机选择。
+- `<cargo>` 块对放入实体货物中的物品工作方式相同。
 
 ---
 
 ## cfgrandompresets.xml
 
-Defines reusable loot preset pools referenced by `cfgspawnabletypes.xml`.
+定义 `cfgspawnabletypes.xml` 引用的可重用战利品预设池。
 
 ```xml
 <randompresets>
@@ -274,7 +295,7 @@ Defines reusable loot preset pools referenced by `cfgspawnabletypes.xml`.
 </randompresets>
 ```
 
-These presets can be referenced by name in `cfgspawnabletypes.xml`:
+这些预设可以在 `cfgspawnabletypes.xml` 中按名称引用：
 
 ```xml
 <type name="Barrel_Green">
@@ -286,7 +307,7 @@ These presets can be referenced by name in `cfgspawnabletypes.xml`:
 
 ## cfgeconomycore.xml
 
-Root-level CE configuration. Defines default values, CE classes, and logging flags.
+根级 CE 配置。定义默认值、CE 类和日志标志。
 
 ```xml
 <economycore>
@@ -307,13 +328,13 @@ Root-level CE configuration. Defines default values, CE classes, and logging fla
 </economycore>
 ```
 
-The `<ce folder="db"/>` tag tells the CE where to find `types.xml`, `events.xml`, and `globals.xml`.
+`<ce folder="db"/>` 标签告诉 CE 在哪里找到 `types.xml`、`events.xml` 和 `globals.xml`。
 
 ---
 
 ## cfglimitsdefinition.xml
 
-Defines all valid category, usage, tag, and value flag names that can be used in `types.xml`.
+定义 `types.xml` 中可以使用的所有有效类别、用途、标签和值标志名称。
 
 ```xml
 <lists>
@@ -352,105 +373,105 @@ Defines all valid category, usage, tag, and value flag names that can be used in
 </lists>
 ```
 
-Custom mods can add new flags here and reference them in their `types.xml` entries.
+自定义模组可以在此添加新标志，并在其 `types.xml` 条目中引用它们。
 
 ---
 
-## ECE Flags in Script
+## 脚本中的 ECE 标志
 
-When spawning entities from script, the ECE flags (covered in [Chapter 6.1](01-entity-system.md)) determine how the entity interacts with the CE:
+从脚本生成实体时，ECE 标志（在[第 6.1 章](01-entity-system.md)中介绍）决定实体如何与 CE 交互：
 
-| Flag | CE Behavior |
+| 标志 | CE 行为 |
 |------|-------------|
-| `ECE_NOLIFETIME` | Entity will never despawn (not tracked by CE lifetime) |
-| `ECE_DYNAMIC_PERSISTENCY` | Entity becomes persistent only after player interaction |
-| `ECE_EQUIP_ATTACHMENTS` | CE spawns configured attachments from `cfgspawnabletypes.xml` |
-| `ECE_EQUIP_CARGO` | CE spawns configured cargo from `cfgspawnabletypes.xml` |
+| `ECE_NOLIFETIME` | 实体永远不会消失（不受 CE 生命周期跟踪） |
+| `ECE_DYNAMIC_PERSISTENCY` | 实体仅在玩家交互后才变为持久化 |
+| `ECE_EQUIP_ATTACHMENTS` | CE 从 `cfgspawnabletypes.xml` 生成配置的附件 |
+| `ECE_EQUIP_CARGO` | CE 从 `cfgspawnabletypes.xml` 生成配置的货物 |
 
-**Example --- spawn an item that persists forever:**
+**示例 --- 生成一个永久存在的物品：**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_NOLIFETIME;
 Object obj = GetGame().CreateObjectEx("Barrel_Green", pos, flags);
 ```
 
-**Example --- spawn with CE-configured attachments:**
+**示例 --- 使用 CE 配置的附件生成：**
 
 ```c
 int flags = ECE_PLACE_ON_SURFACE | ECE_EQUIP_ATTACHMENTS | ECE_EQUIP_CARGO;
 Object obj = GetGame().CreateObjectEx("AKM", pos, flags);
-// The AKM will spawn with random attachments per cfgspawnabletypes.xml
+// AKM 将按照 cfgspawnabletypes.xml 生成随机附件
 ```
 
 ---
 
-## Script API for CE Interaction
+## CE 交互的脚本 API
 
-While the CE is primarily XML-configured, there are some script-side interactions:
+虽然 CE 主要通过 XML 配置，但有一些脚本端的交互：
 
-### Reading Config Values
+### 读取配置值
 
 ```c
-// Check if an item exists in CfgVehicles
+// 检查物品是否存在于 CfgVehicles 中
 bool exists = GetGame().ConfigIsExisting("CfgVehicles MyCustomItem");
 
-// Read config properties
+// 读取配置属性
 string displayName;
 GetGame().ConfigGetText("CfgVehicles AKM displayName", displayName);
 
 int weight = GetGame().ConfigGetInt("CfgVehicles AKM weight");
 ```
 
-### Querying Objects in the World
+### 查询世界中的对象
 
 ```c
-// Get objects near a position
+// 获取某位置附近的对象
 array<Object> objects = new array<Object>;
 array<CargoBase> proxyCargos = new array<CargoBase>;
 GetGame().GetObjectsAtPosition(pos, 50.0, objects, proxyCargos);
 ```
 
-### Surface and Position Queries
+### 地表和位置查询
 
 ```c
-// Get terrain height (for placing items on ground)
+// 获取地形高度（用于将物品放置在地面上）
 float surfaceY = GetGame().SurfaceY(x, z);
 
-// Get surface type at position
+// 获取位置处的地表类型
 string surfaceType;
 GetGame().SurfaceGetType(x, z, surfaceType);
 ```
 
 ---
 
-## Modding the Central Economy
+## 修改中央经济系统
 
-### Adding Custom Items
+### 添加自定义物品
 
-1. Define the item class in your mod's `config.cpp` under `CfgVehicles`.
-2. Add a `<type>` entry in `types.xml` with nominal, lifetime, usage, and value flags.
-3. Optionally add attachment/cargo rules in `cfgspawnabletypes.xml`.
-4. If using new usage/value flags, define them in `cfglimitsdefinition.xml`.
+1. 在你的模组的 `config.cpp` 的 `CfgVehicles` 下定义物品类。
+2. 在 `types.xml` 中添加 `<type>` 条目，包含 nominal、lifetime、usage 和 value 标志。
+3. 可选地在 `cfgspawnabletypes.xml` 中添加附件/货物规则。
+4. 如果使用新的 usage/value 标志，在 `cfglimitsdefinition.xml` 中定义它们。
 
-### Modifying Existing Items
+### 修改现有物品
 
-Edit the `<type>` entry in `types.xml` to change spawn rates, lifetimes, or location restrictions. Changes take effect on server restart.
+编辑 `types.xml` 中的 `<type>` 条目以更改生成率、生命周期或位置限制。更改在服务器重启后生效。
 
-### Disabling Items
+### 禁用物品
 
-Set `nominal` and `min` to `0`:
+将 `nominal` 和 `min` 设置为 `0`：
 
 ```xml
 <type name="UnwantedItem">
     <nominal>0</nominal>
     <min>0</min>
-    <!-- rest of parameters -->
+    <!-- 其余参数 -->
 </type>
 ```
 
-### Adding Custom Events
+### 添加自定义事件
 
-Add a new `<event>` block in `events.xml` and corresponding spawn positions in `cfgeventspawns.xml`:
+在 `events.xml` 中添加新的 `<event>` 块，并在 `cfgeventspawns.xml` 中添加相应的生成位置：
 
 ```xml
 <!-- events.xml -->
@@ -487,26 +508,44 @@ Add a new `<event>` block in `events.xml` and corresponding spawn positions in `
 
 ## 总结
 
-| File | Purpose | Key Parameters |
+| 文件 | 用途 | 关键参数 |
 |------|---------|----------------|
-| `types.xml` | Item spawn definitions | `nominal`, `min`, `lifetime`, `usage`, `value` |
-| `globals.xml` | Global CE variables | `ZombieMaxCount`, `AnimalMaxCount`, cleanup timers |
-| `events.xml` | Dynamic events | `nominal`, `lifetime`, `position`, `children` |
-| `cfgspawnabletypes.xml` | Attachment/cargo rules per item | `attachments`, `cargo`, `chance` |
-| `cfgrandompresets.xml` | Reusable loot pools | `cargo`/`attachments` presets |
-| `cfgeconomycore.xml` | Root CE configuration | `classes`, `defaults`, CE folder |
-| `cfglimitsdefinition.xml` | Valid flag definitions | `categories`, `usageflags`, `valueflags` |
+| `types.xml` | 物品生成定义 | `nominal`、`min`、`lifetime`、`usage`、`value` |
+| `globals.xml` | 全局 CE 变量 | `ZombieMaxCount`、`AnimalMaxCount`、清理计时器 |
+| `events.xml` | 动态事件 | `nominal`、`lifetime`、`position`、`children` |
+| `cfgspawnabletypes.xml` | 每个物品的附件/货物规则 | `attachments`、`cargo`、`chance` |
+| `cfgrandompresets.xml` | 可重用战利品池 | `cargo`/`attachments` 预设 |
+| `cfgeconomycore.xml` | 根 CE 配置 | `classes`、`defaults`、CE 文件夹 |
+| `cfglimitsdefinition.xml` | 有效标志定义 | `categories`、`usageflags`、`valueflags` |
 
-| 概念 | 要点 |
+| 概念 | 关键要点 |
 |---------|-----------|
-| Nominal/Min | CE spawns items when count drops below `min`, targeting `nominal` |
-| Lifetime | Seconds before untouched items despawn |
-| Usage flags | Where items spawn (Military, Town, etc.) |
-| Value flags | Map tier restriction (Tier1 = coast through Tier4 = deep inland) |
-| Count flags | Which items count toward nominal (cargo, hoarder, map, player) |
-| Events | Dynamic spawns with their own lifecycle (crashes, vehicles, infected) |
-| ECE flags | `ECE_NOLIFETIME`, `ECE_EQUIP` for script-spawned items |
+| Nominal/Min | CE 在数量降至 `min` 以下时生成物品，目标为 `nominal` |
+| Lifetime | 未触碰物品消失前的秒数 |
+| Usage 标志 | 物品生成的位置（Military、Town 等） |
+| Value 标志 | 地图层级限制（Tier1 = 海岸 到 Tier4 = 深内陆） |
+| Count 标志 | 哪些物品计入 nominal（cargo、hoarder、map、player） |
+| Events | 具有自己生命周期的动态生成（坠毁、车辆、感染者） |
+| ECE 标志 | 脚本生成物品用 `ECE_NOLIFETIME`、`ECE_EQUIP` |
 
 ---
 
-[<< 上一章: Networking & RPC](09-networking.md) | **Central Economy** | [Home](../../README.md)
+## 最佳实践
+
+- **为高价值物品设置 `count_in_hoarder="1"`。** 没有此标志，玩家可以在藏匿处囤积稀有武器而不减少世界生成数量，实际上导致物品复制。
+- **大多数物品保持 `restock` 为 0。** 非零的 restock 值会延迟物品被拾取后的重新生成。仅对不应立即重新出现的物品使用（例如稀有军事装备）。
+- **在有玩家的正式服务器上测试 nominal/min 比率。** 静态测试无法揭示真实的 CE 行为。物品与玩家移动模式、容器存储和清理计时器的交互方式，只有在真实负载下才能看到。
+- **始终在 `config.cpp` 和 `types.xml` 中都定义新物品。** 有 config 条目但没有 types.xml 条目意味着物品永远不会自然生成。有 types.xml 条目但没有 config 类会导致 CE 错误。
+- **使用 `cfgspawnabletypes.xml` 创建武器多样性。** 不要生成裸武器，而是定义附件预设，让玩家找到带有随机枪托、护木和弹匣的武器 -- 这极大地改善了战利品质量感知。
+
+---
+
+## 兼容性与影响
+
+- **多模组：** 多个模组可以向 `types.xml` 添加条目。如果两个模组定义了相同的 `<type name="">`，最后加载的文件获胜。使用唯一的类名以避免冲突。在社区服务器上仔细合并 types.xml 条目。
+- **性能：** 许多物品类型的高 `nominal` 值（200+）会给 CE 的生成循环带来压力。CE 运行的定期扫描与跟踪的实体总数成正比。保持 nominal 在合理范围 -- 武器 5-20，普通物品 20-100。
+- **服务器/客户端：** CE 完全在服务器上运行。客户端无法看到 CE 状态。所有 XML 文件都是服务器端的，不会分发给客户端。
+
+---
+
+[首页](../../README.md) | [<< 上一章：网络与 RPC](09-networking.md) | **中央经济系统** | [下一章：任务钩子 >>](11-mission-hooks.md)
