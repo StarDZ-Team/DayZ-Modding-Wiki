@@ -6,7 +6,7 @@ hero:
   text: The Complete Guide
   tagline: 92 chapters covering everything from Enforce Script to published mods — in 12 languages.
   image:
-    src: /DayZ-Modding-Wiki/images/wiki-logo.png
+    src: /images/wiki-logo.png
     alt: DayZ Modding Wiki
   actions:
     - theme: brand
@@ -51,18 +51,18 @@ features:
 ## 🌍 Choose Your Language
 
 <p style="font-size: 1.2rem; line-height: 2.5;">
-  <a href="/DayZ-Modding-Wiki/en/" style="margin: 0 0.3rem;">🇺🇸 English</a> ·
-  <a href="/DayZ-Modding-Wiki/pt/" style="margin: 0 0.3rem;">🇧🇷 Português</a> ·
-  <a href="/DayZ-Modding-Wiki/de/" style="margin: 0 0.3rem;">🇩🇪 Deutsch</a> ·
-  <a href="/DayZ-Modding-Wiki/ru/" style="margin: 0 0.3rem;">🇷🇺 Русский</a> ·
-  <a href="/DayZ-Modding-Wiki/es/" style="margin: 0 0.3rem;">🇪🇸 Español</a> ·
-  <a href="/DayZ-Modding-Wiki/fr/" style="margin: 0 0.3rem;">🇫🇷 Français</a> ·
-  <a href="/DayZ-Modding-Wiki/ja/" style="margin: 0 0.3rem;">🇯🇵 日本語</a> ·
-  <a href="/DayZ-Modding-Wiki/zh-hans/" style="margin: 0 0.3rem;">🇨🇳 简体中文</a> ·
-  <a href="/DayZ-Modding-Wiki/cs/" style="margin: 0 0.3rem;">🇨🇿 Čeština</a> ·
-  <a href="/DayZ-Modding-Wiki/pl/" style="margin: 0 0.3rem;">🇵🇱 Polski</a> ·
-  <a href="/DayZ-Modding-Wiki/hu/" style="margin: 0 0.3rem;">🇭🇺 Magyar</a> ·
-  <a href="/DayZ-Modding-Wiki/it/" style="margin: 0 0.3rem;">🇮🇹 Italiano</a>
+  <a href="/en/" style="margin: 0 0.3rem;">🇺🇸 English</a> ·
+  <a href="/pt/" style="margin: 0 0.3rem;">🇧🇷 Português</a> ·
+  <a href="/de/" style="margin: 0 0.3rem;">🇩🇪 Deutsch</a> ·
+  <a href="/ru/" style="margin: 0 0.3rem;">🇷🇺 Русский</a> ·
+  <a href="/es/" style="margin: 0 0.3rem;">🇪🇸 Español</a> ·
+  <a href="/fr/" style="margin: 0 0.3rem;">🇫🇷 Français</a> ·
+  <a href="/ja/" style="margin: 0 0.3rem;">🇯🇵 日本語</a> ·
+  <a href="/zh-hans/" style="margin: 0 0.3rem;">🇨🇳 简体中文</a> ·
+  <a href="/cs/" style="margin: 0 0.3rem;">🇨🇿 Čeština</a> ·
+  <a href="/pl/" style="margin: 0 0.3rem;">🇵🇱 Polski</a> ·
+  <a href="/hu/" style="margin: 0 0.3rem;">🇭🇺 Magyar</a> ·
+  <a href="/it/" style="margin: 0 0.3rem;">🇮🇹 Italiano</a>
 </p>
 
 </div>
