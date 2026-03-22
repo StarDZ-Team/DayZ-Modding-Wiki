@@ -164,6 +164,7 @@ export default withMermaid(
       ['meta', { property: 'og:description', content: 'The most comprehensive DayZ modding documentation ever created' }],
     ],
 
+    base: '/DayZ-Modding-Wiki/',
     cleanUrls: true,
     lastUpdated: true,
     ignoreDeadLinks: [
