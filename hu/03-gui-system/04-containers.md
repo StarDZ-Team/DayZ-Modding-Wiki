@@ -1,17 +1,21 @@
-# Chapter 3.4: Container Widgets
+# 3.4. fejezet: Konténer widgetek
 
-[Home](../../README.md) | [<< Previous: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Next: Programmatic Widgets >>](05-programmatic-widgets.md)
+[Kezdőlap](../../README.md) | [<< Előző: Méretezés és pozícionálás](03-sizing-positioning.md) | **Konténer widgetek** | [Következő: Programozott widgetek >>](05-programmatic-widgets.md)
 
 ---
 
-## FrameWidget -- Structural Container
+A konténer widgetek szervezik a bennük lévő gyermek widgeteket. Míg a `FrameWidget` a legegyszerűbb (láthatatlan doboz, manuális pozícionálás), a DayZ három specializált konténert kínál, amelyek automatikusan kezelik az elrendezést: `WrapSpacerWidget`, `GridSpacerWidget` és `ScrollWidget`.
 
-`FrameWidget` is the most basic container. It draws nothing on screen and does not arrange its children -- you must position each child manually.
+---
 
-**When to use:**
-- Grouping related widgets so they can be shown/hidden together
-- Root widget of a panel or dialog
-- Any structural grouping where you handle positioning yourself
+## FrameWidget -- Strukturális konténer
+
+A `FrameWidget` a legalapvetőbb konténer. Nem rajzol semmit a képernyőre és nem rendezi a gyermekeit -- minden gyermeket manuálisan kell pozícionálnod.
+
+**Mikor használd:**
+- Kapcsolódó widgetek csoportosítása, hogy együtt lehessen megjeleníteni/elrejteni őket
+- Egy panel vagy párbeszédablak gyökér widgetje
+- Bármilyen strukturális csoportosítás, ahol te kezeled a pozícionálást
 
 ```
 FrameWidgetClass MyPanel {
@@ -44,30 +48,30 @@ FrameWidgetClass MyPanel {
 }
 ```
 
-**Fo jellemzok:**
-- No visual appearance (transparent)
-- Children positioned relative to the frame's bounds
-- No automatic layout -- every child needs explicit position/size
-- Lightweight -- zero rendering cost beyond its children
+**Fő jellemzők:**
+- Nincs vizuális megjelenése (átlátszó)
+- A gyermekek a keret határaihoz viszonyítva pozícionáltak
+- Nincs automatikus elrendezés -- minden gyermeknek explicit pozícióra/méretre van szüksége
+- Könnyűsúlyú -- nulla renderelési költség a gyermekein túl
 
 ---
 
-## WrapSpacerWidget -- Flow Layout
+## WrapSpacerWidget -- Folyam elrendezés
 
-`WrapSpacerWidget` automatically arranges its children in a flow sequence. Children are placed one after another horizontally, wrapping to the next row when they exceed the available width. This is the widget to use for dynamic lists where the number of children changes at runtime.
+A `WrapSpacerWidget` automatikusan rendezi a gyermekeit folyam sorozatban. A gyermekek egymás után kerülnek vízszintesen, és a következő sorba törnek, amikor meghaladják az elérhető szélességet. Ez a widget használandó olyan dinamikus listákhoz, ahol a gyermekek száma futásidőben változik.
 
-### Layout Attributes
+### Layout attribútumok
 
-| Attributum | Ertekek | Leiras |
+| Attribútum | Értékek | Leírás |
 |---|---|---|
-| `Padding` | integer (pixels) | Space between the spacer's edge and its children |
-| `Margin` | integer (pixels) | Space between individual children |
-| `"Size To Content H"` | `0` or `1` | Resize width to fit all children |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit all children |
-| `content_halign` | `left`, `center`, `right` | Horizontal alignment of the child group |
-| `content_valign` | `top`, `center`, `bottom` | Vertical alignment of the child group |
+| `Padding` | egész szám (pixelek) | A spacer széle és a gyermekei közötti távolság |
+| `Margin` | egész szám (pixelek) | Az egyes gyermekek közötti távolság |
+| `"Size To Content H"` | `0` vagy `1` | Szélesség átméretezése az összes gyermek befogadásához |
+| `"Size To Content V"` | `0` vagy `1` | Magasság átméretezése az összes gyermek befogadásához |
+| `content_halign` | `left`, `center`, `right` | A gyermekcsoport vízszintes igazítása |
+| `content_valign` | `top`, `center`, `bottom` | A gyermekcsoport függőleges igazítása |
 
-### Basic Flow Layout
+### Alapvető folyam elrendezés
 
 ```
 WrapSpacerWidgetClass TagList {
@@ -99,16 +103,16 @@ WrapSpacerWidgetClass TagList {
 }
 ```
 
-In this example:
-- The spacer is full parent width (`size 1`), but its height adjusts to fit children (`"Size To Content V" 1`).
-- Children are 80px, 60px, and 90px wide buttons.
-- If the available width cannot fit all three on one row, the spacer wraps them to the next row.
-- `Padding 5` adds 5px of space inside the spacer edges.
-- `Margin 3` adds 3px between each child.
+Ebben a példában:
+- A spacer teljes szülő szélességű (`size 1`), de a magassága a gyermekekhez igazodik (`"Size To Content V" 1`).
+- A gyermekek 80px, 60px és 90px széles gombok.
+- Ha az elérhető szélesség nem elegendő mindhárom befogadásához egy sorban, a spacer a következő sorba töri őket.
+- A `Padding 5` 5px-nyi helyet ad a spacer szélein belül.
+- A `Margin 3` 3px-nyi távolságot ad az egyes gyermekek között.
 
-### Vertical List with WrapSpacer
+### Függőleges lista WrapSpacerrel
 
-To create a vertical list (one item per row), make children full-width:
+Függőleges lista létrehozásához (egy elem soronként) tedd teljes szélességűvé a gyermekeket:
 
 ```
 WrapSpacerWidgetClass ItemList {
@@ -131,38 +135,38 @@ WrapSpacerWidgetClass ItemList {
 }
 ```
 
-Each child is 100% width (`size 1` with `hexactsize 0`), so only one fits per row, creating a vertical stack.
+Minden gyermek 100% szélességű (`size 1` a `hexactsize 0` beállítással), így soronként csak egy fér el, függőleges halmazt létrehozva.
 
-### Dynamic Children
+### Dinamikus gyermekek
 
-`WrapSpacerWidget` is ideal for programmatically added children. When you add or remove children, call `Update()` on the spacer to trigger a re-layout:
+A `WrapSpacerWidget` ideális programozottan hozzáadott gyermekekhez. Gyermekek hozzáadásakor vagy eltávolításakor hívd meg az `Update()` metódust a spaceren az újrarendezés kiváltásához:
 
 ```c
 WrapSpacerWidget spacer;
 
-// Add a child from a layout file
+// Gyermek hozzáadása layout fájlból
 Widget child = GetGame().GetWorkspace().CreateWidgets("MyMod/gui/layouts/ListItem.layout", spacer);
 
-// Force the spacer to recalculate
+// A spacer újraszámolásának kényszerítése
 spacer.Update();
 ```
 
 ---
 
-## GridSpacerWidget -- Grid Layout
+## GridSpacerWidget -- Rács elrendezés
 
-`GridSpacerWidget` arranges children in a uniform grid. You define the number of columns and rows, and each cell gets equal space.
+A `GridSpacerWidget` egyenletes rácsba rendezi a gyermekeket. Meghatározod az oszlopok és sorok számát, és minden cella egyenlő helyet kap.
 
-### Layout Attributes
+### Layout attribútumok
 
-| Attributum | Ertekek | Leiras |
+| Attribútum | Értékek | Leírás |
 |---|---|---|
-| `Columns` | integer | Number of grid columns |
-| `Rows` | integer | Number of grid rows |
-| `Margin` | integer (pixels) | Space between grid cells |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit content |
+| `Columns` | egész szám | Rács oszlopainak száma |
+| `Rows` | egész szám | Rács sorainak száma |
+| `Margin` | egész szám (pixelek) | Rács cellák közötti távolság |
+| `"Size To Content V"` | `0` vagy `1` | Magasság átméretezése a tartalomhoz igazítva |
 
-### Basic Grid
+### Alapvető rács
 
 ```
 GridSpacerWidgetClass InventoryGrid {
@@ -173,8 +177,8 @@ GridSpacerWidgetClass InventoryGrid {
  Rows 3
  Margin 2
  {
-  // 12 cells (4 columns x 3 rows)
-  // Children are placed in order: left-to-right, top-to-bottom
+  // 12 cella (4 oszlop x 3 sor)
+  // A gyermekek sorrendben kerülnek elhelyezésre: balról jobbra, felülről lefelé
   FrameWidgetClass Slot1 { }
   FrameWidgetClass Slot2 { }
   FrameWidgetClass Slot3 { }
@@ -191,9 +195,9 @@ GridSpacerWidgetClass InventoryGrid {
 }
 ```
 
-### Single-Column Grid (Vertical List)
+### Egyoszlopos rács (függőleges lista)
 
-Setting `Columns 1` creates a simple vertical stack where each child gets the full width:
+A `Columns 1` beállítás egyszerű függőleges halmazt hoz létre, ahol minden gyermek teljes szélességet kap:
 
 ```
 GridSpacerWidgetClass SettingsList {
@@ -223,37 +227,37 @@ GridSpacerWidgetClass SettingsList {
 
 ### GridSpacer vs. WrapSpacer
 
-| Funkcio | GridSpacer | WrapSpacer |
+| Funkció | GridSpacer | WrapSpacer |
 |---|---|---|
-| Cell size | Uniform (equal) | Each child keeps its own size |
-| Layout mode | Fixed grid (columns x rows) | Flow with wrapping |
-| Best for | Inventory slots, uniform galleries | Dynamic lists, tag clouds |
-| Children sizing | Ignored (grid controls it) | Respected (child size matters) |
+| Cellaméret | Egységes (egyenlő) | Minden gyermek megtartja a saját méretét |
+| Elrendezési mód | Fix rács (oszlopok x sorok) | Folyam tördeléssel |
+| Legjobb ehhez | Tárgyhelyek, egységes galériák | Dinamikus listák, címkefelhők |
+| Gyermekek méretezése | Figyelmen kívül hagyva (a rács vezérli) | Figyelembe véve (a gyermek mérete számít) |
 
 ---
 
-## ScrollWidget -- Scrollable Viewport
+## ScrollWidget -- Görgethető nézet
 
-`ScrollWidget` wraps content that may be taller (or wider) than the visible area, providing scrollbars for navigation.
+A `ScrollWidget` olyan tartalmat foglal keretbe, amely magasabb (vagy szélesebb) lehet a látható területnél, görgetősávokat biztosítva a navigációhoz.
 
-### Layout Attributes
+### Layout attribútumok
 
-| Attributum | Ertekek | Leiras |
+| Attribútum | Értékek | Leírás |
 |---|---|---|
-| `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
-| `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
+| `"Scrollbar V"` | `0` vagy `1` | Függőleges görgetősáv megjelenítése |
+| `"Scrollbar H"` | `0` vagy `1` | Vízszintes görgetősáv megjelenítése |
 
 ### Script API
 
 ```c
 ScrollWidget sw;
-sw.VScrollToPos(float pos);     // Scroll to vertical position (0 = top)
-sw.GetVScrollPos();             // Get current scroll position
-sw.GetContentHeight();          // Get total content height
-sw.VScrollStep(int step);       // Scroll by a step amount
+sw.VScrollToPos(float pos);     // Görgetés függőleges pozícióra (0 = teteje)
+sw.GetVScrollPos();             // Aktuális görgetési pozíció lekérdezése
+sw.GetContentHeight();          // Teljes tartalom magasságának lekérdezése
+sw.VScrollStep(int step);       // Görgetés lépésenként
 ```
 
-### Basic Scrollable List
+### Alapvető görgethető lista
 
 ```
 ScrollWidgetClass ListScroll {
@@ -267,7 +271,7 @@ ScrollWidgetClass ListScroll {
    hexactsize 0
    "Size To Content V" 1
    {
-    // Many children here...
+    // Sok gyermek itt...
     FrameWidgetClass Item1 {
      size 1 30
      hexactsize 0
@@ -278,7 +282,7 @@ ScrollWidgetClass ListScroll {
      hexactsize 0
      vexactsize 1
     }
-    // ... more items
+    // ... további elemek
    }
   }
  }
@@ -287,19 +291,19 @@ ScrollWidgetClass ListScroll {
 
 ---
 
-## The ScrollWidget + WrapSpacer Pattern
+## A ScrollWidget + WrapSpacer minta
 
-This is **the** pattern for scrollable dynamic lists in DayZ mods. It combines a fixed-height `ScrollWidget` with a `WrapSpacerWidget` that grows to fit its children.
+Ez **az** a minta görgethető dinamikus listákhoz a DayZ modokban. Egy fix magasságú `ScrollWidget`-et kombinál egy `WrapSpacerWidget`-tel, amely a gyermekeihez nő.
 
 ```
-// Fixed-height scroll viewport
+// Fix magasságú görgetési nézet
 ScrollWidgetClass DialogScroll {
  size 0.97 235
  hexactsize 0
  vexactsize 1
  "Scrollbar V" 1
  {
-  // Content grows vertically to fit all children
+  // A tartalom függőlegesen nő az összes gyermek befogadásához
   WrapSpacerWidgetClass DialogContent {
    size 1 0
    hexactsize 0
@@ -309,15 +313,15 @@ ScrollWidgetClass DialogScroll {
 }
 ```
 
-How it works:
+Hogyan működik:
 
-1. The `ScrollWidget` has a **fixed** height (235 pixels in this example).
-2. Inside it, the `WrapSpacerWidget` has `"Size To Content V" 1`, so its height grows as children are added.
-3. When the spacer's content exceeds 235 pixels, the scrollbar appears and the user can scroll.
+1. A `ScrollWidget`-nek **fix** magassága van (ebben a példában 235 pixel).
+2. Benne a `WrapSpacerWidget`-nek `"Size To Content V" 1` van beállítva, így a magassága nő, ahogy gyermekeket adnak hozzá.
+3. Amikor a spacer tartalma meghaladja a 235 pixelt, megjelenik a görgetősáv és a felhasználó görgethet.
 
-This pattern appears throughout DabsFramework, DayZ Editor, Expansion, and virtually every professional DayZ mod.
+Ez a minta megjelenik a DabsFramework-ben, a DayZ Editorban, az Expansionben és gyakorlatilag minden professzionális DayZ modban.
 
-### Adding Items Programmatically
+### Elemek programozott hozzáadása
 
 ```c
 ScrollWidget m_Scroll;
@@ -325,15 +329,15 @@ WrapSpacerWidget m_Content;
 
 void AddItem(string text)
 {
-    // Create a new child inside the WrapSpacer
+    // Új gyermek létrehozása a WrapSpacer belsejében
     Widget item = GetGame().GetWorkspace().CreateWidgets(
         "MyMod/gui/layouts/ListItem.layout", m_Content);
 
-    // Configure the new item
+    // Az új elem konfigurálása
     TextWidget tw = TextWidget.Cast(item.FindAnyWidget("Label"));
     tw.SetText(text);
 
-    // Force layout recalculation
+    // Elrendezés újraszámolásának kényszerítése
     m_Content.Update();
 }
 
@@ -344,7 +348,7 @@ void ScrollToBottom()
 
 void ClearAll()
 {
-    // Remove all children
+    // Összes gyermek eltávolítása
     Widget child = m_Content.GetChildren();
     while (child)
     {
@@ -358,39 +362,39 @@ void ClearAll()
 
 ---
 
-## Nesting Rules
+## Beágyazási szabályok
 
-Containers can be nested to create complex layouts. Some guidelines:
+A konténerek beágyazhatók komplex elrendezések létrehozásához. Néhány iránymutatás:
 
-1. **FrameWidget inside anything** -- Always works. Use frames to group sub-sections within spacers or grids.
+1. **FrameWidget bármiben** -- Mindig működik. Használj kereteket alszekciók csoportosítására spacereken vagy rácsokban belül.
 
-2. **WrapSpacer inside ScrollWidget** -- The standard pattern for scrollable lists. The spacer grows; the scroll clips.
+2. **WrapSpacer ScrollWidget-ben** -- A szabványos minta görgethető listákhoz. A spacer nő; a scroll vág.
 
-3. **GridSpacer inside WrapSpacer** -- Works. Useful for putting a fixed grid as one item in a flow layout.
+3. **GridSpacer WrapSpacer-ben** -- Működik. Hasznos fix rács elhelyezéséhez egy folyam elrendezés egyik elemeként.
 
-4. **ScrollWidget inside WrapSpacer** -- Possible but requires a fixed height on the scroll widget (`vexactsize 1`). Without a fixed height, the scroll widget will try to grow to fit its content (defeating the purpose of scrolling).
+4. **ScrollWidget WrapSpacer-ben** -- Lehetséges, de fix magasságra van szükség a scroll widgetnél (`vexactsize 1`). Fix magasság nélkül a scroll widget megpróbál a tartalmához növekedni (ami ellentmond a görgetés céljának).
 
-5. **Avoid deep nesting** -- Every level of nesting adds layout computation cost. Three or four levels deep is typical for complex UIs; going beyond six levels suggests the layout should be restructured.
+5. **Kerüld a mély beágyazást** -- Minden beágyazási szint elrendezés-számítási költséget ad hozzá. Három-négy szint mélység tipikus komplex UI-knál; hat szintet meghaladni azt sugallja, hogy az elrendezést át kellene strukturálni.
 
 ---
 
-## Mikor hasznaljuk Each Container
+## Mikor használjuk az egyes konténereket
 
-| Forgatokonyv | Best Container |
+| Forgatókönyv | Legjobb konténer |
 |---|---|
-| Static panel with manually positioned elements | `FrameWidget` |
-| Dynamic list of varying-size items | `WrapSpacerWidget` |
-| Uniform grid (inventory, gallery) | `GridSpacerWidget` |
-| Vertical list with one item per row | `WrapSpacerWidget` (full-width children) or `GridSpacerWidget` (`Columns 1`) |
-| Content taller than available space | `ScrollWidget` wrapping a spacer |
-| Tab content area | `FrameWidget` (swap children visibility) |
-| Toolbar buttons | `WrapSpacerWidget` or `GridSpacerWidget` |
+| Statikus panel manuálisan pozícionált elemekkel | `FrameWidget` |
+| Változó méretű elemek dinamikus listája | `WrapSpacerWidget` |
+| Egységes rács (leltár, galéria) | `GridSpacerWidget` |
+| Függőleges lista soronként egy elemmel | `WrapSpacerWidget` (teljes szélességű gyermekek) vagy `GridSpacerWidget` (`Columns 1`) |
+| Tartalom magasabb az elérhető helynél | `ScrollWidget` egy spacert csomagolva |
+| Fül tartalmi területe | `FrameWidget` (gyermekek láthatóságának váltása) |
+| Eszköztár gombok | `WrapSpacerWidget` vagy `GridSpacerWidget` |
 
 ---
 
-## Complete Example: Scrollable Settings Panel
+## Teljes példa: Görgethető beállítások panel
 
-A settings panel with a title bar, scrollable content area containing grid-arranged options, and a bottom button bar:
+Egy beállítások panel címsorral, rácsba rendezett opciókat tartalmazó görgethető tartalmi területtel és alsó gombsorral:
 
 ```
 FrameWidgetClass SettingsPanel {
@@ -402,7 +406,7 @@ FrameWidgetClass SettingsPanel {
  hexactsize 0
  vexactsize 0
  {
-  // Title bar
+  // Címsor
   PanelWidgetClass TitleBar {
    position 0 0
    size 1 30
@@ -411,7 +415,7 @@ FrameWidgetClass SettingsPanel {
    color 0.2 0.4 0.8 1
   }
 
-  // Scrollable settings area
+  // Görgethető beállítási terület
   ScrollWidgetClass SettingsScroll {
    position 0 30
    size 1 0
@@ -431,7 +435,7 @@ FrameWidgetClass SettingsPanel {
    }
   }
 
-  // Button bar at bottom
+  // Gombsor alul
   FrameWidgetClass ButtonBar {
    size 1 40
    halign left_ref
@@ -447,7 +451,39 @@ FrameWidgetClass SettingsPanel {
 
 ---
 
-## Kovetkezo lepesek
+## Bevált gyakorlatok
 
-- [3.5 Programozott widget letrehozas](05-programmatic-widgets.md) -- Create widgets from code
-- [3.6 Esemenyek kezelese](06-event-handling.md) -- Respond to clicks, changes, and other events
+- Mindig hívd meg az `Update()` metódust a `WrapSpacerWidget`-en vagy `GridSpacerWidget`-en, miután programozottan hozzáadtál vagy eltávolítottál gyermekeket. E hívás nélkül a spacer nem számítja újra az elrendezését, és a gyermekek átfedhetnek vagy láthatatlanok lehetnek.
+- Használd a `ScrollWidget` + `WrapSpacerWidget` kombinációt szabványos mintaként bármilyen dinamikus listához. Állítsd a scroll widgetet fix pixel magasságra, a belső spacert pedig `"Size To Content V" 1` értékre.
+- Részesítsd előnyben a `WrapSpacerWidget`-et teljes szélességű gyermekekkel a `GridSpacerWidget Columns 1` beállítás helyett olyan függőleges listáknál, ahol az elemek változó magasságúak. A GridSpacer egységes cellaméreteket kényszerít ki.
+- Mindig állítsd be a `clipchildren 1` beállítást a `ScrollWidget`-en. E nélkül a túlcsordult tartalom a scroll nézet határain kívül renderelődik.
+- Kerüld a 4-5 szintnél mélyebb konténer beágyazást. Minden szint elrendezés-számítási költséget ad hozzá és jelentősen megnehezíti a hibakeresést.
+
+---
+
+## Elmélet vs. gyakorlat
+
+> Amit a dokumentáció mond, és hogyan működnek a dolgok ténylegesen futásidőben.
+
+| Fogalom | Elmélet | Valóság |
+|---------|---------|---------|
+| A `WrapSpacerWidget.Update()` | Az elrendezés automatikusan újraszámolódik, amikor a gyermekek változnak | Manuálisan kell hívnod az `Update()` metódust a `CreateWidgets()` vagy `Unlink()` után. Ennek elfelejtése a leggyakoribb spacer hiba |
+| `"Size To Content V"` | A spacer a gyermekekhez nő | Csak akkor működik, ha a gyermekeknek explicit méretük van (pixel magasság vagy ismert arányos szülő). Ha a gyermekek szintén `Size To Content`, nulla magasságot kapsz |
+| `GridSpacerWidget` cellaméretezés | A rács egységesen vezérli a cellaméretet | A gyermekek saját méretattribútumai figyelmen kívül maradnak -- a rács felülírja őket. A `size` beállítása egy rács gyermekén nincs hatása |
+| `ScrollWidget` görgetési pozíció | A `VScrollToPos(0)` a tetejére görget | Gyermekek hozzáadása után lehet, hogy egy képkockával el kell halasztanod a `VScrollToPos()` hívását (a `CallLater` segítségével), mert a tartalom magassága még nem lett újraszámolva |
+| Beágyazott spacerek | A spacerek szabadon beágyazhatók | Egy `WrapSpacer` egy `WrapSpacer`-ben működik, de a `Size To Content` mindkét szinten végtelen elrendezési ciklusokat okozhat, amelyek lefagyasztják az UI-t |
+
+---
+
+## Kompatibilitás és hatás
+
+- **Több moddal:** A konténer widgetek layoutonkéntileg működnek és nem ütköznek modok között. Azonban ha két mod gyermekeket szúr be ugyanabba a vanilla `ScrollWidget`-be (`modded class` segítségével), a gyermekek sorrendje kiszámíthatatlan.
+- **Teljesítmény:** A `WrapSpacerWidget.Update()` újraszámítja az összes gyermek pozícióját. 100+ elemű listáknál hívd meg az `Update()` metódust egyszer a kötegelt műveletek után, nem minden egyes hozzáadás után. A GridSpacer gyorsabb egységes rácsokhoz, mert a cellapozíciók aritmetikusan számítódnak.
+- **Verzió:** A `WrapSpacerWidget` és a `GridSpacerWidget` a DayZ 1.0 óta elérhető. A `"Size To Content H/V"` attribútumok kezdettől fogva jelen voltak, de viselkedésük mélyen beágyazott layoutoknál a DayZ 1.10 körül stabilizálódott.
+
+---
+
+## Következő lépések
+
+- [3.5 Programozott widget létrehozás](05-programmatic-widgets.md) -- Widgetek létrehozása kódból
+- [3.6 Események kezelése](06-event-handling.md) -- Reagálás kattintásokra, változásokra és egyéb eseményekre
