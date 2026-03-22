@@ -252,6 +252,12 @@ export default withMermaid(
       lineNumbers: true,
     },
 
+    vite: {
+      build: {
+        chunkSizeWarningLimit: 1500,
+      },
+    },
+
     mermaid: {
       theme: 'dark',
     },
