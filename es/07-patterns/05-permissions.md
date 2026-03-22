@@ -1,73 +1,73 @@
-# Capítulo 7.5: Permission Systems
+# Capitulo 7.5: Sistemas de Permisos
 
-[Inicio](../../README.md) | [<< Anterior: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Siguiente: Event-Driven Architecture >>](06-events.md)
+[Inicio](../../README.md) | [<< Anterior: Persistencia de Configuracion](04-config-persistence.md) | **Sistemas de Permisos** | [Siguiente: Arquitectura Orientada a Eventos >>](06-events.md)
 
 ---
 
-## Introducción
+## Introduccion
 
-Every admin tool, every privileged action, and every moderation feature in DayZ needs a permission system. The question is not whether to check permissions but how to structure them. The DayZ modding community has settled on three major patterns: hierarchical dot-separated permissions, user-group role assignment (VPP), and framework-level role-based access (CF/COT). Each has different trade-offs in granularity, complexity, and server-owner experience.
+Cada herramienta de administracion, cada accion privilegiada y cada funcion de moderacion en DayZ necesita un sistema de permisos. La pregunta no es si verificar permisos sino como estructurarlos. La comunidad de modding de DayZ se ha establecido en tres patrones principales: permisos jerarquicos separados por punto, asignacion de roles por grupo de usuario (VPP), y acceso basado en roles a nivel de framework (CF/COT). Cada uno tiene diferentes compromisos en granularidad, complejidad y experiencia del operador del servidor.
 
-This chapter covers all three patterns, the permission-checking flow, storage formats, and wildcard/superadmin handling.
+Este capitulo cubre los tres patrones, el flujo de verificacion de permisos, formatos de almacenamiento y manejo de comodines/superadmin.
 
 ---
 
 ## Tabla de Contenidos
 
-- [Why Permissions Matter](#why-permissions-matter)
-- [Hierarchical Dot-Separated (MyMod Pattern)](#hierarchical-dot-separated-mymod-pattern)
-- [VPP UserGroup Pattern](#vpp-usergroup-pattern)
-- [CF Role-Based Pattern (COT)](#cf-role-based-pattern-cot)
-- [Permission Checking Flow](#permission-checking-flow)
-- [Storage Formats](#storage-formats)
-- [Wildcard and Superadmin Patterns](#wildcard-and-superadmin-patterns)
-- [Migration Between Systems](#migration-between-systems)
-- [Best Practices](#best-practices)
+- [Por que Importan los Permisos](#por-que-importan-los-permisos)
+- [Jerarquico Separado por Punto (Patron MyMod)](#jerarquico-separado-por-punto-patron-mymod)
+- [Patron UserGroup de VPP](#patron-usergroup-de-vpp)
+- [Patron Basado en Roles de CF (COT)](#patron-basado-en-roles-de-cf-cot)
+- [Flujo de Verificacion de Permisos](#flujo-de-verificacion-de-permisos)
+- [Formatos de Almacenamiento](#formatos-de-almacenamiento)
+- [Patrones de Comodin y Superadmin](#patrones-de-comodin-y-superadmin)
+- [Migracion Entre Sistemas](#migracion-entre-sistemas)
+- [Mejores Practicas](#mejores-practicas)
 
 ---
 
-## Why Permissions Matter
+## Por que Importan los Permisos
 
-Without a permission system, you have two options: either every player can do everything (chaos), or you hardcode Steam64 IDs in your scripts (unmaintainable). A permission system lets server owners define who can do what, without modifying code.
+Sin un sistema de permisos, tienes dos opciones: o cada jugador puede hacer todo (caos), o codificas Steam64 IDs directamente en tus scripts (inmantenible). Un sistema de permisos permite a los operadores de servidor definir quien puede hacer que, sin modificar codigo.
 
-The three security rules:
+Las tres reglas de seguridad:
 
-1. **Never trust the client.** The client sends a request; the server decides whether to honor it.
-2. **Default deny.** If a player is not explicitly granted a permission, they do not have it.
-3. **Fail closed.** If the permission check itself fails (null identity, corrupted data), deny the action.
+1. **Nunca confies en el cliente.** El cliente envia una solicitud; el servidor decide si la honra.
+2. **Denegar por defecto.** Si un jugador no tiene explicitamente concedido un permiso, no lo tiene.
+3. **Fallar cerrado.** Si la verificacion de permisos en si falla (identidad null, datos corruptos), deniega la accion.
 
 ---
 
-## Hierarchical Dot-Separated (MyMod Pattern)
+## Jerarquico Separado por Punto (Patron MyMod)
 
-MyMod uses dot-separated permission strings organized in a tree hierarchy. Each permission is a path like `"MyMod.Admin.Teleport"` or `"MyMod.Missions.Start"`. Wildcards allow granting entire subtrees.
+MyMod usa strings de permisos separados por puntos organizados en una jerarquia de arbol. Cada permiso es una ruta como `"MyMod.Admin.Teleport"` o `"MyMod.Missions.Start"`. Los comodines permiten conceder subarboles enteros.
 
-### Permission Format
+### Formato de Permisos
 
 ```
-MyMod                           (root namespace)
-├── Admin                        (admin tools)
-│   ├── Panel                    (open admin panel)
-│   ├── Teleport                 (teleport self/others)
-│   ├── Kick                     (kick players)
-│   ├── Ban                      (ban players)
-│   └── Weather                  (change weather)
-├── Missions                     (mission system)
-│   ├── Start                    (start missions manually)
-│   └── Stop                     (stop missions)
-└── AI                           (AI system)
-    ├── Spawn                    (spawn AI manually)
-    └── Config                   (edit AI config)
+MyMod                           (namespace raiz)
++-- Admin                       (herramientas de admin)
+|   +-- Panel                   (abrir panel de admin)
+|   +-- Teleport                (teletransportar a si mismo/otros)
+|   +-- Kick                    (expulsar jugadores)
+|   +-- Ban                     (banear jugadores)
+|   +-- Weather                 (cambiar clima)
++-- Missions                    (sistema de misiones)
+|   +-- Start                   (iniciar misiones manualmente)
+|   +-- Stop                    (detener misiones)
++-- AI                          (sistema de IA)
+    +-- Spawn                   (generar IA manualmente)
+    +-- Config                  (editar config de IA)
 ```
 
-### Data Model
+### Modelo de Datos
 
-Each player (identified by Steam64 ID) has an array of granted permission strings:
+Cada jugador (identificado por Steam64 ID) tiene un array de strings de permisos concedidos:
 
 ```c
 class MyPermissionsData
 {
-    // key: Steam64 ID, value: array of permission strings
+    // clave: Steam64 ID, valor: array de strings de permisos
     ref map<string, ref TStringArray> Admins;
 
     void MyPermissionsData()
@@ -77,9 +77,9 @@ class MyPermissionsData
 };
 ```
 
-### Permission Check
+### Verificacion de Permisos
 
-The check walks the player's granted permissions and supports three match types: exact match, full wildcard (`"*"`), and prefix wildcard (`"MyMod.Admin.*"`):
+La verificacion recorre los permisos concedidos del jugador y soporta tres tipos de coincidencia: coincidencia exacta, comodin completo (`"*"`) y comodin de prefijo (`"MyMod.Admin.*"`):
 
 ```c
 bool HasPermission(string plainId, string permission)
@@ -95,15 +95,15 @@ bool HasPermission(string plainId, string permission)
     {
         string granted = perms[i];
 
-        // Full wildcard: superadmin
+        // Comodin completo: superadmin
         if (granted == "*")
             return true;
 
-        // Exact match
+        // Coincidencia exacta
         if (granted == permission)
             return true;
 
-        // Prefix wildcard: "MyMod.Admin.*" matches "MyMod.Admin.Teleport"
+        // Comodin de prefijo: "MyMod.Admin.*" coincide con "MyMod.Admin.Teleport"
         if (granted.IndexOf("*") > 0)
         {
             string prefix = granted.Substring(0, granted.Length() - 1);
@@ -116,7 +116,7 @@ bool HasPermission(string plainId, string permission)
 }
 ```
 
-### JSON Storage
+### Almacenamiento JSON
 
 ```json
 {
@@ -129,39 +129,39 @@ bool HasPermission(string plainId, string permission)
 }
 ```
 
-### Strengths
+### Fortalezas
 
-- **Fine-grained:** you can grant exactly the permissions each admin needs
-- **Hierarchical:** wildcards grant entire subtrees without listing every permission
-- **Self-documenting:** the permission string tells you what it controls
-- **Extensible:** new permissions are just new strings --- no schema changes
+- **Granular:** puedes conceder exactamente los permisos que cada admin necesita
+- **Jerarquico:** los comodines conceden subarboles enteros sin listar cada permiso
+- **Auto-documentado:** el string del permiso dice lo que controla
+- **Extensible:** nuevos permisos son solo nuevos strings --- sin cambios de esquema
 
-### Weaknesses
+### Debilidades
 
-- **No named roles:** if 10 admins need the same set, you list it 10 times
-- **String-based:** typos in permission strings fail silently (they just do not match)
+- **Sin roles nombrados:** si 10 admins necesitan el mismo conjunto, lo listas 10 veces
+- **Basado en strings:** errores tipograficos en strings de permisos fallan silenciosamente (simplemente no coinciden)
 
 ---
 
-## VPP UserGroup Pattern
+## Patron UserGroup de VPP
 
-VPP Admin Tools uses a group-based system. You define named groups (roles) with sets of permissions, then assign players to groups.
+VPP Admin Tools usa un sistema basado en grupos. Defines grupos nombrados (roles) con conjuntos de permisos, luego asignas jugadores a grupos.
 
-### Concept
+### Concepto
 
 ```
-Groups:
-  "SuperAdmin"  → [all permissions]
-  "Moderator"   → [kick, ban, mute, teleport]
-  "Builder"     → [spawn objects, teleport, ESP]
+Grupos:
+  "SuperAdmin"  -> [todos los permisos]
+  "Moderator"   -> [kick, ban, mute, teleport]
+  "Builder"     -> [generar objetos, teleport, ESP]
 
-Players:
-  "76561198000000001" → "SuperAdmin"
-  "76561198000000002" → "Moderator"
-  "76561198000000003" → "Builder"
+Jugadores:
+  "76561198000000001" -> "SuperAdmin"
+  "76561198000000002" -> "Moderator"
+  "76561198000000003" -> "Builder"
 ```
 
-### Implementation Pattern
+### Patron de Implementacion
 
 ```c
 class VPPUserGroup
@@ -195,7 +195,7 @@ class VPPPermissionManager
         {
             VPPUserGroup group = m_Groups[i];
 
-            // Check if player is in this group
+            // Verificar si el jugador esta en este grupo
             if (group.Members.Find(plainId) == -1)
                 continue;
 
@@ -207,7 +207,7 @@ class VPPPermissionManager
 };
 ```
 
-### JSON Storage
+### Almacenamiento JSON
 
 ```json
 {
@@ -245,32 +245,32 @@ class VPPPermissionManager
 }
 ```
 
-### Strengths
+### Fortalezas
 
-- **Role-based:** define a role once, assign it to many players
-- **Familiar:** server owners understand group/role systems from other games
-- **Easy bulk changes:** change a group's permissions and all members are updated
+- **Basado en roles:** define un rol una vez, asignalo a muchos jugadores
+- **Familiar:** los operadores de servidor entienden sistemas de grupo/rol de otros juegos
+- **Cambios masivos faciles:** cambia los permisos de un grupo y todos los miembros se actualizan
 
-### Weaknesses
+### Debilidades
 
-- **Less granular without extra work:** giving one specific admin one extra permission means creating a new group or adding per-player overrides
-- **Group inheritance is complex:** VPP does not natively support group hierarchy (e.g., "Admin" inherits all "Moderator" permissions)
+- **Menos granular sin trabajo extra:** dar a un admin especifico un permiso extra significa crear un nuevo grupo o agregar sobreescrituras por jugador
+- **La herencia de grupos es compleja:** VPP no soporta nativamente jerarquia de grupos (ej., "Admin" hereda todos los permisos de "Moderator")
 
 ---
 
-## CF Role-Based Pattern (COT)
+## Patron Basado en Roles de CF (COT)
 
-Community Framework / COT uses a role and permission system where roles are defined with explicit permission sets, and players are assigned to roles.
+Community Framework / COT usa un sistema de roles y permisos donde los roles se definen con conjuntos de permisos explicitos, y los jugadores se asignan a roles.
 
-### Concept
+### Concepto
 
-CF's permission system is similar to VPP's groups but integrated into the framework layer, making it available to all CF-based mods:
+El sistema de permisos de CF es similar a los grupos de VPP pero integrado en la capa del framework, haciendolo disponible para todos los mods basados en CF:
 
 ```c
-// COT pattern (simplified)
-// Roles are defined in AuthFile.json
-// Each role has a name and an array of permissions
-// Players are assigned to roles by Steam64 ID
+// Patron COT (simplificado)
+// Los roles se definen en AuthFile.json
+// Cada rol tiene un nombre y un array de permisos
+// Los jugadores se asignan a roles por Steam64 ID
 
 class CF_Permission
 {
@@ -280,22 +280,22 @@ class CF_Permission
 };
 ```
 
-### Permission Tree
+### Arbol de Permisos
 
-CF represents permissions as a tree structure, where each node can be explicitly allowed, denied, or inherit from its parent:
+CF representa permisos como una estructura de arbol, donde cada nodo puede ser explicitamente permitido, denegado o heredar de su padre:
 
 ```
 Root
-├── Admin [ALLOW]
-│   ├── Kick [INHERIT → ALLOW]
-│   ├── Ban [INHERIT → ALLOW]
-│   └── Teleport [DENY]        ← Explicitly denied even though Admin is ALLOW
-└── ESP [ALLOW]
++-- Admin [ALLOW]
+|   +-- Kick [INHERIT -> ALLOW]
+|   +-- Ban [INHERIT -> ALLOW]
+|   +-- Teleport [DENY]        <- Explicitamente denegado aunque Admin es ALLOW
++-- ESP [ALLOW]
 ```
 
-This three-state system (allow/deny/inherit) is more expressive than the binary (granted/not-granted) systems used by MyMod and VPP. It allows you to grant a broad category and then carve out exceptions.
+Este sistema de tres estados (permitir/denegar/heredar) es mas expresivo que los sistemas binarios (concedido/no concedido) usados por MyMod y VPP. Te permite conceder una categoria amplia y luego crear excepciones.
 
-### JSON Storage
+### Almacenamiento JSON
 
 ```json
 {
@@ -316,106 +316,108 @@ This three-state system (allow/deny/inherit) is more expressive than the binary 
 }
 ```
 
-(Where `2 = ALLOW`, `1 = DENY`, `0 = INHERIT`)
+(Donde `2 = ALLOW`, `1 = DENY`, `0 = INHERIT`)
 
-### Strengths
+### Fortalezas
 
-- **Three-state permissions:** allow, deny, inherit gives maximum flexibility
-- **Tree structure:** mirrors the hierarchical nature of permission paths
-- **Framework-level:** all CF mods share the same permission system
+- **Permisos de tres estados:** permitir, denegar, heredar da maxima flexibilidad
+- **Estructura de arbol:** refleja la naturaleza jerarquica de las rutas de permisos
+- **Nivel de framework:** todos los mods CF comparten el mismo sistema de permisos
 
-### Weaknesses
+### Debilidades
 
-- **Complexity:** three states are harder for server owners to understand than simple "granted"
-- **CF dependency:** only works with Community Framework
+- **Complejidad:** tres estados son mas dificiles de entender para los operadores de servidor que un simple "concedido"
+- **Dependencia de CF:** solo funciona con Community Framework
 
 ---
 
-## Permission Checking Flow
+## Flujo de Verificacion de Permisos
 
-Regardless of which system you use, the server-side permission check follows the same pattern:
+Independientemente del sistema que uses, la verificacion de permisos del lado del servidor sigue el mismo patron:
 
 ```
-Client sends RPC request
-        │
-        ▼
-Server RPC handler receives it
-        │
-        ▼
-    ┌─────────────────────────────────┐
-    │ Is sender identity non-null?     │
-    │ (Network-level validation)       │
-    └───────────┬─────────────────────┘
-                │ No → return (drop silently)
-                │ Yes ▼
-    ┌─────────────────────────────────┐
-    │ Does sender have the required    │
-    │ permission for this action?      │
-    └───────────┬─────────────────────┘
-                │ No → log warning, optionally send error to client, return
-                │ Yes ▼
-    ┌─────────────────────────────────┐
-    │ Validate request data            │
-    │ (read params, check bounds)      │
-    └───────────┬─────────────────────┘
-                │ Invalid → send error to client, return
-                │ Valid ▼
-    ┌─────────────────────────────────┐
-    │ Execute the privileged action    │
-    │ Log the action with admin ID     │
-    │ Send success response            │
-    └─────────────────────────────────┘
+El cliente envia solicitud RPC
+        |
+        v
+El manejador RPC del servidor la recibe
+        |
+        v
+    +----------------------------------+
+    | Es la identidad del remitente    |
+    | no null?                         |
+    | (Validacion de nivel de red)     |
+    +------------------+---------------+
+                       | No -> retornar (descartar silenciosamente)
+                       | Si v
+    +----------------------------------+
+    | Tiene el remitente el permiso    |
+    | requerido para esta accion?      |
+    +------------------+---------------+
+                       | No -> registrar advertencia, opcionalmente enviar error al cliente, retornar
+                       | Si v
+    +----------------------------------+
+    | Validar datos de la solicitud    |
+    | (leer parametros, verificar      |
+    | limites)                         |
+    +------------------+---------------+
+                       | Invalido -> enviar error al cliente, retornar
+                       | Valido v
+    +----------------------------------+
+    | Ejecutar la accion privilegiada  |
+    | Registrar la accion con ID admin |
+    | Enviar respuesta de exito        |
+    +----------------------------------+
 ```
 
-### Implementation
+### Implementacion
 
 ```c
 void OnRPC_KickPlayer(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
-    // Step 1: Validate sender
+    // Paso 1: Validar remitente
     if (!sender) return;
 
-    // Step 2: Check permission
+    // Paso 2: Verificar permiso
     if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Kick"))
     {
-        MyLog.Warning("Admin", "Unauthorized kick attempt: " + sender.GetName());
+        MyLog.Warning("Admin", "Intento de kick no autorizado: " + sender.GetName());
         return;
     }
 
-    // Step 3: Read and validate data
+    // Paso 3: Leer y validar datos
     string targetUid;
     if (!ctx.Read(targetUid)) return;
 
     if (targetUid == sender.GetPlainId())
     {
-        // Cannot kick yourself
-        SendError(sender, "Cannot kick yourself");
+        // No puedes expulsarte a ti mismo
+        SendError(sender, "No puedes expulsarte a ti mismo");
         return;
     }
 
-    // Step 4: Execute
+    // Paso 4: Ejecutar
     PlayerIdentity targetIdentity = FindPlayerByUid(targetUid);
     if (!targetIdentity)
     {
-        SendError(sender, "Player not found");
+        SendError(sender, "Jugador no encontrado");
         return;
     }
 
     GetGame().DisconnectPlayer(targetIdentity);
 
-    // Step 5: Log and respond
-    MyLog.Info("Admin", sender.GetName() + " kicked " + targetIdentity.GetName());
-    SendSuccess(sender, "Player kicked");
+    // Paso 5: Registrar y responder
+    MyLog.Info("Admin", sender.GetName() + " expulso a " + targetIdentity.GetName());
+    SendSuccess(sender, "Jugador expulsado");
 }
 ```
 
 ---
 
-## Storage Formats
+## Formatos de Almacenamiento
 
-All three systems store permissions in JSON. The differences are structural:
+Los tres sistemas almacenan permisos en JSON. Las diferencias son estructurales:
 
-### Flat Per-Player
+### Plano Por Jugador
 
 ```json
 {
@@ -425,14 +427,14 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**Archivo:** One file for all players.
-**Pros:** Simple, easy to edit by hand.
-**Cons:** Redundant if many players share the same permissions.
+**Archivo:** Un archivo para todos los jugadores.
+**Ventajas:** Simple, facil de editar a mano.
+**Desventajas:** Redundante si muchos jugadores comparten los mismos permisos.
 
-### Per-Player File (Expansion / Player Data)
+### Archivo Por Jugador (Expansion / Datos de Jugador)
 
 ```json
-// File: $profile:MyMod/Players/76561198xxxxx.json
+// Archivo: $profile:MyMod/Players/76561198xxxxx.json
 {
     "UID": "76561198xxxxx",
     "Permissions": ["perm.a", "perm.b"],
@@ -440,16 +442,16 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**Pros:** Each player is independent; no locking concerns.
-**Cons:** Many small files; searching "who has permission X?" requires scanning all files.
+**Ventajas:** Cada jugador es independiente; sin preocupaciones de bloqueo.
+**Desventajas:** Muchos archivos pequenos; buscar "quien tiene el permiso X?" requiere escanear todos los archivos.
 
-### Group-Based (VPP)
+### Basado en Grupos (VPP)
 
 ```json
 {
     "Groups": [
         {
-            "GroupName": "RoleName",
+            "GroupName": "NombreDelRol",
             "Permissions": ["perm.a", "perm.b"],
             "Members": ["STEAM64_ID_1", "STEAM64_ID_2"]
         }
@@ -457,22 +459,22 @@ All three systems store permissions in JSON. The differences are structural:
 }
 ```
 
-**Pros:** Role changes propagate to all members instantly.
-**Cons:** A player cannot easily have per-player permission overrides without a dedicated group.
+**Ventajas:** Los cambios de rol se propagan a todos los miembros instantaneamente.
+**Desventajas:** Un jugador no puede tener facilmente sobreescrituras de permisos por jugador sin un grupo dedicado.
 
-### Choosing a Format
+### Elegir un Formato
 
-| Factor | Flat Per-Player | Per-Player File | Group-Based |
+| Factor | Plano Por Jugador | Archivo Por Jugador | Basado en Grupos |
 |--------|----------------|-----------------|-------------|
-| **Small server (1-5 admins)** | Best | Overkill | Overkill |
-| **Medium server (5-20 admins)** | Good | Good | Best |
-| **Large community (20+ roles)** | Redundant | Files multiply | Best |
-| **Per-player customization** | Native | Native | Needs workaround |
-| **Hand-editing** | Easy | Easy per player | Moderate |
+| **Servidor pequeno (1-5 admins)** | Mejor | Excesivo | Excesivo |
+| **Servidor mediano (5-20 admins)** | Bueno | Bueno | Mejor |
+| **Comunidad grande (20+ roles)** | Redundante | Los archivos se multiplican | Mejor |
+| **Personalizacion por jugador** | Nativo | Nativo | Necesita solucion alternativa |
+| **Edicion manual** | Facil | Facil por jugador | Moderado |
 
 ---
 
-## Wildcard and Superadmin Patterns
+## Patrones de Comodin y Superadmin
 
 ```mermaid
 graph TD
@@ -490,50 +492,50 @@ graph TD
     style B fill:#ffaa44,color:#fff
 ```
 
-### Full Wildcard: `"*"`
+### Comodin Completo: `"*"`
 
-Grants all permissions. This is the superadmin pattern. A player with `"*"` can do anything.
+Concede todos los permisos. Este es el patron superadmin. Un jugador con `"*"` puede hacer cualquier cosa.
 
 ```c
 if (granted == "*")
     return true;
 ```
 
-**Convention:** Every permission system in the DayZ modding community uses `"*"` for superadmin. Do not invent a different convention.
+**Convencion:** Todo sistema de permisos en la comunidad de modding de DayZ usa `"*"` para superadmin. No inventes una convencion diferente.
 
-### Prefix Wildcard: `"MyMod.Admin.*"`
+### Comodin de Prefijo: `"MyMod.Admin.*"`
 
-Grants all permissions that start with `"MyMod.Admin."`. This allows granting an entire subsystem without listing every permission:
+Concede todos los permisos que comienzan con `"MyMod.Admin."`. Esto permite conceder un subsistema completo sin listar cada permiso:
 
 ```c
-// "MyMod.Admin.*" matches:
-//   "MyMod.Admin.Teleport"  ✓
-//   "MyMod.Admin.Kick"      ✓
-//   "MyMod.Admin.Ban"       ✓
-//   "MyMod.Missions.Start"  ✗ (different subtree)
+// "MyMod.Admin.*" coincide con:
+//   "MyMod.Admin.Teleport"  OK
+//   "MyMod.Admin.Kick"      OK
+//   "MyMod.Admin.Ban"       OK
+//   "MyMod.Missions.Start"  X (subarbol diferente)
 ```
 
-### Implementation
+### Implementacion
 
 ```c
 if (granted.IndexOf("*") > 0)
 {
-    // "MyMod.Admin.*" → prefix = "MyMod.Admin."
+    // "MyMod.Admin.*" -> prefix = "MyMod.Admin."
     string prefix = granted.Substring(0, granted.Length() - 1);
     if (permission.IndexOf(prefix) == 0)
         return true;
 }
 ```
 
-### No Negative Permissions (Dot-Separated / VPP)
+### Sin Permisos Negativos (Separado por Punto / VPP)
 
-Both the dot-separated and VPP systems use additive-only permissions. You can grant permissions but not explicitly deny them. If a permission is not in the player's list, it is denied.
+Tanto el sistema separado por punto como el de VPP usan permisos solo aditivos. Puedes conceder permisos pero no denegarlos explicitamente. Si un permiso no esta en la lista del jugador, esta denegado.
 
-CF/COT is the exception with its three-state system (ALLOW/DENY/INHERIT), which supports explicit denials.
+CF/COT es la excepcion con su sistema de tres estados (ALLOW/DENY/INHERIT), que soporta denegaciones explicitas.
 
-### Superadmin Escape Hatch
+### Escape de Superadmin
 
-Provide a way to check if someone is a superadmin without checking a specific permission. This is useful for bypass logic:
+Proporciona una forma de verificar si alguien es superadmin sin verificar un permiso especifico. Esto es util para logica de bypass:
 
 ```c
 bool IsSuperAdmin(string plainId)
@@ -544,9 +546,9 @@ bool IsSuperAdmin(string plainId)
 
 ---
 
-## Migration Between Systems
+## Migracion Entre Sistemas
 
-If your mod needs to support servers migrating from one permission system to another (e.g., from a flat admin UID list to hierarchical permissions), implement automatic migration on load:
+Si tu mod necesita soportar servidores migrando de un sistema de permisos a otro (ej., de una lista plana de UIDs admin a permisos jerarquicos), implementa migracion automatica al cargar:
 
 ```c
 void Load()
@@ -557,100 +559,100 @@ void Load()
         return;
     }
 
-    // Try new format first
+    // Intentar formato nuevo primero
     if (LoadNewFormat())
         return;
 
-    // Fall back to legacy format and migrate
+    // Caer al formato legacy y migrar
     LoadLegacyAndMigrate();
 }
 
 void LoadLegacyAndMigrate()
 {
-    // Read old format: { "AdminUIDs": ["uid1", "uid2"] }
+    // Leer formato viejo: { "AdminUIDs": ["uid1", "uid2"] }
     LegacyPermissionData legacyData = new LegacyPermissionData();
     JsonFileLoader<LegacyPermissionData>.JsonLoadFile(PERMISSIONS_FILE, legacyData);
 
-    // Migrate: each legacy admin becomes a superadmin in the new system
+    // Migrar: cada admin legacy se convierte en superadmin en el nuevo sistema
     for (int i = 0; i < legacyData.AdminUIDs.Count(); i++)
     {
         string uid = legacyData.AdminUIDs[i];
         GrantPermission(uid, "*");
     }
 
-    // Save in new format
+    // Guardar en formato nuevo
     Save();
-    MyLog.Info("Permissions", "Migrated " + legacyData.AdminUIDs.Count().ToString()
-        + " admin(s) from legacy format");
+    MyLog.Info("Permissions", "Migrados " + legacyData.AdminUIDs.Count().ToString()
+        + " admin(s) desde formato legacy");
 }
 ```
 
-This is a common pattern used to migrate from its original flat `AdminUIDs` array to the hierarchical `Admins` map.
+Este es un patron comun utilizado para migrar desde el array plano original `AdminUIDs` al mapa jerarquico `Admins`.
 
 ---
 
-## Mejores Prácticas
+## Mejores Practicas
 
-1. **Default deny.** If a permission is not explicitly granted, the answer is "no".
+1. **Denegar por defecto.** Si un permiso no esta explicitamente concedido, la respuesta es "no".
 
-2. **Check on the server, never the client.** Client-side permission checks are for UI convenience only (hiding buttons). The server must always re-verify.
+2. **Verificar en el servidor, nunca en el cliente.** Las verificaciones de permisos del lado del cliente son solo para conveniencia de UI (ocultar botones). El servidor siempre debe re-verificar.
 
-3. **Use `"*"` for superadmin.** It is the universal convention. Do not invent `"all"`, `"admin"`, or `"root"`.
+3. **Usar `"*"` para superadmin.** Es la convencion universal. No inventes `"all"`, `"admin"` o `"root"`.
 
-4. **Log every denied privileged action.** This is your security audit trail.
+4. **Registrar cada accion privilegiada denegada.** Esta es tu pista de auditoria de seguridad.
 
-5. **Provide a default permissions file with a placeholder.** New server owners should see a clear example:
+5. **Proporcionar un archivo de permisos por defecto con marcador de posicion.** Los nuevos operadores de servidor deberian ver un ejemplo claro:
 
 ```json
 {
     "Admins": {
-        "PUT_STEAM64_ID_HERE": ["*"]
+        "PON_STEAM64_ID_AQUI": ["*"]
     }
 }
 ```
 
-6. **Namespace your permissions.** Use `"YourMod.Category.Action"` to avoid collisions with other mods.
+6. **Nombrar tus permisos con namespace.** Usa `"TuMod.Categoria.Accion"` para evitar colisiones con otros mods.
 
-7. **Support prefix wildcards.** Server owners should be able to grant `"YourMod.Admin.*"` instead of listing every admin permission individually.
+7. **Soportar comodines de prefijo.** Los operadores de servidor deberian poder conceder `"TuMod.Admin.*"` en lugar de listar cada permiso de admin individualmente.
 
-8. **Keep the permissions file human-editable.** Server owners will edit it by hand. Use clear key names, one permission per line in the JSON, and document the available permissions somewhere in your mod's documentation.
+8. **Mantener el archivo de permisos editable por humanos.** Los operadores de servidor lo editaran a mano. Usa nombres de clave claros, un permiso por linea en el JSON, y documenta los permisos disponibles en algun lugar de la documentacion de tu mod.
 
-9. **Implement migration from day one.** When your permission format changes (and it will), automatic migration prevents support tickets.
+9. **Implementar migracion desde el dia uno.** Cuando tu formato de permisos cambie (y lo hara), la migracion automatica previene tickets de soporte.
 
-10. **Sync permissions to the client on connect.** The client needs to know its own permissions for UI purposes (showing/hiding admin buttons). Send a summary on connect; do not send the entire server permissions file.
+10. **Sincronizar permisos al cliente al conectar.** El cliente necesita conocer sus propios permisos para fines de UI (mostrar/ocultar botones de admin). Envia un resumen al conectar; no envies el archivo completo de permisos del servidor.
 
 ---
 
 ## Compatibilidad e Impacto
 
-- **Multi-Mod:** Each mod can define its own permission namespace (`"ModA.Admin.Kick"`, `"ModB.Build.Spawn"`). The `"*"` wildcard grants superadmin across *all* mods that share the same permission store. If mods use independent permission files, `"*"` only applies within that mod's scope.
-- **Load Order:** Permission files are loaded once during server startup. No cross-mod ordering issues as long as each mod reads its own file. If a shared framework (CF/COT) manages permissions, all mods using that framework share the same permission tree.
-- **Listen Server:** Permission checks should always run server-side. On listen servers, client-side code may call `HasPermission()` for UI gating (showing/hiding admin buttons), but the server-side check is the authoritative one.
-- **Performance:** Permission checks are a string-array linear scan per player. With typical admin counts (1--20 admins, 5--30 permissions each), this is negligible. For extremely large permission sets, consider a `set<string>` instead of an array for O(1) lookups.
-- **Migration:** Adding new permission strings is non-breaking --- existing admins simply do not have the new permission until granted. Renaming permissions breaks existing grants silently. Use config versioning to auto-migrate renamed permission strings.
+- **Multi-Mod:** Cada mod puede definir su propio namespace de permisos (`"ModA.Admin.Kick"`, `"ModB.Build.Spawn"`). El comodin `"*"` concede superadmin a traves de *todos* los mods que comparten el mismo almacen de permisos. Si los mods usan archivos de permisos independientes, `"*"` solo aplica dentro del alcance de ese mod.
+- **Orden de Carga:** Los archivos de permisos se cargan una vez durante el inicio del servidor. Sin problemas de orden entre mods mientras cada mod lea su propio archivo. Si un framework compartido (CF/COT) gestiona los permisos, todos los mods usando ese framework comparten el mismo arbol de permisos.
+- **Listen Server:** Las verificaciones de permisos siempre deberian ejecutarse del lado del servidor. En listen servers, el codigo del lado del cliente puede llamar `HasPermission()` para limitar la UI (mostrar/ocultar botones de admin), pero la verificacion del lado del servidor es la autoritativa.
+- **Rendimiento:** Las verificaciones de permisos son un escaneo lineal de array de strings por jugador. Con conteos tipicos de admins (1--20 admins, 5--30 permisos cada uno), esto es insignificante. Para conjuntos de permisos extremadamente grandes, considera un `set<string>` en lugar de un array para busquedas O(1).
+- **Migracion:** Agregar nuevos strings de permisos no es destructivo --- los admins existentes simplemente no tienen el nuevo permiso hasta que se conceda. Renombrar permisos rompe concesiones existentes silenciosamente. Usa versionado de configuracion para auto-migrar strings de permisos renombrados.
 
 ---
 
 ## Errores Comunes
 
-| Error | Impact | Solución |
+| Error | Impacto | Solucion |
 |---------|--------|-----|
-| Trusting client-sent permission data | Exploited clients send `"I am admin"` and the server believes them; full server compromise | Never read permissions from an RPC payload; always look up `sender.GetPlainId()` in the server-side permission store |
-| Missing default deny | A missing permission check grants access to everyone; accidental privilege escalation | Every RPC handler for a privileged action must check `HasPermission()` and return early on failure |
-| Typo in permission string fails silently | `"MyMod.Amin.Kick"` (typo) never matches --- admin cannot kick, no error is logged | Define permission strings as `static const` variables; reference the constant, never a raw string literal |
-| Sending the full permissions file to the client | Exposes all admin Steam64 IDs and their permission sets to any connected client | Send only the requesting player's own permission list, never the full server file |
-| No wildcard support in HasPermission | Server owners must list every single permission per admin; tedious and error-prone | Implement prefix wildcards (`"MyMod.Admin.*"`) and full wildcard (`"*"`) from day one |
+| Confiar en datos de permisos enviados por el cliente | Clientes explotados envian "Soy admin" y el servidor les cree; compromiso total del servidor | Nunca leer permisos de un payload RPC; siempre buscar `sender.GetPlainId()` en el almacen de permisos del servidor |
+| Falta denegar por defecto | Una verificacion de permisos faltante concede acceso a todos; escalacion accidental de privilegios | Cada manejador RPC para una accion privilegiada debe verificar `HasPermission()` y retornar temprano en caso de fallo |
+| Error tipografico en string de permiso falla silenciosamente | `"MyMod.Amin.Kick"` (typo) nunca coincide --- admin no puede expulsar, no se registra error | Definir strings de permisos como variables `static const`; referenciar la constante, nunca un literal de string crudo |
+| Enviar el archivo completo de permisos al cliente | Expone todos los Steam64 IDs de admin y sus conjuntos de permisos a cualquier cliente conectado | Enviar solo la lista de permisos del propio jugador solicitante, nunca el archivo completo del servidor |
+| Sin soporte de comodin en HasPermission | Los operadores de servidor deben listar cada permiso individual por admin; tedioso y propenso a errores | Implementar comodines de prefijo (`"MyMod.Admin.*"`) y comodin completo (`"*"`) desde el dia uno |
 
 ---
 
-## Teoría vs Práctica
+## Teoria vs Practica
 
-| Textbook Says | DayZ Reality |
+| Los Libros Dicen | Realidad en DayZ |
 |---------------|-------------|
-| Use RBAC (role-based access control) with group inheritance | Only CF/COT supports three-state permissions; most mods use flat per-player grants for simplicity |
-| Permissions should be stored in a database | No database access; JSON files in `$profile:` are the only option |
-| Use cryptographic tokens for authorization | No crypto libraries in Enforce Script; trust is based on `PlayerIdentity.GetPlainId()` (Steam64 ID) verified by the engine |
+| Usar RBAC (control de acceso basado en roles) con herencia de grupos | Solo CF/COT soporta permisos de tres estados; la mayoria de los mods usan concesiones planas por jugador por simplicidad |
+| Los permisos deberian almacenarse en una base de datos | Sin acceso a base de datos; archivos JSON en `$profile:` son la unica opcion |
+| Usar tokens criptograficos para autorizacion | Sin bibliotecas criptograficas en Enforce Script; la confianza se basa en `PlayerIdentity.GetPlainId()` (Steam64 ID) verificado por el motor |
 
 ---
 
-[Inicio](../../README.md) | [<< Anterior: Config Persistence](04-config-persistence.md) | **Permission Systems** | [Siguiente: Event-Driven Architecture >>](06-events.md)
+[Inicio](../../README.md) | [<< Anterior: Persistencia de Configuracion](04-config-persistence.md) | **Sistemas de Permisos** | [Siguiente: Arquitectura Orientada a Eventos >>](06-events.md)

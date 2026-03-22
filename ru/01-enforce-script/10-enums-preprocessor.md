@@ -1,47 +1,33 @@
-# Chapter 1.10: Enums & Preprocessor
+# Глава 1.10: Перечисления и препроцессор
 
-[Home](../../README.md) | [<< Previous: Casting & Reflection](09-casting-reflection.md) | **Enums & Preprocessor** | [Next: Error Handling >>](11-error-handling.md)
-
----
+[Главная](../../README.md) | [<< Назад: Приведение типов и рефлексия](09-casting-reflection.md) | **Перечисления и препроцессор** | [Далее: Обработка ошибок >>](11-error-handling.md)
 
 ---
 
-## Содержание
-
-
-- [Enum Declaration](#enum-declaration)
-  - [Explicit Values](#explicit-values)
-  - [Implicit Values](#implicit-values)
-  - [Enum Inheritance](#enum-inheritance)
-- [Using Enums](#using-enums)
-- [Enum Reflection](#enum-reflection)
-  - [typename.EnumToString](#typenameenumtostring)
-  - [typename.StringToEnum](#typenamestringtoenum)
-- [Bitflags Pattern](#bitflags-pattern)
-- [Constants](#constants)
-- [Preprocessor Directives](#preprocessor-directives)
-  - [#ifdef / #ifndef / #endif](#ifdef--ifndef--endif)
-  - [#define](#define)
-  - [Common Engine Defines](#common-engine-defines)
-  - [Custom Defines via config.cpp](#custom-defines-via-configcpp)
-- [Real-World Examples](#real-world-examples)
-  - [Platform-Specific Code](#platform-specific-code)
-  - [Optional Mod Dependencies](#optional-mod-dependencies)
-  - [Debug-Only Diagnostics](#debug-only-diagnostics)
-  - [Server vs Client Logic](#server-vs-client-logic)
-- [Common Mistakes](#common-mistakes)
-- [Summary](#summary)
-- [Navigation](#navigation)
+> **Цель:** Изучить объявление перечислений, инструменты рефлексии перечислений, паттерны битовых флагов, константы и систему препроцессора для условной компиляции.
 
 ---
 
-## Объявление enum
+## Оглавление
 
+- [Объявление перечислений](#объявление-перечислений)
+- [Использование перечислений](#использование-перечислений)
+- [Рефлексия перечислений](#рефлексия-перечислений)
+- [Паттерн битовых флагов](#паттерн-битовых-флагов)
+- [Константы](#константы)
+- [Директивы препроцессора](#директивы-препроцессора)
+- [Примеры из реальной практики](#примеры-из-реальной-практики)
+- [Распространённые ошибки](#распространённые-ошибки)
+- [Итоги](#итоги)
+- [Навигация](#навигация)
 
-Enums in Enforce Script define named integer constants grouped under a type name. They behave like `int` under the hood.
+---
+
+## Объявление перечислений
+
+Перечисления в Enforce Script определяют именованные целочисленные константы, объединённые под одним именем типа. Внутренне они ведут себя как `int`.
 
 ### Явные значения
-
 
 ```c
 enum EDamageState
@@ -56,8 +42,7 @@ enum EDamageState
 
 ### Неявные значения
 
-
-If you omit values, they auto-increment from the previous value (starting at 0):
+Если значения опущены, они автоматически увеличиваются от предыдущего (начиная с 0):
 
 ```c
 enum EWeaponMode
@@ -65,14 +50,13 @@ enum EWeaponMode
     SEMI,       // 0
     BURST,      // 1
     AUTO,       // 2
-    COUNT       // 3 — common trick to get the total count
+    COUNT       // 3 — распространённый приём для получения общего количества
 };
 ```
 
-### Наследование enum
+### Наследование перечислений
 
-
-Enums can inherit from other enums. Values continue from the last parent value:
+Перечисления могут наследоваться от других перечислений. Значения продолжаются от последнего значения родителя:
 
 ```c
 enum EBaseColor
@@ -90,70 +74,68 @@ enum EExtendedColor : EBaseColor
 };
 ```
 
-All parent values are accessible through the child enum:
+Все значения родителя доступны через дочернее перечисление:
 
 ```c
-int c = EExtendedColor.RED;      // 0 — inherited from EBaseColor
-int d = EExtendedColor.YELLOW;   // 3 — defined in EExtendedColor
+int c = EExtendedColor.RED;      // 0 — унаследовано от EBaseColor
+int d = EExtendedColor.YELLOW;   // 3 — определено в EExtendedColor
 ```
 
-> **Примечание:** Enum inheritance is useful for extending vanilla enums in modded code without changing the original.
+> **Примечание:** Наследование перечислений полезно для расширения ванильных перечислений в моддинг-коде без изменения оригинала.
 
 ---
 
-## Использование enum
+## Использование перечислений
 
-
-Enums act as `int` — you can assign them to `int` variables, compare them, and use them in switch statements:
+Перечисления действуют как `int` — их можно присваивать переменным `int`, сравнивать и использовать в операторах switch:
 
 ```c
 EDamageState state = EDamageState.WORN;
 
-// Compare
+// Сравнение
 if (state == EDamageState.RUINED)
 {
-    Print("Item is ruined!");
+    Print("Предмет разрушен!");
 }
 
-// Use in switch
+// Использование в switch
 switch (state)
 {
     case EDamageState.PRISTINE:
-        Print("Perfect condition");
+        Print("Идеальное состояние");
         break;
     case EDamageState.WORN:
-        Print("Slightly worn");
+        Print("Слегка изношен");
         break;
     case EDamageState.DAMAGED:
-        Print("Damaged");
+        Print("Повреждён");
         break;
     case EDamageState.BADLY_DAMAGED:
-        Print("Badly damaged");
+        Print("Сильно повреждён");
         break;
     case EDamageState.RUINED:
-        Print("Ruined!");
+        Print("Разрушен!");
         break;
 }
 
-// Assign to int
+// Присвоение в int
 int stateInt = state;  // 1
 
-// Assign from int (no validation — any int value is accepted!)
-EDamageState fromInt = 99;  // No error, even though 99 is not a valid enum value
+// Присвоение из int (без проверки — принимается любое значение!)
+EDamageState fromInt = 99;  // Ошибки нет, хотя 99 не является допустимым значением
 ```
 
-> **Внимание:** Enforce Script does **not** validate enum assignments. Assigning an out-of-range integer to an enum variable compiles and runs without error.
+> **Предупреждение:** Enforce Script **не** проверяет присвоения перечислений. Присвоение целого числа вне диапазона переменной перечисления компилируется и выполняется без ошибок.
 
 ---
 
-## Reflection для enum
+## Рефлексия перечислений
 
-
-Enforce Script provides built-in functions to convert between enum values and strings.
+Enforce Script предоставляет встроенные функции для преобразования между значениями перечислений и строками.
 
 ### typename.EnumToString
 
-Convert an enum value to its name as a string:
+Преобразование значения перечисления в его имя в виде строки:
 
 ```c
 EDamageState state = EDamageState.DAMAGED;
@@ -161,19 +143,19 @@ string name = typename.EnumToString(EDamageState, state);
 Print(name);  // "DAMAGED"
 ```
 
-This is invaluable for logging and UI display:
+Незаменимо для логирования и отображения в интерфейсе:
 
 ```c
 void LogDamageState(EntityAI item, EDamageState state)
 {
     string stateName = typename.EnumToString(EDamageState, state);
-    Print(item.GetType() + " is " + stateName);
+    Print(item.GetType() + " имеет состояние " + stateName);
 }
 ```
 
 ### typename.StringToEnum
 
-Convert a string back to an enum value:
+Преобразование строки обратно в значение перечисления:
 
 ```c
 int value;
@@ -181,16 +163,16 @@ typename.StringToEnum(EDamageState, "RUINED", value);
 Print(value.ToString());  // "4"
 ```
 
-This is used when loading enum values from config files or JSON:
+Используется при загрузке значений перечислений из файлов конфигурации или JSON:
 
 ```c
-// Loading from a config string
+// Загрузка из строки конфигурации
 string configValue = "BURST";
 int modeInt;
 if (typename.StringToEnum(EWeaponMode, configValue, modeInt))
 {
     EWeaponMode mode = modeInt;
-    Print("Loaded weapon mode: " + typename.EnumToString(EWeaponMode, mode));
+    Print("Загружен режим оружия: " + typename.EnumToString(EWeaponMode, mode));
 }
 ```
 
@@ -198,8 +180,7 @@ if (typename.StringToEnum(EWeaponMode, configValue, modeInt))
 
 ## Паттерн битовых флагов
 
-
-Enums with power-of-2 values create bitflags — multiple options combined in a single integer:
+Перечисления со значениями степени двойки создают битовые флаги — несколько опций, объединённых в одном целом числе:
 
 ```c
 enum ESpawnFlags
@@ -213,57 +194,56 @@ enum ESpawnFlags
 };
 ```
 
-Combine with bitwise OR, test with bitwise AND:
+Комбинирование побитовым ИЛИ, проверка побитовым И:
 
 ```c
-// Combine flags
+// Комбинирование флагов
 int flags = ESpawnFlags.PLACE_ON_GROUND | ESpawnFlags.CREATE_PHYSICS | ESpawnFlags.UPDATE_NAVMESH;
 
-// Test a single flag
+// Проверка одного флага
 if (flags & ESpawnFlags.CREATE_PHYSICS)
 {
-    Print("Physics will be created");
+    Print("Будет создана физика");
 }
 
-// Remove a flag
+// Удаление флага
 flags = flags & ~ESpawnFlags.CREATE_LOCAL;
 
-// Add a flag
+// Добавление флага
 flags = flags | ESpawnFlags.NO_LIFETIME;
 ```
 
-DayZ uses this pattern extensively for object creation flags (`ECE_PLACE_ON_SURFACE`, `ECE_CREATEPHYSICS`, `ECE_UPDATEPATHGRAPH`, etc.).
+DayZ широко использует этот паттерн для флагов создания объектов (`ECE_PLACE_ON_SURFACE`, `ECE_CREATEPHYSICS`, `ECE_UPDATEPATHGRAPH` и т.д.).
 
 ---
 
 ## Константы
 
-
-Use `const` to declare immutable values. Constants must be initialized at declaration.
+Используйте `const` для объявления неизменяемых значений. Константы должны быть инициализированы при объявлении.
 
 ```c
-// Integer constants
+// Целочисленные константы
 const int MAX_PLAYERS = 60;
 const int INVALID_INDEX = -1;
 
-// Float constants
+// Константы с плавающей точкой
 const float GRAVITY = 9.81;
 const float SPAWN_RADIUS = 500.0;
 
-// String constants
+// Строковые константы
 const string MOD_NAME = "MyMod";
 const string CONFIG_PATH = "$profile:MyMod/config.json";
 const string LOG_PREFIX = "[MyMod] ";
 ```
 
-Constants can be used as switch case values and array sizes:
+Константы можно использовать как значения case в switch и размеры массивов:
 
 ```c
-// Array with const size
+// Массив с размером по константе
 const int BUFFER_SIZE = 256;
 int buffer[BUFFER_SIZE];
 
-// Switch with const values
+// Switch с константными значениями
 const int CMD_HELP = 1;
 const int CMD_SPAWN = 2;
 const int CMD_TELEPORT = 3;
@@ -282,121 +262,116 @@ switch (command)
 }
 ```
 
-> **Примечание:** There is no `const` for reference types (objects). You cannot make an object reference immutable.
+> **Примечание:** Для ссылочных типов (объектов) `const` не существует. Сделать ссылку на объект неизменяемой нельзя.
 
 ---
 
 ## Директивы препроцессора
 
-
-The Enforce Script preprocessor runs before compilation, enabling conditional code inclusion. It works similarly to C/C++ preprocessor but with fewer features.
+Препроцессор Enforce Script выполняется перед компиляцией, обеспечивая условное включение кода. Работает аналогично препроцессору C/C++, но с меньшим набором возможностей.
 
 ### #ifdef / #ifndef / #endif
 
-Conditionally include code based on whether a symbol is defined:
+Условное включение кода в зависимости от того, определён ли символ:
 
 ```c
-// Include code only if DEVELOPER is defined
+// Включить код только если определён DEVELOPER
 #ifdef DEVELOPER
-    Print("[DEBUG] Diagnostics enabled");
+    Print("[DEBUG] Диагностика включена");
 #endif
 
-// Include code only if a symbol is NOT defined
+// Включить код только если символ НЕ определён
 #ifndef SERVER
-    // Client-only code
+    // Код только для клиента
     CreateClientUI();
 #endif
 
-// If-else pattern
+// Паттерн if-else
 #ifdef SERVER
-    Print("Running on server");
+    Print("Выполняется на сервере");
 #else
-    Print("Running on client");
+    Print("Выполняется на клиенте");
 #endif
 ```
 
 ### #define
 
-Define your own symbols (no value — just existence):
+Определение собственных символов (без значения — только существование):
 
 ```c
 #define MY_MOD_DEBUG
 
 #ifdef MY_MOD_DEBUG
-    Print("Debug mode active");
+    Print("Режим отладки активен");
 #endif
 ```
 
-> **Примечание:** Enforce Script `#define` only creates existence flags. It does **not** support macro substitution (no `#define MAX_HP 100` — use `const` instead).
+> **Примечание:** `#define` в Enforce Script создаёт только флаги существования. Макроподстановка **не** поддерживается (нет `#define MAX_HP 100` — используйте вместо этого `const`).
 
-### Встроенные определения движка
+### Стандартные определения движка
 
+DayZ предоставляет встроенные определения в зависимости от типа сборки и платформы:
 
-DayZ provides these built-in defines based on build type and platform:
-
-| Define | When Available | Use For |
+| Определение | Когда доступно | Для чего |
 |--------|---------------|---------|
-| `SERVER` | Running on dedicated server | Server-only logic |
-| `DEVELOPER` | Developer build of DayZ | Dev-only features |
-| `DIAG_DEVELOPER` | Diagnostic build | Diagnostic menus, debug tools |
-| `PLATFORM_WINDOWS` | Windows platform | Platform-specific paths |
-| `PLATFORM_XBOX` | Xbox platform | Console-specific UI |
-| `PLATFORM_PS4` | PlayStation platform | Console-specific logic |
-| `BUILD_EXPERIMENTAL` | Experimental branch | Experimental features |
+| `SERVER` | На выделенном сервере | Серверная логика |
+| `DEVELOPER` | Сборка для разработчика | Функции только для разработки |
+| `DIAG_DEVELOPER` | Диагностическая сборка | Диагностические меню, инструменты отладки |
+| `PLATFORM_WINDOWS` | Платформа Windows | Платформо-зависимые пути |
+| `PLATFORM_XBOX` | Платформа Xbox | UI для консолей |
+| `PLATFORM_PS4` | Платформа PlayStation | Логика для консолей |
+| `BUILD_EXPERIMENTAL` | Экспериментальная ветка | Экспериментальные функции |
 
 ```c
 void InitPlatform()
 {
     #ifdef PLATFORM_WINDOWS
-        Print("Running on Windows");
+        Print("Запуск на Windows");
     #endif
 
     #ifdef PLATFORM_XBOX
-        Print("Running on Xbox");
+        Print("Запуск на Xbox");
     #endif
 
     #ifdef PLATFORM_PS4
-        Print("Running on PlayStation");
+        Print("Запуск на PlayStation");
     #endif
 }
 ```
 
 ### Пользовательские определения через config.cpp
 
-
-Mods can define their own symbols in `config.cpp` using the `defines[]` array. These are available to all scripts loaded after this mod:
+Моды могут определять собственные символы в `config.cpp` через массив `defines[]`. Они доступны для всех скриптов, загружаемых после этого мода:
 
 ```cpp
 class CfgMods
 {
-    class MyMissions
+    class MyMod_MissionSystem
     {
         // ...
-        defines[] = { "MYMOD_MISSIONS" };
+        defines[] = { "MY_MISSIONS_LOADED" };
         // ...
     };
 };
 ```
 
-Now other mods can detect whether MyMissions is loaded:
+Теперь другие моды могут определить, загружен ли ваш мод миссий:
 
 ```c
-#ifdef MYMOD_MISSIONS
-    // MyMissions is loaded — use its API
-    MissionManager.Start();
+#ifdef MY_MISSIONS_LOADED
+    // Мод миссий загружен — используем его API
+    MyMissionManager.Start();
 #else
-    // MyMissions is not loaded — skip or use fallback
-    Print("Missions mod not detected");
+    // Мод миссий не загружен — пропускаем или используем запасной вариант
+    Print("Система миссий не обнаружена");
 #endif
 ```
 
 ---
 
-## Примеры из практики
-
+## Примеры из реальной практики
 
 ### Платформо-зависимый код
-
 
 ```c
 string GetSavePath()
@@ -411,27 +386,26 @@ string GetSavePath()
 
 ### Опциональные зависимости модов
 
-
-Это standard pattern for mods that optionally integrate with other mods:
+Стандартный паттерн для модов, которые опционально интегрируются с другими модами:
 
 ```c
 class MyModManager
 {
     void Init()
     {
-        Print("[MyMod] Initializing...");
+        Print("[MyMod] Инициализация...");
 
-        // Core features always available
+        // Базовые функции всегда доступны
         LoadConfig();
         RegisterRPCs();
 
-        // Optional integration with MyFramework
-        #ifdef MYMOD_CORE
-            MyLog.Info("MyMod", "MyFramework detected — using unified logging");
+        // Опциональная интеграция с MyFramework
+        #ifdef MY_FRAMEWORK
+            Print("[MyMod] Фреймворк обнаружен — используем унифицированное логирование");
             RegisterWithCore();
         #endif
 
-        // Optional integration with Community Framework
+        // Опциональная интеграция с Community Framework
         #ifdef JM_CommunityFramework
             GetRPCManager().AddRPC("MyMod", "RPC_Handler", this, 2);
         #endif
@@ -441,23 +415,22 @@ class MyModManager
 
 ### Диагностика только для отладки
 
-
 ```c
 void ProcessAI(DayZInfected zombie)
 {
     vector pos = zombie.GetPosition();
     float health = zombie.GetHealth("", "Health");
 
-    // Heavy debug logging — only in diagnostic builds
+    // Подробное отладочное логирование — только в диагностических сборках
     #ifdef DIAG_DEVELOPER
-        Print(string.Format("[AI] Zombie %1 at %2, HP: %3",
+        Print(string.Format("[AI] Зомби %1 в позиции %2, HP: %3",
             zombie.GetType(), pos.ToString(), health.ToString()));
 
-        // Draw debug sphere (only works in diag builds)
+        // Отрисовка отладочной сферы (работает только в диагностических сборках)
         Debug.DrawSphere(pos, 1.0, Colors.RED, ShapeFlags.ONCE);
     #endif
 
-    // Actual logic runs in all builds
+    // Фактическая логика выполняется во всех сборках
     if (health <= 0)
     {
         HandleZombieDeath(zombie);
@@ -465,8 +438,7 @@ void ProcessAI(DayZInfected zombie)
 }
 ```
 
-### Серверная vs клиентская логика
-
+### Логика сервера и клиента
 
 ```c
 class MissionHandler
@@ -474,12 +446,12 @@ class MissionHandler
     void OnMissionStart()
     {
         #ifdef SERVER
-            // Server: load mission data, spawn objects
+            // Сервер: загрузка данных миссии, спавн объектов
             LoadMissionData();
             SpawnMissionObjects();
             NotifyAllPlayers();
         #else
-            // Client: set up UI, subscribe to events
+            // Клиент: настройка UI, подписка на события
             CreateMissionHUD();
             RegisterClientRPCs();
         #endif
@@ -489,16 +461,48 @@ class MissionHandler
 
 ---
 
+## Лучшие практики
+
+- Добавляйте элемент-страж `COUNT` последним значением перечисления для удобной итерации или проверки диапазона (например, `for (int i = 0; i < EMode.COUNT; i++)`).
+- Используйте значения степени двойки для перечислений битовых флагов и комбинируйте их через `|`; проверяйте через `&`; удаляйте через `& ~FLAG`.
+- Используйте `const` вместо `#define` для числовых констант — `#define` в Enforce Script создаёт только флаги существования, а не макросы со значениями.
+- Определяйте массив `defines[]` в `config.cpp` вашего мода для создания символов обнаружения между модами (например, `"STARDZ_CORE"`).
+- Всегда проверяйте значения перечислений, загруженные из внешних данных (конфигурации, RPC) — Enforce Script принимает любой `int` как перечисление без проверки диапазона.
+
+---
+
+## Подтверждено в реальных модах
+
+> Паттерны, подтверждённые изучением исходного кода профессиональных модов DayZ.
+
+| Паттерн | Мод | Детали |
+|---------|-----|--------|
+| `#ifdef` для опциональной интеграции модов | Expansion / COT | Проверяет `#ifdef JM_CF` или `#ifdef EXPANSIONMOD` перед вызовом межмодовых API |
+| Битовые перечисления для параметров спавна | Ванильный DayZ | `ECE_PLACE_ON_SURFACE`, `ECE_CREATEPHYSICS` и др. комбинируются через `\|` для `CreateObjectEx` |
+| `typename.EnumToString` для логирования | Expansion / Dabs | Состояния повреждения и типы событий логируются как читаемые строки вместо сырых int |
+| `defines[]` в config.cpp | StarDZ Core / Expansion | Каждый мод объявляет свой символ, чтобы другие моды могли обнаружить его через `#ifdef` |
+
+---
+
+## Теория и практика
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| Проверка присвоения перечислений | Ожидается, что компилятор отклонит недопустимые значения | `EDamageState state = 999` компилируется без проблем — никакой проверки диапазона |
+| `#define MAX_HP 100` | Работает как макрос C/C++ | `#define` в Enforce Script создаёт только флаги существования; используйте `const int` для значений |
+| Сквозное выполнение `switch` case | Несколько case для одного обработчика | В Enforce Script нет сквозного выполнения — каждый `case` независим; используйте `if`/`\|\|` вместо этого |
+
+---
+
 ## Распространённые ошибки
 
-
-### 1. Using enums as validated types
+### 1. Использование перечислений как проверенных типов
 
 ```c
-// PROBLEM — no validation, any int is accepted
-EDamageState state = 999;  // Compiles fine, but 999 is not a valid state
+// ПРОБЛЕМА — нет проверки, принимается любой int
+EDamageState state = 999;  // Компилируется, но 999 — недопустимое состояние
 
-// SOLUTION — validate manually when loading from external data
+// РЕШЕНИЕ — проверяйте вручную при загрузке из внешних данных
 int rawValue = LoadFromConfig();
 if (rawValue >= 0 && rawValue <= EDamageState.RUINED)
 {
@@ -506,55 +510,55 @@ if (rawValue >= 0 && rawValue <= EDamageState.RUINED)
 }
 ```
 
-### 2. Trying to use #define for value substitution
+### 2. Попытка использовать #define для подстановки значений
 
 ```c
-// WRONG — Enforce Script #define does NOT support values
+// НЕПРАВИЛЬНО — #define в Enforce Script НЕ поддерживает значения
 #define MAX_HEALTH 100
-int hp = MAX_HEALTH;  // Compile error!
+int hp = MAX_HEALTH;  // Ошибка компиляции!
 
-// CORRECT — use const instead
+// ПРАВИЛЬНО — используйте const
 const int MAX_HEALTH = 100;
 int hp = MAX_HEALTH;
 ```
 
-### 3. Nesting #ifdef incorrectly
+### 3. Неправильная вложенность #ifdef
 
 ```c
-// CORRECT — nested ifdefs are fine
+// ПРАВИЛЬНО — вложенные ifdef допустимы
 #ifdef SERVER
-    #ifdef MYMOD_CORE
-        MyLog.Info("MyMod", "Server + Core");
+    #ifdef MY_FRAMEWORK
+        MyLog.Info("MyMod", "Сервер + Core");
     #endif
 #endif
 
-// WRONG — missing #endif causes mysterious compile errors
+// НЕПРАВИЛЬНО — отсутствие #endif вызывает загадочные ошибки компиляции
 #ifdef SERVER
     DoServerStuff();
-// forgot #endif here!
+// здесь забыли #endif!
 ```
 
-### 4. Forgetting that switch/case has no fall-through
+### 4. Забыли, что switch/case не имеет сквозного выполнения
 
 ```c
-// In C/C++, cases fall through without break.
-// In Enforce Script, each case is INDEPENDENT — no fall-through.
+// В C/C++ case проваливаются без break.
+// В Enforce Script каждый case НЕЗАВИСИМ — сквозного выполнения нет.
 
 switch (state)
 {
     case EDamageState.PRISTINE:
     case EDamageState.WORN:
-        Print("Good condition");  // Only reached for WORN, not PRISTINE!
+        Print("Хорошее состояние");  // Достигается только для WORN, не для PRISTINE!
         break;
 }
 ```
 
-If you need multiple cases to share logic, use if/else:
+Если нужно, чтобы несколько case делили логику, используйте if/else:
 
 ```c
 if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 {
-    Print("Good condition");
+    Print("Хорошее состояние");
 }
 ```
 
@@ -562,44 +566,42 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 
 ## Итоги
 
+### Перечисления
 
-### Enums
-
-| Feature | Syntax |
+| Возможность | Синтаксис |
 |---------|--------|
-| Declare | `enum EName { A = 0, B = 1 };` |
-| Implicit | `enum EName { A, B, C };` (0, 1, 2) |
-| Inherit | `enum EChild : EParent { D, E };` |
-| To string | `typename.EnumToString(EName, value)` |
-| From string | `typename.StringToEnum(EName, "A", out val)` |
-| Bitflag combine | `flags = A | B` |
-| Bitflag test | `if (flags & A)` |
+| Объявление | `enum EName { A = 0, B = 1 };` |
+| Неявные значения | `enum EName { A, B, C };` (0, 1, 2) |
+| Наследование | `enum EChild : EParent { D, E };` |
+| В строку | `typename.EnumToString(EName, value)` |
+| Из строки | `typename.StringToEnum(EName, "A", out val)` |
+| Комбинирование битфлагов | `flags = A | B` |
+| Проверка битфлага | `if (flags & A)` |
 
-### Preprocessor
+### Препроцессор
 
-| Directive | Purpose |
+| Директива | Назначение |
 |-----------|---------|
-| `#ifdef SYMBOL` | Compile if symbol exists |
-| `#ifndef SYMBOL` | Compile if symbol does NOT exist |
-| `#else` | Alternate branch |
-| `#endif` | End conditional block |
-| `#define SYMBOL` | Define a symbol (no value) |
+| `#ifdef SYMBOL` | Компилировать, если символ существует |
+| `#ifndef SYMBOL` | Компилировать, если символ НЕ существует |
+| `#else` | Альтернативная ветка |
+| `#endif` | Конец условного блока |
+| `#define SYMBOL` | Определить символ (без значения) |
 
-### Key Defines
+### Ключевые определения
 
-| Define | Meaning |
+| Определение | Значение |
 |--------|---------|
-| `SERVER` | Dedicated server |
-| `DEVELOPER` | Developer build |
-| `DIAG_DEVELOPER` | Diagnostic build |
-| `PLATFORM_WINDOWS` | Windows OS |
-| Custom: `defines[]` | Your mod's config.cpp |
+| `SERVER` | Выделенный сервер |
+| `DEVELOPER` | Сборка разработчика |
+| `DIAG_DEVELOPER` | Диагностическая сборка |
+| `PLATFORM_WINDOWS` | ОС Windows |
+| Пользовательское: `defines[]` | config.cpp вашего мода |
 
 ---
 
 ## Навигация
 
-
-| Предыдущая | Вверх | Следующая |
+| Назад | Вверх | Далее |
 |----------|----|------|
-| [1.9 Casting & Reflection](09-casting-reflection.md) | [Part 1: Enforce Script](../README.md) | [1.11 Error Handling](11-error-handling.md) |
+| [1.9 Приведение типов и рефлексия](09-casting-reflection.md) | [Часть 1: Enforce Script](../README.md) | [1.11 Обработка ошибок](11-error-handling.md) |
