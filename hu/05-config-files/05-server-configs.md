@@ -1,47 +1,49 @@
-# Chapter 5.5: Server Configuration Files
+# 5.5. fejezet: Szerver konfigurációs fájlok
 
-[Home](../../README.md) | [<< Previous: ImageSet Format](04-imagesets.md) | **Server Configuration Files** | [Next: Spawning Gear Configuration >>](06-spawning-gear.md)
-
----
+[Főoldal](../../README.md) | [<< Előző: ImageSet formátum](04-imagesets.md) | **Szerver konfigurációs fájlok** | [Következő: Spawn felszerelés konfiguráció >>](06-spawning-gear.md)
 
 ---
 
-## Tartalomjegyzek
-
-- [Attekintes](#overview)
-- [init.c --- Mission Entry Point](#initc--mission-entry-point)
-- [types.xml --- Item Spawn Definitions](#typesxml--item-spawn-definitions)
-- [cfgspawnabletypes.xml --- Attachments and Cargo](#cfgspawnabletypesxml--attachments-and-cargo)
-- [cfgrandompresets.xml --- Reusable Loot Pools](#cfgrandompresetsxml--reusable-loot-pools)
-- [globals.xml --- Economy Parameterek](#globalsxml--economy-parameters)
-- [cfggameplay.json --- Gameplay Settings](#cfggameplayjson--gameplay-settings)
-- [serverDZ.cfg --- Server Settings](#serverdzcfg--server-settings)
-- [How Mods Interact with the Economy](#how-mods-interact-with-the-economy)
-- [Gyakori hibak](#common-mistakes)
+> **Összefoglalás:** A DayZ szervereket XML, JSON és script fájlok konfigurálják a küldetés mappában (pl. `mpmissions/dayzOffline.chernarusplus/`). Ezek a fájlok szabályozzák a tárgyak megjelenését, a gazdaság viselkedését, a játékmenet szabályait és a szerver azonosságát. Megértésük elengedhetetlen egyéni tárgyak hozzáadásához a loot gazdaságba, szerver paraméterek hangolásához, vagy egyéni küldetés építéséhez.
 
 ---
 
-## Attekintes
+## Tartalomjegyzék
 
-Every DayZ server loads its configuration from a **mission folder**. The Central Economy (CE) files define what items spawn, where, and for how long. The server executable itself is configured through `serverDZ.cfg`, which lives alongside the executable.
+- [Áttekintés](#overview)
+- [init.c --- Küldetés belépési pont](#initc--mission-entry-point)
+- [types.xml --- Tárgy spawn definíciók](#typesxml--item-spawn-definitions)
+- [cfgspawnabletypes.xml --- Kiegészítők és rakomány](#cfgspawnabletypesxml--attachments-and-cargo)
+- [cfgrandompresets.xml --- Újrafelhasználható loot készletek](#cfgrandompresetsxml--reusable-loot-pools)
+- [globals.xml --- Gazdasági paraméterek](#globalsxml--economy-parameters)
+- [cfggameplay.json --- Játékmenet beállítások](#cfggameplayjson--gameplay-settings)
+- [serverDZ.cfg --- Szerver beállítások](#serverdzcfg--server-settings)
+- [Hogyan lépnek kapcsolatba a modok a gazdasággal](#how-mods-interact-with-the-economy)
+- [Gyakori hibák](#common-mistakes)
 
-| File | Cel |
+---
+
+## Áttekintés
+
+Minden DayZ szerver a konfigurációját egy **küldetés mappából** tölti be. A Central Economy (CE) fájlok határozzák meg, milyen tárgyak jelennek meg, hol és mennyi ideig. Maga a szerver futtatható fájl a `serverDZ.cfg`-n keresztül van konfigurálva, amely a futtatható fájl mellett található.
+
+| Fájl | Cél |
 |------|---------|
-| `init.c` | Mission entry point --- Hive init, date/time, spawn loadout |
-| `db/types.xml` | Item spawn definitions: quantities, lifetimes, locations |
-| `cfgspawnabletypes.xml` | Pre-attached items and cargo on spawned entities |
-| `cfgrandompresets.xml` | Reusable item pools for cfgspawnabletypes |
-| `db/globals.xml` | Global economy parameters: max counts, cleanup timers |
-| `cfggameplay.json` | Gameplay tuning: stamina, base building, UI |
-| `cfgeconomycore.xml` | Root class registration and CE logging |
-| `cfglimitsdefinition.xml` | Valid category, usage, and value tag definitions |
-| `serverDZ.cfg` | Server name, password, max players, mod loading |
+| `init.c` | Küldetés belépési pont --- Hive inicializálás, dátum/idő, spawn felszerelés |
+| `db/types.xml` | Tárgy spawn definíciók: mennyiségek, élettartamok, helyszínek |
+| `cfgspawnabletypes.xml` | Előre felszerelt tárgyak és rakomány megjelenített entitásokon |
+| `cfgrandompresets.xml` | Újrafelhasználható tárgy készletek a cfgspawnabletypes számára |
+| `db/globals.xml` | Globális gazdasági paraméterek: maximális darabszámok, takarítási időzítők |
+| `cfggameplay.json` | Játékmenet hangolás: állóképesség, bázisépítés, UI |
+| `cfgeconomycore.xml` | Gyökér osztály regisztráció és CE naplózás |
+| `cfglimitsdefinition.xml` | Érvényes kategória, használat és érték címkék definíciói |
+| `serverDZ.cfg` | Szerver neve, jelszó, maximális játékosok, mod betöltés |
 
 ---
 
-## init.c --- Mission Entry Point
+## init.c --- Küldetés belépési pont
 
-The `init.c` script is the first thing the server executes. It initializes the Central Economy and creates the mission instance.
+Az `init.c` script az első dolog, amit a szerver végrehajt. Inicializálja a Central Economy-t és létrehozza a küldetés példányt.
 
 ```c
 void main()
@@ -82,15 +84,15 @@ Mission CreateCustomMission(string path)
 }
 ```
 
-The `Hive` manages the CE database. Without `CreateHive()`, no items spawn and persistence is disabled. `CreateCharacter` creates the player entity at spawn, and `StartingEquipSetup` defines the items a fresh character receives. Other useful `MissionServer` overrides include `OnInit()`, `OnUpdate()`, `InvokeOnConnect()`, and `InvokeOnDisconnect()`.
+A `Hive` kezeli a CE adatbázist. `CreateHive()` nélkül nem jelennek meg tárgyak és a perzisztencia le van tiltva. A `CreateCharacter` hozza létre a játékos entitást spawn-kor, a `StartingEquipSetup` pedig meghatározza azokat a tárgyakat, amelyeket egy friss karakter kap. Egyéb hasznos `MissionServer` felülírások: `OnInit()`, `OnUpdate()`, `InvokeOnConnect()` és `InvokeOnDisconnect()`.
 
 ---
 
-## types.xml --- Item Spawn Definitions
+## types.xml --- Tárgy spawn definíciók
 
-Located at `db/types.xml`, this file is the heart of the CE. Every item that can spawn must have an entry here.
+A `db/types.xml` fájlban található, ez a CE szíve. Minden tárgynak, amely megjelenhet, rendelkeznie kell egy bejegyzéssel itt.
 
-### Complete Entry
+### Teljes bejegyzés
 
 ```xml
 <type name="AK74">
@@ -110,51 +112,51 @@ Located at `db/types.xml`, this file is the heart of the CE. Every item that can
 </type>
 ```
 
-### Mezo Reference
+### Mező referencia
 
-| Mezo | Leiras |
+| Mező | Leírás |
 |-------|-------------|
-| `nominal` | Target count on the map. CE spawns items until this is reached |
-| `min` | Minimum count before CE triggers restocking |
-| `lifetime` | Seconds an item persists on the ground before despawning |
-| `restock` | Minimum seconds between restock attempts (0 = immediate) |
-| `quantmin/quantmax` | Fill percentage for items with quantity (magazines, bottles). Use `-1` for items without quantity |
-| `cost` | CE priority weight (higher = prioritized). Most items use `100` |
+| `nominal` | Cél darabszám a térképen. A CE addig hoz létre tárgyakat, amíg ezt el nem éri |
+| `min` | Minimális darabszám, mielőtt a CE újratöltést indít |
+| `lifetime` | Másodpercek, amíg egy tárgy a földön marad eltűnés előtt |
+| `restock` | Minimum másodpercek újratöltési kísérletek között (0 = azonnal) |
+| `quantmin/quantmax` | Töltöttségi százalék mennyiséggel rendelkező tárgyakhoz (tárak, palackok). Használj `-1`-et mennyiség nélküli tárgyakhoz |
+| `cost` | CE prioritás súly (magasabb = prioritizált). A legtöbb tárgy `100`-at használ |
 
-### Jelzos
+### Jelzők
 
-| Jelzo | Cel |
+| Jelző | Cél |
 |------|---------|
-| `count_in_cargo` | Count items inside containers toward nominal |
-| `count_in_hoarder` | Count items in stashes/tents/barrels toward nominal |
-| `count_in_map` | Count items on the ground toward nominal |
-| `count_in_player` | Count items in player inventory toward nominal |
-| `crafted` | Item is crafted only, not naturally spawned |
-| `deloot` | Dynamic Event loot (heli crashes, etc.) |
+| `count_in_cargo` | A konténerekben lévő tárgyak beleszámítanak a nominálba |
+| `count_in_hoarder` | A raktárakban/sátrakban/hordókban lévő tárgyak beleszámítanak a nominálba |
+| `count_in_map` | A földön lévő tárgyak beleszámítanak a nominálba |
+| `count_in_player` | A játékos leltárában lévő tárgyak beleszámítanak a nominálba |
+| `crafted` | A tárgy csak barkácsolt, nem jelenik meg természetesen |
+| `deloot` | Dinamikus esemény loot (helikopter roncsok, stb.) |
 
-### Kategoria, Hasznalat, and Ertek Tags
+### Kategória, használat és érték címkék
 
-These tags control **where** items spawn:
+Ezek a címkék szabályozzák, **hol** jelennek meg a tárgyak:
 
-- **`category`** --- Item type. Vanilla: `tools`, `containers`, `clothes`, `food`, `weapons`, `books`, `explosives`, `lootdispatch`.
-- **`usage`** --- Building types. Vanilla: `Military`, `Police`, `Medic`, `Firefighter`, `Industrial`, `Farm`, `Coast`, `Town`, `Village`, `Hunting`, `Office`, `School`, `Prison`, `ContaminatedArea`, `Historical`.
-- **`value`** --- Map tier zones. Vanilla: `Tier1` (coast), `Tier2` (inland), `Tier3` (military), `Tier4` (deep military), `Unique`.
+- **`category`** --- Tárgy típus. Vanilla: `tools`, `containers`, `clothes`, `food`, `weapons`, `books`, `explosives`, `lootdispatch`.
+- **`usage`** --- Épület típusok. Vanilla: `Military`, `Police`, `Medic`, `Firefighter`, `Industrial`, `Farm`, `Coast`, `Town`, `Village`, `Hunting`, `Office`, `School`, `Prison`, `ContaminatedArea`, `Historical`.
+- **`value`** --- Térkép szint zónák. Vanilla: `Tier1` (part), `Tier2` (szárazföld), `Tier3` (katonai), `Tier4` (mély katonai), `Unique`.
 
-Multiple tags can be combined. No `usage` tags = item will not spawn. No `value` tags = spawns in all tiers.
+Több címke kombinálható. `usage` címkék nélkül a tárgy nem fog megjelenni. `value` címkék nélkül minden szinten megjelenik.
 
-### Disabling an Item
+### Tárgy letiltása
 
-Set `nominal=0` and `min=0`. The item never spawns but can still exist through scripts or crafting.
+Állítsd be `nominal=0` és `min=0` értékeket. A tárgy soha nem jelenik meg, de továbbra is létezhet scriptek vagy barkácsolás révén.
 
 ---
 
-## cfgspawnabletypes.xml --- Attachments and Cargo
+## cfgspawnabletypes.xml --- Kiegészítők és rakomány
 
-Controls what spawns **already attached to or inside** other items.
+Szabályozza, hogy mi jelenik meg **már felszerelve vagy benne** más tárgyakban.
 
-### Hoarder Marking
+### Felhalmozó jelölés
 
-Storage containers are tagged so the CE knows they hold player items:
+A tároló konténerek úgy vannak megjelölve, hogy a CE tudja, játékos tárgyakat tartalmaznak:
 
 ```xml
 <type name="SeaChest">
@@ -162,7 +164,7 @@ Storage containers are tagged so the CE knows they hold player items:
 </type>
 ```
 
-### Spawn Damage
+### Spawn sérülés
 
 ```xml
 <type name="NVGoggles">
@@ -170,9 +172,9 @@ Storage containers are tagged so the CE knows they hold player items:
 </type>
 ```
 
-Erteks range from `0.0` (pristine) to `1.0` (ruined).
+Az értékek `0.0` (hibátlan) és `1.0` (tönkrement) között mozognak.
 
-### Attachments
+### Kiegészítők
 
 ```xml
 <type name="PlateCarrierVest_Camo">
@@ -186,9 +188,9 @@ Erteks range from `0.0` (pristine) to `1.0` (ruined).
 </type>
 ```
 
-The outer `chance` determines if the attachment group is evaluated. The inner `chance` selects the specific item when multiple items are listed in one group.
+A külső `chance` határozza meg, hogy a kiegészítő csoport kiértékelésre kerül-e. A belső `chance` választja ki az adott tárgyat, amikor több tárgy van egy csoportban.
 
-### Cargo Presets
+### Rakomány készletek
 
 ```xml
 <type name="AssaultBag_Ttsko">
@@ -198,13 +200,13 @@ The outer `chance` determines if the attachment group is evaluated. The inner `c
 </type>
 ```
 
-Each line rolls the preset independently --- three lines means three separate chances.
+Minden sor függetlenül dobja a készletet --- három sor három különálló esélyt jelent.
 
 ---
 
-## cfgrandompresets.xml --- Reusable Loot Pools
+## cfgrandompresets.xml --- Újrafelhasználható loot készletek
 
-Defines named item pools referenced by `cfgspawnabletypes.xml`:
+Megnevezett tárgy készleteket definiál, amelyeket a `cfgspawnabletypes.xml` hivatkozik:
 
 ```xml
 <randompresets>
@@ -224,13 +226,13 @@ Defines named item pools referenced by `cfgspawnabletypes.xml`:
 </randompresets>
 ```
 
-The preset's `chance` is the overall probability anything spawns. If the roll succeeds, one item is selected from the pool based on individual item chances. To add modded items, create a new `cargo` block and reference it in `cfgspawnabletypes.xml`.
+A készlet `chance` értéke az általános valószínűség, hogy bármi megjelenik. Ha a dobás sikeres, egy tárgy kerül kiválasztásra a készletből az egyedi tárgy esélyek alapján. Moddolt tárgyak hozzáadásához hozz létre egy új `cargo` blokkot és hivatkozd a `cfgspawnabletypes.xml`-ben.
 
 ---
 
-## globals.xml --- Economy Parameterek
+## globals.xml --- Gazdasági paraméterek
 
-Located at `db/globals.xml`, this file sets global CE parameters:
+A `db/globals.xml` fájlban található, ez a fájl állítja be a globális CE paramétereket:
 
 ```xml
 <variables>
@@ -255,32 +257,32 @@ Located at `db/globals.xml`, this file sets global CE parameters:
 </variables>
 ```
 
-### Key Variables
+### Kulcs változók
 
-| Variable | Alapertelmezett | Leiras |
+| Változó | Alapértelmezett | Leírás |
 |----------|---------|-------------|
-| `AnimalMaxCount` | 200 | Maximum animals on the map |
-| `ZombieMaxCount` | 1000 | Maximum infected on the map |
-| `CleanupLifetimeDeadPlayer` | 3600 | Dead body removal time (seconds) |
-| `CleanupLifetimeRuined` | 330 | Ruined item removal time |
-| `JelzoRefreshFrequency` | 432000 | Territory flag refresh interval (5 days) |
-| `JelzoRefreshMaxDuration` | 3456000 | Max flag lifetime (40 days) |
-| `FoodDecay` | 1 | Food spoilage toggle (0=off, 1=on) |
-| `InitialSpawn` | 100 | Percentage of nominal spawned on startup |
-| `LootDamageMax` | 0.82 | Maximum damage on spawned loot |
-| `TimeLogin` / `TimeLogout` | 15 | Login/logout timer (anti-combat-log) |
-| `TimePenalty` | 20 | Combat log penalty timer |
-| `ZoneSpawnDist` | 300 | Player distance triggering zombie/animal spawns |
+| `AnimalMaxCount` | 200 | Maximum állatok a térképen |
+| `ZombieMaxCount` | 1000 | Maximum fertőzöttek a térképen |
+| `CleanupLifetimeDeadPlayer` | 3600 | Holttest eltávolítási idő (másodperc) |
+| `CleanupLifetimeRuined` | 330 | Tönkrement tárgy eltávolítási idő |
+| `FlagRefreshFrequency` | 432000 | Területi zászló frissítési intervallum (5 nap) |
+| `FlagRefreshMaxDuration` | 3456000 | Maximális zászló élettartam (40 nap) |
+| `FoodDecay` | 1 | Étel romlás kapcsoló (0=ki, 1=be) |
+| `InitialSpawn` | 100 | A nominál százaléka, ami indításkor megjelenik |
+| `LootDamageMax` | 0.82 | Maximális sérülés a megjelent looton |
+| `TimeLogin` / `TimeLogout` | 15 | Bejelentkezési/kijelentkezési időzítő (anti-combat-log) |
+| `TimePenalty` | 20 | Combat log büntetési időzítő |
+| `ZoneSpawnDist` | 300 | Játékos távolság, ami zombi/állat megjelenést vált ki |
 
-The `type` attribute is `0` for integer, `1` for float. Using the wrong type truncates the value.
+A `type` attribútum `0` egész számhoz, `1` lebegőpontos számhoz. Rossz típus használata csonkítja az értéket.
 
 ---
 
-## cfggameplay.json --- Gameplay Settings
+## cfggameplay.json --- Játékmenet beállítások
 
-Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, the engine uses hardcoded defaults.
+Csak akkor töltődik be, ha `enableCfgGameplayFile = 1` van beállítva a `serverDZ.cfg`-ben. Enélkül a motor a beépített alapértékeket használja.
 
-### Structure
+### Struktúra
 
 ```json
 {
@@ -325,15 +327,15 @@ Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, th
 }
 ```
 
-Key settings: `disableBaseDamage` prevents base damage, `disablePersonalLight` removes the fresh-spawn light, `staminaWeightLimitThreshold` is in grams (6000 = 6kg), temperature arrays have 12 values (January--December), `lightingConfig` accepts `0` (default) or `1` (darker nights), and `displayPlayerPosition` shows the player dot on the map.
+Kulcs beállítások: a `disableBaseDamage` megakadályozza a bázis sérülést, a `disablePersonalLight` eltávolítja a friss spawn fényt, a `staminaWeightLimitThreshold` grammban van megadva (6000 = 6kg), a hőmérsékleti tömbök 12 értéket tartalmaznak (január--december), a `lightingConfig` `0`-t (alapértelmezett) vagy `1`-et (sötétebb éjszakák) fogad el, és a `displayPlayerPosition` mutatja a játékos pontját a térképen.
 
 ---
 
-## serverDZ.cfg --- Server Settings
+## serverDZ.cfg --- Szerver beállítások
 
-This file sits next to the server executable, not in the mission folder.
+Ez a fájl a szerver futtatható fájl mellett található, nem a küldetés mappában.
 
-### Fo beallitasok
+### Fő beállítások
 
 ```
 hostname = "My DayZ Server";
@@ -348,33 +350,33 @@ storeHouseStateDisabled = false;
 storageAutoFix = 1;
 ```
 
-| Parameter | Leiras |
+| Paraméter | Leírás |
 |-----------|-------------|
-| `hostname` | Server name in the browser |
-| `password` | Join password (empty = open) |
-| `passwordAdmin` | RCON admin password |
-| `maxPlayers` | Maximum concurrent players |
-| `template` | Mission folder name |
-| `verifySignatures` | Signature check level (2 = strict) |
-| `enableCfgGameplayFile` | Load cfggameplay.json (0/1) |
+| `hostname` | Szerver neve a böngészőben |
+| `password` | Csatlakozási jelszó (üres = nyílt) |
+| `passwordAdmin` | RCON admin jelszó |
+| `maxPlayers` | Maximális egyidejű játékosok |
+| `template` | Küldetés mappa neve |
+| `verifySignatures` | Aláírás ellenőrzési szint (2 = szigorú) |
+| `enableCfgGameplayFile` | cfggameplay.json betöltése (0/1) |
 
-### Mod Loading
+### Mod betöltés
 
-Mods are specified via launch parameters, not in the config file:
+A modok indítási paramétereken keresztül vannak megadva, nem a konfigurációs fájlban:
 
 ```
 DayZServer_x64.exe -config=serverDZ.cfg -mod=@CF;@MyMod -servermod=@MyServerMod -port=2302
 ```
 
-`-mod=` mods must be installed by clients. `-servermod=` mods run server-side only.
+A `-mod=` modokat a klienseknek is telepíteniük kell. A `-servermod=` modok csak szerver oldalon futnak.
 
 ---
 
-## How Mods Interact with the Economy
+## Hogyan lépnek kapcsolatba a modok a gazdasággal
 
-### cfgeconomycore.xml --- Root Class Registration
+### cfgeconomycore.xml --- Gyökér osztály regisztráció
 
-Every item class hierarchy must trace back to a registered root class:
+Minden tárgy osztály hierarchiának vissza kell vezetnie egy regisztrált gyökér osztályhoz:
 
 ```xml
 <economycore>
@@ -389,11 +391,11 @@ Every item class hierarchy must trace back to a registered root class:
 </economycore>
 ```
 
-If your mod introduces a new base class not inheriting from `Inventory_Base`, `AlapertelmezettWeapon`, or `AlapertelmezettMagazine`, add it as a `rootclass`. The `act` attribute specifies entity type: `character` for AI, `car` for vehicles.
+Ha a modod egy olyan új alap osztályt vezet be, amely nem az `Inventory_Base`, `DefaultWeapon` vagy `DefaultMagazine` osztályból öröklődik, add hozzá `rootclass`-ként. Az `act` attribútum az entitás típusát adja meg: `character` AI-hoz, `car` járművekhez.
 
-### cfglimitsdefinition.xml --- Custom Tags
+### cfglimitsdefinition.xml --- Egyéni címkék
 
-Any `category`, `usage`, or `value` used in `types.xml` must be defined here:
+Minden `category`, `usage` vagy `value`, amelyet a `types.xml`-ben használsz, itt kell definiálni:
 
 ```xml
 <lists>
@@ -409,11 +411,11 @@ Any `category`, `usage`, or `value` used in `types.xml` must be defined here:
 </lists>
 ```
 
-Use `cfglimitsdefinitionuser.xml` for additions that should not overwrite the vanilla file.
+Használd a `cfglimitsdefinitionuser.xml` fájlt olyan kiegészítésekhez, amelyek nem írják felül a vanilla fájlt.
 
-### economy.xml --- Subsystem Control
+### economy.xml --- Alrendszer vezérlés
 
-Controls which CE subsystems are active:
+Szabályozza, hogy mely CE alrendszerek aktívak:
 
 ```xml
 <economy>
@@ -424,11 +426,11 @@ Controls which CE subsystems are active:
 </economy>
 ```
 
-Jelzos: `init` (spawn on startup), `load` (load persistence), `respawn` (respawn after cleanup), `save` (persist to database).
+Jelzők: `init` (megjelenés indításkor), `load` (perzisztencia betöltése), `respawn` (újramegjelenés takarítás után), `save` (mentés adatbázisba).
 
-### Script-Side Economy Interaction
+### Script oldali gazdasági interakció
 
-Items created via `CreateInInventory()` are automatically CE-managed. For world spawns, use ECE flags:
+A `CreateInInventory()` metódussal létrehozott tárgyak automatikusan CE-kezeltek. Világ spawn-okhoz használd az ECE jelzőket:
 
 ```c
 EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE);
@@ -436,65 +438,65 @@ EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE)
 
 ---
 
-## Gyakori hibak
+## Gyakori hibák
 
-### XML Szintaxis Errors
+### XML szintaxis hibák
 
-A single unclosed tag breaks the entire file. Always validate XML before deploying.
+Egyetlen le nem zárt címke elrontja az egész fájlt. Mindig validáld az XML-t telepítés előtt.
 
-### Missing Tags in cfglimitsdefinition.xml
+### Hiányzó címkék a cfglimitsdefinition.xml-ben
 
-Using a `usage` or `value` in types.xml that is not defined in cfglimitsdefinition.xml causes the item to silently fail to spawn. Check RPT logs for warnings.
+Olyan `usage` vagy `value` használata a types.xml-ben, ami nincs definiálva a cfglimitsdefinition.xml-ben, a tárgy csendes megjelenési hibáját okozza. Ellenőrizd az RPT logokat figyelmeztetésekért.
 
-### Nominal Too High
+### Túl magas nominal
 
-Total nominal across all items should stay below 10,000--15,000. Excessive values degrade server performance.
+Az összes tárgy teljes nominálja 10 000--15 000 alatt kell maradjon. Túlzott értékek rontják a szerver teljesítményét.
 
-### Lifetime Too Short
+### Túl rövid élettartam
 
-Items with very short lifetimes disappear before players find them. Use at least `3600` (1 hour) for common items, `28800` (8 hours) for weapons.
+A nagyon rövid élettartamú tárgyak eltűnnek, mielőtt a játékosok megtalálnák őket. Használj legalább `3600`-at (1 óra) közönséges tárgyakhoz, `28800`-at (8 óra) fegyverekhez.
 
-### Missing Root Class
+### Hiányzó gyökér osztály
 
-Items whose class hierarchy does not trace to a registered root class in `cfgeconomycore.xml` will never spawn, even with correct types.xml entries.
+Azok a tárgyak, amelyek osztály hierarchiája nem vezethető vissza egy regisztrált gyökér osztályhoz a `cfgeconomycore.xml`-ben, soha nem fognak megjelenni, még helyes types.xml bejegyzésekkel sem.
 
-### cfggameplay.json Not Enabled
+### cfggameplay.json nincs engedélyezve
 
-The file is ignored unless `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+A fájl figyelmen kívül marad, hacsak az `enableCfgGameplayFile = 1` nincs beállítva a `serverDZ.cfg`-ben.
 
-### Wrong type in globals.xml
+### Rossz típus a globals.xml-ben
 
-Using `type="0"` (integer) for a float value like `0.82` truncates it to `0`. Use `type="1"` for floats.
+A `type="0"` (egész szám) használata egy lebegőpontos értékhez, mint a `0.82`, csonkítja azt `0`-ra. Használj `type="1"`-et lebegőpontos számokhoz.
 
-### Editing Vanilla Files Directly
+### Vanilla fájlok közvetlen szerkesztése
 
-Modifying vanilla types.xml works but breaks on game updates. Prefer shipping separate type files and registering them through cfgeconomycore, or use cfglimitsdefinitionuser.xml for custom tags.
+A vanilla types.xml módosítása működik, de a játék frissítésekor elromlik. Inkább szállíts külön típus fájlokat és regisztráld őket cfgeconomycore-on keresztül, vagy használd a `cfglimitsdefinitionuser.xml`-t egyéni címkékhez.
 
 ---
 
 ## Legjobb gyakorlatok
 
-- Ship a `ServerFiles/` folder with your mod containing pre-configured `types.xml` entries so server admins can copy-paste rather than write from scratch.
-- Use `cfglimitsdefinitionuser.xml` instead of editing the vanilla `cfglimitsdefinition.xml` -- your additions survive game updates.
-- Set `count_in_hoarder="0"` for common items (food, ammo) to prevent hoarding from blocking CE respawns.
-- Always set `enableCfgGameplayFile = 1` in `serverDZ.cfg` before expecting `cfggameplay.json` changes to take effect.
-- Keep total `nominal` across all types.xml entries below 12,000 to avoid CE performance degradation on populated servers.
+- Szállíts egy `ServerFiles/` mappát a mododdal, amely előre konfigurált `types.xml` bejegyzéseket tartalmaz, hogy a szerver adminisztrátorok másolhassák-beilleszthessék ahelyett, hogy nulláról írnák.
+- Használd a `cfglimitsdefinitionuser.xml` fájlt a vanilla `cfglimitsdefinition.xml` szerkesztése helyett -- a kiegészítéseid túlélik a játék frissítéseket.
+- Állítsd be a `count_in_hoarder="0"` értéket közönséges tárgyakhoz (étel, lőszer), hogy megelőzd a felhalmozást, ami blokkolja a CE újramegjelenéseket.
+- Mindig állítsd be az `enableCfgGameplayFile = 1` értéket a `serverDZ.cfg`-ben, mielőtt elvárno a `cfggameplay.json` változtatások érvénybe lépését.
+- Tartsd az összes `nominal` értéket a types.xml bejegyzésekben 12 000 alatt, hogy elkerüld a CE teljesítményromlást népszerű szervereken.
 
 ---
 
-## Elmelet vs gyakorlat
+## Elmélet vs. gyakorlat
 
-| Fogalom | Elmelet | Valosag |
+| Fogalom | Elmélet | Valóság |
 |---------|--------|---------|
-| `nominal` is a hard target | CE spawns exactly this many items | CE approaches nominal over time but fluctuates based on player interaction, cleanup cycles, and zone distance |
-| `restock=0` means instant respawn | Items reappear immediately after despawn | The CE batch processes restocking in cycles (typically every 30-60 seconds), so there is always a delay regardless of the restock value |
-| `cfggameplay.json` controls all gameplay | All tuning goes here | Many gameplay values are hardcoded in script or config.cpp and cannot be overridden by cfggameplay.json |
-| `init.c` runs only on server start | One-time initialization | `init.c` runs every time the mission loads, including after server restarts. Persistent state is managed by the Hive, not init.c |
-| Multiple types.xml files merge cleanly | CE reads all registered files | Files must be registered in cfgeconomycore.xml via `<ce folder="custom">` directives. Simply placing extra XML files in `db/` does nothing |
+| A `nominal` kemény célérték | A CE pontosan ennyi tárgyat hoz létre | A CE idővel közelíti meg a nominált, de ingadozik a játékos interakció, takarítási ciklusok és zóna távolság alapján |
+| A `restock=0` azonnali újramegjelenést jelent | A tárgyak azonnal újra megjelennek eltűnés után | A CE kötegelt feldolgozásban kezeli az újratöltést ciklusokban (jellemzően 30-60 másodpercenként), tehát mindig van késleltetés a restock értéktől függetlenül |
+| A `cfggameplay.json` minden játékmenetet szabályoz | Minden hangolás ide kerül | Sok játékmenet érték scriptben vagy config.cpp-ben van beépítve és nem írható felül a cfggameplay.json-nel |
+| Az `init.c` csak szerver indításkor fut | Egyszeri inicializáció | Az `init.c` minden alkalommal lefut, amikor a küldetés betöltődik, beleértve a szerver újraindításokat is. A perzisztens állapotot a Hive kezeli, nem az init.c |
+| Több types.xml fájl tisztán egyesül | A CE az összes regisztrált fájlt olvassa | A fájlokat a cfgeconomycore.xml-ben kell regisztrálni `<ce folder="custom">` direktívákkal. Egyszerűen extra XML fájlokat elhelyezni a `db/` mappában nem csinál semmit |
 
 ---
 
-## Kompatibilitas es hatas
+## Kompatibilitás és hatás
 
-- **Multi-Mod:** Multiple mods can add entries to types.xml without conflict as long as classnames are unique. If two mods define the same classname with different nominal/lifetime values, the last-loaded entry wins.
-- **Performance:** Excessive nominal counts (15,000+) cause CE tick spikes visible as server FPS drops. Each CE cycle iterates all registered types to check spawn conditions.
+- **Multi-Mod:** Több mod is adhat bejegyzéseket a types.xml-hez ütközés nélkül, amennyiben az osztálynevek egyediek. Ha két mod ugyanazt az osztálynevet definiálja különböző nominal/lifetime értékekkel, az utoljára betöltött bejegyzés nyer.
+- **Teljesítmény:** Túlzott nominal számok (15 000+) CE tick kiugrásokat okoznak, amelyek szerver FPS csökkenésként láthatók. Minden CE ciklus végigiterál az összes regisztrált típuson a spawn feltételek ellenőrzéséhez.
