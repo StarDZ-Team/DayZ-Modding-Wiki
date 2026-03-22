@@ -1,15 +1,19 @@
-# Chapter 3.2: Layout File Format (.layout)
+# 第 3.2 章：布局文件格式（.layout）
 
-[Home](../../README.md) | [<< Previous: Widget Types](01-widget-types.md) | **Layout File Format** | [Next: Sizing & Positioning >>](03-sizing-positioning.md)
+[首页](../../README.md) | [<< 上一章：控件类型](01-widget-types.md) | **布局文件格式** | [下一章：尺寸与定位 >>](03-sizing-positioning.md)
 
 ---
 
-## Basic Structure
+DayZ 使用一种自定义的文本格式来定义 UI 布局文件。这些 `.layout` 文件**不是 XML** —— 它们使用类似 config.cpp 的花括号分隔格式。DayZ Workbench 编辑器可以生成这些文件，但理解其格式可以让你手动编辑布局并调试问题。
 
-A `.layout` file defines a tree of widgets. Every file has exactly one root widget, which contains nested children.
+---
+
+## 基本结构
+
+`.layout` 文件定义了一个控件树。每个文件恰好有一个根控件，其中包含嵌套的子控件。
 
 ```
-WidgetTypeClass WidgetName {
+ WidgetTypeClass WidgetName {
  attribute value
  attribute "quoted value"
  {
@@ -20,137 +24,158 @@ WidgetTypeClass WidgetName {
 }
 ```
 
-Key rules:
+关键规则：
 
-1. The root element is always a single widget (typically `FrameWidgetClass`).
-2. Widget type names use the **layout class** name, which always ends with `Class` (e.g., `FrameWidgetClass`, `TextWidgetClass`, `ButtonWidgetClass`).
-3. Each widget has a unique name following its type class.
-4. Attributes are `key value` pairs, one per line.
-5. Attribute names containing spaces must be quoted: `"text halign" center`.
-6. String values are quoted: `text "Hello World"`.
-7. Numeric values are unquoted: `size 0.5 0.3`.
-8. Children are nested inside `{ }` blocks after the parent's attributes.
-
----
-
-## Attribute Reference
-
-### Positioning & Sizing
-
-| Attribute | Values | Description |
-|---|---|---|
-| `position` | `x y` | Widget position (proportional 0-1 or pixel values) |
-| `size` | `w h` | Widget dimensions (proportional 0-1 or pixel values) |
-| `halign` | `left_ref`, `center_ref`, `right_ref` | Horizontal alignment reference point |
-| `valign` | `top_ref`, `center_ref`, `bottom_ref` | Vertical alignment reference point |
-| `hexactpos` | `0` or `1` | 0 = proportional X position, 1 = pixel X position |
-| `vexactpos` | `0` or `1` | 0 = proportional Y position, 1 = pixel Y position |
-| `hexactsize` | `0` or `1` | 0 = proportional width, 1 = pixel width |
-| `vexactsize` | `0` or `1` | 0 = proportional height, 1 = pixel height |
-| `fixaspect` | `fixwidth`, `fixheight` | Maintain aspect ratio by constraining one dimension |
-| `scaled` | `0` or `1` | Scale with DayZ UI scaling setting |
-| `priority` | integer | Z-order (higher values render on top) |
-
-The `hexactpos`, `vexactpos`, `hexactsize`, and `vexactsize` flags are the most important attributes in the entire layout system. They control whether each dimension uses proportional (0.0 - 1.0 relative to parent) or pixel (absolute screen pixels) units. See [3.3 Sizing & Positioning](03-sizing-positioning.md) for a thorough explanation.
-
-### Visual Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `visible` | `0` or `1` | Initial visibility (0 = hidden) |
-| `color` | `r g b a` | Color as four floats, each 0.0 to 1.0 |
-| `style` | style name | Predefined visual style (e.g., `Default`, `Colorable`) |
-| `draggable` | `0` or `1` | Widget can be dragged by the user |
-| `clipchildren` | `0` or `1` | Clip child widgets to this widget's bounds |
-| `inheritalpha` | `0` or `1` | Children inherit this widget's alpha value |
-| `keepsafezone` | `0` or `1` | Keep widget within screen safe zone |
-
-### Behavioral Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `ignorepointer` | `0` or `1` | Widget ignores mouse input (clicks pass through) |
-| `disabled` | `0` or `1` | Widget is disabled |
-| `"no focus"` | `0` or `1` | Widget cannot receive keyboard focus |
-
-### Text Attributes
-
-These apply to `TextWidgetClass`, `RichTextWidgetClass`, `MultilineTextWidgetClass`, `ButtonWidgetClass`, and other text-bearing widgets.
-
-| Attribute | Values | Description |
-|---|---|---|
-| `text` | `"string"` | Default text content |
-| `font` | `"path/to/font"` | Font file path |
-| `"text halign"` | `left`, `center`, `right` | Horizontal text alignment within the widget |
-| `"text valign"` | `top`, `center`, `bottom` | Vertical text alignment within the widget |
-| `"bold text"` | `0` or `1` | Bold rendering |
-| `"italic text"` | `0` or `1` | Italic rendering |
-| `"exact text"` | `0` or `1` | Use exact pixel font size instead of proportional |
-| `"exact text size"` | integer | Font size in pixels (requires `"exact text" 1`) |
-| `"size to text h"` | `0` or `1` | Resize widget width to fit text |
-| `"size to text v"` | `0` or `1` | Resize widget height to fit text |
-| `"text sharpness"` | float | Text rendering sharpness |
-| `wrap` | `0` or `1` | Enable word wrapping |
-
-### Image Attributes
-
-These apply to `ImageWidgetClass`.
-
-| Attribute | Values | Description |
-|---|---|---|
-| `image0` | `"set:name image:name"` | Primary image from an imageset |
-| `mode` | `blend`, `additive`, `stretch` | Image blend mode |
-| `"src alpha"` | `0` or `1` | Use the source alpha channel |
-| `stretch` | `0` or `1` | Stretch image to fill widget |
-| `filter` | `0` or `1` | Enable texture filtering |
-| `"flip u"` | `0` or `1` | Flip image horizontally |
-| `"flip v"` | `0` or `1` | Flip image vertically |
-| `"clamp mode"` | `clamp`, `wrap` | Texture edge behavior |
-| `"stretch mode"` | `stretch_w_h`, etc. | Stretch mode |
-
-### Spacer Attributes
-
-These apply to `WrapSpacerWidgetClass` and `GridSpacerWidgetClass`.
-
-| Attribute | Values | Description |
-|---|---|---|
-| `Padding` | integer | Inner padding in pixels |
-| `Margin` | integer | Space between child items in pixels |
-| `"Size To Content H"` | `0` or `1` | Resize width to match children |
-| `"Size To Content V"` | `0` or `1` | Resize height to match children |
-| `content_halign` | `left`, `center`, `right` | Child content horizontal alignment |
-| `content_valign` | `top`, `center`, `bottom` | Child content vertical alignment |
-| `Columns` | integer | Grid columns (GridSpacer only) |
-| `Rows` | integer | Grid rows (GridSpacer only) |
-
-### Button Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `switch` | `toggle` | Makes the button a toggle (stays pressed) |
-| `style` | style name | Visual style for the button |
-
-### Slider Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `"fill in"` | `0` or `1` | Show a filled track behind the slider handle |
-| `"listen to input"` | `0` or `1` | Respond to mouse input |
-
-### Scroll Attributes
-
-| Attribute | Values | Description |
-|---|---|---|
-| `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
-| `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
+1. 根元素始终是一个单独的控件（通常是 `FrameWidgetClass`）。
+2. 控件类型名称使用**布局类**名，始终以 `Class` 结尾（例如 `FrameWidgetClass`、`TextWidgetClass`、`ButtonWidgetClass`）。
+3. 每个控件在其类型类名之后都有一个唯一名称。
+4. 属性是 `key value` 键值对，每行一个。
+5. 包含空格的属性名必须加引号：`"text halign" center`。
+6. 字符串值需要加引号：`text "Hello World"`。
+7. 数字值不加引号：`size 0.5 0.3`。
+8. 子控件嵌套在父控件属性之后的 `{ }` 块中。
 
 ---
 
-## Script Integration
+## 属性参考
 
-### The `scriptclass` Attribute
+### 定位与尺寸
 
-The `scriptclass` attribute binds a widget to an Enforce Script class. When the layout is loaded, the engine creates an instance of that class and calls its `OnWidgetScriptInit(Widget w)` method.
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `position` | `x y` | 控件位置（比例 0-1 或像素值） |
+| `size` | `w h` | 控件尺寸（比例 0-1 或像素值） |
+| `halign` | `left_ref`、`center_ref`、`right_ref` | 水平对齐参考点 |
+| `valign` | `top_ref`、`center_ref`、`bottom_ref` | 垂直对齐参考点 |
+| `hexactpos` | `0` 或 `1` | 0 = 比例 X 位置，1 = 像素 X 位置 |
+| `vexactpos` | `0` 或 `1` | 0 = 比例 Y 位置，1 = 像素 Y 位置 |
+| `hexactsize` | `0` 或 `1` | 0 = 比例宽度，1 = 像素宽度 |
+| `vexactsize` | `0` 或 `1` | 0 = 比例高度，1 = 像素高度 |
+| `fixaspect` | `fixwidth`、`fixheight` | 通过约束一个维度来保持宽高比 |
+| `scaled` | `0` 或 `1` | 随 DayZ UI 缩放设置进行缩放 |
+| `priority` | 整数 | Z 轴顺序（值越大越在上层渲染） |
+
+`hexactpos`、`vexactpos`、`hexactsize` 和 `vexactsize` 标志是整个布局系统中最重要的属性。它们控制每个维度是使用比例（0.0 - 1.0，相对于父控件）还是像素（绝对屏幕像素）单位。参见 [3.3 尺寸与定位](03-sizing-positioning.md) 获取详细说明。
+
+### 视觉属性
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `visible` | `0` 或 `1` | 初始可见性（0 = 隐藏） |
+| `color` | `r g b a` | 颜色，四个浮点数，每个 0.0 到 1.0 |
+| `style` | 样式名称 | 预定义视觉样式（例如 `Default`、`Colorable`） |
+| `draggable` | `0` 或 `1` | 控件可被用户拖动 |
+| `clipchildren` | `0` 或 `1` | 将子控件裁剪到此控件的边界内 |
+| `inheritalpha` | `0` 或 `1` | 子控件继承此控件的透明度值 |
+| `keepsafezone` | `0` 或 `1` | 将控件保持在屏幕安全区域内 |
+
+### 行为属性
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `ignorepointer` | `0` 或 `1` | 控件忽略鼠标输入（点击穿透） |
+| `disabled` | `0` 或 `1` | 控件被禁用 |
+| `"no focus"` | `0` 或 `1` | 控件无法获得键盘焦点 |
+
+### 文本属性
+
+这些属性适用于 `TextWidgetClass`、`RichTextWidgetClass`、`MultilineTextWidgetClass`、`ButtonWidgetClass` 及其他带文本的控件。
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `text` | `"string"` | 默认文本内容 |
+| `font` | `"path/to/font"` | 字体文件路径 |
+| `"text halign"` | `left`、`center`、`right` | 控件内文本的水平对齐 |
+| `"text valign"` | `top`、`center`、`bottom` | 控件内文本的垂直对齐 |
+| `"bold text"` | `0` 或 `1` | 粗体渲染 |
+| `"italic text"` | `0` 或 `1` | 斜体渲染 |
+| `"exact text"` | `0` 或 `1` | 使用精确像素字体大小而非比例 |
+| `"exact text size"` | 整数 | 像素字体大小（需要 `"exact text" 1`） |
+| `"size to text h"` | `0` 或 `1` | 调整控件宽度以适应文本 |
+| `"size to text v"` | `0` 或 `1` | 调整控件高度以适应文本 |
+| `"text sharpness"` | 浮点数 | 文本渲染锐度 |
+| `wrap` | `0` 或 `1` | 启用自动换行 |
+
+### 图像属性
+
+这些属性适用于 `ImageWidgetClass`。
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `image0` | `"set:name image:name"` | 来自图像集的主图像 |
+| `mode` | `blend`、`additive`、`stretch` | 图像混合模式 |
+| `"src alpha"` | `0` 或 `1` | 使用源 Alpha 通道 |
+| `stretch` | `0` 或 `1` | 拉伸图像以填满控件 |
+| `filter` | `0` 或 `1` | 启用纹理过滤 |
+| `"flip u"` | `0` 或 `1` | 水平翻转图像 |
+| `"flip v"` | `0` 或 `1` | 垂直翻转图像 |
+| `"clamp mode"` | `clamp`、`wrap` | 纹理边缘行为 |
+| `"stretch mode"` | `stretch_w_h` 等 | 拉伸模式 |
+
+### 间距器属性
+
+这些属性适用于 `WrapSpacerWidgetClass` 和 `GridSpacerWidgetClass`。
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `Padding` | 整数 | 内边距（像素） |
+| `Margin` | 整数 | 子项之间的间距（像素） |
+| `"Size To Content H"` | `0` 或 `1` | 调整宽度以匹配子控件 |
+| `"Size To Content V"` | `0` 或 `1` | 调整高度以匹配子控件 |
+| `content_halign` | `left`、`center`、`right` | 子内容水平对齐 |
+| `content_valign` | `top`、`center`、`bottom` | 子内容垂直对齐 |
+| `Columns` | 整数 | 网格列数（仅 GridSpacer） |
+| `Rows` | 整数 | 网格行数（仅 GridSpacer） |
+
+### 按钮属性
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `switch` | `toggle` | 使按钮成为切换按钮（保持按下状态） |
+| `style` | 样式名称 | 按钮的视觉样式 |
+
+### fixaspect 值
+
+`fixaspect` 属性控制控件如何保持其宽高比：
+
+| 值 | 行为 |
+|-------|----------|
+| `0` | 无宽高比约束（默认） |
+| `1`（fixwidth） | 宽度根据高度调整以保持宽高比 |
+| `2`（fixheight） | 高度根据宽度调整以保持宽高比 |
+| `3`（inside） | 在给定尺寸内适配，保持宽高比 |
+| `4`（outside） | 填满给定尺寸，保持宽高比（可能裁剪） |
+
+### 滑块属性
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `"fill in"` | `0` 或 `1` | 用颜色填充滑块轨道至滑块位置 |
+| `"listen to input"` | `0` 或 `1` | 滑块是否响应输入 |
+
+在脚本中，配置滑块的范围和值：
+
+```c
+SliderWidget slider;
+slider.SetMinMax(0, 100);
+slider.SetCurrent(50);
+float val = slider.GetCurrent();
+```
+
+### 滚动属性
+
+| 属性 | 值 | 描述 |
+|---|---|---|
+| `"Scrollbar V"` | `0` 或 `1` | 显示垂直滚动条 |
+| `"Scrollbar H"` | `0` 或 `1` | 显示水平滚动条 |
+
+---
+
+## 脚本集成
+
+### `scriptclass` 属性
+
+`scriptclass` 属性将控件绑定到一个 Enforce Script 类。当布局被加载时，引擎会创建该类的实例并调用其 `OnWidgetScriptInit(Widget w)` 方法。
 
 ```
 FrameWidgetClass MyPanel {
@@ -159,7 +184,7 @@ FrameWidgetClass MyPanel {
 }
 ```
 
-The script class must inherit from `Managed` and implement `OnWidgetScriptInit`:
+脚本类必须继承自 `Managed` 并实现 `OnWidgetScriptInit`：
 
 ```c
 class MyPanelHandler : Managed
@@ -173,9 +198,9 @@ class MyPanelHandler : Managed
 }
 ```
 
-### The ScriptParamsClass Block
+### ScriptParamsClass 块
 
-Parameters can be passed from the layout to the `scriptclass` via a `ScriptParamsClass` block. This block appears as a second `{ }` child block after the widget's children.
+可以通过 `ScriptParamsClass` 块将参数从布局传递给 `scriptclass`。此块作为控件子控件之后的第二个 `{ }` 子块出现。
 
 ```
 ImageWidgetClass Logo {
@@ -190,11 +215,11 @@ ImageWidgetClass Logo {
 }
 ```
 
-The script class reads these parameters in `OnWidgetScriptInit` by using the widget's script param system.
+脚本类在 `OnWidgetScriptInit` 中通过控件的脚本参数系统读取这些参数。
 
 ### DabsFramework ViewBinding
 
-In mods that use DabsFramework MVC, the `scriptclass "ViewBinding"` pattern connects widgets to a ViewController's data properties:
+在使用 DabsFramework MVC 的模组中，`scriptclass "ViewBinding"` 模式将控件连接到 ViewController 的数据属性：
 
 ```
 TextWidgetClass StatusLabel {
@@ -209,19 +234,19 @@ TextWidgetClass StatusLabel {
 }
 ```
 
-| Param | Description |
+| 参数 | 描述 |
 |---|---|
-| `Binding_Name` | Name of the ViewController property to bind to |
-| `Two_Way_Binding` | `1` = UI changes push back to the controller |
-| `Relay_Command` | Function name on the controller to call when the widget is clicked/changed |
-| `Selected_Item` | Property to bind the selected item to (for lists) |
-| `Debug_Logging` | `1` = enable verbose logging for this binding |
+| `Binding_Name` | 要绑定的 ViewController 属性名 |
+| `Two_Way_Binding` | `1` = UI 更改会推送回控制器 |
+| `Relay_Command` | 当控件被点击/更改时调用的控制器函数名 |
+| `Selected_Item` | 将选中项绑定到的属性（用于列表） |
+| `Debug_Logging` | `1` = 为此绑定启用详细日志 |
 
 ---
 
-## Children Nesting
+## 子控件嵌套
 
-Children are placed inside a `{ }` block after the parent's attributes. Multiple children can exist in the same block.
+子控件放置在父控件属性之后的 `{ }` 块中。同一个块中可以存在多个子控件。
 
 ```
 FrameWidgetClass Parent {
@@ -241,74 +266,74 @@ FrameWidgetClass Parent {
 }
 ```
 
-Children are always positioned relative to their parent. A child with `position 0 0` and `size 1 1` (proportional) fills its parent completely.
+子控件始终相对于其父控件定位。位置为 `position 0 0`、尺寸为 `size 1 1`（比例）的子控件会完全填满其父控件。
 
 ---
 
-## Complete Annotated Example
+## 完整注释示例
 
-Here is a fully annotated layout file for a notification panel -- the kind of UI you might build for a mod:
+以下是一个通知面板的完整注释布局文件 —— 你在模组中可能会构建的 UI 类型：
 
 ```
-// Root container -- invisible frame that covers 30% of screen width
-// Centered horizontally, positioned at top of screen
+// 根容器 -- 不可见的框架，覆盖屏幕宽度的 30%
+// 水平居中，位于屏幕顶部
 FrameWidgetClass NotificationPanel {
 
- // Start hidden (script will show it)
+ // 初始隐藏（脚本将显示它）
  visible 0
 
- // Don't block mouse clicks on things behind this panel
+ // 不阻挡此面板后面的鼠标点击
  ignorepointer 1
 
- // Blue tint color (R=0.2, G=0.6, B=1.0, A=0.9)
+ // 蓝色色调（R=0.2, G=0.6, B=1.0, A=0.9）
  color 0.2 0.6 1.0 0.9
 
- // Position: 0 pixels from left, 0 pixels from top
+ // 位置：距离左侧 0 像素，距离顶部 0 像素
  position 0 0
  hexactpos 1
  vexactpos 1
 
- // Size: 30% of parent width, 30 pixels tall
+ // 尺寸：父控件宽度的 30%，高 30 像素
  size 0.3 30
  hexactsize 0
  vexactsize 1
 
- // Center horizontally within parent
+ // 在父控件内水平居中
  halign center_ref
 
- // Children block
+ // 子控件块
  {
-  // Text label fills the entire notification panel
+  // 文本标签填满整个通知面板
   TextWidgetClass NotificationText {
 
-   // Also ignore mouse input
+   // 同样忽略鼠标输入
    ignorepointer 1
 
-   // Position at origin relative to parent
+   // 相对于父控件的原点位置
    position 0 0
    hexactpos 1
    vexactpos 1
 
-   // Fill parent completely (proportional)
+   // 完全填满父控件（比例）
    size 1 1
    hexactsize 0
    vexactsize 0
 
-   // Center the text both ways
+   // 文本双向居中
    "text halign" center
    "text valign" center
 
-   // Use a bold font
+   // 使用粗体字体
    font "gui/fonts/Metron-Bold"
 
-   // Default text (will be overridden by script)
+   // 默认文本（将被脚本覆盖）
    text "Notification"
   }
  }
 }
 ```
 
-And here is a more complex example -- a dialog with a title bar, scrollable content, and a close button:
+以下是一个更复杂的示例 —— 带有标题栏、可滚动内容和关闭按钮的对话框：
 
 ```
 WrapSpacerWidgetClass MyDialog {
@@ -324,7 +349,7 @@ WrapSpacerWidgetClass MyDialog {
  "Size To Content V" 1
  content_halign center
  {
-  // Title bar row
+  // 标题栏行
   FrameWidgetClass TitleBarRow {
    size 1 26
    hexactsize 0
@@ -353,7 +378,7 @@ WrapSpacerWidgetClass MyDialog {
    }
   }
 
-  // Scrollable content area
+  // 可滚动内容区域
   ScrollWidgetClass ContentScroll {
    size 0.97 235
    hexactsize 0
@@ -375,14 +400,57 @@ WrapSpacerWidgetClass MyDialog {
 
 ## 常见错误
 
-1. **Forgetting the `Class` suffix** -- In layouts, write `TextWidgetClass`, not `TextWidget`.
-2. **Mixing proportional and pixel values** -- If `hexactsize 0`, the size values are 0.0-1.0 proportional. If `hexactsize 1`, they are pixel values. Using `300` with proportional mode means 300x the parent width.
-3. **Not quoting multi-word attributes** -- Write `"text halign" center`, not `text halign center`.
-4. **Placing ScriptParamsClass in the wrong block** -- It must be in a separate `{ }` block after the children block, not inside it.
+1. **忘记 `Class` 后缀** —— 在布局中应写 `TextWidgetClass`，而不是 `TextWidget`。
+2. **混淆比例值和像素值** —— 如果 `hexactsize 0`，尺寸值为 0.0-1.0 的比例值。如果 `hexactsize 1`，则为像素值。在比例模式下使用 `300` 意味着父控件宽度的 300 倍。
+3. **未引用多词属性** —— 应写 `"text halign" center`，而不是 `text halign center`。
+4. **将 ScriptParamsClass 放在错误的块中** —— 它必须在子控件块之后的单独 `{ }` 块中，而不是在子控件块内部。
+
+---
+
+## 最佳实践
+
+- 始终在每个控件上显式设置所有四个精确标志（`hexactpos`、`vexactpos`、`hexactsize`、`vexactsize`）。依赖默认值会导致布局模糊不清，当父结构发生变化时容易出错。
+- 谨慎使用 `scriptclass` —— 仅在确实需要脚本驱动行为的控件上使用。过度绑定会增加初始化开销。
+- 使用描述性名称命名控件（`PlayerListScroll`、`TitleBarClose`），而不是通用名称（`Frame1`、`btn`）。脚本代码使用 `FindAnyWidget()` 按名称查找，名称冲突会导致静默失败。
+- 保持布局文件在 200 行以内。将复杂的 UI 拆分为多个 `.layout` 文件，使用 `CreateWidgets()` 加载并以编程方式设置父级。
+- 始终引用多词属性名（`"text halign"`、`"Size To Content V"`）。未加引号的多词属性会静默失败且不报错。
+
+---
+
+## 理论与实践
+
+> 文档所说的与运行时实际表现的对比。
+
+| 概念 | 理论 | 现实 |
+|---------|--------|---------|
+| `scriptclass` 初始化 | 布局加载时调用 `OnWidgetScriptInit` | 如果类没有继承 `Managed` 或构造函数出错，控件会加载但处理器静默为 null |
+| `ScriptParamsClass` | 参数向脚本类传递任意数据 | 只有字符串和数字值能可靠工作；不支持嵌套对象或数组 |
+| `color` 属性 | 四个浮点数 0.0-1.0（RGBA） | 某些控件类型会忽略 Alpha 通道，或需要父控件设置 `inheritalpha 1` 才能传播透明度 |
+| 属性默认值 | 未记录的属性使用引擎默认值 | 默认值因控件类型而异 —— 在某些引擎版本中，`ButtonWidget` 的 `hexactsize` 默认值与 `FrameWidget` 不同 |
+| `"no focus"` | 阻止键盘焦点 | 同时也会阻止手柄选择，如果在交互式控件上设置此属性，可能会破坏手柄导航 |
+
+---
+
+## 兼容性与影响
+
+- **多模组：** 布局文件是每个模组隔离的 —— 不会直接冲突。但 `scriptclass` 名称必须全局唯一。两个模组使用 `scriptclass "PanelHandler"` 会导致其中一个静默失败。
+- **性能：** 布局中的每个控件都是一个真实的引擎对象。包含 500+ 控件的布局会导致明显的帧率下降。对于大型列表，优先使用编程方式的对象池。
+- **版本：** 布局格式自 DayZ 1.0 以来一直保持稳定。`ScriptParamsClass` 块和 `ViewBinding` scriptclass 是 DabsFramework 添加的，不是原版功能。
+
+---
+
+## 在真实模组中的观察
+
+| 模式 | 模组 | 详情 |
+|---------|-----|--------|
+| `scriptclass "ViewBinding"` 与 `ScriptParamsClass` | DabsFramework / DayZ Editor | 通过 `Binding_Name` 参数在布局和 ViewController 之间进行双向数据绑定 |
+| `WrapSpacerWidgetClass` 作为对话框根控件 | COT、Expansion | 启用 `Size To Content V/H` 以实现围绕动态内容的自动调整大小对话框 |
+| 为每个列表行使用单独的 `.layout` | VPP Admin Tools | 每个玩家行是一个独立的布局，加载到 WrapSpacer 中，实现复用和对象池 |
+| `priority 998-999` 用于模态叠加层 | DabsFramework、COT | 确保对话框渲染在所有其他 UI 元素之上 |
 
 ---
 
 ## 后续步骤
 
-- [3.3 Sizing & Positioning](03-sizing-positioning.md) -- Master the proportional vs. pixel coordinate system
-- [3.4 Container Widgets](04-containers.md) -- Deep dive into spacer and scroll widgets
+- [3.3 尺寸与定位](03-sizing-positioning.md) —— 掌握比例与像素坐标系统
+- [3.4 容器控件](04-containers.md) —— 深入了解间距器和滚动控件

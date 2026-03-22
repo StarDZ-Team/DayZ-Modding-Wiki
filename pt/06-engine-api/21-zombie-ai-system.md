@@ -1,56 +1,56 @@
-# Chapter 6.21: Zombie & AI System
+# Capítulo 6.21: Sistema de Zumbis e IA
 
-[Home](../../README.md) | [<< Previous: Particle & Effect System](20-particle-effects.md) | **Zombie & AI System** | [Next: Admin & Server Management >>](22-admin-server.md)
+[Início](../../README.md) | [<< Anterior: Sistema de Partículas e Efeitos](20-particle-effects.md) | **Sistema de Zumbis e IA** | [Próximo: Administração e Gerenciamento de Servidor >>](22-admin-server.md)
 
 ---
 
 ## Introdução
 
-Zombies (officially called "Infected") are the primary hostile AI entity in DayZ. They patrol, detect players through sight, sound, and proximity, transition through behavioral states, attack, vault, crawl, and die --- all driven by a C++ AI engine with script-level hooks for customization. Understanding how the infected system works is essential for any mod that spawns, modifies, or interacts with zombies.
+Zumbis (oficialmente chamados de "Infectados") são a principal entidade de IA hostil no DayZ. Eles patrulham, detectam jogadores através de visão, som e proximidade, transitam entre estados comportamentais, atacam, pulam, rastejam e morrem --- tudo conduzido por um motor de IA em C++ com hooks em nível de script para personalização. Entender como o sistema de infectados funciona é essencial para qualquer mod que spawna, modifica ou interage com zumbis.
 
-This chapter covers the full class hierarchy, the mind state machine, movement and attack commands, the perception/targeting system, spawning patterns, and modding hooks. All method signatures and constants are taken directly from the vanilla script source. Onde behavior is driven by the C++ engine with no script-visible API, that is noted explicitly.
+Este capítulo cobre a hierarquia completa de classes, a máquina de estados mentais, comandos de movimento e ataque, o sistema de percepção/alvos, padrões de spawn e hooks de modding. Todas as assinaturas de métodos e constantes são extraídas diretamente do código-fonte vanilla dos scripts. Onde o comportamento é conduzido pelo motor C++ sem API visível no script, isso é indicado explicitamente.
 
 ---
 
-## Class Hierarchy
+## Hierarquia de Classes
 
-The infected entity inherits from a deep chain shared with animals. Each level adds capabilities:
+A entidade infectada herda de uma cadeia profunda compartilhada com animais. Cada nível adiciona capacidades:
 
 ```
-Class (root of all Enforce Script classes)
+Class (raiz de todas as classes do Enforce Script)
 +-- Managed
     +-- IEntity
         +-- Object
             +-- ObjectTyped
                 +-- Entity
                     +-- EntityAI
-                        +-- DayZCreature                 // 3_Game - animation, bones, sound
-                            +-- DayZCreatureAI           // 3_Game - AI agent, navmesh, damage spheres
-                                +-- DayZInfected         // 3_Game - infected commands, hit handling
-                                    +-- ZombieBase       // 4_World - command handler, fight logic, sync
-                                        +-- ZombieMaleBase     // sound sets, male variants
+                        +-- DayZCreature                 // 3_Game - animação, ossos, som
+                            +-- DayZCreatureAI           // 3_Game - agente de IA, navmesh, esferas de dano
+                                +-- DayZInfected         // 3_Game - comandos de infectados, tratamento de golpes
+                                    +-- ZombieBase       // 4_World - handler de comandos, lógica de combate, sync
+                                        +-- ZombieMaleBase     // sets de som, variantes masculinas
                                         |   +-- ZmbM_CitizenASkinny_Base
                                         |   +-- ZmbM_Soldier_Base  (IsZombieMilitary = true)
                                         |   +-- ZmbM_NBC_Yellow     (ResistContaminatedEffect = true)
-                                        |   +-- ZmbM_Mummy          (custom light + visual on death)
-                                        |   +-- ... (~35 more types)
-                                        +-- ZombieFemaleBase   // sound sets, IsMale = false
+                                        |   +-- ZmbM_Mummy          (luz personalizada + visual na morte)
+                                        |   +-- ... (~35 tipos adicionais)
+                                        +-- ZombieFemaleBase   // sets de som, IsMale = false
                                             +-- ZmbF_CitizenANormal_Base
                                             +-- ZmbF_PoliceWomanNormal_Base
-                                            +-- ... (~20 more types)
+                                            +-- ... (~20 tipos adicionais)
 ```
 
-### Key Classes at Each Level
+### Classes Chave em Cada Nível
 
-| Class | Script File | Função |
-|-------|------------|------|
-| `DayZCreature` | `3_Game/entities/dayzanimal.c` | Animation instance, bone queries, `StartDeath()` / `ResetDeath()` |
+| Classe | Arquivo do Script | Função |
+|--------|-------------------|--------|
+| `DayZCreature` | `3_Game/entities/dayzanimal.c` | Instância de animação, consultas de ossos, `StartDeath()` / `ResetDeath()` |
 | `DayZCreatureAI` | `3_Game/entities/dayzanimal.c` | `GetAIAgent()`, `InitAIAgent()`, `DestroyAIAgent()`, `AddDamageSphere()` |
-| `DayZInfected` | `3_Game/entities/dayzinfected.c` | Command starters (`StartCommand_Move`, `_Attack`, `_Death`, etc.), `EEHitBy` |
-| `DayZInfectedType` | `3_Game/entities/dayzinfectedtype.c` | Attack registration, hit component selection, utility-based attack choice |
-| `ZombieBase` | `4_World/entities/creatures/infected/zombiebase.c` | `CommandHandler`, fight logic, crawl transition, damage hit evaluation, net sync |
+| `DayZInfected` | `3_Game/entities/dayzinfected.c` | Iniciadores de comandos (`StartCommand_Move`, `_Attack`, `_Death`, etc.), `EEHitBy` |
+| `DayZInfectedType` | `3_Game/entities/dayzinfectedtype.c` | Registro de ataques, seleção de componente de impacto, escolha de ataque baseada em utilidade |
+| `ZombieBase` | `4_World/entities/creatures/infected/zombiebase.c` | `CommandHandler`, lógica de combate, transição para rastejamento, avaliação de dano de impacto, sync de rede |
 
-### Hierarchy Diagram
+### Diagrama de Hierarquia
 
 ```mermaid
 classDiagram
@@ -96,16 +96,16 @@ classDiagram
 
 ---
 
-## Enums and Constantes
+## Enums e Constantes
 
-### DayZInfectedConstantes
+### DayZInfectedConstants
 
-Defined in `3_Game/entities/dayzinfected.c`:
+Definido em `3_Game/entities/dayzinfected.c`:
 
 ```csharp
 enum DayZInfectedConstants
 {
-    // Animation command IDs
+    // IDs de comandos de animação
     COMMANDID_MOVE,       // 0
     COMMANDID_VAULT,      // 1
     COMMANDID_DEATH,      // 2
@@ -114,7 +114,7 @@ enum DayZInfectedConstants
     COMMANDID_CRAWL,      // 5
     COMMANDID_SCRIPT,     // 6
 
-    // Mind states
+    // Estados mentais
     MINDSTATE_CALM,       // 7
     MINDSTATE_DISTURBED,  // 8
     MINDSTATE_ALERTED,    // 9
@@ -123,7 +123,7 @@ enum DayZInfectedConstants
 }
 ```
 
-### DayZInfectedConstantesMovement
+### DayZInfectedConstantsMovement
 
 ```csharp
 enum DayZInfectedConstantsMovement
@@ -141,43 +141,43 @@ enum DayZInfectedConstantsMovement
 enum DayZInfectedDeathAnims
 {
     ANIM_DEATH_DEFAULT   = 0,
-    ANIM_DEATH_IMPULSE   = 1,   // vehicle hit / physics impulse
-    ANIM_DEATH_BACKSTAB  = 2,   // finisher: liver stab
-    ANIM_DEATH_NECKSTAB  = 3    // finisher: neck stab
+    ANIM_DEATH_IMPULSE   = 1,   // impacto de veículo / impulso de física
+    ANIM_DEATH_BACKSTAB  = 2,   // finalizador: facada no fígado
+    ANIM_DEATH_NECKSTAB  = 3    // finalizador: facada no pescoço
 }
 ```
 
-### GameConstantes (AI-Related)
+### GameConstants (Relacionadas à IA)
 
-From `3_Game/constants.c`:
+De `3_Game/constants.c`:
 
 | Constante | Valor | Propósito |
-|----------|-------|---------|
-| `AI_ATTACKSPEED` | `1.5` | Multiplier for attack cooldown reduction rate |
-| `AI_MAX_BLOCKABLE_ANGLE` | `60` | Max angle (degrees) where player block stance works against infected |
-| `AI_CONTAMINATION_DMG_PER_SEC` | `3` | Damage per tick in contaminated zones |
-| `NL_DAMAGE_CLOSECOMBAT_CONVERSION_INFECTED` | `0.20` | Shock-to-health conversion for melee hits on infected |
-| `NL_DAMAGE_FIREARM_CONVERSION_INFECTED` | varies | Shock-to-health conversion for firearm hits on infected |
+|-----------|-------|-----------|
+| `AI_ATTACKSPEED` | `1.5` | Multiplicador para taxa de redução de cooldown de ataque |
+| `AI_MAX_BLOCKABLE_ANGLE` | `60` | Ângulo máximo (graus) onde a postura de bloqueio do jogador funciona contra infectados |
+| `AI_CONTAMINATION_DMG_PER_SEC` | `3` | Dano por tick em zonas contaminadas |
+| `NL_DAMAGE_CLOSECOMBAT_CONVERSION_INFECTED` | `0.20` | Conversão de choque para saúde para golpes corpo a corpo em infectados |
+| `NL_DAMAGE_FIREARM_CONVERSION_INFECTED` | varia | Conversão de choque para saúde para tiros de arma de fogo em infectados |
 
 ---
 
-## Mind States
+## Estados Mentais
 
-The infected AI uses five mind states, managed entirely by the C++ AI engine. Script reads the current state via `DayZInfectedInputController.GetMindState()` but cannot directly set it.
+A IA dos infectados usa cinco estados mentais, gerenciados inteiramente pelo motor de IA em C++. O script lê o estado atual via `DayZInfectedInputController.GetMindState()` mas não pode defini-lo diretamente.
 
-### State Descriçãos
+### Descrições dos Estados
 
-| State | Enum Valor | Behavior |
-|-------|-----------|----------|
-| **CALM** | `MINDSTATE_CALM` | Idle or wandering. No threat detected. Idle animation state 0. |
-| **DISTURBED** | `MINDSTATE_DISTURBED` | Noise or brief visual stimulus. Alert posture, looking around. Idle animation state 1. |
-| **ALERTED** | `MINDSTATE_ALERTED` | Strong stimulus confirmed. Active searching. Used in sound event handling. |
-| **CHASE** | `MINDSTATE_CHASE` | Target acquired, pursuing. Running/sprinting. Chase-group attacks enabled. Idle animation state 2. |
-| **FIGHT** | `MINDSTATE_FIGHT` | In melee range. Standing attacks with cooldowns. Fight-group attacks enabled. |
+| Estado | Valor do Enum | Comportamento |
+|--------|---------------|---------------|
+| **CALM** | `MINDSTATE_CALM` | Parado ou vagando. Nenhuma ameaça detectada. Estado de animação idle 0. |
+| **DISTURBED** | `MINDSTATE_DISTURBED` | Ruído ou estímulo visual breve. Postura alerta, olhando ao redor. Estado de animação idle 1. |
+| **ALERTED** | `MINDSTATE_ALERTED` | Estímulo forte confirmado. Busca ativa. Usado no tratamento de eventos sonoros. |
+| **CHASE** | `MINDSTATE_CHASE` | Alvo adquirido, perseguindo. Correndo/sprintando. Ataques do grupo chase habilitados. Estado de animação idle 2. |
+| **FIGHT** | `MINDSTATE_FIGHT` | Em alcance de combate corpo a corpo. Ataques em pé com cooldowns. Ataques do grupo fight habilitados. |
 
-### State Transitions in Script
+### Transições de Estado no Script
 
-The `HandleMindStateChange` method in `ZombieBase` reads the mind state from the input controller each frame and triggers idle animation transitions:
+O método `HandleMindStateChange` em `ZombieBase` lê o estado mental do controlador de entrada a cada frame e dispara transições de animação idle:
 
 ```csharp
 bool HandleMindStateChange(int pCurrentCommandID, DayZInfectedInputController pInputController, float pDt)
@@ -208,90 +208,90 @@ bool HandleMindStateChange(int pCurrentCommandID, DayZInfectedInputController pI
 }
 ```
 
-> **Important:** The actual state transitions (CALM to DISTURBED, DISTURBED to CHASE, etc.) are driven by the C++ perception system. Script cannot force a mind state change --- it only reacts to what the engine decides.
+> **Importante:** As transições reais de estado (CALM para DISTURBED, DISTURBED para CHASE, etc.) são conduzidas pelo sistema de percepção em C++. O script não pode forçar uma mudança de estado mental --- ele apenas reage ao que o motor decide.
 
-### Network Synchronization
+### Sincronização de Rede
 
-`m_MindState` is registered as a synced variable:
+`m_MindState` é registrado como uma variável sincronizada:
 
 ```csharp
 RegisterNetSyncVariableInt("m_MindState", -1, 4);
 ```
 
-On clients, `OnVariávelsSynchronized()` triggers sound event updates based on the current mind state.
+Nos clientes, `OnVariablesSynchronized()` dispara atualizações de eventos sonoros baseados no estado mental atual.
 
 ---
 
-## Movement System
+## Sistema de Movimento
 
 ### DayZInfectedCommandMove
 
-The primary movement command, started with `StartCommand_Move()`. Métodos:
+O comando de movimento primário, iniciado com `StartCommand_Move()`. Métodos:
 
 | Método | Assinatura | Descrição |
-|--------|-----------|-------------|
-| `SetStanceVariation` | `void SetStanceVariation(int pStanceVariation)` | Sets animation stance variant (0-3, randomized on init) |
-| `SetIdleState` | `void SetIdleState(int pIdleState)` | Sets idle animation (0=calm, 1=disturbed, 2=chase) |
-| `StartTurn` | `void StartTurn(float pDirection, int pSpeedType)` | Initiates a turn animation |
-| `IsTurning` | `bool IsTurning()` | Retorna true during turn animation |
+|--------|-----------|-----------|
+| `SetStanceVariation` | `void SetStanceVariation(int pStanceVariation)` | Define variante de postura de animação (0-3, aleatório na inicialização) |
+| `SetIdleState` | `void SetIdleState(int pIdleState)` | Define animação idle (0=calmo, 1=perturbado, 2=perseguição) |
+| `StartTurn` | `void StartTurn(float pDirection, int pSpeedType)` | Inicia uma animação de virada |
+| `IsTurning` | `bool IsTurning()` | Retorna true durante a animação de virada |
 
-Movement speed is read from the input controller and synced:
+A velocidade de movimento é lida do controlador de entrada e sincronizada:
 
 ```csharp
 RegisterNetSyncVariableFloat("m_MovementSpeed", -1, 3);
 ```
 
-The `HandleMove` method updates `m_MovementSpeed` from `ic.GetMovementSpeed()` and marks dirty when the change exceeds 0.9.
+O método `HandleMove` atualiza `m_MovementSpeed` a partir de `ic.GetMovementSpeed()` e marca como dirty quando a mudança excede 0.9.
 
 ### DayZCreatureAIInputController (Base)
 
-The base input controller (shared with animals) provides override methods:
+O controlador de entrada base (compartilhado com animais) fornece métodos de sobrescrita:
 
 | Método | Assinatura | Descrição |
-|--------|-----------|-------------|
-| `OverrideMovementSpeed` | `void OverrideMovementSpeed(bool state, float movementSpeed)` | Force a specific movement speed |
-| `GetMovementSpeed` | `float GetMovementSpeed()` | Current movement speed |
-| `OverrideHeading` | `void OverrideHeading(bool state, float heading)` | Force heading direction |
-| `OverrideTurnSpeed` | `void OverrideTurnSpeed(bool state, float turnSpeed)` | Force turn rate |
-| `OverrideAlertLevel` | `void OverrideAlertLevel(bool state, bool alerted, int level, float inLevel)` | Force alert level |
-| `OverrideBehaviourSlot` | `void OverrideBehaviourSlot(bool state, int slot)` | Force behaviour slot |
+|--------|-----------|-----------|
+| `OverrideMovementSpeed` | `void OverrideMovementSpeed(bool state, float movementSpeed)` | Forçar uma velocidade de movimento específica |
+| `GetMovementSpeed` | `float GetMovementSpeed()` | Velocidade de movimento atual |
+| `OverrideHeading` | `void OverrideHeading(bool state, float heading)` | Forçar direção de orientação |
+| `OverrideTurnSpeed` | `void OverrideTurnSpeed(bool state, float turnSpeed)` | Forçar taxa de virada |
+| `OverrideAlertLevel` | `void OverrideAlertLevel(bool state, bool alerted, int level, float inLevel)` | Forçar nível de alerta |
+| `OverrideBehaviourSlot` | `void OverrideBehaviourSlot(bool state, int slot)` | Forçar slot de comportamento |
 
-### DayZInfectedInputController (Infected-Specific)
+### DayZInfectedInputController (Específico para Infectados)
 
-Extends the base controller with infected-specific queries:
+Estende o controlador base com consultas específicas para infectados:
 
 | Método | Assinatura | Descrição |
-|--------|-----------|-------------|
-| `IsVault` | `bool IsVault()` | AI wants to vault |
-| `GetVaultHeight` | `float GetVaultHeight()` | Height of the vault obstacle |
-| `GetMindState` | `int GetMindState()` | Current mind state enum value |
-| `GetTargetEntity` | `EntityAI GetTargetEntity()` | Current AI target entity |
+|--------|-----------|-----------|
+| `IsVault` | `bool IsVault()` | IA quer pular |
+| `GetVaultHeight` | `float GetVaultHeight()` | Altura do obstáculo de pulo |
+| `GetMindState` | `int GetMindState()` | Valor do enum do estado mental atual |
+| `GetTargetEntity` | `EntityAI GetTargetEntity()` | Entidade alvo atual da IA |
 
-### Vaulting
+### Salto
 
-`HandleVault` in `ZombieBase` translates vault height to a type:
+`HandleVault` em `ZombieBase` traduz a altura do salto em um tipo:
 
-| Height Range | Vault Type |
-|-------------|-----------|
-| <= 0.6m | 0 (step over) |
-| <= 1.1m | 1 (low vault) |
-| <= 1.6m | 2 (medium vault) |
-| > 1.6m | 3 (high vault) |
+| Faixa de Altura | Tipo de Salto |
+|----------------|---------------|
+| <= 0.6m | 0 (passar por cima) |
+| <= 1.1m | 1 (salto baixo) |
+| <= 1.6m | 2 (salto médio) |
+| > 1.6m | 3 (salto alto) |
 
-After landing (`WasLand()` returns true), a 2-second `m_KnuckleOutTimer` runs before the vault command exits via `StartCommand_Vault(-1)`.
+Após aterrissar (`WasLand()` retorna true), um `m_KnuckleOutTimer` de 2 segundos é executado antes do comando de salto sair via `StartCommand_Vault(-1)`.
 
-### Crawling
+### Rastejamento
 
-Crawling is triggered by leg damage. When either leg's health reaches 0 (damage >= `LEG_CRIPPLE_THRESHOLD` of 74.0), `HandleSpecialZoneDamage` sets the leg health to zero, and `EvaluateCrawlTransitionAnimation` determines the crawl transition type:
+O rastejamento é acionado por dano nas pernas. Quando a saúde de qualquer perna chega a 0 (dano >= `LEG_CRIPPLE_THRESHOLD` de 74.0), `HandleSpecialZoneDamage` define a saúde da perna como zero, e `EvaluateCrawlTransitionAnimation` determina o tipo de transição de rastejamento:
 
-| Condition | Anim Type |
-|-----------|-----------|
-| Left leg destroyed, hit from behind | 0 |
-| Left leg destroyed, hit from front | 1 |
-| Right leg destroyed, hit from behind | 2 |
-| Right leg destroyed, hit from front | 3 |
+| Condição | Tipo de Animação |
+|----------|-----------------|
+| Perna esquerda destruída, golpe por trás | 0 |
+| Perna esquerda destruída, golpe pela frente | 1 |
+| Perna direita destruída, golpe por trás | 2 |
+| Perna direita destruída, golpe pela frente | 3 |
 
-After the crawl transition command finishes, the zombie remains in `COMMANDID_MOVE` with `m_IsCrawling = true`. The `IsCrawling()` method returns this flag.
+Após o comando de transição de rastejamento terminar, o zumbi permanece em `COMMANDID_MOVE` com `m_IsCrawling = true`. O método `IsCrawling()` retorna este flag.
 
 ```csharp
 RegisterNetSyncVariableBool("m_IsCrawling");
@@ -299,11 +299,11 @@ RegisterNetSyncVariableBool("m_IsCrawling");
 
 ---
 
-## Attack System
+## Sistema de Ataque
 
-### Attack Registration
+### Registro de Ataques
 
-`DayZInfectedType.RegisterAttacks()` defines two attack groups with parameters read from config:
+`DayZInfectedType.RegisterAttacks()` define dois grupos de ataque com parâmetros lidos da config:
 
 ```csharp
 RegisterAttack(groupType, distance, pitch, type, subtype, ammoType, isHeavy, cooldown, probability);
@@ -314,119 +314,119 @@ RegisterAttack(groupType, distance, pitch, type, subtype, ammoType, isHeavy, coo
 ```csharp
 class DayZInfectedAttackType
 {
-    float m_Distance;      // attack reach in meters
-    int m_Pitch;           // 1=up, 0=center, -1=down
-    int m_Type;            // animation type (left/right)
-    float m_Subtype;       // animation subtype (up/center/down/run)
-    string m_AmmoType;     // damage config from cfgAmmo
-    int m_IsHeavy;         // 0=light (blockable), 1=heavy (unblockable)
-    float m_Cooldown;      // seconds between attacks
-    float m_Probability;   // selection probability [0..1]
+    float m_Distance;      // alcance do ataque em metros
+    int m_Pitch;           // 1=cima, 0=centro, -1=baixo
+    int m_Type;            // tipo de animação (esquerda/direita)
+    float m_Subtype;       // subtipo de animação (cima/centro/baixo/corrida)
+    string m_AmmoType;     // config de dano de cfgAmmo
+    int m_IsHeavy;         // 0=leve (bloqueável), 1=pesado (não bloqueável)
+    float m_Cooldown;      // segundos entre ataques
+    float m_Probability;   // probabilidade de seleção [0..1]
 }
 ```
 
-### Attack Groups
+### Grupos de Ataque
 
-**Chase Group** (`DayZInfectedAttackGroupType.CHASE`): Running attacks at 2.4m range, no cooldown reduction, always center pitch (-1). Two variants: left and right.
+**Grupo Chase** (`DayZInfectedAttackGroupType.CHASE`): Ataques correndo a 2.4m de alcance, sem redução de cooldown, sempre pitch central (-1). Duas variantes: esquerda e direita.
 
-**Fight Group** (`DayZInfectedAttackGroupType.FIGHT`): Standing attacks at 1.4-1.7m range. Ten variants covering up/center/down pitch and left/right/heavy combinations. Cooldowns from 0.1 to 0.6 seconds.
+**Grupo Fight** (`DayZInfectedAttackGroupType.FIGHT`): Ataques em pé a 1.4-1.7m de alcance. Dez variantes cobrindo pitch cima/centro/baixo e combinações esquerda/direita/pesado. Cooldowns de 0.1 a 0.6 segundos.
 
-### Attack Selection (Utility System)
+### Seleção de Ataque (Sistema de Utilidade)
 
-`DayZInfectedType.ChooseAttack()` uses a utility function to select attacks:
+`DayZInfectedType.ChooseAttack()` usa uma função de utilidade para selecionar ataques:
 
-1. Filter by matching pitch
-2. Reject attacks where target is beyond attack distance
-3. Compute utility = distance_score (0-100) + probability_score (0-10)
-4. Select the highest utility attack
+1. Filtrar por pitch correspondente
+2. Rejeitar ataques onde o alvo está além da distância de ataque
+3. Calcular utilidade = pontuação_distância (0-100) + pontuação_probabilidade (0-10)
+4. Selecionar o ataque de maior utilidade
 
-### Fight Logic Flow
+### Fluxo da Lógica de Combate
 
-`ZombieBase.FightLogic()` is the main combat dispatcher:
+`ZombieBase.FightLogic()` é o despachante principal de combate:
 
-1. In **COMMANDID_MOVE** + **MINDSTATE_CHASE**: calls `ChaseAttackLogic`
-2. In **COMMANDID_MOVE** + **MINDSTATE_FIGHT**: calls `FightAttackLogic`
-3. In **COMMANDID_ATTACK**: checks `WasHit()` and applies damage
+1. Em **COMMANDID_MOVE** + **MINDSTATE_CHASE**: chama `ChaseAttackLogic`
+2. Em **COMMANDID_MOVE** + **MINDSTATE_FIGHT**: chama `FightAttackLogic`
+3. Em **COMMANDID_ATTACK**: verifica `WasHit()` e aplica dano
 
-### Damage Application
+### Aplicação de Dano
 
-When `attackCommand.WasHit()` returns true:
+Quando `attackCommand.WasHit()` retorna true:
 
-- Check if target is within attack distance
-- If player is blocking and facing the zombie (within `AI_MAX_BLOCKABLE_ANGLE` = 60 degrees):
-  - Heavy attack: reduced to `"MeleeZombie"` ammo type
-  - Light attack: reduced to `"Dummy_Light"` (no real damage)
-- Otherwise: full damage via `DamageSystem.CloseCombatDamageName()` with the attack's `m_AmmoType`
+- Verifica se o alvo está dentro da distância de ataque
+- Se o jogador estiver bloqueando e de frente para o zumbi (dentro de `AI_MAX_BLOCKABLE_ANGLE` = 60 graus):
+  - Ataque pesado: reduzido para tipo de munição `"MeleeZombie"`
+  - Ataque leve: reduzido para `"Dummy_Light"` (sem dano real)
+- Caso contrário: dano completo via `DamageSystem.CloseCombatDamageName()` com o `m_AmmoType` do ataque
 
-Ammo types are read from config paths:
-- `cfgVehicles <ZombieClass> AttackAçãos AttackShort ammoType` (light/fight)
-- `cfgVehicles <ZombieClass> AttackAçãos AttackLong ammoType` (heavy/fight)
-- `cfgVehicles <ZombieClass> AttackAçãos AttackRun ammoType` (chase)
+Tipos de munição são lidos de caminhos de config:
+- `cfgVehicles <ZombieClass> AttackActions AttackShort ammoType` (leve/fight)
+- `cfgVehicles <ZombieClass> AttackActions AttackLong ammoType` (pesado/fight)
+- `cfgVehicles <ZombieClass> AttackActions AttackRun ammoType` (chase)
 
-### Attack Cooldown
+### Cooldown de Ataque
 
-Fight attacks use a cooldown timer decremented by `pDt * GameConstantes.AI_ATTACKSPEED` (1.5x speed). Chase attacks have no cooldown gating in script --- they fire as soon as target alignment is valid.
+Ataques fight usam um timer de cooldown decrementado por `pDt * GameConstants.AI_ATTACKSPEED` (velocidade 1.5x). Ataques chase não têm controle de cooldown no script --- disparam assim que o alinhamento do alvo é válido.
 
-### Target Cone Validation
+### Validação de Cone do Alvo
 
-Before attacking, the zombie verifies target alignment using `DayZPlayerUtils.GetMeleeTarget()` with cone angles:
-- Chase: `TARGET_CONE_ANGLE_CHASE = 20` degrees
-- Fight: `TARGET_CONE_ANGLE_FIGHT = 30` degrees
+Antes de atacar, o zumbi verifica o alinhamento do alvo usando `DayZPlayerUtils.GetMeleeTarget()` com ângulos de cone:
+- Chase: `TARGET_CONE_ANGLE_CHASE = 20` graus
+- Fight: `TARGET_CONE_ANGLE_FIGHT = 30` graus
 
 ---
 
-## Perception System
+## Sistema de Percepção
 
-Zombie perception is primarily handled by the C++ engine. Script exposes the result (mind state, target entity) but not the internal perception logic. However, the script side defines the **target callbacks** and **noise system** that feed into the engine.
+A percepção do zumbi é primariamente tratada pelo motor C++. O script expõe o resultado (estado mental, entidade alvo) mas não a lógica interna de percepção. No entanto, o lado do script define os **callbacks de alvo** e o **sistema de ruído** que alimentam o motor.
 
-### Vision (Visibility Modificadors)
+### Visão (Modificadores de Visibilidade)
 
-`AITargetCallbacksPlayer` (registered on each `PlayerBase`) provides `GetMaxVisionRangeModificador()`, which tells the engine how visible a player is:
+`AITargetCallbacksPlayer` (registrado em cada `PlayerBase`) fornece `GetMaxVisionRangeModifier()`, que informa ao motor o quão visível um jogador está:
 
-**Speed modifiers** (from `PlayerConstantes`):
+**Modificadores de velocidade** (de `PlayerConstants`):
 
-| Movement State | Multiplier |
-|---------------|-----------|
-| Sprint / Run | `AI_VISIBILITY_RUN = 1.0` |
-| Walk | `AI_VISIBILITY_WALK = 0.66` |
-| Idle | `AI_VISIBILITY_IDLE = 0.3` |
+| Estado de Movimento | Multiplicador |
+|--------------------|---------------|
+| Sprint / Corrida | `AI_VISIBILITY_RUN = 1.0` |
+| Caminhada | `AI_VISIBILITY_WALK = 0.66` |
+| Parado | `AI_VISIBILITY_IDLE = 0.3` |
 
-**Stance modifiers**:
+**Modificadores de postura**:
 
-| Stance | Multiplier |
-|--------|-----------|
-| Standing | `AI_VISIBILITY_STANDING = 1.5` |
-| Crouched | `AI_VISIBILITY_CROUCH = 0.6` |
-| Prone | `AI_VISIBILITY_PRONE = 0.15` |
+| Postura | Multiplicador |
+|---------|---------------|
+| Em pé | `AI_VISIBILITY_STANDING = 1.5` |
+| Agachado | `AI_VISIBILITY_CROUCH = 0.6` |
+| Deitado | `AI_VISIBILITY_PRONE = 0.15` |
 
-The final modifier is the average of speed and stance coefficients: `mod = (speedCoef + stanceCoef) / 2`.
+O modificador final é a média dos coeficientes de velocidade e postura: `mod = (speedCoef + stanceCoef) / 2`.
 
-**Vision point selection** also depends on mind state: when the infected is ALERTED or higher, it looks at the player's head bone; otherwise, it checks the chest (Spine3 bone).
+**Seleção de ponto de visão** também depende do estado mental: quando o infectado está ALERTED ou superior, ele olha para o osso da cabeça do jogador; caso contrário, verifica o peito (osso Spine3).
 
-### Sound (Noise System)
+### Som (Sistema de Ruído)
 
-The noise system feeds into AI perception via `g_Game.GetNoiseSystem().AddNoise()`. Player actions generate noise with multipliers:
+O sistema de ruído alimenta a percepção da IA via `g_Game.GetNoiseSystem().AddNoise()`. Ações do jogador geram ruído com multiplicadores:
 
-**Speed noise** (from `PlayerConstantes`):
+**Ruído de velocidade** (de `PlayerConstants`):
 
-| Ação | Multiplier |
-|--------|-----------|
-| Rolling (prone) | `AI_NOISE_ROLL = 2.0` |
-| Sprinting | `AI_NOISE_SPRINT = 1.0` |
-| Running | `AI_NOISE_RUN = 0.8` |
-| Crouch running | `AI_NOISE_CROUCH_RUN = 0.6` |
-| Walking | `AI_NOISE_WALK = 0.4` |
-| Idle | `AI_NOISE_IDLE = 0.0` |
+| Ação | Multiplicador |
+|------|---------------|
+| Rolando (deitado) | `AI_NOISE_ROLL = 2.0` |
+| Sprintando | `AI_NOISE_SPRINT = 1.0` |
+| Correndo | `AI_NOISE_RUN = 0.8` |
+| Correndo agachado | `AI_NOISE_CROUCH_RUN = 0.6` |
+| Caminhando | `AI_NOISE_WALK = 0.4` |
+| Parado | `AI_NOISE_IDLE = 0.0` |
 
-**Footwear noise**:
+**Ruído de calçado**:
 
-| Type | Multiplier |
-|------|-----------|
-| Boots | `AI_NOISE_SHOES_BOOTS = 0.85` |
-| Sneakers | `AI_NOISE_SHOES_SNEAKERS = 0.6` |
-| Barefoot | `AI_NOISE_SHOES_NONE = 0.45` |
+| Tipo | Multiplicador |
+|------|---------------|
+| Botas | `AI_NOISE_SHOES_BOOTS = 0.85` |
+| Tênis | `AI_NOISE_SHOES_SNEAKERS = 0.6` |
+| Descalço | `AI_NOISE_SHOES_NONE = 0.45` |
 
-The final noise is computed by `NoiseAIEvaluate.GetNoiseMultiplier()`:
+O ruído final é calculado por `NoiseAIEvaluate.GetNoiseMultiplier()`:
 
 ```
 surfaceNoise *= 0.25
@@ -434,92 +434,92 @@ avgNoise = (shoesNoise + surfaceNoise) / 1.25
 finalNoise = avgNoise * speedNoise
 ```
 
-Weather also reduces noise via `Weather.GetNoiseReductionByWeather()` (rain reduces detection).
+O clima também reduz o ruído via `Weather.GetNoiseReductionByWeather()` (chuva reduz a detecção).
 
-### Smell / Proximity
+### Cheiro / Proximidade
 
-There is no script-visible "smell" API. Proximity detection appears to be handled entirely in the C++ engine. Modders should treat the engine perception as a black box that outputs mind state and target entity.
+Não existe uma API de "cheiro" visível no script. A detecção por proximidade parece ser tratada inteiramente no motor C++. Modders devem tratar a percepção do motor como uma caixa preta que produz estado mental e entidade alvo.
 
 ---
 
-## The Command Handler
+## O Command Handler
 
-`ZombieBase.CommandHandler()` is called every frame by the engine. It is the central decision point:
+`ZombieBase.CommandHandler()` é chamado a cada frame pelo motor. É o ponto de decisão central:
 
 ```
 CommandHandler(dt, currentCommandID, currentCommandFinished)
   |
-  +-- ModCommandHandlerBefore() ........ [mod hook, return true to override]
+  +-- ModCommandHandlerBefore() ........ [hook de mod, retorna true para sobrescrever]
   |
-  +-- HandleDeath() .................... [if not alive or finisher in progress]
+  +-- HandleDeath() .................... [se não está vivo ou finalizador em progresso]
   |
-  +-- HandleMove() ..................... [sync movement speed]
-  +-- HandleOrientation() .............. [sync yaw angle]
+  +-- HandleMove() ..................... [sincronizar velocidade de movimento]
+  +-- HandleOrientation() .............. [sincronizar ângulo de yaw]
   |
-  +-- [if command finished] ............ [restart StartCommand_Move]
+  +-- [se comando finalizado] ........... [reiniciar StartCommand_Move]
   |
-  +-- ModCommandHandlerInside() ........ [mod hook]
+  +-- ModCommandHandlerInside() ........ [hook de mod]
   |
-  +-- HandleCrawlTransition() .......... [leg destruction -> crawl]
+  +-- HandleCrawlTransition() .......... [destruição de perna -> rastejamento]
   |
-  +-- HandleDamageHit() ................ [stagger/hit reaction]
+  +-- HandleDamageHit() ................ [reação de atordoamento/golpe]
   |
-  +-- HandleVault() .................... [navmesh vault obstacles]
-  +-- HandleMindStateChange() .......... [idle state animation updates]
-  +-- FightLogic() ..................... [chase/fight attacks]
+  +-- HandleVault() .................... [obstáculos de salto do navmesh]
+  +-- HandleMindStateChange() .......... [atualizações de animação idle]
+  +-- FightLogic() ..................... [ataques chase/fight]
   |
-  +-- ModCommandHandlerAfter() ......... [mod hook]
+  +-- ModCommandHandlerAfter() ......... [hook de mod]
 ```
 
-### Mod Hooks
+### Hooks de Mod
 
-Three insertion points let mods override or extend behavior:
+Três pontos de inserção permitem que mods sobrescrevam ou estendam o comportamento:
 
-| Hook | When | Usage |
-|------|------|-------|
-| `ModCommandHandlerBefore` | Before any vanilla logic | Return `true` to skip all default behavior |
-| `ModCommandHandlerInside` | After death/move handling, before combat | Return `true` to skip combat logic |
-| `ModCommandHandlerAfter` | After all vanilla logic | Return `true` (no practical effect, runs last) |
+| Hook | Quando | Uso |
+|------|--------|-----|
+| `ModCommandHandlerBefore` | Antes de qualquer lógica vanilla | Retorna `true` para pular todo o comportamento padrão |
+| `ModCommandHandlerInside` | Após tratamento de morte/movimento, antes do combate | Retorna `true` para pular a lógica de combate |
+| `ModCommandHandlerAfter` | Após toda a lógica vanilla | Retorna `true` (sem efeito prático, executa por último) |
 
-All three are meant to be overridden via `modded class ZombieBase`.
+Todos os três são destinados a serem sobrescritos via `modded class ZombieBase`.
 
 ---
 
-## Damage and Death
+## Dano e Morte
 
-### Hit Reactions
+### Reações a Golpes
 
-When a zombie takes damage, `EEHitBy` in `ZombieBase`:
+Quando um zumbi recebe dano, `EEHitBy` em `ZombieBase`:
 
-1. Calls `super.EEHitBy()` (DayZInfected level handles shock-to-health conversion and killer tracking)
-2. If dead: evaluates death animation via `EvaluateDeathAnimationEx()`
-3. If alive: checks for crawl transition (leg destroyed), then evaluates hit reaction animation
+1. Chama `super.EEHitBy()` (nível DayZInfected trata conversão de choque para saúde e rastreamento do assassino)
+2. Se morto: avalia animação de morte via `EvaluateDeathAnimationEx()`
+3. Se vivo: verifica transição para rastejamento (perna destruída), depois avalia animação de reação a golpe
 
-Hit reactions are throttled by `HIT_INTERVAL_MIN = 0.3` seconds. The stun chance is:
+Reações a golpes são limitadas por `HIT_INTERVAL_MIN = 0.3` segundos. A chance de atordoamento é:
 
 ```
-stunChance = SHOCK_TO_STUN_MULTIPLIER * shockDamage  // 2.82 * damage
+stunChance = SHOCK_TO_STUN_MULTIPLIER * shockDamage  // 2.82 * dano
 ```
 
-A random roll (0-100) must be <= `stunChance` for the hit animation to play, unless:
-- The hit is heavy (always staggers)
-- The zombie is in CALM or DISTURBED state (always staggers)
+Uma rolagem aleatória (0-100) deve ser <= `stunChance` para a animação de golpe ser reproduzida, a menos que:
+- O golpe seja pesado (sempre atordoa)
+- O zumbi esteja no estado CALM ou DISTURBED (sempre atordoa)
 
-### Special Zone Damage
+### Dano em Zonas Especiais
 
-`DayZInfected.HandleSpecialZoneDamage()` checks if damage exceeds `LEG_CRIPPLE_THRESHOLD = 74.0`:
-- **LeftLeg / RightLeg**: Sets leg health to 0 (triggers crawl transition)
-- **Torso / Head**: Sets `m_HeavyHitOverride = true` (forces heavy hit animation)
+`DayZInfected.HandleSpecialZoneDamage()` verifica se o dano excede `LEG_CRIPPLE_THRESHOLD = 74.0`:
+- **LeftLeg / RightLeg**: Define saúde da perna como 0 (aciona transição de rastejamento)
+- **Torso / Head**: Define `m_HeavyHitOverride = true` (força animação de golpe pesado)
 
-### Shock-to-Health Conversion
+### Conversão de Choque para Saúde
 
-`DayZInfected.ConvertNonlethalDamage()` converts shock damage to actual health damage:
-- Close combat: `damage * 0.20`
-- Firearms: `damage * PROJECTILE_CONVERSION_INFECTED`
+`DayZInfected.ConvertNonlethalDamage()` converte dano de choque em dano real de saúde:
+- Combate corpo a corpo: `dano * 0.20`
+- Armas de fogo: `dano * PROJECTILE_CONVERSION_INFECTED`
 
-### Death
+### Morte
 
-`HandleDeath()` triggers when `!IsAlive()` or `m_FinisherInProgress`:
+`HandleDeath()` é acionado quando `!IsAlive()` ou `m_FinisherInProgress`:
 
 ```csharp
 StartCommand_Death(m_DeathType, m_DamageHitDirection);
@@ -528,13 +528,13 @@ m_MindState = -1;
 SetSynchDirty();
 ```
 
-Death types are selected by `EvaluateDeathAnimation()` based on ammo config (`doPhxImpulse`). Vehicle hits apply physics impulse to ragdoll.
+Tipos de morte são selecionados por `EvaluateDeathAnimation()` baseado na config de munição (`doPhxImpulse`). Impactos de veículos aplicam impulso de física ao ragdoll.
 
-### Finisher (Backstab) System
+### Sistema de Finalizador (Backstab)
 
-`SetBeingBackstabbed()` disables AI via `GetAIAgent().SetKeepInIdle(true)`, selects a death animation type, and sets `m_FinisherInProgress = true`. The `HandleDeath` check catches this flag and triggers the death command.
+`SetBeingBackstabbed()` desabilita a IA via `GetAIAgent().SetKeepInIdle(true)`, seleciona um tipo de animação de morte e define `m_FinisherInProgress = true`. A verificação `HandleDeath` captura este flag e dispara o comando de morte.
 
-If the finisher fails, `OnRecoverFromDeath()` re-enables AI:
+Se o finalizador falhar, `OnRecoverFromDeath()` reativa a IA:
 
 ```csharp
 GetAIAgent().SetKeepInIdle(false);
@@ -543,57 +543,57 @@ m_FinisherInProgress = false;
 
 ---
 
-## Spawning Zombies
+## Spawnando Zumbis
 
-### Script Spawning with CreateObjectEx
+### Spawn via Script com CreateObjectEx
 
 ```csharp
-// Server-side only
+// Apenas do lado do servidor
 DayZInfected zombie = DayZInfected.Cast(
     g_Game.CreateObjectEx(
-        "ZmbF_JournalistNormal_Blue",        // class name from cfgVehicles
-        spawnPosition,                        // vector position
+        "ZmbF_JournalistNormal_Blue",        // nome da classe de cfgVehicles
+        spawnPosition,                        // posição como vector
         ECE_PLACE_ON_SURFACE | ECE_INITAI | ECE_EQUIP_ATTACHMENTS
     )
 );
 ```
 
-**ECE Flags** (from `3_Game/ce/centraleconomy.c`):
+**Flags ECE** (de `3_Game/ce/centraleconomy.c`):
 
 | Flag | Valor | Propósito |
-|------|-------|---------|
-| `ECE_INITAI` | `2048` | Initialize the AI agent (required for zombies to function) |
-| `ECE_EQUIP_ATTACHMENTS` | `8192` | Equip configured attachments from config |
-| `ECE_PLACE_ON_SURFACE` | `1060` | Composite: create physics + update pathgraph + trace to ground |
+|------|-------|-----------|
+| `ECE_INITAI` | `2048` | Inicializar o agente de IA (necessário para os zumbis funcionarem) |
+| `ECE_EQUIP_ATTACHMENTS` | `8192` | Equipar anexos configurados da config |
+| `ECE_PLACE_ON_SURFACE` | `1060` | Composto: criar física + atualizar pathgraph + traçar ao chão |
 
-> **Critical:** Omitting `ECE_INITAI` creates a zombie with no AI brain --- it will stand motionless. You can later call `zombie.InitAIAgent(group)` manually, but `ECE_INITAI` is the standard approach.
+> **Crítico:** Omitir `ECE_INITAI` cria um zumbi sem cérebro de IA --- ele ficará parado imóvel. Você pode depois chamar `zombie.InitAIAgent(group)` manualmente, mas `ECE_INITAI` é a abordagem padrão.
 
-### Manual AI Initialization
+### Inicialização Manual de IA
 
 ```csharp
-// Create without AI
+// Criar sem IA
 DayZInfected zombie = DayZInfected.Cast(
     g_Game.CreateObjectEx("ZmbM_Soldier_Normal", pos, ECE_PLACE_ON_SURFACE)
 );
 
-// Later, initialize AI with a group
+// Depois, inicializar a IA com um grupo
 AIWorld aiWorld = g_Game.GetAIWorld();
 AIGroup group = aiWorld.CreateDefaultGroup();
 zombie.InitAIAgent(group);
 
-// To disable AI temporarily
+// Para desabilitar a IA temporariamente
 zombie.GetAIAgent().SetKeepInIdle(true);
 
-// To re-enable
+// Para reativar
 zombie.GetAIAgent().SetKeepInIdle(false);
 
-// To destroy the AI agent
+// Para destruir o agente de IA
 zombie.DestroyAIAgent();
 ```
 
-### Events.xml Zombie Spawning
+### Spawn de Zumbis via Events.xml
 
-The Central Economy spawns zombies via `events.xml` using zombie class names and group definitions. This is not script --- it is XML configuration processed by the CE engine:
+A Central Economy spawna zumbis via `events.xml` usando nomes de classe de zumbis e definições de grupo. Isso não é script --- é configuração XML processada pelo motor CE:
 
 ```xml
 <event name="InfectedCity">
@@ -616,15 +616,15 @@ The Central Economy spawns zombies via `events.xml` using zombie class names and
 </event>
 ```
 
-The `type` values must match class names in `cfgVehicles`. The CE handles spawn positions, despawn radius, and population caps.
+Os valores de `type` devem corresponder a nomes de classe em `cfgVehicles`. O CE gerencia posições de spawn, raio de despawn e limites de população.
 
 ---
 
-## AI Groups and Patrol Waypoints
+## Grupos de IA e Waypoints de Patrulha
 
 ### AIWorld
 
-`AIWorld` provides navmesh pathfinding and group management:
+`AIWorld` fornece pathfinding de navmesh e gerenciamento de grupos:
 
 ```csharp
 AIWorld aiWorld = g_Game.GetAIWorld();
@@ -635,101 +635,101 @@ filter.SetFlags(PGPolyFlags.WALK, PGPolyFlags.DISABLED, 0);
 TVectorArray waypoints = new TVectorArray();
 bool found = aiWorld.FindPath(fromPos, toPos, filter, waypoints);
 
-// Navmesh sampling
+// Amostragem de navmesh
 vector sampledPos;
 bool onNavmesh = aiWorld.SampleNavmeshPosition(pos, 5.0, filter, sampledPos);
 ```
 
-### AIGroup and BehaviourGroupInfectedPack
+### AIGroup e BehaviourGroupInfectedPack
 
-Groups can have patrol waypoints:
+Grupos podem ter waypoints de patrulha:
 
 ```csharp
 AIGroup group = aiWorld.CreateGroup("BehaviourGroupInfectedPack");
 BehaviourGroupInfectedPack behaviour = BehaviourGroupInfectedPack.Cast(group.GetBehaviour());
 
-// Define patrol waypoints
+// Definir waypoints de patrulha
 array<ref BehaviourGroupInfectedPackWaypointParams> waypoints = new array<ref BehaviourGroupInfectedPackWaypointParams>();
 waypoints.Insert(new BehaviourGroupInfectedPackWaypointParams("100 0 200", 10.0));
 waypoints.Insert(new BehaviourGroupInfectedPackWaypointParams("150 0 250", 15.0));
 
-behaviour.SetWaypoints(waypoints, 0, true, true);   // start at 0, forward, loop
+behaviour.SetWaypoints(waypoints, 0, true, true);   // iniciar em 0, avançar, repetir
 ```
 
-### PGPolyFlags (Navmesh Filter)
+### PGPolyFlags (Filtro de Navmesh)
 
 | Flag | Propósito |
-|------|---------|
-| `WALK` | Ground, grass, road |
-| `DOOR` | Can move through doors |
-| `INSIDE` | Can move inside buildings |
-| `JUMP_OVER` | Can vault obstacles |
-| `CRAWL` | Can crawl |
-| `CLIMB` | Can climb |
+|------|-----------|
+| `WALK` | Chão, grama, estrada |
+| `DOOR` | Pode mover-se através de portas |
+| `INSIDE` | Pode mover-se dentro de edifícios |
+| `JUMP_OVER` | Pode pular obstáculos |
+| `CRAWL` | Pode rastejar |
+| `CLIMB` | Pode escalar |
 
 ---
 
-## Zombie Configuration (DayZInfectedType)
+## Configuração de Zumbis (DayZInfectedType)
 
-### Hit Components
+### Componentes de Impacto
 
-`DayZInfectedType.RegisterHitComponentsForAI()` defines which body parts zombies target and with what probability:
+`DayZInfectedType.RegisterHitComponentsForAI()` define quais partes do corpo os zumbis alvejam e com qual probabilidade:
 
-| Component | Weight | Notas |
-|-----------|--------|-------|
-| Head | 2 | Rare target selection |
-| LeftArm | 50 | Common |
-| Torso | 65 | Most common |
-| RightArm | 50 | Common |
-| LeftLeg | 50 | Common |
-| RightLeg | 50 | Common |
+| Componente | Peso | Notas |
+|-----------|------|-------|
+| Head | 2 | Seleção de alvo rara |
+| LeftArm | 50 | Comum |
+| Torso | 65 | Mais comum |
+| RightArm | 50 | Comum |
+| LeftLeg | 50 | Comum |
+| RightLeg | 50 | Comum |
 
-Padrão hit component: `"Torso"`. Padrão hit position component: `"Spine1"`.
+Componente de impacto padrão: `"Torso"`. Componente de posição de impacto padrão: `"Spine1"`.
 
-Finisher-suitable components: `"Head"`, `"Neck"`, `"Torso"`.
+Componentes adequados para finalizadores: `"Head"`, `"Neck"`, `"Torso"`.
 
-### Type Variants
+### Variantes de Tipo
 
-Specific zombie types override behavior flags:
+Tipos específicos de zumbis sobrescrevem flags de comportamento:
 
-| Override | Types | Effect |
-|----------|-------|--------|
-| `IsZombieMilitary()` | ZmbM_PatrolNormal, ZmbM_Soldier, ZmbM_SoldierNormal, ZmbM_usSoldier_normal, ZmbM_NBC_Grey, ZmbM_NBC_White | Used for loot table selection |
-| `ResistContaminatedEffect()` | ZmbM_NBC_Yellow, ZmbM_NBC_Grey, ZmbM_NBC_White, ZmbM_Mummy | Immune to contaminated zone damage |
-| `IsMale()` | All `ZombieFemaleBase` return `false` | Sound set selection |
+| Sobrescrita | Tipos | Efeito |
+|-------------|-------|--------|
+| `IsZombieMilitary()` | ZmbM_PatrolNormal, ZmbM_Soldier, ZmbM_SoldierNormal, ZmbM_usSoldier_normal, ZmbM_NBC_Grey, ZmbM_NBC_White | Usado para seleção de tabela de loot |
+| `ResistContaminatedEffect()` | ZmbM_NBC_Yellow, ZmbM_NBC_Grey, ZmbM_NBC_White, ZmbM_Mummy | Imune a dano de zona contaminada |
+| `IsMale()` | Todos `ZombieFemaleBase` retornam `false` | Seleção de set de som |
 
 ---
 
-## Script Access Padrãos
+## Padrões de Acesso via Script
 
-### Reading Zombie State
+### Lendo o Estado do Zumbi
 
 ```csharp
 ZombieBase zombie = ZombieBase.Cast(someEntity);
 if (zombie)
 {
-    // Mind state (synced)
+    // Estado mental (sincronizado)
     int mindState = zombie.GetMindStateSynced();
 
-    // Movement speed (-1 to 3, synced)
-    // Access m_MovementSpeed via the synced variable
+    // Velocidade de movimento (-1 a 3, sincronizada)
+    // Acessar m_MovementSpeed via a variável sincronizada
 
-    // Crawling state (synced)
+    // Estado de rastejamento (sincronizado)
     bool crawling = zombie.IsCrawling();
 
-    // Orientation (synced, 0-359 degrees)
+    // Orientação (sincronizada, 0-359 graus)
     int yaw = zombie.GetOrientationSynced();
 
-    // Alive check
-    bool alive = zombie.IsAlive();  // inherited from EntityAI
+    // Verificação de vida
+    bool alive = zombie.IsAlive();  // herdado de EntityAI
 
-    // Type checks
+    // Verificações de tipo
     bool military = zombie.IsZombieMilitary();
     bool male = zombie.IsMale();
 }
 ```
 
-### Reading via Input Controller (Server Only)
+### Lendo via Controlador de Entrada (Apenas Servidor)
 
 ```csharp
 DayZInfectedInputController ic = zombie.GetInputController();
@@ -741,43 +741,43 @@ if (ic)
 }
 ```
 
-### Overriding AI Behavior (Server Only)
+### Sobrescrevendo Comportamento da IA (Apenas Servidor)
 
 ```csharp
 DayZInfectedInputController ic = zombie.GetInputController();
 
-// Force movement speed
-ic.OverrideMovementSpeed(true, 2.0);   // force run speed
-ic.OverrideMovementSpeed(false, 0);     // release override
+// Forçar velocidade de movimento
+ic.OverrideMovementSpeed(true, 2.0);   // forçar velocidade de corrida
+ic.OverrideMovementSpeed(false, 0);     // liberar sobrescrita
 
-// Force heading
-ic.OverrideHeading(true, 90.0);         // face east
-ic.OverrideHeading(false, 0);           // release
+// Forçar orientação
+ic.OverrideHeading(true, 90.0);         // virar para leste
+ic.OverrideHeading(false, 0);           // liberar
 
-// Suspend AI entirely
+// Suspender IA inteiramente
 zombie.GetAIAgent().SetKeepInIdle(true);
 
-// Resume AI
+// Retomar IA
 zombie.GetAIAgent().SetKeepInIdle(false);
 ```
 
 ---
 
-## Custom Zombie Types
+## Tipos de Zumbis Personalizados
 
-### Extending ZombieBase
+### Estendendo ZombieBase
 
 ```csharp
 class MyCustomZombie extends ZombieMaleBase
 {
     override bool IsZombieMilitary()
     {
-        return true;    // drops military loot
+        return true;    // dropa loot militar
     }
 
     override bool ResistContaminatedEffect()
     {
-        return true;    // immune to gas zones
+        return true;    // imune a zonas de gás
     }
 
     override string CaptureSound()
@@ -792,57 +792,57 @@ class MyCustomZombie extends ZombieMaleBase
 }
 ```
 
-This also requires a `config.cpp` entry in `CfgVehicles` inheriting from an existing zombie class.
+Isso também requer uma entrada `config.cpp` em `CfgVehicles` herdando de uma classe de zumbi existente.
 
-### Custom Command Scripts
+### Scripts de Comando Personalizados
 
-`DayZInfectedCommandScript` allows fully scriptable animation commands:
+`DayZInfectedCommandScript` permite comandos de animação totalmente scriptáveis:
 
 ```csharp
 class MyZombieCommand extends DayZInfectedCommandScript
 {
     void MyZombieCommand(DayZInfected pInfected)
     {
-        // Constructor - first param MUST be DayZInfected
+        // Construtor - primeiro parâmetro DEVE ser DayZInfected
     }
 
     bool PostPhysUpdate(float pDt)
     {
-        // Called each frame after physics
-        // Return true to keep running, false to finish
+        // Chamado a cada frame após a física
+        // Retorna true para continuar executando, false para finalizar
         return true;
     }
 }
 
-// Start the custom command
+// Iniciar o comando personalizado
 zombie.StartCommand_ScriptInst(MyZombieCommand);
 ```
 
-> **Warning:** `DayZInfectedCommandScript` is NON-MANAGED. Once sent to the CommandHandler via `StartCommand_Script` or `StartCommand_ScriptInst`, the engine takes ownership. Do not delete it manually while active --- this will cause a crash.
+> **Aviso:** `DayZInfectedCommandScript` é NÃO-GERENCIADO. Uma vez enviado ao CommandHandler via `StartCommand_Script` ou `StartCommand_ScriptInst`, o motor assume a propriedade. Não o delete manualmente enquanto ativo --- isso causará um crash.
 
 ### Modding via modded class
 
-The recommended approach for modifying all zombies is `modded class ZombieBase`:
+A abordagem recomendada para modificar todos os zumbis é `modded class ZombieBase`:
 
 ```csharp
 modded class ZombieBase
 {
     override bool ModCommandHandlerBefore(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
     {
-        // Custom pre-processing
-        // Return true to skip all default command handling
+        // Pré-processamento personalizado
+        // Retorna true para pular todo o tratamento padrão de comandos
         return false;
     }
 
     override bool ModCommandHandlerInside(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
     {
-        // Runs after death/move handling, before combat
+        // Executa após tratamento de morte/movimento, antes do combate
         return false;
     }
 
     override bool ModCommandHandlerAfter(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)
     {
-        // Runs after all vanilla logic
+        // Executa após toda a lógica vanilla
         return false;
     }
 }
@@ -852,122 +852,122 @@ modded class ZombieBase
 
 ## Sistema de Som
 
-Infected sound is managed by `InfectedSoundEventHandler` (client only), which maps mind states to sound event IDs:
+O som dos infectados é gerenciado por `InfectedSoundEventHandler` (apenas cliente), que mapeia estados mentais para IDs de eventos sonoros:
 
-| Mind State | Sound Event |
-|-----------|-------------|
+| Estado Mental | Evento Sonoro |
+|--------------|---------------|
 | CALM | `MINDSTATE_CALM_MOVE` |
 | DISTURBED | `MINDSTATE_DISTURBED_IDLE` |
 | ALERTED | `MINDSTATE_ALERTED_MOVE` |
 | CHASE | `MINDSTATE_CHASE_MOVE` |
-| FIGHT (and others) | Sound stopped |
+| FIGHT (e outros) | Som interrompido |
 
-Animation-driven voice events (`OnSoundVoiceEvent`) interrupt state-based sounds. Male and female zombies use different sound sets:
+Eventos de voz acionados por animação (`OnSoundVoiceEvent`) interrompem sons baseados em estado. Zumbis masculinos e femininos usam sets de som diferentes:
 
-- Male: `"ZmbM_Normal_HeavyHit_Soundset"`, `"ZmbM_Normal_CallToArmsShort_Soundset"`
-- Female: `"ZmbF_Normal_HeavyHit_Soundset"`, `"ZmbF_Normal_CallToArmsShort_Soundset"`
+- Masculino: `"ZmbM_Normal_HeavyHit_Soundset"`, `"ZmbM_Normal_CallToArmsShort_Soundset"`
+- Feminino: `"ZmbF_Normal_HeavyHit_Soundset"`, `"ZmbF_Normal_CallToArmsShort_Soundset"`
 
 ---
 
 ## Boas Práticas
 
-1. **Always use `ECE_INITAI` when spawning** --- without it, the zombie has no AI brain and will be motionless.
-2. **Server-side spawning only** --- `CreateObjectEx` for zombies should only run on the server; the network handles client replication.
-3. **Check `IsAlive()` before any AI manipulation** --- calling `GetAIAgent()` on a dead zombie can produce unexpected results.
-4. **Use `SetKeepInIdle(true)` sparingly** --- it suspends the entire AI, including perception. Remember to restore it.
-5. **Respect the command handler flow** --- use `ModCommandHandlerBefore/Inside/After` instead of overriding `CommandHandler` directly.
-6. **Avoid deleting active `DayZInfectedCommandScript`** --- the engine owns it once started. Let it finish or call `SetFlagFinished(true)`.
+1. **Sempre use `ECE_INITAI` ao spawnar** --- sem ele, o zumbi não tem cérebro de IA e ficará imóvel.
+2. **Spawn apenas do lado do servidor** --- `CreateObjectEx` para zumbis deve ser executado apenas no servidor; a rede cuida da replicação para clientes.
+3. **Verifique `IsAlive()` antes de qualquer manipulação de IA** --- chamar `GetAIAgent()` em um zumbi morto pode produzir resultados inesperados.
+4. **Use `SetKeepInIdle(true)` com moderação** --- suspende toda a IA, incluindo percepção. Lembre-se de restaurá-la.
+5. **Respeite o fluxo do command handler** --- use `ModCommandHandlerBefore/Inside/After` em vez de sobrescrever `CommandHandler` diretamente.
+6. **Evite deletar `DayZInfectedCommandScript` ativo** --- o motor é dono dele uma vez iniciado. Deixe-o terminar ou chame `SetFlagFinished(true)`.
 
 ---
 
-## Observed in Real Mods
+## Observado em Mods Reais
 
 ### DayZ Expansion AI (eAIBase)
 
-The Expansion mod extends the zombie/creature AI system by creating `eAIBase` (extending `DayZPlayer`, not `DayZInfected`) for human-like AI. For infected modifications, Expansion uses `modded class ZombieBase` to add quest-related tracking (e.g., counting kills for objectives). This demonstrates that the `modded class` approach is the standard for infected customization.
+O mod Expansion estende o sistema de IA de zumbis/criaturas criando `eAIBase` (estendendo `DayZPlayer`, não `DayZInfected`) para IA semelhante a humanos. Para modificações de infectados, o Expansion usa `modded class ZombieBase` para adicionar rastreamento relacionado a quests (ex.: contagem de kills para objetivos). Isso demonstra que a abordagem `modded class` é o padrão para personalização de infectados.
 
-### Vanilla Debug Plugin
+### Plugin de Debug Vanilla
 
-`PluginDayZInfectedDebug` (in `4_World/plugins/pluginbase/plugindayzinfecteddebug.c`) is a built-in debug tool that demonstrates the full API:
+`PluginDayZInfectedDebug` (em `4_World/plugins/pluginbase/plugindayzinfecteddebug.c`) é uma ferramenta de debug embutida que demonstra a API completa:
 
-- Spawns a zombie with `CreateObjectEx("ZmbF_JournalistNormal_Blue", pos, ECE_PLACE_ON_SURFACE|ECE_INITAI|ECE_EQUIP_ATTACHMENTS)`
-- Sets `GetAIAgent().SetKeepInIdle(true)` for manual control
-- Overrides movement speed via `GetInputController().OverrideMovementSpeed(true, speed)`
-- Directly issues commands: `StartCommand_Vault`, `StartCommand_Crawl`, `StartCommand_Hit`, `StartCommand_Death`, `StartCommand_Attack`
+- Spawna um zumbi com `CreateObjectEx("ZmbF_JournalistNormal_Blue", pos, ECE_PLACE_ON_SURFACE|ECE_INITAI|ECE_EQUIP_ATTACHMENTS)`
+- Define `GetAIAgent().SetKeepInIdle(true)` para controle manual
+- Sobrescreve velocidade de movimento via `GetInputController().OverrideMovementSpeed(true, speed)`
+- Emite comandos diretamente: `StartCommand_Vault`, `StartCommand_Crawl`, `StartCommand_Hit`, `StartCommand_Death`, `StartCommand_Attack`
 
-This plugin is an excellent reference for testing any infected-related mod.
+Este plugin é uma referência excelente para testar qualquer mod relacionado a infectados.
 
 ---
 
 ## Teoria vs Prática
 
-| Teoria | Practice |
+| Teoria | Prática |
 |--------|---------|
-| Mind states can be set from script | The C++ engine controls transitions; script can only read state and override input controller values |
-| Zombies use pathfinding for navigation | Yes, via `AIWorld.FindPath()` and navmesh, but the path planning is internal to the engine |
-| Attack selection is random | It uses a utility function combining distance, pitch, and weighted probability |
-| All zombie types behave differently | Most share identical behavior; only NBC (contamination resistance) and Military (loot flags) differ in script |
-| `DayZInfectedCommandCrawl` controls crawling | It only handles the transition animation; actual crawling uses `DayZInfectedCommandMove` with `m_IsCrawling = true` |
-| `GetMindState()` works on clients | The raw controller method is server-only; clients use the synced `m_MindState` variable via `GetMindStateSynced()` |
+| Estados mentais podem ser definidos do script | O motor C++ controla as transições; o script pode apenas ler o estado e sobrescrever valores do controlador de entrada |
+| Zumbis usam pathfinding para navegação | Sim, via `AIWorld.FindPath()` e navmesh, mas o planejamento de caminho é interno ao motor |
+| Seleção de ataque é aleatória | Usa uma função de utilidade combinando distância, pitch e probabilidade ponderada |
+| Todos os tipos de zumbis se comportam diferentemente | A maioria compartilha comportamento idêntico; apenas NBC (resistência à contaminação) e Militar (flags de loot) diferem no script |
+| `DayZInfectedCommandCrawl` controla o rastejamento | Ele apenas trata a animação de transição; o rastejamento real usa `DayZInfectedCommandMove` com `m_IsCrawling = true` |
+| `GetMindState()` funciona nos clientes | O método bruto do controlador é apenas servidor; clientes usam a variável sincronizada `m_MindState` via `GetMindStateSynced()` |
 
 ---
 
 ## Erros Comuns
 
-1. **Forgetting `ECE_INITAI`** --- The most common spawning bug. The zombie appears but does nothing.
-2. **Calling `StartCommand_Attack(null, ...)` in production** --- The debug plugin does this for testing, but real attacks need a valid target entity or damage will not apply.
-3. **Overriding `CommandHandler` directly** --- This breaks compatibility with other mods. Use the three `ModCommandHandler*` hooks instead.
-4. **Assuming `COMMANDID_CRAWL` means the zombie is crawling** --- `COMMANDID_CRAWL` is only the transition. Check `IsCrawling()` for the persistent state.
-5. **Reading `m_MindState` on clients without sync** --- Use `GetMindStateSynced()` which reads the network-synced variable.
-6. **Not checking `!IsAlive()` before AI operations** --- Dead zombies still exist as entities but their AI state is undefined.
-7. **Deleting zombie entities without `DestroyAIAgent()` first** --- Can cause orphaned AI agents. The engine usually handles this, but explicit cleanup is safer for mod-spawned zombies.
-8. **Setting leg health to 0 without triggering `m_CrawlTransition`** --- Direct `SetHealth("LeftLeg", "Health", 0)` does not trigger the crawl transition; the logic flows through `EEHitBy` -> `HandleSpecialZoneDamage` -> `EvaluateCrawlTransitionAnimation`.
+1. **Esquecer `ECE_INITAI`** --- O bug de spawn mais comum. O zumbi aparece mas não faz nada.
+2. **Chamar `StartCommand_Attack(null, ...)` em produção** --- O plugin de debug faz isso para testes, mas ataques reais precisam de uma entidade alvo válida ou o dano não será aplicado.
+3. **Sobrescrever `CommandHandler` diretamente** --- Isso quebra a compatibilidade com outros mods. Use os três hooks `ModCommandHandler*` em vez disso.
+4. **Assumir que `COMMANDID_CRAWL` significa que o zumbi está rastejando** --- `COMMANDID_CRAWL` é apenas a transição. Verifique `IsCrawling()` para o estado persistente.
+5. **Ler `m_MindState` nos clientes sem sincronização** --- Use `GetMindStateSynced()` que lê a variável sincronizada de rede.
+6. **Não verificar `!IsAlive()` antes de operações de IA** --- Zumbis mortos ainda existem como entidades, mas seu estado de IA é indefinido.
+7. **Deletar entidades de zumbis sem `DestroyAIAgent()` primeiro** --- Pode causar agentes de IA órfãos. O motor geralmente lida com isso, mas limpeza explícita é mais segura para zumbis spawnados por mods.
+8. **Definir saúde da perna como 0 sem acionar `m_CrawlTransition`** --- `SetHealth("LeftLeg", "Health", 0)` direto não aciona a transição de rastejamento; a lógica flui através de `EEHitBy` -> `HandleSpecialZoneDamage` -> `EvaluateCrawlTransitionAnimation`.
 
 ---
 
-## Compatibility & Impact
+## Compatibilidade e Impacto
 
-| Aspect | Impact |
-|--------|--------|
-| **Performance** | Each zombie runs its `CommandHandler` every frame on the server. Large zombie populations (50+) can cause server lag. |
-| **Network** | Three synced variables per zombie (`m_MindState`, `m_MovementSpeed`, `m_IsCrawling`, `m_OrientationSynced`). Changes trigger `SetSynchDirty()`. |
-| **Mod conflicts** | Multiple mods using `ModCommandHandlerBefore` returning `true` will conflict --- only the last-loaded mod's override runs. |
-| **Client/Server** | Command handler, fight logic, and damage run server-side only. Sound events and animation playback are client-side. |
-| **AI engine dependency** | Mind state transitions, pathfinding decisions, and target selection are C++ engine features. Script cannot fully replace or bypass the built-in AI. |
+| Aspecto | Impacto |
+|---------|---------|
+| **Desempenho** | Cada zumbi executa seu `CommandHandler` a cada frame no servidor. Grandes populações de zumbis (50+) podem causar lag no servidor. |
+| **Rede** | Três variáveis sincronizadas por zumbi (`m_MindState`, `m_MovementSpeed`, `m_IsCrawling`, `m_OrientationSynced`). Mudanças disparam `SetSynchDirty()`. |
+| **Conflitos de mods** | Múltiplos mods usando `ModCommandHandlerBefore` retornando `true` vão conflitar --- apenas a sobrescrita do último mod carregado é executada. |
+| **Cliente/Servidor** | Command handler, lógica de combate e dano executam apenas do lado do servidor. Eventos sonoros e reprodução de animação são do lado do cliente. |
+| **Dependência do motor de IA** | Transições de estado mental, decisões de pathfinding e seleção de alvo são recursos do motor C++. O script não pode substituir ou contornar completamente a IA embutida. |
 
 ---
 
 ## Referência Rápida
 
 ```csharp
-// Spawn a zombie (server only)
+// Spawnar um zumbi (apenas servidor)
 DayZInfected z = DayZInfected.Cast(
     g_Game.CreateObjectEx("ZmbM_Soldier_Normal", pos,
         ECE_PLACE_ON_SURFACE | ECE_INITAI | ECE_EQUIP_ATTACHMENTS));
 
-// Check state
-int mind = z.GetInputController().GetMindState();     // server
-int mindSync = ZombieBase.Cast(z).GetMindStateSynced(); // synced
+// Verificar estado
+int mind = z.GetInputController().GetMindState();     // servidor
+int mindSync = ZombieBase.Cast(z).GetMindStateSynced(); // sincronizado
 
-// Suspend/resume AI
+// Suspender/retomar IA
 z.GetAIAgent().SetKeepInIdle(true);
 z.GetAIAgent().SetKeepInIdle(false);
 
-// Force movement
+// Forçar movimento
 z.GetInputController().OverrideMovementSpeed(true, 3.0); // sprint
-z.GetInputController().OverrideMovementSpeed(false, 0);   // release
+z.GetInputController().OverrideMovementSpeed(false, 0);   // liberar
 
-// Kill
+// Matar
 z.SetHealth("", "Health", 0);
-// (death command triggers automatically via HandleDeath on next frame)
+// (comando de morte é acionado automaticamente via HandleDeath no próximo frame)
 
-// Check type
+// Verificar tipo
 ZombieBase zb = ZombieBase.Cast(z);
 bool isMilitary = zb.IsZombieMilitary();
 bool isCrawling = zb.IsCrawling();
-bool isZombie   = zb.IsZombie();       // always true for ZombieBase
+bool isZombie   = zb.IsZombie();       // sempre true para ZombieBase
 ```
 
 ---
 
-*Source files referenced: `3_Game/entities/dayzinfected.c`, `3_Game/entities/dayzinfectedtype.c`, `3_Game/entities/dayzinfectedinputcontroller.c`, `3_Game/entities/dayzcreatureaiinputcontroller.c`, `3_Game/entities/dayzanimal.c`, `3_Game/entities/dayzcreatureaitype.c`, `3_Game/ai/aiworld.c`, `3_Game/ai/aiagent.c`, `3_Game/ai/aigroup.c`, `3_Game/ai/aigroupbehaviour.c`, `3_Game/systems/ai/aitarget_callbacks.c`, `3_Game/constants.c`, `3_Game/playerconstants.c`, `3_Game/ce/centraleconomy.c`, `4_World/entities/creatures/infected/zombiebase.c`, `4_World/entities/creatures/infected/zombiemalebase.c`, `4_World/entities/creatures/infected/zombiefemalebase.c`, `4_World/entities/dayzinfectedimplement.c`, `4_World/entities/manbase/playerbase/aitargetcallbacksplayer.c`, `4_World/static/sensesaievaluate.c`, `4_World/plugins/pluginbase/plugindayzinfecteddebug.c`, `4_World/classes/soundevents/infectedsoundevents/`*
+*Arquivos de código-fonte referenciados: `3_Game/entities/dayzinfected.c`, `3_Game/entities/dayzinfectedtype.c`, `3_Game/entities/dayzinfectedinputcontroller.c`, `3_Game/entities/dayzcreatureaiinputcontroller.c`, `3_Game/entities/dayzanimal.c`, `3_Game/entities/dayzcreatureaitype.c`, `3_Game/ai/aiworld.c`, `3_Game/ai/aiagent.c`, `3_Game/ai/aigroup.c`, `3_Game/ai/aigroupbehaviour.c`, `3_Game/systems/ai/aitarget_callbacks.c`, `3_Game/constants.c`, `3_Game/playerconstants.c`, `3_Game/ce/centraleconomy.c`, `4_World/entities/creatures/infected/zombiebase.c`, `4_World/entities/creatures/infected/zombiemalebase.c`, `4_World/entities/creatures/infected/zombiefemalebase.c`, `4_World/entities/dayzinfectedimplement.c`, `4_World/entities/manbase/playerbase/aitargetcallbacksplayer.c`, `4_World/static/sensesaievaluate.c`, `4_World/plugins/pluginbase/plugindayzinfecteddebug.c`, `4_World/classes/soundevents/infectedsoundevents/`*

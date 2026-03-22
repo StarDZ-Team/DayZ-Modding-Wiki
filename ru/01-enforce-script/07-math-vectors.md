@@ -1,39 +1,35 @@
-# Chapter 1.7: Math & Vector Operations
+# Глава 1.7: Математические и векторные операции
 
-[Home](../../README.md) | [<< Previous: String Operations](06-strings.md) | **Math & Vector Operations** | [Next: Memory Management >>](08-memory-management.md)
+[Главная](../../README.md) | [<< Назад: Строковые операции](06-strings.md) | **Математические и векторные операции** | [Далее: Управление памятью >>](08-memory-management.md)
 
----
 ---
 
 ## Введение
 
-
-DayZ modding frequently requires mathematical calculations: finding distances between players, randomizing spawn positions, interpolating camera movements, computing angles for AI targeting. Enforce Script provides the `Math` class for scalar operations and the `vector` type with static helpers for 3D math. This chapter is a complete reference for both, organized by category.
+Моддинг DayZ часто требует математических вычислений: нахождение расстояний между игроками, рандомизация позиций спауна, интерполяция движений камеры, вычисление углов для наведения ИИ. Enforce Script предоставляет класс `Math` для скалярных операций и тип `vector` со статическими методами для 3D-математики. Эта глава является полным справочником по обоим, организованным по категориям.
 
 ---
 
 ## Класс Math
 
-
-All methods on the `Math` class are **static**. You call them as `Math.MethodName()`.
+Все методы класса `Math` являются **статическими**. Вы вызываете их как `Math.MethodName()`.
 
 ### Константы
 
-
-| Constant | Value | Description |
+| Константа | Значение | Описание |
 |----------|-------|-------------|
-| `Math.PI` | 3.14159265... | Pi |
-| `Math.PI2` | 6.28318530... | 2 * Pi (full circle in radians) |
-| `Math.PI_HALF` | 1.57079632... | Pi / 2 (quarter circle) |
-| `Math.EULER` | 2.71828182... | Euler's number |
-| `Math.DEG2RAD` | 0.01745329... | Multiply degrees by this to get radians |
-| `Math.RAD2DEG` | 57.29577951... | Multiply radians by this to get degrees |
+| `Math.PI` | 3.14159265... | Число Пи |
+| `Math.PI2` | 6.28318530... | 2 * Пи (полный оборот в радианах) |
+| `Math.PI_HALF` | 1.57079632... | Пи / 2 (четверть оборота) |
+| `Math.EULER` | 2.71828182... | Число Эйлера |
+| `Math.DEG2RAD` | 0.01745329... | Умножьте градусы на это, чтобы получить радианы |
+| `Math.RAD2DEG` | 57.29577951... | Умножьте радианы на это, чтобы получить градусы |
 
 ```c
-// Convert 90 degrees to radians
+// Конвертация 90 градусов в радианы
 float rad = 90 * Math.DEG2RAD; // 1.5707...
 
-// Convert PI radians to degrees
+// Конвертация PI радиан в градусы
 float deg = Math.PI * Math.RAD2DEG; // 180.0
 ```
 
@@ -41,49 +37,46 @@ float deg = Math.PI * Math.RAD2DEG; // 180.0
 
 ### Случайные числа
 
-
 ```c
-// Random integer in range [min, max) -- max is EXCLUSIVE
-int roll = Math.RandomInt(0, 10);           // 0 through 9
+// Случайное целое число в диапазоне [min, max) -- max ИСКЛЮЧИТЕЛЬНО
+int roll = Math.RandomInt(0, 10);           // от 0 до 9
 
-// Random integer in range [min, max] -- max is INCLUSIVE
-int dice = Math.RandomIntInclusive(1, 6);   // 1 through 6
+// Случайное целое число в диапазоне [min, max] -- max ВКЛЮЧИТЕЛЬНО
+int dice = Math.RandomIntInclusive(1, 6);   // от 1 до 6
 
-// Random float in range [min, max) -- max is EXCLUSIVE
+// Случайное число с плавающей запятой в диапазоне [min, max) -- max ИСКЛЮЧИТЕЛЬНО
 float rf = Math.RandomFloat(0.0, 1.0);
 
-// Random float in range [min, max] -- max is INCLUSIVE
+// Случайное число с плавающей запятой в диапазоне [min, max] -- max ВКЛЮЧИТЕЛЬНО
 float rf2 = Math.RandomFloatInclusive(0.0, 1.0);
 
-// Random float [0, 1] inclusive (shorthand)
+// Случайное число с плавающей запятой [0, 1] включительно (сокращение)
 float chance = Math.RandomFloat01();
 
-// Random bool
+// Случайное булево значение
 bool coinFlip = Math.RandomBool();
 
-// Seed the random number generator (-1 seeds from system time)
+// Инициализация генератора случайных чисел (-1 использует системное время)
 Math.Randomize(-1);
 ```
 
-#### Пример DayZ: Random loot chance
-
+#### Пример DayZ: шанс выпадения редкого лута
 
 ```c
 bool ShouldSpawnRareLoot(float rarity)
 {
-    // rarity: 0.0 = never, 1.0 = always
+    // rarity: 0.0 = никогда, 1.0 = всегда
     return Math.RandomFloat01() < rarity;
 }
 
-// 15% chance for rare weapon
+// 15% шанс на редкое оружие
 if (ShouldSpawnRareLoot(0.15))
 {
     GetGame().CreateObject("VSS", position, false, false, true);
 }
 ```
 
-#### Пример DayZ: Random position within radius
-
+#### Пример DayZ: случайная позиция в радиусе
 
 ```c
 vector GetRandomPositionInRadius(vector center, float radius)
@@ -104,7 +97,6 @@ vector GetRandomPositionInRadius(vector center, float radius)
 
 ### Округление
 
-
 ```c
 float rounded = Math.Round(5.6);   // 6.0
 float rounded2 = Math.Round(5.4);  // 5.0
@@ -112,8 +104,7 @@ float floored = Math.Floor(5.9);   // 5.0
 float ceiled = Math.Ceil(5.1);     // 6.0
 ```
 
-#### Пример DayZ: Grid-snapped building placement
-
+#### Пример DayZ: привязка здания к сетке
 
 ```c
 vector SnapToGrid(vector pos, float gridSize)
@@ -128,7 +119,6 @@ vector SnapToGrid(vector pos, float gridSize)
 ---
 
 ### Абсолютное значение и знак
-
 
 ```c
 float af = Math.AbsFloat(-5.5);    // 5.5
@@ -146,7 +136,6 @@ int si2 = Math.SignInt(7);         // 1
 
 ### Степень, корень и логарифм
 
-
 ```c
 float pw = Math.Pow(2, 10);        // 1024.0
 float sq = Math.Sqrt(25);          // 5.0
@@ -157,25 +146,23 @@ float lg = Math.Log2(8);           // 3.0
 
 ### Тригонометрия
 
-
-All trigonometric functions work in **radians**. Use `Math.DEG2RAD` and `Math.RAD2DEG` to convert.
+Все тригонометрические функции работают в **радианах**. Используйте `Math.DEG2RAD` и `Math.RAD2DEG` для конвертации.
 
 ```c
-// Basic trig
+// Базовые тригонометрические функции
 float s = Math.Sin(Math.PI / 4);     // ~0.707
 float c = Math.Cos(Math.PI / 4);     // ~0.707
 float t = Math.Tan(Math.PI / 4);     // ~1.0
 
-// Inverse trig
-float asin = Math.Asin(0.5);         // ~0.5236 rad (30 degrees)
-float acos = Math.Acos(0.5);         // ~1.0472 rad (60 degrees)
+// Обратные тригонометрические функции
+float asin = Math.Asin(0.5);         // ~0.5236 рад (30 градусов)
+float acos = Math.Acos(0.5);         // ~1.0472 рад (60 градусов)
 
-// Atan2 -- angle from x-axis to point (y, x)
-float angle = Math.Atan2(1, 1);      // PI/4 (~0.785 rad = 45 degrees)
+// Atan2 -- угол от оси X до точки (y, x)
+float angle = Math.Atan2(1, 1);      // PI/4 (~0.785 рад = 45 градусов)
 ```
 
-#### Пример DayZ: Direction angle between two positions
-
+#### Пример DayZ: угол направления между двумя позициями
 
 ```c
 float GetAngleBetween(vector from, vector to)
@@ -183,12 +170,11 @@ float GetAngleBetween(vector from, vector to)
     float dx = to[0] - from[0];
     float dz = to[2] - from[2];
     float angleRad = Math.Atan2(dx, dz);
-    return angleRad * Math.RAD2DEG; // Return in degrees
+    return angleRad * Math.RAD2DEG; // Возвращает в градусах
 }
 ```
 
-#### Пример DayZ: Spawn objects in a circle
-
+#### Пример DayZ: спаун объектов по кругу
 
 ```c
 void SpawnCircleOfBarrels(vector center, float radius, int count)
@@ -212,24 +198,22 @@ void SpawnCircleOfBarrels(vector center, float radius, int count)
 
 ### Ограничение и Min/Max
 
-
 ```c
-// Clamp a value to a range
-float clamped = Math.Clamp(15, 0, 10);  // 10 (capped at max)
-float clamped2 = Math.Clamp(-5, 0, 10); // 0  (capped at min)
-float clamped3 = Math.Clamp(5, 0, 10);  // 5  (within range)
+// Ограничить значение диапазоном
+float clamped = Math.Clamp(15, 0, 10);  // 10 (ограничено максимумом)
+float clamped2 = Math.Clamp(-5, 0, 10); // 0  (ограничено минимумом)
+float clamped3 = Math.Clamp(5, 0, 10);  // 5  (в пределах диапазона)
 
-// Min and Max
+// Min и Max
 float mn = Math.Min(3, 7);              // 3
 float mx = Math.Max(3, 7);              // 7
 
-// Check if value is in range
+// Проверить, находится ли значение в диапазоне
 bool inRange = Math.IsInRange(5, 0, 10); // true
 bool outRange = Math.IsInRange(15, 0, 10); // false
 ```
 
-#### Пример DayZ: Clamping player health
-
+#### Пример DayZ: ограничение здоровья игрока
 
 ```c
 void ApplyDamage(PlayerBase player, float damage)
@@ -244,37 +228,35 @@ void ApplyDamage(PlayerBase player, float damage)
 
 ### Интерполяция
 
-
 ```c
-// Linear interpolation (Lerp)
-// Returns a + (b - a) * t, where t is [0, 1]
+// Линейная интерполяция (Lerp)
+// Возвращает a + (b - a) * t, где t находится в [0, 1]
 float lerped = Math.Lerp(0, 100, 0.5);     // 50
 float lerped2 = Math.Lerp(0, 100, 0.25);   // 25
 
-// Inverse Lerp -- finds the t value
-// Returns (value - a) / (b - a)
+// Обратная линейная интерполяция -- находит значение t
+// Возвращает (value - a) / (b - a)
 float t = Math.InverseLerp(0, 100, 50);    // 0.5
 float t2 = Math.InverseLerp(0, 100, 75);   // 0.75
 ```
 
-#### SmoothCD (Smooth Critical Damping)
+#### SmoothCD (плавное критическое затухание)
 
-`SmoothCD` provides smooth, framerate-independent interpolation. It is the best choice for camera smoothing, UI animations, and any value that should approach a target gradually without oscillation.
+`SmoothCD` обеспечивает плавную, независимую от частоты кадров интерполяцию. Это лучший выбор для сглаживания камеры, анимаций UI и любого значения, которое должно плавно приближаться к цели без осцилляций.
 
 ```c
 // SmoothCD(current, target, velocity, smoothTime, maxSpeed, dt)
-// velocity is passed by reference and updated each call
+// velocity передаётся по ссылке и обновляется при каждом вызове
 float currentVal = 0;
 float velocity = 0;
 float target = 100;
 float smoothTime = 0.3;
 
-// Called each frame:
+// Вызывается каждый кадр:
 currentVal = Math.SmoothCD(currentVal, target, velocity, smoothTime, 1000, 0.016);
 ```
 
-#### Пример DayZ: Smooth camera zoom
-
+#### Пример DayZ: плавное масштабирование камеры
 
 ```c
 class SmoothZoomCamera
@@ -311,13 +293,12 @@ class SmoothZoomCamera
 
 ### Операции с углами
 
-
 ```c
-// Normalize angle to [0, 360)
+// Нормализация угла в [0, 360)
 float norm = Math.NormalizeAngle(370);   // 10
 float norm2 = Math.NormalizeAngle(-30);  // 330
 
-// Difference between two angles (shortest path)
+// Разница между двумя углами (кратчайший путь)
 float diff = Math.DiffAngle(350, 10);   // -20
 float diff2 = Math.DiffAngle(10, 350);  // 20
 ```
@@ -326,16 +307,15 @@ float diff2 = Math.DiffAngle(10, 350);  // 20
 
 ### Возведение в квадрат и модуль
 
-
 ```c
-// Square (faster than Pow(x, 2))
+// Квадрат (быстрее, чем Pow(x, 2))
 float sqf = Math.SqrFloat(5);          // 25.0
 int sqi = Math.SqrInt(5);              // 25
 
-// Float modulo
+// Модуль для чисел с плавающей запятой
 float mod = Math.ModFloat(5.5, 2.0);   // 1.5
 
-// Wrap an integer into a range
+// Обернуть целое число в диапазон
 int wrapped = Math.WrapInt(12, 0, 10);  // 2
 int wrapped2 = Math.WrapInt(-1, 0, 10); // 9
 ```
@@ -344,75 +324,69 @@ int wrapped2 = Math.WrapInt(-1, 0, 10); // 9
 
 ## Тип vector
 
-
-The `vector` type is a built-in value type with three float components (x, y, z). It is used everywhere in DayZ for positions, directions, orientations, and scales.
+Тип `vector` -- это встроенный тип-значение с тремя компонентами float (x, y, z). Он используется повсюду в DayZ для позиций, направлений, ориентаций и масштабов.
 
 ### Создание векторов
 
-
 ```c
-// String initialization (x y z separated by spaces)
+// Инициализация строкой (x y z, разделённые пробелами)
 vector pos = "100.5 0 200.3";
 
-// Constructor function
+// Функция-конструктор
 vector pos2 = Vector(100.5, 0, 200.3);
 
-// Default value (zero vector)
+// Значение по умолчанию (нулевой вектор)
 vector zero;           // "0 0 0"
 ```
 
 ### Доступ к компонентам
 
-
 ```c
 vector pos = Vector(10, 25, 30);
 
 float x = pos[0]; // 10
-float y = pos[1]; // 25 (height in DayZ)
+float y = pos[1]; // 25 (высота в DayZ)
 float z = pos[2]; // 30
 
-pos[1] = 50.0;    // Set y component
+pos[1] = 50.0;    // Установить компонент y
 ```
 
-> **DayZ coordinate system:** `[0]` is East-West (X), `[1]` is height (Y), `[2]` is North-South (Z).
+> **Система координат DayZ:** `[0]` -- Восток-Запад (X), `[1]` -- высота (Y), `[2]` -- Север-Юг (Z).
 
 ### Константы vector
 
-
-| Constant | Value | Description |
+| Константа | Значение | Описание |
 |----------|-------|-------------|
-| `vector.Zero` | `"0 0 0"` | Zero vector (origin) |
-| `vector.Up` | `"0 1 0"` | Points upward |
-| `vector.Aside` | `"1 0 0"` | Points east (X+) |
-| `vector.Forward` | `"0 0 1"` | Points north (Z+) |
+| `vector.Zero` | `"0 0 0"` | Нулевой вектор (начало координат) |
+| `vector.Up` | `"0 1 0"` | Направлен вверх |
+| `vector.Aside` | `"1 0 0"` | Направлен на восток (X+) |
+| `vector.Forward` | `"0 0 1"` | Направлен на север (Z+) |
 
 ---
 
 ### Операции с векторами (статические методы)
 
-
 #### Расстояние
-
 
 ```c
 vector a = Vector(0, 0, 0);
 vector b = Vector(100, 0, 100);
 
 float dist = vector.Distance(a, b);     // ~141.42
-float distSq = vector.DistanceSq(a, b); // 20000 (no sqrt, faster)
+float distSq = vector.DistanceSq(a, b); // 20000 (без sqrt, быстрее)
 ```
 
-> **Совет по производительности:** Use `DistanceSq` when comparing distances. Comparing squared values avoids the expensive square root calculation.
+> **Совет по производительности:** используйте `DistanceSq` при сравнении расстояний. Сравнение квадратов значений позволяет избежать дорогостоящего вычисления квадратного корня.
 
 ```c
-// GOOD -- compare squared distances
+// ХОРОШО -- сравнение квадратов расстояний
 float maxDistSq = 100 * 100; // 10000
 if (vector.DistanceSq(playerPos, targetPos) < maxDistSq)
 {
     Print("Target is within 100m");
 }
 
-// SLOWER -- computing actual distance
+// МЕДЛЕННЕЕ -- вычисление фактического расстояния
 if (vector.Distance(playerPos, targetPos) < 100)
 {
     Print("Target is within 100m");
@@ -421,26 +395,23 @@ if (vector.Distance(playerPos, targetPos) < 100)
 
 #### Направление
 
-
-Returns the direction vector from one point to another (not normalized).
+Возвращает вектор направления от одной точки к другой (не нормализованный).
 
 ```c
 vector dir = vector.Direction(from, to);
-// Equivalent to: to - from
+// Эквивалентно: to - from
 ```
 
 #### Скалярное произведение
 
-
 ```c
 float dot = vector.Dot(a, b);
-// dot > 0: vectors point in similar directions
-// dot = 0: vectors are perpendicular
-// dot < 0: vectors point in opposite directions
+// dot > 0: векторы направлены в схожих направлениях
+// dot = 0: векторы перпендикулярны
+// dot < 0: векторы направлены в противоположных направлениях
 ```
 
-#### Пример DayZ: Is target in front of player?
-
+#### Пример DayZ: находится ли цель перед игроком?
 
 ```c
 bool IsTargetInFront(PlayerBase player, vector targetPos)
@@ -450,14 +421,13 @@ bool IsTargetInFront(PlayerBase player, vector targetPos)
     toTarget.Normalize();
 
     float dot = vector.Dot(playerDir, toTarget);
-    return dot > 0; // Positive means in front
+    return dot > 0; // Положительное значение означает спереди
 }
 ```
 
 #### Нормализация
 
-
-Converts a vector to unit length (length of 1).
+Преобразует вектор к единичной длине (длина равна 1).
 
 ```c
 vector dir = Vector(3, 0, 4);
@@ -466,23 +436,22 @@ float len = dir.Length();      // 5.0
 vector norm = dir.Normalized(); // Vector(0.6, 0, 0.8)
 // norm.Length() == 1.0
 
-// In-place normalization
+// Нормализация на месте
 dir.Normalize();
-// dir is now Vector(0.6, 0, 0.8)
+// dir теперь Vector(0.6, 0, 0.8)
 ```
 
 #### Длина
 
-
 ```c
 vector v = Vector(3, 4, 0);
 float len = v.Length();        // 5.0
-float lenSq = v.LengthSq();   // 25.0 (faster, no sqrt)
+float lenSq = v.LengthSq();   // 25.0 (быстрее, без sqrt)
 ```
 
-#### Lerp (static)
+#### Lerp (статический)
 
-Linear interpolation between two vectors.
+Линейная интерполяция между двумя векторами.
 
 ```c
 vector start = Vector(0, 0, 0);
@@ -495,32 +464,31 @@ vector quarter = vector.Lerp(start, end, 0.25);
 // quarter = Vector(25, 12.5, 50)
 ```
 
-#### RotateAroundZeroDeg (static)
+#### RotateAroundZeroDeg (статический)
 
-Rotates a vector around an axis by a given angle in degrees.
+Вращает вектор вокруг оси на заданный угол в градусах.
 
 ```c
-vector original = Vector(1, 0, 0); // pointing east
-vector axis = Vector(0, 1, 0);     // rotate around Y axis
-float angle = 90;                  // 90 degrees
+vector original = Vector(1, 0, 0); // направлен на восток
+vector axis = Vector(0, 1, 0);     // вращение вокруг оси Y
+float angle = 90;                  // 90 градусов
 
 vector rotated = vector.RotateAroundZeroDeg(original, axis, angle);
-// rotated is approximately Vector(0, 0, 1) -- now pointing north
+// rotated приблизительно Vector(0, 0, 1) -- теперь направлен на север
 ```
 
-#### Random Direction
+#### Случайное направление
 
 ```c
-vector rdir = vector.RandomDir();    // Random 3D direction (unit vector)
-vector rdir2d = vector.RandomDir2D(); // Random direction in XZ plane
+vector rdir = vector.RandomDir();    // Случайное 3D-направление (единичный вектор)
+vector rdir2d = vector.RandomDir2D(); // Случайное направление в плоскости XZ
 ```
 
 ---
 
 ### Арифметика векторов
 
-
-Vectors support standard arithmetic operators:
+Векторы поддерживают стандартные арифметические операторы:
 
 ```c
 vector a = Vector(1, 2, 3);
@@ -530,14 +498,13 @@ vector sum = a + b;         // Vector(5, 7, 9)
 vector diff = a - b;        // Vector(-3, -3, -3)
 vector scaled = a * 2;      // Vector(2, 4, 6)
 
-// Move a position forward
+// Перемещение позиции вперёд
 vector pos = player.GetPosition();
 vector dir = player.GetDirection();
-vector ahead = pos + dir * 5; // 5 meters ahead of the player
+vector ahead = pos + dir * 5; // 5 метров впереди игрока
 ```
 
 ### Преобразование Vector в String
-
 
 ```c
 vector pos = Vector(100.5, 25.3, 200.7);
@@ -548,18 +515,17 @@ string s = pos.ToString(); // "<100.5, 25.3, 200.7>"
 
 ## Класс Math3D
 
-
-For advanced 3D operations, the `Math3D` class provides matrix and rotation utilities.
+Для продвинутых 3D-операций класс `Math3D` предоставляет утилиты для матриц и вращений.
 
 ```c
-// Create a rotation matrix from yaw/pitch/roll (degrees)
+// Создание матрицы вращения из yaw/pitch/roll (градусы)
 vector mat[3];
 Math3D.YawPitchRollMatrix("45 0 0", mat);
 
-// Convert a rotation matrix back to angles
+// Конвертация матрицы вращения обратно в углы
 vector angles = Math3D.MatrixToAngles(mat);
 
-// Identity matrix (4x4)
+// Единичная матрица (4x4)
 vector mat4[4];
 Math3D.MatrixIdentity4(mat4);
 ```
@@ -568,8 +534,7 @@ Math3D.MatrixIdentity4(mat4);
 
 ## Примеры из практики
 
-
-### Calculating distance between two players
+### Вычисление расстояния между двумя игроками
 
 ```c
 float GetPlayerDistance(PlayerBase player1, PlayerBase player2)
@@ -599,7 +564,7 @@ void WarnProximity(PlayerBase player, array<Man> allPlayers, float warnDistance)
 }
 ```
 
-### Finding the closest object
+### Поиск ближайшего объекта
 
 ```c
 Object FindClosest(vector origin, array<Object> objects)
@@ -624,15 +589,15 @@ Object FindClosest(vector origin, array<Object> objects)
 }
 ```
 
-### Moving an object along a path
+### Перемещение объекта по пути
 
 ```c
 class PathMover
 {
     protected ref array<vector> m_Waypoints;
     protected int m_CurrentWaypoint;
-    protected float m_Progress; // 0.0 to 1.0 between waypoints
-    protected float m_Speed;    // meters per second
+    protected float m_Progress; // от 0.0 до 1.0 между путевыми точками
+    protected float m_Speed;    // метров в секунду
 
     void PathMover(array<vector> waypoints, float speed)
     {
@@ -660,7 +625,7 @@ class PathMover
         {
             m_Progress = 0;
             m_CurrentWaypoint++;
-            return Update(0); // Recalculate with next segment
+            return Update(0); // Пересчитать для следующего сегмента
         }
 
         return vector.Lerp(from, to, m_Progress);
@@ -668,7 +633,7 @@ class PathMover
 }
 ```
 
-### Calculating a spawn ring around a point
+### Вычисление кольца спауна вокруг точки
 
 ```c
 array<vector> GetSpawnRing(vector center, float radius, int count)
@@ -692,59 +657,90 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 ---
 
+## Лучшие практики
+
+- Используйте `vector.DistanceSq()` и сравнивайте с `radius * radius` в плотных циклах -- это позволяет избежать дорогостоящего `sqrt` внутри `Distance()`.
+- Всегда умножайте на `Math.DEG2RAD` перед передачей углов в `Sin()`/`Cos()` -- все тригонометрические функции работают в радианах.
+- Проверяйте `v.Length() > 0` перед вызовом `Normalize()` -- нормализация вектора нулевой длины порождает значения `NaN`.
+- Используйте `Math.Clamp()` для ограничения здоровья, урона и значений UI вместо написания ручных цепочек `if`.
+- Предпочитайте `Math.RandomIntInclusive()`, когда максимальное значение должно быть достижимо (например, броски кубика) -- максимум `RandomInt()` исключителен.
+
+---
+
+## Замечено в реальных модах
+
+> Паттерны, подтверждённые изучением исходного кода профессиональных модов DayZ.
+
+| Паттерн | Мод | Детали |
+|---------|-----|--------|
+| `DistanceSq` с предварительно возведённым в квадрат порогом | Expansion / COT | Проверки близости хранят `float maxDistSq = range * range` и сравнивают с `DistanceSq` |
+| `Math.Atan2(dx, dz) * RAD2DEG` для направления | Expansion AI | Направление к цели вычисляется как угол в градусах для присвоения ориентации |
+| `Math.RandomFloat(0, Math.PI2)` для кольца спауна | Dabs / Expansion | Случайный угол + `Cos`/`Sin` для генерации круговых позиций спауна |
+| `Math.Clamp` для значений здоровья/урона | VPP / COT | Каждое применение урона ограничивает результат диапазоном `[0, maxHealth]` для предотвращения отрицательных значений или переполнения |
+
+---
+
+## Теория и практика
+
+| Концепция | Теория | Реальность |
+|---------|--------|---------|
+| `Math.RandomInt(0, 10)` | Можно ожидать 0-10 включительно | Максимум исключителен -- возвращает 0-9; используйте `RandomIntInclusive` для включительного максимума |
+| `vector[1]` -- ось Y | Стандартное отображение XYZ | В DayZ Y -- это вертикальная высота -- легко спутать с соглашением Z-вверх из других движков |
+| `Math.SqrFloat` и `Math.Sqrt` | Названия выглядят похоже | `SqrFloat(5)` = 25 (возводит в квадрат), `Sqrt(25)` = 5 (квадратный корень) -- противоположные операции |
+
+---
+
 ## Распространённые ошибки
 
-
-| Mistake | Problem | Fix |
+| Ошибка | Проблема | Решение |
 |---------|---------|-----|
-| Passing degrees to `Math.Sin()` / `Math.Cos()` | Trig functions expect radians | Multiply by `Math.DEG2RAD` first |
-| Using `Math.RandomInt(0, 10)` and expecting 10 | Max is exclusive | Use `Math.RandomIntInclusive(0, 10)` for inclusive max |
-| Computing `vector.Distance()` in a tight loop | `Distance` uses `sqrt`, which is slow | Use `vector.DistanceSq()` and compare against squared distance |
-| Normalizing a zero-length vector | Division by zero, produces NaN | Check `v.Length() > 0` before normalizing |
-| Forgetting that DayZ Y is up | `pos[1]` is height, not Z | `[0]` = X (East), `[1]` = Y (Up), `[2]` = Z (North) |
-| Using `Lerp` with t outside [0,1] | Extrapolates beyond the range | Clamp t with `Math.Clamp(t, 0, 1)` |
-| Confusing `SqrFloat` with `Sqrt` | `SqrFloat` squares the value; `Sqrt` takes the square root | `Math.SqrFloat(5)` = 25, `Math.Sqrt(25)` = 5 |
+| Передача градусов в `Math.Sin()` / `Math.Cos()` | Тригонометрические функции ожидают радианы | Сначала умножьте на `Math.DEG2RAD` |
+| Использование `Math.RandomInt(0, 10)` с ожиданием 10 | Максимум исключителен | Используйте `Math.RandomIntInclusive(0, 10)` для включительного максимума |
+| Вычисление `vector.Distance()` в плотном цикле | `Distance` использует `sqrt`, что медленно | Используйте `vector.DistanceSq()` и сравнивайте с квадратом расстояния |
+| Нормализация вектора нулевой длины | Деление на ноль, порождает NaN | Проверяйте `v.Length() > 0` перед нормализацией |
+| Забыли, что в DayZ Y направлен вверх | `pos[1]` -- это высота, а не Z | `[0]` = X (Восток), `[1]` = Y (Вверх), `[2]` = Z (Север) |
+| Использование `Lerp` с t вне [0,1] | Экстраполирует за пределы диапазона | Ограничьте t с помощью `Math.Clamp(t, 0, 1)` |
+| Путаница `SqrFloat` и `Sqrt` | `SqrFloat` возводит в квадрат; `Sqrt` извлекает квадратный корень | `Math.SqrFloat(5)` = 25, `Math.Sqrt(25)` = 5 |
 
 ---
 
 ## Краткая справка
 
-
 ```c
-// Constants
+// Константы
 Math.PI  Math.PI2  Math.PI_HALF  Math.EULER  Math.DEG2RAD  Math.RAD2DEG
 
-// Random
+// Случайные числа
 Math.RandomInt(min, max)              // [min, max)
 Math.RandomIntInclusive(min, max)     // [min, max]
 Math.RandomFloat(min, max)            // [min, max)
 Math.RandomFloatInclusive(min, max)   // [min, max]
 Math.RandomFloat01()                  // [0, 1]
 Math.RandomBool()
-Math.Randomize(-1)                    // Seed from time
+Math.Randomize(-1)                    // Инициализация от времени
 
-// Rounding
+// Округление
 Math.Round(f)  Math.Floor(f)  Math.Ceil(f)
 
-// Absolute & Sign
+// Абсолютное значение и знак
 Math.AbsFloat(f)  Math.AbsInt(i)  Math.SignFloat(f)  Math.SignInt(i)
 
-// Power & Root
+// Степень и корень
 Math.Pow(base, exp)  Math.Sqrt(f)  Math.Log2(f)  Math.SqrFloat(f)
 
-// Trig (radians)
+// Тригонометрия (радианы)
 Math.Sin(r) Math.Cos(r) Math.Tan(r) Math.Asin(f) Math.Acos(f) Math.Atan2(y, x)
 
-// Clamp & Interpolation
+// Ограничение и интерполяция
 Math.Clamp(val, min, max)  Math.Min(a, b)  Math.Max(a, b)
 Math.Lerp(a, b, t)  Math.InverseLerp(a, b, val)
 Math.SmoothCD(cur, target, vel, smoothTime, maxSpeed, dt)
 Math.IsInRange(val, min, max)
 
-// Angle
+// Углы
 Math.NormalizeAngle(deg)  Math.DiffAngle(a, b)
 
-// Vector
+// Вектор
 vector.Distance(a, b)    vector.DistanceSq(a, b)
 vector.Direction(from, to)
 vector.Dot(a, b)          vector.Lerp(a, b, t)
@@ -752,10 +748,10 @@ vector.RotateAroundZeroDeg(vec, axis, angleDeg)
 vector.RandomDir()        vector.RandomDir2D()
 v.Length()  v.LengthSq()  v.Normalized()  v.Normalize()
 
-// Vector constants
+// Константы vector
 vector.Zero  vector.Up  vector.Aside  vector.Forward
 ```
 
 ---
 
-[<< 1.6: String Operations](06-strings.md) | [Главная](../../README.md) | [1.8: Memory Management >>](08-memory-management.md)
+[<< 1.6: Строковые операции](06-strings.md) | [Главная](../../README.md) | [1.8: Управление памятью >>](08-memory-management.md)

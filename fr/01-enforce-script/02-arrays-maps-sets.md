@@ -1,26 +1,26 @@
-# Chapitre 1.2: Arrays, Maps & Sets
+# Chapitre 1.2 : Tableaux, Maps & Sets
 
-[Accueil](../../README.md) | [<< Précédent : Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Suivant : Classes & Inheritance >>](03-classes-inheritance.md)
+[Accueil](../../README.md) | [<< Précédent : Variables & Types](01-variables-types.md) | **Tableaux, Maps & Sets** | [Suivant : Classes & Héritage >>](03-classes-inheritance.md)
 
 ---
 
 ## Introduction
 
-Real DayZ mods deal with collections of things: lists of players, inventories of items, mappings from player IDs to permissions, sets of active zones. Enforce Script provides three collection types to handle these needs:
+Les vrais mods DayZ traitent des collections de choses : listes de joueurs, inventaires d'objets, mappings d'IDs de joueurs vers des permissions, ensembles de zones actives. Enforce Script fournit trois types de collection pour gérer ces besoins :
 
-- **`array<T>`** --- Dynamic, ordered, resizable list (the collection you will use most)
-- **`map<K,V>`** --- Key-value associative container (hash map)
-- **`set<T>`** --- Ordered collection with value-based removal
+- **`array<T>`** --- Liste dynamique, ordonnée et redimensionnable (la collection que vous utiliserez le plus)
+- **`map<K,V>`** --- Conteneur associatif clé-valeur (table de hachage)
+- **`set<T>`** --- Collection ordonnée avec suppression basée sur la valeur
 
-There are also **static arrays** (`int arr[5]`) for fixed-size data known à la compilation. Ce chapitre couvre all of them in depth, including every available method, iteration patterns, and the subtle pitfalls that cause real bugs in production mods.
+Il existe aussi des **tableaux statiques** (`int arr[5]`) pour les données de taille fixe connues à la compilation. Ce chapitre couvre tout cela en profondeur, y compris chaque méthode disponible, les patterns d'itération et les pièges subtils qui causent de vrais bugs dans les mods de production.
 
 ---
 
 ## Tableaux statiques
 
-Static arrays have a fixed size determined à la compilation. They cannot grow or shrink. They are useful for small, known-size collections and are more memory-efficient than dynamic arrays.
+Les tableaux statiques ont une taille fixe déterminée à la compilation. Ils ne peuvent ni grandir ni rétrécir. Ils sont utiles pour les petites collections de taille connue et sont plus efficaces en mémoire que les tableaux dynamiques.
 
-### Declaration and Usage
+### Déclaration et utilisation
 
 ```c
 void StaticArrayBasics()
@@ -36,7 +36,7 @@ void StaticArrayBasics()
     // Déclarer avec une liste d'initialisation
     float damages[3] = {10.5, 25.0, 50.0};
 
-    // Déclarer avec une taille constante
+    // Déclarer avec une taille const
     const int GRID_SIZE = 4;
     string labels[GRID_SIZE];
 
@@ -52,15 +52,15 @@ void StaticArrayBasics()
 }
 ```
 
-### Static Array Rules
+### Règles des tableaux statiques
 
-1. Size must be a compile-time constant (literal or `const int`)
-2. You **cannot** use a variable as the size: `int arr[myVar]` is a compile error
-3. Accessing an out-of-bounds index causes undefined behavior (no runtime bounds check)
-4. Static arrays are passed by reference to functions (unlike primitives)
+1. La taille doit être une constante à la compilation (littéral ou `const int`)
+2. Vous **ne pouvez pas** utiliser une variable comme taille : `int arr[myVar]` est une erreur de compilation
+3. Accéder à un index hors limites cause un comportement indéfini (pas de vérification de limites à l'exécution)
+4. Les tableaux statiques sont passés par référence aux fonctions (contrairement aux primitives)
 
 ```c
-// Static arrays as function parameters
+// Tableaux statiques comme paramètres de fonction
 void FillArray(int arr[3])
 {
     arr[0] = 100;
@@ -72,40 +72,40 @@ void Test()
 {
     int myArr[3];
     FillArray(myArr);
-    Print(myArr[0]);  // 100 -- the original was modified (passed by reference)
+    Print(myArr[0]);  // 100 -- l'original a été modifié (passé par référence)
 }
 ```
 
-### Quand utiliser Static Arrays
+### Quand utiliser les tableaux statiques
 
-Use static arrays for:
-- Vector/matrix data (`vector mat[3]` for 3x3 rotation matrices)
-- Small fixed lookup tables
-- Performance-critical hot paths where allocation matters
+Utilisez les tableaux statiques pour :
+- Les données de vecteur/matrice (`vector mat[3]` pour les matrices de rotation 3x3)
+- Les petites tables de recherche fixes
+- Les chemins chauds critiques en performance où l'allocation compte
 
-Use dynamic `array<T>` for everything else.
+Utilisez `array<T>` dynamique pour tout le reste.
 
 ---
 
-## Dynamic Arrays: `array<T>`
+## Tableaux dynamiques : `array<T>`
 
-Dynamic arrays are the most commonly used collection in DayZ modding. They can grow and shrink à l'exécution, support generics, and provide a rich set of methods.
+Les tableaux dynamiques sont la collection la plus couramment utilisée dans le modding DayZ. Ils peuvent grandir et rétrécir à l'exécution, supportent les génériques et fournissent un riche ensemble de méthodes.
 
-### Creation
+### Création
 
 ```c
 void CreateArrays()
 {
-    // Méthode 1 : new operator
+    // Méthode 1 : opérateur new
     array<string> names = new array<string>;
 
-    // Méthode 2 : Initializer list
+    // Méthode 2 : Liste d'initialisation
     array<int> scores = {100, 85, 92, 78};
 
-    // Méthode 3 : Using typedef
+    // Méthode 3 : Utiliser un typedef
     TStringArray items = new TStringArray;  // identique à array<string>
 
-    // Arrays of any type
+    // Tableaux de n'importe quel type
     array<float> distances = new array<float>;
     array<bool> flags = new array<bool>;
     array<vector> positions = new array<vector>;
@@ -113,9 +113,9 @@ void CreateArrays()
 }
 ```
 
-### Pre-defined Typedefs
+### Typedefs pré-définis
 
-DayZ provides shorthand typedefs for the most common array types:
+DayZ fournit des typedefs raccourcis pour les types de tableaux les plus courants :
 
 ```c
 typedef array<string>  TStringArray;
@@ -125,193 +125,193 @@ typedef array<bool>    TBoolArray;
 typedef array<vector>  TVectorArray;
 ```
 
-You will encounter `TStringArray` constantly in DayZ code --- config parsing, chat messages, loot tables, and more.
+Vous rencontrerez `TStringArray` constamment dans le code DayZ --- parsing de config, messages de chat, tables de loot, et plus encore.
 
 ---
 
-## Complete Array Method Reference
+## Référence complète des méthodes de tableau
 
-### Adding Elements
+### Ajouter des éléments
 
 ```c
 void AddingElements()
 {
     array<string> items = new array<string>;
 
-    // Insert: append to end, returns the new index
+    // Insert : ajouter à la fin, retourne le nouvel index
     int idx = items.Insert("Bandage");     // idx == 0
     idx = items.Insert("Morphine");        // idx == 1
     idx = items.Insert("Saline");          // idx == 2
-    // items: ["Bandage", "Morphine", "Saline"]
+    // items : ["Bandage", "Morphine", "Saline"]
 
-    // InsertAt: insert at specific index, shifts existing elements right
+    // InsertAt : insérer à un index spécifique, décale les éléments existants vers la droite
     items.InsertAt("Epinephrine", 1);
-    // items: ["Bandage", "Epinephrine", "Morphine", "Saline"]
+    // items : ["Bandage", "Epinephrine", "Morphine", "Saline"]
 
-    // InsertAll: append all elements from another array
+    // InsertAll : ajouter tous les éléments d'un autre tableau
     array<string> moreItems = {"Tetracycline", "Charcoal"};
     items.InsertAll(moreItems);
-    // items: ["Bandage", "Epinephrine", "Morphine", "Saline", "Tetracycline", "Charcoal"]
+    // items : ["Bandage", "Epinephrine", "Morphine", "Saline", "Tetracycline", "Charcoal"]
 }
 ```
 
-### Accessing Elements
+### Accéder aux éléments
 
 ```c
 void AccessingElements()
 {
     array<string> items = {"Apple", "Banana", "Cherry", "Date"};
 
-    // Get: access by index
+    // Get : accès par index
     string first = items.Get(0);       // "Apple"
     string third = items.Get(2);       // "Cherry"
 
-    // Bracket operator: same as Get
+    // Opérateur crochet : identique à Get
     string second = items[1];          // "Banana"
 
-    // Set: replace element at index
-    items.Set(1, "Blueberry");         // items[1] is now "Blueberry"
+    // Set : remplacer l'élément à l'index
+    items.Set(1, "Blueberry");         // items[1] est maintenant "Blueberry"
 
-    // Count: number of elements
+    // Count : nombre d'éléments
     int count = items.Count();         // 4
 
-    // IsValidIndex: bounds check
+    // IsValidIndex : vérification de limites
     bool valid = items.IsValidIndex(3);   // true
     bool invalid = items.IsValidIndex(4); // false
     bool negative = items.IsValidIndex(-1); // false
 }
 ```
 
-### Searching
+### Recherche
 
 ```c
 void SearchingArrays()
 {
     array<string> weapons = {"AKM", "M4A1", "Mosin", "IZH18", "AKM"};
 
-    // Find: returns first index of element, or -1 if not found
+    // Find : retourne le premier index de l'élément, ou -1 s'il n'est pas trouvé
     int idx = weapons.Find("Mosin");    // 2
     int notFound = weapons.Find("FAL");  // -1
 
-    // Check existence
+    // Vérifier l'existence
     if (weapons.Find("M4A1") != -1)
         Print("M4A1 found!");
 
-    // GetRandomElement: returns a random element
+    // GetRandomElement : retourne un élément aléatoire
     string randomWeapon = weapons.GetRandomElement();
 
-    // GetRandomIndex: returns a random valid index
+    // GetRandomIndex : retourne un index valide aléatoire
     int randomIdx = weapons.GetRandomIndex();
 }
 ```
 
-### Removing Elements
+### Supprimer des éléments
 
-This is where the most common bugs occur. Pay close attention to the difference between `Remove` and `RemoveOrdered`.
+C'est ici que les bugs les plus courants se produisent. Faites bien attention à la différence entre `Remove` et `RemoveOrdered`.
 
 ```c
 void RemovingElements()
 {
     array<string> items = {"A", "B", "C", "D", "E"};
 
-    // Remove(index): FAST but UNORDERED
-    // Swaps the element at index with the LAST element, then shrinks the array
-    items.Remove(1);  // Removes "B" by swapping with "E"
-    // items is now: ["A", "E", "C", "D"]  -- ORDER CHANGED!
+    // Remove(index) : RAPIDE mais NON ORDONNÉ
+    // Échange l'élément à l'index avec le DERNIER élément, puis réduit le tableau
+    items.Remove(1);  // Supprime "B" en échangeant avec "E"
+    // items est maintenant : ["A", "E", "C", "D"]  -- L'ORDRE A CHANGÉ !
 
-    // RemoveOrdered(index): SLOW but preserves order
-    // Shifts all elements after the index left by one
+    // RemoveOrdered(index) : LENT mais préserve l'ordre
+    // Décale tous les éléments après l'index vers la gauche
     items = {"A", "B", "C", "D", "E"};
-    items.RemoveOrdered(1);  // Removes "B", shifts C,D,E left
-    // items is now: ["A", "C", "D", "E"]  -- order preserved
+    items.RemoveOrdered(1);  // Supprime "B", décale C,D,E vers la gauche
+    // items est maintenant : ["A", "C", "D", "E"]  -- ordre préservé
 
-    // RemoveItem(value): finds the element and removes it (ordered)
+    // RemoveItem(value) : trouve l'élément et le supprime (ordonné)
     items = {"A", "B", "C", "D", "E"};
     items.RemoveItem("C");
-    // items is now: ["A", "B", "D", "E"]
+    // items est maintenant : ["A", "B", "D", "E"]
 
-    // Clear: remove all elements
+    // Clear : supprimer tous les éléments
     items.Clear();
     // items.Count() == 0
 }
 ```
 
-### Sizing and Capacity
+### Dimensionnement et capacité
 
 ```c
 void SizingArrays()
 {
     array<int> data = new array<int>;
 
-    // Reserve: pre-allocate internal capacity (does NOT change Count)
-    // Use when you know how many elements you will add
+    // Reserve : pré-allouer la capacité interne (ne change PAS Count)
+    // Utiliser quand vous savez combien d'éléments vous allez ajouter
     data.Reserve(100);
-    // data.Count() == 0, but internal buffer is ready for 100 elements
+    // data.Count() == 0, mais le buffer interne est prêt pour 100 éléments
 
-    // Redimensionner: change the Count, filling new slots with default values
+    // Resize : changer le Count, remplir les nouveaux emplacements avec les valeurs par défaut
     data.Resize(10);
-    // data.Count() == 10, all elements are 0
+    // data.Count() == 10, tous les éléments sont 0
 
-    // Redimensionner smaller truncates
+    // Resize plus petit tronque
     data.Resize(5);
     // data.Count() == 5
 }
 ```
 
-### Ordering and Shuffling
+### Tri et mélange
 
 ```c
 void OrderingArrays()
 {
     array<int> numbers = {5, 2, 8, 1, 9, 3};
 
-    // Sort ascending
+    // Tri croissant
     numbers.Sort();
-    // numbers: [1, 2, 3, 5, 8, 9]
+    // numbers : [1, 2, 3, 5, 8, 9]
 
-    // Sort descending
+    // Tri décroissant
     numbers.Sort(true);
-    // numbers: [9, 8, 5, 3, 2, 1]
+    // numbers : [9, 8, 5, 3, 2, 1]
 
-    // Invert (reverse) the array
+    // Inverser le tableau
     numbers = {1, 2, 3, 4, 5};
     numbers.Invert();
-    // numbers: [5, 4, 3, 2, 1]
+    // numbers : [5, 4, 3, 2, 1]
 
-    // Shuffle randomly
+    // Mélanger aléatoirement
     numbers.ShuffleArray();
-    // numbers: [3, 1, 5, 2, 4]  (random order)
+    // numbers : [3, 1, 5, 2, 4]  (ordre aléatoire)
 }
 ```
 
-### Copying
+### Copie
 
 ```c
 void CopyingArrays()
 {
     array<string> original = {"A", "B", "C"};
 
-    // Copy: replaces all contents with a copy of another array
+    // Copy : remplace tout le contenu par une copie d'un autre tableau
     array<string> copy = new array<string>;
     copy.Copy(original);
-    // copy: ["A", "B", "C"]
-    // Modifying copy does NOT affect original
+    // copy : ["A", "B", "C"]
+    // Modifier copy n'affecte PAS original
 
-    // InsertAll: appends (does not replace)
+    // InsertAll : ajoute (ne remplace pas)
     array<string> combined = {"X", "Y"};
     combined.InsertAll(original);
-    // combined: ["X", "Y", "A", "B", "C"]
+    // combined : ["X", "Y", "A", "B", "C"]
 }
 ```
 
-### Debugging
+### Debug
 
 ```c
 void DebuggingArrays()
 {
     array<string> items = {"Bandage", "Morphine", "Saline"};
 
-    // Debug: prints all elements to script log
+    // Debug : affiche tous les éléments dans le log de script
     items.Debug();
     // Sortie :
     // [0] => Bandage
@@ -322,9 +322,9 @@ void DebuggingArrays()
 
 ---
 
-## Itération des tableaux
+## Itérer les tableaux
 
-### for Loop (Index-Based)
+### Boucle for (basée sur l'index)
 
 ```c
 void ForLoopIteration()
@@ -341,7 +341,7 @@ void ForLoopIteration()
 }
 ```
 
-### foreach (Value Only)
+### foreach (valeur seulement)
 
 ```c
 void ForEachValue()
@@ -358,7 +358,7 @@ void ForEachValue()
 }
 ```
 
-### foreach (Index + Value)
+### foreach (index + valeur)
 
 ```c
 void ForEachIndexValue()
@@ -375,7 +375,7 @@ void ForEachIndexValue()
 }
 ```
 
-### Real-World Example: Finding the Nearest Player
+### Exemple du monde réel : Trouver le joueur le plus proche
 
 ```c
 PlayerBase FindNearestPlayer(vector origin, float maxRange)
@@ -409,11 +409,11 @@ PlayerBase FindNearestPlayer(vector origin, float maxRange)
 
 ---
 
-## Maps: `map<K,V>`
+## Maps : `map<K,V>`
 
-Maps store key-value pairs. They are used when you need to look up a value by a key --- player data by UID, item prices by class name, permissions by role name, and so on.
+Les maps stockent des paires clé-valeur. Elles sont utilisées quand vous devez chercher une valeur par une clé --- données de joueur par UID, prix d'objet par nom de classe, permissions par nom de rôle, etc.
 
-### Creation
+### Création
 
 ```c
 void CreateMaps()
@@ -421,49 +421,40 @@ void CreateMaps()
     // Création standard
     map<string, int> prices = new map<string, int>;
 
-    // Maps de différents types
+    // Maps de divers types
     map<string, float> multipliers = new map<string, float>;
     map<int, string> idToName = new map<int, string>;
     map<string, ref array<string>> categories = new map<string, ref array<string>>;
 }
 ```
 
-### Pre-defined Map Typedefs
-
-```c
-typedef map<string, int>     TStringIntMap;
-typedef map<string, string>  TStringStringMap;
-typedef map<int, string>     TIntStringMap;
-typedef map<string, float>   TStringFloatMap;
-```
-
 ---
 
-## Complete Map Method Reference
+## Référence complète des méthodes de map
 
-### Inserting and Updating
+### Insertion et mise à jour
 
 ```c
 void MapInsertUpdate()
 {
     map<string, int> inventory = new map<string, int>;
 
-    // Insert: add a new key-value pair
-    // Returns true if the key was new, false if it already existed
-    bool isNew = inventory.Insert("Bandage", 5);    // true (new key)
-    isNew = inventory.Insert("Bandage", 10);         // false (key exists, value NOT updated)
-    // inventory["Bandage"] is still 5!
+    // Insert : ajouter une nouvelle paire clé-valeur
+    // Retourne true si la clé est nouvelle, false si elle existe déjà
+    bool isNew = inventory.Insert("Bandage", 5);    // true (nouvelle clé)
+    isNew = inventory.Insert("Bandage", 10);         // false (clé existe, valeur NON mise à jour)
+    // inventory["Bandage"] est toujours 5 !
 
-    // Set: insert OR update (this is what you usually want)
-    inventory.Set("Bandage", 10);    // Now inventory["Bandage"] == 10
-    inventory.Set("Morphine", 3);    // New key added
-    inventory.Set("Morphine", 7);    // Existing key updated to 7
+    // Set : insérer OU mettre à jour (c'est ce que vous voulez habituellement)
+    inventory.Set("Bandage", 10);    // Maintenant inventory["Bandage"] == 10
+    inventory.Set("Morphine", 3);    // Nouvelle clé ajoutée
+    inventory.Set("Morphine", 7);    // Clé existante mise à jour à 7
 }
 ```
 
-**Distinction critique :** `Insert()` does **not** update existing keys. `Set()` does. When in doubt, use `Set()`.
+**Distinction critique :** `Insert()` ne met **pas** à jour les clés existantes. `Set()` le fait. En cas de doute, utilisez `Set()`.
 
-### Accessing Values
+### Accéder aux valeurs
 
 ```c
 void MapAccess()
@@ -473,25 +464,25 @@ void MapAccess()
     prices.Set("M4A1", 7500);
     prices.Set("Mosin", 2000);
 
-    // Get: returns value, or default (0 for int) if key not found
+    // Get : retourne la valeur, ou la valeur par défaut (0 pour int) si la clé n'est pas trouvée
     int akmPrice = prices.Get("AKM");         // 5000
-    int falPrice = prices.Get("FAL");          // 0 (not found, returns default)
+    int falPrice = prices.Get("FAL");          // 0 (non trouvé, retourne la valeur par défaut)
 
-    // Find: safe access, returns true if key exists and sets the out parameter
+    // Find : accès sûr, retourne true si la clé existe et définit le paramètre out
     int price;
     bool found = prices.Find("M4A1", price);  // found == true, price == 7500
-    bool notFound = prices.Find("SVD", price); // notFound == false, price unchanged
+    bool notFound = prices.Find("SVD", price); // notFound == false, price inchangé
 
-    // Contains: check if key exists (no value retrieval)
+    // Contains : vérifier si la clé existe (pas de récupération de valeur)
     bool hasAKM = prices.Contains("AKM");     // true
     bool hasFAL = prices.Contains("FAL");     // false
 
-    // Count: number of key-value pairs
+    // Count : nombre de paires clé-valeur
     int count = prices.Count();  // 3
 }
 ```
 
-### Removing
+### Suppression
 
 ```c
 void MapRemove()
@@ -501,19 +492,19 @@ void MapRemove()
     data.Set("b", 2);
     data.Set("c", 3);
 
-    // Remove: remove by key
+    // Remove : supprimer par clé
     data.Remove("b");
-    // data now has: {"a": 1, "c": 3}
+    // data a maintenant : {"a": 1, "c": 3}
 
-    // Clear: remove all entries
+    // Clear : supprimer toutes les entrées
     data.Clear();
     // data.Count() == 0
 }
 ```
 
-### Index-Based Access
+### Accès basé sur l'index
 
-Maps support positional access, but it is `O(n)` --- use it for iteration, not frequent lookups.
+Les maps supportent l'accès positionnel, mais c'est en `O(n)` --- utilisez-le pour l'itération, pas pour les recherches fréquentes.
 
 ```c
 void MapIndexAccess()
@@ -523,7 +514,7 @@ void MapIndexAccess()
     data.Set("beta", 2);
     data.Set("gamma", 3);
 
-    // Access by internal index (O(n), order is insertion order)
+    // Accès par index interne (O(n), l'ordre est l'ordre d'insertion)
     for (int i = 0; i < data.Count(); i++)
     {
         string key = data.GetKey(i);
@@ -533,7 +524,7 @@ void MapIndexAccess()
 }
 ```
 
-### Extracting Keys and Values
+### Extraire les clés et valeurs
 
 ```c
 void MapExtraction()
@@ -543,23 +534,23 @@ void MapExtraction()
     prices.Set("M4A1", 7500);
     prices.Set("Mosin", 2000);
 
-    // Get all keys as an array
+    // Obtenir toutes les clés comme un tableau
     array<string> keys = prices.GetKeyArray();
-    // keys: ["AKM", "M4A1", "Mosin"]
+    // keys : ["AKM", "M4A1", "Mosin"]
 
-    // Get all values as an array
+    // Obtenir toutes les valeurs comme un tableau
     array<int> values = prices.GetValueArray();
-    // values: [5000, 7500, 2000]
+    // values : [5000, 7500, 2000]
 }
 ```
 
-### Real-World Example: Player Tracking
+### Exemple du monde réel : Suivi de joueurs
 
 ```c
 class PlayerTracker
 {
     protected ref map<string, vector> m_LastPositions;  // UID -> position
-    protected ref map<string, float> m_PlayTime;        // UID -> seconds
+    protected ref map<string, float> m_PlayTime;        // UID -> secondes
 
     void PlayerTracker()
     {
@@ -598,37 +589,37 @@ class PlayerTracker
 
 ---
 
-## Sets: `set<T>`
+## Sets : `set<T>`
 
-Sets are ordered collections similar to arrays, but with semantics oriented toward value-based operations (find and remove by value). They are less commonly used than arrays and maps.
+Les sets sont des collections ordonnées similaires aux tableaux, mais avec une sémantique orientée vers les opérations basées sur la valeur (trouver et supprimer par valeur). Ils sont moins couramment utilisés que les tableaux et les maps.
 
 ```c
 void SetExamples()
 {
     set<string> activeZones = new set<string>;
 
-    // Insert: add an element
+    // Insert : ajouter un élément
     activeZones.Insert("NWAF");
     activeZones.Insert("Tisy");
     activeZones.Insert("Balota");
 
-    // Find: returns index or -1
+    // Find : retourne l'index ou -1
     int idx = activeZones.Find("Tisy");    // 1
     int missing = activeZones.Find("Zelenogorsk");  // -1
 
-    // Get: access by index
+    // Get : accès par index
     string first = activeZones.Get(0);     // "NWAF"
 
     // Count
     int count = activeZones.Count();       // 3
 
-    // Remove by index
+    // Remove par index
     activeZones.Remove(0);
-    // activeZones: ["Tisy", "Balota"]
+    // activeZones : ["Tisy", "Balota"]
 
-    // RemoveItem: remove by value
+    // RemoveItem : supprimer par valeur
     activeZones.RemoveItem("Tisy");
-    // activeZones: ["Balota"]
+    // activeZones : ["Balota"]
 
     // Clear
     activeZones.Clear();
@@ -637,20 +628,20 @@ void SetExamples()
 
 ### Quand utiliser Set vs Array
 
-En pratique, most DayZ modders use `array<T>` for almost everything because:
-- `set<T>` has fewer methods than `array<T>`
-- `array<T>` provides `Find()` for search and `RemoveItem()` for value-based removal
-- The API you need is typically on `array<T>` already
+En pratique, la plupart des moddeurs DayZ utilisent `array<T>` pour presque tout car :
+- `set<T>` a moins de méthodes que `array<T>`
+- `array<T>` fournit `Find()` pour la recherche et `RemoveItem()` pour la suppression basée sur la valeur
+- L'API dont vous avez besoin est typiquement déjà sur `array<T>`
 
-Use `set<T>` when your code semantically represents a set (no meaningful order, focused on membership testing), or when you encounter it in le DayZ vanilla code and need to interface with it.
+Utilisez `set<T>` quand votre code représente sémantiquement un ensemble (pas d'ordre significatif, focalisé sur les tests d'appartenance), ou quand vous le rencontrez dans le code vanilla DayZ et devez interagir avec lui.
 
 ---
 
-## Itération des maps
+## Itérer les maps
 
-Maps support `foreach` for convenient iteration:
+Les maps supportent `foreach` pour une itération pratique :
 
-### foreach with Key-Value
+### foreach avec clé-valeur
 
 ```c
 void IterateMap()
@@ -660,7 +651,7 @@ void IterateMap()
     scores.Set("Bob", 230);
     scores.Set("Charlie", 180);
 
-    // foreach with key and value
+    // foreach avec clé et valeur
     foreach (string name, int score : scores)
     {
         Print(string.Format("%1: %2 points", name, score));
@@ -671,41 +662,23 @@ void IterateMap()
 }
 ```
 
-### Index-Based for Loop
-
-```c
-void IterateMapByIndex()
-{
-    map<string, int> scores = new map<string, int>;
-    scores.Set("Alice", 150);
-    scores.Set("Bob", 230);
-
-    for (int i = 0; i < scores.Count(); i++)
-    {
-        string key = scores.GetKey(i);
-        int val = scores.GetElement(i);
-        Print(string.Format("%1 = %2", key, val));
-    }
-}
-```
-
 ---
 
 ## Collections imbriquées
 
-Collections can contain other collections. When storing reference types (like arrays) inside a map, use `ref` to manage ownership.
+Les collections peuvent contenir d'autres collections. Quand vous stockez des types référence (comme des tableaux) dans une map, utilisez `ref` pour gérer la propriété.
 
 ```c
 class LootTable
 {
-    // Map from category name to list of class names
+    // Map du nom de catégorie vers la liste de noms de classes
     protected ref map<string, ref array<string>> m_Categories;
 
     void LootTable()
     {
         m_Categories = new map<string, ref array<string>>;
 
-        // Create category arrays
+        // Créer les tableaux de catégorie
         ref array<string> medical = new array<string>;
         medical.Insert("Bandage");
         medical.Insert("Morphine");
@@ -737,137 +710,137 @@ class LootTable
 
 ## Bonnes pratiques
 
-- Always use `new` to instantiate collections before use -- `array<string> items;` is `null`, not empty.
-- Prefer `map.Set()` over `map.Insert()` for updates -- `Insert` silently ignores existing keys.
-- When removing elements during iteration, use a backward `for` loop or build a separate removal list -- never modify a collection inside `foreach`.
-- Use `Reserve()` when you know the expected element count ahead of time to avoid repeated internal re-allocations.
-- Guard every element access with `IsValidIndex()` or a `Count() > 0` check -- out-of-bounds access causes silent crashes.
+- Utilisez toujours `new` pour instancier les collections avant utilisation -- `array<string> items;` est `null`, pas vide.
+- Préférez `map.Set()` à `map.Insert()` pour les mises à jour -- `Insert` ignore silencieusement les clés existantes.
+- Quand vous supprimez des éléments pendant l'itération, utilisez une boucle `for` inversée ou construisez une liste de suppression séparée -- ne modifiez jamais une collection à l'intérieur d'un `foreach`.
+- Utilisez `Reserve()` quand vous connaissez le nombre d'éléments attendu à l'avance pour éviter les réallocations internes répétées.
+- Protégez chaque accès aux éléments avec `IsValidIndex()` ou une vérification `Count() > 0` -- un accès hors limites cause des crashs silencieux.
 
 ---
 
 ## Observé dans les mods réels
 
-> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+> Patterns confirmés par l'étude du code source de mods DayZ professionnels.
 
-| Patron | Mod | Détail |
+| Pattern | Mod | Détail |
 |---------|-----|--------|
-| Backward `for` loop for removal | Expansion / COT | Always iterate `Count()-1` down to `0` when removing filtered elements |
-| `map<string, ref ClassName>` for registries | Dabs Framework | All manager registries use `ref` in map values to keep objects alive |
-| `TStringArray` typedef everywhere | Vanilla / VPP | Config parsing, chat messages, and loot tables all use `TStringArray` instead of `array<string>` |
-| Null + empty guard before access | Expansion Market | Every function receiving an array starts with `if (!arr \|\| arr.Count() == 0) return;` |
+| Boucle `for` inversée pour la suppression | Expansion / COT | Itère toujours de `Count()-1` à `0` quand on supprime des éléments filtrés |
+| `map<string, ref ClassName>` pour les registres | Dabs Framework | Tous les registres de gestionnaires utilisent `ref` dans les valeurs de map pour garder les objets vivants |
+| Typedef `TStringArray` partout | Vanilla / VPP | Le parsing de config, les messages de chat et les tables de loot utilisent tous `TStringArray` au lieu de `array<string>` |
+| Garde null + vide avant accès | Expansion Market | Chaque fonction recevant un tableau commence par `if (!arr \|\| arr.Count() == 0) return;` |
 
 ---
 
 ## Théorie vs Pratique
 
 | Concept | Théorie | Réalité |
-|---------|--------|---------|
-| `Remove(index)` is "fast remove" | Should just delete the element | It swaps with the last element first, silently re-ordering the array |
-| `map.Insert()` adds a key | Expected to update if key exists | Returns `false` and does nothing if the key is already present |
-| `set<T>` for unique collections | Should behave like a mathematical set | Most modders use `array<T>` with `Find()` instead because `set` has fewer methods |
+|---------|---------|---------|
+| `Remove(index)` est une « suppression rapide » | Devrait juste supprimer l'élément | Il échange avec le dernier élément d'abord, réordonnant silencieusement le tableau |
+| `map.Insert()` ajoute une clé | Devrait mettre à jour si la clé existe | Retourne `false` et ne fait rien si la clé est déjà présente |
+| `set<T>` pour les collections uniques | Devrait se comporter comme un ensemble mathématique | La plupart des moddeurs utilisent `array<T>` avec `Find()` à la place car `set` a moins de méthodes |
 
 ---
 
 ## Erreurs courantes
 
-### 1. `Remove` vs `RemoveOrdered`: The Silent Bug
+### 1. `Remove` vs `RemoveOrdered` : Le bug silencieux
 
-`Remove(index)` is fast but **changes the order** by swapping with the last element. If you are iterating forward and removing, this causes skipped elements:
+`Remove(index)` est rapide mais **change l'ordre** en échangeant avec le dernier élément. Si vous itérez en avant et supprimez, cela cause des éléments sautés :
 
 ```c
-// MAUVAIS : skips elements because Remove swaps order
+// MAUVAIS : saute des éléments car Remove échange l'ordre
 array<int> nums = {1, 2, 3, 4, 5};
 for (int i = 0; i < nums.Count(); i++)
 {
     if (nums[i] % 2 == 0)
-        nums.Remove(i);  // After removing index 1, element at index 1 is now "5"
-                          // and we skip to index 2, missing "5"
+        nums.Remove(i);  // Après avoir supprimé l'index 1, l'élément à l'index 1 est maintenant "5"
+                          // et on saute à l'index 2, ratant "5"
 }
 
-// BON : iterate backward when removing
+// BON : itérer en arrière quand on supprime
 array<int> nums2 = {1, 2, 3, 4, 5};
 for (int j = nums2.Count() - 1; j >= 0; j--)
 {
     if (nums2[j] % 2 == 0)
-        nums2.Remove(j);  // Sûr : removing from the end doesn't affect lower indices
+        nums2.Remove(j);  // Sûr : supprimer depuis la fin n'affecte pas les indices inférieurs
 }
 
-// AUSSI BON : use RemoveOrdered with backward iteration for order preservation
+// AUSSI BON : utiliser RemoveOrdered avec itération inversée pour préserver l'ordre
 array<int> nums3 = {1, 2, 3, 4, 5};
 for (int k = nums3.Count() - 1; k >= 0; k--)
 {
     if (nums3[k] % 2 == 0)
         nums3.RemoveOrdered(k);
 }
-// nums3: [1, 3, 5] in original order
+// nums3 : [1, 3, 5] dans l'ordre original
 ```
 
-### 2. Array Index Out of Bounds
+### 2. Index de tableau hors limites
 
-Enforce Script does not throw exceptions for out-of-bounds access --- it silently returns garbage or crashes. Always check bounds.
+Enforce Script ne lève pas d'exceptions pour l'accès hors limites --- il retourne silencieusement des données erronées ou crashe. Vérifiez toujours les limites.
 
 ```c
-// MAUVAIS : no bounds check
+// MAUVAIS : pas de vérification de limites
 array<string> items = {"A", "B", "C"};
-string fourth = items[3];  // INDÉFINI BEHAVIOR: index 3 doesn't exist
+string fourth = items[3];  // COMPORTEMENT INDÉFINI : l'index 3 n'existe pas
 
-// BON : check bounds
+// BON : vérifier les limites
 if (items.IsValidIndex(3))
 {
     string fourth2 = items[3];
 }
 
-// BON : check count
+// BON : vérifier le count
 if (items.Count() > 0)
 {
     string last = items[items.Count() - 1];
 }
 ```
 
-### 3. Forgetting to Create the Collection
+### 3. Oublier de créer la collection
 
-Collections are objects and must be instantiated with `new`:
+Les collections sont des objets et doivent être instanciées avec `new` :
 
 ```c
-// MAUVAIS : null reference crash
+// MAUVAIS : crash de référence null
 array<string> items;
-items.Insert("Test");  // PLANTAGE: items is null
+items.Insert("Test");  // CRASH : items est null
 
-// BON : create first
+// BON : créer d'abord
 array<string> items2 = new array<string>;
 items2.Insert("Test");
 
-// AUSSI BON : initializer list creates automatically
+// AUSSI BON : la liste d'initialisation crée automatiquement
 array<string> items3 = {"Test"};
 ```
 
-### 4. `Insert` vs `Set` on Maps
+### 4. `Insert` vs `Set` sur les maps
 
-`Insert` does not update existing keys --- it returns `false` and leaves the value unchanged:
+`Insert` ne met pas à jour les clés existantes --- il retourne `false` et laisse la valeur inchangée :
 
 ```c
 map<string, int> data = new map<string, int>;
 data.Insert("key", 100);
-data.Insert("key", 200);   // Returns false, value is STILL 100!
+data.Insert("key", 200);   // Retourne false, la valeur est TOUJOURS 100 !
 
-// Use Set to update
-data.Set("key", 200);      // Now value is 200
+// Utilisez Set pour mettre à jour
+data.Set("key", 200);      // Maintenant la valeur est 200
 ```
 
-### 5. Modifying a Collection During foreach
+### 5. Modifier une collection pendant un foreach
 
-Do not add or remove elements from a collection while iterating over it with `foreach`. Build a separate list of elements to remove, then remove them afterward.
+N'ajoutez ni ne supprimez d'éléments d'une collection pendant que vous itérez dessus avec `foreach`. Construisez une liste séparée d'éléments à supprimer, puis supprimez-les après.
 
 ```c
-// MAUVAIS : modifying during iteration
+// MAUVAIS : modification pendant l'itération
 array<string> items = {"A", "B", "C", "D"};
 foreach (string item : items)
 {
     if (item == "B")
-        items.RemoveItem(item);  // INDÉFINI: invalidates iterator
+        items.RemoveItem(item);  // INDÉFINI : invalide l'itérateur
 }
 
-// BON : collect then remove
+// BON : collecter puis supprimer
 array<string> toRemove = new array<string>;
 foreach (string item2 : items)
 {
@@ -880,14 +853,14 @@ foreach (string rem : toRemove)
 }
 ```
 
-### 6. Empty Array Safety
+### 6. Sécurité de tableau vide
 
-Always check if an array is both non-null and non-empty before accessing elements:
+Vérifiez toujours si un tableau est à la fois non-null et non-vide avant d'accéder aux éléments :
 
 ```c
 string GetFirstItem(array<string> items)
 {
-    // Guard clause: null check + empty check
+    // Clause de garde : vérification null + vérification vide
     if (!items || items.Count() == 0)
         return "";
 
@@ -899,55 +872,50 @@ string GetFirstItem(array<string> items)
 
 ## Exercices pratiques
 
-### Exercise 1: Inventory Counter
-Create a function that takes an `array<string>` of item class names (with duplicates) and returns a `map<string, int>` counting how many of each item exists.
+### Exercice 1 : Compteur d'inventaire
+Créez une fonction qui prend un `array<string>` de noms de classes d'objets (avec des doublons) et retourne un `map<string, int>` comptant combien de chaque objet existe.
 
-Example: `{"Bandage", "Morphine", "Bandage", "Saline", "Bandage"}` should produce `{"Bandage": 3, "Morphine": 1, "Saline": 1}`.
+### Exercice 2 : Déduplication de tableau
+Écrivez une fonction `array<string> RemoveDuplicates(array<string> input)` qui retourne un nouveau tableau avec les doublons supprimés, en préservant l'ordre de première occurrence.
 
-### Exercise 2: Array Deduplication
-Write a function `array<string> RemoveDuplicates(array<string> input)` that returns a new array with duplicates removed, preserving the order of first occurrence.
+### Exercice 3 : Classement
+Créez un `map<string, int>` de noms de joueurs vers des compteurs de kills. Écrivez des fonctions pour :
+1. Ajouter un kill pour un joueur (créer l'entrée si nécessaire)
+2. Obtenir les N meilleurs joueurs triés par kills
+3. Supprimer tous les joueurs avec zéro kill
 
-### Exercise 3: Leaderboard
-Create a `map<string, int>` of player names to kill counts. Write functions to:
-1. Add a kill for a player (creating the entry if needed)
-2. Get the top N players sorted by kills (hint: extract to arrays, sort)
-3. Remove all players with zero kills
+### Exercice 4 : Historique de positions
+Créez une classe qui stocke les 10 dernières positions d'un joueur (buffer circulaire utilisant un tableau).
 
-### Exercise 4: Position History
-Create a class that stores the last 10 positions of a player (ring buffer using an array). It should:
-1. Add a new position (dropping the oldest if at capacity)
-2. Return the total distance traveled across all stored positions
-3. Return the average position
-
-### Exercise 5: Two-Way Lookup
-Create a class with two maps that allows lookup in both directions: given a player UID, find their name; given a name, find their UID. Implement `Register(uid, name)`, `GetNameByUID(uid)`, `GetUIDByName(name)`, and `Unregister(uid)`.
+### Exercice 5 : Recherche bidirectionnelle
+Créez une classe avec deux maps permettant la recherche dans les deux sens : étant donné un UID de joueur, trouver son nom ; étant donné un nom, trouver son UID.
 
 ---
 
 ## Résumé
 
 | Collection | Type | Cas d'utilisation | Différence clé |
-|-----------|------|----------|----------------|
-| Static array | `int arr[5]` | Fixed-size, compile-time known | No resize, no methods |
-| Dynamic array | `array<T>` | General-purpose ordered list | Rich API, resizable |
-| Map | `map<K,V>` | Key-value lookup | `Set()` to insert/update |
-| Set | `set<T>` | Value-based membership | Simpler than array, less common |
+|-----------|------|-------------------|----------------|
+| Tableau statique | `int arr[5]` | Taille fixe, connue à la compilation | Pas de redimensionnement, pas de méthodes |
+| Tableau dynamique | `array<T>` | Liste ordonnée à usage général | API riche, redimensionnable |
+| Map | `map<K,V>` | Recherche clé-valeur | `Set()` pour insérer/mettre à jour |
+| Set | `set<T>` | Appartenance basée sur la valeur | Plus simple que array, moins courant |
 
 | Opération | Méthode | Notes |
-|-----------|--------|-------|
-| Add to end | `Insert(val)` | Returns index |
-| Add at position | `InsertAt(val, idx)` | Shifts right |
-| Remove fast | `Remove(idx)` | Swaps with last, **unordered** |
-| Remove ordered | `RemoveOrdered(idx)` | Shifts left, preserves order |
-| Remove by value | `RemoveItem(val)` | Finds then removes (ordered) |
-| Find | `Find(val)` | Returns index or -1 |
-| Count | `Count()` | Number of elements |
-| Bounds check | `IsValidIndex(idx)` | Returns bool |
-| Sort | `Sort()` / `Sort(true)` | Ascending / descending |
-| Random | `GetRandomElement()` | Returns random value |
-| foreach | `foreach (T val : arr)` | Value only |
-| foreach indexed | `foreach (int i, T val : arr)` | Index + value |
+|-----------|---------|-------|
+| Ajouter à la fin | `Insert(val)` | Retourne l'index |
+| Ajouter à une position | `InsertAt(val, idx)` | Décale à droite |
+| Suppression rapide | `Remove(idx)` | Échange avec le dernier, **non ordonné** |
+| Suppression ordonnée | `RemoveOrdered(idx)` | Décale à gauche, préserve l'ordre |
+| Supprimer par valeur | `RemoveItem(val)` | Trouve puis supprime (ordonné) |
+| Rechercher | `Find(val)` | Retourne l'index ou -1 |
+| Compter | `Count()` | Nombre d'éléments |
+| Vérification de limites | `IsValidIndex(idx)` | Retourne bool |
+| Trier | `Sort()` / `Sort(true)` | Croissant / décroissant |
+| Aléatoire | `GetRandomElement()` | Retourne une valeur aléatoire |
+| foreach | `foreach (T val : arr)` | Valeur seulement |
+| foreach indexé | `foreach (int i, T val : arr)` | Index + valeur |
 
 ---
 
-[Accueil](../../README.md) | [<< Précédent : Variables & Types](01-variables-types.md) | **Arrays, Maps & Sets** | [Suivant : Classes & Inheritance >>](03-classes-inheritance.md)
+[Accueil](../../README.md) | [<< Précédent : Variables & Types](01-variables-types.md) | **Tableaux, Maps & Sets** | [Suivant : Classes & Héritage >>](03-classes-inheritance.md)

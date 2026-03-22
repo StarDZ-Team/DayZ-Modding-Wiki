@@ -1,31 +1,35 @@
-# Chapter 3.7: Styles, Fonts & Images
+# 第 3.7 章：样式、字体与图像
 
-[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
+[首页](../../README.md) | [<< 上一章：事件处理](06-event-handling.md) | **样式、字体与图像** | [下一章：对话框与模态框 >>](08-dialogs-modals.md)
 
 ---
 
-## Styles
+本章涵盖 DayZ UI 的视觉构建模块：预定义样式、字体使用、文本尺寸、带图像集引用的图像控件，以及如何为你的模组创建自定义图像集。
 
-Styles are predefined visual appearances that can be applied to widgets via the `style` attribute in layout files. They control background rendering, borders, and overall look without requiring manual color and image configuration.
+---
 
-### Common Built-In Styles
+## 样式
 
-| Style Name | Description |
+样式是预定义的视觉外观，可以通过布局文件中的 `style` 属性应用到控件上。它们控制背景渲染、边框和整体外观，无需手动配置颜色和图像。
+
+### 常用内置样式
+
+| 样式名称 | 描述 |
 |---|---|
-| `blank` | No visual -- completely transparent background |
-| `Empty` | No background rendering |
-| `Default` | Default button/widget style with standard DayZ appearance |
-| `Colorable` | Style that can be tinted using `SetColor()` |
-| `rover_sim_colorable` | Colored panel style, commonly used for backgrounds |
-| `rover_sim_black` | Dark panel background |
-| `rover_sim_black_2` | Darker panel variant |
-| `Outline_1px_BlackBackground` | 1-pixel outline with solid black background |
-| `OutlineFilled` | Outline with a filled interior |
-| `DayZDefaultPanelRight` | DayZ default right panel style |
-| `DayZNormal` | DayZ normal text/widget style |
-| `MenuDefault` | Standard menu button style |
+| `blank` | 无视觉效果 -- 完全透明的背景 |
+| `Empty` | 无背景渲染 |
+| `Default` | 具有标准 DayZ 外观的默认按钮/控件样式 |
+| `Colorable` | 可以使用 `SetColor()` 进行着色的样式 |
+| `rover_sim_colorable` | 着色面板样式，常用于背景 |
+| `rover_sim_black` | 深色面板背景 |
+| `rover_sim_black_2` | 更深的面板变体 |
+| `Outline_1px_BlackBackground` | 1 像素边框配纯黑背景 |
+| `OutlineFilled` | 带填充内部的边框 |
+| `DayZDefaultPanelRight` | DayZ 默认右侧面板样式 |
+| `DayZNormal` | DayZ 标准文本/控件样式 |
+| `MenuDefault` | 标准菜单按钮样式 |
 
-### Using Styles in Layouts
+### 在布局中使用样式
 
 ```
 ButtonWidgetClass MyButton {
@@ -43,9 +47,9 @@ PanelWidgetClass Background {
 }
 ```
 
-### Style + Color Pattern
+### 样式 + 颜色模式
 
-The `Colorable` and `rover_sim_colorable` styles are designed to be tinted. Set the `color` attribute in the layout or call `SetColor()` in code:
+`Colorable` 和 `rover_sim_colorable` 样式设计用于着色。在布局中设置 `color` 属性或在代码中调用 `SetColor()`：
 
 ```
 PanelWidgetClass TitleBar {
@@ -58,14 +62,14 @@ PanelWidgetClass TitleBar {
 ```
 
 ```c
-// Change color at runtime
+// 在运行时更改颜色
 PanelWidget bar = PanelWidget.Cast(root.FindAnyWidget("TitleBar"));
 bar.SetColor(ARGB(240, 107, 165, 255));
 ```
 
-### Styles in Professional Mods
+### 专业模组中的样式
 
-DabsFramework dialogs use `Outline_1px_BlackBackground` for dialog containers:
+DabsFramework 对话框使用 `Outline_1px_BlackBackground` 作为对话框容器：
 
 ```
 WrapSpacerWidgetClass EditorDialog {
@@ -75,25 +79,25 @@ WrapSpacerWidgetClass EditorDialog {
 }
 ```
 
-Colorful UI uses `rover_sim_colorable` extensively for themed panels where the color is controlled by a centralized theme manager.
+Colorful UI 大量使用 `rover_sim_colorable`，用于由集中式主题管理器控制颜色的主题化面板。
 
 ---
 
-## Fonts
+## 字体
 
-DayZ includes several built-in fonts. Font paths are specified in the `font` attribute.
+DayZ 包含几种内置字体。字体路径通过 `font` 属性指定。
 
-### Built-In Font Paths
+### 内置字体路径
 
-| Font Path | Description |
+| 字体路径 | 描述 |
 |---|---|
-| `"gui/fonts/Metron"` | Standard UI font |
-| `"gui/fonts/Metron28"` | Standard font, 28pt variant |
-| `"gui/fonts/Metron-Bold"` | Bold variant |
-| `"gui/fonts/Metron-Bold58"` | Bold 58pt variant |
-| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) font -- crisp at any size |
+| `"gui/fonts/Metron"` | 标准 UI 字体 |
+| `"gui/fonts/Metron28"` | 标准字体，28pt 变体 |
+| `"gui/fonts/Metron-Bold"` | 粗体变体 |
+| `"gui/fonts/Metron-Bold58"` | 粗体 58pt 变体 |
+| `"gui/fonts/sdf_MetronBook24"` | SDF（有符号距离场）字体 -- 任何尺寸都清晰 |
 
-### Using Fonts in Layouts
+### 在布局中使用字体
 
 ```
 TextWidgetClass Title {
@@ -109,27 +113,27 @@ TextWidgetClass Body {
 }
 ```
 
-### Using Fonts in Code
+### 在代码中使用字体
 
 ```c
 TextWidget tw = TextWidget.Cast(root.FindAnyWidget("MyText"));
 tw.SetText("Hello");
-// Font is set in the layout, not changeable at runtime via script
+// 字体在布局中设置，无法在运行时通过脚本更改
 ```
 
-### SDF Fonts
+### SDF 字体
 
-SDF (Signed Distance Field) fonts render crisply at any zoom level, making them ideal for UI elements that may appear at various sizes. The `sdf_MetronBook24` font is the best choice for text that needs to look sharp across different UI scale settings.
+SDF（有符号距离场）字体在任何缩放级别下都能清晰渲染，使其非常适合可能以各种尺寸显示的 UI 元素。`sdf_MetronBook24` 字体是需要在不同 UI 缩放设置下保持清晰的文本的最佳选择。
 
 ---
 
-## Text Sizing: "exact text" vs. Proportional
+## 文本尺寸："exact text" 与比例
 
-DayZ text widgets support two sizing modes, controlled by the `"exact text"` attribute:
+DayZ 文本控件支持两种尺寸模式，由 `"exact text"` 属性控制：
 
-### Proportional Text (Default)
+### 比例文本（默认）
 
-When `"exact text" 0` (the default), the font size is determined by the widget's height. The text scales with the widget. This is the default behavior.
+当 `"exact text" 0`（默认值）时，字体大小由控件的高度决定。文本随控件缩放。这是默认行为。
 
 ```
 TextWidgetClass ScalingText {
@@ -140,9 +144,9 @@ TextWidgetClass ScalingText {
 }
 ```
 
-### Exact Text Size
+### 精确文本尺寸
 
-When `"exact text" 1`, the font size is a fixed pixel value set by `"exact text size"`:
+当 `"exact text" 1` 时，字体大小是由 `"exact text size"` 设置的固定像素值：
 
 ```
 TextWidgetClass FixedText {
@@ -155,31 +159,31 @@ TextWidgetClass FixedText {
 }
 ```
 
-### Which to Use?
+### 何时使用哪种？
 
-| Scenario | Recommendation |
+| 场景 | 建议 |
 |---|---|
-| HUD elements that scale with screen size | Proportional (default) |
-| Menu text at a specific size | `"exact text" 1` with `"exact text size"` |
-| Text that must match a specific font pixel size | `"exact text" 1` |
-| Text inside spacers/grids | Often proportional, determined by cell height |
+| 随屏幕尺寸缩放的 HUD 元素 | 比例（默认） |
+| 特定尺寸的菜单文本 | `"exact text" 1` 配合 `"exact text size"` |
+| 必须匹配特定字体像素大小的文本 | `"exact text" 1` |
+| 间距器/网格内的文本 | 通常使用比例，由单元格高度决定 |
 
-### Text-Related Size Attributes
+### 文本相关尺寸属性
 
-| Attribute | Effect |
+| 属性 | 效果 |
 |---|---|
-| `"size to text h" 1` | Widget width adjusts to fit the text |
-| `"size to text v" 1` | Widget height adjusts to fit the text |
-| `"text sharpness"` | Float value controlling rendering sharpness |
-| `wrap 1` | Enable word wrapping for text that exceeds widget width |
+| `"size to text h" 1` | 控件宽度调整以适应文本 |
+| `"size to text v" 1` | 控件高度调整以适应文本 |
+| `"text sharpness"` | 控制渲染锐度的浮点值 |
+| `wrap 1` | 为超出控件宽度的文本启用自动换行 |
 
-The `"size to text"` attributes are useful for labels and tags where the widget should be exactly as large as its text content.
+`"size to text"` 属性对于标签和标记很有用，使控件的大小恰好与其文本内容一致。
 
 ---
 
-## Text Alignment
+## 文本对齐
 
-Control where text appears within its widget using alignment attributes:
+使用对齐属性控制文本在控件内的显示位置：
 
 ```
 TextWidgetClass CenteredLabel {
@@ -189,36 +193,36 @@ TextWidgetClass CenteredLabel {
 }
 ```
 
-| Attribute | Values | Effect |
+| 属性 | 值 | 效果 |
 |---|---|---|
-| `"text halign"` | `left`, `center`, `right` | Horizontal text position within widget |
-| `"text valign"` | `top`, `center`, `bottom` | Vertical text position within widget |
+| `"text halign"` | `left`、`center`、`right` | 控件内文本的水平位置 |
+| `"text valign"` | `top`、`center`、`bottom` | 控件内文本的垂直位置 |
 
 ---
 
-## Text Outline
+## 文本描边
 
-Add outlines to text for readability on busy backgrounds:
+为文本添加描边以提高在复杂背景上的可读性：
 
 ```c
 TextWidget tw;
-tw.SetOutline(1, ARGB(255, 0, 0, 0));   // 1px black outline
+tw.SetOutline(1, ARGB(255, 0, 0, 0));   // 1 像素黑色描边
 
-int size = tw.GetOutlineSize();           // Read outline size
-int color = tw.GetOutlineColor();         // Read outline color (ARGB)
+int size = tw.GetOutlineSize();           // 读取描边大小
+int color = tw.GetOutlineColor();         // 读取描边颜色（ARGB）
 ```
 
 ---
 
 ## ImageWidget
 
-`ImageWidget` displays images from two sources: imageset references and dynamically loaded files.
+`ImageWidget` 从两种来源显示图像：图像集引用和动态加载的文件。
 
-### Imageset References
+### 图像集引用
 
-The most common way to display images. An imageset is a sprite atlas -- a single texture file with multiple named sub-images.
+最常用的显示图像方式。图像集是一个精灵图集 —— 一个包含多个命名子图像的单一纹理文件。
 
-In a layout file:
+在布局文件中：
 
 ```
 ImageWidgetClass MyIcon {
@@ -229,24 +233,24 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-The format is `"set:<imageset_name> image:<image_name>"`.
+格式为 `"set:<imageset_name> image:<image_name>"`。
 
-Common vanilla imagesets and images:
+常用的原版图像集和图像：
 
 ```
-"set:dayz_gui image:icon_pin"           -- Map pin icon
-"set:dayz_gui image:icon_refresh"       -- Refresh icon
-"set:dayz_gui image:icon_x"            -- Close/X icon
-"set:dayz_gui image:icon_missing"      -- Warning/missing icon
-"set:dayz_gui image:iconHealth0"       -- Health/plus icon
-"set:dayz_gui image:DayZLogo"          -- DayZ logo
-"set:dayz_gui image:Expand"            -- Expand arrow
-"set:dayz_gui image:Gradient"          -- Gradient strip
+"set:dayz_gui image:icon_pin"           -- 地图标记图标
+"set:dayz_gui image:icon_refresh"       -- 刷新图标
+"set:dayz_gui image:icon_x"            -- 关闭/X 图标
+"set:dayz_gui image:icon_missing"      -- 警告/缺失图标
+"set:dayz_gui image:iconHealth0"       -- 生命/加号图标
+"set:dayz_gui image:DayZLogo"          -- DayZ 徽标
+"set:dayz_gui image:Expand"            -- 展开箭头
+"set:dayz_gui image:Gradient"          -- 渐变条
 ```
 
-### Multiple Image Slots
+### 多图像槽位
 
-A single `ImageWidget` can hold multiple images in different slots (`image0`, `image1`, etc.) and switch between them:
+单个 `ImageWidget` 可以在不同的槽位（`image0`、`image1` 等）中保存多个图像并在它们之间切换：
 
 ```
 ImageWidgetClass StatusIcon {
@@ -257,13 +261,13 @@ ImageWidgetClass StatusIcon {
 
 ```c
 ImageWidget icon;
-icon.SetImage(0);    // Show image0 (missing icon)
-icon.SetImage(1);    // Show image1 (health icon)
+icon.SetImage(0);    // 显示 image0（缺失图标）
+icon.SetImage(1);    // 显示 image1（生命图标）
 ```
 
-### Loading Images from Files
+### 从文件加载图像
 
-Load images dynamically at runtime:
+在运行时动态加载图像：
 
 ```c
 ImageWidget img;
@@ -271,39 +275,39 @@ img.LoadImageFile(0, "MyMod/gui/textures/my_image.edds");
 img.SetImage(0);
 ```
 
-The path is relative to the mod's root directory. Supported formats include `.edds`, `.paa`, and `.tga` (though `.edds` is standard for DayZ).
+路径相对于模组的根目录。支持的格式包括 `.edds`、`.paa` 和 `.tga`（不过 `.edds` 是 DayZ 的标准格式）。
 
-### Image Blend Modes
+### 图像混合模式
 
-The `mode` attribute controls how the image blends with what's behind it:
+`mode` 属性控制图像与后面内容的混合方式：
 
-| Mode | Effect |
+| 模式 | 效果 |
 |---|---|
-| `blend` | Standard alpha blending (most common) |
-| `additive` | Colors add together (glow effects) |
-| `stretch` | Stretch to fill without blending |
+| `blend` | 标准 Alpha 混合（最常用） |
+| `additive` | 颜色叠加（发光效果） |
+| `stretch` | 拉伸填充，不进行混合 |
 
-### Image Mask Transitions
+### 图像遮罩过渡
 
-`ImageWidget` supports mask-based reveal transitions:
+`ImageWidget` 支持基于遮罩的揭示过渡效果：
 
 ```c
 ImageWidget img;
 img.LoadMaskTexture("gui/textures/mask_wipe.edds");
-img.SetMaskProgress(0.5);  // 50% revealed
+img.SetMaskProgress(0.5);  // 揭示 50%
 ```
 
-This is useful for loading bars, health displays, and reveal animations.
+这对于加载条、生命值显示和揭示动画很有用。
 
 ---
 
-## ImageSet Format
+## ImageSet 格式
 
-An imageset file (`.imageset`) defines named regions within a sprite atlas texture. DayZ supports two imageset formats.
+图像集文件（`.imageset`）定义了精灵图集纹理中的命名区域。DayZ 支持两种图像集格式。
 
-### DayZ Native Format
+### DayZ 原生格式
 
-Used by vanilla DayZ and most mods. This is **not** XML -- it uses the same brace-delimited format as layout files.
+被原版 DayZ 和大多数模组使用。这**不是** XML —— 它使用与布局文件相同的花括号分隔格式。
 
 ```
 ImageSetClass {
@@ -338,16 +342,16 @@ ImageSetClass {
 }
 ```
 
-Key fields:
-- `Name` -- Imageset name (used in `"set:<name>"`)
-- `RefSize` -- Reference size of the source texture in pixels (width height)
-- `path` -- Path to the texture file (`.edds`)
-- `mpix` -- Mipmap level (0 = standard resolution, 1 = 2x resolution)
-- Each image entry defines `Name`, `Pos` (x y in pixels), and `Size` (width height in pixels)
+关键字段：
+- `Name` -- 图像集名称（在 `"set:<name>"` 中使用）
+- `RefSize` -- 源纹理的参考大小（像素，宽度 高度）
+- `path` -- 纹理文件的路径（`.edds`）
+- `mpix` -- Mipmap 级别（0 = 标准分辨率，1 = 2x 分辨率）
+- 每个图像条目定义 `Name`、`Pos`（x y，像素）和 `Size`（宽度 高度，像素）
 
-### XML Format
+### XML 格式
 
-Some mods (including some DayZ Expansion modules) use an XML-based imageset format:
+一些模组（包括部分 DayZ Expansion 模块）使用基于 XML 的图像集格式：
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -358,23 +362,23 @@ Some mods (including some DayZ Expansion modules) use an XML-based imageset form
 </imageset>
 ```
 
-Both formats accomplish the same thing. The native format is used by vanilla DayZ; the XML format is sometimes easier to read and edit by hand.
+两种格式实现的功能相同。原生格式被原版 DayZ 使用；XML 格式有时更容易手动阅读和编辑。
 
 ---
 
-## Creating Custom Imagesets
+## 创建自定义图像集
 
-To create your own imageset for a mod:
+要为你的模组创建自己的图像集：
 
-### Step 1: Create the Sprite Atlas Texture
+### 步骤 1：创建精灵图集纹理
 
-Use an image editor (Photoshop, GIMP, etc.) to create a single texture that contains all your icons/images arranged on a grid. Common sizes are 256x256, 512x512, or 1024x1024 pixels.
+使用图像编辑器（Photoshop、GIMP 等）创建一个包含所有图标/图像的单一纹理，排列在网格上。常见尺寸为 256x256、512x512 或 1024x1024 像素。
 
-Save as `.tga`, then convert to `.edds` using DayZ Tools (TexView2 or the ImageTool).
+保存为 `.tga`，然后使用 DayZ Tools（TexView2 或 ImageTool）转换为 `.edds`。
 
-### Step 2: Create the Imageset File
+### 步骤 2：创建图像集文件
 
-Create a `.imageset` file that maps named regions to positions in the texture:
+创建一个 `.imageset` 文件，将命名区域映射到纹理中的位置：
 
 ```
 ImageSetClass {
@@ -403,31 +407,31 @@ ImageSetClass {
 }
 ```
 
-### Step 3: Register in config.cpp
+### 步骤 3：在 config.cpp 中注册
 
-In your mod's `config.cpp`, register the imageset under `CfgMods`:
+在你的模组的 `config.cpp` 中，在 `CfgMods` 下注册图像集：
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        // ... other fields ...
+        // ... 其他字段 ...
         class defs
         {
             class imageSets
             {
                 files[] = { "MyMod/GUI/imagesets/mymod_icons.imageset" };
             };
-            // ... script modules ...
+            // ... 脚本模块 ...
         };
     };
 };
 ```
 
-### Step 4: Use in Layouts and Code
+### 步骤 4：在布局和代码中使用
 
-In layout files:
+在布局文件中：
 
 ```
 ImageWidgetClass MissionIcon {
@@ -437,19 +441,19 @@ ImageWidgetClass MissionIcon {
 }
 ```
 
-In code:
+在代码中：
 
 ```c
 ImageWidget icon;
-// Images from registered imagesets are available by set:name image:name
-// No additional loading step needed after config.cpp registration
+// 已注册图像集中的图像可通过 set:name image:name 格式使用
+// 在 config.cpp 注册后无需额外加载步骤
 ```
 
 ---
 
-## Color Theme Pattern
+## 颜色主题模式
 
-Professional mods centralize their color definitions in a theme class, then apply colors at runtime. This makes it easy to restyle the entire UI by changing one file.
+专业模组将颜色定义集中在主题类中，然后在运行时应用颜色。这使得只需更改一个文件就能轻松重新设计整个 UI 的样式。
 
 ```c
 class UIColor
@@ -465,7 +469,7 @@ class UIColor
 }
 ```
 
-Apply in code:
+在代码中应用：
 
 ```c
 titleBar.SetColor(UIColor.Primary());
@@ -473,43 +477,74 @@ statusText.SetColor(UIColor.Accent());
 errorText.SetColor(UIColor.Danger());
 ```
 
-This pattern (used by Colorful UI, MyMod, and others) means changing the entire UI color scheme requires editing only the theme class.
+这种模式（被 Colorful UI、MyMod 等使用）意味着更改整个 UI 配色方案只需编辑主题类即可。
 
 ---
 
-## 总结 of Visual Attributes by Widget Type
+## 按控件类型的视觉属性总结
 
-| Widget | Key Visual Attributes |
+| 控件 | 关键视觉属性 |
 |---|---|
-| Any widget | `color`, `visible`, `style`, `priority`, `inheritalpha` |
-| TextWidget | `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `wrap` |
-| ImageWidget | `image0`, `mode`, `"src alpha"`, `stretch`, `"flip u"`, `"flip v"` |
-| ButtonWidget | `text`, `style`, `switch toggle` |
-| PanelWidget | `color`, `style` |
+| 任何控件 | `color`、`visible`、`style`、`priority`、`inheritalpha` |
+| TextWidget | `text`、`font`、`"text halign"`、`"text valign"`、`"exact text"`、`"exact text size"`、`"bold text"`、`wrap` |
+| ImageWidget | `image0`、`mode`、`"src alpha"`、`stretch`、`"flip u"`、`"flip v"` |
+| ButtonWidget | `text`、`style`、`switch toggle` |
+| PanelWidget | `color`、`style` |
 | SliderWidget | `"fill in"` |
 | ProgressBarWidget | `style` |
 
 ---
 
-## Best Practices
+## 最佳实践
 
-1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by the engine.
+1. **尽可能使用图像集引用**而非直接文件路径 -- 图像集被引擎更高效地批量处理。
 
-2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at any scale.
+2. **使用 SDF 字体**（`sdf_MetronBook24`）用于需要在任何缩放下保持清晰的文本。
 
-3. **Use `"exact text" 1`** for UI text at specific pixel sizes; use proportional text for HUD elements that should scale.
+3. **使用 `"exact text" 1`** 用于特定像素大小的 UI 文本；使用比例文本用于应随缩放的 HUD 元素。
 
-4. **Centralize colors** in a theme class rather than hardcoding ARGB values throughout your code.
+4. **将颜色集中**在主题类中，而不是在代码中硬编码 ARGB 值。
 
-5. **Set `"src alpha" 1`** on image widgets to get proper transparency.
+5. **在图像控件上设置 `"src alpha" 1`** 以获得正确的透明度。
 
-6. **Register custom imagesets** in `config.cpp` so they are available globally without manual loading.
+6. **在 `config.cpp` 中注册自定义图像集**，使其无需手动加载即可全局使用。
 
-7. **Keep sprite atlases reasonably sized** -- 512x512 or 1024x1024 is typical. Larger textures waste memory if most of the space is empty.
+7. **保持精灵图集合理的大小** -- 512x512 或 1024x1024 是典型大小。更大的纹理如果大部分空间为空会浪费内存。
 
 ---
 
 ## 后续步骤
 
-- [3.1 Widget Types](01-widget-types.md) -- Review the full widget catalog
-- [3.6 Event Handling](06-event-handling.md) -- Make your styled widgets interactive
+- [3.8 对话框与模态框](08-dialogs-modals.md) -- 弹出窗口、确认提示和叠加面板
+- [3.1 控件类型](01-widget-types.md) -- 回顾完整的控件目录
+- [3.6 事件处理](06-event-handling.md) -- 使你的样式化控件具有交互性
+
+---
+
+## 理论与实践
+
+| 概念 | 理论 | 现实 |
+|---------|--------|---------|
+| SDF 字体可缩放到任何大小 | `sdf_MetronBook24` 在所有尺寸下都清晰 | 在大于约 10px 的尺寸下确实如此。低于该值时，SDF 字体可能比原始大小的位图字体看起来更模糊 |
+| `"exact text" 1` 提供像素完美的尺寸 | 字体以指定的精确像素大小渲染 | DayZ 应用内部缩放，因此 `"exact text size" 16` 在不同分辨率下可能渲染略有不同。请在 1080p 和 1440p 上测试 |
+| 内置样式满足所有需求 | `Default`、`blank`、`Colorable` 就够了 | 大多数专业模组定义自己的 `.styles` 文件，因为内置样式的视觉多样性有限 |
+| 图像集 XML 和原生格式等效 | 两者都定义精灵区域 | 原生花括号格式是引擎处理最快的。XML 格式可以工作但增加了解析步骤；生产环境使用原生格式 |
+| `SetColor()` 覆盖布局颜色 | 运行时颜色替换布局值 | `SetColor()` 对控件现有的视觉效果进行着色。在使用样式的控件上，着色与样式的基础颜色相乘，可能产生意外结果 |
+
+---
+
+## 兼容性与影响
+
+- **多模组：** 样式名称是全局的。如果两个模组注册了定义相同样式名称的 `.styles` 文件，最后加载的模组获胜。为自定义样式名称添加模组标识前缀（例如 `MyMod_PanelDark`）。
+- **性能：** 图像集在启动时一次性加载到 GPU 内存中。添加大型精灵图集（2048x2048+）会增加显存使用。保持图集在 512x512 或 1024x1024，如需更多则拆分为多个图像集。
+
+---
+
+## 在真实模组中的观察
+
+| 模式 | 模组 | 详情 |
+|---------|-----|--------|
+| 集中式 `UIColor` 主题类 | Colorful UI | 所有颜色通过静态函数定义在一个类中，使全局重新着色只需一次更改 |
+| 自定义 `.imageset` 用于模组图标 | Expansion Market | 为购买/出售/交易操作定义自定义图标的精灵图集 |
+| `rover_sim_colorable` 用于主题化面板 | COT、VPP Admin Tools | 面板使用此样式以便主题管理器可以在运行时更改颜色 |
+| SDF 字体用于 HUD 叠加 | Colorful UI | 使用 `sdf_MetronBook24` 确保 HUD 文本在所有 UI 缩放设置下保持清晰 |

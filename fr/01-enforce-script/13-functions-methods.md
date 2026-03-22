@@ -1,88 +1,72 @@
-# Chapitre 1.13: Functions & Methods
+# Chapitre 1.13 : Fonctions & Méthodes
 
-[Accueil](../../README.md) | [<< Précédent : Gotchas](12-gotchas.md) | **Functions & Methods**
+[Accueil](../../README.md) | [<< Précédent : Pièges](12-gotchas.md) | **Fonctions & Méthodes**
 
 ---
 
 ## Introduction
 
-Functions are the fundamental unit of behavior in Enforce Script. Every action a mod performs --- apparition an item, checking a player's health, sending an RPC, drawing a UI element --- lives inside a function. Understanding how to declare them, pass data in and out, and work with le moteur's special modifiers is essential for writing correct DayZ mods.
+Les fonctions sont l'unité fondamentale de comportement en Enforce Script. Chaque action qu'un mod effectue --- spawner un objet, vérifier la santé d'un joueur, envoyer un RPC, dessiner un élément UI --- vit dans une fonction. Comprendre comment les déclarer, passer des données en entrée et en sortie, et travailler avec les modificateurs spéciaux du moteur est essentiel pour écrire des mods DayZ corrects.
 
-Ce chapitre couvre function mechanics in depth: declaration syntax, parameter passing modes, return values, default parameters, proto native bindings, static vs instance methods, overriding, the `thread` keyword, and the `event` keyword. If Chapter 1.3 (Classes) taught you where functions live, this chapter teaches you how they work.
+Ce chapitre couvre les mécanismes des fonctions en profondeur : syntaxe de déclaration, modes de passage de paramètres, valeurs de retour, paramètres par défaut, liaisons proto native, méthodes statiques vs instance, l'override, le mot-clé `thread` et le mot-clé `event`. Si le Chapitre 1.3 (Classes) vous a appris où vivent les fonctions, ce chapitre vous apprend comment elles fonctionnent.
 
 ---
 
 ## Table des matières
 
-- [Function Declaration Syntax](#function-declaration-syntax)
-  - [Standalone Functions](#standalone-functions)
-  - [Instance Methods](#instance-methods)
-  - [Static Methods](#static-methods)
-- [Parameter Passing Modes](#parameter-passing-modes)
-  - [By Value (Default)](#by-value-default)
-  - [out Parameters](#out-parameters)
-  - [inout Parameters](#inout-parameters)
-  - [notnull Parameters](#notnull-parameters)
-- [Return Values](#return-values)
-- [Default Parameter Values](#default-parameter-values)
-- [Proto Native Methods (Engine Bindings)](#proto-native-methods-engine-bindings)
-- [Static vs Instance Methods](#static-vs-instance-methods)
-- [Method Overriding](#method-overriding)
-- [Method Overloading (Not Supported)](#method-overloading-not-supported)
-- [The event Keyword](#the-event-keyword)
-- [Thread Methods (Coroutines)](#thread-methods-coroutines)
-- [Deferred Calls with CallLater](#deferred-calls-with-calllater)
-- [Best Practices](#best-practices)
-- [Observed in Real Mods](#observed-in-real-mods)
-- [Theory vs Practice](#theory-vs-practice)
-- [Common Mistakes](#common-mistakes)
-- [Quick Reference Table](#quick-reference-table)
+- [Syntaxe de déclaration de fonction](#syntaxe-de-déclaration-de-fonction)
+  - [Fonctions autonomes](#fonctions-autonomes)
+  - [Méthodes d'instance](#méthodes-dinstance)
+  - [Méthodes statiques](#méthodes-statiques)
+- [Modes de passage de paramètres](#modes-de-passage-de-paramètres)
+  - [Par valeur (par défaut)](#par-valeur-par-défaut)
+  - [Paramètres out](#paramètres-out)
+  - [Paramètres inout](#paramètres-inout)
+  - [Paramètres notnull](#paramètres-notnull)
+- [Valeurs de retour](#valeurs-de-retour)
+- [Valeurs par défaut des paramètres](#valeurs-par-défaut-des-paramètres)
+- [Méthodes Proto Native (Liaisons moteur)](#méthodes-proto-native-liaisons-moteur)
+- [Méthodes statiques vs instance](#méthodes-statiques-vs-instance)
+- [Override de méthodes](#override-de-méthodes)
+- [Surcharge de méthodes (Non supportée)](#surcharge-de-méthodes-non-supportée)
+- [Le mot-clé event](#le-mot-clé-event)
+- [Méthodes Thread (Coroutines)](#méthodes-thread-coroutines)
+- [Appels différés avec CallLater](#appels-différés-avec-calllater)
+- [Bonnes pratiques](#bonnes-pratiques)
+- [Observé dans les mods réels](#observé-dans-les-mods-réels)
+- [Théorie vs Pratique](#théorie-vs-pratique)
+- [Erreurs courantes](#erreurs-courantes)
+- [Tableau de référence rapide](#tableau-de-référence-rapide)
 
 ---
 
-## Function Declaration Syntax
+## Syntaxe de déclaration de fonction
 
-Every function has a return type, a name, and a parameter list. The body is enclosed in braces.
+Chaque fonction a un type de retour, un nom et une liste de paramètres. Le corps est encadré par des accolades.
 
 ```
-ReturnType FunctionName(ParamType paramName, ...)
+TypeDeRetour NomDeFonction(TypeParam nomParam, ...)
 {
-    // body
+    // corps
 }
 ```
 
-### Standalone Functions
+### Fonctions autonomes
 
-Standalone (global) functions exist outside any class. They are rare in DayZ modding --- nearly all code lives inside classes --- but you will encounter a few in le vanilla scripts.
+Les fonctions autonomes (globales) existent en dehors de toute classe. Elles sont rares dans le modding DayZ --- presque tout le code vit dans des classes --- mais vous en rencontrerez quelques-unes dans les scripts vanilla.
 
 ```c
-// Standalone function (global scope)
+// Fonction autonome (portée globale)
 void PrintPlayerCount()
 {
     int count = GetGame().GetPlayers().Count();
     Print(string.Format("Players online: %1", count));
 }
-
-// Standalone function with return value
-string FormatTimestamp(int hours, int minutes)
-{
-    return string.Format("%1:%2", hours.ToStringLen(2), minutes.ToStringLen(2));
-}
 ```
 
-The vanilla engine defines several standalone utility functions:
+### Méthodes d'instance
 
-```c
-// From enscript.c — helper for string expressions
-string String(string s)
-{
-    return s;
-}
-```
-
-### Instance Methods
-
-The vast majority of functions in DayZ mods are instance methods --- they belong to a class and operate on that instance's data.
+La grande majorité des fonctions dans les mods DayZ sont des méthodes d'instance --- elles appartiennent à une classe et opèrent sur les données de cette instance.
 
 ```c
 class LootSpawner
@@ -107,11 +91,11 @@ class LootSpawner
 }
 ```
 
-Instance methods have implicit access to `this` --- a reference to the current object. You rarely need to write `this.` explicitly, but it can help disambiguate when a parameter has a similar name.
+Les méthodes d'instance ont un accès implicite à `this` --- une référence à l'objet courant.
 
-### Static Methods
+### Méthodes statiques
 
-Static methods belong to the class itself, not to any instance. Call them via `ClassName.Method()`. They cannot access instance fields or `this`.
+Les méthodes statiques appartiennent à la classe elle-même, pas à une instance. Appelez-les via `NomDeClasse.Methode()`. Elles ne peuvent pas accéder aux champs d'instance ni à `this`.
 
 ```c
 class MathHelper
@@ -129,66 +113,42 @@ class MathHelper
     }
 }
 
-// Usage:
+// Utilisation :
 float result = MathHelper.Lerp(0, 100, 0.75);  // 75.0
 ```
 
-Static methods are ideal for utility functions, factory methods, and singleton accessors. DayZ's vanilla code uses them extensively:
-
-```c
-// From DamageSystem (3_game/damagesystem.c)
-class DamageSystem
-{
-    static bool GetDamageZoneMap(EntityAI entity, out DamageZoneMap zoneMap)
-    {
-        // ...
-    }
-
-    static string GetDamageDisplayName(EntityAI entity, string zone)
-    {
-        // ...
-    }
-}
-```
+Les méthodes statiques sont idéales pour les fonctions utilitaires, les méthodes factory et les accesseurs singleton.
 
 ---
 
-## Parameter Passing Modes
+## Modes de passage de paramètres
 
-Enforce Script supports four parameter passing modes. Understanding them is critical because the wrong mode leads to silent bugs where data never reaches the caller.
+Enforce Script supporte quatre modes de passage de paramètres. Les comprendre est critique car le mauvais mode mène à des bugs silencieux où les données n'atteignent jamais l'appelant.
 
-### By Value (Default)
+### Par valeur (par défaut)
 
-When no modifier is specified, the parameter is passed **by value**. For primitives (`int`, `float`, `bool`, `string`, `vector`), a copy is made. Modifications inside the function do not affect the caller's variable.
+Quand aucun modificateur n'est spécifié, le paramètre est passé **par valeur**. Pour les primitives (`int`, `float`, `bool`, `string`, `vector`), une copie est faite. Les modifications à l'intérieur de la fonction n'affectent pas la variable de l'appelant.
 
 ```c
 void DoubleValue(int x)
 {
-    x = x * 2;  // modifies local copy only
+    x = x * 2;  // modifie la copie locale uniquement
 }
 
-// Usage:
+// Utilisation :
 int n = 5;
 DoubleValue(n);
-Print(n);  // still 5 --- the original is unchanged
+Print(n);  // toujours 5 --- l'original est inchangé
 ```
 
-For class types (objects), by-value passing still passes a **reference to the object** --- but the reference itself is copied. You can modify the object's fields, but you cannot reassign the reference to point to a different object.
+Pour les types classe (objets), le passage par valeur passe quand même une **référence à l'objet** --- mais la référence elle-même est copiée. Vous pouvez modifier les champs de l'objet, mais vous ne pouvez pas réassigner la référence pour pointer vers un objet différent.
+
+### Paramètres out
+
+Le mot-clé `out` marque un paramètre comme **sortie uniquement**. La fonction y écrit une valeur, et l'appelant reçoit cette valeur. La valeur initiale du paramètre est indéfinie --- ne la lisez pas avant d'écrire.
 
 ```c
-void RenameZone(SpawnZone zone)
-{
-    zone.SetName("NewName");  // this WORKS --- modifies the same object
-    zone = null;              // this does NOT affect the caller's variable
-}
-```
-
-### out Parameters
-
-The `out` keyword marks a parameter as **output-only**. The function writes a value into it, and the caller receives that value. The initial value of the parameter is undefined --- do not read it before writing.
-
-```c
-// out parameter — function fills the value
+// Paramètre out — la fonction remplit la valeur
 bool TryFindPlayer(string name, out PlayerBase player)
 {
     array<Man> players = new array<Man>;
@@ -208,7 +168,7 @@ bool TryFindPlayer(string name, out PlayerBase player)
     return false;
 }
 
-// Usage:
+// Utilisation :
 PlayerBase result;
 if (TryFindPlayer("John", result))
 {
@@ -216,25 +176,12 @@ if (TryFindPlayer("John", result))
 }
 ```
 
-The vanilla scripts use `out` extensively for engine-to-script data flow:
+### Paramètres inout
+
+Le mot-clé `inout` marque un paramètre qui est **à la fois lu et écrit** par la fonction. La valeur de l'appelant est disponible à l'intérieur de la fonction, et toute modification est visible par l'appelant après.
 
 ```c
-// From DayZPlayer (3_game/dayzplayer.c)
-proto native void GetCurrentCameraTransform(out vector position, out vector direction, out vector rotation);
-
-// From AIWorld (3_game/ai/aiworld.c)
-proto native bool RaycastNavMesh(vector from, vector to, PGFilter pgFilter, out vector hitPos, out vector hitNormal);
-
-// Multiple out parameters for look limits
-proto void GetLookLimits(out float pDown, out float pUp, out float pLeft, out float pRight);
-```
-
-### inout Parameters
-
-The `inout` keyword marks a parameter that is **both read and written** by the function. The caller's value is available inside the function, and any modifications are visible to the caller afterward.
-
-```c
-// inout — the function reads the current value and modifies it
+// inout — la fonction lit la valeur courante et la modifie
 void ClampHealth(inout float health)
 {
     if (health < 0)
@@ -243,65 +190,32 @@ void ClampHealth(inout float health)
         health = 100;
 }
 
-// Usage:
+// Utilisation :
 float hp = 150.0;
 ClampHealth(hp);
 Print(hp);  // 100.0
 ```
 
-Vanilla examples of `inout`:
+### Paramètres notnull
 
-```c
-// From enmath.c — smoothing function reads and writes velocity
-proto static float SmoothCD(float val, float target, inout float velocity[],
-    float smoothTime, float maxVelocity, float dt);
-
-// From enscript.c — parsing modifies the input string
-proto int ParseStringEx(inout string input, string token);
-
-// From Pawn (3_game/entities/pawn.c) — transform is read and modified
-event void GetTransform(inout vector transform[4])
-```
-
-### notnull Parameters
-
-The `notnull` keyword tells the compiler (and le moteur) that the parameter must not be `null`. If a null value is passed, le jeu will crash with an error rather than silently proceeding with invalid data.
+Le mot-clé `notnull` dit au compilateur (et au moteur) que le paramètre ne doit pas être `null`. Si une valeur null est passée, le jeu crashera avec une erreur plutôt que de procéder silencieusement avec des données invalides.
 
 ```c
 void ProcessEntity(notnull EntityAI entity)
 {
-    // Safe to use entity without null-checking — engine guarantees it
+    // Sûr d'utiliser entity sans vérification null — le moteur le garantit
     string name = entity.GetType();
     Print(name);
 }
 ```
 
-Vanilla uses `notnull` heavily in engine-facing functions:
-
-```c
-// From envisual.c
-proto native void SetBone(notnull IEntity ent, int bone, vector angles, vector trans, float scale);
-proto native bool GetBoneMatrix(notnull IEntity ent, int bone, vector mat[4]);
-
-// From DamageSystem
-static bool GetDamageZoneFromComponentName(notnull EntityAI entity, string component, out string damageZone);
-```
-
-You can combine `notnull` with `out`:
-
-```c
-// From universaltemperaturesourcelambdabaseimpl.c
-override void DryItemsInVicinity(UniversalTemperatureSourceSettings pSettings, vector position,
-    out notnull array<EntityAI> nearestObjects);
-```
-
 ---
 
-## Return Values
+## Valeurs de retour
 
-### Single Return Value
+### Valeur de retour unique
 
-Functions return a single value. The return type is declared before the function name.
+Les fonctions retournent une seule valeur. Le type de retour est déclaré avant le nom de la fonction.
 
 ```c
 float GetDistanceBetween(vector a, vector b)
@@ -310,32 +224,13 @@ float GetDistanceBetween(vector a, vector b)
 }
 ```
 
-### void (No Return)
+### void (Pas de retour)
 
-Use `void` for functions that perform an action without returning data.
+Utilisez `void` pour les fonctions qui effectuent une action sans retourner de données.
 
-```c
-void LogMessage(string msg)
-{
-    Print(string.Format("[MyMod] %1", msg));
-}
-```
+### Valeurs de retour multiples via paramètres out
 
-### Returning Objects
-
-When a function returns an object, it returns a **reference** (not a copy). The caller receives a pointer to the same object in memory.
-
-```c
-EntityAI SpawnItem(string className, vector pos)
-{
-    EntityAI item = EntityAI.Cast(GetGame().CreateObject(className, pos, false, false, true));
-    return item;  // caller gets a reference to the same object
-}
-```
-
-### Multiple Return Values via out Parameters
-
-When you need to return more than one value, use `out` parameters. This is a universal pattern in DayZ scripting.
+Quand vous devez retourner plus d'une valeur, utilisez des paramètres `out`. C'est un pattern universel dans le scripting DayZ.
 
 ```c
 void GetTimeComponents(float totalSeconds, out int hours, out int minutes, out int seconds)
@@ -345,228 +240,107 @@ void GetTimeComponents(float totalSeconds, out int hours, out int minutes, out i
     seconds = (int)(totalSeconds % 60);
 }
 
-// Usage:
+// Utilisation :
 int h, m, s;
 GetTimeComponents(3725, h, m, s);
 // h == 1, m == 2, s == 5
 ```
 
-### GOTCHA: JsonFileLoader Returns void
+### PIÈGE : JsonFileLoader retourne void
 
-A common trap: `JsonFileLoader<T>.JsonLoadFile()` returns `void`, not the loaded object. You must pass a pre-created object as a `ref` parameter.
+Un piège courant : `JsonFileLoader<T>.JsonLoadFile()` retourne `void`, pas l'objet chargé. Vous devez passer un objet pré-créé comme paramètre `ref`.
 
 ```c
-// INCORRECT — will not compile
+// FAUX — ne compilera pas
 MyConfig config = JsonFileLoader<MyConfig>.JsonLoadFile(path);
 
-// CORRECT — pass a ref object
+// CORRECT — passer un objet ref
 MyConfig config = new MyConfig;
 JsonFileLoader<MyConfig>.JsonLoadFile(path, config);
 ```
 
 ---
 
-## Default Parameter Values
+## Valeurs par défaut des paramètres
 
-Enforce Script supports default values for parameters. Parameters with defaults must come **after** all required parameters.
+Enforce Script supporte les valeurs par défaut pour les paramètres. Les paramètres avec des valeurs par défaut doivent venir **après** tous les paramètres requis.
 
 ```c
 void SpawnItem(string className, vector pos, float quantity = -1, bool withAttachments = true)
 {
-    // quantity defaults to -1 (full), withAttachments defaults to true
+    // quantity vaut -1 par défaut (plein), withAttachments vaut true par défaut
     EntityAI item = EntityAI.Cast(GetGame().CreateObject(className, pos, false, false, true));
     if (item && quantity >= 0)
         item.SetQuantity(quantity);
 }
 
-// All of these are valid calls:
-SpawnItem("AKM", myPos);                   // uses both defaults
-SpawnItem("AKM", myPos, 0.5);             // custom quantity, default attachments
-SpawnItem("AKM", myPos, -1, false);        // must specify quantity to reach attachments
-```
-
-### Default Values From Vanilla
-
-The vanilla scripts use default parameters extensively:
-
-```c
-// From Weather (3_game/weather.c)
-proto native void Set(float forecast, float time = 0, float minDuration = 0);
-proto native void SetDynVolFogDistanceDensity(float value, float time = 0);
-
-// From UAInput (3_game/inputapi/uainput.c)
-proto native float SyncedValue_ID(int action, bool check_focus = true);
-proto native bool SyncedPress(string action, bool check_focus = true);
-
-// From DbgUI (1_core/proto/dbgui.c)
-static bool FloatOverride(string id, inout float value, float min, float max,
-    int precision = 1000, bool sameLine = true);
-
-// From InputManager (2_gamelib/inputmanager.c)
-proto native external bool ActivateAction(string actionName, int duration = 0);
+// Tous ces appels sont valides :
+SpawnItem("AKM", myPos);                   // utilise les deux valeurs par défaut
+SpawnItem("AKM", myPos, 0.5);             // quantité personnalisée, accessoires par défaut
+SpawnItem("AKM", myPos, -1, false);        // doit spécifier quantity pour atteindre attachments
 ```
 
 ### Limitations
 
-1. **Literal values only** --- you cannot use expressions, function calls, or other variables as defaults:
-
-```c
-// INCORRECT — no expressions in defaults
-void MyFunc(float speed = Math.PI * 2)  // COMPILE ERROR
-
-// CORRECT — use a literal
-void MyFunc(float speed = 6.283)
-```
-
-2. **No named parameters** --- you cannot skip a parameter by name. To set the third default, you must provide all preceding parameters:
-
-```c
-void Configure(int a = 1, int b = 2, int c = 3) {}
-
-Configure(1, 2, 10);  // must specify a and b to set c
-// There is no syntax like Configure(c: 10)
-```
-
-3. **Default values for class types are restricted to `null` or `NULL`:**
-
-```c
-void DoWork(EntityAI target = null, string name = "")
-{
-    if (!target) return;
-    // ...
-}
-```
+1. **Valeurs littérales uniquement** --- vous ne pouvez pas utiliser d'expressions, d'appels de fonction ou d'autres variables comme valeurs par défaut
+2. **Pas de paramètres nommés** --- vous ne pouvez pas sauter un paramètre par nom
+3. **Les valeurs par défaut pour les types classe sont restreintes à `null` ou `NULL`**
 
 ---
 
-## Proto Native Methods (Engine Bindings)
+## Méthodes Proto Native (Liaisons moteur)
 
-Proto native methods are declared in script but **implemented in the C++ engine**. They form the bridge between your Enforce Script code and the DayZ game engine. You call them like normal methods, but you cannot see or modify their implementation.
+Les méthodes proto native sont déclarées en script mais **implémentées dans le moteur C++**. Elles forment le pont entre votre code Enforce Script et le moteur de jeu DayZ. Vous les appelez comme des méthodes normales, mais vous ne pouvez pas voir ni modifier leur implémentation.
 
-### Modifier Reference
+### Référence des modificateurs
 
-| Modifier | Meaning | Example |
-|----------|---------|---------|
-| `proto native` | Implemented in C++ engine code | `proto native void SetPosition(vector pos);` |
-| `proto native owned` | Returns a value the caller owns (manages memory) | `proto native owned string GetType();` |
-| `proto native external` | Defined in another module | `proto native external bool AddSettings(typename cls);` |
-| `proto volatile` | Has side effects; compiler must not optimize away | `proto volatile int Call(Class inst, string fn, void parm);` |
-| `proto` (without `native`) | Internal function, may or may not be native | `proto int ParseString(string input, out string tokens[]);` |
+| Modificateur | Signification | Exemple |
+|-------------|---------------|---------|
+| `proto native` | Implémenté dans le code C++ du moteur | `proto native void SetPosition(vector pos);` |
+| `proto native owned` | Retourne une valeur que l'appelant possède (gère la mémoire) | `proto native owned string GetType();` |
+| `proto native external` | Défini dans un autre module | `proto native external bool AddSettings(typename cls);` |
+| `proto volatile` | A des effets secondaires ; le compilateur ne doit pas optimiser | `proto volatile int Call(Class inst, string fn, void parm);` |
+| `proto` (sans `native`) | Fonction interne, peut être native ou non | `proto int ParseString(string input, out string tokens[]);` |
 
-### proto native
+### Appeler les méthodes Proto Native
 
-The most common modifier. These are straightforward engine calls.
-
-```c
-// Setting/getting position (Object)
-proto native void SetPosition(vector pos);
-proto native vector GetPosition();
-
-// AI pathfinding (AIWorld)
-proto native bool FindPath(vector from, vector to, PGFilter pgFilter, out TVectorArray waypoints);
-proto native bool SampleNavmeshPosition(vector position, float maxDistance, PGFilter pgFilter,
-    out vector sampledPosition);
-```
-
-### proto native owned
-
-The `owned` modifier means the return value is allocated by le moteur and **ownership is transferred to the script**. This is primarily used for `string` returns, where le moteur creates a new string that the script's garbage collector must later free.
+Vous les appelez comme n'importe quelle autre méthode. La règle clé : **n'essayez jamais d'override ou de redéfinir une méthode proto native**. Ce sont des liaisons moteur fixes.
 
 ```c
-// From Class (enscript.c) — returns a string the script now owns
-proto native owned external string ClassName();
-
-// From Widget (enwidgets.c)
-proto native owned string GetName();
-proto native owned string GetTypeName();
-proto native owned string GetStyleName();
-
-// From Object (3_game/entities/object.c)
-proto native owned string GetLODName(LOD lod);
-proto native owned string GetActionComponentName(int componentIndex, string geometry = "");
-```
-
-### proto native external
-
-The `external` modifier indicates the function is defined in a different script module. This allows cross-module method declarations.
-
-```c
-// From Settings (2_gamelib/settings.c)
-proto native external bool AddSettings(typename settingsClass);
-
-// From InputManager (2_gamelib/inputmanager.c)
-proto native external bool RegisterAction(string actionName);
-proto native external float LocalValue(string actionName);
-proto native external bool ActivateAction(string actionName, int duration = 0);
-
-// From Workbench API (1_core/workbenchapi.c)
-proto native external bool SetOpenedResource(string filename);
-proto native external bool Save();
-```
-
-### proto volatile
-
-The `volatile` modifier tells the compiler the function may have **side effects** or may **call back into script** (creating re-entrancy). The compiler must preserve full context when calling these.
-
-```c
-// From ScriptModule (enscript.c) — dynamic function calls that may invoke script
-proto volatile int Call(Class inst, string function, void parm);
-proto volatile int CallFunction(Class inst, string function, out void returnVal, void parm);
-
-// From typename (enconvert.c) — creates a new instance dynamically
-proto volatile Class Spawn();
-
-// Yielding control
-proto volatile void Idle();
-```
-
-### Calling Proto Native Methods
-
-You call them like any other method. The key rule: **never try to override or redefine a proto native method**. They are fixed engine bindings.
-
-```c
-// Calling proto native methods — no different from script methods
+// Appeler les méthodes proto native — pas différent des méthodes script
 Object obj = GetGame().CreateObject("AKM", pos, false, false, true);
 vector position = obj.GetPosition();
-string typeName = obj.GetType();     // owned string — returned to you
-obj.SetPosition(newPos);             // native void — no return
+string typeName = obj.GetType();     // chaîne owned — retournée à vous
+obj.SetPosition(newPos);             // native void — pas de retour
 ```
 
 ---
 
-## Static vs Instance Methods
+## Méthodes statiques vs instance
 
-### Quand utiliser Static
+### Quand utiliser static
 
-Use static methods when the function does not need any instance data:
+Utilisez les méthodes statiques quand la fonction n'a besoin d'aucune donnée d'instance :
 
 ```c
 class StringUtils
 {
-    // Pure utility — no state needed
+    // Utilitaire pur — pas d'état nécessaire
     static bool IsNullOrEmpty(string s)
     {
         return s == "" || s.Length() == 0;
     }
-
-    static string PadLeft(string s, int totalWidth, string padChar = "0")
-    {
-        while (s.Length() < totalWidth)
-            s = padChar + s;
-        return s;
-    }
 }
 ```
 
-**Common static use cases:**
-- **Utility functions** --- math helpers, string formatters, validation checks
-- **Factory methods** --- `Create()` that returns a new configured instance
-- **Singleton accessors** --- `GetInstance()` that returns the single instance
-- **Constants/lookups** --- `Init()` + `Cleanup()` for static data tables
+**Cas d'utilisation statiques courants :**
+- **Fonctions utilitaires** --- helpers math, formateurs de chaîne, vérifications de validation
+- **Méthodes factory** --- `Create()` qui retourne une nouvelle instance configurée
+- **Accesseurs singleton** --- `GetInstance()` qui retourne l'instance unique
 
-### Singleton Pattern (Static + Instance)
+### Pattern Singleton (Static + Instance)
 
-Many DayZ managers combine static and instance:
+Beaucoup de gestionnaires DayZ combinent statique et instance :
 
 ```c
 class NotificationManager
@@ -580,49 +354,24 @@ class NotificationManager
         return s_Instance;
     }
 
-    // Instance methods for actual work
+    // Méthodes d'instance pour le travail réel
     void ShowNotification(string text, float duration)
     {
         // ...
     }
 }
 
-// Usage:
+// Utilisation :
 NotificationManager.GetInstance().ShowNotification("Hello", 5.0);
-```
-
-### Quand utiliser Instance
-
-Use instance methods when the function needs access to the object's state:
-
-```c
-class SupplyDrop
-{
-    protected vector m_DropPosition;
-    protected float m_DropRadius;
-    protected ref array<string> m_LootTable;
-
-    // Needs m_DropPosition, m_DropRadius — must be instance
-    bool IsInDropZone(vector testPos)
-    {
-        return vector.Distance(m_DropPosition, testPos) <= m_DropRadius;
-    }
-
-    // Needs m_LootTable — must be instance
-    string GetRandomItem()
-    {
-        return m_LootTable.GetRandomElement();
-    }
-}
 ```
 
 ---
 
-## Method Overriding
+## Override de méthodes
 
-When a child class needs to change the behavior of a parent method, it uses the `override` keyword.
+Quand une classe enfant a besoin de changer le comportement d'une méthode parente, elle utilise le mot-clé `override`.
 
-### Basic Override
+### Override basique
 
 ```c
 class BaseModule
@@ -631,96 +380,37 @@ class BaseModule
     {
         Print("[BaseModule] Initialized");
     }
-
-    void OnUpdate(float dt)
-    {
-        // default: do nothing
-    }
 }
 
 class CombatModule extends BaseModule
 {
     override void OnInit()
     {
-        super.OnInit();  // call parent first
+        super.OnInit();  // appeler le parent d'abord
         Print("[CombatModule] Combat system ready");
     }
-
-    override void OnUpdate(float dt)
-    {
-        super.OnUpdate(dt);
-        // custom combat logic
-        CheckCombatState();
-    }
 }
 ```
 
-### Rules for Overriding
+### Règles pour l'override
 
-1. **`override` keyword is required** --- without it, you create a new method that hides the parent's, instead of replacing it.
+1. **Le mot-clé `override` est obligatoire** --- sans lui, vous créez une nouvelle méthode qui cache celle du parent
+2. **La signature doit correspondre exactement** --- même type de retour, mêmes types de paramètres, même nombre de paramètres
+3. **`super.NomMethode()` appelle le parent** --- utilisez-le pour étendre le comportement plutôt que le remplacer complètement
+4. **Les méthodes privées ne peuvent pas être overridées**
+5. **Les méthodes protégées peuvent être overridées**
 
-2. **Signature must match exactly** --- same return type, same parameter types, same parameter count.
+### PIÈGE : Oublier override
 
-3. **`super.MethodName()` calls the parent** --- use this to extend behavior rather than completely replace it.
-
-4. **Private methods cannot be overridden** --- they are invisible to child classes.
-
-5. **Protected methods can be overridden** --- child classes see and can override them.
-
-```c
-class Parent
-{
-    private void SecretMethod() {}    // cannot be overridden
-    protected void InternalWork() {}  // can be overridden by children
-    void PublicWork() {}              // can be overridden by anyone
-}
-
-class Child extends Parent
-{
-    // redéfinition void SecretMethod() {}   // COMPILE ERROR — private
-    override void InternalWork() {}      // OK — protected is visible
-    override void PublicWork() {}        // OK — public
-}
-```
-
-### GOTCHA: Forgetting override
-
-If you omit `override`, the compiler may emit a warning but will **not** error. Your method silently becomes a new method instead of replacing the parent's. The parent's version runs whenever the object is referenced through a parent-type variable.
-
-```c
-class Animal
-{
-    void Speak() { Print("..."); }
-}
-
-class Dog extends Animal
-{
-    // MAUVAIS : Missing override — creates a NEW method
-    void Speak() { Print("Woof!"); }
-
-    // BON : Properly overrides
-    override void Speak() { Print("Woof!"); }
-}
-```
+Si vous omettez `override`, le compilateur peut émettre un avertissement mais ne produira **pas** d'erreur. Votre méthode devient silencieusement une nouvelle méthode au lieu de remplacer celle du parent.
 
 ---
 
-## Method Overloading (Not Supported)
+## Surcharge de méthodes (Non supportée)
 
-**Enforce Script does not support method overloading.** You cannot have two methods with the same name but different parameter lists. Attempting this will cause a compile error.
+**Enforce Script ne supporte pas la surcharge de méthodes.** Vous ne pouvez pas avoir deux méthodes avec le même nom mais des listes de paramètres différentes. Tenter cela causera une erreur de compilation.
 
-```c
-class Calculator
-{
-    // COMPILE ERROR — duplicate method name
-    int Add(int a, int b) { return a + b; }
-    float Add(float a, float b) { return a + b; }  // NOT ALLOWED
-}
-```
-
-### Workaround 1: Different Method Names
-
-The most common approach is to use descriptive names:
+### Solution 1 : Noms de méthodes différents
 
 ```c
 class Calculator
@@ -730,94 +420,63 @@ class Calculator
 }
 ```
 
-### Workaround 2: The Ex() Convention
+### Solution 2 : La convention Ex()
 
-DayZ vanilla and mods follow a naming convention where an extended version of a method appends `Ex` to the name:
+DayZ vanilla et les mods suivent une convention de nommage où une version étendue d'une méthode ajoute `Ex` au nom :
 
 ```c
-// From vanilla scripts — base version vs extended version
+// Depuis les scripts vanilla — version de base vs version étendue
 void ExplosionEffects(Object source, Object directHit, int componentIndex);
 void ExplosionEffectsEx(Object source, Object directHit, int componentIndex,
     float energyFactor, float explosionFactor, HitInfo hitInfo);
-
-// From EffectManager
-static void EffectUnregister(Effect effect);
-static void EffectUnregisterEx(Effect effect);
-
-// From EntityAI
-void SplitIntoStackMax(EntityAI destination_entity, int slot_id);
-void SplitIntoStackMaxEx(EntityAI destination_entity, int slot_id);
 ```
 
-### Workaround 3: Default Parameters
+### Solution 3 : Paramètres par défaut
 
-If the difference is just optional parameters, use defaults instead:
+Si la différence n'est que des paramètres optionnels, utilisez les valeurs par défaut :
 
 ```c
 class Spawner
 {
-    // Instead of overloads, use defaults
     void SpawnAt(vector pos, float radius = 0, string filter = "")
     {
-        // one method handles all cases
+        // une seule méthode gère tous les cas
     }
 }
 ```
 
 ---
 
-## The event Keyword
+## Le mot-clé event
 
-The `event` keyword marks a method as an **engine event handler** --- a function that the C++ engine calls at specific moments (entity creation, animation events, physics callbacks, etc.). It is a hint for tooling (like Workbench) that the method should be exposed as a script event.
+Le mot-clé `event` marque une méthode comme **handler d'événement du moteur** --- une fonction que le moteur C++ appelle à des moments spécifiques (création d'entité, événements d'animation, callbacks physiques, etc.).
 
 ```c
-// From Pawn (3_game/entities/pawn.c)
+// Depuis Pawn (3_game/entities/pawn.c)
 protected event void OnPossess()
 {
-    // called by engine when a controller possesses this pawn
-}
-
-protected event void OnUnPossess()
-{
-    // called by engine when the controller releases this pawn
+    // appelé par le moteur quand un contrôleur possède ce pawn
 }
 
 event void GetTransform(inout vector transform[4])
 {
-    // engine calls this to get the entity's transform
-}
-
-// Event methods that supply data for networking
-protected event void ObtainMove(PawnMove pMove)
-{
-    // called by engine to gather movement input
+    // le moteur appelle ceci pour obtenir la transformation de l'entité
 }
 ```
 
-You typically `override` event methods in child classes rather than defining them from scratch:
+Vous overridez typiquement les méthodes event dans les classes enfants plutôt que de les définir de zéro.
 
-```c
-class MyVehicle extends Transport
-{
-    override event void GetTransform(inout vector transform[4])
-    {
-        // provide custom transform logic
-        super.GetTransform(transform);
-    }
-}
-```
-
-The key takeaway: `event` is a declaration modifier, not something you invoke. Le moteur calls event methods at the appropriate time.
+Le point clé : `event` est un modificateur de déclaration, pas quelque chose que vous invoquez. Le moteur appelle les méthodes event au moment approprié.
 
 ---
 
-## Thread Methods (Coroutines)
+## Méthodes Thread (Coroutines)
 
-The `thread` keyword creates a **coroutine** --- a function that can yield execution and resume later. Despite the name, Enforce Script is **single-threaded**. Thread methods are cooperative coroutines, not OS-level threads.
+Le mot-clé `thread` crée une **coroutine** --- une fonction qui peut céder l'exécution et reprendre plus tard. Malgré le nom, Enforce Script est **mono-thread**. Les méthodes thread sont des coroutines coopératives, pas des threads au niveau OS.
 
-### Declaring and Starting a Thread
+### Déclarer et démarrer un thread
 
-You start a thread by calling a function with the `thread` keyword preceding the call:
+Vous démarrez un thread en appelant une fonction avec le mot-clé `thread` précédant l'appel :
 
 ```c
 class Monitor
@@ -832,99 +491,65 @@ class Monitor
         while (true)
         {
             CheckStatus();
-            Sleep(1000);  // yield for 1000 milliseconds
+            Sleep(1000);  // céder pendant 1000 millisecondes
         }
     }
 }
 ```
 
-The `thread` keyword goes on the **call**, not the function declaration. The function itself is a normal function --- what makes it a coroutine is how you invoke it.
+Le mot-clé `thread` va sur **l'appel**, pas la déclaration de fonction. La fonction elle-même est une fonction normale --- ce qui en fait une coroutine est la façon dont vous l'invoquez.
 
-### Sleep() and Yielding
+### Quand utiliser les threads (et quand ne pas)
 
-Inside a thread function, `Sleep(milliseconds)` pauses execution and yields to other code. When the sleep time elapses, the thread resumes from where it left off.
+**Préférez `CallLater` et les timers aux threads.** Les coroutines thread ont des limitations :
+- Elles sont plus difficiles à déboguer
+- Elles consomment un emplacement de coroutine qui persiste jusqu'à complétion ou kill
+- Elles ne peuvent pas être sérialisées ou transférées à travers les limites réseau
 
-### Killing Threads
-
-You can terminate a running thread with `KillThread()`:
-
-```c
-// From enscript.c
-proto native int KillThread(Class owner, string name);
-
-// Usage:
-KillThread(this, "MonitorLoop");  // stops the MonitorLoop coroutine
-```
-
-The `owner` is the object that started the thread (or `null` for global threads). The `name` is the function name.
-
-### Quand utiliser Threads (and When Not To)
-
-**Prefer `CallLater` and timers over threads.** Thread coroutines have limitations:
-- They are harder to debug (stack traces are less clear)
-- They consume a coroutine slot that persists until completion or kill
-- They cannot be serialized or transferred across network boundaries
-
-Use threads only when you genuinely need a long-running loop with intermediate yields. For one-shot delayed actions, use `CallLater` (see below).
+Utilisez les threads uniquement quand vous avez véritablement besoin d'une boucle longue durée avec des cessions intermédiaires.
 
 ---
 
-## Deferred Calls with CallLater
+## Appels différés avec CallLater
 
-`CallLater` schedules a function call to execute after a delay. It is the primary alternative to thread coroutines and is used extensively in le DayZ vanilla.
+`CallLater` planifie un appel de fonction à exécuter après un délai. C'est l'alternative principale aux coroutines thread et est utilisé abondamment dans DayZ vanilla.
 
-### Syntax
+### Syntaxe
 
 ```c
-g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(FunctionToCall, delayMs, repeat, ...params);
+g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(FonctionAAppeler, delaiMs, repeter, ...params);
 ```
 
-| Parameter | Type | Description |
+| Paramètre | Type | Description |
 |-----------|------|-------------|
-| Function | `func` | The method to call |
-| Delay | `int` | Milliseconds before calling |
-| Repeat | `bool` | `true` to repeat at interval, `false` for one-shot |
-| Params | variadic | Parameters to pass to the function |
+| Function | `func` | La méthode à appeler |
+| Delay | `int` | Millisecondes avant l'appel |
+| Repeat | `bool` | `true` pour répéter à intervalle, `false` pour un tir unique |
+| Params | variadique | Paramètres à passer à la fonction |
 
-### Call Categories
+### Catégories d'appel
 
-| Category | Purpose |
-|----------|---------|
-| `CALL_CATEGORY_SYSTEM` | General-purpose, runs every frame |
-| `CALL_CATEGORY_GUI` | UI-related callbacks |
-| `CALL_CATEGORY_GAMEPLAY` | Gameplay logic callbacks |
+| Catégorie | Objectif |
+|----------|----------|
+| `CALL_CATEGORY_SYSTEM` | Usage général, s'exécute chaque frame |
+| `CALL_CATEGORY_GUI` | Callbacks liés à l'UI |
+| `CALL_CATEGORY_GAMEPLAY` | Callbacks de logique de gameplay |
 
-### Examples from Vanilla
+### Supprimer des appels planifiés
 
-```c
-// One-shot delayed call (3_game/entities/entityai.c)
-g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeferredInit, 34);
-
-// Repeated call — login countdown every 1 second (3_game/dayzgame.c)
-GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this.LoginTimeCountdown, 1000, true);
-
-// Delayed deletion with parameter (4_world/entities/explosivesbase)
-g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeleteSafe, delayFor * 1000, false);
-
-// UI delayed callback (3_game/gui/hints/uihintpanel.c)
-m_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(SlideshowThread, m_SlideShowDelay);
-```
-
-### Removing Queued Calls
-
-To cancel a scheduled call before it fires:
+Pour annuler un appel planifié avant qu'il ne se déclenche :
 
 ```c
-g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(FunctionToCall);
+g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(FonctionAAppeler);
 ```
 
 ---
 
 ## Bonnes pratiques
 
-1. **Keep functions short** --- aim for under 50 lines. If a function is longer, extract helper methods.
+1. **Gardez les fonctions courtes** --- visez moins de 50 lignes. Si une fonction est plus longue, extrayez des méthodes helper.
 
-2. **Use guard clauses for early return** --- check preconditions at the top and return early. This reduces nesting and makes the "happy path" easier to read.
+2. **Utilisez les clauses de garde pour le retour anticipé** --- vérifiez les préconditions en haut et retournez tôt. Cela réduit l'imbrication.
 
 ```c
 void ProcessPlayer(PlayerBase player)
@@ -933,152 +558,99 @@ void ProcessPlayer(PlayerBase player)
     if (!player.IsAlive()) return;
     if (!player.GetIdentity()) return;
 
-    // actual logic here, unnested
+    // logique réelle ici, non imbriquée
     string name = player.GetIdentity().GetName();
     // ...
 }
 ```
 
-3. **Prefer out parameters over complex return types** --- when a function needs to communicate success/failure plus data, use a `bool` return with `out` parameters.
+3. **Préférez les paramètres out aux types de retour complexes** --- quand une fonction doit communiquer succès/échec plus des données, utilisez un retour `bool` avec des paramètres `out`.
 
-4. **Use static for stateless utilities** --- if a method does not access `this`, make it `static`. This documents intent and allows calling without an instance.
+4. **Utilisez static pour les utilitaires sans état** --- si une méthode n'accède pas à `this`, rendez-la `static`.
 
-5. **Document proto native limitations** --- when wrapping a proto native call, note in comments what le moteur function can and cannot do.
+5. **Préférez CallLater aux coroutines thread** --- `CallLater` est plus simple, plus facile à annuler et moins sujet aux erreurs.
 
-6. **Prefer CallLater over thread coroutines** --- `CallLater` is simpler, easier to cancel, and less error-prone.
-
-7. **Always call super in overrides** --- unless you intentionally want to completely replace the parent behavior. DayZ's deep inheritance chains depend on `super` calls propagating through the hierarchy.
+6. **Appelez toujours super dans les overrides** --- sauf si vous voulez intentionnellement remplacer complètement le comportement parent.
 
 ---
 
 ## Observé dans les mods réels
 
-> Patrons confirmés par l'étude du code source de mods DayZ professionnels.
+> Patterns confirmés par l'étude du code source de mods DayZ professionnels.
 
-| Patron | Mod | Détail |
+| Pattern | Mod | Détail |
 |---------|-----|--------|
-| `TryGet___()` returning `bool` with `out` param | COT / Expansion | Consistent pattern for nullable lookups: return `true`/`false`, fill `out` param on success |
-| `MethodEx()` for extended signatures | Vanilla / Expansion Market | When an API needs more parameters, append `Ex` rather than breaking existing callers |
-| Static `Init()` + `Cleanup()` class methods | Expansion / VPP | Manager classes initialize static data in `Init()` and tear down in `Cleanup()`, called from mission lifecycle |
-| Guard clause `if (!GetGame()) return` at method start | COT Admin Tools | Every method that touches le moteur starts with null checks to avoid crashes during shutdown |
-| Singleton `GetInstance()` with lazy creation | COT / Expansion / Dabs | Managers expose `static ref` instance with `GetInstance()` accessor, created on first access |
+| `TryGet___()` retournant `bool` avec paramètre `out` | COT / Expansion | Pattern cohérent pour les recherches nullable |
+| `MethodEx()` pour les signatures étendues | Vanilla / Expansion Market | Quand une API a besoin de plus de paramètres, ajouter `Ex` plutôt que casser les appelants existants |
+| Méthodes de classe statiques `Init()` + `Cleanup()` | Expansion / VPP | Les classes gestionnaire initialisent les données statiques dans `Init()` et nettoient dans `Cleanup()` |
+| Clause de garde `if (!GetGame()) return` au début de méthode | COT Admin Tools | Chaque méthode touchant le moteur commence par des vérifications null |
+| Singleton `GetInstance()` avec création paresseuse | COT / Expansion / Dabs | Les gestionnaires exposent une instance `static ref` avec un accesseur `GetInstance()` |
 
 ---
 
 ## Théorie vs Pratique
 
 | Concept | Théorie | Réalité |
-|---------|--------|---------|
-| Method overloading | Standard OOP feature | Not supported; use `Ex()` suffix or default parameters instead |
-| `thread` creates OS threads | Keyword suggests parallelism | Single-threaded coroutines with cooperative yielding via `Sleep()` |
-| `out` parameters are write-only | Should not read initial value | Some vanilla code reads the `out` param before writing; safer to always treat as `inout` defensively |
-| `override` is optional | Could be inferred | Omitting it silently creates a new method instead of overriding; always include it |
-| Default parameter expressions | Should support function calls | Only literal values (`42`, `true`, `null`, `""`) are allowed; no expressions |
+|---------|---------|---------|
+| Surcharge de méthodes | Fonctionnalité OOP standard | Non supportée ; utilisez le suffixe `Ex()` ou les paramètres par défaut |
+| `thread` crée des threads OS | Le mot-clé suggère le parallélisme | Coroutines mono-thread avec cession coopérative via `Sleep()` |
+| Les paramètres `out` sont en écriture seule | Ne devrait pas lire la valeur initiale | Certains codes vanilla lisent le paramètre `out` avant d'écrire |
+| `override` est optionnel | Pourrait être inféré | L'omettre crée silencieusement une nouvelle méthode au lieu d'overrider |
+| Expressions dans les paramètres par défaut | Devrait supporter les appels de fonction | Seules les valeurs littérales sont autorisées |
 
 ---
 
 ## Erreurs courantes
 
-### 1. Forgetting override When Replacing a Parent Method
+### 1. Oublier override en remplaçant une méthode parente
 
-Without `override`, your method becomes a new method that hides the parent's. The parent's version will still be called when the object is referenced through a parent type.
+Sans `override`, votre méthode devient une nouvelle méthode qui cache celle du parent.
 
-```c
-// BAD — silently creates a new method
-class CustomPlayer extends PlayerBase
-{
-    void OnConnect() { Print("Custom!"); }
-}
+### 2. S'attendre à ce que les paramètres out soient pré-initialisés
 
-// GOOD — properly overrides
-class CustomPlayer extends PlayerBase
-{
-    override void OnConnect() { Print("Custom!"); }
-}
-```
+Un paramètre `out` n'a pas de valeur initiale garantie. Ne le lisez jamais avant d'écrire.
 
-### 2. Expecting out Parameters to Be Pre-initialized
+### 3. Essayer de surcharger les méthodes
 
-An `out` parameter has no guaranteed initial value. Never read it before writing.
+Enforce Script ne supporte pas la surcharge. Deux méthodes avec le même nom causent une erreur de compilation.
+
+### 4. Assigner le retour d'une fonction void
+
+Certaines fonctions (notamment `JsonFileLoader.JsonLoadFile`) retournent `void`. Essayer d'assigner leur résultat cause une erreur de compilation.
+
+### 5. Utiliser des expressions dans les paramètres par défaut
+
+Les valeurs par défaut des paramètres doivent être des littéraux à la compilation.
 
 ```c
-// BAD — reading out param before it's set
-void GetData(out int value)
-{
-    if (value > 0)  // INCORRECT — value is undefined here
-        return;
-    value = 42;
-}
-
-// GOOD — always write first, then read
-void GetData(out int value)
-{
-    value = 42;
-}
-```
-
-### 3. Trying to Overload Methods
-
-Enforce Script does not support overloading. Two methods with the same name cause a compile error.
-
-```c
-// COMPILE ERROR
-void Process(int id) {}
-void Process(string name) {}
-
-// CORRECT — use different names
-void ProcessById(int id) {}
-void ProcessByName(string name) {}
-```
-
-### 4. Assigning the Return of a void Function
-
-Some functions (notably `JsonFileLoader.JsonLoadFile`) return `void`. Trying to assign their result causes a compile error.
-
-```c
-// COMPILE ERROR — JsonLoadFile returns void
-MyConfig cfg = JsonFileLoader<MyConfig>.JsonLoadFile(path);
-
-// CORRECT
-MyConfig cfg = new MyConfig;
-JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);
-```
-
-### 5. Using Expressions in Default Parameters
-
-Default parameter values must be compile-time literals. Expressions, function calls, and variable references are not allowed.
-
-```c
-// COMPILE ERROR — expression in default
+// ERREUR DE COMPILATION — expression dans la valeur par défaut
 void SetTimeout(float seconds = GetDefaultTimeout()) {}
-void SetAngle(float rad = Math.PI) {}
 
-// CORRECT — literal values only
+// CORRECT — valeurs littérales uniquement
 void SetTimeout(float seconds = 30.0) {}
-void SetAngle(float rad = 3.14159) {}
 ```
 
-### 6. Forgetting super in Override Chains
+### 6. Oublier super dans les chaînes d'override
 
-DayZ's class hierarchies are deep. Omitting `super` in an override can break functionality several layers up the chain that you never even knew existed.
+Les hiérarchies de classes de DayZ sont profondes. Omettre `super` dans un override peut casser des fonctionnalités plusieurs couches plus haut dans la chaîne.
 
 ```c
-// BAD — breaks parent initialization
+// MAUVAIS — casse l'initialisation parente
 class MyMission extends MissionServer
 {
     override void OnInit()
     {
-        // forgot super.OnInit() — vanilla initialization never runs!
+        // oublié super.OnInit() — l'initialisation vanilla ne s'exécute jamais !
         Print("My mission started");
     }
 }
 
-// GOOD
+// BON
 class MyMission extends MissionServer
 {
     override void OnInit()
     {
-        super.OnInit();  // let vanilla + other mods initialize first
+        super.OnInit();  // laisser vanilla + les autres mods s'initialiser d'abord
         Print("My mission started");
     }
 }
@@ -1086,33 +658,33 @@ class MyMission extends MissionServer
 
 ---
 
-## Quick Reference Table
+## Tableau de référence rapide
 
 | Fonctionnalité | Syntaxe | Notes |
-|---------|--------|-------|
-| Instance method | `void DoWork()` | Has access to `this` |
-| Static method | `static void DoWork()` | Called via `ClassName.DoWork()` |
-| By-value param | `void Fn(int x)` | Copy for primitives; ref copy for objects |
-| `out` param | `void Fn(out int x)` | Write-only; caller receives value |
-| `inout` param | `void Fn(inout float x)` | Read + write; caller sees changes |
-| `notnull` param | `void Fn(notnull EntityAI e)` | Crashes on null |
-| Default value | `void Fn(int x = 5)` | Literals only, no expressions |
-| Override | `override void Fn()` | Must match parent signature |
-| Call parent | `super.Fn()` | Inside override body |
-| Proto native | `proto native void Fn()` | Implemented in C++ |
-| Owned return | `proto native owned string Fn()` | Script manages returned memory |
-| External | `proto native external void Fn()` | Defined in another module |
-| Volatile | `proto volatile void Fn()` | May callback into script |
-| Event | `event void Fn()` | Engine-invoked callback |
-| Thread start | `thread MyFunc()` | Starts coroutine (not OS thread) |
-| Kill thread | `KillThread(owner, "FnName")` | Stops a running coroutine |
-| Deferred call | `CallLater(Fn, delay, repeat)` | Preferred over threads |
-| `Ex()` convention | `void FnEx(...)` | Extended version of `Fn` |
+|----------------|---------|-------|
+| Méthode d'instance | `void DoWork()` | A accès à `this` |
+| Méthode statique | `static void DoWork()` | Appelée via `ClassName.DoWork()` |
+| Param par valeur | `void Fn(int x)` | Copie pour primitives ; copie de ref pour objets |
+| Paramètre `out` | `void Fn(out int x)` | Écriture seule ; l'appelant reçoit la valeur |
+| Paramètre `inout` | `void Fn(inout float x)` | Lecture + écriture ; l'appelant voit les changements |
+| Paramètre `notnull` | `void Fn(notnull EntityAI e)` | Crashe sur null |
+| Valeur par défaut | `void Fn(int x = 5)` | Littéraux uniquement, pas d'expressions |
+| Override | `override void Fn()` | Doit correspondre à la signature parente |
+| Appeler le parent | `super.Fn()` | À l'intérieur du corps d'override |
+| Proto native | `proto native void Fn()` | Implémenté en C++ |
+| Retour owned | `proto native owned string Fn()` | Le script gère la mémoire retournée |
+| External | `proto native external void Fn()` | Défini dans un autre module |
+| Volatile | `proto volatile void Fn()` | Peut rappeler dans le script |
+| Event | `event void Fn()` | Callback invoqué par le moteur |
+| Démarrer un thread | `thread MyFunc()` | Démarre une coroutine (pas un thread OS) |
+| Tuer un thread | `KillThread(owner, "FnName")` | Arrête une coroutine en cours |
+| Appel différé | `CallLater(Fn, delay, repeat)` | Préféré aux threads |
+| Convention `Ex()` | `void FnEx(...)` | Version étendue de `Fn` |
 
 ---
 
 ## Navigation
 
-| Previous | Up | Next |
-|----------|----|------|
-| [1.12 Gotchas](12-gotchas.md) | [Part 1: Enforce Script](../README.md) | -- |
+| Précédent | Haut | Suivant |
+|-----------|------|---------|
+| [1.12 Pièges](12-gotchas.md) | [Partie 1 : Enforce Script](../README.md) | -- |
