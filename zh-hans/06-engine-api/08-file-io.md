@@ -1,38 +1,38 @@
-# Chapter 6.8: File I/O & JSON
+# 第 6.8 章：文件 I/O 与 JSON
 
-[Home](../../README.md) | [<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
+[首页](../../README.md) | [<< 上一章：计时器与 CallQueue](07-timers.md) | **文件 I/O 与 JSON** | [下一章：网络与 RPC >>](09-networking.md)
 
 ---
 
 ## 简介
 
-DayZ provides file I/O operations for reading and writing text files, JSON serialization/deserialization, directory management, and file enumeration. All file operations use special path prefixes (`$profile:`, `$saves:`, `$mission:`) rather than absolute filesystem paths. This chapter covers every file operation available in Enforce Script.
+DayZ 提供了用于读写文本文件、JSON 序列化/反序列化、目录管理和文件枚举的文件 I/O 操作。所有文件操作使用特殊的路径前缀（`$profile:`、`$saves:`、`$mission:`）而非绝对文件系统路径。本章涵盖 Enforce Script 中所有可用的文件操作。
 
 ---
 
-## Path Prefixes
+## 路径前缀
 
-| Prefix | Location | Writable |
+| 前缀 | 位置 | 可写 |
 |--------|----------|----------|
-| `$profile:` | Server/client profile directory (e.g., `DayZServer/profiles/`) | Yes |
-| `$saves:` | Save directory | Yes |
-| `$mission:` | Current mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`) | Read typically |
-| `$CurrentDir:` | Current working directory | Depends |
-| No prefix | Relative to game root | Read only |
+| `$profile:` | 服务器/客户端配置文件目录（例如 `DayZServer/profiles/`） | 是 |
+| `$saves:` | 存档目录 | 是 |
+| `$mission:` | 当前任务文件夹（例如 `mpmissions/dayzOffline.chernarusplus/`） | 通常只读 |
+| `$CurrentDir:` | 当前工作目录 | 视情况而定 |
+| 无前缀 | 相对于游戏根目录 | 只读 |
 
-> **重要：** Most file write operations are restricted to `$profile:` and `$saves:`. Attempting to write elsewhere may silently fail.
+> **重要：** 大多数文件写入操作仅限于 `$profile:` 和 `$saves:`。尝试写入其他位置可能会静默失败。
 
 ---
 
-## File Existence Check
+## 文件存在检查
 
 ```c
 proto bool FileExist(string name);
 ```
 
-Returns `true` if the file exists at the given path.
+如果给定路径的文件存在，返回 `true`。
 
-**Example:**
+**示例：**
 
 ```c
 if (FileExist("$profile:MyMod/config.json"))
@@ -47,61 +47,61 @@ else
 
 ---
 
-## Opening & Closing Files
+## 打开和关闭文件
 
 ```c
 proto FileHandle OpenFile(string name, FileMode mode);
 proto void CloseFile(FileHandle file);
 ```
 
-### FileMode Enum
+### FileMode 枚举
 
 ```c
 enum FileMode
 {
-    READ,     // Open for reading (file must exist)
-    WRITE,    // Open for writing (creates new / overwrites existing)
-    APPEND    // Open for appending (creates if not exists)
+    READ,     // 以读取方式打开（文件必须存在）
+    WRITE,    // 以写入方式打开（创建新文件/覆盖现有文件）
+    APPEND    // 以追加方式打开（不存在则创建）
 }
 ```
 
-`FileHandle` is an integer handle. A return value of `0` indicates failure.
+`FileHandle` 是一个整数句柄。返回值为 `0` 表示失败。
 
-**Example:**
+**示例：**
 
 ```c
 FileHandle fh = OpenFile("$profile:MyMod/log.txt", FileMode.WRITE);
 if (fh != 0)
 {
-    // File opened successfully
-    // ... do work ...
+    // 文件成功打开
+    // ... 执行操作 ...
     CloseFile(fh);
 }
 ```
 
-> **Critical:** Always call `CloseFile()` when done. Failure to close files can cause data loss and resource leaks.
+> **关键：** 完成后始终调用 `CloseFile()`。不关闭文件可能导致数据丢失和资源泄漏。
 
 ---
 
-## Writing Files
+## 写入文件
 
-### FPrintln (Write Line)
+### FPrintln（写入行）
 
 ```c
 proto void FPrintln(FileHandle file, void var);
 ```
 
-Writes the value followed by a newline character.
+写入值后跟一个换行符。
 
-### FPrint (Write Without Newline)
+### FPrint（不带换行写入）
 
 ```c
 proto void FPrint(FileHandle file, void var);
 ```
 
-Writes the value without a trailing newline.
+写入值，不带尾部换行符。
 
-**Example --- write a log file:**
+**示例 --- 写入日志文件：**
 
 ```c
 void WriteLog(string message)
@@ -121,17 +121,17 @@ void WriteLog(string message)
 
 ---
 
-## Reading Files
+## 读取文件
 
-### FGets (Read Line)
+### FGets（读取行）
 
 ```c
 proto int FGets(FileHandle file, string var);
 ```
 
-Reads one line from the file into `var`. Returns the number of characters read, or `-1` at end of file.
+从文件中读取一行到 `var` 中。返回读取的字符数，在文件末尾返回 `-1`。
 
-**Example --- read a file line by line:**
+**示例 --- 逐行读取文件：**
 
 ```c
 void ReadConfigFile()
@@ -150,17 +150,17 @@ void ReadConfigFile()
 }
 ```
 
-### ReadFile (Raw Binary Read)
+### ReadFile（原始二进制读取）
 
 ```c
 proto int ReadFile(FileHandle file, void param_array, int length);
 ```
 
-Reads raw bytes into a buffer. Used for binary data.
+将原始字节读入缓冲区。用于二进制数据。
 
 ---
 
-## Directory Operations
+## 目录操作
 
 ### MakeDirectory
 
@@ -168,9 +168,9 @@ Reads raw bytes into a buffer. Used for binary data.
 proto native bool MakeDirectory(string name);
 ```
 
-Creates a directory. Returns `true` on success. Creates only the final directory --- parent directories must already exist.
+创建目录。成功时返回 `true`。只创建最后一级目录 --- 父目录必须已存在。
 
-**Example --- ensure directory structure:**
+**示例 --- 确保目录结构：**
 
 ```c
 void EnsureDirectories()
@@ -187,7 +187,7 @@ void EnsureDirectories()
 proto native bool DeleteFile(string name);
 ```
 
-Deletes a file. Only works in `$profile:` and `$saves:` directories.
+删除文件。仅在 `$profile:` 和 `$saves:` 目录中有效。
 
 ### CopyFile
 
@@ -195,12 +195,12 @@ Deletes a file. Only works in `$profile:` and `$saves:` directories.
 proto native bool CopyFile(string sourceName, string destName);
 ```
 
-Copies a file from source to destination.
+将文件从源复制到目标。
 
-**Example:**
+**示例：**
 
 ```c
-// Backup before overwriting
+// 覆盖前备份
 if (FileExist("$profile:MyMod/config.json"))
 {
     CopyFile("$profile:MyMod/config.json", "$profile:MyMod/config.json.bak");
@@ -209,9 +209,9 @@ if (FileExist("$profile:MyMod/config.json"))
 
 ---
 
-## File Enumeration (FindFile / Find下一章File)
+## 文件枚举（FindFile / FindNextFile）
 
-Enumerate files matching a pattern in a directory.
+枚举目录中匹配模式的文件。
 
 ```c
 proto FindFileHandle FindFile(string pattern, out string fileName,
@@ -221,30 +221,30 @@ proto bool FindNextFile(FindFileHandle handle, out string fileName,
 proto native void CloseFindFile(FindFileHandle handle);
 ```
 
-### FileAttr Enum
+### FileAttr 枚举
 
 ```c
 enum FileAttr
 {
-    DIRECTORY,   // Entry is a directory
-    HIDDEN,      // Entry is hidden
-    READONLY,    // Entry is read-only
-    INVALID      // Invalid entry
+    DIRECTORY,   // 条目是目录
+    HIDDEN,      // 条目是隐藏的
+    READONLY,    // 条目是只读的
+    INVALID      // 无效条目
 }
 ```
 
-### FindFileFlags Enum
+### FindFileFlags 枚举
 
 ```c
 enum FindFileFlags
 {
-    DIRECTORIES,  // Return only directories
-    ARCHIVES,     // Return only files
-    ALL           // Return both
+    DIRECTORIES,  // 仅返回目录
+    ARCHIVES,     // 仅返回文件
+    ALL           // 返回两者
 }
 ```
 
-**Example --- enumerate all JSON files in a directory:**
+**示例 --- 枚举目录中的所有 JSON 文件：**
 
 ```c
 void ListJsonFiles()
@@ -257,13 +257,13 @@ void ListJsonFiles()
 
     if (handle)
     {
-        // Process first result
+        // 处理第一个结果
         if (!(fileAttr & FileAttr.DIRECTORY))
         {
             Print("Found: " + fileName);
         }
 
-        // Process remaining results
+        // 处理剩余结果
         while (FindNextFile(handle, fileName, fileAttr))
         {
             if (!(fileAttr & FileAttr.DIRECTORY))
@@ -277,9 +277,9 @@ void ListJsonFiles()
 }
 ```
 
-> **重要：** `FindFile` returns just the file name, not the full path. You must prepend the directory path yourself when processing the files.
+> **重要：** `FindFile` 只返回文件名，而不是完整路径。处理文件时你必须自己添加目录路径前缀。
 
-**Example --- count files in a directory:**
+**示例 --- 计算目录中的文件数：**
 
 ```c
 int CountFiles(string pattern)
@@ -305,58 +305,58 @@ int CountFiles(string pattern)
 
 ---
 
-## JsonFileLoader (Generic JSON)
+## JsonFileLoader（通用 JSON）
 
-**File:** `3_Game/tools/jsonfileloader.c` (173 lines)
+**文件：** `3_Game/tools/jsonfileloader.c`（173 行）
 
-The recommended way to load and save JSON data. Works with any class that has public fields.
+加载和保存 JSON 数据的推荐方式。适用于任何具有公共字段的类。
 
-### Modern API (Preferred)
+### 现代 API（推荐）
 
 ```c
 class JsonFileLoader<Class T>
 {
-    // Load JSON file into object
+    // 将 JSON 文件加载到对象中
     static bool LoadFile(string filename, out T data, out string errorMessage);
 
-    // Save object to JSON file
+    // 将对象保存到 JSON 文件
     static bool SaveFile(string filename, T data, out string errorMessage);
 
-    // Parse JSON string into object
+    // 将 JSON 字符串解析到对象中
     static bool LoadData(string string_data, out T data, out string errorMessage);
 
-    // Serialize object to JSON string
+    // 将对象序列化为 JSON 字符串
     static bool MakeData(T inputData, out string outputData,
                           out string errorMessage, bool prettyPrint = true);
 }
 ```
 
-All methods return `bool` --- `true` on success, `false` on failure with the error in `errorMessage`.
+所有方法返回 `bool` --- 成功时为 `true`，失败时为 `false`，错误信息在 `errorMessage` 中。
 
-### Legacy API (Deprecated)
+### 旧版 API（已弃用）
 
 ```c
 class JsonFileLoader<Class T>
 {
-    static void JsonLoadFile(string filename, out T data);    // Returns void!
+    static void JsonLoadFile(string filename, out T data);    // 返回 void！
     static void JsonSaveFile(string filename, T data);
     static void JsonLoadData(string string_data, out T data);
     static string JsonMakeData(T data);
 }
 ```
 
-> **Critical Gotcha:** `JsonLoadFile()` returns `void`. You CANNOT use it in an `if` condition:
+> **关键陷阱：** `JsonLoadFile()` 返回 `void`。你**不能**在 `if` 条件中使用它：
 > ```c
-> // WRONG - will not compile or will always be false
+> // 错误 - 不会编译或始终为 false
 > if (JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg)) { }
 >
-> // CORRECT - use the modern LoadFile() which returns bool
+> // 正确 - 使用返回 bool 的现代 LoadFile()
 > if (JsonFileLoader<MyConfig>.LoadFile(path, cfg, error)) { }
 > ```
 
-### Data Class Requirements
+### 数据类要求
 
-The target class must have **public fields** with default values. The JSON serializer maps field names directly to JSON keys.
+目标类必须具有带默认值的**公共字段**。JSON 序列化器将字段名直接映射到 JSON 键。
 
 ```c
 class MyConfig
@@ -376,7 +376,7 @@ class MyConfig
 }
 ```
 
-This produces JSON:
+这将产生 JSON：
 
 ```json
 {
@@ -389,7 +389,7 @@ This produces JSON:
 }
 ```
 
-### Complete Load/Save Example
+### 完整的加载/保存示例
 
 ```c
 class MyModConfig
@@ -415,7 +415,7 @@ class MyModConfigManager
     {
         if (!FileExist(CONFIG_PATH))
         {
-            Save();  // Create default config
+            Save();  // 创建默认配置
             return;
         }
 
@@ -423,7 +423,7 @@ class MyModConfigManager
         if (!JsonFileLoader<MyModConfig>.LoadFile(CONFIG_PATH, m_Config, error))
         {
             Print("[MyMod] Config load error: " + error);
-            m_Config = new MyModConfig();  // Reset to defaults
+            m_Config = new MyModConfig();  // 重置为默认值
             Save();
         }
     }
@@ -446,11 +446,11 @@ class MyModConfigManager
 
 ---
 
-## JsonSerializer (Direct Use)
+## JsonSerializer（直接使用）
 
-**File:** `3_Game/gameplay.c`
+**文件：** `3_Game/gameplay.c`
 
-For cases where you need to serialize/deserialize JSON strings directly without file operations:
+当你需要直接序列化/反序列化 JSON 字符串而不进行文件操作时使用：
 
 ```c
 class JsonSerializer : Serializer
@@ -460,7 +460,7 @@ class JsonSerializer : Serializer
 }
 ```
 
-**Example:**
+**示例：**
 
 ```c
 MyConfig cfg = new MyConfig();
@@ -468,12 +468,12 @@ cfg.MaxPlayers = 100;
 
 JsonSerializer js = new JsonSerializer();
 
-// Serialize to string
+// 序列化为字符串
 string jsonOutput;
-js.WriteToString(cfg, true, jsonOutput);  // true = pretty print
+js.WriteToString(cfg, true, jsonOutput);  // true = 美化打印
 Print(jsonOutput);
 
-// Deserialize from string
+// 从字符串反序列化
 MyConfig parsed = new MyConfig();
 string parseError;
 js.ReadFromString(parsed, jsonOutput, parseError);
@@ -484,30 +484,64 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 
 ## 总结
 
-| Operation | Function | Notes |
+| 操作 | 函数 | 注意事项 |
 |-----------|----------|-------|
-| Check exists | `FileExist(path)` | Returns bool |
-| Open | `OpenFile(path, FileMode)` | Returns handle (0 = fail) |
-| Close | `CloseFile(handle)` | Always call when done |
-| Write line | `FPrintln(handle, data)` | With newline |
-| Write | `FPrint(handle, data)` | Without newline |
-| Read line | `FGets(handle, out line)` | Returns -1 at EOF |
-| Make dir | `MakeDirectory(path)` | Single level only |
-| Delete | `DeleteFile(path)` | Only `$profile:` / `$saves:` |
-| Copy | `CopyFile(src, dst)` | -- |
-| Find files | `FindFile(pattern, ...)` | Returns handle, iterate with `Find下一章File` |
-| JSON load | `JsonFileLoader<T>.LoadFile(path, data, error)` | Modern API, returns bool |
-| JSON save | `JsonFileLoader<T>.SaveFile(path, data, error)` | Modern API, returns bool |
-| JSON string | `JsonSerializer.WriteToString()` / `ReadFromString()` | Direct string operations |
+| 检查存在 | `FileExist(path)` | 返回 bool |
+| 打开 | `OpenFile(path, FileMode)` | 返回句柄（0 = 失败） |
+| 关闭 | `CloseFile(handle)` | 完成后始终调用 |
+| 写入行 | `FPrintln(handle, data)` | 带换行 |
+| 写入 | `FPrint(handle, data)` | 不带换行 |
+| 读取行 | `FGets(handle, out line)` | 在 EOF 时返回 -1 |
+| 创建目录 | `MakeDirectory(path)` | 仅单级 |
+| 删除 | `DeleteFile(path)` | 仅 `$profile:` / `$saves:` |
+| 复制 | `CopyFile(src, dst)` | -- |
+| 查找文件 | `FindFile(pattern, ...)` | 返回句柄，用 `FindNextFile` 迭代 |
+| JSON 加载 | `JsonFileLoader<T>.LoadFile(path, data, error)` | 现代 API，返回 bool |
+| JSON 保存 | `JsonFileLoader<T>.SaveFile(path, data, error)` | 现代 API，返回 bool |
+| JSON 字符串 | `JsonSerializer.WriteToString()` / `ReadFromString()` | 直接字符串操作 |
 
-| 概念 | 要点 |
+| 概念 | 关键要点 |
 |---------|-----------|
-| Path prefixes | `$profile:` (writable), `$mission:` (read), `$saves:` (writable) |
-| JsonLoadFile | **Returns void** --- use `LoadFile()` (bool) instead |
-| Data classes | Public fields with defaults, `ref` for arrays/maps |
-| Always close | Every `OpenFile` must have a matching `CloseFile` |
-| FindFile | Returns only filenames, not full paths |
+| 路径前缀 | `$profile:`（可写）、`$mission:`（只读）、`$saves:`（可写） |
+| JsonLoadFile | **返回 void** --- 改用 `LoadFile()`（返回 bool） |
+| 数据类 | 带默认值的公共字段，数组/映射使用 `ref` |
+| 始终关闭 | 每个 `OpenFile` 必须有对应的 `CloseFile` |
+| FindFile | 只返回文件名，不是完整路径 |
 
 ---
 
-[<< 上一章: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [下一章: Networking & RPC >>](09-networking.md)
+## 最佳实践
+
+- **始终将文件操作包装在存在检查中，并在所有代码路径中关闭句柄。** 未关闭的 `FileHandle` 会泄漏资源，并可能阻止文件写入磁盘。使用保护模式：检查 `fh != 0`，执行操作，然后在每个 `return` 之前调用 `CloseFile(fh)`。
+- **使用现代的 `JsonFileLoader<T>.LoadFile()`（返回 bool）而不是旧版的 `JsonLoadFile()`（返回 void）。** 旧版 API 无法报告错误，并且尝试在条件中使用其 void 返回值会静默失败。
+- **使用 `MakeDirectory()` 按从父到子的顺序创建目录。** `MakeDirectory` 只创建最后一级目录段。如果 `A/B` 不存在，`MakeDirectory("$profile:A/B/C")` 会失败。按顺序创建每一级。
+- **在覆盖配置文件之前使用 `CopyFile()` 创建备份。** 损坏的存档导致的 JSON 解析错误是不可恢复的。`.bak` 副本让服务器管理员可以恢复最后的良好状态。
+- **记住 `FindFile()` 只返回文件名，不是完整路径。** 加载通过 `FindFile`/`FindNextFile` 找到的文件时，你必须自己拼接目录前缀。
+
+---
+
+## 兼容性与影响
+
+> **模组兼容性：** 当每个模组使用自己的 `$profile:` 子目录时，文件 I/O 本质上是隔离的。只有当两个模组读写相同的文件路径时才会发生冲突。
+
+- **加载顺序：** 文件 I/O 没有加载顺序依赖。模组独立读写。
+- **Modded Class 冲突：** 没有类冲突。风险是两个模组使用相同的 `$profile:` 子目录名或文件名，导致数据损坏。
+- **性能影响：** 通过 `JsonFileLoader` 的 JSON 序列化是同步的，会阻塞主线程。在游戏过程中加载大型 JSON 文件（>100KB）会导致帧卡顿。在 `OnInit()` 或 `OnMissionStart()` 中加载配置，永远不要在 `OnUpdate()` 中加载。
+- **服务器/客户端：** 文件写入限制在 `$profile:` 和 `$saves:`。在客户端上，`$profile:` 指向客户端配置文件目录。在专用服务器上，它指向服务器配置文件。`$mission:` 在两端通常都是只读的。
+
+---
+
+## 在真实模组中的观察
+
+> 这些模式通过研究专业 DayZ 模组的源代码得到了确认。
+
+| 模式 | 模组 | 文件/位置 |
+|---------|-----|---------------|
+| `MakeDirectory` 链 + `FileExist` 检查 + `LoadFile` 带回退到默认值 | Expansion | 设置管理器（`ExpansionSettings`） |
+| 配置保存前 `CopyFile` 备份 | COT | 权限文件管理 |
+| `FindFile`/`FindNextFile` 枚举 `$profile:` 中的每个玩家 JSON 文件 | VPP Admin Tools | 玩家数据加载器 |
+| `JsonSerializer.WriteToString()` 用于 RPC 负载序列化（无文件） | Dabs Framework | 网络配置同步 |
+
+---
+
+[<< 上一章：计时器与 CallQueue](07-timers.md) | **文件 I/O 与 JSON** | [下一章：网络与 RPC >>](09-networking.md)

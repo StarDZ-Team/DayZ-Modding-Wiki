@@ -1,17 +1,46 @@
-# Chapter 3.4: Container Widgets
+# Kapitel 3.4: Container-Widgets
 
-[Home](../../README.md) | [<< Previous: Sizing & Positioning](03-sizing-positioning.md) | **Container Widgets** | [Next: Programmatic Widgets >>](05-programmatic-widgets.md)
+[Startseite](../../README.md) | [<< Zurück: Größe & Positionierung](03-sizing-positioning.md) | **Container-Widgets** | [Weiter: Programmatische Widgets >>](05-programmatic-widgets.md)
 
 ---
 
-## FrameWidget -- Structural Container
+Container-Widgets organisieren Kind-Widgets innerhalb von ihnen. Während `FrameWidget` der einfachste ist (unsichtbare Box, manuelle Positionierung), bietet DayZ drei spezialisierte Container, die das Layout automatisch handhaben: `WrapSpacerWidget`, `GridSpacerWidget` und `ScrollWidget`.
 
-`FrameWidget` is the most basic container. It draws nothing on screen and does not arrange its children -- you must position each child manually.
+### Container-Vergleich
 
-**When to use:**
-- Grouping related widgets so they can be shown/hidden together
-- Root widget of a panel or dialog
-- Any structural grouping where you handle positioning yourself
+```mermaid
+graph LR
+    subgraph "FrameWidget (Absolut)"
+        FA["Kind A<br/>pos: 10,10"]
+        FB["Kind B<br/>pos: 200,10"]
+        FC["Kind C<br/>pos: 10,100"]
+    end
+
+    subgraph "WrapSpacer (Fließend)"
+        WA["Element 1"] --> WB["Element 2"] --> WC["Element 3"]
+        WC --> WD["Element 4<br/>(umbricht in nächste Zeile)"]
+    end
+
+    subgraph "GridSpacer (Raster)"
+        GA["Zelle 0,0"] --- GB["Zelle 1,0"] --- GC["Zelle 2,0"]
+        GD["Zelle 0,1"] --- GE["Zelle 1,1"] --- GF["Zelle 2,1"]
+    end
+
+    style FA fill:#4A90D9,color:#fff
+    style WA fill:#2D8A4E,color:#fff
+    style GA fill:#D97A4A,color:#fff
+```
+
+---
+
+## FrameWidget -- Struktureller Container
+
+`FrameWidget` ist der grundlegendste Container. Er zeichnet nichts auf dem Bildschirm und ordnet seine Kinder nicht an -- du musst jedes Kind manuell positionieren.
+
+**Wann verwenden:**
+- Gruppierung verwandter Widgets, damit sie gemeinsam ein-/ausgeblendet werden können
+- Stamm-Widget eines Panels oder Dialogs
+- Jede strukturelle Gruppierung, bei der du die Positionierung selbst handhabst
 
 ```
 FrameWidgetClass MyPanel {
@@ -26,7 +55,7 @@ FrameWidgetClass MyPanel {
   TextWidgetClass Header {
    position 0 0
    size 1 0.1
-   text "Panel Title"
+   text "Panel-Titel"
    "text halign" center
   }
   PanelWidgetClass Divider {
@@ -44,30 +73,30 @@ FrameWidgetClass MyPanel {
 }
 ```
 
-**Key characteristics:**
-- No visual appearance (transparent)
-- Children positioned relative to the frame's bounds
-- No automatic layout -- every child needs explicit position/size
-- Lightweight -- zero rendering cost beyond its children
+**Hauptmerkmale:**
+- Kein visuelles Erscheinungsbild (transparent)
+- Kinder werden relativ zu den Grenzen des Frames positioniert
+- Kein automatisches Layout -- jedes Kind braucht explizite Position/Größe
+- Leichtgewichtig -- null Rendering-Kosten jenseits seiner Kinder
 
 ---
 
-## WrapSpacerWidget -- Flow Layout
+## WrapSpacerWidget -- Fließendes Layout
 
-`WrapSpacerWidget` automatically arranges its children in a flow sequence. Children are placed one after another horizontally, wrapping to the next row when they exceed the available width. This is the widget to use for dynamic lists where the number of children changes at runtime.
+`WrapSpacerWidget` ordnet seine Kinder automatisch in einer Fließsequenz an. Kinder werden nacheinander horizontal platziert und brechen in die nächste Zeile um, wenn sie die verfügbare Breite überschreiten. Dies ist das Widget für dynamische Listen, bei denen sich die Anzahl der Kinder zur Laufzeit ändert.
 
-### Layout Attributes
+### Layout-Attribute
 
-| Attribute | Values | Description |
+| Attribut | Werte | Beschreibung |
 |---|---|---|
-| `Padding` | integer (pixels) | Space between the spacer's edge and its children |
-| `Margin` | integer (pixels) | Space between individual children |
-| `"Size To Content H"` | `0` or `1` | Resize width to fit all children |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit all children |
-| `content_halign` | `left`, `center`, `right` | Horizontal alignment of the child group |
-| `content_valign` | `top`, `center`, `bottom` | Vertical alignment of the child group |
+| `Padding` | Ganzzahl (Pixel) | Abstand zwischen dem Rand des Spacers und seinen Kindern |
+| `Margin` | Ganzzahl (Pixel) | Abstand zwischen einzelnen Kindern |
+| `"Size To Content H"` | `0` oder `1` | Breite an alle Kinder anpassen |
+| `"Size To Content V"` | `0` oder `1` | Höhe an alle Kinder anpassen |
+| `content_halign` | `left`, `center`, `right` | Horizontale Ausrichtung der Kindergruppe |
+| `content_valign` | `top`, `center`, `bottom` | Vertikale Ausrichtung der Kindergruppe |
 
-### Basic Flow Layout
+### Einfaches fließendes Layout
 
 ```
 WrapSpacerWidgetClass TagList {
@@ -81,34 +110,34 @@ WrapSpacerWidgetClass TagList {
    size 80 24
    hexactsize 1
    vexactsize 1
-   text "Weapons"
+   text "Waffen"
   }
   ButtonWidgetClass Tag2 {
    size 60 24
    hexactsize 1
    vexactsize 1
-   text "Food"
+   text "Essen"
   }
   ButtonWidgetClass Tag3 {
    size 90 24
    hexactsize 1
    vexactsize 1
-   text "Medical"
+   text "Medizin"
   }
  }
 }
 ```
 
-In this example:
-- The spacer is full parent width (`size 1`), but its height adjusts to fit children (`"Size To Content V" 1`).
-- Children are 80px, 60px, and 90px wide buttons.
-- If the available width cannot fit all three on one row, the spacer wraps them to the next row.
-- `Padding 5` adds 5px of space inside the spacer edges.
-- `Margin 3` adds 3px between each child.
+In diesem Beispiel:
+- Der Spacer hat die volle Elternbreite (`size 1`), aber seine Höhe passt sich den Kindern an (`"Size To Content V" 1`).
+- Die Kinder sind 80px, 60px und 90px breite Buttons.
+- Wenn die verfügbare Breite nicht alle drei in eine Zeile passt, bricht der Spacer sie in die nächste Zeile um.
+- `Padding 5` fügt 5px Abstand innerhalb der Spacer-Ränder hinzu.
+- `Margin 3` fügt 3px zwischen jedem Kind hinzu.
 
-### Vertical List with WrapSpacer
+### Vertikale Liste mit WrapSpacer
 
-To create a vertical list (one item per row), make children full-width:
+Um eine vertikale Liste zu erstellen (ein Element pro Zeile), mache die Kinder vollbreit:
 
 ```
 WrapSpacerWidgetClass ItemList {
@@ -131,38 +160,38 @@ WrapSpacerWidgetClass ItemList {
 }
 ```
 
-Each child is 100% width (`size 1` with `hexactsize 0`), so only one fits per row, creating a vertical stack.
+Jedes Kind hat 100% Breite (`size 1` mit `hexactsize 0`), sodass nur eines pro Zeile passt, was einen vertikalen Stapel ergibt.
 
-### Dynamic Children
+### Dynamische Kinder
 
-`WrapSpacerWidget` is ideal for programmatically added children. When you add or remove children, call `Update()` on the spacer to trigger a re-layout:
+`WrapSpacerWidget` ist ideal für programmatisch hinzugefügte Kinder. Wenn du Kinder hinzufügst oder entfernst, rufe `Update()` auf dem Spacer auf, um ein Neuberechnen des Layouts auszulösen:
 
 ```c
 WrapSpacerWidget spacer;
 
-// Add a child from a layout file
+// Ein Kind aus einer Layout-Datei hinzufügen
 Widget child = GetGame().GetWorkspace().CreateWidgets("MyMod/gui/layouts/ListItem.layout", spacer);
 
-// Force the spacer to recalculate
+// Spacer zur Neuberechnung zwingen
 spacer.Update();
 ```
 
 ---
 
-## GridSpacerWidget -- Grid Layout
+## GridSpacerWidget -- Rasterlayout
 
-`GridSpacerWidget` arranges children in a uniform grid. You define the number of columns and rows, and each cell gets equal space.
+`GridSpacerWidget` ordnet Kinder in einem gleichmäßigen Raster an. Du definierst die Anzahl der Spalten und Zeilen, und jede Zelle bekommt gleich viel Platz.
 
-### Layout Attributes
+### Layout-Attribute
 
-| Attribute | Values | Description |
+| Attribut | Werte | Beschreibung |
 |---|---|---|
-| `Columns` | integer | Number of grid columns |
-| `Rows` | integer | Number of grid rows |
-| `Margin` | integer (pixels) | Space between grid cells |
-| `"Size To Content V"` | `0` or `1` | Resize height to fit content |
+| `Columns` | Ganzzahl | Anzahl der Rasterspalten |
+| `Rows` | Ganzzahl | Anzahl der Rasterzeilen |
+| `Margin` | Ganzzahl (Pixel) | Abstand zwischen Rasterzellen |
+| `"Size To Content V"` | `0` oder `1` | Höhe an den Inhalt anpassen |
 
-### Basic Grid
+### Einfaches Raster
 
 ```
 GridSpacerWidgetClass InventoryGrid {
@@ -173,8 +202,8 @@ GridSpacerWidgetClass InventoryGrid {
  Rows 3
  Margin 2
  {
-  // 12 cells (4 columns x 3 rows)
-  // Children are placed in order: left-to-right, top-to-bottom
+  // 12 Zellen (4 Spalten x 3 Zeilen)
+  // Kinder werden der Reihe nach platziert: links nach rechts, oben nach unten
   FrameWidgetClass Slot1 { }
   FrameWidgetClass Slot2 { }
   FrameWidgetClass Slot3 { }
@@ -191,9 +220,9 @@ GridSpacerWidgetClass InventoryGrid {
 }
 ```
 
-### Single-Column Grid (Vertical List)
+### Einspaltige Raster (Vertikale Liste)
 
-Setting `Columns 1` creates a simple vertical stack where each child gets the full width:
+`Columns 1` erstellt einen einfachen vertikalen Stapel, bei dem jedes Kind die volle Breite bekommt:
 
 ```
 GridSpacerWidgetClass SettingsList {
@@ -223,37 +252,37 @@ GridSpacerWidgetClass SettingsList {
 
 ### GridSpacer vs. WrapSpacer
 
-| Feature | GridSpacer | WrapSpacer |
+| Eigenschaft | GridSpacer | WrapSpacer |
 |---|---|---|
-| Cell size | Uniform (equal) | Each child keeps its own size |
-| Layout mode | Fixed grid (columns x rows) | Flow with wrapping |
-| Best for | Inventory slots, uniform galleries | Dynamic lists, tag clouds |
-| Children sizing | Ignored (grid controls it) | Respected (child size matters) |
+| Zellengröße | Einheitlich (gleich) | Jedes Kind behält seine eigene Größe |
+| Layout-Modus | Festes Raster (Spalten x Zeilen) | Fließend mit Umbruch |
+| Am besten für | Inventarslots, einheitliche Galerien | Dynamische Listen, Tag-Wolken |
+| Kindergrößen | Ignoriert (Raster steuert es) | Respektiert (Kindergröße zählt) |
 
 ---
 
-## ScrollWidget -- Scrollable Viewport
+## ScrollWidget -- Scrollbarer Viewport
 
-`ScrollWidget` wraps content that may be taller (or wider) than the visible area, providing scrollbars for navigation.
+`ScrollWidget` umschließt Inhalte, die höher (oder breiter) als der sichtbare Bereich sein können, und bietet Scrollbalken zur Navigation.
 
-### Layout Attributes
+### Layout-Attribute
 
-| Attribute | Values | Description |
+| Attribut | Werte | Beschreibung |
 |---|---|---|
-| `"Scrollbar V"` | `0` or `1` | Show vertical scrollbar |
-| `"Scrollbar H"` | `0` or `1` | Show horizontal scrollbar |
+| `"Scrollbar V"` | `0` oder `1` | Vertikalen Scrollbalken anzeigen |
+| `"Scrollbar H"` | `0` oder `1` | Horizontalen Scrollbalken anzeigen |
 
-### Script API
+### Skript-API
 
 ```c
 ScrollWidget sw;
-sw.VScrollToPos(float pos);     // Scroll to vertical position (0 = top)
-sw.GetVScrollPos();             // Get current scroll position
-sw.GetContentHeight();          // Get total content height
-sw.VScrollStep(int step);       // Scroll by a step amount
+sw.VScrollToPos(float pos);     // Zur vertikalen Position scrollen (0 = oben)
+sw.GetVScrollPos();             // Aktuelle Scroll-Position abrufen
+sw.GetContentHeight();          // Gesamte Inhaltshöhe abrufen
+sw.VScrollStep(int step);       // Um einen Schrittbetrag scrollen
 ```
 
-### Basic Scrollable List
+### Einfache scrollbare Liste
 
 ```
 ScrollWidgetClass ListScroll {
@@ -267,7 +296,7 @@ ScrollWidgetClass ListScroll {
    hexactsize 0
    "Size To Content V" 1
    {
-    // Many children here...
+    // Viele Kinder hier...
     FrameWidgetClass Item1 {
      size 1 30
      hexactsize 0
@@ -278,7 +307,7 @@ ScrollWidgetClass ListScroll {
      hexactsize 0
      vexactsize 1
     }
-    // ... more items
+    // ... weitere Elemente
    }
   }
  }
@@ -287,19 +316,40 @@ ScrollWidgetClass ListScroll {
 
 ---
 
-## The ScrollWidget + WrapSpacer Pattern
+## Das ScrollWidget + WrapSpacer Muster
 
-This is **the** pattern for scrollable dynamic lists in DayZ mods. It combines a fixed-height `ScrollWidget` with a `WrapSpacerWidget` that grows to fit its children.
+### ScrollWidget + WrapSpacer Muster
+
+```mermaid
+graph TB
+    SCROLL["ScrollWidget<br/>feste Viewport-Größe<br/>Scrollbar V = 1"]
+    WRAP["WrapSpacerWidget<br/>size: 1 0<br/>Size To Content V = 1"]
+    I1["Element 1"]
+    I2["Element 2"]
+    I3["Element 3"]
+    I4["Element N..."]
+
+    SCROLL --> WRAP
+    WRAP --> I1
+    WRAP --> I2
+    WRAP --> I3
+    WRAP --> I4
+
+    style SCROLL fill:#4A90D9,color:#fff
+    style WRAP fill:#2D8A4E,color:#fff
+```
+
+Dies ist **das** Muster für scrollbare dynamische Listen in DayZ-Mods. Es kombiniert ein `ScrollWidget` mit fester Höhe mit einem `WrapSpacerWidget`, das wächst, um seine Kinder aufzunehmen.
 
 ```
-// Fixed-height scroll viewport
+// Scroll-Viewport mit fester Höhe
 ScrollWidgetClass DialogScroll {
  size 0.97 235
  hexactsize 0
  vexactsize 1
  "Scrollbar V" 1
  {
-  // Content grows vertically to fit all children
+  // Inhalt wächst vertikal, um alle Kinder aufzunehmen
   WrapSpacerWidgetClass DialogContent {
    size 1 0
    hexactsize 0
@@ -309,15 +359,15 @@ ScrollWidgetClass DialogScroll {
 }
 ```
 
-How it works:
+So funktioniert es:
 
-1. The `ScrollWidget` has a **fixed** height (235 pixels in this example).
-2. Inside it, the `WrapSpacerWidget` has `"Size To Content V" 1`, so its height grows as children are added.
-3. When the spacer's content exceeds 235 pixels, the scrollbar appears and the user can scroll.
+1. Das `ScrollWidget` hat eine **feste** Höhe (235 Pixel in diesem Beispiel).
+2. Darin hat das `WrapSpacerWidget` `"Size To Content V" 1`, sodass seine Höhe wächst, wenn Kinder hinzugefügt werden.
+3. Wenn der Inhalt des Spacers 235 Pixel überschreitet, erscheint der Scrollbalken und der Benutzer kann scrollen.
 
-This pattern appears throughout DabsFramework, DayZ Editor, Expansion, and virtually every professional DayZ mod.
+Dieses Muster erscheint durchgehend in DabsFramework, DayZ Editor, Expansion und praktisch jeder professionellen DayZ-Mod.
 
-### Adding Items Programmatically
+### Elemente programmatisch hinzufügen
 
 ```c
 ScrollWidget m_Scroll;
@@ -325,15 +375,15 @@ WrapSpacerWidget m_Content;
 
 void AddItem(string text)
 {
-    // Create a new child inside the WrapSpacer
+    // Ein neues Kind innerhalb des WrapSpacer erstellen
     Widget item = GetGame().GetWorkspace().CreateWidgets(
         "MyMod/gui/layouts/ListItem.layout", m_Content);
 
-    // Configure the new item
+    // Das neue Element konfigurieren
     TextWidget tw = TextWidget.Cast(item.FindAnyWidget("Label"));
     tw.SetText(text);
 
-    // Force layout recalculation
+    // Layout-Neuberechnung erzwingen
     m_Content.Update();
 }
 
@@ -344,7 +394,7 @@ void ScrollToBottom()
 
 void ClearAll()
 {
-    // Remove all children
+    // Alle Kinder entfernen
     Widget child = m_Content.GetChildren();
     while (child)
     {
@@ -358,39 +408,39 @@ void ClearAll()
 
 ---
 
-## Nesting Rules
+## Verschachtelungsregeln
 
-Containers can be nested to create complex layouts. Some guidelines:
+Container können verschachtelt werden, um komplexe Layouts zu erstellen. Einige Richtlinien:
 
-1. **FrameWidget inside anything** -- Always works. Use frames to group sub-sections within spacers or grids.
+1. **FrameWidget in allem** -- Funktioniert immer. Verwende Frames, um Unterabschnitte innerhalb von Spacern oder Grids zu gruppieren.
 
-2. **WrapSpacer inside ScrollWidget** -- The standard pattern for scrollable lists. The spacer grows; the scroll clips.
+2. **WrapSpacer in ScrollWidget** -- Das Standardmuster für scrollbare Listen. Der Spacer wächst; der Scroll beschneidet.
 
-3. **GridSpacer inside WrapSpacer** -- Works. Useful for putting a fixed grid as one item in a flow layout.
+3. **GridSpacer in WrapSpacer** -- Funktioniert. Nützlich, um ein festes Raster als ein Element in einem fließenden Layout zu platzieren.
 
-4. **ScrollWidget inside WrapSpacer** -- Possible but requires a fixed height on the scroll widget (`vexactsize 1`). Without a fixed height, the scroll widget will try to grow to fit its content (defeating the purpose of scrolling).
+4. **ScrollWidget in WrapSpacer** -- Möglich, erfordert aber eine feste Höhe auf dem Scroll-Widget (`vexactsize 1`). Ohne feste Höhe wird das Scroll-Widget versuchen, zu wachsen, um seinen Inhalt aufzunehmen (was den Zweck des Scrollens zunichte macht).
 
-5. **Avoid deep nesting** -- Every level of nesting adds layout computation cost. Three or four levels deep is typical for complex UIs; going beyond six levels suggests the layout should be restructured.
+5. **Tiefe Verschachtelung vermeiden** -- Jede Verschachtelungsebene erhöht die Layout-Berechnungskosten. Drei oder vier Ebenen tief ist typisch für komplexe UIs; mehr als sechs Ebenen deutet darauf hin, dass das Layout umstrukturiert werden sollte.
 
 ---
 
-## Wann verwenden Each Container
+## Wann welchen Container verwenden
 
-| Scenario | Best Container |
+| Szenario | Bester Container |
 |---|---|
-| Static panel with manually positioned elements | `FrameWidget` |
-| Dynamic list of varying-size items | `WrapSpacerWidget` |
-| Uniform grid (inventory, gallery) | `GridSpacerWidget` |
-| Vertical list with one item per row | `WrapSpacerWidget` (full-width children) or `GridSpacerWidget` (`Columns 1`) |
-| Content taller than available space | `ScrollWidget` wrapping a spacer |
-| Tab content area | `FrameWidget` (swap children visibility) |
-| Toolbar buttons | `WrapSpacerWidget` or `GridSpacerWidget` |
+| Statisches Panel mit manuell positionierten Elementen | `FrameWidget` |
+| Dynamische Liste mit Elementen unterschiedlicher Größe | `WrapSpacerWidget` |
+| Einheitliches Raster (Inventar, Galerie) | `GridSpacerWidget` |
+| Vertikale Liste mit einem Element pro Zeile | `WrapSpacerWidget` (vollbreite Kinder) oder `GridSpacerWidget` (`Columns 1`) |
+| Inhalt höher als verfügbarer Platz | `ScrollWidget` umschließt einen Spacer |
+| Tab-Inhaltsbereich | `FrameWidget` (Kinder-Sichtbarkeit wechseln) |
+| Toolbar-Buttons | `WrapSpacerWidget` oder `GridSpacerWidget` |
 
 ---
 
-## Complete Example: Scrollable Settings Panel
+## Vollständiges Beispiel: Scrollbares Einstellungspanel
 
-A settings panel with a title bar, scrollable content area containing grid-arranged options, and a bottom button bar:
+Ein Einstellungspanel mit einer Titelleiste, einem scrollbaren Inhaltsbereich mit rasterartig angeordneten Optionen und einer unteren Buttonleiste:
 
 ```
 FrameWidgetClass SettingsPanel {
@@ -402,7 +452,7 @@ FrameWidgetClass SettingsPanel {
  hexactsize 0
  vexactsize 0
  {
-  // Title bar
+  // Titelleiste
   PanelWidgetClass TitleBar {
    position 0 0
    size 1 30
@@ -411,7 +461,7 @@ FrameWidgetClass SettingsPanel {
    color 0.2 0.4 0.8 1
   }
 
-  // Scrollable settings area
+  // Scrollbarer Einstellungsbereich
   ScrollWidgetClass SettingsScroll {
    position 0 30
    size 1 0
@@ -431,7 +481,7 @@ FrameWidgetClass SettingsPanel {
    }
   }
 
-  // Button bar at bottom
+  // Buttonleiste unten
   FrameWidgetClass ButtonBar {
    size 1 40
    halign left_ref
@@ -447,7 +497,50 @@ FrameWidgetClass SettingsPanel {
 
 ---
 
+## Bewährte Methoden
+
+- Rufe immer `Update()` auf einem `WrapSpacerWidget` oder `GridSpacerWidget` auf, nachdem du Kinder programmatisch hinzugefügt oder entfernt hast. Ohne diesen Aufruf berechnet der Spacer sein Layout nicht neu und Kinder können sich überlappen oder unsichtbar sein.
+- Verwende `ScrollWidget` + `WrapSpacerWidget` als Standardmuster für jede dynamische Liste. Setze den Scroll auf eine feste Pixelhöhe und den inneren Spacer auf `"Size To Content V" 1`.
+- Bevorzuge `WrapSpacerWidget` mit vollbreiten Kindern gegenüber `GridSpacerWidget Columns 1` für vertikale Listen, bei denen Elemente unterschiedliche Höhen haben. GridSpacer erzwingt einheitliche Zellengrößen.
+- Setze immer `clipchildren 1` auf dem `ScrollWidget`. Ohne dies wird überlaufender Inhalt außerhalb der Scroll-Viewport-Grenzen gerendert.
+- Vermeide Verschachtelung von mehr als 4-5 Container-Ebenen. Jede Ebene erhöht die Layout-Berechnungskosten und macht das Debugging deutlich schwieriger.
+
+---
+
+## Theorie vs. Praxis
+
+> Was die Dokumentation sagt gegenüber dem, was zur Laufzeit tatsächlich passiert.
+
+| Konzept | Theorie | Realität |
+|---------|---------|---------|
+| `WrapSpacerWidget.Update()` | Layout berechnet sich automatisch neu, wenn Kinder sich ändern | Du musst `Update()` manuell aufrufen nach `CreateWidgets()` oder `Unlink()`. Das Vergessen ist der häufigste Spacer-Bug |
+| `"Size To Content V"` | Spacer wächst, um Kinder aufzunehmen | Funktioniert nur, wenn Kinder explizite Größen haben (Pixelhöhe oder bekannter proportionaler Elternteil). Wenn Kinder auch `Size To Content` verwenden, erhältst du eine Höhe von Null |
+| `GridSpacerWidget` Zellengröße | Raster steuert Zellengröße einheitlich | Die eigenen Größenattribute der Kinder werden ignoriert -- das Raster überschreibt sie. Das Setzen von `size` auf ein Raster-Kind hat keinen Effekt |
+| `ScrollWidget` Scroll-Position | `VScrollToPos(0)` scrollt nach oben | Nach dem Hinzufügen von Kindern musst du `VScrollToPos()` möglicherweise um einen Frame verzögern (via `CallLater`), weil die Inhaltshöhe noch nicht neu berechnet wurde |
+| Verschachtelte Spacer | Spacer können frei verschachtelt werden | Ein `WrapSpacer` in einem `WrapSpacer` funktioniert, aber `Size To Content` auf beiden Ebenen kann endlose Layout-Schleifen verursachen, die die UI einfrieren |
+
+---
+
+## Kompatibilität & Auswirkungen
+
+- **Multi-Mod:** Container-Widgets sind pro Layout und verursachen keine Konflikte zwischen Mods. Wenn jedoch zwei Mods Kinder in dasselbe Vanilla-`ScrollWidget` injizieren (über `modded class`), ist die Kinder-Reihenfolge unvorhersehbar.
+- **Leistung:** `WrapSpacerWidget.Update()` berechnet alle Kinder-Positionen neu. Bei Listen mit 100+ Elementen rufe `Update()` einmal nach Stapeloperationen auf, nicht nach jedem einzelnen Hinzufügen. GridSpacer ist schneller für einheitliche Raster, weil Zellenpositionen arithmetisch berechnet werden.
+- **Version:** `WrapSpacerWidget` und `GridSpacerWidget` sind seit DayZ 1.0 verfügbar. Die `"Size To Content H/V"`-Attribute waren von Anfang an vorhanden, aber ihr Verhalten mit tief verschachtelten Layouts wurde um DayZ 1.10 herum stabilisiert.
+
+---
+
+## In echten Mods beobachtet
+
+| Muster | Mod | Detail |
+|---------|-----|--------|
+| `ScrollWidget` + `WrapSpacerWidget` für dynamische Listen | DabsFramework, Expansion, COT | Scroll-Viewport mit fester Höhe und automatisch wachsendem innerem Spacer -- das universelle Muster für scrollbare Listen |
+| `GridSpacerWidget Columns 10` für Inventar | Vanilla DayZ | Inventarraster verwendet GridSpacer mit fester Spaltenanzahl, die dem Slot-Layout entspricht |
+| Gepoolte Kinder in WrapSpacer | VPP Admin Tools | Erstellt vorab einen Pool von Listen-Element-Widgets, zeigt/verbirgt sie anstatt sie zu erstellen/zerstören, um `Update()`-Overhead zu vermeiden |
+| `WrapSpacerWidget` als Dialog-Stamm | COT, DayZ Editor | Dialog-Stamm verwendet `Size To Content V/H`, damit der Dialog sich automatisch um seinen Inhalt dimensioniert, ohne hartcodierte Abmessungen |
+
+---
+
 ## Nächste Schritte
 
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Create widgets from code
-- [3.6 Event Handling](06-event-handling.md) -- Respond to clicks, changes, and other events
+- [3.5 Programmatische Widget-Erstellung](05-programmatic-widgets.md) -- Widgets aus Code erstellen
+- [3.6 Ereignisbehandlung](06-event-handling.md) -- Auf Klicks, Änderungen und andere Events reagieren

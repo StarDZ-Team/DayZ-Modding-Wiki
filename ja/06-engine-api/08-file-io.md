@@ -1,38 +1,38 @@
-# Chapter 6.8: File I/O & JSON
+# 第6.8章: ファイルI/OとJSON
 
-[Home](../../README.md) | [<< Previous: Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [Next: Networking & RPC >>](09-networking.md)
+[ホーム](../../README.md) | [<< 前へ: タイマーとCallQueue](07-timers.md) | **ファイルI/OとJSON** | [次へ: ネットワークとRPC >>](09-networking.md)
 
 ---
 
 ## はじめに
 
-DayZ provides file I/O operations for reading and writing text files, JSON serialization/deserialization, directory management, and file enumeration. All file operations use special path prefixes (`$profile:`, `$saves:`, `$mission:`) rather than absolute filesystem paths. This chapter covers every file operation available in Enforce Script.
+DayZはテキストファイルの読み書き、JSONのシリアライズ/デシリアライズ、ディレクトリ管理、ファイル列挙のためのファイルI/O操作を提供しています。すべてのファイル操作は絶対ファイルシステムパスではなく、特別なパスプレフィックス（`$profile:`、`$saves:`、`$mission:`）を使用します。この章ではEnforce Scriptで利用可能なすべてのファイル操作について説明します。
 
 ---
 
-## Path Prefixes
+## パスプレフィックス
 
-| Prefix | Location | Writable |
+| プレフィックス | 場所 | 書き込み可能 |
 |--------|----------|----------|
-| `$profile:` | Server/client profile directory (e.g., `DayZServer/profiles/`) | Yes |
-| `$saves:` | Save directory | Yes |
-| `$mission:` | Current mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`) | Read typically |
-| `$CurrentDir:` | Current working directory | Depends |
-| No prefix | Relative to game root | Read only |
+| `$profile:` | サーバー/クライアントプロファイルディレクトリ（例：`DayZServer/profiles/`） | はい |
+| `$saves:` | セーブディレクトリ | はい |
+| `$mission:` | 現在のミッションフォルダ（例：`mpmissions/dayzOffline.chernarusplus/`） | 通常は読み取りのみ |
+| `$CurrentDir:` | カレントワーキングディレクトリ | 場合による |
+| プレフィックスなし | ゲームルートからの相対パス | 読み取りのみ |
 
-> **重要：** Most file write operations are restricted to `$profile:` and `$saves:`. Attempting to write elsewhere may silently fail.
+> **重要:** ほとんどのファイル書き込み操作は `$profile:` と `$saves:` に制限されています。他の場所への書き込みは暗黙的に失敗する場合があります。
 
 ---
 
-## File Existence Check
+## ファイル存在チェック
 
 ```c
 proto bool FileExist(string name);
 ```
 
-Returns `true` if the file exists at the given path.
+指定されたパスにファイルが存在する場合、`true` を返します。
 
-**Example:**
+**例：**
 
 ```c
 if (FileExist("$profile:MyMod/config.json"))
@@ -47,61 +47,61 @@ else
 
 ---
 
-## Opening & Closing Files
+## ファイルのオープンとクローズ
 
 ```c
 proto FileHandle OpenFile(string name, FileMode mode);
 proto void CloseFile(FileHandle file);
 ```
 
-### FileMode Enum
+### FileMode列挙型
 
 ```c
 enum FileMode
 {
-    READ,     // Open for reading (file must exist)
-    WRITE,    // Open for writing (creates new / overwrites existing)
-    APPEND    // Open for appending (creates if not exists)
+    READ,     // 読み取り用に開く（ファイルが存在する必要がある）
+    WRITE,    // 書き込み用に開く（新規作成/既存を上書き）
+    APPEND    // 追記用に開く（存在しない場合は作成）
 }
 ```
 
-`FileHandle` is an integer handle. A return value of `0` indicates failure.
+`FileHandle` は整数ハンドルです。戻り値 `0` は失敗を示します。
 
-**Example:**
+**例：**
 
 ```c
 FileHandle fh = OpenFile("$profile:MyMod/log.txt", FileMode.WRITE);
 if (fh != 0)
 {
-    // File opened successfully
-    // ... do work ...
+    // ファイルが正常に開かれた
+    // ... 作業 ...
     CloseFile(fh);
 }
 ```
 
-> **Critical:** Always call `CloseFile()` when done. Failure to close files can cause data loss and resource leaks.
+> **重要:** 作業が完了したら必ず `CloseFile()` を呼び出してください。ファイルを閉じ忘れるとデータ損失やリソースリークの原因になります。
 
 ---
 
-## Writing Files
+## ファイルの書き込み
 
-### FPrintln (Write Line)
+### FPrintln（行の書き込み）
 
 ```c
 proto void FPrintln(FileHandle file, void var);
 ```
 
-Writes the value followed by a newline character.
+値の後に改行文字を付けて書き込みます。
 
-### FPrint (Write Without Newline)
+### FPrint（改行なし書き込み）
 
 ```c
 proto void FPrint(FileHandle file, void var);
 ```
 
-Writes the value without a trailing newline.
+値を末尾の改行なしで書き込みます。
 
-**Example --- write a log file:**
+**例 --- ログファイルの書き込み：**
 
 ```c
 void WriteLog(string message)
@@ -121,17 +121,17 @@ void WriteLog(string message)
 
 ---
 
-## Reading Files
+## ファイルの読み取り
 
-### FGets (Read Line)
+### FGets（行の読み取り）
 
 ```c
 proto int FGets(FileHandle file, string var);
 ```
 
-Reads one line from the file into `var`. Returns the number of characters read, or `-1` at end of file.
+ファイルから1行を `var` に読み込みます。読み取った文字数を返し、ファイルの末尾では `-1` を返します。
 
-**Example --- read a file line by line:**
+**例 --- ファイルを1行ずつ読み取る：**
 
 ```c
 void ReadConfigFile()
@@ -150,17 +150,17 @@ void ReadConfigFile()
 }
 ```
 
-### ReadFile (Raw Binary Read)
+### ReadFile（生バイナリ読み取り）
 
 ```c
 proto int ReadFile(FileHandle file, void param_array, int length);
 ```
 
-Reads raw bytes into a buffer. Used for binary data.
+生バイトをバッファに読み込みます。バイナリデータに使用します。
 
 ---
 
-## Directory Operations
+## ディレクトリ操作
 
 ### MakeDirectory
 
@@ -168,9 +168,9 @@ Reads raw bytes into a buffer. Used for binary data.
 proto native bool MakeDirectory(string name);
 ```
 
-Creates a directory. Returns `true` on success. Creates only the final directory --- parent directories must already exist.
+ディレクトリを作成します。成功した場合 `true` を返します。最終ディレクトリのみを作成します --- 親ディレクトリは既に存在している必要があります。
 
-**Example --- ensure directory structure:**
+**例 --- ディレクトリ構造の確保：**
 
 ```c
 void EnsureDirectories()
@@ -187,7 +187,7 @@ void EnsureDirectories()
 proto native bool DeleteFile(string name);
 ```
 
-Deletes a file. Only works in `$profile:` and `$saves:` directories.
+ファイルを削除します。`$profile:` と `$saves:` ディレクトリでのみ動作します。
 
 ### CopyFile
 
@@ -195,12 +195,12 @@ Deletes a file. Only works in `$profile:` and `$saves:` directories.
 proto native bool CopyFile(string sourceName, string destName);
 ```
 
-Copies a file from source to destination.
+ソースからデスティネーションにファイルをコピーします。
 
-**Example:**
+**例：**
 
 ```c
-// Backup before overwriting
+// 上書き前にバックアップ
 if (FileExist("$profile:MyMod/config.json"))
 {
     CopyFile("$profile:MyMod/config.json", "$profile:MyMod/config.json.bak");
@@ -209,9 +209,9 @@ if (FileExist("$profile:MyMod/config.json"))
 
 ---
 
-## File Enumeration (FindFile / FindNextFile)
+## ファイル列挙（FindFile / FindNextFile）
 
-Enumerate files matching a pattern in a directory.
+ディレクトリ内のパターンに一致するファイルを列挙します。
 
 ```c
 proto FindFileHandle FindFile(string pattern, out string fileName,
@@ -221,30 +221,30 @@ proto bool FindNextFile(FindFileHandle handle, out string fileName,
 proto native void CloseFindFile(FindFileHandle handle);
 ```
 
-### FileAttr Enum
+### FileAttr列挙型
 
 ```c
 enum FileAttr
 {
-    DIRECTORY,   // Entry is a directory
-    HIDDEN,      // Entry is hidden
-    READONLY,    // Entry is read-only
-    INVALID      // Invalid entry
+    DIRECTORY,   // エントリはディレクトリ
+    HIDDEN,      // エントリは非表示
+    READONLY,    // エントリは読み取り専用
+    INVALID      // 無効なエントリ
 }
 ```
 
-### FindFileFlags Enum
+### FindFileFlags列挙型
 
 ```c
 enum FindFileFlags
 {
-    DIRECTORIES,  // Return only directories
-    ARCHIVES,     // Return only files
-    ALL           // Return both
+    DIRECTORIES,  // ディレクトリのみを返す
+    ARCHIVES,     // ファイルのみを返す
+    ALL           // 両方を返す
 }
 ```
 
-**Example --- enumerate all JSON files in a directory:**
+**例 --- ディレクトリ内のすべてのJSONファイルを列挙：**
 
 ```c
 void ListJsonFiles()
@@ -257,13 +257,13 @@ void ListJsonFiles()
 
     if (handle)
     {
-        // Process first result
+        // 最初の結果を処理
         if (!(fileAttr & FileAttr.DIRECTORY))
         {
             Print("Found: " + fileName);
         }
 
-        // Process remaining results
+        // 残りの結果を処理
         while (FindNextFile(handle, fileName, fileAttr))
         {
             if (!(fileAttr & FileAttr.DIRECTORY))
@@ -277,9 +277,9 @@ void ListJsonFiles()
 }
 ```
 
-> **重要：** `FindFile` returns just the file name, not the full path. You must prepend the directory path yourself when processing the files.
+> **重要:** `FindFile` はファイル名のみを返し、フルパスは返しません。ファイルを処理する際は自分でディレクトリパスを先頭に追加する必要があります。
 
-**Example --- count files in a directory:**
+**例 --- ディレクトリ内のファイル数をカウント：**
 
 ```c
 int CountFiles(string pattern)
@@ -305,58 +305,58 @@ int CountFiles(string pattern)
 
 ---
 
-## JsonFileLoader (Generic JSON)
+## JsonFileLoader（汎用JSON）
 
-**File:** `3_Game/tools/jsonfileloader.c` (173 lines)
+**ファイル:** `3_Game/tools/jsonfileloader.c`（173行）
 
-The recommended way to load and save JSON data. Works with any class that has public fields.
+JSONデータの読み込みと保存に推奨される方法です。パブリックフィールドを持つ任意のクラスで動作します。
 
-### Modern API (Preferred)
+### モダンAPI（推奨）
 
 ```c
 class JsonFileLoader<Class T>
 {
-    // Load JSON file into object
+    // JSONファイルをオブジェクトに読み込む
     static bool LoadFile(string filename, out T data, out string errorMessage);
 
-    // Save object to JSON file
+    // オブジェクトをJSONファイルに保存する
     static bool SaveFile(string filename, T data, out string errorMessage);
 
-    // Parse JSON string into object
+    // JSON文字列をオブジェクトにパースする
     static bool LoadData(string string_data, out T data, out string errorMessage);
 
-    // Serialize object to JSON string
+    // オブジェクトをJSON文字列にシリアライズする
     static bool MakeData(T inputData, out string outputData,
                           out string errorMessage, bool prettyPrint = true);
 }
 ```
 
-All methods return `bool` --- `true` on success, `false` on failure with the error in `errorMessage`.
+すべてのメソッドは `bool` を返します --- 成功時は `true`、失敗時は `false` でエラーは `errorMessage` に格納されます。
 
-### Legacy API (Deprecated)
+### レガシーAPI（非推奨）
 
 ```c
 class JsonFileLoader<Class T>
 {
-    static void JsonLoadFile(string filename, out T data);    // Returns void!
+    static void JsonLoadFile(string filename, out T data);    // voidを返す！
     static void JsonSaveFile(string filename, T data);
     static void JsonLoadData(string string_data, out T data);
     static string JsonMakeData(T data);
 }
 ```
 
-> **Critical Gotcha:** `JsonLoadFile()` returns `void`. You CANNOT use it in an `if` condition:
+> **重大な注意点:** `JsonLoadFile()` は `void` を返します。`if` 条件で使用することはできません：
 > ```c
-> // WRONG - will not compile or will always be false
+> // 間違い - コンパイルできないか、常にfalseになる
 > if (JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg)) { }
 >
-> // CORRECT - use the modern LoadFile() which returns bool
+> // 正しい - boolを返すモダンなLoadFile()を使用する
 > if (JsonFileLoader<MyConfig>.LoadFile(path, cfg, error)) { }
 > ```
 
-### Data Class Requirements
+### データクラスの要件
 
-The target class must have **public fields** with default values. The JSON serializer maps field names directly to JSON keys.
+ターゲットクラスはデフォルト値を持つ**パブリックフィールド**を持つ必要があります。JSONシリアライザはフィールド名をJSONキーに直接マッピングします。
 
 ```c
 class MyConfig
@@ -376,7 +376,7 @@ class MyConfig
 }
 ```
 
-This produces JSON:
+これにより以下のJSONが生成されます：
 
 ```json
 {
@@ -389,7 +389,7 @@ This produces JSON:
 }
 ```
 
-### Complete Load/Save Example
+### 完全な読み込み/保存の例
 
 ```c
 class MyModConfig
@@ -415,7 +415,7 @@ class MyModConfigManager
     {
         if (!FileExist(CONFIG_PATH))
         {
-            Save();  // Create default config
+            Save();  // デフォルト設定を作成
             return;
         }
 
@@ -423,7 +423,7 @@ class MyModConfigManager
         if (!JsonFileLoader<MyModConfig>.LoadFile(CONFIG_PATH, m_Config, error))
         {
             Print("[MyMod] Config load error: " + error);
-            m_Config = new MyModConfig();  // Reset to defaults
+            m_Config = new MyModConfig();  // デフォルトにリセット
             Save();
         }
     }
@@ -446,11 +446,11 @@ class MyModConfigManager
 
 ---
 
-## JsonSerializer (Direct Use)
+## JsonSerializer（直接使用）
 
-**File:** `3_Game/gameplay.c`
+**ファイル:** `3_Game/gameplay.c`
 
-For cases where you need to serialize/deserialize JSON strings directly without file operations:
+ファイル操作なしでJSON文字列を直接シリアライズ/デシリアライズする必要がある場合に使用します：
 
 ```c
 class JsonSerializer : Serializer
@@ -460,7 +460,7 @@ class JsonSerializer : Serializer
 }
 ```
 
-**Example:**
+**例：**
 
 ```c
 MyConfig cfg = new MyConfig();
@@ -468,12 +468,12 @@ cfg.MaxPlayers = 100;
 
 JsonSerializer js = new JsonSerializer();
 
-// Serialize to string
+// 文字列にシリアライズ
 string jsonOutput;
-js.WriteToString(cfg, true, jsonOutput);  // true = pretty print
+js.WriteToString(cfg, true, jsonOutput);  // true = 整形出力
 Print(jsonOutput);
 
-// Deserialize from string
+// 文字列からデシリアライズ
 MyConfig parsed = new MyConfig();
 string parseError;
 js.ReadFromString(parsed, jsonOutput, parseError);
@@ -484,30 +484,64 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 
 ## まとめ
 
-| Operation | Function | Notes |
+| 操作 | 関数 | 注意点 |
 |-----------|----------|-------|
-| Check exists | `FileExist(path)` | Returns bool |
-| Open | `OpenFile(path, FileMode)` | Returns handle (0 = fail) |
-| Close | `CloseFile(handle)` | Always call when done |
-| Write line | `FPrintln(handle, data)` | With newline |
-| Write | `FPrint(handle, data)` | Without newline |
-| Read line | `FGets(handle, out line)` | Returns -1 at EOF |
-| Make dir | `MakeDirectory(path)` | Single level only |
-| Delete | `DeleteFile(path)` | Only `$profile:` / `$saves:` |
-| Copy | `CopyFile(src, dst)` | -- |
-| Find files | `FindFile(pattern, ...)` | Returns handle, iterate with `FindNextFile` |
-| JSON load | `JsonFileLoader<T>.LoadFile(path, data, error)` | Modern API, returns bool |
-| JSON save | `JsonFileLoader<T>.SaveFile(path, data, error)` | Modern API, returns bool |
-| JSON string | `JsonSerializer.WriteToString()` / `ReadFromString()` | Direct string operations |
+| 存在チェック | `FileExist(path)` | boolを返す |
+| オープン | `OpenFile(path, FileMode)` | ハンドルを返す（0 = 失敗） |
+| クローズ | `CloseFile(handle)` | 完了時に必ず呼び出す |
+| 行の書き込み | `FPrintln(handle, data)` | 改行付き |
+| 書き込み | `FPrint(handle, data)` | 改行なし |
+| 行の読み取り | `FGets(handle, out line)` | EOFで-1を返す |
+| ディレクトリ作成 | `MakeDirectory(path)` | 単一レベルのみ |
+| 削除 | `DeleteFile(path)` | `$profile:` / `$saves:` のみ |
+| コピー | `CopyFile(src, dst)` | -- |
+| ファイル検索 | `FindFile(pattern, ...)` | ハンドルを返し、`FindNextFile` で反復 |
+| JSON読み込み | `JsonFileLoader<T>.LoadFile(path, data, error)` | モダンAPI、boolを返す |
+| JSON保存 | `JsonFileLoader<T>.SaveFile(path, data, error)` | モダンAPI、boolを返す |
+| JSON文字列 | `JsonSerializer.WriteToString()` / `ReadFromString()` | 直接文字列操作 |
 
-| 概念 | 要点 |
+| 概念 | 重要ポイント |
 |---------|-----------|
-| Path prefixes | `$profile:` (writable), `$mission:` (read), `$saves:` (writable) |
-| JsonLoadFile | **Returns void** --- use `LoadFile()` (bool) instead |
-| Data classes | Public fields with defaults, `ref` for arrays/maps |
-| Always close | Every `OpenFile` must have a matching `CloseFile` |
-| FindFile | Returns only filenames, not full paths |
+| パスプレフィックス | `$profile:`（書き込み可能）、`$mission:`（読み取り）、`$saves:`（書き込み可能） |
+| JsonLoadFile | **voidを返す** --- 代わりに `LoadFile()`（bool）を使用する |
+| データクラス | デフォルト値を持つパブリックフィールド、配列/マップには `ref` |
+| 常にクローズ | すべての `OpenFile` に対応する `CloseFile` が必要 |
+| FindFile | ファイル名のみを返し、フルパスは返さない |
 
 ---
 
-[<< 前： Timers & CallQueue](07-timers.md) | **File I/O & JSON** | [次： Networking & RPC >>](09-networking.md)
+## ベストプラクティス
+
+- **ファイル操作は常に存在チェックで囲み、すべてのコードパスでハンドルを閉じてください。** 閉じられていない `FileHandle` はリソースをリークし、ファイルがディスクに書き込まれるのを妨げる可能性があります。ガードパターンを使用してください：`fh != 0` を確認し、作業を行い、すべての `return` の前に `CloseFile(fh)` を呼び出します。
+- **レガシーの `JsonFileLoader<T>.JsonLoadFile()`（voidを返す）の代わりに、モダンな `JsonFileLoader<T>.LoadFile()`（boolを返す）を使用してください。** レガシーAPIはエラーを報告できず、そのvoidの戻り値を条件で使用しようとすると暗黙的に失敗します。
+- **`MakeDirectory()` で親から子の順にディレクトリを作成してください。** `MakeDirectory` は最終ディレクトリセグメントのみを作成します。`A/B` が存在しない場合、`MakeDirectory("$profile:A/B/C")` は失敗します。各レベルを順番に作成してください。
+- **設定ファイルを上書きする前に `CopyFile()` でバックアップを作成してください。** 破損したセーブからのJSONパースエラーは回復不能です。`.bak` コピーがあればサーバーオーナーは最後の正常な状態を復元できます。
+- **`FindFile()` はファイル名のみを返し、フルパスは返さないことを忘れないでください。** `FindFile`/`FindNextFile` で見つかったファイルを読み込む際は、自分でディレクトリプレフィックスを連結する必要があります。
+
+---
+
+## 互換性と影響
+
+> **Mod互換性:** 各Modが独自の `$profile:` サブディレクトリを使用する場合、ファイルI/Oは本質的にMod間で分離されます。競合が発生するのは2つのModが同じファイルパスを読み書きする場合のみです。
+
+- **ロード順序:** ファイルI/Oにはロード順序の依存関係はありません。Modは独立して読み書きします。
+- **moddedクラスの競合:** クラスの競合はありません。リスクは2つのModが同じ `$profile:` サブディレクトリ名やファイル名を使用し、データの破損を引き起こすことです。
+- **パフォーマンスへの影響:** `JsonFileLoader` によるJSONシリアライゼーションは同期的で、メインスレッドをブロックします。ゲームプレイ中に大きなJSONファイル（>100KB）を読み込むとフレームの停止が発生します。`OnInit()` または `OnMissionStart()` で設定を読み込み、`OnUpdate()` では決して行わないでください。
+- **サーバー/クライアント:** ファイルの書き込みは `$profile:` と `$saves:` に制限されています。クライアントでは `$profile:` はクライアントプロファイルディレクトリを指します。専用サーバーではサーバープロファイルを指します。`$mission:` は通常、どちらの側でも読み取り専用です。
+
+---
+
+## 実際のModで確認されたパターン
+
+> これらのパターンはプロフェッショナルなDayZ Modのソースコードを調査して確認されました。
+
+| パターン | Mod | ファイル/場所 |
+|---------|-----|---------------|
+| `MakeDirectory` チェーン + `FileExist` チェック + デフォルトへのフォールバック付き `LoadFile` | Expansion | 設定マネージャー（`ExpansionSettings`） |
+| 設定保存前の `CopyFile` バックアップ | COT | パーミッションファイル管理 |
+| `$profile:` 内のプレイヤーごとのJSONファイルを列挙する `FindFile`/`FindNextFile` | VPP Admin Tools | プレイヤーデータローダー |
+| ファイルなしでRPCペイロードシリアライゼーションに `JsonSerializer.WriteToString()` | Dabs Framework | ネットワーク設定同期 |
+
+---
+
+[<< 前へ: タイマーとCallQueue](07-timers.md) | **ファイルI/OとJSON** | [次へ: ネットワークとRPC >>](09-networking.md)
