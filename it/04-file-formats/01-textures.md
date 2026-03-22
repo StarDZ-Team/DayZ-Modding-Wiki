@@ -1,461 +1,480 @@
-# Chapter 4.1: Textures (.paa, .edds, .tga)
+# Capitolo 4.1: Texture (.paa, .edds, .tga)
 
-[Home](../../README.md) | **Textures** | [Next: 3D Models >>](02-models.md)
+[Home](../../README.md) | **Texture** | [Successivo: Modelli 3D >>](02-models.md)
 
 ---
 
 ## Introduzione
 
-Every surface you vedi in DayZ -- weapon skins, clothing, terrain, UI icons -- is defined by texture files. The engine uses a proprietary compressed format called **PAA** at runtime, but during development you work with several source formats that are converted during the build process. Understanding these formats, the naming conventions that bind them to materials, and the resolution rules the engine enforces is fundamental to creating visual content for DayZ mods.
+Ogni superficie che vedi in DayZ -- skin delle armi, abbigliamento, terreno, icone UI -- è definita da file di texture. Il motore usa un formato compresso proprietario chiamato **PAA** a runtime, ma durante lo sviluppo lavori con diversi formati sorgente che vengono convertiti durante il processo di build. Comprendere questi formati, le convenzioni di denominazione che li legano ai materiali e le regole di risoluzione imposte dal motore è fondamentale per creare contenuto visivo per le mod DayZ.
 
-Questo capitolo copre every texture format you will encounter, the suffix naming system that tells the engine how to interpret each texture, resolution and alpha channel requirements, and the practical workflow for converting between formats.
+Questo capitolo copre ogni formato di texture che incontrerai, il sistema di suffissi di denominazione che dice al motore come interpretare ogni texture, i requisiti di risoluzione e canale alfa, e il flusso di lavoro pratico per la conversione tra formati.
 
 ---
 
 ## Indice dei Contenuti
 
-- [Texture Formats Overview](#texture-formats-overview)
-- [PAA Format](#paa-format)
-- [EDDS Format](#edds-format)
-- [TGA Format](#tga-format)
-- [PNG Format](#png-format)
-- [Texture Naming Conventions](#texture-naming-conventions)
-- [Resolution Requirements](#resolution-requirements)
-- [Alpha Channel Support](#alpha-channel-support)
-- [Converting Between Formats](#converting-between-formats)
-- [Texture Quality and Compression](#texture-quality-and-compression)
-- [Real-World Examples](#real-world-examples)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [Panoramica dei Formati Texture](#panoramica-dei-formati-texture)
+- [Formato PAA](#formato-paa)
+- [Formato EDDS](#formato-edds)
+- [Formato TGA](#formato-tga)
+- [Formato PNG](#formato-png)
+- [Convenzioni di Denominazione delle Texture](#convenzioni-di-denominazione-delle-texture)
+- [Requisiti di Risoluzione](#requisiti-di-risoluzione)
+- [Supporto al Canale Alfa](#supporto-al-canale-alfa)
+- [Conversione tra Formati](#conversione-tra-formati)
+- [Qualità e Compressione delle Texture](#qualità-e-compressione-delle-texture)
+- [Esempi dal Mondo Reale](#esempi-dal-mondo-reale)
+- [Errori Comuni](#errori-comuni)
+- [Buone Pratiche](#buone-pratiche)
 
 ---
 
 ## Panoramica dei Formati Texture
 
-DayZ uses four texture formats at different stages of the development pipeline:
+DayZ usa quattro formati di texture in fasi diverse della pipeline di sviluppo:
 
-| Format | Extension | Role | Alpha Support | Used At |
+| Formato | Estensione | Ruolo | Supporto Alfa | Usato In |
 |--------|-----------|------|---------------|---------|
-| **PAA** | `.paa` | Runtime game format (compressed) | Yes | Final build, shipped in PBOs |
-| **EDDS** | `.edds` | Editor/intermediate DDS variant | Yes | Object Builder preview, auto-converts |
-| **TGA** | `.tga` | Uncompressed source artwork | Yes | Artist workspace, Photoshop/GIMP export |
-| **PNG** | `.png` | Portable source format | Yes | UI textures, external tools |
+| **PAA** | `.paa` | Formato di gioco a runtime (compresso) | Sì | Build finale, distribuito nei PBO |
+| **EDDS** | `.edds` | Variante DDS editor/intermedia | Sì | Anteprima Object Builder, auto-conversione |
+| **TGA** | `.tga` | Artwork sorgente non compresso | Sì | Workspace dell'artista, esportazione Photoshop/GIMP |
+| **PNG** | `.png` | Formato sorgente portatile | Sì | Texture UI, strumenti esterni |
 
-The general workflow is: **Source (TGA/PNG) --> DayZ Tools conversion --> PAA (game-ready)**.
+Il flusso di lavoro generale è: **Sorgente (TGA/PNG) --> conversione DayZ Tools --> PAA (pronto per il gioco)**.
 
 ---
 
-## PAA Format
+## Formato PAA
 
-**PAA** (PAcked Arma) is the native compressed texture format used by the Enfusion engine at runtime. Every texture that ships in a PBO must be in PAA format (or will be converted to it during binarization).
+**PAA** (PAcked Arma) è il formato di texture compresso nativo usato dal motore Enfusion a runtime. Ogni texture distribuita in un PBO deve essere in formato PAA (o sarà convertita ad esso durante la binarizzazione).
 
 ### Caratteristiche
 
-- **Compressed:** Uses DXT1, DXT5, or ARGB8888 compression internally depending on alpha channel presence and quality settings.
-- **Mipmapped:** PAA files contain a full mipmap chain, generated automatically during conversion. Questo e' critical for rendering performance -- the engine selects the appropriate mip level based on distance.
-- **Power-of-two dimensions:** The engine requires PAA textures to have dimensions that are powers of 2 (256, 512, 1024, 2048, 4096).
-- **Leggi-only at runtime:** The engine loads PAA files directly from PBOs. You never edit a PAA file -- you edit the source and re-convert.
+- **Compresso:** Usa compressione DXT1, DXT5 o ARGB8888 internamente a seconda della presenza del canale alfa e delle impostazioni di qualità.
+- **Con mipmap:** I file PAA contengono una catena completa di mipmap, generata automaticamente durante la conversione. Questo è critico per le prestazioni di rendering -- il motore seleziona il livello mip appropriato in base alla distanza.
+- **Dimensioni potenza di due:** Il motore richiede che le texture PAA abbiano dimensioni che sono potenze di 2 (256, 512, 1024, 2048, 4096).
+- **Sola lettura a runtime:** Il motore carica i file PAA direttamente dai PBO. Non modifichi mai un file PAA -- modifichi la sorgente e riconverti.
 
-### Internal Compression Types
+### Tipi di Compressione Interna
 
-| Type | Alpha | Quality | Caso d'Uso |
+| Tipo | Alfa | Qualità | Caso d'Uso |
 |------|-------|---------|----------|
-| **DXT1** | No (1-bit) | Good, 6:1 ratio | Opaque textures, terrain |
-| **DXT5** | Full 8-bit | Good, 4:1 ratio | Textures with smooth alpha (glass, foliage) |
-| **ARGB4444** | Full 4-bit | Medium | UI textures, small icons |
-| **ARGB8888** | Full 8-bit | Lossless | Debug, highest quality (large file size) |
-| **AI88** | Grayscale + alpha | Good | Normal maps, grayscale masks |
+| **DXT1** | No (1-bit) | Buona, rapporto 6:1 | Texture opache, terreno |
+| **DXT5** | Piena 8-bit | Buona, rapporto 4:1 | Texture con alfa uniforme (vetro, fogliame) |
+| **ARGB4444** | Piena 4-bit | Media | Texture UI, piccole icone |
+| **ARGB8888** | Piena 8-bit | Senza perdita | Debug, massima qualità (dimensione file grande) |
+| **AI88** | Scala di grigi + alfa | Buona | Normal map, maschere scala di grigi |
 
-### When You Vedi PAA Files
+### Quando Vedi File PAA
 
-- Inside unpacked vanilla game data (`dta/` and addon PBOs)
-- As the output of TexView2 conversion
-- As the output of Binarize when processing source textures
-- In your mod's final PBO after building
-
----
-
-## EDDS Format
-
-**EDDS** is an intermediate texture format used primarily by DayZ's **Object Builder** and the editor tools. E' essentially a variant of the standard DirectDraw Surface (DDS) format with engine-specific metadata.
-
-### Caratteristiche
-
-- **Preview format:** Object Builder can display EDDS textures directly, making them useful during model creation.
-- **Auto-converts to PAA:** When you run Binarize or AddonBuilder (without `-packonly`), EDDS files in your source tree are automatically converted to PAA.
-- **Larger than PAA:** EDDS files are not optimized for distribution -- they exist for editor convenience.
-- **DayZ-Samples format:** The official DayZ-Samples provided by Bohemia use EDDS textures extensively.
-
-### Workflow with EDDS
-
-```
-Artist creates TGA/PNG source
-    --> Photoshop DDS plugin exports EDDS for preview
-        --> Object Builder displays EDDS on model
-            --> Binarize converts EDDS to PAA for PBO
-```
-
-> **Suggerimento:** Puoi skip EDDS entirely if you prefer. Convert your source textures directly to PAA using TexView2 and reference the PAA paths in your materials. EDDS is a convenience, not a requirement.
+- All'interno dei dati di gioco vanilla spacchettati (PBO `dta/` e addon)
+- Come output della conversione TexView2
+- Come output di Binarize durante l'elaborazione delle texture sorgente
+- Nel PBO finale della tua mod dopo la build
 
 ---
 
-## TGA Format
+## Formato EDDS
 
-**TGA** (Truevision TGA / Targa) is the traditional uncompressed source format for DayZ texture work. Many vanilla DayZ textures were originally authored as TGA files.
+**EDDS** è un formato di texture intermedio usato principalmente da **Object Builder** e dagli strumenti editor di DayZ. È essenzialmente una variante del formato standard DirectDraw Surface (DDS) con metadati specifici del motore.
 
 ### Caratteristiche
 
-- **Uncompressed:** No quality loss, full color depth (24-bit or 32-bit with alpha).
-- **Large file sizes:** A 2048x2048 TGA with alpha is approximately 16 MB.
-- **Alpha in dedicated channel:** TGA supports a proper 8-bit alpha channel (32-bit TGA), which maps directly to transparency in PAA.
-- **TexView2 compatible:** TexView2 can open TGA files directly and convert them to PAA.
+- **Formato di anteprima:** Object Builder può visualizzare direttamente le texture EDDS, rendendole utili durante la creazione dei modelli.
+- **Auto-conversione in PAA:** Quando esegui Binarize o AddonBuilder (senza `-packonly`), i file EDDS nel tuo albero sorgente vengono automaticamente convertiti in PAA.
+- **Più grande del PAA:** I file EDDS non sono ottimizzati per la distribuzione -- esistono per comodità nell'editor.
+- **Formato DayZ-Samples:** I DayZ-Samples ufficiali forniti da Bohemia usano estensivamente texture EDDS.
+
+### Flusso di Lavoro con EDDS
+
+```
+L'artista crea la sorgente TGA/PNG
+    --> Plugin DDS Photoshop esporta EDDS per l'anteprima
+        --> Object Builder visualizza EDDS sul modello
+            --> Binarize converte EDDS in PAA per il PBO
+```
+
+> **Suggerimento:** Puoi saltare completamente EDDS se preferisci. Converti le tue texture sorgente direttamente in PAA usando TexView2 e riferisci i percorsi PAA nei tuoi materiali. EDDS è una comodità, non un requisito.
+
+---
+
+## Formato TGA
+
+**TGA** (Truevision TGA / Targa) è il formato sorgente non compresso tradizionale per il lavoro sulle texture DayZ. Molte texture vanilla DayZ sono state originariamente create come file TGA.
+
+### Caratteristiche
+
+- **Non compresso:** Nessuna perdita di qualità, profondità colore completa (24-bit o 32-bit con alfa).
+- **Dimensioni file grandi:** Una TGA 2048x2048 con alfa è di circa 16 MB.
+- **Alfa in canale dedicato:** TGA supporta un canale alfa a 8-bit (TGA 32-bit), che corrisponde direttamente alla trasparenza in PAA.
+- **Compatibile con TexView2:** TexView2 può aprire direttamente i file TGA e convertirli in PAA.
 
 ### Quando Usare TGA
 
-- As your master source file for textures you author from scratch.
-- When exporting from Substance Painter or Photoshop for DayZ.
-- When the DayZ-Samples documentation or community tutorials specify TGA as the source format.
+- Come file sorgente master per le texture che crei da zero.
+- Quando esporti da Substance Painter o Photoshop per DayZ.
+- Quando la documentazione DayZ-Samples o i tutorial della community specificano TGA come formato sorgente.
 
-### TGA Export Settings
+### Impostazioni di Esportazione TGA
 
-When exporting TGA for DayZ conversion:
+Quando esporti TGA per la conversione DayZ:
 
-- **Bit depth:** 32-bit (if alpha is needed) or 24-bit (opaque textures)
-- **Compression:** None (uncompressed)
-- **Orientation:** Bottom-left origin (standard TGA orientation)
-- **Resolution:** Must be power of 2 (vedi [Resolution Requirements](#resolution-requirements))
+- **Profondità bit:** 32-bit (se serve l'alfa) o 24-bit (texture opache)
+- **Compressione:** Nessuna (non compresso)
+- **Orientamento:** Origine in basso a sinistra (orientamento TGA standard)
+- **Risoluzione:** Deve essere potenza di 2 (vedi [Requisiti di Risoluzione](#requisiti-di-risoluzione))
 
 ---
 
-## PNG Format
+## Formato PNG
 
-**PNG** (Portable Network Graphics) is widely supported and can be used as an alternative source format, particularly for UI textures.
+**PNG** (Portable Network Graphics) è ampiamente supportato e può essere usato come formato sorgente alternativo, in particolare per le texture UI.
 
 ### Caratteristiche
 
-- **Lossless compression:** Smaller than TGA but retains full quality.
-- **Full alpha channel:** 32-bit PNG supports 8-bit alpha.
-- **TexView2 compatible:** TexView2 can open and convert PNG to PAA.
-- **UI-friendly:** Many UI imagesets and icons in mods use PNG as their source format.
+- **Compressione senza perdita:** Più piccolo del TGA ma mantiene la qualità completa.
+- **Canale alfa completo:** PNG a 32-bit supporta alfa a 8-bit.
+- **Compatibile con TexView2:** TexView2 può aprire e convertire PNG in PAA.
+- **Adatto all'UI:** Molti imageset e icone UI nelle mod usano PNG come formato sorgente.
 
 ### Quando Usare PNG
 
-- **UI textures and icons:** PNG is the practical choice for imagesets and HUD elements.
-- **Simple retextures:** When you only need a color/diffuse map with no complex alpha.
-- **Cross-tool workflows:** PNG is universally supported across image editors, web tools, and scripts.
+- **Texture e icone UI:** PNG è la scelta pratica per imageset ed elementi HUD.
+- **Retexture semplici:** Quando hai bisogno solo di una mappa colore/diffuse senza alfa complesso.
+- **Flussi di lavoro cross-tool:** PNG è supportato universalmente tra editor di immagini, strumenti web e script.
 
-> **Nota:** PNG is not an official Bohemia source format -- they prefer TGA. Tuttavia, the conversion tools handle PNG without issues and many modders use it successfully.
+> **Nota:** PNG non è un formato sorgente ufficiale Bohemia -- preferiscono TGA. Tuttavia, gli strumenti di conversione gestiscono PNG senza problemi e molti modder lo usano con successo.
 
 ---
 
 ## Convenzioni di Denominazione delle Texture
 
-DayZ uses a strict suffix system to identify the role of each texture. The engine and materials reference textures by filename, and the suffix tells both the engine and other modders what type of data the texture contains.
+DayZ usa un sistema di suffissi rigoroso per identificare il ruolo di ogni texture. Il motore e i materiali riferiscono le texture per nome file, e il suffisso dice sia al motore che agli altri modder che tipo di dati contiene la texture.
 
-### Obbligatorio Suffixes
+### Suffissi Obbligatori
 
-| Suffix | Full Name | Scopo | Typical Format |
+| Suffisso | Nome Completo | Scopo | Formato Tipico |
 |--------|-----------|---------|----------------|
-| `_co` | **Color / Diffuse** | The base color (albedo) of a surface | RGB, opzionale alpha |
-| `_nohq` | **Normal Map (High Quality)** | Surface detail normals, defines bumps and grooves | RGB (tangent-space normal) |
-| `_smdi` | **Specular / Metallic / Dettaglio Index** | Controls shininess and metallic properties | RGB channels encode separate data |
-| `_ca` | **Color with Alpha** | Color texture where the alpha channel carries meaningful data (transparency, mask) | RGBA |
-| `_as` | **Ambient Shadow** | Ambient occlusion / shadow bake | Grayscale |
-| `_mc` | **Macro** | Large-scale color variation visible at distance | RGB |
-| `_li` | **Light / Emissive** | Self-illumination map (glowing parts) | RGB |
-| `_no` | **Normal Map (Standard)** | Lower quality normal map variant | RGB |
-| `_mca` | **Macro with Alpha** | Macro texture with alpha channel | RGBA |
-| `_de` | **Dettaglio** | Tiling detail texture for close-up surface variation | RGB |
+| `_co` | **Color / Diffuse** | Il colore base (albedo) di una superficie | RGB, alfa opzionale |
+| `_nohq` | **Normal Map (Alta Qualità)** | Normali di dettaglio della superficie, definisce dossi e scanalature | RGB (normale tangent-space) |
+| `_smdi` | **Specular / Metallic / Indice Dettaglio** | Controlla lucentezza e proprietà metalliche | I canali RGB codificano dati separati |
+| `_ca` | **Colore con Alfa** | Texture colore dove il canale alfa porta dati significativi (trasparenza, maschera) | RGBA |
+| `_as` | **Ombra Ambientale** | Occlusione ambientale / bake ombre | Scala di grigi |
+| `_mc` | **Macro** | Variazione di colore su larga scala visibile a distanza | RGB |
+| `_li` | **Luce / Emissivo** | Mappa di auto-illuminazione (parti luminose) | RGB |
+| `_no` | **Normal Map (Standard)** | Variante normal map di qualità inferiore | RGB |
+| `_mca` | **Macro con Alfa** | Texture macro con canale alfa | RGBA |
+| `_de` | **Dettaglio** | Texture di dettaglio a tiling per variazione della superficie da vicino | RGB |
 
-### Naming Convention in Practice
+### Convenzione di Denominazione nella Pratica
 
-A single item typically has multiple textures, all sharing a base name:
+Un singolo oggetto tipicamente ha più texture, tutte con lo stesso nome base:
 
 ```
 data/
-  my_rifle_co.paa          <-- Base color (what you see)
-  my_rifle_nohq.paa        <-- Normal map (surface bumps)
-  my_rifle_smdi.paa         <-- Specular/metallic (shininess)
-  my_rifle_as.paa           <-- Ambient shadow (baked AO)
-  my_rifle_ca.paa           <-- Color with alpha (if transparency needed)
+  my_rifle_co.paa          <-- Colore base (ciò che vedi)
+  my_rifle_nohq.paa        <-- Normal map (rilievi della superficie)
+  my_rifle_smdi.paa         <-- Speculare/metallico (lucentezza)
+  my_rifle_as.paa           <-- Ombra ambientale (AO precalcolato)
+  my_rifle_ca.paa           <-- Colore con alfa (se serve la trasparenza)
 ```
 
-### The _smdi Channels
+### I Canali _smdi
 
-The specular/metallic/detail texture packs three data streams into one RGB image:
+La texture speculare/metallico/dettaglio comprime tre flussi di dati in una singola immagine RGB:
 
-| Channel | Data | Range | Effect |
+| Canale | Dati | Intervallo | Effetto |
 |---------|------|-------|--------|
-| **R** | Metallic | 0-255 | 0 = non-metal, 255 = full metal |
-| **G** | Roughness (inverted specular) | 0-255 | 0 = rough/matte, 255 = smooth/glossy |
-| **B** | Dettaglio index / AO | 0-255 | Dettaglio tiling or ambient occlusion |
+| **R** | Metallico | 0-255 | 0 = non-metallo, 255 = metallo pieno |
+| **G** | Ruvidità (speculare invertito) | 0-255 | 0 = ruvido/opaco, 255 = liscio/lucido |
+| **B** | Indice dettaglio / AO | 0-255 | Tiling dettaglio o occlusione ambientale |
 
-### The _nohq Channels
+### I Canali _nohq
 
-Normal maps in DayZ use tangent-space encoding:
+Le normal map in DayZ usano codifica tangent-space:
 
-| Channel | Data |
+| Canale | Dati |
 |---------|------|
-| **R** | X-axis normal (left-right) |
-| **G** | Y-axis normal (up-down) |
-| **B** | Z-axis normal (toward viewer) |
-| **A** | Specular power (opzionale, depends on material) |
+| **R** | Normale asse X (sinistra-destra) |
+| **G** | Normale asse Y (alto-basso) |
+| **B** | Normale asse Z (verso l'osservatore) |
+| **A** | Potenza speculare (opzionale, dipende dal materiale) |
 
 ---
 
 ## Requisiti di Risoluzione
 
-The Enfusion engine requires all textures to have **power-of-two dimensions**. Entrambi width and height must independently be a power of 2, but they do not have to be equal (non-square textures are valid).
+Il motore Enfusion richiede che tutte le texture abbiano **dimensioni potenza di due**. Sia larghezza che altezza devono indipendentemente essere una potenza di 2, ma non devono essere uguali (le texture non quadrate sono valide).
 
-### Valid Dimensions
+### Dimensioni Valide
 
-| Size | Typical Use |
+| Dimensione | Uso Tipico |
 |------|-------------|
-| **64x64** | Tiny icons, UI elements |
-| **128x128** | Small icons, inventory thumbnails |
-| **256x256** | UI panels, small item textures |
-| **512x512** | Standard item textures, clothing |
-| **1024x1024** | Weapons, detailed clothing, vehicle parts |
-| **2048x2048** | High-detail weapons, character models |
-| **4096x4096** | Terrain textures, large vehicle textures |
+| **64x64** | Icone minuscole, elementi UI |
+| **128x128** | Piccole icone, miniature inventario |
+| **256x256** | Pannelli UI, texture di piccoli oggetti |
+| **512x512** | Texture di oggetti standard, abbigliamento |
+| **1024x1024** | Armi, abbigliamento dettagliato, parti di veicoli |
+| **2048x2048** | Armi ad alto dettaglio, modelli di personaggi |
+| **4096x4096** | Texture del terreno, texture di veicoli grandi |
 
-### Non-Square Textures
+### Texture Non Quadrate
 
-Non-square power-of-two textures are valid:
+Le texture non quadrate con potenze di due sono valide:
 
 ```
-256x512    -- Valid (both are powers of 2)
-512x1024   -- Valid
-1024x2048  -- Valid
-300x512    -- INVALID (300 is not a power of 2)
+256x512    -- Valido (entrambi sono potenze di 2)
+512x1024   -- Valido
+1024x2048  -- Valido
+300x512    -- NON VALIDO (300 non è una potenza di 2)
 ```
 
-### Resolution Guidelines
+### Linee Guida sulla Risoluzione
 
-- **Weapons:** 2048x2048 for the main body, 1024x1024 for attachments.
-- **Clothing:** 1024x1024 or 2048x2048 depending on surface area coverage.
-- **UI icons:** 128x128 or 256x256 for inventory icons, 64x64 for HUD elements.
-- **Terrain:** 4096x4096 for satellite maps, 512x512 or 1024x1024 for material tiles.
-- **Normal maps:** Same resolution as the corresponding color texture.
-- **SMDI maps:** Same resolution as the corresponding color texture.
+- **Armi:** 2048x2048 per il corpo principale, 1024x1024 per gli accessori.
+- **Abbigliamento:** 1024x1024 o 2048x2048 a seconda della copertura dell'area superficiale.
+- **Icone UI:** 128x128 o 256x256 per le icone inventario, 64x64 per gli elementi HUD.
+- **Terreno:** 4096x4096 per le mappe satellitari, 512x512 o 1024x1024 per le tile dei materiali.
+- **Normal map:** Stessa risoluzione della texture colore corrispondente.
+- **Mappe SMDI:** Stessa risoluzione della texture colore corrispondente.
 
-> **Attenzione:** If a texture has non-power-of-two dimensions, the engine will either refuse to load it or display a magenta error texture. TexView2 will show a warning during conversion.
+> **Attenzione:** Se una texture ha dimensioni non potenza di due, il motore rifiuterà di caricarla o mostrerà una texture di errore magenta. TexView2 mostrerà un avviso durante la conversione.
 
 ---
 
-## Supporto al Canale Alpha
+## Supporto al Canale Alfa
 
-The alpha channel in a texture carries additional data beyond color. How it is interpreted depends on the texture suffix and the material shader.
+Il canale alfa in una texture trasporta dati aggiuntivi oltre al colore. Come viene interpretato dipende dal suffisso della texture e dallo shader del materiale.
 
-### Alpha Channel Roles
+### Ruoli del Canale Alfa
 
-| Suffix | Alpha Interpretation |
+| Suffisso | Interpretazione Alfa |
 |--------|---------------------|
-| `_co` | Di solito unused; if present, may define transparency for simple materials |
-| `_ca` | Transparency mask (0 = fully transparent, 255 = fully opaque) |
-| `_nohq` | Specular power map (higher = sharper specular highlight) |
-| `_smdi` | Di solito unused |
-| `_li` | Emissive intensity mask |
+| `_co` | Di solito non usato; se presente, può definire la trasparenza per materiali semplici |
+| `_ca` | Maschera di trasparenza (0 = completamente trasparente, 255 = completamente opaco) |
+| `_nohq` | Mappa di potenza speculare (più alto = highlight speculare più nitido) |
+| `_smdi` | Di solito non usato |
+| `_li` | Maschera di intensità emissiva |
 
-### Creating Textures with Alpha
+### Creare Texture con Alfa
 
-In your image editor (Photoshop, GIMP, Krita):
+Nel tuo editor di immagini (Photoshop, GIMP, Krita):
 
-1. Create the RGB content as normal.
-2. Add an alpha channel.
-3. Paint white (255) where you want full opacity/effect, black (0) where you want none.
-4. Export as 32-bit TGA or PNG.
-5. Convert to PAA using TexView2 -- it will detect the alpha channel automatically.
+1. Crea il contenuto RGB normalmente.
+2. Aggiungi un canale alfa.
+3. Dipingi bianco (255) dove vuoi opacità/effetto pieno, nero (0) dove non ne vuoi.
+4. Esporta come TGA 32-bit o PNG.
+5. Converti in PAA usando TexView2 -- rileverà automaticamente il canale alfa.
 
-### Verifying Alpha in TexView2
+### Verifica dell'Alfa in TexView2
 
-Open the PAA in TexView2 and use the channel display buttons:
+Apri il PAA in TexView2 e usa i pulsanti di visualizzazione canale:
 
-- **RGBA** -- Shows the final composite
-- **RGB** -- Shows color only
-- **A** -- Shows alpha channel only (white = opaque, black = transparent)
+- **RGBA** -- Mostra il composito finale
+- **RGB** -- Mostra solo il colore
+- **A** -- Mostra solo il canale alfa (bianco = opaco, nero = trasparente)
 
 ---
 
 ## Conversione tra Formati
 
-### TexView2 (Principale Tool)
+### TexView2 (Strumento Principale)
 
-**TexView2** is included with DayZ Tools and is the standard texture conversion utility.
+**TexView2** è incluso con DayZ Tools ed è l'utilità standard di conversione texture.
 
-**Opening a file:**
-1. Launch TexView2 from DayZ Tools or directly from `DayZ Tools\Bin\TexView2\TexView2.exe`.
-2. Open your source file (TGA, PNG, or EDDS).
-3. Verifica the image looks correct and check dimensions.
+**Apertura di un file:**
+1. Avvia TexView2 da DayZ Tools o direttamente da `DayZ Tools\Bin\TexView2\TexView2.exe`.
+2. Apri il tuo file sorgente (TGA, PNG o EDDS).
+3. Verifica che l'immagine appaia corretta e controlla le dimensioni.
 
-**Converting to PAA:**
-1. Open the source texture in TexView2.
-2. Go to **File --> Save As**.
-3. Select **PAA** as the output format.
-4. Choose the compression type:
-   - **DXT1** for opaque textures (no alpha needed)
-   - **DXT5** for textures with alpha transparency
-   - **ARGB4444** for small UI textures where file size matters
-5. Click **Save**.
+**Conversione in PAA:**
+1. Apri la texture sorgente in TexView2.
+2. Vai a **File --> Save As**.
+3. Seleziona **PAA** come formato di output.
+4. Scegli il tipo di compressione:
+   - **DXT1** per texture opache (nessun alfa necessario)
+   - **DXT5** per texture con trasparenza alfa
+   - **ARGB4444** per piccole texture UI dove la dimensione file conta
+5. Clicca **Save**.
 
-**Batch conversion via command line:**
+**Conversione batch tramite riga di comando:**
 
 ```bash
-# Convert a single TGA to PAA
+# Converti un singolo TGA in PAA
 "P:\DayZ Tools\Bin\TexView2\TexView2.exe" -i "source.tga" -o "output.paa"
 
-# TexView2 will auto-select compression based on alpha channel presence
+# TexView2 selezionerà automaticamente la compressione in base alla presenza del canale alfa
 ```
 
-### Binarize (Automated)
+### Binarize (Automatizzato)
 
-When Binarize processes your mod's source directory, it automatically converts all recognized texture formats (TGA, PNG, EDDS) to PAA. This happens as part of the AddonBuilder pipeline.
+Quando Binarize elabora la directory sorgente della tua mod, converte automaticamente tutti i formati di texture riconosciuti (TGA, PNG, EDDS) in PAA. Questo avviene come parte della pipeline di AddonBuilder.
 
-**Binarize conversion flow:**
+**Flusso di conversione Binarize:**
 ```
 source/mod_name/data/texture_co.tga
-    --> Binarize detects TGA
-        --> Converts to PAA with automatic compression selection
+    --> Binarize rileva TGA
+        --> Converte in PAA con selezione automatica della compressione
             --> Output: build/mod_name/data/texture_co.paa
 ```
 
-### Manual Conversion Table
+### Tabella di Conversione Manuale
 
-| From | To | Tool | Note |
+| Da | A | Strumento | Note |
 |------|----|------|-------|
-| TGA --> PAA | TexView2 | Standard workflow |
-| PNG --> PAA | TexView2 | Works identically to TGA |
-| EDDS --> PAA | TexView2 or Binarize | Automatic during build |
-| PAA --> TGA | TexView2 (Save As TGA) | For editing existing textures |
-| PAA --> PNG | TexView2 (Save As PNG) | For extracting to portable format |
-| PSD --> TGA/PNG | Photoshop/GIMP | Export from editor, then convert |
+| TGA --> PAA | TexView2 | Flusso di lavoro standard |
+| PNG --> PAA | TexView2 | Funziona identicamente a TGA |
+| EDDS --> PAA | TexView2 o Binarize | Automatico durante la build |
+| PAA --> TGA | TexView2 (Salva come TGA) | Per modificare texture esistenti |
+| PAA --> PNG | TexView2 (Salva come PNG) | Per estrarre in formato portatile |
+| PSD --> TGA/PNG | Photoshop/GIMP | Esporta dall'editor, poi converti |
 
 ---
 
-## Qualita' e Compressione delle Texture
+## Qualità e Compressione delle Texture
 
-### Compression Type Selection
+### Selezione del Tipo di Compressione
 
-| Scenario | Consigliato Compression | Motivo |
+| Scenario | Compressione Consigliata | Motivo |
 |----------|------------------------|--------|
-| Opaque diffuse (`_co`) | DXT1 | Best ratio, no alpha needed |
-| Transparent diffuse (`_ca`) | DXT5 | Full alpha support |
-| Normal maps (`_nohq`) | DXT5 | Alpha channel carries specular power |
-| Specular maps (`_smdi`) | DXT1 | Di solito opaque, RGB channels only |
-| UI textures | ARGB4444 or DXT5 | Small size, clean edges |
-| Emissive maps (`_li`) | DXT1 or DXT5 | DXT5 if alpha carries intensity |
+| Diffuse opaco (`_co`) | DXT1 | Miglior rapporto, nessun alfa necessario |
+| Diffuse trasparente (`_ca`) | DXT5 | Supporto alfa completo |
+| Normal map (`_nohq`) | DXT5 | Il canale alfa trasporta la potenza speculare |
+| Mappe speculari (`_smdi`) | DXT1 | Di solito opache, solo canali RGB |
+| Texture UI | ARGB4444 o DXT5 | Dimensione ridotta, bordi puliti |
+| Mappe emissive (`_li`) | DXT1 o DXT5 | DXT5 se l'alfa trasporta l'intensità |
 
-### Quality vs. File Size
+### Qualità vs. Dimensione File
 
 ```
-Format        2048x2048 approx. size
+Formato        2048x2048 dimensione approx.
 -----------------------------------------
-ARGB8888      16.0 MB    (uncompressed)
-DXT5           5.3 MB    (4:1 compression)
-DXT1           2.7 MB    (6:1 compression)
-ARGB4444       8.0 MB    (2:1 compression)
+ARGB8888      16.0 MB    (non compresso)
+DXT5           5.3 MB    (compressione 4:1)
+DXT1           2.7 MB    (compressione 6:1)
+ARGB4444       8.0 MB    (compressione 2:1)
 ```
 
-### In-Game Quality Settings
+### Impostazioni di Qualità nel Gioco
 
-Players can adjust texture quality in DayZ's video settings. The engine selects lower mip levels when quality is reduced, so your textures will look progressively blurrier at lower settings. Questo e' automatic -- you do not need to create separate quality levels.
+I giocatori possono regolare la qualità delle texture nelle impostazioni video di DayZ. Il motore seleziona livelli mip inferiori quando la qualità è ridotta, quindi le tue texture appariranno progressivamente più sfocate a impostazioni inferiori. Questo è automatico -- non devi creare livelli di qualità separati.
 
 ---
 
 ## Esempi dal Mondo Reale
 
-### Weapon Texture Set
+### Set di Texture per Armi
 
-A typical weapon mod contains these texture files:
+Una tipica mod armi contiene questi file di texture:
 
 ```
-MyWeapons/data/weapons/m4a1/
-  my_weapon_co.paa           <-- 2048x2048, DXT1, base color
+MyMod_Weapons/data/weapons/m4a1/
+  my_weapon_co.paa           <-- 2048x2048, DXT1, colore base
   my_weapon_nohq.paa         <-- 2048x2048, DXT5, normal map
-  my_weapon_smdi.paa          <-- 2048x2048, DXT1, specular/metallic
-  my_weapon_as.paa            <-- 1024x1024, DXT1, ambient shadow
+  my_weapon_smdi.paa          <-- 2048x2048, DXT1, speculare/metallico
+  my_weapon_as.paa            <-- 1024x1024, DXT1, ombra ambientale
 ```
 
-The material file (`.rvmat`) references these textures and assigns them to shader stages.
+Il file materiale (`.rvmat`) riferisce queste texture e le assegna agli stadi dello shader.
 
-### UI Texture (Imageset Source)
+### Texture UI (Sorgente Imageset)
 
 ```
 MyFramework/data/gui/icons/
-  my_icons_co.paa           <-- 512x512, ARGB4444, sprite atlas
+  my_icons_co.paa           <-- 512x512, ARGB4444, atlante sprite
 ```
 
-UI textures are often packed into a single atlas (imageset) and referenced by name in layout files. ARGB4444 compression is common for UI perche' it preserves clean edges while keeping file sizes small.
+Le texture UI sono spesso impacchettate in un singolo atlante (imageset) e riferite per nome nei file di layout. La compressione ARGB4444 è comune per l'UI perché preserva bordi puliti mantenendo le dimensioni file piccole.
 
-### Terrain Textures
+### Texture del Terreno
 
 ```
 terrain/
-  grass_green_co.paa         <-- 1024x1024, DXT1, tiling color
-  grass_green_nohq.paa       <-- 1024x1024, DXT5, tiling normal
-  grass_green_smdi.paa        <-- 1024x1024, DXT1, tiling specular
-  grass_green_mc.paa          <-- 512x512, DXT1, macro variation
-  grass_green_de.paa          <-- 512x512, DXT1, detail tiling
+  grass_green_co.paa         <-- 1024x1024, DXT1, colore a tiling
+  grass_green_nohq.paa       <-- 1024x1024, DXT5, normale a tiling
+  grass_green_smdi.paa        <-- 1024x1024, DXT1, speculare a tiling
+  grass_green_mc.paa          <-- 512x512, DXT1, variazione macro
+  grass_green_de.paa          <-- 512x512, DXT1, dettaglio a tiling
 ```
 
-Terrain textures tile across the landscape. The `_mc` macro texture adds large-scale color variation to prevent repetition.
+Le texture del terreno si ripetono attraverso il paesaggio. La texture macro `_mc` aggiunge variazione di colore su larga scala per prevenire la ripetizione.
 
 ---
 
 ## Errori Comuni
 
-### 1. Non-Power-of-Two Dimensions
+### 1. Dimensioni Non Potenza di Due
 
-**Sintomo:** Magenta texture in-game, TexView2 warnings.
-**Soluzione:** Resize your source to the nearest power of 2 before converting.
+**Sintomo:** Texture magenta nel gioco, avvisi di TexView2.
+**Soluzione:** Ridimensiona la tua sorgente alla potenza di 2 più vicina prima di convertire.
 
-### 2. Missing Suffix
+### 2. Suffisso Mancante
 
-**Sintomo:** Material cannot find the texture, or it renders incorrectly.
-**Soluzione:** Sempre include the proper suffix (`_co`, `_nohq`, etc.) in the filename.
+**Sintomo:** Il materiale non trova la texture, o viene renderizzata in modo scorretto.
+**Soluzione:** Includi sempre il suffisso appropriato (`_co`, `_nohq`, ecc.) nel nome del file.
 
-### 3. Wrong Compression for Alpha
+### 3. Compressione Sbagliata per l'Alfa
 
-**Sintomo:** Transparency looks blocky or binary (on/off with no gradient).
-**Soluzione:** Use DXT5 invece of DXT1 for textures that need smooth alpha gradients.
+**Sintomo:** La trasparenza appare blocchettosa o binaria (on/off senza sfumatura).
+**Soluzione:** Usa DXT5 invece di DXT1 per le texture che necessitano di sfumature alfa uniformi.
 
-### 4. Forgetting Mipmaps
+### 4. Mipmap Dimenticate
 
-**Sintomo:** Texture looks fine up close but shimmers/sparkles at distance.
-**Soluzione:** PAA files generated by TexView2 automatically include mipmaps. Se are using a non-standard tool, ensure mipmap generation is enabled.
+**Sintomo:** La texture appare bene da vicino ma luccica/scintilla a distanza.
+**Soluzione:** I file PAA generati da TexView2 includono automaticamente le mipmap. Se stai usando uno strumento non standard, assicurati che la generazione di mipmap sia abilitata.
 
-### 5. Incorrect Normal Map Format
+### 5. Formato Normal Map Scorretto
 
-**Sintomo:** Lighting on the model looks inverted or flat.
-**Soluzione:** Assicurati your normal map is in tangent-space format with DirectX-style Y-axis convention (green channel: up = lighter). Some tools export OpenGL-style (inverted Y) -- you need to invert the green channel.
+**Sintomo:** L'illuminazione sul modello appare invertita o piatta.
+**Soluzione:** Assicurati che la tua normal map sia in formato tangent-space con convenzione asse Y stile DirectX (canale verde: su = più chiaro). Alcuni strumenti esportano in stile OpenGL (Y invertito) -- devi invertire il canale verde.
 
-### 6. Path Mismatch After Conversion
+### 6. Disallineamento del Percorso Dopo la Conversione
 
-**Sintomo:** Model or material shows magenta perche' it references a `.tga` path but the PBO contains `.paa`.
-**Soluzione:** Materials should reference the final `.paa` path. Binarize handles path remapping automatically, but if you pack with `-packonly` (no binarization), you must ensure the paths match exactly.
+**Sintomo:** Il modello o il materiale mostra magenta perché riferisce un percorso `.tga` ma il PBO contiene `.paa`.
+**Soluzione:** I materiali dovrebbero riferire il percorso `.paa` finale. Binarize gestisce automaticamente la rimappatura dei percorsi, ma se impacchetti con `-packonly` (senza binarizzazione), devi assicurarti che i percorsi corrispondano esattamente.
 
 ---
 
 ## Buone Pratiche
 
-1. **Keep source files in version control.** Store TGA/PNG masters alongside your mod. The PAA files are generated output -- the sources are what matter.
+1. **Mantieni i file sorgente nel controllo versione.** Archivia i master TGA/PNG insieme alla tua mod. I file PAA sono output generati -- le sorgenti sono ciò che conta.
 
-2. **Match resolution to importance.** A rifle the player stares at for hours deserves 2048x2048. A can of beans in the back of a shelf can use 512x512.
+2. **Adatta la risoluzione all'importanza.** Un fucile che il giocatore fissa per ore merita 2048x2048. Una lattina di fagioli in fondo a uno scaffale può usare 512x512.
 
-3. **Sempre provide a normal map.** Even a flat normal map (128, 128, 255 solid fill) is better than none -- missing normal maps cause material errors.
+3. **Fornisci sempre una normal map.** Anche una normal map piatta (riempimento solido 128, 128, 255) è meglio di nessuna -- le normal map mancanti causano errori del materiale.
 
-4. **Name consistently.** One base name, multiple suffixes: `myitem_co.paa`, `myitem_nohq.paa`, `myitem_smdi.paa`. Mai mix naming schemes.
+4. **Denominazione consistente.** Un nome base, suffissi multipli: `myitem_co.paa`, `myitem_nohq.paa`, `myitem_smdi.paa`. Non mescolare mai gli schemi di denominazione.
 
-5. **Preview in TexView2 before building.** Open your PAA output and verify it looks correct. Controlla each channel individually.
+5. **Anteprima in TexView2 prima della build.** Apri il tuo output PAA e verifica che appaia corretto. Controlla ogni canale individualmente.
 
-6. **Use DXT1 by default, DXT5 only when alpha is needed.** DXT1 is half the file size of DXT5 and looks identical for opaque textures.
+6. **Usa DXT1 per impostazione predefinita, DXT5 solo quando serve l'alfa.** DXT1 è la metà della dimensione file di DXT5 e appare identico per le texture opache.
 
-7. **Test at low quality settings.** What looks great at Ultra may be unreadable at Low perche' the engine drops mip levels aggressively.
+7. **Testa alle impostazioni di qualità bassa.** Ciò che appare ottimo a Ultra potrebbe essere illeggibile a Basso perché il motore scarta aggressivamente i livelli mip.
+
+---
+
+## Osservato nelle Mod Reali
+
+| Pattern | Mod | Dettaglio |
+|---------|-----|--------|
+| Texture atlante `_co` per griglie di icone | Colorful UI | Impacchetta più icone UI in un singolo atlante `_co.paa` 512x512 riferito dagli imageset |
+| Fogli sprite icone mercato | Expansion Market | Usa grandi texture PAA atlante con decine di miniature oggetti per l'interfaccia del commerciante |
+| Retexture hiddenSelections senza nuovo P3D | DayZ-Samples (Test_ClothingRetexture) | Scambia `_co.paa` tramite `hiddenSelectionsTextures[]` per creare varianti di colore da un modello |
+| ARGB4444 per piccoli elementi HUD | VPP Admin Tools | Usa file PAA 64x64 compressi ARGB4444 per icone della barra strumenti e dei pannelli per minimizzare la dimensione file |
+
+---
+
+## Compatibilità e Impatto
+
+- **Multi-Mod:** Le collisioni di percorsi texture sono rare perché ogni mod usa il proprio prefisso PBO, ma due mod che ritexturizzano lo stesso oggetto vanilla tramite `hiddenSelectionsTextures[]` entreranno in conflitto -- l'ultimo caricato vince.
+- **Prestazioni:** Una singola texture 4096x4096 DXT5 usa ~21 MB di memoria GPU con le mipmap. L'uso eccessivo di texture grandi su molti oggetti moddati può esaurire la VRAM su hardware di fascia bassa. Preferisci 1024 o 2048 per la maggior parte degli oggetti.
+- **Versione:** Il formato PAA e la pipeline TexView2 sono stabili da DayZ 1.0. Non si sono verificati cambiamenti incompatibili tra le versioni di DayZ.
 
 ---
 
 ## Navigazione
 
-| Precedente | Up | Successivo |
+| Precedente | Su | Successivo |
 |----------|----|------|
-| [Part 3: GUI System](../03-gui-system/07-styles-fonts.md) | [Part 4: File Formats & DayZ Tools](../04-file-formats/01-textures.md) | [4.2 3D Models](02-models.md) |
+| [Parte 3: Sistema GUI](../03-gui-system/07-styles-fonts.md) | [Parte 4: Formati File e DayZ Tools](../04-file-formats/01-textures.md) | [4.2 Modelli 3D](02-models.md) |

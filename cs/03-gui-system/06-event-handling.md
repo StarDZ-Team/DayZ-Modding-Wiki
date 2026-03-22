@@ -1,83 +1,87 @@
-# Chapter 3.6: Event Handling
+# Kapitola 3.6: Zpracování událostí
 
-[Home](../../README.md) | [<< Previous: Programmatic Widget Creation](05-programmatic-widgets.md) | **Event Handling** | [Next: Styles, Fonts & Images >>](07-styles-fonts.md)
+[Domů](../../README.md) | [<< Předchozí: Programatické vytváření widgetů](05-programmatic-widgets.md) | **Zpracování událostí** | [Další: Styly, písma a obrázky >>](07-styles-fonts.md)
+
+---
+
+Widgety generují události, když s nimi uživatel interaguje -- klikání na tlačítka, psaní do vstupních polí, pohyb myší, přetahování prvků. Tato kapitola pokrývá, jak tyto události přijímat a zpracovávat.
 
 ---
 
 ## ScriptedWidgetEventHandler
 
-The `ScriptedWidgetEventHandler` class is the foundation of all widget event handling in DayZ. It provides override methods for every possible widget event.
+Třída `ScriptedWidgetEventHandler` je základem veškerého zpracování událostí widgetů v DayZ. Poskytuje přepisovací metody pro každou možnou událost widgetu.
 
-To receive events from a widget, create a class that extends `ScriptedWidgetEventHandler`, override the event methods you care about, and attach the handler to the widget with `SetHandler()`.
+Pro přijímání událostí z widgetu vytvořte třídu, která rozšiřuje `ScriptedWidgetEventHandler`, přepište metody událostí, které vás zajímají, a připojte handler k widgetu pomocí `SetHandler()`.
 
-### Complete Event Method List
+### Kompletní seznam metod událostí
 
 ```c
 class ScriptedWidgetEventHandler
 {
-    // Click events
+    // Události kliknutí
     bool OnClick(Widget w, int x, int y, int button);
     bool OnDoubleClick(Widget w, int x, int y, int button);
 
-    // Selection events
+    // Události výběru
     bool OnSelect(Widget w, int x, int y);
     bool OnItemSelected(Widget w, int x, int y, int row, int column,
                          int oldRow, int oldColumn);
 
-    // Focus events
+    // Události fokusu
     bool OnFocus(Widget w, int x, int y);
     bool OnFocusLost(Widget w, int x, int y);
 
-    // Mouse events
+    // Události myši
     bool OnMouseEnter(Widget w, int x, int y);
     bool OnMouseLeave(Widget w, Widget enterW, int x, int y);
     bool OnMouseWheel(Widget w, int x, int y, int wheel);
     bool OnMouseButtonDown(Widget w, int x, int y, int button);
     bool OnMouseButtonUp(Widget w, int x, int y, int button);
 
-    // Keyboard events
+    // Události klávesnice
     bool OnKeyDown(Widget w, int x, int y, int key);
     bool OnKeyUp(Widget w, int x, int y, int key);
     bool OnKeyPress(Widget w, int x, int y, int key);
 
-    // Change events (sliders, checkboxes, editboxes)
+    // Události změny (posuvníky, checkboxy, vstupní pole)
     bool OnChange(Widget w, int x, int y, bool finished);
 
-    // Drag and drop events
+    // Události přetažení
     bool OnDrag(Widget w, int x, int y);
     bool OnDragging(Widget w, int x, int y, Widget receiver);
     bool OnDraggingOver(Widget w, int x, int y, Widget receiver);
     bool OnDrop(Widget w, int x, int y, Widget receiver);
     bool OnDropReceived(Widget w, int x, int y, Widget receiver);
 
-    // Controller (gamepad) events
+    // Události ovladače (gamepad)
     bool OnController(Widget w, int control, int value);
 
-    // Layout events
+    // Události rozložení
     bool OnResize(Widget w, int x, int y);
     bool OnChildAdd(Widget w, Widget child);
     bool OnChildRemove(Widget w, Widget child);
 
-    // Other
+    // Ostatní
     bool OnUpdate(Widget w);
     bool OnModalResult(Widget w, int x, int y, int code, int result);
 }
 ```
 
-### Return Value: Consumed vs. Pass-Through
+### Návratová hodnota: Spotřebováno vs. předáno dál
 
-Every event handler returns a `bool`:
+Každý handler události vrací `bool`:
 
-- **`return true;`** -- The event is **consumed**. No other handler will receive it. The event stops propagating up the widget hierarchy.
-- **`return false;`** -- The event is **passed through** to the parent widget's handler (if any).
+- **`return true;`** -- Událost je **spotřebována**. Žádný jiný handler ji nepřijme. Událost přestane propagovat nahoru hierarchií widgetů.
+- **`return false;`** -- Událost je **předána dál** handleru rodičovského widgetu (pokud existuje).
 
-This is critical for building layered UIs. For example, a button click handler should return `true` to prevent the click from also triggering a panel behind it.
+Toto je kritické pro budování vrstvených UI. Například handler kliknutí na tlačítko by měl vrátit `true`, aby zabránil kliknutí v aktivování panelu za ním.
 
 ---
 
-## Registering Handlers with SetHandler()
+## Registrace handlerů pomocí SetHandler()
 
-The simplest way to handle events is to call `SetHandler()` on a widget:
+Nejjednodušší způsob zpracování událostí je zavolat `SetHandler()` na widgetu:
 
 ```c
 class MyPanel : ScriptedWidgetEventHandler
@@ -94,7 +98,7 @@ class MyPanel : ScriptedWidgetEventHandler
         m_SaveBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("SaveButton"));
         m_CancelBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("CancelButton"));
 
-        // Register this class as the event handler for both buttons
+        // Registrace této třídy jako handleru událostí pro obě tlačítka
         m_SaveBtn.SetHandler(this);
         m_CancelBtn.SetHandler(this);
     }
@@ -104,7 +108,7 @@ class MyPanel : ScriptedWidgetEventHandler
         if (w == m_SaveBtn)
         {
             Save();
-            return true;  // Consumed
+            return true;  // Spotřebováno
         }
 
         if (w == m_CancelBtn)
@@ -113,16 +117,16 @@ class MyPanel : ScriptedWidgetEventHandler
             return true;
         }
 
-        return false;  // Not our widget, pass through
+        return false;  // Není náš widget, předat dál
     }
 }
 ```
 
-A single handler instance can be registered on multiple widgets. Inside the event method, compare `w` (the widget that generated the event) against your cached references to determine which widget was interacted with.
+Jedna instance handleru může být registrována na více widgetech. Uvnitř metody události porovnejte `w` (widget, který vygeneroval událost) s vašimi kešovanými referencemi pro určení, se kterým widgetem bylo interagováno.
 
 ---
 
-## Common Events in Detail
+## Podrobnosti o běžných událostech
 
 ### OnClick
 
@@ -130,16 +134,16 @@ A single handler instance can be registered on multiple widgets. Inside the even
 bool OnClick(Widget w, int x, int y, int button)
 ```
 
-Fired when a `ButtonWidget` is clicked (mouse released over the widget).
+Vyvolá se, když je kliknuto na `ButtonWidget` (uvolnění myši nad widgetem).
 
-- `w` -- The clicked widget
-- `x, y` -- Mouse cursor position (screen pixels)
-- `button` -- Mouse button index: `0` = left, `1` = right, `2` = middle
+- `w` -- Kliknutý widget
+- `x, y` -- Pozice kurzoru myši (pixely obrazovky)
+- `button` -- Index tlačítka myši: `0` = levé, `1` = pravé, `2` = střední
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
 {
-    if (button != 0) return false;  // Only handle left click
+    if (button != 0) return false;  // Zpracovat pouze levý klik
 
     if (w == m_MyButton)
     {
@@ -156,10 +160,10 @@ override bool OnClick(Widget w, int x, int y, int button)
 bool OnChange(Widget w, int x, int y, bool finished)
 ```
 
-Fired by `SliderWidget`, `CheckBoxWidget`, `EditBoxWidget`, and other value-based widgets when their value changes.
+Vyvolá se `SliderWidget`, `CheckBoxWidget`, `EditBoxWidget` a dalšími widgety založenými na hodnotách, když se jejich hodnota změní.
 
-- `w` -- The widget whose value changed
-- `finished` -- For sliders: `true` when the user releases the slider handle. For edit boxes: `true` when Enter is pressed.
+- `w` -- Widget, jehož hodnota se změnila
+- `finished` -- Pro posuvníky: `true` když uživatel uvolní jezdec. Pro vstupní pole: `true` při stisknutí Enter.
 
 ```c
 override bool OnChange(Widget w, int x, int y, bool finished)
@@ -169,14 +173,14 @@ override bool OnChange(Widget w, int x, int y, bool finished)
         SliderWidget slider = SliderWidget.Cast(w);
         float value = slider.GetCurrent();
 
-        // Only apply when user finishes dragging
+        // Aplikovat pouze po dokončení tažení
         if (finished)
         {
             ApplyVolume(value);
         }
         else
         {
-            // Preview while dragging
+            // Náhled během tažení
             PreviewVolume(value);
         }
         return true;
@@ -189,7 +193,7 @@ override bool OnChange(Widget w, int x, int y, bool finished)
 
         if (finished)
         {
-            // User pressed Enter
+            // Uživatel stiskl Enter
             SubmitName(text);
         }
         return true;
@@ -214,16 +218,16 @@ bool OnMouseEnter(Widget w, int x, int y)
 bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 ```
 
-Fired when the mouse cursor enters or leaves a widget's bounds. The `enterW` parameter in `OnMouseLeave` is the widget the cursor moved to.
+Vyvolá se, když kurzor myši vstoupí nebo opustí hranice widgetu. Parametr `enterW` v `OnMouseLeave` je widget, na který se kurzor přesunul.
 
-Common use: hover effects.
+Běžné použití: efekty při najetí.
 
 ```c
 override bool OnMouseEnter(Widget w, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // Highlight
+        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // Zvýraznění
         return true;
     }
     return false;
@@ -233,7 +237,7 @@ override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // Default
+        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // Výchozí
         return true;
     }
     return false;
@@ -247,29 +251,7 @@ bool OnFocus(Widget w, int x, int y)
 bool OnFocusLost(Widget w, int x, int y)
 ```
 
-Fired when a widget gains or loses keyboard focus. Important for edit boxes and other text input widgets.
-
-```c
-override bool OnFocus(Widget w, int x, int y)
-{
-    if (w == m_SearchBox)
-    {
-        m_SearchBox.SetColor(ARGB(255, 100, 160, 220));
-        return true;
-    }
-    return false;
-}
-
-override bool OnFocusLost(Widget w, int x, int y)
-{
-    if (w == m_SearchBox)
-    {
-        m_SearchBox.SetColor(ARGB(255, 60, 60, 60));
-        return true;
-    }
-    return false;
-}
-```
+Vyvolá se, když widget získá nebo ztratí fokus klávesnice. Důležité pro vstupní pole a další widgety textového vstupu.
 
 ### OnMouseWheel
 
@@ -277,7 +259,7 @@ override bool OnFocusLost(Widget w, int x, int y)
 bool OnMouseWheel(Widget w, int x, int y, int wheel)
 ```
 
-Fired when the mouse wheel scrolls over a widget. `wheel` is positive for scroll up, negative for scroll down.
+Vyvolá se, když se kolečko myši posouvá nad widgetem. `wheel` je kladné pro posun nahoru, záporné pro posun dolů.
 
 ### OnKeyDown / OnKeyUp / OnKeyPress
 
@@ -287,7 +269,7 @@ bool OnKeyUp(Widget w, int x, int y, int key)
 bool OnKeyPress(Widget w, int x, int y, int key)
 ```
 
-Keyboard events. The `key` parameter corresponds to `KeyCode` constants (e.g., `KeyCode.KC_ESCAPE`, `KeyCode.KC_RETURN`).
+Události klávesnice. Parametr `key` odpovídá konstantám `KeyCode` (např. `KeyCode.KC_ESCAPE`, `KeyCode.KC_RETURN`).
 
 ### OnDrag / OnDrop / OnDropReceived
 
@@ -297,11 +279,11 @@ bool OnDrop(Widget w, int x, int y, Widget receiver)
 bool OnDropReceived(Widget w, int x, int y, Widget receiver)
 ```
 
-Drag and drop events. The widget must have `draggable 1` in its layout (or `WidgetFlags.DRAGGABLE` set in code).
+Události přetažení. Widget musí mít `draggable 1` ve svém layoutu (nebo `WidgetFlags.DRAGGABLE` nastaveno v kódu).
 
-- `OnDrag` -- User started dragging widget `w`
-- `OnDrop` -- Widget `w` was dropped; `receiver` is the widget underneath
-- `OnDropReceived` -- Widget `w` received a drop; `receiver` is the dropped widget
+- `OnDrag` -- Uživatel začal přetahovat widget `w`
+- `OnDrop` -- Widget `w` byl upuštěn; `receiver` je widget pod ním
+- `OnDropReceived` -- Widget `w` přijal upuštění; `receiver` je upuštěný widget
 
 ### OnItemSelected
 
@@ -310,18 +292,18 @@ bool OnItemSelected(Widget w, int x, int y, int row, int column,
                      int oldRow, int oldColumn)
 ```
 
-Fired by `TextListboxWidget` when a row is selected.
+Vyvolá se `TextListboxWidget`, když je vybrán řádek.
 
 ---
 
-## Vanilla WidgetEventHandler (Callback Registration)
+## Vanilla WidgetEventHandler (registrace callbacků)
 
-DayZ's vanilla code uses an alternative pattern: `WidgetEventHandler`, a singleton that routes events to named callback functions. This is commonly used in vanilla menus.
+Vanilla kód DayZ používá alternativní vzor: `WidgetEventHandler`, singleton, který směruje události na pojmenované callback funkce. Toto se běžně používá ve vanilla menu.
 
 ```c
 WidgetEventHandler handler = WidgetEventHandler.GetInstance();
 
-// Register event callbacks by function name
+// Registrace callbacků událostí podle názvu funkce
 handler.RegisterOnClick(myButton, this, "OnMyButtonClick");
 handler.RegisterOnMouseEnter(myWidget, this, "OnHoverStart");
 handler.RegisterOnMouseLeave(myWidget, this, "OnHoverEnd");
@@ -338,46 +320,46 @@ handler.RegisterOnDraggingOver(myWidget, this, "OnDragOver");
 handler.RegisterOnChildAdd(myWidget, this, "OnChildAdded");
 handler.RegisterOnChildRemove(myWidget, this, "OnChildRemoved");
 
-// Unregister all callbacks for a widget
+// Odregistrace všech callbacků pro widget
 handler.UnregisterWidget(myWidget);
 ```
 
-The callback function signatures must match the event type:
+Signatury callback funkcí musí odpovídat typu události:
 
 ```c
 void OnMyButtonClick(Widget w, int x, int y, int button)
 {
-    // Handle click
+    // Zpracování kliknutí
 }
 
 void OnHoverStart(Widget w, int x, int y)
 {
-    // Handle mouse enter
+    // Zpracování najetí myší
 }
 
 void OnHoverEnd(Widget w, Widget enterW, int x, int y)
 {
-    // Handle mouse leave
+    // Zpracování odjetí myší
 }
 ```
 
 ### SetHandler() vs. WidgetEventHandler
 
-| Aspect | SetHandler() | WidgetEventHandler |
+| Aspekt | SetHandler() | WidgetEventHandler |
 |---|---|---|
-| Pattern | Override virtual methods | Register named callbacks |
-| Handler per widget | One handler per widget | Multiple callbacks per event |
-| Used by | DabsFramework, Expansion, custom mods | Vanilla DayZ menus |
-| Flexibility | Must handle all events in one class | Can register different targets for different events |
-| Cleanup | Implicit when handler is destroyed | Must call `UnregisterWidget()` |
+| Vzor | Přepsání virtuálních metod | Registrace pojmenovaných callbacků |
+| Handler na widget | Jeden handler na widget | Více callbacků na událost |
+| Používá | DabsFramework, Expansion, vlastní mody | Vanilla DayZ menu |
+| Flexibilita | Všechny události musí být zpracovány v jedné třídě | Lze registrovat různé cíle pro různé události |
+| Úklid | Implicitní při zničení handleru | Musíte volat `UnregisterWidget()` |
 
-For new mods, `SetHandler()` with `ScriptedWidgetEventHandler` is the recommended approach.
+Pro nové mody je doporučený přístup `SetHandler()` s `ScriptedWidgetEventHandler`.
 
 ---
 
-## Complete Example: Interactive Button Panel
+## Kompletní příklad: Interaktivní panel s tlačítky
 
-A panel with three buttons that change color on hover and perform actions on click:
+Panel se třemi tlačítky, která mění barvu při najetí a provádějí akce při kliknutí:
 
 ```c
 class InteractivePanel : ScriptedWidgetEventHandler
@@ -402,7 +384,7 @@ class InteractivePanel : ScriptedWidgetEventHandler
         m_BtnReset  = ButtonWidget.Cast(m_Root.FindAnyWidget("BtnReset"));
         m_StatusText = TextWidget.Cast(m_Root.FindAnyWidget("StatusText"));
 
-        // Register this handler on all interactive widgets
+        // Registrace tohoto handleru na všech interaktivních widgetech
         m_BtnStart.SetHandler(this);
         m_BtnStop.SetHandler(this);
         m_BtnReset.SetHandler(this);
@@ -471,21 +453,21 @@ class InteractivePanel : ScriptedWidgetEventHandler
 
 ---
 
-## Event Handling Best Practices
+## Osvědčené postupy pro zpracování událostí
 
-1. **Always return `true` when you handle an event** -- Otherwise the event propagates to parent widgets and may trigger unintended behavior.
+1. **Vždy vracejte `true`, když událost zpracujete** -- Jinak se událost propaguje k rodičovským widgetům a může vyvolat nechtěné chování.
 
-2. **Return `false` for events you do not handle** -- This allows parent widgets to process the event.
+2. **Vracejte `false` pro události, které nezpracováváte** -- To umožní rodičovským widgetům událost zpracovat.
 
-3. **Cache widget references** -- Do not call `FindAnyWidget()` inside event handlers. Look up widgets once in the constructor and store references.
+3. **Kešujte reference na widgety** -- Nevolejte `FindAnyWidget()` uvnitř handlerů událostí. Vyhledejte widgety jednou v konstruktoru a uložte reference.
 
-4. **Null-check widgets in events** -- The widget `w` is usually valid, but defensive coding prevents crashes.
+4. **Kontrolujte widgety na null v událostech** -- Widget `w` je obvykle platný, ale defenzivní kódování předchází pádům.
 
-5. **Clean up handlers** -- When destroying a panel, unlink the root widget. If using `WidgetEventHandler`, call `UnregisterWidget()`.
+5. **Uklízejte handlery** -- Při ničení panelu odpojte kořenový widget. Pokud používáte `WidgetEventHandler`, volejte `UnregisterWidget()`.
 
-6. **Use `finished` parameter wisely** -- For sliders, only apply expensive operations when `finished` is `true` (user released the handle). Use non-finished events for previewing.
+6. **Používejte parametr `finished` rozumně** -- Pro posuvníky aplikujte náročné operace pouze když `finished` je `true` (uživatel uvolnil jezdec). Události s `finished == false` používejte pro náhled.
 
-7. **Defer heavy work** -- If an event handler needs to do expensive computation, use `CallLater` to defer it:
+7. **Odkládejte náročnou práci** -- Pokud handler události potřebuje provést náročný výpočet, použijte `CallLater` pro odložení:
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
@@ -501,7 +483,40 @@ override bool OnClick(Widget w, int x, int y, int button)
 
 ---
 
-## Next Steps
+## Teorie vs. praxe
 
-- [3.7 Styles, Fonts & Images](07-styles-fonts.md) -- Visual styling with styles, fonts, and imageset references
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Creating widgets that generate events
+> Co říká dokumentace versus jak věci skutečně fungují za běhu.
+
+| Koncept | Teorie | Realita |
+|---------|--------|---------|
+| `OnClick` se vyvolá na jakémkoli widgetu | Jakýkoli widget může přijímat události kliknutí | Pouze `ButtonWidget` spolehlivě vyvolává `OnClick`. Pro jiné typy widgetů použijte místo toho `OnMouseButtonDown` / `OnMouseButtonUp` |
+| `SetHandler()` nahradí handler | Nastavení nového handleru nahradí starý | Správně, ale starý handler není upozorněn. Pokud držel zdroje, unikají. Vždy ukliďte před výměnou handlerů |
+| Parametr `finished` v `OnChange` | `true` když uživatel dokončí interakci | Pro `EditBoxWidget` je `finished` `true` pouze při klávese Enter -- přechod tabulátorem nebo kliknutí jinam NENASTAVÍ `finished` na `true` |
+| Propagace návratové hodnoty události | `return false` předá událost rodiči | Události propagují nahoru stromem widgetů, ne k sourozeneckým widgetům. `return false` od potomka jde k jeho rodiči, nikdy k sousednímu widgetu |
+| Názvy callbacků `WidgetEventHandler` | Jakýkoli název funkce funguje | Funkce musí existovat na cílovém objektu v době registrace. Pokud je název funkce špatně napsán, registrace tiše uspěje, ale callback se nikdy nevyvolá |
+
+---
+
+## Kompatibilita a dopad
+
+- **Více modů:** `SetHandler()` povoluje pouze jeden handler na widget. Pokud mod A i mod B oba zavolají `SetHandler()` na stejném vanilla widgetu (přes `modded class`), poslední vyhraje a druhý tiše přestane přijímat události. Pro aditivní kompatibilitu více modů použijte `WidgetEventHandler.RegisterOnClick()`.
+- **Výkon:** Handlery událostí se spouštějí na hlavním vláknu hry. Pomalý handler `OnClick` (např. souborové I/O nebo složité výpočty) způsobuje viditelné záseky snímků. Odkládejte náročnou práci pomocí `GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater()`.
+- **Verze:** API `ScriptedWidgetEventHandler` je stabilní od DayZ 1.0. Singleton callbacky `WidgetEventHandler` jsou vanilla vzory přítomné od raných verzí Enforce Scriptu a zůstávají beze změn.
+
+---
+
+## Pozorováno v reálných modech
+
+| Vzor | Mod | Detail |
+|---------|-----|--------|
+| Jeden handler pro celý panel | COT, VPP Admin Tools | Jedna podtřída `ScriptedWidgetEventHandler` zpracovává všechna tlačítka v panelu, rozesílá porovnáváním `w` s kešovanými referencemi widgetů |
+| `WidgetEventHandler.RegisterOnClick` pro modulární tlačítka | Expansion Market | Každé dynamicky vytvořené tlačítko kupovat/prodat registruje svůj vlastní callback, umožňující funkce handleru pro jednotlivé položky |
+| `OnMouseEnter` / `OnMouseLeave` pro tooltipy při najetí | DayZ Editor | Události najetí spouštějí widgety tooltipů, které sledují pozici kurzoru přes `GetMousePos()` |
+| Odložení `CallLater` v `OnClick` | DabsFramework | Náročné operace (uložení konfigurace, odeslání RPC) jsou odloženy o 0ms přes `CallLater` pro vyhnutí se blokování UI vlákna během události |
+
+---
+
+## Další kroky
+
+- [3.7 Styly, písma a obrázky](07-styles-fonts.md) -- Vizuální stylování pomocí stylů, písem a odkazů na imagesety
+- [3.5 Programatické vytváření widgetů](05-programmatic-widgets.md) -- Vytváření widgetů, které generují události

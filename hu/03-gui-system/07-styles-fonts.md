@@ -1,31 +1,35 @@
-# Chapter 3.7: Styles, Fonts & Images
+# 3.7. fejezet: Stílusok, betűtípusok és képek
 
-[Home](../../README.md) | [<< Previous: Event Handling](06-event-handling.md) | **Styles, Fonts & Images** | [Next: Dialogs & Modals >>](08-dialogs-modals.md)
+[Kezdőlap](../../README.md) | [<< Előző: Események kezelése](06-event-handling.md) | **Stílusok, betűtípusok és képek** | [Következő: Párbeszédablakok és modális ablakok >>](08-dialogs-modals.md)
 
 ---
 
-## Styles
+Ez a fejezet a DayZ UI vizuális építőköveit tárgyalja: előre definiált stílusokat, betűtípus használatot, szöveg méretezést, imageset referenciákkal rendelkező kép widgeteket, és hogyan hozhatsz létre egyéni imageseteket a mododhoz.
 
-Styles are predefined visual appearances that can be applied to widgets via the `style` attribute in layout files. They control background rendering, borders, and overall look without requiring manual color and image configuration.
+---
 
-### Common Built-In Styles
+## Stílusok
 
-| Style Name | Leiras |
+A stílusok előre definiált vizuális megjelenések, amelyek widgetekre alkalmazhatók a `style` attribútumon keresztül layout fájlokban. Vezérlik a háttér renderelést, kereteket és összhatást manuális szín és kép konfiguráció nélkül.
+
+### Gyakori beépített stílusok
+
+| Stílus neve | Leírás |
 |---|---|
-| `blank` | No visual -- completely transparent background |
-| `Empty` | No background rendering |
-| `Default` | Default button/widget style with standard DayZ appearance |
-| `Colorable` | Style that can be tinted using `SetColor()` |
-| `rover_sim_colorable` | Colored panel style, commonly used for backgrounds |
-| `rover_sim_black` | Dark panel background |
-| `rover_sim_black_2` | Darker panel variant |
-| `Outline_1px_BlackBackground` | 1-pixel outline with solid black background |
-| `OutlineFilled` | Outline with a filled interior |
-| `DayZDefaultPanelRight` | DayZ default right panel style |
-| `DayZNormal` | DayZ normal text/widget style |
-| `MenuDefault` | Standard menu button style |
+| `blank` | Nincs vizuális megjelenés -- teljesen átlátszó háttér |
+| `Empty` | Nincs háttér renderelés |
+| `Default` | Alapértelmezett gomb/widget stílus szabványos DayZ megjelenéssel |
+| `Colorable` | Stílus, amely a `SetColor()` használatával színezhető |
+| `rover_sim_colorable` | Színezett panel stílus, háttérekhez gyakran használt |
+| `rover_sim_black` | Sötét panel háttér |
+| `rover_sim_black_2` | Még sötétebb panel változat |
+| `Outline_1px_BlackBackground` | 1 pixeles körvonal fekete háttérrel |
+| `OutlineFilled` | Körvonal kitöltött belsővel |
+| `DayZDefaultPanelRight` | DayZ alapértelmezett jobb oldali panel stílus |
+| `DayZNormal` | DayZ normál szöveg/widget stílus |
+| `MenuDefault` | Szabványos menü gomb stílus |
 
-### Using Styles in Layouts
+### Stílusok használata layoutokban
 
 ```
 ButtonWidgetClass MyButton {
@@ -43,9 +47,9 @@ PanelWidgetClass Background {
 }
 ```
 
-### Style + Color Pattern
+### Stílus + szín minta
 
-The `Colorable` and `rover_sim_colorable` styles are designed to be tinted. Set the `color` attribute in the layout or call `SetColor()` in code:
+A `Colorable` és `rover_sim_colorable` stílusok színezésre tervezettek. Állítsd be a `color` attribútumot a layoutban vagy hívd meg a `SetColor()` metódust kódban:
 
 ```
 PanelWidgetClass TitleBar {
@@ -58,14 +62,14 @@ PanelWidgetClass TitleBar {
 ```
 
 ```c
-// Change color at runtime
+// Szín módosítása futásidőben
 PanelWidget bar = PanelWidget.Cast(root.FindAnyWidget("TitleBar"));
 bar.SetColor(ARGB(240, 107, 165, 255));
 ```
 
-### Styles in Professional Mods
+### Stílusok professzionális modokban
 
-DabsFramework dialogs use `Outline_1px_BlackBackground` for dialog containers:
+A DabsFramework párbeszédablakok az `Outline_1px_BlackBackground` stílust használják párbeszédablak konténerekhez:
 
 ```
 WrapSpacerWidgetClass EditorDialog {
@@ -75,25 +79,25 @@ WrapSpacerWidgetClass EditorDialog {
 }
 ```
 
-Colorful UI uses `rover_sim_colorable` extensively for themed panels where the color is controlled by a centralized theme manager.
+A Colorful UI kiterjedten használja a `rover_sim_colorable` stílust témázott panelekhez, ahol a színt egy központi téma kezelő vezérli.
 
 ---
 
-## Fonts
+## Betűtípusok
 
-DayZ includes several built-in fonts. Font paths are specified in the `font` attribute.
+A DayZ több beépített betűtípust tartalmaz. A betűtípus elérési utak a `font` attribútumban vannak megadva.
 
-### Built-In Font Paths
+### Beépített betűtípus útvonalak
 
-| Font Path | Leiras |
+| Betűtípus útvonal | Leírás |
 |---|---|
-| `"gui/fonts/Metron"` | Standard UI font |
-| `"gui/fonts/Metron28"` | Standard font, 28pt variant |
-| `"gui/fonts/Metron-Bold"` | Bold variant |
-| `"gui/fonts/Metron-Bold58"` | Bold 58pt variant |
-| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) font -- crisp at any size |
+| `"gui/fonts/Metron"` | Szabványos UI betűtípus |
+| `"gui/fonts/Metron28"` | Szabványos betűtípus, 28pt változat |
+| `"gui/fonts/Metron-Bold"` | Félkövér változat |
+| `"gui/fonts/Metron-Bold58"` | Félkövér 58pt változat |
+| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) betűtípus -- éles bármilyen méreten |
 
-### Using Fonts in Layouts
+### Betűtípusok használata layoutokban
 
 ```
 TextWidgetClass Title {
@@ -109,27 +113,27 @@ TextWidgetClass Body {
 }
 ```
 
-### Using Fonts in Code
+### Betűtípusok használata kódban
 
 ```c
 TextWidget tw = TextWidget.Cast(root.FindAnyWidget("MyText"));
 tw.SetText("Hello");
-// Font is set in the layout, not changeable at runtime via script
+// A betűtípus a layoutban van beállítva, futásidőben script által nem módosítható
 ```
 
-### SDF Fonts
+### SDF betűtípusok
 
-SDF (Signed Distance Field) fonts render crisply at any zoom level, making them ideal for UI elements that may appear at various sizes. The `sdf_MetronBook24` font is the best choice for text that needs to look sharp across different UI scale settings.
+Az SDF (Signed Distance Field) betűtípusok bármilyen nagyítási szinten élesen renderelődnek, így ideálisak olyan UI elemekhez, amelyek különböző méretekben jelenhetnek meg. Az `sdf_MetronBook24` betűtípus a legjobb választás olyan szövegekhez, amelyeknek élesen kell kinézniük a különböző UI skálázási beállításokon.
 
 ---
 
-## Text Sizing: "exact text" vs. Proportional
+## Szöveg méretezés: "exact text" vs. arányos
 
-DayZ text widgets support two sizing modes, controlled by the `"exact text"` attribute:
+A DayZ szöveges widgetek két méretezési módot támogatnak, az `"exact text"` attribútum által vezérelve:
 
-### Proportional Text (Default)
+### Arányos szöveg (alapértelmezett)
 
-When `"exact text" 0` (the default), the font size is determined by the widget's height. The text scales with the widget. This is the default behavior.
+Amikor az `"exact text" 0` (az alapértelmezett), a betűméret a widget magassága határozza meg. A szöveg a widgettel együtt skálázódik. Ez az alapértelmezett viselkedés.
 
 ```
 TextWidgetClass ScalingText {
@@ -140,9 +144,9 @@ TextWidgetClass ScalingText {
 }
 ```
 
-### Exact Text Size
+### Pontos szöveg méret
 
-When `"exact text" 1`, the font size is a fixed pixel value set by `"exact text size"`:
+Amikor az `"exact text" 1`, a betűméret egy fix pixel érték, amelyet az `"exact text size"` állít be:
 
 ```
 TextWidgetClass FixedText {
@@ -155,31 +159,31 @@ TextWidgetClass FixedText {
 }
 ```
 
-### Which to Use?
+### Melyiket használjuk?
 
-| Forgatokonyv | Ajanlott |
+| Forgatókönyv | Ajánlás |
 |---|---|
-| HUD elements that scale with screen size | Proportional (default) |
-| Menu text at a specific size | `"exact text" 1` with `"exact text size"` |
-| Text that must match a specific font pixel size | `"exact text" 1` |
-| Text inside spacers/grids | Often proportional, determined by cell height |
+| Képernyőmérettel skálázódó HUD elemek | Arányos (alapértelmezett) |
+| Menüszöveg adott méretben | `"exact text" 1` az `"exact text size"` beállítással |
+| Szöveg, amelynek adott pixel betűméretet kell egyeznie | `"exact text" 1` |
+| Szöveg spacerekben/rácsokban | Gyakran arányos, a cella magassága határozza meg |
 
-### Text-Related Size Attributes
+### Szöveggel kapcsolatos méret attribútumok
 
-| Attributum | Hatas |
+| Attribútum | Hatás |
 |---|---|
-| `"size to text h" 1` | Widget width adjusts to fit the text |
-| `"size to text v" 1` | Widget height adjusts to fit the text |
-| `"text sharpness"` | Float value controlling rendering sharpness |
-| `wrap 1` | Enable word wrapping for text that exceeds widget width |
+| `"size to text h" 1` | Widget szélessége a szöveghez igazodik |
+| `"size to text v" 1` | Widget magassága a szöveghez igazodik |
+| `"text sharpness"` | Float érték a renderelési élesség szabályozásához |
+| `wrap 1` | Szótördelés engedélyezése a widget szélességét meghaladó szöveghez |
 
-The `"size to text"` attributes are useful for labels and tags where the widget should be exactly as large as its text content.
+A `"size to text"` attribútumok hasznosak címkékhez és jelölőkhöz, ahol a widget pontosan akkora legyen, mint a szövegtartalma.
 
 ---
 
-## Text Alignment
+## Szöveg igazítás
 
-Control where text appears within its widget using alignment attributes:
+Szabályozd, hol jelenik meg a szöveg a widgetjén belül igazítási attribútumokkal:
 
 ```
 TextWidgetClass CenteredLabel {
@@ -189,36 +193,36 @@ TextWidgetClass CenteredLabel {
 }
 ```
 
-| Attributum | Ertekek | Hatas |
+| Attribútum | Értékek | Hatás |
 |---|---|---|
-| `"text halign"` | `left`, `center`, `right` | Horizontal text position within widget |
-| `"text valign"` | `top`, `center`, `bottom` | Vertical text position within widget |
+| `"text halign"` | `left`, `center`, `right` | Szöveg vízszintes pozíciója a widgeten belül |
+| `"text valign"` | `top`, `center`, `bottom` | Szöveg függőleges pozíciója a widgeten belül |
 
 ---
 
-## Text Outline
+## Szöveg körvonal
 
-Add outlines to text for readability on busy backgrounds:
+Adj körvonalat a szöveghez az olvashatóság érdekében zsúfolt háttéren:
 
 ```c
 TextWidget tw;
-tw.SetOutline(1, ARGB(255, 0, 0, 0));   // 1px black outline
+tw.SetOutline(1, ARGB(255, 0, 0, 0));   // 1px fekete körvonal
 
-int size = tw.GetOutlineSize();           // Read outline size
-int color = tw.GetOutlineColor();         // Read outline color (ARGB)
+int size = tw.GetOutlineSize();           // Körvonal méret olvasása
+int color = tw.GetOutlineColor();         // Körvonal szín olvasása (ARGB)
 ```
 
 ---
 
 ## ImageWidget
 
-`ImageWidget` displays images from two sources: imageset references and dynamically loaded files.
+Az `ImageWidget` két forrásból jelenít meg képeket: imageset referenciák és dinamikusan betöltött fájlok.
 
-### Imageset References
+### Imageset referenciák
 
-The most common way to display images. An imageset is a sprite atlas -- a single texture file with multiple named sub-images.
+A képek megjelenítésének leggyakoribb módja. Az imageset egy sprite atlasz -- egyetlen textúra fájl több elnevezett alképpel.
 
-In a layout file:
+Layout fájlban:
 
 ```
 ImageWidgetClass MyIcon {
@@ -229,41 +233,34 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-The format is `"set:<imageset_name> image:<image_name>"`.
+A formátum: `"set:<imageset_neve> image:<kep_neve>"`.
 
-Common vanilla imagesets and images:
-
-```
-"set:dayz_gui image:icon_pin"           -- Map pin icon
-"set:dayz_gui image:icon_refresh"       -- Refresh icon
-"set:dayz_gui image:icon_x"            -- Close/X icon
-"set:dayz_gui image:icon_missing"      -- Warning/missing icon
-"set:dayz_gui image:iconHealth0"       -- Health/plus icon
-"set:dayz_gui image:DayZLogo"          -- DayZ logo
-"set:dayz_gui image:Expand"            -- Expand arrow
-"set:dayz_gui image:Gradient"          -- Gradient strip
-```
-
-### Multiple Image Slots
-
-A single `ImageWidget` can hold multiple images in different slots (`image0`, `image1`, etc.) and switch between them:
+Gyakori vanilla imageset képek:
 
 ```
-ImageWidgetClass StatusIcon {
- image0 "set:dayz_gui image:icon_missing"
- image1 "set:dayz_gui image:iconHealth0"
-}
+"set:dayz_gui image:icon_pin"           -- Térkép tű ikon
+"set:dayz_gui image:icon_refresh"       -- Frissítés ikon
+"set:dayz_gui image:icon_x"            -- Bezárás/X ikon
+"set:dayz_gui image:icon_missing"      -- Figyelmeztetés/hiányzó ikon
+"set:dayz_gui image:iconHealth0"       -- Egészség/plusz ikon
+"set:dayz_gui image:DayZLogo"          -- DayZ logó
+"set:dayz_gui image:Expand"            -- Kibontás nyíl
+"set:dayz_gui image:Gradient"          -- Színátmenet csík
 ```
+
+### Több kép hely
+
+Egyetlen `ImageWidget` több képet tartalmazhat különböző helyeken (`image0`, `image1` stb.) és váltogathat közöttük:
 
 ```c
 ImageWidget icon;
-icon.SetImage(0);    // Show image0 (missing icon)
-icon.SetImage(1);    // Show image1 (health icon)
+icon.SetImage(0);    // image0 megjelenítése (hiányzó ikon)
+icon.SetImage(1);    // image1 megjelenítése (egészség ikon)
 ```
 
-### Loading Images from Files
+### Képek betöltése fájlokból
 
-Load images dynamically at runtime:
+Képek dinamikus betöltése futásidőben:
 
 ```c
 ImageWidget img;
@@ -271,39 +268,37 @@ img.LoadImageFile(0, "MyMod/gui/textures/my_image.edds");
 img.SetImage(0);
 ```
 
-The path is relative to the mod's root directory. Supported formats include `.edds`, `.paa`, and `.tga` (though `.edds` is standard for DayZ).
+### Kép keverési módok
 
-### Image Blend Modes
+A `mode` attribútum szabályozza, hogyan keveredik a kép a mögötte lévővel:
 
-The `mode` attribute controls how the image blends with what's behind it:
-
-| Mode | Hatas |
+| Mód | Hatás |
 |---|---|
-| `blend` | Standard alpha blending (most common) |
-| `additive` | Colors add together (glow effects) |
-| `stretch` | Stretch to fill without blending |
+| `blend` | Szabványos alfa keverés (leggyakoribb) |
+| `additive` | A színek összeadódnak (fény effektek) |
+| `stretch` | Nyújtás a kitöltéshez keverés nélkül |
 
-### Image Mask Transitions
+### Kép maszk átmenetek
 
-`ImageWidget` supports mask-based reveal transitions:
+Az `ImageWidget` támogatja a maszk-alapú feltárási átmeneteket:
 
 ```c
 ImageWidget img;
 img.LoadMaskTexture("gui/textures/mask_wipe.edds");
-img.SetMaskProgress(0.5);  // 50% revealed
+img.SetMaskProgress(0.5);  // 50% feltárva
 ```
 
-This is useful for loading bars, health displays, and reveal animations.
+Ez hasznos töltősávokhoz, egészségmegjelenítőkhöz és feltárási animációkhoz.
 
 ---
 
-## ImageSet formatum
+## ImageSet formátum
 
-An imageset file (`.imageset`) defines named regions within a sprite atlas texture. DayZ supports two imageset formats.
+Az imageset fájl (`.imageset`) elnevezett régiókat definiál egy sprite atlasz textúrán belül. A DayZ két imageset formátumot támogat.
 
-### DayZ Native Format
+### DayZ natív formátum
 
-Used by vanilla DayZ and most mods. This is **not** XML -- it uses the same brace-delimited format as layout files.
+A vanilla DayZ és a legtöbb mod által használt. Ez **nem** XML -- ugyanazt a kapcsos zárójelekkel tagolt formátumot használja, mint a layout fájlok.
 
 ```
 ImageSetClass {
@@ -328,106 +323,63 @@ ImageSetClass {
    Size 64 64
    Flags 0
   }
-  ImageSetDefClass icon_potion {
-   Name "icon_potion"
-   Pos 128 0
-   Size 64 64
-   Flags 0
-  }
  }
 }
 ```
 
-Key fields:
-- `Name` -- Imageset name (used in `"set:<name>"`)
-- `RefSize` -- Reference size of the source texture in pixels (width height)
-- `path` -- Path to the texture file (`.edds`)
-- `mpix` -- Mipmap level (0 = standard resolution, 1 = 2x resolution)
-- Each image entry defines `Name`, `Pos` (x y in pixels), and `Size` (width height in pixels)
+### XML formátum
 
-### XML Format
-
-Some mods (including some DayZ Expansion modules) use an XML-based imageset format:
+Néhány mod (beleértve néhány DayZ Expansion modult) XML-alapú imageset formátumot használ:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <imageset name="my_icons" file="MyMod/GUI/imagesets/my_icons.edds">
   <image name="icon_sword" pos="0 0" size="64 64" />
   <image name="icon_shield" pos="64 0" size="64 64" />
-  <image name="icon_potion" pos="128 0" size="64 64" />
 </imageset>
 ```
 
-Both formats accomplish the same thing. The native format is used by vanilla DayZ; the XML format is sometimes easier to read and edit by hand.
+Mindkét formátum ugyanazt valósítja meg. A natív formátumot a vanilla DayZ használja; az XML formátum néha könnyebben olvasható és szerkeszthető kézzel.
 
 ---
 
-## Creating Custom Imagesets
+## Egyéni imageset készítése
 
-To create your own imageset for a mod:
+### 1. lépés: Sprite atlasz textúra létrehozása
 
-### Step 1: Create the Sprite Atlas Texture
+Használj képszerkesztőt (Photoshop, GIMP stb.) egyetlen textúra létrehozásához, amely rácson elrendezett ikonjaidat/képeidet tartalmazza. A gyakori méretek 256x256, 512x512 vagy 1024x1024 pixel.
 
-Use an image editor (Photoshop, GIMP, etc.) to create a single texture that contains all your icons/images arranged on a grid. Common sizes are 256x256, 512x512, or 1024x1024 pixels.
+Mentsd el `.tga` fájlként, majd konvertáld `.edds` formátumba DayZ Tools segítségével (TexView2 vagy az ImageTool).
 
-Save as `.tga`, then convert to `.edds` using DayZ eszkozok (TexView2 or the ImageTool).
+### 2. lépés: Imageset fájl létrehozása
 
-### Step 2: Create the Imageset File
+Hozz létre egy `.imageset` fájlt, amely a textúra pozícióihoz rendeli az elnevezett régiókat.
 
-Create a `.imageset` file that maps named regions to positions in the texture:
+### 3. lépés: Regisztráció a config.cpp-ben
 
-```
-ImageSetClass {
- Name "mymod_icons"
- RefSize 512 512
- Textures {
-  ImageSetTextureClass {
-   mpix 0
-   path "MyFramework/GUI/imagesets/mymod_icons.edds"
-  }
- }
- Images {
-  ImageSetDefClass icon_mission {
-   Name "icon_mission"
-   Pos 0 0
-   Size 64 64
-   Flags 0
-  }
-  ImageSetDefClass icon_waypoint {
-   Name "icon_waypoint"
-   Pos 64 0
-   Size 64 64
-   Flags 0
-  }
- }
-}
-```
-
-### Step 3: Register in config.cpp
-
-In your mod's `config.cpp`, register the imageset under `CfgMods`:
+A modod `config.cpp` fájljában regisztráld az imagesetet a `CfgMods` alatt:
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        // ... other fields ...
+        // ... egyéb mezők ...
         class defs
         {
             class imageSets
             {
                 files[] = { "MyMod/GUI/imagesets/mymod_icons.imageset" };
             };
-            // ... script modules ...
+            // ... script modulok ...
         };
     };
 };
 ```
 
-### Step 4: Use in Layouts and Code
+### 4. lépés: Használat layoutokban és kódban
 
-In layout files:
+Layout fájlokban:
 
 ```
 ImageWidgetClass MissionIcon {
@@ -437,19 +389,11 @@ ImageWidgetClass MissionIcon {
 }
 ```
 
-In code:
-
-```c
-ImageWidget icon;
-// Images from registered imagesets are available by set:name image:name
-// No additional loading step needed after config.cpp registration
-```
-
 ---
 
-## Color Theme Pattern
+## Szín téma minta
 
-Professional mods centralize their color definitions in a theme class, then apply colors at runtime. This makes it easy to restyle the entire UI by changing one file.
+A professzionális modok központosítják a szín definícióikat egy téma osztályban, majd futásidőben alkalmazzák a színeket. Ez megkönnyíti a teljes UI átszínezését egyetlen fájl módosításával.
 
 ```c
 class UIColor
@@ -465,7 +409,7 @@ class UIColor
 }
 ```
 
-Apply in code:
+Alkalmazás kódban:
 
 ```c
 titleBar.SetColor(UIColor.Primary());
@@ -473,15 +417,13 @@ statusText.SetColor(UIColor.Accent());
 errorText.SetColor(UIColor.Danger());
 ```
 
-This pattern (used by Colorful UI, MyMod, and others) means changing the entire UI color scheme requires editing only the theme class.
-
 ---
 
-## Osszefoglalas of Visual Attributes by Widget Type
+## Vizuális attribútumok összefoglalása widget típusonként
 
-| Widget | Key Visual Attributes |
+| Widget | Fő vizuális attribútumok |
 |---|---|
-| Any widget | `color`, `visible`, `style`, `priority`, `inheritalpha` |
+| Bármilyen widget | `color`, `visible`, `style`, `priority`, `inheritalpha` |
 | TextWidget | `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `wrap` |
 | ImageWidget | `image0`, `mode`, `"src alpha"`, `stretch`, `"flip u"`, `"flip v"` |
 | ButtonWidget | `text`, `style`, `switch toggle` |
@@ -491,25 +433,26 @@ This pattern (used by Colorful UI, MyMod, and others) means changing the entire 
 
 ---
 
-## Bevalt gyakorlatok
+## Bevált gyakorlatok
 
-1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by the engine.
+1. **Használj imageset referenciákat** közvetlen fájl útvonalak helyett ahol lehetséges -- az imageseteket a motor hatékonyabban kötegelten dolgozza fel.
 
-2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at any scale.
+2. **Használj SDF betűtípusokat** (`sdf_MetronBook24`) olyan szöveghez, amelynek bármilyen méretben élesen kell kinéznie.
 
-3. **Use `"exact text" 1`** for UI text at specific pixel sizes; use proportional text for HUD elements that should scale.
+3. **Használj `"exact text" 1`-et** adott pixel méretű UI szöveghez; használj arányos szöveget olyan HUD elemekhez, amelyeknek skálázódniuk kell.
 
-4. **Centralize colors** in a theme class rather than hardcoding ARGB values throughout your code.
+4. **Központosítsd a színeket** egy téma osztályban ahelyett, hogy ARGB értékeket kódolnál be a kódodba szétszórva.
 
-5. **Set `"src alpha" 1`** on image widgets to get proper transparency.
+5. **Állítsd be a `"src alpha" 1`-et** a kép widgeteken a megfelelő átlátszóság érdekében.
 
-6. **Register custom imagesets** in `config.cpp` so they are available globally without manual loading.
+6. **Regisztráld az egyéni imageseteket** a `config.cpp`-ben, hogy globálisan elérhetők legyenek manuális betöltés nélkül.
 
-7. **Keep sprite atlases reasonably sized** -- 512x512 or 1024x1024 is typical. Larger textures waste memory if most of the space is empty.
+7. **Tartsd ésszerű méretben a sprite atlaszokat** -- 512x512 vagy 1024x1024 a tipikus. A nagyobb textúrák pazarolják a memóriát, ha a hely nagy része üres.
 
 ---
 
-## Kovetkezo lepesek
+## Következő lépések
 
-- [3.1 Widget tipusok](01-widget-types.md) -- Review the full widget catalog
-- [3.6 Esemenyek kezelese](06-event-handling.md) -- Make your styled widgets interactive
+- [3.8 Párbeszédablakok és modális ablakok](08-dialogs-modals.md) -- Felugró ablakok, megerősítési felszólítások és fedőpanelek
+- [3.1 Widget típusok](01-widget-types.md) -- A teljes widget katalógus áttekintése
+- [3.6 Események kezelése](06-event-handling.md) -- A stílusos widgetek interaktívvá tétele

@@ -1,35 +1,35 @@
-# Chapter 6.20: Particle & Effect System
+# Capítulo 6.20: Sistema de Partículas e Efeitos
 
-[Home](../../README.md) | [<< Previous: Terrain & World Queries](19-terrain-queries.md) | **Particle & Effect System** | [Next: Zombie & AI System >>](21-zombie-ai-system.md)
+[Início](../../README.md) | [<< Anterior: Consultas de Terreno e Mundo](19-terrain-queries.md) | **Sistema de Partículas e Efeitos** | [Próximo: Sistema de Zumbis e IA >>](21-zombie-ai-system.md)
 
 ---
 
 ## Introdução
 
-DayZ's particle and visual effects system handles fire, smoke, blood, explosions, weather effects, vehicle exhaust, contaminated area gas, and more. Every visual effect you see in the game world --- from a campfire to a bullet impact crater --- is driven by this system.
+O sistema de partículas e efeitos visuais do DayZ gerencia fogo, fumaça, sangue, explosões, efeitos climáticos, escapamento de veículos, gás de áreas contaminadas e muito mais. Cada efeito visual que você vê no mundo do jogo --- de uma fogueira a uma cratera de impacto de bala --- é controlado por este sistema.
 
-There are **two layers** for working with particles from script:
+Existem **duas camadas** para trabalhar com partículas via script:
 
-1. **Low-level:** The `Particle` / `ParticleSource` classes and `ParticleManager` --- direct control over engine particle objects.
-2. **High-level:** The `EffectParticle` wrapper and `SEffectManager` --- lifecycle-managed effects with events, autodestroy, and integration with the unified Effect system (shared with `EffectSound`).
+1. **Baixo nível:** As classes `Particle` / `ParticleSource` e `ParticleManager` --- controle direto sobre objetos de partículas do motor.
+2. **Alto nível:** O wrapper `EffectParticle` e `SEffectManager` --- efeitos com ciclo de vida gerenciado, com eventos, autodestruição e integração com o sistema unificado de efeitos (compartilhado com `EffectSound`).
 
-All particle playback is **client-side only**. Dedicated servers have no rendering pipeline and cannot display particles. Always guard particle creation behind `!GetGame().IsDedicatedServer()` or rely on the built-in guards in the API. The `ParticleManager.GetInstance()` method already returns `null` on dedicated servers.
+Toda reprodução de partículas é **apenas no lado do cliente**. Servidores dedicados não possuem pipeline de renderização e não podem exibir partículas. Sempre proteja a criação de partículas com `!GetGame().IsDedicatedServer()` ou confie nas proteções integradas da API. O método `ParticleManager.GetInstance()` já retorna `null` em servidores dedicados.
 
-This chapter covers the complete particle pipeline: the `ParticleList` registry, both creation approaches, the `EmitorParam` system for runtime tuning, the `EffectParticle` wrapper, `SEffectManager` integration, and real-world patterns from vanilla code.
+Este capítulo cobre o pipeline completo de partículas: o registro `ParticleList`, ambas as abordagens de criação, o sistema `EmitorParam` para ajuste em tempo de execução, o wrapper `EffectParticle`, integração com `SEffectManager` e padrões do mundo real encontrados no código vanilla.
 
 ---
 
-## Particle Architecture Visão Geral
+## Visão Geral da Arquitetura de Partículas
 
-### System Architecture
+### Arquitetura do Sistema
 
 ```mermaid
 graph TB
-    subgraph "High-Level API"
+    subgraph "API de Alto Nível"
         SEM[SEffectManager] --> EP[EffectParticle]
         SEM --> ES[EffectSound]
     end
-    subgraph "Low-Level API"
+    subgraph "API de Baixo Nível"
         PM[ParticleManager] --> PS[ParticleSource]
         PS --> P[Particle]
     end
@@ -41,471 +41,471 @@ graph TB
     style PL fill:#50C878,color:#fff
 ```
 
-### Detalheed Pipeline
+### Pipeline Detalhado
 
 ```
-ParticleList                                 Script (High-Level)
+ParticleList                                 Script (Alto Nível)
 ------------                                 --------------------
-Static int IDs                               EffectParticle
+IDs int estáticos                            EffectParticle
   (CAMP_SMALL_FIRE,                              |
    BLEEDING_SOURCE,                              v
    GUN_FNX, etc.)                            SEffectManager
       |                                      PlayInWorld / PlayOnObject
       v                                          |
   RegisterParticle()                              |
-  maps ID -> "graphics/particles/xxx"             |
+  mapeia ID -> "graphics/particles/xxx"           |
       |                                           |
       +-------------------------------------------+
       |
       v
-  ParticleManager (pool-based)        Particle (legacy, per-instance)
-  CreateParticle / PlayOnObject       CreateOnObject / PlayInWorld
+  ParticleManager (baseado em pool)     Particle (legado, por instância)
+  CreateParticle / PlayOnObject         CreateOnObject / PlayInWorld
       |                                   |
       v                                   v
   ParticleSource (Entity)             Particle (Entity)
-  (native engine particle component)  (child Object with vobject)
+  (componente nativo de partículas)   (Object filho com vobject)
       |
       v
-  .ptc file (binary particle definition)
+  arquivo .ptc (definição binária de partículas)
 ```
 
-**Key distinction:**
+**Distinção principal:**
 
-- **`Particle`** (legacy) creates a separate child `Object` to hold the particle effect. Each instance registers for `EOnFrame` to track lifetime. Suitable for simple, infrequent particles.
-- **`ParticleSource`** (modern, via `ParticleManager`) is the particle entity itself, with native C++ lifetime management. Uses a pre-allocated pool of 10,000 slots. Preferred for all new code.
+- **`Particle`** (legado) cria um `Object` filho separado para conter o efeito de partícula. Cada instância se registra em `EOnFrame` para rastrear o tempo de vida. Adequado para partículas simples e pouco frequentes.
+- **`ParticleSource`** (moderno, via `ParticleManager`) é a própria entidade de partícula, com gerenciamento de ciclo de vida nativo em C++. Usa um pool pré-alocado de 10.000 slots. Preferido para todo código novo.
 
 ---
 
-## ParticleList --- Built-in Particle IDs
+## ParticleList --- IDs de Partículas Integrados
 
-All particles are registered in `ParticleList` (`scripts/3_game/particles/particlelist.c`). Each registration maps an integer constant to a `.ptc` file path under `graphics/particles/`.
+Todas as partículas são registradas em `ParticleList` (`scripts/3_game/particles/particlelist.c`). Cada registro mapeia uma constante inteira para um caminho de arquivo `.ptc` em `graphics/particles/`.
 
-### Registration Mechanism
+### Mecanismo de Registro
 
 ```c
-// Internal registration -- maps sequential ID to file path
+// Registro interno -- mapeia ID sequencial para caminho de arquivo
 static int RegisterParticle(string file_name)
 {
     return RegisterParticle(GetPathToParticles(), file_name);
-    // GetPathToParticles() returns "graphics/particles/"
-    // Full path becomes: "graphics/particles/<file_name>.ptc"
+    // GetPathToParticles() retorna "graphics/particles/"
+    // Caminho completo se torna: "graphics/particles/<file_name>.ptc"
 }
 ```
 
-IDs are assigned sequentially starting from 1. `NONE = 0` and `INVALID = -1` are reserved.
+IDs são atribuídos sequencialmente começando em 1. `NONE = 0` e `INVALID = -1` são reservados.
 
-### Common Particle ID Categories
+### Categorias Comuns de IDs de Partículas
 
-**Fire particles:**
+**Partículas de fogo:**
 
-| Constante | File | Caso de Uso |
+| Constante | Arquivo | Caso de Uso |
 |----------|------|----------|
-| `CAMP_FIRE_START` | `fire_small_camp_01_start` | Campfire ignition |
-| `CAMP_SMALL_FIRE` | `fire_small_camp_01` | Small campfire flame |
-| `CAMP_NORMAL_FIRE` | `fire_medium_camp_01` | Medium campfire flame |
-| `CAMP_STOVE_FIRE` | `fire_small_stove_01` | Stove flame |
-| `TORCH_T1` / `T2` / `T3` | `fire_small_torch_0x` | Torch flame states |
-| `BONFIRE_FIRE` | `fire_bonfire` | Large bonfire |
-| `TIREPILE_FIRE` | `fire_tirepile` | Burning tire pile |
+| `CAMP_FIRE_START` | `fire_small_camp_01_start` | Ignição de fogueira |
+| `CAMP_SMALL_FIRE` | `fire_small_camp_01` | Chama pequena de fogueira |
+| `CAMP_NORMAL_FIRE` | `fire_medium_camp_01` | Chama média de fogueira |
+| `CAMP_STOVE_FIRE` | `fire_small_stove_01` | Chama de fogão |
+| `TORCH_T1` / `T2` / `T3` | `fire_small_torch_0x` | Estados de chama de tocha |
+| `BONFIRE_FIRE` | `fire_bonfire` | Fogueira grande |
+| `TIREPILE_FIRE` | `fire_tirepile` | Pilha de pneus em chamas |
 
-**Smoke particles:**
+**Partículas de fumaça:**
 
-| Constante | File | Caso de Uso |
+| Constante | Arquivo | Caso de Uso |
 |----------|------|----------|
-| `CAMP_SMALL_SMOKE` | `smoke_small_camp_01` | Campfire smoke (small) |
-| `CAMP_NORMAL_SMOKE` | `smoke_medium_camp_01` | Campfire smoke (medium) |
-| `SMOKING_HELI_WRECK` | `smoke_heli_wreck_01` | Helicopter crash site |
-| `SMOKE_GENERIC_WRECK` | `smoke_generic_wreck` | Generic wreckage smoke |
-| `POWER_GENERATOR_SMOKE` | `smoke_small_generator_01` | Running generator |
-| `SMOKING_BARREL` | `smoking_barrel` | Hot gun barrel |
+| `CAMP_SMALL_SMOKE` | `smoke_small_camp_01` | Fumaça de fogueira (pequena) |
+| `CAMP_NORMAL_SMOKE` | `smoke_medium_camp_01` | Fumaça de fogueira (média) |
+| `SMOKING_HELI_WRECK` | `smoke_heli_wreck_01` | Local de queda de helicóptero |
+| `SMOKE_GENERIC_WRECK` | `smoke_generic_wreck` | Fumaça genérica de destroços |
+| `POWER_GENERATOR_SMOKE` | `smoke_small_generator_01` | Gerador em funcionamento |
+| `SMOKING_BARREL` | `smoking_barrel` | Cano de arma quente |
 
-**Blood and player effects:**
+**Sangue e efeitos de jogador:**
 
-| Constante | File | Caso de Uso |
+| Constante | Arquivo | Caso de Uso |
 |----------|------|----------|
-| `BLEEDING_SOURCE` | `blood_bleeding_01` | Active bleeding wound |
-| `BLEEDING_SOURCE_LIGHT` | `blood_bleeding_02` | Light bleeding wound |
-| `BLOOD_SURFACE_DROPS` | `blood_surface_drops` | Blood dripping on ground |
-| `BLOOD_SURFACE_CHUNKS` | `blood_surface_chunks` | Blood splatter chunks |
-| `VOMIT` | `character_vomit_01` | Character vomiting |
-| `BREATH_VAPOUR_LIGHT` | `breath_vapour_light` | Cold breath (light) |
-| `BREATH_VAPOUR_HEAVY` | `breath_vapour_heavy` | Cold breath (heavy) |
+| `BLEEDING_SOURCE` | `blood_bleeding_01` | Ferimento com sangramento ativo |
+| `BLEEDING_SOURCE_LIGHT` | `blood_bleeding_02` | Ferimento com sangramento leve |
+| `BLOOD_SURFACE_DROPS` | `blood_surface_drops` | Sangue pingando no chão |
+| `BLOOD_SURFACE_CHUNKS` | `blood_surface_chunks` | Pedaços de sangue espalhados |
+| `VOMIT` | `character_vomit_01` | Personagem vomitando |
+| `BREATH_VAPOUR_LIGHT` | `breath_vapour_light` | Respiração fria (leve) |
+| `BREATH_VAPOUR_HEAVY` | `breath_vapour_heavy` | Respiração fria (pesada) |
 
-**Cooking effects:**
+**Efeitos de cozimento:**
 
-| Constante | File | Caso de Uso |
+| Constante | Arquivo | Caso de Uso |
 |----------|------|----------|
-| `COOKING_BOILING_START` | `cooking_boiling_start` | Water starting to boil |
-| `COOKING_BOILING_DONE` | `cooking_boiling_done` | Boiling complete |
-| `COOKING_BAKING_START` | `cooking_baking_start` | Food baking steam |
-| `COOKING_BURNING_DONE` | `cooking_burning_done` | Food burnt smoke |
-| `ITEM_HOT_VAPOR` | `item_hot_vapor` | Steam from hot items |
+| `COOKING_BOILING_START` | `cooking_boiling_start` | Água começando a ferver |
+| `COOKING_BOILING_DONE` | `cooking_boiling_done` | Fervura completa |
+| `COOKING_BAKING_START` | `cooking_baking_start` | Vapor de alimento assando |
+| `COOKING_BURNING_DONE` | `cooking_burning_done` | Fumaça de alimento queimado |
+| `ITEM_HOT_VAPOR` | `item_hot_vapor` | Vapor de itens quentes |
 
-**Weapon effects:**
+**Efeitos de armas:**
 
-| Constante | File | Caso de Uso |
+| Constante | Arquivo | Caso de Uso |
 |----------|------|----------|
-| `GUN_FNX` | `weapon_shot_fnx_01` | FNX muzzle flash |
-| `GUN_AKM` | `weapon_shot_akm_01` | AKM muzzle flash |
-| `GUN_M4A1` | `weapon_shot_m4a1_01` | M4A1 muzzle flash |
-| `GUN_PARTICLE_CASING` | `weapon_shot_chamber_smoke` | Chamber smoke after shot |
-| `GUN_PELLETS` | `weapon_shot_pellets` | Shotgun pellet spread |
+| `GUN_FNX` | `weapon_shot_fnx_01` | Flash de boca da FNX |
+| `GUN_AKM` | `weapon_shot_akm_01` | Flash de boca da AKM |
+| `GUN_M4A1` | `weapon_shot_m4a1_01` | Flash de boca da M4A1 |
+| `GUN_PARTICLE_CASING` | `weapon_shot_chamber_smoke` | Fumaça da câmara após o tiro |
+| `GUN_PELLETS` | `weapon_shot_pellets` | Dispersão de chumbos de espingarda |
 
-**Bullet impacts (per material):**
+**Impactos de bala (por material):**
 
 | Padrão | Exemplo | Descrição |
 |---------|---------|-------------|
-| `IMPACT_<MATERIAL>_ENTER` | `IMPACT_WOOD_ENTER` | Bullet entry into surface |
-| `IMPACT_<MATERIAL>_RICOCHET` | `IMPACT_METAL_RICOCHET` | Bullet deflection |
-| `IMPACT_<MATERIAL>_EXIT` | `IMPACT_CONCRETE_EXIT` | Bullet exit from surface |
+| `IMPACT_<MATERIAL>_ENTER` | `IMPACT_WOOD_ENTER` | Entrada de bala na superfície |
+| `IMPACT_<MATERIAL>_RICOCHET` | `IMPACT_METAL_RICOCHET` | Deflexão da bala |
+| `IMPACT_<MATERIAL>_EXIT` | `IMPACT_CONCRETE_EXIT` | Saída de bala da superfície |
 
-Materials include: `WOOD`, `CONCRETE`, `DIRT`, `METAL`, `GLASS`, `SAND`, `SNOW`, `ICE`, `MEAT`, `WATER` (small/medium/large), and more.
+Os materiais incluem: `WOOD`, `CONCRETE`, `DIRT`, `METAL`, `GLASS`, `SAND`, `SNOW`, `ICE`, `MEAT`, `WATER` (pequeno/médio/grande), entre outros.
 
-**Explosions and grenades:**
-
-| Constante | Descrição |
-|----------|-------------|
-| `RGD5`, `M67` | Fragmentation grenade explosions |
-| `EXPLOSION_LANDMINE` | Landmine detonation |
-| `CLAYMORE_EXPLOSION` | Directional mine |
-| `GRENADE_M18_<COLOR>_START/LOOP/END` | Smoke grenade lifecycle (6 colors) |
-| `GRENADE_RDG2_BLACK/WHITE_START/LOOP/END` | Russian smoke grenade |
-
-**Vehicles:**
+**Explosões e granadas:**
 
 | Constante | Descrição |
 |----------|-------------|
-| `HATCHBACK_EXHAUST_SMOKE` | Vehicle exhaust |
-| `HATCHBACK_COOLANT_OVERHEATING` | Engine warning steam |
-| `HATCHBACK_ENGINE_OVERHEATED` | Engine failure smoke |
-| `BOAT_WATER_FRONT` / `BACK` / `SIDE` | Boat wake effects |
+| `RGD5`, `M67` | Explosões de granada de fragmentação |
+| `EXPLOSION_LANDMINE` | Detonação de mina terrestre |
+| `CLAYMORE_EXPLOSION` | Mina direcional |
+| `GRENADE_M18_<COLOR>_START/LOOP/END` | Ciclo de vida de granada de fumaça (6 cores) |
+| `GRENADE_RDG2_BLACK/WHITE_START/LOOP/END` | Granada de fumaça russa |
 
-**Environment:**
+**Veículos:**
 
 | Constante | Descrição |
 |----------|-------------|
-| `CONTAMINATED_AREA_GAS_BIGASS` | Large contaminated zone gas |
-| `ENV_SWARMING_FLIES` | Flies around corpses |
-| `SPOOKY_MIST` | Atmospheric mist |
-| `STEP_SNOW` / `STEP_DESERT` | Footstep particles |
-| `HOTPSRING_WATERVAPOR` | Hot spring steam |
-| `GEYSER_NORMAL` / `GEYSER_STRONG` | Geyser eruption |
+| `HATCHBACK_EXHAUST_SMOKE` | Escapamento de veículo |
+| `HATCHBACK_COOLANT_OVERHEATING` | Vapor de aviso do motor |
+| `HATCHBACK_ENGINE_OVERHEATED` | Fumaça de falha do motor |
+| `BOAT_WATER_FRONT` / `BACK` / `SIDE` | Efeitos de esteira de barco |
+
+**Ambiente:**
+
+| Constante | Descrição |
+|----------|-------------|
+| `CONTAMINATED_AREA_GAS_BIGASS` | Gás de grande zona contaminada |
+| `ENV_SWARMING_FLIES` | Moscas ao redor de cadáveres |
+| `SPOOKY_MIST` | Névoa atmosférica |
+| `STEP_SNOW` / `STEP_DESERT` | Partículas de pegadas |
+| `HOTPSRING_WATERVAPOR` | Vapor de fonte termal |
+| `GEYSER_NORMAL` / `GEYSER_STRONG` | Erupção de gêiser |
 
 ---
 
-## Playing Particles --- Direct API
+## Reproduzindo Partículas --- API Direta
 
-### Método 1: ParticleManager (Recommended)
+### Método 1: ParticleManager (Recomendado)
 
-`ParticleManager` uses a pre-allocated pool of `ParticleSource` entities. This avoids the overhead of creating and destroying objects at runtime.
+`ParticleManager` usa um pool pré-alocado de entidades `ParticleSource`. Isso evita a sobrecarga de criar e destruir objetos em tempo de execução.
 
 ```c
-// Get the global ParticleManager singleton (returns null on server)
+// Obter o singleton global de ParticleManager (retorna null no servidor)
 ParticleManager pm = ParticleManager.GetInstance();
 if (!pm)
     return;
 
-// Play a particle attached to an object
+// Reproduzir uma partícula vinculada a um objeto
 ParticleSource p = pm.PlayOnObject(
-    ParticleList.CAMP_SMALL_FIRE,   // particle ID
-    myObject,                        // parent entity
-    "0 0.5 0",                       // local offset from parent origin
-    "0 0 0",                         // local orientation (yaw, pitch, roll)
-    false                            // force world-space rotation
+    ParticleList.CAMP_SMALL_FIRE,   // ID da partícula
+    myObject,                        // entidade pai
+    "0 0.5 0",                       // deslocamento local da origem do pai
+    "0 0 0",                         // orientação local (yaw, pitch, roll)
+    false                            // forçar rotação no espaço mundo
 );
 
-// Play a particle at a world position (no parent)
+// Reproduzir uma partícula em uma posição do mundo (sem pai)
 ParticleSource p2 = pm.PlayInWorld(
     ParticleList.SMOKE_GENERIC_WRECK,
     worldPosition
 );
 
-// Extended variant with parent for world-position particles
+// Variante estendida com pai para partículas em posição do mundo
 ParticleSource p3 = pm.PlayInWorldEx(
     ParticleList.EXPLOSION_LANDMINE,
-    parentObj,              // optional parent
+    parentObj,              // pai opcional
     worldPosition,
-    "0 0 0",                // orientation
-    true                     // force world rotation
+    "0 0 0",                // orientação
+    true                     // forçar rotação no mundo
 );
 ```
 
-**Create without playing** (deferred activation):
+**Criar sem reproduzir** (ativação adiada):
 
 ```c
-// Create but don't play yet
+// Criar mas não reproduzir ainda
 ParticleSource p = pm.CreateOnObject(
     ParticleList.POWER_GENERATOR_SMOKE,
     generatorObj,
     "0 1.2 0"
 );
 
-// ... later, start it
+// ... mais tarde, iniciar
 p.PlayParticle();
 ```
 
-**Batch creation** (multiple particles at once):
+**Criação em lote** (múltiplas partículas de uma vez):
 
 ```c
 array<ParticleSource> results = new array<ParticleSource>;
 ParticleProperties props = new ParticleProperties(
     worldPos,
     ParticlePropertiesFlags.PLAY_ON_CREATION,
-    null,         // no parent
-    vector.Zero,  // orientation
-    this          // owner (prevents pool reuse while alive)
+    null,         // sem pai
+    vector.Zero,  // orientação
+    this          // proprietário (previne reutilização do pool enquanto vivo)
 );
 
 pm.CreateParticles(results, "graphics/particles/debug_dot.ptc", {props}, 10);
 ```
 
-### Método 2: Particle Static Métodos (Legacy)
+### Método 2: Métodos Estáticos de Particle (Legado)
 
-The legacy `Particle` class creates individual entity instances. Still functional but less efficient for high particle counts.
+A classe legada `Particle` cria instâncias de entidade individuais. Ainda funcional, mas menos eficiente para grande quantidade de partículas.
 
 ```c
-// Create and play on an object (one line)
+// Criar e reproduzir em um objeto (uma linha)
 Particle p = Particle.PlayOnObject(
     ParticleList.BLEEDING_SOURCE,
     playerObj,
-    "0 0.8 0",   // local position
-    "0 0 0",      // local orientation
-    true          // force world rotation
+    "0 0.8 0",   // posição local
+    "0 0 0",      // orientação local
+    true          // forçar rotação no mundo
 );
 
-// Create and play at world position
+// Criar e reproduzir em posição do mundo
 Particle p2 = Particle.PlayInWorld(
     ParticleList.EXPLOSION_LANDMINE,
     explosionPos
 );
 
-// Create without playing
+// Criar sem reproduzir
 Particle p3 = Particle.CreateOnObject(
     ParticleList.CAMP_SMALL_SMOKE,
     campfireObj,
     "0 0.5 0"
 );
-// ... later
+// ... mais tarde
 p3.PlayParticle();
 ```
 
 ---
 
-## Stopping and Controlling Particles
+## Parando e Controlando Partículas
 
-### Stopping
+### Parando
 
 ```c
-// Gradual fade (default) -- particle stops emitting, existing particles finish
+// Fade gradual (padrão) -- partícula para de emitir, partículas existentes terminam
 p.StopParticle();
 
-// Legacy shorthand
+// Atalho legado
 p.Stop();
 
-// ParticleSource: Immediate stop (freezes and hides)
+// ParticleSource: Parada imediata (congela e oculta)
 p.StopParticle(StopParticleFlags.IMMEDIATE);
 
-// ParticleSource: Pause (freeze but keep visible)
+// ParticleSource: Pausar (congelar mas manter visível)
 p.StopParticle(StopParticleFlags.PAUSE);
 
-// ParticleSource: Stop and reset to initial state
+// ParticleSource: Parar e resetar para estado inicial
 p.StopParticle(StopParticleFlags.RESET);
 ```
 
-### Auto-Destroy Behavior
+### Comportamento de Auto-Destruição
 
-`ParticleSource` auto-destroys by default when the particle ends or stops:
+`ParticleSource` se auto-destrói por padrão quando a partícula termina ou para:
 
 ```c
-// Check current flags
+// Verificar flags atuais
 int flags = p.GetParticleAutoDestroyFlags();
 
-// Disable auto-destroy (keep the particle for reuse)
+// Desabilitar auto-destruição (manter a partícula para reutilização)
 p.DisableAutoDestroy();
-// or
+// ou
 p.SetParticleAutoDestroyFlags(ParticleAutoDestroyFlags.NONE);
 
-// Only destroy on natural end (not on manual stop)
+// Destruir apenas no fim natural (não na parada manual)
 p.SetParticleAutoDestroyFlags(ParticleAutoDestroyFlags.ON_END);
 
-// Destroy on either end or stop (default)
+// Destruir tanto no fim quanto na parada (padrão)
 p.SetParticleAutoDestroyFlags(ParticleAutoDestroyFlags.ALL);
 ```
 
-**Important:** Particles belonging to a `ParticleManager` pool ignore auto-destroy flags --- the pool manages their lifecycle.
+**Importante:** Partículas pertencentes a um pool de `ParticleManager` ignoram flags de auto-destruição --- o pool gerencia seu ciclo de vida.
 
-### Reset and Restart (ParticleSource Only)
+### Reset e Reiniciar (Apenas ParticleSource)
 
 ```c
-// Reset to initial state (clears all particles, resets timer)
+// Resetar para estado inicial (limpa todas as partículas, reseta timer)
 p.ResetParticle();
 
-// Restart = reset + play
+// Reiniciar = resetar + reproduzir
 p.RestartParticle();
 ```
 
-### State Queries
+### Consultas de Estado
 
 ```c
-// Is the particle currently playing?
+// A partícula está sendo reproduzida atualmente?
 bool playing = p.IsParticlePlaying();
 
-// Does it have any active (visible) particles right now?
+// Ela tem alguma partícula ativa (visível) agora?
 bool active = p.HasActiveParticle();
 
-// Total count of active particles across all emitters
+// Contagem total de partículas ativas em todos os emissores
 int count = p.GetParticleCount();
 
-// Is any emitter set to repeat?
+// Algum emissor está configurado para repetir?
 bool loops = p.IsRepeat();
 
-// Approximate maximum lifetime in seconds
+// Tempo de vida máximo aproximado em segundos
 float maxLife = p.GetMaxLifetime();
 ```
 
-### Attaching and Detaching
+### Vinculando e Desvinculando
 
 ```c
-// Attach to a parent entity
+// Vincular a uma entidade pai
 p.AddAsChild(parentObj, "0 1 0", "0 0 0", false);
 
-// Detach from parent (pass null)
+// Desvincular do pai (passar null)
 p.AddAsChild(null);
 
-// Get current parent
+// Obter pai atual
 Object parent = p.GetParticleParent();
 ```
 
 ---
 
-## EmitorParam --- Runtime Parâmetro Tuning
+## EmitorParam --- Ajuste de Parâmetros em Tempo de Execução
 
-Every particle effect contains one or more **emitters** (also spelled "emitors" in the API). Each emitter has tunable parameters defined by the `EmitorParam` enum.
+Cada efeito de partícula contém um ou mais **emissores** (também grafados "emitors" na API). Cada emissor possui parâmetros ajustáveis definidos pelo enum `EmitorParam`.
 
-### EmitorParam Valors
+### Valores de EmitorParam
 
-| Parâmetro | Type | Descrição |
+| Parâmetro | Tipo | Descrição |
 |-----------|------|-------------|
-| `CONEANGLE` | vector | Emission cone angle |
-| `EMITOFFSET` | vector | Emission offset from origin |
-| `VELOCITY` | float | Base particle velocity |
-| `VELOCITY_RND` | float | Random velocity variation |
-| `AVELOCITY` | float | Angular velocity |
-| `SIZE` | float | Particle size |
-| `STRETCH` | float | Particle stretch factor |
-| `RANDOM_ANGLE` | bool | Begin with random rotation |
-| `RANDOM_ROT` | bool | Rotate in random direction |
-| `AIR_RESISTANCE` | float | Air drag factor |
-| `AIR_RESISTANCE_RND` | float | Random air drag variation |
-| `GRAVITY_SCALE` | float | Gravity multiplier |
-| `GRAVITY_SCALE_RND` | float | Random gravity variation |
-| `BIRTH_RATE` | float | Particle spawn rate |
-| `BIRTH_RATE_RND` | float | Random spawn rate variation |
-| `LIFETIME` | float | Emitter active duration |
-| `LIFETIME_RND` | float | Random lifetime variation |
-| `LIFETIME_BY_ANIM` | bool | Tie lifetime to animation |
-| `ANIM_ONCE` | bool | Play animation once |
-| `RAND_FRAME` | bool | Start on random frame |
-| `EFFECT_TIME` | float | Total effect time for emitter |
-| `REPEAT` | bool | Loop the emitter |
-| `CURRENT_TIME` | float | Current emitter time (read) |
-| `ACTIVE_PARTICLES` | int | Active particle count (read-only) |
-| `SORT` | bool | Sort particles by distance |
-| `WIND` | bool | Affected by wind |
-| `SPRING` | float | Spring force |
+| `CONEANGLE` | vector | Ângulo do cone de emissão |
+| `EMITOFFSET` | vector | Deslocamento de emissão da origem |
+| `VELOCITY` | float | Velocidade base da partícula |
+| `VELOCITY_RND` | float | Variação aleatória de velocidade |
+| `AVELOCITY` | float | Velocidade angular |
+| `SIZE` | float | Tamanho da partícula |
+| `STRETCH` | float | Fator de alongamento da partícula |
+| `RANDOM_ANGLE` | bool | Começar com rotação aleatória |
+| `RANDOM_ROT` | bool | Rotacionar em direção aleatória |
+| `AIR_RESISTANCE` | float | Fator de arrasto do ar |
+| `AIR_RESISTANCE_RND` | float | Variação aleatória de arrasto do ar |
+| `GRAVITY_SCALE` | float | Multiplicador de gravidade |
+| `GRAVITY_SCALE_RND` | float | Variação aleatória de gravidade |
+| `BIRTH_RATE` | float | Taxa de geração de partículas |
+| `BIRTH_RATE_RND` | float | Variação aleatória da taxa de geração |
+| `LIFETIME` | float | Duração ativa do emissor |
+| `LIFETIME_RND` | float | Variação aleatória do tempo de vida |
+| `LIFETIME_BY_ANIM` | bool | Vincular tempo de vida à animação |
+| `ANIM_ONCE` | bool | Reproduzir animação uma vez |
+| `RAND_FRAME` | bool | Começar em frame aleatório |
+| `EFFECT_TIME` | float | Tempo total de efeito para o emissor |
+| `REPEAT` | bool | Repetir o emissor em loop |
+| `CURRENT_TIME` | float | Tempo atual do emissor (leitura) |
+| `ACTIVE_PARTICLES` | int | Contagem de partículas ativas (somente leitura) |
+| `SORT` | bool | Ordenar partículas por distância |
+| `WIND` | bool | Afetado pelo vento |
+| `SPRING` | float | Força de mola |
 
-### Setting Parâmetros
+### Definindo Parâmetros
 
 ```c
-// Set a parameter on ALL emitters (-1 = all)
+// Definir um parâmetro em TODOS os emissores (-1 = todos)
 p.SetParameter(-1, EmitorParam.LIFETIME, 5.0);
 
-// Set a parameter on a specific emitter (index 0)
+// Definir um parâmetro em um emissor específico (índice 0)
 p.SetParameter(0, EmitorParam.BIRTH_RATE, 20.0);
 
-// Shorthand: set on all emitters
+// Atalho: definir em todos os emissores
 p.SetParticleParam(EmitorParam.SIZE, 2.0);
 ```
 
-### Getting Parâmetros
+### Obtendo Parâmetros
 
 ```c
-// Get current value
+// Obter valor atual
 float value;
 p.GetParameter(0, EmitorParam.VELOCITY, value);
 
-// Get current value (return variant)
+// Obter valor atual (variante de retorno)
 float vel = p.GetParameterEx(0, EmitorParam.VELOCITY);
 
-// Get ORIGINAL value (before any runtime changes)
+// Obter valor ORIGINAL (antes de quaisquer mudanças em tempo de execução)
 float origVel = p.GetParameterOriginal(0, EmitorParam.VELOCITY);
 ```
 
-### Scaling and Incrementing
+### Escalonamento e Incremento
 
 ```c
-// Scale relative to ORIGINAL value (multiplicative)
-p.ScaleParticleParamFromOriginal(EmitorParam.SIZE, 2.0);   // double original size
+// Escalar em relação ao valor ORIGINAL (multiplicativo)
+p.ScaleParticleParamFromOriginal(EmitorParam.SIZE, 2.0);   // dobrar tamanho original
 
-// Scale relative to CURRENT value
-p.ScaleParticleParam(EmitorParam.BIRTH_RATE, 0.5);         // halve current rate
+// Escalar em relação ao valor ATUAL
+p.ScaleParticleParam(EmitorParam.BIRTH_RATE, 0.5);         // reduzir taxa atual pela metade
 
-// Increment from ORIGINAL value (additive)
-p.IncrementParticleParamFromOriginal(EmitorParam.VELOCITY, 5.0);  // add 5 to original
+// Incrementar a partir do valor ORIGINAL (aditivo)
+p.IncrementParticleParamFromOriginal(EmitorParam.VELOCITY, 5.0);  // adicionar 5 ao original
 
-// Increment from CURRENT value
-p.IncrementParticleParam(EmitorParam.GRAVITY_SCALE, -0.5);  // reduce current gravity
+// Incrementar a partir do valor ATUAL
+p.IncrementParticleParam(EmitorParam.GRAVITY_SCALE, -0.5);  // reduzir gravidade atual
 ```
 
-### Low-Level Engine Functions
+### Funções de Baixo Nível do Motor
 
-These are the raw proto functions that all the above methods call internally:
+Essas são as funções proto brutas que todos os métodos acima chamam internamente:
 
 ```c
-// Get emitter count
+// Obter contagem de emissores
 int count = GetParticleEmitorCount(entityWithParticle);
 
-// Set/Get parameters directly
+// Definir/Obter parâmetros diretamente
 SetParticleParm(entity, emitterIndex, EmitorParam.SIZE, 3.0);
 GetParticleParm(entity, emitterIndex, EmitorParam.SIZE, outValue);
 GetParticleParmOriginal(entity, emitterIndex, EmitorParam.SIZE, outValue);
 
-// Force-update particle position (avoids particle streaking on teleport)
+// Forçar atualização da posição da partícula (evita rastro ao teleportar)
 ResetParticlePosition(entity);
 ```
 
 ---
 
-## Wiggle API
+## API de Wiggle
 
-The Wiggle API makes a particle randomly change orientation at intervals, useful for effects like flickering flames or swaying smoke.
+A API de Wiggle faz uma partícula mudar aleatoriamente de orientação em intervalos, útil para efeitos como chamas tremeluzentes ou fumaça oscilante.
 
 ```c
-// Start wiggling: random angle range, random interval range
+// Iniciar wiggle: faixa de ângulo aleatório, faixa de intervalo aleatório
 p.SetWiggle(15.0, 0.5);
-// Orientation will change by [-15, 15] degrees every [0, 0.5] seconds
+// A orientação mudará em [-15, 15] graus a cada [0, 0.5] segundos
 
-// Check if wiggling
+// Verificar se está fazendo wiggle
 bool wiggling = p.IsWiggling();
 
-// Stop wiggling (restores original orientation)
+// Parar wiggle (restaura orientação original)
 p.StopWiggle();
 ```
 
-**Note:** On legacy `Particle`, wiggle only works when the particle has a parent. On `ParticleSource`, it works in all cases.
+**Nota:** No `Particle` legado, wiggle só funciona quando a partícula tem um pai. No `ParticleSource`, funciona em todos os casos.
 
 ---
 
-## EffectParticle --- High-Level Wrapper
+## EffectParticle --- Wrapper de Alto Nível
 
-`EffectParticle` extends the `Effect` base class to provide a managed lifecycle for particles, integrated with `SEffectManager`. It wraps a `Particle` or `ParticleSource` internally.
+`EffectParticle` estende a classe base `Effect` para fornecer um ciclo de vida gerenciado para partículas, integrado com `SEffectManager`. Ele encapsula um `Particle` ou `ParticleSource` internamente.
 
-### Class Hierarchy
+### Hierarquia de Classes
 
 ```
 Effect (base)
   |
-  +-- EffectParticle (visual particle effects)
+  +-- EffectParticle (efeitos visuais de partículas)
   |     |
   |     +-- BleedingSourceEffect
   |     +-- BloodSplatter
@@ -516,26 +516,26 @@ Effect (base)
   |     +-- EffSwarmingFlies
   |     +-- EffBreathVapourLight / Medium / Heavy
   |     +-- EffWheelSmoke
-  |     +-- EffectParticleGeneral (dynamic ID)
-  |     +-- (your custom subclass)
+  |     +-- EffectParticleGeneral (ID dinâmico)
+  |     +-- (sua subclasse customizada)
   |
-  +-- EffectSound (audio effects --- see Chapter 6.15)
+  +-- EffectSound (efeitos sonoros --- veja Capítulo 6.15)
 ```
 
-### Creating Custom EffectParticle Subclasses
+### Criando Subclasses Customizadas de EffectParticle
 
 ```c
 class MyCustomSmoke : EffectParticle
 {
     void MyCustomSmoke()
     {
-        // Set the particle ID in the constructor
+        // Definir o ID da partícula no construtor
         SetParticleID(ParticleList.SMOKE_GENERIC_WRECK);
     }
 }
 ```
 
-**Multi-state example** (from vanilla `EffVehicleSmoke`):
+**Exemplo multi-estado** (do vanilla `EffVehicleSmoke`):
 
 ```c
 class EffVehicleSmoke : EffectParticle
@@ -568,111 +568,111 @@ class EffVehicleSmoke : EffectParticle
 }
 ```
 
-### Playing EffectParticle Through SEffectManager
+### Reproduzindo EffectParticle via SEffectManager
 
 ```c
-// Play at a world position
+// Reproduzir em uma posição do mundo
 EffectParticle eff = new MyCustomSmoke();
 int effectID = SEffectManager.PlayInWorld(eff, worldPos);
 
-// Play attached to an object
+// Reproduzir vinculado a um objeto
 EffectParticle eff2 = new EffGeneratorSmoke();
 int effectID2 = SEffectManager.PlayOnObject(eff2, generatorObj, "0 1.2 0");
 ```
 
-### EffectParticle Lifecycle
+### Ciclo de Vida do EffectParticle
 
-When `Start()` is called on an `EffectParticle`:
+Quando `Start()` é chamado em um `EffectParticle`:
 
-1. If `m_ParticleID > 0`, it creates a particle via `ParticleManager.GetInstance().CreateParticle()`.
-2. The particle is attached to the parent (if any) with the cached position and orientation.
-3. The `Event_OnStarted` invoker fires.
-4. If no particle was created (e.g., invalid ID), `ValidateStart()` calls `Stop()`.
+1. Se `m_ParticleID > 0`, ele cria uma partícula via `ParticleManager.GetInstance().CreateParticle()`.
+2. A partícula é vinculada ao pai (se houver) com a posição e orientação em cache.
+3. O invocador `Event_OnStarted` é disparado.
+4. Se nenhuma partícula foi criada (ex.: ID inválido), `ValidateStart()` chama `Stop()`.
 
-When `Stop()` is called:
+Quando `Stop()` é chamado:
 
-1. The managed `Particle` is stopped and released (`SetParticle(null)`).
-2. The `Event_OnStopped` invoker fires.
-3. If `IsAutodestroy()` is true, the Effect queues itself for deletion.
+1. O `Particle` gerenciado é parado e liberado (`SetParticle(null)`).
+2. O invocador `Event_OnStopped` é disparado.
+3. Se `IsAutodestroy()` for true, o Effect se enfileira para exclusão.
 
-### Attaching EffectParticle to Objects
+### Vinculando EffectParticle a Objetos
 
 ```c
 EffectParticle eff = new BleedingSourceEffect();
 
-// Method 1: Set parent before Start
+// Método 1: Definir pai antes de Start
 eff.SetParent(playerObj);
 eff.SetLocalPosition("0 0.8 0");
 eff.SetAttachedLocalOri("0 0 0");
 eff.Start();
 
-// Method 2: Use AttachTo after creation
+// Método 2: Usar AttachTo após criação
 eff.AttachTo(playerObj, "0 0.8 0", "0 0 0", false);
 
-// Method 3: Use SEffectManager.PlayOnObject (handles everything)
+// Método 3: Usar SEffectManager.PlayOnObject (gerencia tudo)
 SEffectManager.PlayOnObject(eff, playerObj, "0 0.8 0");
 ```
 
-### Cleanup
+### Limpeza
 
-Always clean up effects to prevent memory leaks:
+Sempre limpe os efeitos para prevenir vazamentos de memória:
 
 ```c
-// Option 1: Set autodestroy (effect cleans itself when stopped)
+// Opção 1: Definir autodestruição (efeito se limpa quando parado)
 eff.SetAutodestroy(true);
 
-// Option 2: Manual destruction
+// Opção 2: Destruição manual
 SEffectManager.DestroyEffect(eff);
 
-// Option 3: Stop by registered ID
+// Opção 3: Parar pelo ID registrado
 SEffectManager.Stop(effectID);
 ```
 
 ---
 
-## SEffectManager --- Unified Effect Manager
+## SEffectManager --- Gerenciador Unificado de Efeitos
 
-`SEffectManager` is a static manager that handles both `EffectParticle` and `EffectSound`. It maintains a registry of all active effects with integer IDs.
+`SEffectManager` é um gerenciador estático que lida tanto com `EffectParticle` quanto com `EffectSound`. Ele mantém um registro de todos os efeitos ativos com IDs inteiros.
 
-### Key Métodos for Particles
+### Métodos Principais para Partículas
 
 | Método | Retorna | Descrição |
 |--------|---------|-------------|
-| `PlayInWorld(eff, pos)` | `int` | Register and play Effect at world position |
-| `PlayOnObject(eff, obj, pos, ori)` | `int` | Register and play Effect on parent object |
-| `Stop(effectID)` | void | Stop Effect by ID |
-| `DestroyEffect(eff)` | void | Stop, unregister, and delete |
-| `IsEffectExist(effectID)` | `bool` | Check if ID is registered |
-| `GetEffectByID(effectID)` | `Effect` | Retrieve Effect by ID |
+| `PlayInWorld(eff, pos)` | `int` | Registrar e reproduzir Effect em posição do mundo |
+| `PlayOnObject(eff, obj, pos, ori)` | `int` | Registrar e reproduzir Effect em objeto pai |
+| `Stop(effectID)` | void | Parar Effect pelo ID |
+| `DestroyEffect(eff)` | void | Parar, desregistrar e excluir |
+| `IsEffectExist(effectID)` | `bool` | Verificar se o ID está registrado |
+| `GetEffectByID(effectID)` | `Effect` | Recuperar Effect pelo ID |
 
-### Registration
+### Registro
 
-Every Effect played through `SEffectManager` is automatically registered and receives an integer ID. The manager holds a `ref` to the Effect, preventing garbage collection.
+Todo Effect reproduzido via `SEffectManager` é automaticamente registrado e recebe um ID inteiro. O gerenciador mantém um `ref` para o Effect, prevenindo coleta de lixo.
 
 ```c
-// SEffectManager holds a strong ref -- must unregister to allow cleanup
+// SEffectManager mantém uma ref forte -- deve desregistrar para permitir limpeza
 int id = SEffectManager.PlayInWorld(eff, pos);
 
-// Later, to fully clean up:
+// Mais tarde, para limpar completamente:
 SEffectManager.DestroyEffect(eff);
-// or
+// ou
 SEffectManager.EffectUnregister(id);
 ```
 
-### Server-Side Particle Effecters
+### Effecters de Partículas no Lado do Servidor
 
-`SEffectManager` also provides a server-side mechanism for synchronized particle effects via `EffecterBase` / `ParticleEffecter`. These use network sync to replicate particle state:
+`SEffectManager` também fornece um mecanismo no lado do servidor para efeitos de partículas sincronizados via `EffecterBase` / `ParticleEffecter`. Estes usam sincronização de rede para replicar o estado da partícula:
 
 ```c
-// Server-side: create a synced particle effecter
+// Lado do servidor: criar um effecter de partícula sincronizado
 ParticleEffecterParameters params = new ParticleEffecterParameters(
-    "ParticleEffecter",                     // effecter type
-    30.0,                                    // lifespan in seconds
-    ParticleList.CONTAMINATED_AREA_GAS_BIGASS // particle ID
+    "ParticleEffecter",                     // tipo do effecter
+    30.0,                                    // tempo de vida em segundos
+    ParticleList.CONTAMINATED_AREA_GAS_BIGASS // ID da partícula
 );
 int effecterID = SEffectManager.CreateParticleServer(worldPos, params);
 
-// Control the effecter
+// Controlar o effecter
 SEffectManager.StartParticleServer(effecterID);
 SEffectManager.StopParticleServer(effecterID);
 SEffectManager.DestroyEffecterParticleServer(effecterID);
@@ -680,17 +680,17 @@ SEffectManager.DestroyEffecterParticleServer(effecterID);
 
 ---
 
-## ParticleProperties and Flags
+## ParticleProperties e Flags
 
-When using `ParticleManager`, particle behavior is configured through `ParticleProperties`:
+Ao usar `ParticleManager`, o comportamento da partícula é configurado através de `ParticleProperties`:
 
 ```c
 ParticleProperties props = new ParticleProperties(
-    localPos,                              // position (local if parent, world if no parent)
+    localPos,                              // posição (local se pai, mundo se sem pai)
     ParticlePropertiesFlags.PLAY_ON_CREATION,  // flags
-    parentObj,                              // parent (optional, null for world)
-    localOri,                               // orientation (optional)
-    ownerInstance                            // owner class (optional)
+    parentObj,                              // pai (opcional, null para mundo)
+    localOri,                               // orientação (opcional)
+    ownerInstance                            // instância proprietária (opcional)
 );
 ```
 
@@ -698,16 +698,16 @@ ParticleProperties props = new ParticleProperties(
 
 | Flag | Descrição |
 |------|-------------|
-| `NONE` | Padrão, no special behavior |
-| `PLAY_ON_CREATION` | Start playing immediately when created |
-| `FORCE_WORLD_ROT` | Orientation stays in world space even with parent |
-| `KEEP_PARENT_ON_END` | Don't unparent when particle ends |
+| `NONE` | Padrão, sem comportamento especial |
+| `PLAY_ON_CREATION` | Iniciar reprodução imediatamente quando criada |
+| `FORCE_WORLD_ROT` | Orientação permanece no espaço mundo mesmo com pai |
+| `KEEP_PARENT_ON_END` | Não desvincular do pai quando a partícula terminar |
 
 ---
 
-## Common Particle Padrãos
+## Padrões Comuns de Partículas
 
-### Campfire / Fireplace Effect
+### Efeito de Fogueira / Lareira
 
 ```c
 class MyFireplace
@@ -724,16 +724,16 @@ class MyFireplace
         if (!pm)
             return;
 
-        // Play fire at a memory point
+        // Reproduzir fogo em um ponto de memória
         m_FireParticle = pm.PlayOnObject(
             ParticleList.CAMP_SMALL_FIRE,
             this,
             GetMemoryPointPos("fire_point"),
             vector.Zero,
-            true  // world rotation
+            true  // rotação no mundo
         );
 
-        // Play smoke slightly above fire
+        // Reproduzir fumaça ligeiramente acima do fogo
         m_SmokeParticle = pm.PlayOnObject(
             ParticleList.CAMP_SMALL_SMOKE,
             this,
@@ -754,18 +754,18 @@ class MyFireplace
 }
 ```
 
-### Blood Splatter on Hit
+### Respingo de Sangue ao Ser Atingido
 
 ```c
 void OnPlayerHit(vector hitPosition)
 {
-    BloodSplatter eff = new BloodSplatter();  // extends EffectParticle
+    BloodSplatter eff = new BloodSplatter();  // estende EffectParticle
     eff.SetAutodestroy(true);
     SEffectManager.PlayInWorld(eff, hitPosition);
 }
 ```
 
-### Bleeding Source Attached to Player
+### Fonte de Sangramento Vinculada ao Jogador
 
 ```c
 class BleedingSourceEffect : EffectParticle
@@ -776,15 +776,15 @@ class BleedingSourceEffect : EffectParticle
     }
 }
 
-// Usage
+// Uso
 BleedingSourceEffect eff = new BleedingSourceEffect();
 SEffectManager.PlayOnObject(eff, playerObj, boneOffset);
 ```
 
-### Vehicle Exhaust
+### Escapamento de Veículo
 
 ```c
-// From vanilla CarScript (simplified)
+// Do CarScript vanilla (simplificado)
 protected ref EffVehicleSmoke m_exhaustFx;
 protected int m_exhaustPtcFx;
 
@@ -806,10 +806,10 @@ void CleanupExhaust()
 }
 ```
 
-### Heli Wreck Smoke (Static World Effect)
+### Fumaça de Destroços de Helicóptero (Efeito Estático do Mundo)
 
 ```c
-// From vanilla wreck_uh1y.c
+// Do vanilla wreck_uh1y.c
 class Wreck_UH1Y extends Wreck
 {
     protected Particle m_ParticleEfx;
@@ -829,132 +829,132 @@ class Wreck_UH1Y extends Wreck
 }
 ```
 
-### Contaminated Area Particle Spawning
+### Geração de Partículas em Área Contaminada
 
-The `EffectArea` class spawns particles in concentric rings to fill a contaminated zone:
+A classe `EffectArea` gera partículas em anéis concêntricos para preencher uma zona contaminada:
 
 ```c
-// Particle IDs from config
+// IDs de partículas do config
 int m_ParticleID       = ParticleList.CONTAMINATED_AREA_GAS_BIGASS;
 int m_AroundParticleID = ParticleList.CONTAMINATED_AREA_GAS_AROUND;
 int m_TinyParticleID   = ParticleList.CONTAMINATED_AREA_GAS_TINY;
 
-// Particles are stored in an array for batch management
+// Partículas são armazenadas em um array para gerenciamento em lote
 ref array<Particle> m_ToxicClouds;
 ```
 
 ---
 
-## Registering Custom Particles from Mods
+## Registrando Partículas Customizadas de Mods
 
-To add custom particles from your mod, use a `modded class` on `ParticleList`:
+Para adicionar partículas customizadas do seu mod, use uma `modded class` em `ParticleList`:
 
 ```c
 modded class ParticleList
 {
-    // Register with a subfolder path under graphics/particles/
+    // Registrar com um caminho de subpasta em graphics/particles/
     static const int MY_MOD_CUSTOM_SMOKE = RegisterParticle("mymod/custom_smoke");
 
-    // Or with an explicit root path
+    // Ou com um caminho raiz explícito
     static const int MY_MOD_MAGIC_FX = RegisterParticle("mymod/particles/", "magic_fx");
 }
 ```
 
-The particle file must exist at:
+O arquivo de partícula deve existir em:
 ```
 graphics/particles/mymod/custom_smoke.ptc
 ```
 
-### Particle File Format
+### Formato de Arquivo de Partículas
 
-`.ptc` files are binary particle definitions created with the **Enfusion Workbench Particle Editor**. They define emitters, textures, blend modes, velocities, colors, and all visual properties. These files cannot be authored from script alone --- they require the toolchain.
+Arquivos `.ptc` são definições binárias de partículas criadas com o **Editor de Partículas do Enfusion Workbench**. Eles definem emissores, texturas, modos de mesclagem, velocidades, cores e todas as propriedades visuais. Esses arquivos não podem ser criados apenas por script --- eles requerem a cadeia de ferramentas.
 
-### Lookup Métodos
+### Métodos de Consulta
 
 ```c
-// Get path from ID
-string path = ParticleList.GetParticlePath(particleID);       // without .ptc
-string fullPath = ParticleList.GetParticleFullPath(particleID); // with .ptc
+// Obter caminho a partir do ID
+string path = ParticleList.GetParticlePath(particleID);       // sem .ptc
+string fullPath = ParticleList.GetParticleFullPath(particleID); // com .ptc
 
-// Get ID from path (without .ptc, without root)
+// Obter ID a partir do caminho (sem .ptc, sem raiz)
 int id = ParticleList.GetParticleID("graphics/particles/mymod/custom_smoke");
 
-// Get ID by filename only (must be unique across all mods)
+// Obter ID apenas pelo nome do arquivo (deve ser único entre todos os mods)
 int id2 = ParticleList.GetParticleIDByName("custom_smoke");
 
-// Validate an ID
-bool valid = ParticleList.IsValidId(id);  // not NONE and not INVALID
+// Validar um ID
+bool valid = ParticleList.IsValidId(id);  // não NONE e não INVALID
 ```
 
 ---
 
-## ParticleBase Events
+## Eventos de ParticleBase
 
-Both `Particle` and `ParticleSource` inherit from `ParticleBase`, which provides an event system via `ParticleEvents`:
+Tanto `Particle` quanto `ParticleSource` herdam de `ParticleBase`, que fornece um sistema de eventos via `ParticleEvents`:
 
 ```c
 ParticleEvents events = myParticle.GetEvents();
 
-// Subscribe to lifecycle events
+// Inscrever-se em eventos do ciclo de vida
 events.Event_OnParticleStart.Insert(OnMyParticleStarted);
 events.Event_OnParticleStop.Insert(OnMyParticleStopped);
 events.Event_OnParticleEnd.Insert(OnMyParticleEnded);
 events.Event_OnParticleReset.Insert(OnMyParticleReset);
 
-// ParticleSource only:
+// Apenas ParticleSource:
 events.Event_OnParticleParented.Insert(OnParented);
 events.Event_OnParticleUnParented.Insert(OnOrphaned);
 
-// Event handler signature
+// Assinatura do handler de evento
 void OnMyParticleStarted(ParticleBase particle)
 {
-    // particle started playing
+    // partícula começou a reproduzir
 }
 ```
 
-**Difference between Stop and End:**
-- `OnParticleStop` fires when `StopParticle()` is called or the particle naturally finishes.
-- `OnParticleEnd` fires only when the particle fully ends (no active particles remain). Looping particles never fire this naturally.
+**Diferença entre Stop e End:**
+- `OnParticleStop` dispara quando `StopParticle()` é chamado ou a partícula termina naturalmente.
+- `OnParticleEnd` dispara apenas quando a partícula termina completamente (não restam partículas ativas). Partículas em loop nunca disparam isso naturalmente.
 
 ---
 
-## Observed in Real Mods
+## Observado em Mods Reais
 
-Padrãos seen in vanilla DayZ and community mods:
+Padrões vistos no DayZ vanilla e mods da comunidade:
 
-1. **ParticleManager is dominant.** Nearly all vanilla 4_World code uses `ParticleManager.GetInstance().PlayOnObject()/PlayInWorld()` rather than `Particle.PlayOnObject()`. The pool-based approach is the standard.
+1. **ParticleManager é dominante.** Quase todo código vanilla 4_World usa `ParticleManager.GetInstance().PlayOnObject()/PlayInWorld()` em vez de `Particle.PlayOnObject()`. A abordagem baseada em pool é o padrão.
 
-2. **EffectParticle subclasses are thin.** Most subclasses consist of a constructor that calls `SetParticleID()` and nothing else. Complex behavior (state changes, parameter tuning) happens in the owning class, not in the effect.
+2. **Subclasses de EffectParticle são finas.** A maioria das subclasses consiste em um construtor que chama `SetParticleID()` e nada mais. Comportamento complexo (mudanças de estado, ajuste de parâmetros) acontece na classe proprietária, não no efeito.
 
-3. **Vehicle effects use SEffectManager.** Cars and boats play particles through `SEffectManager.PlayOnObject()` with `EffectParticle` subclasses, storing both the effect ref and the returned ID.
+3. **Efeitos de veículos usam SEffectManager.** Carros e barcos reproduzem partículas através de `SEffectManager.PlayOnObject()` com subclasses de `EffectParticle`, armazenando tanto a ref do efeito quanto o ID retornado.
 
-4. **Cleanup is explicit.** Vanilla code always calls `SEffectManager.DestroyEffect()` in destructors and cleanup methods. Relying solely on autodestroy is rare in entity-owned effects.
+4. **Limpeza é explícita.** Código vanilla sempre chama `SEffectManager.DestroyEffect()` em destrutores e métodos de limpeza. Depender apenas de autodestruição é raro em efeitos pertencentes a entidades.
 
-5. **Memory points for attachment.** Object particles are almost always positioned at named memory points (`GetMemoryPointPos("fire_point")`) rather than hardcoded offsets.
+5. **Pontos de memória para vinculação.** Partículas de objetos são quase sempre posicionadas em pontos de memória nomeados (`GetMemoryPointPos("fire_point")`) em vez de offsets fixos.
 
 ---
 
 ## Teoria vs Prática
 
-| What the API Suggests | What Actually Works |
+| O que a API Sugere | O que Realmente Funciona |
 |----------------------|-------------------|
-| `Particle.CreateOnObject()` and `ParticleManager.CreateOnObject()` both exist | `ParticleManager` version is preferred; legacy `Particle` version creates per-instance entities |
-| `ParticleAutoDestroyFlags` controls particle lifetime | Ignored for particles managed by a `ParticleManager` pool --- the pool handles lifecycle |
-| `ResetParticle()` and `RestartParticle()` are on `ParticleBase` | Only functional on `ParticleSource`, the `Particle` base throws "Not implemented" errors |
-| `EffectParticle.ForceParticleRotationRelativeToWorld()` can be called anytime | Only takes effect on the next `Start()` call, cannot live-update an active particle |
-| `SetSource()` can change the particle ID at runtime | On legacy `Particle`, this only takes effect after stopping and replaying; `ParticleSource` updates immediately |
+| `Particle.CreateOnObject()` e `ParticleManager.CreateOnObject()` ambos existem | A versão do `ParticleManager` é preferida; a versão legada de `Particle` cria entidades por instância |
+| `ParticleAutoDestroyFlags` controla o tempo de vida da partícula | Ignorado para partículas gerenciadas por um pool de `ParticleManager` --- o pool gerencia o ciclo de vida |
+| `ResetParticle()` e `RestartParticle()` estão em `ParticleBase` | Só funciona em `ParticleSource`, o `Particle` base lança erros "Not implemented" |
+| `EffectParticle.ForceParticleRotationRelativeToWorld()` pode ser chamado a qualquer momento | Só tem efeito na próxima chamada de `Start()`, não pode atualizar ao vivo uma partícula ativa |
+| `SetSource()` pode mudar o ID da partícula em tempo de execução | No `Particle` legado, isso só tem efeito após parar e reproduzir novamente; `ParticleSource` atualiza imediatamente |
 
 ---
 
 ## Erros Comuns
 
-### 1. Creating Particles on Dedicated Server
+### 1. Criando Partículas em Servidor Dedicado
 
 ```c
-// WRONG: This wastes resources and ParticleManager.GetInstance() returns null
+// ERRADO: Isso desperdiça recursos e ParticleManager.GetInstance() retorna null
 Particle p = ParticleManager.GetInstance().PlayInWorld(ParticleList.CAMP_SMALL_FIRE, pos);
 
-// CORRECT: Guard with server check
+// CORRETO: Proteger com verificação de servidor
 if (!GetGame().IsDedicatedServer())
 {
     ParticleManager pm = ParticleManager.GetInstance();
@@ -965,18 +965,18 @@ if (!GetGame().IsDedicatedServer())
 }
 ```
 
-### 2. Forgetting to Stop Looping Particles
+### 2. Esquecendo de Parar Partículas em Loop
 
-Looping particles (where `REPEAT = true` in the .ptc definition) never end on their own. If the owning entity is deleted without stopping them, they persist as orphaned effects.
+Partículas em loop (onde `REPEAT = true` na definição .ptc) nunca terminam por conta própria. Se a entidade proprietária for excluída sem pará-las, elas persistem como efeitos órfãos.
 
 ```c
-// WRONG: No cleanup
+// ERRADO: Sem limpeza
 void ~MyEntity()
 {
-    // particle keeps playing forever
+    // partícula continua reproduzindo para sempre
 }
 
-// CORRECT: Stop in destructor
+// CORRETO: Parar no destrutor
 void ~MyEntity()
 {
     if (m_MyParticle)
@@ -984,88 +984,88 @@ void ~MyEntity()
 }
 ```
 
-### 3. Not Destroying EffectParticle Referências
+### 3. Não Destruindo Referências de EffectParticle
 
-`SEffectManager` holds a strong `ref` to every registered Effect. If you don't unregister or destroy it, the effect and its associated particle remain in memory.
+`SEffectManager` mantém um `ref` forte para cada Effect registrado. Se você não desregistrar ou destruí-lo, o efeito e sua partícula associada permanecem na memória.
 
 ```c
-// WRONG: Leak
+// ERRADO: Vazamento
 EffectParticle eff = new MySmoke();
 SEffectManager.PlayInWorld(eff, pos);
-eff = null;  // SEffectManager still holds the ref!
+eff = null;  // SEffectManager ainda mantém a ref!
 
-// CORRECT: Either autodestroy or explicit cleanup
+// CORRETO: Ou autodestruição ou limpeza explícita
 eff.SetAutodestroy(true);
-// or later:
+// ou mais tarde:
 SEffectManager.DestroyEffect(eff);
 ```
 
-### 4. Using SetParâmetro on Null Particle Effect
+### 4. Usando SetParameter em Efeito de Partícula Null
 
-Both `Particle` and `ParticleSource` guard against null internally, but calling methods on a particle that has not been played yet (or has already been stopped and cleaned up) does nothing silently.
+Tanto `Particle` quanto `ParticleSource` protegem contra null internamente, mas chamar métodos em uma partícula que ainda não foi reproduzida (ou já foi parada e limpa) não faz nada silenciosamente.
 
 ```c
-// This does nothing -- particle hasn't been created yet
+// Isso não faz nada -- partícula ainda não foi criada
 Particle p = Particle.CreateOnObject(ParticleList.CAMP_SMALL_FIRE, obj);
-p.SetParameter(0, EmitorParam.SIZE, 5.0);  // m_ParticleEffect is null!
+p.SetParameter(0, EmitorParam.SIZE, 5.0);  // m_ParticleEffect é null!
 
-// Must play first, then adjust
+// Deve reproduzir primeiro, depois ajustar
 p.PlayParticle();
-p.SetParameter(0, EmitorParam.SIZE, 5.0);  // now it works
+p.SetParameter(0, EmitorParam.SIZE, 5.0);  // agora funciona
 ```
 
-### 5. Mixing Legacy Particle and ParticleSource APIs
+### 5. Misturando APIs de Particle Legado e ParticleSource
 
-Legacy `Particle` and `ParticleSource` have overlapping method names but different internal behavior. Do not mix them on the same instance.
+`Particle` legado e `ParticleSource` têm nomes de métodos sobrepostos mas comportamento interno diferente. Não os misture na mesma instância.
 
 ```c
-// WRONG: Using ResetParticle() on a legacy Particle
+// ERRADO: Usando ResetParticle() em um Particle legado
 Particle p = Particle.PlayInWorld(ParticleList.DEBUG_DOT, pos);
-p.ResetParticle();  // Throws "Not implemented" error
+p.ResetParticle();  // Lança erro "Not implemented"
 
-// ParticleSource (from ParticleManager) supports it
+// ParticleSource (do ParticleManager) suporta
 ParticleSource ps = ParticleManager.GetInstance().PlayInWorld(ParticleList.DEBUG_DOT, pos);
-ps.ResetParticle();  // Works correctly
+ps.ResetParticle();  // Funciona corretamente
 ```
 
 ---
 
 ## Boas Práticas
 
-- **Always use `ParticleManager.GetInstance()` for new code.** The pool-based approach is more efficient, supports batch creation, and provides full `ParticleSource` functionality including reset, restart, and native lifecycle management.
-- **Guard all particle code with `!GetGame().IsDedicatedServer()`.** Even though `ParticleManager.GetInstance()` returns null on servers, calling any particle-related method on the server is wasteful. Guard early and return.
-- **Store particle references and clean them up explicitly.** In your entity's destructor or cleanup method, always stop and null your particle references. For `EffectParticle` wrappers, use `SEffectManager.DestroyEffect()`.
-- **Use memory points for attachment positions.** Hardcoded offsets break when models change. Use `GetMemoryPointPos("point_name")` to position particles relative to model geometry.
-- **Use `EffectParticle` subclasses for lifecycle-managed effects.** When you need start/stop events, autodestroy, or integration with `SEffectManager`, wrapping your particle in an `EffectParticle` is cleaner than managing raw `Particle` instances manually.
-- **Prefer `SetAutodestroy(true)` for one-shot effects.** Fire-and-forget particles (explosions, blood splatters) should self-clean. Persistent effects (engine smoke, bleeding) should be managed explicitly.
-- **Call `ResetParticlePosition()` after teleporting an entity.** Without this, emitted particles streak between the old and new positions in a single frame.
+- **Sempre use `ParticleManager.GetInstance()` para código novo.** A abordagem baseada em pool é mais eficiente, suporta criação em lote e fornece funcionalidade completa de `ParticleSource` incluindo reset, reiniciar e gerenciamento nativo de ciclo de vida.
+- **Proteja todo código de partículas com `!GetGame().IsDedicatedServer()`.** Mesmo que `ParticleManager.GetInstance()` retorne null em servidores, chamar qualquer método relacionado a partículas no servidor é desperdício. Proteja cedo e retorne.
+- **Armazene referências de partículas e limpe-as explicitamente.** No destrutor ou método de limpeza da sua entidade, sempre pare e anule suas referências de partículas. Para wrappers de `EffectParticle`, use `SEffectManager.DestroyEffect()`.
+- **Use pontos de memória para posições de vinculação.** Offsets fixos quebram quando modelos mudam. Use `GetMemoryPointPos("point_name")` para posicionar partículas em relação à geometria do modelo.
+- **Use subclasses de `EffectParticle` para efeitos com ciclo de vida gerenciado.** Quando você precisa de eventos de início/parada, autodestruição ou integração com `SEffectManager`, encapsular sua partícula em um `EffectParticle` é mais limpo do que gerenciar instâncias brutas de `Particle` manualmente.
+- **Prefira `SetAutodestroy(true)` para efeitos de disparo único.** Partículas de disparo e esquecimento (explosões, respingos de sangue) devem se auto-limpar. Efeitos persistentes (fumaça do motor, sangramento) devem ser gerenciados explicitamente.
+- **Chame `ResetParticlePosition()` após teleportar uma entidade.** Sem isso, partículas emitidas criam rastros entre as posições antiga e nova em um único frame.
 
 ---
 
-## Key Source Files
+## Arquivos Fonte Principais
 
-| File | Contains |
+| Arquivo | Contém |
 |------|----------|
-| `scripts/3_game/particles/particlelist.c` | `ParticleList` --- all registered particle IDs and lookup methods |
-| `scripts/3_game/particles/particlebase.c` | `ParticleBase`, `ParticleEvents` --- base class and event system |
-| `scripts/3_game/particles/particle.c` | `Particle` --- legacy particle class with static Create/Play methods |
-| `scripts/3_game/particles/particlemanager/particlemanager.c` | `ParticleManager` --- pool-based particle manager |
-| `scripts/3_game/particles/particlemanager/particlesource.c` | `ParticleSource` --- modern particle entity with native lifecycle |
-| `scripts/3_game/effect.c` | `Effect` --- base wrapper class for managed effects |
-| `scripts/3_game/effects/effectparticle.c` | `EffectParticle` --- particle wrapper with SEffectManager integration |
-| `scripts/3_game/effectmanager.c` | `SEffectManager`, `EffecterBase`, `ParticleEffecter` --- unified effect manager |
-| `scripts/1_core/proto/envisual.c` | `EmitorParam` enum, `SetParticleParm`, `GetParticleParm` proto functions |
-| `scripts/4_world/classes/contaminatedarea/effectarea.c` | `EffectArea` --- contaminated zone particle spawning |
+| `scripts/3_game/particles/particlelist.c` | `ParticleList` --- todos os IDs de partículas registrados e métodos de consulta |
+| `scripts/3_game/particles/particlebase.c` | `ParticleBase`, `ParticleEvents` --- classe base e sistema de eventos |
+| `scripts/3_game/particles/particle.c` | `Particle` --- classe de partícula legada com métodos estáticos Create/Play |
+| `scripts/3_game/particles/particlemanager/particlemanager.c` | `ParticleManager` --- gerenciador de partículas baseado em pool |
+| `scripts/3_game/particles/particlemanager/particlesource.c` | `ParticleSource` --- entidade moderna de partícula com ciclo de vida nativo |
+| `scripts/3_game/effect.c` | `Effect` --- classe base wrapper para efeitos gerenciados |
+| `scripts/3_game/effects/effectparticle.c` | `EffectParticle` --- wrapper de partícula com integração ao SEffectManager |
+| `scripts/3_game/effectmanager.c` | `SEffectManager`, `EffecterBase`, `ParticleEffecter` --- gerenciador unificado de efeitos |
+| `scripts/1_core/proto/envisual.c` | Enum `EmitorParam`, funções proto `SetParticleParm`, `GetParticleParm` |
+| `scripts/4_world/classes/contaminatedarea/effectarea.c` | `EffectArea` --- geração de partículas em zona contaminada |
 
 ---
 
-## Compatibility & Impact
+## Compatibilidade e Impacto
 
-- **Multi-Mod:** `ParticleList` is a single global class. Multiple mods can register particles via `modded class ParticleList`, but particle filenames must be unique --- duplicates cause an error on the second registration, and `GetParticleIDByName()` only returns the first match.
-- **Performance:** The global `ParticleManager` pool is limited to 10,000 slots (`ParticleManagerConstantes.POOL_SIZE`). Exceeding this creates "virtual" particles that wait for a slot to free up. Mods spawning many simultaneous particles (e.g., weather effects, contaminated areas with hundreds of emitters) should monitor pool usage and avoid exhausting it.
-- **Server/Client:** All particle rendering is client-side. Server-side particle effecters (`ParticleEffecter`) are network-synced entities that trigger client-side rendering via `OnVariávelsSynchronized`. Direct `Particle` or `ParticleManager` calls on a dedicated server do nothing.
-- **Legacy Compatibility:** The legacy `Particle` static methods (`Particle.PlayOnObject`, `Particle.CreateInWorld`) still work and are used by older mods. They are not deprecated but are less efficient than `ParticleManager` equivalents.
+- **Multi-Mod:** `ParticleList` é uma classe global única. Múltiplos mods podem registrar partículas via `modded class ParticleList`, mas nomes de arquivos de partículas devem ser únicos --- duplicatas causam um erro no segundo registro, e `GetParticleIDByName()` retorna apenas a primeira correspondência.
+- **Performance:** O pool global de `ParticleManager` é limitado a 10.000 slots (`ParticleManagerConstants.POOL_SIZE`). Exceder isso cria partículas "virtuais" que aguardam um slot ser liberado. Mods gerando muitas partículas simultâneas (ex.: efeitos climáticos, áreas contaminadas com centenas de emissores) devem monitorar o uso do pool e evitar esgotá-lo.
+- **Servidor/Cliente:** Toda renderização de partículas é no lado do cliente. Effecters de partículas do lado do servidor (`ParticleEffecter`) são entidades sincronizadas pela rede que acionam renderização no lado do cliente via `OnVariablesSynchronized`. Chamadas diretas de `Particle` ou `ParticleManager` em um servidor dedicado não fazem nada.
+- **Compatibilidade Legada:** Os métodos estáticos legados de `Particle` (`Particle.PlayOnObject`, `Particle.CreateInWorld`) ainda funcionam e são usados por mods mais antigos. Não estão depreciados, mas são menos eficientes que os equivalentes de `ParticleManager`.
 
 ---
 
-[Home](../../README.md) | [<< Anterior: Consultas de Terreno e Mundo](19-terrain-queries.md) | **Sistema de Partículas e Efeitos**
+[Início](../../README.md) | [<< Anterior: Consultas de Terreno e Mundo](19-terrain-queries.md) | **Sistema de Partículas e Efeitos** | [Próximo: Sistema de Zumbis e IA >>](21-zombie-ai-system.md)

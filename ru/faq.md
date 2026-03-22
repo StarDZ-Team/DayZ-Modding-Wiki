@@ -1,6 +1,6 @@
-# Frequently Asked Questions
+# Часто задаваемые вопросы
 
-[Home](../README.md) | **FAQ**
+[Главная](../README.md) | **ЧаВо**
 
 ---
 

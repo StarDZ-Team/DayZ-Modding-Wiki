@@ -1,125 +1,125 @@
-# Chapitre 4.4: Audio (.ogg, .wss)
+# Chapitre 4.4 : Audio (.ogg, .wss)
 
-[Accueil](../../README.md) | [<< Précédent : Materials](03-materials.md) | **Audio** | [Suivant : DayZ Tools Workflow >>](05-dayz-tools.md)
+[Accueil](../../README.md) | [<< Précédent : Matériaux](03-materials.md) | **Audio** | [Suivant : Flux de travail DayZ Tools >>](05-dayz-tools.md)
 
 ---
 
 ## Introduction
 
-Sound design is one of the most immersive aspects of DayZ modding. From the crack of a rifle to the ambient wind in a forest, audio brings le jeu world to life. DayZ uses **OGG Vorbis** as its primary audio format and configures sound playback through a layered system of **CfgSoundShaders** and **CfgSoundSets** defined in `config.cpp`. Understanding this pipeline -- from raw audio file to spatialized in-game sound -- is essential for any mod that introduces custom weapons, vehicles, ambient effects, or UI feedback.
+La conception sonore est l'un des aspects les plus immersifs du modding DayZ. Du craquement d'un fusil au vent ambiant dans une forêt, l'audio donne vie au monde du jeu. DayZ utilise **OGG Vorbis** comme format audio principal et configure la lecture du son via un système en couches de **CfgSoundShaders** et **CfgSoundSets** définis dans `config.cpp`. Comprendre ce pipeline -- du fichier audio brut au son spatialisé en jeu -- est essentiel pour tout mod introduisant des armes personnalisées, des véhicules, des effets ambiants ou des retours d'interface.
 
-Ce chapitre couvre audio formats, the config-driven sound system, 3D positional audio, volume and distance attenuation, looping, and the complete workflow for adding custom sounds to a DayZ mod.
+Ce chapitre couvre les formats audio, le système sonore piloté par la configuration, l'audio positionnel 3D, l'atténuation du volume et de la distance, la boucle, et le flux de travail complet pour ajouter des sons personnalisés à un mod DayZ.
 
 ---
 
 ## Table des matières
 
-- [Audio Formats](#audio-formats)
-- [CfgSoundShaders and CfgSoundSets](#cfgsoundshaders-and-cfgsoundsets)
-- [Sound Categories](#sound-categories)
-- [3D Positional Audio](#3d-positional-audio)
-- [Volume and Distance Attenuation](#volume-and-distance-attenuation)
-- [Looping Sounds](#looping-sounds)
-- [Adding Custom Sounds to a Mod](#adding-custom-sounds-to-a-mod)
-- [Audio Production Tools](#audio-production-tools)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+- [Formats audio](#formats-audio)
+- [CfgSoundShaders et CfgSoundSets](#cfgsoundshaders-et-cfgsoundsets)
+- [Catégories de sons](#catégories-de-sons)
+- [Audio positionnel 3D](#audio-positionnel-3d)
+- [Volume et atténuation par la distance](#volume-et-atténuation-par-la-distance)
+- [Sons en boucle](#sons-en-boucle)
+- [Ajouter des sons personnalisés à un mod](#ajouter-des-sons-personnalisés-à-un-mod)
+- [Outils de production audio](#outils-de-production-audio)
+- [Erreurs courantes](#erreurs-courantes)
+- [Bonnes pratiques](#bonnes-pratiques)
 
 ---
 
-## Audio Formats
+## Formats audio
 
-### OGG Vorbis (Primary Format)
+### OGG Vorbis (format principal)
 
-**OGG Vorbis** is DayZ's primary audio format. All custom sounds should be exported as `.ogg` files.
+**OGG Vorbis** est le format audio principal de DayZ. Tous les sons personnalisés doivent être exportés en fichiers `.ogg`.
 
-| Property | Value |
+| Propriété | Valeur |
 |----------|-------|
 | **Extension** | `.ogg` |
-| **Codec** | Vorbis (lossy compression) |
-| **Sample rates** | 44100 Hz (standard), 22050 Hz (acceptable for ambient) |
-| **Bit depth** | Managed by encoder (quality setting) |
-| **Channels** | Mono (for 3D sounds) or Stereo (for music/UI) |
-| **Quality range** | -1 to 10 (5-7 recommended for game audio) |
+| **Codec** | Vorbis (compression avec perte) |
+| **Taux d'échantillonnage** | 44100 Hz (standard), 22050 Hz (acceptable pour l'ambiance) |
+| **Profondeur de bits** | Gérée par l'encodeur (paramètre de qualité) |
+| **Canaux** | Mono (pour les sons 3D) ou Stéréo (pour la musique/l'interface) |
+| **Plage de qualité** | -1 à 10 (5-7 recommandé pour l'audio de jeu) |
 
-### Key Rules for OGG in DayZ
+### Règles clés pour l'OGG dans DayZ
 
-- **3D positional sounds MUST be mono.** If you provide a stereo file for a 3D sound, le moteur may not spatialize it correctly or may ignore one channel.
-- **UI and music sounds can be stereo.** Non-positional sounds (menus, HUD feedback, background music) work correctly in stereo.
-- **Sample rate should be 44100 Hz** for most sounds. Lower rates (22050 Hz) can be used for distant ambient sounds to save space.
+- **Les sons positionnels 3D DOIVENT être en mono.** Si vous fournissez un fichier stéréo pour un son 3D, le moteur peut ne pas le spatialiser correctement ou ignorer un canal.
+- **Les sons d'interface et de musique peuvent être en stéréo.** Les sons non positionnels (menus, retours HUD, musique de fond) fonctionnent correctement en stéréo.
+- **Le taux d'échantillonnage devrait être de 44100 Hz** pour la plupart des sons. Des taux plus bas (22050 Hz) peuvent être utilisés pour les sons ambiants distants afin d'économiser de l'espace.
 
-### WSS (Legacy Format)
+### WSS (format hérité)
 
-**WSS** is a legacy sound format from older Bohemia titles (Arma series). DayZ can still load WSS files, but new mods should use OGG exclusively.
+**WSS** est un format sonore hérité des anciens titres Bohemia (série Arma). DayZ peut encore charger des fichiers WSS, mais les nouveaux mods devraient utiliser exclusivement l'OGG.
 
-| Property | Value |
+| Propriété | Valeur |
 |----------|-------|
 | **Extension** | `.wss` |
-| **Status** | Legacy, not recommended for new mods |
-| **Conversion** | WSS files can be converted to OGG with Audacity or similar tools |
+| **Statut** | Hérité, non recommandé pour les nouveaux mods |
+| **Conversion** | Les fichiers WSS peuvent être convertis en OGG avec Audacity ou des outils similaires |
 
-You will encounter WSS files when examining le DayZ vanilla data or porting content from older Bohemia games.
+Vous rencontrerez des fichiers WSS en examinant les données vanilla de DayZ ou en portant du contenu depuis d'anciens jeux Bohemia.
 
 ---
 
-## CfgSoundShaders and CfgSoundSets
+## CfgSoundShaders et CfgSoundSets
 
-DayZ's audio system uses a two-layer configuration approach defined in `config.cpp`. A **SoundShader** defines what audio file to play and how, while a **SoundSet** defines where and how the sound is heard in le monde.
+Le système audio de DayZ utilise une approche de configuration à deux couches définie dans `config.cpp`. Un **SoundShader** définit quel fichier audio jouer et comment, tandis qu'un **SoundSet** définit où et comment le son est entendu dans le monde.
 
-### The Relationship
+### La relation
 
 ```
 config.cpp
   |
-  |--> CfgSoundShaders     (WHAT to play: file, volume, frequency)
+  |--> CfgSoundShaders     (QUOI jouer : fichier, volume, fréquence)
   |      |
-  |      |--> MyShader      references --> sound\my_sound.ogg
+  |      |--> MyShader      référence --> sound\my_sound.ogg
   |
-  |--> CfgSoundSets         (HOW to play: 3D position, distance, spatial)
+  |--> CfgSoundSets         (COMMENT jouer : position 3D, distance, spatial)
          |
-         |--> MySoundSet    references --> MyShader
+         |--> MySoundSet    référence --> MyShader
 ```
 
-Game code and other configs reference **SoundSets**, never SoundShaders directly. SoundSets are the public interface; SoundShaders are the implementation detail.
+Le code du jeu et les autres configs référencent les **SoundSets**, jamais les SoundShaders directement. Les SoundSets sont l'interface publique ; les SoundShaders sont le détail d'implémentation.
 
 ### CfgSoundShaders
 
-A SoundShader defines the raw audio content and basic playback parameters:
+Un SoundShader définit le contenu audio brut et les paramètres de lecture de base :
 
 ```cpp
 class CfgSoundShaders
 {
     class MyMod_GunShot_SoundShader
     {
-        // Array of audio files -- engine picks one randomly
+        // Tableau de fichiers audio -- le moteur en choisit un aléatoirement
         samples[] =
         {
-            {"MyMod\sound\gunshot_01", 1},    // {path (no extension), probability weight}
+            {"MyMod\sound\gunshot_01", 1},    // {chemin (sans extension), poids de probabilité}
             {"MyMod\sound\gunshot_02", 1},
             {"MyMod\sound\gunshot_03", 1}
         };
-        volume = 1.0;                          // Base volume (0.0 - 1.0)
-        range = 300;                           // Maximum audible distance (meters)
-        rangeCurve[] = {{0, 1.0}, {300, 0.0}}; // Volume falloff curve
+        volume = 1.0;                          // Volume de base (0.0 - 1.0)
+        range = 300;                           // Distance audible maximale (mètres)
+        rangeCurve[] = {{0, 1.0}, {300, 0.0}}; // Courbe d'atténuation du volume
     };
 };
 ```
 
-#### SoundShader Properties
+#### Propriétés du SoundShader
 
-| Property | Type | Description |
+| Propriété | Type | Description |
 |----------|------|-------------|
-| `samples[]` | array | List of `{path, weight}` pairs. Path excludes the file extension. |
-| `volume` | float | Base volume multiplier (0.0 to 1.0). |
-| `range` | float | Maximum audible distance in meters. |
-| `rangeCurve[]` | array | Array of `{distance, volume}` points defining attenuation over distance. |
-| `frequency` | float | Playback speed multiplier. 1.0 = normal, 0.5 = half speed (lower pitch), 2.0 = double speed (higher pitch). |
+| `samples[]` | array | Liste de paires `{chemin, poids}`. Le chemin exclut l'extension du fichier. |
+| `volume` | float | Multiplicateur de volume de base (0.0 à 1.0). |
+| `range` | float | Distance audible maximale en mètres. |
+| `rangeCurve[]` | array | Tableau de points `{distance, volume}` définissant l'atténuation sur la distance. |
+| `frequency` | float | Multiplicateur de vitesse de lecture. 1.0 = normal, 0.5 = demi-vitesse (hauteur plus basse), 2.0 = double vitesse (hauteur plus haute). |
 
-> **Important :** The `samples[]` path does NOT include the file extension. Le moteur appends `.ogg` (or `.wss`) automatically based on what it finds on disk.
+> **Important :** Le chemin dans `samples[]` N'inclut PAS l'extension du fichier. Le moteur ajoute automatiquement `.ogg` (ou `.wss`) en fonction de ce qu'il trouve sur le disque.
 
 ### CfgSoundSets
 
-A SoundSet wraps one or more SoundShaders and defines the spatial and behavioral properties:
+Un SoundSet encapsule un ou plusieurs SoundShaders et définit les propriétés spatiales et comportementales :
 
 ```cpp
 class CfgSoundSets
@@ -127,52 +127,52 @@ class CfgSoundSets
     class MyMod_GunShot_SoundSet
     {
         soundShaders[] = {"MyMod_GunShot_SoundShader"};
-        volumeFactor = 1.0;          // Volume scaling (applied on top of shader volume)
-        frequencyFactor = 1.0;       // Frequency scaling
-        volumeCurve = "InverseSquare"; // Predefined attenuation curve name
-        spatial = 1;                  // 1 = 3D positional, 0 = 2D (HUD/menu)
-        doppler = 0;                  // 1 = enable Doppler effect
-        loop = 0;                     // 1 = loop continuously
+        volumeFactor = 1.0;          // Mise à l'échelle du volume (appliquée en plus du volume du shader)
+        frequencyFactor = 1.0;       // Mise à l'échelle de la fréquence
+        volumeCurve = "InverseSquare"; // Nom de courbe d'atténuation prédéfinie
+        spatial = 1;                  // 1 = positionnel 3D, 0 = 2D (HUD/menu)
+        doppler = 0;                  // 1 = activer l'effet Doppler
+        loop = 0;                     // 1 = boucle continue
     };
 };
 ```
 
-#### SoundSet Properties
+#### Propriétés du SoundSet
 
-| Property | Type | Description |
+| Propriété | Type | Description |
 |----------|------|-------------|
-| `soundShaders[]` | array | List of SoundShader class names to combine. |
-| `volumeFactor` | float | Additional volume multiplier applied on top of shader volume. |
-| `frequencyFactor` | float | Additional frequency/pitch multiplier. |
-| `frequencyRandomizer` | float | Random pitch variation (0.0 = none, 0.1 = +/- 10%). |
-| `volumeCurve` | string | Named attenuation curve: `"InverseSquare"`, `"Linear"`, `"Logarithmic"`. |
-| `spatial` | int | `1` for 3D positional audio, `0` for 2D (UI, music). |
-| `doppler` | int | `1` to enable Doppler pitch shift for moving sources. |
-| `loop` | int | `1` for continuous looping, `0` for one-shot. |
-| `distanceFilter` | int | `1` to apply low-pass filter at distance (muffled far-away sounds). |
-| `occlusionFactor` | float | How much walls/terrain muffle the sound (0.0 to 1.0). |
-| `obstructionFactor` | float | How much obstacles between source and listener affect the sound. |
+| `soundShaders[]` | array | Liste des noms de classes SoundShader à combiner. |
+| `volumeFactor` | float | Multiplicateur de volume supplémentaire appliqué en plus du volume du shader. |
+| `frequencyFactor` | float | Multiplicateur de fréquence/hauteur supplémentaire. |
+| `frequencyRandomizer` | float | Variation aléatoire de la hauteur (0.0 = aucune, 0.1 = +/- 10%). |
+| `volumeCurve` | string | Courbe d'atténuation nommée : `"InverseSquare"`, `"Linear"`, `"Logarithmic"`. |
+| `spatial` | int | `1` pour l'audio positionnel 3D, `0` pour le 2D (interface, musique). |
+| `doppler` | int | `1` pour activer le décalage de hauteur Doppler pour les sources en mouvement. |
+| `loop` | int | `1` pour la boucle continue, `0` pour un coup unique. |
+| `distanceFilter` | int | `1` pour appliquer un filtre passe-bas à distance (sons lointains étouffés). |
+| `occlusionFactor` | float | Combien les murs/le terrain étouffent le son (0.0 à 1.0). |
+| `obstructionFactor` | float | Combien les obstacles entre la source et l'auditeur affectent le son. |
 
 ---
 
-## Sound Categories
+## Catégories de sons
 
-DayZ organizes sounds into categories that affect how they interact with le jeu's audio mixing system.
+DayZ organise les sons en catégories qui affectent leur interaction avec le système de mixage audio du jeu.
 
-### Weapon Sounds
+### Sons d'armes
 
-Weapon sounds are the most complex audio in DayZ, typically involving multiple SoundSets for different aspects of a single gunshot:
+Les sons d'armes sont l'audio le plus complexe dans DayZ, impliquant généralement plusieurs SoundSets pour différents aspects d'un seul coup de feu :
 
 ```
-Shot fired
-  |--> Close shot SoundSet       (the "bang" heard nearby)
-  |--> Distance shot SoundSet    (the rumble/echo heard far away)
-  |--> Tail SoundSet             (reverb/echo that follows)
-  |--> Supersonic crack SoundSet (bullet passing overhead)
-  |--> Mechanical SoundSet       (bolt cycling, magazine insertion)
+Tir effectué
+  |--> SoundSet de tir rapproché     (le "bang" entendu à proximité)
+  |--> SoundSet de tir distant        (le grondement/écho entendu au loin)
+  |--> SoundSet de traînée            (réverbération/écho qui suit)
+  |--> SoundSet de claquement supersonique (balle passant au-dessus)
+  |--> SoundSet mécanique             (culasse, insertion de chargeur)
 ```
 
-Example weapon sound config:
+Exemple de configuration audio d'arme :
 
 ```cpp
 class CfgSoundShaders
@@ -226,9 +226,9 @@ class CfgSoundSets
 };
 ```
 
-### Ambient Sounds
+### Sons ambiants
 
-Environmental audio for atmosphere:
+Audio environnemental pour l'atmosphère :
 
 ```cpp
 class MyMod_Wind_SoundShader
@@ -242,87 +242,87 @@ class MyMod_Wind_SoundSet
 {
     soundShaders[] = {"MyMod_Wind_SoundShader"};
     volumeFactor = 0.6;
-    spatial = 0;           // Non-positional (ambient surround)
-    loop = 1;              // Continuous loop
+    spatial = 0;           // Non positionnel (ambiance surround)
+    loop = 1;              // Boucle continue
 };
 ```
 
-### UI Sounds
+### Sons d'interface
 
-Interface feedback sounds (button clicks, notifications):
+Sons de retour d'interface (clics de boutons, notifications) :
 
 ```cpp
 class MyMod_ButtonClick_SoundShader
 {
     samples[] = {{"MyMod\sound\ui\click_01", 1}};
     volume = 0.7;
-    range = 0;             // No spatial range needed
+    range = 0;             // Pas de portée spatiale nécessaire
 };
 
 class MyMod_ButtonClick_SoundSet
 {
     soundShaders[] = {"MyMod_ButtonClick_SoundShader"};
     volumeFactor = 0.8;
-    spatial = 0;           // 2D -- plays in the listener's head
+    spatial = 0;           // 2D -- joue dans la tête de l'auditeur
     loop = 0;
 };
 ```
 
-### Vehicle Sounds
+### Sons de véhicules
 
-Vehicles use complex sound configurations with multiple components:
+Les véhicules utilisent des configurations sonores complexes avec plusieurs composants :
 
-- **Engine idle** -- looping, pitch varies with RPM
-- **Engine acceleration** -- looping, volume and pitch scale with throttle
-- **Tire noise** -- looping, volume scales with speed
-- **Horn** -- triggered, looping while held
-- **Crash** -- one-shot on collision
+- **Ralenti moteur** -- en boucle, la hauteur varie avec le régime
+- **Accélération moteur** -- en boucle, le volume et la hauteur varient avec l'accélérateur
+- **Bruit des pneus** -- en boucle, le volume varie avec la vitesse
+- **Klaxon** -- déclenché, en boucle tant qu'il est maintenu
+- **Crash** -- un coup unique à la collision
 
-### Character Sounds
+### Sons de personnage
 
-Player-related sounds include:
+Les sons liés au joueur incluent :
 
-- **Footsteps** -- varies by surface material (concrete, grass, wood, metal)
-- **Breathing** -- stamina-dependent
-- **Voice** -- emotes and commands
-- **Inventory** -- item manipulation sounds
+- **Pas** -- varient selon le matériau de surface (béton, herbe, bois, métal)
+- **Respiration** -- dépendante de l'endurance
+- **Voix** -- émotes et commandes
+- **Inventaire** -- sons de manipulation d'objets
 
 ---
 
-## 3D Positional Audio
+## Audio positionnel 3D
 
-DayZ uses 3D spatial audio to position sounds in le jeu world. When a gun fires 200 meters to your left, you hear it from your left speaker/headphone with appropriate volume reduction.
+DayZ utilise l'audio spatial 3D pour positionner les sons dans le monde du jeu. Quand un fusil tire à 200 mètres sur votre gauche, vous l'entendez depuis votre haut-parleur/écouteur gauche avec une réduction de volume appropriée.
 
-### Requirements for 3D Audio
+### Prérequis pour l'audio 3D
 
-1. **Audio file must be mono.** Stereo files will not spatialize correctly.
-2. **SoundSet `spatial` must be `1`.** This enables the 3D positioning system.
-3. **Sound source must have a world position.** Le moteur needs coordinates to calculate direction and distance.
+1. **Le fichier audio doit être en mono.** Les fichiers stéréo ne se spatialiseront pas correctement.
+2. **Le `spatial` du SoundSet doit être `1`.** Cela active le système de positionnement 3D.
+3. **La source sonore doit avoir une position dans le monde.** Le moteur a besoin de coordonnées pour calculer la direction et la distance.
 
-### How the Engine Spatializes Sound
+### Comment le moteur spatialise le son
 
 ```
-Sound Source (world position)
+Source sonore (position dans le monde)
   |
-  |--> Calculate distance to listener
-  |--> Calculate direction relative to listener facing
-  |--> Apply distance attenuation (rangeCurve)
-  |--> Apply occlusion (walls, terrain)
-  |--> Apply Doppler effect (if enabled and source is moving)
-  |--> Output to correct speaker channels
+  |--> Calculer la distance à l'auditeur
+  |--> Calculer la direction relative à l'orientation de l'auditeur
+  |--> Appliquer l'atténuation de distance (rangeCurve)
+  |--> Appliquer l'occlusion (murs, terrain)
+  |--> Appliquer l'effet Doppler (si activé et si la source est en mouvement)
+  |--> Sortir vers les bons canaux de haut-parleurs
 ```
 
-### Triggering 3D Sounds from Script
+### Déclencher des sons 3D depuis un script
 
 ```c
-// Play a positional sound at a world location
+// Jouer un son positionnel à un emplacement du monde
 void PlaySoundAtPosition(vector position)
 {
     EffectSound sound;
     SEffectManager.PlaySound("MyMod_Rifle_Shot_SoundSet", position);
 }
 
-// Play a sound attached to an object (moves with it)
+// Jouer un son attaché à un objet (se déplace avec lui)
 void PlaySoundOnObject(Object obj)
 {
     EffectSound sound;
@@ -332,49 +332,49 @@ void PlaySoundOnObject(Object obj)
 
 ---
 
-## Volume and Distance Attenuation
+## Volume et atténuation par la distance
 
-### Range Curve
+### Courbe de portée
 
-The `rangeCurve[]` in a SoundShader defines how volume decreases with distance. It is an array of `{distance, volume}` pairs:
+La `rangeCurve[]` dans un SoundShader définit comment le volume diminue avec la distance. C'est un tableau de paires `{distance, volume}` :
 
 ```cpp
 rangeCurve[] =
 {
-    {0, 1.0},       // At 0m: full volume
-    {50, 0.7},      // At 50m: 70% volume
-    {150, 0.3},     // At 150m: 30% volume
-    {300, 0.0}      // At 300m: silent
+    {0, 1.0},       // À 0m : volume maximal
+    {50, 0.7},      // À 50m : 70% du volume
+    {150, 0.3},     // À 150m : 30% du volume
+    {300, 0.0}      // À 300m : silence
 };
 ```
 
-Le moteur interpolates linearly between defined points. You can create any falloff curve by adding more control points.
+Le moteur interpole linéairement entre les points définis. Vous pouvez créer n'importe quelle courbe d'atténuation en ajoutant plus de points de contrôle.
 
-### Predefined Volume Curves
+### Courbes de volume prédéfinies
 
-SoundSets can reference named curves via the `volumeCurve` property:
+Les SoundSets peuvent référencer des courbes nommées via la propriété `volumeCurve` :
 
-| Curve Name | Behavior |
+| Nom de la courbe | Comportement |
 |------------|----------|
-| `"InverseSquare"` | Realistic falloff (volume = 1/distance^2). Natural-sounding. |
-| `"Linear"` | Even falloff from max to zero over the range. |
-| `"Logarithmic"` | Loud up close, drops quickly at medium distance, then tapers slowly. |
+| `"InverseSquare"` | Atténuation réaliste (volume = 1/distance^2). Son naturel. |
+| `"Linear"` | Atténuation uniforme du maximum à zéro sur la portée. |
+| `"Logarithmic"` | Fort de près, chute rapidement à moyenne distance, puis s'atténue lentement. |
 
-### Practical Attenuation Examples
+### Exemples pratiques d'atténuation
 
-**Gunshot (loud, carries far):**
+**Coup de feu (fort, porte loin) :**
 ```cpp
 range = 800;
 rangeCurve[] = {{0, 1.0}, {100, 0.6}, {300, 0.3}, {600, 0.1}, {800, 0.0}};
 ```
 
-**Footstep (quiet, close range):**
+**Pas (discret, courte portée) :**
 ```cpp
 range = 30;
 rangeCurve[] = {{0, 1.0}, {10, 0.5}, {20, 0.15}, {30, 0.0}};
 ```
 
-**Vehicle engine (medium range, sustained):**
+**Moteur de véhicule (portée moyenne, continu) :**
 ```cpp
 range = 200;
 rangeCurve[] = {{0, 1.0}, {50, 0.7}, {100, 0.4}, {200, 0.0}};
@@ -382,26 +382,26 @@ rangeCurve[] = {{0, 1.0}, {50, 0.7}, {100, 0.4}, {200, 0.0}};
 
 ---
 
-## Looping Sounds
+## Sons en boucle
 
-Looping sounds repeat continuously until explicitly stopped. They are used for engines, ambient atmosphere, alarms, and any sustained audio.
+Les sons en boucle se répètent continuellement jusqu'à être explicitement arrêtés. Ils sont utilisés pour les moteurs, l'atmosphère ambiante, les alarmes et tout audio continu.
 
-### Configuring a Looping Sound
+### Configurer un son en boucle
 
-In the SoundSet:
+Dans le SoundSet :
 ```cpp
 class MyMod_Alarm_SoundSet
 {
     soundShaders[] = {"MyMod_Alarm_SoundShader"};
     spatial = 1;
-    loop = 1;              // Enable looping
+    loop = 1;              // Activer la boucle
 };
 ```
 
-### Looping from Script
+### Boucle depuis un script
 
 ```c
-// Start a looping sound
+// Démarrer un son en boucle
 EffectSound m_AlarmSound;
 
 void StartAlarm(vector position)
@@ -412,7 +412,7 @@ void StartAlarm(vector position)
     }
 }
 
-// Stop the looping sound
+// Arrêter le son en boucle
 void StopAlarm()
 {
     if (m_AlarmSound)
@@ -423,29 +423,29 @@ void StopAlarm()
 }
 ```
 
-### Audio File Preparation for Loops
+### Préparation du fichier audio pour les boucles
 
-For seamless looping, the audio file itself must loop cleanly:
+Pour une boucle sans couture, le fichier audio lui-même doit boucler proprement :
 
-1. **Zero-crossing at start and end.** The waveform should cross zero amplitude at both endpoints to avoid a click/pop at the loop point.
-2. **Matched start and end.** The end of the file should blend seamlessly into the beginning.
-3. **No fade in/out.** Fades would be audible on each loop iteration.
-4. **Test the loop in Audacity.** Select the entire clip, enable loop playback, and listen for clicks or discontinuities.
+1. **Passage par zéro au début et à la fin.** La forme d'onde doit traverser l'amplitude zéro aux deux extrémités pour éviter un clic/pop au point de boucle.
+2. **Début et fin correspondants.** La fin du fichier doit se fondre parfaitement dans le début.
+3. **Pas de fondu entrant/sortant.** Les fondus seraient audibles à chaque itération de boucle.
+4. **Testez la boucle dans Audacity.** Sélectionnez tout le clip, activez la lecture en boucle et écoutez les clics ou les discontinuités.
 
 ---
 
-## Adding Custom Sounds to a Mod
+## Ajouter des sons personnalisés à un mod
 
-### Complete Workflow
+### Flux de travail complet
 
-**Step 1: Prepare audio files**
-- Record or source your audio.
-- Edit in Audacity (or your preferred audio editor).
-- For 3D sounds: convert to mono.
-- Export as OGG Vorbis (quality 5-7).
-- Name files descriptively: `rifle_shot_01.ogg`, `rifle_shot_02.ogg`.
+**Étape 1 : Préparer les fichiers audio**
+- Enregistrez ou procurez-vous votre audio.
+- Éditez dans Audacity (ou votre éditeur audio préféré).
+- Pour les sons 3D : convertissez en mono.
+- Exportez en OGG Vorbis (qualité 5-7).
+- Nommez les fichiers de manière descriptive : `rifle_shot_01.ogg`, `rifle_shot_02.ogg`.
 
-**Step 2: Organize in mod directory**
+**Étape 2 : Organiser dans le répertoire du mod**
 
 ```
 MyMod/
@@ -464,7 +464,7 @@ MyMod/
   config.cpp
 ```
 
-**Step 3: Define SoundShaders in config.cpp**
+**Étape 3 : Définir les SoundShaders dans config.cpp**
 
 ```cpp
 class CfgPatches
@@ -508,16 +508,16 @@ class CfgSoundSets
 };
 ```
 
-**Step 4: Reference from weapon/item config**
+**Étape 4 : Référencer depuis la config de l'arme/objet**
 
-For weapons, the SoundSet is referenced in the weapon's config class:
+Pour les armes, le SoundSet est référencé dans la classe de configuration de l'arme :
 
 ```cpp
 class CfgWeapons
 {
     class MyMod_Rifle: Rifle_Base
     {
-        // ... other config ...
+        // ... autre config ...
 
         class Sounds
         {
@@ -530,44 +530,44 @@ class CfgWeapons
 };
 ```
 
-**Step 5: Build and test**
-- Pack the PBO (use `-packonly` since OGG files do not need binarization).
-- Launch le jeu with the mod loaded.
-- Test the sound in-game at various distances.
+**Étape 5 : Compiler et tester**
+- Empaquetez le PBO (utilisez `-packonly` car les fichiers OGG n'ont pas besoin de binarisation).
+- Lancez le jeu avec le mod chargé.
+- Testez le son en jeu à différentes distances.
 
 ---
 
-## Audio Production Tools
+## Outils de production audio
 
-### Audacity (Free, Open Source)
+### Audacity (gratuit, open source)
 
-Audacity is the recommended tool for DayZ audio production:
+Audacity est l'outil recommandé pour la production audio DayZ :
 
-- **Download:** [audacityteam.org](https://www.audacityteam.org/)
-- **OGG export:** File --> Export --> Export as OGG
-- **Mono conversion:** Tracks --> Mix --> Mix Stereo Down to Mono
-- **Normalization:** Effect --> Normalize (set peak to -1 dB to prevent clipping)
-- **Noise removal:** Effect --> Noise Reduction
-- **Loop testing:** Transport --> Loop Play (Shift+Space)
+- **Téléchargement :** [audacityteam.org](https://www.audacityteam.org/)
+- **Export OGG :** Fichier --> Exporter --> Exporter en OGG
+- **Conversion mono :** Pistes --> Mixer --> Mixer stéréo vers mono
+- **Normalisation :** Effet --> Normaliser (régler le pic à -1 dB pour éviter l'écrêtage)
+- **Suppression du bruit :** Effet --> Réduction du bruit
+- **Test de boucle :** Transport --> Lecture en boucle (Shift+Espace)
 
-### OGG Export Settings in Audacity
+### Paramètres d'export OGG dans Audacity
 
-1. **File --> Export --> Export as OGG Vorbis**
-2. **Quality:** 5-7 (5 for ambient/UI, 7 for weapon/important sounds)
-3. **Channels:** Mono for 3D sounds, Stereo for UI/music
+1. **Fichier --> Exporter --> Exporter en OGG Vorbis**
+2. **Qualité :** 5-7 (5 pour l'ambiance/interface, 7 pour les armes/sons importants)
+3. **Canaux :** Mono pour les sons 3D, Stéréo pour l'interface/musique
 
-### Other Useful Tools
+### Autres outils utiles
 
-| Tool | Purpose | Cost |
+| Outil | Usage | Coût |
 |------|---------|------|
-| **Audacity** | General audio editing, format conversion | Free |
-| **Reaper** | Professional DAW, advanced editing | $60 (personal license) |
-| **FFmpeg** | Command-line batch audio conversion | Free |
-| **Ocenaudio** | Simple editor with real-time preview | Free |
+| **Audacity** | Édition audio générale, conversion de format | Gratuit |
+| **Reaper** | Station de travail audio professionnelle, édition avancée | 60 $ (licence personnelle) |
+| **FFmpeg** | Conversion audio par lots en ligne de commande | Gratuit |
+| **Ocenaudio** | Éditeur simple avec prévisualisation en temps réel | Gratuit |
 
-### Batch Conversion with FFmpeg
+### Conversion par lots avec FFmpeg
 
-Convert all WAV files in a directory to mono OGG:
+Convertir tous les fichiers WAV d'un répertoire en OGG mono :
 
 ```bash
 for file in *.wav; do
@@ -579,15 +579,15 @@ done
 
 ## Erreurs courantes
 
-### 1. Stereo File for 3D Sound
+### 1. Fichier stéréo pour un son 3D
 
-**Symptom:** Sound does not spatialize, plays centered or only in one ear.
-**Fix:** Convert to mono before exporting. 3D positional sounds require mono audio files.
+**Symptôme :** Le son ne se spatialise pas, joue au centre ou seulement dans une oreille.
+**Correction :** Convertissez en mono avant l'export. Les sons positionnels 3D nécessitent des fichiers audio mono.
 
-### 2. File Extension in samples[] Path
+### 2. Extension de fichier dans le chemin samples[]
 
-**Symptom:** Sound does not play, no error in log (engine silently fails to find the file).
-**Fix:** Remove the `.ogg` extension from the path in `samples[]`. Le moteur adds it automatically.
+**Symptôme :** Le son ne joue pas, pas d'erreur dans le log (le moteur échoue silencieusement à trouver le fichier).
+**Correction :** Retirez l'extension `.ogg` du chemin dans `samples[]`. Le moteur l'ajoute automatiquement.
 
 ```cpp
 // INCORRECT
@@ -597,23 +597,23 @@ samples[] = {{"MyMod\sound\gunshot_01.ogg", 1}};
 samples[] = {{"MyMod\sound\gunshot_01", 1}};
 ```
 
-### 3. Missing CfgPatches requiredAddons
+### 3. requiredAddons de CfgPatches manquant
 
-**Symptom:** SoundShaders or SoundSets not recognized, sounds do not play.
-**Fix:** Add `"DZ_Sounds_Effects"` to your CfgPatches `requiredAddons[]` to ensure the base sound system loads before your definitions.
+**Symptôme :** Les SoundShaders ou SoundSets ne sont pas reconnus, les sons ne jouent pas.
+**Correction :** Ajoutez `"DZ_Sounds_Effects"` à votre `requiredAddons[]` de CfgPatches pour vous assurer que le système sonore de base se charge avant vos définitions.
 
-### 4. Range Too Short
+### 4. Portée trop courte
 
-**Symptom:** Sound cuts off abruptly at a short distance, feels unnatural.
-**Fix:** Set `range` to a realistic value. Gunshots should carry 300-800m, footsteps 20-40m, voices 50-100m.
+**Symptôme :** Le son se coupe abruptement à courte distance, semble artificiel.
+**Correction :** Réglez `range` à une valeur réaliste. Les coups de feu devraient porter à 300-800m, les pas à 20-40m, les voix à 50-100m.
 
-### 5. No Random Variation
+### 5. Pas de variation aléatoire
 
-**Symptom:** Sound feels repetitive and artificial after hearing it multiple times.
-**Fix:** Provide multiple samples in the SoundShader and add `frequencyRandomizer` to the SoundSet for pitch variation.
+**Symptôme :** Le son semble répétitif et artificiel après l'avoir entendu plusieurs fois.
+**Correction :** Fournissez plusieurs échantillons dans le SoundShader et ajoutez `frequencyRandomizer` au SoundSet pour la variation de hauteur.
 
 ```cpp
-// Multiple samples for variety
+// Plusieurs échantillons pour la variété
 samples[] =
 {
     {"MyMod\sound\step_01", 1},
@@ -622,34 +622,34 @@ samples[] =
     {"MyMod\sound\step_04", 1}
 };
 
-// Plus pitch randomization in the SoundSet
-frequencyRandomizer = 0.05;    // +/- 5% pitch variation
+// Plus la randomisation de hauteur dans le SoundSet
+frequencyRandomizer = 0.05;    // +/- 5% de variation de hauteur
 ```
 
-### 6. Clipping / Distortion
+### 6. Écrêtage / Distorsion
 
-**Symptom:** Sound crackles or distorts, especially at close range.
-**Fix:** Normalize your audio to -1 dB or -3 dB peak in Audacity before exporting. Never set `volume` or `volumeFactor` above 1.0 unless the source audio is very quiet.
+**Symptôme :** Le son crépite ou se déforme, surtout à courte distance.
+**Correction :** Normalisez votre audio à -1 dB ou -3 dB de pic dans Audacity avant l'export. Ne réglez jamais `volume` ou `volumeFactor` au-dessus de 1.0 sauf si l'audio source est très faible.
 
 ---
 
 ## Bonnes pratiques
 
-1. **Always export 3D sounds as mono OGG.** This is the single most important rule. Stereo files will not spatialize.
+1. **Exportez toujours les sons 3D en OGG mono.** C'est la règle la plus importante. Les fichiers stéréo ne se spatialiseront pas.
 
-2. **Provide 3-5 sample variants** for frequently heard sounds (gunshots, footsteps, impacts). Random selection prevents the "machine gun effect" of identical repeated audio.
+2. **Fournissez 3 à 5 variantes d'échantillons** pour les sons fréquemment entendus (coups de feu, pas, impacts). La sélection aléatoire évite l'« effet mitrailleuse » d'un audio identique répété.
 
-3. **Use `frequencyRandomizer`** between 0.03 and 0.08 for natural pitch variation. Even subtle variation significantly improves perceived audio quality.
+3. **Utilisez `frequencyRandomizer`** entre 0.03 et 0.08 pour une variation de hauteur naturelle. Même une variation subtile améliore significativement la qualité audio perçue.
 
-4. **Set realistic range values.** Study le DayZ vanilla sounds for reference. A rifle shot at 600-800m range, a suppressed shot at 150-200m, footsteps at 20-40m.
+4. **Définissez des valeurs de portée réalistes.** Étudiez les sons vanilla de DayZ pour référence. Un tir de fusil à 600-800m de portée, un tir supprimé à 150-200m, les pas à 20-40m.
 
-5. **Layer your sounds.** Complex audio events (gunshots) should use multiple SoundSets: close shot + distant rumble + tail/echo. This creates depth that a single sound file cannot achieve.
+5. **Superposez vos sons.** Les événements audio complexes (coups de feu) devraient utiliser plusieurs SoundSets : tir rapproché + grondement distant + traînée/écho. Cela crée une profondeur qu'un seul fichier sonore ne peut pas atteindre.
 
-6. **Test at multiple distances.** Walk away from the sound source in-game and verify the attenuation curve feels natural. Adjust `rangeCurve[]` control points iteratively.
+6. **Testez à plusieurs distances.** Éloignez-vous de la source sonore en jeu et vérifiez que la courbe d'atténuation semble naturelle. Ajustez les points de contrôle de `rangeCurve[]` de manière itérative.
 
-7. **Organize your sound directory.** Use subdirectories by category (`weapons/`, `ambient/`, `ui/`, `vehicles/`). A flat directory with 200 OGG files is unmanageable.
+7. **Organisez votre répertoire de sons.** Utilisez des sous-répertoires par catégorie (`weapons/`, `ambient/`, `ui/`, `vehicles/`). Un répertoire plat avec 200 fichiers OGG est ingérable.
 
-8. **Keep file sizes reasonable.** Game audio does not need studio quality. OGG quality 5-7 is sufficient. Most individual sound files should be under 500 KB.
+8. **Gardez des tailles de fichiers raisonnables.** L'audio de jeu n'a pas besoin d'une qualité studio. La qualité OGG 5-7 est suffisante. La plupart des fichiers sonores individuels devraient faire moins de 500 Ko.
 
 ---
 
@@ -657,23 +657,23 @@ frequencyRandomizer = 0.05;    // +/- 5% pitch variation
 
 | Patron | Mod | Détail |
 |---------|-----|--------|
-| Custom notification sounds via SoundSets | Expansion (Notification module) | Defines multiple `CfgSoundSets` for different notification types (success, warning, error) with `spatial = 0` |
-| UI click sounds with cached playback | VPP Admin Tools | Uses `SEffectManager.PlaySoundCachedParams()` for button clicks to avoid re-parsing config each time |
-| Multi-layer weapon audio (shot + tail + crack) | Community weapon packs (RFCP, MuchStuffPack) | Each weapon defines 3-5 separate SoundSets per fire event for close shot, distant rumble, supersonic crack |
-| `frequencyRandomizer` for footstep variation | Vanilla DayZ | Uses 0.05-0.08 pitch randomization on footstep SoundSets to prevent robotic repetition |
+| Sons de notification personnalisés via les SoundSets | Expansion (module Notification) | Définit plusieurs `CfgSoundSets` pour différents types de notifications (succès, avertissement, erreur) avec `spatial = 0` |
+| Sons de clic d'interface avec lecture en cache | VPP Admin Tools | Utilise `SEffectManager.PlaySoundCachedParams()` pour les clics de boutons afin d'éviter de re-parser la config à chaque fois |
+| Audio d'arme multicouche (tir + traînée + claquement) | Packs d'armes communautaires (RFCP, MuchStuffPack) | Chaque arme définit 3 à 5 SoundSets séparés par événement de tir pour le tir rapproché, le grondement distant, le claquement supersonique |
+| `frequencyRandomizer` pour la variation des pas | DayZ Vanilla | Utilise une randomisation de hauteur de 0.05-0.08 sur les SoundSets de pas pour éviter la répétition robotique |
 
 ---
 
 ## Compatibilité et impact
 
-- **Multi-Mod :** SoundShader and SoundSet class names are global. Two mods defining the same class name will conflict (last loaded wins). Always prefix names with your mod identifier (e.g., `MyMod_Shot_SoundShader`).
-- **Performance :** OGG files are decompressed à l'exécution. Mods with hundreds of unique audio files increase memory usage. Keep individual files under 500 KB and reuse samples across variants.
-- **Version :** DayZ's audio system (CfgSoundShaders/CfgSoundSets) has been stable since 1.0. The `sound3DProcessingType` and `volumeCurve` named presets were added in later updates but are backward-compatible.
+- **Multi-Mod :** Les noms de classes SoundShader et SoundSet sont globaux. Deux mods définissant le même nom de classe entreront en conflit (le dernier chargé l'emporte). Préfixez toujours les noms avec l'identifiant de votre mod (ex : `MyMod_Shot_SoundShader`).
+- **Performance :** Les fichiers OGG sont décompressés à l'exécution. Les mods avec des centaines de fichiers audio uniques augmentent l'utilisation mémoire. Gardez les fichiers individuels en dessous de 500 Ko et réutilisez les échantillons entre les variantes.
+- **Version :** Le système audio de DayZ (CfgSoundShaders/CfgSoundSets) est stable depuis la version 1.0. Les préréglages nommés `sound3DProcessingType` et `volumeCurve` ont été ajoutés dans des mises à jour ultérieures mais sont rétrocompatibles.
 
 ---
 
 ## Navigation
 
-| Previous | Up | Next |
+| Précédent | Haut | Suivant |
 |----------|----|------|
-| [4.3 Materials](03-materials.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.5 DayZ Tools Workflow](05-dayz-tools.md) |
+| [4.3 Matériaux](03-materials.md) | [Partie 4 : Formats de fichiers et outils DayZ](01-textures.md) | [4.5 Flux de travail DayZ Tools](05-dayz-tools.md) |

@@ -1,35 +1,35 @@
-# Chapter 3.7: Styles, Fonts & Images
+# Kapitola 3.7: Styly, písma a obrázky
 
-[Domů](../../README.md) | [<< Předchozí: Zpracování událostí](06-event-handling.md) | **Styles, Fonts & Images** | [Další: Dialogy a modální okna >>](08-dialogs-modals.md)
-
----
-
-This chapter covers the visual building blocks of DayZ UI: predefined styles, font usage, text sizing, image widgets with imageset references, and how to create vlastní imagesets for your mod.
+[Domů](../../README.md) | [<< Předchozí: Zpracování událostí](06-event-handling.md) | **Styly, písma a obrázky** | [Další: Dialogy a modální okna >>](08-dialogs-modals.md)
 
 ---
 
-## Styles
+Tato kapitola pokrývá vizuální stavební bloky UI DayZ: předdefinované styly, používání písem, rozměry textu, obrázkové widgety s odkazy na imagesety a jak vytvořit vlastní imagesety pro váš mod.
 
-Styles are predefined visual appearances that can be applied to widgets via the `style` attribute in layout files. They control background rendering, borders, and overall look without requiring manual color and image configuration.
+---
 
-### Běžné Built-In Styles
+## Styly
 
-| Style Name | Description |
+Styly jsou předdefinované vizuální vzhled, které lze aplikovat na widgety pomocí atributu `style` v souborech layoutu. Řídí vykreslování pozadí, okraje a celkový vzhled bez nutnosti ruční konfigurace barev a obrázků.
+
+### Běžné vestavěné styly
+
+| Název stylu | Popis |
 |---|---|
-| `blank` | No visual -- zcela transparent background |
-| `Empty` | No background rendering |
-| `Default` | Default button/widget style with standard DayZ appearance |
-| `Colorable` | Style that can be tinted using `SetColor()` |
-| `rover_sim_colorable` | Colored panel style, běžně used for backgrounds |
-| `rover_sim_black` | Dark panel background |
-| `rover_sim_black_2` | Darker panel variant |
-| `Outline_1px_BlackBackground` | 1-pixel outline with solid black background |
-| `OutlineFilled` | Outline with a filled interior |
-| `DayZDefaultPanelRight` | DayZ výchozí right panel style |
-| `DayZNormal` | DayZ normal text/widget style |
-| `MenuDefault` | Standard menu button style |
+| `blank` | Žádný vizuál -- zcela průhledné pozadí |
+| `Empty` | Žádné vykreslování pozadí |
+| `Default` | Výchozí styl tlačítka/widgetu se standardním vzhledem DayZ |
+| `Colorable` | Styl, který lze tónovat pomocí `SetColor()` |
+| `rover_sim_colorable` | Styl barevného panelu, běžně používaný pro pozadí |
+| `rover_sim_black` | Tmavé pozadí panelu |
+| `rover_sim_black_2` | Tmavší varianta panelu |
+| `Outline_1px_BlackBackground` | 1-pixelový obrys s plným černým pozadím |
+| `OutlineFilled` | Obrys s vyplněným interiérem |
+| `DayZDefaultPanelRight` | Výchozí styl pravého panelu DayZ |
+| `DayZNormal` | Normální styl textu/widgetu DayZ |
+| `MenuDefault` | Standardní styl tlačítka menu |
 
-### Using Styles in Layouts
+### Použití stylů v layoutech
 
 ```
 ButtonWidgetClass MyButton {
@@ -47,9 +47,9 @@ PanelWidgetClass Background {
 }
 ```
 
-### Style + Color Pattern
+### Vzor styl + barva
 
-The `Colorable` and `rover_sim_colorable` styles are designed to be tinted. Nastavte the `color` attribute in the layout or call `SetColor()` in code:
+Styly `Colorable` a `rover_sim_colorable` jsou navrženy k tónování. Nastavte atribut `color` v layoutu nebo zavolejte `SetColor()` v kódu:
 
 ```
 PanelWidgetClass TitleBar {
@@ -62,14 +62,14 @@ PanelWidgetClass TitleBar {
 ```
 
 ```c
-// Change color at runtime
+// Změna barvy za běhu
 PanelWidget bar = PanelWidget.Cast(root.FindAnyWidget("TitleBar"));
 bar.SetColor(ARGB(240, 107, 165, 255));
 ```
 
-### Styles in Professional Mods
+### Styly v profesionálních modech
 
-DabsFramework dialogs use `Outline_1px_BlackBackground` for dialog containers:
+Dialogy DabsFrameworku používají `Outline_1px_BlackBackground` pro kontejnery dialogů:
 
 ```
 WrapSpacerWidgetClass EditorDialog {
@@ -79,25 +79,25 @@ WrapSpacerWidgetClass EditorDialog {
 }
 ```
 
-Colorful UI uses `rover_sim_colorable` extensively for themed panels where the color is controlled by a centralized theme manager.
+Colorful UI rozsáhle používá `rover_sim_colorable` pro tematické panely, kde barvu řídí centralizovaný správce motivů.
 
 ---
 
-## Fonts
+## Písma
 
-DayZ includes several vestavěný fonts. Font paths are specified in the `font` attribute.
+DayZ obsahuje několik vestavěných písem. Cesty k písmům se zadávají v atributu `font`.
 
-### Built-In Font Paths
+### Cesty vestavěných písem
 
-| Font Path | Description |
+| Cesta k písmu | Popis |
 |---|---|
-| `"gui/fonts/Metron"` | Standard UI font |
-| `"gui/fonts/Metron28"` | Standard font, 28pt variant |
-| `"gui/fonts/Metron-Bold"` | Bold variant |
-| `"gui/fonts/Metron-Bold58"` | Bold 58pt variant |
-| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) font -- crisp at jakýkoli size |
+| `"gui/fonts/Metron"` | Standardní UI písmo |
+| `"gui/fonts/Metron28"` | Standardní písmo, varianta 28pt |
+| `"gui/fonts/Metron-Bold"` | Tučná varianta |
+| `"gui/fonts/Metron-Bold58"` | Tučná varianta 58pt |
+| `"gui/fonts/sdf_MetronBook24"` | SDF (Signed Distance Field) písmo -- ostré při jakékoli velikosti |
 
-### Using Fonts in Layouts
+### Použití písem v layoutech
 
 ```
 TextWidgetClass Title {
@@ -113,27 +113,27 @@ TextWidgetClass Body {
 }
 ```
 
-### Using Fonts in Code
+### Použití písem v kódu
 
 ```c
 TextWidget tw = TextWidget.Cast(root.FindAnyWidget("MyText"));
 tw.SetText("Hello");
-// Font is set in the layout, not changeable at runtime via script
+// Písmo je nastaveno v layoutu, nelze ho měnit za běhu přes skript
 ```
 
-### SDF Fonts
+### SDF písma
 
-SDF (Signed Distance Field) fonts render crisply at jakýkoli zoom level, making them ideal for UI elements that may appear at různý sizes. The `sdf_MetronBook24` font is the best choice for text that needs to look sharp across odlišný UI scale settings.
+SDF (Signed Distance Field) písma se vykreslují ostře při jakékoli úrovni přiblížení, což je činí ideálními pro UI prvky, které se mohou zobrazovat v různých velikostech. Písmo `sdf_MetronBook24` je nejlepší volbou pro text, který musí vypadat ostře napříč různými nastaveními škálování UI.
 
 ---
 
-## Text Sizing: "exact text" vs. Proportional
+## Rozměry textu: "exact text" vs. proporcionální
 
-DayZ text widgets support two sizing modes, controlled by the `"exact text"` attribute:
+Textové widgety DayZ podporují dva režimy rozměrování, řízené atributem `"exact text"`:
 
-### Proportional Text (Default)
+### Proporcionální text (výchozí)
 
-When `"exact text" 0` (the výchozí), the font size is determined by the widget's height. The text scales with the widget. Toto je výchozí behavior.
+Když `"exact text" 0` (výchozí), velikost písma je určena výškou widgetu. Text se škáluje s widgetem. Toto je výchozí chování.
 
 ```
 TextWidgetClass ScalingText {
@@ -144,9 +144,9 @@ TextWidgetClass ScalingText {
 }
 ```
 
-### Exact Text Size
+### Přesná velikost textu
 
-When `"exact text" 1`, the font size is a fixed pixel value set by `"exact text size"`:
+Když `"exact text" 1`, velikost písma je pevná pixelová hodnota nastavená pomocí `"exact text size"`:
 
 ```
 TextWidgetClass FixedText {
@@ -159,31 +159,31 @@ TextWidgetClass FixedText {
 }
 ```
 
-### Which to Use?
+### Co použít?
 
-| Scenario | Recommendation |
+| Scénář | Doporučení |
 |---|---|
-| HUD elements that scale with screen size | Proportional (výchozí) |
-| Menu text at a specifický size | `"exact text" 1` with `"exact text size"` |
-| Text that must match a specifický font pixel size | `"exact text" 1` |
-| Text inside spacers/grids | Often proportional, determined by cell height |
+| HUD prvky, které se škálují s velikostí obrazovky | Proporcionální (výchozí) |
+| Text menu ve specifické velikosti | `"exact text" 1` s `"exact text size"` |
+| Text, který musí odpovídat specifické pixelové velikosti písma | `"exact text" 1` |
+| Text uvnitř spacerů/mřížek | Často proporcionální, určen výškou buňky |
 
-### Text-Related Size Attributes
+### Atributy související s rozměry textu
 
-| Attribute | Effect |
+| Atribut | Efekt |
 |---|---|
-| `"size to text h" 1` | Widget width adjusts to fit the text |
-| `"size to text v" 1` | Widget height adjusts to fit the text |
-| `"text sharpness"` | Float value controlling rendering sharpness |
-| `wrap 1` | Povolte word wrapping for text that exceeds widget width |
+| `"size to text h" 1` | Šířka widgetu se přizpůsobí textu |
+| `"size to text v" 1` | Výška widgetu se přizpůsobí textu |
+| `"text sharpness"` | Plovoucí hodnota řídící ostrost vykreslování |
+| `wrap 1` | Povolit zalamování slov pro text přesahující šířku widgetu |
 
-The `"size to text"` attributes are užitečný for labels and tags where the widget should be exactly as large as its text content.
+Atributy `"size to text"` jsou užitečné pro popisky a štítky, kde by widget měl být přesně tak velký jako jeho textový obsah.
 
 ---
 
-## Text Alignment
+## Zarovnání textu
 
-Control where text appears within its widget using alignment attributes:
+Řiďte, kde se text zobrazí v rámci svého widgetu, pomocí atributů zarovnání:
 
 ```
 TextWidgetClass CenteredLabel {
@@ -193,36 +193,36 @@ TextWidgetClass CenteredLabel {
 }
 ```
 
-| Attribute | Values | Effect |
+| Atribut | Hodnoty | Efekt |
 |---|---|---|
-| `"text halign"` | `left`, `center`, `right` | Horizontal text position within widget |
-| `"text valign"` | `top`, `center`, `bottom` | Vertical text position within widget |
+| `"text halign"` | `left`, `center`, `right` | Horizontální pozice textu v rámci widgetu |
+| `"text valign"` | `top`, `center`, `bottom` | Vertikální pozice textu v rámci widgetu |
 
 ---
 
-## Text Outline
+## Obrys textu
 
-Přidejte outlines to text for readability on busy backgrounds:
+Přidejte obrysy k textu pro čitelnost na rušných pozadích:
 
 ```c
 TextWidget tw;
-tw.SetOutline(1, ARGB(255, 0, 0, 0));   // 1px black outline
+tw.SetOutline(1, ARGB(255, 0, 0, 0));   // 1px černý obrys
 
-int size = tw.GetOutlineSize();           // Read outline size
-int color = tw.GetOutlineColor();         // Read outline color (ARGB)
+int size = tw.GetOutlineSize();           // Čtení velikosti obrysu
+int color = tw.GetOutlineColor();         // Čtení barvy obrysu (ARGB)
 ```
 
 ---
 
 ## ImageWidget
 
-`ImageWidget` displays images from two sources: imageset references and dynamically loaded files.
+`ImageWidget` zobrazuje obrázky ze dvou zdrojů: odkazů na imagesety a dynamicky načtených souborů.
 
-### Imageset References
+### Odkazy na imagesety
 
-The většina common way to display images. An imageset is a sprite atlas -- a jeden texture file with více named sub-images.
+Nejběžnější způsob zobrazení obrázků. Imageset je sprite atlas -- jeden soubor textury s více pojmenovanými podobrázky.
 
-In a layout file:
+V souboru layoutu:
 
 ```
 ImageWidgetClass MyIcon {
@@ -233,24 +233,24 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-The format is `"set:<imageset_name> image:<image_name>"`.
+Formát je `"set:<název_imagesetu> image:<název_obrázku>"`.
 
-Běžné vanilla imagesets and images:
+Běžné vanilla imagesety a obrázky:
 
 ```
-"set:dayz_gui image:icon_pin"           -- Map pin icon
-"set:dayz_gui image:icon_refresh"       -- Refresh icon
-"set:dayz_gui image:icon_x"            -- Close/X icon
-"set:dayz_gui image:icon_missing"      -- Warning/missing icon
-"set:dayz_gui image:iconHealth0"       -- Health/plus icon
-"set:dayz_gui image:DayZLogo"          -- DayZ logo
-"set:dayz_gui image:Expand"            -- Expand arrow
-"set:dayz_gui image:Gradient"          -- Gradient strip
+"set:dayz_gui image:icon_pin"           -- Ikona špendlíku mapy
+"set:dayz_gui image:icon_refresh"       -- Ikona obnovení
+"set:dayz_gui image:icon_x"            -- Ikona zavřít/X
+"set:dayz_gui image:icon_missing"      -- Ikona varování/chybějící
+"set:dayz_gui image:iconHealth0"       -- Ikona zdraví/plus
+"set:dayz_gui image:DayZLogo"          -- Logo DayZ
+"set:dayz_gui image:Expand"            -- Šipka rozbalit
+"set:dayz_gui image:Gradient"          -- Přechodový pruh
 ```
 
-### Multiple Image Slots
+### Více slotů obrázků
 
-A jeden `ImageWidget` can hold více images in odlišný slots (`image0`, `image1`, etc.) and switch mezi them:
+Jeden `ImageWidget` může držet více obrázků v různých slotech (`image0`, `image1` atd.) a přepínat mezi nimi:
 
 ```
 ImageWidgetClass StatusIcon {
@@ -261,13 +261,13 @@ ImageWidgetClass StatusIcon {
 
 ```c
 ImageWidget icon;
-icon.SetImage(0);    // Show image0 (missing icon)
-icon.SetImage(1);    // Show image1 (health icon)
+icon.SetImage(0);    // Zobrazit image0 (ikona chybějící)
+icon.SetImage(1);    // Zobrazit image1 (ikona zdraví)
 ```
 
-### Loading Images from Files
+### Načítání obrázků ze souborů
 
-Načtěte images dynamically za běhu:
+Načtení obrázků dynamicky za běhu:
 
 ```c
 ImageWidget img;
@@ -275,39 +275,39 @@ img.LoadImageFile(0, "MyMod/gui/textures/my_image.edds");
 img.SetImage(0);
 ```
 
-The path is relative to the mod's root directory. Supported formats include `.edds`, `.paa`, and `.tga` (though `.edds` is standard for DayZ).
+Cesta je relativní ke kořenovému adresáři modu. Podporované formáty zahrnují `.edds`, `.paa` a `.tga` (ačkoli `.edds` je standard pro DayZ).
 
-### Image Blend Modes
+### Režimy prolínání obrázků
 
-The `mode` attribute controls how the image blends with what's behind it:
+Atribut `mode` řídí, jak se obrázek prolíná s tím, co je za ním:
 
-| Mode | Effect |
+| Režim | Efekt |
 |---|---|
-| `blend` | Standard alpha blending (most common) |
-| `additive` | Colors add together (glow effects) |
-| `stretch` | Stretch to fill without blending |
+| `blend` | Standardní alfa prolínání (nejběžnější) |
+| `additive` | Barvy se sčítají (efekty záře) |
+| `stretch` | Roztažení na výplň bez prolínání |
 
-### Image Mask Transitions
+### Maskové přechody obrázků
 
-`ImageWidget` supports mask-based reveal transitions:
+`ImageWidget` podporuje přechodové efekty odhalení založené na masce:
 
 ```c
 ImageWidget img;
 img.LoadMaskTexture("gui/textures/mask_wipe.edds");
-img.SetMaskProgress(0.5);  // 50% revealed
+img.SetMaskProgress(0.5);  // 50% odhaleno
 ```
 
-This is užitečný for loading bars, health displays, and reveal animations.
+Toto je užitečné pro ukazatele načítání, zobrazení zdraví a odhalovací animace.
 
 ---
 
-## ImageNastavte Format
+## Formát imagesetu
 
-An imageset file (`.imageset`) defines named regions within a sprite atlas texture. DayZ supports two imageset formats.
+Soubor imagesetu (`.imageset`) definuje pojmenované oblasti v rámci textury sprite atlasu. DayZ podporuje dva formáty imagesetů.
 
-### DayZ Native Format
+### Nativní formát DayZ
 
-Used by vanilla DayZ and většina mods. This is **not** XML -- it uses the stejný brace-delimited format as layout files.
+Používaný vanilla DayZ a většinou modů. Toto **není** XML -- používá stejný formát s hranatými závorkami jako soubory layoutu.
 
 ```
 ImageSetClass {
@@ -342,16 +342,16 @@ ImageSetClass {
 }
 ```
 
-Key fields:
-- `Name` -- Imageset name (used in `"set:<name>"`)
-- `RefSize` -- Reference size of the source texture in pixels (width height)
-- `path` -- Path to the texture file (`.edds`)
-- `mpix` -- Mipmap level (0 = standard resolution, 1 = 2x resolution)
-- Každý image entry defines `Name`, `Pos` (x y in pixels), and `Size` (width height in pixels)
+Klíčová pole:
+- `Name` -- Název imagesetu (použitý v `"set:<název>"`)
+- `RefSize` -- Referenční velikost zdrojové textury v pixelech (šířka výška)
+- `path` -- Cesta k souboru textury (`.edds`)
+- `mpix` -- Úroveň mipmapy (0 = standardní rozlišení, 1 = 2x rozlišení)
+- Každý záznam obrázku definuje `Name`, `Pos` (x y v pixelech) a `Size` (šířka výška v pixelech)
 
-### XML Format
+### Formát XML
 
-Some mods (including některé DayZ Expansion modules) use an XML-based imageset format:
+Některé mody (včetně některých modulů DayZ Expansion) používají formát imagesetu založený na XML:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -362,23 +362,23 @@ Some mods (including některé DayZ Expansion modules) use an XML-based imageset
 </imageset>
 ```
 
-Oba formats accomplish the stejný thing. The native format is used by vanilla DayZ; the XML format is některétimes easier to read and edit by hand.
+Oba formáty dosahují stejné věci. Nativní formát používá vanilla DayZ; formát XML je někdy snáze čitelný a upravitelný ručně.
 
 ---
 
-## Creating Custom Imagesets
+## Vytváření vlastních imagesetů
 
-To create your own imageset for a mod:
+Pro vytvoření vlastního imagesetu pro mod:
 
-### Step 1: Vytvořte the Sprite Atlas Texture
+### Krok 1: Vytvořte texturu sprite atlasu
 
-Use an image editor (Photoshop, GIMP, etc.) to create a jeden texture that contains all your icons/images arranged on a grid. Běžné sizes are 256x256, 512x512, or 1024x1024 pixels.
+Použijte editor obrázků (Photoshop, GIMP atd.) k vytvoření jedné textury, která obsahuje všechny vaše ikony/obrázky uspořádané na mřížce. Běžné velikosti jsou 256x256, 512x512 nebo 1024x1024 pixelů.
 
-Uložte as `.tga`, then convert to `.edds` using DayZ Tools (TexView2 or the ImageTool).
+Uložte jako `.tga`, poté převeďte na `.edds` pomocí DayZ Tools (TexView2 nebo ImageTool).
 
-### Step 2: Vytvořte the Imageset File
+### Krok 2: Vytvořte soubor imagesetu
 
-Vytvořte a `.imageset` file that maps named regions to positions in the texture:
+Vytvořte soubor `.imageset`, který mapuje pojmenované oblasti na pozice v textuře:
 
 ```
 ImageSetClass {
@@ -407,31 +407,31 @@ ImageSetClass {
 }
 ```
 
-### Step 3: Register in config.cpp
+### Krok 3: Registrace v config.cpp
 
-In your mod's `config.cpp`, register the imageset under `CfgMods`:
+V `config.cpp` vašeho modu zaregistrujte imageset pod `CfgMods`:
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        // ... other fields ...
+        // ... ostatní pole ...
         class defs
         {
             class imageSets
             {
                 files[] = { "MyMod/GUI/imagesets/mymod_icons.imageset" };
             };
-            // ... script modules ...
+            // ... skriptové moduly ...
         };
     };
 };
 ```
 
-### Step 4: Use in Layouts and Code
+### Krok 4: Použití v layoutech a kódu
 
-In layout files:
+V souborech layoutu:
 
 ```
 ImageWidgetClass MissionIcon {
@@ -441,19 +441,19 @@ ImageWidgetClass MissionIcon {
 }
 ```
 
-In code:
+V kódu:
 
 ```c
 ImageWidget icon;
-// Images from registered imagesets are available by set:name image:name
-// No additional loading step needed after config.cpp registration
+// Obrázky z registrovaných imagesetů jsou dostupné přes set:název image:název
+// Po registraci v config.cpp není potřeba žádný další krok načítání
 ```
 
 ---
 
-## Color Theme Pattern
+## Vzor barevného motivu
 
-Professional mods centralize their color definitions in a theme class, then apply colors za běhu. This makes it easy to restyle the celý UI by changing one file.
+Profesionální mody centralizují své definice barev v třídě motivu a poté aplikují barvy za běhu. To usnadňuje přestylování celého UI změnou jednoho souboru.
 
 ```c
 class UIColor
@@ -469,7 +469,7 @@ class UIColor
 }
 ```
 
-Apply in code:
+Aplikace v kódu:
 
 ```c
 titleBar.SetColor(UIColor.Primary());
@@ -477,15 +477,15 @@ statusText.SetColor(UIColor.Accent());
 errorText.SetColor(UIColor.Danger());
 ```
 
-This pattern (used by Colorful UI, MyMod, and jinýs) means changing the celý UI color scheme requires editing pouze the theme class.
+Tento vzor (používaný Colorful UI, MyMod a dalšími) znamená, že změna celého barevného schématu UI vyžaduje editaci pouze třídy motivu.
 
 ---
 
-## Shrnutí of Visual Attributes by Widget Type
+## Přehled vizuálních atributů podle typu widgetu
 
-| Widget | Key Visual Attributes |
+| Widget | Klíčové vizuální atributy |
 |---|---|
-| Any widget | `color`, `visible`, `style`, `priority`, `inheritalpha` |
+| Jakýkoli widget | `color`, `visible`, `style`, `priority`, `inheritalpha` |
 | TextWidget | `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `wrap` |
 | ImageWidget | `image0`, `mode`, `"src alpha"`, `stretch`, `"flip u"`, `"flip v"` |
 | ButtonWidget | `text`, `style`, `switch toggle` |
@@ -497,43 +497,43 @@ This pattern (used by Colorful UI, MyMod, and jinýs) means changing the celý U
 
 ## Osvědčené postupy
 
-1. **Use imageset references** místo direct file paths where možný -- imagesets are batched more efficiently by engine.
+1. **Používejte odkazy na imagesety** místo přímých cest k souborům, kde je to možné -- imagesety jsou enginem dávkovány efektivněji.
 
-2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at jakýkoli scale.
+2. **Používejte SDF písma** (`sdf_MetronBook24`) pro text, který potřebuje vypadat ostře při jakémkoli měřítku.
 
-3. **Use `"exact text" 1`** for UI text at specifický pixel sizes; use proportional text for HUD elements that should scale.
+3. **Používejte `"exact text" 1`** pro UI text ve specifických pixelových velikostech; pro HUD prvky, které by se měly škálovat, používejte proporcionální text.
 
-4. **Centralize colors** in a theme class spíše než hardcoding ARGB values throughout your code.
+4. **Centralizujte barvy** ve třídě motivu místo hardcodování ARGB hodnot v celém vašem kódu.
 
-5. **Nastavte `"src alpha" 1`** on image widgets to get proper transparency.
+5. **Nastavte `"src alpha" 1`** na obrázkových widgetech pro správnou průhlednost.
 
-6. **Register vlastní imagesets** in `config.cpp` so they are dostupný globálníly without manual loading.
+6. **Registrujte vlastní imagesety** v `config.cpp`, aby byly globálně dostupné bez ručního načítání.
 
-7. **Udržujte sprite atlases reasonably sized** -- 512x512 or 1024x1024 is typical. Larger textures waste memory if většina of the space is prázdný.
+7. **Udržujte sprite atlasy v rozumné velikosti** -- 512x512 nebo 1024x1024 je typické. Větší textury plýtvají pamětí, pokud je většina prostoru prázdná.
 
 ---
 
 ## Další kroky
 
-- [3.8 Dialogs & Modals](08-dialogs-modals.md) -- Popup windows, confirmation prompts, and overlay panels
-- [3.1 Widget Types](01-widget-types.md) -- Review the plný widget catalog
-- [3.6 Event Handling](06-event-handling.md) -- Make your styled widgets interactive
+- [3.8 Dialogy a modální okna](08-dialogs-modals.md) -- Vyskakovací okna, potvrzovací výzvy a překryvné panely
+- [3.1 Typy widgetů](01-widget-types.md) -- Přehled kompletního katalogu widgetů
+- [3.6 Zpracování událostí](06-event-handling.md) -- Udělejte své stylizované widgety interaktivními
 
 ---
 
-## Teorie vs praxe
+## Teorie vs. praxe
 
-| Concept | Theory | Reality |
+| Koncept | Teorie | Realita |
 |---------|--------|---------|
-| SDF fonts scale to jakýkoli size | `sdf_MetronBook24` is crisp at all sizes | True for sizes výše ~10px. Below that, SDF fonts can appear blurry compared to bitmap fonts at their native size |
-| `"exact text" 1` gives pixel-perfect sizing | Font renders at the exact pixel size specified | DayZ applies interní scaling, so `"exact text size" 16` may render slightly odlišnýly across resolutions. Testujte on 1080p and 1440p |
-| Built-in styles cover all needs | `Default`, `blank`, `Colorable` are sufficient | Most professional mods define their own `.styles` files protože vestavěný styles have limited visual variety |
-| Imageset XML and native formats are equivalent | Oba define sprite regions | The native brace format is what engine processes fastest. XML format works but adds a parsing step; use native format for production |
-| `SetColor()` overrides layout color | Runtime color replaces the layout value | `SetColor()` tints the widget's existing visual. On styled widgets, the tint multiplies with the style's base color, producing unexpected results |
+| SDF písma se škálují na jakoukoli velikost | `sdf_MetronBook24` je ostré ve všech velikostech | Platí pro velikosti nad ~10px. Pod tím mohou SDF písma vypadat rozmazaněji ve srovnání s bitmapovými písmy v jejich nativní velikosti |
+| `"exact text" 1` dává pixelově přesné rozměry | Písmo se vykresluje v přesně zadané pixelové velikosti | DayZ aplikuje interní škálování, takže `"exact text size" 16` se může vykreslovat mírně odlišně napříč rozlišeními. Testujte na 1080p a 1440p |
+| Vestavěné styly pokrývají všechny potřeby | `Default`, `blank`, `Colorable` jsou dostačující | Většina profesionálních modů definuje vlastní `.styles` soubory, protože vestavěné styly mají omezenou vizuální rozmanitost |
+| XML a nativní formáty imagesetů jsou ekvivalentní | Oba definují oblasti sprite | Nativní formát se závorkami je to, co engine zpracovává nejrychleji. XML formát funguje, ale přidává krok parsování; pro produkci používejte nativní formát |
+| `SetColor()` přepíše barvu layoutu | Barva za běhu nahradí hodnotu layoutu | `SetColor()` tónuje existující vizuál widgetu. Na stylizovaných widgetech se tón násobí se základní barvou stylu, což produkuje neočekávané výsledky |
 
 ---
 
 ## Kompatibilita a dopad
 
-- **Více modů:** Style names are globální. Pokud dva mods register a `.styles` file defining the stejný style name, the last-loaded mod wins. Prefix vlastní style names with your mod identifier (e.g., `MyMod_PanelDark`).
-- **Výkon:** Imagesets are loaded once into GPU memory při startu. Adding large sprite atlases (2048x2048+) increases VRAM usage. Udržujte atlases at 512x512 or 1024x1024 and split across více imagesets if needed.
+- **Více modů:** Názvy stylů jsou globální. Pokud dva mody registrují soubor `.styles` definující stejný název stylu, poslední načtený mod vyhraje. Přidávejte prefix vlastních názvů stylů identifikátorem vašeho modu (např. `MyMod_PanelDark`).
+- **Výkon:** Imagesety se načítají jednou do GPU paměti při startu. Přidání velkých sprite atlasů (2048x2048+) zvyšuje využití VRAM. Udržujte atlasy na 512x512 nebo 1024x1024 a rozdělte je napříč více imagesety pokud je potřeba.

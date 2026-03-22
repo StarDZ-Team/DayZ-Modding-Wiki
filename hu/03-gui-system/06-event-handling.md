@@ -1,83 +1,87 @@
-# Chapter 3.6: Event Handling
+# 3.6. fejezet: Események kezelése
 
-[Home](../../README.md) | [<< Previous: Programmatic Widget Creation](05-programmatic-widgets.md) | **Event Handling** | [Next: Styles, Fonts & Images >>](07-styles-fonts.md)
+[Kezdőlap](../../README.md) | [<< Előző: Programozott widget létrehozás](05-programmatic-widgets.md) | **Események kezelése** | [Következő: Stílusok, betűtípusok és képek >>](07-styles-fonts.md)
+
+---
+
+A widgetek eseményeket generálnak, amikor a felhasználó interakcióba lép velük -- gombok kattintása, szerkesztőmezőkbe gépelés, az egér mozgatása, elemek húzása. Ez a fejezet bemutatja, hogyan fogadhatod és kezelheted ezeket az eseményeket.
 
 ---
 
 ## ScriptedWidgetEventHandler
 
-The `ScriptedWidgetEventHandler` class is the foundation of all widget event handling in DayZ. It provides override methods for every possible widget event.
+A `ScriptedWidgetEventHandler` osztály az összes widget eseménykezelés alapja a DayZ-ben. Felülírható metódusokat biztosít minden lehetséges widget eseményhez.
 
-To receive events from a widget, create a class that extends `ScriptedWidgetEventHandler`, override the event methods you care about, and attach the handler to the widget with `SetHandler()`.
+Ahhoz, hogy eseményeket fogadj egy widgettől, hozz létre egy osztályt, amely kiterjeszti a `ScriptedWidgetEventHandler`-t, írd felül a kívánt esemény metódusokat, és csatold a kezelőt a widgethez a `SetHandler()` segítségével.
 
-### Complete Event Method List
+### Teljes esemény metódus lista
 
 ```c
 class ScriptedWidgetEventHandler
 {
-    // Click events
+    // Kattintás események
     bool OnClick(Widget w, int x, int y, int button);
     bool OnDoubleClick(Widget w, int x, int y, int button);
 
-    // Selection events
+    // Kiválasztás események
     bool OnSelect(Widget w, int x, int y);
     bool OnItemSelected(Widget w, int x, int y, int row, int column,
                          int oldRow, int oldColumn);
 
-    // Focus events
+    // Fókusz események
     bool OnFocus(Widget w, int x, int y);
     bool OnFocusLost(Widget w, int x, int y);
 
-    // Mouse events
+    // Egér események
     bool OnMouseEnter(Widget w, int x, int y);
     bool OnMouseLeave(Widget w, Widget enterW, int x, int y);
     bool OnMouseWheel(Widget w, int x, int y, int wheel);
     bool OnMouseButtonDown(Widget w, int x, int y, int button);
     bool OnMouseButtonUp(Widget w, int x, int y, int button);
 
-    // Keyboard events
+    // Billentyűzet események
     bool OnKeyDown(Widget w, int x, int y, int key);
     bool OnKeyUp(Widget w, int x, int y, int key);
     bool OnKeyPress(Widget w, int x, int y, int key);
 
-    // Change events (sliders, checkboxes, editboxes)
+    // Változás események (csúszkák, jelölőnégyzetek, szerkesztőmezők)
     bool OnChange(Widget w, int x, int y, bool finished);
 
-    // Drag and drop events
+    // Húzd és ejtsd események
     bool OnDrag(Widget w, int x, int y);
     bool OnDragging(Widget w, int x, int y, Widget receiver);
     bool OnDraggingOver(Widget w, int x, int y, Widget receiver);
     bool OnDrop(Widget w, int x, int y, Widget receiver);
     bool OnDropReceived(Widget w, int x, int y, Widget receiver);
 
-    // Controller (gamepad) events
+    // Kontroller (gamepad) események
     bool OnController(Widget w, int control, int value);
 
-    // Layout events
+    // Layout események
     bool OnResize(Widget w, int x, int y);
     bool OnChildAdd(Widget w, Widget child);
     bool OnChildRemove(Widget w, Widget child);
 
-    // Other
+    // Egyéb
     bool OnUpdate(Widget w);
     bool OnModalResult(Widget w, int x, int y, int code, int result);
 }
 ```
 
-### Return Value: Consumed vs. Pass-Through
+### Visszatérési érték: Felhasznált vs. átengedett
 
-Every event handler returns a `bool`:
+Minden eseménykezelő `bool` értéket ad vissza:
 
-- **`return true;`** -- The event is **consumed**. No other handler will receive it. The event stops propagating up the widget hierarchy.
-- **`return false;`** -- The event is **passed through** to the parent widget's handler (if any).
+- **`return true;`** -- Az esemény **felhasznált**. Más kezelő nem fogja megkapni. Az esemény terjedése megáll a widget hierarchiában.
+- **`return false;`** -- Az esemény **átengedett** a szülő widget kezelőjéhez (ha van).
 
-This is critical for building layered UIs. For example, a button click handler should return `true` to prevent the click from also triggering a panel behind it.
+Ez kritikus a rétegzett UI-k építéséhez. Például egy gomb kattintás kezelőnek `true` értéket kell visszaadnia, hogy megakadályozza a kattintást a mögötte lévő panel aktiválásától.
 
 ---
 
-## Registering Handlers with SetHandler()
+## Kezelők regisztrálása a SetHandler() segítségével
 
-The simplest way to handle events is to call `SetHandler()` on a widget:
+Az események kezelésének legegyszerűbb módja a `SetHandler()` hívása egy widgeten:
 
 ```c
 class MyPanel : ScriptedWidgetEventHandler
@@ -94,7 +98,7 @@ class MyPanel : ScriptedWidgetEventHandler
         m_SaveBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("SaveButton"));
         m_CancelBtn = ButtonWidget.Cast(m_Root.FindAnyWidget("CancelButton"));
 
-        // Register this class as the event handler for both buttons
+        // Ennek az osztálynak a regisztrálása eseménykezelőként mindkét gombhoz
         m_SaveBtn.SetHandler(this);
         m_CancelBtn.SetHandler(this);
     }
@@ -104,7 +108,7 @@ class MyPanel : ScriptedWidgetEventHandler
         if (w == m_SaveBtn)
         {
             Save();
-            return true;  // Consumed
+            return true;  // Felhasznált
         }
 
         if (w == m_CancelBtn)
@@ -113,16 +117,16 @@ class MyPanel : ScriptedWidgetEventHandler
             return true;
         }
 
-        return false;  // Not our widget, pass through
+        return false;  // Nem a mi widgetünk, átengedés
     }
 }
 ```
 
-A single handler instance can be registered on multiple widgets. Inside the event method, compare `w` (the widget that generated the event) against your cached references to determine which widget was interacted with.
+Egyetlen kezelő példány több widgetre is regisztrálható. Az esemény metóduson belül hasonlítsd össze a `w` értéket (az eseményt generáló widget) a gyorsítótárazott referenciáiddal, hogy meghatározd, melyik widgettel történt az interakció.
 
 ---
 
-## Common Esemenyek in Detail
+## Gyakori események részletesen
 
 ### OnClick
 
@@ -130,16 +134,16 @@ A single handler instance can be registered on multiple widgets. Inside the even
 bool OnClick(Widget w, int x, int y, int button)
 ```
 
-Fired when a `ButtonWidget` is clicked (mouse released over the widget).
+Akkor aktiválódik, amikor egy `ButtonWidget`-re kattintanak (az egeret a widget felett elengedik).
 
-- `w` -- The clicked widget
-- `x, y` -- Mouse cursor position (screen pixels)
-- `button` -- Mouse button index: `0` = left, `1` = right, `2` = middle
+- `w` -- A kattintott widget
+- `x, y` -- Egérkurzor pozíció (képernyő pixelek)
+- `button` -- Egérgomb index: `0` = bal, `1` = jobb, `2` = középső
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
 {
-    if (button != 0) return false;  // Only handle left click
+    if (button != 0) return false;  // Csak bal kattintás kezelése
 
     if (w == m_MyButton)
     {
@@ -156,10 +160,10 @@ override bool OnClick(Widget w, int x, int y, int button)
 bool OnChange(Widget w, int x, int y, bool finished)
 ```
 
-Fired by `SliderWidget`, `CheckBoxWidget`, `EditBoxWidget`, and other value-based widgets when their value changes.
+A `SliderWidget`, `CheckBoxWidget`, `EditBoxWidget` és más érték-alapú widgetek váltják ki, amikor az értékük változik.
 
-- `w` -- The widget whose value changed
-- `finished` -- For sliders: `true` when the user releases the slider handle. For edit boxes: `true` when Enter is pressed.
+- `w` -- A widget, amelynek az értéke megváltozott
+- `finished` -- Csúszkáknál: `true`, amikor a felhasználó elengedi a csúszka fogantyúját. Szerkesztőmezőknél: `true`, amikor az Enter billentyűt megnyomják.
 
 ```c
 override bool OnChange(Widget w, int x, int y, bool finished)
@@ -169,14 +173,14 @@ override bool OnChange(Widget w, int x, int y, bool finished)
         SliderWidget slider = SliderWidget.Cast(w);
         float value = slider.GetCurrent();
 
-        // Only apply when user finishes dragging
+        // Csak akkor alkalmazd, amikor a felhasználó befejezi a húzást
         if (finished)
         {
             ApplyVolume(value);
         }
         else
         {
-            // Preview while dragging
+            // Előnézet húzás közben
             PreviewVolume(value);
         }
         return true;
@@ -189,7 +193,7 @@ override bool OnChange(Widget w, int x, int y, bool finished)
 
         if (finished)
         {
-            // User pressed Enter
+            // A felhasználó megnyomta az Entert
             SubmitName(text);
         }
         return true;
@@ -214,16 +218,16 @@ bool OnMouseEnter(Widget w, int x, int y)
 bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 ```
 
-Fired when the mouse cursor enters or leaves a widget's bounds. The `enterW` parameter in `OnMouseLeave` is the widget the cursor moved to.
+Akkor aktiválódik, amikor az egérkurzor belép egy widget területére vagy elhagyja azt. Az `OnMouseLeave` metódus `enterW` paramétere az a widget, amelyre a kurzor átkerült.
 
-Common use: hover effects.
+Gyakori használat: hover effektek.
 
 ```c
 override bool OnMouseEnter(Widget w, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // Highlight
+        m_HoverPanel.SetColor(ARGB(255, 80, 130, 200));  // Kiemelés
         return true;
     }
     return false;
@@ -233,7 +237,7 @@ override bool OnMouseLeave(Widget w, Widget enterW, int x, int y)
 {
     if (w == m_HoverPanel)
     {
-        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // Default
+        m_HoverPanel.SetColor(ARGB(255, 50, 50, 50));  // Alapértelmezett
         return true;
     }
     return false;
@@ -247,29 +251,7 @@ bool OnFocus(Widget w, int x, int y)
 bool OnFocusLost(Widget w, int x, int y)
 ```
 
-Fired when a widget gains or loses keyboard focus. Important for edit boxes and other text input widgets.
-
-```c
-override bool OnFocus(Widget w, int x, int y)
-{
-    if (w == m_SearchBox)
-    {
-        m_SearchBox.SetColor(ARGB(255, 100, 160, 220));
-        return true;
-    }
-    return false;
-}
-
-override bool OnFocusLost(Widget w, int x, int y)
-{
-    if (w == m_SearchBox)
-    {
-        m_SearchBox.SetColor(ARGB(255, 60, 60, 60));
-        return true;
-    }
-    return false;
-}
-```
+Akkor aktiválódik, amikor egy widget megkapja vagy elveszíti a billentyűzet fókuszt. Fontos a szerkesztőmezőknél és más szövegbeviteli widgeteknél.
 
 ### OnMouseWheel
 
@@ -277,7 +259,7 @@ override bool OnFocusLost(Widget w, int x, int y)
 bool OnMouseWheel(Widget w, int x, int y, int wheel)
 ```
 
-Fired when the mouse wheel scrolls over a widget. `wheel` is positive for scroll up, negative for scroll down.
+Akkor aktiválódik, amikor az egérgörgőt görgetik egy widget felett. A `wheel` pozitív felfelé görgetéskor, negatív lefelé görgetéskor.
 
 ### OnKeyDown / OnKeyUp / OnKeyPress
 
@@ -287,7 +269,7 @@ bool OnKeyUp(Widget w, int x, int y, int key)
 bool OnKeyPress(Widget w, int x, int y, int key)
 ```
 
-Keyboard events. The `key` parameter corresponds to `KeyCode` constants (e.g., `KeyCode.KC_ESCAPE`, `KeyCode.KC_RETURN`).
+Billentyűzet események. A `key` paraméter a `KeyCode` konstansoknak felel meg (pl. `KeyCode.KC_ESCAPE`, `KeyCode.KC_RETURN`).
 
 ### OnDrag / OnDrop / OnDropReceived
 
@@ -297,11 +279,11 @@ bool OnDrop(Widget w, int x, int y, Widget receiver)
 bool OnDropReceived(Widget w, int x, int y, Widget receiver)
 ```
 
-Drag and drop events. The widget must have `draggable 1` in its layout (or `WidgetFlags.DRAGGABLE` set in code).
+Húzd és ejtsd események. A widgetnek `draggable 1` beállítással kell rendelkeznie a layoutjában (vagy `WidgetFlags.DRAGGABLE` kódban beállítva).
 
-- `OnDrag` -- User started dragging widget `w`
-- `OnDrop` -- Widget `w` was dropped; `receiver` is the widget underneath
-- `OnDropReceived` -- Widget `w` received a drop; `receiver` is the dropped widget
+- `OnDrag` -- A felhasználó elkezdte húzni a `w` widgetet
+- `OnDrop` -- A `w` widget el lett ejtve; a `receiver` az alatta lévő widget
+- `OnDropReceived` -- A `w` widget fogadott egy ejtést; a `receiver` az ejtett widget
 
 ### OnItemSelected
 
@@ -310,74 +292,44 @@ bool OnItemSelected(Widget w, int x, int y, int row, int column,
                      int oldRow, int oldColumn)
 ```
 
-Fired by `TextListboxWidget` when a row is selected.
+A `TextListboxWidget` váltja ki, amikor egy sort kiválasztanak.
 
 ---
 
-## Vanilla WidgetEventHandler (Callback Registration)
+## Vanilla WidgetEventHandler (visszahívás regisztráció)
 
-DayZ's vanilla code uses an alternative pattern: `WidgetEventHandler`, a singleton that routes events to named callback functions. This is commonly used in vanilla menus.
+A DayZ vanilla kódja egy alternatív mintát használ: a `WidgetEventHandler`-t, egy singletont, amely nevezett visszahívási függvényekhez irányítja az eseményeket. Ez gyakran használatos a vanilla menükben.
 
 ```c
 WidgetEventHandler handler = WidgetEventHandler.GetInstance();
 
-// Register event callbacks by function name
+// Esemény visszahívások regisztrálása függvénynév alapján
 handler.RegisterOnClick(myButton, this, "OnMyButtonClick");
 handler.RegisterOnMouseEnter(myWidget, this, "OnHoverStart");
 handler.RegisterOnMouseLeave(myWidget, this, "OnHoverEnd");
 handler.RegisterOnDoubleClick(myWidget, this, "OnDoubleClick");
-handler.RegisterOnMouseButtonDown(myWidget, this, "OnMouseDown");
-handler.RegisterOnMouseButtonUp(myWidget, this, "OnMouseUp");
-handler.RegisterOnMouseWheel(myWidget, this, "OnWheel");
-handler.RegisterOnFocus(myWidget, this, "OnFocusGained");
-handler.RegisterOnFocusLost(myWidget, this, "OnFocusLost");
-handler.RegisterOnDrag(myWidget, this, "OnDragStart");
-handler.RegisterOnDrop(myWidget, this, "OnDropped");
-handler.RegisterOnDropReceived(myWidget, this, "OnDropReceived");
-handler.RegisterOnDraggingOver(myWidget, this, "OnDragOver");
-handler.RegisterOnChildAdd(myWidget, this, "OnChildAdded");
-handler.RegisterOnChildRemove(myWidget, this, "OnChildRemoved");
 
-// Unregister all callbacks for a widget
+// Összes visszahívás regisztrációjának törlése egy widgethez
 handler.UnregisterWidget(myWidget);
-```
-
-The callback function signatures must match the event type:
-
-```c
-void OnMyButtonClick(Widget w, int x, int y, int button)
-{
-    // Handle click
-}
-
-void OnHoverStart(Widget w, int x, int y)
-{
-    // Handle mouse enter
-}
-
-void OnHoverEnd(Widget w, Widget enterW, int x, int y)
-{
-    // Handle mouse leave
-}
 ```
 
 ### SetHandler() vs. WidgetEventHandler
 
 | Szempont | SetHandler() | WidgetEventHandler |
 |---|---|---|
-| Minta | Override virtual methods | Register named callbacks |
-| Handler per widget | One handler per widget | Multiple callbacks per event |
-| Used by | DabsFramework, Expansion, custom mods | Vanilla DayZ menus |
-| Flexibility | Must handle all events in one class | Can register different targets for different events |
-| Cleanup | Implicit when handler is destroyed | Must call `UnregisterWidget()` |
+| Minta | Virtuális metódusok felülírása | Nevezett visszahívások regisztrálása |
+| Kezelő widgetenként | Egy kezelő widgetenként | Több visszahívás eseményenként |
+| Használja | DabsFramework, Expansion, egyéni modok | Vanilla DayZ menük |
+| Rugalmasság | Minden eseményt egy osztályban kell kezelni | Különböző célpontok regisztrálhatók különböző eseményekhez |
+| Takarítás | Implicit a kezelő megsemmisítésekor | `UnregisterWidget()` hívása szükséges |
 
-For new mods, `SetHandler()` with `ScriptedWidgetEventHandler` is the recommended approach.
+Új modokhoz a `SetHandler()` a `ScriptedWidgetEventHandler`-rel az ajánlott megközelítés.
 
 ---
 
-## Complete Example: Interactive Button Panel
+## Teljes példa: Interaktív gomb panel
 
-A panel with three buttons that change color on hover and perform actions on click:
+Egy panel három gombbal, amelyek hover-kor színt váltanak és kattintásra műveletet hajtanak végre:
 
 ```c
 class InteractivePanel : ScriptedWidgetEventHandler
@@ -402,7 +354,7 @@ class InteractivePanel : ScriptedWidgetEventHandler
         m_BtnReset  = ButtonWidget.Cast(m_Root.FindAnyWidget("BtnReset"));
         m_StatusText = TextWidget.Cast(m_Root.FindAnyWidget("StatusText"));
 
-        // Register this handler on all interactive widgets
+        // Kezelő regisztrálása az összes interaktív widgetre
         m_BtnStart.SetHandler(this);
         m_BtnStop.SetHandler(this);
         m_BtnReset.SetHandler(this);
@@ -471,21 +423,21 @@ class InteractivePanel : ScriptedWidgetEventHandler
 
 ---
 
-## Esemenyek kezelese Best Practices
+## Eseménykezelési bevált gyakorlatok
 
-1. **Always return `true` when you handle an event** -- Otherwise the event propagates to parent widgets and may trigger unintended behavior.
+1. **Mindig adj vissza `true`-t, amikor kezelsz egy eseményt** -- Ellenkező esetben az esemény továbbterjed a szülő widgetekhez és nem kívánt viselkedést válthat ki.
 
-2. **Return `false` for events you do not handle** -- This allows parent widgets to process the event.
+2. **Adj vissza `false`-t az általad nem kezelt eseményekre** -- Ez lehetővé teszi a szülő widgetek számára az esemény feldolgozását.
 
-3. **Cache widget references** -- Do not call `FindAnyWidget()` inside event handlers. Look up widgets once in the constructor and store references.
+3. **Gyorsítótárazd a widget referenciákat** -- Ne hívj `FindAnyWidget()`-et az eseménykezelőkben. Keresd ki a widgeteket egyszer a konstruktorban és tárold a referenciákat.
 
-4. **Null-check widgets in events** -- The widget `w` is usually valid, but defensive coding prevents crashes.
+4. **Null-ellenőrizd a widgeteket az eseményekben** -- A `w` widget általában érvényes, de a védelmi kódolás megakadályozza az összeomlásokat.
 
-5. **Clean up handlers** -- When destroying a panel, unlink the root widget. If using `WidgetEventHandler`, call `UnregisterWidget()`.
+5. **Takaríts kezelőket** -- Egy panel megsemmisítésekor szüntesd meg a gyökér widget csatolását. Ha `WidgetEventHandler`-t használsz, hívd az `UnregisterWidget()` metódust.
 
-6. **Use `finished` parameter wisely** -- For sliders, only apply expensive operations when `finished` is `true` (user released the handle). Use non-finished events for previewing.
+6. **Használd bölcsen a `finished` paramétert** -- Csúszkáknál csak akkor alkalmazz költséges műveleteket, amikor a `finished` értéke `true` (a felhasználó elengedte a fogantyút). Használd a nem befejezett eseményeket előnézethez.
 
-7. **Defer heavy work** -- If an event handler needs to do expensive computation, use `CallLater` to defer it:
+7. **Halaszd el a nehéz munkát** -- Ha egy eseménykezelőnek költséges számítást kell végeznie, használd a `CallLater` hívást az elhalasztáshoz:
 
 ```c
 override bool OnClick(Widget w, int x, int y, int button)
@@ -501,7 +453,7 @@ override bool OnClick(Widget w, int x, int y, int button)
 
 ---
 
-## Kovetkezo lepesek
+## Következő lépések
 
-- [3.7 Stilusok, betutipusok es kepek](07-styles-fonts.md) -- Visual styling with styles, fonts, and imageset references
-- [3.5 Programozott widget letrehozas](05-programmatic-widgets.md) -- Creating widgets that generate events
+- [3.7 Stílusok, betűtípusok és képek](07-styles-fonts.md) -- Vizuális stílusok stílusokkal, betűtípusokkal és imageset referenciákkal
+- [3.5 Programozott widget létrehozás](05-programmatic-widgets.md) -- Eseményeket generáló widgetek létrehozása
