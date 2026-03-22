@@ -1,34 +1,36 @@
-# Chapter 3.8: Dialogs & Modals
+# Kapitola 3.8: Dialogy a modální okna
 
-[Home](../../README.md) | [<< Previous: Styles, Fonts & Images](07-styles-fonts.md) | **Dialogs & Modals** | [Next: Real Mod UI Patterns >>](09-real-mod-patterns.md)
-
----
+[Domů](../../README.md) | [<< Předchozí: Styly, fonty a obrázky](07-styles-fonts.md) | **Dialogy a modální okna** | [Další: Vzory UI ve skutečných modech >>](09-real-mod-patterns.md)
 
 ---
 
-## Modal vs. Modeless
-
-There are two fundamental types of dialog:
-
-- **Modal** -- Blocks all interaction with content behind the dialog. The user must respond (confirm, cancel, close) before doing anything else. Priklads: quit confirmation, delete warning, rename prompt.
-- **Modeless** -- Allows the user to interact with content behind the dialog while it remains open. Priklads: info panels, settings windows, tool palettes.
-
-In DayZ, the distinction is controlled by whether you lock game input when the dialog opens. A modal dialog calls `ZmenaGameFocus(1)` and shows the cursor; a modeless dialog may skip this or use a toggle approach.
+Dialogy jsou dočasná překryvná okna, která vyžadují interakci uživatele -- potvrzovací výzvy, upozornění, vstupní formuláře a panely nastavení. Tato kapitola pokrývá vestavěný systém dialogů, ruční vzory dialogů, strukturu layoutu, správu fokusu a časté chyby.
 
 ---
 
-## UIScriptedMenu -- The Built-in System
+## Modální vs. nemodální
 
-`UIScriptedMenu` is the engine-level base class for all menu screens in DayZ. It integrates with the `UIManager` menu stack, handles input locking automatically, and provides lifecycle hooks. Vanilla DayZ uses it for the in-game menu, logout dialog, respawn dialog, options menu, and many others.
+Existují dva základní typy dialogů:
 
-### Hierarchie trid
+- **Modální** -- Blokuje veškerou interakci s obsahem za dialogem. Uživatel musí odpovědět (potvrdit, zrušit, zavřít), než může dělat cokoliv jiného. Příklady: potvrzení ukončení, varování při mazání, výzva k přejmenování.
+- **Nemodální** -- Umožňuje uživateli interagovat s obsahem za dialogem, zatímco dialog zůstává otevřený. Příklady: informační panely, okna nastavení, palety nástrojů.
+
+V DayZ je rozlišení řízeno tím, zda při otevření dialogu uzamknete herní vstup. Modální dialog volá `ChangeGameFocus(1)` a zobrazí kurzor; nemodální dialog může toto přeskočit nebo použít přepínací přístup.
+
+---
+
+## UIScriptedMenu -- Vestavěný systém
+
+`UIScriptedMenu` je základní třída na úrovni enginu pro všechny obrazovky menu v DayZ. Integruje se se zásobníkem menu `UIManager`, automaticky zpracovává uzamčení vstupu a poskytuje háčky životního cyklu. Vanilla DayZ ji používá pro herní menu, dialog odhlášení, dialog respawnu, menu nastavení a mnoho dalších.
+
+### Hierarchie tříd
 
 ```
-UIMenuPanel          (base: menu stack, Close(), submenu management)
-  UIScriptedMenu     (scripted menus: Init(), OnShow(), OnHide(), Update())
+UIMenuPanel          (základ: zásobník menu, Close(), správa podmenu)
+  UIScriptedMenu     (skriptovaná menu: Init(), OnShow(), OnHide(), Update())
 ```
 
-### Minimal UIScriptedMenu Dialog
+### Minimální dialog UIScriptedMenu
 
 ```c
 class MyDialog extends UIScriptedMenu
@@ -55,7 +57,7 @@ class MyDialog extends UIScriptedMenu
     override void OnShow()
     {
         super.OnShow();
-        // super.OnShow() calls LockControls() which handles:
+        // super.OnShow() volá LockControls(), který zajistí:
         //   GetGame().GetInput().ChangeGameFocus(1);
         //   GetGame().GetUIManager().ShowUICursor(true);
     }
@@ -63,7 +65,7 @@ class MyDialog extends UIScriptedMenu
     override void OnHide()
     {
         super.OnHide();
-        // super.OnHide() calls UnlockControls() which handles:
+        // super.OnHide() volá UnlockControls(), který zajistí:
         //   GetGame().GetInput().ChangeGameFocus(-1);
         //   GetGame().GetUIManager().ShowUICursor(false);
     }
@@ -74,7 +76,7 @@ class MyDialog extends UIScriptedMenu
 
         if (w == m_BtnConfirm)
         {
-            // Do action
+            // Provést akci
             Close();
             return true;
         }
@@ -92,7 +94,7 @@ class MyDialog extends UIScriptedMenu
     {
         super.Update(timeslice);
 
-        // ESC to close
+        // ESC pro zavření
         if (GetUApi().GetInputByID(UAUIBack).LocalPress())
         {
             Close();
@@ -101,38 +103,38 @@ class MyDialog extends UIScriptedMenu
 }
 ```
 
-### Opening and Closing
+### Otevírání a zavírání
 
 ```c
-// Opening -- create the menu and push it onto the UIManager stack
+// Otevření -- vytvoří menu a vloží ho na zásobník UIManager
 MyDialog dialog = new MyDialog();
 GetGame().GetUIManager().ShowScriptedMenu(dialog, null);
 
-// Closing from outside
+// Zavření zvenčí
 GetGame().GetUIManager().HideScriptedMenu(dialog);
 
-// Closing from inside the dialog class
+// Zavření zevnitř třídy dialogu
 Close();
 ```
 
-`ShowScriptedMenu()` pushes the menu onto the engine menu stack, triggers `Init()`, then `OnShow()`. `Close()` triggers `OnHide()`, pops it from the stack, and destroys the widget tree.
+`ShowScriptedMenu()` vloží menu na zásobník menu enginu, vyvolá `Init()` a poté `OnShow()`. `Close()` vyvolá `OnHide()`, odebere menu ze zásobníku a zničí strom widgetů.
 
-### Key Lifecycle Metodas
+### Klíčové metody životního cyklu
 
-| Metoda | Kdy se vola | Typicke pouziti |
+| Metoda | Kdy se volá | Typické použití |
 |--------|------------|-------------|
-| `Init()` | Once, when menu is created | Create widgets, cache references |
-| `OnShow()` | After menu becomes visible | Lock input, start timers |
-| `OnHide()` | After menu is hidden | Unlock input, cancel timers |
-| `Update(float timeslice)` | Every frame while visible | Poll input (ESC key), animations |
-| `Cleanup()` | Before destruction | Release resources |
+| `Init()` | Jednou, při vytvoření menu | Vytvoření widgetů, uložení referencí |
+| `OnShow()` | Po zviditelnění menu | Uzamčení vstupu, spuštění časovačů |
+| `OnHide()` | Po skrytí menu | Odemčení vstupu, zrušení časovačů |
+| `Update(float timeslice)` | Každý snímek, dokud je viditelné | Dotazování vstupu (klávesa ESC), animace |
+| `Cleanup()` | Před zničením | Uvolnění prostředků |
 
 ### LockControls / UnlockControls
 
-`UIScriptedMenu` provides built-in methods that `OnShow()` and `OnHide()` call automatically:
+`UIScriptedMenu` poskytuje vestavěné metody, které `OnShow()` a `OnHide()` volají automaticky:
 
 ```c
-// Inside UIScriptedMenu (engine code, simplified):
+// Uvnitř UIScriptedMenu (kód enginu, zjednodušený):
 void LockControls()
 {
     g_Game.GetInput().ChangeGameFocus(1, INPUT_DEVICE_MOUSE);
@@ -146,38 +148,38 @@ void UnlockControls()
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_MOUSE);
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_KEYBOARD);
     g_Game.GetInput().ChangeGameFocus(-1, INPUT_DEVICE_GAMEPAD);
-    // Cursor visibility depends on whether a parent menu exists
+    // Viditelnost kurzoru závisí na tom, zda existuje nadřazené menu
 }
 ```
 
-Because `UIScriptedMenu` handles focus management automatically in `OnShow()`/`OnHide()`, you rarely need to call `ZmenaGameFocus()` yourself when using this base class. Simply call `super.OnShow()` and `super.OnHide()`.
+Protože `UIScriptedMenu` zpracovává správu fokusu automaticky v `OnShow()`/`OnHide()`, zřídka potřebujete volat `ChangeGameFocus()` sami, když používáte tuto základní třídu. Jednoduše volejte `super.OnShow()` a `super.OnHide()`.
 
 ---
 
-## Built-in ShowDialog (Native Zprava Boxes)
+## Vestavěný ShowDialog (Nativní dialogová okna)
 
-The engine provides a native dialog system for simple confirmation prompts. It renders a platform-appropriate dialog box without requiring any layout file.
+Engine poskytuje nativní systém dialogů pro jednoduché potvrzovací výzvy. Vykreslí dialogové okno přizpůsobené platformě bez nutnosti jakéhokoliv souboru layoutu.
 
-### Pouziti
+### Použití
 
 ```c
-// Show a Yes/No confirmation dialog
+// Zobrazení potvrzovacího dialogu Ano/Ne
 const int MY_DIALOG_ID = 500;
 
 g_Game.GetUIManager().ShowDialog(
-    "Confirm Action",                  // caption
+    "Confirm Action",                  // titulek
     "Are you sure you want to do this?", // text
-    MY_DIALOG_ID,                      // custom ID to identify this dialog
-    DBT_YESNO,                         // button configuration
-    DBB_YES,                           // default button
-    DMT_QUESTION,                      // icon type
-    this                               // handler (receives OnModalResult)
+    MY_DIALOG_ID,                      // vlastní ID pro identifikaci dialogu
+    DBT_YESNO,                         // konfigurace tlačítek
+    DBB_YES,                           // výchozí tlačítko
+    DMT_QUESTION,                      // typ ikony
+    this                               // handler (přijímá OnModalResult)
 );
 ```
 
-### Receiving the Result
+### Přijetí výsledku
 
-The handler (the `UIScriptedMenu` passed as the last argument) receives the result through `OnModalResult`:
+Handler (instance `UIScriptedMenu` předaná jako poslední argument) přijímá výsledek přes `OnModalResult`:
 
 ```c
 override bool OnModalResult(Widget w, int x, int y, int code, int result)
@@ -188,7 +190,7 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
         {
             PerformAction();
         }
-        // DBB_NO means user declined -- do nothing
+        // DBB_NO znamená, že uživatel odmítl -- nic neděláme
         return true;
     }
 
@@ -198,45 +200,45 @@ override bool OnModalResult(Widget w, int x, int y, int code, int result)
 
 ### Konstanty
 
-**Button configurations** (`DBT_` -- DialogBoxTyp):
+**Konfigurace tlačítek** (`DBT_` -- DialogBoxType):
 
-| Konstanta | Buttons Shown |
+| Konstanta | Zobrazená tlačítka |
 |----------|---------------|
 | `DBT_OK` | OK |
 | `DBT_YESNO` | Yes, No |
 | `DBT_YESNOCANCEL` | Yes, No, Cancel |
 
-**Button identifiers** (`DBB_` -- DialogBoxButton):
+**Identifikátory tlačítek** (`DBB_` -- DialogBoxButton):
 
-| Konstanta | Hodnota | Vyznam |
+| Konstanta | Hodnota | Význam |
 |----------|-------|---------|
-| `DBB_NONE` | 0 | No default |
-| `DBB_OK` | 1 | OK button |
-| `DBB_YES` | 2 | Yes button |
-| `DBB_NO` | 3 | No button |
-| `DBB_CANCEL` | 4 | Cancel button |
+| `DBB_NONE` | 0 | Bez výchozího |
+| `DBB_OK` | 1 | Tlačítko OK |
+| `DBB_YES` | 2 | Tlačítko Yes |
+| `DBB_NO` | 3 | Tlačítko No |
+| `DBB_CANCEL` | 4 | Tlačítko Cancel |
 
-**Zprava types** (`DMT_` -- DialogZpravaTyp):
+**Typy zpráv** (`DMT_` -- DialogMessageType):
 
 | Konstanta | Ikona |
 |----------|------|
-| `DMT_NONE` | No icon |
-| `DMT_INFO` | Info |
-| `DMT_WARNING` | Warning |
-| `DMT_QUESTION` | Question mark |
-| `DMT_EXCLAMATION` | Exclamation |
+| `DMT_NONE` | Bez ikony |
+| `DMT_INFO` | Informace |
+| `DMT_WARNING` | Varování |
+| `DMT_QUESTION` | Otazník |
+| `DMT_EXCLAMATION` | Vykřičník |
 
-### Kdy pouzit ShowDialog
+### Kdy použít ShowDialog
 
-Use `ShowDialog()` for simple alerts and confirmations that do not need custom styling. It is reliable and handles focus/cursor automatically. For branded or complex dialogs (custom layout, input fields, multiple options), build your own dialog class.
+Použijte `ShowDialog()` pro jednoduché výstrahy a potvrzení, které nepotřebují vlastní stylování. Je spolehlivý a automaticky zpracovává fokus/kurzor. Pro brandované nebo složité dialogy (vlastní layout, vstupní pole, více možností) si vytvořte vlastní třídu dialogu.
 
 ---
 
-## Manual Dialog Vzor (Without UIScriptedMenu)
+## Ruční vzor dialogu (bez UIScriptedMenu)
 
-When you need a dialog that is not part of the engine menu stack -- for example, a popup inside an existing panel -- extend `ScriptedWidgetEventHandler` instead of `UIScriptedMenu`. This gives you full control but requires manual focus and lifecycle management.
+Když potřebujete dialog, který není součástí zásobníku menu enginu -- například vyskakovací okno uvnitř existujícího panelu -- rozšiřte `ScriptedWidgetEventHandler` místo `UIScriptedMenu`. To vám dává plnou kontrolu, ale vyžaduje ruční správu fokusu a životního cyklu.
 
-### Basic Vzor
+### Základní vzor
 
 ```c
 class SimplePopup : ScriptedWidgetEventHandler
@@ -258,7 +260,7 @@ class SimplePopup : ScriptedWidgetEventHandler
 
         m_Message.SetText(message);
 
-        // Lock game input so player cannot move/shoot
+        // Uzamknout herní vstup, aby se hráč nemohl pohybovat/střílet
         GetGame().GetInput().ChangeGameFocus(1);
         GetGame().GetUIManager().ShowUICursor(true);
     }
@@ -271,7 +273,7 @@ class SimplePopup : ScriptedWidgetEventHandler
             m_Root = null;
         }
 
-        // Restore game input -- MUST match the +1 from Show()
+        // Obnovit herní vstup -- MUSÍ odpovídat +1 z Show()
         GetGame().GetInput().ChangeGameFocus(-1);
         GetGame().GetUIManager().ShowUICursor(false);
     }
@@ -301,14 +303,14 @@ class SimplePopup : ScriptedWidgetEventHandler
 
     protected void OnConfirm()
     {
-        // Override in subclasses or set a callback
+        // Přepište v podtřídách nebo nastavte callback
     }
 }
 ```
 
-### VPP-Style Popup (OnWidgetScriptInit Vzor)
+### Vyskakovací okno ve stylu VPP (vzor OnWidgetScriptInit)
 
-VPP Admin Tools and other mods use `OnWidgetScriptInit()` to initialize popups. The widget is created by a parent, and the script class is attached via `scriptclass` in the layout file:
+VPP Admin Tools a další mody používají `OnWidgetScriptInit()` k inicializaci vyskakovacích oken. Widget je vytvořen rodičem a skriptová třída je připojena přes atribut `scriptclass` v souboru layoutu:
 
 ```c
 class MyPopup : ScriptedWidgetEventHandler
@@ -327,7 +329,7 @@ class MyPopup : ScriptedWidgetEventHandler
         m_BtnSave   = ButtonWidget.Cast(m_Root.FindAnyWidget("BtnSave"));
         m_NameInput = EditBoxWidget.Cast(m_Root.FindAnyWidget("NameInput"));
 
-        // Push dialog above other widgets
+        // Posunout dialog nad ostatní widgety
         m_Root.SetSort(1024, true);
     }
 
@@ -361,35 +363,35 @@ class MyPopup : ScriptedWidgetEventHandler
 
     protected void SaveName(string name)
     {
-        // Process the input
+        // Zpracovat vstup
     }
 }
 ```
 
-The parent creates the popup by creating the layout widget as a child:
+Rodič vytvoří vyskakovací okno vytvořením widgetu layoutu jako potomka:
 
 ```c
 Widget popup = GetGame().GetWorkspace().CreateWidgets(
     "MyMod/GUI/layouts/popup.layout", parentWidget);
 ```
 
-The engine automatically calls `OnWidgetScriptInit()` on the script class specified in the layout's `scriptclass` attribute.
+Engine automaticky zavolá `OnWidgetScriptInit()` na skriptové třídě specifikované v atributu `scriptclass` layoutu.
 
 ---
 
-## Dialog Layout Structure
+## Struktura layoutu dialogu
 
-A dialog layout typically has three layers: a full-screen root for click interception, a semi-transparent overlay for dimming, and the centered dialog panel.
+Layout dialogu má typicky tři vrstvy: celoobrazovkový kořen pro zachycení kliknutí, poloprůhledné překrytí pro ztmavení a vycentrovaný panel dialogu.
 
-### Layout File Priklad
+### Příklad souboru layoutu
 
 ```
 FrameWidget "DialogRoot" {
-    size 1 1 0 0        // Full screen
+    size 1 1 0 0        // Celá obrazovka
     halign fill
     valign fill
 
-    // Semi-transparent background overlay
+    // Poloprůhledné překrytí pozadí
     ImageWidget "Overlay" {
         size 1 1 0 0
         halign fill
@@ -397,7 +399,7 @@ FrameWidget "DialogRoot" {
         color "0 0 0 180"
     }
 
-    // Centered dialog panel
+    // Vycentrovaný panel dialogu
     FrameWidget "DialogPanel" {
         halign center
         valign center
@@ -405,9 +407,9 @@ FrameWidget "DialogRoot" {
         vexactsize 1
         hexactpos  1
         vexactpos  1
-        size 0 0 500 300   // 500x300 pixel dialog
+        size 0 0 500 300   // Dialog 500x300 pixelů
 
-        // Title bar
+        // Záhlaví
         TextWidget "TitleText" {
             halign fill
             size 1 0 0 30
@@ -415,14 +417,14 @@ FrameWidget "DialogRoot" {
             font "gui/fonts/MetronBook24"
         }
 
-        // Content area
+        // Oblast obsahu
         MultilineTextWidget "ContentText" {
             position 0 0 0 35
             size 1 0 0 200
             halign fill
         }
 
-        // Button row at bottom
+        // Řádek tlačítek dole
         FrameWidget "ButtonRow" {
             valign bottom
             halign fill
@@ -444,20 +446,20 @@ FrameWidget "DialogRoot" {
 }
 ```
 
-### Key Layout Principles
+### Klíčové principy layoutu
 
-1. **Full-screen root** -- The outermost widget covers the entire screen so clicks outside the dialog are intercepted.
-2. **Semi-transparent overlay** -- An `ImageWidget` or panel with alpha (e.g., `color "0 0 0 180"`) dims the background, visually indicating a modal state.
-3. **Centered panel** -- Use `halign center` and `valign center` with exact pixel sizes for predictable dimensions.
-4. **Button alignment** -- Place buttons in a horizontal container at the bottom of the dialog panel.
+1. **Celoobrazovkový kořen** -- Nejvnějšnější widget pokrývá celou obrazovku, takže kliknutí mimo dialog jsou zachycena.
+2. **Poloprůhledné překrytí** -- `ImageWidget` nebo panel s průhledností (např. `color "0 0 0 180"`) ztmaví pozadí a vizuálně indikuje modální stav.
+3. **Vycentrovaný panel** -- Použijte `halign center` a `valign center` s přesnými pixelovými rozměry pro předvídatelné rozměry.
+4. **Zarovnání tlačítek** -- Umístěte tlačítka do horizontálního kontejneru ve spodní části panelu dialogu.
 
 ---
 
-## Confirmation Dialog Vzor
+## Vzor potvrzovacího dialogu
 
-A reusable confirmation dialog accepts a title, message, and callback. This is the most common dialog pattern in DayZ mods.
+Znovupoužitelný potvrzovací dialog přijímá titulek, zprávu a callback. Jedná se o nejběžnější vzor dialogu v modech DayZ.
 
-### Implementation
+### Implementace
 
 ```c
 class ConfirmDialog : ScriptedWidgetEventHandler
@@ -493,7 +495,7 @@ class ConfirmDialog : ScriptedWidgetEventHandler
         m_TitleText.SetText(title);
         m_ContentText.SetText(message);
 
-        // Ensure dialog renders above other UI
+        // Zajistit, aby se dialog vykresloval nad ostatním UI
         m_Root.SetSort(1024, true);
 
         GetGame().GetInput().ChangeGameFocus(1);
@@ -511,11 +513,11 @@ class ConfirmDialog : ScriptedWidgetEventHandler
         GetGame().GetInput().ChangeGameFocus(-1);
         GetGame().GetUIManager().ShowUICursor(false);
 
-        // Call the callback function on the target object
+        // Zavolat funkci callbacku na cílovém objektu
         GetGame().GameScript.CallFunction(
             m_CallbackTarget, m_CallbackFunc, null, confirmed);
 
-        // Clean up -- defer deletion to avoid issues
+        // Vyčistit -- odložit smazání, aby se předešlo problémům
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
             DestroyDialog, 0, false);
     }
@@ -544,10 +546,10 @@ class ConfirmDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### Pouziti
+### Použití
 
 ```c
-// In the calling class:
+// Ve volající třídě:
 void AskDeleteItem()
 {
     new ConfirmDialog(
@@ -567,13 +569,13 @@ void OnDeleteConfirmed(bool confirmed)
 }
 ```
 
-The callback uses `GameScript.CallFunction()` which invokes a function by name on the target object. This is the standard way DayZ mods implement dialog callbacks since Enforce Script does not support closures or delegates.
+Callback používá `GameScript.CallFunction()`, který vyvolá funkci podle názvu na cílovém objektu. Toto je standardní způsob, jakým mody DayZ implementují callbacky dialogů, protože Enforce Script nepodporuje uzávěry (closures) ani delegáty.
 
 ---
 
-## Input Dialog Vzor
+## Vzor vstupního dialogu
 
-An input dialog adds an `EditBoxWidget` for text entry with validation.
+Vstupní dialog přidává `EditBoxWidget` pro zadávání textu s validací.
 
 ```c
 class InputDialog : ScriptedWidgetEventHandler
@@ -641,7 +643,7 @@ class InputDialog : ScriptedWidgetEventHandler
             GetGame().GetInput().ChangeGameFocus(-1);
             GetGame().GetUIManager().ShowUICursor(false);
 
-            // Send result as Param2: OK status + text
+            // Odeslat výsledek jako Param2: stav OK + text
             GetGame().GameScript.CallFunctionParams(
                 m_CallbackTarget, m_CallbackFunc, null,
                 new Param2<bool, string>(true, text));
@@ -672,10 +674,10 @@ class InputDialog : ScriptedWidgetEventHandler
     {
         if (w == m_InputBox)
         {
-            // Hide error when user starts typing
+            // Skrýt chybu, když uživatel začne psát
             m_ErrorText.Show(false);
 
-            // Submit on Enter key
+            // Odeslat při stisknutí Enter
             if (finished)
             {
                 OnClick(m_BtnOk, 0, 0, 0);
@@ -695,88 +697,88 @@ class InputDialog : ScriptedWidgetEventHandler
 
 ---
 
-## Sprava fokusu
+## Správa fokusu
 
-Focus management is the most critical aspect of dialog implementation. DayZ uses a **reference-counted** focus system -- every `ZmenaGameFocus(1)` must be balanced by a `ZmenaGameFocus(-1)`.
+Správa fokusu je nejkritičtějším aspektem implementace dialogu. DayZ používá systém fokusu **založený na počítání referencí** -- každé `ChangeGameFocus(1)` musí být vyváženo odpovídajícím `ChangeGameFocus(-1)`.
 
 ### Jak to funguje
 
 ```c
-// Increment focus counter -- game input is suppressed while counter > 0
+// Inkrementovat počítadlo fokusu -- herní vstup je potlačen, dokud je počítadlo > 0
 GetGame().GetInput().ChangeGameFocus(1);
 
-// Show the mouse cursor
+// Zobrazit kurzor myši
 GetGame().GetUIManager().ShowUICursor(true);
 
-// ... dialog interaction ...
+// ... interakce s dialogem ...
 
-// Decrement focus counter -- game input resumes when counter reaches 0
+// Dekrementovat počítadlo fokusu -- herní vstup se obnoví, když počítadlo dosáhne 0
 GetGame().GetInput().ChangeGameFocus(-1);
 
-// Hide cursor (only if no other menus need it)
+// Skrýt kurzor (pouze pokud ho žádné jiné menu nepotřebuje)
 GetGame().GetUIManager().ShowUICursor(false);
 ```
 
 ### Pravidla
 
-1. **Every +1 must have a matching -1.** If you call `ZmenaGameFocus(1)` in `Show()`, you must call `ZmenaGameFocus(-1)` in `Hide()`, with no exceptions.
+1. **Každé +1 musí mít odpovídající -1.** Pokud zavoláte `ChangeGameFocus(1)` v `Show()`, musíte zavolat `ChangeGameFocus(-1)` v `Hide()`, bez výjimek.
 
-2. **Call -1 even on error paths.** If the dialog is destroyed unexpectedly (player dies, server disconnect), the destructor must still decrement. Put cleanup in the destructor as a safety net.
+2. **Volejte -1 i na chybových cestách.** Pokud je dialog neočekávaně zničen (hráč zemře, odpojení serveru), destruktor musí stále dekrementovat. Umístěte čištění do destruktoru jako pojistku.
 
-3. **UIScriptedMenu handles this automatically.** If you extend `UIScriptedMenu` and call `super.OnShow()` / `super.OnHide()`, focus is managed for you. Only manage it manually when using `ScriptedWidgetEventHandler`.
+3. **UIScriptedMenu to zpracovává automaticky.** Pokud rozšiřujete `UIScriptedMenu` a voláte `super.OnShow()` / `super.OnHide()`, fokus je spravován za vás. Spravujte ho ručně pouze při použití `ScriptedWidgetEventHandler`.
 
-4. **Per-device focus is optional.** The engine supports per-device focus locking (`INPUT_DEVICE_MOUSE`, `INPUT_DEVICE_KEYBOARD`, `INPUT_DEVICE_GAMEPAD`). For most mod dialogs, a single `ZmenaGameFocus(1)` (no device argument) locks all input.
+4. **Fokus po zařízeních je volitelný.** Engine podporuje uzamčení fokusu po zařízeních (`INPUT_DEVICE_MOUSE`, `INPUT_DEVICE_KEYBOARD`, `INPUT_DEVICE_GAMEPAD`). Pro většinu dialogů v modech jedno volání `ChangeGameFocus(1)` (bez argumentu zařízení) uzamkne veškerý vstup.
 
-5. **ResetGameFocus() is a nuclear option.** It forces the counter to zero. Use it only in top-level cleanup (e.g., when closing an entire admin tool), never inside individual dialog classes.
+5. **ResetGameFocus() je nukleární volba.** Vynutí nulové počítadlo. Použijte ho pouze při čištění nejvyšší úrovně (např. při zavírání celého admin nástroje), nikdy uvnitř jednotlivých tříd dialogů.
 
-### What Goes Wrong
+### Co se může pokazit
 
-| Chyba | Symptom |
+| Chyba | Příznak |
 |---------|---------|
-| Forgot `ZmenaGameFocus(-1)` on close | Player cannot move, shoot, or interact after dialog closes |
-| Called `-1` twice | Focus counter goes negative; next menu that opens will not properly lock input |
-| Forgot `ShowUICursor(false)` | Mouse cursor stays visible permanently |
-| Called `ShowUICursor(false)` when parent menu is still open | Cursor disappears while parent menu is still active |
+| Zapomenutí `ChangeGameFocus(-1)` při zavření | Hráč se nemůže pohybovat, střílet nebo interagovat po zavření dialogu |
+| Dvojité volání `-1` | Počítadlo fokusu přejde do záporu; další menu, které se otevře, nebude správně uzamykat vstup |
+| Zapomenutí `ShowUICursor(false)` | Kurzor myši zůstane trvale viditelný |
+| Volání `ShowUICursor(false)`, když je nadřazené menu stále otevřené | Kurzor zmizí, zatímco nadřazené menu je stále aktivní |
 
 ---
 
-## Z-Order and Layering
+## Z-pořadí a vrstvení
 
-When a dialog opens on top of existing UI, it must render above everything else. DayZ provides two mechanisms:
+Když se dialog otevře nad existujícím UI, musí se vykreslovat nad vším ostatním. DayZ poskytuje dva mechanismy:
 
-### Widget Sort Order
+### Pořadí řazení widgetů
 
 ```c
-// Push widget above all siblings (sort value 1024)
+// Posunout widget nad všechny sourozence (hodnota řazení 1024)
 m_Root.SetSort(1024, true);
 ```
 
-The `SetSort()` method sets the rendering priority. Higher values render on top. The second parameter (`true`) applies recursively to children. VPP Admin Tools use `SetSort(1024, true)` for all dialog boxes.
+Metoda `SetSort()` nastavuje prioritu vykreslování. Vyšší hodnoty se vykreslují nahoře. Druhý parametr (`true`) se aplikuje rekurzivně na potomky. VPP Admin Tools používá `SetSort(1024, true)` pro všechna dialogová okna.
 
-### Layout Priority (Static)
+### Priorita layoutu (statická)
 
-In layout files, you can set priority directly:
+V souborech layoutu můžete nastavit prioritu přímo:
 
 ```
 FrameWidget "DialogRoot" {
-    // Higher values render on top
-    // Normal UI: 0-100
-    // Overlay:   998
-    // Dialog:    999
+    // Vyšší hodnoty se vykreslují nahoře
+    // Normální UI: 0-100
+    // Překrytí:    998
+    // Dialog:      999
 }
 ```
 
-### Doporucene postupy
+### Doporučené postupy
 
-- **Overlay background**: Use a high sort value (e.g., 998) for the semi-transparent background.
-- **Dialog panel**: Use a higher sort value (e.g., 999 or 1024) for the dialog itself.
-- **Stacking dialogs**: If your system supports nested dialogs, increment the sort value for each new dialog layer.
+- **Překrytí pozadí**: Použijte vysokou hodnotu řazení (např. 998) pro poloprůhledné pozadí.
+- **Panel dialogu**: Použijte vyšší hodnotu řazení (např. 999 nebo 1024) pro samotný dialog.
+- **Skládání dialogů**: Pokud váš systém podporuje vnořené dialogy, zvyšujte hodnotu řazení pro každou novou vrstvu dialogu.
 
 ---
 
-## Bezne vzory
+## Běžné vzory
 
-### Toggle Panel (Open/Close with Same Key)
+### Přepínací panel (otevření/zavření stejnou klávesou)
 
 ```c
 class TogglePanel : ScriptedWidgetEventHandler
@@ -819,10 +821,10 @@ class TogglePanel : ScriptedWidgetEventHandler
 }
 ```
 
-### ESC to Close
+### ESC pro zavření
 
 ```c
-// Inside Update() of a UIScriptedMenu:
+// Uvnitř Update() v UIScriptedMenu:
 override void Update(float timeslice)
 {
     super.Update(timeslice);
@@ -833,8 +835,8 @@ override void Update(float timeslice)
     }
 }
 
-// Inside a ScriptedWidgetEventHandler (no Update loop):
-// You must poll from an external update source, or use OnKeyDown:
+// Uvnitř ScriptedWidgetEventHandler (nemá smyčku Update):
+// Musíte dotazovat z externího zdroje aktualizací, nebo použít OnKeyDown:
 override bool OnKeyDown(Widget w, int x, int y, int key)
 {
     if (key == KeyCode.KC_ESCAPE)
@@ -846,9 +848,9 @@ override bool OnKeyDown(Widget w, int x, int y, int key)
 }
 ```
 
-### Click Outside to Close
+### Kliknutí mimo pro zavření
 
-Make the full-screen overlay widget clickable. When clicked, close the dialog:
+Udělejte celoobrazovkový widget překrytí klikatelný. Při kliknutí zavřete dialog:
 
 ```c
 class OverlayDialog : ScriptedWidgetEventHandler
@@ -864,13 +866,13 @@ class OverlayDialog : ScriptedWidgetEventHandler
         m_Overlay = m_Root.FindAnyWidget("Overlay");
         m_Panel   = m_Root.FindAnyWidget("DialogPanel");
 
-        // Register handler on both overlay and panel widgets
+        // Zaregistrovat handler na widgety překrytí i panelu
         m_Root.SetHandler(this);
     }
 
     override bool OnClick(Widget w, int x, int y, int button)
     {
-        // If user clicked the overlay (not the panel), close
+        // Pokud uživatel klikl na překrytí (ne na panel), zavřít
         if (w == m_Overlay)
         {
             Hide();
@@ -882,12 +884,12 @@ class OverlayDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### Dialog Result Callbacks
+### Callbacky výsledků dialogu
 
-For dialogs that need to return complex results, use `GameScript.CallFunctionParams()` with `Param` objects:
+Pro dialogy, které potřebují vracet složité výsledky, použijte `GameScript.CallFunctionParams()` s objekty `Param`:
 
 ```c
-// Sending a result with multiple values
+// Odeslání výsledku s více hodnotami
 GetGame().GameScript.CallFunctionParams(
     m_CallbackTarget,
     m_CallbackFunc,
@@ -895,7 +897,7 @@ GetGame().GameScript.CallFunctionParams(
     new Param2<int, string>(RESULT_OK, inputText)
 );
 
-// Receiving in the caller
+// Přijetí ve volající třídě
 void OnDialogResult(int result, string text)
 {
     if (result == RESULT_OK)
@@ -905,13 +907,13 @@ void OnDialogResult(int result, string text)
 }
 ```
 
-This is the same pattern VPP Admin Tools uses for its `VPPDialogBox` callback system.
+Toto je stejný vzor, jaký VPP Admin Tools používá pro svůj systém callbacků `VPPDialogBox`.
 
 ---
 
-## UIScriptedWindow -- Floating Windows
+## UIScriptedWindow -- Plovoucí okna
 
-DayZ has a second built-in system: `UIScriptedWindow`, for floating windows that exist alongside a `UIScriptedMenu`. Unlike `UIScriptedMenu`, windows are tracked in a static map and their events are routed through the active menu.
+DayZ má druhý vestavěný systém: `UIScriptedWindow`, pro plovoucí okna, která existují vedle `UIScriptedMenu`. Na rozdíl od `UIScriptedMenu` jsou okna sledována ve statické mapě a jejich události jsou směrovány přes aktivní menu.
 
 ```c
 class MyWindow extends UIScriptedWindow
@@ -929,45 +931,45 @@ class MyWindow extends UIScriptedWindow
 
     override bool OnClick(Widget w, int x, int y, int button)
     {
-        // Handle clicks
+        // Zpracovat kliknutí
         return false;
     }
 }
 ```
 
-Windows are opened and closed through the `UIManager`:
+Okna se otevírají a zavírají přes `UIManager`:
 
 ```c
-// Open
+// Otevřít
 GetGame().GetUIManager().OpenWindow(MY_WINDOW_ID);
 
-// Close
+// Zavřít
 GetGame().GetUIManager().CloseWindow(MY_WINDOW_ID);
 
-// Check if open
+// Zkontrolovat, zda je otevřeno
 GetGame().GetUIManager().IsWindowOpened(MY_WINDOW_ID);
 ```
 
-In practice, most mod developers use `ScriptedWidgetEventHandler`-based popups rather than `UIScriptedWindow`, because the window system requires registering with the engine's switch-case in `MissionBase` and the events route through the active `UIScriptedMenu`. The manual pattern is simpler and more flexible.
+V praxi většina vývojářů modů používá vyskakovací okna založená na `ScriptedWidgetEventHandler` místo `UIScriptedWindow`, protože systém oken vyžaduje registraci přes switch-case v `MissionBase` a události jsou směrovány přes aktivní `UIScriptedMenu`. Ruční vzor je jednodušší a flexibilnější.
 
 ---
 
-## Caste chyby
+## Časté chyby
 
-### 1. Not Restoring Game Focus on Close
+### 1. Neobnovení herního fokusu při zavření
 
-**Problem:** Player cannot move, shoot, or interact after the dialog closes.
+**Problém:** Hráč se nemůže pohybovat, střílet nebo interagovat po zavření dialogu.
 
 ```c
-// WRONG -- no focus restoration
+// ŠPATNĚ -- žádné obnovení fokusu
 void CloseDialog()
 {
     m_Root.Unlink();
     m_Root = null;
-    // Focus counter is still incremented!
+    // Počítadlo fokusu je stále inkrementované!
 }
 
-// CORRECT -- always decrement
+// SPRÁVNĚ -- vždy dekrementovat
 void CloseDialog()
 {
     m_Root.Unlink();
@@ -977,18 +979,18 @@ void CloseDialog()
 }
 ```
 
-### 2. Not Unlinking Widgets on Close
+### 2. Neodpojení widgetů při zavření
 
-**Problem:** Widget tree stays in memory, events keep firing, memory leaks accumulate.
+**Problém:** Strom widgetů zůstává v paměti, události se stále vyvolávají, úniky paměti se hromadí.
 
 ```c
-// WRONG -- just hiding
+// ŠPATNĚ -- pouhé skrytí
 void Hide()
 {
-    m_Root.Show(false);  // Widget still exists and consumes memory
+    m_Root.Show(false);  // Widget stále existuje a spotřebovává paměť
 }
 
-// CORRECT -- unlink destroys the widget tree
+// SPRÁVNĚ -- Unlink zničí strom widgetů
 void Hide()
 {
     if (m_Root)
@@ -999,23 +1001,23 @@ void Hide()
 }
 ```
 
-If you need to show/hide the same dialog repeatedly, keeping the widget and using `Show(true/false)` is fine -- just ensure you `Unlink()` in the destructor.
+Pokud potřebujete opakovaně zobrazovat/skrývat stejný dialog, ponechání widgetu a použití `Show(true/false)` je v pořádku -- jen se ujistěte, že zavoláte `Unlink()` v destruktoru.
 
-### 3. Dialog Renders Behind Other UI
+### 3. Dialog se vykresluje za ostatním UI
 
-**Problem:** Dialog is invisible or partially hidden because other widgets have higher rendering priority.
+**Problém:** Dialog je neviditelný nebo částečně skrytý, protože jiné widgety mají vyšší prioritu vykreslování.
 
-**Oprava:** Use `SetSort()` to push the dialog above everything:
+**Řešení:** Použijte `SetSort()` k posunutí dialogu nad vše ostatní:
 
 ```c
 m_Root.SetSort(1024, true);
 ```
 
-### 4. Multiple Dialogs Stacking Focus Zmenas
+### 4. Více dialogů skládajících změny fokusu
 
-**Problem:** Opening dialog A (+1), then dialog B (+1), then closing B (-1) -- focus counter is still 1, so input is still locked even though the user sees no dialog.
+**Problém:** Otevření dialogu A (+1), poté dialogu B (+1), poté zavření B (-1) -- počítadlo fokusu je stále 1, takže vstup je stále uzamčen, i když uživatel nevidí žádný dialog.
 
-**Oprava:** Track whether each dialog instance has locked focus, and only decrement if it did:
+**Řešení:** Sledujte, zda každá instance dialogu uzamkla fokus, a dekrementujte pouze v takovém případě:
 
 ```c
 class SafeDialog : ScriptedWidgetEventHandler
@@ -1054,11 +1056,11 @@ class SafeDialog : ScriptedWidgetEventHandler
 }
 ```
 
-### 5. Calling Close() or Delete in the Constructor
+### 5. Volání Close() nebo Delete v konstruktoru
 
-**Problem:** Calling `Close()` or `delete this` during construction causes crashes or undefined behavior because the object is not fully initialized.
+**Problém:** Volání `Close()` nebo `delete this` během konstrukce způsobuje pády nebo nedefinované chování, protože objekt není plně inicializován.
 
-**Oprava:** Defer closure using `CallLater`:
+**Řešení:** Odložte uzavření pomocí `CallLater`:
 
 ```c
 void MyDialog()
@@ -1066,8 +1068,8 @@ void MyDialog()
     // ...
     if (someErrorCondition)
     {
-        // WRONG: Close(); or delete this;
-        // CORRECT:
+        // ŠPATNĚ: Close(); nebo delete this;
+        // SPRÁVNĚ:
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(
             DeferredClose, 0, false);
     }
@@ -1075,22 +1077,22 @@ void MyDialog()
 
 void DeferredClose()
 {
-    Close();  // or: delete this;
+    Close();  // nebo: delete this;
 }
 ```
 
-### 6. Not Checking for Null Before Widget Operations
+### 6. Nekontrolování null před operacemi s widgety
 
-**Problem:** Crash when accessing a widget that was already destroyed or never created.
+**Problém:** Pád při přístupu k widgetu, který byl již zničen nebo nikdy vytvořen.
 
 ```c
-// WRONG
+// ŠPATNĚ
 void UpdateMessage(string text)
 {
-    m_MessageText.SetText(text);  // Crash if m_MessageText is null
+    m_MessageText.SetText(text);  // Pád, pokud m_MessageText je null
 }
 
-// CORRECT
+// SPRÁVNĚ
 void UpdateMessage(string text)
 {
     if (m_MessageText)
@@ -1100,20 +1102,20 @@ void UpdateMessage(string text)
 
 ---
 
-## Shrnuti
+## Shrnutí
 
-| Pristup | Zakladni trida | Sprava fokusu | Nejlepsi pro |
+| Přístup | Základní třída | Správa fokusu | Nejlepší pro |
 |----------|-----------|-----------------|----------|
-| Engine menu stack | `UIScriptedMenu` | Automatic via `LockControls`/`UnlockControls` | Full-screen menus, major dialogs |
-| Native dialog | `ShowDialog()` | Automatic | Simple Yes/No/OK prompts |
-| Manual popup | `ScriptedWidgetEventHandler` | Manual `ZmenaGameFocus` | In-panel popups, custom dialogs |
-| Floating window | `UIScriptedWindow` | Via parent menu | Tool windows alongside a menu |
+| Zásobník menu enginu | `UIScriptedMenu` | Automatická přes `LockControls`/`UnlockControls` | Celoobrazovková menu, hlavní dialogy |
+| Nativní dialog | `ShowDialog()` | Automatická | Jednoduché výzvy Ano/Ne/OK |
+| Ruční vyskakovací okno | `ScriptedWidgetEventHandler` | Ruční `ChangeGameFocus` | Vyskakovací okna v panelech, vlastní dialogy |
+| Plovoucí okno | `UIScriptedWindow` | Přes nadřazené menu | Okna nástrojů vedle menu |
 
-The golden rule: **every `ZmenaGameFocus(1)` must be matched by a `ZmenaGameFocus(-1)`.** Put focus cleanup in your destructor as a safety net, always `Unlink()` widgets when done, and use `SetSort()` to ensure your dialog renders on top.
+Zlaté pravidlo: **každé `ChangeGameFocus(1)` musí být spárováno s `ChangeGameFocus(-1)`.** Umístěte čištění fokusu do destruktoru jako pojistku, vždy odpojujte widgety pomocí `Unlink()` po dokončení a použijte `SetSort()` k zajištění, že se váš dialog vykresluje nahoře.
 
 ---
 
-## Dalsi kroky
+## Další kroky
 
-- [3.6 Event Handling](06-event-handling.md) -- Handle clicks, hover, keyboard events inside dialogs
-- [3.5 Programmatic Widget Creation](05-programmatic-widgets.md) -- Build dialog content dynamically in code
+- [3.6 Zpracování událostí](06-event-handling.md) -- Zpracování kliknutí, najetí myší, klávesnicových událostí uvnitř dialogů
+- [3.5 Programatické vytváření widgetů](05-programmatic-widgets.md) -- Dynamické vytváření obsahu dialogu v kódu

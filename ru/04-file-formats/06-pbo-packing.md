@@ -1,66 +1,64 @@
-# Chapter 4.6: PBO Packing
+# Глава 4.6: Упаковка PBO
 
-[Home](../../README.md) | [<< Previous: DayZ Tools Workflow](05-dayz-tools.md) | **PBO Packing** | [Next: Workbench Guide >>](07-workbench-guide.md)
+[Главная](../../README.md) | [<< Предыдущая: Рабочий процесс DayZ Tools](05-dayz-tools.md) | **Упаковка PBO** | [Следующая: Руководство по Workbench >>](07-workbench-guide.md)
 
 ---
 
 ## Введение
 
+**PBO** (Packed Bank of Objects) --- это архивный формат DayZ -- эквивалент `.zip` файла для игрового контента. Каждый мод, который загружает игра, поставляется в виде одного или нескольких PBO-файлов. Когда игрок подписывается на мод в Steam Workshop, он скачивает PBO. Когда сервер загружает моды, он читает PBO. PBO --- это конечный продукт всего конвейера моддинга.
 
-A **PBO** (Packed Bank of Objects) is DayZ's archive format ---  equivalent of a `.zip` file for game content. Every mod the game loads is delivered as one or more PBO files. When a player subscribes to a mod on Steam Workshop, they download PBOs. When a server loads mods, it reads PBOs. The PBO is the final deliverable of the entire modding pipeline.
-
-Understanding how to create PBOs correctly -- when to binarize, how to set prefixes, how to structure the output, and how to automate the process -- is the last step between your source files and a working mod. Эта глава охватывает everything from the basic concept through advanced automated build workflows.
+Понимание того, как правильно создавать PBO --- когда бинаризировать, как устанавливать префиксы, как структурировать вывод и как автоматизировать процесс --- это последний шаг между вашими исходными файлами и работающим модом. Эта глава охватывает всё: от базовой концепции до продвинутых автоматизированных рабочих процессов сборки.
 
 ---
 
 ## Содержание
 
-
-- [What is a PBO?](#what-is-a-pbo)
-- [PBO Internal Structure](#pbo-internal-structure)
-- [AddonBuilder: The Packing Tool](#addonbuilder-the-packing-tool)
-- [The -packonly Flag](#the--packonly-flag)
-- [The -prefix Flag](#the--prefix-flag)
-- [Binarization: When Needed vs. Not](#binarization-when-needed-vs-not)
-- [Key Signing](#key-signing)
-- [@mod Folder Structure](#mod-folder-structure)
-- [Automated Build Scripts](#automated-build-scripts)
-- [Multi-PBO Mod Builds](#multi-pbo-mod-builds)
-- [Common Build Errors and Solutions](#common-build-errors-and-solutions)
-- [Testing: File Patching vs. PBO Loading](#testing-file-patching-vs-pbo-loading)
-- [Best Practices](#best-practices)
-
----
-
-## What is a PBO?
-
-A PBO is a flat archive file that contains a directory tree of game assets. It has no compression (unlike ZIP) -- files inside are stored at their original size. The "packing" is purely organizational: many files become one file with an internal path structure.
-
-### Key Characteristics
-
-- **No compression:** Files are stored verbatim. The PBO's size equals the sum of its contents plus a small header.
-- **Flat header:** A list of file entries with paths, sizes, and offsets.
-- **Prefix metadata:** Each PBO declares an internal path prefix that maps its contents into the engine's virtual filesystem.
-- **Read-only at runtime:** The engine reads from PBOs but never writes to them.
-- **Signed for multiplayer:** PBOs can be signed with a Bohemia-style key pair for server signature verification.
-
-### Why PBOs Instead of Loose Files
-
-- **Distribution:** One file per mod component is simpler than thousands of loose files.
-- **Integrity:** Key signing ensures the mod has not been tampered with.
-- **Performance:** The engine's file I/O is optimized for reading from PBOs.
-- **Organization:** The prefix system ensures no path collisions between mods.
+- [Что такое PBO?](#что-такое-pbo)
+- [Внутренняя структура PBO](#внутренняя-структура-pbo)
+- [AddonBuilder: инструмент упаковки](#addonbuilder-инструмент-упаковки)
+- [Флаг -packonly](#флаг--packonly)
+- [Флаг -prefix](#флаг--prefix)
+- [Бинаризация: когда нужна, а когда нет](#бинаризация-когда-нужна-а-когда-нет)
+- [Подписание ключами](#подписание-ключами)
+- [Структура папки @mod](#структура-папки-mod)
+- [Автоматизированные скрипты сборки](#автоматизированные-скрипты-сборки)
+- [Сборка модов с несколькими PBO](#сборка-модов-с-несколькими-pbo)
+- [Распространённые ошибки сборки и решения](#распространённые-ошибки-сборки-и-решения)
+- [Тестирование: патчинг файлов vs загрузка PBO](#тестирование-патчинг-файлов-vs-загрузка-pbo)
+- [Лучшие практики](#лучшие-практики)
 
 ---
 
-## PBO Internal Structure
+## Что такое PBO?
 
-When you open a PBO (using a tool like PBO Manager or MikeroTools), you see a directory tree:
+PBO --- это плоский архивный файл, содержащий дерево директорий с игровыми ассетами. Он не использует сжатие (в отличие от ZIP) -- файлы внутри хранятся в оригинальном размере. «Упаковка» чисто организационная: множество файлов становятся одним файлом с внутренней структурой путей.
+
+### Ключевые характеристики
+
+- **Без сжатия:** Файлы хранятся как есть. Размер PBO равен сумме его содержимого плюс небольшой заголовок.
+- **Плоский заголовок:** Список записей файлов с путями, размерами и смещениями.
+- **Метаданные префикса:** Каждый PBO объявляет внутренний префикс пути, который отображает его содержимое в виртуальную файловую систему движка.
+- **Только для чтения во время выполнения:** Движок читает из PBO, но никогда не записывает в них.
+- **Подписание для мультиплеера:** PBO могут быть подписаны парой ключей в стиле Bohemia для проверки подписей сервером.
+
+### Почему PBO, а не отдельные файлы
+
+- **Распространение:** Один файл на компонент мода проще, чем тысячи отдельных файлов.
+- **Целостность:** Подписание ключами гарантирует, что мод не был изменён.
+- **Производительность:** Файловый ввод-вывод движка оптимизирован для чтения из PBO.
+- **Организация:** Система префиксов исключает конфликты путей между модами.
+
+---
+
+## Внутренняя структура PBO
+
+Когда вы открываете PBO (используя инструмент вроде PBO Manager или MikeroTools), вы видите дерево директорий:
 
 ```
 MyMod.pbo
-  $PBOPREFIX$                    <-- Text file containing the prefix path
-  config.bin                      <-- Binarized config.cpp (or config.cpp if -packonly)
+  $PBOPREFIX$                    <-- Текстовый файл, содержащий путь префикса
+  config.bin                      <-- Бинаризированный config.cpp (или config.cpp при -packonly)
   Scripts/
     3_Game/
       MyConstants.c
@@ -70,7 +68,7 @@ MyMod.pbo
       MyUI.c
   data/
     models/
-      my_item.p3d                 <-- Binarized ODOL (or MLOD if -packonly)
+      my_item.p3d                 <-- Бинаризированный ODOL (или MLOD при -packonly)
     textures/
       my_item_co.paa
       my_item_nohq.paa
@@ -86,47 +84,47 @@ MyMod.pbo
 
 ### $PBOPREFIX$
 
-The `$PBOPREFIX$` file is a tiny text file at the root of the PBO that declares the mod's path prefix. Например:
+Файл `$PBOPREFIX$` --- это маленький текстовый файл в корне PBO, который объявляет префикс пути мода. Например:
 
 ```
 MyMod
 ```
 
-This tells the engine: "When something references `MyMod\data\textures\my_item_co.paa`, look inside this PBO at `data\textures\my_item_co.paa`."
+Это сообщает движку: «Когда что-то ссылается на `MyMod\data\textures\my_item_co.paa`, ищи внутри этого PBO по пути `data\textures\my_item_co.paa`.»
 
 ### config.bin vs. config.cpp
 
-- **config.bin:** Binarized (binary) version of config.cpp, created by Binarize. Faster to parse at load time.
-- **config.cpp:** The original text-format configuration. Works in the engine but is slightly slower to parse.
+- **config.bin:** Бинаризированная (двоичная) версия config.cpp, создаваемая Binarize. Быстрее парсится при загрузке.
+- **config.cpp:** Оригинальная текстовая конфигурация. Работает в движке, но парсится немного медленнее.
 
-When you build with binarization, config.cpp becomes config.bin. When you use `-packonly`, config.cpp is included as-is.
+При сборке с бинаризацией config.cpp становится config.bin. При использовании `-packonly` config.cpp включается как есть.
 
 ---
 
-## AddonBuilder: The Packing Tool
+## AddonBuilder: инструмент упаковки
 
-**AddonBuilder** is Bohemia's official PBO packing tool, included with DayZ Tools. It can operate in GUI mode or command-line mode.
+**AddonBuilder** --- это официальный инструмент упаковки PBO от Bohemia, входящий в состав DayZ Tools. Он может работать в режиме GUI или из командной строки.
 
-### GUI Mode
+### Режим GUI
 
-1. Launch AddonBuilder from DayZ Tools Launcher.
-2. **Source directory:** Browse to your mod folder on P: (e.g., `P:\MyMod`).
-3. **Output directory:** Browse to your output folder (e.g., `P:\output`).
+1. Запустите AddonBuilder из DayZ Tools Launcher.
+2. **Source directory:** Укажите папку вашего мода на P: (например, `P:\MyMod`).
+3. **Output directory:** Укажите выходную папку (например, `P:\output`).
 4. **Options:**
-   - **Binarize:** Check to run Binarize on content (converts P3D, textures, configs).
-   - **Sign:** Check and select a key to sign the PBO.
-   - **Prefix:** Enter the mod prefix (e.g., `MyMod`).
-5. Click **Pack**.
+   - **Binarize:** Отметьте для запуска Binarize по контенту (конвертирует P3D, текстуры, конфиги).
+   - **Sign:** Отметьте и выберите ключ для подписания PBO.
+   - **Prefix:** Введите префикс мода (например, `MyMod`).
+5. Нажмите **Pack**.
 
-### Command-Line Mode
+### Режим командной строки
 
-Command-line mode is preferred for automated builds:
+Режим командной строки предпочтителен для автоматизированных сборок:
 
 ```bash
 AddonBuilder.exe [source_path] [output_path] [options]
 ```
 
-**Full example:**
+**Полный пример:**
 ```bash
 "P:\DayZ Tools\Bin\AddonBuilder\AddonBuilder.exe" ^
     "P:\MyMod" ^
@@ -135,166 +133,166 @@ AddonBuilder.exe [source_path] [output_path] [options]
     -sign="P:\keys\MyKey"
 ```
 
-### Command-Line Options
+### Параметры командной строки
 
-| Flag | Description |
-|------|-------------|
-| `-prefix=<path>` | Set the PBO internal prefix (critical for path resolution) |
-| `-packonly` | Skip binarization, pack files as-is |
-| `-sign=<key_path>` | Sign the PBO with the specified BI key (private key path, no extension) |
-| `-include=<path>` | Include file list -- only pack files matching this filter |
-| `-exclude=<path>` | Exclude file list -- skip files matching this filter |
-| `-binarize=<path>` | Path to Binarize.exe (if not in default location) |
-| `-temp=<path>` | Temporary directory for Binarize output |
-| `-clear` | Clear output directory before packing |
-| `-project=<path>` | Project drive path (usually `P:\`) |
+| Флаг | Описание |
+|------|----------|
+| `-prefix=<path>` | Установить внутренний префикс PBO (критически важен для разрешения путей) |
+| `-packonly` | Пропустить бинаризацию, упаковать файлы как есть |
+| `-sign=<key_path>` | Подписать PBO указанным BI-ключом (путь к приватному ключу, без расширения) |
+| `-include=<path>` | Список включения файлов -- упаковать только файлы, соответствующие фильтру |
+| `-exclude=<path>` | Список исключения файлов -- пропустить файлы, соответствующие фильтру |
+| `-binarize=<path>` | Путь к Binarize.exe (если не в стандартном расположении) |
+| `-temp=<path>` | Временная директория для вывода Binarize |
+| `-clear` | Очистить выходную директорию перед упаковкой |
+| `-project=<path>` | Путь к диску проекта (обычно `P:\`) |
 
 ---
 
-## The -packonly Flag
+## Флаг -packonly
 
-The `-packonly` flag is one of the most important options in AddonBuilder. It tells the tool to skip all binarization and pack the source files exactly as they are.
+Флаг `-packonly` --- один из важнейших параметров AddonBuilder. Он указывает инструменту пропустить всю бинаризацию и упаковать исходные файлы точно как есть.
 
-### When to Use -packonly
+### Когда использовать -packonly
 
-| Mod Content | Use -packonly? | Reason |
-|-------------|---------------|--------|
-| Scripts only (.c files) | **Yes** | Scripts are never binarized |
-| UI layouts (.layout) | **Yes** | Layouts are never binarized |
-| Audio only (.ogg) | **Yes** | OGG is already game-ready |
-| Pre-converted textures (.paa) | **Yes** | Already in final format |
-| Config.cpp (no CfgVehicles) | **Yes** | Simple configs work unbinarized |
-| Config.cpp (с CfgVehicles) | **No** | Item definitions require binarized config |
-| P3D models (MLOD) | **No** | Should be binarized to ODOL for performance |
-| TGA/PNG textures (need conversion) | **No** | Must be converted to PAA |
+| Содержимое мода | Использовать -packonly? | Причина |
+|-----------------|------------------------|---------|
+| Только скрипты (.c файлы) | **Да** | Скрипты никогда не бинаризируются |
+| UI-макеты (.layout) | **Да** | Макеты никогда не бинаризируются |
+| Только аудио (.ogg) | **Да** | OGG уже в готовом для игры формате |
+| Предварительно конвертированные текстуры (.paa) | **Да** | Уже в финальном формате |
+| Config.cpp (без CfgVehicles) | **Да** | Простые конфиги работают без бинаризации |
+| Config.cpp (с CfgVehicles) | **Нет** | Определения предметов требуют бинаризированного конфига |
+| P3D-модели (MLOD) | **Нет** | Должны быть бинаризированы в ODOL для производительности |
+| TGA/PNG текстуры (требуют конвертации) | **Нет** | Должны быть конвертированы в PAA |
 
-### Practical Guidance
+### Практическое руководство
 
-For a **script-only mod** (like a framework or utility mod with no custom items):
+Для **мода только со скриптами** (фреймворк или утилитарный мод без пользовательских предметов):
 ```bash
 AddonBuilder.exe "P:\MyScriptMod" "P:\output" -prefix="MyScriptMod" -packonly
 ```
 
-For an **item mod** (weapons, clothing, vehicles with models and textures):
+Для **мода с предметами** (оружие, одежда, транспорт с моделями и текстурами):
 ```bash
 AddonBuilder.exe "P:\MyItemMod" "P:\output" -prefix="MyItemMod" -sign="P:\keys\MyKey"
 ```
 
-> **Совет:** Many mods split into multiple PBOs precisely to optimize the build process. Script PBOs use `-packonly` (fast), while data PBOs with models and textures get full binarization (slower but necessary).
+> **Совет:** Многие моды разделяются на несколько PBO именно для оптимизации процесса сборки. Скриптовые PBO используют `-packonly` (быстро), тогда как PBO с данными (модели и текстуры) проходят полную бинаризацию (медленнее, но необходимо).
 
 ---
 
-## The -prefix Flag
+## Флаг -prefix
 
-The `-prefix` flag sets the PBO's internal path prefix, which is written to the `$PBOPREFIX$` file inside the PBO. This prefix is critical --- он determines how the engine resolves paths to content inside the PBO.
+Флаг `-prefix` устанавливает внутренний префикс пути PBO, который записывается в файл `$PBOPREFIX$` внутри PBO. Этот префикс критически важен -- он определяет, как движок разрешает пути к содержимому внутри PBO.
 
-### How Prefix Works
+### Как работает префикс
 
 ```
-Source: P:\MyMod\data\textures\item_co.paa
-Prefix: MyMod
-PBO internal path: data\textures\item_co.paa
+Исходник: P:\MyMod\data\textures\item_co.paa
+Префикс: MyMod
+Внутренний путь PBO: data\textures\item_co.paa
 
-Engine resolution: MyMod\data\textures\item_co.paa
-  --> Looks in MyMod.pbo for: data\textures\item_co.paa
-  --> Found!
+Разрешение движком: MyMod\data\textures\item_co.paa
+  --> Ищет в MyMod.pbo: data\textures\item_co.paa
+  --> Найдено!
 ```
 
-### Multi-Level Prefixes
+### Многоуровневые префиксы
 
-For mods that use a subfolder structure, the prefix can include multiple levels:
+Для модов с подпапочной структурой префикс может включать несколько уровней:
 
 ```bash
-# Source on P: drive
+# Исходник на диске P:
 P:\MyMod\MyMod\Scripts\3_Game\MyClass.c
 
-# If prefix is "MyMod\MyMod\Scripts"
-# PBO internal: 3_Game\MyClass.c
-# Engine path: MyMod\MyMod\Scripts\3_Game\MyClass.c
+# Если префикс "MyMod\MyMod\Scripts"
+# Внутри PBO: 3_Game\MyClass.c
+# Путь движка: MyMod\MyMod\Scripts\3_Game\MyClass.c
 ```
 
-### Prefix Must Match References
+### Префикс должен совпадать со ссылками
 
-If your config.cpp references `MyMod\data\texture_co.paa`, then the PBO containing that texture must have prefix `MyMod` and the file must be at `data\texture_co.paa` inside the PBO. A mismatch causes the engine to fail to find the file.
+Если ваш config.cpp ссылается на `MyMod\data\texture_co.paa`, то PBO, содержащий эту текстуру, должен иметь префикс `MyMod`, а файл должен находиться по пути `data\texture_co.paa` внутри PBO. Несовпадение приводит к тому, что движок не может найти файл.
 
-### Common Prefix Patterns
+### Распространённые паттерны префиксов
 
-| Mod Structure | Source Path | Prefix | Config Reference |
-|---------------|-------------|--------|-----------------|
-| Simple mod | `P:\MyMod\` | `MyMod` | `MyMod\data\item.p3d` |
-| Namespaced mod | `P:\MyWeapons\` | `MyWeapons` | `MyWeapons\data\rifle.p3d` |
-| Script sub-package | `P:\MyFramework\MyMod\Scripts\` | `MyFramework\MyMod\Scripts` | (referenced via config.cpp `CfgMods`) |
-
----
-
-## Binarization: When Needed vs. Not
-
-Binarization is the conversion of human-readable source formats into engine-optimized binary formats. It is the most time-consuming step in the build process and the most common source of build errors.
-
-### What Gets Binarized
-
-| File Type | Binarized To | Required? |
-|-----------|-------------|-----------|
-| `config.cpp` | `config.bin` | Required for mods defining items (CfgVehicles, CfgWeapons) |
-| `.p3d` (MLOD) | `.p3d` (ODOL) | Recommended -- ODOL loads faster and is smaller |
-| `.tga` / `.png` | `.paa` | Required -- engine needs PAA at runtime |
-| `.edds` | `.paa` | Required -- same as above |
-| `.rvmat` | `.rvmat` (processed) | Paths resolved, minor optimization |
-| `.wrp` | `.wrp` (optimized) | Required for terrain/map mods |
-
-### What is NOT Binarized
-
-| File Type | Reason |
-|-----------|--------|
-| `.c` scripts | Scripts are loaded as text by the engine |
-| `.ogg` audio | Already in game-ready format |
-| `.layout` files | Already in game-ready format |
-| `.paa` textures | Already in final format (pre-converted) |
-| `.json` data | Read as text by script code |
-
-### Config.cpp Binarization Details
-
-Config.cpp binarization is the step most modders encounter issues with. The binarizer parses the config.cpp text, validates its structure, resolves inheritance chains, and outputs a binary config.bin.
-
-**When binarization is required for config.cpp:**
-- The config defines `CfgVehicles` entries (items, weapons, vehicles, buildings).
-- The config defines `CfgWeapons` entries.
-- The config defines entries that reference models or textures.
-
-**When binarization is NOT required:**
-- The config only defines `CfgPatches` and `CfgMods` (mod registration).
-- The config only defines sound configurations.
-- Script-only mods with minimal config.
-
-> **Rule of thumb:** If your config.cpp adds physical items to the game world, you need binarization. If it only registers scripts and defines non-item data, `-packonly` works fine.
+| Структура мода | Исходный путь | Префикс | Ссылка в конфиге |
+|----------------|---------------|---------|------------------|
+| Простой мод | `P:\MyMod\` | `MyMod` | `MyMod\data\item.p3d` |
+| Мод с пространством имён | `P:\MyMod_Weapons\` | `MyMod_Weapons` | `MyMod_Weapons\data\rifle.p3d` |
+| Скриптовый подпакет | `P:\MyFramework\MyMod\Scripts\` | `MyFramework\MyMod\Scripts` | (ссылка через config.cpp `CfgMods`) |
 
 ---
 
-## Key Signing
+## Бинаризация: когда нужна, а когда нет
 
-PBOs can be signed with a cryptographic key pair. Servers use signature verification to ensure all connected clients have the same (unmodified) mod files.
+Бинаризация --- это преобразование человекочитаемых исходных форматов в оптимизированные для движка бинарные форматы. Это самый времязатратный шаг в процессе сборки и самый частый источник ошибок.
 
-### Key Pair Components
+### Что бинаризируется
 
-| File | Extension | Purpose | Who Has It |
-|------|-----------|---------|------------|
-| Private key | `.biprivatekey` | Signs PBOs during build | Mod author only (KEEP SECRET) |
-| Public key | `.bikey` | Verifies signatures | Server admins, distributed with mod |
+| Тип файла | Бинаризируется в | Обязательно? |
+|-----------|------------------|--------------|
+| `config.cpp` | `config.bin` | Обязательно для модов, определяющих предметы (CfgVehicles, CfgWeapons) |
+| `.p3d` (MLOD) | `.p3d` (ODOL) | Рекомендуется -- ODOL загружается быстрее и меньше по размеру |
+| `.tga` / `.png` | `.paa` | Обязательно -- движку нужен PAA во время выполнения |
+| `.edds` | `.paa` | Обязательно -- то же, что выше |
+| `.rvmat` | `.rvmat` (обработанный) | Разрешение путей, минимальная оптимизация |
+| `.wrp` | `.wrp` (оптимизированный) | Обязательно для модов ландшафта/карт |
 
-### Generating Keys
+### Что НЕ бинаризируется
 
-Use DayZ Tools' **DSSignFile** or **DSCreateKey** utilities:
+| Тип файла | Причина |
+|-----------|---------|
+| `.c` скрипты | Скрипты загружаются движком как текст |
+| `.ogg` аудио | Уже в готовом для игры формате |
+| `.layout` файлы | Уже в готовом для игры формате |
+| `.paa` текстуры | Уже в финальном формате (предварительно конвертированы) |
+| `.json` данные | Читаются как текст скриптовым кодом |
+
+### Детали бинаризации config.cpp
+
+Бинаризация config.cpp --- это этап, на котором у большинства моддеров возникают проблемы. Бинаризатор парсит текст config.cpp, проверяет его структуру, разрешает цепочки наследования и выводит бинарный config.bin.
+
+**Когда бинаризация обязательна для config.cpp:**
+- Конфиг определяет записи `CfgVehicles` (предметы, оружие, транспорт, здания).
+- Конфиг определяет записи `CfgWeapons`.
+- Конфиг определяет записи, ссылающиеся на модели или текстуры.
+
+**Когда бинаризация НЕ обязательна:**
+- Конфиг определяет только `CfgPatches` и `CfgMods` (регистрация мода).
+- Конфиг определяет только звуковые конфигурации.
+- Моды только со скриптами с минимальным конфигом.
+
+> **Правило большого пальца:** Если ваш config.cpp добавляет физические предметы в игровой мир, вам нужна бинаризация. Если он только регистрирует скрипты и определяет данные, не связанные с предметами, `-packonly` работает нормально.
+
+---
+
+## Подписание ключами
+
+PBO могут быть подписаны криптографической парой ключей. Серверы используют проверку подписей, чтобы убедиться, что у всех подключённых клиентов одинаковые (неизменённые) файлы мода.
+
+### Компоненты пары ключей
+
+| Файл | Расширение | Назначение | Кто имеет |
+|------|------------|------------|-----------|
+| Приватный ключ | `.biprivatekey` | Подписывает PBO при сборке | Только автор мода (ХРАНИТЕ В СЕКРЕТЕ) |
+| Публичный ключ | `.bikey` | Проверяет подписи | Администраторы серверов, распространяется с модом |
+
+### Генерация ключей
+
+Используйте утилиты **DSSignFile** или **DSCreateKey** из DayZ Tools:
 
 ```bash
-# Generate a key pair
+# Генерация пары ключей
 DSCreateKey.exe MyModKey
 
-# This creates:
-#   MyModKey.biprivatekey   (keep secret, do not distribute)
-#   MyModKey.bikey          (distribute to server admins)
+# Создаёт:
+#   MyModKey.biprivatekey   (храните в секрете, не распространяйте)
+#   MyModKey.bikey          (распространяйте администраторам серверов)
 ```
 
-### Signing During Build
+### Подписание при сборке
 
 ```bash
 AddonBuilder.exe "P:\MyMod" "P:\output" ^
@@ -302,42 +300,42 @@ AddonBuilder.exe "P:\MyMod" "P:\output" ^
     -sign="P:\keys\MyModKey"
 ```
 
-This produces:
+Результат:
 ```
 P:\output\
   MyMod.pbo
-  MyMod.pbo.MyModKey.bisign    <-- Signature file
+  MyMod.pbo.MyModKey.bisign    <-- Файл подписи
 ```
 
-### Server-Side Key Installation
+### Установка ключей на сервере
 
-Server admins place the public key (`.bikey`) in the server's `keys/` directory:
+Администраторы серверов размещают публичный ключ (`.bikey`) в директории `keys/` сервера:
 
 ```
 DayZServer/
   keys/
-    MyModKey.bikey             <-- Allows clients with this mod to connect
+    MyModKey.bikey             <-- Позволяет клиентам с этим модом подключаться
 ```
 
 ---
 
-## @mod Folder Structure
+## Структура папки @mod
 
-DayZ expects mods to be organized in a specific directory structure using the `@` prefix convention:
+DayZ ожидает, что моды организованы в определённой структуре директорий с использованием соглашения о префиксе `@`:
 
 ```
 @MyMod/
   addons/
-    MyMod.pbo                  <-- Packed mod content
-    MyMod.pbo.MyKey.bisign     <-- PBO signature (optional)
+    MyMod.pbo                  <-- Упакованный контент мода
+    MyMod.pbo.MyKey.bisign     <-- Подпись PBO (опционально)
   keys/
-    MyKey.bikey                <-- Public key for servers (optional)
-  mod.cpp                      <-- Mod metadata
+    MyKey.bikey                <-- Публичный ключ для серверов (опционально)
+  mod.cpp                      <-- Метаданные мода
 ```
 
 ### mod.cpp
 
-The `mod.cpp` file provides metadata displayed in the DayZ launcher:
+Файл `mod.cpp` предоставляет метаданные, отображаемые в лаунчере DayZ:
 
 ```cpp
 name = "My Awesome Mod";
@@ -346,44 +344,44 @@ version = "1.0.0";
 url = "https://steamcommunity.com/sharedfiles/filedetails/?id=XXXXXXXXX";
 ```
 
-### Multi-PBO Mods
+### Моды с несколькими PBO
 
-Large mods often split into multiple PBOs within a single `@mod` folder:
+Крупные моды часто разделяются на несколько PBO внутри одной папки `@mod`:
 
 ```
 @MyFramework/
   addons/
-    MyCore_Scripts.pbo        <-- Script layer
-    MyCore_Data.pbo           <-- Textures, models, materials
-    MyCore_GUI.pbo            <-- Layout files, imagesets
+    MyMod_Core_Scripts.pbo        <-- Слой скриптов
+    MyMod_Core_Data.pbo           <-- Текстуры, модели, материалы
+    MyMod_Core_GUI.pbo            <-- Файлы макетов, наборы изображений
   keys/
     MyMod.bikey
   mod.cpp
 ```
 
-### Loading Mods
+### Загрузка модов
 
-Mods are loaded via the `-mod` parameter:
+Моды загружаются через параметр `-mod`:
 
 ```bash
-# Single mod
+# Один мод
 DayZDiag_x64.exe -mod="@MyMod"
 
-# Multiple mods (semicolon-separated)
-DayZDiag_x64.exe -mod="@MyFramework;@MyWeapons;@MyMissions"
+# Несколько модов (через точку с запятой)
+DayZDiag_x64.exe -mod="@MyFramework;@MyMod_Weapons;@MyMod_Missions"
 ```
 
-The `@` folder must be in the game's root directory, or an absolute path must be provided.
+Папка `@` должна находиться в корневой директории игры, или необходимо указать абсолютный путь.
 
 ---
 
-## Automated Build Scripts
+## Автоматизированные скрипты сборки
 
-Ручное PBO packing through AddonBuilder's GUI is acceptable for small, simple mods. For larger projects with multiple PBOs, automated build scripts are essential.
+Ручная упаковка PBO через GUI AddonBuilder допустима для маленьких, простых модов. Для крупных проектов с несколькими PBO автоматизированные скрипты сборки необходимы.
 
-### Batch Script Pattern
+### Паттерн Batch-скрипта
 
-A typical `build_pbos.bat`:
+Типичный `build_pbos.bat`:
 
 ```batch
 @echo off
@@ -403,9 +401,9 @@ echo === Build Complete ===
 pause
 ```
 
-### Python Build Script Pattern (dev.py)
+### Паттерн Python-скрипта сборки (dev.py)
 
-For more sophisticated builds, a Python script provides better error handling, logging, and conditional logic:
+Для более сложных сборок Python-скрипт обеспечивает лучшую обработку ошибок, логирование и условную логику:
 
 ```python
 import subprocess
@@ -474,172 +472,190 @@ if __name__ == "__main__":
     main()
 ```
 
-### Integration with dev.py
+### Интеграция с dev.py
 
-The MyMod project uses `dev.py` as the central build orchestrator:
+Проект MyMod использует `dev.py` как центральный оркестратор сборки:
 
 ```bash
-python dev.py build          # Build all PBOs
-python dev.py server         # Build + launch server + monitor logs
-python dev.py full           # Build + server + client
+python dev.py build          # Собрать все PBO
+python dev.py server         # Собрать + запустить сервер + мониторинг логов
+python dev.py full           # Собрать + сервер + клиент
 ```
 
-This pattern is recommended for any multi-mod workspace. A single command builds everything, launches the server, and starts monitoring -- eliminating manual steps and reducing human error.
+Этот паттерн рекомендуется для любого мульти-мод рабочего пространства. Одна команда собирает всё, запускает сервер и начинает мониторинг -- устраняя ручные шаги и уменьшая человеческие ошибки.
 
 ---
 
-## Multi-PBO Mod Builds
+## Сборка модов с несколькими PBO
 
-Large mods benefit from splitting into multiple PBOs. This has several advantages:
+Крупные моды выигрывают от разделения на несколько PBO. У этого есть несколько преимуществ:
 
-### Why Split into Multiple PBOs
+### Зачем разделять на несколько PBO
 
-1. **Faster rebuilds.** If you change only a script, rebuild only the script PBO (with `-packonly`, which takes seconds). The data PBO (with binarization) takes minutes and does not need rebuilding.
-2. **Modular loading.** Server-only PBOs can be excluded from client downloads.
-3. **Cleaner organization.** Scripts, data, and GUI are clearly separated.
-4. **Parallel builds.** Independent PBOs can be built simultaneously.
+1. **Быстрая пересборка.** Если вы изменили только скрипт, пересоберите только скриптовый PBO (с `-packonly`, что занимает секунды). PBO с данными (с бинаризацией) занимает минуты и не требует пересборки.
+2. **Модульная загрузка.** Серверные PBO могут быть исключены из загрузок клиента.
+3. **Более чистая организация.** Скрипты, данные и GUI чётко разделены.
+4. **Параллельная сборка.** Независимые PBO могут собираться одновременно.
 
-### Typical Split Pattern
+### Типичный паттерн разделения
 
 ```
 @MyMod/
   addons/
-    MyMod_Core.pbo           <-- config.cpp, CfgPatches (binarized)
-    MyMod_Scripts.pbo         <-- All .c script files (-packonly)
-    MyMod_Data.pbo            <-- Models, textures, materials (binarized)
-    MyMod_GUI.pbo             <-- Layouts, imagesets (-packonly)
-    MyMod_Sounds.pbo          <-- OGG audio files (-packonly)
+    MyMod_Core.pbo           <-- config.cpp, CfgPatches (бинаризированный)
+    MyMod_Scripts.pbo         <-- Все .c скриптовые файлы (-packonly)
+    MyMod_Data.pbo            <-- Модели, текстуры, материалы (бинаризированный)
+    MyMod_GUI.pbo             <-- Макеты, наборы изображений (-packonly)
+    MyMod_Sounds.pbo          <-- OGG аудиофайлы (-packonly)
 ```
 
-### Dependency Between PBOs
+### Зависимости между PBO
 
-When one PBO depends on another (e.g., scripts reference items defined in the config PBO), the `requiredAddons[]` in `CfgPatches` ensures correct load order:
+Когда один PBO зависит от другого (например, скрипты ссылаются на предметы, определённые в конфигурационном PBO), `requiredAddons[]` в `CfgPatches` обеспечивает правильный порядок загрузки:
 
 ```cpp
-// In MyMod_Scripts config.cpp
+// В config.cpp MyMod_Scripts
 class CfgPatches
 {
     class MyMod_Scripts
     {
-        requiredAddons[] = {"MyMod_Core"};   // Load after the core PBO
+        requiredAddons[] = {"MyMod_Core"};   // Загружать после core PBO
     };
 };
 ```
 
 ---
 
-## Common Build Errors and Solutions
+## Распространённые ошибки сборки и решения
 
-### Error: "Include file not found"
+### Ошибка: «Include file not found»
 
-**Cause:** Config.cpp references a file (model, texture) that does not exist at the expected path.
-**Solution:** Verify the file exists on P: at the exact path referenced. Check spelling and capitalization.
+**Причина:** Config.cpp ссылается на файл (модель, текстуру), который не существует по ожидаемому пути.
+**Решение:** Убедитесь, что файл существует на P: по точному указанному пути. Проверьте правописание и регистр.
 
-### Error: "Binarize failed" with no details
+### Ошибка: «Binarize failed» без подробностей
 
-**Cause:** Binarize crashed on a corrupted or invalid source file.
-**Solution:**
-1. Check which file Binarize was processing (look at its log output).
-2. Open the problematic file in the appropriate tool (Object Builder for P3D, TexView2 for textures).
-3. Validate the file.
-4. Common culprits: non-power-of-2 textures, corrupted P3D files, invalid config.cpp syntax.
+**Причина:** Binarize аварийно завершился на повреждённом или невалидном исходном файле.
+**Решение:**
+1. Проверьте, какой файл обрабатывал Binarize (посмотрите в логе вывода).
+2. Откройте проблемный файл в соответствующем инструменте (Object Builder для P3D, TexView2 для текстур).
+3. Проверьте валидность файла.
+4. Частые виновники: текстуры не степени 2, повреждённые P3D-файлы, невалидный синтаксис config.cpp.
 
-### Error: "Addon requires addon X"
+### Ошибка: «Addon requires addon X»
 
-**Cause:** CfgPatches `requiredAddons[]` lists an addon that is not present.
-**Solution:** Either install the required addon, add it to the build, or remove the requirement if it is not actually needed.
+**Причина:** `requiredAddons[]` в CfgPatches указывает аддон, который отсутствует.
+**Решение:** Либо установите требуемый аддон, добавьте его в сборку, либо удалите требование, если оно на самом деле не нужно.
 
-### Error: Config.cpp parse error (line X)
+### Ошибка: ошибка парсинга config.cpp (строка X)
 
-**Cause:** Syntax error in config.cpp.
-**Solution:** Open config.cpp in a text editor and check line X. Common issues:
-- Missing semicolons after class definitions.
-- Unclosed braces `{}`.
-- Missing quotes around string values.
-- Backslash at end of line (line continuation is not supported).
+**Причина:** Синтаксическая ошибка в config.cpp.
+**Решение:** Откройте config.cpp в текстовом редакторе и проверьте строку X. Частые проблемы:
+- Отсутствующие точки с запятой после определений классов.
+- Незакрытые фигурные скобки `{}`.
+- Отсутствующие кавычки вокруг строковых значений.
+- Обратный слэш в конце строки (продолжение строк не поддерживается).
 
-### Error: PBO prefix mismatch
+### Ошибка: несовпадение префикса PBO
 
-**Cause:** The prefix in the PBO does not match the paths used in config.cpp or materials.
-**Solution:** Ensure `-prefix` matches the path structure expected by all references. If config.cpp references `MyMod\data\item.p3d`, the PBO prefix must be `MyMod` and the file must be at `data\item.p3d` inside the PBO.
+**Причина:** Префикс в PBO не совпадает с путями, используемыми в config.cpp или материалах.
+**Решение:** Убедитесь, что `-prefix` совпадает со структурой путей, ожидаемой всеми ссылками. Если config.cpp ссылается на `MyMod\data\item.p3d`, префикс PBO должен быть `MyMod`, а файл должен находиться по пути `data\item.p3d` внутри PBO.
 
-### Error: "Signature check failed" on server
+### Ошибка: «Signature check failed» на сервере
 
-**Cause:** Client's PBO does not match the server's expected signature.
-**Solution:**
-1. Ensure both server and client have the same PBO version.
-2. Re-sign the PBO with a fresh key if needed.
-3. Update the `.bikey` on the server.
+**Причина:** PBO клиента не совпадает с ожидаемой сервером подписью.
+**Решение:**
+1. Убедитесь, что и сервер, и клиент имеют одну и ту же версию PBO.
+2. При необходимости повторно подпишите PBO свежим ключом.
+3. Обновите `.bikey` на сервере.
 
-### Error: "Cannot open file" during Binarize
+### Ошибка: «Cannot open file» при бинаризации
 
-**Cause:** P: drive is not mounted or the file path is incorrect.
-**Solution:** Mount P: drive and verify the source path exists.
-
----
-
-## Testing: File Patching vs. PBO Loading
-
-Development involves two testing modes. Choosing the right one for each situation saves significant time.
-
-### File Patching (Development)
-
-| Aspect | Detail |
-|--------|--------|
-| **Speed** | Instant -- edit file, restart game |
-| **Setup** | Mount P: drive, launch with `-filePatching` flag |
-| **Executable** | `DayZDiag_x64.exe` (Diag build required) |
-| **Signing** | Not applicable (no PBOs to sign) |
-| **Limitations** | No binarized configs, Diag build only |
-| **Best for** | Script development, UI iteration, rapid prototyping |
-
-### PBO Loading (Release Testing)
-
-| Aspect | Detail |
-|--------|--------|
-| **Speed** | Slower -- must rebuild PBO for each change |
-| **Setup** | Build PBO, place in `@mod/addons/` |
-| **Executable** | `DayZDiag_x64.exe` or retail `DayZ_x64.exe` |
-| **Signing** | Supported (required for multiplayer) |
-| **Limitations** | Rebuild required for every change |
-| **Best for** | Final testing, multiplayer testing, release validation |
-
-### Recommended Workflow
-
-1. **Develop with file patching:** Write scripts, adjust layouts, iterate on textures. Restart the game to test. No build step.
-2. **Build PBOs periodically:** Test the binarized build to catch binarization-specific issues (config parse errors, texture conversion problems).
-3. **Final test with PBO only:** Before release, test exclusively from PBOs to ensure the packed mod works identically to the file-patched version.
-4. **Sign and distribute PBOs:** Generate signatures for multiplayer compatibility.
+**Причина:** Диск P: не смонтирован или путь к файлу неверен.
+**Решение:** Смонтируйте диск P: и убедитесь, что исходный путь существует.
 
 ---
 
-## Best Practices
+## Тестирование: патчинг файлов vs загрузка PBO
 
-1. **Use `-packonly` for script PBOs.** Scripts are never binarized, so `-packonly` is always correct and much faster.
+Разработка включает два режима тестирования. Выбор правильного для каждой ситуации экономит значительное время.
 
-2. **Always set a prefix.** Without a prefix, the engine cannot resolve paths to your mod's content. Every PBO must have a correct `-prefix`.
+### Патчинг файлов (разработка)
 
-3. **Automate your builds.** Create a build script (batch or Python) from day one. Ручное packing does not scale and is error-prone.
+| Аспект | Детали |
+|--------|--------|
+| **Скорость** | Мгновенно -- редактируем файл, перезапускаем игру |
+| **Настройка** | Смонтировать диск P:, запустить с флагом `-filePatching` |
+| **Исполняемый файл** | `DayZDiag_x64.exe` (требуется Diag-сборка) |
+| **Подписание** | Не применимо (нет PBO для подписания) |
+| **Ограничения** | Нет бинаризированных конфигов, только Diag-сборка |
+| **Лучше всего для** | Разработка скриптов, итерация UI, быстрое прототипирование |
 
-4. **Keep source and output separate.** Source on P:, built PBOs in a separate output directory or `@mod/addons/`. Never pack from the output directory.
+### Загрузка PBO (тестирование релиза)
 
-5. **Sign your PBOs for any multiplayer testing.** Unsigned PBOs are rejected by servers with signature verification enabled. Sign during development even if it seems unnecessary --- он prevents "works for me" issues when others test.
+| Аспект | Детали |
+|--------|--------|
+| **Скорость** | Медленнее -- необходимо пересобирать PBO при каждом изменении |
+| **Настройка** | Собрать PBO, поместить в `@mod/addons/` |
+| **Исполняемый файл** | `DayZDiag_x64.exe` или розничный `DayZ_x64.exe` |
+| **Подписание** | Поддерживается (обязательно для мультиплеера) |
+| **Ограничения** | Пересборка необходима при каждом изменении |
+| **Лучше всего для** | Финальное тестирование, мультиплеерное тестирование, валидация релиза |
 
-6. **Version your keys.** When you make breaking changes, generate a new key pair. This forces all clients and servers to update together.
+### Рекомендуемый рабочий процесс
 
-7. **Test both file patching and PBO modes.** Some bugs only appear in one mode. Binarized configs behave differently from text configs in edge cases.
+1. **Разрабатывайте с патчингом файлов:** Пишите скрипты, настраивайте макеты, итерируйте над текстурами. Перезапускайте игру для тестирования. Никакого этапа сборки.
+2. **Периодически собирайте PBO:** Тестируйте бинаризированную сборку, чтобы обнаружить проблемы, специфичные для бинаризации (ошибки парсинга конфигов, проблемы конвертации текстур).
+3. **Финальный тест только с PBO:** Перед релизом тестируйте исключительно из PBO, чтобы убедиться, что упакованный мод работает идентично версии с патчингом файлов.
+4. **Подпишите и распространите PBO:** Сгенерируйте подписи для совместимости с мультиплеером.
 
-8. **Clean your output directory regularly.** Stale PBOs from previous builds can cause confusing behavior. Use the `-clear` flag or manually clean before building.
+---
 
-9. **Split large mods into multiple PBOs.** The time saved on incremental rebuilds pays for itself within the first day of development.
+## Лучшие практики
 
-10. **Read the build logs.** Binarize and AddonBuilder produce log files. When something goes wrong, the answer is almost always in the logs. Check `%TEMP%\AddonBuilder\` and `%TEMP%\Binarize\` for detailed output.
+1. **Используйте `-packonly` для скриптовых PBO.** Скрипты никогда не бинаризируются, поэтому `-packonly` всегда корректен и намного быстрее.
+
+2. **Всегда устанавливайте префикс.** Без префикса движок не может разрешить пути к содержимому вашего мода. Каждый PBO должен иметь корректный `-prefix`.
+
+3. **Автоматизируйте сборки.** Создайте скрипт сборки (batch или Python) с первого дня. Ручная упаковка не масштабируется и подвержена ошибкам.
+
+4. **Храните исходники и вывод отдельно.** Исходники на P:, собранные PBO в отдельной выходной директории или `@mod/addons/`. Никогда не упаковывайте из выходной директории.
+
+5. **Подписывайте PBO для любого мультиплеерного тестирования.** Неподписанные PBO отклоняются серверами с включённой проверкой подписей. Подписывайте во время разработки, даже если это кажется ненужным -- это предотвращает проблемы «у меня работает», когда другие тестируют.
+
+6. **Версионируйте ключи.** При внесении критических изменений генерируйте новую пару ключей. Это заставляет всех клиентов и серверы обновляться одновременно.
+
+7. **Тестируйте оба режима: патчинг файлов и PBO.** Некоторые баги проявляются только в одном из режимов. Бинаризированные конфиги ведут себя иначе, чем текстовые, в граничных случаях.
+
+8. **Регулярно очищайте выходную директорию.** Устаревшие PBO от предыдущих сборок могут вызывать путаницу. Используйте флаг `-clear` или очищайте вручную перед сборкой.
+
+9. **Разделяйте крупные моды на несколько PBO.** Время, сэкономленное на инкрементальных пересборках, окупается в первый же день разработки.
+
+10. **Читайте логи сборки.** Binarize и AddonBuilder создают файлы логов. Когда что-то идёт не так, ответ почти всегда в логах. Проверяйте `%TEMP%\AddonBuilder\` и `%TEMP%\Binarize\` для подробного вывода.
+
+---
+
+## Наблюдения из реальных модов
+
+| Паттерн | Мод | Детали |
+|---------|-----|--------|
+| 20+ PBO на мод с мелкоструктурным разделением | Expansion (все модули) | Разделение на отдельные PBO для Scripts, Data, GUI, Vehicles, Book, Market и т.д., обеспечивающее независимые пересборки и опциональное разделение клиент/сервер |
+| Тройное разделение Scripts/Data/GUI | StarDZ (Core, Missions, AI) | Каждый мод производит 2-3 PBO: `_Scripts.pbo` (packonly), `_Data.pbo` (бинаризированные модели/текстуры), `_GUI.pbo` (packonly макеты) |
+| Один монолитный PBO | Простые моды ретекстура | Маленькие моды с только config.cpp и несколькими PAA-текстурами упаковывают всё в один PBO с бинаризацией |
+| Версионирование ключей при каждом крупном релизе | Expansion | Генерирует новые пары ключей при критических обновлениях, заставляя всех клиентов и серверы обновляться синхронно |
+
+---
+
+## Совместимость и влияние
+
+- **Мульти-мод:** Коллизии префиксов PBO заставляют движок загружать файлы одного мода вместо другого. Каждый мод должен использовать уникальный префикс. Внимательно проверяйте `$PBOPREFIX$` при отладке ошибок «file not found» в мульти-мод окружениях.
+- **Производительность:** Загрузка PBO быстрая (последовательное чтение файлов), но моды с множеством крупных PBO увеличивают время запуска сервера. Бинаризированный контент загружается быстрее небинаризированного. Используйте ODOL-модели и PAA-текстуры для релизных сборок.
+- **Версия:** Сам формат PBO не менялся. AddonBuilder получает периодические исправления через обновления DayZ Tools, но флаги командной строки и поведение упаковки стабильны со времён DayZ 1.0.
 
 ---
 
 ## Навигация
 
-
 | Предыдущая | Вверх | Следующая |
-|----------|----|------|
-| [4.5 DayZ Tools Workflow](05-dayz-tools.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [Part 5: Config Files](07-workbench-guide.md) |
+|------------|-------|-----------|
+| [4.5 Рабочий процесс DayZ Tools](05-dayz-tools.md) | [Часть 4: Форматы файлов и DayZ Tools](01-textures.md) | [Следующая: Руководство по Workbench](07-workbench-guide.md) |

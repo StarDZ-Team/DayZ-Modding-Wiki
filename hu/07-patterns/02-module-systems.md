@@ -1,36 +1,36 @@
-# Chapter 7.2: Module / Plugin Systems
+# 7.2. fejezet: Modul / Plugin rendszerek
 
-[Home](../../README.md) | [<< Previous: Singleton Pattern](01-singletons.md) | **Module / Plugin Systems** | [Next: RPC Patterns >>](03-rpc-patterns.md)
-
----
-
-## Bevezetes
-
-Every serious DayZ mod framework uses a module or plugin system to organize code into self-contained units with defined lifecycle hooks. Rather than scattering initialization logic across modded mission classes, modules register themselves with a central manager that dispatches lifecycle events --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- to each module in a predictable order.
-
-This chapter examines four real-world approaches: Community Framework's `CF_ModuleCore`, VPP's `PluginBase` / `ConfigurablePlugin`, Dabs Framework's attribute-based registration, and MyMod's `MyModuleManager`. Each solves the same problem differently; understanding all four will help you choose the right pattern for your own mod or integrate cleanly with an existing framework.
+[Kezdőlap](../../README.md) | [<< Előző: Singleton minta](01-singletons.md) | **Modul / Plugin rendszerek** | [Következő: RPC minták >>](03-rpc-patterns.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [Why Modules?](#why-modules)
+Minden komoly DayZ mod keretrendszer modul- vagy pluginrendszert használ a kód önálló egységekbe szervezéséhez, meghatározott életciklus-hookokkal. Ahelyett, hogy az inicializációs logikát modolt mission osztályok között szórnánk szét, a modulok egy központi menedzsernél regisztrálják magukat, amely életciklus-eseményeket diszpécsel --- `OnInit`, `OnMissionStart`, `OnUpdate`, `OnMissionFinish` --- minden modulnak kiszámítható sorrendben.
+
+Ez a fejezet négy valós megközelítést vizsgál: a Community Framework `CF_ModuleCore`-ját, a VPP `PluginBase` / `ConfigurablePlugin`-ját, a Dabs Framework attribútum-alapú regisztrációját és egy egyéni statikus modul menedzsert. Mindegyik különbözőképpen oldja meg ugyanazt a problémát; mind a négy megértése segít kiválasztani a megfelelő mintát a saját mododhoz vagy problémamentesen integrálni egy meglévő keretrendszerrel.
+
+---
+
+## Tartalomjegyzék
+
+- [Miért modulok?](#miért-modulok)
 - [CF_ModuleCore (COT / Expansion)](#cf_modulecore-cot--expansion)
 - [VPP PluginBase / ConfigurablePlugin](#vpp-pluginbase--configurableplugin)
-- [Dabs Attribute-Based Registration](#dabs-attribute-based-registration)
-- [MyMod MyModuleManager](#custom-static-module-manager)
-- [Module Lifecycle: The Universal Contract](#module-lifecycle-the-universal-contract)
-- [Best Practices for Module Design](#best-practices-for-module-design)
-- [Comparison Table](#comparison-table)
+- [Dabs attribútum-alapú regisztráció](#dabs-attribútum-alapú-regisztráció)
+- [Egyéni statikus modul menedzser](#egyéni-statikus-modul-menedzser)
+- [Modul életciklus: Az univerzális szerződés](#modul-életciklus-az-univerzális-szerződés)
+- [Bevált gyakorlatok a modul tervezéshez](#bevált-gyakorlatok-a-modul-tervezéshez)
+- [Összehasonlító táblázat](#összehasonlító-táblázat)
 
 ---
 
-## Why Modules?
+## Miért modulok?
 
-Without a module system, a DayZ mod typically ends up with a monolithic modded `MissionServer` or `MissionGameplay` class that grows until it becomes unmanageable:
+Modulrendszer nélkül egy DayZ mod jellemzően egy monolitikus modolt `MissionServer` vagy `MissionGameplay` osztállyal végzi, amely addig nő, amíg kezelhetetlenné nem válik:
 
 ```c
-// BAD: Everything crammed into one modded class
+// ROSSZ: Minden egy modolt osztályba zsúfolva
 modded class MissionServer
 {
     override void OnInit()
@@ -42,7 +42,7 @@ modded class MissionServer
         InitWeatherController();
         InitAdminPanel();
         InitKillfeedHUD();
-        // ... 20 more systems
+        // ... még 20 rendszer
     }
 
     override void OnUpdate(float timeslice)
@@ -51,12 +51,12 @@ modded class MissionServer
         TickLootSystem(timeslice);
         TickVehicleTracker(timeslice);
         TickWeatherController(timeslice);
-        // ... 20 more ticks
+        // ... még 20 tick
     }
 };
 ```
 
-A module system replaces this with a single, stable hook point:
+A modulrendszer ezt egyetlen stabil hook-ponttal helyettesíti:
 
 ```c
 modded class MissionServer
@@ -72,81 +72,81 @@ modded class MissionServer
     override void OnMissionStart()
     {
         super.OnMissionStart();
-        MyModuleManager.OnMissionStart();  // Dispatches to all modules
+        MyModuleManager.OnMissionStart();  // Minden modulnak diszpécsel
     }
 
     override void OnUpdate(float timeslice)
     {
         super.OnUpdate(timeslice);
-        MyModuleManager.OnServerUpdate(timeslice);  // Dispatches to all modules
+        MyModuleManager.OnServerUpdate(timeslice);  // Minden modulnak diszpécsel
     }
 };
 ```
 
-Each module is an independent class with its own file, its own state, and its own lifecycle hooks. Adding a new feature means adding a new module --- not editing a 3000-line mission class.
+Minden modul független osztály, saját fájllal, saját állapottal és saját életciklus-hookjokkal. Új funkció hozzáadása új modul hozzáadását jelenti --- nem egy 3000 soros mission osztály szerkesztését.
 
 ---
 
 ## CF_ModuleCore (COT / Expansion)
 
-Community Framework (CF) provides the most widely-used module system in the DayZ modding ecosystem. Both COT and Expansion build on it.
+A Community Framework (CF) biztosítja a legszélesebb körben használt modulrendszert a DayZ modding ökoszisztémában. Mind a COT, mind az Expansion erre épít.
 
-### How It Works
+### Hogyan működik
 
-1. You declare a module class that extends one of CF's module base classes
-2. You register it in `config.cpp` under `CfgPatches` / `CfgMods`
-3. CF's `CF_ModuleCoreManager` auto-discovers and instantiates all registered module classes at startup
-4. Lifecycle events are dispatched automatically
+1. Deklarálsz egy modul osztályt, amely kiterjeszti a CF valamelyik modul alaposztályát
+2. Regisztrálod a `config.cpp`-ben a `CfgPatches` / `CfgMods` alatt
+3. A CF `CF_ModuleCoreManager`-je automatikusan felfedezi és példányosítja az összes regisztrált modul osztályt indításkor
+4. Az életciklus-események automatikusan diszpécselődnek
 
-### Module Base Classes
+### Modul alaposztályok
 
-CF provides three base classes corresponding to DayZ's script layers:
+A CF három alaposztályt biztosít, amelyek megfelelnek a DayZ szkriptrétegjeinek:
 
-| Base Class | Reteg | Tipikus hasznalat |
+| Alaposztály | Réteg | Tipikus használat |
 |-----------|-------|-------------|
-| `CF_ModuleGame` | 3_Game | Early init, RPC registration, data classes |
-| `CF_ModuleWorld` | 4_World | Entity interaction, gameplay systems |
-| `CF_ModuleMission` | 5_Mission | UI, HUD, mission-level hooks |
+| `CF_ModuleGame` | 3_Game | Korai init, RPC regisztráció, adatosztályok |
+| `CF_ModuleWorld` | 4_World | Entitás interakció, játékmenet rendszerek |
+| `CF_ModuleMission` | 5_Mission | UI, HUD, mission-szintű hookok |
 
-### Example: A CF Module
+### Példa: CF modul
 
 ```c
 class MyLootModule : CF_ModuleWorld
 {
-    // CF calls this once during module initialization
+    // A CF ezt egyszer hívja meg a modul inicializálása során
     override void OnInit()
     {
         super.OnInit();
-        // Register RPC handlers, allocate data structures
+        // RPC kezelők regisztrálása, adatszerkezetek foglalása
     }
 
-    // CF calls this when the mission starts
+    // A CF ezt hívja a küldetés indulásakor
     override void OnMissionStart(Class sender, CF_EventArgs args)
     {
         super.OnMissionStart(sender, args);
-        // Load configs, spawn initial loot
+        // Konfigurációk betöltése, kezdeti loot spawnolása
     }
 
-    // CF calls this every frame on the server
+    // A CF ezt minden képkockán hívja a szerveren
     override void OnUpdate(Class sender, CF_EventArgs args)
     {
         super.OnUpdate(sender, args);
-        // Tick loot respawn timers
+        // Loot újraspawn időzítők frissítése
     }
 
-    // CF calls this when the mission ends
+    // A CF ezt hívja a küldetés végeztével
     override void OnMissionFinish(Class sender, CF_EventArgs args)
     {
         super.OnMissionFinish(sender, args);
-        // Save state, release resources
+        // Állapot mentése, erőforrások felszabadítása
     }
 };
 ```
 
-### Accessing a CF Module
+### CF modul elérése
 
 ```c
-// Get a reference to a running module by type
+// Referencia lekérése futó modulra típus alapján
 MyLootModule lootMod;
 CF_Modules<MyLootModule>.Get(lootMod);
 if (lootMod)
@@ -155,30 +155,30 @@ if (lootMod)
 }
 ```
 
-### Key Characteristics
+### Kulcsjellemzők
 
-- **Auto-discovery**: modules are instantiated by CF based on `config.cpp` declarations --- no manual `new` calls
-- **Event args**: lifecycle hooks receive `CF_EventArgs` with context data
-- **Dependency on CF**: your mod requires Community Framework as a dependency
-- **Widely supported**: if your mod targets servers that already run COT or Expansion, CF is already present
+- **Automatikus felfedezés**: a modulok a `config.cpp` deklarációk alapján automatikusan példányosulnak --- nincs kézi `new` hívás
+- **Eseményargumentumok**: az életciklus-hookok `CF_EventArgs`-t kapnak kontextusadatokkal
+- **CF függőség**: a modod a Community Framework-öt igényli függőségként
+- **Széles körű támogatottság**: ha a modod COT-ot vagy Expansion-t futtató szervereket céloz, a CF már jelen van
 
 ---
 
 ## VPP PluginBase / ConfigurablePlugin
 
-VPP Admin Tools uses a plugin architecture where each admin tool is a plugin class registered with a central manager.
+A VPP Admin Tools plugin architektúrát használ, ahol minden admin eszköz egy központi menedzsernél regisztrált plugin osztály.
 
-### Plugin Base
+### Plugin alap
 
 ```c
-// VPP pattern (simplified)
+// VPP minta (egyszerűsítve)
 class PluginBase : Managed
 {
     void OnInit();
     void OnUpdate(float dt);
     void OnDestroy();
 
-    // Plugin identity
+    // Plugin azonosság
     string GetPluginName();
     bool IsServerOnly();
 };
@@ -186,12 +186,12 @@ class PluginBase : Managed
 
 ### ConfigurablePlugin
 
-VPP extends the base with a config-aware variant that automatically loads/saves settings:
+A VPP a bázist egy konfiguráció-tudatos változattal bővíti, amely automatikusan betölti/menti a beállításokat:
 
 ```c
 class ConfigurablePlugin : PluginBase
 {
-    // VPP auto-loads this from JSON on init
+    // A VPP automatikusan betölti ezt JSON-ból init-kor
     ref PluginConfigBase m_Config;
 
     override void OnInit()
@@ -217,36 +217,36 @@ class ConfigurablePlugin : PluginBase
 };
 ```
 
-### Registration
+### Regisztráció
 
-VPP registers plugins in the modded `MissionServer.OnInit()`:
+A VPP a pluginokat a modolt `MissionServer.OnInit()`-ben regisztrálja:
 
 ```c
-// VPP pattern
+// VPP minta
 GetPluginManager().RegisterPlugin(new VPPESPPlugin());
 GetPluginManager().RegisterPlugin(new VPPTeleportPlugin());
 GetPluginManager().RegisterPlugin(new VPPWeatherPlugin());
 ```
 
-### Key Characteristics
+### Kulcsjellemzők
 
-- **Manual registration**: each plugin is explicitly `new`-ed and registered
-- **Config integration**: `ConfigurablePlugin` merges config management with the module lifecycle
-- **Self-contained**: no dependency on CF; VPP's plugin manager is its own system
-- **Clear ownership**: the plugin manager holds `ref` to all plugins, controlling their lifetime
+- **Kézi regisztráció**: minden plugin kifejezetten `new`-val jön létre és regisztrálva van
+- **Konfiguráció integráció**: a `ConfigurablePlugin` egyesíti a konfigurációkezelést a modul életciklusával
+- **Önálló**: nincs CF függőség; a VPP plugin menedzsere a saját rendszere
+- **Egyértelmű tulajdonlás**: a plugin menedzser `ref`-et tart az összes pluginra, vezérelve azok élettartamát
 
 ---
 
-## Dabs Attribute-Based Registration
+## Dabs attribútum-alapú regisztráció
 
-The Dabs Framework (used in Dabs Framework Admin Tools) uses a more modern approach: C#-style attributes for auto-registration.
+A Dabs Framework (amelyet a Dabs Framework Admin Tools használ) egy modernebb megközelítést alkalmaz: C#-stílusú attribútumokat az automatikus regisztrációhoz.
 
-### The Concept
+### A koncepció
 
-Instead of manually registering modules, you annotate a class with an attribute, and the framework discovers it at startup using reflection:
+Ahelyett, hogy kézzel regisztrálnál modulokat, az osztályt attribútummal jelölöd, és a keretrendszer indításkor reflexió segítségével felfedezi:
 
 ```c
-// Dabs pattern (conceptual)
+// Dabs minta (koncepcionális)
 [CF_RegisterModule(DabsAdminESP)]
 class DabsAdminESP : CF_ModuleWorld
 {
@@ -258,40 +258,40 @@ class DabsAdminESP : CF_ModuleWorld
 };
 ```
 
-The `CF_RegisterModule` attribute tells CF's module manager to instantiate this class automatically. No manual `Register()` call needed.
+A `CF_RegisterModule` attribútum utasítja a CF modul menedzserét, hogy automatikusan példányosítsa ezt az osztályt. Nincs szükség kézi `Register()` hívásra.
 
-### How Discovery Works
+### Hogyan működik a felfedezés
 
-At startup, CF scans all loaded script classes for the registration attribute. For each match, it creates an instance and adds it to the module manager. This happens before `OnInit()` is called on any module.
+Indításkor a CF átvizsgálja az összes betöltött szkript osztályt a regisztrációs attribútum után. Minden egyezéshez létrehoz egy példányt és hozzáadja a modul menedzserhez. Ez azelőtt történik, hogy bármely modulon meghívná az `OnInit()`-et.
 
-### Key Characteristics
+### Kulcsjellemzők
 
-- **Zero boilerplate**: no registration code in mission classes
-- **Declarative**: the class itself declares that it is a module
-- **Relies on CF**: only works with Community Framework's attribute processing
-- **Discoverability**: you can find all modules by searching for the attribute in the codebase
+- **Nulla boilerplate**: nincs regisztrációs kód a mission osztályokban
+- **Deklaratív**: maga az osztály deklarálja, hogy modul
+- **CF-re támaszkodik**: csak a Community Framework attribútum-feldolgozásával működik
+- **Felfedezhetőség**: az összes modul megtalálható az attribútum keresésével a kódbázisban
 
 ---
 
-## MyMod MyModuleManager
+## Egyéni statikus modul menedzser
 
-MyFramework uses an explicit registration pattern with a static manager class. There is no instance of the manager --- it is entirely static methods and static storage.
+Ez a megközelítés explicit regisztrációs mintát használ statikus menedzser osztállyal. Nincs a menedzsernek példánya --- teljesen statikus metódusok és statikus tároló. Ez akkor hasznos, ha nulla függőséget szeretnél külső keretrendszerektől.
 
-### Module Base Classes
+### Modul alaposztályok
 
 ```c
-// Base: lifecycle hooks
+// Alap: életciklus-hookok
 class MyModuleBase : Managed
 {
-    bool IsServer();       // Override in subclass
-    bool IsClient();       // Override in subclass
+    bool IsServer();       // Alosztályban felülírandó
+    bool IsClient();       // Alosztályban felülírandó
     string GetModuleName();
     void OnInit();
     void OnMissionStart();
     void OnMissionFinish();
 };
 
-// Server-side module: adds OnUpdate + player events
+// Szerver oldali modul: OnUpdate + játékos események hozzáadása
 class MyServerModule : MyModuleBase
 {
     void OnUpdate(float dt);
@@ -299,26 +299,26 @@ class MyServerModule : MyModuleBase
     void OnPlayerDisconnect(PlayerIdentity identity, string uid);
 };
 
-// Client-side module: adds OnUpdate
+// Kliens oldali modul: OnUpdate hozzáadása
 class MyClientModule : MyModuleBase
 {
     void OnUpdate(float dt);
 };
 ```
 
-### Registration
+### Regisztráció
 
-Modules register themselves explicitly, typically from modded mission classes:
+A modulok explicit módon regisztrálják magukat, jellemzően modolt mission osztályokból:
 
 ```c
-// In modded MissionServer.OnInit():
+// A modolt MissionServer.OnInit()-ben:
 MyModuleManager.Register(new MyMissionServerModule());
 MyModuleManager.Register(new MyAIServerModule());
 ```
 
-### Lifecycle Dispatch
+### Életciklus diszpécselés
 
-The modded mission classes call into `MyModuleManager` at each lifecycle point:
+A modolt mission osztályok minden életciklus-ponton hívják a `MyModuleManager`-t:
 
 ```c
 modded class MissionServer
@@ -344,95 +344,98 @@ modded class MissionServer
 };
 ```
 
-### Listen-Server Safety
+### Listen szerver biztonság
 
-MyMod's module base classes enforce a critical invariant: `MyServerModule` returns `true` from `IsServer()` and `false` from `IsClient()`, while `MyClientModule` does the opposite. The manager uses these flags to avoid dispatching lifecycle events twice on listen servers (where both `MissionServer` and `MissionGameplay` run in the same process).
+Az egyéni modulrendszer alaposztályai egy kritikus invariánst érvényesítenek: a `MyServerModule` `true`-t ad vissza az `IsServer()`-ből és `false`-t az `IsClient()`-ből, míg a `MyClientModule` az ellenkezőjét. A menedzser ezeket a jelzőket használja, hogy elkerülje az életciklus-események kétszeri diszpécselését listen szervereken (ahol mind a `MissionServer`, mind a `MissionGameplay` ugyanabban a folyamatban fut).
 
-The base `MyModuleBase` returns `true` from both --- which is why the codebase warns against subclassing it directly.
+Az alap `MyModuleBase` mindkettőből `true`-t ad vissza --- ezért figyelmeztet a kódbázis a közvetlen alosztályozása ellen.
 
-### Key Characteristics
+### Kulcsjellemzők
 
-- **Zero dependencies**: no CF, no external frameworks
-- **Static manager**: no `GetInstance()` needed; purely static API
-- **Explicit registration**: full control over what gets registered and when
-- **Listen-server safe**: typed subclasses prevent double-dispatch
-- **Centralized cleanup**: `MyModuleManager.Cleanup()` tears down all modules and core timers
+- **Nulla függőség**: nincs CF, nincs külső keretrendszer
+- **Statikus menedzser**: nincs szükség `GetInstance()`-re; teljesen statikus API
+- **Explicit regisztráció**: teljes kontroll afölött, mi regisztrálódik és mikor
+- **Listen szerver biztonságos**: típusos alosztályok megakadályozzák a dupla diszpécselést
+- **Centralizált takarítás**: a `MyModuleManager.Cleanup()` az összes modult és core időzítőt lebontja
 
 ---
 
-## Module Lifecycle: The Universal Contract
+## Modul életciklus: Az univerzális szerződés
 
-Despite implementation differences, all four frameworks follow the same lifecycle contract:
+Az implementációs különbségek ellenére mind a négy keretrendszer ugyanazt az életciklus-szerződést követi:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Registration / Discovery                            │
-│  Module instance is created and registered            │
+│  Regisztráció / Felfedezés                           │
+│  A modul példány létrejön és regisztrálva van         │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnInit()                                            │
-│  One-time setup: allocate collections, register RPCs │
-│  Called once per module after registration            │
+│  Egyszeri beállítás: gyűjtemények foglalása, RPC      │
+│  regisztráció. Modulonként egyszer hívódik regisztráció│
+│  után                                                │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionStart()                                    │
-│  Mission is live: load configs, start timers,        │
-│  subscribe to events, spawn initial entities         │
+│  A küldetés él: konfigurációk betöltése, időzítők     │
+│  indítása, feliratkozás eseményekre, kezdeti          │
+│  entitások spawnolása                                │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
-│  OnUpdate(float dt)         [repeating every frame]  │
-│  Per-frame tick: process queues, update timers,      │
-│  check conditions, advance state machines            │
+│  OnUpdate(float dt)         [minden képkockán ismétlődik]│
+│  Képkockánkénti tick: sorok feldolgozása, időzítők    │
+│  frissítése, feltételek ellenőrzése, állapotgépek     │
+│  előreléptetése                                      │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │  OnMissionFinish()                                   │
-│  Teardown: save state, unsubscribe events,           │
-│  clear collections, null out references              │
+│  Lebontás: állapot mentése, leiratkozás eseményekről, │
+│  gyűjtemények kiürítése, referenciák nullázása        │
 └─────────────────────────────────────────────────────┘
 ```
 
-### Rules
+### Szabályok
 
-1. **OnInit comes before OnMissionStart.** Never load configs or spawn entities in `OnInit()` --- the world may not be ready yet.
-2. **OnUpdate receives delta time.** Always use `dt` for time-based logic, never assume a fixed frame rate.
-3. **OnMissionFinish must clean up everything.** Every `ref` collection must be cleared. Every event subscription must be removed. Every singleton must be destroyed. This is the only reliable teardown point.
-4. **Modules should not depend on each other's initialization order.** If Module A needs Module B, use lazy access (`GetModule()`) rather than assuming B was registered first.
+1. **Az OnInit az OnMissionStart előtt jön.** Soha ne tölts be konfigurációkat vagy spawnolj entitásokat az `OnInit()`-ben --- a világ még nem feltétlenül áll készen.
+2. **Az OnUpdate delta időt kap.** Mindig a `dt`-t használd az időalapú logikához, soha ne feltételezz fix képkockasebességet.
+3. **Az OnMissionFinish-nek mindent ki kell takarítania.** Minden `ref` gyűjteményt ki kell üríteni. Minden esemény-feliratkozást el kell távolítani. Minden singletont meg kell semmisíteni. Ez az egyetlen megbízható lebontási pont.
+4. **A modulok ne függjenek egymás inicializálási sorrendjétől.** Ha az A modulnak szüksége van a B modulra, használj lusta hozzáférést (`GetModule()`) ahelyett, hogy feltételeznéd, hogy B korábban regisztrálva lett.
 
 ---
 
-## Bevalt gyakorlatok for Module Design
+## Bevált gyakorlatok a modul tervezéshez
 
-### 1. One Module, One Responsibility
+### 1. Egy modul, egy felelősség
 
-A module should own exactly one domain. If you find yourself writing `VehicleAndIdojarasAndLootModule`, split it.
+Egy modul pontosan egy területet kell, hogy birtokoljon. Ha azon kapod magad, hogy `JárműÉsIdőjárásÉsLootModul`-t írsz, bontsd szét.
 
 ```c
-// GOOD: Focused modules
+// JÓ: Fókuszált modulok
 class MyLootModule : MyServerModule { ... }
 class MyVehicleModule : MyServerModule { ... }
 class MyWeatherModule : MyServerModule { ... }
 
-// BAD: God module
+// ROSSZ: Isten-modul
 class MyEverythingModule : MyServerModule { ... }
 ```
 
-### 2. Keep OnUpdate Cheap
+### 2. Tartsd olcsón az OnUpdate-et
 
-`OnUpdate` runs every frame. If your module does expensive work (file I/O, world scans, pathfinding), do it on a timer or batch it across frames:
+Az `OnUpdate` minden képkockán fut. Ha a modulod költséges munkát végez (fájl I/O, világ-szkennelés, útkereső), időzítővel vagy képkockák közötti kötegeléssel csináld:
 
 ```c
 class MyCleanupModule : MyServerModule
 {
     protected float m_CleanupTimer;
-    protected const float CLEANUP_INTERVAL = 300.0;  // Every 5 minutes
+    protected const float CLEANUP_INTERVAL = 300.0;  // 5 percenként
 
     override void OnUpdate(float dt)
     {
@@ -446,9 +449,9 @@ class MyCleanupModule : MyServerModule
 };
 ```
 
-### 3. Register RPCs in OnInit, Not OnMissionStart
+### 3. RPC-ket az OnInit-ben regisztráld, ne az OnMissionStart-ban
 
-RPC handlers must be in place before any client can send a message. `OnInit()` runs during module registration, which happens early in the mission setup. `OnMissionStart()` may be too late if clients connect fast.
+Az RPC kezelőknek a helyükön kell lenniük, mielőtt bármely kliens üzenetet küldhetne. Az `OnInit()` a modul regisztráció során fut, ami a küldetés beállítás elején történik. Az `OnMissionStart()` lehet, hogy túl késő, ha a kliensek gyorsan csatlakoznak.
 
 ```c
 class MyModule : MyServerModule
@@ -461,17 +464,17 @@ class MyModule : MyServerModule
 
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // Handle RPC
+        // RPC kezelése
     }
 };
 ```
 
-### 4. Use the Module Manager for Cross-Module Access
+### 4. Használd a modul menedzsert a modulok közötti hozzáféréshez
 
-Do not hold direct references to other modules. Use the manager's lookup:
+Ne tarts közvetlen referenciákat más modulokra. Használd a menedzser keresését:
 
 ```c
-// GOOD: Loose coupling through the manager
+// JÓ: Laza csatolás a menedzseren keresztül
 MyModuleBase mod = MyModuleManager.GetModule("MyAIServerModule");
 MyAIServerModule aiMod;
 if (Class.CastTo(aiMod, mod))
@@ -479,28 +482,28 @@ if (Class.CastTo(aiMod, mod))
     aiMod.PauseSpawning();
 }
 
-// BAD: Direct static reference creates hard coupling
+// ROSSZ: Közvetlen statikus referencia erős csatolást hoz létre
 MyAIServerModule.s_Instance.PauseSpawning();
 ```
 
-### 5. Guard Against Missing Dependencies
+### 5. Védekezz a hiányzó függőségek ellen
 
-Not every server runs every mod. If your module optionally integrates with another mod, use preprocessor checks:
+Nem minden szerver futtat minden modot. Ha a modulod opcionálisan integrálódik egy másik moddal, használj preprocesszor ellenőrzéseket:
 
 ```c
 override void OnMissionStart()
 {
     super.OnMissionStart();
 
-    #ifdef MyAI
+    #ifdef MYMOD_AI
     MyEventBus.OnMissionStarted.Insert(OnAIMissionStarted);
     #endif
 }
 ```
 
-### 6. Log Module Lifecycle Esemenyek
+### 6. Naplózd a modul életciklus-eseményeket
 
-Logging makes debugging straightforward. Every module should log when it initializes and shuts down:
+A naplózás egyszerűvé teszi a hibakeresést. Minden modulnak naplóznia kell, amikor inicializálódik és leáll:
 
 ```c
 override void OnInit()
@@ -512,27 +515,60 @@ override void OnInit()
 override void OnMissionFinish()
 {
     MyLog.Info("MyModule", "Shutting down");
-    // Cleanup...
+    // Takarítás...
 }
 ```
 
 ---
 
-## Comparison Table
+## Összehasonlító táblázat
 
-| Funkcio | CF_ModuleCore | VPP Plugin | Dabs Attribute | MyMod Module |
+| Jellemző | CF_ModuleCore | VPP Plugin | Dabs attribútum | Egyéni modul |
 |---------|--------------|------------|----------------|---------------|
-| **Discovery** | config.cpp + auto | Manual `Register()` | Attribute scan | Manual `Register()` |
-| **Base classes** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribute | ServerModule / ClientModule |
-| **Dependencies** | Requires CF | Self-contained | Requires CF | Self-contained |
-| **Listen-server safe** | CF handles it | Manual check | CF handles it | Typed subclasses |
-| **Config integration** | Separate | Built into ConfigurablePlugin | Separate | Via MyConfigManager |
-| **Update dispatch** | Automatic | Manager calls `OnUpdate` | Automatic | Manager calls `OnUpdate` |
-| **Cleanup** | CF handles it | Manual `OnDestroy` | CF handles it | `MyModuleManager.Cleanup()` |
-| **Cross-mod access** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
+| **Felfedezés** | config.cpp + auto | Kézi `Register()` | Attribútum szkennelés | Kézi `Register()` |
+| **Alaposztályok** | Game / World / Mission | PluginBase / ConfigurablePlugin | CF_ModuleWorld + attribútum | ServerModule / ClientModule |
+| **Függőségek** | CF szükséges | Önálló | CF szükséges | Önálló |
+| **Listen szerver biztonságos** | CF kezeli | Kézi ellenőrzés | CF kezeli | Típusos alosztályok |
+| **Konfiguráció integráció** | Külön | Beépítve a ConfigurablePlugin-be | Külön | MyConfigManager-en keresztül |
+| **Update diszpécselés** | Automatikus | A menedzser hívja az `OnUpdate`-et | Automatikus | A menedzser hívja az `OnUpdate`-et |
+| **Takarítás** | CF kezeli | Kézi `OnDestroy` | CF kezeli | `MyModuleManager.Cleanup()` |
+| **Mod-közi hozzáférés** | `CF_Modules<T>.Get()` | `GetPluginManager().Get()` | `CF_Modules<T>.Get()` | `MyModuleManager.GetModule()` |
 
-Choose the approach that matches your mod's dependency profile. If you already depend on CF, use `CF_ModuleCore`. If you want zero external dependencies, build your own system following the MyMod or VPP pattern.
+Válaszd azt a megközelítést, amely illeszkedik a modod függőségi profiljához. Ha már függsz a CF-től, használd a `CF_ModuleCore`-t. Ha nulla külső függőséget szeretnél, építsd meg a saját rendszered az egyéni menedzser vagy VPP minta alapján.
 
 ---
 
-[<< Elozo: Singleton Pattern](01-singletons.md) | [Kezdolap](../../README.md) | [Kovetkezo: RPC mintak >>](03-rpc-patterns.md)
+## Kompatibilitás és hatás
+
+- **Multi-Mod:** Több mod is regisztrálhatja a saját moduljait ugyanannál a menedzsernél (CF, VPP vagy egyéni). Névütközések csak akkor fordulnak elő, ha két mod ugyanazt az osztálytípust regisztrálja --- használj egyedi, a mod előtagjával ellátott osztályneveket.
+- **Betöltési sorrend:** A CF a `config.cpp`-ből fedezi fel a modulokat, így a betöltési sorrend a `requiredAddons`-t követi. Az egyéni menedzserek az `OnInit()`-ben regisztrálják a modulokat, ahol a `modded class` lánc határozza meg a sorrendet. A moduloknak nem kellene a regisztrációs sorrendtől függeniük --- használj lusta hozzáférési mintákat.
+- **Listen szerver:** Listen szervereken mind a `MissionServer`, mind a `MissionGameplay` ugyanabban a folyamatban fut. Ha a modul menedzsered mindkettőből diszpécsel `OnUpdate`-et, a modulok dupla tick-eket kapnak. Használj típusos alosztályokat (`ServerModule` / `ClientModule`), amelyek `IsServer()`-t vagy `IsClient()`-t adnak vissza ennek megakadályozásához.
+- **Teljesítmény:** A modul diszpécselés egy ciklusiterációt ad hozzá regisztrált modulonként életciklus-hívásonként. 10--20 modullal ez elhanyagolható. Biztosítsd, hogy az egyes modulok `OnUpdate` metódusai olcsók legyenek (lásd a 7.7. fejezetet).
+- **Migráció:** DayZ verziók frissítésekor a modulrendszerek stabilak, amíg az alaposztály API (`CF_ModuleWorld`, `PluginBase` stb.) nem változik. Rögzítsd a CF függőségi verziódat a törés elkerüléséhez.
+
+---
+
+## Gyakori hibák
+
+| Hiba | Hatás | Javítás |
+|---------|--------|-----|
+| Hiányzó `OnMissionFinish` takarítás egy modulban | Gyűjtemények, időzítők és esemény-feliratkozások túlélik a küldetés-újraindításokat, elavult adatokat vagy összeomlásokat okozva | Írd felül az `OnMissionFinish`-t, ürítsd ki az összes `ref` gyűjteményt, iratkozz le minden eseményről |
+| Életciklus-események kétszeri diszpécselése listen szervereken | Szerver modulok futtatják a kliens logikát és fordítva; dupla spawnok, dupla RPC küldések | Használj `IsServer()` / `IsClient()` védelmeket vagy típusos modul alosztályokat, amelyek kikényszerítik a szétválasztást |
+| RPC-k regisztrálása az `OnMissionStart`-ban az `OnInit` helyett | A küldetés beállítás során csatlakozó kliensek küldhetnek RPC-ket, mielőtt a kezelők készek --- az üzenetek csendben eldobódnak | Mindig az `OnInit()`-ben regisztráld az RPC kezelőket, amely a modul regisztráció során fut, mielőtt bármely kliens csatlakozna |
+| Egy "Isten-modul" mindent kezel | Lehetetlen hibakeresni, tesztelni vagy bővíteni; összevonási konfliktusok, amikor több fejlesztő dolgozik rajta | Bontsd fókuszált modulokra, mindegyik egyetlen felelősséggel |
+| Közvetlen `ref` tartása másik modul példányra | Erős csatolást és potenciális ref-ciklus memóriaszivárgásokat hoz létre | Használd a modul menedzser keresését (`GetModule()`, `CF_Modules<T>.Get()`) a modulok közötti hozzáféréshez |
+
+---
+
+## Elmélet vs gyakorlat
+
+| Az elmélet azt mondja | DayZ valóság |
+|---------------|-------------|
+| A modulfelfedezésnek automatikusnak kell lennie reflexión keresztül | Az Enforce Script reflexió korlátozott; a `config.cpp`-alapú felfedezés (CF) vagy explicit `Register()` hívások az egyetlen megbízható megközelítések |
+| A moduloknak futásidőben cserélhetőnek kell lenniük | A DayZ nem támogatja a szkriptek menet közbeni újratöltését; a modulok a teljes küldetés életciklus alatt élnek |
+| Használj interfészeket a modul szerződésekhez | Az Enforce Scriptben nincs `interface` kulcsszó; használj alaposztály virtuális metódusokat (`override`) helyette |
+| A függőséginjektálás szétválasztja a modulokat | Nem létezik DI keretrendszer; használj menedzser kereséseket és `#ifdef` védelmeket az opcionális mod-közi függőségekhez |
+
+---
+
+[Kezdőlap](../../README.md) | [<< Előző: Singleton minta](01-singletons.md) | **Modul / Plugin rendszerek** | [Következő: RPC minták >>](03-rpc-patterns.md)

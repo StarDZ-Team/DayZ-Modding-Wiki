@@ -1,77 +1,77 @@
-# Chapter 4.7: Workbench Guide
+# Глава 4.7: Руководство по Workbench
 
-[Home](../../README.md) | [<< Previous: PBO Packing](06-pbo-packing.md) | **Workbench Guide** | [Next: Building Modeling >>](08-building-modeling.md)
+[Главная](../../README.md) | [<< Предыдущая: Упаковка PBO](06-pbo-packing.md) | **Руководство по Workbench** | [Следующая: Моделирование зданий >>](08-building-modeling.md)
 
 ---
 
 ## Введение
 
-Workbench --- это интегрированная среда разработки Bohemia Interactive для движка Enfusion. Она поставляется с DayZ Tools и является единственным официальным инструментом, понимающим Enforce Script на уровне языка. While many modders write code in VS Code or other editors, Workbench remains indispensable for tasks no other tool can perform: attaching a debugger to a running DayZ instance, setting breakpoints, stepping through code, inspecting variables at runtime, previewing `.layout` UI files, browsing game resources, and running live script commands through the built-in console.
+Workbench --- это интегрированная среда разработки Bohemia Interactive для движка Enfusion. Она поставляется с DayZ Tools и является единственным официальным инструментом, понимающим Enforce Script на уровне языка. Хотя многие моддеры пишут код в VS Code или других редакторах, Workbench остаётся незаменимым для задач, которые не может выполнить ни один другой инструмент: подключение отладчика к запущенному экземпляру DayZ, установка точек останова, пошаговое выполнение кода, инспекция переменных во время выполнения, предварительный просмотр `.layout` файлов UI, навигация по игровым ресурсам и выполнение скриптовых команд в реальном времени через встроенную консоль.
 
 ---
 
 ## Содержание
 
-- [What is Workbench?](#what-is-workbench)
-- [Installation and Setup](#installation-and-setup)
-- [Project Files (.gproj)](#project-files-gproj)
-- [The Workbench Interface](#the-workbench-interface)
-- [Script Editing](#script-editing)
-- [Debugging Scripts](#debugging-scripts)
-- [Script Console -- Live Testing](#script-console----live-testing)
-- [UI / Layout Preview](#ui--layout-preview)
-- [Resource Browser](#resource-browser)
-- [Performance Profiling](#performance-profiling)
-- [Integration with File Patching](#integration-with-file-patching)
-- [Common Workbench Issues](#common-workbench-issues)
-- [Tips and Best Practices](#tips-and-best-practices)
+- [Что такое Workbench?](#что-такое-workbench)
+- [Установка и настройка](#установка-и-настройка)
+- [Файлы проекта (.gproj)](#файлы-проекта-gproj)
+- [Интерфейс Workbench](#интерфейс-workbench)
+- [Редактирование скриптов](#редактирование-скриптов)
+- [Отладка скриптов](#отладка-скриптов)
+- [Консоль скриптов --- тестирование в реальном времени](#консоль-скриптов----тестирование-в-реальном-времени)
+- [Предварительный просмотр UI / макетов](#предварительный-просмотр-ui--макетов)
+- [Обозреватель ресурсов](#обозреватель-ресурсов)
+- [Профилирование производительности](#профилирование-производительности)
+- [Интеграция с патчингом файлов](#интеграция-с-патчингом-файлов)
+- [Распространённые проблемы Workbench](#распространённые-проблемы-workbench)
+- [Советы и лучшие практики](#советы-и-лучшие-практики)
 
 ---
 
 ## Что такое Workbench?
 
-Workbench is Bohemia's IDE for Enfusion engine development. It is the only tool in the DayZ Tools suite that can compile, analyze, and debug Enforce Script. It serves six purposes:
+Workbench --- это IDE от Bohemia для разработки на движке Enfusion. Это единственный инструмент в составе DayZ Tools, который может компилировать, анализировать и отлаживать Enforce Script. Он служит шести целям:
 
 | Назначение | Описание |
-|---------|-------------|
-| **Редактирование скриптов** | Подсветка синтаксиса, автодополнение и проверка ошибок for `.c` files |
+|------------|----------|
+| **Редактирование скриптов** | Подсветка синтаксиса, автодополнение и проверка ошибок для `.c` файлов |
 | **Отладка скриптов** | Точки останова, инспекция переменных, стек вызовов, пошаговое выполнение |
-| **Просмотр ресурсов** | Навигация и предварительный просмотр игровых ассетов -- models, textures, configs, layouts |
-| **Предварительный просмотр UI / макетов** | Визуальный предварительный просмотр `.layout` widget hierarchies with property inspection |
+| **Просмотр ресурсов** | Навигация и предварительный просмотр игровых ассетов -- модели, текстуры, конфиги, макеты |
+| **Предварительный просмотр UI / макетов** | Визуальный предварительный просмотр иерархий виджетов `.layout` с инспекцией свойств |
 | **Профилирование производительности** | Профилирование скриптов, анализ времени кадра, мониторинг памяти |
-| **Консоль скриптов** | Выполнение команд Enforce Script в реальном времени against a running game instance |
+| **Консоль скриптов** | Выполнение команд Enforce Script в реальном времени для запущенного экземпляра игры |
 
-Workbench uses the same Enfusion script compiler as DayZ itself. When Workbench reports a compile error, that error will also occur in-game -- making it a reliable pre-flight check before launching.
+Workbench использует тот же компилятор скриптов Enfusion, что и сам DayZ. Когда Workbench сообщает об ошибке компиляции, эта ошибка также произойдёт в игре -- что делает его надёжной предварительной проверкой перед запуском.
 
 ### Чем Workbench НЕ является
 
-- **Not a general-purpose code editor.** It lacks refactoring tools, Git integration, multi-cursor editing, and the extension ecosystem of VS Code.
-- **Not a game launcher.** You still run `DayZDiag_x64.exe` separately; Workbench connects to it.
-- **Not required for building PBOs.** AddonBuilder and build scripts handle PBO packing independently.
+- **Не универсальный редактор кода.** В нём нет инструментов рефакторинга, интеграции с Git, мультикурсорного редактирования и экосистемы расширений VS Code.
+- **Не средство запуска игры.** Вы по-прежнему запускаете `DayZDiag_x64.exe` отдельно; Workbench подключается к нему.
+- **Не требуется для сборки PBO.** AddonBuilder и скрипты сборки обрабатывают упаковку PBO независимо.
 
 ---
 
 ## Установка и настройка
 
-### Шаг 1: Install DayZ Tools
+### Шаг 1: Установите DayZ Tools
 
-Workbench is included with DayZ Tools, distributed free through Steam. Open Steam Library, enable the **Tools** filter, search for **DayZ Tools**, and install (~2 GB).
+Workbench входит в состав DayZ Tools, распространяемых бесплатно через Steam. Откройте библиотеку Steam, включите фильтр **Инструменты**, найдите **DayZ Tools** и установите (~2 ГБ).
 
-### Шаг 2: Locate Workbench
+### Шаг 2: Найдите Workbench
 
 ```
 Steam\steamapps\common\DayZ Tools\Bin\Workbench\
-  workbenchApp.exe          <-- The Workbench executable
-  dayz.gproj                <-- Default project file
+  workbenchApp.exe          <-- Исполняемый файл Workbench
+  dayz.gproj                <-- Файл проекта по умолчанию
 ```
 
-### Шаг 3: Mount the P: Drive
+### Шаг 3: Смонтируйте диск P:
 
-Workbench requires the P: drive (workdrive) to be mounted. Without it, Workbench fails to start or shows an empty resource browser. Mount via DayZ Tools Launcher, your project's `SetupWorkdrive.bat`, or manually: `subst P: "D:\YourWorkDir"`.
+Workbench требует смонтированного диска P: (рабочий диск). Без него Workbench не запускается или показывает пустой обозреватель ресурсов. Смонтируйте через DayZ Tools Launcher, `SetupWorkdrive.bat` вашего проекта или вручную: `subst P: "D:\YourWorkDir"`.
 
-### Шаг 4: Extract Vanilla Scripts
+### Шаг 4: Извлеките ванильные скрипты
 
-Workbench needs vanilla DayZ scripts on P: to compile your mod (since your code extends vanilla classes):
+Workbench нуждается в ванильных скриптах DayZ на P: для компиляции вашего мода (поскольку ваш код расширяет ванильные классы):
 
 ```
 P:\scripts\
@@ -82,38 +82,38 @@ P:\scripts\
   5_Mission\
 ```
 
-Extract these via the DayZ Tools Launcher, or create a symbolic link to the extracted scripts directory.
+Извлеките их через DayZ Tools Launcher или создайте символическую ссылку на директорию извлечённых скриптов.
 
-### Шаг 4б: Link Game Install to Project Drive (for Live Hotloading)
+### Шаг 4б: Связывание игровой установки с диском проекта (для горячей перезагрузки)
 
-To allow DayZDiag to load scripts directly from your Project Drive (enabling live editing without PBO rebuilds), create a symbolic link from the DayZ installation folder to `P:\scripts`:
+Чтобы позволить DayZDiag загружать скрипты напрямую с вашего диска проекта (обеспечивая живое редактирование без пересборки PBO), создайте символическую ссылку из папки установки DayZ на `P:\scripts`:
 
-1. Navigate to your DayZ installation folder (typically `Steam\steamapps\common\DayZ`).
-2. Delete any existing `scripts` folder inside it.
-3. Open a command prompt **as Administrator** and run:
+1. Перейдите в папку установки DayZ (обычно `Steam\steamapps\common\DayZ`).
+2. Удалите существующую папку `scripts` внутри неё.
+3. Откройте командную строку **от имени администратора** и выполните:
 
 ```batch
 mklink /J "C:\...\steamapps\common\DayZ\scripts" "P:\scripts"
 ```
 
-Replace the first path with your actual DayZ installation path. After this, the DayZ install folder will contain a `scripts` junction that points to `P:\scripts`. Any changes you make on the Project Drive are immediately visible to the game.
+Замените первый путь на фактический путь установки DayZ. После этого папка установки DayZ будет содержать junction `scripts`, указывающий на `P:\scripts`. Любые изменения, сделанные на диске проекта, немедленно видны игре.
 
-### Шаг 5: Configure Source Data Directory
+### Шаг 5: Настройте директорию исходных данных
 
-1. Launch `workbenchApp.exe`.
-2. Click **Workbench > Options** in the menu bar.
-3. Set **Source data directory** to `P:\`.
-4. Click **OK** and allow Workbench to restart.
+1. Запустите `workbenchApp.exe`.
+2. Нажмите **Workbench > Options** в строке меню.
+3. Установите **Source data directory** на `P:\`.
+4. Нажмите **OK** и позвольте Workbench перезапуститься.
 
 ---
 
 ## Файлы проекта (.gproj)
 
-The `.gproj` file is Workbench's project configuration. It tells Workbench where to find scripts, which image sets to load for layout preview, and which widget styles are available.
+Файл `.gproj` --- это конфигурация проекта Workbench. Он указывает Workbench, где искать скрипты, какие наборы изображений загружать для предварительного просмотра макетов и какие стили виджетов доступны.
 
 ### Расположение файла
 
-Convention is to place it in a `Workbench/` directory inside your mod:
+Принято размещать его в директории `Workbench/` внутри вашего мода:
 
 ```
 P:\MyMod\
@@ -126,9 +126,9 @@ P:\MyMod\
   config.cpp
 ```
 
-### Структура Overview
+### Обзор структуры
 
-A `.gproj` uses a proprietary text format (not JSON, not XML):
+Файл `.gproj` использует проприетарный текстовый формат (не JSON, не XML):
 
 ```
 GameProjectClass {
@@ -150,7 +150,7 @@ GameProjectClass {
                 "gui/imagesets/ccgui_enforce.imageset"
                 "gui/imagesets/dayz_gui.imageset"
                 "gui/imagesets/dayz_inventory.imageset"
-                // ... other vanilla image sets ...
+                // ... другие ванильные наборы изображений ...
                 "MyMod/gui/imagesets/my_imageset.imageset"
             }
 
@@ -213,57 +213,57 @@ GameProjectClass {
 
 ### Объяснение ключевых секций
 
-**FileSystem** -- Root directories where Workbench searches for files. At minimum, include `P:/`. You can add additional paths (e.g., Steam DayZ install directory) if files live outside the workdrive.
+**FileSystem** -- Корневые директории, в которых Workbench ищет файлы. Как минимум, включите `P:/`. Вы можете добавить дополнительные пути (например, директорию установки DayZ через Steam), если файлы находятся вне рабочего диска.
 
-**ScriptModules** -- The most important section. Maps each engine layer to script directories:
+**ScriptModules** -- Самая важная секция. Сопоставляет каждый слой движка с директориями скриптов:
 
 | Модуль | Слой | Точка входа | Назначение |
-|--------|-------|------------|---------|
-| `core` | `1_Core` | `""` | Engine core, basic types |
-| `gameLib` | `2_GameLib` | `""` | Game library utilities |
-| `game` | `3_Game` | `"CreateGame"` | Enums, constants, game init |
-| `world` | `4_World` | `""` | Entities, managers |
-| `mission` | `5_Mission` | `"CreateMission"` | Mission hooks, UI panels |
-| `workbench` | (tools) | `""` | Workbench plugins |
+|--------|------|-------------|------------|
+| `core` | `1_Core` | `""` | Ядро движка, базовые типы |
+| `gameLib` | `2_GameLib` | `""` | Утилиты игровой библиотеки |
+| `game` | `3_Game` | `"CreateGame"` | Перечисления, константы, инициализация игры |
+| `world` | `4_World` | `""` | Сущности, менеджеры |
+| `mission` | `5_Mission` | `"CreateMission"` | Хуки миссий, UI-панели |
+| `workbench` | (инструменты) | `""` | Плагины Workbench |
 
-Vanilla paths come first, then your mod paths. If your mod depends on other mods (like Community Framework), add their paths too:
+Ванильные пути идут первыми, затем пути вашего мода. Если ваш мод зависит от других модов (например, Community Framework), добавьте и их пути:
 
 ```
 ScriptModulePathClass {
     Name "game"
     Paths {
-        "scripts/3_Game"              // Vanilla
+        "scripts/3_Game"              // Ванильный
         "JM/CF/Scripts/3_Game"        // Community Framework
-        "MyMod/Scripts/3_Game"        // Your mod
+        "MyMod/Scripts/3_Game"        // Ваш мод
     }
     EntryPoint "CreateGame"
 }
 ```
 
-Some frameworks override entry points (CF uses `"CF_CreateGame"`).
+Некоторые фреймворки переопределяют точки входа (CF использует `"CF_CreateGame"`).
 
-**imageSets / widgetStyles** -- Required for layout preview. Without vanilla image sets, layout files show missing images. Always include the standard 14 vanilla image sets listed in the example above.
+**imageSets / widgetStyles** -- Необходимы для предварительного просмотра макетов. Без ванильных наборов изображений файлы макетов показывают отсутствующие изображения. Всегда включайте стандартные 14 ванильных наборов изображений, перечисленных в примере выше.
 
 ### Разрешение префиксов путей
 
-When Workbench auto-resolves script paths from a mod's `config.cpp`, the FileSystem path is prepended. If your mod is at `P:\OtherMods\MyMod` and config.cpp declares `MyMod/scripts/3_Game`, the FileSystem must include `P:\OtherMods` for correct resolution.
+Когда Workbench автоматически разрешает пути скриптов из `config.cpp` мода, путь FileSystem добавляется в начало. Если ваш мод находится в `P:\OtherMods\MyMod` и config.cpp объявляет `MyMod/scripts/3_Game`, FileSystem должен включать `P:\OtherMods` для корректного разрешения.
 
 ### Создание и запуск
 
-**Create a .gproj:** Copy the default `dayz.gproj` from `DayZ Tools\Bin\Workbench\`, update `ID`/`TITLE`, and add your mod's script paths to each module.
+**Создание .gproj:** Скопируйте стандартный `dayz.gproj` из `DayZ Tools\Bin\Workbench\`, обновите `ID`/`TITLE` и добавьте пути скриптов вашего мода в каждый модуль.
 
-**Launch with custom project:**
+**Запуск с пользовательским проектом:**
 ```batch
 workbenchApp.exe -project="P:\MyMod\Workbench\dayz.gproj"
 ```
 
-**Launch with -mod (auto-configure from config.cpp):**
+**Запуск с -mod (автонастройка из config.cpp):**
 ```batch
 workbenchApp.exe -mod=P:\MyMod
 workbenchApp.exe -mod=P:\CommunityFramework;P:\MyMod
 ```
 
-The `-mod` approach is simpler but gives less control. For complex multi-mod setups, a custom `.gproj` is more reliable.
+Подход `-mod` проще, но даёт меньше контроля. Для сложных мульти-мод конфигураций пользовательский `.gproj` надёжнее.
 
 ---
 
@@ -272,22 +272,22 @@ The `-mod` approach is simpler but gives less control. For complex multi-mod set
 ### Главная панель меню
 
 | Меню | Ключевые элементы |
-|------|-----------|
-| **File** | Open project, recent projects, save |
-| **Edit** | Cut, copy, paste, find, replace |
-| **View** | Toggle panels on/off, reset layout |
-| **Workbench** | Options (source data directory, preferences) |
-| **Debug** | Start/stop debugging, client/server toggle, breakpoint management |
-| **Plugins** | Installed Workbench plugins and tool addons |
+|------|-------------------|
+| **File** | Открыть проект, недавние проекты, сохранить |
+| **Edit** | Вырезать, копировать, вставить, найти, заменить |
+| **View** | Переключение панелей, сброс макета |
+| **Workbench** | Настройки (директория исходных данных, предпочтения) |
+| **Debug** | Запуск/остановка отладки, переключение клиент/сервер, управление точками останова |
+| **Plugins** | Установленные плагины Workbench и дополнения инструментов |
 
 ### Панели
 
-- **Resource Browser** (left) -- File tree of the P: drive. Double-click `.c` files to edit, `.layout` files to preview, `.p3d` to view models, `.paa` to view textures.
-- **Script Editor** (center) -- Code editing area with syntax highlighting, code completion, error underlines, line numbers, breakpoint markers, and tabbed multi-file editing.
-- **Output** (bottom) -- Compiler errors/warnings, `Print()` output from a connected game, debug messages. When connected to DayZDiag, this window streams all text that the diagnostic executable prints for debug purposes in real time ---  same output you would see in script logs. Double-click errors to navigate to the source line.
-- **Properties** (right) -- Properties of the selected object. Most useful in the Layout Editor for widget inspection.
-- **Console** -- Live Enforce Script command execution.
-- **Debug panels** (when debugging) -- **Locals** (current scope variables), **Watch** (user expressions), **Call Stack** (function chain), **Breakpoints** (list with enable/disable toggles).
+- **Обозреватель ресурсов** (слева) -- Дерево файлов диска P:. Двойной клик по `.c` файлам для редактирования, `.layout` файлам для предварительного просмотра, `.p3d` для просмотра моделей, `.paa` для просмотра текстур.
+- **Редактор скриптов** (в центре) -- Область редактирования кода с подсветкой синтаксиса, автодополнением, подчёркиванием ошибок, номерами строк, маркерами точек останова и редактированием нескольких файлов во вкладках.
+- **Вывод** (внизу) -- Ошибки/предупреждения компилятора, вывод `Print()` от подключённой игры, отладочные сообщения. При подключении к DayZDiag это окно транслирует в реальном времени весь текст, который диагностический исполняемый файл выводит для целей отладки -- тот же вывод, что вы видели бы в журналах скриптов. Двойной клик по ошибкам для перехода к строке в исходном коде.
+- **Свойства** (справа) -- Свойства выбранного объекта. Наиболее полезны в редакторе макетов для инспекции виджетов.
+- **Консоль** -- Выполнение команд Enforce Script в реальном времени.
+- **Панели отладки** (при отладке) -- **Locals** (переменные текущей области видимости), **Watch** (пользовательские выражения), **Call Stack** (цепочка вызовов функций), **Breakpoints** (список с переключением включения/отключения).
 
 ---
 
@@ -295,82 +295,82 @@ The `-mod` approach is simpler but gives less control. For complex multi-mod set
 
 ### Открытие файлов
 
-1. **Resource Browser:** Double-click a `.c` file. This automatically opens the Script Editor module and loads the file.
-2. **Script Editor Resource Browser:** The Script Editor has its own built-in Resource Browser panel, separate from the main Workbench Resource Browser. You can use either to navigate and open script files.
-3. **File > Open:** Standard file dialog.
-4. **Error output:** Double-click a compiler error to jump to the file and line.
+1. **Обозреватель ресурсов:** Двойной клик по `.c` файлу. Это автоматически открывает модуль редактора скриптов и загружает файл.
+2. **Обозреватель ресурсов редактора скриптов:** Редактор скриптов имеет собственную встроенную панель обозревателя ресурсов, отдельную от основного обозревателя ресурсов Workbench. Вы можете использовать любой из них для навигации и открытия файлов скриптов.
+3. **File > Open:** Стандартный диалог открытия файла.
+4. **Вывод ошибок:** Двойной клик по ошибке компилятора для перехода к файлу и строке.
 
 ### Подсветка синтаксиса
 
 | Элемент | Подсветка |
-|---------|-------------|
-| Keywords (`class`, `if`, `while`, `return`, `modded`, `override`) | Bold / keyword color |
-| Types (`int`, `float`, `string`, `bool`, `vector`, `void`) | Type color |
-| Strings, comments, preprocessor directives | Distinct colors |
+|---------|-----------|
+| Ключевые слова (`class`, `if`, `while`, `return`, `modded`, `override`) | Жирный / цвет ключевых слов |
+| Типы (`int`, `float`, `string`, `bool`, `vector`, `void`) | Цвет типов |
+| Строки, комментарии, директивы препроцессора | Отдельные цвета |
 
 ### Автодополнение кода
 
-Type a class name followed by `.` to see methods and fields, or press `Ctrl+Space` for suggestions. Completion is based on the compiled script context. It is functional but limited compared to VS Code -- best for quick API lookups.
+Введите имя класса, затем `.`, чтобы увидеть методы и поля, или нажмите `Ctrl+Space` для предложений. Автодополнение основано на контексте скомпилированных скриптов. Оно функционально, но ограничено по сравнению с VS Code -- лучше всего подходит для быстрого поиска по API.
 
 ### Обратная связь компилятора
 
-Workbench compiles on save. Common errors:
+Workbench компилирует при сохранении. Типичные ошибки:
 
 | Сообщение | Значение |
-|---------|---------|
+|-----------|----------|
 | `Undefined variable 'xyz'` | Не объявлена или опечатка |
 | `Method 'Foo' not found in class 'Bar'` | Неверное имя метода или класса |
 | `Cannot convert 'string' to 'int'` | Несоответствие типов |
-| `Type 'MyClass' not found` | Файл не в проекте |
+| `Type 'MyClass' not found` | Файл не включён в проект |
 
 ### Поиск, замена и переход к определению
 
-- `Ctrl+F` / `Ctrl+H` -- find/replace in current file.
-- `Ctrl+Shift+F` -- search across all project files.
-- Right-click a symbol and select **Go to Definition** to jump to its declaration, even into vanilla scripts.
+- `Ctrl+F` / `Ctrl+H` -- поиск/замена в текущем файле.
+- `Ctrl+Shift+F` -- поиск по всем файлам проекта.
+- Правый клик по символу и выберите **Go to Definition** для перехода к объявлению, даже в ванильных скриптах.
 
 ---
 
 ## Отладка скриптов
 
-Debugging is Workbench's most powerful feature -- pause a running DayZ instance, inspect every variable, and step through code line by line.
+Отладка --- самая мощная функция Workbench -- приостановите работающий экземпляр DayZ, инспектируйте каждую переменную и пошагово проходите код строка за строкой.
 
 ### Предварительные требования
 
-- **DayZDiag_x64.exe** (not retail DayZ) -- only the Diag build supports debugging.
-- **P: drive mounted** with vanilla scripts extracted.
-- **Scripts must match** --- если you edit after game loads, line numbers will not align.
+- **DayZDiag_x64.exe** (не розничный DayZ) -- только Diag-сборка поддерживает отладку.
+- **Диск P: смонтирован** с извлечёнными ванильными скриптами.
+- **Скрипты должны совпадать** -- если вы редактируете после загрузки игры, номера строк не будут совпадать.
 
 ### Настройка сессии отладки
 
-1. Open Workbench and load your project.
-2. Open the **Script Editor** module (from the menu bar or by double-clicking any `.c` file in the Resource Browser --- это automatically opens the Script Editor and loads the file).
-3. Launch DayZDiag separately:
+1. Откройте Workbench и загрузите ваш проект.
+2. Откройте модуль **Script Editor** (из строки меню или двойным кликом по любому `.c` файлу в обозревателе ресурсов -- это автоматически откроет редактор скриптов и загрузит файл).
+3. Запустите DayZDiag отдельно:
 
 ```batch
 DayZDiag_x64.exe -filePatching -mod=P:\MyMod -connect=127.0.0.1 -port=2302
 ```
 
-4. Workbench auto-detects DayZDiag and connects. A brief popup appears in the lower-right corner of the screen confirming the connection.
+4. Workbench автоматически обнаруживает DayZDiag и подключается. В правом нижнем углу экрана появляется краткое уведомление, подтверждающее подключение.
 
-> **Совет:** If you only need to see console output (no breakpoints or stepping), you do not need to extract PBOs or load scripts into Workbench. The Script Editor will still connect to DayZDiag and display the Output stream. However, breakpoints and code navigation require the matching script files to be loaded in the project.
+> **Совет:** Если вам нужно только видеть консольный вывод (без точек останова или пошагового выполнения), вам не нужно извлекать PBO или загружать скрипты в Workbench. Редактор скриптов всё равно подключится к DayZDiag и отобразит поток вывода. Однако точки останова и навигация по коду требуют загрузки соответствующих файлов скриптов в проект.
 
 ### Точки останова
 
-Click the left margin next to a line number. A red dot appears.
+Кликните на левый отступ рядом с номером строки. Появится красная точка.
 
 | Маркер | Значение |
-|--------|---------|
-| Red dot | Активная точка останова -- выполнение приостанавливается здесь |
-| Yellow exclamation | Недействительная --- это line never executes |
-| Blue dot | Закладка -- только маркер навигации |
+|--------|----------|
+| Красная точка | Активная точка останова -- выполнение приостанавливается здесь |
+| Жёлтый восклицательный знак | Недействительная -- эта строка никогда не выполняется |
+| Синяя точка | Закладка -- только маркер навигации |
 
-Toggle with `F9`. You can also left-click directly in the margin area (where the red dots appear) to add or remove breakpoints. Right-clicking in the margin adds a blue **Закладка** instead -- bookmarks have no effect on execution but mark places you want to revisit. Right-click a breakpoint to set a **condition** (e.g., `i == 10` or `player.GetIdentity().GetName() == "TestPlayer"`).
+Переключение клавишей `F9`. Вы также можете кликнуть левой кнопкой мыши прямо в области отступа (где появляются красные точки) для добавления или удаления точек останова. Правый клик в области отступа добавляет синюю **закладку** -- закладки не влияют на выполнение, но отмечают места, к которым вы хотите вернуться. Правый клик по точке останова для установки **условия** (например, `i == 10` или `player.GetIdentity().GetName() == "TestPlayer"`).
 
 ### Пошаговое выполнение кода
 
 | Действие | Горячая клавиша | Описание |
-|--------|----------|-------------|
+|----------|-----------------|----------|
 | Продолжить | `F5` | Выполнить до следующей точки останова |
 | Шаг через | `F10` | Выполнить текущую строку, перейти к следующей |
 | Шаг внутрь | `F11` | Войти в вызываемую функцию |
@@ -379,48 +379,48 @@ Toggle with `F9`. You can also left-click directly in the margin area (where the
 
 ### Инспекция переменных
 
-The **Locals** panel shows all variables in scope -- primitives with values, objects with class names (expandable), arrays with lengths, and NULL references clearly marked. The **Watch** panel evaluates custom expressions at each pause. The **Call Stack** shows the function chain; click entries to navigate.
+Панель **Locals** показывает все переменные в области видимости -- примитивы со значениями, объекты с именами классов (раскрываемые), массивы с длинами и чётко помеченные NULL-ссылки. Панель **Watch** вычисляет пользовательские выражения при каждой паузе. **Call Stack** показывает цепочку вызовов функций; кликайте по записям для навигации.
 
 ### Отладка клиента и сервера
 
-`DayZDiag_x64.exe` can act as either a client or a server (by adding the `-server` launch parameter). It accepts all the same parameters as the retail executable. Workbench can connect to either instance.
+`DayZDiag_x64.exe` может работать как клиент или как сервер (с добавлением параметра запуска `-server`). Он принимает все те же параметры, что и розничный исполняемый файл. Workbench может подключаться к любому экземпляру.
 
-Use **Debug > Debug Client** or **Debug > Debug Server** in the Script Editor menu to choose which side to debug. On a listen server, you can switch freely. The stepping controls, breakpoints, and variable inspection all apply to whichever side is currently selected.
+Используйте **Debug > Debug Client** или **Debug > Debug Server** в меню редактора скриптов для выбора стороны отладки. На listen-сервере вы можете свободно переключаться. Элементы управления пошаговым выполнением, точки останова и инспекция переменных применяются к той стороне, которая выбрана в данный момент.
 
 ### Ограничения
 
-- Only `DayZDiag_x64.exe` supports debugging, not retail builds.
-- Engine-internal C++ functions cannot be stepped into.
-- Many breakpoints in high-frequency functions (`OnUpdate`) cause severe lag.
-- Large mod projects may slow Workbench indexing.
+- Только `DayZDiag_x64.exe` поддерживает отладку, не розничные сборки.
+- Внутренние C++ функции движка нельзя пошагово проходить.
+- Множество точек останова в высокочастотных функциях (`OnUpdate`) вызывают серьёзные задержки.
+- Большие проекты модов могут замедлить индексацию Workbench.
 
 ---
 
 ## Консоль скриптов --- тестирование в реальном времени
 
-The Script Console lets you execute Enforce Script commands against a running game instance -- invaluable for API experimentation without editing files.
+Консоль скриптов позволяет выполнять команды Enforce Script для запущенного экземпляра игры -- неоценимый инструмент для экспериментов с API без редактирования файлов.
 
 ### Открытие
 
-Look for the **Console** tab in the bottom panel, or enable via **View > Console**.
+Найдите вкладку **Console** на нижней панели или включите через **View > Console**.
 
 ### Частые команды
 
 ```c
-// Print player position
+// Вывод позиции игрока
 Print(GetGame().GetPlayer().GetPosition().ToString());
 
-// Spawn an item at player feet
+// Спавн предмета у ног игрока
 GetGame().CreateObject("AKM", GetGame().GetPlayer().GetPosition(), false, false, true);
 
-// Test math
+// Тест математики
 float dist = vector.Distance("0 0 0", "100 0 100");
 Print("Distance: " + dist.ToString());
 
-// Teleport player
+// Телепортация игрока
 GetGame().GetPlayer().SetPosition("6737 0 2505");
 
-// Spawn zombies nearby
+// Спавн зомби поблизости
 vector pos = GetGame().GetPlayer().GetPosition();
 for (int i = 0; i < 5; i++)
 {
@@ -431,81 +431,81 @@ for (int i = 0; i < 5; i++)
 
 ### Ограничения
 
-- **Client-side only** by default (server-side code needs a listen server).
-- **No persistent state** -- variables do not carry between executions.
-- **Some APIs unavailable** until the game reaches a specific state (player spawned, mission loaded).
-- **No error recovery** -- null pointers simply fail silently.
+- **Только на стороне клиента** по умолчанию (серверный код требует listen-сервера).
+- **Нет сохранения состояния** -- переменные не переносятся между выполнениями.
+- **Некоторые API недоступны** до тех пор, пока игра не достигнет определённого состояния (игрок заспавнен, миссия загружена).
+- **Нет восстановления после ошибок** -- нулевые указатели просто тихо завершаются неудачей.
 
 ---
 
 ## Предварительный просмотр UI / макетов
 
-Workbench can open `.layout` files for visual inspection.
+Workbench может открывать `.layout` файлы для визуального осмотра.
 
 ### Что можно делать
 
-- **View widget hierarchy** -- see parent-child nesting and widget names.
-- **Inspect properties** -- position, size, color, alpha, alignment, image source, text, font.
-- **Find widget names** used by `FindAnyWidget()` in script code.
-- **Check image references** -- which image set entries or textures a widget uses.
+- **Просмотр иерархии виджетов** -- видеть вложенность родитель-потомок и имена виджетов.
+- **Инспекция свойств** -- позиция, размер, цвет, альфа, выравнивание, источник изображения, текст, шрифт.
+- **Поиск имён виджетов**, используемых `FindAnyWidget()` в коде скриптов.
+- **Проверка ссылок на изображения** -- какие записи наборов изображений или текстуры использует виджет.
 
 ### Чего нельзя делать
 
-- **No runtime behavior** -- ScriptClass handlers and dynamic content do not execute.
-- **Rendering differences** -- transparency, layering, and resolution may differ from in-game.
-- **Limited editing** -- Workbench is primarily a viewer, not a visual designer.
+- **Нет поведения во время выполнения** -- обработчики ScriptClass и динамический контент не выполняются.
+- **Различия в рендеринге** -- прозрачность, наложение слоёв и разрешение могут отличаться от игры.
+- **Ограниченное редактирование** -- Workbench в первую очередь средство просмотра, а не визуальный дизайнер.
 
-**Лучшая практика:** Use the Layout Editor for inspection. Build and edit `.layout` files in a text editor. Test in-game with file patching.
+**Лучшая практика:** Используйте редактор макетов для инспекции. Создавайте и редактируйте `.layout` файлы в текстовом редакторе. Тестируйте в игре с патчингом файлов.
 
 ---
 
 ## Обозреватель ресурсов
 
-The Resource Browser navigates the P: drive with game-aware file previews.
+Обозреватель ресурсов навигирует по диску P: с игровыми предварительными просмотрами файлов.
 
 ### Возможности
 
 | Тип файла | Действие по двойному клику |
-|-----------|----------------------|
+|-----------|---------------------------|
 | `.c` | Открывается в редакторе скриптов |
 | `.layout` | Открывается в редакторе макетов |
-| `.p3d` | Предварительный просмотр 3D-модели (rotate, zoom, inspect LODs) |
+| `.p3d` | Предварительный просмотр 3D-модели (вращение, масштабирование, инспекция LOD) |
 | `.paa` / `.edds` | Просмотр текстур с инспекцией каналов (R, G, B, A) |
-| Config classes | Просмотр разобранных CfgVehicles, CfgWeapons hierarchies |
+| Config-классы | Просмотр разобранных иерархий CfgVehicles, CfgWeapons |
 
 ### Поиск ванильных ресурсов
 
-One of the most valuable uses -- study how Bohemia structures assets:
+Одно из самых ценных применений -- изучение того, как Bohemia структурирует ассеты:
 
 ```
-P:\DZ\weapons\        <-- Vanilla weapon models and textures
-P:\DZ\characters\     <-- Character models and clothing
-P:\scripts\4_World\   <-- Vanilla world scripts
-P:\scripts\5_Mission\  <-- Vanilla mission scripts
+P:\DZ\weapons\        <-- Ванильные модели и текстуры оружия
+P:\DZ\characters\     <-- Модели персонажей и одежды
+P:\scripts\4_World\   <-- Ванильные скрипты мира
+P:\scripts\5_Mission\  <-- Ванильные скрипты миссий
 ```
 
 ---
 
 ## Профилирование производительности
 
-When connected to DayZDiag, Workbench can profile script execution.
+При подключении к DayZDiag Workbench может профилировать выполнение скриптов.
 
 ### Что показывает профилировщик
 
-- **Function call counts** -- how often each function runs per frame.
-- **Execution time** -- milliseconds per function.
-- **Call hierarchy** -- which functions call which, with time attribution.
-- **Frame time breakdown** -- script time vs engine time. At 60 FPS, each frame has ~16.6ms budget.
-- **Memory** --- llocation counts by class, detection of ref-cycle leaks.
+- **Количество вызовов функций** -- как часто каждая функция выполняется за кадр.
+- **Время выполнения** -- миллисекунды на функцию.
+- **Иерархия вызовов** -- какие функции вызывают какие, с атрибуцией времени.
+- **Разбивка времени кадра** -- время скриптов vs время движка. При 60 FPS каждый кадр имеет бюджет ~16.6 мс.
+- **Память** -- количество аллокаций по классам, обнаружение утечек ref-циклов.
 
-### In-Game Script Profiler (Diag Menu)
+### Встроенный профилировщик скриптов (Diag Menu)
 
-In addition to Workbench's profiler, `DayZDiag_x64.exe` has a built-in Script Profiler accessible through the Diag Menu (under Statistics). It shows top-20 lists for time per class, time per function, class allocations, count per function, and class instance counts. Use the `-profile` launch parameter to enable profiling from startup. The profiler only measures Enforce Script -- proto (engine) methods are not measured as separate entries, but their execution time is included in the total time of the script method that calls them. See `EnProfiler.c` in vanilla scripts for the programmatic API (`EnProfiler.Enable`, `EnProfiler.SetModule`, flag constants).
+В дополнение к профилировщику Workbench, `DayZDiag_x64.exe` имеет встроенный профилировщик скриптов, доступный через Diag Menu (в разделе Statistics). Он показывает списки top-20 по времени на класс, времени на функцию, аллокациям классов, количеству вызовов на функцию и количеству экземпляров классов. Используйте параметр запуска `-profile` для включения профилирования с момента старта. Профилировщик измеряет только Enforce Script -- proto (движковые) методы не измеряются как отдельные записи, но их время выполнения включено в общее время скриптового метода, который их вызывает. Смотрите `EnProfiler.c` в ванильных скриптах для программного API (`EnProfiler.Enable`, `EnProfiler.SetModule`, константы флагов).
 
 ### Типичные узкие места
 
 | Проблема | Симптом профилировщика | Исправление |
-|---------|-----------------|-----|
+|----------|------------------------|-------------|
 | Дорогостоящий покадровый код | Высокое время в `OnUpdate` | Перенесите на таймеры, уменьшите частоту |
 | Чрезмерная итерация | Цикл с тысячами вызовов | Кешируйте результаты, используйте пространственные запросы |
 | Конкатенация строк в циклах | Высокое количество аллокаций | Уменьшите логирование, группируйте строки |
@@ -514,104 +514,104 @@ In addition to Workbench's profiler, `DayZDiag_x64.exe` has a built-in Script Pr
 
 ## Интеграция с патчингом файлов
 
-The fastest development workflow combines Workbench with file patching, eliminating PBO rebuilds for script changes.
+Самый быстрый рабочий процесс разработки сочетает Workbench с патчингом файлов, устраняя пересборку PBO для изменений скриптов.
 
 ### Настройка
 
-1. Scripts on P: drive as loose files (not in PBOs).
-2. Symlink DayZ install scripts: `mklink /J "...\DayZ\scripts" "P:\scripts"`
-3. Launch with `-filePatching`: both client and server use `DayZDiag_x64.exe`.
+1. Скрипты на диске P: как отдельные файлы (не в PBO).
+2. Символическая ссылка на скрипты установки DayZ: `mklink /J "...\DayZ\scripts" "P:\scripts"`
+3. Запуск с `-filePatching`: и клиент, и сервер используют `DayZDiag_x64.exe`.
 
 ### Цикл быстрой итерации
 
 ```
-1. Edit .c file in your editor
-2. Save (file is already on P: drive)
-3. Restart mission in DayZDiag (no PBO rebuild)
-4. Test in-game
-5. Set breakpoints in Workbench if needed
-6. Repeat
+1. Редактируем .c файл в редакторе
+2. Сохраняем (файл уже на диске P:)
+3. Перезапускаем миссию в DayZDiag (без пересборки PBO)
+4. Тестируем в игре
+5. При необходимости ставим точки останова в Workbench
+6. Повторяем
 ```
 
 ### Что нужно пересобирать?
 
 | Изменение | Нужна пересборка? |
-|--------|----------|
-| Логика скриптов (`.c`) | Нет --- перезапуск миссии |
-| Файлы макетов (`.layout`) | Нет --- перезапуск миссии |
-| Config.cpp (только скрипты) | Нет --- перезапуск миссии |
-| Config.cpp (с CfgVehicles) | Да --- бинаризированные конфиги требуют PBO |
-| Текстуры (`.paa`) | Нет --- движок перезагружает с P: |
-| Модели (`.p3d`) | Возможно --- только небинаризированный MLOD |
+|-----------|-------------------|
+| Логика скриптов (`.c`) | Нет -- перезапуск миссии |
+| Файлы макетов (`.layout`) | Нет -- перезапуск миссии |
+| Config.cpp (только скрипты) | Нет -- перезапуск миссии |
+| Config.cpp (с CfgVehicles) | Да -- бинаризированные конфиги требуют PBO |
+| Текстуры (`.paa`) | Нет -- движок перезагружает с P: |
+| Модели (`.p3d`) | Возможно -- только небинаризированный MLOD |
 
 ---
 
-## Распространенные проблемы Workbench
+## Распространённые проблемы Workbench
 
-### Workbench Crashes on Startup
+### Workbench падает при запуске
 
-**Причина:** P: drive not mounted or `.gproj` references nonexistent paths.
-**Решение:** Mount P: first. Check **Workbench > Options** source directory. Verify `.gproj` FileSystem paths exist.
+**Причина:** Диск P: не смонтирован или `.gproj` ссылается на несуществующие пути.
+**Решение:** Сначала смонтируйте P:. Проверьте **Workbench > Options** директорию исходных данных. Убедитесь, что пути FileSystem в `.gproj` существуют.
 
-### No Code Completion
+### Нет автодополнения кода
 
-**Причина:** Project misconfigured -- Workbench cannot compile scripts.
-**Решение:** Verify `.gproj` ScriptModules include vanilla paths (`scripts/1_Core`, etc.). Check Output for compiler errors. Ensure vanilla scripts are on P:.
+**Причина:** Проект неправильно настроен -- Workbench не может скомпилировать скрипты.
+**Решение:** Проверьте, что ScriptModules в `.gproj` включают ванильные пути (`scripts/1_Core` и т.д.). Проверьте вывод на наличие ошибок компилятора. Убедитесь, что ванильные скрипты есть на P:.
 
-### Scripts Do Not Compile
+### Скрипты не компилируются
 
-**Решение:** Check Output panel for exact errors. Verify all dependency mod paths are in ScriptModules. Ensure no cross-layer references (3_Game cannot use 4_World types).
+**Решение:** Проверьте панель вывода на наличие точных ошибок. Убедитесь, что все пути зависимых модов включены в ScriptModules. Убедитесь в отсутствии межслойных ссылок (3_Game не может использовать типы из 4_World).
 
-### Точки останова Not Hitting
+### Точки останова не срабатывают
 
-**Checklist:**
-1. Connected to DayZDiag (not retail)?
-2. Red dot (valid) or yellow exclamation (invalid)?
-3. Scripts match between Workbench and game?
-4. Debugging the right side (client vs server)?
-5. Code path actually reached? (Add `Print()` to verify.)
+**Чеклист:**
+1. Подключены к DayZDiag (не розничной версии)?
+2. Красная точка (действительная) или жёлтый восклицательный знак (недействительная)?
+3. Скрипты совпадают между Workbench и игрой?
+4. Отлаживаете правильную сторону (клиент vs сервер)?
+5. Путь кода действительно достигается? (Добавьте `Print()` для проверки.)
 
-### Cannot Find Files in Resource Browser
+### Не удаётся найти файлы в обозревателе ресурсов
 
-**Решение:** Check `.gproj` FileSystem includes the directory where your files live. Restart Workbench after modifying `.gproj`.
+**Решение:** Проверьте, что FileSystem в `.gproj` включает директорию, где находятся ваши файлы. Перезапустите Workbench после изменения `.gproj`.
 
-### "Plugin Not Found" Errors
+### Ошибки «Plugin Not Found»
 
-**Решение:** Verify DayZ Tools integrity via Steam (right-click > Properties > Installed Files > Verify). Reinstall if needed.
+**Решение:** Проверьте целостность DayZ Tools через Steam (правый клик > Свойства > Установленные файлы > Проверить). При необходимости переустановите.
 
-### Connection to DayZDiag Fails
+### Не удаётся подключиться к DayZDiag
 
-**Решение:** Both processes must be on the same machine. Check firewalls. Ensure Script Editor module is open before launching DayZDiag. Try restarting both.
+**Решение:** Оба процесса должны быть на одной машине. Проверьте брандмауэры. Убедитесь, что модуль Script Editor открыт до запуска DayZDiag. Попробуйте перезапустить оба.
 
 ---
 
 ## Советы и лучшие практики
 
-1. **Use Workbench for debugging, VS Code for writing.** Workbench's editor is basic. Use external editors for daily coding; switch to Workbench for debugging and layout preview.
+1. **Используйте Workbench для отладки, VS Code для написания кода.** Редактор Workbench базовый. Используйте внешние редакторы для ежедневного кодирования; переключайтесь на Workbench для отладки и предварительного просмотра макетов.
 
-2. **Keep a .gproj per mod.** Each mod should have its own project file to compile exactly the right script context without indexing unrelated mods.
+2. **Держите отдельный .gproj для каждого мода.** Каждый мод должен иметь собственный файл проекта для компиляции именно нужного контекста скриптов без индексации не связанных модов.
 
-3. **Use the console for API experimentation.** Test API calls in the console before writing them into files. Faster than edit-restart-test cycles.
+3. **Используйте консоль для экспериментов с API.** Тестируйте вызовы API в консоли, прежде чем записывать их в файлы. Быстрее, чем циклы редактирование-перезапуск-тест.
 
-4. **Profile before optimizing.** Do not guess bottlenecks. The profiler shows where time is actually spent.
+4. **Профилируйте перед оптимизацией.** Не угадывайте узкие места. Профилировщик показывает, где на самом деле тратится время.
 
-5. **Set breakpoints strategically.** Avoid `OnUpdate()` breakpoints unless conditional. They fire every frame and freeze the game constantly.
+5. **Устанавливайте точки останова стратегически.** Избегайте точек останова в `OnUpdate()`, если они не условные. Они срабатывают каждый кадр и постоянно замораживают игру.
 
-6. **Use bookmarks for navigation.** Blue bookmark dots mark interesting vanilla script locations you reference frequently.
+6. **Используйте закладки для навигации.** Синие точки закладок отмечают интересные места в ванильных скриптах, к которым вы часто обращаетесь.
 
-7. **Check compiler output before launching.** If Workbench reports errors, the game will fail too. Fix errors in Workbench first -- faster than waiting for game boot.
+7. **Проверяйте вывод компилятора перед запуском.** Если Workbench сообщает об ошибках, игра тоже сломается. Сначала исправьте ошибки в Workbench -- быстрее, чем ждать загрузки игры.
 
-8. **Use -mod for simple setups, .gproj for complex.** Single-mod with no dependencies: `-mod=P:\MyMod`. Multi-mod with CF/Dabs: custom `.gproj`.
+8. **Используйте -mod для простых конфигураций, .gproj для сложных.** Один мод без зависимостей: `-mod=P:\MyMod`. Мульти-мод с CF/Dabs: пользовательский `.gproj`.
 
-9. **Keep Workbench updated.** Update DayZ Tools through Steam when DayZ updates. Mismatched versions cause compilation failures.
+9. **Держите Workbench обновлённым.** Обновляйте DayZ Tools через Steam при обновлении DayZ. Несовпадающие версии вызывают ошибки компиляции.
 
 ---
 
-## Краткая справка: Keyboard Shortcuts
+## Краткая справка: горячие клавиши
 
 | Горячая клавиша | Действие |
-|----------|--------|
-| `F5` | Начать / Продолжить отладку |
+|-----------------|----------|
+| `F5` | Начать / продолжить отладку |
 | `Shift+F5` | Остановить отладку |
 | `F9` | Переключить точку останова |
 | `F10` | Шаг через |
@@ -623,11 +623,11 @@ The fastest development workflow combines Workbench with file patching, eliminat
 | `Ctrl+S` | Сохранить |
 | `Ctrl+Space` | Автодополнение кода |
 
-## Краткая справка: Launch Parameters
+## Краткая справка: параметры запуска
 
 | Параметр | Описание |
-|-----------|-------------|
-| `-project="path/dayz.gproj"` | Загрузить определенный файл проекта |
+|----------|----------|
+| `-project="path/dayz.gproj"` | Загрузить определённый файл проекта |
 | `-mod=P:\MyMod` | Автонастройка из config.cpp мода |
 | `-mod=P:\ModA;P:\ModB` | Несколько модов (через точку с запятой) |
 
@@ -636,5 +636,5 @@ The fastest development workflow combines Workbench with file patching, eliminat
 ## Навигация
 
 | Назад | Вверх | Далее |
-|----------|----|------|
-| [4.6 PBO Packing](06-pbo-packing.md) | [Part 4: File Formats & DayZ Tools](01-textures.md) | [4.8 Building Modeling](08-building-modeling.md) |
+|-------|-------|-------|
+| [4.6 Упаковка PBO](06-pbo-packing.md) | [Часть 4: Форматы файлов и DayZ Tools](01-textures.md) | [4.8 Моделирование зданий](08-building-modeling.md) |

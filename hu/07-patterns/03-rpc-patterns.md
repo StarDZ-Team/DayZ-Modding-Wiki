@@ -1,110 +1,110 @@
-# Chapter 7.3: RPC Communication Patterns
+# 7.3. fejezet: RPC kommunikációs minták
 
-[Home](../../README.md) | [<< Previous: Module Systems](02-module-systems.md) | **RPC Communication Patterns** | [Next: Config Persistence >>](04-config-persistence.md)
-
----
-
-## Bevezetes
-
-Remote Procedure Calls (RPCs) are the only way to send data between client and server in DayZ. Every admin panel, every synced UI, every server-to-client notification, and every client-to-server action request flows through RPCs. Understanding how to build them correctly --- with proper serialization order, permission checks, and error handling --- is essential for any mod that does more than add items to CfgJarmuvek.
-
-This chapter covers the fundamental `ScriptRPC` pattern, the client-server roundtrip lifecycle, error handling, and then compares the three major RPC routing approaches used in the DayZ modding community.
+[Kezdőlap](../../README.md) | [<< Előző: Modul rendszerek](02-module-systems.md) | **RPC kommunikációs minták** | [Következő: Konfiguráció perzisztencia >>](04-config-persistence.md)
 
 ---
 
-## Tartalomjegyzek
+## Bevezetés
 
-- [ScriptRPC Fundamentals](#scriptrpc-fundamentals)
-- [Client to Server to Client Roundtrip](#client-to-server-to-client-roundtrip)
-- [Permission Checking Before Execution](#permission-checking-before-execution)
-- [Hibakezelees and Ertesitesek](#error-handling-and-notifications)
-- [Serialization: The Read/Write Contract](#serialization-the-readwrite-contract)
-- [Three RPC Approaches Compared](#three-rpc-approaches-compared)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+A távoli eljáráshívások (RPC-k) az egyetlen módja az adatok kliens és szerver közötti küldésének a DayZ-ben. Minden admin panel, minden szinkronizált UI, minden szerver-kliens értesítés és minden kliens-szerver műveleti kérés RPC-ken keresztül áramlik. Az RPC-k helyes felépítésének megértése --- megfelelő szerializációs sorrenddel, jogosultság-ellenőrzéssel és hibakezeléssel --- elengedhetetlen bármely modhoz, amely többet tesz, mint tárgyakat ad hozzá a CfgVehicles-hez.
+
+Ez a fejezet az alapvető `ScriptRPC` mintát, a kliens-szerver oda-vissza életciklust, a hibakezelést tárgyalja, majd összehasonlítja a DayZ modding közösség által használt három fő RPC útválasztási megközelítést.
 
 ---
 
-## ScriptRPC Fundamentals
+## Tartalomjegyzék
 
-Every RPC in DayZ uses the `ScriptRPC` class. The pattern is always the same: create, write data, send.
+- [ScriptRPC alapok](#scriptrpc-alapok)
+- [Kliens-szerver-kliens oda-vissza](#kliens-szerver-kliens-oda-vissza)
+- [Jogosultság-ellenőrzés végrehajtás előtt](#jogosultság-ellenőrzés-végrehajtás-előtt)
+- [Hibakezelés és értesítések](#hibakezelés-és-értesítések)
+- [Szerializáció: Az olvasás/írás szerződés](#szerializáció-az-olvasásírás-szerződés)
+- [Három RPC megközelítés összehasonlítása](#három-rpc-megközelítés-összehasonlítása)
+- [Gyakori hibák](#gyakori-hibák)
+- [Bevált gyakorlatok](#bevált-gyakorlatok)
 
-### Sending Side
+---
+
+## ScriptRPC alapok
+
+Minden RPC a DayZ-ben a `ScriptRPC` osztályt használja. A minta mindig ugyanaz: létrehozás, adatírás, küldés.
+
+### Küldő oldal
 
 ```c
 void SendDamageReport(PlayerIdentity target, string weaponName, float damage)
 {
     ScriptRPC rpc = new ScriptRPC();
 
-    // Write fields in a specific order
-    rpc.Write(weaponName);    // field 1: string
-    rpc.Write(damage);        // field 2: float
+    // Mezők írása meghatározott sorrendben
+    rpc.Write(weaponName);    // 1. mező: string
+    rpc.Write(damage);        // 2. mező: float
 
-    // Send through the engine
-    // Parameters: target object, RPC ID, guaranteed delivery, recipient
+    // Küldés a motoron keresztül
+    // Paraméterek: célobjektum, RPC ID, garantált kézbesítés, címzett
     rpc.Send(null, MY_RPC_ID, true, target);
 }
 ```
 
-### Receiving Side
+### Fogadó oldal
 
-The receiver reads fields in the **exact same order** they were written:
+A fogadó a mezőket **pontosan ugyanabban a sorrendben** olvassa, ahogyan írták:
 
 ```c
 void OnRPC_DamageReport(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     string weaponName;
-    if (!ctx.Read(weaponName)) return;  // field 1: string
+    if (!ctx.Read(weaponName)) return;  // 1. mező: string
 
     float damage;
-    if (!ctx.Read(damage)) return;      // field 2: float
+    if (!ctx.Read(damage)) return;      // 2. mező: float
 
-    // Use the data
+    // Adatok felhasználása
     Print("Hit by " + weaponName + " for " + damage.ToString() + " damage");
 }
 ```
 
-### Send Parameters Explained
+### Küldési paraméterek magyarázata
 
 ```c
 rpc.Send(object, rpcId, guaranteed, identity);
 ```
 
-| Parameter | Tipus | Leiras |
+| Paraméter | Típus | Leírás |
 |-----------|------|-------------|
-| `object` | `Object` | The target entity (e.g., a player or vehicle). Use `null` for global RPCs. |
-| `rpcId` | `int` | Integer identifying this RPC type. Must match on both sides. |
-| `guaranteed` | `bool` | `true` = reliable (TCP-like, retransmits on loss). `false` = unreliable (fire-and-forget). |
-| `identity` | `PlayerIdentity` | Recipient. `null` from client = send to server. `null` from server = broadcast to all clients. Specific identity = send to that client only. |
+| `object` | `Object` | A célentitás (pl. játékos vagy jármű). Használj `null`-t globális RPC-khez. |
+| `rpcId` | `int` | Az RPC típusát azonosító egész szám. Mindkét oldalon egyeznie kell. |
+| `guaranteed` | `bool` | `true` = megbízható (TCP-szerű, veszteség esetén újraküldés). `false` = megbízhatatlan (tüzelj és felejtsd el). |
+| `identity` | `PlayerIdentity` | Címzett. Kliensről `null` = küldés a szervernek. Szerverről `null` = küldés minden kliensnek. Meghatározott identity = küldés annak a kliensnek. |
 
-### Mikor hasznaljuk `guaranteed`
+### Mikor használd a `guaranteed`-et
 
-- **`true` (reliable):** Config changes, permission grants, teleport commands, ban actions --- anything where a dropped packet would leave client and server out of sync.
-- **`false` (unreliable):** Rapid position updates, visual effects, HUD state that refreshes every few seconds anyway. Lower overhead, no retransmit queue.
+- **`true` (megbízható):** Konfigurációváltozások, jogosultság-megadások, teleport parancsok, tiltási műveletek --- bármi, ahol egy elvesztett csomag szinkronizációs eltérést okozna a kliens és szerver között.
+- **`false` (megbízhatatlan):** Gyors pozíciófrissítések, vizuális effektek, HUD állapot, ami néhány másodpercenként frissül amúgy is. Alacsonyabb többletterhelés, nincs újraküldési sor.
 
 ---
 
-## Client to Server to Client Roundtrip
+## Kliens-szerver-kliens oda-vissza
 
-The most common RPC pattern is the roundtrip: client requests an action, server validates and executes, server sends back the result.
+A leggyakoribb RPC minta az oda-vissza: a kliens kérelmez egy műveletet, a szerver validálja és végrehajtja, a szerver visszaküldi az eredményt.
 
 ```
-CLIENT                          SERVER
+KLIENS                          SZERVER
   │                               │
-  │  1. Request RPC ───────────►  │
-  │     (action + params)         │
-  │                               │  2. Validate permission
-  │                               │  3. Execute action
-  │                               │  4. Prepare response
-  │  ◄─────────── 5. Response RPC │
-  │     (result + data)           │
+  │  1. Kérés RPC ──────────────►  │
+  │     (művelet + paraméterek)    │
+  │                               │  2. Jogosultság validálása
+  │                               │  3. Művelet végrehajtása
+  │                               │  4. Válasz előkészítése
+  │  ◄───────────── 5. Válasz RPC │
+  │     (eredmény + adatok)        │
   │                               │
-  │  6. Update UI                 │
+  │  6. UI frissítése              │
 ```
 
-### Complete Example: Teleport Request
+### Teljes példa: Teleport kérés
 
-**Client sends the request:**
+**A kliens elküldi a kérést:**
 
 ```c
 class TeleportClient
@@ -113,52 +113,52 @@ class TeleportClient
     {
         ScriptRPC rpc = new ScriptRPC();
         rpc.Write(position);
-        rpc.Send(null, MYMOD_RPC_TELEPORT, true, null);  // null identity = send to server
+        rpc.Send(null, MY_RPC_TELEPORT, true, null);  // null identity = küldés a szervernek
     }
 };
 ```
 
-**Server receives, validates, executes, responds:**
+**A szerver fogadja, validálja, végrehajtja, válaszol:**
 
 ```c
 class TeleportServer
 {
     void OnRPC_TeleportRequest(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        // 1. Read the request data
+        // 1. Kérési adatok olvasása
         vector position;
         if (!ctx.Read(position)) return;
 
-        // 2. Validate permission
+        // 2. Jogosultság validálása
         if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Teleport"))
         {
             SendError(sender, "No permission to teleport");
             return;
         }
 
-        // 3. Validate the data
+        // 3. Adatok validálása
         if (position[1] < 0 || position[1] > 1000)
         {
             SendError(sender, "Invalid teleport height");
             return;
         }
 
-        // 4. Execute the action
+        // 4. Művelet végrehajtása
         PlayerBase player = PlayerBase.Cast(sender.GetPlayer());
         if (!player) return;
 
         player.SetPosition(position);
 
-        // 5. Send success response
+        // 5. Sikeres válasz küldése
         ScriptRPC response = new ScriptRPC();
-        response.Write(true);           // success flag
-        response.Write(position);       // echo back the position
-        response.Send(null, MYMOD_RPC_TELEPORT_RESULT, true, sender);
+        response.Write(true);           // siker jelző
+        response.Write(position);       // pozíció visszaküldése
+        response.Send(null, MY_RPC_TELEPORT_RESULT, true, sender);
     }
 };
 ```
 
-**Client receives the response:**
+**A kliens fogadja a választ:**
 
 ```c
 class TeleportClient
@@ -173,7 +173,7 @@ class TeleportClient
 
         if (success)
         {
-            // Update UI: "Teleported to X, Y, Z"
+            // UI frissítése: "Teleported to X, Y, Z"
         }
     }
 };
@@ -181,40 +181,40 @@ class TeleportClient
 
 ---
 
-## Permission Checking Before Execution
+## Jogosultság-ellenőrzés végrehajtás előtt
 
-Every server-side RPC handler that performs a privileged action **must** check permissions before executing. Never trust the client.
+Minden szerver oldali RPC kezelő, amely privilegizált műveletet végez, **köteles** a jogosultságokat ellenőrizni a végrehajtás előtt. Soha ne bízz meg a kliensben.
 
-### The Pattern
+### A minta
 
 ```c
 void OnRPC_AdminAction(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
-    // RULE 1: Always validate the sender exists
+    // 1. SZABÁLY: Mindig validáld, hogy a küldő létezik
     if (!sender) return;
 
-    // RULE 2: Check permission before reading data
+    // 2. SZABÁLY: Ellenőrizd a jogosultságot az adatok olvasása előtt
     if (!MyPermissions.GetInstance().HasPermission(sender.GetPlainId(), "MyMod.Admin.Ban"))
     {
         MyLog.Warning("BanRPC", "Unauthorized ban attempt from " + sender.GetName());
         return;
     }
 
-    // RULE 3: Only now read and execute
+    // 3. SZABÁLY: Csak most olvasd és hajtsd végre
     string targetUid;
     if (!ctx.Read(targetUid)) return;
 
-    // ... execute ban
+    // ... tiltás végrehajtása
 }
 ```
 
-### Why Check Before Reading?
+### Miért ellenőrizd az olvasás előtt?
 
-Reading data from an unauthorized client wastes server cycles. More importantly, malformed data from a malicious client could cause parsing errors. Checking permission first is a cheap guard that rejects bad actors immediately.
+Egy jogosulatlan klienstől érkező adatok olvasása szerver ciklusokat pazarol. Ennél is fontosabb, hogy egy rosszindulatú kliens hibás adatai elemzési hibákat okozhatnak. A jogosultság ellenőrzése először egy olcsó védelem, amely azonnal elutasítja a rossz szereplőket.
 
-### Log Unauthorized Attempts
+### Jogosulatlan kísérletek naplózása
 
-Always log failed permission checks. This creates an audit trail and helps server owners detect exploit attempts:
+Mindig naplózd a sikertelen jogosultság-ellenőrzéseket. Ez audit nyomot hoz létre és segíti a szerver-tulajdonosokat a kihasználási kísérletek felismerésében:
 
 ```c
 if (!HasPermission(sender, "MyMod.Spawn"))
@@ -227,43 +227,43 @@ if (!HasPermission(sender, "MyMod.Spawn"))
 
 ---
 
-## Hibakezelees and Ertesitesek
+## Hibakezelés és értesítések
 
-RPCs can fail in multiple ways: network drops, malformed data, server-side validation failures. Robust mods handle all of these.
+Az RPC-k többféleképpen vallhatnak kudarcot: hálózati kiesés, hibás adatok, szerver oldali validációs hibák. A robusztus modok mindezeket kezelik.
 
-### Read Failures
+### Olvasási hibák
 
-Every `ctx.Read()` can fail. Always check the return value:
+Minden `ctx.Read()` kudarcot vallhat. Mindig ellenőrizd a visszatérési értéket:
 
 ```c
-// BAD: Ignoring read failures
+// ROSSZ: Olvasási hibák figyelmen kívül hagyása
 string name;
-ctx.Read(name);     // If this fails, name is "" — silent corruption
+ctx.Read(name);     // Ha ez kudarcot vall, a name "" — csendes adatsérülés
 int count;
-ctx.Read(count);    // This reads the wrong bytes — everything after is garbage
+ctx.Read(count);    // Rossz bájtokat olvas — minden utána szemét
 
-// GOOD: Early return on any read failure
+// JÓ: Korai visszatérés bármely olvasási hibánál
 string name;
 if (!ctx.Read(name)) return;
 int count;
 if (!ctx.Read(count)) return;
 ```
 
-### Error Response Pattern
+### Hibaválasz minta
 
-When the server rejects a request, send a structured error back to the client so the UI can display it:
+Amikor a szerver elutasít egy kérést, küldj strukturált hibát vissza a kliensnek, hogy az UI megjeleníthesse:
 
 ```c
-// Server: send error
+// Szerver: hiba küldése
 void SendError(PlayerIdentity target, string errorMsg)
 {
     ScriptRPC rpc = new ScriptRPC();
     rpc.Write(false);        // success = false
-    rpc.Write(errorMsg);     // reason
+    rpc.Write(errorMsg);     // ok
     rpc.Send(null, MY_RPC_RESPONSE_ID, true, target);
 }
 
-// Client: handle error
+// Kliens: hiba kezelése
 void OnRPC_Response(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     bool success;
@@ -274,72 +274,72 @@ void OnRPC_Response(PlayerIdentity sender, Object target, ParamsReadContext ctx)
         string errorMsg;
         if (!ctx.Read(errorMsg)) return;
 
-        // Show error in UI
+        // Hiba megjelenítése az UI-ban
         MyLog.Warning("MyMod", "Server error: " + errorMsg);
         return;
     }
 
-    // Handle success...
+    // Siker kezelése...
 }
 ```
 
-### Notification Broadcasts
+### Értesítési szórásos küldés
 
-For events that all clients should see (killfeed, announcements, weather changes), the server broadcasts with `identity = null`:
+Olyan eseményekhez, amelyeket minden kliensnek látnia kell (killfeed, bejelentések, időjárásváltozások), a szerver szórásos küldést végez `identity = null`-lal:
 
 ```c
-// Server: broadcast to all clients
+// Szerver: szórásos küldés minden kliensnek
 void BroadcastAnnouncement(string message)
 {
     ScriptRPC rpc = new ScriptRPC();
     rpc.Write(message);
-    rpc.Send(null, RPC_ANNOUNCEMENT, true, null);  // null = all clients
+    rpc.Send(null, RPC_ANNOUNCEMENT, true, null);  // null = minden kliens
 }
 ```
 
 ---
 
-## Serialization: The Read/Write Contract
+## Szerializáció: Az olvasás/írás szerződés
 
-The single most important rule of DayZ RPCs: **the Read order must exactly match the Write order, type for type.**
+A DayZ RPC-k legfontosabb szabálya: **az olvasási sorrendnek pontosan meg kell egyeznie az írási sorrenddel, típusról típusra.**
 
-### The Contract
+### A szerződés
 
 ```c
-// SENDER writes:
+// A KÜLDŐ ír:
 rpc.Write("hello");      // 1. string
 rpc.Write(42);           // 2. int
 rpc.Write(3.14);         // 3. float
 rpc.Write(true);         // 4. bool
 
-// RECEIVER reads in the SAME order:
+// A FOGADÓ UGYANABBAN a sorrendben olvas:
 string s;   ctx.Read(s);     // 1. string
 int i;      ctx.Read(i);     // 2. int
 float f;    ctx.Read(f);     // 3. float
 bool b;     ctx.Read(b);     // 4. bool
 ```
 
-### What Goes Wrong When Order Mismatches
+### Mi történik, ha a sorrend eltér
 
-If you swap the read order, the deserializer interprets bytes intended for one type as another. An `int` read where a `string` was written will produce garbage, and every subsequent read will be offset --- corrupting all remaining fields. The engine does not throw an exception; it silently returns wrong data or causes `Read()` to return `false`.
+Ha felcseréled az olvasási sorrendet, a deszerializáló az egyik típusnak szánt bájtokat egy másikként értelmezi. Egy `int` olvasás ott, ahol `string` lett írva, szemetet eredményez, és minden további olvasás eltolódik --- megsértve az összes fennmaradó mezőt. A motor nem dob kivételt; csendben rossz adatokat ad vissza, vagy a `Read()` `false`-t ad vissza.
 
-### Supported Types
+### Támogatott típusok
 
-| Tipus | Megjegyzesek |
+| Típus | Megjegyzések |
 |------|-------|
-| `int` | 32-bit signed |
-| `float` | 32-bit IEEE 754 |
-| `bool` | Single byte |
-| `string` | Length-prefixed UTF-8 |
-| `vector` | Three floats (x, y, z) |
-| `Object` (as target parameter) | Entity reference, resolved by engine |
+| `int` | 32 bites előjeles |
+| `float` | 32 bites IEEE 754 |
+| `bool` | Egyetlen bájt |
+| `string` | Hossz-előtagú UTF-8 |
+| `vector` | Három float (x, y, z) |
+| `Object` (mint target paraméter) | Entitás referencia, a motor oldja fel |
 
-### Serializing Collections
+### Gyűjtemények szerializálása
 
-There is no built-in array serialization. Write the count first, then each element:
+Nincs beépített tömbszerializáció. Először írd a darabszámot, majd minden elemet:
 
 ```c
-// SENDER
+// KÜLDŐ
 array<string> names = {"Alice", "Bob", "Charlie"};
 rpc.Write(names.Count());
 for (int i = 0; i < names.Count(); i++)
@@ -347,7 +347,7 @@ for (int i = 0; i < names.Count(); i++)
     rpc.Write(names[i]);
 }
 
-// RECEIVER
+// FOGADÓ
 int count;
 if (!ctx.Read(count)) return;
 
@@ -360,17 +360,17 @@ for (int i = 0; i < count; i++)
 }
 ```
 
-### Serializing Complex Objects
+### Összetett objektumok szerializálása
 
-For complex data, serialize field by field. Do not try to pass objects directly through `Write()`:
+Összetett adatokhoz mezőnként szerializálj. Ne próbálj objektumokat közvetlenül `Write()`-on keresztül átadni:
 
 ```c
-// SENDER: flatten the object into primitives
+// KÜLDŐ: az objektum lapítása primitívekre
 rpc.Write(player.GetName());
 rpc.Write(player.GetHealth());
 rpc.Write(player.GetPosition());
 
-// RECEIVER: reconstruct
+// FOGADÓ: rekonstruálás
 string name;    ctx.Read(name);
 float health;   ctx.Read(health);
 vector pos;     ctx.Read(pos);
@@ -378,22 +378,50 @@ vector pos;     ctx.Read(pos);
 
 ---
 
-## Three RPC Approaches Compared
+## Három RPC megközelítés összehasonlítása
 
-The DayZ modding community uses three fundamentally different approaches to RPC routing. Each has trade-offs.
+A DayZ modding közösség három alapvetően különböző megközelítést használ az RPC útválasztáshoz. Mindegyiknek vannak kompromisszumai.
 
-### 1. CF Named RPCs
+### Három RPC megközelítés összehasonlítása
 
-Community Framework provides `GetRPCManager()` which routes RPCs by string names grouped by mod namespace.
+```mermaid
+graph TB
+    subgraph "1. megközelítés: Egyetlen ID + szöveges útvonal"
+        S1["Minden RPC egyetlen<br/>motor ID-t oszt meg"]
+        S1 --> S1D["A diszpécser útvonal<br/>szöveget olvas az adattartalomból"]
+        S1D --> S1H1["Kezelő A"]
+        S1D --> S1H2["Kezelő B"]
+        S1D --> S1H3["Kezelő C"]
+    end
+
+    subgraph "2. megközelítés: Egész tartomány modulonként"
+        S2M1["A modul<br/>ID-k 10100-10119"]
+        S2M2["B modul<br/>ID-k 10200-10219"]
+        S2M3["C modul<br/>ID-k 10300-10319"]
+    end
+
+    subgraph "3. megközelítés: Hash-alapú ID-k"
+        S3["ClassName::Method<br/>.Hash() → egyedi ID"]
+        S3 --> S3C["Ütközésérzékelés<br/>regisztrációnál"]
+    end
+
+    style S1 fill:#4A90D9,color:#fff
+    style S2M1 fill:#2D8A4E,color:#fff
+    style S3 fill:#D97A4A,color:#fff
+```
+
+### 1. CF nevesített RPC-k
+
+A Community Framework a `GetRPCManager()`-t biztosítja, amely szöveg nevek alapján irányítja az RPC-ket, mod névtérbe csoportosítva.
 
 ```c
-// Registration (in OnInit):
+// Regisztráció (az OnInit-ben):
 GetRPCManager().AddRPC("MyMod", "RPC_SpawnItem", this, SingleplayerExecutionType.Server);
 
-// Sending from client:
+// Küldés a kliensről:
 GetRPCManager().SendRPC("MyMod", "RPC_SpawnItem", new Param1<string>("AK74"), true);
 
-// Handler receives:
+// A kezelő fogadja:
 void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
 {
     if (type != CallType.Server) return;
@@ -402,36 +430,36 @@ void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, 
     if (!ctx.Read(data)) return;
 
     string className = data.param1;
-    // ... spawn the item
+    // ... tárgy spawnolása
 }
 ```
 
-**Pros:**
-- String-based routing is human-readable and collision-free
-- Namespace grouping (`"MyMod"`) prevents name clashes between mods
-- Widely used --- if you integrate with COT/Expansion, you use this
+**Előnyök:**
+- A szöveg-alapú útválasztás ember által olvasható és ütközésmentes
+- A névtér csoportosítás (`"MyMod"`) megakadályozza a nevek ütközését modok között
+- Széles körben használt --- ha COT/Expansion-nel integrálsz, ezt használod
 
-**Cons:**
-- Requires CF as a dependency
-- Uses `Param` wrappers which are verbose for complex payloads
-- String comparison on every dispatch (minor overhead)
+**Hátrányok:**
+- CF-t igényel függőségként
+- `Param` burkolókat használ, amelyek bőbeszédűek összetett adattartalomhoz
+- Szöveg összehasonlítás minden diszpécseléskor (minimális többletterhelés)
 
-### 2. COT / Vanilla Integer-Range RPCs
+### 2. COT / Vanilla egész-tartomány RPC-k
 
-Vanilla DayZ and some parts of COT use raw integer RPC IDs. Each mod claims a range of integers and dispatches in a modded `OnRPC` override.
+A vanilla DayZ és a COT egyes részei nyers egész RPC ID-kat használnak. Minden mod egy egész tartományt foglal le és modolt `OnRPC` felülírásban diszpécsel.
 
 ```c
-// Define your RPC IDs (pick a unique range to avoid collisions)
+// RPC ID-k definiálása (válassz egyedi tartományt az ütközések elkerüléséhez)
 const int MY_RPC_SPAWN_ITEM     = 90001;
 const int MY_RPC_DELETE_ITEM    = 90002;
 const int MY_RPC_TELEPORT       = 90003;
 
-// Sending:
+// Küldés:
 ScriptRPC rpc = new ScriptRPC();
 rpc.Write("AK74");
 rpc.Send(null, MY_RPC_SPAWN_ITEM, true, null);
 
-// Receiving (in modded DayZGame or entity):
+// Fogadás (modolt DayZGame-ben vagy entitásban):
 modded class DayZGame
 {
     override void OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)
@@ -451,35 +479,35 @@ modded class DayZGame
 };
 ```
 
-**Pros:**
-- No dependencies --- works with vanilla DayZ
-- Integer comparison is fast
-- Full control over the RPC pipeline
+**Előnyök:**
+- Nincs függőség --- a vanilla DayZ-zel működik
+- Az egész összehasonlítás gyors
+- Teljes kontroll az RPC csővezeték felett
 
-**Cons:**
-- **ID collision risk**: two mods picking the same integer range will silently intercept each other's RPCs
-- Manual dispatch logic (switch/case) gets unwieldy with many RPCs
-- No namespace isolation
-- No built-in registry or discoverability
+**Hátrányok:**
+- **ID ütközési kockázat**: két mod, amely ugyanazt az egész tartományt választja, csendben elfogja egymás RPC-it
+- A kézi diszpécser logika (switch/case) sok RPC-nél kezelhetetlenné válik
+- Nincs névtér elszigetelés
+- Nincs beépített nyilvántartás vagy felfedezhetőség
 
-### 3. MyMod String-Routed RPCs
+### 3. Egyéni szöveg-útválasztásos RPC-k
 
-MyMod uses a single engine RPC ID (83722) and multiplexes by writing a mod name + function name as a string header in every RPC. All routing happens inside `MyRPC`.
+Egy egyéni szöveg-útválasztásos rendszer egyetlen motor RPC ID-t használ és multiplexel azáltal, hogy mod nevet + függvénynevet ír szöveg fejlécként minden RPC-be. Minden útválasztás egy statikus menedzser osztályon belül történik (a példában `MyRPC`).
 
 ```c
-// Registration:
+// Regisztráció:
 MyRPC.Register("MyMod", "RPC_SpawnItem", this, MyRPCSide.SERVER);
 
-// Sending (header-only, no payload):
+// Küldés (csak fejléc, nincs adattartalom):
 MyRPC.Send("MyMod", "RPC_SpawnItem", null, true, null);
 
-// Sending (with payload):
+// Küldés (adattartalommal):
 ScriptRPC rpc = MyRPC.CreateRPC("MyMod", "RPC_SpawnItem");
 rpc.Write("AK74");
-rpc.Write(5);    // quantity
-rpc.Send(null, MyRPC.MyFRAMEWORK_RPC_ID, true, null);
+rpc.Write(5);    // mennyiség
+rpc.Send(null, MyRPC.FRAMEWORK_RPC_ID, true, null);
 
-// Handler:
+// Kezelő:
 void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 {
     string className;
@@ -488,57 +516,57 @@ void RPC_SpawnItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     int quantity;
     if (!ctx.Read(quantity)) return;
 
-    // ... spawn items
+    // ... tárgyak spawnolása
 }
 ```
 
-**Pros:**
-- Zero collision risk --- string namespace + function name is globally unique
-- Zero dependency on CF (but optionally bridges to CF's `GetRPCManager()` when CF is present)
-- Single engine ID means minimal hook footprint
-- `CreateRPC()` helper pre-writes the routing header so you only write payload
-- Clean handler signature: `(PlayerIdentity, Object, ParamsReadContext)`
+**Előnyök:**
+- Nulla ütközési kockázat --- szöveg névtér + függvénynév globálisan egyedi
+- Nulla CF függőség (de opcionálisan átjár a CF `GetRPCManager()`-éhez, ha a CF jelen van)
+- Egyetlen motor ID minimális hook lábnyomot jelent
+- A `CreateRPC()` segédfüggvény előre beírja az útválasztási fejlécet, így csak az adattartalmat kell írnod
+- Tiszta kezelő szignatúra: `(PlayerIdentity, Object, ParamsReadContext)`
 
-**Cons:**
-- Two extra string reads per RPC (the routing header) --- minimal overhead in practice
-- Custom system means other mods cannot discover your RPCs through CF's registry
-- Only dispatches via `CallFunctionParams` reflection, which is slightly slower than a direct method call
+**Hátrányok:**
+- Két extra szöveg olvasás RPC-nként (az útválasztási fejléc) --- a gyakorlatban minimális többletterhelés
+- Az egyéni rendszer azt jelenti, hogy más modok nem fedezhetik fel az RPC-idet a CF nyilvántartásán keresztül
+- Csak `CallFunctionParams` reflexión keresztül diszpécsel, ami kicsit lassabb a közvetlen metódushívásnál
 
-### Comparison Table
+### Összehasonlító táblázat
 
-| Funkcio | CF Named | Integer-Range | MyMod String-Routed |
+| Jellemző | CF nevesített | Egész-tartomány | Egyéni szöveg-útválasztásos |
 |---------|----------|---------------|---------------------|
-| **Collision risk** | None (namespaced) | High | None (namespaced) |
-| **Dependencies** | Requires CF | None | None |
-| **Handler signature** | `(CallType, ctx, sender, target)` | Custom | `(sender, target, ctx)` |
-| **Discoverability** | CF registry | None | `MyRPC.s_Handlers` |
-| **Dispatch overhead** | String lookup | Integer switch | String lookup |
-| **Payload style** | Param wrappers | Raw Write/Read | Raw Write/Read |
-| **CF bridge** | Native | Manual | Automatic (`#ifdef`) |
+| **Ütközési kockázat** | Nincs (névteres) | Magas | Nincs (névteres) |
+| **Függőségek** | CF szükséges | Nincs | Nincs |
+| **Kezelő szignatúra** | `(CallType, ctx, sender, target)` | Egyéni | `(sender, target, ctx)` |
+| **Felfedezhetőség** | CF nyilvántartás | Nincs | `MyRPC.s_Handlers` |
+| **Diszpécselési többletterhelés** | Szöveg keresés | Egész switch | Szöveg keresés |
+| **Adattartalom stílus** | Param burkolók | Nyers Write/Read | Nyers Write/Read |
+| **CF átjárás** | Natív | Kézi | Automatikus (`#ifdef`) |
 
-### Which Should You Use?
+### Melyiket kellene használnod?
 
-- **Your mod depends on CF anyway** (COT/Expansion integration): use CF Named RPCs
-- **Standalone mod, minimal dependencies**: use integer-range or build a string-routed system
-- **MyMod ecosystem mod**: use `MyRPC.Register()` / `MyRPC.CreateRPC()`
-- **Learning / prototyping**: integer-range is the simplest to understand
+- **A modod amúgy is CF-től függ** (COT/Expansion integráció): használj CF nevesített RPC-ket
+- **Önálló mod, minimális függőségek**: használj egész-tartományt vagy építs szöveg-útválasztásos rendszert
+- **Keretrendszert építesz**: fontold meg a szöveg-útválasztásos rendszert, mint a fenti egyéni `MyRPC` minta
+- **Tanulás / prototípus**: az egész-tartomány a legegyszerűbb megérteni
 
 ---
 
-## Gyakori hibak
+## Gyakori hibák
 
-### 1. Forgetting to Register the Handler
+### 1. A kezelő regisztrációjának elfelejtése
 
-You send an RPC but nothing happens on the other side. The handler was never registered.
+RPC-t küldesz, de a másik oldalon semmi nem történik. A kezelő soha nem lett regisztrálva.
 
 ```c
-// WRONG: No registration — the server never knows about this handler
+// HIBÁS: Nincs regisztráció — a szerver soha nem tud erről a kezelőről
 class MyModule
 {
     void RPC_DoThing(PlayerIdentity sender, Object target, ParamsReadContext ctx) { ... }
 };
 
-// RIGHT: Register in OnInit
+// HELYES: Regisztrálj az OnInit-ben
 class MyModule
 {
     void OnInit()
@@ -550,35 +578,35 @@ class MyModule
 };
 ```
 
-### 2. Read/Write Order Mismatch
+### 2. Olvasási/írási sorrend eltérés
 
-The most common RPC bug. The sender writes `(string, int, float)` but the receiver reads `(string, float, int)`. No error message --- just garbage data.
+A leggyakoribb RPC hiba. A küldő `(string, int, float)`-t ír, de a fogadó `(string, float, int)`-et olvas. Nincs hibaüzenet --- csak szemét adatok.
 
-**Javitas:** Write a comment block documenting the field order at both the send and receive sites:
+**Javítás:** Írj megjegyzés blokkot a mezősorrend dokumentálásához mind a küldő, mind a fogadó oldalon:
 
 ```c
-// Wire format: [string weaponName] [int damage] [float distance]
+// Átviteli formátum: [string weaponName] [int damage] [float distance]
 ```
 
-### 3. Sending Client-Only Data to the Server
+### 3. Kliens-oldali adatok küldése a szervernek
 
-The server cannot read client-side widget state, input state, or local variables. If you need to send a UI selection to the server, serialize the relevant value (a string, an index, an ID) --- not the widget object itself.
+A szerver nem tudja olvasni a kliens oldali widget állapotot, input állapotot vagy lokális változókat. Ha egy UI választást kell a szervernek küldened, szerializáld a releváns értéket (szöveg, index, ID) --- ne magát a widget objektumot.
 
-### 4. Broadcasting When You Meant Unicast
+### 4. Szórásos küldés egyedi küldés helyett
 
 ```c
-// WRONG: Sends to ALL clients when you meant to send to one
+// HIBÁS: MINDEN kliensnek küld, amikor egynek szántad
 rpc.Send(null, MY_RPC_ID, true, null);
 
-// RIGHT: Send to the specific client
+// HELYES: Küldés a konkrét kliensnek
 rpc.Send(null, MY_RPC_ID, true, targetIdentity);
 ```
 
-### 5. Not Handling Stale Handlers Across Mission Restarts
+### 5. Elavult kezelők kezelése küldetés-újraindításkor
 
-If a module registers an RPC handler and is then destroyed on mission end, the handler still points to the dead object. The next RPC dispatch will crash.
+Ha egy modul regisztrál egy RPC kezelőt, majd a küldetés végén megsemmisül, a kezelő továbbra is a halott objektumra mutat. A következő RPC diszpécselés összeomlást okoz.
 
-**Javitas:** Always unregister or clean up handlers on mission finish:
+**Javítás:** Mindig töröld a regisztrációt vagy takarítsd ki a kezelőket a küldetés befejezésekor:
 
 ```c
 override void OnMissionFinish()
@@ -587,28 +615,48 @@ override void OnMissionFinish()
 }
 ```
 
-Or use a centralized `Cleanup()` that clears the entire handler map (as `MyRPC.Cleanup()` does).
+Vagy használj centralizált `Cleanup()`-ot, amely kitörli a teljes kezelő térképet (ahogy a `MyRPC.Cleanup()` teszi).
 
 ---
 
-## Bevalt gyakorlatok
+## Bevált gyakorlatok
 
-1. **Always check `ctx.Read()` return values.** Every read can fail. Return immediately on failure.
+1. **Mindig ellenőrizd a `ctx.Read()` visszatérési értékét.** Minden olvasás kudarcot vallhat. Azonnal térj vissza kudarc esetén.
 
-2. **Always validate the sender on the server.** Check that `sender` is non-null and has the required permission before doing anything.
+2. **Mindig validáld a küldőt a szerveren.** Ellenőrizd, hogy a `sender` nem-null és rendelkezik a szükséges jogosultsággal, mielőtt bármit tennél.
 
-3. **Document the wire format.** At both the send and receive sites, write a comment listing the fields in order with their types.
+3. **Dokumentáld az átviteli formátumot.** Mind a küldő, mind a fogadó oldalon írj megjegyzést, amely felsorolja a mezőket sorrendben a típusaikkal.
 
-4. **Use reliable delivery for state changes.** Unreliable delivery is only appropriate for rapid, ephemeral updates (position, effects).
+4. **Használj megbízható kézbesítést állapotváltozásokhoz.** A megbízhatatlan kézbesítés csak gyors, mulandó frissítésekhez megfelelő (pozíció, effektek).
 
-5. **Keep payloads small.** DayZ has a practical per-RPC size limit. For large data (config sync, player lists), split into multiple RPCs or use pagination.
+5. **Tartsd kicsinek az adattartalmakat.** A DayZ-nek van gyakorlati RPC-nkénti méretkorlátja. Nagy adatokhoz (konfiguráció szinkronizálás, játékos listák) bontsd több RPC-re vagy használj lapozást.
 
-6. **Register handlers early.** `OnInit()` is the safest place. Clients can connect before `OnMissionStart()` completes.
+6. **Regisztráld a kezelőket korán.** Az `OnInit()` a legbiztonságosabb hely. A kliensek csatlakozhatnak, mielőtt az `OnMissionStart()` befejeződik.
 
-7. **Clean up handlers on shutdown.** Either unregister individually or clear the entire registry in `OnMissionFinish()`.
+7. **Takarítsd ki a kezelőket leállításkor.** Vagy töröld a regisztrációt egyenként, vagy töröld a teljes nyilvántartást az `OnMissionFinish()`-ben.
 
-8. **Use `CreateRPC()` for payloads, `Send()` for signals.** If you have no data to send (just a "do it" signal), use the header-only `Send()`. If you have data, use `CreateRPC()` + manual writes + manual `rpc.Send()`.
+8. **Használd a `CreateRPC()`-t adattartalomhoz, a `Send()`-et jelzésekhez.** Ha nincs küldendő adatod (csak egy "csináld" jelzés), használd a csak-fejléces `Send()`-et. Ha van adatod, használd a `CreateRPC()` + kézi írások + kézi `rpc.Send()` kombinációt.
 
 ---
 
-[<< Elozo: Modul rendszerek](02-module-systems.md) | [Kezdolap](../../README.md) | [Kovetkezo: Konfiguracio perzisztencia >>](04-config-persistence.md)
+## Kompatibilitás és hatás
+
+- **Multi-Mod:** Az egész-tartomány RPC-k ütközésérzékenyek --- két mod, amely ugyanazt az ID-t választja, csendben elfogja egymás üzeneteit. A szöveg-útválasztásos vagy CF nevesített RPC-k elkerülik ezt a névtér + függvénynév kulcs használatával.
+- **Betöltési sorrend:** Az RPC kezelő regisztrációs sorrend csak akkor számít, ha több mod `modded class DayZGame`-et használ és felülírja az `OnRPC`-t. Mindegyiknek hívnia kell a `super.OnRPC()`-t a nem kezelt ID-khoz, különben az alább lévő modok soha nem kapják meg az RPC-iket. A szöveg-útválasztásos rendszerek elkerülik ezt egyetlen motor ID használatával.
+- **Listen szerver:** Listen szervereken a kliens és a szerver ugyanabban a folyamatban fut. A szerver oldalról `identity = null`-lal küldött RPC helyben is fogadódik. Védd a kezelőket `if (type != CallType.Server) return;` ellenőrzéssel vagy használd a `GetGame().IsServer()` / `GetGame().IsClient()` ellenőrzést szükség szerint.
+- **Teljesítmény:** Az RPC diszpécselési többletterhelés minimális (szöveg keresés vagy egész switch). A szűk keresztmetszet az adattartalom mérete --- a DayZ-nek van gyakorlati RPC-nkénti korlátja (~64 KB). Nagy adatokhoz (konfiguráció szinkronizálás) lapozz több RPC-n keresztül.
+- **Migráció:** Az RPC ID-k mod-belső részletek és nem érintik a DayZ verziófrissítések. Ha megváltoztatod az RPC átviteli formátumodat (mezőket adsz hozzá/távolítasz el), a régi kliensek az új szerverrel csendben deszinkronizálódnak. Verziózd az RPC adattartalmakat vagy kényszerítsd a kliens frissítéseket.
+
+---
+
+## Elmélet vs gyakorlat
+
+| Az elmélet azt mondja | DayZ valóság |
+|---------------|-------------|
+| Használj protocol buffereket vagy séma-alapú szerializációt | Az Enforce Scriptben nincs protobuf támogatás; kézzel `Write`/`Read`-elsz primitíveket egyeztetett sorrendben |
+| Validálj minden bemenetet séma érvényesítéssel | Nem létezik séma validáció; minden `ctx.Read()` visszatérési értéket egyenként kell ellenőrizni |
+| Az RPC-k legyenek idempotensek | A gyakorlatban a DayZ-ben ez csak lekérdezési RPC-knél kivitelezhető; a mutációs RPC-k (spawn, törlés, teleport) eredendően nem-idempotensek --- védd jogosultság-ellenőrzéssel helyette |
+
+---
+
+[Kezdőlap](../../README.md) | [<< Előző: Modul rendszerek](02-module-systems.md) | **RPC kommunikációs minták** | [Következő: Konfiguráció perzisztencia >>](04-config-persistence.md)

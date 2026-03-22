@@ -1,8 +1,10 @@
+<h1 align="center">DayZ Modding Complete Guide</h1>
+
 <p align="center">
   <img src="./images/logo.png" alt="DayZ Modding Wiki" />
 </p>
 
-<h1 align="center">DayZ Modding Complete Guide</h1>
+---
 
 <p align="center">
   <strong>The most comprehensive DayZ modding documentation ever created.</strong><br/>
@@ -144,7 +146,7 @@ This wiki exists thanks to the incredible work of these developers and their ope
 
 <p align="center">
   <strong>Built with reverse engineering, coffee, and the DayZ modding community.</strong><br/>
-  <sub>If this wiki helped you, consider giving it a star and sharing it with fellow modders.</sub>
+  <sub>If this wiki helped you, consider giving it a star and sharing it with fellow modders.</sub><br/>
   <img src="https://img.shields.io/badge/DayZ-Modding_Wiki-black?style=for-the-badge&logo=steam&logoColor=white" alt="DayZ Modding Wiki" />
 </p>
 
@@ -152,11 +154,7 @@ This wiki exists thanks to the incredible work of these developers and their ope
 
 ## License
 <p align="center">
-  <img src="https://img.shields.io/badge/license-CC_BY--SA_4.0-lightgrey?style=flat-square" alt="CC BY-SA 4.0" />
+  Documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/"><img src="https://img.shields.io/badge/license-CC_BY--SA_4.0-lightgrey?style=flat-square" alt="CC BY-SA 4.0" /></a> — share and adapt with attribution.<br/>
+  Code examples are licensed under <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square" alt="MIT License" /></a> — use freely in your mods.
+  See <a href="LICENSE"><img src="https://img.shields.io/badge/license-See_LICENSE-lightgrey?style=flat-square" alt="See LICENSE" /></a> for full text.
 </p>
-
-Documentation is licensed under [**CC BY-SA 4.0**](https://creativecommons.org/licenses/by-sa/4.0/) — share and adapt with attribution.
-
-Code examples are licensed under [**MIT**](LICENCE) — use freely in your mods.
-
-See [LICENCE](LICENCE) for full text.
