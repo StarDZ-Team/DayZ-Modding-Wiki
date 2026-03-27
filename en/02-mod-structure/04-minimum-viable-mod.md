@@ -430,7 +430,7 @@ The method or property you are calling does not exist on that class. Double-chec
 
 | Concept | Theory | Reality |
 |---------|--------|---------|
-| `Print()` outputs to log | Messages appear in script log | Output goes to the `.RPT` file, not a separate script log. On dedicated servers, check the server RPT in the profile folder |
+| `Print()` outputs to log | Messages appear in script log | Output goes to **both** the `.RPT` file and the `script_<date>_<time>.log` file. Check either one; the script log is often easier to search since it contains only script output |
 | `-filePatching` loads loose files | Unpacked mods work instantly | Some assets (models, textures) still require PBO packing; scripts work loose, but `.layout` files may not load from unpacked folders on all setups |
 | `modded class` patches vanilla | Your override replaces the original | Multiple mods can `modded class` the same class; they chain in load order. If one skips `super.OnInit()`, all later mods break |
 | `DZ_Data` is the only needed dependency | Minimal `requiredAddons` | Works for pure script mods, but if you reference any vanilla weapon/item class, you also need `DZ_Scripts` or the specific vanilla PBO |

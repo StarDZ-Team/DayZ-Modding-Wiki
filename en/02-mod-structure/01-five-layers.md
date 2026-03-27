@@ -45,45 +45,6 @@ Each layer builds on top of the previous ones. The numbers are not arbitrary -- 
 
 ## The Layer Stack
 
-```
-+---------------------------------------------------------------+
-|                                                               |
-|   5_Mission   (missionScriptModule)                           |
-|   UI, HUD, mission lifecycle, menu screens                    |
-|   Can reference: everything below (1-4)                       |
-|                                                               |
-+---------------------------------------------------------------+
-|                                                               |
-|   4_World     (worldScriptModule)                             |
-|   Entities, items, vehicles, managers, gameplay logic          |
-|   Can reference: 1_Core, 2_GameLib, 3_Game                    |
-|                                                               |
-+---------------------------------------------------------------+
-|                                                               |
-|   3_Game      (gameScriptModule)                              |
-|   Configs, RPC registration, data classes, input bindings     |
-|   Can reference: 1_Core, 2_GameLib                            |
-|                                                               |
-+---------------------------------------------------------------+
-|                                                               |
-|   2_GameLib   (gameLibScriptModule)                           |
-|   Low-level engine bindings (rarely used by mods)             |
-|   Can reference: 1_Core only                                  |
-|                                                               |
-+---------------------------------------------------------------+
-|                                                               |
-|   1_Core      (engineScriptModule)                            |
-|   Fundamental types, constants, pure utility functions         |
-|   Can reference: nothing (this is the foundation)             |
-|                                                               |
-+---------------------------------------------------------------+
-
-        COMPILATION ORDER: 1 --> 2 --> 3 --> 4 --> 5
-        DEPENDENCY DIRECTION: upward only (lower cannot see higher)
-```
-
-### Layer Stack Diagram
-
 ```mermaid
 graph TB
     subgraph "Script Module Load Order"
@@ -455,26 +416,40 @@ class MyWorldLogic
 
 ## Load Order and Timing
 
+### What Controls Load Order
+
+The **only** thing that determines mod load order is `requiredAddons[]` in `config.cpp` `CfgPatches`. Nothing else matters. Not the `-mod=` order on the command line, not folder names, not file names. The engine reads every PBO's `CfgPatches`, builds a dependency graph from `requiredAddons[]`, and sorts mods topologically.
+
+If your mod declares:
+
+```cpp
+requiredAddons[] = { "DZ_Data", "JM_CF_Scripts" };
+```
+
+Then `DZ_Data` and `JM_CF_Scripts` are guaranteed to be loaded and compiled before your mod. If you forget to list a dependency, your mod may compile before it, causing "Undefined type" errors.
+
 ### Compilation Order
 
 The engine compiles all mods' scripts for each layer before moving to the next layer:
 
 ```
-Step 1: Compile ALL mods' 1_Core scripts
-Step 2: Compile ALL mods' 2_GameLib scripts
-Step 3: Compile ALL mods' 3_Game scripts
-Step 4: Compile ALL mods' 4_World scripts
-Step 5: Compile ALL mods' 5_Mission scripts
+Step 1: Compile ALL mods' 1_Core scripts (ordered by requiredAddons)
+Step 2: Compile ALL mods' 2_GameLib scripts (ordered by requiredAddons)
+Step 3: Compile ALL mods' 3_Game scripts (ordered by requiredAddons)
+Step 4: Compile ALL mods' 4_World scripts (ordered by requiredAddons)
+Step 5: Compile ALL mods' 5_Mission scripts (ordered by requiredAddons)
 ```
 
-Within each step, mods are ordered by their `requiredAddons` dependency chain in `config.cpp`. If ModB depends on ModA, ModA's scripts for that layer are compiled first.
+Within each step, mods are ordered by the dependency graph built from `requiredAddons[]`. If ModB lists `"ModA_Scripts"` in its `requiredAddons`, ModA's scripts for that layer compile first.
+
+> **Community insight:** When two mods have no dependency relationship (neither lists the other in `requiredAddons[]`), they compile in ASCII alphabetical order of the `CfgMods` class name. For example, a mod with `class AlphaMod` compiles before `class BetaMod` if neither depends on the other. *Source: inclementdab (DabsFramework author).*
 
 ### Initialization Order
 
 After compilation, the runtime initialization follows a different sequence:
 
 ```
-1. Engine boots, loads configs
+1. Engine boots, loads configs (requiredAddons determines config parse order)
 2. 1_Core scripts are available (static constructors run)
 3. 2_GameLib scripts are available
 4. 3_Game scripts are available
@@ -552,22 +527,14 @@ BAD:
 
 ## Quick Decision Guide
 
-```
-                    Does it extend a world entity?
-                          (EntityAI, ItemBase, etc.)
-                         /                    \
-                       YES                    NO
-                        |                      |
-                    4_World              Does it touch UI/HUD/Mission?
-                                        /                    \
-                                      YES                    NO
-                                       |                      |
-                                   5_Mission          Is it a pure utility
-                                                      with zero game deps?
-                                                      /                \
-                                                    YES                NO
-                                                     |                  |
-                                                  1_Core            3_Game
+```mermaid
+flowchart TD
+    A{Extends a world entity?<br/>EntityAI, ItemBase, etc.} -->|YES| B[4_World]
+    A -->|NO| C{Touches UI/HUD/Mission?}
+    C -->|YES| D[5_Mission]
+    C -->|NO| E{Pure utility with<br/>zero game deps?}
+    E -->|YES| F[1_Core]
+    E -->|NO| G[3_Game]
 ```
 
 ---
@@ -655,30 +622,6 @@ If your "constants" reference any game type, they cannot go in `1_Core`. Even so
 | 5 | `5_Mission/` | `missionScriptModule` | UI, HUD, mission hooks | Common |
 
 **Remember:** Lower layers cannot see higher layers. When in doubt, use `3_Game`. Move code up only when you need access to types defined in a higher layer.
-
----
-
-## Observed in Real Mods
-
-| Pattern | Mod | Detail |
-|---------|-----|--------|
-| All 5 layers used | DabsFramework | One of the few mods using `2_GameLib` for low-level MVC view binding |
-| `Common/` folder shared across layers | COT | Same directory included in every script module's `files[]` to share types |
-| `1_Core` for module registration | Community Framework | `CF_ModuleCoreManager` lives in `1_Core` so all layers can register modules |
-| Most code in `3_Game` + `4_World` | VPP Admin Tools | No `1_Core` usage; configs and commands in `3_Game`, managers in `4_World` |
-| `3_Game` casting workaround | Expansion Market | Uses `Man` type in `3_Game` data classes, casts to `PlayerBase` in `4_World` |
-
----
-
-## Theory vs Practice
-
-| Concept | Theory | Reality |
-|---------|--------|---------|
-| Use `1_Core` for shared constants | Constants available to all layers | Most mods put constants in `3_Game` since they rarely need them before game init |
-| `2_GameLib` for engine bindings | Available for low-level engine work | Only DabsFramework uses it in practice; virtually all mods skip layer 2 entirely |
-| One class per layer | Each class lives in its correct layer | Complex features often split one logical system across `3_Game` (data), `4_World` (logic), and `5_Mission` (UI) |
-| Layer errors are clear | Compiler explains the issue | Error says "Undefined type" with no mention of layers; you must figure out the layer mismatch yourself |
-| Static init runs at compile time | Static code executes during linking | Static arrays and maps initialized in `3_Game` can cause crashes if they reference types from higher layers |
 
 ---
 

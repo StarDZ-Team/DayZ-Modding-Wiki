@@ -114,7 +114,7 @@
 | `DecreaseHealth` | `void DecreaseHealth(string zone, string type, float value, bool auto_delete = false)` | Reduce health |
 | `SetAllowDamage` | `void SetAllowDamage(bool val)` | Enable/disable damage |
 | `GetAllowDamage` | `bool GetAllowDamage()` | Check if damage allowed |
-| `IsAlive` | `bool IsAlive()` | Alive check (use on EntityAI) |
+| `IsAlive` | `bool IsAlive()` | Alive check (defined on Object, works on any Object subclass) |
 | `ProcessDirectDamage` | `void ProcessDirectDamage(int dmgType, EntityAI source, string component, string ammoType, vector modelPos, float coef = 1.0, int flags = 0)` | Apply damage (EntityAI) |
 
 **Common zone/type pairs:** `("", "Health")` global, `("", "Blood")` player blood, `("", "Shock")` player shock, `("Engine", "Health")` vehicle engine.
@@ -537,13 +537,13 @@
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `Math.SmoothCD` | `float SmoothCD(float val, float target, inout float velocity, float smoothTime, float maxSpeed, float dt)` | Smooth damp toward target (like Unity's SmoothDamp) |
+| `Math.SmoothCD` | `float SmoothCD(float val, float target, inout float velocity[], float smoothTime, float maxSpeed, float dt)` | Smooth damp toward target (like Unity's SmoothDamp) |
 
 ```c
 // Smooth damping usage
-// val: current value, target: target value, velocity: ref velocity (persisted between calls)
+// val: current value, target: target value, velocity: inout float[] (persisted between calls)
 // smoothTime: smoothing time, maxSpeed: speed cap, dt: delta time
-float m_Velocity = 0;
+float m_Velocity[1] = {0};  // MUST be float array, not plain float
 float result = Math.SmoothCD(current, target, m_Velocity, 0.3, 1000.0, dt);
 ```
 
@@ -594,7 +594,7 @@ float result = Math.SmoothCD(current, target, m_Velocity, 0.3, 1000.0, dt);
 | `GetGame().IsMultiplayer()` | `bool IsMultiplayer()` | Multiplayer check |
 | `Print(string)` | `void Print(string msg)` | Write to script log |
 | `ErrorEx(string)` | `void ErrorEx(string msg, ErrorExSeverity sev = ERROR)` | Log error with severity |
-| `DumpStackString()` | `string DumpStackString()` | Get call stack as string |
+| `DumpStackString()` | `void DumpStackString(out string stack)` | Get call stack as string (fills out param) |
 | `string.Format(fmt, ...)` | `string Format(string fmt, ...)` | Format string (`%1`..`%9`) |
 
 ---

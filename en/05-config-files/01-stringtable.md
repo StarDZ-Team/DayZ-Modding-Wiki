@@ -28,7 +28,13 @@
 
 DayZ uses a CSV-based localization system. When the engine encounters a string key prefixed with `#` (for example, `#STR_MYMOD_HELLO`), it looks up that key in all loaded stringtable files and returns the translation matching the player's current language. If no match is found for the active language, the engine falls back through a defined chain.
 
-The stringtable file must be named exactly `stringtable.csv` and placed inside your mod's PBO structure. The engine discovers it automatically --- no config.cpp registration is required.
+The stringtable file must be named exactly `stringtable.csv`. The engine discovers it automatically --- no config.cpp registration is required. It can live in multiple locations:
+
+- **Next to mod.cpp** at the root of your mod directory
+- **Inside any PBO** (this is how COT, CF, and Expansion do it)
+- **Multiple stringtable.csv files across different PBOs** are all loaded and merged by the engine
+
+This means a single mod can have several stringtable.csv files spread across its PBOs, and they all work together.
 
 ---
 
@@ -208,21 +214,26 @@ This is the one place where you omit the `#`. The input system adds it internall
 
 ### Step 1: Create the File
 
-Create `stringtable.csv` at the root of your mod's PBO content directory. The engine scans all loaded PBOs for files named exactly `stringtable.csv`.
-
-Typical placement:
+Create a file named exactly `stringtable.csv`. The engine scans all loaded PBOs for files with this name and merges them together. You have several valid placement options:
 
 ```
 @MyMod/
+  mod.cpp
+  stringtable.csv              <-- Option A: next to mod.cpp (mod root)
   Addons/
     MyMod_Scripts.pbo
       config.cpp
-      stringtable.csv        <-- Here
+      stringtable.csv          <-- Option B: inside a PBO
       Scripts/
         3_Game/
         4_World/
         5_Mission/
+    MyMod_Data.pbo
+      config.cpp
+      stringtable.csv          <-- Option C: inside another PBO (also valid)
 ```
+
+All three options work. You can even use multiple stringtable.csv files across different PBOs in the same mod -- the engine merges them all. This is the approach used by large mods like DayZ Expansion, which has 20 separate stringtable files across its PBOs (see the [Modular Stringtable Approach](#modular-stringtable-approach-dayz-expansion) section below).
 
 ### Step 2: Write the Header
 

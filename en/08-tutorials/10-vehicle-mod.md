@@ -15,7 +15,7 @@
 - [Step 1: Create the Config (config.cpp)](#step-1-create-the-config-configcpp)
 - [Step 2: Custom Textures](#step-2-custom-textures)
 - [Step 3: Script Behavior (CarScript)](#step-3-script-behavior-carscript)
-- [Step 4: types.xml Entry](#step-4-typesxml-entry)
+- [Step 4: Vehicle Spawning (events.xml)](#step-4-vehicle-spawning-eventsxml)
 - [Step 5: Build and Test](#step-5-build-and-test)
 - [Step 6: Polish](#step-6-polish)
 - [Complete Code Reference](#complete-code-reference)
@@ -756,40 +756,63 @@ If you change this to the wrong value, the player's animation will clip through 
 
 ---
 
-## Step 4: types.xml Entry
+## Step 4: Vehicle Spawning (events.xml)
 
-### Vehicle Spawn Configuration
+### Why Vehicles Use events.xml, Not types.xml
 
-Vehicles in `types.xml` use the same format as items, but with some important differences. Add this to your server's `types.xml`:
+In DayZ, vehicles are **not** spawned through the Central Economy `types.xml` system. Unlike regular loot items, vehicles spawn through `events.xml` with defined spawn points. This is a critical distinction -- if you add your vehicle to `types.xml`, it will not spawn in the world.
+
+The `events.xml` system controls vehicle spawn counts, lifetime, and positioning. Each vehicle event references a child type, and the engine places vehicles at positions defined in map-specific spawn point files.
+
+### events.xml Entry
+
+Add this to your server's mission folder `events.xml`:
 
 ```xml
-<type name="MFM_RallyHatchback">
+<event name="VehicleMFMRallyHatchback">
     <nominal>3</nominal>
-    <lifetime>3888000</lifetime>
-    <restock>0</restock>
     <min>1</min>
-    <quantmin>-1</quantmin>
-    <quantmax>-1</quantmax>
-    <cost>100</cost>
-    <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0" />
-    <category name="vehicles" />
-    <usage name="Coast" />
-    <usage name="Farm" />
-    <usage name="Village" />
-    <value name="Tier1" />
-    <value name="Tier2" />
-    <value name="Tier3" />
-</type>
+    <max>5</max>
+    <lifetime>3600</lifetime>
+    <restock>0</restock>
+    <saferadius>500</saferadius>
+    <distanceradius>500</distanceradius>
+    <cleanupradius>200</cleanupradius>
+    <flags deletable="0" init_random="0" remove_damaged="1"/>
+    <position>fixed</position>
+    <limit>mixed</limit>
+    <active>1</active>
+    <children>
+        <child lootmax="0" lootmin="0" max="1" min="1" type="MFM_RallyHatchback"/>
+    </children>
+</event>
 ```
 
-### Vehicle vs Item Differences in types.xml
+### events.xml Fields Explained
 
-| Setting | Items | Vehicles |
-|---------|-------|----------|
-| `nominal` | 10-50+ | 1-5 (vehicles are rare) |
-| `lifetime` | 3600-14400 | 3888000 (45 days -- vehicles persist a long time) |
-| `restock` | 1800 | 0 (vehicles do not restock automatically; they respawn only after the previous one is destroyed and despawned) |
-| `category` | `tools`, `weapons`, etc. | `vehicles` |
+| Field | Purpose |
+|-------|---------|
+| `nominal` | Target number of this vehicle in the world |
+| `min` | Minimum count before the CE tries to spawn more |
+| `max` | Maximum count allowed in the world |
+| `lifetime` | How long (seconds) the event stays active before re-evaluation |
+| `restock` | Time (seconds) before a new vehicle can replace a destroyed one. `0` means immediate. |
+| `saferadius` | Minimum distance (meters) from players before spawning |
+| `distanceradius` | Minimum distance (meters) between spawn instances |
+| `cleanupradius` | Radius (meters) within which the engine checks for cleanup |
+| `position` | `fixed` means the vehicle spawns at predefined map positions |
+| `active` | `1` = enabled, `0` = disabled |
+
+### Vehicle vs Item Spawning
+
+| Aspect | Items (types.xml) | Vehicles (events.xml) |
+|--------|-------------------|----------------------|
+| Spawn system | Central Economy loot spawner | Event-based spawner with fixed map positions |
+| Position | Random building/ground positions by usage tags | Predefined vehicle spawn points on the map |
+| Count control | `nominal`/`min` with restock timer | `nominal`/`min`/`max` with event lifecycle |
+| Typical count | 10-50+ per item type | 1-5 per vehicle type |
+
+> **Note:** Vanilla DayZ ships with predefined vehicle spawn points on each map. Your custom vehicle event will use these same positions. If you need custom spawn positions, you must edit the map's `cfgeventspawns.xml` file.
 
 ### Pre-Attached Parts with cfgspawnabletypes.xml
 
@@ -1136,26 +1159,26 @@ class CfgMods
 };
 ```
 
-### Server Mission types.xml Entry
+### Server Mission events.xml Entry
 
 ```xml
-<type name="MFM_RallyHatchback">
+<event name="VehicleMFMRallyHatchback">
     <nominal>3</nominal>
-    <lifetime>3888000</lifetime>
-    <restock>0</restock>
     <min>1</min>
-    <quantmin>-1</quantmin>
-    <quantmax>-1</quantmax>
-    <cost>100</cost>
-    <flags count_in_cargo="0" count_in_hoarder="0" count_in_map="1" count_in_player="0" crafted="0" deloot="0" />
-    <category name="vehicles" />
-    <usage name="Coast" />
-    <usage name="Farm" />
-    <usage name="Village" />
-    <value name="Tier1" />
-    <value name="Tier2" />
-    <value name="Tier3" />
-</type>
+    <max>5</max>
+    <lifetime>3600</lifetime>
+    <restock>0</restock>
+    <saferadius>500</saferadius>
+    <distanceradius>500</distanceradius>
+    <cleanupradius>200</cleanupradius>
+    <flags deletable="0" init_random="0" remove_damaged="1"/>
+    <position>fixed</position>
+    <limit>mixed</limit>
+    <active>1</active>
+    <children>
+        <child lootmax="0" lootmin="0" max="1" min="1" type="MFM_RallyHatchback"/>
+    </children>
+</event>
 ```
 
 ### Server Mission cfgspawnabletypes.xml Entry
@@ -1195,7 +1218,7 @@ class CfgMods
 ## Best Practices
 
 - **Always extend an existing vehicle class.** Creating a vehicle from scratch requires a custom 3D model with correct geometry LODs, proxies, memory points, and a physics simulation config. Extending a vanilla vehicle gives you all of this for free.
-- **Test with `OnDebugSpawn()` first.** Before setting up types.xml and cfgspawnabletypes.xml, verify the vehicle works by spawning it fully equipped via the debug menu or script console.
+- **Test with `OnDebugSpawn()` first.** Before setting up events.xml and cfgspawnabletypes.xml, verify the vehicle works by spawning it fully equipped via the debug menu or script console.
 - **Keep the same `GetAnimInstance()` as the parent.** If you change this without a matching animation set, players will T-pose or clip through the vehicle.
 - **Do not change door slot names.** The Niva uses `NivaDriverDoors`, `NivaCoDriverDoors`, `NivaHood`, `NivaTrunk`. These are tied to the model's proxy names and inventory slot definitions. Changing them without changing the model will break door functionality.
 - **Use `scope = 0` for internal base classes.** If you create an abstract base vehicle that other variants extend, set `scope = 0` so it never spawns directly.
@@ -1224,7 +1247,7 @@ In this tutorial you learned:
 - How damage zones work and how to configure health values for each vehicle component
 - How vehicle hidden selections allow retexturing the body without a custom 3D model
 - How to write a vehicle script with door state logic, crew entry checks, and engine behavior
-- How `types.xml` and `cfgspawnabletypes.xml` work together for vehicle spawning with randomized pre-attached parts
+- How `events.xml` and `cfgspawnabletypes.xml` work together for vehicle spawning with randomized pre-attached parts
 - How to test vehicles in-game using the script console and the `OnDebugSpawn()` method
 - How to add custom sounds for horns and custom light classes for headlights
 
@@ -1265,6 +1288,10 @@ The Niva rear seats require the front seat to be folded forward. If your `CrewCa
 ### Vehicle Spawns Without Parts in Multiplayer
 
 `OnDebugSpawn()` is only for debug/testing. In a real server, parts come from `cfgspawnabletypes.xml`. If your vehicle spawns as a bare shell, add the `cfgspawnabletypes.xml` entry described in Step 4.
+
+### Vehicle Does Not Spawn on the Server
+
+If you added your vehicle to `types.xml` instead of `events.xml`, it will not appear. Vehicles use the event spawning system, not the Central Economy loot table. Create an `events.xml` entry as described in Step 4.
 
 ---
 

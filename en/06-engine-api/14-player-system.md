@@ -25,7 +25,8 @@ Class (root of all Enforce Script classes)
                 └── Entity
                     └── EntityAI         // 3_Game/entities/entityai.c
                         └── Man          // 3_Game/entities/man.c
-                            └── DayZPlayer            // 3_Game/dayzplayer.c
+                            └── Human    // engine native (proto)
+                                └── DayZPlayer            // 3_Game/dayzplayer.c
                                 └── DayZPlayerImplement  // 4_World/entities/dayzplayerimplement.c
                                     └── ManBase        // 4_World/entities/manbase.c
                                         └── PlayerBase // 4_World/entities/manbase/playerbase.c
@@ -37,7 +38,8 @@ Class (root of all Enforce Script classes)
 ```mermaid
 classDiagram
     EntityAI <|-- Man
-    Man <|-- DayZPlayer
+    Man <|-- Human
+    Human <|-- DayZPlayer
     DayZPlayer <|-- DayZPlayerImplement
     DayZPlayerImplement <|-- ManBase
     ManBase <|-- PlayerBase
@@ -84,6 +86,7 @@ classDiagram
 | **Object** | `GetPosition()`, `SetPosition()`, `GetHealth()`, `SetHealth()`, `IsAlive()`, `SetAllowDamage()` |
 | **EntityAI** | Inventory, attachments, damage zones, `EEInit()`, `EEKilled()`, `EEHitBy()`, net sync variables |
 | **Man** | `GetIdentity()`, `GetHumanInventory()`, `GetEntityInHands()`, `IsUnconscious()` |
+| **Human** | Engine-native class (proto). Provides low-level animation command interface between Man and DayZPlayer |
 | **DayZPlayer** | Instance type, command system, camera system, animation commands |
 | **DayZPlayerImplement** | Movement state checks (`IsInVehicle`, `IsSwimming`, `IsRaised`, `IsFalling`) |
 | **ManBase** | Base implementation connecting DayZPlayerImplement to PlayerBase |

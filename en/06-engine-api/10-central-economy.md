@@ -152,15 +152,15 @@ Global CE parameters that affect all items.
     <var name="CleanupLifetimeDeadInfected" type="0" value="330"/>
     <var name="CleanupLifetimeDeadPlayer" type="0" value="3600"/>
     <var name="CleanupLifetimeDefault" type="0" value="45"/>
-    <var name="CleanupLifetimeLimit" type="0" value="7200"/>
+    <var name="CleanupLifetimeLimit" type="0" value="50"/>
     <var name="CleanupLifetimeRuined" type="0" value="330"/>
     <var name="FlagRefreshFrequency" type="0" value="432000"/>
     <var name="FlagRefreshMaxDuration" type="0" value="3456000"/>
     <var name="IdleModeCountdown" type="0" value="60"/>
     <var name="IdleModeStartup" type="0" value="1"/>
-    <var name="InitialSpawn" type="0" value="1200"/>
-    <var name="LootDamageMax" type="0" value="2"/>
-    <var name="LootDamageMin" type="0" value="0"/>
+    <var name="InitialSpawn" type="0" value="100"/>
+    <var name="LootDamageMax" type="1" value="0.82"/>
+    <var name="LootDamageMin" type="1" value="0.0"/>
     <var name="RespawnAttempt" type="0" value="2"/>
     <var name="RespawnLimit" type="0" value="20"/>
     <var name="RespawnTypes" type="0" value="12"/>
@@ -185,7 +185,7 @@ Global CE parameters that affect all items.
 | `CleanupLifetimeDeadInfected` | Seconds before dead zombie despawns |
 | `InitialSpawn` | Number of items to spawn on server startup |
 | `SpawnInitial` | Number of spawn attempts on startup |
-| `LootDamageMin` / `LootDamageMax` | Damage range applied to spawned loot (0-4: Pristine to Ruined) |
+| `LootDamageMin` / `LootDamageMax` | Damage range applied to spawned loot (0.0-1.0 float, type="1") |
 | `RespawnAttempt` | Seconds between respawn checks |
 | `FlagRefreshFrequency` | Territory flag refresh interval (seconds) |
 | `TimeLogin` / `TimeLogout` | Login/logout timer (seconds) |
@@ -202,20 +202,20 @@ Defines dynamic events: infected spawn zones, vehicle spawns, helicopter crashes
 <events>
     <event name="StaticHeliCrash">
         <nominal>3</nominal>
-        <min>1</min>
-        <max>3</max>
-        <lifetime>1800</lifetime>
+        <min>0</min>
+        <max>0</max>
+        <lifetime>2100</lifetime>
         <restock>0</restock>
-        <saferadius>500</saferadius>
-        <distanceradius>500</distanceradius>
-        <cleanupradius>200</cleanupradius>
-        <flags deletable="1" init_random="0" remove_damaged="1"/>
+        <saferadius>1000</saferadius>
+        <distanceradius>1000</distanceradius>
+        <cleanupradius>1000</cleanupradius>
+        <flags deletable="1" init_random="0" remove_damaged="0"/>
         <position>fixed</position>
         <limit>child</limit>
         <active>1</active>
         <children>
             <child lootmax="10" lootmin="5" max="3" min="1"
-                   type="Wreck_Mi8_Crashed"/>
+                   type="Wreck_UH1Y"/>
         </children>
     </event>
 </events>

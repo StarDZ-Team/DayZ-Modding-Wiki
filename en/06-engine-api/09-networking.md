@@ -4,21 +4,16 @@
 
 ---
 
-## Introduction
-
-DayZ is a client-server game. All authoritative logic runs on the server, and clients communicate with it through Remote Procedure Calls (RPCs). The primary RPC mechanism is `ScriptRPC`, which allows you to write arbitrary data on one side and read it on the other. This chapter covers the networking API: sending and receiving RPCs, the serialization context classes, the legacy `CGame.RPC()` method, and `ScriptInputUserData` for input-verified client-to-server messages.
+DayZ is a client-server game. All authoritative logic runs on the server, and clients communicate with it through Remote Procedure Calls (RPCs). This chapter covers `ScriptRPC`, the serialization context classes, the legacy `CGame.RPC()` method, and `ScriptInputUserData` for input-verified client-to-server messages.
 
 ---
 
 ## Client-Server Architecture
 
-```
-┌────────────┐                    ┌────────────┐
-│   Client   │  ──── RPC ────►   │   Server   │
-│            │  ◄──── RPC ────   │            │
-│ GetGame()  │                    │ GetGame()  │
-│ .IsClient()│                    │ .IsServer()│
-└────────────┘                    └────────────┘
+```mermaid
+graph LR
+    Client["Client<br/>GetGame().IsClient()"] -- "RPC →" --> Server["Server<br/>GetGame().IsServer()"]
+    Server -- "← RPC" --> Client
 ```
 
 ### Environment Checks
@@ -470,35 +465,21 @@ The engine has built-in rate limiting for RPCs. Sending too many RPCs per frame 
 
 ## Best Practices
 
-- **Always check `ctx.Read()` return values.** Every `Read()` call can fail if the data is malformed or the sender wrote fewer fields than expected. Skipping the check leads to reading garbage data from the buffer, corrupting all subsequent reads.
-- **Define RPC ID constants in `3_Game` so both client and server compile them.** Placing RPC constants in `4_World` or `5_Mission` means only one side sees them, and `OnRPC` will never match on the other side.
-- **Use `guaranteed = true` for state-changing RPCs, `false` only for cosmetic/frequent updates.** Unreliable RPCs can be dropped by the network layer. Admin commands, inventory sync, and score updates must always be guaranteed.
-- **Validate all client-sent data on the server.** Never trust RPC data from clients. Clamp numeric ranges, verify identity matches the sender, and check permissions before executing any server-side action.
-- **Prefer `ScriptRPC` over the legacy `GetGame().RPC()` for new code.** `ScriptRPC` is more flexible (arbitrary data via `Write`), avoids `Param` object allocation overhead, and is the approach used by all modern mods.
+- Always check `ctx.Read()` return values. Skipping the check leads to reading garbage data from the buffer, corrupting all subsequent reads.
+- Define RPC ID constants in `3_Game` so both client and server compile them. Placing them in `4_World` or `5_Mission` means only one side sees them.
+- Use `guaranteed = true` for state-changing RPCs, `false` only for cosmetic/frequent updates.
+- Validate all client-sent data on the server. Clamp numeric ranges, verify identity, check permissions.
+- Prefer `ScriptRPC` over the legacy `GetGame().RPC()` for new code. It avoids `Param` object allocation overhead and supports arbitrary data via `Write`.
 
 ---
 
-## Compatibility & Impact
+## Multi-Mod Considerations
 
-> **Mod Compatibility:** RPC ID collisions are the primary risk. Two mods using the same integer RPC ID will intercept each other's messages, causing silent data corruption or crashes.
-
-- **Load Order:** RPC handlers registered via `modded class` overrides of `OnRPC` are load-order sensitive. Always call `super.OnRPC()` so earlier mods in the chain can process their own IDs.
-- **Modded Class Conflicts:** Multiple mods overriding `OnRPC` on `PlayerBase` is extremely common. As long as each mod checks its own RPC IDs and calls `super`, they coexist. Forgetting `super` breaks all other mods' RPCs.
-- **Performance Impact:** Each `ScriptRPC.Send()` with `guaranteed = true` creates a reliable network packet. Sending dozens of guaranteed RPCs per frame to all players will saturate bandwidth. Batch data into fewer, larger RPCs when possible.
-- **Server/Client:** `ScriptRPC.Send()` from client always goes to server (recipient parameter is ignored). From server, `null` recipient broadcasts to all clients. Sending server-only logic via client RPC without validation is a security vulnerability.
-
----
-
-## Observed in Real Mods
-
-> These patterns were confirmed by studying the source code of professional DayZ mods.
-
-| Pattern | Mod | File/Location |
-|---------|-----|---------------|
-| Single engine RPC ID with string-based routing for all features | StarDZ Core | `SDZ_RPC` (ID 83722) |
-| `OnRPC` override on `PlayerBase` with `super` call and ID switch | Expansion | Player sync, notifications, parties |
-| `ScriptInputUserData` with `CanStoreInputUserData()` guard for actions | Vanilla | Action system input verification |
-| High-numbered RPC base constant (80000+) to avoid vanilla conflicts | COT | `CommunityOnlineToolsBase` RPC definitions |
+- **RPC ID collisions** are the primary risk. Two mods using the same integer RPC ID will intercept each other's messages, causing silent data corruption or crashes. Use high base numbers (80000+).
+- Always call `super.OnRPC()` in `modded class` overrides so other mods in the chain can process their own IDs. Forgetting `super` breaks all other mods' RPCs.
+- Each `ScriptRPC.Send()` with `guaranteed = true` creates a reliable network packet. Batch data into fewer, larger RPCs to avoid saturating bandwidth.
+- `ScriptRPC.Send()` from client always goes to server (recipient parameter is ignored). From server, `null` recipient broadcasts to all clients.
+- For mods with many RPC types, use a single engine RPC ID and route internally by a string identifier instead of consuming many integer IDs.
 
 ---
 

@@ -31,7 +31,7 @@ de/01-enforce-script/01-variables-types.md   (German translation)
 
 Languages: `en`, `pt`, `de`, `ru`, `es`, `fr`, `ja`, `zh-hans`, `cs`, `pl`, `hu`, `it`
 
-### Chapter Organization (8 Parts)
+### Chapter Organization (9 Parts)
 
 | Part | Directory | Chapters | Topic |
 |------|-----------|----------|-------|
@@ -43,6 +43,7 @@ Languages: `en`, `pt`, `de`, `ru`, `es`, `fr`, `ja`, `zh-hans`, `cs`, `pl`, `hu`
 | 6 | `06-engine-api/` | 24 | Entity, player, vehicle, sound, AI, terrain |
 | 7 | `07-patterns/` | 7 | Singletons, RPC, permissions, events |
 | 8 | `08-tutorials/` | 13 | Hello World through Trading System |
+| 9 | `09-server-admin/` | 12 | Server setup, economy, persistence, troubleshooting |
 
 Reference files sit at the root of each language dir: `cheatsheet.md`, `glossary.md`, `faq.md`, `troubleshooting.md`, `README.md`.
 

@@ -160,21 +160,21 @@ string log = string.Format("[%1] %2 :: %3", "MyMod", "INFO", "Server started");
 
 ### ToLower
 
-Converts the string to lowercase. **Modifies in place** -- does NOT return a new string.
+Converts the string to lowercase. **Modifies in place** and returns `int` (the length of the changed string). From enstring.c: `proto int ToLower();`.
 
 ```c
 string s = "Hello WORLD";
-s.ToLower();
+int len = s.ToLower();  // s is now "hello world", len is 11
 Print(s); // "hello world"
 ```
 
 ### ToUpper
 
-Converts the string to uppercase. **Modifies in place.**
+Converts the string to uppercase. **Modifies in place** and returns `int` (the length of the changed string). From enstring.c: `proto int ToUpper();`.
 
 ```c
 string s = "Hello World";
-s.ToUpper();
+int len = s.ToUpper();  // s is now "HELLO WORLD", len is 11
 Print(s); // "HELLO WORLD"
 ```
 
@@ -463,7 +463,7 @@ string GetFileName(string path)
 
 | Concept | Theory | Reality |
 |---------|--------|---------|
-| `ToLower()` / `Replace()` return value | Expected to return a new string (like C#) | They modify in place and return `void` or count -- a constant source of bugs |
+| `ToLower()` / `Replace()` return value | Expected to return a new string (like C#) | They modify in place. `ToLower()` and `ToUpper()` return `int` (length), `Replace()` returns `int` (count) -- a constant source of bugs |
 | `string.Format` placeholders | `%d`, `%f`, `%s` like C printf | Only `%1` through `%9` work; C-style specifiers are silently ignored |
 | Backslash `\\` in strings | Standard escape character | Can break DayZ's CParser in JSON contexts -- prefer forward slashes for paths |
 
@@ -473,8 +473,8 @@ string GetFileName(string path)
 
 | Mistake | Problem | Fix |
 |---------|---------|-----|
-| Expecting `ToLower()` to return a new string | `ToLower()` modifies in place, returns `void` | Copy the string first, then call `ToLower()` on the copy |
-| Expecting `ToUpper()` to return a new string | Same as above -- modifies in place | Copy first, then call `ToUpper()` on the copy |
+| Expecting `ToLower()` to return a new string | `ToLower()` modifies in place, returns `int` (length) | Copy the string first, then call `ToLower()` on the copy |
+| Expecting `ToUpper()` to return a new string | Same as above -- modifies in place, returns `int` (length) | Copy first, then call `ToUpper()` on the copy |
 | Expecting `Replace()` to return a new string | `Replace()` modifies in place, returns replacement count | Copy the string first if you need the original |
 | Using `%0` in `string.Format()` | Placeholders are 1-indexed (`%1` through `%9`) | Start from `%1` |
 | Using `%d`, `%f`, `%s` format specifiers | C-style format specifiers do not work | Use `%1`, `%2`, etc. |

@@ -86,6 +86,8 @@ This is the most critical field in the entire config. `requiredAddons` tells the
 1. **Load order:** Your PBO's scripts compile AFTER all listed addons
 2. **Hard dependency:** If a listed addon is missing, your mod fails to load
 
+`requiredAddons` chains are transitive. If Mod_A depends on Mod_B, and Mod_B depends on `DZ_Data`, then Mod_A does not need to list `DZ_Data`. However, listing explicit dependencies is still good practice for clarity and resilience against upstream changes.
+
 Each entry must match a `CfgPatches` class name from another mod:
 
 | Dependency | requiredAddons Entry | When to Use |
@@ -369,7 +371,7 @@ class defs
 
 ## defines Array
 
-The `defines[]` array in `CfgMods` creates preprocessor symbols that other mods can check with `#ifdef`:
+The `defines[]` array in `CfgMods` creates preprocessor symbols that other mods can check with `#ifdef`. Since DayZ 1.21, the engine also automatically registers the `CfgMods` class name itself as a `#define`, so `#ifdef MyMod` works without an explicit `defines[]` entry.
 
 ```cpp
 defines[] =
@@ -449,7 +451,7 @@ class CfgVehicles
     class ItemBase;                          // Forward-declare the parent class
     class MyMod_CustomItem : ItemBase        // Inherit from vanilla base
     {
-        scope = 2;                           // 0=hidden, 1=editor-only, 2=public
+        scope = 2;                           // 0=hidden, 1=static/map objects, 2=public
         displayName = "Custom Item";
         descriptionShort = "A custom item.";
         model = "MyMod/Data/Models/item.p3d";
@@ -461,13 +463,45 @@ class CfgVehicles
 };
 ```
 
+### Forward Declarations
+
+When overriding a class from another addon, you must forward-declare the parent class so the config parser can resolve the inheritance chain:
+
+```cpp
+class CfgVehicles
+{
+    class Inventory_Base;                        // Forward declaration
+    class MyCustomItem : Inventory_Base          // Now the parser knows the parent
+    {
+        scope = 2;
+        displayName = "Custom Item";
+    };
+};
+```
+
+### The += Operator for Config Arrays
+
+Since DayZ 1.17, you can use `+=` to append to arrays without overwriting entries from other mods:
+
+```cpp
+class CfgVehicles
+{
+    class MyItem : ItemBase
+    {
+        attachments[] += { "MyCustomAttachment" };  // Appends instead of replacing
+    };
+};
+```
+
+Without `+=`, using `=` replaces the entire array, potentially removing attachments added by other mods or vanilla.
+
 ### scope Values
 
 | Value | Meaning | Usage |
 |-------|---------|-------|
-| `0` | Hidden | Base classes, abstract parents -- never spawnable |
-| `1` | Editor only | Visible in DayZ Editor but not in normal gameplay |
-| `2` | Public | Fully spawnable, appears in admin tools and spawners |
+| `0` | Hidden | Hidden from everything -- not spawnable, not in editor, not in script console. Used for base classes and abstract parents. |
+| `1` | Static/map objects | For objects placed on the map: houses, wrecks, rocks, trees. These are NOT general "editor-only" items -- they are static world objects that exist as part of the terrain. They cannot be spawned through the Central Economy or admin tools. |
+| `2` | Public | Fully spawnable -- appears in the script console, admin tools, and can be used in `types.xml` or `events.xml`. This is the scope for any item, vehicle, or entity that players interact with. |
 
 ### Building/Structure Definition
 
@@ -767,6 +801,8 @@ class CfgMods
 };
 ```
 
+> **Note:** The real COT `config.cpp` omits `units[]` and `weapons[]` from its `CfgPatches` block entirely. These arrays are optional -- they default to empty when not declared. Script-only PBOs that add no spawnable entities or weapons can safely leave them out.
+
 ### Server-Only Feature Mod
 
 ```cpp
@@ -1029,18 +1065,6 @@ This does not cause an error, but it is misleading. Only list dependencies you a
 ### 7. Putting CfgVehicles in the Scripts config.cpp
 
 It works, but is poor practice. Keep item/entity definitions in a separate PBO (`Data/config.cpp`) and script definitions in `Scripts/config.cpp`.
-
----
-
-## Theory vs Practice
-
-| Concept | Theory | Reality |
-|---------|--------|---------|
-| One config.cpp per PBO | Each PBO has exactly one | True, but the engine merges all CfgPatches/CfgMods across PBOs, so class names must be globally unique |
-| `requiredAddons` enforces load order | Listed addons load first | Missing a dependency does not always crash -- it silently compiles with undefined types, causing random errors later |
-| `files[]` paths are validated | Engine reports bad paths | Wrong paths cause scripts to silently not compile; no error appears in RPT unless you look for missing classes |
-| `defines[]` are simple feature flags | Preprocessor symbols for `#ifdef` | Defines are global across all mods, so a generic name like `"DEBUG"` can collide with other mods |
-| `value` field sets custom entry point | Engine calls the named function | Almost no mods use this; CF is the notable exception with `CF_CreateGame`. Leaving it empty is the safe default |
 
 ---
 

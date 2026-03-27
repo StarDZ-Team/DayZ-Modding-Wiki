@@ -268,12 +268,13 @@ void LoadConfig(string path)
 
 ## DumpStackString — Stack Traces
 
-`DumpStackString` captures the current call stack as a string. This is crucial for diagnosing where an unexpected state occurred:
+`DumpStackString` captures the current call stack as a string. The function signature is `proto void DumpStackString(out string stack)` -- it returns `void` and fills the `out` parameter. This is crucial for diagnosing where an unexpected state occurred:
 
 ```c
 void OnUnexpectedState(string context)
 {
-    string stack = DumpStackString();
+    string stack;
+    DumpStackString(stack);
     Print("[ERROR] Unexpected state in " + context);
     Print("[ERROR] Stack trace:");
     Print(stack);
@@ -287,7 +288,8 @@ void CriticalFunction(PlayerBase player)
 {
     if (!player)
     {
-        string stack = DumpStackString();
+        string stack;
+        DumpStackString(stack);
         ErrorEx("CriticalFunction called with null player! Stack: " + stack);
         return;
     }
@@ -690,7 +692,7 @@ bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
 | Validate before use | Range/bounds check | `if (arr.IsValidIndex(i))` |
 | Log on failure | Trace where things went wrong | `Print("[Tag] Error: " + context);` |
 | ErrorEx for engine | Write to .RPT file | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
-| DumpStackString | Capture call stack | `Print(DumpStackString());` |
+| DumpStackString | Capture call stack | `string s; DumpStackString(s); Print(s);` |
 
 ---
 
@@ -820,7 +822,7 @@ override void OnUpdate(float timeslice)
 | Guard clause | Early return on failure | `if (!x) return;` |
 | Null check | Prevent crash | `if (obj) obj.Method();` |
 | ErrorEx | Write to .RPT log | `ErrorEx("msg", ErrorExSeverity.WARNING);` |
-| DumpStackString | Get call stack | `string s = DumpStackString();` |
+| DumpStackString | Get call stack | `string s; DumpStackString(s);` |
 | Print | Write to script log | `Print("message");` |
 | string.Format | Formatted logging | `string.Format("P %1 at %2", a, b)` |
 | #ifdef guard | Compile-time debug switch | `#ifdef DIAG_DEVELOPER` |

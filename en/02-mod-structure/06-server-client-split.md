@@ -35,32 +35,18 @@ DayZ uses a **dedicated server** model. The server and the client are separate p
 
 This means your mod code runs in one of three contexts, and the rules for each are fundamentally different.
 
-```
-+------------------------------------------------------------------+
-|                                                                  |
-|   DEDICATED SERVER                                               |
-|   - Headless process (no window, no GPU)                         |
-|   - Authoritative: owns the game state                           |
-|   - Spawns entities, applies damage, saves data                  |
-|   - Has NO player, NO UI, NO keyboard input                      |
-|   - Runs: MissionServer                                          |
-|                                                                  |
-+------------------------------------------------------------------+
+```mermaid
+graph TD
+    SERVER["DEDICATED SERVER<br/>Headless process (no window, no GPU)<br/>Authoritative: owns game state<br/>Spawns entities, applies damage, saves data<br/>No player, no UI, no input<br/>Runs: MissionServer"]
+    CLIENT1["CLIENT 1<br/>Has window + GPU<br/>Renders world, handles input<br/>Shows UI and HUD<br/>Runs: MissionGameplay"]
+    CLIENT2["CLIENT 2<br/>Has window + GPU<br/>Renders world, handles input<br/>Shows UI and HUD<br/>Runs: MissionGameplay"]
 
-          ^                                         ^
-          |          NETWORK (RPCs, sync vars)       |
-          v                                         v
+    SERVER <-->|"RPCs, sync vars"| CLIENT1
+    SERVER <-->|"RPCs, sync vars"| CLIENT2
 
-+---------------------------+     +---------------------------+
-|                           |     |                           |
-|   CLIENT 1                |     |   CLIENT 2                |
-|   - Has a window, GPU     |     |   - Has a window, GPU     |
-|   - Renders the world     |     |   - Renders the world     |
-|   - Handles player input  |     |   - Handles player input  |
-|   - Shows UI and HUD      |     |   - Shows UI and HUD      |
-|   - Runs: MissionGameplay |     |   - Runs: MissionGameplay |
-|                           |     |                           |
-+---------------------------+     +---------------------------+
+    style SERVER fill:#D94A4A,color:#fff
+    style CLIENT1 fill:#4A90D9,color:#fff
+    style CLIENT2 fill:#4A90D9,color:#fff
 ```
 
 ---
@@ -144,13 +130,15 @@ if (GetGame().IsMultiplayer())
 
 ### Truth Table
 
-| Method | Dedicated Server | Client (Remote) | Listen Server |
-|--------|:---:|:---:|:---:|
-| `IsServer()` | true | false | true |
-| `IsClient()` | false | true | true |
-| `IsDedicatedServer()` | true | false | false |
-| `IsMultiplayer()` | true | true | false |
-| `GetPlayer()` returns | null | PlayerBase | PlayerBase |
+| Method | Dedicated Server | Client (Remote) | Listen Server (LAN) | Offline Singleplayer |
+|--------|:---:|:---:|:---:|:---:|
+| `IsServer()` | true | false | true | true |
+| `IsClient()` | false | true | true | true |
+| `IsDedicatedServer()` | true | false | false | false |
+| `IsMultiplayer()` | true | true | true | false |
+| `GetPlayer()` returns | null | PlayerBase | PlayerBase | PlayerBase |
+
+> **Note on IsMultiplayer():** A LAN listen server (launched with `-server`) returns `true` for `IsMultiplayer()` because it accepts network connections from other players. Only true offline singleplayer (no networking) returns `false`. The distinction is whether the session involves networking, not whether the process acts as a server.
 
 ### Common Patterns
 
@@ -475,7 +463,7 @@ Enforce Script supports preprocessor directives that let you conditionally compi
 
 ### The SERVER Define
 
-The engine automatically defines `SERVER` when compiling for a dedicated server. This is a **compile-time** check, not a runtime check:
+The engine automatically defines `SERVER` when compiling for a **dedicated server** or a **listen server** (client launched with the `-server` flag). Per `staticdefinesdoc.c`, `SERVER` is set whenever the process acts as a server -- this includes both dedicated and listen server contexts. This is a **compile-time** check, not a runtime check:
 
 ```c
 #ifdef SERVER
@@ -493,19 +481,33 @@ The engine automatically defines `SERVER` when compiling for a dedicated server.
 
 | Approach | When to Use | Example |
 |----------|-------------|---------|
-| `#ifndef SERVER` | Wrapping entire class definitions that should only exist on client | `modded class MissionGameplay` in a shared mod |
+| `#ifndef SERVER` | Wrapping code that references client-only types (widgets, UI classes) | Client UI helper classes, `MissionGameplay` bodies that use widget types |
 | `#ifdef SERVER` | Wrapping entire class definitions that should only exist on server | Server-only helper classes |
 | `GetGame().IsServer()` | Runtime branching within code that runs on both sides | Entity update logic that differs per side |
 | `GetGame().IsClient()` | Runtime branching within code that runs on both sides | Playing effects only on client |
 
 ### Real Example: Client Mission Hook in a Shared Mod
 
-When your client mod (`type = "mod"`) contains a `modded class MissionGameplay`, you MUST wrap it in `#ifndef SERVER`. Otherwise, the dedicated server will try to compile it and fail because `MissionGameplay` does not exist on the server:
+`MissionGameplay` compiles on **both server and client** -- the class itself exists everywhere in vanilla DayZ. You do NOT need `#ifndef SERVER` just to mod `MissionGameplay`. The guard is only required when the modded class body references **client-only types** such as widget classes or UI helpers that do not exist on the server.
+
+COT and Expansion both mod `MissionGameplay` without wrapping it in `#ifndef SERVER`. The vanilla `MissionGameplay` class is not guarded either.
 
 ```c
-// In the shared client mod (type = "mod")
-// This file is compiled on BOTH server and client
-// Without the guard, the server would crash on the undefined MissionGameplay class
+// SAFE: No #ifndef SERVER needed because the body uses no client-only types
+modded class MissionGameplay
+{
+    override void OnInit()
+    {
+        super.OnInit();
+        Print("[MyMod] MissionGameplay.OnInit");
+    }
+};
+```
+
+```c
+// NEEDS #ifndef SERVER: The body references MyClientUI (a widget/UI class
+// that only exists on the client). Without the guard, the server cannot
+// resolve the MyClientUI type and compilation fails.
 
 #ifndef SERVER
 modded class MissionGameplay
@@ -527,6 +529,8 @@ modded class MissionGameplay
 };
 #endif
 ```
+
+The rule is simple: if the **body** of your modded `MissionGameplay` (or `MissionServer`) references types that only exist on one side, wrap it. If it only calls `super` and `Print`, no guard is needed.
 
 ### Combining Guards for Optional Dependencies
 
@@ -1301,30 +1305,18 @@ void LoadConfig()
 
 Use this to determine where a piece of code belongs:
 
-```
-                Does it create/destroy entities?
-                       /              \
-                     YES               NO
-                      |                 |
-              Does it show UI?     Does it show UI?
-                /        \           /          \
-              YES        NO        YES           NO
-               |          |         |             |
-           ERROR!     SERVER    CLIENT        Is it a data class
-        (entities =              only         or RPC constant?
-         server,                               /          \
-         UI = client                         YES           NO
-         -- redesign)                         |             |
-                                          SHARED        Does it read/write
-                                       (client mod)     files or validate?
-                                                         /          \
-                                                       YES           NO
-                                                        |             |
-                                                     SERVER        SHARED
-                                                  (servermod)   (client mod,
-                                                                 guard with
-                                                                 IsServer/
-                                                                 IsClient)
+```mermaid
+flowchart TD
+    A{Creates/destroys entities?} -->|YES| B{Shows UI?}
+    A -->|NO| C{Shows UI?}
+    B -->|YES| D["ERROR: redesign<br/>(entities = server, UI = client)"]
+    B -->|NO| E[SERVER]
+    C -->|YES| F[CLIENT only]
+    C -->|NO| G{Data class or RPC constant?}
+    G -->|YES| H["SHARED (client mod)"]
+    G -->|NO| I{Reads/writes files or validates?}
+    I -->|YES| J["SERVER (servermod)"]
+    I -->|NO| K["SHARED (client mod,<br/>guard with IsServer/IsClient)"]
 ```
 
 ---
@@ -1338,7 +1330,7 @@ Before publishing a split mod, verify:
 - [ ] Server `config.cpp` lists client package in `requiredAddons[]`
 - [ ] All shared types (RPC data, entity classes, enums) are in the client package
 - [ ] All server logic (spawning, validation, AI brains) is in the server package
-- [ ] `MissionGameplay` modded classes are wrapped in `#ifndef SERVER`
+- [ ] `MissionGameplay` modded classes that reference client-only types (widgets, UI classes) are wrapped in `#ifndef SERVER`
 - [ ] No `GetGame().GetPlayer()` calls on server without null checks
 - [ ] No UI/widget code in the server package
 - [ ] Optional dependencies use `#ifdef` guards, not direct references

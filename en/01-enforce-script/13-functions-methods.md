@@ -59,7 +59,9 @@ Standalone (global) functions exist outside any class. They are rare in DayZ mod
 // Standalone function (global scope)
 void PrintPlayerCount()
 {
-    int count = GetGame().GetPlayers().Count();
+    array<Man> players = new array<Man>();
+    GetGame().GetPlayers(players);
+    int count = players.Count();
     Print(string.Format("Players online: %1", count));
 }
 
@@ -843,6 +845,8 @@ The `thread` keyword goes on the **call**, not the function declaration. The fun
 ### Sleep() and Yielding
 
 Inside a thread function, `Sleep(milliseconds)` pauses execution and yields to other code. When the sleep time elapses, the thread resumes from where it left off.
+
+> **Note:** `Sleep()` is an engine built-in (intrinsic) function --- there is no `proto` declaration for it in the script files. It takes an `int` parameter in milliseconds and **must** be called within a threaded context (i.e., a function invoked with the `thread` keyword). Calling `Sleep()` outside a threaded context will crash. It is used extensively by COT, VPP, Expansion, and Dabs Framework in their threaded routines.
 
 ### Killing Threads
 

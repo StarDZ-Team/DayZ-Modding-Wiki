@@ -237,7 +237,7 @@ Toxic gas zones configured via `cfgEffectArea.json`. Apply PPE effects and damag
 **Chapter:** [6.23 World Systems](06-engine-api/23-world-systems.md)
 
 ### Control Flow
-`if/else`, `for`, `while`, `foreach`, `switch` constructs. Key difference: no `do...while`, no ternary operator, `switch` does not fall through.
+`if/else`, `for`, `while`, `foreach`, `switch` constructs. Key difference: no `do...while`, no ternary operator. `switch` falls through without `break` (same as C/C++).
 
 **Chapter:** [1.5 Control Flow](01-enforce-script/05-control-flow.md) | [1.12 Gotchas](01-enforce-script/12-gotchas.md)
 
@@ -1023,7 +1023,7 @@ Keyword used inside method overrides to call the parent class implementation. Cr
 **Chapter:** [1.4 Modded Classes](01-enforce-script/04-modded-classes.md) | [1.3 Classes & Inheritance](01-enforce-script/03-classes-inheritance.md)
 
 ### switch/case
-Control flow construct for multi-branch selection. Key difference: cases do NOT fall through in Enforce Script.
+Control flow construct for multi-branch selection. Cases fall through without `break` (same as C/C++). Always include `break` unless fall-through is intentional.
 
 **Chapter:** [1.5 Control Flow](01-enforce-script/05-control-flow.md) | [1.12 Gotchas](01-enforce-script/12-gotchas.md)
 

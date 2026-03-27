@@ -4,9 +4,7 @@
 
 ---
 
-## Introduction
-
-Every object in the DayZ world --- items, players, zombies, animals, buildings, vehicles --- descends from a single class hierarchy rooted at `IEntity`. Understanding this hierarchy and the methods available at each level is the foundation of all DayZ modding. This chapter is an API reference for the core entity classes: what methods exist, what their signatures are, and how to use them correctly.
+Every object in the DayZ world --- items, players, zombies, animals, buildings, vehicles --- descends from a single class hierarchy rooted at `IEntity`. This chapter is an API reference for the core entity classes: what methods exist, what their signatures are, and how to use them correctly.
 
 ---
 
@@ -25,7 +23,8 @@ Class (root of all Enforce Script classes)
                         │       ├── Weapon_Base, Magazine_Base
                         │       └── (all inventory items)
                         ├── Man              // 3_Game/entities/man.c
-                        │   └── DayZPlayer
+                        │   └── Human       // engine native (proto)
+                        │       └── DayZPlayer
                         │       └── DayZPlayerImplement
                         │           └── ManBase
                         │               └── PlayerBase  // 4_World/entities/manbase/playerbase.c
@@ -46,7 +45,9 @@ classDiagram
     ObjectTyped <|-- Entity
     Entity <|-- EntityAI
     EntityAI <|-- ItemBase
-    EntityAI <|-- ManBase
+    EntityAI <|-- Man
+    Man <|-- Human
+    Human <|-- ManBase
     EntityAI <|-- Building
     EntityAI <|-- DayZInfected
     EntityAI <|-- DayZAnimal
@@ -178,8 +179,8 @@ proto native float GetHealth(string zoneName, string healthType);
 proto native float GetMaxHealth(string zoneName, string healthType);
 proto native void  SetHealth(string zoneName, string healthType, float value);
 proto native void  SetHealthMax(string zoneName, string healthType);
-proto native void  DecreaseHealth(string zoneName, string healthType, float value,
-                                   bool auto_delete = false);
+proto native void  DecreaseHealth(string zoneName, string healthType, float value);
+// NOTE: A 4-param overload with auto_delete exists as a regular script method, not proto native.
 proto native void  AddHealth(string zoneName, string healthType, float value);
 proto native void  SetAllowDamage(bool val);
 proto native bool  GetAllowDamage();
@@ -200,10 +201,12 @@ obj.SetHealth("", "Health", maxHP * 0.5);
 ### IsAlive
 
 ```c
-proto native bool IsAlive();
+bool IsAlive();
 ```
 
-> **Gotcha:** The vanilla reference shows `IsAlive()` on `Object`, but in practice many modders have found it unreliable on the base `Object` class. The safe pattern is to cast to `EntityAI` first:
+`IsAlive()` is a regular script method on `Object`, not a proto native. It checks whether the object's health is above zero. Note that only `IsDamageDestroyed()` is proto native on `Object`.
+
+> **Gotcha:** In practice many modders have found `IsAlive()` unreliable on the base `Object` class. The safe pattern is to cast to `EntityAI` first:
 
 ```c
 EntityAI eai;
@@ -216,12 +219,14 @@ if (Class.CastTo(eai, obj) && eai.IsAlive())
 ### Type Checking
 
 ```c
-proto native bool IsMan();
-proto native bool IsDayZCreature();
-proto native bool IsBuilding();
-proto native bool IsTransport();
-proto native bool IsKindOf(string type);     // Check config inheritance
+bool IsMan();
+bool IsDayZCreature();
+bool IsBuilding();
+bool IsTransport();
+bool IsKindOf(string type);     // Check config inheritance
 ```
+
+These are regular script methods on `Object`, not proto native. Only `IsDamageDestroyed()` is proto native on `Object`.
 
 **Example:**
 
@@ -573,8 +578,8 @@ proto native void SetHealth(string zoneName, string healthType, float value);
 proto native float GetHealth(string zoneName, string healthType);
 proto native float GetMaxHealth(string zoneName, string healthType);
 proto native void SetHealthMax(string zoneName, string healthType);
-proto native void DecreaseHealth(string zoneName, string healthType, float value,
-                                  bool auto_delete = false);
+proto native void DecreaseHealth(string zoneName, string healthType, float value);
+// NOTE: A 4-param overload with auto_delete exists as a regular script method, not proto native.
 proto native void ProcessDirectDamage(int damageType, EntityAI source, string component,
                                        string ammoType, vector modelPos,
                                        float damageCoef = 1.0, int flags = 0);
@@ -1533,28 +1538,11 @@ void DamageEntity(EntityAI target, float amount)
 
 ---
 
-## Compatibility & Impact
+## Multi-Mod Considerations
 
-> **Mod Compatibility:** The entity system is the most commonly modded layer. Multiple mods frequently override `EEInit()`, `EEKilled()`, `EEHitBy()`, and `OnVariablesSynchronized()` on `ItemBase` and `PlayerBase`.
-
-- **Load Order:** Mods loaded later override earlier mods' `modded class` declarations. If two mods both `modded class ItemBase` and override `EEInit()`, only the last-loaded mod's code runs unless both call `super`.
-- **Modded Class Conflicts:** The most common conflict is forgetting `super` calls in `EEInit()` or `SetActions()`, which silently breaks all mods loaded before yours. Always call `super` as the first line.
-- **Performance Impact:** `RegisterNetSyncVariable*()` adds network traffic per entity. Keep synced variable count low (under 8 per entity). Use RPCs for infrequent updates instead.
-- **Server/Client:** `SetHealth()`, `ProcessDirectDamage()`, and `Delete()` are server-authoritative. Calling them on the client causes desync. `GetHealth()`, `GetPosition()`, and type checks are safe on both sides.
-
----
-
-## Observed in Real Mods
-
-> These patterns were confirmed by studying the source code of professional DayZ mods.
-
-| Pattern | Mod | File/Location |
-|---------|-----|---------------|
-| Thin `modded class ItemBase` with `super` chain for `EEInit` | COT | `4_World/entities/itembase.c` |
-| `RegisterNetSyncVariableInt` for custom state enum in constructor | Expansion | Vehicle and basebuilding entity classes |
-| `CreateObjectEx` with `ECE_NOLIFETIME` for admin-spawned persistent objects | VPP Admin Tools | Object spawner module |
-| `EEHitBy` override to log damage source and ammo type for killfeed | Dabs Framework | Player hit tracking |
-| `FindAttachmentBySlotName` to check equipped gear before granting perks | Expansion | Party/group gear checks |
+- If two mods both `modded class ItemBase` and override `EEInit()`, only the last-loaded mod's code runs unless both call `super`. This is the most common source of mod conflicts.
+- `RegisterNetSyncVariable*()` adds network traffic per entity. Keep synced variable count under 8 per entity. Use RPCs for infrequent updates.
+- `SetHealth()`, `ProcessDirectDamage()`, and `Delete()` are server-authoritative. Calling them on the client causes desync. `GetHealth()`, `GetPosition()`, and type checks are safe on both sides.
 
 ---
 

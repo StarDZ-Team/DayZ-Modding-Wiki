@@ -168,11 +168,10 @@ void LogDamageState(EntityAI item, EDamageState state)
 
 ### typename.StringToEnum
 
-Convert a string back to an enum value:
+Convert a string back to an enum value. The function takes 2 parameters and returns `int` (the enum value, or `-1` on failure):
 
 ```c
-int value;
-typename.StringToEnum(EDamageState, "RUINED", value);
+int value = typename.StringToEnum(EDamageState, "RUINED");
 Print(value.ToString());  // "4"
 ```
 
@@ -181,8 +180,8 @@ This is used when loading enum values from config files or JSON:
 ```c
 // Loading from a config string
 string configValue = "BURST";
-int modeInt;
-if (typename.StringToEnum(EWeaponMode, configValue, modeInt))
+int modeInt = typename.StringToEnum(EWeaponMode, configValue);
+if (modeInt != -1)
 {
     EWeaponMode mode = modeInt;
     Print("Loaded weapon mode: " + typename.EnumToString(EWeaponMode, mode));
@@ -503,7 +502,7 @@ class MissionHandler
 |---------|--------|---------|
 | Enum assignment validation | Expect compiler to reject invalid values | `EDamageState state = 999` compiles fine -- no range checking whatsoever |
 | `#define MAX_HP 100` | Works like C/C++ macro | Enforce Script `#define` creates only existence flags; use `const int` for values |
-| `switch` case stacking | Multiple cases sharing one handler | No fall-through in Enforce Script -- each `case` is independent; use `if`/`\|\|` instead |
+| `switch` case stacking | Multiple cases sharing one handler | Fall-through works in Enforce Script (same as C/C++) -- stack empty cases to share a handler |
 
 ---
 
@@ -551,28 +550,32 @@ int hp = MAX_HEALTH;
 // forgot #endif here!
 ```
 
-### 4. Forgetting that switch/case has no fall-through
+### 4. Forgetting `break` when you do NOT want fall-through
 
 ```c
-// In C/C++, cases fall through without break.
-// In Enforce Script, each case is INDEPENDENT — no fall-through.
+// Enforce Script switch/case DOES fall through when break is omitted (same as C/C++).
+// Vanilla code uses intentional fall-through (biossessionservice.c:182).
 
+// Stacking cases to share a handler WORKS:
 switch (state)
 {
     case EDamageState.PRISTINE:
     case EDamageState.WORN:
-        Print("Good condition");  // Only reached for WORN, not PRISTINE!
+        Print("Good condition");  // Reached for BOTH PRISTINE and WORN
         break;
 }
-```
 
-If you need multiple cases to share logic, use if/else:
-
-```c
-if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
+// But forgetting break is a bug:
+switch (state)
 {
-    Print("Good condition");
+    case EDamageState.PRISTINE:
+        Print("Pristine");
+        // Missing break! Falls through to WORN case
+    case EDamageState.WORN:
+        Print("Worn");
+        break;
 }
+// If state == PRISTINE, prints BOTH "Pristine" and "Worn"
 ```
 
 ---
@@ -587,7 +590,7 @@ if (state == EDamageState.PRISTINE || state == EDamageState.WORN)
 | Implicit | `enum EName { A, B, C };` (0, 1, 2) |
 | Inherit | `enum EChild : EParent { D, E };` |
 | To string | `typename.EnumToString(EName, value)` |
-| From string | `typename.StringToEnum(EName, "A", out val)` |
+| From string | `int val = typename.StringToEnum(EName, "A")` |
 | Bitflag combine | `flags = A | B` |
 | Bitflag test | `if (flags & A)` |
 

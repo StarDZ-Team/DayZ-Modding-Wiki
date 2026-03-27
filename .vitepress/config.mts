@@ -139,6 +139,24 @@ function sidebar(lang: string = 'en') {
       ]
     },
     {
+      text: 'Part 9: Server Administration',
+      collapsed: true,
+      items: [
+        { text: '9.1 Server Setup', link: `${l}/09-server-admin/01-server-setup` },
+        { text: '9.2 Directory Structure', link: `${l}/09-server-admin/02-directory-structure` },
+        { text: '9.3 serverDZ.cfg Reference', link: `${l}/09-server-admin/03-server-cfg` },
+        { text: '9.4 Loot Economy Deep Dive', link: `${l}/09-server-admin/04-loot-economy` },
+        { text: '9.5 Vehicle & Event Spawning', link: `${l}/09-server-admin/05-vehicle-spawning` },
+        { text: '9.6 Player Spawning', link: `${l}/09-server-admin/06-player-spawning` },
+        { text: '9.7 Persistence & World State', link: `${l}/09-server-admin/07-persistence` },
+        { text: '9.8 Performance Tuning', link: `${l}/09-server-admin/08-performance` },
+        { text: '9.9 Access Control', link: `${l}/09-server-admin/09-access-control` },
+        { text: '9.10 Mod Management', link: `${l}/09-server-admin/10-mod-management` },
+        { text: '9.11 Server Troubleshooting', link: `${l}/09-server-admin/11-troubleshooting` },
+        { text: '9.12 Advanced Topics', link: `${l}/09-server-admin/12-advanced` },
+      ]
+    },
+    {
       text: 'Reference',
       collapsed: true,
       items: [
@@ -155,7 +173,7 @@ function sidebar(lang: string = 'en') {
 export default withMermaid(
   defineConfig({
     title: 'DayZ Modding Wiki',
-    description: 'The most comprehensive DayZ modding documentation — 92 chapters in 12 languages',
+    description: 'The most comprehensive DayZ modding documentation — 104 chapters in 12 languages',
 
     head: [
       ['link', { rel: 'icon', type: 'image/png', href: '/DayZ-Modding-Wiki/favicon.png' }],
@@ -198,6 +216,7 @@ export default withMermaid(
         { text: 'Guide', link: '/en/01-enforce-script/01-variables-types' },
         { text: 'API Reference', link: '/en/06-engine-api/quick-reference' },
         { text: 'Tutorials', link: '/en/08-tutorials/01-first-mod' },
+        { text: 'Server Admin', link: '/en/09-server-admin/01-server-setup' },
         {
           text: 'Quick Links',
           items: [

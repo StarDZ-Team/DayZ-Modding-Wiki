@@ -4,29 +4,7 @@
 
 ---
 
-## Introduction
-
-Every surface you see in DayZ -- weapon skins, clothing, terrain, UI icons -- is defined by texture files. The engine uses a proprietary compressed format called **PAA** at runtime, but during development you work with several source formats that are converted during the build process. Understanding these formats, the naming conventions that bind them to materials, and the resolution rules the engine enforces is fundamental to creating visual content for DayZ mods.
-
-This chapter covers every texture format you will encounter, the suffix naming system that tells the engine how to interpret each texture, resolution and alpha channel requirements, and the practical workflow for converting between formats.
-
----
-
-## Table of Contents
-
-- [Texture Formats Overview](#texture-formats-overview)
-- [PAA Format](#paa-format)
-- [EDDS Format](#edds-format)
-- [TGA Format](#tga-format)
-- [PNG Format](#png-format)
-- [Texture Naming Conventions](#texture-naming-conventions)
-- [Resolution Requirements](#resolution-requirements)
-- [Alpha Channel Support](#alpha-channel-support)
-- [Converting Between Formats](#converting-between-formats)
-- [Texture Quality and Compression](#texture-quality-and-compression)
-- [Real-World Examples](#real-world-examples)
-- [Common Mistakes](#common-mistakes)
-- [Best Practices](#best-practices)
+DayZ uses **PAA** as its runtime texture format. During development you work with source formats (TGA, PNG, EDDS) that are converted to PAA during the build process. This chapter covers the formats, naming conventions, resolution rules, and conversion workflow.
 
 ---
 
@@ -114,7 +92,7 @@ Artist creates TGA/PNG source
 
 - As your master source file for textures you author from scratch.
 - When exporting from Substance Painter or Photoshop for DayZ.
-- When the DayZ-Samples documentation or community tutorials specify TGA as the source format.
+- When the DayZ-Samples documentation specifies TGA as the source format.
 
 ### TGA Export Settings
 
@@ -144,7 +122,7 @@ When exporting TGA for DayZ conversion:
 - **Simple retextures:** When you only need a color/diffuse map with no complex alpha.
 - **Cross-tool workflows:** PNG is universally supported across image editors, web tools, and scripts.
 
-> **Note:** PNG is not an official Bohemia source format -- they prefer TGA. However, the conversion tools handle PNG without issues and many modders use it successfully.
+> **Note:** PNG is not an official Bohemia source format -- they prefer TGA. However, the conversion tools handle PNG without issues.
 
 ---
 
@@ -438,38 +416,15 @@ Terrain textures tile across the landscape. The `_mc` macro texture adds large-s
 
 ## Best Practices
 
-1. **Keep source files in version control.** Store TGA/PNG masters alongside your mod. The PAA files are generated output -- the sources are what matter.
-
-2. **Match resolution to importance.** A rifle the player stares at for hours deserves 2048x2048. A can of beans in the back of a shelf can use 512x512.
-
+1. **Keep source files in version control.** Store TGA/PNG masters alongside your mod. PAA files are generated output.
+2. **Match resolution to importance.** A rifle the player holds deserves 2048x2048. A can on a shelf can use 512x512.
 3. **Always provide a normal map.** Even a flat normal map (128, 128, 255 solid fill) is better than none -- missing normal maps cause material errors.
-
-4. **Name consistently.** One base name, multiple suffixes: `myitem_co.paa`, `myitem_nohq.paa`, `myitem_smdi.paa`. Never mix naming schemes.
-
-5. **Preview in TexView2 before building.** Open your PAA output and verify it looks correct. Check each channel individually.
-
-6. **Use DXT1 by default, DXT5 only when alpha is needed.** DXT1 is half the file size of DXT5 and looks identical for opaque textures.
-
-7. **Test at low quality settings.** What looks great at Ultra may be unreadable at Low because the engine drops mip levels aggressively.
-
----
-
-## Observed in Real Mods
-
-| Pattern | Mod | Detail |
-|---------|-----|--------|
-| Atlas `_co` textures for icon grids | Colorful UI | Packs multiple UI icons into a single 512x512 `_co.paa` atlas referenced by imagesets |
-| Market icon sprite sheets | Expansion Market | Uses large atlas PAA textures with dozens of item thumbnails for the trader UI |
-| hiddenSelections retexture without new P3D | DayZ-Samples (Test_ClothingRetexture) | Swaps `_co.paa` via `hiddenSelectionsTextures[]` to create color variants from one model |
-| ARGB4444 for small HUD elements | VPP Admin Tools | Uses ARGB4444-compressed 64x64 PAA files for toolbar and panel icons to minimize file size |
-
----
-
-## Compatibility & Impact
-
-- **Multi-Mod:** Texture path collisions are rare because each mod uses its own PBO prefix, but two mods retexturing the same vanilla item via `hiddenSelectionsTextures[]` will conflict -- last loaded wins.
-- **Performance:** A single 4096x4096 DXT5 texture uses ~21 MB of GPU memory with mipmaps. Overuse of large textures across many mod items can exhaust VRAM on lower-end hardware. Prefer 1024 or 2048 for most items.
-- **Version:** The PAA format and TexView2 pipeline have been stable since DayZ 1.0. No breaking changes have occurred between DayZ versions.
+4. **Name consistently.** One base name, multiple suffixes: `myitem_co.paa`, `myitem_nohq.paa`, `myitem_smdi.paa`.
+5. **Use DXT1 by default, DXT5 only when alpha is needed.** DXT1 is half the file size and looks identical for opaque textures.
+6. **Use atlas textures for UI icons.** Pack multiple icons into a single 512x512 `_co.paa` referenced by imagesets. Use ARGB4444 for small HUD elements.
+7. **Create color variants via `hiddenSelectionsTextures[]`** instead of duplicating P3D models. Swap only the `_co.paa`.
+8. **Watch VRAM usage.** A single 4096x4096 DXT5 texture uses ~21 MB of GPU memory with mipmaps. Prefer 1024 or 2048 for most items.
+9. Two mods retexturing the same vanilla item via `hiddenSelectionsTextures[]` will conflict -- last loaded wins.
 
 ---
 

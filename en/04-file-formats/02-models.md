@@ -118,9 +118,9 @@ A P3D file contains multiple **LODs** (Levels of Detail), each serving a specifi
 | LOD | Resolution Value | Purpose |
 |-----|-----------------|---------|
 | **Resolution 0** | 1.000 | Highest detail visual mesh. Rendered when the object is close to the camera. |
-| **Resolution 1** | 1.100 | Medium detail. Rendered at moderate distance. |
-| **Resolution 2** | 1.200 | Low detail. Rendered at far distance. |
-| **Resolution 3+** | 1.300+ | Additional distance LODs. |
+| **Resolution 1** | 2.000 | Medium detail. Rendered at moderate distance. |
+| **Resolution 2** | 4.000 | Low detail. Rendered at far distance. |
+| **Resolution 3+** | 8.000+ | Additional distance LODs. |
 | **View Geometry** | Special | Determines what blocks the player's view (first person). Simplified mesh. |
 | **Fire Geometry** | Special | Collision for bullets and projectiles. Must be convex or composed of convex parts. |
 | **Geometry** | Special | Physics collision. Used for movement collision, gravity, placement. Must be convex or composed of convex decomposition. |

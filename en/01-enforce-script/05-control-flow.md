@@ -4,12 +4,6 @@
 
 ---
 
-## Introduction
-
-Control flow determines the order in which your code executes. Enforce Script provides the familiar `if/else`, `for`, `while`, `foreach`, and `switch` constructs -- but with several important differences from C/C++ that will catch you off guard if you are not prepared. This chapter covers every control flow mechanism available, including the pitfalls unique to DayZ's scripting engine.
-
----
-
 ## if / else / else if
 
 The `if` statement evaluates a boolean expression and executes a block of code when the result is `true`. You can chain conditions with `else if` and provide a fallback with `else`.
@@ -358,9 +352,9 @@ void PrintStaticArray()
 
 The `switch` statement matches a value against a list of `case` labels. It works with `int`, `string`, enum values, and constants.
 
-### Important: NO fall-through
+### Important: Fall-through behavior (same as C/C++)
 
-Unlike C/C++, Enforce Script `switch/case` does **NOT** fall through from one case to the next. Each `case` is independent. You can include `break` for clarity, but it is not required to prevent fall-through.
+Enforce Script `switch/case` **DOES** fall through from one case to the next when `break` is omitted, just like C/C++. Vanilla code intentionally uses fall-through (biossessionservice.c:182 has comment "Intentionally no break, fall through to connecting"). Always use `break` at the end of every case unless you intentionally want fall-through.
 
 ```c
 void HandleCommand(string command)
@@ -453,7 +447,7 @@ void DescribeWeaponSlot(int slotId)
 }
 ```
 
-> **Remember:** Because there is no fall-through, you cannot stack cases to share a handler the way you would in C. Each case must have its own body.
+> **Note:** You can stack cases to share a handler, just like in C/C++. An empty case without `break` falls through to the next case's handler.
 
 ---
 
@@ -550,6 +544,8 @@ thread LongOperation();  // Starts without blocking the caller
 
 **Important:** `thread` in Enforce Script is NOT the same as OS threads. It is more like a coroutine --- it runs on the same thread but can yield/sleep without blocking the game. Use `CallLater` instead of `thread` for most mod use cases --- it is simpler and more predictable.
 
+> **Note on `Sleep()`:** `Sleep()` is an engine built-in (intrinsic) function --- there is no `proto` declaration for it in the script files. It takes an `int` parameter in milliseconds and **must** be called within a threaded context (i.e., a function invoked with the `thread` keyword). Calling `Sleep()` outside a threaded context will crash. It is used by COT, VPP, Expansion, and Dabs Framework in their threaded routines.
+
 ### Thread vs CallLater
 
 | Feature | `thread` | `CallLater` |
@@ -563,40 +559,6 @@ For most DayZ modding scenarios, `CallLater` with a timer is the preferred appro
 
 ---
 
-## Best Practices
-
-- Use guard clauses (`if (!x) return;`) at the top of functions instead of deeply nested `if` blocks -- it keeps the happy path flat and readable.
-- Declare shared variables before `if`/`else` blocks to avoid the sibling-scope redeclaration error unique to Enforce Script.
-- Use `foreach` for simple iteration and `for` with index only when you need to remove elements or access neighbors.
-- Replace `do...while` with `while (first || condition)` using a `bool first = true` flag -- this is the standard Enforce Script workaround.
-- Prefer `CallLater` over `thread` for delayed or repeated actions -- it is cancellable, simpler, and more predictable.
-
----
-
-## Observed in Real Mods
-
-> Patterns confirmed by studying professional DayZ mod source code.
-
-| Pattern | Mod | Detail |
-|---------|-----|--------|
-| Guard clause + `continue` in loops | COT / Expansion | Loops over players always `continue` on failed cast or `!IsAlive()` before doing work |
-| `switch` on string commands | VPP Admin | Chat command handlers use `switch(command)` with string cases like `"!heal"`, `"!tp"` |
-| Flag variable to break nested loops | Expansion Market | Uses `bool found = false` with check after inner loop to exit outer loop |
-| `CallLater` for delayed spawn | Dabs Framework | Prefers `GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater()` over `thread` |
-
----
-
-## Theory vs Practice
-
-| Concept | Theory | Reality |
-|---------|--------|---------|
-| `do...while` loop | Standard in most C-like languages | Does not exist in Enforce Script; causes a confusing compile error |
-| `switch` fall-through | C/C++ cases fall through without `break` | Enforce Script cases are independent -- stacking cases does not share handlers |
-| `thread` keyword | Sounds like multithreading | Actually a coroutine on the main thread; `Sleep()` yields, does not block |
-| Variable scope in `if`/`else` | Sibling blocks should have independent scope | Enforce Script treats them as shared scope -- same variable name in both blocks is a compile error |
-
----
-
 ## Common Mistakes
 
 | Mistake | Problem | Fix |
@@ -604,7 +566,7 @@ For most DayZ modding scenarios, `CallLater` with a timer is the preferred appro
 | Using `do...while` | Does not exist in Enforce Script | Use `while` with a `bool first = true` flag |
 | Declaring same variable in `if` and `else` blocks | Multiple declaration error | Declare the variable before the `if` |
 | Redeclaring loop variable `i` in nested scope | Multiple declaration error | Use different names (`i`, `j`, `k`) or declare outside |
-| Expecting `switch` fall-through | Cases are independent, no fall-through | Each case needs its own complete handler |
+| Forgetting `break` in `switch` cases | Cases fall through without `break` (same as C/C++) | Always add `break` unless fall-through is intentional |
 | Modifying array while iterating with `foreach` | Undefined behavior, potential crash | Use index-based `for` loop when removing elements |
 | Infinite `while` loop without `break` | Server freeze / client hang | Always ensure the condition will eventually be `false`, or use `break` |
 
@@ -635,7 +597,7 @@ foreach (int i, Type value : array) { }
 // foreach (key + value on map)
 foreach (KeyType key, ValueType val : someMap) { }
 
-// switch/case (no fall-through)
+// switch/case (falls through without break, like C/C++)
 switch (value) { case X: /* ... */ break; default: break; }
 
 // thread (coroutine-style async)

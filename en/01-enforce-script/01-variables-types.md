@@ -4,14 +4,6 @@
 
 ---
 
-## Introduction
-
-Enforce Script is the scripting language of the Enfusion engine, used by DayZ Standalone. It is an object-oriented language with C-like syntax, similar to C# in many respects but with its own distinct set of types, rules, and limitations. If you have experience with C#, Java, or C++, you will feel at home quickly --- but pay close attention to the differences, because the places where Enforce Script diverges from those languages are exactly the places where bugs hide.
-
-This chapter covers the fundamental building blocks: primitive types, how to declare and initialize variables, and how type conversion works. Every line of DayZ mod code starts here.
-
----
-
 ## Primitive Types
 
 Enforce Script has a small, fixed set of primitive types. You cannot define new value types --- only classes (covered in [Chapter 1.3](03-classes-inheritance.md)).
@@ -502,9 +494,8 @@ void EnumConvert()
     string name = typename.EnumToString(DamageType, DamageType.BULLET);
     // name == "BULLET"
 
-    // String to enum
-    int value;
-    typename.StringToEnum(DamageType, "EXPLOSION", value);
+    // String to enum (returns int, -1 on failure)
+    int value = typename.StringToEnum(DamageType, "EXPLOSION");
     // value == 2
 }
 ```
@@ -710,39 +701,6 @@ From highest to lowest precedence:
 | 13 | `=` `+=` `-=` `*=` `/=` `%=` `&=` `\|=` `^=` `<<=` `>>=` | Assignment | Right to left |
 
 > **Tip:** When in doubt, use parentheses. Enforce Script follows C-like precedence rules, but explicit grouping prevents bugs and improves readability.
-
----
-
-## Best Practices
-
-- Always initialize variables explicitly at declaration, even when the default value matches your intent -- it communicates intent to future readers.
-- Use `const` for any value that should never change; place constants at file or class scope with `UPPER_SNAKE_CASE` naming.
-- Prefer `string.Format()` over `+` concatenation when mixing types -- it avoids implicit conversion issues and is easier to read.
-- Use `vector.DistanceSq()` instead of `vector.Distance()` when comparing distances -- it avoids an expensive square root.
-- Never compare floats with `==`; always use an epsilon tolerance via `Math.AbsFloat(a - b) < 0.001`.
-
----
-
-## Observed in Real Mods
-
-> Patterns confirmed by studying professional DayZ mod source code.
-
-| Pattern | Mod | Detail |
-|---------|-----|--------|
-| `const string LOG_PREFIX` at class scope | COT / Expansion | Every module defines a string constant for log prefixes to avoid typos |
-| `m_PascalCase` member naming | VPP / Dabs Framework | All member variables use `m_` prefix consistently, even for primitives |
-| `string.Format` for all log output | Expansion Market | Never uses `+` concatenation with numbers -- always `%1`..`%9` placeholders |
-| `vector.Zero` instead of `"0 0 0"` literal | COT Admin Tools | Uses named constants for readability and to avoid string-parse overhead |
-
----
-
-## Theory vs Practice
-
-| Concept | Theory | Reality |
-|---------|--------|---------|
-| `auto` keyword | Should infer any type | Works for simple assignments but can confuse readers -- most mods declare types explicitly |
-| `float`-to-`int` truncation | Documented as "rounds toward zero" | Catches nearly everyone at least once; `3.99` becomes `3`, not `4` |
-| `string` is a value type | Passed by copy like `int` | Surprises C#/Java developers who expect reference semantics; modifications to a copy never affect the original |
 
 ---
 

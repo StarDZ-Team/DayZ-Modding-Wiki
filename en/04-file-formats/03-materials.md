@@ -149,12 +149,16 @@ The `PixelShaderID` and `VertexShaderID` values determine which rendering pipeli
 
 ### Super Shader (Most Common)
 
-The **Super** shader is the standard physically-based rendering shader used for the vast majority of items in DayZ. It expects three texture stages:
+The **Super** shader is the standard physically-based rendering shader used for the vast majority of items in DayZ. It expects these core texture stages (matching real gorka_normal.rvmat):
 
 ```
 Stage1 = Normal map (_nohq)
 Stage2 = Diffuse/Color map (_co)
-Stage3 = Specular/Metallic map (_smdi)
+Stage3 = Macro map (_mc)
+Stage4 = Ambient Shadow (_as)
+Stage5 = Specular/Metallic map (_smdi)
+Stage6 = Fresnel (_fr)
+Stage7 = Environment map (_env)
 ```
 
 If you are creating a mod item (weapon, clothing, tool, container), you will almost always use the Super shader.
@@ -194,11 +198,11 @@ Each `Stage` class in the RVMAT assigns a texture to a specific shader input. Th
 |-------|-------------|----------------|-------------|
 | **Stage1** | Normal map | `_nohq` | Surface detail, bumps, grooves |
 | **Stage2** | Diffuse / Color map | `_co` or `_ca` | Base color of the surface |
-| **Stage3** | Specular / Metallic map | `_smdi` | Shininess, metallic properties, detail |
+| **Stage3** | Macro map | `_mc` | Large-scale color variation |
 | **Stage4** | Ambient Shadow | `_as` | Pre-baked ambient occlusion (optional) |
-| **Stage5** | Macro map | `_mc` | Large-scale color variation (optional) |
-| **Stage6** | Detail map | `_de` | Tiling micro-detail (optional) |
-| **Stage7** | Emissive / Light map | `_li` | Self-illumination (optional) |
+| **Stage5** | Specular / Metallic map | `_smdi` | Shininess, metallic properties, detail |
+| **Stage6** | Fresnel | `_fr` | Fresnel reflection intensity (optional) |
+| **Stage7** | Environment map | `_env` | Environment/reflection map (optional) |
 
 ### Stage Properties
 
@@ -575,7 +579,7 @@ VertexShaderID = "Super";
 ### 1. Wrong Stage Order
 
 **Symptom:** Texture appears scrambled, normal map shows as color, color shows as bumps.
-**Fix:** Ensure Stage1 = normal, Stage2 = diffuse, Stage3 = specular (for the Super shader).
+**Fix:** Ensure Stage1 = normal, Stage2 = diffuse, Stage3 = macro, Stage5 = specular (for the Super shader). See the Stage Assignments table above.
 
 ### 2. Misspelling `emmisive`
 

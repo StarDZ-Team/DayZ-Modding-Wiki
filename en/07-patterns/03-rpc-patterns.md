@@ -336,10 +336,22 @@ If you swap the read order, the deserializer interprets bytes intended for one t
 
 ### Serializing Collections
 
-There is no built-in array serialization. Write the count first, then each element:
+`ParamsWriteContext.Write()` can serialize arrays directly. You can write and read an entire array in a single call:
 
 ```c
 // SENDER
+array<string> names = {"Alice", "Bob", "Charlie"};
+rpc.Write(names);
+
+// RECEIVER
+array<string> names = new array<string>();
+if (!ctx.Read(names)) return;
+```
+
+For manual control (or mixed-type payloads), you can also write the count first, then each element:
+
+```c
+// SENDER (manual approach)
 array<string> names = {"Alice", "Bob", "Charlie"};
 rpc.Write(names.Count());
 for (int i = 0; i < names.Count(); i++)
@@ -347,7 +359,7 @@ for (int i = 0; i < names.Count(); i++)
     rpc.Write(names[i]);
 }
 
-// RECEIVER
+// RECEIVER (manual approach)
 int count;
 if (!ctx.Read(count)) return;
 

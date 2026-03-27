@@ -267,11 +267,12 @@ Create `MyClothingMod/Data/Stringtable.csv`:
 Add to your server's mission folder `types.xml`:
 
 ```xml
+<!-- Values based on vanilla GorkaEJacket pattern from DayZServer types.xml -->
 <type name="MCM_TacticalJacket_Woodland">
-    <nominal>8</nominal>
+    <nominal>4</nominal>
     <lifetime>14400</lifetime>
-    <restock>3600</restock>
-    <min>3</min>
+    <restock>600</restock>
+    <min>2</min>
     <quantmin>-1</quantmin>
     <quantmax>-1</quantmax>
     <cost>100</cost>
@@ -282,6 +283,17 @@ Add to your server's mission folder `types.xml`:
     <value name="Tier3" />
 </type>
 ```
+
+**Understanding the values (based on vanilla patterns):**
+
+- `nominal=4` — CE tries to keep 4 in the world (vanilla military jackets use 4)
+- `min=2` — CE starts spawning new ones when count drops below 2
+- `restock=600` — CE checks every 10 minutes if more are needed
+- `lifetime=14400` — items on the ground despawn after 4 hours
+- `count_in_map=1` — counts items on the ground toward the nominal
+- `count_in_player=0` — items worn by players do NOT count (so more spawn)
+
+> **Tip:** Check vanilla `types.xml` in your server's mission folder to see real values for similar items. For example, `GorkaEJacket_Autumn` uses `nominal=4`, `restock=600`, `lifetime=14400`.
 
 Use `category name="clothes"` for all clothing. Set `usage` to match where the item should spawn (Military, Town, Police, etc.) and `value` for the map tier (Tier1=coast through Tier4=deep inland).
 

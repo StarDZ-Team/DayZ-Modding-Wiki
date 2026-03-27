@@ -4,7 +4,7 @@ layout: home
 hero:
   name: DayZ Modding Wiki
   text: The Complete Guide
-  tagline: 92 chapters covering everything from Enforce Script to published mods — in 12 languages.
+  tagline: 104 chapters covering everything from Enforce Script to server administration — in 12 languages.
   image:
     src: /images/wiki-logo.png
     alt: DayZ Modding Wiki
@@ -40,6 +40,10 @@ features:
     title: File Formats & Tools
     details: 8 chapters on textures, models, audio, DayZ Tools, Workbench debugging, PBO packing, and building modeling.
     link: /en/04-file-formats/01-textures
+  - icon: 🖥️
+    title: Server Administration
+    details: 12 chapters on server setup, loot economy, vehicle spawning, persistence, performance tuning, and troubleshooting.
+    link: /en/09-server-admin/01-server-setup
   - icon: 🏗️
     title: Patterns & Best Practices
     details: 7 chapters of battle-tested patterns from professional mods — singletons, RPC, permissions, events, and performance.

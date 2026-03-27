@@ -4,8 +4,6 @@
 
 ---
 
-> **Summary:** This tutorial walks you through creating your very first DayZ mod from absolute zero. You will install the tools, set up your workspace, write three files, pack a PBO, load the mod in DayZ, and verify it works by reading the script log. No prior DayZ modding experience required.
-
 ---
 
 ## Table of Contents
@@ -35,7 +33,7 @@ Before you begin, make sure you have:
 - A **text editor** (VS Code, Notepad++, or even Notepad)
 - About **15 GB of free disk space** for DayZ Tools
 
-That is everything. No programming experience is required for this tutorial -- every line of code is explained.
+That is everything.
 
 ---
 
@@ -563,33 +561,21 @@ Now that you have a working mod, here are the natural progressions:
 
 ---
 
-## Best Practices
+## Tips
 
-- **Always test with `-filePatching` before building PBOs.** It removes the pack-copy-restart cycle and cuts iteration time from minutes to seconds.
-- **Start with the `5_Mission` layer for fastest iteration.** Mission hooks like `OnInit()` are the simplest way to prove your mod loads and runs. Only add `3_Game` and `4_World` when you actually need them.
-- **Always call `super` first in overridden methods.** Omitting `super.OnInit()` silently breaks vanilla behavior and every other mod hooking the same method.
-- **Use a unique prefix in Print output** (e.g., `[MyFirstMod]`). Script logs contain thousands of lines from vanilla and other mods -- a prefix is the only way to find your output quickly.
-- **Keep `config.cpp` syntax simple and valid.** A missing semicolon or brace in config.cpp causes a hard crash or silent mod skip with no clear error message.
-
----
-
-## Theory vs Practice
-
-| Concept | Theory | Reality |
-|---------|--------|---------|
-| `mod.cpp` fields | `version` is used for dependency resolution | The engine ignores the version string entirely -- it is purely cosmetic for the launcher. |
-| CfgPatches `requiredAddons` | Lists dependencies so your mod loads in the right order | If you misspell an addon name, the entire PBO is silently skipped with no error in the script log. Check the `.RPT` file instead. |
-| File patching | Edit a `.c` file and reconnect to see changes instantly | `config.cpp` and newly added files are NOT covered by file patching. You still need a PBO rebuild for those. |
-| Offline mode testing | Quick way to verify your mod works | Some APIs (like `GetGame().GetPlayer().GetIdentity()`) return NULL in offline mode, causing crashes that do not happen on a real server. |
+- Test with `-filePatching` before building PBOs. It cuts iteration time from minutes to seconds.
+- Start with the `5_Mission` layer. Only add `3_Game` and `4_World` when you actually need them.
+- Always call `super` first in overridden methods. Omitting it silently breaks vanilla behavior and every other mod hooking the same method.
+- Use a unique prefix in `Print()` output (e.g., `[MyFirstMod]`). Logs contain thousands of lines -- a prefix is the only way to find yours.
+- A missing semicolon or brace in `config.cpp` causes a hard crash or silent mod skip with no clear error.
 
 ---
 
-## What You Learned
+## Gotchas
 
-In this tutorial you learned:
-- How to install DayZ Tools and set up the P: drive workspace
-- The three essential files every mod needs: `mod.cpp`, `config.cpp`, and at least one `.c` script
-- How `modded class` extends vanilla classes without replacing them
-- How to pack a PBO, load a mod, and verify it works by reading the script log
+- The `version` field in `mod.cpp` is purely cosmetic. The engine does not parse it for dependency resolution.
+- If you misspell an addon name in `requiredAddons`, the entire PBO is silently skipped with no error in the script log. Check the `.RPT` file instead.
+- `config.cpp` changes and newly added `.c` files are **not** covered by file patching. You still need a PBO rebuild for those.
+- Some APIs (like `GetGame().GetPlayer().GetIdentity()`) return NULL in offline mode, causing crashes that do not happen on a real server.
 
 **Next:** [Chapter 8.2: Creating a Custom Item](02-custom-item.md)

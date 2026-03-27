@@ -386,21 +386,21 @@ A dialog layout typically has three layers: a full-screen root for click interce
 ### Layout File Example
 
 ```
-FrameWidget "DialogRoot" {
-    size 1 1 0 0        // Full screen
-    halign fill
-    valign fill
+FrameWidgetClass "DialogRoot" {
+    size 1 1 0 0        // Full screen (proportional)
+    halign center_ref
+    valign center_ref
 
     // Semi-transparent background overlay
-    ImageWidget "Overlay" {
+    ImageWidgetClass "Overlay" {
         size 1 1 0 0
-        halign fill
-        valign fill
-        color "0 0 0 180"
+        halign center_ref
+        valign center_ref
+        color 0 0 0 180
     }
 
     // Centered dialog panel
-    FrameWidget "DialogPanel" {
+    FrameWidgetClass "DialogPanel" {
         halign center
         valign center
         hexactsize 1
@@ -410,33 +410,30 @@ FrameWidget "DialogRoot" {
         size 0 0 500 300   // 500x300 pixel dialog
 
         // Title bar
-        TextWidget "TitleText" {
-            halign fill
+        TextWidgetClass "TitleText" {
             size 1 0 0 30
             text "Dialog Title"
             font "gui/fonts/MetronBook24"
         }
 
         // Content area
-        MultilineTextWidget "ContentText" {
+        MultilineTextWidgetClass "ContentText" {
             position 0 0 0 35
             size 1 0 0 200
-            halign fill
         }
 
         // Button row at bottom
-        FrameWidget "ButtonRow" {
+        FrameWidgetClass "ButtonRow" {
             valign bottom
-            halign fill
             size 1 0 0 40
 
-            ButtonWidget "BtnConfirm" {
+            ButtonWidgetClass "BtnConfirm" {
                 halign left
                 size 0 0 120 35
                 text "Confirm"
             }
 
-            ButtonWidget "BtnCancel" {
+            ButtonWidgetClass "BtnCancel" {
                 halign right
                 size 0 0 120 35
                 text "Cancel"
@@ -449,7 +446,7 @@ FrameWidget "DialogRoot" {
 ### Key Layout Principles
 
 1. **Full-screen root** -- The outermost widget covers the entire screen so clicks outside the dialog are intercepted.
-2. **Semi-transparent overlay** -- An `ImageWidget` or panel with alpha (e.g., `color "0 0 0 180"`) dims the background, visually indicating a modal state.
+2. **Semi-transparent overlay** -- An `ImageWidget` or panel with alpha (e.g., `color 0 0 0 180`) dims the background, visually indicating a modal state.
 3. **Centered panel** -- Use `halign center` and `valign center` with exact pixel sizes for predictable dimensions.
 4. **Button alignment** -- Place buttons in a horizontal container at the bottom of the dialog panel.
 
@@ -753,7 +750,7 @@ When a dialog opens on top of existing UI, it must render above everything else.
 m_Root.SetSort(1024, true);
 ```
 
-The `SetSort()` method sets the rendering priority. Higher values render on top. The second parameter (`true`) applies recursively to children. VPP Admin Tools use `SetSort(1024, true)` for all dialog boxes.
+The `SetSort()` method sets the rendering priority. Higher values render on top. The second parameter (`immedUpdate`) controls whether to immediately update rendering -- it is NOT a recursive flag. Signature: `proto native void SetSort(int sort, bool immedUpdate = true)`. VPP Admin Tools use `SetSort(1024, true)` for all dialog boxes.
 
 ### Layout Priority (Static)
 

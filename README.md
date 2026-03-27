@@ -7,8 +7,8 @@
 ---
 
 <p align="center">
-  <strong>The most comprehensive DayZ modding documentation ever created.</strong><br/>
-  From absolute zero to published mod — in 12 languages.
+  <strong>The most comprehensive DayZ modding and server administration documentation ever created.</strong><br/>
+  From absolute zero to published mod, from first server to advanced economy tuning — in 12 languages.
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/DayZ-1.29-black?style=flat-square&logo=steam&logoColor=white" alt="DayZ 1.29" />
-  <img src="https://img.shields.io/badge/chapters-92-blue?style=flat-square" alt="92 chapters" />
+  <img src="https://img.shields.io/badge/chapters-104-blue?style=flat-square" alt="104 chapters" />
   <img src="https://img.shields.io/badge/languages-12-green?style=flat-square" alt="12 languages" />
   <img src="https://img.shields.io/badge/files-1,107-orange?style=flat-square" alt="1,107 files" />
 </p>
@@ -57,6 +57,7 @@ This wiki was built by **reverse-engineering 10+ professional mods**, studying *
 | **6** | [Engine API Reference](en/06-engine-api/01-entity-system.md) | 23 | Entity, player, vehicle, sound, crafting, construction, animation, zombie/AI, terrain, particles, admin |
 | **7** | [Patterns & Best Practices](en/07-patterns/01-singletons.md) | 7 | Singletons, modules, RPC, permissions, events, performance |
 | **8** | [Tutorials](en/08-tutorials/01-first-mod.md) | 13 | Hello World → Custom Items → Admin Panel → Vehicles → Trading System |
+| **9** | [Server Administration](en/09-server-admin/01-server-setup.md) | 12 | Server setup, loot economy, vehicles, persistence, performance, troubleshooting |
 | | [Quick Reference](en/06-engine-api/quick-reference.md) | 6 | Cheatsheet, API reference, glossary, FAQ, troubleshooting |
 
 > **92 chapters total** — each with code examples, common mistakes, best practices, and real-world patterns from professional mods.

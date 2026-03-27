@@ -407,46 +407,22 @@ WrapSpacerWidgetClass MyDialog {
 
 ---
 
-## Best Practices
+## Gotchas
 
-- Always set all four exact flags (`hexactpos`, `vexactpos`, `hexactsize`, `vexactsize`) explicitly on every widget. Relying on defaults leads to ambiguous layouts that break when the parent structure changes.
-- Use `scriptclass` sparingly -- only on widgets that genuinely need script-driven behavior. Over-binding adds initialization overhead.
-- Name widgets descriptively (`PlayerListScroll`, `TitleBarClose`) rather than generically (`Frame1`, `btn`). Script code uses `FindAnyWidget()` by name, and collisions cause silent failures.
-- Keep layout files under 200 lines. Split complex UIs into multiple `.layout` files loaded with `CreateWidgets()` and parented programmatically.
-- Always quote multi-word attribute names (`"text halign"`, `"Size To Content V"`). Unquoted multi-word attributes silently fail without error.
-
----
-
-## Theory vs Practice
-
-> What the documentation says versus how things actually work at runtime.
-
-| Concept | Theory | Reality |
-|---------|--------|---------|
-| `scriptclass` initialization | `OnWidgetScriptInit` is called when the layout loads | If the class does not inherit from `Managed` or has a constructor error, the widget loads but the handler is silently null |
-| `ScriptParamsClass` | Params pass arbitrary data to script classes | Only string and numeric values work reliably; nested objects or arrays are not supported |
-| `color` attribute | Four floats 0.0-1.0 (RGBA) | Some widget types ignore the alpha channel or require `inheritalpha 1` on the parent for transparency to propagate |
-| Attribute defaults | Undocumented attributes use engine defaults | Defaults vary per widget type -- `ButtonWidget` defaults `hexactsize` differently than `FrameWidget` on some engine versions |
-| `"no focus"` | Prevents keyboard focus | Also prevents gamepad selection, which can break controller navigation if set on interactive widgets |
-
----
-
-## Compatibility & Impact
-
-- **Multi-Mod:** Layout files are isolated per mod -- no direct conflicts. However, `scriptclass` names must be globally unique. Two mods using `scriptclass "PanelHandler"` will cause one to silently fail.
-- **Performance:** Each widget in a layout is a real engine object. Layouts with 500+ widgets cause measurable frame drops. Prefer programmatic pooling for large lists.
-- **Version:** The layout format has been stable since DayZ 1.0. The `ScriptParamsClass` block and `ViewBinding` scriptclass were added by DabsFramework and are not vanilla features.
-
----
-
-## Observed in Real Mods
-
-| Pattern | Mod | Detail |
-|---------|-----|--------|
-| `scriptclass "ViewBinding"` with `ScriptParamsClass` | DabsFramework / DayZ Editor | Two-way data binding between layouts and ViewControllers via `Binding_Name` param |
-| `WrapSpacerWidgetClass` as dialog root | COT, Expansion | Enables `Size To Content V/H` for auto-sizing dialogs around dynamic content |
-| Separate `.layout` per list row | VPP Admin Tools | Each player row is a standalone layout loaded into a WrapSpacer, enabling reuse and pooling |
-| `priority 998-999` for modal overlays | DabsFramework, COT | Ensures dialogs render above all other UI elements |
+- If the `scriptclass` does not inherit from `Managed` or has a constructor error, the widget loads but the handler is silently null.
+- `ScriptParamsClass` only supports string and numeric values. Nested objects or arrays are not supported.
+- Some widget types ignore the alpha channel in `color`. You may need `inheritalpha 1` on the parent for transparency to propagate.
+- Attribute defaults vary per widget type -- `ButtonWidget` defaults `hexactsize` differently than `FrameWidget` on some engine versions. Always set all four exact flags explicitly.
+- `"no focus"` also prevents gamepad selection, which can break controller navigation if set on interactive widgets.
+- `scriptclass` names must be globally unique across all mods. Two mods using `scriptclass "PanelHandler"` will cause one to silently fail.
+- Each widget is a real engine object. Layouts with 500+ widgets cause measurable frame drops. Use programmatic pooling for large lists.
+- Use `WrapSpacerWidgetClass` as dialog root with `Size To Content V/H` for auto-sizing dialogs.
+- Use `priority 998-999` for modal overlays to render above all other UI.
+- Split list rows into separate `.layout` files loaded into a WrapSpacer for reuse and pooling.
+- Use `scriptclass` sparingly -- only on widgets that genuinely need script-driven behavior.
+- Name widgets descriptively (`PlayerListScroll`, `TitleBarClose`). `FindAnyWidget()` uses names, and collisions cause silent failures.
+- Keep layout files under 200 lines. Split complex UIs into multiple `.layout` files loaded with `CreateWidgets()`.
+- Always quote multi-word attribute names (`"text halign"`, `"Size To Content V"`). Unquoted multi-word attributes silently fail.
 
 ---
 

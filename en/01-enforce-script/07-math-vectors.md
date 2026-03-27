@@ -245,10 +245,10 @@ float t2 = Math.InverseLerp(0, 100, 75);   // 0.75
 `SmoothCD` provides smooth, framerate-independent interpolation. It is the best choice for camera smoothing, UI animations, and any value that should approach a target gradually without oscillation.
 
 ```c
-// SmoothCD(current, target, velocity, smoothTime, maxSpeed, dt)
-// velocity is passed by reference and updated each call
+// SmoothCD(current, target, velocity[], smoothTime, maxSpeed, dt)
+// velocity is inout float[] — MUST be a float array, not a plain float
 float currentVal = 0;
-float velocity = 0;
+float velocity[1] = {0};  // Array required for inout parameter
 float target = 100;
 float smoothTime = 0.3;
 
@@ -263,13 +263,13 @@ class SmoothZoomCamera
 {
     protected float m_CurrentFOV;
     protected float m_TargetFOV;
-    protected float m_Velocity;
+    protected float m_Velocity[1];  // Must be float array for SmoothCD
 
     void SmoothZoomCamera()
     {
         m_CurrentFOV = 70;
         m_TargetFOV = 70;
-        m_Velocity = 0;
+        m_Velocity[0] = 0;
     }
 
     void SetZoom(float targetFOV)

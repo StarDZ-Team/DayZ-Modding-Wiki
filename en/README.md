@@ -1,6 +1,6 @@
 # DayZ Modding Complete Guide -- English
 
-> The most comprehensive DayZ modding documentation available. From zero to published mod.
+> The most comprehensive DayZ modding and server administration documentation available. From zero to published mod, from first server to advanced economy tuning.
 >
 > **Note:** This is the English version. For other languages, see the [home page](../).
 
@@ -143,6 +143,24 @@ Step-by-step guides.
 | [8.11](08-tutorials/11-clothing-mod.md) | Creating a Clothing Mod | Done |
 | [8.12](08-tutorials/12-trading-system.md) | Building a Trading System | Done |
 | [8.13](08-tutorials/13-diag-menu.md) | Diag Menu Reference | Done |
+
+### Part 9: Server Administration
+Configure and manage DayZ dedicated servers.
+
+| Chapter | Topic | Status |
+|---------|-------|--------|
+| [9.1](09-server-admin/01-server-setup.md) | Server Setup & First Launch | Done |
+| [9.2](09-server-admin/02-directory-structure.md) | Directory Structure & Mission Folder | Done |
+| [9.3](09-server-admin/03-server-cfg.md) | serverDZ.cfg Complete Reference | Done |
+| [9.4](09-server-admin/04-loot-economy.md) | Loot Economy Deep Dive | Done |
+| [9.5](09-server-admin/05-vehicle-spawning.md) | Vehicle & Dynamic Event Spawning | Done |
+| [9.6](09-server-admin/06-player-spawning.md) | Player Spawning | Done |
+| [9.7](09-server-admin/07-persistence.md) | World State & Persistence | Done |
+| [9.8](09-server-admin/08-performance.md) | Performance Tuning | Done |
+| [9.9](09-server-admin/09-access-control.md) | Access Control | Done |
+| [9.10](09-server-admin/10-mod-management.md) | Mod Management | Done |
+| [9.11](09-server-admin/11-troubleshooting.md) | Server Troubleshooting | Done |
+| [9.12](09-server-admin/12-advanced.md) | Advanced Topics | Done |
 
 ---
 

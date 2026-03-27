@@ -129,7 +129,7 @@ foreach (string key, int val : myMap) { }
 // while
 while (condition) { }
 
-// switch (NO fall-through!)
+// switch (falls through without break, like C/C++)
 switch (val) { case 0: Print("zero"); break; default: break; }
 ```
 
@@ -145,8 +145,8 @@ switch (val) { case 0: Print("zero"); break; default: break; }
 | `s.LastIndexOf(sub)` | `int` | Search from end |
 | `s.Contains(sub)` | `bool` | |
 | `s.Replace(old, new)` | `int` | Modifies in-place, returns count |
-| `s.ToLower()` | `void` | **In-place!** |
-| `s.ToUpper()` | `void` | **In-place!** |
+| `s.ToLower()` | `int` (length) | **In-place!** |
+| `s.ToUpper()` | `int` (length) | **In-place!** |
 | `s.TrimInPlace()` | `void` | **In-place!** |
 | `s.Split(delim, out arr)` | `void` | Splits into TStringArray |
 | `s.Get(idx)` | `string` | Single char |
@@ -232,7 +232,7 @@ foreach (string key, int value : myMap)
 
 ```c
 string name = typename.EnumToString(EDamageState, state);
-int val; typename.StringToEnum(EDamageState, "RUINED", val);
+int val = typename.StringToEnum(EDamageState, "RUINED");  // Returns int, -1 on failure
 ```
 
 ### Bitflags
@@ -260,7 +260,7 @@ flags = flags & ~FLAG_B;          // remove
 | `#include` | config.cpp `files[]` |
 | Namespaces | Name prefixes (`MyMod_`, `VPP_`) |
 | Interfaces / abstract | Empty base methods |
-| switch fall-through | Each case is independent |
+| switch fall-through | Works like C/C++ — use `break` |
 | `#define` values | Use `const` |
 | Default param expressions | Literals/NULL only |
 | Variadic params | `string.Format` or arrays |
@@ -331,7 +331,7 @@ ErrorEx("message");                              // Default ERROR severity
 ErrorEx("info", ErrorExSeverity.INFO);           // Info
 ErrorEx("warning", ErrorExSeverity.WARNING);     // Warning
 Print("debug output");                           // Script log
-string stack = DumpStackString();                // Get call stack
+string stack; DumpStackString(stack);             // Get call stack (out param)
 ```
 
 ---

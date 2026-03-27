@@ -21,9 +21,9 @@
   8. [No String Escape for Backslash/Quote](#8-no-string-escape-for-backslashquote)
   9. [No Variable Redeclaration in else-if Blocks](#9-no-variable-redeclaration-in-else-if-blocks)
   10. [No Ternary in Variable Declaration](#10-no-ternary-in-variable-declaration)
-  11. [Object.IsAlive() Does NOT Exist on Base Object](#11-objectisalive-does-not-exist-on-base-object)
+  11. [No Multiline Function Calls](#11-no-multiline-function-calls)
   12. [No nullptr — Use NULL or null](#12-no-nullptr--use-null-or-null)
-  13. [switch/case Does NOT Fall Through](#13-switchcase-does-not-fall-through)
+  13. [switch/case DOES Fall Through](#13-switchcase-does-fall-through)
   14. [No Default Parameter Expressions](#14-no-default-parameter-expressions)
   15. [JsonFileLoader.JsonLoadFile Returns void](#15-jsonfileloaderjsonloadfile-returns-void)
   16. [No #define Value Substitution](#16-no-define-value-substitution)
@@ -352,25 +352,25 @@ else
 
 ---
 
-### 11. Object.IsAlive() Does NOT Exist on Base Object
+### 11. No Multiline Function Calls
 
 **What you would write:**
 ```c
-Object obj = GetSomething();
-if (obj.IsAlive())  // Check if alive
+string msg = string.Format(
+    "Player %1 at %2",
+    name,
+    pos
+);
 ```
 
-**What happens:** Compile error or runtime crash. `IsAlive()` is defined on `EntityAI`, not on `Object`.
+**What happens:** Compile error. Enforce Script's parser does not reliably handle function calls split across multiple lines.
 
 **Correct solution:**
 ```c
-Object obj = GetSomething();
-EntityAI eai;
-if (Class.CastTo(eai, obj) && eai.IsAlive())
-{
-    // Safely alive
-}
+string msg = string.Format("Player %1 at %2", name, pos);
 ```
+
+Keep function calls on a single line. If the line is too long, break the work into intermediate variables.
 
 ---
 
@@ -392,45 +392,39 @@ if (!obj)           // idiomatic null check (preferred)
 
 ---
 
-### 13. switch/case Does NOT Fall Through
+### 13. switch/case DOES Fall Through
 
-**What you would write (expecting C/C++ fall-through):**
+Enforce Script switch/case **DOES** fall through when `break` is omitted, same as C/C++. Vanilla code intentionally uses fall-through (biossessionservice.c:182 has comment "Intentionally no break, fall through to connecting").
+
+**What you would write:**
 ```c
 switch (value)
 {
     case 1:
     case 2:
     case 3:
-        Print("1, 2, or 3");  // In C++, cases 1 and 2 fall through to here
+        Print("1, 2, or 3");  // All three cases reach this — fall-through works
         break;
 }
 ```
 
-**What happens:** Only case 3 executes the Print. Cases 1 and 2 are empty — they do nothing and do NOT fall through.
+**This works as expected.** Cases 1 and 2 fall through to case 3's handler.
 
-**Correct solution:**
+**The gotcha:** Forgetting `break` when you do NOT want fall-through:
 ```c
-if (value >= 1 && value <= 3)
+switch (state)
 {
-    Print("1, 2, or 3");
-}
-
-// Or handle each case explicitly:
-switch (value)
-{
+    case 0:
+        Print("Zero");
+        // Missing break! Falls through to case 1
     case 1:
-        Print("1, 2, or 3");
-        break;
-    case 2:
-        Print("1, 2, or 3");
-        break;
-    case 3:
-        Print("1, 2, or 3");
+        Print("One");
         break;
 }
+// If state == 0, prints BOTH "Zero" and "One"
 ```
 
-> **Note:** `break` is technically optional in Enforce Script since there is no fall-through, but it is conventional to include it.
+**Rule:** Always use `break` at the end of every case unless you intentionally want fall-through. When you do want fall-through, add a comment to make it clear.
 
 ---
 
@@ -789,7 +783,7 @@ class VPP_AdminConfig { }     // VPP Admin
 string upper = myString.ToUpper();  // Expect: returns new string
 ```
 
-**What happens:** `ToUpper()` and `ToLower()` modify the string **in place** and return `void`.
+**What happens:** `ToUpper()` and `ToLower()` modify the string **in place** and return `int` (the length of the changed string), not a new string. From enstring.c: `proto int ToLower();` and `proto int ToUpper();`.
 
 **Correct solution:**
 ```c
@@ -1019,9 +1013,9 @@ If you are a C++ developer, here are the biggest adjustments:
 | Delegates | No | `ScriptInvoker` |
 | `\\` / `\"` in strings | Broken | Avoid them |
 | Variable redeclaration | Broken in else-if | Unique names or declare before if |
-| `Object.IsAlive()` | Not on base Object | Cast to `EntityAI` first |
+| Multiline function calls | Unreliable parsing | Keep calls on one line |
 | `nullptr` | No | `null` / `NULL` |
-| switch fall-through | No | Each case is independent |
+| switch fall-through | Yes (like C/C++) | Always use `break` unless intentional |
 | Default param expressions | No | Literals or NULL only |
 | `#define` values | No | `const` |
 | Interfaces | No | Empty base class |

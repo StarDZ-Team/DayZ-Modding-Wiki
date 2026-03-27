@@ -280,7 +280,7 @@ The `type` attribute is `0` for integer, `1` for float. Using the wrong type tru
 
 ## cfggameplay.json --- Gameplay Settings
 
-Loaded only when `enableCfgGameplayFile = 1` in `serverDZ.cfg`. Without this, the engine uses hardcoded defaults.
+This file controls gameplay tuning when placed in the mission folder. The engine loads it automatically if it exists.
 
 ### Structure
 
@@ -344,10 +344,15 @@ passwordAdmin = "adminpass123";
 maxPlayers = 60;
 verifySignatures = 2;
 forceSameBuild = 1;
-template = "dayzOffline.chernarusplus";
-enableCfgGameplayFile = 1;
-storeHouseStateDisabled = false;
 storageAutoFix = 1;
+
+class Missions
+{
+    class DayZ
+    {
+        template = "dayzOffline.chernarusplus";
+    };
+};
 ```
 
 | Parameter | Description |
@@ -356,9 +361,8 @@ storageAutoFix = 1;
 | `password` | Join password (empty = open) |
 | `passwordAdmin` | RCON admin password |
 | `maxPlayers` | Maximum concurrent players |
-| `template` | Mission folder name |
+| `template` | Mission folder name (inside `class Missions { class DayZ { ... }; };`) |
 | `verifySignatures` | Signature check level (2 = strict) |
-| `enableCfgGameplayFile` | Load cfggameplay.json (0/1) |
 
 ### Mod Loading
 
@@ -460,9 +464,9 @@ Items with very short lifetimes disappear before players find them. Use at least
 
 Items whose class hierarchy does not trace to a registered root class in `cfgeconomycore.xml` will never spawn, even with correct types.xml entries.
 
-### cfggameplay.json Not Enabled
+### cfggameplay.json Not Loading
 
-The file is ignored unless `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.
+Ensure `cfggameplay.json` is placed in the mission folder and contains valid JSON. A syntax error will cause it to be silently ignored.
 
 ### Wrong type in globals.xml
 
@@ -479,7 +483,7 @@ Modifying vanilla types.xml works but breaks on game updates. Prefer shipping se
 - Ship a `ServerFiles/` folder with your mod containing pre-configured `types.xml` entries so server admins can copy-paste rather than write from scratch.
 - Use `cfglimitsdefinitionuser.xml` instead of editing the vanilla `cfglimitsdefinition.xml` -- your additions survive game updates.
 - Set `count_in_hoarder="0"` for common items (food, ammo) to prevent hoarding from blocking CE respawns.
-- Always set `enableCfgGameplayFile = 1` in `serverDZ.cfg` before expecting `cfggameplay.json` changes to take effect.
+- Place `cfggameplay.json` in the mission folder with valid JSON to apply gameplay overrides.
 - Keep total `nominal` across all types.xml entries below 12,000 to avoid CE performance degradation on populated servers.
 
 ---

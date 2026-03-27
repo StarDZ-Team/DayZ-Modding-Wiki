@@ -60,14 +60,16 @@ panel.Show(true);
 
 A visible rectangle with a solid color. Unlike `FrameWidget`, a `PanelWidget` actually draws something on screen.
 
-**Key methods:**
+> **Note:** `PanelWidgetClass` is usable in `.layout` files but there is no `PanelWidget` script class. Work with it as a base `Widget`. Cast to `Widget` (not `PanelWidget`) and use the standard `Widget` methods.
+
+**Key methods (via `Widget` base class):**
 - `SetColor(int argb)` -- Set the background color
 - `SetAlpha(float alpha)` -- Set transparency
 
 **When to use:** Backgrounds behind text, colored dividers, overlay rectangles, tint layers.
 
 ```c
-PanelWidget bg = PanelWidget.Cast(root.FindAnyWidget("Background"));
+Widget bg = root.FindAnyWidget("Background");
 bg.SetColor(ARGB(200, 0, 0, 0));  // Semi-transparent black
 ```
 
@@ -141,14 +143,15 @@ The most common display widget. Shows a single line of text.
 ```c
 TextWidget tw;
 tw.SetText("Hello World");
-tw.GetText();                           // Returns string
 tw.GetTextSize(out int w, out int h);   // Pixel dimensions of rendered text
-tw.SetTextExactSize(float size);        // Set font size in pixels
+tw.SetTextExactSize(int size);          // Set font size in pixels
 tw.SetOutline(int size, int color);     // Add text outline
 tw.GetOutlineSize();                    // Returns int
 tw.GetOutlineColor();                   // Returns int (ARGB)
 tw.SetColor(int argb);                  // Text color
 ```
+
+> **Note:** `TextWidget` does NOT have a `GetText()` method. `GetText()` only exists on `EditBoxWidget` and `ButtonWidget`. If you need to read text back, store it in a variable when you call `SetText()`.
 
 **Key layout attributes:** `text`, `font`, `"text halign"`, `"text valign"`, `"exact text"`, `"exact text size"`, `"bold text"`, `"size to text h"`, `"size to text v"`, `wrap`.
 
@@ -347,7 +350,7 @@ A scrollable list of text rows. Supports selection and multi-column data.
 TextListboxWidget tlb;
 tlb.AddItem("Row text", null, 0);   // text, userData, column
 tlb.GetSelectedRow();               // Returns int (-1 if none)
-tlb.SetRow(int row);                // Select a row
+tlb.SelectRow(int row);             // Select a row
 tlb.RemoveRow(int row);
 tlb.ClearItems();
 ```
@@ -394,6 +397,11 @@ WorkspaceWidgetTypeID
 GridSpacerWidgetTypeID
 WrapSpacerWidgetTypeID
 ScrollWidgetTypeID
+ConsoleWidgetTypeID
+EmbededWidgetTypeID
+WindowWidgetTypeID
+BaseListboxWidgetTypeID
+GenericListboxWidgetTypeID
 ```
 
 ---

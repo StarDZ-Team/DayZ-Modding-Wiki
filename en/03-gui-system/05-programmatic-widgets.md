@@ -84,10 +84,10 @@ Widget w = GetGame().GetWorkspace().CreateWidget(
 | Parameter | Type | Description |
 |---|---|---|
 | typeID | int | Widget type constant (e.g., `FrameWidgetTypeID`, `TextWidgetTypeID`) |
-| x | float | X position (proportional or pixel based on flags) |
-| y | float | Y position |
-| width | float | Widget width |
-| height | float | Widget height |
+| x | int | X position (proportional or pixel based on flags) |
+| y | int | Y position |
+| width | int | Widget width |
+| height | int | Widget height |
 | flags | int | Bitwise OR of `WidgetFlags` constants |
 | color | int | ARGB color integer (-1 for default/white) |
 | sort | int | Z-order (higher renders on top) |
@@ -117,6 +117,11 @@ GridSpacerWidgetTypeID
 WrapSpacerWidgetTypeID
 ScrollWidgetTypeID
 WorkspaceWidgetTypeID
+ConsoleWidgetTypeID
+EmbededWidgetTypeID
+WindowWidgetTypeID
+BaseListboxWidgetTypeID
+GenericListboxWidgetTypeID
 ```
 
 ---

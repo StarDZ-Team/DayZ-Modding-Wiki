@@ -591,7 +591,7 @@ class MathUtils
     static string FormatDistance(float meters)
     {
         if (meters >= 1000)
-            return string.Format("%.1f km", meters / 1000.0);
+            return string.Format("%1 km", (meters / 1000.0));
         else
             return string.Format("%1 m", Math.Round(meters));
     }

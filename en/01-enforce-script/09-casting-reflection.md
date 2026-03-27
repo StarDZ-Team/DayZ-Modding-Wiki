@@ -200,33 +200,42 @@ if (obj.IsInherited(CarScript))
 
 ---
 
-## obj.IsKindOf — String-Based Type Checking
+## obj.IsKindOf — Config-Based Type Checking
 
-`IsKindOf` does the same check but with a **string** class name. Useful when you have the type name as data (e.g., from config files).
+`IsKindOf` checks whether an object's **config class** (defined in `config.cpp` under `CfgVehicles`, `CfgWeapons`, etc.) inherits from the given class name. It takes a **string** argument and is defined on `Object`, where it delegates to `g_Game.ObjectIsKindOf()`.
 
 ```c
 Object obj = GetSomeObject();
 
 if (obj.IsKindOf("ItemBase"))
 {
-    Print("This is an item");
+    Print("This is an item (by config hierarchy)");
 }
 
 if (obj.IsKindOf("DayZAnimal"))
 {
-    Print("This is an animal");
+    Print("This is an animal (by config hierarchy)");
 }
 ```
 
-**Important:** `IsKindOf` checks the full inheritance chain, just like `IsInherited`. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")`, `IsKindOf("InventoryItem")`, `IsKindOf("EntityAI")`, etc.
+**Important:** `IsKindOf` checks the **config class hierarchy** (what is defined in `config.cpp`), not the script class hierarchy. In most cases these match, but they are not the same thing. A `Mag_STANAG_30Rnd` returns `true` for `IsKindOf("Magazine_Base")` because `Mag_STANAG_30Rnd` inherits from `Magazine_Base` in `CfgMagazines`.
 
-### IsInherited vs IsKindOf
+### IsInherited vs IsKindOf --- They Are NOT Interchangeable
+
+These two methods check **different inheritance hierarchies**:
+
+- **`IsInherited(typename)`** --- checks the **script class** inheritance chain (classes defined in `.c` files). Takes a `typename` argument (compile-time type).
+- **`IsKindOf(string)`** --- checks the **config class** inheritance chain (classes defined in `config.cpp` under `CfgVehicles`, `CfgWeapons`, etc.). Takes a `string` argument. Defined on `Object`, delegates to `g_Game.ObjectIsKindOf()`.
+
+In most cases the script hierarchy and config hierarchy mirror each other, so both methods return the same result. But they can diverge when a config class inherits from a different parent than the script class, or when checking types that only exist in one hierarchy.
 
 | Feature | `IsInherited(typename)` | `IsKindOf(string)` |
 |---------|------------------------|---------------------|
-| Argument | Compile-time type | String name |
-| Speed | Faster (type comparison) | Slower (string lookup) |
-| Use when | You know the type at compile time | Type comes from data/config |
+| Checks | **Script class** inheritance (`.c` files) | **Config class** inheritance (`config.cpp`) |
+| Argument | `typename` (compile-time type) | `string` (class name) |
+| Speed | Faster (type comparison) | Slower (string + config lookup) |
+| Defined on | `Class` (available on all script objects) | `Object` (game entities only) |
+| Use when | You know the script type at compile time | You need to check config hierarchy, or the type name comes from data |
 
 ---
 
@@ -348,8 +357,9 @@ void InspectObject(Class obj)
 
 ```c
 // Signature:
-// static void EnScript.GetClassVar(Class instance, string varName, int index, out T value)
-// static bool EnScript.SetClassVar(Class instance, string varName, int index, T value)
+// static int EnScript.GetClassVar(Class instance, string varName, int index, out T value)
+// static int EnScript.SetClassVar(Class instance, string varName, int index, T value)
+// Both return 1 on success, 0 on failure.
 // 'index' is the array element index — use 0 for non-array fields.
 
 class MyConfig
@@ -416,26 +426,17 @@ static array<CarScript> FindAllVehicles()
 }
 ```
 
-### Safe Object Helper With Cast
+### Safe Object Alive Check
 
-This pattern is used throughout DayZ modding — a utility function that safely checks if an `Object` is alive by casting to `EntityAI`:
+`IsAlive()` is defined on `Object` (object.c:523) as `bool IsAlive() { return !IsDamageDestroyed(); }`, so it can be called on any Object-typed variable. Both vanilla and mods (COT, Expansion) call it directly on Object references:
 
 ```c
-// Object.IsAlive() does NOT exist on the base Object class!
-// You must cast to EntityAI first.
-
 static bool IsObjectAlive(Object obj)
 {
     if (!obj)
         return false;
 
-    EntityAI eai;
-    if (Class.CastTo(eai, obj))
-    {
-        return eai.IsAlive();
-    }
-
-    return false;  // Non-EntityAI objects (buildings, etc.) — treat as "not alive"
+    return obj.IsAlive();  // Works on any Object — no cast needed
 }
 ```
 
@@ -540,8 +541,8 @@ class EventDispatcher
 
 - Always null-check after every cast -- both `Class.CastTo` and `Type.Cast` return null on failure, and using the result unchecked causes crashes.
 - Use `Class.CastTo` when you need to branch on success/failure; use `Type.Cast` for concise one-liner assignments followed by a null check.
-- Prefer `IsInherited(typename)` over `IsKindOf(string)` when the type is known at compile time -- it is faster and catches typos at compile time.
-- Cast to `EntityAI` before calling `IsAlive()` -- the base `Object` class does not have this method.
+- Remember that `IsInherited(typename)` checks **script class** inheritance while `IsKindOf(string)` checks **config class** inheritance -- they are not interchangeable. Prefer `IsInherited` when the type is known at compile time (faster, catches typos).
+- `IsAlive()` is defined on `Object` (object.c:523), so you can call it on any `Object` reference without casting -- just null-check first.
 - Validate variable names with `GetVariableCount`/`GetVariableName` before using `EnScript.GetClassVar` -- it fails silently on wrong names.
 
 ---
@@ -563,8 +564,8 @@ class EventDispatcher
 
 | Concept | Theory | Reality |
 |---------|--------|---------|
-| `Object.IsAlive()` | Expect it to exist on `Object` | Only available on `EntityAI` and subclasses -- calling it on `Object` crashes |
-| `EnScript.SetClassVar` returns `bool` | Should indicate success/failure | Returns `false` silently on wrong field name with no error message -- easy to miss |
+| `Object.IsAlive()` | Might expect it only on `EntityAI` | Actually defined on `Object` (object.c:523) as `!IsDamageDestroyed()` -- works on any Object reference |
+| `EnScript.SetClassVar` returns `int` | Returns 1 on success, 0 on failure | Returns `0` silently on wrong field name with no error message -- easy to miss |
 | `typename.Spawn()` | Creates any class instance | Only works for classes with a parameterless constructor; for game entities use `CreateObject` |
 
 ---
@@ -586,16 +587,16 @@ if (player)
 }
 ```
 
-### 2. Calling IsAlive() on base Object
+### 2. Forgetting to null-check before calling methods on Object
 
 ```c
-// WRONG — Object.IsAlive() does not exist
+// WRONG — crashes if obj is null
 Object obj = GetSomeObject();
-if (obj.IsAlive())  // Compile error or runtime crash!
+if (obj.IsAlive())  // Crash if obj is null!
 
-// CORRECT
-EntityAI eai;
-if (Class.CastTo(eai, obj) && eai.IsAlive())
+// CORRECT — null-check first
+Object obj = GetSomeObject();
+if (obj && obj.IsAlive())
 {
     // Safe
 }
@@ -639,8 +640,8 @@ if (myObj.Type() == PlayerBase)  // true if myObj IS a PlayerBase
 | Variable count | `obj.Type().GetVariableCount()` | `int` |
 | Variable name | `obj.Type().GetVariableName(i)` | `string` |
 | Variable type | `obj.Type().GetVariableType(i)` | `typename` |
-| Read property | `EnScript.GetClassVar(obj, name, 0, out val)` | `void` |
-| Write property | `EnScript.SetClassVar(obj, name, 0, val)` | `bool` |
+| Read property | `EnScript.GetClassVar(obj, name, 0, out val)` | `int` (1 = success, 0 = failure) |
+| Write property | `EnScript.SetClassVar(obj, name, 0, val)` | `int` (1 = success, 0 = failure) |
 
 ---
 
