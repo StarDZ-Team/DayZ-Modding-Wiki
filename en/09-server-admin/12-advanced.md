@@ -9,7 +9,7 @@
 - [Multi-Map Servers](#multi-map-servers)
 - [Custom Map Mods](#custom-map-mods)
 - [Running Multiple Maps at Once](#running-multiple-maps-at-once)
-- [cfgenvironment.xml and Animal Territories](#cfgenvironmentxml-and-animal-territories)
+- [cfgenvironment.xml and Animal Territories](#cfgenvironment-xml-and-animal-territories)
 - [Server Restart Automation](#server-restart-automation)
 - [Scheduled Messages](#scheduled-messages)
 - [Moved Topics](#moved-topics)

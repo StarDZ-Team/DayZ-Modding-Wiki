@@ -19,7 +19,7 @@
 - [Step 5: Send Feedback to the Admin](#step-5-send-feedback-to-the-admin)
 - [Step 6: Register Commands and Handle the RPC](#step-6-register-commands-and-handle-the-rpc)
 - [Step 7: List Commands in an Admin Panel](#step-7-list-commands-in-an-admin-panel)
-- [Mod Registration (config.cpp)](#mod-registration-configcpp)
+- [Mod Registration (config.cpp)](#mod-registration-config-cpp)
 - [Adding More Commands](#adding-more-commands)
 - [Troubleshooting](#troubleshooting)
 - [Best Practices](#best-practices)

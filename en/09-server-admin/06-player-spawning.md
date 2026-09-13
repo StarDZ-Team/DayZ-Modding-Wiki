@@ -9,7 +9,7 @@
 
 ## Table of Contents
 
-- [cfgplayerspawnpoints.xml Overview](#cfgplayerspawnpointsxml-overview)
+- [cfgplayerspawnpoints.xml Overview](#cfgplayerspawnpoints-xml-overview)
 - [File Structure](#file-structure)
 - [Spawn Parameters](#spawn-parameters)
 - [Generator Parameters](#generator-parameters)
@@ -17,7 +17,7 @@
 - [Fresh Spawn Bubbles](#fresh-spawn-bubbles)
 - [Hop Spawns](#hop-spawns)
 - [Map-Specific Configs](#map-specific-configs)
-- [init.c -- Starting Equipment](#initc----starting-equipment)
+- [init.c -- Starting Equipment](#init-c-starting-equipment)
 - [Adding Custom Spawn Points](#adding-custom-spawn-points)
 - [Common Mistakes](#common-mistakes)
 

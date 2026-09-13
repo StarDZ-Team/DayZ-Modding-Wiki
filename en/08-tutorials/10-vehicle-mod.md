@@ -11,10 +11,10 @@
 
 - [What We Are Building](#what-we-are-building)
 - [Prerequisites](#prerequisites)
-- [Step 1: Create the Config (config.cpp)](#step-1-create-the-config-configcpp)
+- [Step 1: Create the Config (config.cpp)](#step-1-create-the-config-config-cpp)
 - [Step 2: Custom Textures](#step-2-custom-textures)
 - [Step 3: Script Behavior (CarScript)](#step-3-script-behavior-carscript)
-- [Step 4: Vehicle Spawning (events.xml)](#step-4-vehicle-spawning-eventsxml)
+- [Step 4: Vehicle Spawning (events.xml)](#step-4-vehicle-spawning-events-xml)
 - [Step 5: Build and Test](#step-5-build-and-test)
 - [Step 6: Polish](#step-6-polish)
 - [Complete Code Reference](#complete-code-reference)

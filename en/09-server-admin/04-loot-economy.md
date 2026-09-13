@@ -9,14 +9,14 @@
 - [How the Central Economy Works](#how-the-central-economy-works)
 - [The Economy File Set](#the-economy-file-set)
 - [The Spawn Cycle](#the-spawn-cycle)
-- [types.xml -- Item Spawn Definitions](#typesxml----item-spawn-definitions)
-- [globals.xml -- Economy Parameters](#globalsxml----economy-parameters)
-- [events.xml -- Dynamic Events](#eventsxml----dynamic-events)
-- [cfgspawnabletypes.xml -- Attachments and Cargo](#cfgspawnabletypesxml----attachments-and-cargo)
-- [cfgrandompresets.xml -- Reusable Loot Pools](#cfgrandompresetsxml----reusable-loot-pools)
-- [cfgeconomycore.xml -- Root Configuration](#cfgeconomycorexml----root-configuration)
-- [cfglimitsdefinition.xml -- Flag Definitions](#cfglimitsdefinitionxml----flag-definitions)
-- [The Nominal/Restock Relationship](#the-nominalrestock-relationship)
+- [types.xml -- Item Spawn Definitions](#types-xml-item-spawn-definitions)
+- [globals.xml -- Economy Parameters](#globals-xml-economy-parameters)
+- [events.xml -- Dynamic Events](#events-xml-dynamic-events)
+- [cfgspawnabletypes.xml -- Attachments and Cargo](#cfgspawnabletypes-xml-attachments-and-cargo)
+- [cfgrandompresets.xml -- Reusable Loot Pools](#cfgrandompresets-xml-reusable-loot-pools)
+- [cfgeconomycore.xml -- Root Configuration](#cfgeconomycore-xml-root-configuration)
+- [cfglimitsdefinition.xml -- Flag Definitions](#cfglimitsdefinition-xml-flag-definitions)
+- [The Nominal/Restock Relationship](#the-nominal-restock-relationship)
 - [Adding Modded Items to the Economy](#adding-modded-items-to-the-economy)
 - [Common Economy Mistakes](#common-economy-mistakes)
 - [Best Practices](#best-practices)
@@ -258,7 +258,7 @@ If you omit `<value>` entirely, the item spawns in **all** tiers. Community prac
 
 Where an item's loot point actually comes from is `mapgroupproto.xml` (not covered elsewhere in this chapter): it assigns usage/category/tag flags to each building prototype and holds every loot `<point>` a container can spawn into, capped per group and per container by a `lootmax` default (shipped Chernarus: group 6, container 4, overridable per prototype). The official [Central Economy setup for custom terrains](https://community.bistudio.com/wiki/DayZ:Central_Economy_setup_for_custom_terrains) page notes that only one piece of loot can end up on a given spawn point, so the number of spawn points tagged into a container is effectively that container's usable loot cap. If a type has valid `types.xml` flags but never spawns, a `mapgroupproto.xml` prototype missing a matching tagged point is a more likely cause than the presence or absence of `<usage>` alone.
 
-The full lists of valid names live in `cfglimitsdefinition.xml` -- see [below](#cfglimitsdefinitionxml----flag-definitions).
+The full lists of valid names live in `cfglimitsdefinition.xml` -- see [below](#cfglimitsdefinition-xml-flag-definitions).
 
 ---
 
@@ -301,7 +301,7 @@ This file controls global CE behavior. Every parameter from the vanilla file:
 </variables>
 ```
 
-The `type` attribute indicates data type: `0` = integer, `1` = float, `2` = string. Server mods can also read these values (and custom variables you add) from script via `GetCEApi().GetCEGlobalInt()` -- see [Central Economy Script API](../06-engine-api/10-central-economy.md#reading-globalsxml-from-script).
+The `type` attribute indicates data type: `0` = integer, `1` = float, `2` = string. Server mods can also read these values (and custom variables you add) from script via `GetCEApi().GetCEGlobalInt()` -- see [Central Economy Script API](../06-engine-api/10-central-economy.md#reading-globals-xml-from-script).
 
 ### Complete Parameter Reference
 

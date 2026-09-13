@@ -10,10 +10,10 @@
 ## Table of Contents
 
 - [What Affects Server Performance](#what-affects-server-performance)
-- [globals.xml Tuning](#globalsxml-tuning)
+- [globals.xml Tuning](#globals-xml-tuning)
 - [Economy Tuning for Performance](#economy-tuning-for-performance)
-- [cfgeconomycore.xml Logging](#cfgeconomycorexml-logging)
-- [serverDZ.cfg Performance Settings](#serverdzcfg-performance-settings)
+- [cfgeconomycore.xml Logging](#cfgeconomycore-xml-logging)
+- [serverDZ.cfg Performance Settings](#serverdz-cfg-performance-settings)
 - [Mod Performance Impact](#mod-performance-impact)
 - [Hardware Recommendations](#hardware-recommendations)
 - [Monitoring Server Health](#monitoring-server-health)

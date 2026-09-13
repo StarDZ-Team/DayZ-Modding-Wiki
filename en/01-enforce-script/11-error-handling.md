@@ -6,7 +6,7 @@
 
 ## Table of Contents
 
-- [The Fundamental Rule: No try/catch](#the-fundamental-rule-no-trycatch)
+- [The Fundamental Rule: No try/catch](#the-fundamental-rule-no-try-catch)
 - [Guard Clause Pattern](#guard-clause-pattern)
   - [Single Guard](#single-guard)
   - [Multiple Guards (Stacked)](#multiple-guards-stacked)
@@ -15,17 +15,17 @@
   - [Before Every Operation](#before-every-operation)
   - [Chained Null Checks](#chained-null-checks)
   - [The notnull Keyword](#the-notnull-keyword)
-- [ErrorEx — Engine Error Reporting](#errorex--engine-error-reporting)
+- [ErrorEx — Engine Error Reporting](#errorex-—-engine-error-reporting)
   - [Severity Levels](#severity-levels)
   - [When to Use Each Level](#when-to-use-each-level)
-- [DumpStackString — Stack Traces](#dumpstackstring--stack-traces)
+- [DumpStackString — Stack Traces](#dumpstackstring-—-stack-traces)
 - [Debug Printing](#debug-printing)
   - [Basic Print](#basic-print)
   - [Conditional Debug with #ifdef](#conditional-debug-with-ifdef)
 - [Structured Logging Patterns](#structured-logging-patterns)
   - [Simple Prefix Pattern](#simple-prefix-pattern)
   - [Level-Based Logger Class](#level-based-logger-class)
-  - [Production Logger Pattern (LNT_Log)](#production-logger-pattern-lnt_log)
+  - [Production Logger Pattern (LNT_Log)](#production-logger-pattern-lnt-log)
 - [Worked Examples](#worked-examples)
   - [Safe Function With Multiple Guards](#safe-function-with-multiple-guards)
   - [Safe Config Loading](#safe-config-loading)
@@ -722,7 +722,7 @@ Every pattern in this chapter is grounded in code you can read yourself in the v
 | Pattern | Where to Look | Detail |
 |---------|---------------|--------|
 | Stacked guard clauses in RPC handlers | `DayZGame.OnRPC()` in `3_game/dayzgame.c`; `PlayerBase.OnRPC()` in `4_world/entities/manbase/playerbase.c` | Vanilla RPC handlers switch on the RPC type and validate `ctx.Read()` results before acting on any payload |
-| Static logger class with level filtering | `LNT_Log` in this chapter ([Production Logger Pattern](#production-logger-pattern-lnt_log)) | A single static class routes `Info`/`Warning`/`Error` through one `Log()` method with separate console and file thresholds |
+| Static logger class with level filtering | `LNT_Log` in this chapter ([Production Logger Pattern](#production-logger-pattern-lnt-log)) | A single static class routes `Info`/`Warning`/`Error` through one `Log()` method with separate console and file thresholds |
 | `DumpStackString()` in critical guards | `1_core/proto/endebug.c` | Declared as `proto void DumpStackString(out string stack)` — fills the `out` parameter with the current call stack |
 | `#ifdef DIAG_DEVELOPER` around debug prints | Pervasive across the vanilla scripts (hundreds of occurrences, e.g. `4_world/systems/inventory/dayzplayerinventory.c`) | Diagnostic-only code is wrapped so it never compiles into release builds |
 

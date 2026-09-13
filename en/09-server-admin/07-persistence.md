@@ -8,11 +8,11 @@
 
 - [How Persistence Works](#how-persistence-works)
 - [What Persists and What Does Not](#what-persists-and-what-does-not)
-- [The storage_1/ Directory](#the-storage_1-directory)
+- [The storage_1/ Directory](#the-storage-1-directory)
 - [When the Server Saves](#when-the-server-saves)
 - [Territory Flags and Base Decay](#territory-flags-and-base-decay)
 - [Hoarder Containers](#hoarder-containers)
-- [cfggameplay.json Base and Container Damage](#cfggameplayjson-base-and-container-damage)
+- [cfggameplay.json Base and Container Damage](#cfggameplay-json-base-and-container-damage)
 - [Cleanup Timers](#cleanup-timers)
 - [Server Wipe Procedures](#server-wipe-procedures)
 - [Backup Strategy](#backup-strategy)
@@ -34,7 +34,7 @@ If `storage_1/` does not exist on startup, the server creates a fresh world: no 
 
 ## What Persists and What Does Not
 
-Persistence is not all-or-nothing. The `economy.xml` toggles (documented in [Directory Structure & Mission Folder](02-directory-structure.md#the-db-folder----economy-core)) decide which subsystems save their state. In the vanilla configuration:
+Persistence is not all-or-nothing. The `economy.xml` toggles (documented in [Directory Structure & Mission Folder](02-directory-structure.md#the-db-folder-economy-core)) decide which subsystems save their state. In the vanilla configuration:
 
 | Category | Persists? | Notes |
 |----------|:---:|-------|
@@ -66,7 +66,7 @@ The `data/` folder is where base building and deployed storage live; `players/` 
 
 > The character records in `players/` are keyed internally by the player's persistent identity, not stored as readable per-SteamID files. Treat the folder as an opaque database: back it up or delete it wholesale, but do not open or edit individual records.
 
-For the full mission and server directory layout surrounding `storage_1/`, see [Directory Structure & Mission Folder](02-directory-structure.md#the-storage_1-folder----persistence).
+For the full mission and server directory layout surrounding `storage_1/`, see [Directory Structure & Mission Folder](02-directory-structure.md#the-storage-1-folder-persistence).
 
 ---
 
@@ -99,7 +99,7 @@ When a flag's refresh budget runs out:
 2. The base-building parts in the territory no longer have their lifetimes reset, so their own `lifetime` values start running down.
 3. As those lifetimes expire, the parts become eligible for the normal CE cleanup cycle and begin despawning. The flag itself becomes eligible too.
 
-`FlagRefreshMaxDuration` is therefore the knob for how long an unvisited base survives — lower it to wipe abandoned bases sooner. `FlagRefreshFrequency` is not a second decay knob, and lowering it makes the automatic refresh run *more* often rather than demanding more player visits. The script-level mechanism, the 60 m refresh radius and the way item `lifetime` interacts with the frequency are set out in [Loot Economy Deep Dive](04-loot-economy.md#how-the-territory-flag-actually-refreshes); the full `globals.xml` parameter set is in the [same chapter](04-loot-economy.md#globalsxml----economy-parameters).
+`FlagRefreshMaxDuration` is therefore the knob for how long an unvisited base survives — lower it to wipe abandoned bases sooner. `FlagRefreshFrequency` is not a second decay knob, and lowering it makes the automatic refresh run *more* often rather than demanding more player visits. The script-level mechanism, the 60 m refresh radius and the way item `lifetime` interacts with the frequency are set out in [Loot Economy Deep Dive](04-loot-economy.md#how-the-territory-flag-actually-refreshes); the full `globals.xml` parameter set is in the [same chapter](04-loot-economy.md#globals-xml-economy-parameters).
 
 This wiki has not verified the in-game flag interaction against a running server; the mechanism above is read from Bohemia's documentation and the vanilla scripts.
 
@@ -147,7 +147,7 @@ Setting both to `true` produces a PvE-friendly server where bases and storage ar
 
 ## Cleanup Timers
 
-Persistence works alongside the CE's cleanup system, which removes dead bodies, ruined items, and untouched loot on a timer. The relevant `globals.xml` values (dead-player body lifetime, ruined-item lifetime, cleanup avoidance radius, and so on) are **not** unique to persistence — they belong to the economy and are documented once, in full, in [Loot Economy Deep Dive](04-loot-economy.md#globalsxml----economy-parameters).
+Persistence works alongside the CE's cleanup system, which removes dead bodies, ruined items, and untouched loot on a timer. The relevant `globals.xml` values (dead-player body lifetime, ruined-item lifetime, cleanup avoidance radius, and so on) are **not** unique to persistence — they belong to the economy and are documented once, in full, in [Loot Economy Deep Dive](04-loot-economy.md#globals-xml-economy-parameters).
 
 The one interaction worth calling out here: `CleanupAvoidance` (vanilla `100` meters) stops the CE from despawning objects near active players. A dead body or expired item within that radius of any player is protected until the player leaves, so cleanup timers are a floor, not an exact schedule.
 

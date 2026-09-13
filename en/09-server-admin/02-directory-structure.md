@@ -15,9 +15,9 @@
 - [The profiles/ Folder](#the-profiles-folder)
 - [The mpmissions/ Folder](#the-mpmissions-folder)
 - [Mission Folder Structure](#mission-folder-structure)
-- [The db/ Folder -- Economy Core](#the-db-folder----economy-core)
-- [The env/ Folder -- Animal Territories](#the-env-folder----animal-territories)
-- [The storage_1/ Folder -- Persistence](#the-storage_1-folder----persistence)
+- [The db/ Folder -- Economy Core](#the-db-folder-economy-core)
+- [The env/ Folder -- Animal Territories](#the-env-folder-animal-territories)
+- [The storage_1/ Folder -- Persistence](#the-storage-1-folder-persistence)
 - [Top-Level Mission Files](#top-level-mission-files)
 - [Which Files to Edit vs Leave Alone](#which-files-to-edit-vs-leave-alone)
 

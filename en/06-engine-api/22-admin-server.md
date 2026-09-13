@@ -9,10 +9,10 @@
 - [Player Management](#player-management)
 - [World Control](#world-control)
 - [Permission Checks](#permission-checks)
-- [Logging & Monitoring](#logging--monitoring)
-- [Hive & Database](#hive--database)
+- [Logging & Monitoring](#logging-monitoring)
+- [Hive & Database](#hive-database)
 - [Worked Example: Building Admin Features](#worked-example-building-admin-features)
-- [Connection Events & Load Order](#connection-events--load-order)
+- [Connection Events & Load Order](#connection-events-load-order)
 - [BattlEye Notes](#battleye-notes)
 - [Best Practices](#best-practices)
 - [Common Mistakes](#common-mistakes)
@@ -308,7 +308,7 @@ class LNT_BanManager
 }
 ```
 
-Enforcement happens as the player connects. The mission's `OnClientPrepareEvent` (see [Connection Events](#connection-events--load-order)) runs before the character finishes loading, but an admission-check integration must account for the remaining vanilla event flow. This storage example does not implement or test connection rejection. To ban someone already in-game, call `Add()` and then reuse the deferred kick from the previous section.
+Enforcement happens as the player connects. The mission's `OnClientPrepareEvent` (see [Connection Events](#connection-events-load-order)) runs before the character finishes loading, but an admission-check integration must account for the remaining vanilla event flow. This storage example does not implement or test connection rejection. To ban someone already in-game, call `Add()` and then reuse the deferred kick from the previous section.
 
 ---
 

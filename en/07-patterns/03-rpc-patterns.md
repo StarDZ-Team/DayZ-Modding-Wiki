@@ -21,7 +21,7 @@ The raw `ScriptRPC` class, its `Send()` parameters, and the list of serializable
 - [Central Dispatch: The modded OnRPC Hook](#central-dispatch-the-modded-onrpc-hook)
 - [Permission Checks](#permission-checks)
 - [Error Handling and Notifications](#error-handling-and-notifications)
-- [The Read/Write Contract](#the-readwrite-contract)
+- [The Read/Write Contract](#the-read-write-contract)
 - [Three RPC Routing Approaches](#three-rpc-routing-approaches)
 - [Common Mistakes](#common-mistakes)
 - [Best Practices](#best-practices)

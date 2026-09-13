@@ -35,7 +35,7 @@ Method called inside `SetActions()` to register an action on an item. Always cal
 DayZ Tools application that packs source files into PBO archives. Handles binarization, prefix assignment, and signature generation.
 
 **Chapter:** [4.5 DayZ Tools Workflow](04-file-formats/05-dayz-tools.md) | [4.6 PBO Packing](04-file-formats/06-pbo-packing.md)
-**See also:** [PBO](#pbo), [Binarize](#binarize)
+**See also:** [PBO](#pbo-packed-bank-of-objects), [Binarize](#binarize)
 
 ### Admin Panel
 A server-side UI for managing players, spawning items, controlling weather, etc. Built with modded MissionServer + RPC + UI layout.
@@ -51,7 +51,7 @@ A server-side UI for managing players, spawning items, controlling weather, etc.
 Controls player stances, movements, gestures, and object animations via `model.cfg` animation definitions and script-level commands.
 
 **Chapter:** [6.18 Animation System](06-engine-api/18-animation-system.md)
-**See also:** [model.cfg](#modelcfg), [P3D](#p3d)
+**See also:** [model.cfg](#model-cfg), [P3D](#p3d)
 
 ### AnimalBase
 Base class for wildlife entities (deer, wolves, bears, chickens). Extends the AI system shared with infected.
@@ -94,7 +94,7 @@ DayZ's anti-cheat system. Managed at the engine level; scripts interact with it 
 The DayZ Tools process that converts human-readable source files (config.cpp, model.cfg, .p3d) into optimized binary format for game loading.
 
 **Chapter:** [4.5 DayZ Tools Workflow](04-file-formats/05-dayz-tools.md) | [4.6 PBO Packing](04-file-formats/06-pbo-packing.md)
-**See also:** [AddonBuilder](#addonbuilder), [PBO](#pbo)
+**See also:** [AddonBuilder](#addonbuilder), [PBO](#pbo-packed-bank-of-objects)
 
 ### bisign
 Signature file (`.bisign`) generated when a PBO is signed with a private key. Servers running `verifySignatures = 2` accept only mods whose `.bisign` matches a `.bikey` in the `keys/` folder. One `.bisign` is produced per PBO, per key.
@@ -151,25 +151,25 @@ Scriptable base class for drivable vehicles. Extends `Car` (engine-native physic
 DayZ's server-side system for managing loot, vehicle, and infected spawning. Configured through XML files (`types.xml`, `events.xml`, `mapgroupproto.xml`).
 
 **Chapter:** [6.10 Central Economy](06-engine-api/10-central-economy.md) | [5.5 Server Configs](05-config-files/05-server-configs.md)
-**See also:** [types.xml](#typesxml)
+**See also:** [types.xml](#types-xml)
 
 ### CE Event
 A dynamic Central Economy spawn defined in `events.xml` and tuned by `cfgeventspawns.xml` -- helicopter crashes, vehicle wrecks, animal herds, and infected hordes. Each event has a nominal count, min/max, cooldown, and a list of children to spawn.
 
 **Chapter:** [9.5 Vehicle & Dynamic Event Spawning](09-server-admin/05-vehicle-spawning.md) | [6.10 Central Economy](06-engine-api/10-central-economy.md)
-**See also:** [events.xml](#eventsxml), [nominal](#nominal)
+**See also:** [events.xml](#events-xml), [nominal](#nominal)
 
 ### CfgMods
 Block in `config.cpp` that defines mod metadata, script module paths, imageset paths, and preprocessor defines.
 
 **Chapter:** [2.2 config.cpp Deep Dive](02-mod-structure/02-config-cpp.md)
-**See also:** [config.cpp](#configcpp), [CfgPatches](#cfgpatches)
+**See also:** [config.cpp](#config-cpp), [CfgPatches](#cfgpatches)
 
 ### CfgPatches
 Block in `config.cpp` that declares the addon name, required addons (dependencies), and units/weapons it provides.
 
 **Chapter:** [2.2 config.cpp Deep Dive](02-mod-structure/02-config-cpp.md)
-**See also:** [config.cpp](#configcpp), [requiredAddons](#requiredaddons)
+**See also:** [config.cpp](#config-cpp), [requiredAddons](#requiredaddons)
 
 ### CfgSoundSets
 Config class in `config.cpp` that defines playable sound configurations: volume, distance attenuation, spatial behavior. Referenced by `SEffectManager.PlaySound`.
@@ -187,7 +187,7 @@ Config class in `config.cpp` that maps sound samples (.ogg/.wss files) to playba
 Config class in `config.cpp` where items, entities, and objects are defined. Despite the name, all entities (not just vehicles) are declared here.
 
 **Chapter:** [2.2 config.cpp Deep Dive](02-mod-structure/02-config-cpp.md)
-**See also:** [config.cpp](#configcpp)
+**See also:** [config.cpp](#config-cpp)
 
 ### cfgweather.xml
 Mission folder XML file that controls weather parameters, overcast thresholds, and atmospheric conditions.
@@ -214,7 +214,7 @@ A mod that adds wearable items with insulation, cargo, and hidden selection text
 Jacob_Mango's open-source framework mod providing module lifecycle, RPC, permissions, and logging. Foundation for COT and many community mods.
 
 **Chapter:** [7.2 Module Systems](07-patterns/02-module-systems.md) | [3.9 Real Mod Patterns](03-gui-system/09-real-mod-patterns.md)
-**See also:** [COT](#cot)
+**See also:** [COT](#cot-community-online-tools)
 
 ### config.cpp
 The heart of every DayZ mod PBO. Declares dependencies, script paths, item definitions, sound sets, and preprocessor defines.
@@ -276,7 +276,7 @@ JSON file in the mod root that defines credits displayed in the game's mod menu.
 A new item added to DayZ by defining it in `CfgVehicles`, adding textures, and registering it in `types.xml` for server spawning.
 
 **Chapter:** [8.2 Creating a Custom Item](08-tutorials/02-custom-item.md)
-**See also:** [CfgVehicles](#cfgvehicles), [types.xml](#typesxml)
+**See also:** [CfgVehicles](#cfgvehicles), [types.xml](#types-xml)
 
 ## D
 
@@ -408,7 +408,7 @@ Best practices for structuring a mod directory: Scripts folder by layer, naming 
 Development mode (`-filePatching`) that lets DayZ load loose files from the P: drive instead of packed PBOs. Enables edit-and-reload without rebuilding.
 
 **Chapter:** [4.5 DayZ Tools Workflow](04-file-formats/05-dayz-tools.md) | [8.6 Debugging & Testing](08-tutorials/06-debugging-testing.md)
-**See also:** [P Drive](#p-drive)
+**See also:** [P Drive](#p-drive-workdrive)
 
 ### Five-Layer Hierarchy
 DayZ's script compilation layers: `1_Core`, `2_GameLib`, `3_Game`, `4_World`, `5_Mission`. Lower layers cannot reference higher layers.
@@ -568,7 +568,7 @@ Base class for all inventory items (weapons, tools, food, clothing). Extends `In
 `JsonFileLoader<T>.LoadFile(path, out data, out errorMessage)` (`3_game/tools/jsonfileloader.c:7`) -- loads a JSON file and deserializes it into an object, returning `bool` success plus an error message. The older `JsonLoadFile(path, data)`/`JsonSaveFile()` pair returns `void` and so never signals the caller: it does nothing when the file is missing or cannot be opened, and logs a parse failure to the RPT via `ErrorEx` (`:129`). It still works, but is marked `//! DEPRECATED` in the vanilla source (`:99`).
 
 **Chapter:** [6.8 File I/O & JSON](06-engine-api/08-file-io.md) | [7.4 Config Persistence](07-patterns/04-config-persistence.md)
-**See also:** [File I/O](#file-io)
+**See also:** [File I/O](#file-i-o)
 
 ## K
 
@@ -576,7 +576,7 @@ Base class for all inventory items (weapons, tools, food, clothing). Extends `In
 RSA key pair (`.bikey` + `.biprivatekey`) used to sign PBOs. Servers verify mod signatures to prevent tampering. Generated via DayZ Tools DSSignFile.
 
 **Chapter:** [8.7 Publishing to Workshop](08-tutorials/07-publishing-workshop.md)
-**See also:** [PBO](#pbo)
+**See also:** [PBO](#pbo-packed-bank-of-objects)
 
 ## L
 
@@ -596,7 +596,7 @@ DayZ's `.layout` format for defining UI widget trees. Brace-delimited text forma
 A `types.xml` attribute (seconds) that sets how long a spawned item persists on the ground before the Central Economy despawns it. High-value loot uses short lifetimes; deployed base items use very long ones.
 
 **Chapter:** [9.4 Loot Economy Deep Dive](09-server-admin/04-loot-economy.md) | [6.10 Central Economy](06-engine-api/10-central-economy.md)
-**See also:** [types.xml](#typesxml), [nominal](#nominal)
+**See also:** [types.xml](#types-xml), [nominal](#nominal)
 
 ### Listen Server
 A server where one player also acts as the host. Both `GetGame().IsServer()` and `GetGame().IsClient()` return true. Requires special guard logic.
@@ -613,7 +613,7 @@ Multiple mesh resolutions within a single P3D model. The engine selects the appr
 Multi-language text support via `stringtable.csv`. The engine resolves translation keys based on the player's language setting.
 
 **Chapter:** [5.1 stringtable.csv](05-config-files/01-stringtable.md)
-**See also:** [stringtable.csv](#stringtablecsv)
+**See also:** [stringtable.csv](#stringtable-csv)
 
 ## M
 
@@ -670,7 +670,7 @@ Server-side mission class. Hook via `modded class` to add server initialization,
 Metadata file in the mod root. Controls launcher display name, icon, description, action URL, and type (client/server/both). No gameplay effect.
 
 **Chapter:** [2.3 mod.cpp & Workshop](02-mod-structure/03-mod-cpp.md)
-**See also:** [config.cpp](#configcpp)
+**See also:** [config.cpp](#config-cpp)
 
 ### Mod Template
 Pre-made skeleton project with correct folder structure, config.cpp, mod.cpp, and script stubs. Chapters 8.5 and 8.9 build one from scratch; community-maintained starter templates also exist on GitHub, each under its own license -- check the license before reusing any of their code.
@@ -712,7 +712,7 @@ Client-server communication via `ScriptRPC`. All authoritative logic runs on the
 A `types.xml` attribute: the target number of an item the Central Economy tries to keep in the world. The CE spawns toward `nominal` but never drops below `min`. Raising it makes loot more common; lowering it makes loot rarer.
 
 **Chapter:** [9.4 Loot Economy Deep Dive](09-server-admin/04-loot-economy.md) | [6.10 Central Economy](06-engine-api/10-central-economy.md)
-**See also:** [types.xml](#typesxml), [lifetime](#lifetime)
+**See also:** [types.xml](#types-xml), [lifetime](#lifetime)
 
 ### Notification System
 `NotificationSystem` class for displaying toast-style popup messages. `AddNotification()` for local, `SendNotificationToPlayerExtended()` for server-to-client.
@@ -1000,7 +1000,7 @@ The main server config file. Sets hostname, `maxPlayers`, message-of-the-day, ti
 The `-servermod=` launch parameter that loads mods on the server only -- never sent to clients. Use it for server-side logic (admin tools, spawners) that players must not download. Contrast with `-mod=`, whose mods clients also load.
 
 **Chapter:** [9.10 Mod Management](09-server-admin/10-mod-management.md)
-**See also:** [serverDZ.cfg](#serverdzcfg)
+**See also:** [serverDZ.cfg](#serverdz-cfg)
 
 ### SetActions
 Method on `ItemBase` where actions are registered. Override it, call `super.SetActions()`, then `AddAction(ActionClass)`.
@@ -1151,7 +1151,7 @@ Central Economy file that defines every spawnable item's nominal count, min coun
 Script-level API for querying input state at runtime. `GetUApi().GetInputByName("UAMyAction")` returns a `UAInput` object with press/release/hold methods.
 
 **Chapter:** [6.13 Input System](06-engine-api/13-input-system.md) | [5.2 inputs.xml](05-config-files/02-inputs-xml.md)
-**See also:** [inputs.xml](#inputsxml)
+**See also:** [inputs.xml](#inputs-xml)
 
 ### UI Patterns
 Real-world UI techniques from professional mods: tab navigation, list pooling, context menus, drag-and-drop, tooltip management.

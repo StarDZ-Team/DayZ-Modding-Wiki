@@ -1,0 +1,1694 @@
+{
+  "generated": "2026-09-13T22:28:38.735Z",
+  "tool": "scripts/check-links.mjs --anchors",
+  "id_source": "vitepress createMarkdownRenderer (versão instalada em node_modules); IDs lidos do HTML renderizado, não reimplementados",
+  "scope": [
+    "en"
+  ],
+  "files_scanned": 105,
+  "anchors_checked": 1278,
+  "dead": 210,
+  "pages_affected": 41,
+  "entries": [
+    {
+      "file": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "line": 11,
+      "col": 32,
+      "href": "#dynamic-arrays-arrayt",
+      "anchor": "dynamic-arrays-arrayt",
+      "target": "en/01-enforce-script/02-arrays-maps-sets.md"
+    },
+    {
+      "file": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "line": 14,
+      "col": 22,
+      "href": "#maps-mapkv",
+      "anchor": "maps-mapkv",
+      "target": "en/01-enforce-script/02-arrays-maps-sets.md"
+    },
+    {
+      "file": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "line": 17,
+      "col": 20,
+      "href": "#sets-sett",
+      "anchor": "sets-sett",
+      "target": "en/01-enforce-script/02-arrays-maps-sets.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 10,
+      "col": 37,
+      "href": "#classcastto--safe-downcasting",
+      "anchor": "classcastto--safe-downcasting",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 11,
+      "col": 37,
+      "href": "#typecast--alternative-casting",
+      "anchor": "typecast--alternative-casting",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 12,
+      "col": 45,
+      "href": "#castto-vs-typecast--when-to-use-which",
+      "anchor": "castto-vs-typecast--when-to-use-which",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 13,
+      "col": 45,
+      "href": "#obisinherited--runtime-type-checking",
+      "anchor": "obisinherited--runtime-type-checking",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 14,
+      "col": 47,
+      "href": "#obiskindof--string-based-type-checking",
+      "anchor": "obiskindof--string-based-type-checking",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 15,
+      "col": 33,
+      "href": "#objtype--get-runtime-type",
+      "anchor": "objtype--get-runtime-type",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 16,
+      "col": 40,
+      "href": "#typename--storing-type-references",
+      "anchor": "typename--storing-type-references",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 19,
+      "col": 42,
+      "href": "#enscriptgetclassvar--setclassvar",
+      "anchor": "enscriptgetclassvar--setclassvar",
+      "target": "en/01-enforce-script/09-casting-reflection.md"
+    },
+    {
+      "file": "en/01-enforce-script/10-enums-preprocessor.md",
+      "line": 15,
+      "col": 29,
+      "href": "#typenameenumtostring",
+      "anchor": "typenameenumtostring",
+      "target": "en/01-enforce-script/10-enums-preprocessor.md"
+    },
+    {
+      "file": "en/01-enforce-script/10-enums-preprocessor.md",
+      "line": 16,
+      "col": 29,
+      "href": "#typenamestringtoenum",
+      "anchor": "typenamestringtoenum",
+      "target": "en/01-enforce-script/10-enums-preprocessor.md"
+    },
+    {
+      "file": "en/01-enforce-script/10-enums-preprocessor.md",
+      "line": 20,
+      "col": 33,
+      "href": "#ifdef--ifndef--endif",
+      "anchor": "ifdef--ifndef--endif",
+      "target": "en/01-enforce-script/10-enums-preprocessor.md"
+    },
+    {
+      "file": "en/01-enforce-script/10-enums-preprocessor.md",
+      "line": 23,
+      "col": 37,
+      "href": "#custom-defines-via-configcpp",
+      "anchor": "custom-defines-via-configcpp",
+      "target": "en/01-enforce-script/10-enums-preprocessor.md"
+    },
+    {
+      "file": "en/01-enforce-script/11-error-handling.md",
+      "line": 9,
+      "col": 40,
+      "href": "#the-fundamental-rule-no-trycatch",
+      "anchor": "the-fundamental-rule-no-trycatch",
+      "target": "en/01-enforce-script/11-error-handling.md"
+    },
+    {
+      "file": "en/01-enforce-script/11-error-handling.md",
+      "line": 18,
+      "col": 38,
+      "href": "#errorex--engine-error-reporting",
+      "anchor": "errorex--engine-error-reporting",
+      "target": "en/01-enforce-script/11-error-handling.md"
+    },
+    {
+      "file": "en/01-enforce-script/11-error-handling.md",
+      "line": 21,
+      "col": 36,
+      "href": "#dumpstackstring--stack-traces",
+      "anchor": "dumpstackstring--stack-traces",
+      "target": "en/01-enforce-script/11-error-handling.md"
+    },
+    {
+      "file": "en/01-enforce-script/11-error-handling.md",
+      "line": 28,
+      "col": 43,
+      "href": "#production-logger-pattern-lnt_log",
+      "anchor": "production-logger-pattern-lnt_log",
+      "target": "en/01-enforce-script/11-error-handling.md"
+    },
+    {
+      "file": "en/01-enforce-script/11-error-handling.md",
+      "line": 725,
+      "col": 101,
+      "href": "#production-logger-pattern-lnt_log",
+      "anchor": "production-logger-pattern-lnt_log",
+      "target": "en/01-enforce-script/11-error-handling.md"
+    },
+    {
+      "file": "en/01-enforce-script/12-gotchas.md",
+      "line": 14,
+      "col": 29,
+      "href": "#engine--runtime-quirks",
+      "anchor": "engine--runtime-quirks",
+      "target": "en/01-enforce-script/12-gotchas.md"
+    },
+    {
+      "file": "en/01-enforce-script/12-gotchas.md",
+      "line": 16,
+      "col": 29,
+      "href": "#build--log-diagnostics",
+      "anchor": "build--log-diagnostics",
+      "target": "en/01-enforce-script/12-gotchas.md"
+    },
+    {
+      "file": "en/02-mod-structure/01-five-layers.md",
+      "line": 14,
+      "col": 42,
+      "href": "#layer-1-1_core-enginescriptmodule",
+      "anchor": "layer-1-1_core-enginescriptmodule",
+      "target": "en/02-mod-structure/01-five-layers.md"
+    },
+    {
+      "file": "en/02-mod-structure/01-five-layers.md",
+      "line": 15,
+      "col": 46,
+      "href": "#layer-2-2_gamelib-gamelibscriptmodule",
+      "anchor": "layer-2-2_gamelib-gamelibscriptmodule",
+      "target": "en/02-mod-structure/01-five-layers.md"
+    },
+    {
+      "file": "en/02-mod-structure/01-five-layers.md",
+      "line": 16,
+      "col": 40,
+      "href": "#layer-3-3_game-gamescriptmodule",
+      "anchor": "layer-3-3_game-gamescriptmodule",
+      "target": "en/02-mod-structure/01-five-layers.md"
+    },
+    {
+      "file": "en/02-mod-structure/01-five-layers.md",
+      "line": 17,
+      "col": 42,
+      "href": "#layer-4-4_world-worldscriptmodule",
+      "anchor": "layer-4-4_world-worldscriptmodule",
+      "target": "en/02-mod-structure/01-five-layers.md"
+    },
+    {
+      "file": "en/02-mod-structure/01-five-layers.md",
+      "line": 18,
+      "col": 46,
+      "href": "#layer-5-5_mission-missionscriptmodule",
+      "anchor": "layer-5-5_mission-missionscriptmodule",
+      "target": "en/02-mod-structure/01-five-layers.md"
+    },
+    {
+      "file": "en/02-mod-structure/01-five-layers.md",
+      "line": 21,
+      "col": 37,
+      "href": "#when-each-layers-code-executes",
+      "anchor": "when-each-layers-code-executes",
+      "target": "en/02-mod-structure/01-five-layers.md"
+    },
+    {
+      "file": "en/02-mod-structure/02-config-cpp.md",
+      "line": 12,
+      "col": 28,
+      "href": "#where-configcpp-lives",
+      "anchor": "where-configcpp-lives",
+      "target": "en/02-mod-structure/02-config-cpp.md"
+    },
+    {
+      "file": "en/02-mod-structure/02-config-cpp.md",
+      "line": 209,
+      "col": 389,
+      "href": "06-server-client-split.md#the-configcpp-type-field",
+      "anchor": "the-configcpp-type-field",
+      "target": "en/02-mod-structure/06-server-client-split.md"
+    },
+    {
+      "file": "en/02-mod-structure/03-mod-cpp.md",
+      "line": 13,
+      "col": 25,
+      "href": "#where-modcpp-lives",
+      "anchor": "where-modcpp-lives",
+      "target": "en/02-mod-structure/03-mod-cpp.md"
+    },
+    {
+      "file": "en/02-mod-structure/04-minimum-viable-mod.md",
+      "line": 16,
+      "col": 42,
+      "href": "#file-1-modcpp----launcher-metadata",
+      "anchor": "file-1-modcpp----launcher-metadata",
+      "target": "en/02-mod-structure/04-minimum-viable-mod.md"
+    },
+    {
+      "file": "en/02-mod-structure/04-minimum-viable-mod.md",
+      "line": 17,
+      "col": 47,
+      "href": "#file-2-configcpp----engine-registration",
+      "anchor": "file-2-configcpp----engine-registration",
+      "target": "en/02-mod-structure/04-minimum-viable-mod.md"
+    },
+    {
+      "file": "en/02-mod-structure/04-minimum-viable-mod.md",
+      "line": 18,
+      "col": 47,
+      "href": "#file-3-the-script----hooking-the-mission",
+      "anchor": "file-3-the-script----hooking-the-mission",
+      "target": "en/02-mod-structure/04-minimum-viable-mod.md"
+    },
+    {
+      "file": "en/02-mod-structure/06-server-client-split.md",
+      "line": 15,
+      "col": 28,
+      "href": "#the-modcpp-type-field",
+      "anchor": "the-modcpp-type-field",
+      "target": "en/02-mod-structure/06-server-client-split.md"
+    },
+    {
+      "file": "en/02-mod-structure/06-server-client-split.md",
+      "line": 16,
+      "col": 31,
+      "href": "#the-configcpp-type-field",
+      "anchor": "the-configcpp-type-field",
+      "target": "en/02-mod-structure/06-server-client-split.md"
+    },
+    {
+      "file": "en/05-config-files/02-inputs-xml.md",
+      "line": 29,
+      "col": 28,
+      "href": "#compatibility--impact",
+      "anchor": "compatibility--impact",
+      "target": "en/05-config-files/02-inputs-xml.md"
+    },
+    {
+      "file": "en/05-config-files/04-imagesets.md",
+      "line": 16,
+      "col": 41,
+      "href": "#registering-imagesets-in-configcpp",
+      "anchor": "registering-imagesets-in-configcpp",
+      "target": "en/05-config-files/04-imagesets.md"
+    },
+    {
+      "file": "en/05-config-files/05-server-configs.md",
+      "line": 12,
+      "col": 36,
+      "href": "#initc--mission-entry-point",
+      "anchor": "initc--mission-entry-point",
+      "target": "en/05-config-files/05-server-configs.md"
+    },
+    {
+      "file": "en/05-config-files/05-server-configs.md",
+      "line": 14,
+      "col": 52,
+      "href": "#cfgeconomycorexml--registering-modded-loot",
+      "anchor": "cfgeconomycorexml--registering-modded-loot",
+      "target": "en/05-config-files/05-server-configs.md"
+    },
+    {
+      "file": "en/05-config-files/05-server-configs.md",
+      "line": 15,
+      "col": 42,
+      "href": "#cfggameplayjson--gameplay-tuning",
+      "anchor": "cfggameplayjson--gameplay-tuning",
+      "target": "en/05-config-files/05-server-configs.md"
+    },
+    {
+      "file": "en/05-config-files/05-server-configs.md",
+      "line": 16,
+      "col": 54,
+      "href": "#cfgplayerspawnpointsxml--player-spawn-points",
+      "anchor": "cfgplayerspawnpointsxml--player-spawn-points",
+      "target": "en/05-config-files/05-server-configs.md"
+    },
+    {
+      "file": "en/05-config-files/05-server-configs.md",
+      "line": 17,
+      "col": 54,
+      "href": "#serverdzcfg--server-settings-and-mod-loading",
+      "anchor": "serverdzcfg--server-settings-and-mod-loading",
+      "target": "en/05-config-files/05-server-configs.md"
+    },
+    {
+      "file": "en/05-config-files/05-server-configs.md",
+      "line": 136,
+      "col": 174,
+      "href": "#cfgeconomycorexml--registering-modded-loot",
+      "anchor": "cfgeconomycorexml--registering-modded-loot",
+      "target": "en/05-config-files/05-server-configs.md"
+    },
+    {
+      "file": "en/06-engine-api/10-central-economy.md",
+      "line": 15,
+      "col": 39,
+      "href": "#reading-an-items-economy-profile",
+      "anchor": "reading-an-items-economy-profile",
+      "target": "en/06-engine-api/10-central-economy.md"
+    },
+    {
+      "file": "en/06-engine-api/10-central-economy.md",
+      "line": 17,
+      "col": 37,
+      "href": "#reading-globalsxml-from-script",
+      "anchor": "reading-globalsxml-from-script",
+      "target": "en/06-engine-api/10-central-economy.md"
+    },
+    {
+      "file": "en/06-engine-api/10-central-economy.md",
+      "line": 343,
+      "col": 435,
+      "href": "../09-server-admin/04-loot-economy.md#globalsxml----economy-parameters",
+      "anchor": "globalsxml----economy-parameters",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/06-engine-api/18-animation-system.md",
+      "line": 509,
+      "col": 274,
+      "href": "../04-file-formats/02-models.md#modelcfg-for-animations",
+      "anchor": "modelcfg-for-animations",
+      "target": "en/04-file-formats/02-models.md"
+    },
+    {
+      "file": "en/06-engine-api/18-animation-system.md",
+      "line": 910,
+      "col": 400,
+      "href": "../04-file-formats/02-models.md#modelcfg-for-animations",
+      "anchor": "modelcfg-for-animations",
+      "target": "en/04-file-formats/02-models.md"
+    },
+    {
+      "file": "en/06-engine-api/22-admin-server.md",
+      "line": 12,
+      "col": 26,
+      "href": "#logging--monitoring",
+      "anchor": "logging--monitoring",
+      "target": "en/06-engine-api/22-admin-server.md"
+    },
+    {
+      "file": "en/06-engine-api/22-admin-server.md",
+      "line": 13,
+      "col": 21,
+      "href": "#hive--database",
+      "anchor": "hive--database",
+      "target": "en/06-engine-api/22-admin-server.md"
+    },
+    {
+      "file": "en/06-engine-api/22-admin-server.md",
+      "line": 15,
+      "col": 36,
+      "href": "#connection-events--load-order",
+      "anchor": "connection-events--load-order",
+      "target": "en/06-engine-api/22-admin-server.md"
+    },
+    {
+      "file": "en/06-engine-api/22-admin-server.md",
+      "line": 311,
+      "col": 107,
+      "href": "#connection-events--load-order",
+      "anchor": "connection-events--load-order",
+      "target": "en/06-engine-api/22-admin-server.md"
+    },
+    {
+      "file": "en/06-engine-api/quick-reference.md",
+      "line": 13,
+      "col": 21,
+      "href": "#health--damage",
+      "anchor": "health--damage",
+      "target": "en/06-engine-api/quick-reference.md"
+    },
+    {
+      "file": "en/06-engine-api/quick-reference.md",
+      "line": 16,
+      "col": 32,
+      "href": "#entity-creation--deletion",
+      "anchor": "entity-creation--deletion",
+      "target": "en/06-engine-api/quick-reference.md"
+    },
+    {
+      "file": "en/06-engine-api/quick-reference.md",
+      "line": 20,
+      "col": 22,
+      "href": "#file-io-methods",
+      "anchor": "file-io-methods",
+      "target": "en/06-engine-api/quick-reference.md"
+    },
+    {
+      "file": "en/06-engine-api/quick-reference.md",
+      "line": 21,
+      "col": 31,
+      "href": "#timer--callqueue-methods",
+      "anchor": "timer--callqueue-methods",
+      "target": "en/06-engine-api/quick-reference.md"
+    },
+    {
+      "file": "en/06-engine-api/quick-reference.md",
+      "line": 23,
+      "col": 30,
+      "href": "#rpc--networking-methods",
+      "anchor": "rpc--networking-methods",
+      "target": "en/06-engine-api/quick-reference.md"
+    },
+    {
+      "file": "en/06-engine-api/quick-reference.md",
+      "line": 24,
+      "col": 30,
+      "href": "#math-constants--methods",
+      "anchor": "math-constants--methods",
+      "target": "en/06-engine-api/quick-reference.md"
+    },
+    {
+      "file": "en/07-patterns/02-module-systems.md",
+      "line": 549,
+      "col": 596,
+      "href": "#3-register-rpcs-in-oninit-not-onmissionstart",
+      "anchor": "3-register-rpcs-in-oninit-not-onmissionstart",
+      "target": "en/07-patterns/02-module-systems.md"
+    },
+    {
+      "file": "en/07-patterns/03-rpc-patterns.md",
+      "line": 24,
+      "col": 29,
+      "href": "#the-readwrite-contract",
+      "anchor": "the-readwrite-contract",
+      "target": "en/07-patterns/03-rpc-patterns.md"
+    },
+    {
+      "file": "en/08-tutorials/01-first-mod.md",
+      "line": 14,
+      "col": 27,
+      "href": "#step-4-write-modcpp",
+      "anchor": "step-4-write-modcpp",
+      "target": "en/08-tutorials/01-first-mod.md"
+    },
+    {
+      "file": "en/08-tutorials/01-first-mod.md",
+      "line": 15,
+      "col": 30,
+      "href": "#step-5-write-configcpp",
+      "anchor": "step-5-write-configcpp",
+      "target": "en/08-tutorials/01-first-mod.md"
+    },
+    {
+      "file": "en/08-tutorials/02-custom-item.md",
+      "line": 14,
+      "col": 49,
+      "href": "#step-1-define-the-item-class-in-configcpp",
+      "anchor": "step-1-define-the-item-class-in-configcpp",
+      "target": "en/08-tutorials/02-custom-item.md"
+    },
+    {
+      "file": "en/08-tutorials/02-custom-item.md",
+      "line": 17,
+      "col": 50,
+      "href": "#step-4-add-to-typesxml-for-server-spawning",
+      "anchor": "step-4-add-to-typesxml-for-server-spawning",
+      "target": "en/08-tutorials/02-custom-item.md"
+    },
+    {
+      "file": "en/08-tutorials/02-custom-item.md",
+      "line": 20,
+      "col": 51,
+      "href": "#step-7-polish----model-textures-and-sounds",
+      "anchor": "step-7-polish----model-textures-and-sounds",
+      "target": "en/08-tutorials/02-custom-item.md"
+    },
+    {
+      "file": "en/08-tutorials/04-chat-commands.md",
+      "line": 22,
+      "col": 35,
+      "href": "#mod-registration-configcpp",
+      "anchor": "mod-registration-configcpp",
+      "target": "en/08-tutorials/04-chat-commands.md"
+    },
+    {
+      "file": "en/08-tutorials/05-mod-template.md",
+      "line": 18,
+      "col": 31,
+      "href": "#step-5-update-configcpp",
+      "anchor": "step-5-update-configcpp",
+      "target": "en/08-tutorials/05-mod-template.md"
+    },
+    {
+      "file": "en/08-tutorials/05-mod-template.md",
+      "line": 19,
+      "col": 28,
+      "href": "#step-6-update-modcpp",
+      "anchor": "step-6-update-modcpp",
+      "target": "en/08-tutorials/05-mod-template.md"
+    },
+    {
+      "file": "en/08-tutorials/05-mod-template.md",
+      "line": 90,
+      "col": 69,
+      "href": "#step-5-update-configcpp",
+      "anchor": "step-5-update-configcpp",
+      "target": "en/08-tutorials/05-mod-template.md"
+    },
+    {
+      "file": "en/08-tutorials/05-mod-template.md",
+      "line": 90,
+      "col": 108,
+      "href": "#step-6-update-modcpp",
+      "anchor": "step-6-update-modcpp",
+      "target": "en/08-tutorials/05-mod-template.md"
+    },
+    {
+      "file": "en/08-tutorials/05-mod-template.md",
+      "line": 386,
+      "col": 205,
+      "href": "#step-5-update-configcpp",
+      "anchor": "step-5-update-configcpp",
+      "target": "en/08-tutorials/05-mod-template.md"
+    },
+    {
+      "file": "en/08-tutorials/06-debugging-testing.md",
+      "line": 13,
+      "col": 40,
+      "href": "#the-script-log----your-best-friend",
+      "anchor": "the-script-log----your-best-friend",
+      "target": "en/08-tutorials/06-debugging-testing.md"
+    },
+    {
+      "file": "en/08-tutorials/06-debugging-testing.md",
+      "line": 15,
+      "col": 38,
+      "href": "#dayzdiag----the-debug-executable",
+      "anchor": "dayzdiag----the-debug-executable",
+      "target": "en/08-tutorials/06-debugging-testing.md"
+    },
+    {
+      "file": "en/08-tutorials/06-debugging-testing.md",
+      "line": 16,
+      "col": 46,
+      "href": "#file-patching----edit-without-rebuilding",
+      "anchor": "file-patching----edit-without-rebuilding",
+      "target": "en/08-tutorials/06-debugging-testing.md"
+    },
+    {
+      "file": "en/08-tutorials/06-debugging-testing.md",
+      "line": 17,
+      "col": 45,
+      "href": "#workbench----script-editor-and-debugger",
+      "anchor": "workbench----script-editor-and-debugger",
+      "target": "en/08-tutorials/06-debugging-testing.md"
+    },
+    {
+      "file": "en/08-tutorials/07-publishing-workshop.md",
+      "line": 15,
+      "col": 38,
+      "href": "#step-2-write-a-complete-modcpp",
+      "anchor": "step-2-write-a-complete-modcpp",
+      "target": "en/08-tutorials/07-publishing-workshop.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 14,
+      "col": 13,
+      "href": "#modcpp",
+      "anchor": "modcpp",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 15,
+      "col": 16,
+      "href": "#configcpp",
+      "anchor": "configcpp",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 16,
+      "col": 29,
+      "href": "#constants-file-3_game",
+      "anchor": "constants-file-3_game",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 17,
+      "col": 32,
+      "href": "#config-data-class-3_game",
+      "anchor": "config-data-class-3_game",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 18,
+      "col": 30,
+      "href": "#rpc-definitions-3_game",
+      "anchor": "rpc-definitions-3_game",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 19,
+      "col": 33,
+      "href": "#manager-singleton-4_world",
+      "anchor": "manager-singleton-4_world",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 20,
+      "col": 36,
+      "href": "#player-event-handler-4_world",
+      "anchor": "player-event-handler-4_world",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 21,
+      "col": 38,
+      "href": "#mission-hook-server-5_mission",
+      "anchor": "mission-hook-server-5_mission",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 22,
+      "col": 38,
+      "href": "#mission-hook-client-5_mission",
+      "anchor": "mission-hook-client-5_mission",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 23,
+      "col": 33,
+      "href": "#ui-panel-script-5_mission",
+      "anchor": "ui-panel-script-5_mission",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 25,
+      "col": 21,
+      "href": "#stringtablecsv",
+      "anchor": "stringtablecsv",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/09-professional-template.md",
+      "line": 26,
+      "col": 16,
+      "href": "#inputsxml",
+      "anchor": "inputsxml",
+      "target": "en/08-tutorials/09-professional-template.md"
+    },
+    {
+      "file": "en/08-tutorials/10-vehicle-mod.md",
+      "line": 14,
+      "col": 44,
+      "href": "#step-1-create-the-config-configcpp",
+      "anchor": "step-1-create-the-config-configcpp",
+      "target": "en/08-tutorials/10-vehicle-mod.md"
+    },
+    {
+      "file": "en/08-tutorials/10-vehicle-mod.md",
+      "line": 17,
+      "col": 43,
+      "href": "#step-4-vehicle-spawning-eventsxml",
+      "anchor": "step-4-vehicle-spawning-eventsxml",
+      "target": "en/08-tutorials/10-vehicle-mod.md"
+    },
+    {
+      "file": "en/08-tutorials/11-clothing-mod.md",
+      "line": 14,
+      "col": 37,
+      "href": "#step-2-configcpp-for-clothing",
+      "anchor": "step-2-configcpp-for-clothing",
+      "target": "en/08-tutorials/11-clothing-mod.md"
+    },
+    {
+      "file": "en/08-tutorials/12-trading-system.md",
+      "line": 13,
+      "col": 33,
+      "href": "#step-1-data-model-3_game",
+      "anchor": "step-1-data-model-3_game",
+      "target": "en/08-tutorials/12-trading-system.md"
+    },
+    {
+      "file": "en/08-tutorials/12-trading-system.md",
+      "line": 14,
+      "col": 36,
+      "href": "#step-2-rpc-constants-3_game",
+      "anchor": "step-2-rpc-constants-3_game",
+      "target": "en/08-tutorials/12-trading-system.md"
+    },
+    {
+      "file": "en/08-tutorials/12-trading-system.md",
+      "line": 15,
+      "col": 48,
+      "href": "#step-3-server-side-shop-manager-4_world",
+      "anchor": "step-3-server-side-shop-manager-4_world",
+      "target": "en/08-tutorials/12-trading-system.md"
+    },
+    {
+      "file": "en/08-tutorials/12-trading-system.md",
+      "line": 16,
+      "col": 45,
+      "href": "#step-4-client-side-shop-ui-5_mission",
+      "anchor": "step-4-client-side-shop-ui-5_mission",
+      "target": "en/08-tutorials/12-trading-system.md"
+    },
+    {
+      "file": "en/09-server-admin/02-directory-structure.md",
+      "line": 18,
+      "col": 36,
+      "href": "#the-db-folder----economy-core",
+      "anchor": "the-db-folder----economy-core",
+      "target": "en/09-server-admin/02-directory-structure.md"
+    },
+    {
+      "file": "en/09-server-admin/02-directory-structure.md",
+      "line": 19,
+      "col": 43,
+      "href": "#the-env-folder----animal-territories",
+      "anchor": "the-env-folder----animal-territories",
+      "target": "en/09-server-admin/02-directory-structure.md"
+    },
+    {
+      "file": "en/09-server-admin/02-directory-structure.md",
+      "line": 20,
+      "col": 42,
+      "href": "#the-storage_1-folder----persistence",
+      "anchor": "the-storage_1-folder----persistence",
+      "target": "en/09-server-admin/02-directory-structure.md"
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 16,
+      "col": 24,
+      "href": "#network--security",
+      "anchor": "network--security",
+      "target": "en/09-server-admin/03-server-cfg.md"
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 18,
+      "col": 20,
+      "href": "#time--weather",
+      "anchor": "time--weather",
+      "target": "en/09-server-admin/03-server-cfg.md"
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 19,
+      "col": 31,
+      "href": "#performance--login-queue",
+      "anchor": "performance--login-queue",
+      "target": "en/09-server-admin/03-server-cfg.md"
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 20,
+      "col": 21,
+      "href": "#logging--debug",
+      "anchor": "logging--debug",
+      "target": "en/09-server-admin/03-server-cfg.md"
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 21,
+      "col": 28,
+      "href": "#persistence--instance",
+      "anchor": "persistence--instance",
+      "target": "en/09-server-admin/03-server-cfg.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 12,
+      "col": 41,
+      "href": "#typesxml----item-spawn-definitions",
+      "anchor": "typesxml----item-spawn-definitions",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 13,
+      "col": 39,
+      "href": "#globalsxml----economy-parameters",
+      "anchor": "globalsxml----economy-parameters",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 14,
+      "col": 34,
+      "href": "#eventsxml----dynamic-events",
+      "anchor": "eventsxml----dynamic-events",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 15,
+      "col": 52,
+      "href": "#cfgspawnabletypesxml----attachments-and-cargo",
+      "anchor": "cfgspawnabletypesxml----attachments-and-cargo",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 16,
+      "col": 49,
+      "href": "#cfgrandompresetsxml----reusable-loot-pools",
+      "anchor": "cfgrandompresetsxml----reusable-loot-pools",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 17,
+      "col": 46,
+      "href": "#cfgeconomycorexml----root-configuration",
+      "anchor": "cfgeconomycorexml----root-configuration",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 18,
+      "col": 49,
+      "href": "#cfglimitsdefinitionxml----flag-definitions",
+      "anchor": "cfglimitsdefinitionxml----flag-definitions",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 19,
+      "col": 38,
+      "href": "#the-nominalrestock-relationship",
+      "anchor": "the-nominalrestock-relationship",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 261,
+      "col": 80,
+      "href": "#cfglimitsdefinitionxml----flag-definitions",
+      "anchor": "cfglimitsdefinitionxml----flag-definitions",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 304,
+      "col": 237,
+      "href": "../06-engine-api/10-central-economy.md#reading-globalsxml-from-script",
+      "anchor": "reading-globalsxml-from-script",
+      "target": "en/06-engine-api/10-central-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/05-vehicle-spawning.md",
+      "line": 13,
+      "col": 32,
+      "href": "#eventsxml-vehicle-entries",
+      "anchor": "eventsxml-vehicle-entries",
+      "target": "en/09-server-admin/05-vehicle-spawning.md"
+    },
+    {
+      "file": "en/09-server-admin/05-vehicle-spawning.md",
+      "line": 15,
+      "col": 43,
+      "href": "#cfgeventspawnsxml----spawn-positions",
+      "anchor": "cfgeventspawnsxml----spawn-positions",
+      "target": "en/09-server-admin/05-vehicle-spawning.md"
+    },
+    {
+      "file": "en/09-server-admin/05-vehicle-spawning.md",
+      "line": 19,
+      "col": 42,
+      "href": "#cfgeventgroupsxml----grouped-spawns",
+      "anchor": "cfgeventgroupsxml----grouped-spawns",
+      "target": "en/09-server-admin/05-vehicle-spawning.md"
+    },
+    {
+      "file": "en/09-server-admin/05-vehicle-spawning.md",
+      "line": 20,
+      "col": 43,
+      "href": "#cfgeconomycorexml-vehicle-root-class",
+      "anchor": "cfgeconomycorexml-vehicle-root-class",
+      "target": "en/09-server-admin/05-vehicle-spawning.md"
+    },
+    {
+      "file": "en/09-server-admin/06-player-spawning.md",
+      "line": 12,
+      "col": 39,
+      "href": "#cfgplayerspawnpointsxml-overview",
+      "anchor": "cfgplayerspawnpointsxml-overview",
+      "target": "en/09-server-admin/06-player-spawning.md"
+    },
+    {
+      "file": "en/09-server-admin/06-player-spawning.md",
+      "line": 20,
+      "col": 34,
+      "href": "#initc----starting-equipment",
+      "anchor": "initc----starting-equipment",
+      "target": "en/09-server-admin/06-player-spawning.md"
+    },
+    {
+      "file": "en/09-server-admin/07-persistence.md",
+      "line": 11,
+      "col": 30,
+      "href": "#the-storage_1-directory",
+      "anchor": "the-storage_1-directory",
+      "target": "en/09-server-admin/07-persistence.md"
+    },
+    {
+      "file": "en/09-server-admin/07-persistence.md",
+      "line": 15,
+      "col": 48,
+      "href": "#cfggameplayjson-base-and-container-damage",
+      "anchor": "cfggameplayjson-base-and-container-damage",
+      "target": "en/09-server-admin/07-persistence.md"
+    },
+    {
+      "file": "en/09-server-admin/07-persistence.md",
+      "line": 37,
+      "col": 116,
+      "href": "02-directory-structure.md#the-db-folder----economy-core",
+      "anchor": "the-db-folder----economy-core",
+      "target": "en/09-server-admin/02-directory-structure.md"
+    },
+    {
+      "file": "en/09-server-admin/07-persistence.md",
+      "line": 69,
+      "col": 119,
+      "href": "02-directory-structure.md#the-storage_1-folder----persistence",
+      "anchor": "the-storage_1-folder----persistence",
+      "target": "en/09-server-admin/02-directory-structure.md"
+    },
+    {
+      "file": "en/09-server-admin/07-persistence.md",
+      "line": 102,
+      "col": 559,
+      "href": "04-loot-economy.md#globalsxml----economy-parameters",
+      "anchor": "globalsxml----economy-parameters",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/07-persistence.md",
+      "line": 150,
+      "col": 372,
+      "href": "04-loot-economy.md#globalsxml----economy-parameters",
+      "anchor": "globalsxml----economy-parameters",
+      "target": "en/09-server-admin/04-loot-economy.md"
+    },
+    {
+      "file": "en/09-server-admin/08-performance.md",
+      "line": 13,
+      "col": 24,
+      "href": "#globalsxml-tuning",
+      "anchor": "globalsxml-tuning",
+      "target": "en/09-server-admin/08-performance.md"
+    },
+    {
+      "file": "en/09-server-admin/08-performance.md",
+      "line": 15,
+      "col": 32,
+      "href": "#cfgeconomycorexml-logging",
+      "anchor": "cfgeconomycorexml-logging",
+      "target": "en/09-server-admin/08-performance.md"
+    },
+    {
+      "file": "en/09-server-admin/08-performance.md",
+      "line": 16,
+      "col": 39,
+      "href": "#serverdzcfg-performance-settings",
+      "anchor": "serverdzcfg-performance-settings",
+      "target": "en/09-server-admin/08-performance.md"
+    },
+    {
+      "file": "en/09-server-admin/09-access-control.md",
+      "line": 12,
+      "col": 35,
+      "href": "#admin-access-via-serverdzcfg",
+      "anchor": "admin-access-via-serverdzcfg",
+      "target": "en/09-server-admin/09-access-control.md"
+    },
+    {
+      "file": "en/09-server-admin/09-access-control.md",
+      "line": 13,
+      "col": 13,
+      "href": "#bantxt",
+      "anchor": "bantxt",
+      "target": "en/09-server-admin/09-access-control.md"
+    },
+    {
+      "file": "en/09-server-admin/09-access-control.md",
+      "line": 14,
+      "col": 19,
+      "href": "#whitelisttxt",
+      "anchor": "whitelisttxt",
+      "target": "en/09-server-admin/09-access-control.md"
+    },
+    {
+      "file": "en/09-server-admin/11-troubleshooting.md",
+      "line": 14,
+      "col": 24,
+      "href": "#server-wont-start",
+      "anchor": "server-wont-start",
+      "target": "en/09-server-admin/11-troubleshooting.md"
+    },
+    {
+      "file": "en/09-server-admin/11-troubleshooting.md",
+      "line": 15,
+      "col": 27,
+      "href": "#players-cant-connect",
+      "anchor": "players-cant-connect",
+      "target": "en/09-server-admin/11-troubleshooting.md"
+    },
+    {
+      "file": "en/09-server-admin/12-advanced.md",
+      "line": 12,
+      "col": 47,
+      "href": "#cfgenvironmentxml-and-animal-territories",
+      "anchor": "cfgenvironmentxml-and-animal-territories",
+      "target": "en/09-server-admin/12-advanced.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 38,
+      "col": 21,
+      "href": "#pbo",
+      "anchor": "pbo",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 54,
+      "col": 27,
+      "href": "#modelcfg",
+      "anchor": "modelcfg",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 97,
+      "col": 52,
+      "href": "#pbo",
+      "anchor": "pbo",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 154,
+      "col": 27,
+      "href": "#typesxml",
+      "anchor": "typesxml",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 160,
+      "col": 28,
+      "href": "#eventsxml",
+      "anchor": "eventsxml",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 166,
+      "col": 28,
+      "href": "#configcpp",
+      "anchor": "configcpp",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 172,
+      "col": 28,
+      "href": "#configcpp",
+      "anchor": "configcpp",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 190,
+      "col": 28,
+      "href": "#configcpp",
+      "anchor": "configcpp",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 217,
+      "col": 21,
+      "href": "#cot",
+      "anchor": "cot",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 279,
+      "col": 56,
+      "href": "#typesxml",
+      "anchor": "typesxml",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 411,
+      "col": 25,
+      "href": "#p-drive",
+      "anchor": "p-drive",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 571,
+      "col": 26,
+      "href": "#file-io",
+      "anchor": "file-io",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 579,
+      "col": 21,
+      "href": "#pbo",
+      "anchor": "pbo",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 599,
+      "col": 27,
+      "href": "#typesxml",
+      "anchor": "typesxml",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 616,
+      "col": 33,
+      "href": "#stringtablecsv",
+      "anchor": "stringtablecsv",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 673,
+      "col": 28,
+      "href": "#configcpp",
+      "anchor": "configcpp",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 715,
+      "col": 27,
+      "href": "#typesxml",
+      "anchor": "typesxml",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 1003,
+      "col": 30,
+      "href": "#serverdzcfg",
+      "anchor": "serverdzcfg",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/glossary.md",
+      "line": 1154,
+      "col": 28,
+      "href": "#inputsxml",
+      "anchor": "inputsxml",
+      "target": "en/glossary.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 12,
+      "col": 21,
+      "href": "#1-mod-wont-load",
+      "anchor": "1-mod-wont-load",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 13,
+      "col": 20,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 14,
+      "col": 29,
+      "href": "#3-rpc-and-network-issues",
+      "anchor": "3-rpc-and-network-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 15,
+      "col": 18,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 16,
+      "col": 27,
+      "href": "#5-build-and-pbo-issues",
+      "anchor": "5-build-and-pbo-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 17,
+      "col": 25,
+      "href": "#6-performance-issues",
+      "anchor": "6-performance-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 18,
+      "col": 39,
+      "href": "#7-item-vehicle-and-entity-issues",
+      "anchor": "7-item-vehicle-and-entity-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 19,
+      "col": 30,
+      "href": "#8-config-and-types-issues",
+      "anchor": "8-config-and-types-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 20,
+      "col": 25,
+      "href": "#9-persistence-issues",
+      "anchor": "9-persistence-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 21,
+      "col": 27,
+      "href": "#10-decision-flowcharts",
+      "anchor": "10-decision-flowcharts",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 22,
+      "col": 38,
+      "href": "#11-debug-commands-quick-reference",
+      "anchor": "11-debug-commands-quick-reference",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 23,
+      "col": 26,
+      "href": "#12-log-file-locations",
+      "anchor": "12-log-file-locations",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 24,
+      "col": 25,
+      "href": "#13-where-to-get-help",
+      "anchor": "13-where-to-get-help",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 362,
+      "col": 65,
+      "href": "#1-mod-wont-load",
+      "anchor": "1-mod-wont-load",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 363,
+      "col": 37,
+      "href": "#5-build-and-pbo-issues",
+      "anchor": "5-build-and-pbo-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 364,
+      "col": 42,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 365,
+      "col": 39,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 366,
+      "col": 37,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 367,
+      "col": 40,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 368,
+      "col": 36,
+      "href": "#1-mod-wont-load",
+      "anchor": "1-mod-wont-load",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 369,
+      "col": 32,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 370,
+      "col": 34,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 371,
+      "col": 38,
+      "href": "#9-persistence-issues",
+      "anchor": "9-persistence-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 372,
+      "col": 44,
+      "href": "#7-item-vehicle-and-entity-issues",
+      "anchor": "7-item-vehicle-and-entity-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 373,
+      "col": 43,
+      "href": "#5-build-and-pbo-issues",
+      "anchor": "5-build-and-pbo-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 374,
+      "col": 27,
+      "href": "#6-performance-issues",
+      "anchor": "6-performance-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 375,
+      "col": 34,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 376,
+      "col": 76,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 377,
+      "col": 35,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 378,
+      "col": 32,
+      "href": "#7-item-vehicle-and-entity-issues",
+      "anchor": "7-item-vehicle-and-entity-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 379,
+      "col": 34,
+      "href": "#7-item-vehicle-and-entity-issues",
+      "anchor": "7-item-vehicle-and-entity-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 380,
+      "col": 34,
+      "href": "#8-config-and-types-issues",
+      "anchor": "8-config-and-types-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 381,
+      "col": 37,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 382,
+      "col": 35,
+      "href": "#8-config-and-types-issues",
+      "anchor": "8-config-and-types-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 383,
+      "col": 40,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 384,
+      "col": 29,
+      "href": "#6-performance-issues",
+      "anchor": "6-performance-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 385,
+      "col": 34,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 386,
+      "col": 37,
+      "href": "#1-mod-wont-load",
+      "anchor": "1-mod-wont-load",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 387,
+      "col": 37,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 388,
+      "col": 34,
+      "href": "#9-persistence-issues",
+      "anchor": "9-persistence-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 389,
+      "col": 38,
+      "href": "#5-build-and-pbo-issues",
+      "anchor": "5-build-and-pbo-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 390,
+      "col": 33,
+      "href": "#5-build-and-pbo-issues",
+      "anchor": "5-build-and-pbo-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 391,
+      "col": 34,
+      "href": "#3-rpc-and-network-issues",
+      "anchor": "3-rpc-and-network-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 392,
+      "col": 36,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 393,
+      "col": 35,
+      "href": "#9-persistence-issues",
+      "anchor": "9-persistence-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 394,
+      "col": 41,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 395,
+      "col": 39,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 396,
+      "col": 32,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 397,
+      "col": 36,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 398,
+      "col": 35,
+      "href": "#8-config-and-types-issues",
+      "anchor": "8-config-and-types-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 399,
+      "col": 36,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 400,
+      "col": 40,
+      "href": "#2-script-errors",
+      "anchor": "2-script-errors",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 401,
+      "col": 37,
+      "href": "#7-item-vehicle-and-entity-issues",
+      "anchor": "7-item-vehicle-and-entity-issues",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 402,
+      "col": 34,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 403,
+      "col": 55,
+      "href": "#4-ui-problems",
+      "anchor": "4-ui-problems",
+      "target": "en/troubleshooting.md"
+    },
+    {
+      "file": "en/troubleshooting.md",
+      "line": 404,
+      "col": 44,
+      "href": "#3-rpc-and-network-issues",
+      "anchor": "3-rpc-and-network-issues",
+      "target": "en/troubleshooting.md"
+    }
+  ]
+}

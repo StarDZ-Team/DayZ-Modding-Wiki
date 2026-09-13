@@ -12,7 +12,7 @@
 - [Introduction](#introduction)
 - [Pre-Publishing Checklist](#pre-publishing-checklist)
 - [Step 1: Prepare Your Mod Folder](#step-1-prepare-your-mod-folder)
-- [Step 2: Write a Complete mod.cpp](#step-2-write-a-complete-modcpp)
+- [Step 2: Write a Complete mod.cpp](#step-2-write-a-complete-mod-cpp)
 - [Step 3: Prepare Logo and Preview Images](#step-3-prepare-logo-and-preview-images)
 - [Step 4: Generate a Key Pair](#step-4-generate-a-key-pair)
 - [Step 5: Sign Your PBOs](#step-5-sign-your-pbos)

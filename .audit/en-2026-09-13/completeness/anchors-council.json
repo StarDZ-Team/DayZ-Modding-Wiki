@@ -1,0 +1,528 @@
+{
+  "schema_version": 1,
+  "review": "English internal anchor repair independent council",
+  "reviewed_at": "2026-09-13T22:41:52.5826356Z",
+  "baseline_commit": "8fa131365f59a343602cefd682290535cd435cc2",
+  "current_git_head": "8fa131365f59a343602cefd682290535cd435cc2",
+  "decision": "approve_exact_current_diff",
+  "decision_scope": "Current EN working-tree diff against baseline_commit, hash-bound below",
+  "reviewer_role": "independent council; author reports were inspected but not treated as proof",
+  "runtime": {
+    "node": "v24.14.0",
+    "vitepress": "1.6.4"
+  },
+  "checker_review": {
+    "checker": "scripts/check-links.mjs",
+    "checker_sha256": "6409f99d7583c7b7b34119dd48b75974d252061c5dc6c88700061fe082c3ccc9",
+    "repair_helper": "scripts/repair-anchors.mjs",
+    "repair_helper_sha256": "b041ea7e8dfc7cc0feb3ad5313a60926a4855368193b0e37fa09d2b459733085",
+    "vitepress_bundle": "node_modules/vitepress/dist/node/chunk-D3CUZ4fa.js",
+    "vitepress_bundle_sha256": "07d45c356e7c850c2454904949f4b0b95c1d4a2d92119cbdaf4d419ae20dde98",
+    "id_method": "createMarkdownRenderer renders target Markdown; checker reads emitted h1-h6 id attributes",
+    "installed_implementation": "VitePress passes its NFKD/control/punctuation/numeric-prefix slugify to markdown-it-anchor, which honors explicit IDs and uniquifies duplicates",
+    "bounded_limit": "Checker harvests inline Markdown links and intentionally excludes reference-style, HTML, and absolute-site links; every changed repair is an inline Markdown fragment and was separately accounted for by rendered-link comparison"
+  },
+  "verification": {
+    "strict_command": "node scripts/check-links.mjs --anchors --strict",
+    "strict_exit": 0,
+    "markdown_files_checked_for_file_links": 1265,
+    "dead_file_links": 0,
+    "english_files_checked": 105,
+    "fragment_links_checked": 1278,
+    "dead_fragments": 0,
+    "diff_check_command": "git diff --check -- en",
+    "diff_check_exit": 0,
+    "changed_english_files": 41,
+    "changed_source_lines": 209,
+    "changed_fragment_links": 210,
+    "rendered_targets_with_exactly_one_matching_heading_id": 210,
+    "unchanged_link_labels": 210,
+    "unchanged_link_path_components": 210,
+    "non_fragment_source_changes": 0,
+    "baseline_entries_exactly_covered": true
+  },
+  "accounting": {
+    "github_slug": {
+      "occurrences": 171,
+      "decision": "approve_all",
+      "basis": "Each old fragment matched exactly one target heading under the legacy GitHub-style rule; each new fragment is that same heading’s installed-VitePress ID"
+    },
+    "punctuation_insensitive": {
+      "occurrences": 32,
+      "unique_old_new_target_triples": 30,
+      "decisions": [
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 10,
+          "old_fragment": "#classcastto--safe-downcasting",
+          "new_fragment": "#class-castto-—-safe-downcasting",
+          "target": "en/01-enforce-script/09-casting-reflection.md",
+          "target_heading": "Class.CastTo — Safe Downcasting",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 11,
+          "old_fragment": "#typecast--alternative-casting",
+          "new_fragment": "#type-cast-—-alternative-casting",
+          "target": "en/01-enforce-script/09-casting-reflection.md",
+          "target_heading": "Type.Cast — Alternative Casting",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 12,
+          "old_fragment": "#castto-vs-typecast--when-to-use-which",
+          "new_fragment": "#castto-vs-type-cast-—-when-to-use-which",
+          "target": "en/01-enforce-script/09-casting-reflection.md",
+          "target_heading": "CastTo vs Type.Cast — When to Use Which",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 15,
+          "old_fragment": "#objtype--get-runtime-type",
+          "new_fragment": "#obj-type-—-get-runtime-type",
+          "target": "en/01-enforce-script/09-casting-reflection.md",
+          "target_heading": "obj.Type — Get Runtime Type",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 16,
+          "old_fragment": "#typename--storing-type-references",
+          "new_fragment": "#typename-—-storing-type-references",
+          "target": "en/01-enforce-script/09-casting-reflection.md",
+          "target_heading": "typename — Storing Type References",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 19,
+          "old_fragment": "#enscriptgetclassvar--setclassvar",
+          "new_fragment": "#enscript-getclassvar-setclassvar",
+          "target": "en/01-enforce-script/09-casting-reflection.md",
+          "target_heading": "EnScript.GetClassVar / SetClassVar",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/10-enums-preprocessor.md",
+          "line": 20,
+          "old_fragment": "#ifdef--ifndef--endif",
+          "new_fragment": "#ifdef-ifndef-endif",
+          "target": "en/01-enforce-script/10-enums-preprocessor.md",
+          "target_heading": "#ifdef / #ifndef / #endif",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/11-error-handling.md",
+          "line": 18,
+          "old_fragment": "#errorex--engine-error-reporting",
+          "new_fragment": "#errorex-—-engine-error-reporting",
+          "target": "en/01-enforce-script/11-error-handling.md",
+          "target_heading": "ErrorEx — Engine Error Reporting",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/11-error-handling.md",
+          "line": 21,
+          "old_fragment": "#dumpstackstring--stack-traces",
+          "new_fragment": "#dumpstackstring-—-stack-traces",
+          "target": "en/01-enforce-script/11-error-handling.md",
+          "target_heading": "DumpStackString — Stack Traces",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/12-gotchas.md",
+          "line": 14,
+          "old_fragment": "#engine--runtime-quirks",
+          "new_fragment": "#engine-runtime-quirks",
+          "target": "en/01-enforce-script/12-gotchas.md",
+          "target_heading": "Engine & Runtime Quirks",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/01-enforce-script/12-gotchas.md",
+          "line": 16,
+          "old_fragment": "#build--log-diagnostics",
+          "new_fragment": "#build-log-diagnostics",
+          "target": "en/01-enforce-script/12-gotchas.md",
+          "target_heading": "Build & Log Diagnostics",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/05-config-files/02-inputs-xml.md",
+          "line": 29,
+          "old_fragment": "#compatibility--impact",
+          "new_fragment": "#compatibility-impact",
+          "target": "en/05-config-files/02-inputs-xml.md",
+          "target_heading": "Compatibility & Impact",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/05-config-files/05-server-configs.md",
+          "line": 12,
+          "old_fragment": "#initc--mission-entry-point",
+          "new_fragment": "#init-c-mission-entry-point",
+          "target": "en/05-config-files/05-server-configs.md",
+          "target_heading": "init.c --- Mission Entry Point",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/05-config-files/05-server-configs.md",
+          "line": 14,
+          "old_fragment": "#cfgeconomycorexml--registering-modded-loot",
+          "new_fragment": "#cfgeconomycore-xml-registering-modded-loot",
+          "target": "en/05-config-files/05-server-configs.md",
+          "target_heading": "cfgeconomycore.xml --- Registering Modded Loot",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/05-config-files/05-server-configs.md",
+          "line": 15,
+          "old_fragment": "#cfggameplayjson--gameplay-tuning",
+          "new_fragment": "#cfggameplay-json-gameplay-tuning",
+          "target": "en/05-config-files/05-server-configs.md",
+          "target_heading": "cfggameplay.json --- Gameplay Tuning",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/05-config-files/05-server-configs.md",
+          "line": 16,
+          "old_fragment": "#cfgplayerspawnpointsxml--player-spawn-points",
+          "new_fragment": "#cfgplayerspawnpoints-xml-player-spawn-points",
+          "target": "en/05-config-files/05-server-configs.md",
+          "target_heading": "cfgplayerspawnpoints.xml --- Player Spawn Points",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/05-config-files/05-server-configs.md",
+          "line": 17,
+          "old_fragment": "#serverdzcfg--server-settings-and-mod-loading",
+          "new_fragment": "#serverdz-cfg-server-settings-and-mod-loading",
+          "target": "en/05-config-files/05-server-configs.md",
+          "target_heading": "serverDZ.cfg --- Server Settings and Mod Loading",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/05-config-files/05-server-configs.md",
+          "line": 136,
+          "old_fragment": "#cfgeconomycorexml--registering-modded-loot",
+          "new_fragment": "#cfgeconomycore-xml-registering-modded-loot",
+          "target": "en/05-config-files/05-server-configs.md",
+          "target_heading": "cfgeconomycore.xml --- Registering Modded Loot",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/22-admin-server.md",
+          "line": 12,
+          "old_fragment": "#logging--monitoring",
+          "new_fragment": "#logging-monitoring",
+          "target": "en/06-engine-api/22-admin-server.md",
+          "target_heading": "Logging & Monitoring",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/22-admin-server.md",
+          "line": 13,
+          "old_fragment": "#hive--database",
+          "new_fragment": "#hive-database",
+          "target": "en/06-engine-api/22-admin-server.md",
+          "target_heading": "Hive & Database",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/22-admin-server.md",
+          "line": 15,
+          "old_fragment": "#connection-events--load-order",
+          "new_fragment": "#connection-events-load-order",
+          "target": "en/06-engine-api/22-admin-server.md",
+          "target_heading": "Connection Events & Load Order",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/22-admin-server.md",
+          "line": 311,
+          "old_fragment": "#connection-events--load-order",
+          "new_fragment": "#connection-events-load-order",
+          "target": "en/06-engine-api/22-admin-server.md",
+          "target_heading": "Connection Events & Load Order",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/quick-reference.md",
+          "line": 13,
+          "old_fragment": "#health--damage",
+          "new_fragment": "#health-damage",
+          "target": "en/06-engine-api/quick-reference.md",
+          "target_heading": "Health & Damage",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/quick-reference.md",
+          "line": 16,
+          "old_fragment": "#entity-creation--deletion",
+          "new_fragment": "#entity-creation-deletion",
+          "target": "en/06-engine-api/quick-reference.md",
+          "target_heading": "Entity Creation & Deletion",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/quick-reference.md",
+          "line": 21,
+          "old_fragment": "#timer--callqueue-methods",
+          "new_fragment": "#timer-callqueue-methods",
+          "target": "en/06-engine-api/quick-reference.md",
+          "target_heading": "Timer & CallQueue Methods",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/quick-reference.md",
+          "line": 23,
+          "old_fragment": "#rpc--networking-methods",
+          "new_fragment": "#rpc-networking-methods",
+          "target": "en/06-engine-api/quick-reference.md",
+          "target_heading": "RPC / Networking Methods",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/06-engine-api/quick-reference.md",
+          "line": 24,
+          "old_fragment": "#math-constants--methods",
+          "new_fragment": "#math-constants-methods",
+          "target": "en/06-engine-api/quick-reference.md",
+          "target_heading": "Math Constants & Methods",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/09-server-admin/03-server-cfg.md",
+          "line": 16,
+          "old_fragment": "#network--security",
+          "new_fragment": "#network-security",
+          "target": "en/09-server-admin/03-server-cfg.md",
+          "target_heading": "Network & Security",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/09-server-admin/03-server-cfg.md",
+          "line": 18,
+          "old_fragment": "#time--weather",
+          "new_fragment": "#time-weather",
+          "target": "en/09-server-admin/03-server-cfg.md",
+          "target_heading": "Time & Weather",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/09-server-admin/03-server-cfg.md",
+          "line": 19,
+          "old_fragment": "#performance--login-queue",
+          "new_fragment": "#performance-login-queue",
+          "target": "en/09-server-admin/03-server-cfg.md",
+          "target_heading": "Performance & Login Queue",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/09-server-admin/03-server-cfg.md",
+          "line": 20,
+          "old_fragment": "#logging--debug",
+          "new_fragment": "#logging-debug",
+          "target": "en/09-server-admin/03-server-cfg.md",
+          "target_heading": "Logging & Debug",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        },
+        {
+          "file": "en/09-server-admin/03-server-cfg.md",
+          "line": 21,
+          "old_fragment": "#persistence--instance",
+          "new_fragment": "#persistence-instance",
+          "target": "en/09-server-admin/03-server-cfg.md",
+          "target_heading": "Persistence & Instance",
+          "decision": "approve",
+          "basis": "old and rendered IDs are punctuation-insensitive equivalents; replacement exists as exactly one installed-VitePress heading ID and preserves the linked subject"
+        }
+      ]
+    },
+    "manual": {
+      "occurrences": 7,
+      "decisions": [
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 13,
+          "link_label": "obj.IsInherited — Runtime Type Checking",
+          "old_fragment": "#obisinherited--runtime-type-checking",
+          "new_fragment": "#obj-isinherited-—-runtime-type-checking",
+          "target_heading": "obj.IsInherited — Runtime Type Checking",
+          "decision": "approve",
+          "basis": "exact subject and label; unique rendered heading"
+        },
+        {
+          "file": "en/01-enforce-script/09-casting-reflection.md",
+          "line": 14,
+          "link_label": "obj.IsKindOf — String-Based Type Checking",
+          "old_fragment": "#obiskindof--string-based-type-checking",
+          "new_fragment": "#obj-iskindof-—-config-based-type-checking",
+          "target_heading": "obj.IsKindOf — Config-Based Type Checking",
+          "decision": "approve",
+          "basis": "unique obj.IsKindOf section and intended subject; String-Based versus Config-Based is a pre-existing wording difference, not a redirected subject"
+        },
+        {
+          "file": "en/glossary.md",
+          "line": 38,
+          "link_label": "PBO",
+          "old_fragment": "#pbo",
+          "new_fragment": "#pbo-packed-bank-of-objects",
+          "target_heading": "PBO (Packed Bank of Objects)",
+          "decision": "approve",
+          "basis": "unique PBO glossary definition"
+        },
+        {
+          "file": "en/glossary.md",
+          "line": 97,
+          "link_label": "PBO",
+          "old_fragment": "#pbo",
+          "new_fragment": "#pbo-packed-bank-of-objects",
+          "target_heading": "PBO (Packed Bank of Objects)",
+          "decision": "approve",
+          "basis": "unique PBO glossary definition"
+        },
+        {
+          "file": "en/glossary.md",
+          "line": 217,
+          "link_label": "COT",
+          "old_fragment": "#cot",
+          "new_fragment": "#cot-community-online-tools",
+          "target_heading": "COT (Community Online Tools)",
+          "decision": "approve",
+          "basis": "unique COT glossary definition"
+        },
+        {
+          "file": "en/glossary.md",
+          "line": 411,
+          "link_label": "P Drive",
+          "old_fragment": "#p-drive",
+          "new_fragment": "#p-drive-workdrive",
+          "target_heading": "P Drive (Workdrive)",
+          "decision": "approve",
+          "basis": "unique P Drive glossary definition"
+        },
+        {
+          "file": "en/glossary.md",
+          "line": 579,
+          "link_label": "PBO",
+          "old_fragment": "#pbo",
+          "new_fragment": "#pbo-packed-bank-of-objects",
+          "target_heading": "PBO (Packed Bank of Objects)",
+          "decision": "approve",
+          "basis": "unique PBO glossary definition"
+        }
+      ]
+    },
+    "rejected": [],
+    "unresolved": []
+  },
+  "hashes": {
+    "algorithm": "SHA-256",
+    "raw_binary_en_diff": "73e8ab04b29fa2f9fc7ab441356f82be4a3b08a8108ee9fe655b677a32fc064d",
+    "all_41_match_author_manifest": true,
+    "manifest_mismatches": [],
+    "final_english_files": {
+      "en/01-enforce-script/02-arrays-maps-sets.md": "121ffe60187ba024f448b8809742654de404cb577d561437ae2451bbc29bdbab",
+      "en/01-enforce-script/09-casting-reflection.md": "9b2015d2006504a4389407ebffda5dbe2f626d4ce60eb8f8c9b9912b57f40430",
+      "en/01-enforce-script/10-enums-preprocessor.md": "4b42db8f2b094d2baf14087cea08d63405fe28f4d55f09971d0eca7840e7faed",
+      "en/01-enforce-script/11-error-handling.md": "6aa05763fc713916b9b541b1af671cb0e219e412df93ba1451a2480365cb1067",
+      "en/01-enforce-script/12-gotchas.md": "529999b670b99f3e4f49d6b45adf1b6fddee6a29cc73cd6a2d862e8eb6e456da",
+      "en/02-mod-structure/01-five-layers.md": "1c8571c015339dd7508d92c519a0f6a563b3790d5120ed776832efba345c8413",
+      "en/02-mod-structure/02-config-cpp.md": "8af40f97a560e63f45ab69dd67694bba22b56beec1c07019e37fbcac135e0ab1",
+      "en/02-mod-structure/03-mod-cpp.md": "768d674dc48aaa28e9e3ea663f67009df68b6be734cb59210a84411fd52d1ac6",
+      "en/02-mod-structure/04-minimum-viable-mod.md": "58e008d6b6a9850ab74f971e5dfdc47698b8f52d36106cfbfa1c0aab28f73eb4",
+      "en/02-mod-structure/06-server-client-split.md": "efbbd4214b68f07b3ac30888823fa7e4a717cfa125aa829391104bd56b6da05a",
+      "en/05-config-files/02-inputs-xml.md": "d99d3e813b9fa8af6b0ea31e4ab763bb69080e20612ee1df96d09c04ad98db90",
+      "en/05-config-files/04-imagesets.md": "6759f4e2f50e1b293d7549d726a9616c08b5d9ae30890a9c3a6eca3d886c7a8c",
+      "en/05-config-files/05-server-configs.md": "daa7461106cbe1a72c197411389f6e3e5e04701e0f8d4f3488278356ddef59fe",
+      "en/06-engine-api/10-central-economy.md": "2938e3b5208314ff77ee6c65daec0fe798cafe6a1076b4f9b0532d15ba60039a",
+      "en/06-engine-api/18-animation-system.md": "af2c848d310af9335d587eb2f25be838a2f8cf389a86250690fb8aeba2e49751",
+      "en/06-engine-api/22-admin-server.md": "f5206cc8c299924ee20cce9018662839f43e9eb5dea7c51590e09d823b2b0e13",
+      "en/06-engine-api/quick-reference.md": "ea189b1ece23698b20546eff5c27f162bf39c4825f2a699a441463e7aa14fa21",
+      "en/07-patterns/02-module-systems.md": "7fc67aa31d129c8c1a233855b9b985b3321c71072048b936b1116a3cc308d613",
+      "en/07-patterns/03-rpc-patterns.md": "84f2cc3731d44bd07db409fc999a2e09275128405b3e39e258f93f6e7adc9688",
+      "en/08-tutorials/01-first-mod.md": "5de7fa29c84e2c5df0cefa22a7fbb271977daf4972b2fd7ff86cdaebdf2bc634",
+      "en/08-tutorials/02-custom-item.md": "0926409eb9c41d02b1b228ea58d1f67d74abb8c77292e536e166e1917e3f322d",
+      "en/08-tutorials/04-chat-commands.md": "40540a7e2fcd1727f580d2390c464efbebe9e904c6dfaa23975b0f7e6a71c70f",
+      "en/08-tutorials/05-mod-template.md": "b2adb62801bdadadc467eda8a2f50e8bbc3b54fabc6458e7f20be34f9fd2934d",
+      "en/08-tutorials/06-debugging-testing.md": "e51055ab8342a156cc38c59edfad08ad5cc2b508f9b6bc3cf11ce29228bbc0f5",
+      "en/08-tutorials/07-publishing-workshop.md": "b7f98787ce9554a91a8b3a6b2c2fee41c32e11491d48ccd2bac7d8e2ca6c7a55",
+      "en/08-tutorials/09-professional-template.md": "d6cefe1bc942f9716a18221e059437207cadc8bf56e48281dd2a89a85eb707fb",
+      "en/08-tutorials/10-vehicle-mod.md": "fa1661adfd53600f2864b6ceb13c88aaf87f4271d723daaba6d00a3eb26b4b03",
+      "en/08-tutorials/11-clothing-mod.md": "f9394ace0cff7af9416184a3e44b502e83119558a0f1e87feb5ef5c76274f084",
+      "en/08-tutorials/12-trading-system.md": "3461153fafc68f8430d23a39274d097baf26c52f6302b0bc65e3b95f3585d961",
+      "en/09-server-admin/02-directory-structure.md": "5f6c1f3aa2c48282bf1b921b0b1f12eee65bdd27f865d7d9b070e1b856c5d6ca",
+      "en/09-server-admin/03-server-cfg.md": "322425d132b05ece054c2f9739255fcd28006e00e592c17408a861a1d2439f9a",
+      "en/09-server-admin/04-loot-economy.md": "e878f78bc51e2e275073f4bb6156b1c8da04b58d8e71a031f4abbde24898aef5",
+      "en/09-server-admin/05-vehicle-spawning.md": "23cc75bc6b52ee4de1e5b970deccf8a0b70f9f0431fcf7ae51e4c7fafccd0f59",
+      "en/09-server-admin/06-player-spawning.md": "61bdda20e5e6563e458091c03c71ecbda805ace1855b915cd9dedb054bd7b437",
+      "en/09-server-admin/07-persistence.md": "7de855d73b655d66019d6f99bb9d171b67893a181b72ae92439bb82e59fe6c53",
+      "en/09-server-admin/08-performance.md": "f3c7b9ad8a8e29cb54d2c44114e2fec9e2d9d00d5fa246adc66dda4b85c9d9e5",
+      "en/09-server-admin/09-access-control.md": "ea194b15ccee5c095343dd9e635268a3396f0ba427841732218012b4627d7402",
+      "en/09-server-admin/11-troubleshooting.md": "00ed8f7fd2adbe348ccb43febd295bddd9dbc77daf30a6d27d10f75372495bc2",
+      "en/09-server-admin/12-advanced.md": "895f7f47bf23843173c065924245dd0634c5dec4abea30bab78db072b9e5bde9",
+      "en/glossary.md": "d1b2005ed88e2b53591527206f4fa3121148471be495e92f72c540cbd2969b26",
+      "en/troubleshooting.md": "da08530090f727f679bc051fb98899061a8ab80b9a58f26bdbd02a77e0053be4"
+    },
+    "author_artifacts": {
+      "anchors-before.json": "1adc66a32e520fd121ec09ce0f5d5b517a7f4544c080f12d39b9b3a814a96a37",
+      "anchors-dry-run.json": "79fba411d87d992f23f9148b66372c169efa7ca0e643f454723352bf7e6c3390",
+      "anchors-applied-auto.json": "30695a61b63bf91ff1edcee7be107a6a1be821e7f0bdc9f874d0ef8501ffdfe8",
+      "anchors-after.json": "c2a4657ee54e7132f81c73593a1df2f1e2757b9d6e8fec6f63194ac92274d5bc",
+      "anchors-after-final.json": "6f894c90ad0b73f4cb1829c802014c2223e9f5a6e40ef9cbc5020e6ba527498b",
+      "anchors-final-hashes.json": "dddb3049765daf1980d9d87162da0679c3a85609b8c58dd6cb41033aa762283b",
+      "anchors-REPORT.md": "d370eeb127a2ba5215a35f5f67f98f1d9185e07594c3d9f37ca0d0adc0e280fd",
+      "runtime-inventory.json": "3b4dfe8a2af2b872258516db98f9ae6a2ac89bd281ee995327de275e25b2483a"
+    }
+  },
+  "caveats": [
+    {
+      "kind": "pre-existing wording",
+      "location": "en/01-enforce-script/09-casting-reflection.md:14",
+      "detail": "Link label says String-Based while heading says Config-Based; both identify obj.IsKindOf and the chosen target is unique. This does not reject the anchor mapping."
+    },
+    {
+      "kind": "line endings",
+      "detail": "Git warns that selected LF working files may become CRLF if Git later rewrites them; approval is bound to current raw file hashes."
+    }
+  ],
+  "files_modified_by_reviewer": [
+    ".audit/en-2026-09-13/completeness/anchors-council.md",
+    ".audit/en-2026-09-13/completeness/anchors-council.json"
+  ]
+}

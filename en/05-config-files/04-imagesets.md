@@ -13,7 +13,7 @@
 - [How ImageSets Work](#how-imagesets-work)
 - [DayZ Native ImageSet Format](#dayz-native-imageset-format)
 - [XML ImageSet Format](#xml-imageset-format)
-- [Registering ImageSets in config.cpp](#registering-imagesets-in-configcpp)
+- [Registering ImageSets in config.cpp](#registering-imagesets-in-config-cpp)
 - [Referencing Images in Layouts](#referencing-images-in-layouts)
 - [Referencing Images in Scripts](#referencing-images-in-scripts)
 - [Image Flags](#image-flags)

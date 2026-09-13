@@ -12,9 +12,9 @@
 - [Getting the CE API](#getting-the-ce-api)
 - [ECE Spawn Flags](#ece-spawn-flags)
 - [Rotation Flags (RF)](#rotation-flags-rf)
-- [Reading an Item's Economy Profile](#reading-an-items-economy-profile)
+- [Reading an Item's Economy Profile](#reading-an-item-s-economy-profile)
 - [Controlling Lifetime from Script](#controlling-lifetime-from-script)
-- [Reading globals.xml from Script](#reading-globalsxml-from-script)
+- [Reading globals.xml from Script](#reading-globals-xml-from-script)
 - [Avoidance Queries](#avoidance-queries)
 - [The EEOnCECreate Hook](#the-eeoncecreate-hook)
 - [Developer and Diagnostic Tools](#developer-and-diagnostic-tools)
@@ -340,7 +340,7 @@ int zombieMax = ce.GetCEGlobalInt("ZombieMaxCount");     // returns int.MIN if n
 float dmgMax = ce.GetCEGlobalFloat("LootDamageMax");     // returns float.MIN if not found
 ```
 
-`CEApi` exposes typed getters for entries loaded from `globals.xml`. The inspected declarations and official CE documentation do not establish whether arbitrary custom `<var>` names are supported in every build, so treat custom globals as version-specific until tested on the target server. Use a mod-owned config file when portability matters. The full parameter reference for the documented variables is in [Loot Economy Deep Dive](../09-server-admin/04-loot-economy.md#globalsxml----economy-parameters).
+`CEApi` exposes typed getters for entries loaded from `globals.xml`. The inspected declarations and official CE documentation do not establish whether arbitrary custom `<var>` names are supported in every build, so treat custom globals as version-specific until tested on the target server. Use a mod-owned config file when portability matters. The full parameter reference for the documented variables is in [Loot Economy Deep Dive](../09-server-admin/04-loot-economy.md#globals-xml-economy-parameters).
 
 ---
 

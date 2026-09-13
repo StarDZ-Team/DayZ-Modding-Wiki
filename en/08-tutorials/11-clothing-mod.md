@@ -11,7 +11,7 @@
 
 - [What We Are Building](#what-we-are-building)
 - [Step 1: Choose a Base Class](#step-1-choose-a-base-class)
-- [Step 2: config.cpp for Clothing](#step-2-configcpp-for-clothing)
+- [Step 2: config.cpp for Clothing](#step-2-config-cpp-for-clothing)
 - [Step 3: Create Textures](#step-3-create-textures)
 - [Step 4: Add Cargo Space](#step-4-add-cargo-space)
 - [Step 5: Localization and Spawning](#step-5-localization-and-spawning)

@@ -9,12 +9,12 @@
 ## Table of Contents
 
 - [Overview: The Ownership Map](#overview-the-ownership-map)
-- [init.c --- Mission Entry Point](#initc--mission-entry-point)
+- [init.c --- Mission Entry Point](#init-c-mission-entry-point)
 - [The Central Economy File Set](#the-central-economy-file-set)
-- [cfgeconomycore.xml --- Registering Modded Loot](#cfgeconomycorexml--registering-modded-loot)
-- [cfggameplay.json --- Gameplay Tuning](#cfggameplayjson--gameplay-tuning)
-- [cfgplayerspawnpoints.xml --- Player Spawn Points](#cfgplayerspawnpointsxml--player-spawn-points)
-- [serverDZ.cfg --- Server Settings and Mod Loading](#serverdzcfg--server-settings-and-mod-loading)
+- [cfgeconomycore.xml --- Registering Modded Loot](#cfgeconomycore-xml-registering-modded-loot)
+- [cfggameplay.json --- Gameplay Tuning](#cfggameplay-json-gameplay-tuning)
+- [cfgplayerspawnpoints.xml --- Player Spawn Points](#cfgplayerspawnpoints-xml-player-spawn-points)
+- [serverDZ.cfg --- Server Settings and Mod Loading](#serverdz-cfg-server-settings-and-mod-loading)
 - [Common Mistakes](#common-mistakes)
 - [Theory vs Practice](#theory-vs-practice)
 
@@ -133,7 +133,7 @@ Located at `db/types.xml`. Every item that can spawn through the CE needs an ent
 </type>
 ```
 
-**Mod hook:** your mod's items get their own `types.xml` entries, shipped in a separate file and registered through `cfgeconomycore.xml` (see the [canonical workflow below](#cfgeconomycorexml--registering-modded-loot)) --- never by pasting into the vanilla `db/types.xml`.
+**Mod hook:** your mod's items get their own `types.xml` entries, shipped in a separate file and registered through `cfgeconomycore.xml` (see the [canonical workflow below](#cfgeconomycore-xml-registering-modded-loot)) --- never by pasting into the vanilla `db/types.xml`.
 
 ### cfgspawnabletypes.xml --- Attachments and Cargo
 

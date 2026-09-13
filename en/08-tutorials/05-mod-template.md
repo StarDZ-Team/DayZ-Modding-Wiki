@@ -15,8 +15,8 @@
 - [Step 2: Understand the File Structure](#step-2-understand-the-file-structure)
 - [Step 3: Choose Your Names](#step-3-choose-your-names)
 - [Step 4: A Safe, Scripted Rename](#step-4-a-safe-scripted-rename)
-- [Step 5: Update config.cpp](#step-5-update-configcpp)
-- [Step 6: Update mod.cpp](#step-6-update-modcpp)
+- [Step 5: Update config.cpp](#step-5-update-config-cpp)
+- [Step 6: Update mod.cpp](#step-6-update-mod-cpp)
 - [Step 7: Build and Test](#step-7-build-and-test)
 - [Integration with DayZ Tools and Workbench](#integration-with-dayz-tools-and-workbench)
 - [Template vs. Manual Setup](#template-vs-manual-setup)
@@ -87,7 +87,7 @@ P:\_ModScaffold\
                 ModInit.c
 ```
 
-Populate `config.cpp` and `mod.cpp` using the templates in [Step 5](#step-5-update-configcpp) and [Step 6](#step-6-update-modcpp) below (with `ModName`/placeholder identifiers), and put a single startup print in `5_Mission/ModName/ModInit.c`:
+Populate `config.cpp` and `mod.cpp` using the templates in [Step 5](#step-5-update-config-cpp) and [Step 6](#step-6-update-mod-cpp) below (with `ModName`/placeholder identifiers), and put a single startup print in `5_Mission/ModName/ModInit.c`:
 
 ```c
 modded class MissionServer
@@ -383,7 +383,7 @@ After launching, check the script log for your startup messages:
 %localappdata%\DayZ\script_<date>_<time>.log
 ```
 
-Search for your mod's prefix tag (e.g., `[MyAwesomeMod]`). If it is missing, the most common cause is a `files[]` path in `config.cpp` that still points at the old placeholder folder -- re-check [Step 5](#step-5-update-configcpp).
+Search for your mod's prefix tag (e.g., `[MyAwesomeMod]`). If it is missing, the most common cause is a `files[]` path in `config.cpp` that still points at the old placeholder folder -- re-check [Step 5](#step-5-update-config-cpp).
 
 ---
 

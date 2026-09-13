@@ -11,8 +11,8 @@
 
 ## Table of Contents
 
-- [Server Won't Start](#server-wont-start)
-- [Players Can't Connect](#players-cant-connect)
+- [Server Won't Start](#server-won-t-start)
+- [Players Can't Connect](#players-can-t-connect)
 - [Crashes and Null Pointers](#crashes-and-null-pointers)
 - [Loot Not Spawning](#loot-not-spawning)
 - [Vehicles Not Spawning](#vehicles-not-spawning)

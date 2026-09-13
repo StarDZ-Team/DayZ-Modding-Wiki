@@ -1,0 +1,13 @@
+{
+  "generated": "2026-09-13T22:32:02.973Z",
+  "tool": "scripts/check-links.mjs --anchors",
+  "id_source": "vitepress createMarkdownRenderer (versão instalada em node_modules); IDs lidos do HTML renderizado, não reimplementados",
+  "scope": [
+    "en"
+  ],
+  "files_scanned": 105,
+  "anchors_checked": 1278,
+  "dead": 0,
+  "pages_affected": 0,
+  "entries": []
+}

@@ -10,10 +10,10 @@
 ## Table of Contents
 
 - [What We Are Building](#what-we-are-building)
-- [Step 1: Data Model (3_Game)](#step-1-data-model-3_game)
-- [Step 2: RPC Constants (3_Game)](#step-2-rpc-constants-3_game)
-- [Step 3: Server-Side Shop Manager (4_World)](#step-3-server-side-shop-manager-4_world)
-- [Step 4: Client-Side Shop UI (5_Mission)](#step-4-client-side-shop-ui-5_mission)
+- [Step 1: Data Model (3_Game)](#step-1-data-model-3-game)
+- [Step 2: RPC Constants (3_Game)](#step-2-rpc-constants-3-game)
+- [Step 3: Server-Side Shop Manager (4_World)](#step-3-server-side-shop-manager-4-world)
+- [Step 4: Client-Side Shop UI (5_Mission)](#step-4-client-side-shop-ui-5-mission)
 - [Step 5: Layout File](#step-5-layout-file)
 - [Step 6: Mission Hook and Keybind](#step-6-mission-hook-and-keybind)
 - [Step 7: Currency Item](#step-7-currency-item)

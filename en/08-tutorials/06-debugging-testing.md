@@ -10,11 +10,11 @@
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [The Script Log -- Your Best Friend](#the-script-log----your-best-friend)
+- [The Script Log -- Your Best Friend](#the-script-log-your-best-friend)
 - [Print Debugging (The Reliable Method)](#print-debugging-the-reliable-method)
-- [DayZDiag -- The Debug Executable](#dayzdiag----the-debug-executable)
-- [File Patching -- Edit Without Rebuilding](#file-patching----edit-without-rebuilding)
-- [Workbench -- Script Editor and Debugger](#workbench----script-editor-and-debugger)
+- [DayZDiag -- The Debug Executable](#dayzdiag-the-debug-executable)
+- [File Patching -- Edit Without Rebuilding](#file-patching-edit-without-rebuilding)
+- [Workbench -- Script Editor and Debugger](#workbench-script-editor-and-debugger)
 - [Common Error Patterns and Solutions](#common-error-patterns-and-solutions)
 - [Testing Workflow](#testing-workflow)
 - [In-Game Debug Tools](#in-game-debug-tools)

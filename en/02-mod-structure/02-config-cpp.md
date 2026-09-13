@@ -9,7 +9,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Where config.cpp Lives](#where-configcpp-lives)
+- [Where config.cpp Lives](#where-config-cpp-lives)
 - [Path Conventions](#path-conventions)
 - [CfgPatches Block](#cfgpatches-block)
 - [CfgMods Block](#cfgmods-block)
@@ -206,7 +206,7 @@ class CfgMods
 
 **`dir`** -- The root path prefix commonly written for the mod's own bookkeeping. Script-side `files[]` entries in `class defs` are full paths from the PBO prefix, so they work whether or not `dir` is present.
 
-**`type`** -- Declares the side the package is meant for: `"mod"` or `"servermod"`. Bohemia documents `type = "mod";` as required and lists no other value; what actually routes a package to clients or keeps it server-side is the launch flag that loads it (`-mod=` versus `-servermod=`). Keep the declaration consistent with how you ship the package -- see [Server vs Client Architecture](06-server-client-split.md#the-configcpp-type-field).
+**`type`** -- Declares the side the package is meant for: `"mod"` or `"servermod"`. Bohemia documents `type = "mod";` as required and lists no other value; what actually routes a package to clients or keeps it server-side is the launch flag that loads it (`-mod=` versus `-servermod=`). Keep the declaration consistent with how you ship the package -- see [Server vs Client Architecture](06-server-client-split.md#the-config-cpp-type-field).
 
 **`dependencies`** -- Which vanilla script modules your mod extends. Almost always `{ "Game", "World", "Mission" }`. Possible values: `"Core"`, `"GameLib"`, `"Game"`, `"World"`, `"Mission"`.
 

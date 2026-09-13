@@ -506,7 +506,7 @@ modded class EmoteConstructor
 
 Objects like doors, barrels, tents, and deployables use a separate animation system: the model declares animations in `model.cfg`, linked by `source` to controllers configured for the object (custom user sources normally live in `CfgVehicles.AnimationSources` in `config.cpp`). Script drives the configured animation through `SetAnimationPhase()`. This section covers only the **script side** -- how you read and drive those sources at runtime.
 
-> **The `model.cfg` side lives in Part 4.** How to declare config-side `AnimationSources` and model-side `Animations`, the available source types (`user`, `hit`, `door`, ...) and animation types (`rotation`, `translation`, `hide`, ...) are documented in [3D Models (.p3d)](../04-file-formats/02-models.md#modelcfg-for-animations), with a full door/ladder walkthrough in [Building Modeling](../04-file-formats/08-building-modeling.md). The examples assume matching animations and controllers exist; `source = "user"` describes the controller type, not a required literal source name.
+> **The `model.cfg` side lives in Part 4.** How to declare config-side `AnimationSources` and model-side `Animations`, the available source types (`user`, `hit`, `door`, ...) and animation types (`rotation`, `translation`, `hide`, ...) are documented in [3D Models (.p3d)](../04-file-formats/02-models.md#model-cfg-for-animations), with a full door/ladder walkthrough in [Building Modeling](../04-file-formats/08-building-modeling.md). The examples assume matching animations and controllers exist; `source = "user"` describes the controller type, not a required literal source name.
 
 ### Animation API on Entity
 
@@ -907,7 +907,7 @@ class MyLever extends ItemBase
 }
 ```
 
-For this to work, configure `lever_source` as a user source in the object's `config.cpp`, and bind the model's rotation animation to it in `model.cfg`. The class illustrates local animation control only; add authoritative state, synchronization, and persistence for a multiplayer lever. That config-side setup -- `AnimationSources`, `Animations`, axes and angles -- is covered in [3D Models (.p3d)](../04-file-formats/02-models.md#modelcfg-for-animations).
+For this to work, configure `lever_source` as a user source in the object's `config.cpp`, and bind the model's rotation animation to it in `model.cfg`. The class illustrates local animation control only; add authoritative state, synchronization, and persistence for a multiplayer lever. That config-side setup -- `AnimationSources`, `Animations`, axes and angles -- is covered in [3D Models (.p3d)](../04-file-formats/02-models.md#model-cfg-for-animations).
 
 ### Detecting Active Animation Command
 

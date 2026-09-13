@@ -10,7 +10,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Where mod.cpp Lives](#where-modcpp-lives)
+- [Where mod.cpp Lives](#where-mod-cpp-lives)
 - [All Fields Reference](#all-fields-reference)
 - [Field Details](#field-details)
 - [Client Mod vs Server Mod](#client-mod-vs-server-mod)

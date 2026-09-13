@@ -9,19 +9,19 @@
 
 ## Table of Contents
 
-1. [Mod Won't Load](#1-mod-wont-load)
-2. [Script Errors](#2-script-errors)
-3. [RPC and Network Issues](#3-rpc-and-network-issues)
-4. [UI Problems](#4-ui-problems)
-5. [Build and PBO Issues](#5-build-and-pbo-issues)
-6. [Performance Issues](#6-performance-issues)
-7. [Item, Vehicle, and Entity Issues](#7-item-vehicle-and-entity-issues)
-8. [Config and Types Issues](#8-config-and-types-issues)
-9. [Persistence Issues](#9-persistence-issues)
-10. [Decision Flowcharts](#10-decision-flowcharts)
-11. [Debug Commands Quick Reference](#11-debug-commands-quick-reference)
-12. [Log File Locations](#12-log-file-locations)
-13. [Where to Get Help](#13-where-to-get-help)
+1. [Mod Won't Load](#_1-mod-won-t-load)
+2. [Script Errors](#_2-script-errors)
+3. [RPC and Network Issues](#_3-rpc-and-network-issues)
+4. [UI Problems](#_4-ui-problems)
+5. [Build and PBO Issues](#_5-build-and-pbo-issues)
+6. [Performance Issues](#_6-performance-issues)
+7. [Item, Vehicle, and Entity Issues](#_7-item-vehicle-and-entity-issues)
+8. [Config and Types Issues](#_8-config-and-types-issues)
+9. [Persistence Issues](#_9-persistence-issues)
+10. [Decision Flowcharts](#_10-decision-flowcharts)
+11. [Debug Commands Quick Reference](#_11-debug-commands-quick-reference)
+12. [Log File Locations](#_12-log-file-locations)
+13. [Where to Get Help](#_13-where-to-get-help)
 
 ---
 
@@ -359,49 +359,49 @@ Cannot find your problem in the sections above? Try this alphabetical index.
 
 | Symptom (what you see) | Go to |
 |-------------------------|-------|
-| `ACCESS_VIOLATION` crash on boot, no script log | [Section 1](#1-mod-wont-load) |
-| Addon Builder fails | [Section 5](#5-build-and-pbo-issues) |
-| Array index out of range | [Section 2](#2-script-errors) |
-| Buttons not clickable | [Section 4](#4-ui-problems) |
-| Cannot convert type | [Section 2](#2-script-errors) |
-| Cannot create instance | [Section 2](#2-script-errors) |
-| Config parse error | [Section 1](#1-mod-wont-load) |
-| Cursor missing | [Section 4](#4-ui-problems) |
-| Division by zero | [Section 2](#2-script-errors) |
-| Data lost on restart | [Section 9](#9-persistence-issues) |
-| Entity deleted after spawn | [Section 7](#7-item-vehicle-and-entity-issues) |
-| File patching not working | [Section 5](#5-build-and-pbo-issues) |
-| FPS drops | [Section 6](#6-performance-issues) |
-| Game input stuck | [Section 4](#4-ui-problems) |
-| Raw health reads (`GetHealth`/`GetHealth01`) on the client | [Section 2](#2-script-errors) |
-| Image not showing | [Section 4](#4-ui-problems) |
-| Item invisible | [Section 7](#7-item-vehicle-and-entity-issues) |
-| Item won't spawn | [Section 7](#7-item-vehicle-and-entity-issues) |
-| JSON not loading | [Section 8](#8-config-and-types-issues) |
-| Layout returns null | [Section 4](#4-ui-problems) |
-| Loot not spawning | [Section 8](#8-config-and-types-issues) |
-| Member already defined | [Section 2](#2-script-errors) |
-| Memory leak | [Section 6](#6-performance-issues) |
-| Method not found | [Section 2](#2-script-errors) |
-| Mod not in launcher | [Section 1](#1-mod-wont-load) |
-| Null pointer access | [Section 2](#2-script-errors) |
-| Player data lost | [Section 9](#9-persistence-issues) |
-| PBO signature failed | [Section 5](#5-build-and-pbo-issues) |
-| Prefix mismatch | [Section 5](#5-build-and-pbo-issues) |
-| RPC not received | [Section 3](#3-rpc-and-network-issues) |
-| Scroll not working | [Section 4](#4-ui-problems) |
-| Save file corrupt | [Section 9](#9-persistence-issues) |
-| Server crash on startup | [Section 2](#2-script-errors) |
-| Slider not responding | [Section 4](#4-ui-problems) |
-| Stack overflow | [Section 2](#2-script-errors) |
-| Text shows STR key | [Section 4](#4-ui-problems) |
-| Types.xml ignored | [Section 8](#8-config-and-types-issues) |
-| Undefined variable | [Section 2](#2-script-errors) |
-| Variable redeclaration | [Section 2](#2-script-errors) |
-| Vehicle won't drive | [Section 7](#7-item-vehicle-and-entity-issues) |
-| Widget invisible | [Section 4](#4-ui-problems) |
-| Widget never updates / never responds | [Section 4](#4-ui-problems) |
-| Works offline fails online | [Section 3](#3-rpc-and-network-issues) |
+| `ACCESS_VIOLATION` crash on boot, no script log | [Section 1](#_1-mod-won-t-load) |
+| Addon Builder fails | [Section 5](#_5-build-and-pbo-issues) |
+| Array index out of range | [Section 2](#_2-script-errors) |
+| Buttons not clickable | [Section 4](#_4-ui-problems) |
+| Cannot convert type | [Section 2](#_2-script-errors) |
+| Cannot create instance | [Section 2](#_2-script-errors) |
+| Config parse error | [Section 1](#_1-mod-won-t-load) |
+| Cursor missing | [Section 4](#_4-ui-problems) |
+| Division by zero | [Section 2](#_2-script-errors) |
+| Data lost on restart | [Section 9](#_9-persistence-issues) |
+| Entity deleted after spawn | [Section 7](#_7-item-vehicle-and-entity-issues) |
+| File patching not working | [Section 5](#_5-build-and-pbo-issues) |
+| FPS drops | [Section 6](#_6-performance-issues) |
+| Game input stuck | [Section 4](#_4-ui-problems) |
+| Raw health reads (`GetHealth`/`GetHealth01`) on the client | [Section 2](#_2-script-errors) |
+| Image not showing | [Section 4](#_4-ui-problems) |
+| Item invisible | [Section 7](#_7-item-vehicle-and-entity-issues) |
+| Item won't spawn | [Section 7](#_7-item-vehicle-and-entity-issues) |
+| JSON not loading | [Section 8](#_8-config-and-types-issues) |
+| Layout returns null | [Section 4](#_4-ui-problems) |
+| Loot not spawning | [Section 8](#_8-config-and-types-issues) |
+| Member already defined | [Section 2](#_2-script-errors) |
+| Memory leak | [Section 6](#_6-performance-issues) |
+| Method not found | [Section 2](#_2-script-errors) |
+| Mod not in launcher | [Section 1](#_1-mod-won-t-load) |
+| Null pointer access | [Section 2](#_2-script-errors) |
+| Player data lost | [Section 9](#_9-persistence-issues) |
+| PBO signature failed | [Section 5](#_5-build-and-pbo-issues) |
+| Prefix mismatch | [Section 5](#_5-build-and-pbo-issues) |
+| RPC not received | [Section 3](#_3-rpc-and-network-issues) |
+| Scroll not working | [Section 4](#_4-ui-problems) |
+| Save file corrupt | [Section 9](#_9-persistence-issues) |
+| Server crash on startup | [Section 2](#_2-script-errors) |
+| Slider not responding | [Section 4](#_4-ui-problems) |
+| Stack overflow | [Section 2](#_2-script-errors) |
+| Text shows STR key | [Section 4](#_4-ui-problems) |
+| Types.xml ignored | [Section 8](#_8-config-and-types-issues) |
+| Undefined variable | [Section 2](#_2-script-errors) |
+| Variable redeclaration | [Section 2](#_2-script-errors) |
+| Vehicle won't drive | [Section 7](#_7-item-vehicle-and-entity-issues) |
+| Widget invisible | [Section 4](#_4-ui-problems) |
+| Widget never updates / never responds | [Section 4](#_4-ui-problems) |
+| Works offline fails online | [Section 3](#_3-rpc-and-network-issues) |
 
 ---
 

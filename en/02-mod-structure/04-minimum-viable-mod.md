@@ -13,9 +13,9 @@
 ## Table of Contents
 
 - [The Three-File Skeleton](#the-three-file-skeleton)
-- [File 1: mod.cpp -- Launcher Metadata](#file-1-modcpp----launcher-metadata)
-- [File 2: config.cpp -- Engine Registration](#file-2-configcpp----engine-registration)
-- [File 3: The Script -- Hooking the Mission](#file-3-the-script----hooking-the-mission)
+- [File 1: mod.cpp -- Launcher Metadata](#file-1-mod-cpp-launcher-metadata)
+- [File 2: config.cpp -- Engine Registration](#file-2-config-cpp-engine-registration)
+- [File 3: The Script -- Hooking the Mission](#file-3-the-script-hooking-the-mission)
 - [The Load Sequence](#the-load-sequence)
 - [Where the Output Goes](#where-the-output-goes)
 - [Testing Without Packing](#testing-without-packing)

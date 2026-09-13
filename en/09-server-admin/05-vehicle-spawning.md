@@ -10,14 +10,14 @@
 ## Table of Contents
 
 - [How Vehicle Spawning Works](#how-vehicle-spawning-works)
-- [events.xml Vehicle Entries](#eventsxml-vehicle-entries)
+- [events.xml Vehicle Entries](#events-xml-vehicle-entries)
 - [Vehicle Event Field Reference](#vehicle-event-field-reference)
-- [cfgeventspawns.xml -- Spawn Positions](#cfgeventspawnsxml----spawn-positions)
+- [cfgeventspawns.xml -- Spawn Positions](#cfgeventspawns-xml-spawn-positions)
 - [Heli Crash Events](#heli-crash-events)
 - [Military Convoy](#military-convoy)
 - [Police Car](#police-car)
-- [cfgeventgroups.xml -- Grouped Spawns](#cfgeventgroupsxml----grouped-spawns)
-- [cfgeconomycore.xml Vehicle Root Class](#cfgeconomycorexml-vehicle-root-class)
+- [cfgeventgroups.xml -- Grouped Spawns](#cfgeventgroups-xml-grouped-spawns)
+- [cfgeconomycore.xml Vehicle Root Class](#cfgeconomycore-xml-vehicle-root-class)
 - [Common Mistakes](#common-mistakes)
 
 ---

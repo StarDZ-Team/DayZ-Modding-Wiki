@@ -26,7 +26,7 @@
 - [Common Mistakes](#common-mistakes)
 - [Best Practices](#best-practices)
 - [Theory vs Practice](#theory-vs-practice)
-- [Compatibility & Impact](#compatibility--impact)
+- [Compatibility & Impact](#compatibility-impact)
 - [Patterns in the Wild](#patterns-in-the-wild)
 
 ---

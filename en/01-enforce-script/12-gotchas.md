@@ -11,9 +11,9 @@
 
 - [Missing Language Features](#missing-language-features)
 - [Parser (CParser) Traps](#parser-cparser-traps)
-- [Engine & Runtime Quirks](#engine--runtime-quirks)
+- [Engine & Runtime Quirks](#engine-runtime-quirks)
 - [Sealed Classes, Parameter Limits, and the Obsolete Attribute](#sealed-classes-parameter-limits-and-the-obsolete-attribute)
-- [Build & Log Diagnostics](#build--log-diagnostics)
+- [Build & Log Diagnostics](#build-log-diagnostics)
 - [Coming From C++](#coming-from-c)
 - [Coming From C#](#coming-from-c-1)
 - [Coming From Java](#coming-from-java)

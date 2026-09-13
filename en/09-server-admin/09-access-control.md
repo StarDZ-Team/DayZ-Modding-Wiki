@@ -9,9 +9,9 @@
 
 ## Table of Contents
 
-- [Admin Access via serverDZ.cfg](#admin-access-via-serverdzcfg)
-- [ban.txt](#bantxt)
-- [whitelist.txt](#whitelisttxt)
+- [Admin Access via serverDZ.cfg](#admin-access-via-serverdz-cfg)
+- [ban.txt](#ban-txt)
+- [whitelist.txt](#whitelist-txt)
 - [Which identifier goes in these files](#which-identifier-goes-in-these-files)
 - [BattlEye Anti-Cheat](#battleye-anti-cheat)
 - [RCON (Remote Console)](#rcon-remote-console)
