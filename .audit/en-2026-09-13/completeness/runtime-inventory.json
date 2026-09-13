@@ -1,0 +1,55 @@
+{
+  "observedAt": "2026-09-13T22:30:07.9887379Z",
+  "purpose": "Runtime and packaging feasibility inventory; presence is not successful execution",
+  "executables": [
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ\\DayZDiag_x64.exe",
+      "fileVersion": "1.29",
+      "productVersion": "1.29.0.163709",
+      "bytes": 20245560,
+      "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+      "tested": false
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Exp\\DayZDiag_x64.exe",
+      "fileVersion": "1.29",
+      "productVersion": "1.29.0.163401",
+      "bytes": 20240952,
+      "sha256": "5BE59DBD91AE927A7F04A21C3CE6C9A545CF430069687CE3388A7ABFA401FC14",
+      "tested": false
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Server Exp\\DayZServer_x64.exe",
+      "fileVersion": "1.29",
+      "productVersion": "1.29.0.163401",
+      "bytes": 16966200,
+      "sha256": "880E05761281400807C75D464A399A4646760DA4F0179942D7A95EA7BAE20F85",
+      "tested": false
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\PboUtils\\FileBank.exe",
+      "fileVersion": null,
+      "productVersion": null,
+      "bytes": 194480,
+      "sha256": "F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF",
+      "tested": false
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\Workbench\\workbenchApp.exe",
+      "fileVersion": "",
+      "productVersion": "",
+      "bytes": 40879672,
+      "sha256": "B61D240394845EF9EAB3B5F459D487B50DBF3C42713FB9E9E50CE945F5A894C6",
+      "tested": false
+    }
+  ],
+  "officialReferences": [
+    "https://community.bistudio.com/wiki/DayZ:Workbench_Script_Debugging",
+    "https://community.bistudio.com/wiki/DayZ:Modding_Basics"
+  ],
+  "sourceFilesRead": [
+    "D:/DayZ Projects/scripts/3_game/autotest/autotestrunner.c",
+    "D:/DayZ Projects/scripts/3_game/autotest/autotestconfighandler.c",
+    "D:/DayZ Projects/scripts/3_game/dayzgame.c:2338-2355"
+  ]
+}

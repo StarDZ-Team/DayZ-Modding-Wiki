@@ -1,0 +1,505 @@
+{
+  "observedAt": "2026-09-13T23:02:00.0910345Z",
+  "requestedCount": 64,
+  "entries": [
+    {
+      "path": "D:/StarDZ/docs/plans",
+      "kind": "directory",
+      "status": "enumerated_not_reviewed",
+      "files": [
+        "D:/StarDZ/docs/plans\\STARDZ_MOD_STRUCTURE_STANDARD.md",
+        "D:/StarDZ/docs/plans\\SDZ_W_WEAPON_REAL_DATA.md",
+        "D:/StarDZ/docs/plans\\SDZ_W_WEAPON_OVERHAUL_DESIGN.md",
+        "D:/StarDZ/docs/plans\\SDZ_W_STATS_BRAINSTORM.md",
+        "D:/StarDZ/docs/plans\\2026-03-20-stardz-admin-panel-redesign.md",
+        "D:/StarDZ/docs/plans\\2026-03-19-stardz-full-ecosystem-refinement.md",
+        "D:/StarDZ/docs/plans\\2026-03-18-stardz-ecosystem-unification.md"
+      ]
+    },
+    {
+      "path": "D:/StarDZ/docs/vanilla_metadata",
+      "kind": "directory",
+      "status": "enumerated_not_reviewed",
+      "files": [
+        "D:/StarDZ/docs/vanilla_metadata\\system.txt",
+        "D:/StarDZ/docs/vanilla_metadata\\scripts.txt",
+        "D:/StarDZ/docs/vanilla_metadata\\languagecore.txt",
+        "D:/StarDZ/docs/vanilla_metadata\\gui.txt",
+        "D:/StarDZ/docs/vanilla_metadata\\graphics.txt",
+        "D:/StarDZ/docs/vanilla_metadata\\core.txt",
+        "D:/StarDZ/docs/vanilla_metadata\\bin.txt"
+      ]
+    },
+    {
+      "path": "D:/StarDZ/docs/API_ENFORCE_TIPOS_E_CONTAINERS.md",
+      "kind": "file",
+      "bytes": 106040,
+      "sha256": "E3C6CC59D363990F6599A4B27B57E004B79EA4F83267D46D0BF24771396047B8",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/API_TIMERS_EVENTOS_E_INPUT.md",
+      "kind": "file",
+      "bytes": 101937,
+      "sha256": "CBCA1AD91536EA14CDA971762E017771BD2238C0F25D9D203C686221EC21813A",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/CF_COMPLETE_REFERENCE.md",
+      "kind": "file",
+      "bytes": 58468,
+      "sha256": "AB0428821B300FB42ADF3170B3BA9ED4C00302EF460362A4F4BD2FA98FD10A61",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/COOKBOOK_RECEITAS_COMPLETAS.md",
+      "kind": "file",
+      "bytes": 15173,
+      "sha256": "0D05D8B011933D7E9ADC246CA3180C14A6EC2681F39CC91C655458509DEB9B9A",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/DAYZ_ENFORCE_SCRIPT_REFERENCE.md",
+      "kind": "file",
+      "bytes": 49120,
+      "sha256": "2FD5EAC54A2EA849FCA334E613D55884A35D02D5843E60261F3DD88F15479FD5",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/DAYZ_GUI_REFERENCE.md",
+      "kind": "file",
+      "bytes": 69254,
+      "sha256": "F83CD7E9843AAD1001B36E40883E3FF876FE645489C958DBFD83067A35AB9063",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/DAYZ_MOD_ARCHITECTURE_PATTERNS.md",
+      "kind": "file",
+      "bytes": 63647,
+      "sha256": "315C4C07A240C46D239984288F903860D46076A34376AC9CEDF5281D57D87B5B",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/DAYZ_VANILLA_SCRIPTS_REFERENCE.md",
+      "kind": "file",
+      "bytes": 66843,
+      "sha256": "00753D2A2D7EAF37ED257DE8319EA6753B665BA8C7A5815A7F8881BA14AF038D",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_AI_ZUMBIS_ANIMAIS.md",
+      "kind": "file",
+      "bytes": 104550,
+      "sha256": "B95F491ABA8CD98EB976E3E5DE598ACE82459BC3327DDFBE80EEFF8B9433D4E2",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_ANIMACAO.md",
+      "kind": "file",
+      "bytes": 80970,
+      "sha256": "3F7DB3CC786E900072F8D31B219C8F0B81C5F0561C470132517A67C0C39AF23A",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_BASE_BUILDING.md",
+      "kind": "file",
+      "bytes": 116706,
+      "sha256": "82F7DFB00A1340DFFAFA1225926CC2C975989D6DB3689CB9E2D02256F0AF00AA",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_CLIMA_E_AMBIENTE.md",
+      "kind": "file",
+      "bytes": 107263,
+      "sha256": "678217268743058FE85C1A9A83594929FE2F013C9D9F4F38698F84AAAE38AE79",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_COMPLETO_MODDING_DAYZ.md",
+      "kind": "file",
+      "bytes": 37353,
+      "sha256": "209268A58A89BF0DA97979A2B01034FBB77E6E478E3136E19815344A11E9BE4B",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_CRAFTING_E_ACOES.md",
+      "kind": "file",
+      "bytes": 112313,
+      "sha256": "A76E623A95EA35D650851279B69E9A839C6E60B9CDF3C62B017B74B791FB816D",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_CRIAR_ITEM_DO_ZERO.md",
+      "kind": "file",
+      "bytes": 115941,
+      "sha256": "E6D837BB74CA8ABD5BDA5E532EAAEB08C3E847E01FAA85F085C77FC94AADD359",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_DEBUG_E_PERFORMANCE.md",
+      "kind": "file",
+      "bytes": 59650,
+      "sha256": "86D3AD63EBA59C766FB1F75B277A38DC1C043C555DDF033837AC5266D5303835",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_ECONOMIA_E_LOOT.md",
+      "kind": "file",
+      "bytes": 94984,
+      "sha256": "25EEB8790E5FBDAECFE6A3FC04E709BDC6F6B93E5DDC9DC38E6132045A465F75",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md",
+      "kind": "file",
+      "bytes": 110585,
+      "sha256": "2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_FRAMEWORKS_COMUNIDADE.md",
+      "kind": "file",
+      "bytes": 98011,
+      "sha256": "7AA185CDC38A6EB5DEBCACB7418B27D734AE202CC871C13214D62D4B205E8F73",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md",
+      "kind": "file",
+      "bytes": 80278,
+      "sha256": "43AAECA6B5A5353499FE592C47615766EDE14DC8AB53B9E21B6551E32CFB07E8",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/GUIA_VEICULOS.md",
+      "kind": "file",
+      "bytes": 134614,
+      "sha256": "5CF73CF29A47EA68982CEDBEAD70F0BAE6B0410A0467D867DF459ECF10D8BD0D",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/README.md",
+      "kind": "file",
+      "bytes": 3735,
+      "sha256": "B8CAB5D599B6B3E23EFBEF69F536B91E8B669BF822C3CE96C421982B50238F3E",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/REFERENCE_MODS_DEEP_STUDY.md",
+      "kind": "file",
+      "bytes": 33812,
+      "sha256": "4EBFE0199D05526711FBA69070FB1C1D560ECD9994B1C5578796DA3CC96A6F91",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/REFERENCIA_LIMITES_E_MUROS.md",
+      "kind": "file",
+      "bytes": 14172,
+      "sha256": "726033DB527944DF57EED0767FB2F0329AB65438B3D48E6247E19D98DAE18EA0",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/REFERENCIA_TIPOS_DE_ARQUIVO.md",
+      "kind": "file",
+      "bytes": 19579,
+      "sha256": "BCC70BBA5733111C8EF513A1B2A2735A9B9D71C5A282B1D70CC86643ECFAD1C1",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md",
+      "kind": "file",
+      "bytes": 63617,
+      "sha256": "E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_ADMIN_CONFIRM_FEEDBACK_SPEC.md",
+      "kind": "file",
+      "bytes": 46850,
+      "sha256": "6473980D436B3DFDF70CCB5616CB44A23944EF3AD97C650DC39E373F53E56930",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_ADMIN_PANEL_SPEC.md",
+      "kind": "file",
+      "bytes": 18146,
+      "sha256": "81D2D09DA19E25C6435766864CC0E5414D324B01C5FD98BBA15D3861A0655130",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_ADMIN_PRACTICALITY_SPEC.md",
+      "kind": "file",
+      "bytes": 21774,
+      "sha256": "D7C78137A949C642D02B9D53D37951781B1A07F138D2145D3DDEE8E2E5981ED5",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/stardz_admin_redesign.html",
+      "kind": "file",
+      "bytes": 59299,
+      "sha256": "5FCFBEBC745BFC43EDBF55D5292A8471DA6151A8B0EC8036A9687322D84F4773",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_AUTONOMOUS_TEST_LOOP.md",
+      "kind": "file",
+      "bytes": 20495,
+      "sha256": "78EDCBB17948E12C2089B246D14091580975214ECA294CCF9D527C1561F38207",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_BOARD_PLAN.md",
+      "kind": "file",
+      "bytes": 16941,
+      "sha256": "C832E8A8F528C7B05A48AB8935F5DF16A0B583A06F6654A775481BC90036D1A6",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_COMMUNITY_TOOLS.md",
+      "kind": "file",
+      "bytes": 26940,
+      "sha256": "88F53020DD07ADD6CC6D103E351BE74A243EF97BD7F75E85D97A29FC7AF5A126",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_CORE_FULLSCREEN_PROPOSAL.md",
+      "kind": "file",
+      "bytes": 23419,
+      "sha256": "6D9BD30C15473DD37865EFB8A128CF3D8362ECE2C2EBCE3E60C9C3F8D42452E5",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_CURRENCY_BRIDGE_CONTRACT.md",
+      "kind": "file",
+      "bytes": 7483,
+      "sha256": "2CCF77EDC3DC6F0E3CD3FD8AC7B3CBDB8A85EBCCB845C88223958AA15DA2EEE9",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/stardz_decisions.html",
+      "kind": "file",
+      "bytes": 40401,
+      "sha256": "1BEDC1527DB0A7C41BC509889A6DC2696E0D389051CAC88B4E84B516EF9EA42D",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_DEV_REFERENCE.md",
+      "kind": "file",
+      "bytes": 8165,
+      "sha256": "8AA227292957A0E956C742AD74054F1FE083B6AC7C7B1FB6E8501DB89485D273",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_ECOSYSTEM_IDEAS.md",
+      "kind": "file",
+      "bytes": 92793,
+      "sha256": "CEE68B992A2673F0E7CA3D50766DD8EA15D2A1105B9CDF77D72FA2406D39680C",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/stardz_feature_board.html",
+      "kind": "file",
+      "bytes": 163363,
+      "sha256": "999C451FDEC15B21DAC30A5EF077136EC6EDDCFFE897DAE16E30AEABD9DB087A",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_FEATURE_BOARD.json",
+      "kind": "file",
+      "bytes": 165615,
+      "sha256": "F6CB5F5D614315209AE2F1CBEB7A2B874C82BC09122CD881B758E495321034C4",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_FEATURE_IDEAS.md",
+      "kind": "file",
+      "bytes": 56226,
+      "sha256": "B346DDDC47186E78A105CEB3003C7CFCAAFEADDF94117DFC25F20335B2BD1CE4",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_HUD_CONTENT_SPEC.md",
+      "kind": "file",
+      "bytes": 39800,
+      "sha256": "171604CEC65E363CEAAA983C90F0ABD18689F7CAA2DF7EFC3D0232DDB14AAA83",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_HUD_STANDARD.md",
+      "kind": "file",
+      "bytes": 65949,
+      "sha256": "E93D6AB7665443BA85AC06EA4B82701E364CFFC058C484949F71962676FCB51A",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_I18N_CONTRACT.md",
+      "kind": "file",
+      "bytes": 34811,
+      "sha256": "1E22BDC7304F1B15443B52554FB7F99BF6F528E4C64CCDCBACEA1D31A8616F58",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_ICON_PIPELINE_SPEC.md",
+      "kind": "file",
+      "bytes": 81609,
+      "sha256": "592AAE1BE64F883704353C1FF14A922E0CBDAF30A8C992277C3E7AC1B83D9347",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_ICON_SYSTEM.md",
+      "kind": "file",
+      "bytes": 81262,
+      "sha256": "99A23F0CBCAD82E5882DC7DCCD2349032A79228783ED48565FE748672FA100DE",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_LAYOUT_BUILDER.md",
+      "kind": "file",
+      "bytes": 44948,
+      "sha256": "869D6261860AD09C1B96556038803265A8E6F16D7E1125E926E478EAED2C5411",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_LAYOUT_BUILDER_PRIOR_ART.md",
+      "kind": "file",
+      "bytes": 46187,
+      "sha256": "1AEF5A15F80DF848415DA369D41C6B335D94F6D789EACC4F44FF4C2255DA63F3",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_MASTER_PLAN.md",
+      "kind": "file",
+      "bytes": 49302,
+      "sha256": "5D517F35C801507553B77A33F8D37B9AF0840A0245D16CBF776CAC025553A3A2",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_PLAYER_DOSSIER_SPEC.md",
+      "kind": "file",
+      "bytes": 22664,
+      "sha256": "09CD3F3FA327B1A9CCAA743D2233DC5467E528FC027F3C07136555815CFF6E71",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_PRODUCT_PROCESS.md",
+      "kind": "file",
+      "bytes": 17064,
+      "sha256": "841FBC506361F11E9C90B803DFDAC775A2B9483CFAD9E2E652891B73D4E48962",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_PROGRESSION_ENGINE.md",
+      "kind": "file",
+      "bytes": 22588,
+      "sha256": "C3AB3CF0D8240537193DA7F3E96FB14BC4A14F47783D0B3FED371DD5855AA4D0",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_PVE_HORROR_IDEAS.md",
+      "kind": "file",
+      "bytes": 76571,
+      "sha256": "ECA06BFA7BC5DE5AD6E1A49437B0D9A54488D865FD488FA7EBF33D1CED1CD6DD",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_QOL_CS_IDEAS.md",
+      "kind": "file",
+      "bytes": 34773,
+      "sha256": "794F084EEADD54DCA5B2D829D89923DCC04A101AE9851F01530E786ABAE9E0B1",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_REPO_MAP.md",
+      "kind": "file",
+      "bytes": 34363,
+      "sha256": "7A224F020C9B22417F99DE6FAC66D3924EB2B87562EEF58210C50F53DE066B16",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_TYPOGRAPHY_STRATEGY.md",
+      "kind": "file",
+      "bytes": 49438,
+      "sha256": "68DA6DDEB08A8400D75BD66686B9A6D5A86E4EB8E877C8A025799A7B3D1436EB",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_UX_CHARTER.md",
+      "kind": "file",
+      "bytes": 12275,
+      "sha256": "5EA8C8FBF67EC0FEC3B649656ABF6E1001B58B900411013D09F130E2790AF997",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/STARDZ_UX_ELEVATION_PLAN.md",
+      "kind": "file",
+      "bytes": 56410,
+      "sha256": "E16D1350B0D7840E92585AFAB8371BE648F4BDCA5D894FBF0A9ADCB1FAA105BC",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/TUTORIAL_CRIAR_ANEXOS.md",
+      "kind": "file",
+      "bytes": 12901,
+      "sha256": "DF3FDD6FA4E52CF24F7453392698172255DDD09AC4A339EC0AA0AF6D5C27271A",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/WIKI_RESTRUCTURE_PLAN.md",
+      "kind": "file",
+      "bytes": 11134,
+      "sha256": "5055D484EFFCA48EF5B9E367026BE3C448CF9368A534F1891A40A75703817FA5",
+      "status": "inventoried_not_reviewed"
+    },
+    {
+      "path": "D:/StarDZ/docs/AI",
+      "kind": "directory",
+      "status": "enumerated_not_reviewed",
+      "files": [
+        "D:/StarDZ/docs/AI\\09-dayz-modding-reference.md",
+        "D:/StarDZ/docs/AI\\08-template-misc-docs.md",
+        "D:/StarDZ/docs/AI\\07-central-economy.md",
+        "D:/StarDZ/docs/AI\\06-samples.md",
+        "D:/StarDZ/docs/AI\\05-vanilla-scripts.md",
+        "D:/StarDZ/docs/AI\\04-expansion-scripts.md",
+        "D:/StarDZ/docs/AI\\03-dabs-framework.md",
+        "D:/StarDZ/docs/AI\\02-community-framework.md",
+        "D:/StarDZ/docs/AI\\01-colorful-ui.md",
+        "D:/StarDZ/docs/AI\\00-index.md"
+      ]
+    },
+    {
+      "path": "D:/StarDZ/docs/DayZ",
+      "kind": "directory",
+      "status": "enumerated_not_reviewed",
+      "files": [
+        "D:/StarDZ/docs/DayZ\\Workbench Script Debugging.md",
+        "D:/StarDZ/docs/DayZ\\Weather Configuration.md",
+        "D:/StarDZ/docs/DayZ\\Underground Areas Configuration.md",
+        "D:/StarDZ/docs/DayZ\\Tools Launcher.md",
+        "D:/StarDZ/docs/DayZ\\Spawning Gear Configuration.md",
+        "D:/StarDZ/docs/DayZ\\Server manager.md",
+        "D:/StarDZ/docs/DayZ\\Server Configuration.md",
+        "D:/StarDZ/docs/DayZ\\Projection Layer.md",
+        "D:/StarDZ/docs/DayZ\\Player Spawning Configuration.md",
+        "D:/StarDZ/docs/DayZ\\Object Spawner.md",
+        "D:/StarDZ/docs/DayZ\\Modding Structure.md",
+        "D:/StarDZ/docs/DayZ\\Modding Basics.md",
+        "D:/StarDZ/docs/DayZ\\Ladders on buildings.md",
+        "D:/StarDZ/docs/DayZ\\Hosting a Linux Server.md",
+        "D:/StarDZ/docs/DayZ\\Grass-clutter modelling.md",
+        "D:/StarDZ/docs/DayZ\\Geometric Occluders.md",
+        "D:/StarDZ/docs/DayZ\\Gameplay Settings.md",
+        "D:/StarDZ/docs/DayZ\\Enforce Script Syntax.md",
+        "D:/StarDZ/docs/DayZ\\Doors on buildings.md",
+        "D:/StarDZ/docs/DayZ\\Diag Menu.md",
+        "D:/StarDZ/docs/DayZ\\Contaminated Areas Configuration.md",
+        "D:/StarDZ/docs/DayZ\\CfgConvert.md",
+        "D:/StarDZ/docs/DayZ\\Central Economy setup for custom terrains.md",
+        "D:/StarDZ/docs/DayZ\\Central Economy mission files modding.md",
+        "D:/StarDZ/docs/DayZ\\Central Economy Configuration.md",
+        "D:/StarDZ/docs/DayZ\\Buldozer for Object Builder.md"
+      ]
+    }
+  ],
+  "note": "Inventory and hashing do not establish content review or correctness. Worker source-use records must identify actual reads and evidence."
+}

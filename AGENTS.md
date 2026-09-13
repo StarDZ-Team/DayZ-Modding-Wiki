@@ -191,6 +191,8 @@ These instructions consolidate the user's decisions from the audit conversation 
 - Missing script declarations do not prove that a native feature is absent. Empty or incomplete extracted files cannot establish absence either.
 - State access failures and evidence limits honestly. Do not cite inaccessible material as if it was read.
 
+The user explicitly supplied a local reference corpus on 2026-09-13. Its exact paths are preserved in [the source list](.audit/en-2026-09-13/completeness/user-source-paths.txt), including `plans/`, `vanilla_metadata/`, `AI/`, `DayZ/`, technical references, cookbooks, guides, and StarDZ specifications/contracts. Consult relevant contents by domain and track actual reading separately from inventory. A document's own verification label or claim that tests passed is a lead to verify, not independent proof. Product plans and designs must not be represented as implemented DayZ behavior.
+
 ### Coverage of Limits and Packaging
 
 Include PBO packaging and multi-PBO design in the coverage map, alongside language, GUI, assets, engine APIs, patterns, tutorials, and server administration.
