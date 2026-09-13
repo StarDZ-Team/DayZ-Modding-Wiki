@@ -102,7 +102,7 @@ Without the correct key, any player running that mod gets: **"Player kicked: Mod
 
 ## Load Order and Dependencies
 
-Mods load left-to-right in the `-mod=` parameter. A mod's `config.cpp` declares its dependencies:
+What actually *declares* a dependency is `requiredAddons[]` in the mod's `CfgPatches`, which Bohemia documents in [Modding Basics](https://community.bistudio.com/wiki/DayZ:Modding_Basics) as the mechanism for ordering addon initialisation:
 
 ```cpp
 class CfgPatches
@@ -114,12 +114,14 @@ class CfgPatches
 };
 ```
 
-If `MyMod` requires `CF`, then `@CF` must appear **before** `@MyMod` in the launch parameter:
+Mods are listed left-to-right in `-mod=`, and the reliable convention — the one mod authors document and the one this chapter recommends — is to list dependencies before the mods that need them:
 
 ```
--mod=@CF;@MyMod          ✓ correct
--mod=@MyMod;@CF          ✗ crash or missing classes
+-mod=@CF;@MyMod          ✓ recommended
+-mod=@MyMod;@CF          ✗ the ordering to avoid
 ```
+
+Getting it wrong typically shows up as a "Missing addons" error or missing classes at load, sometimes a crash. Bohemia does not publish a statement that `-mod=` ordering is what resolves `requiredAddons[]`, so treat "dependencies first" as well-established community practice rather than a documented engine guarantee. Either way it costs nothing to follow, and it is what mod documentation assumes.
 
 **General load order pattern:**
 
@@ -193,7 +195,7 @@ When you have many mods and something breaks, test incrementally:
 
 ### Two Mods Editing the Same Class
 
-If two mods both use `modded class PlayerBase`, the one loaded **last** (rightmost in `-mod=`) wins. Its `super` call chains to the other mod's version. This usually works, but if one mod overrides a method without calling `super`, the other mod's changes are lost.
+If two mods both use `modded class PlayerBase`, the widely observed behaviour is that the one loaded **last** (rightmost in `-mod=`) sits outermost in the chain, and its `super` call chains back through the other mod's version. This is **well-established community modding practice, not a rule Bohemia documents** — what Bohemia publishes is `requiredAddons[]` and the five script modules that load in the order `engineScriptModule`, `gamelibScriptModule`, `gameScriptModule`, `worldScriptModule`, `missionScriptModule`. Chaining usually works regardless of which mod ends up outermost; the real failure mode is a mod that overrides a method **without calling `super`**, which drops the other mod's changes whatever the order. If two mods must coexist, check that both call `super` before worrying about their positions.
 
 ---
 

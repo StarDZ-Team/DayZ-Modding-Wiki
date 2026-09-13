@@ -45,6 +45,8 @@ The CE runs entirely on the server. Clients have no visibility into CE state, an
 
 All CE files live in the mission folder (e.g., `mpmissions/dayzOffline.chernarusplus/`). The `db/` files are the core database; the `cfg*` files sit at the mission root.
 
+This chapter's table previously covered 12 files. Bohemia's own [Central Economy setup for custom terrains](https://community.bistudio.com/wiki/DayZ:Central_Economy_setup_for_custom_terrains) page tabulates a fuller set, and the shipped Chernarus mission folder carries more still (including files outside the Central Economy proper, such as `env/` and the weather/underground-trigger configs); the table below adds the ones this chapter's scope covers and did not previously list.
+
 | File | Purpose | Documented In |
 |------|---------|---------------|
 | `db/types.xml` | Every spawnable item's parameters | this chapter |
@@ -56,9 +58,19 @@ All CE files live in the mission folder (e.g., `mpmissions/dayzOffline.chernarus
 | `cfgspawnabletypes.xml` | Per-item attachment, cargo, and spawn-damage rules | this chapter |
 | `cfgrandompresets.xml` | Reusable random loot pools | this chapter |
 | `cfglimitsdefinition.xml` | All valid category, usage, tag, and value flag names | this chapter |
+| `cfglimitsdefinitionuser.xml` | Server-defined additional flag groups layered on top of `cfglimitsdefinition.xml` | this chapter |
 | `cfgeventspawns.xml` | World coordinates for event spawn positions | [Vehicle & Dynamic Event Spawning](05-vehicle-spawning.md) |
+| `cfgeventgroups.xml` | Groups of objects/vehicles spawned together for an event | [Vehicle & Dynamic Event Spawning](05-vehicle-spawning.md) |
 | `cfgplayerspawnpoints.xml` | Fresh spawn locations | [Player Spawning](06-player-spawning.md) |
 | `cfgignorelist.xml` | Items excluded from the economy | this chapter |
+| `cfgenvironment.xml` | Per-area environment/animal-spawning weights | not covered in this domain |
+| `mapgroupproto.xml` | Per-building-prototype usage/category/tag flags and every loot `<point>`, capped by `lootmax` | this chapter, see the Tags section below |
+| `mapgrouppos.xml` | Placement (position/orientation) of each map group instance on the terrain | not covered in this domain |
+| `mapgroupcluster.xml` | Clusters of map groups placed together | not covered in this domain |
+| `mapclusterproto.xml` | Prototypes referenced by `mapgroupcluster.xml` | not covered in this domain |
+| `mapgroupdirt.xml` | Positions of map groups (buildings) not tied to a specific map object | not covered in this domain |
+| `areaflags.map` | Binary CETool output mapping terrain area to tier/usage flags | not covered in this domain -- see the `<value>` tier caveat below |
+| `env/` | Per-region wildlife/zombie population and territory data | [Advanced Server Operations](12-advanced.md#cfgenvironment-xml-and-animal-territories) |
 
 ---
 
@@ -94,7 +106,7 @@ In short: the CE counts how many of each item exist, compares against the nomina
 
 ## types.xml -- Item Spawn Definitions
 
-This is the most important economy file. Every item that can spawn in the world needs an entry here. The vanilla `types.xml` for Chernarus contains approximately 23,000 lines covering thousands of items.
+This is the most important economy file. Every item that can spawn in the world needs an entry here. The vanilla `types.xml` for Chernarus runs to roughly 24,000 lines -- 24,455 in the extracted build audited for this chapter, and 24,456 in `dayzOffline.chernarusplus/db/types.xml` of Bohemia's [DayZ-Central-Economy](https://github.com/BohemiaInteractive/DayZ-Central-Economy) repository at commit `9a21bb9`. Both carry the same **1,970** `<type>` entries; the two builds differ in a handful of `nominal`, `min` and `flags` values, so expect small drift between whatever copy you hold and any figure quoted here.
 
 ### Real types.xml Examples
 
@@ -242,7 +254,9 @@ Bandages are very common (40 nominal). They spawn in Medic buildings (hospitals,
 
 An item can have **multiple** `<usage>` and `<value>` tags. Multiple usages mean it can spawn in any of those building types. Multiple values mean it can spawn in any of those tiers.
 
-If you omit `<value>` entirely, the item spawns in **all** tiers. If you omit `<usage>`, the item has no valid spawn location and will **not spawn**.
+If you omit `<value>` entirely, the item spawns in **all** tiers. Community practice treats omitting `<usage>` as leaving the item with no valid spawn location, and this wiki previously stated that as an unqualified fact -- but it is **not** what Bohemia's own shipped `types.xml` does. Parsing the vanilla Chernarus file finds 19 of its 1,970 `<type>` entries with no `<usage>` child at all and a `nominal` above zero, including ordinary world loot such as `Flashlight` (nominal 90, has `<category name="tools"/>` and `<tag name="shelves"/>`), `Lockpick` (nominal 50, `<category name="tools"/>` only) and `GlassBottle` (nominal 80, with no `<usage>`, `<category>` or `<tag>` at all). Only 2 of the 19 set `deloot="1"`, so dynamic-event-only spawning does not explain them. No page in Bohemia's Central Economy documentation states the "no usage = no spawn" rule. Treat it as unconfirmed community shorthand rather than an engine fact: what the data does support is that `<category>` and `<tag>` matching still apply independently of `<usage>`, and that a type missing all three (like `GlassBottle`) still spawns somewhere in vanilla Chernarus.
+
+Where an item's loot point actually comes from is `mapgroupproto.xml` (not covered elsewhere in this chapter): it assigns usage/category/tag flags to each building prototype and holds every loot `<point>` a container can spawn into, capped per group and per container by a `lootmax` default (shipped Chernarus: group 6, container 4, overridable per prototype). The official [Central Economy setup for custom terrains](https://community.bistudio.com/wiki/DayZ:Central_Economy_setup_for_custom_terrains) page notes that only one piece of loot can end up on a given spawn point, so the number of spawn points tagged into a container is effectively that container's usable loot cap. If a type has valid `types.xml` flags but never spawns, a `mapgroupproto.xml` prototype missing a matching tagged point is a more likely cause than the presence or absence of `<usage>` alone.
 
 The full lists of valid names live in `cfglimitsdefinition.xml` -- see [below](#cfglimitsdefinitionxml----flag-definitions).
 
@@ -291,30 +305,34 @@ The `type` attribute indicates data type: `0` = integer, `1` = float, `2` = stri
 
 ### Complete Parameter Reference
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| **AnimalMaxCount** | int | 200 | Maximum number of animals alive on the map at once. |
+Bohemia documents all 30 of these variables -- type, unit and engine default -- on the [DayZ:Central Economy Configuration](https://community.bistudio.com/wiki/DayZ:Central_Economy_Configuration) wiki page, in its `db\globals.xml` table. The descriptions below expand on that page's wording; where the two would otherwise differ, the official text is quoted.
+
+The **Chernarus value** column holds the value shipped in `dayzOffline.chernarusplus/db/globals.xml`, which is not always the engine default Bohemia states. Two diverge: `LootSpawnAvoidance` (engine default 50, Chernarus ships 100) and `LootDamageMax` (engine default 0, Chernarus ships 0.82). For the other 28 the shipped value and the engine default are identical.
+
+| Parameter | Type | Chernarus value | Description |
+|-----------|------|-----------------|-------------|
+| **AnimalMaxCount** | int | 200 | Maximum number of spawned animals across all zones on the map. Bohemia's text adds *(not ambient)*: ambient wildlife is not counted against this limit. |
 | **CleanupAvoidance** | int | 100 | Distance in meters from a player where the CE will NOT clean up items. Items within this radius are protected from lifetime expiry. |
 | **CleanupLifetimeDeadAnimal** | int | 1200 | Seconds before a dead animal corpse is removed. (20 minutes) |
 | **CleanupLifetimeDeadInfected** | int | 330 | Seconds before a dead zombie corpse is removed. (5.5 minutes) |
 | **CleanupLifetimeDeadPlayer** | int | 3600 | Seconds before a dead player body is removed. (1 hour) |
-| **CleanupLifetimeDefault** | int | 45 | Default cleanup time in seconds for items with no specific lifetime. |
+| **CleanupLifetimeDefault** | int | 45 | Default lifetime in seconds for entities with no economy setup of their own **and** already at damage >= 1.0 (that is, ruined or dead). It is not a blanket 45-second timer on every unconfigured item. |
 | **CleanupLifetimeLimit** | int | 50 | Maximum number of items processed per cleanup cycle. |
 | **CleanupLifetimeRuined** | int | 330 | Seconds before ruined items are cleaned up. (5.5 minutes) |
-| **FlagRefreshFrequency** | int | 432000 | How often a flag pole must be "refreshed" by interaction to prevent base decay, in seconds. (5 days) |
-| **FlagRefreshMaxDuration** | int | 3456000 | Maximum lifetime of a flag pole even with regular refreshing, in seconds. (40 days) |
-| **FoodDecay** | int | 1 | Enable (1) or disable (0) food spoilage over time. |
+| **FlagRefreshFrequency** | int | 432000 | *"Items lifetime will be refreshed with this frequency."* The interval, in seconds, at which an active territory flag automatically resets the lifetimes of items around it -- not a deadline the player must meet. (5 days) |
+| **FlagRefreshMaxDuration** | int | 3456000 | *"How long the flag will be refreshing items."* The total refresh budget, in seconds, that a fully raised flag holds; once it is spent the flag stops refreshing. (40 days) |
+| **FoodDecay** | int | 1 | Enable (1) or disable (0) food spoilage over time. Bohemia documents it as *requiring `WorldWetTempUpdate` set to 1*; with that update switched off, food decay does not run. |
 | **IdleModeCountdown** | int | 60 | Seconds before server enters idle mode when no players are connected. |
 | **IdleModeStartup** | int | 1 | Whether the server starts in idle mode (1) or active mode (0). |
 | **InitialSpawn** | int | 100 | Percentage of nominal values to spawn on first server start (0-100). |
-| **LootDamageMax** | float | 0.82 | Maximum damage state for randomly spawned loot (0.0 = pristine, 1.0 = ruined). |
+| **LootDamageMax** | float | 0.82 | Maximum damage applied to any item spawned through the CE (0.0 = pristine, 1.0 = ruined). Bohemia's engine default is **0**; Chernarus ships 0.82. |
 | **LootDamageMin** | float | 0.0 | Minimum damage state for randomly spawned loot. |
-| **LootProxyPlacement** | int | 1 | Enable (1) visual placement of items on shelves/tables vs random floor drops. |
-| **LootSpawnAvoidance** | int | 100 | Distance in meters from a player where the CE will NOT spawn new loot. Prevents items popping into existence in front of players. |
+| **LootProxyPlacement** | int | 1 | *"Allow dispatch containers to receive the loot."* Whether the CE may place loot into proxy containers rather than only onto loose loot points. |
+| **LootSpawnAvoidance** | int | 100 | How far a player must be from a loot group for loot to spawn inside it, in meters. Prevents items popping into existence in front of players. Bohemia's engine default is **50** -- the value this was once hard-coded to -- and Chernarus ships 100. |
 | **RespawnAttempt** | int | 2 | Number of spawn position attempts per item per CE cycle before giving up. |
-| **RespawnLimit** | int | 20 | Maximum number of items the CE will respawn per cycle. |
+| **RespawnLimit** | int | 20 | *"How many items of one type can be spawned at once"* -- a per-type cap, not a total for the whole cycle. |
 | **RespawnTypes** | int | 12 | Maximum number of different item types processed per respawn cycle. |
-| **RestartSpawn** | int | 0 | When 1, re-randomize all loot positions on server restart. When 0, load from persistence. |
+| **RestartSpawn** | int | 0 | Bohemia gives this a unit of **%**: *"How much loot should be respawned during restart to nomimal"*. On that reading it is a percentage of nominal to top up at restart, so `1` asks for one percent -- not an on/off switch. See [Re-randomizing Loot at Restart](#re-randomizing-loot-at-restart). |
 | **SpawnInitial** | int | 1200 | Number of spawn attempts (tests) allowed during the initial economy population -- not a count of items spawned. The amount of loot placed on first start is governed by `InitialSpawn`. |
 | **TimeHopping** | int | 60 | Cooldown in seconds preventing a player from reconnecting to the same server (anti-server-hop). |
 | **TimeLogin** | int | 15 | Login countdown timer in seconds (the "Please wait" timer when connecting). |
@@ -341,9 +359,36 @@ The `type` attribute indicates data type: `0` = integer, `1` = float, `2` = stri
 
 **Shorter base decay (wipe stale bases faster):**
 ```xml
-<var name="FlagRefreshFrequency" type="0" value="259200"/>
 <var name="FlagRefreshMaxDuration" type="0" value="1728000"/>
 ```
+
+`FlagRefreshMaxDuration` is the knob for base decay pace: it is the total refresh budget a raised flag holds, so halving it halves how long an unvisited base stays protected. `FlagRefreshFrequency` is *not* a second decay knob -- see [How the territory flag actually refreshes](#how-the-territory-flag-actually-refreshes) below before touching it.
+
+### How the territory flag actually refreshes
+
+The mechanism is visible in the vanilla scripts, in `TerritoryFlag` (`scripts/4_world/entities/itembase/basebuildingbase/totem.c`), and it is not a player deadline:
+
+- A raised flag holds a **refresh budget** in seconds, capped at `FlagRefreshMaxDuration`. Raising the flag is what fills it: each step of the *Raise Flag* action adds 20% of the cap (`ActionRaiseFlag` -> `AddRefresherTime01(0.2)`), so five steps fill it completely.
+- While the budget is above zero, the flag's economy update accumulates elapsed time and, every `FlagRefreshFrequency` seconds, calls `RadiusLifetimeReset()` on a **60 m** radius (`GameConstants.REFRESHER_RADIUS`) -- resetting the lifetime of everything inside it -- and then subtracts that elapsed time from the budget.
+- When the budget reaches zero the refresher switches off, item lifetimes stop being reset, and the parts become eligible for normal CE cleanup as their own lifetimes run out.
+- The flag's mast height is driven by the remaining budget (`AnimateFlag(1 - GetRefresherTime01())`), which is why a flag visibly sinks as protection is used up.
+
+Two consequences that the "flag must be refreshed every five days" framing gets backwards:
+
+- `FlagRefreshFrequency` sets the **cadence of the automatic refresh**, not how often a player must show up. Lowering it makes the flag refresh more often, not less.
+- An item is only kept alive by a flag if its own `lifetime` is at least `FlagRefreshFrequency`. `EntityAI.MaxLifetimeRefreshCalc()` marks an entity refresher-viable only when `frequency <= lifetime`, so *raising* `FlagRefreshFrequency` silently drops short-lifetime items out of flag protection.
+
+If the vanilla defaults are in place, the engine constants match them exactly: `REFRESHER_FREQUENCY_DEFAULT` is `3600 * 24 * 5` (432000) and `REFRESHER_MAX_DURATION_DEFAULT` is `3600 * 24 * 40` (3456000), in `scripts/3_game/constants.c`.
+
+What a player has to do in-game to top the budget back up is raise the flag; the exact in-game timing and interaction feel has not been verified against a running server for this chapter.
+
+### Re-randomizing Loot at Restart
+
+`RestartSpawn` is the variable usually reached for here, and it needs a caveat. Bohemia documents it with a unit of **%** and the description *"How much loot should be respawned during restart to nomimal"* -- a percentage of nominal to top up at restart, with an engine default of 0.
+
+The procedure circulated widely in the admin community is to set it to `1` for a single restart and then back to `0`. Under Bohemia's percentage reading, `1` requests one percent of nominal and would do almost nothing. The two readings cannot both be right, and this wiki has not verified the behaviour against a running server, so treat the `1` procedure as **community practice of unverified effect**. If you want a top-up that is unambiguous under either reading, set a value you actually intend as a percentage -- `100` asks for a full top-up to nominal on the percentage reading, and is non-zero under the boolean reading too.
+
+The dependable way to get a fresh economy remains a persistence wipe (see [Persistence & Storage](07-persistence.md)).
 
 ---
 
@@ -385,11 +430,11 @@ Reading this entry:
 
 1. The AKM spawns with damage between 45-85% (worn to badly damaged)
 2. It **always** (100%) gets a plastic handguard, but only a 25% chance of a buttstock
-3. 50% chance of the optic slot being rolled -- if it is, 30% chance for Kashtan, 20% for PSO-11
+3. 50% chance of the optic slot being rolled -- if it is, Kashtan and PSO-11 compete for the slot on their `chance="0.30"`/`chance="0.20"` weights (see the note below on what those per-item weights mean)
 4. 5% chance of a suppressor
 5. 10% chance of a loaded magazine
 
-Each `<attachments>` block represents one attachment slot. The `chance` on the block is the probability of that slot being populated at all. The `chance` on each `<item>` within is relative selection weight -- the CE picks one item from the list using these as weights.
+Each `<attachments>` block represents one attachment slot. The `chance` on the block is the probability of that slot being populated at all. **The per-item `chance` selection semantics are unverified here.** This wiki has not tested how the engine selects among multiple `<item>` entries or whether their values imply a chance of selecting none; do not infer those outcomes from the example values.
 
 ### Weapon with Attachments -- M4A1
 
@@ -454,6 +499,8 @@ The `preset` attribute references a loot pool defined in `cfgrandompresets.xml`.
 
 The `<hoarder />` tag marks storage containers -- in vanilla: the four barrel colors, all tents, `SeaChest`, `SmallProtectorCase`, `WoodenCrate`, and `UndergroundStash`. Items stored inside a hoarder container are counted by the CE **only** for types whose `types.xml` entry sets `count_in_hoarder="1"`. For everything else, stashed items silently leave the economy: the CE no longer sees them and keeps spawning fresh copies into the world. This counting behavior is the entire meaning of the tag -- it is how the economy decides whether hoarded loot suppresses respawns or not.
 
+Bohemia's `cfgspawnabletypes.xml` documentation names a second, sibling flag on the same line as `<hoarder/>`: `<unique/>`. It is not used anywhere in the vanilla Chernarus `cfgspawnabletypes.xml`, so this wiki cannot show a real example or confirm its runtime effect from the shipped data -- it is documented to exist, but its behavior is unverified here.
+
 ### Spawn Damage Override
 
 ```xml
@@ -484,7 +531,7 @@ How a roll works:
 
 1. A `<cargo preset="foodHermit"/>` line in `cfgspawnabletypes.xml` triggers one roll.
 2. The pool's own `chance` (here 0.15) decides whether the roll produces anything at all.
-3. If it does, one item is picked from the list using the per-item `chance` values as relative weights.
+3. If it does, selection uses the per-item `chance` values. As with `cfgspawnabletypes.xml` above, the per-item selection semantics are unverified here; this example does not establish how multiple entries are combined or whether none can be selected.
 
 Because presets are shared, one edit rebalances every container that references the pool. Vanilla uses this heavily: `mixArmy`, `foodVillage`, `toolsTools`, and dozens of other pools feed backpacks, wrecks, and infected inventories.
 
@@ -534,6 +581,35 @@ Notes:
 - **Root classes** tell the CE which config base classes it should track. Character-like roots need `act="character"`, movable vehicles need `act="car"`.
 - The `log_ce_*` defaults switch on per-subsystem CE logging -- invaluable when debugging why an item does not spawn.
 - The core CE files (`types.xml`, `events.xml`, `globals.xml`) live in `db/` by built-in convention; vanilla does not point at them from here.
+- The vanilla Chernarus file omits the persistence-backup and world-segment defaults entirely, so those fall back to their engine values -- see below.
+
+### Persistence Backups and World Segments
+
+Bohemia documents four further `<default>` entries in this file that govern the automatic persistence backups you see appear under `storage_1/backup/`. None of them is present in the vanilla Chernarus file, so a stock server runs on the engine values:
+
+| Default | Type | Engine default | Meaning |
+|---------|------|----------------|---------|
+| `world_segments` | int | 12 | How many segments the CE splits the world into for saving, loading, cleanup and other processing. The default is sized for Chernarus; a larger or denser map may want a different number. |
+| `backup_period` | int | 60 | Minutes between automatic backups. Each new backup overwrites the oldest once `backup_count` is reached. Minimum permitted value is **15**. |
+| `backup_count` | int | 12 | How many backup folders to keep. With `backup_count` 3 and `backup_period` 20 you hold an hour of history and start overwriting after 80 minutes. |
+| `backup_startup` | bool | false | Take a backup immediately after the server finishes loading and its initial respawn. |
+
+```xml
+<economycore>
+    <!-- classes as above -->
+    <defaults>
+        <!-- ... -->
+        <default name="world_segments" value="12" />
+        <default name="backup_period" value="60" />
+        <default name="backup_count" value="12" />
+        <default name="backup_startup" value="false" />
+    </defaults>
+</economycore>
+```
+
+The segmented save is also the reason the persistence chapter warns against touching `storage_1/` on a live server: because the map is saved segment by segment, some segment is mid-save for most of the server's uptime, and an interruption there can corrupt it. The backup system exists precisely to give you a rollback when that happens. See [World State & Persistence](07-persistence.md#the-storage-1-directory).
+
+Two more defaults on the same official page control whether the CE writes its startup dumps at all: `save_events_startup` and `save_types_startup`. Bohemia's description is *"If disabled, no `data/events.bin` is created at startup (usefull for minimal hive setup)"* and the equivalent for `data/types.bin`. Vanilla Chernarus sets both to `true`.
 
 ### Registering Custom Economy Files
 
@@ -550,8 +626,15 @@ The `<ce>` element (supported since game update 1.08) registers **additional** C
 ```
 
 - `folder` names a directory inside the mission folder holding your custom XML.
-- Each `<file>` entry appends to (or overrides matching entries of) the corresponding vanilla file. Valid `type` values: `types`, `spawnabletypes`, `globals`, `economy`, `events`, `messages`.
+- Valid `type` values: `types`, `spawnabletypes`, `globals`, `economy`, `events`, `messages`. Each one merges with the corresponding vanilla file differently -- the official [Central Economy mission files modding](https://community.bistudio.com/wiki/DayZ:Central_Economy_mission_files_modding) page's per-type rules, summarized:
+  - **`messages`** -- always appended; there is no way to override an existing message.
+  - **`types`** -- you can partially override an existing type, but when you define a multi-element attribute such as `<flags>`, you must explicitly supply all its elements. Defining any `<usage>`, `<tag>` or `<value>` name for an existing type **replaces the whole group**, not just the members you name. Add a `<usage>` in a custom file and the vanilla type's other usages are gone, not merged.
+  - **`spawnabletypes`** -- defining a flag (`unique` or `hoarder`) resets the original's flags and applies only the new ones; defining any `<attachments>` or `<cargo>` overrides all of the original's attachments or cargo.
+  - **`globals`** and **`economy`** -- all attributes of a global, and all flags of an element, must always be defined; there is no partial override.
+  - **`events`** -- you can partially override an existing event, but when you define a multi-element attribute such as `<flags>`, you must explicitly supply all its elements. The original event's children always remain and can be modified; adding children is also allowed.
 - Multiple `<ce>` blocks are allowed, so each mod can ship its own folder of economy files.
+
+**This bites directly on `types`:** adding a `<usage>` or `<value>` tag for an item that already has a vanilla `types.xml` entry discards the vanilla entry's other usages and values rather than adding to them. If you want to keep the vanilla flags, copy them into your custom entry alongside the new one.
 
 This is the cleanest way to add modded items to the economy -- your additions survive vanilla mission updates because the stock files stay untouched.
 
@@ -682,7 +765,7 @@ The full workflow for making a custom item spawn naturally:
 2. **Add a `<type>` entry** with `nominal`, `min`, `lifetime`, `usage`, and `value` -- ideally in a custom file registered through `cfgeconomycore.xml` rather than by editing the vanilla `types.xml`.
 3. **Optionally add attachment/cargo rules** in a custom `spawnabletypes` file.
 4. **If you need new usage/value flags**, define them in `cfglimitsdefinition.xml` / `cfglimitsdefinitionuser.xml`.
-5. **Restart the server** -- CE changes only take effect on restart.
+5. **Restart the server.** A restart is often not enough by itself: Bohemia's [Central Economy setup for custom terrains](https://community.bistudio.com/wiki/DayZ:Central_Economy_setup_for_custom_terrains) page states that CE mission-file changes *"in most cases wont be applied unless you remove this folder"* -- the mission's `storage_` folder -- *"and thus forcing the game to create a new one during the mission init."* Removing `storage_` discards the server's persisted item and player state, so treat it as a deliberate, data-losing step for a test or early-wipe server, not a routine part of every CE edit; see [Re-randomizing Loot at Restart](#re-randomizing-loot-at-restart) for the same caveat in more detail before doing it on a live server.
 
 **Disabling an unwanted item** works the other way around -- set its counts to zero:
 
@@ -703,17 +786,17 @@ The full workflow for making a custom item spawn naturally:
 **Check in order:**
 
 1. Is `nominal` greater than 0?
-2. Does the item have at least one `<usage>` tag? (No usage = no valid spawn location)
+2. Does the item have valid `<category>`/`<tag>`/`<usage>` flags, and does a `mapgroupproto.xml` prototype actually carry a matching point? (Community practice treats a missing `<usage>` as fatal, but Bohemia's own vanilla `types.xml` ships 19 types with live `nominal` and no `<usage>` at all -- so check the full flag set and the building's loot points, not `<usage>` alone.)
 3. Is the `<usage>` tag defined in `cfglimitsdefinition.xml`?
 4. Is the `<value>` tag (if present) defined in `cfglimitsdefinition.xml`?
 5. Is the `<category>` tag valid?
 6. Is the item listed in `cfgignorelist.xml`? (Items there are blocked)
 7. Is the `crafted` flag set to 1? (Crafted items never spawn naturally)
-8. Is `RestartSpawn` in `globals.xml` set to 0 with existing persistence? (Old persistence may block new items from spawning until a wipe)
+8. Is `RestartSpawn` in `globals.xml` at 0 with existing persistence? Old persistence can keep new items from appearing until a wipe -- but read [Re-randomizing Loot at Restart](#re-randomizing-loot-at-restart) before changing this variable.
 
 ### Items Spawn But Immediately Disappear
 
-The `lifetime` value is too low. A lifetime of 45 seconds (the `CleanupLifetimeDefault`) means the item is cleaned up almost immediately. Weapons should have lifetimes of 7200-28800 seconds.
+The `lifetime` value is too low. Weapons should have lifetimes of 7200-28800 seconds. Note that `CleanupLifetimeDefault` (45 seconds) is *not* the fallback for a live item with no lifetime: Bohemia documents it as the default for entities with no economy setup **that are already at damage >= 1.0**. If a pristine weapon is vanishing in under a minute, the cause is its own `lifetime` entry, not that default.
 
 ### Too Many/Too Few of an Item
 
@@ -721,7 +804,7 @@ Adjust `nominal` and `min` together. If you set `nominal=100` but `min=1`, the C
 
 ### Items Only Spawn in One Area
 
-Check your `<value>` tags. If an item only has `<value name="Tier4"/>`, it will only spawn in the northwest military area of Chernarus. Add more tiers to spread it across the map:
+Check your `<value>` tags. `cfglimitsdefinition.xml` defines `Tier1`-`Tier4` (and `Unique`) as bare names with no geography attached -- the actual tier-to-terrain mapping lives in `areaflags.map`, a binary file generated by Bohemia's CETool and not human-readable from the mission's XML. The widely repeated community claim that `Tier4` alone maps to Chernarus's northwest military zone is plausible but unconfirmed by any first-party source available to this wiki; treat it as community convention, not documented fact. What is certain from the flag definitions is the mechanical point: an item restricted to a single `<value>` spawns only in terrain tagged with that tier by `areaflags.map`, and adding more tiers widens the terrain it can spawn on:
 
 ```xml
 <value name="Tier1"/>
@@ -752,7 +835,7 @@ Check `LootDamageMin` and `LootDamageMax` in `globals.xml`. Vanilla values are `
 
 After editing economy files, do one of:
 - Delete `storage_1/` for a full wipe and fresh economy start
-- Set `RestartSpawn` to `1` in `globals.xml` for one restart to re-randomize loot, then set it back to `0`
+- Adjust `RestartSpawn` in `globals.xml` for one restart, then set it back to `0` -- read [Re-randomizing Loot at Restart](#re-randomizing-loot-at-restart) first, because the widely repeated "set it to 1" step is of unverified effect under Bohemia's documented percentage unit
 - Wait for item lifetimes to expire naturally (can take hours)
 
 ---
@@ -765,5 +848,5 @@ After editing economy files, do one of:
 - **Test nominal/min ratios on a live server with players.** Static testing does not reveal real CE behavior. Items interact with player movement patterns, container storage, and cleanup timers in ways that are only visible under real load.
 - **Always define new items in both `config.cpp` and the economy files.** A config entry without a types entry means the item never spawns naturally. A types entry without a config class causes CE errors in the log.
 - **Use `cfgspawnabletypes.xml` to create weapon variety.** Instead of spawning naked weapons, define attachment presets so players find weapons with random stocks, handguards, and magazines -- this dramatically improves loot quality perception.
-- **Watch collisions between mods.** If two loaded economy files define the same `<type name="">`, the last one loaded wins. Use unique class names, and merge community-server economy files deliberately.
+- **Watch collisions between mods.** Community convention holds that if two loaded economy files define the same `<type name="">`, the last one loaded wins -- but no Bohemia Central Economy page states a resolution order between two custom `<ce>` files, so treat that ordering as unconfirmed rather than documented fact. Use unique class names, and merge community-server economy files deliberately regardless of which way the tie actually resolves.
 - **Keep nominals realistic.** High `nominal` values (200+) across many types strain the CE's periodic scans, which scale with the total tracked entity count -- 5-20 for weapons and 20-100 for common items is the vanilla ballpark.

@@ -76,11 +76,11 @@ All vehicle events use the same structure as the Sedan above. Only the values di
 | `VehicleOffroadHatchback` | 8 | 5 | 11 | 300 | `OffroadHatchback`, `_Blue`, `_White` |
 | `VehicleHatchback02` | 8 | 5 | 11 | 300 | Hatchback02 variants |
 | `VehicleSedan02` | 8 | 5 | 11 | 300 | Sedan02 variants |
-| `VehicleTruck01` | 8 | 5 | 11 | 300 | V3S truck variants |
+| `VehicleTruck01` | 8 | 5 | 11 | 300 | `Truck_01_Covered` variants |
 | `VehicleOffroad02` | 3 | 2 | 3 | 300 | Gunter -- fewer spawn |
-| `VehicleBoat` | 22 | 18 | 24 | 600 | Boats -- highest count, longer lifetime |
+| `VehicleBoat` | 17 | 15 | 24 | 600 | Boats -- highest count, longer lifetime |
 
-`VehicleOffroad02` has a lower nominal (3) than other land vehicles (8). `VehicleBoat` has both the highest nominal (22) and a longer lifetime (600 vs 300).
+`VehicleOffroad02` has a lower nominal (3) than other land vehicles (8). `VehicleBoat` has both the highest nominal (17) and a longer lifetime (600 vs 300).
 
 ---
 
@@ -112,8 +112,8 @@ All vehicle events use the same structure as the Sedan above. Only the values di
 
 | Field | Values | Description |
 |-------|--------|-------------|
-| `position` | `fixed`, `player` | `fixed` = spawn at positions from `cfgeventspawns.xml`. `player` = spawn relative to player positions. |
-| `limit` | `child`, `mixed`, `custom` | `child` = min/max enforced per child type. `mixed` = min/max shared across all children. `custom` = engine-specific behavior. |
+| `position` | `fixed`, `player`, `uniform` | `fixed` = spawn at positions from `cfgeventspawns.xml`. `player` = spawn relative to player positions. `uniform` = distributed evenly (used by vanilla ambient events like `StaticChristmasTree`). |
+| `limit` | `child`, `mixed`, `custom`, `parent` | `child` = min/max enforced per child type. `mixed` = min/max shared across all children. `custom` = engine-specific behavior. `parent` = enforced at the parent/group level (used by vanilla `StaticContaminatedArea`). |
 | `active` | 0, 1 | Enable or disable this event. 0 = the event is skipped entirely. |
 
 ### Child Fields
@@ -200,15 +200,15 @@ Military convoys are static wrecked vehicle groups that spawn with military loot
 
 ```xml
 <event name="StaticMilitaryConvoy">
-    <nominal>5</nominal>
+    <nominal>6</nominal>
     <min>0</min>
     <max>0</max>
     <lifetime>1800</lifetime>
     <restock>0</restock>
-    <saferadius>1000</saferadius>
+    <saferadius>500</saferadius>
     <distanceradius>1000</distanceradius>
     <cleanupradius>1000</cleanupradius>
-    <secondary>InfectedArmy</secondary>
+    <secondary>InfectedArmyDesert</secondary>
     <flags deletable="1" init_random="0" remove_damaged="0"/>
     <position>fixed</position>
     <limit>child</limit>
@@ -217,7 +217,7 @@ Military convoys are static wrecked vehicle groups that spawn with military loot
 </event>
 ```
 
-Convoys work like heli crashes: the `<secondary>` tag spawns `InfectedArmy` around the site, and loot items with `deloot="1"` appear on the wrecks. Unlike the heli crash, the convoy event has an empty `<children/>` element -- its wrecked vehicles are defined as a group in `cfgeventgroups.xml` and placed via group references in `cfgeventspawns.xml`. With `nominal=5`, up to 5 convoy sites exist on the map simultaneously. Each lasts 1800 seconds (30 minutes) before cycling to a new location.
+Convoys work like heli crashes: the `<secondary>` tag spawns `InfectedArmyDesert` around the site, and loot items with `deloot="1"` appear on the wrecks. Unlike the heli crash, the convoy event has an empty `<children/>` element -- its wrecked vehicles are defined as a group in `cfgeventgroups.xml` and placed via group references in `cfgeventspawns.xml`. With `nominal=6`, up to 6 convoy sites exist on the map simultaneously. Each lasts 1800 seconds (30 minutes) before cycling to a new location.
 
 ---
 

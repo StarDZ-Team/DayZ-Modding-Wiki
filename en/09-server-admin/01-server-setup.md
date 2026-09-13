@@ -37,7 +37,7 @@ DayZ Server is single-threaded for gameplay logic. Clock speed matters more than
 ### Software
 
 - **SteamCMD** -- the Steam command-line client for installing dedicated servers
-- **Visual C++ Redistributable 2019** (Windows) -- required by `DayZServer_x64.exe`
+- **Microsoft Visual C++ Redistributable for Visual Studio 2015-2022 (x64)** (Windows) -- required by `DayZServer_x64.exe`. Microsoft ships 2015 through 2022 as a single package, so there is no separate "2019" download to hunt for; get it from [Microsoft's redistributable downloads page](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist)
 - **DirectX Runtime** (Windows) -- usually already present
 - Ports **2302-2305 UDP** forwarded on your router/firewall
 
@@ -64,18 +64,20 @@ sudo apt install steamcmd
 
 ## Installing DayZ Server
 
-DayZ Server's Steam App ID is **223350**. You can install it without logging into a Steam account that owns DayZ.
+DayZ Server's Steam App ID is **223350**. Unlike some dedicated-server depots, this one does **not** accept anonymous SteamCMD login (`+login anonymous`) -- confirmed independently for both Windows and Linux, in separate reports. You need a real, authenticated Steam account to download or update it. Hosting guides consistently recommend using an account that also owns DayZ (app 221100) itself, and that is the safest assumption to build a runbook around -- but whether Steam's depot access control technically requires DayZ ownership specifically, as opposed to any authenticated login, is not confirmed by an official Bohemia source. If you already have a spare authenticated Steam account without DayZ, it may be worth testing before ruling it out.
 
 ### One-Line Install (Windows)
 
 ```batch
-C:\SteamCMD\steamcmd.exe +force_install_dir "C:\DayZServer" +login anonymous +app_update 223350 validate +quit
+C:\SteamCMD\steamcmd.exe +force_install_dir "C:\DayZServer" +login your_steam_username +app_update 223350 validate +quit
 ```
+
+SteamCMD will prompt for your password (and a Steam Guard code, if enabled) after this command starts.
 
 ### One-Line Install (Linux)
 
 ```bash
-steamcmd +force_install_dir /home/dayz/server +login anonymous +app_update 223350 validate +quit
+steamcmd +force_install_dir /home/dayz/server +login your_steam_username +app_update 223350 validate +quit
 ```
 
 ### Update Script
@@ -86,7 +88,7 @@ Create a script you can re-run whenever a patch drops:
 @echo off
 C:\SteamCMD\steamcmd.exe ^
   +force_install_dir "C:\DayZServer" ^
-  +login anonymous ^
+  +login your_steam_username ^
   +app_update 223350 validate ^
   +quit
 echo Update complete.
@@ -105,7 +107,7 @@ After installation, the server root looks like this:
 DayZServer/
   DayZServer_x64.exe        # The server executable
   serverDZ.cfg               # Main server configuration
-  dayzsetting.xml            # Rendering/video settings (not relevant for dedicated)
+  dayzsetting.xml            # Holds the <jobsystem> block that sizes server worker threads
   addons/                    # Vanilla PBO files (ai.pbo, animals.pbo, etc.)
   battleye/                  # BattlEye anti-cheat (BEServer_x64.dll)
   dta/                       # Core engine data (bin.pbo, scripts.pbo, gui.pbo)
@@ -116,9 +118,9 @@ DayZServer/
     dayzOffline.enoch/           # Livonia mission (DLC)
     dayzOffline.sakhal/          # Sakhal mission (DLC)
   profiles/                  # Runtime output: RPT logs, script logs, player DB
-  ban.txt                    # Banned player list (Steam64 IDs)
-  whitelist.txt              # Whitelisted players (Steam64 IDs)
-  steam_appid.txt            # Contains "221100"
+  ban.txt                    # Banned player list (identifier format undocumented -- see ch.9)
+  whitelist.txt              # Whitelisted players (identifier format undocumented -- see ch.9)
+  steam_appid.txt            # Holds the DayZ client app id, used by the Steam API
 ```
 
 Key points:
@@ -126,6 +128,7 @@ Key points:
 - **You never edit** files in `addons/` or `dta/` -- they are overwritten on every update.
 - **Mod PBOs** go into the server root or a subfolder (covered in a later chapter).
 - **`profiles/`** is created on first launch and contains your script logs and crash dumps.
+- **`dayzsetting.xml` is not just a client leftover.** It carries the `<jobsystem>` block whose `maxcores` and `reservedcores` values size the server's worker-thread pool -- the pool `multithreadedReplication` uses. See [The jobsystem block](03-server-cfg.md#the-jobsystem-block-in-dayzsetting-xml).
 
 ---
 
@@ -172,7 +175,7 @@ class Missions
 Open a Command Prompt in the server directory and run:
 
 ```batch
-DayZServer_x64.exe -config=serverDZ.cfg -port=2302 -profiles=profiles -dologs -adminlog -netlog -freezecheck
+DayZServer_x64.exe -config=serverDZ.cfg -port=2302 -profiles=profiles -dologs -adminlog -netlog -freezeCheck
 ```
 
 | Flag | Purpose |
@@ -183,7 +186,7 @@ DayZServer_x64.exe -config=serverDZ.cfg -port=2302 -profiles=profiles -dologs -a
 | `-dologs` | Enable server logging |
 | `-adminlog` | Log admin actions |
 | `-netlog` | Log network events |
-| `-freezecheck` | Stops the server and writes a crash dump when frozen for more than 5 minutes |
+| `-freezeCheck` | Stops the server and writes a dump file when frozen for more than 5 minutes. It does **not** restart the server -- that is your supervision's job. Official casing is `-freezeCheck`. |
 
 ### Step 3: Wait for Initialization
 
@@ -204,11 +207,11 @@ BattlEye Server: Initialized (v1.xxx)
 Check `profiles/` for a file named like `script_YYYY-MM-DD_HH-MM-SS.log`. Open it and look for:
 
 ```
-SCRIPT       : ...creatingass. world
+SCRIPT       : ...creating ass. world
 SCRIPT       : ...creating mission
 ```
 
-These lines confirm the economy initialized and the mission loaded.
+These lines confirm the economy initialized and the mission loaded. Both strings are emitted engine-side -- neither appears anywhere in the vanilla script extraction -- so this wiki has no static source for their exact text; if a search turns up nothing, search for the shorter fragment `creating mission` and compare against your own boot log.
 
 ### Method 2: RPT File
 
@@ -225,7 +228,7 @@ Open Steam, go to **View > Game Servers > Favorites**, click **Add a Server**, e
 
 ### Method 4: Query Port
 
-Use an external tool like https://www.battlemetrics.com/ or the `gamedig` npm package to query the Steam query port. By default this is **2305 UDP** (configurable via `steamQueryPort` in `serverDZ.cfg`), not the game port.
+Use an external tool like https://www.battlemetrics.com/ or the `gamedig` npm package to query the Steam query port — not the game port. That port is whatever `steamQueryPort` in `serverDZ.cfg` is set to; **2305 UDP** is the value in Bohemia's sample config and the conventional choice, but Bohemia documents no default, so read your own config rather than assuming.
 
 ---
 
@@ -255,9 +258,9 @@ Use your server's **public IP** or **LAN IP** depending on whether the client is
 
 ### Server Starts But Immediately Closes
 
-**Cause:** Missing Visual C++ Redistributable or a syntax error in `serverDZ.cfg`.
+**Cause:** Missing Visual C++ Redistributable (the 2015-2022 x64 package) or a syntax error in `serverDZ.cfg`.
 
-**Fix:** Install VC++ Redist 2019 (x64). Check `serverDZ.cfg` for missing semicolons -- every parameter line must end with `;`.
+**Fix:** Install the VC++ Redistributable for Visual Studio 2015-2022 (x64). Check `serverDZ.cfg` for missing semicolons -- every parameter line must end with `;`.
 
 ### "BattlEye initialization failed"
 

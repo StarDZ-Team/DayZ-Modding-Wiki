@@ -27,7 +27,7 @@
 
 ### Missing DLL Files
 
-If `DayZServer_x64.exe` crashes immediately with a missing DLL error, install the latest **Visual C++ Redistributable for Visual Studio 2019** (x64) from Microsoft's official site and restart.
+If `DayZServer_x64.exe` crashes immediately with a missing DLL error, install the current **Microsoft Visual C++ Redistributable for Visual Studio 2015-2022 (x64)** from [Microsoft's download page](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist) and restart. Microsoft distributes 2015-2022 as one package, so do not go looking for a standalone 2019 build.
 
 ### Port Already in Use
 
@@ -61,9 +61,9 @@ DayZ needs these UDP ports forwarded and open in your firewall:
 |------|----------|---------|
 | 2302 | UDP | Main game traffic |
 | 2303-2304 | UDP | Steam networking |
-| 2305 | UDP | Steam query port (`steamQueryPort`, default) |
+| 2305 | UDP | Steam query port — the value in Bohemia's sample config (`steamQueryPort = 2305`) and the conventional choice |
 
-The engine reserves the block **2302-2305** off the base port. If you change the base with `-port=`, the whole block shifts by the same offset. The query port default of **2305** is confirmed in [Server Setup](01-server-setup.md#method-4-query-port).
+Forwarding the whole **2302-2305** block off the base port is long-standing admin practice and the advice here, but treat it as convention rather than an engine guarantee: Bohemia documents `-port=` as the port the server listens on and shows `clientPort = 2304` and `steamQueryPort = 2305` as sample values, and publishes no statement that a four-port block is reserved or that it shifts with `-port=`. The dependable approach is to set `steamQueryPort` (and `clientPort`, if you use it) explicitly and forward exactly what you set.
 
 ### Firewall Blocking
 
@@ -100,7 +100,7 @@ Engine-level failures -- missing addons, signature errors, hard crashes -- go in
 
 ### Crash on Restart
 
-If the server crashes on every restart, **storage_1/** may be corrupted. Stop the server, back up `storage_1/`, delete `storage_1/data/events.bin`, and restart. If that fails, delete the entire `storage_1/` directory (wipes all persistence). See [World State & Persistence](07-persistence.md) for a safe recovery routine.
+If the server crashes on every restart, **storage_1/** may be corrupted. Stop the server and back up `storage_1/` first. A widely used community first step is to delete `storage_1/data/events.bin` and restart -- the file itself is first-party: Bohemia documents the `save_events_startup` default in `cfgeconomycore.xml` as *"If disabled, no `data/events.bin` is created at startup"*, so the server recreates it. That deletion is **community recovery practice, not a documented Bohemia procedure**, and it discards saved dynamic-event state. If it does not help, delete the entire `storage_1/` directory (wipes all persistence). See [World State & Persistence](07-persistence.md) for a safe recovery routine, and [Loot Economy Deep Dive](04-loot-economy.md#persistence-backups-and-world-segments) for the startup-dump and backup defaults.
 
 ### Crash After Mod Update
 
@@ -145,7 +145,7 @@ Full event structure (`nominal`/`min`/`max`, radii, children, spawn coordinates)
 
 | Symptom | Likely cause | First-aid check |
 |---------|-------------|-----------------|
-| Bases and stored objects disappear | Territory flag expired | Check `FlagRefreshFrequency` in **globals.xml** (default `432000` = 5 days); a flag not refreshed in that window deletes everything in its radius |
+| Bases and stored objects disappear | Territory flag's refresh budget ran out | Check `FlagRefreshMaxDuration` in **globals.xml** (vanilla `3456000` = 40 days). That is the budget a raised flag holds; once it is spent the flag stops refreshing item lifetimes and the parts in its radius become eligible for cleanup as their own lifetimes expire. `FlagRefreshFrequency` (vanilla `432000` = 5 days) is the automatic refresh interval, not a player deadline -- see [World State & Persistence](07-persistence.md#territory-flags-and-base-decay) |
 | Items vanish after a restart | `lifetime` expired | Each item has a `lifetime` (seconds) in **types.xml**; container contents inherit the container's lifetime |
 | `storage_1/` grows very large | Too many economy items | Reduce `nominal` values, especially food, clothing, and ammunition |
 | All players spawn fresh | Player data lost | Player inventories live in `storage_1/players/`; back up `storage_1/` regularly |
@@ -160,11 +160,11 @@ Lifetime reference values, flag refresh tuning, and safe `storage_1/` maintenanc
 
 | Symptom | Likely cause | First-aid check |
 |---------|-------------|-----------------|
-| Low server FPS (target is 30+) | Too many entities or heavy loot | Reduce `ZombieMaxCount` and `AnimalMaxCount` in **globals.xml**; lower `nominal` values |
-| Rubber-banding, delayed actions, invisible zombies (desync) | Server FPS below ~15 | Fix the underlying FPS problem -- there is no desync-specific setting |
+| Low server FPS (30+ is the commonly cited target -- a community rule of thumb, not an engine-documented threshold) | Too many entities or heavy loot | Reduce `ZombieMaxCount` and `AnimalMaxCount` in **globals.xml**; lower `nominal` values |
+| Rubber-banding, delayed actions, invisible zombies (desync) | Low server FPS -- admins consistently report this below roughly 15, which is also where Bohemia's `serverFpsWarning` sample sits, though Bohemia does not publish it as a playability threshold | Fix the underlying FPS problem -- there is no desync-specific setting |
 | Restarts take longer than 2-3 minutes | Oversized `storage_1/` | Reduce loot nominals and set appropriate lifetimes to shrink persistence |
 
-**First-aid:** watch server FPS in the admin console or a monitoring tool before changing settings, so you can measure the effect of each change.
+**First-aid:** watch server FPS in the admin console or a monitoring tool before changing settings, so you can measure the effect of each change. The FPS bands above are community rules of thumb; the qualified version, with the official `serverFpsWarning` facts, is in [Server Performance Tuning](08-performance.md#monitoring-server-health).
 
 Default values, the entity/loot/persistence trade-offs, and a step-by-step tuning method are in [Performance Tuning](08-performance.md).
 
@@ -207,9 +207,9 @@ When something goes wrong, work through this list in order:
 2. Verify every -mod= path exists and contains addons/*.pbo
 3. Verify all .bikey files are copied to keys/
 4. Check serverDZ.cfg for syntax errors (missing semicolons)
-5. Check port forwarding: 2302 UDP + Steam ports 2303-2305 UDP
+5. Check port forwarding: the game port (2302 by default) plus whatever you set steamQueryPort to (conventionally 2305)
 6. Verify mission folder matches the template value in serverDZ.cfg
-7. Check storage_1/ for corruption (delete data/events.bin if needed)
+7. Check storage_1/ for corruption (deleting data/events.bin is the common community first step -- the server recreates it at startup)
 8. Test with zero mods first, then add mods one at a time
 ```
 

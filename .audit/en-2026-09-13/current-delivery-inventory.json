@@ -1,0 +1,969 @@
+{
+  "integrated_delivery_pages": 105,
+  "basis": "93 prior integrated EN delivery paths rehashed against latest domain manifests, with the committed 9c3f2b0 anchor exception; 12 server pages match acceptance after reversing only authorized mechanical anchors.",
+  "domain_counts": {
+    "architecture": 13,
+    "engine-advanced": 4,
+    "engine-ai-admin": 4,
+    "engine-config": 18,
+    "engine-world": 4,
+    "gui-assets": 18,
+    "language": 19,
+    "tutorials": 13,
+    "server": 12
+  },
+  "pages": [
+    {
+      "domain": "architecture",
+      "path": "en/02-mod-structure/01-five-layers.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "1219ff05733ecd4ec699212e1ad24343cb9a6d7dc647b21d91197354348a1248",
+      "actual": "1219ff05733ecd4ec699212e1ad24343cb9a6d7dc647b21d91197354348a1248",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/02-mod-structure/02-config-cpp.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "50f846d7cd9b1c9ac89391cfec88be26f6ef90714f5478ade8a3516e48988783",
+      "actual": "50f846d7cd9b1c9ac89391cfec88be26f6ef90714f5478ade8a3516e48988783",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/02-mod-structure/03-mod-cpp.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "f590e0271a659ebed61df447cb2b7fa227310ab90ac473d413dc17bcbe2b9a59",
+      "actual": "f590e0271a659ebed61df447cb2b7fa227310ab90ac473d413dc17bcbe2b9a59",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/02-mod-structure/04-minimum-viable-mod.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "bedf6dfeac18d9c16b55719b6e037036b0a4af20cd126b150cdc82998b62b8b9",
+      "actual": "bedf6dfeac18d9c16b55719b6e037036b0a4af20cd126b150cdc82998b62b8b9",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/02-mod-structure/05-file-organization.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "57e7fe43b7476ccd71bb8981cde5e9c0262e2d5b047bc164918f6960fb9d5f67",
+      "actual": "57e7fe43b7476ccd71bb8981cde5e9c0262e2d5b047bc164918f6960fb9d5f67",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/02-mod-structure/06-server-client-split.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "496716ceb37227bf387429faca76ddd86c7aa197c3b09551bdec178a5114d27d",
+      "actual": "496716ceb37227bf387429faca76ddd86c7aa197c3b09551bdec178a5114d27d",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/07-patterns/01-singletons.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "58b2444184da21438e413fe73a4e5ec22dd3972a8c866564c88a1615f604f888",
+      "actual": "58b2444184da21438e413fe73a4e5ec22dd3972a8c866564c88a1615f604f888",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/07-patterns/02-module-systems.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "2937c0f49d173eda1215d4226d53525868aa690d59e5fa333dce7b49d51fef2d",
+      "actual": "2937c0f49d173eda1215d4226d53525868aa690d59e5fa333dce7b49d51fef2d",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/07-patterns/03-rpc-patterns.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "eac39002165a9bc1d4cd60f8953b39c994c9b7105e09798e4a0cb6be7c02c941",
+      "actual": "eac39002165a9bc1d4cd60f8953b39c994c9b7105e09798e4a0cb6be7c02c941",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/07-patterns/04-config-persistence.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "479e3283c99812b46bccfe4d64ddbd6caea68ec2de33cec80867cc66ced8946b",
+      "actual": "479e3283c99812b46bccfe4d64ddbd6caea68ec2de33cec80867cc66ced8946b",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/07-patterns/05-permissions.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "0b2178cd1b0afd08de670ad29b6417c2ca909158deebec2dcdcf2463a792a40b",
+      "actual": "0b2178cd1b0afd08de670ad29b6417c2ca909158deebec2dcdcf2463a792a40b",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/07-patterns/06-events.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "23e5ccc2a2538ce7f292ffe6d1b4a0d0b97a5b5d1a158c7d89102b61ffdcec84",
+      "actual": "23e5ccc2a2538ce7f292ffe6d1b4a0d0b97a5b5d1a158c7d89102b61ffdcec84",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "architecture",
+      "path": "en/07-patterns/07-performance.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\architecture-20260911T084410593490Z.json",
+      "expected": "c0e42e010b2309534df986a08682f5949a8cf87cd810e945c18d6924c80be8bf",
+      "actual": "c0e42e010b2309534df986a08682f5949a8cf87cd810e945c18d6924c80be8bf",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-advanced",
+      "path": "en/06-engine-api/13-input-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-advanced-20260913T194937656426Z.json",
+      "expected": "968a5ec8d1cb3ac475e2e7077af809d91a6946d34ac4a7dd44776a3525262dc3",
+      "actual": "968a5ec8d1cb3ac475e2e7077af809d91a6946d34ac4a7dd44776a3525262dc3",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-advanced",
+      "path": "en/06-engine-api/14-player-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-advanced-20260913T194937656426Z.json",
+      "expected": "7a316ed39c4f5da37777ce00c59e890a11df49b9ef204619eb68d0d2498bb5c2",
+      "actual": "7a316ed39c4f5da37777ce00c59e890a11df49b9ef204619eb68d0d2498bb5c2",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-advanced",
+      "path": "en/06-engine-api/15-sound-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-advanced-20260913T194937656426Z.json",
+      "expected": "16dce2ffc39d5dace9e85c535fa50fa4f8dbf710023cc50ae5409d3a2c5f22fe",
+      "actual": "16dce2ffc39d5dace9e85c535fa50fa4f8dbf710023cc50ae5409d3a2c5f22fe",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-advanced",
+      "path": "en/06-engine-api/16-crafting-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-advanced-20260913T194937656426Z.json",
+      "expected": "11033d0192d62cbbe060f0f24fe053053eca7b5973e17848b7b0ca3c5fb2e681",
+      "actual": "11033d0192d62cbbe060f0f24fe053053eca7b5973e17848b7b0ca3c5fb2e681",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-ai-admin",
+      "path": "en/06-engine-api/21-zombie-ai-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-ai-admin-20260911T084454688410Z.json",
+      "expected": "a098ffa43346aa178761c8caf8b1e3d4666ecda8f7c658299205fb78158caa6b",
+      "actual": "a098ffa43346aa178761c8caf8b1e3d4666ecda8f7c658299205fb78158caa6b",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-ai-admin",
+      "path": "en/06-engine-api/22-admin-server.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-ai-admin-20260911T084454688410Z.json",
+      "expected": "329209692b461a96727f5770adc0d71d5e538f040f7713d767128d7ee7d1cbb6",
+      "actual": "329209692b461a96727f5770adc0d71d5e538f040f7713d767128d7ee7d1cbb6",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-ai-admin",
+      "path": "en/06-engine-api/23-world-systems.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-ai-admin-20260911T084454688410Z.json",
+      "expected": "417addc0c9f422a573a5ef2f7a14dfd2197eae431f1ad30deb41944cf2e5f658",
+      "actual": "417addc0c9f422a573a5ef2f7a14dfd2197eae431f1ad30deb41944cf2e5f658",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-ai-admin",
+      "path": "en/06-engine-api/quick-reference.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-ai-admin-20260911T084454688410Z.json",
+      "expected": "8c366c16363f0b9b37c939ddbe96d4a552dc7602033196fc5a750ef6c8d55b0e",
+      "actual": "8c366c16363f0b9b37c939ddbe96d4a552dc7602033196fc5a750ef6c8d55b0e",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/05-config-files/01-stringtable.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "ff51de52f5b7ca23d188258b8fad59a8fa5f7cd84f37eda76ba019a13065353a",
+      "actual": "ff51de52f5b7ca23d188258b8fad59a8fa5f7cd84f37eda76ba019a13065353a",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/05-config-files/02-inputs-xml.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "e6a7170e6169de3a3cebeece84b4bafc9eb37e06a6319386380f76a720d7a7d0",
+      "actual": "e6a7170e6169de3a3cebeece84b4bafc9eb37e06a6319386380f76a720d7a7d0",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/05-config-files/03-credits-json.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "2650e77ccd39a190caa5ddd6a4c7ecb40b6625be2ccce6d2af358456f5d02529",
+      "actual": "2650e77ccd39a190caa5ddd6a4c7ecb40b6625be2ccce6d2af358456f5d02529",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/05-config-files/04-imagesets.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "2c4e21f30702b1ef5bb9454365b9cd0fb4168f19be62af31555c878f3d246730",
+      "actual": "2c4e21f30702b1ef5bb9454365b9cd0fb4168f19be62af31555c878f3d246730",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/05-config-files/05-server-configs.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "f5ea1f25f7c4b808e78553bb1d377aa8b4dcb88209c1b9da354d6256fb625583",
+      "actual": "ef1632b9ae53c031e7db0eb03257b63213654ba2c6c42c113a635728584d6e3b",
+      "matches": false,
+      "exception": "Committed mechanical anchor repair in 9c3f2b0",
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/05-config-files/06-spawning-gear.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "4f542658d5cb9ed7743ceb3b18ff9cc8e886f2cd779bb58d6b1083da52b6230e",
+      "actual": "4f542658d5cb9ed7743ceb3b18ff9cc8e886f2cd779bb58d6b1083da52b6230e",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/01-entity-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "ac6d0057eaf7966e207f18f6a3f233d2bd522bbd75af56bc37bd3ea2d42fb164",
+      "actual": "ac6d0057eaf7966e207f18f6a3f233d2bd522bbd75af56bc37bd3ea2d42fb164",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/02-vehicles.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "6b071678ec8735b4a5dc6517a5df73b20f727f3ce14f90462a8e4bdce002431a",
+      "actual": "6b071678ec8735b4a5dc6517a5df73b20f727f3ce14f90462a8e4bdce002431a",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/03-weather.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "7d449f0bb3883a0b9d6e6dc6b3c28473b17e466d71deb0204fdea334b9356c8e",
+      "actual": "7d449f0bb3883a0b9d6e6dc6b3c28473b17e466d71deb0204fdea334b9356c8e",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/04-cameras.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "a8033fc616a6f5fa74b884c340bb4face20f363a5de6643344a8b2d1b4f9ef00",
+      "actual": "a8033fc616a6f5fa74b884c340bb4face20f363a5de6643344a8b2d1b4f9ef00",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/05-ppe.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "db1180f8c3babca43a4bad3bd76cb95bd76c2571fcb33e6eb17f6b8c27b7d93c",
+      "actual": "db1180f8c3babca43a4bad3bd76cb95bd76c2571fcb33e6eb17f6b8c27b7d93c",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/06-notifications.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "6c48fd6e520ee6227496a895567218ef6d2d2dd4f728d3f85d164acf480931d0",
+      "actual": "6c48fd6e520ee6227496a895567218ef6d2d2dd4f728d3f85d164acf480931d0",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/07-timers.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "7267ca26183144b278e8ecf928fc60b20f11c3f272378c9372184a9d05570c33",
+      "actual": "7267ca26183144b278e8ecf928fc60b20f11c3f272378c9372184a9d05570c33",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/08-file-io.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "db9bcba5f37423bf152873b2cfa8820c3973108127b83185bc8ae39074512a42",
+      "actual": "db9bcba5f37423bf152873b2cfa8820c3973108127b83185bc8ae39074512a42",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/09-networking.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "dfe5cee28e0b1d16ea607d44ea2c5927f6a5d8bf778a6e239fdaf18e6f617b9d",
+      "actual": "dfe5cee28e0b1d16ea607d44ea2c5927f6a5d8bf778a6e239fdaf18e6f617b9d",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/10-central-economy.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "46d81eed87b138a3f6ec4a144ab54226582967532872334934792579029ff377",
+      "actual": "46d81eed87b138a3f6ec4a144ab54226582967532872334934792579029ff377",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/11-mission-hooks.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "a18abfb9d49fca872a87ec9076563d5f4870d7db73e28b5eb0f95b308dddbdc8",
+      "actual": "a18abfb9d49fca872a87ec9076563d5f4870d7db73e28b5eb0f95b308dddbdc8",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-config",
+      "path": "en/06-engine-api/12-action-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-config-20260913T194937656426Z.json",
+      "expected": "a40665bbd5714da665c85209f095f21d845c1f71e0dde6e6093f150e348ccbed",
+      "actual": "a40665bbd5714da665c85209f095f21d845c1f71e0dde6e6093f150e348ccbed",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-world",
+      "path": "en/06-engine-api/17-construction-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-world-20260911T084455589731Z.json",
+      "expected": "cda6f6997163efba17073a26c5147fcc6c01b0f5b588a58ea1490faa87b1d066",
+      "actual": "cda6f6997163efba17073a26c5147fcc6c01b0f5b588a58ea1490faa87b1d066",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-world",
+      "path": "en/06-engine-api/18-animation-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-world-20260911T084455589731Z.json",
+      "expected": "34ffd6c5ec23c2172af51c513da23a2ab794261428c3950dac9bec98b71ffe7b",
+      "actual": "34ffd6c5ec23c2172af51c513da23a2ab794261428c3950dac9bec98b71ffe7b",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-world",
+      "path": "en/06-engine-api/19-terrain-queries.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-world-20260911T084455589731Z.json",
+      "expected": "5b778982556c5bd20550fb911b381d91c59b0e79b4f3dfb6859d992593bceb6e",
+      "actual": "5b778982556c5bd20550fb911b381d91c59b0e79b4f3dfb6859d992593bceb6e",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "engine-world",
+      "path": "en/06-engine-api/20-particle-effects.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\engine-world-20260911T084455589731Z.json",
+      "expected": "f43a09ae940f1bd84cfc6dce41591839d302b989647e437d19ec120843dd1ef1",
+      "actual": "f43a09ae940f1bd84cfc6dce41591839d302b989647e437d19ec120843dd1ef1",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/01-widget-types.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "00f2700348c52ae9c0a9f5acc97c5152191ea947f965156c19c2297df32ff465",
+      "actual": "00f2700348c52ae9c0a9f5acc97c5152191ea947f965156c19c2297df32ff465",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/02-layout-files.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "8d1ad3846458fefa37ebf5f991db220f7a192ab2dd8726fc27048b373667b2f6",
+      "actual": "8d1ad3846458fefa37ebf5f991db220f7a192ab2dd8726fc27048b373667b2f6",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/03-sizing-positioning.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "845c35560bc2d8339a89e17a62964f2a9f01b79bffb2e2c75f5fce7898807242",
+      "actual": "845c35560bc2d8339a89e17a62964f2a9f01b79bffb2e2c75f5fce7898807242",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/04-containers.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "f60ed7caab9f0a5aa18c368428cc33c80fdc25e44dfd39c79183bfd03d6a705a",
+      "actual": "f60ed7caab9f0a5aa18c368428cc33c80fdc25e44dfd39c79183bfd03d6a705a",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/05-programmatic-widgets.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "adb7cc7051a2cce93f2a2d869130688cd312047638e86bdd08b6ea178bbfb702",
+      "actual": "adb7cc7051a2cce93f2a2d869130688cd312047638e86bdd08b6ea178bbfb702",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/06-event-handling.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "fd3e180d24246bbdf2d59a708e9e57d932f63274460e648358b1089cfb83205f",
+      "actual": "fd3e180d24246bbdf2d59a708e9e57d932f63274460e648358b1089cfb83205f",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/07-styles-fonts.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "95909f8ce4b19d4f9364915653fe33361557a56d97e8c3de87e40c2d7522c5c7",
+      "actual": "95909f8ce4b19d4f9364915653fe33361557a56d97e8c3de87e40c2d7522c5c7",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/08-dialogs-modals.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "2e9684095a99714ba3794bda78a383343a4f17b8dbcb92281074a74f5429cab2",
+      "actual": "2e9684095a99714ba3794bda78a383343a4f17b8dbcb92281074a74f5429cab2",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/09-real-mod-patterns.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "f044b530ff1367f6f69f73cec4208a881df0dbd7aa6d38b4196a65919decb2b0",
+      "actual": "f044b530ff1367f6f69f73cec4208a881df0dbd7aa6d38b4196a65919decb2b0",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/03-gui-system/10-advanced-widgets.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "08109da58c4b21075e95ee52a1f32ba2c22ff31f6a34c634b60887a99f4b67f4",
+      "actual": "08109da58c4b21075e95ee52a1f32ba2c22ff31f6a34c634b60887a99f4b67f4",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/01-textures.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "ce49a12726bd186d4e23d0e3cd54c6182b9ed0b86ca50f0d50da9d342c0ee36c",
+      "actual": "ce49a12726bd186d4e23d0e3cd54c6182b9ed0b86ca50f0d50da9d342c0ee36c",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/02-models.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "2833e849432157c10f439887aacc899e4a873e679f527d21050d88397b874590",
+      "actual": "2833e849432157c10f439887aacc899e4a873e679f527d21050d88397b874590",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/03-materials.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "de05e487d3e4473b58b88d47fe0d129ac41b65ce38168f1787b0968af0b49d77",
+      "actual": "de05e487d3e4473b58b88d47fe0d129ac41b65ce38168f1787b0968af0b49d77",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/04-audio.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "06a77616e26c0834f64631422f527c401f8f2bf24ab14f370c7ffa5b33e34d01",
+      "actual": "06a77616e26c0834f64631422f527c401f8f2bf24ab14f370c7ffa5b33e34d01",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/05-dayz-tools.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "cfb5daad27e45d7e3e09b72c9ee0933f26b884fdb6de4a29eeaa1f051288bd83",
+      "actual": "cfb5daad27e45d7e3e09b72c9ee0933f26b884fdb6de4a29eeaa1f051288bd83",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/06-pbo-packing.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "dda31bbe5068507bfc489aac2108e6500a5c50775d4df5f4ed9ba09e885e3401",
+      "actual": "dda31bbe5068507bfc489aac2108e6500a5c50775d4df5f4ed9ba09e885e3401",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/07-workbench-guide.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "2e907cc06f478c877aa1c53dce23fcc39826086a746dc0af9e178171bcc627be",
+      "actual": "2e907cc06f478c877aa1c53dce23fcc39826086a746dc0af9e178171bcc627be",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "gui-assets",
+      "path": "en/04-file-formats/08-building-modeling.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\gui-assets-20260911T081500499263Z.json",
+      "expected": "78b3365ce62e04ff92253693a3d8dd1e3c51023145a25bae135d1cdeef664a61",
+      "actual": "78b3365ce62e04ff92253693a3d8dd1e3c51023145a25bae135d1cdeef664a61",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/01-variables-types.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "c60a36ef00d2611dc917174b728738a2b0ecdb214e1e696f7f541959e8011ae6",
+      "actual": "c60a36ef00d2611dc917174b728738a2b0ecdb214e1e696f7f541959e8011ae6",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "254a6a2f6449c0a21aa3922be3f40a1848d554f4825fca67ad1a6a376700933e",
+      "actual": "254a6a2f6449c0a21aa3922be3f40a1848d554f4825fca67ad1a6a376700933e",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/03-classes-inheritance.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "7d05a410a6773dfe5b576163f7998eb10a74d55d4792773b0cabe230c166fad6",
+      "actual": "7d05a410a6773dfe5b576163f7998eb10a74d55d4792773b0cabe230c166fad6",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/04-modded-classes.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "1e0db5e3be3bc03b2983a864c8be56d59282ef724cef5f501d9ab9a3528f4550",
+      "actual": "1e0db5e3be3bc03b2983a864c8be56d59282ef724cef5f501d9ab9a3528f4550",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/05-control-flow.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "cff3cd3578a9dc4863e924598d9213e371cd8bdc0f3a5d9970136e98aa4152d7",
+      "actual": "cff3cd3578a9dc4863e924598d9213e371cd8bdc0f3a5d9970136e98aa4152d7",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/06-strings.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "e6e0fefffdc3d404b040d2aa0260dc4366e3a0ede1cedc8154a9bc1e1ceb7c67",
+      "actual": "e6e0fefffdc3d404b040d2aa0260dc4366e3a0ede1cedc8154a9bc1e1ceb7c67",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/07-math-vectors.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "20680ef3d153f3c47e26fe58771e9809ddeaa88b637b78d10a2672221b6c9c0e",
+      "actual": "20680ef3d153f3c47e26fe58771e9809ddeaa88b637b78d10a2672221b6c9c0e",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/08-memory-management.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "f3cd556ac51b4ab84557133cfe32d1c36e4192d8012ac62d07133a594c84a31f",
+      "actual": "f3cd556ac51b4ab84557133cfe32d1c36e4192d8012ac62d07133a594c84a31f",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/09-casting-reflection.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "0c6398df1bebc0e19792b304ece37a334328e91765b1008c9fbdb78d01b6b9e6",
+      "actual": "0c6398df1bebc0e19792b304ece37a334328e91765b1008c9fbdb78d01b6b9e6",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/10-enums-preprocessor.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "566e21c01001b41ff284edc9e4140ec9aedcc81802912b789c4a54ba9106e4cc",
+      "actual": "566e21c01001b41ff284edc9e4140ec9aedcc81802912b789c4a54ba9106e4cc",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/11-error-handling.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "2c2356e8e22325bfc77a740de12a3ac56c7d94a1edd9078a13633c59f91bac6f",
+      "actual": "2c2356e8e22325bfc77a740de12a3ac56c7d94a1edd9078a13633c59f91bac6f",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/12-gotchas.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "95879b3bdc113b680aa5ab8dd0d74948bc0f49ecab20f0612840218a81359885",
+      "actual": "95879b3bdc113b680aa5ab8dd0d74948bc0f49ecab20f0612840218a81359885",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/01-enforce-script/13-functions-methods.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "3e865c30946837207a47ab08285c361afd5562d21bedcd59571d2dd0c04ec48d",
+      "actual": "3e865c30946837207a47ab08285c361afd5562d21bedcd59571d2dd0c04ec48d",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/cheatsheet.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "f6950521917493c71f9a680bd02c5d514dd7f43b2960d06aa8c98ab5d66c17d0",
+      "actual": "f6950521917493c71f9a680bd02c5d514dd7f43b2960d06aa8c98ab5d66c17d0",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/faq.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "b2079a4573e68911e59b293329e6af6b2b92f74061e212443d0a6fd6a6461d5b",
+      "actual": "b2079a4573e68911e59b293329e6af6b2b92f74061e212443d0a6fd6a6461d5b",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/glossary.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "627f3d7b9c8fab397fccc3f4df3c3d723d77a3012dd6d2daad29fab1e2f00354",
+      "actual": "627f3d7b9c8fab397fccc3f4df3c3d723d77a3012dd6d2daad29fab1e2f00354",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/index.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "7852c6dbf7db9889950ea6d826407d9c432c8f4340f52f6deec2403df5a6b1b8",
+      "actual": "7852c6dbf7db9889950ea6d826407d9c432c8f4340f52f6deec2403df5a6b1b8",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/README.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "61a7ba0be501243fcca07a5a4a1c8b678987d2e2164213c7969e0ed757eb79b1",
+      "actual": "61a7ba0be501243fcca07a5a4a1c8b678987d2e2164213c7969e0ed757eb79b1",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "language",
+      "path": "en/troubleshooting.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\language-20260911T085729776720Z.json",
+      "expected": "f63c0c82f7be34a8dda4677496fab971f908f13d1df2330cc05a9fb9730fa73b",
+      "actual": "f63c0c82f7be34a8dda4677496fab971f908f13d1df2330cc05a9fb9730fa73b",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/01-first-mod.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "1eb49b731339c72dcbaaa342e1971b59c43e2f0118ee5fc458a7611834cbdec3",
+      "actual": "1eb49b731339c72dcbaaa342e1971b59c43e2f0118ee5fc458a7611834cbdec3",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/02-custom-item.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "6d36eff473b0919cbd5db1169adb3b387016032ac6cc83dbaf131216f1cdab29",
+      "actual": "6d36eff473b0919cbd5db1169adb3b387016032ac6cc83dbaf131216f1cdab29",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/03-admin-panel.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "6d52ed6d18d506658b7696218fee88b8db0bb1fe098b825e207277592127211d",
+      "actual": "6d52ed6d18d506658b7696218fee88b8db0bb1fe098b825e207277592127211d",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/04-chat-commands.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "3291a2925da56cad2b1011ded5b0bafe4866ad87c21f1b8d2f342671bfa0603b",
+      "actual": "3291a2925da56cad2b1011ded5b0bafe4866ad87c21f1b8d2f342671bfa0603b",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/05-mod-template.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "1c99966c55afacb6f467336623df5550a6eec401374cc0aaa85efc7f805e3f2f",
+      "actual": "1c99966c55afacb6f467336623df5550a6eec401374cc0aaa85efc7f805e3f2f",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/06-debugging-testing.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "dc5a3a0882e4fea1e8c441d358a3d8d487917de42e9f467659ff7b9886575ab8",
+      "actual": "dc5a3a0882e4fea1e8c441d358a3d8d487917de42e9f467659ff7b9886575ab8",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/07-publishing-workshop.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "5049b47865322837a7b22ce3c93151af9fa5e665dd6034de1d824a3a59733408",
+      "actual": "5049b47865322837a7b22ce3c93151af9fa5e665dd6034de1d824a3a59733408",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/08-hud-overlay.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "47d1508e62e0ad8002d263491a9e047880919e6af310110f5735a0d04ddb0e6c",
+      "actual": "47d1508e62e0ad8002d263491a9e047880919e6af310110f5735a0d04ddb0e6c",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/09-professional-template.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "957a09ae356ed930a796e551436f2c0f824d7d75d6c4b5cdd4df07961c9082f3",
+      "actual": "957a09ae356ed930a796e551436f2c0f824d7d75d6c4b5cdd4df07961c9082f3",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/10-vehicle-mod.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "9ba2a4ff68479eb2a6633eca98c726614e76bc04bdb1d8be1abb1ac3cdd1a3db",
+      "actual": "9ba2a4ff68479eb2a6633eca98c726614e76bc04bdb1d8be1abb1ac3cdd1a3db",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/11-clothing-mod.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "71d0e39c146caf389734d01e32aaf630e6f67286bd70d8ecccc133b4d1800f1d",
+      "actual": "71d0e39c146caf389734d01e32aaf630e6f67286bd70d8ecccc133b4d1800f1d",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/12-trading-system.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "5c729930b0b975e5b0fa5b84966b2a6a88910fc72fb6072b3165d917ad07e5dc",
+      "actual": "5c729930b0b975e5b0fa5b84966b2a6a88910fc72fb6072b3165d917ad07e5dc",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials/13-diag-menu.md",
+      "manifest": ".audit\\en-2026-09-11\\integrations\\tutorials-20260913T195514373631Z.json",
+      "expected": "0efd4c7ec47e6e8a43bcff72da93b99e47b52008ec64872da40d4d0771c212f4",
+      "actual": "0efd4c7ec47e6e8a43bcff72da93b99e47b52008ec64872da40d4d0771c212f4",
+      "matches": true,
+      "matches_with_authorized_exception": true
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/01-server-setup.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "3ff2c03476ac5bdd83d48d57cfd4dfe41afa402575fda775cc92c77d32518338",
+      "actual": "2faedeb8dde0abbcb103e76a95d55bf3cc3f1ad82d23a0ee804beda8b4b941ef",
+      "matches_with_authorized_exception": true,
+      "exception": "Only fragment repairs recorded in server-integration-anchor-corrections.json"
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/02-directory-structure.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "2347bb40d55151dfa30bfc5dced1b5f1cac6d581240aa4b44c5536f36b8f7ae4",
+      "actual": "46333250ca4e7c0b33361ad831db2a39ea5b80df2f01c7794c8e229883043133",
+      "matches_with_authorized_exception": true,
+      "exception": "Only fragment repairs recorded in server-integration-anchor-corrections.json"
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/03-server-cfg.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "405dde26d9a61b970503a9056b0873e4b2d3bfac4fbf462a8d478d793b4f6ec4",
+      "actual": "979f23f2fbb63da260d7f410a1452835962390420c27724de3774ccc6e918792",
+      "matches_with_authorized_exception": true,
+      "exception": "Only fragment repairs recorded in server-integration-anchor-corrections.json"
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "84e40672a7b6f1fe38b8f8f4b76be785efcfb95c2cba6991b3c3146a427bc0c4",
+      "actual": "b558aaa3ba815e87464e131a5ff7e72435d9d28847fe8914e667c9ba32d13921",
+      "matches_with_authorized_exception": true,
+      "exception": "Only fragment repairs recorded in server-integration-anchor-corrections.json"
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/05-vehicle-spawning.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "e7bb44a9f777767fc1f7c00f2615b04c203a85053df39695cdc6cf8f50717335",
+      "actual": "e7bb44a9f777767fc1f7c00f2615b04c203a85053df39695cdc6cf8f50717335",
+      "matches_with_authorized_exception": true,
+      "exception": null
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/06-player-spawning.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "7dca57d6da99730d41b8ba7c20760fc94e8ee13c6ab42ed61b9d1063be5a91af",
+      "actual": "7dca57d6da99730d41b8ba7c20760fc94e8ee13c6ab42ed61b9d1063be5a91af",
+      "matches_with_authorized_exception": true,
+      "exception": null
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/07-persistence.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "fccd97afb70830ec1b48bfa10cf2552258cd7efd7561bc9683c29a3141315a4c",
+      "actual": "fccd97afb70830ec1b48bfa10cf2552258cd7efd7561bc9683c29a3141315a4c",
+      "matches_with_authorized_exception": true,
+      "exception": null
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/08-performance.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "95c3952f5311aebbe3fd35e04bc8830d4e002ebc295badf47cc513cb77596e5f",
+      "actual": "cfcc81b9c8d6af245af34c6d42f3e73bf83f9330df7f2006c944fdf8ebe95254",
+      "matches_with_authorized_exception": true,
+      "exception": "Only fragment repairs recorded in server-integration-anchor-corrections.json"
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/09-access-control.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "4ae065361d1eefdda15197f9d8d08bc53c7a59b3c2a2a613ca9d951d530715fd",
+      "actual": "14da786b5502975f2d4ccf577e975d8c64db23c59f4f98b1474e36ffafbbbbdd",
+      "matches_with_authorized_exception": true,
+      "exception": "Only fragment repairs recorded in server-integration-anchor-corrections.json"
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/10-mod-management.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "b18e5116b9df930324be026d1d7bb6650fb1e90a098770e853cffdeb3b64bffe",
+      "actual": "b18e5116b9df930324be026d1d7bb6650fb1e90a098770e853cffdeb3b64bffe",
+      "matches_with_authorized_exception": true,
+      "exception": null
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/11-troubleshooting.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "c64aa9877fdae952860ec896e329ec2ff634b1a305b960e6c4be7dda59ec127a",
+      "actual": "c64aa9877fdae952860ec896e329ec2ff634b1a305b960e6c4be7dda59ec127a",
+      "matches_with_authorized_exception": true,
+      "exception": null
+    },
+    {
+      "domain": "server",
+      "path": "en/09-server-admin/12-advanced.md",
+      "manifest": ".audit/en-2026-09-13/council-server-ACCEPTANCE.json",
+      "expected": "f7794cedbe560e4f3dbb7856453a5fc38cf5230e000e9eac466f532a6d0c1bc8",
+      "actual": "f7794cedbe560e4f3dbb7856453a5fc38cf5230e000e9eac466f532a6d0c1bc8",
+      "matches_with_authorized_exception": true,
+      "exception": null
+    }
+  ],
+  "pending": [
+    "Global graph refresh",
+    "Final integrated-site build",
+    "Global navigation and LLM finalization"
+  ],
+  "project_complete": false
+}

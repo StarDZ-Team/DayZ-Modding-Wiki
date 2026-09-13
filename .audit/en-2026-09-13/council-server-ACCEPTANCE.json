@@ -1,0 +1,727 @@
+{
+  "artifact": "Independent server fourth-revision acceptance",
+  "timestamp_utc": "2026-09-13T20:23:06.060610+00:00",
+  "task_id": "task_b572fe278a33",
+  "dispatch_id": "ctx_0a20e981b601",
+  "verdict": "approved",
+  "integration_approved": true,
+  "approval_scope": "Exact twelve child server page bytes and bound server delivery reports only; coordinator routes to committer. No integration performed.",
+  "scope": "CS13-1 through CS13-4 only; preservation checks, not a full twelve-page audit",
+  "main_root": "D:\\StarDZ\\docs\\wiki",
+  "child_root": "C:\\Users\\Leonardo Mello\\orca\\workspaces\\wiki\\wiki-audit-server",
+  "main_head_observed": "9c3f2b0d6406dcdccf5f6f7487a2c18391c08fe6",
+  "prior_council_main_head": "d19ede0eb2d7419abde1bfa6bd328ac12a8142e6",
+  "child_head": "42b5f2c5c8c862ea1d94224763b7eef0e4c95785",
+  "main_changed_paths_since_council": [
+    ".audit/en-2026-09-13/approved-commit-REPORT.md",
+    ".audit/en-2026-09-13/approved-commit-anchor-correction.json",
+    ".audit/en-2026-09-13/approved-commit-approval.json",
+    "en/05-config-files/01-stringtable.md",
+    "en/05-config-files/02-inputs-xml.md",
+    "en/05-config-files/03-credits-json.md",
+    "en/05-config-files/04-imagesets.md",
+    "en/05-config-files/05-server-configs.md",
+    "en/05-config-files/06-spawning-gear.md",
+    "en/06-engine-api/01-entity-system.md",
+    "en/06-engine-api/02-vehicles.md",
+    "en/06-engine-api/03-weather.md",
+    "en/06-engine-api/04-cameras.md",
+    "en/06-engine-api/06-notifications.md",
+    "en/06-engine-api/07-timers.md",
+    "en/06-engine-api/08-file-io.md",
+    "en/06-engine-api/09-networking.md",
+    "en/06-engine-api/11-mission-hooks.md",
+    "en/06-engine-api/12-action-system.md",
+    "en/06-engine-api/14-player-system.md",
+    "en/06-engine-api/16-crafting-system.md",
+    "en/08-tutorials/06-debugging-testing.md"
+  ],
+  "main_server_working_status": [],
+  "comparison_note": "Main HEAD advanced since council; all twelve main server files remain equal to the prior council main working bytes, clean against observed HEAD, and differ from child. Approval binds child bytes, not an assumed unchanged main HEAD.",
+  "hash_method": "SHA256 exact raw bytes and CRLF-to-LF bytes only; no other normalization.",
+  "findings": [
+    {
+      "id": "CS13-1",
+      "parent": "MAT-2",
+      "status": "resolved",
+      "evidence": "Chapter 04:629/631/634 now says summarized and requires all multi-element/flags elements for both types and events, matching cached mission-files lines 38-44. Adjacent messages, group replacement, spawnabletypes, globals/economy and event children rules remain intact."
+    },
+    {
+      "id": "CS13-2",
+      "parent": "OPT-2",
+      "status": "resolved",
+      "evidence": "Chapter 03:91 uses bool / false,true / false and explicitly leaves parser equivalence unverified, matching cached Server Configuration lines 22-23. Identifier caveat and access-control link are retained."
+    },
+    {
+      "id": "CS13-3",
+      "parent": "OPT-4",
+      "status": "resolved",
+      "evidence": "Chapter 04:437/534 removes the speculative numerical models and states multiple-item and empty-selection semantics are unverified. No assertion of independent probability addition remains; engine semantics are not inferred."
+    },
+    {
+      "id": "CS13-4",
+      "parent": "OPT-6",
+      "status": "resolved",
+      "evidence": "Chapter 04:71 matches custom-terrain cache line 92 for mapgroupdirt purpose; :73 links to the existing chapter 12 territory heading and discussion; :67 points below to Tags. Independently counted 22 data rows at :52-73 with all ten additions retained; both third-revision reports now state 22, with no other report changes."
+    }
+  ],
+  "changes_requested": [],
+  "pages": [
+    {
+      "path": "en/09-server-admin/01-server-setup.md",
+      "sha256_raw": "9eb7b685512839a6840248e9c91b76db6af22d273ca461d910ea2fb217d4fec0",
+      "sha256_lf": "3ff2c03476ac5bdd83d48d57cfd4dfe41afa402575fda775cc92c77d32518338",
+      "bytes_raw": 11673,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "9eb7b685512839a6840248e9c91b76db6af22d273ca461d910ea2fb217d4fec0",
+        "sha256_lf": "3ff2c03476ac5bdd83d48d57cfd4dfe41afa402575fda775cc92c77d32518338",
+        "bytes_raw": 11673
+      },
+      "main_working": {
+        "sha256_raw": "0c946033564f73e4369a1d5d197ec7773d353a1c61499bf02c4a14d2104f36dc",
+        "sha256_lf": "0c946033564f73e4369a1d5d197ec7773d353a1c61499bf02c4a14d2104f36dc",
+        "bytes_raw": 9327
+      },
+      "main_head": {
+        "sha256_raw": "0c946033564f73e4369a1d5d197ec7773d353a1c61499bf02c4a14d2104f36dc",
+        "sha256_lf": "0c946033564f73e4369a1d5d197ec7773d353a1c61499bf02c4a14d2104f36dc",
+        "bytes_raw": 9327
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/02-directory-structure.md",
+      "sha256_raw": "b5d33f4e7ad7d7264822e0e7a04a06544f4586013b699fba411f8e2f8b09a19f",
+      "sha256_lf": "2347bb40d55151dfa30bfc5dced1b5f1cac6d581240aa4b44c5536f36b8f7ae4",
+      "bytes_raw": 17558,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "b5d33f4e7ad7d7264822e0e7a04a06544f4586013b699fba411f8e2f8b09a19f",
+        "sha256_lf": "2347bb40d55151dfa30bfc5dced1b5f1cac6d581240aa4b44c5536f36b8f7ae4",
+        "bytes_raw": 17558
+      },
+      "main_working": {
+        "sha256_raw": "93b7defb6e2ca8450215cd8e40926520328e933ad5e6882dfa0e809be99c88bd",
+        "sha256_lf": "93b7defb6e2ca8450215cd8e40926520328e933ad5e6882dfa0e809be99c88bd",
+        "bytes_raw": 16661
+      },
+      "main_head": {
+        "sha256_raw": "93b7defb6e2ca8450215cd8e40926520328e933ad5e6882dfa0e809be99c88bd",
+        "sha256_lf": "93b7defb6e2ca8450215cd8e40926520328e933ad5e6882dfa0e809be99c88bd",
+        "bytes_raw": 16661
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/03-server-cfg.md",
+      "sha256_raw": "0d3bd14292727a7752d5175466d0cfbeb9485b54e4024876957fb0c821678996",
+      "sha256_lf": "405dde26d9a61b970503a9056b0873e4b2d3bfac4fbf462a8d478d793b4f6ec4",
+      "bytes_raw": 34701,
+      "changed_from_council": true,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "3670ddd75bbc52ff5ea81ae85ddc59df9c1dad09ad92e8a61a21ce054a340b8a",
+        "sha256_lf": "e51393d4beb9d12f7a995f79e07e2e8c4b113a07415784298409e5e72eecdfa1",
+        "bytes_raw": 34762
+      },
+      "main_working": {
+        "sha256_raw": "8695192d900293c175ef5dfc819d4ecf8f98be48650d569a065418ca65e4e5ce",
+        "sha256_lf": "8695192d900293c175ef5dfc819d4ecf8f98be48650d569a065418ca65e4e5ce",
+        "bytes_raw": 18566
+      },
+      "main_head": {
+        "sha256_raw": "8695192d900293c175ef5dfc819d4ecf8f98be48650d569a065418ca65e4e5ce",
+        "sha256_lf": "8695192d900293c175ef5dfc819d4ecf8f98be48650d569a065418ca65e4e5ce",
+        "bytes_raw": 18566
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "sha256_raw": "7ffe958e13891ddaca32409f8912840fd8228d834527a3ef3b0f9d2ac981e830",
+      "sha256_lf": "84e40672a7b6f1fe38b8f8f4b76be785efcfb95c2cba6991b3c3146a427bc0c4",
+      "bytes_raw": 54563,
+      "changed_from_council": true,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "9eb7afa7fde16e247ccea56edcdb06e4323a6c163286094d8861dd1b77f46dc0",
+        "sha256_lf": "05da3fe77471aa1b701abcb6c76dd162cb20d6b5de30e5e0ee425caaf2ecff62",
+        "bytes_raw": 54636
+      },
+      "main_working": {
+        "sha256_raw": "02abb6c2fe885c5467e1d6e5919b4c0b078057a9515c69d410af35ab27c6a5e4",
+        "sha256_lf": "02abb6c2fe885c5467e1d6e5919b4c0b078057a9515c69d410af35ab27c6a5e4",
+        "bytes_raw": 37414
+      },
+      "main_head": {
+        "sha256_raw": "02abb6c2fe885c5467e1d6e5919b4c0b078057a9515c69d410af35ab27c6a5e4",
+        "sha256_lf": "02abb6c2fe885c5467e1d6e5919b4c0b078057a9515c69d410af35ab27c6a5e4",
+        "bytes_raw": 37414
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/05-vehicle-spawning.md",
+      "sha256_raw": "04f8ce76802d350a8779ed669663b77e489e8b9b99b7a6a7b5a3fb0c4a3f7efc",
+      "sha256_lf": "e7bb44a9f777767fc1f7c00f2615b04c203a85053df39695cdc6cf8f50717335",
+      "bytes_raw": 17212,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "04f8ce76802d350a8779ed669663b77e489e8b9b99b7a6a7b5a3fb0c4a3f7efc",
+        "sha256_lf": "e7bb44a9f777767fc1f7c00f2615b04c203a85053df39695cdc6cf8f50717335",
+        "bytes_raw": 17212
+      },
+      "main_working": {
+        "sha256_raw": "3c35a380a9fa6e072c32e2c201333c07111ccb79efc87bec4e447eb78c479b11",
+        "sha256_lf": "3c35a380a9fa6e072c32e2c201333c07111ccb79efc87bec4e447eb78c479b11",
+        "bytes_raw": 16644
+      },
+      "main_head": {
+        "sha256_raw": "3c35a380a9fa6e072c32e2c201333c07111ccb79efc87bec4e447eb78c479b11",
+        "sha256_lf": "3c35a380a9fa6e072c32e2c201333c07111ccb79efc87bec4e447eb78c479b11",
+        "bytes_raw": 16644
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/06-player-spawning.md",
+      "sha256_raw": "d4772ffed9ed1549ef2226a34ee162fd028453d660db48a90925710db60322cd",
+      "sha256_lf": "7dca57d6da99730d41b8ba7c20760fc94e8ee13c6ab42ed61b9d1063be5a91af",
+      "bytes_raw": 20014,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "d4772ffed9ed1549ef2226a34ee162fd028453d660db48a90925710db60322cd",
+        "sha256_lf": "7dca57d6da99730d41b8ba7c20760fc94e8ee13c6ab42ed61b9d1063be5a91af",
+        "bytes_raw": 20014
+      },
+      "main_working": {
+        "sha256_raw": "e2eea008f92e744239928f2c89c1c52179ab9ca2d10ddf72305d75a7872f7ff0",
+        "sha256_lf": "e2eea008f92e744239928f2c89c1c52179ab9ca2d10ddf72305d75a7872f7ff0",
+        "bytes_raw": 15925
+      },
+      "main_head": {
+        "sha256_raw": "e2eea008f92e744239928f2c89c1c52179ab9ca2d10ddf72305d75a7872f7ff0",
+        "sha256_lf": "e2eea008f92e744239928f2c89c1c52179ab9ca2d10ddf72305d75a7872f7ff0",
+        "bytes_raw": 15925
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/07-persistence.md",
+      "sha256_raw": "a7b4de6249d00e6af6485f294b7869d44ea3541de8fae7b3c1be8c01bffcfc01",
+      "sha256_lf": "fccd97afb70830ec1b48bfa10cf2552258cd7efd7561bc9683c29a3141315a4c",
+      "bytes_raw": 16480,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "a7b4de6249d00e6af6485f294b7869d44ea3541de8fae7b3c1be8c01bffcfc01",
+        "sha256_lf": "fccd97afb70830ec1b48bfa10cf2552258cd7efd7561bc9683c29a3141315a4c",
+        "bytes_raw": 16480
+      },
+      "main_working": {
+        "sha256_raw": "452fc59b6a660bccfcc33d214dc5f9e2a7e968e9cfd4f9bf9c6b5040e6474cfc",
+        "sha256_lf": "452fc59b6a660bccfcc33d214dc5f9e2a7e968e9cfd4f9bf9c6b5040e6474cfc",
+        "bytes_raw": 14605
+      },
+      "main_head": {
+        "sha256_raw": "452fc59b6a660bccfcc33d214dc5f9e2a7e968e9cfd4f9bf9c6b5040e6474cfc",
+        "sha256_lf": "452fc59b6a660bccfcc33d214dc5f9e2a7e968e9cfd4f9bf9c6b5040e6474cfc",
+        "bytes_raw": 14605
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/08-performance.md",
+      "sha256_raw": "24e8aaf097cb30d312f0c4b37afce2c82b3a549388d6c75f82ad7d9e8d444cef",
+      "sha256_lf": "95c3952f5311aebbe3fd35e04bc8830d4e002ebc295badf47cc513cb77596e5f",
+      "bytes_raw": 17356,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "24e8aaf097cb30d312f0c4b37afce2c82b3a549388d6c75f82ad7d9e8d444cef",
+        "sha256_lf": "95c3952f5311aebbe3fd35e04bc8830d4e002ebc295badf47cc513cb77596e5f",
+        "bytes_raw": 17356
+      },
+      "main_working": {
+        "sha256_raw": "186220bd449751694cb39e96331c53cb52923d88d19881d833223622f7909e8c",
+        "sha256_lf": "186220bd449751694cb39e96331c53cb52923d88d19881d833223622f7909e8c",
+        "bytes_raw": 11867
+      },
+      "main_head": {
+        "sha256_raw": "186220bd449751694cb39e96331c53cb52923d88d19881d833223622f7909e8c",
+        "sha256_lf": "186220bd449751694cb39e96331c53cb52923d88d19881d833223622f7909e8c",
+        "bytes_raw": 11867
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/09-access-control.md",
+      "sha256_raw": "aac968e574f7cc6da5c4c9351771abfcb33c456bc474b1d05fb193d96dff0bd0",
+      "sha256_lf": "4ae065361d1eefdda15197f9d8d08bc53c7a59b3c2a2a613ca9d951d530715fd",
+      "bytes_raw": 11631,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "aac968e574f7cc6da5c4c9351771abfcb33c456bc474b1d05fb193d96dff0bd0",
+        "sha256_lf": "4ae065361d1eefdda15197f9d8d08bc53c7a59b3c2a2a613ca9d951d530715fd",
+        "bytes_raw": 11631
+      },
+      "main_working": {
+        "sha256_raw": "b411865716dc408ff832d1417f3ebfed19bf737d3b3ba62f95f2cb9f9c9f6166",
+        "sha256_lf": "b411865716dc408ff832d1417f3ebfed19bf737d3b3ba62f95f2cb9f9c9f6166",
+        "bytes_raw": 7652
+      },
+      "main_head": {
+        "sha256_raw": "b411865716dc408ff832d1417f3ebfed19bf737d3b3ba62f95f2cb9f9c9f6166",
+        "sha256_lf": "b411865716dc408ff832d1417f3ebfed19bf737d3b3ba62f95f2cb9f9c9f6166",
+        "bytes_raw": 7652
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/10-mod-management.md",
+      "sha256_raw": "9fbe9d3fbdb79d5257429f13fa153e74717fec3b64e00c567240d38f0c13b143",
+      "sha256_lf": "b18e5116b9df930324be026d1d7bb6650fb1e90a098770e853cffdeb3b64bffe",
+      "bytes_raw": 9790,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "9fbe9d3fbdb79d5257429f13fa153e74717fec3b64e00c567240d38f0c13b143",
+        "sha256_lf": "b18e5116b9df930324be026d1d7bb6650fb1e90a098770e853cffdeb3b64bffe",
+        "bytes_raw": 9790
+      },
+      "main_working": {
+        "sha256_raw": "03c68398dc334e990d68945f34fb2f1e6108f103494443a9e7a9ded214af82d8",
+        "sha256_lf": "03c68398dc334e990d68945f34fb2f1e6108f103494443a9e7a9ded214af82d8",
+        "bytes_raw": 8368
+      },
+      "main_head": {
+        "sha256_raw": "03c68398dc334e990d68945f34fb2f1e6108f103494443a9e7a9ded214af82d8",
+        "sha256_lf": "03c68398dc334e990d68945f34fb2f1e6108f103494443a9e7a9ded214af82d8",
+        "bytes_raw": 8368
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/11-troubleshooting.md",
+      "sha256_raw": "378a8e849b9300c4f21933c40d762f8bbcf5d1440a3a02324602f524cd5afaa5",
+      "sha256_lf": "c64aa9877fdae952860ec896e329ec2ff634b1a305b960e6c4be7dda59ec127a",
+      "bytes_raw": 12973,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "378a8e849b9300c4f21933c40d762f8bbcf5d1440a3a02324602f524cd5afaa5",
+        "sha256_lf": "c64aa9877fdae952860ec896e329ec2ff634b1a305b960e6c4be7dda59ec127a",
+        "bytes_raw": 12973
+      },
+      "main_working": {
+        "sha256_raw": "4ed6cea5851ba4d1454130f1040cc11cd6df97aabdf9878db8ec24c019cc58db",
+        "sha256_lf": "4ed6cea5851ba4d1454130f1040cc11cd6df97aabdf9878db8ec24c019cc58db",
+        "bytes_raw": 10804
+      },
+      "main_head": {
+        "sha256_raw": "4ed6cea5851ba4d1454130f1040cc11cd6df97aabdf9878db8ec24c019cc58db",
+        "sha256_lf": "4ed6cea5851ba4d1454130f1040cc11cd6df97aabdf9878db8ec24c019cc58db",
+        "bytes_raw": 10804
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    },
+    {
+      "path": "en/09-server-admin/12-advanced.md",
+      "sha256_raw": "8605a3aa971410c3d1a297d8e8697eb727fa6398ccce206eed8317635cc0ef7f",
+      "sha256_lf": "f7794cedbe560e4f3dbb7856453a5fc38cf5230e000e9eac466f532a6d0c1bc8",
+      "bytes_raw": 18459,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "8605a3aa971410c3d1a297d8e8697eb727fa6398ccce206eed8317635cc0ef7f",
+        "sha256_lf": "f7794cedbe560e4f3dbb7856453a5fc38cf5230e000e9eac466f532a6d0c1bc8",
+        "bytes_raw": 18459
+      },
+      "main_working": {
+        "sha256_raw": "e1d91262cf49f6dbe3f3c48c111a43d3c47d187e8e83a4d88460074ab6ae8d33",
+        "sha256_lf": "e1d91262cf49f6dbe3f3c48c111a43d3c47d187e8e83a4d88460074ab6ae8d33",
+        "bytes_raw": 11963
+      },
+      "main_head": {
+        "sha256_raw": "e1d91262cf49f6dbe3f3c48c111a43d3c47d187e8e83a4d88460074ab6ae8d33",
+        "sha256_lf": "e1d91262cf49f6dbe3f3c48c111a43d3c47d187e8e83a4d88460074ab6ae8d33",
+        "bytes_raw": 11963
+      },
+      "main_unchanged_since_council": true,
+      "main_working_equals_child_lf": false
+    }
+  ],
+  "reports": [
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-COUNCIL-REVISION.json",
+      "sha256_raw": "6d0df34ede1820533799a3e498b6e5b4f076eec7663bcacab5608edd284a9644",
+      "sha256_lf": "6d0df34ede1820533799a3e498b6e5b4f076eec7663bcacab5608edd284a9644",
+      "bytes_raw": 30256,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "6d0df34ede1820533799a3e498b6e5b4f076eec7663bcacab5608edd284a9644",
+        "sha256_lf": "6d0df34ede1820533799a3e498b6e5b4f076eec7663bcacab5608edd284a9644",
+        "bytes_raw": 30256
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-COUNCIL-REVISION.md",
+      "sha256_raw": "8b053c5d2378837d858f767cf134e74f213b17abe2294276f66f240ef0c50076",
+      "sha256_lf": "8b053c5d2378837d858f767cf134e74f213b17abe2294276f66f240ef0c50076",
+      "bytes_raw": 23760,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "8b053c5d2378837d858f767cf134e74f213b17abe2294276f66f240ef0c50076",
+        "sha256_lf": "8b053c5d2378837d858f767cf134e74f213b17abe2294276f66f240ef0c50076",
+        "bytes_raw": 23760
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-findings.json",
+      "sha256_raw": "4fe2e56528e7286e01055beb1e1ad3a30cf99cf41ee5727785458cd015bb9a8e",
+      "sha256_lf": "4fe2e56528e7286e01055beb1e1ad3a30cf99cf41ee5727785458cd015bb9a8e",
+      "bytes_raw": 110724,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "4fe2e56528e7286e01055beb1e1ad3a30cf99cf41ee5727785458cd015bb9a8e",
+        "sha256_lf": "4fe2e56528e7286e01055beb1e1ad3a30cf99cf41ee5727785458cd015bb9a8e",
+        "bytes_raw": 110724
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-REPORT.md",
+      "sha256_raw": "83f79cea3ee8b8abc0040feffd2b8a96e1e7733c3ddafbedaa9cb1f42930ef99",
+      "sha256_lf": "067f3bf22632715ee9412f5661379d0377df2b8967d7a59c89f3d1a1903e844e",
+      "bytes_raw": 19151,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "83f79cea3ee8b8abc0040feffd2b8a96e1e7733c3ddafbedaa9cb1f42930ef99",
+        "sha256_lf": "067f3bf22632715ee9412f5661379d0377df2b8967d7a59c89f3d1a1903e844e",
+        "bytes_raw": 19151
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-REVISION.md",
+      "sha256_raw": "8ea14f3378c7f81a6ff1f076fda254af6dd90aac6b77de016b018deeaa610268",
+      "sha256_lf": "7e6ed1ade302e67eaf6eaed4e1bfc074d2422301f324b5e0ef11b39826d13662",
+      "bytes_raw": 25601,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "8ea14f3378c7f81a6ff1f076fda254af6dd90aac6b77de016b018deeaa610268",
+        "sha256_lf": "7e6ed1ade302e67eaf6eaed4e1bfc074d2422301f324b5e0ef11b39826d13662",
+        "bytes_raw": 25601
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-SECOND-REVISION.json",
+      "sha256_raw": "84c219bc5e60a17de680b664aca8b5c36a96db6a3ad701770dd4d2d1d5af675c",
+      "sha256_lf": "84c219bc5e60a17de680b664aca8b5c36a96db6a3ad701770dd4d2d1d5af675c",
+      "bytes_raw": 76101,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "84c219bc5e60a17de680b664aca8b5c36a96db6a3ad701770dd4d2d1d5af675c",
+        "sha256_lf": "84c219bc5e60a17de680b664aca8b5c36a96db6a3ad701770dd4d2d1d5af675c",
+        "bytes_raw": 76101
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-SECOND-REVISION.md",
+      "sha256_raw": "95c8ed6aa5abb0f54f46193b7c4cb84b16bd39f4e3700646a694f076f280eb08",
+      "sha256_lf": "b7b66ecf0a9480503580ced221d1ffa0a7e538ac06df5fab6b258d0d849face3",
+      "bytes_raw": 28086,
+      "changed_from_council": false,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "95c8ed6aa5abb0f54f46193b7c4cb84b16bd39f4e3700646a694f076f280eb08",
+        "sha256_lf": "b7b66ecf0a9480503580ced221d1ffa0a7e538ac06df5fab6b258d0d849face3",
+        "bytes_raw": 28086
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-THIRD-REVISION.json",
+      "sha256_raw": "40588451247cccfe510d46437041e23cf3d9a71520a2fda13b0527b95f568446",
+      "sha256_lf": "40588451247cccfe510d46437041e23cf3d9a71520a2fda13b0527b95f568446",
+      "bytes_raw": 32336,
+      "changed_from_council": true,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "1b30286c8e72ae02efcf3774c40c5824124e27314fa16f6847d826fb55c6409f",
+        "sha256_lf": "1b30286c8e72ae02efcf3774c40c5824124e27314fa16f6847d826fb55c6409f",
+        "bytes_raw": 32336
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-11/server-THIRD-REVISION.md",
+      "sha256_raw": "e02c5f55a537e6eacfc5d324ae173436aae64070b7f01b2c9d15054d0b231d14",
+      "sha256_lf": "e02c5f55a537e6eacfc5d324ae173436aae64070b7f01b2c9d15054d0b231d14",
+      "bytes_raw": 17395,
+      "changed_from_council": true,
+      "reconstructed_council_hashes": {
+        "sha256_raw": "6da748088e2baaaa1423405618132ca45f46c1f2856de081150ad6331edf3e4f",
+        "sha256_lf": "6da748088e2baaaa1423405618132ca45f46c1f2856de081150ad6331edf3e4f",
+        "bytes_raw": 17395
+      }
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-13/server-FOURTH-REVISION.json",
+      "sha256_raw": "ed9dd3e4072d7444ff71df69521f889ade7cb77705c838e55f6d480263c8ec01",
+      "sha256_lf": "e8ecf0fd10ae2d3f13ee02e907e1e44f6a757b1a0300691a6007cdbf63a4f301",
+      "bytes_raw": 35378
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-13/server-FOURTH-REVISION-REPORT.md",
+      "sha256_raw": "ebf65ecfd20d0fbf046fc9baaf52feb1803c24e71e9a74786694b239eb332c3f",
+      "sha256_lf": "1782b4d414fc99315df6f931866827299730ceaec421b2889b6a5feec08d4d6e",
+      "bytes_raw": 6983
+    },
+    {
+      "root": "child",
+      "path": ".audit/en-2026-09-13/server-FOURTH-REVISION-SHA256.json",
+      "sha256_raw": "137b5a142ff6b567d49ab1f217239d424f1881fb0c4a17a5970838d678bdc88d",
+      "sha256_lf": "6fea8b8ac803ac89354a4f1c49b739768dead358732ccb6cccdef038c5cf5856",
+      "bytes_raw": 693
+    },
+    {
+      "root": "main",
+      "path": ".audit/en-2026-09-13/council-server.json",
+      "sha256_raw": "66328542fe1ebe3e0137645fbb7037eba99f8cfcda15228bdbe378e7742793a4",
+      "sha256_lf": "a84ca26f961b90cd23f6000ff5496fe425c937b6b284a41ce23ab74e6f86a647",
+      "bytes_raw": 41243
+    },
+    {
+      "root": "main",
+      "path": ".audit/en-2026-09-13/council-server-REPORT.md",
+      "sha256_raw": "2373c2cc4327c4ed0a3802b187c78e82f62f7450c194e948d6e1bfbc42939fe3",
+      "sha256_lf": "6a939fd938583ef59d6dd8081a40e1730841b4992a1ac6c8bfcdcba23c586955",
+      "bytes_raw": 11482
+    }
+  ],
+  "sources": [
+    {
+      "path": "C:/Users/LEONAR~1/AppData/Local/Temp/wiki-audit-20260911/BIKI-CE-mission-files-council-20260913.txt",
+      "url": "https://community.bistudio.com/wiki/DayZ:Central_Economy_mission_files_modding?action=raw",
+      "sha256_raw": "4940eb16d5002a08da0563f27d9e69d3a5e6b4956d083a381bf269c8578ae645",
+      "sha256_lf": "4940eb16d5002a08da0563f27d9e69d3a5e6b4956d083a381bf269c8578ae645",
+      "bytes_raw": 3168,
+      "access": "Actual cached raw primary source reopened; no fresh live retrieval claimed."
+    },
+    {
+      "path": "C:/Users/LEONAR~1/AppData/Local/Temp/wiki-audit-20260911/BIKI-CE-terrains-council-20260913.txt",
+      "url": "https://community.bistudio.com/wiki/DayZ:Central_Economy_setup_for_custom_terrains?action=raw",
+      "sha256_raw": "099cb40823d2ed9f2d601a9e936c648fdf9db799bd3a0c0ca9662532b05b1078",
+      "sha256_lf": "099cb40823d2ed9f2d601a9e936c648fdf9db799bd3a0c0ca9662532b05b1078",
+      "bytes_raw": 15387,
+      "access": "Actual cached raw primary source reopened; no fresh live retrieval claimed."
+    },
+    {
+      "path": "C:/Users/LEONAR~1/AppData/Local/Temp/wiki-audit-20260911/BIKI-Server-council-20260913.txt",
+      "url": "https://community.bistudio.com/wiki/DayZ:Server_Configuration?action=raw",
+      "sha256_raw": "b2d11b4cd7d973ff65fd9804406e02d4c091176f9926ee1af1f04142fe4142f7",
+      "sha256_lf": "b2d11b4cd7d973ff65fd9804406e02d4c091176f9926ee1af1f04142fe4142f7",
+      "bytes_raw": 13017,
+      "access": "Actual cached raw primary source reopened; no fresh live retrieval claimed."
+    }
+  ],
+  "reversible_replacements": [
+    {
+      "index": 1,
+      "finding": "CS13-2",
+      "path": "en/09-server-admin/03-server-cfg.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 2,
+      "finding": "CS13-1",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 3,
+      "finding": "CS13-1",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 4,
+      "finding": "CS13-1",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 5,
+      "finding": "CS13-3",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 6,
+      "finding": "CS13-3",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 7,
+      "finding": "CS13-4",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 8,
+      "finding": "CS13-4",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 9,
+      "finding": "CS13-4",
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 10,
+      "finding": "CS13-4",
+      "path": ".audit/en-2026-09-11/server-THIRD-REVISION.json",
+      "occurrences": 1,
+      "result": "pass"
+    },
+    {
+      "index": 11,
+      "finding": "CS13-4",
+      "path": ".audit/en-2026-09-11/server-THIRD-REVISION.md",
+      "occurrences": 1,
+      "result": "pass"
+    }
+  ],
+  "validation": {
+    "reversal": "11 substitutions reversed in memory, restoring all four files exactly to independently bound council raw/LF hashes",
+    "delta": "Two changed pages and two changed reports; ten pages and seven existing reports byte-identical to council",
+    "output_manifest": "Both fourth-revision outputs match separate SHA256 manifest; checksum manifest itself bound in reports",
+    "structure": "Both changed pages have balanced fences and one H1 outside fences; chapter 12 target exists; 22 table rows",
+    "prior_dispositions": "Exact deep equality of carried-forward disposition objects with council confirmed; 21 historical statuses preserved"
+  },
+  "preserved_resolved_third_findings": [
+    "MAT-1",
+    "MAT-3",
+    "MAT-4",
+    "MAT-5",
+    "OPT-1",
+    "OPT-3",
+    "OPT-5",
+    "OPT-7"
+  ],
+  "prior_dispositions": [
+    {
+      "request": "COUNCIL-SERVER-001",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-002",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-003",
+      "historical_status": "RESOLVED - accepted, boundary independently confirmed"
+    },
+    {
+      "request": "COUNCIL-SERVER-004",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-005",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-006",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-007",
+      "historical_status": "RESOLVED - accepted with the limitation"
+    },
+    {
+      "request": "COUNCIL-SERVER-008",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-009",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-010",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-011",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-012",
+      "historical_status": "COUNCIL REQUEST WITHDRAWN - the author is right. See ADJ-012."
+    },
+    {
+      "request": "COUNCIL-SERVER-013",
+      "historical_status": "COUNCIL REQUEST WITHDRAWN - the premise is false. See ADJ-013."
+    },
+    {
+      "request": "COUNCIL-SERVER-014",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-015",
+      "historical_status": "NOT RESOLVED - the applied fix introduces a false claim. See MAT-1."
+    },
+    {
+      "request": "COUNCIL-SERVER-016",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-017",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-018",
+      "historical_status": "RESOLVED - accepted, and the author's correction of the request is confirmed"
+    },
+    {
+      "request": "COUNCIL-SERVER-019",
+      "historical_status": "NOT FULLY RESOLVED - a fourth occurrence survives and now contradicts the page. See MAT-5."
+    },
+    {
+      "request": "COUNCIL-SERVER-020",
+      "historical_status": "RESOLVED - accepted"
+    },
+    {
+      "request": "COUNCIL-SERVER-008b",
+      "historical_status": "ACCEPTED"
+    }
+  ],
+  "preservation_note": "The eight resolved third findings remain intact because reversal proves the only page edits are the nine reviewed CS13 substitutions; other bytes are unchanged. Historical withdrawn requests stay withdrawn; historical -015/-019 residuals remain closed by MAT-1/MAT-5. Prior findings are carried forward, not freshly re-audited.",
+  "limits": [
+    "Static cached-source review; no live source refresh, parser/runtime/native chance verification, build, dev server, integration, source or child edits, commit, nested agents or Claude.",
+    "Initial verification helper used the Windows default text encoding and absolute/relative report keys; corrected to explicit UTF-8 mode and normalized keys before successful checks."
+  ],
+  "remaining": "Coordinator may route exact approved bytes to committer; recheck hashes and current main server state at integration."
+}

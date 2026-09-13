@@ -86,9 +86,28 @@ Vanilla fresh spawn values:
 | `min_dist_static` | 0 | Minimum distance from static objects (buildings, walls) |
 | `max_dist_static` | 2 | Maximum distance from static objects -- keeps players close to structures |
 
-**Scoring logic:** The engine calculates a score for each candidate point rather than applying hard cutoffs. Distance `0` to `min_dist` scores `-1` (nearly invalidated). Distance `min_dist` to the midpoint scores up to `1.1`. Distance from the midpoint to `max_dist` scores down from `1.1` to `0.1`. Beyond `max_dist` scores `0`. The higher a point's total score, the more likely it is chosen. In practice this means the engine prefers positions inside the `min_dist`--`max_dist` band and falls back to more distant ones when nothing better exists.
+**Scoring logic:** the engine scores each candidate point rather than applying hard cutoffs, and the higher the score the more likely the point is chosen. Bohemia draws the curve in the mission file's own comments, with five anchor values:
 
-> **Sakhal:** The Sakhal mission also adds `min_dist_trigger` and `max_dist_trigger` parameters, which score distance to trigger zones with a 6x weight multiplier.
+```
+distance:    0           min    mid    max          MAX
+             |============|======|======|============|
+score:      -1           0.1    1.1    0.1           0
+```
+
+Read left to right: a point right on top of whatever is being measured scores `-1`, and the score climbs to `0.1` at `min_dist`, peaks at `1.1` midway between `min_dist` and `max_dist`, falls back to `0.1` at `max_dist`, and tails off to `0` at the engine's maximum considered distance. Both ends are ramps, not cliffs -- a point closer than `min_dist` is *very unlikely* rather than forbidden, and a point past `max_dist` still scores above zero for a while. The engine therefore strongly prefers the middle of the `min_dist`--`max_dist` band and falls back outward when nothing better exists.
+
+**Per-parameter weights.** Bohemia annotates a weight on every `spawn_params` child, so the four distance measures do not count equally toward the total:
+
+| Measure | Weight |
+|---------|--------|
+| `min_dist_infected` / `max_dist_infected` | 2x |
+| `min_dist_player` / `max_dist_player` | 3x |
+| `min_dist_static` / `max_dist_static` | 1x |
+| `min_dist_trigger` / `max_dist_trigger` | 6x |
+
+Distance from other players counts three times as heavily as distance from buildings, and the trigger pair -- where present -- dominates at 6x. The total is also influenced by the static score the generator computed for that point.
+
+> **Sakhal:** the `min_dist_trigger` / `max_dist_trigger` pair (the 6x row above) appears in the Sakhal mission, which sets them to 50 and 100. The weights and the curve above are quoted from the comments in `dayzOffline.sakhal/cfgplayerspawnpoints.xml`.
 
 ---
 
@@ -113,15 +132,21 @@ The generator creates a grid of candidate positions around each bubble:
 | `grid_density` | 4 | Sampling frequency (number of subdivisions) of the grid -- higher = more candidates, higher CPU cost. Spacing between points = `grid_width` / `grid_density` |
 | `grid_width` | 200 | Total width of the candidate grid in meters (centered on the bubble) -- extends ~100m to each side on the X axis |
 | `grid_height` | 200 | Total height of the candidate grid in meters (centered on the bubble) -- extends ~100m to each side on the Z axis |
-| `min_steepness` / `max_steepness` | -45 / 45 | Terrain slope range in degrees -- rejects cliff faces and steep hills |
+| `min_dist_static` | 0 | Minimum distance from static objects. Bohemia's note: points **below** this are *discarded* during binarisation. Chernarus sets 0, so nothing is discarded on this basis; Sakhal sets 3. |
+| `max_dist_static` | 2 | Maximum distance from static objects. Bohemia's note: points **above** this are not discarded, just *less likely* than those inside the range. Sakhal sets 10. |
+| `min_steepness` / `max_steepness` | -45 / 45 | Terrain slope range in degrees -- points outside the range are discarded during binarisation, which rejects cliff faces and steep hills. Sakhal narrows this to -30 / 30. |
 
-Each bubble gets a 200x200m grid with candidate points spaced `grid_width` / `grid_density` = 200/4 = 50m apart (on the order of ~16-25 candidates). The engine filters by steepness and static distance and discards points that overlap objects or fall in water, then applies `spawn_params` at spawn time.
+Each bubble gets a 200x200 m grid subdivided `grid_density` times per axis, so each cell is `grid_width` / `grid_density` = 200/4 = 50 m across and the candidates sit on the cell corners. Bohemia's diagrams in the mission file make the count explicit: density 4 draws a 5x5 lattice (**25** candidates) and density 8 a 9x9 one (81). The engine filters by steepness and static distance and discards points that overlap objects or fall in water, then applies `spawn_params` at spawn time.
 
-`grid_density` must be at least `1`. When set to `0`, only the bubble's center point is used as a candidate.
+`grid_density` must be at least `1` and cannot exceed the smaller of `grid_width` and `grid_height`. When set to `0`, only the bubble's center point is used as a candidate.
 
 #### `allow_in_water` Parameter (1.28+)
 
-Starting in DayZ 1.28, a new boolean `allow_in_water` parameter was added to `generator_params` (default: `false`). When set to `true`, the spawn point generator will consider positions in water as valid spawn points:
+DayZ 1.28 added a boolean `allow_in_water` child to `generator_params`, defaulting to `false`. Bohemia's stable changelog lists it verbatim under **SERVER**. The source is the *Stable Update 1.28* thread in the official, read-only **PC Stable Updates** forum, posted 2025-06-02 by a DayZ Community Support account, under the post's own heading *"PC Stable 1.28 Update 1 - Version 1.28.159992 (Release on 03.06.2025)"*:
+
+> Added: "allow_in_water" bool to "generator_params" in "cfgplayerspawnpoints.xml" defaulting to "false"
+
+The `false` behaviour is separately documented by Bohemia inside the Sakhal mission's own `cfgplayerspawnpoints.xml`, which comments the generator as *"Generated spawn points which overlap with objects or water are discarded."* Setting the flag to `true` is described by its name and by that default as lifting the water half of that filter; Bohemia has published no further description of the `true` case, so treat the exact behaviour as inferred rather than documented.
 
 ```xml
 <generator_params>
@@ -136,7 +161,12 @@ Starting in DayZ 1.28, a new boolean `allow_in_water` parameter was added to `ge
 </generator_params>
 ```
 
-By default, the engine rejects any candidate position that falls in water (ponds, rivers, ocean). Setting `allow_in_water` to `true` removes this filter. This is primarily useful for custom maps with island spawns or scenarios where coastal water spawns are intentional. For most servers, leave this at `false` to avoid players spawning in lakes or the ocean.
+By default the generator discards candidate positions that fall in water. Setting `allow_in_water` to `true` is what lifts that filter.
+
+Two practical notes:
+
+- **You have to add the element yourself.** `allow_in_water` appears in none of Bohemia's shipped mission files -- a full-text search of the official [DayZ-Central-Economy](https://github.com/BohemiaInteractive/DayZ-Central-Economy) repository at commit `9a21bb9` (2026-08-13) finds zero occurrences repository-wide -- the repository holds 17 mission folders, of which only three (`dayzOffline.chernarusplus`, `dayzOffline.enoch`, `dayzOffline.sakhal`) contain a `cfgplayerspawnpoints.xml` at all, and `allow_in_water` appears in none of them, nor anywhere else in the repository -- and the official [Player Spawning Configuration](https://community.bistudio.com/wiki/DayZ:Player_Spawning_Configuration) wiki page does not list it either (that page was last edited 2024-02-06, before 1.28). That is expected for an optional parameter whose default is `false`; it is not evidence against the parameter, but it does mean there is no vanilla example to copy.
+- **Leave it at `false` unless you specifically want water spawns.** The scenario usually cited for `true` is a custom map with island or coastal spawns. This audit found no Bohemia-authored guidance on when to enable it.
 
 ---
 

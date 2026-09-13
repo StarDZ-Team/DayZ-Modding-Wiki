@@ -29,10 +29,10 @@
 DayZServer/
   DayZServer_x64.exe          # Server executable
   serverDZ.cfg                 # Main server config (name, password, mods, time)
-  dayzsetting.xml              # Rendering settings (irrelevant for dedicated servers)
-  ban.txt                      # Banned Steam64 IDs, one per line
-  whitelist.txt                # Whitelisted Steam64 IDs, one per line
-  steam_appid.txt              # Contains "221100" -- do not edit
+  dayzsetting.xml              # <jobsystem> block: maxcores/reservedcores size the worker-thread pool
+  ban.txt                      # Banned players, one identifier per line (format undocumented)
+  whitelist.txt                # Whitelisted players, one identifier per line (format undocumented)
+  steam_appid.txt              # DayZ client app id, read by the Steam API -- do not edit
   dayz.gproj                   # Workbench project file -- do not edit
   addons/                      # Vanilla game PBOs
   battleye/                    # Anti-cheat files
@@ -44,6 +44,8 @@ DayZServer/
   profiles/                    # Runtime output (script logs, player DB, crash dumps)
   server_manager/              # Server management utilities
 ```
+
+`dayzsetting.xml` is worth a second look despite its name: Bohemia's server-configuration reference documents its `<jobsystem>` block as what sizes the server's worker-thread pool via `maxcores` and `reservedcores`. It is threading configuration, not video configuration -- see [The jobsystem block](03-server-cfg.md#the-jobsystem-block-in-dayzsetting-xml).
 
 ---
 

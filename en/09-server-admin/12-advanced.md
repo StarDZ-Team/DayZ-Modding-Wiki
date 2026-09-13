@@ -138,18 +138,49 @@ The `env/` folder contains the animal territory files themselves:
 | **sheep_goat_territories.xml** | Sheep/goats |
 | **wild_boar_territories.xml** | Wild boars |
 | **cattle_territories.xml** | Cows |
+| **domestic_animals_territories.xml** | Mixed domestic animals |
+| **zombie_territories.xml** | Infected (not an animal file, but it lives in `env/` and uses the same schema) |
 
-A territory entry defines circular zones with a position and an animal count:
+A territory entry defines circular zones, grouped under a `<territory>` element by color (not by name -- vanilla `<territory>` elements carry only a `color` attribute):
 
 ```xml
-<territory color="4291543295" name="BearTerritory 001">
-    <zone name="Bear zone" smin="-1" smax="-1" dmin="1" dmax="4" x="7628" z="5048" r="500" />
+<territory color="4294923520">
+    <zone name="Graze" smin="0" smax="0" dmin="0" dmax="0" x="1920" z="13115" r="100"/>
+    <zone name="Graze" smin="0" smax="0" dmin="0" dmax="0" x="2085" z="13415" r="200"/>
 </territory>
 ```
 
-- `x`, `z` -- center coordinates; `r` -- radius in meters
-- `dmin`, `dmax` -- min/max animal count in the zone
-- `smin`, `smax` -- reserved (set to `-1`)
+- `x`, `z` -- zone center coordinates; `r` -- radius in meters
+- `name` (on `<zone>`) -- a behavior/role label for that zone, not a per-animal description. Every `<zone>` in every vanilla file carries all eight attributes: `name`, `smin`, `smax`, `dmin`, `dmax`, `x`, `z`, `r`.
+- `smin`, `smax`, `dmin`, `dmax` -- four integer counts. Vanilla does set them to non-zero values, so they are a live tuning knob, not a reserved field. What the engine does with them is a separate question -- see below.
+
+#### What the vanilla files actually contain
+
+Counted across all 13 `env/` files of Chernarus in the local extraction, and cross-checked against all 39 `env/` files across the seven mission folders that contain one -- the three `dayzOffline` missions (Chernarus 13, Livonia 13, Sakhal 8) and four Halloween folders (`halloween.chernarusplus` 2, and one file each in `halloweenOffline.chernarusplus`, `.enoch` and `.sakhal`) -- in Bohemia's [DayZ-Central-Economy](https://github.com/BohemiaInteractive/DayZ-Central-Economy) repository at commit `9a21bb9` (2026-08-13) -- 817 `<territory>` elements and 10,665 `<zone>` elements in total:
+
+- **`<territory>` carries a `color` attribute and nothing else.** All 817 of them. No vanilla `<territory>` has a `name`.
+- **Zone labels come from a small per-file vocabulary, not free text.** 29 distinct values across all missions, and each file draws from its own short set:
+
+| File group | Zone `name` values used |
+|------------|------------------------|
+| Grazing animals (cattle, domestic_animals, pig, red_deer, roe_deer, sheep_goat, wild_boar) | `Graze`, `Rest`, `Water` (`sheep_goat` uses only `Graze` and `Rest`) |
+| `bear_territories.xml` | `Graze` only -- all 71 Chernarus zones |
+| `wolf_territories.xml` | `HuntingGround`, `Rest`, `Water` |
+| `fox`, `hare`, `hen` | `Zone_fox`, `Zone_Hare`, `Zone_hen` -- one label per file, and the casing is inconsistent between missions (`Zone_Fox` and `Zone_hare` also occur) |
+| `zombie_territories.xml` | 15 `Infected*` labels on Chernarus, including `InfectedVillage`, `InfectedSolitude`, `InfectedCityTier1`, `InfectedVillageTier1`, `InfectedIndustrial`, `InfectedArmy`, `InfectedArmyHard`, `InfectedMedic`, `InfectedPolice`, `InfectedNBC` |
+
+  Because `Zone_fox` is just the species name and the casing varies between files, these labels are **not** demonstrably a fixed engine-recognised vocabulary. Treat an existing label as the safe choice rather than inventing one.
+
+- **The four counts are non-zero in vanilla.** On Chernarus, `fox`, `hare` and `hen` set `dmax="2"` on every one of their 1,621 zones, and `zombie_territories.xml` uses `dmin` 1-15 and `dmax` 2-20 across its 768 zones, with `smin` up to 8 and `smax` up to 10 on a handful of high-value military and NBC zones. Across all missions in the official repository the ranges widen to `dmin` 1-30 and `dmax` 1-40. Every other Chernarus file leaves all four at `0`.
+
+#### What the counts mean
+
+Unresolved, and deliberately left that way. The pattern is *consistent with* the widely repeated reading -- `s` for a static minimum/maximum and `d` for a dynamic minimum/maximum population for the zone -- and a zone like `<zone name="InfectedArmyHard" smin="6" smax="8" dmin="8" dmax="12" .../>` reads naturally that way. But:
+
+- Nothing in the 2,800-file vanilla Enforce Script tree references `smin`, `smax`, `dmin` or `dmax`. These files are parsed entirely engine-side, so there is no script implementation to read.
+- Bohemia has published no description of these attributes.
+
+So: the values are real and you can change them, but this wiki will not tell you exactly what the engine does with a given number. Change one at a time on a test server and observe.
 
 When you build a custom map's animal population, add one territory file per species, register each in **cfgenvironment.xml**, and place zones on the terrain that actually has the ground cover those animals expect.
 
@@ -165,20 +196,28 @@ Create **restart_server.bat** and run it from a Windows Scheduled Task every 4-6
 
 ```batch
 @echo off
-taskkill /f /im DayZServer_x64.exe
-timeout /t 10
+rem A plain "taskkill" (no /f) requests a graceful close so the engine can
+rem run its shutdown save. Do NOT add /f here -- a forced kill is exactly
+rem the "killed process" case World State & Persistence warns loses
+rem everything since the last timed save.
+taskkill /im DayZServer_x64.exe
+timeout /t 30
 
 rem Build a locale-independent timestamp (yyyy-MM-dd_HHmm) via PowerShell.
 rem Do NOT slice %date% by character offset -- its layout changes with the
 rem machine's regional settings and the backup path will silently break.
 for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HHmm"') do set STAMP=%%i
 
-xcopy /e /i /y "C:\DayZServer\profiles\storage_1" "C:\DayZBackups\%STAMP%\storage_1\"
-C:\SteamCMD\steamcmd.exe +force_install_dir C:\DayZServer +login anonymous +app_update 223350 validate +quit
+rem storage_1/ lives inside the mission folder, not profiles/ -- see
+rem Directory Structure & Mission Folder and World State & Persistence.
+xcopy /e /i /y "C:\DayZServer\mpmissions\dayzOffline.chernarusplus\storage_1" "C:\DayZBackups\%STAMP%\storage_1\"
+C:\SteamCMD\steamcmd.exe +force_install_dir C:\DayZServer +login your_steam_username +app_update 223350 validate +quit
 start "" "C:\DayZServer\DayZServer_x64.exe" -config=serverDZ.cfg -profiles=profiles -port=2302
 ```
 
 > **Why not `%date:~-4%`?** The classic trick of slicing `%date%` by character offset assumes a fixed layout, but `%date%` is formatted from Windows regional settings. On a machine set to `dd/MM/yyyy` the same slice produces a different (or invalid) folder name, and the backup lands somewhere you never look. Asking PowerShell for `Get-Date -Format yyyy-MM-dd_HHmm` returns the same string on every machine regardless of locale.
+>
+> **Why not `taskkill /f`?** `/f` sends a forced termination, giving the engine no chance to run its shutdown save -- see [When the Server Saves](07-persistence.md#when-the-server-saves). A plain `taskkill` requests a graceful close first. If the process is still running after the timeout, that is a sign something hung and needs investigating, not a reason to reach for `/f` as routine practice.
 
 ### Linux
 
@@ -186,11 +225,20 @@ Create a shell script and add it to cron (`0 */4 * * *` runs it every four hours
 
 ```bash
 #!/bin/bash
-kill $(pidof DayZServer) && sleep 15
-cp -r /home/dayz/server/profiles/storage_1 "/home/dayz/backups/$(date +%F_%H%M)_storage_1"
-/home/dayz/steamcmd/steamcmd.sh +force_install_dir /home/dayz/server +login anonymous +app_update 223350 validate +quit
+# Plain `kill` sends SIGTERM, which the engine treats as a graceful shutdown
+# request (unlike `kill -9`/SIGKILL). Give it time to actually exit before
+# copying or updating anything.
+kill $(pidof DayZServer)
+while pidof DayZServer > /dev/null; do sleep 2; done
+
+# storage_1/ lives inside the mission folder, not profiles/ -- see
+# Directory Structure & Mission Folder and World State & Persistence.
+cp -r /home/dayz/server/mpmissions/dayzOffline.chernarusplus/storage_1 "/home/dayz/backups/$(date +%F_%H%M)_storage_1"
+/home/dayz/steamcmd/steamcmd.sh +force_install_dir /home/dayz/server +login your_steam_username +app_update 223350 validate +quit
 cd /home/dayz/server && ./DayZServer -config=serverDZ.cfg -profiles=profiles -port=2302 &
 ```
+
+> **Unattended logins:** DayZ Server's depot (app 223350) does not accept `+login anonymous` -- both scripts above need a real, authenticated Steam account (see [Installing DayZ Server](01-server-setup.md#installing-dayz-server) for what is and isn't confirmed about the ownership requirement). For a scheduled task to run unattended, cache that account's SteamCMD login first (run `steamcmd.exe +login your_steam_username` once interactively and complete Steam Guard) so subsequent non-interactive runs reuse the cached credentials instead of hanging on a password prompt.
 
 Always back up `storage_1/` **before** each restart. Persistence corrupted during an unclean shutdown can wipe player bases and vehicles, and a pre-restart backup is the only way back. Pair the restart schedule with the warning broadcasts in the next section so players are not caught mid-action.
 
@@ -228,6 +276,8 @@ Each `<message>` carries its settings as **child elements**, not attributes. A s
 - Tokens such as `#name` (server name) and `#tmin` (minutes remaining) are substituted at runtime.
 
 The messages system **does** stop the server when a `<deadline>` elapses, and it displays the warnings on the way there. Set the `<deadline>` to match the interval of your external restart task (from [Server Restart Automation](#server-restart-automation)) so the on-screen countdown ends exactly when the OS task relaunches the process.
+
+> **Linux reliability note:** community bug reports on the Bohemia feedback tracker describe cases where a Linux server logs the shutdown event from a `messages.xml` deadline but the process does not fully terminate. Do not treat the in-game countdown as your only shutdown mechanism -- keep the OS-level `kill`/scheduled-task step from [Server Restart Automation](#server-restart-automation) as the authoritative way to actually stop the process, and use `messages.xml` for the player-facing warning only.
 
 ---
 

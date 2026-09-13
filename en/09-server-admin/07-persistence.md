@@ -1,6 +1,6 @@
 # World State & Persistence
 
-> **Summary:** DayZ keeps the world alive between restarts by writing selected objects — bases, tents, barrels, vehicles, and player characters — into the `storage_1/` folder inside the server profile. This chapter is the canonical reference for what lives in `storage_1/`, how the save cycle works, the four kinds of server wipe, and a backup strategy that survives disk failure and botched wipes. The economy-side cleanup timers referenced here are documented in full in [Loot Economy Deep Dive](04-loot-economy.md); the surrounding mission and server folder layout is in [Directory Structure & Mission Folder](02-directory-structure.md).
+> **Summary:** DayZ keeps the world alive between restarts by writing selected objects — bases, tents, barrels, vehicles, and player characters — into the `storage_1/` folder inside the mission folder. This chapter is the canonical reference for what lives in `storage_1/`, how the save cycle works, the four kinds of server wipe, and a backup strategy that survives disk failure and botched wipes. The economy-side cleanup timers referenced here are documented in full in [Loot Economy Deep Dive](04-loot-economy.md); the surrounding mission and server folder layout is in [Directory Structure & Mission Folder](02-directory-structure.md).
 
 ---
 
@@ -60,7 +60,7 @@ The distinction matters when you plan a wipe: deleting persistence removes only 
 | `data/` | The bulk of persistence: serialized world objects — base-building parts, deployed storage, vehicle positions, and saved dynamic-event state. Read on boot to reconstruct the world. |
 | `players/` | Binary character records, one per character. Each record holds position, inventory, health, and status effects. These are opaque files written only by the server process — never human-readable and never safe to hand-edit. |
 | `spawnpoints.bin` | Binary spawn-point data used by the persistence system. |
-| `backup/` | Automatic engine-side copies of persistence data, rotated by the server. This is a convenience, not a substitute for your own external backups. |
+| `backup/` | Automatic engine-side copies of persistence data, rotated by the server. Configurable in `cfgeconomycore.xml` via `backup_period`, `backup_count` and `backup_startup` — see [Loot Economy Deep Dive](04-loot-economy.md#persistence-backups-and-world-segments). This is a convenience, not a substitute for your own external backups. |
 
 The `data/` folder is where base building and deployed storage live; `players/` is where characters live. A wipe targets one or both, depending on what you want to reset (see [Server Wipe Procedures](#server-wipe-procedures)).
 
@@ -80,7 +80,7 @@ The server writes persistence in two situations:
 Two consequences follow from this:
 
 1. **A hard crash loses everything since the last timed save.** Whatever players built, looted, or moved after the previous flush is gone. This is why scheduled, graceful restarts matter — they force a save.
-2. **Never copy or delete `storage_1/` while the server is running.** A save can land mid-copy, giving you a half-written backup, or mid-delete, corrupting the live world. Always stop the server first (see [Backup Strategy](#backup-strategy)).
+2. **Never copy or delete `storage_1/` while the server is running.** A save can land mid-copy, giving you a half-written backup, or mid-delete, corrupting the live world. Bohemia gives the reason in its own documentation of the backup system: the map is saved in segments, so for most of the server's uptime *some* segment is mid-save, and an interruption at that moment can corrupt it. Always stop the server first (see [Backup Strategy](#backup-strategy)).
 
 ---
 
@@ -88,16 +88,20 @@ Two consequences follow from this:
 
 Territory flags are the core of base persistence. Two `globals.xml` values govern how long a base survives without attention:
 
-- **FlagRefreshFrequency** (vanilla `432000` seconds = 5 days) — how often a player must interact with the flag ("Refresh" action) to keep the territory active.
-- **FlagRefreshMaxDuration** (vanilla `3456000` seconds = 40 days) — the maximum accumulated protection time. Each refresh tops the timer back up, but the total can never exceed this cap.
+- **FlagRefreshMaxDuration** (vanilla `3456000` seconds = 40 days) — Bohemia's description is *"How long the flag will be refreshing items."* It is the size of the refresh budget a raised flag holds. Raising the flag fills that budget; the budget then drains as the flag runs.
+- **FlagRefreshFrequency** (vanilla `432000` seconds = 5 days) — Bohemia's description is *"Items lifetime will be refreshed with this frequency."* It is the interval at which an active flag **automatically** resets the lifetime of the items around it. It is not a deadline the player has to meet.
 
-When a flag's timer expires:
+So the flag does the refreshing, on a timer, for as long as its budget lasts. What the player supplies is the budget, by raising the flag.
 
-1. The flag itself becomes eligible for cleanup.
-2. The base-building parts attached to that territory lose their persistence protection.
-3. On the next cleanup cycle, the unprotected parts begin despawning.
+When a flag's refresh budget runs out:
 
-Lowering FlagRefreshFrequency forces more frequent base visits; lowering FlagRefreshMaxDuration wipes abandoned bases sooner. Adjust both together to match your server's pace. These two variables, along with the full `globals.xml` parameter set, are documented in [Loot Economy Deep Dive](04-loot-economy.md#globalsxml----economy-parameters).
+1. The automatic lifetime refresh stops.
+2. The base-building parts in the territory no longer have their lifetimes reset, so their own `lifetime` values start running down.
+3. As those lifetimes expire, the parts become eligible for the normal CE cleanup cycle and begin despawning. The flag itself becomes eligible too.
+
+`FlagRefreshMaxDuration` is therefore the knob for how long an unvisited base survives — lower it to wipe abandoned bases sooner. `FlagRefreshFrequency` is not a second decay knob, and lowering it makes the automatic refresh run *more* often rather than demanding more player visits. The script-level mechanism, the 60 m refresh radius and the way item `lifetime` interacts with the frequency are set out in [Loot Economy Deep Dive](04-loot-economy.md#how-the-territory-flag-actually-refreshes); the full `globals.xml` parameter set is in the [same chapter](04-loot-economy.md#globalsxml----economy-parameters).
+
+This wiki has not verified the in-game flag interaction against a running server; the mechanism above is read from Bohemia's documentation and the vanilla scripts.
 
 ---
 
@@ -167,7 +171,7 @@ Stop the server and delete `storage_1/players/`. Every character resets to a fre
 
 ### Loot Re-randomize (no persistence deletion)
 
-If you only want to shuffle ground loot after editing economy files — not wipe anything persistent — set `RestartSpawn` to `1` in `globals.xml` for one restart, then set it back to `0`. This re-randomizes loot positions without touching `storage_1/`. This is an economy operation, detailed in [Loot Economy Deep Dive](04-loot-economy.md#economy-feels-stuck-after-editing-typesxml).
+If you only want to refresh ground loot after editing economy files — not wipe anything persistent — `RestartSpawn` in `globals.xml` is the variable involved, and it comes with a caveat. Bohemia documents it as a **percentage** of nominal to respawn at restart, not as an on/off switch, so the widely circulated "set it to 1 for one restart" step asks for one percent under that reading. Read [Re-randomizing Loot at Restart](04-loot-economy.md#re-randomizing-loot-at-restart) before using it; this wiki has not verified either reading against a running server. Whatever you set, it does not touch `storage_1/`.
 
 > There is no separate "weather wipe." Weather is regenerated from `cfgweather.xml` on every boot and is never stored in `storage_1/`. Saved dynamic events (helicopter crashes and similar) live inside `data/`, so an Object Wipe already clears them.
 
@@ -204,5 +208,5 @@ These come up repeatedly in server-admin communities:
 | Not backing up before a wipe | If you delete the wrong folder, there is no recovery. | Back up `storage_1/` before every wipe. |
 | Expecting a "weather wipe" file | Weather is config-driven (`cfgweather.xml`) and regenerates each boot — there is no persistence file to delete. | Edit `cfgweather.xml` to change weather; leave `storage_1/` alone. |
 | Assuming `<hoarder/>` limits placement | The tag governs CE counting via `count_in_hoarder`, not a per-player cap on containers. | Read the counting rules in [Loot Economy Deep Dive](04-loot-economy.md#flags). |
-| Flag not refreshed in time | After FlagRefreshMaxDuration the territory expires and all attached base parts become eligible for cleanup, so players lose the base. | Remind players of the refresh interval; lower FlagRefreshMaxDuration on low-pop servers. |
+| Flag's refresh budget runs out | Once the budget capped by FlagRefreshMaxDuration is spent, the automatic lifetime refresh stops and the attached base parts become eligible for cleanup as their own lifetimes expire, so players lose the base. | Remind players to raise the flag again; lower FlagRefreshMaxDuration on low-pop servers if you want faster decay. |
 | Editing `globals.xml` or `cfggameplay.json` while the server runs | Changes are not picked up until restart, and the server may overwrite your edits on its next save. | Edit config files only while the server is stopped. |

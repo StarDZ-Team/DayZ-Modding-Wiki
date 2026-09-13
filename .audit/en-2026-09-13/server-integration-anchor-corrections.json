@@ -1,0 +1,215 @@
+{
+  "authorization": "Existing task_e5662c463139 permits only newly introduced broken anchors with one unambiguous actual VitePress target",
+  "fixes": [
+    {
+      "file": "en/09-server-admin/01-server-setup.md",
+      "line": 131,
+      "before": "03-server-cfg.md#the-jobsystem-block-in-dayzsettingxml",
+      "after": "03-server-cfg.md#the-jobsystem-block-in-dayzsetting-xml",
+      "rendered_heading": {
+        "id": "the-jobsystem-block-in-dayzsetting-xml",
+        "level": 3,
+        "rawSource": "The jobsystem block in dayzsetting.xml",
+        "text": "The jobsystem block in dayzsetting.xml"
+      }
+    },
+    {
+      "file": "en/09-server-admin/02-directory-structure.md",
+      "line": 48,
+      "before": "03-server-cfg.md#the-jobsystem-block-in-dayzsettingxml",
+      "after": "03-server-cfg.md#the-jobsystem-block-in-dayzsetting-xml",
+      "rendered_heading": {
+        "id": "the-jobsystem-block-in-dayzsetting-xml",
+        "level": 3,
+        "rawSource": "The jobsystem block in dayzsetting.xml",
+        "text": "The jobsystem block in dayzsetting.xml"
+      }
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 92,
+      "before": "#parameters-this-page-documents-that-bohemias-reference-does-not-list",
+      "after": "#parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+      "rendered_heading": {
+        "id": "parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+        "level": 3,
+        "rawSource": "Parameters this page documents that Bohemia's reference does not list",
+        "text": "Parameters this page documents that Bohemia's reference does not list"
+      }
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 118,
+      "before": "#parameters-this-page-documents-that-bohemias-reference-does-not-list",
+      "after": "#parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+      "rendered_heading": {
+        "id": "parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+        "level": 3,
+        "rawSource": "Parameters this page documents that Bohemia's reference does not list",
+        "text": "Parameters this page documents that Bohemia's reference does not list"
+      }
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 177,
+      "before": "#the-jobsystem-block-in-dayzsettingxml",
+      "after": "#the-jobsystem-block-in-dayzsetting-xml",
+      "rendered_heading": {
+        "id": "the-jobsystem-block-in-dayzsetting-xml",
+        "level": 3,
+        "rawSource": "The jobsystem block in dayzsetting.xml",
+        "text": "The jobsystem block in dayzsetting.xml"
+      }
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 249,
+      "before": "#parameters-this-page-documents-that-bohemias-reference-does-not-list",
+      "after": "#parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+      "rendered_heading": {
+        "id": "parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+        "level": 3,
+        "rawSource": "Parameters this page documents that Bohemia's reference does not list",
+        "text": "Parameters this page documents that Bohemia's reference does not list"
+      }
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 250,
+      "before": "#parameters-this-page-documents-that-bohemias-reference-does-not-list",
+      "after": "#parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+      "rendered_heading": {
+        "id": "parameters-this-page-documents-that-bohemia-s-reference-does-not-list",
+        "level": 3,
+        "rawSource": "Parameters this page documents that Bohemia's reference does not list",
+        "text": "Parameters this page documents that Bohemia's reference does not list"
+      }
+    },
+    {
+      "file": "en/09-server-admin/03-server-cfg.md",
+      "line": 306,
+      "before": "#diagnosing-the-file_patching-connect-refusal",
+      "after": "#diagnosing-the-file-patching-connect-refusal",
+      "rendered_heading": {
+        "id": "diagnosing-the-file-patching-connect-refusal",
+        "level": 4,
+        "rawSource": "Diagnosing the FILE_PATCHING connect refusal",
+        "text": "Diagnosing the FILE_PATCHING connect refusal"
+      }
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 73,
+      "before": "12-advanced.md#cfgenvironmentxml-and-animal-territories",
+      "after": "12-advanced.md#cfgenvironment-xml-and-animal-territories",
+      "rendered_heading": {
+        "id": "cfgenvironment-xml-and-animal-territories",
+        "level": 2,
+        "rawSource": "cfgenvironment.xml and Animal Territories",
+        "text": "cfgenvironment.xml and Animal Territories"
+      }
+    },
+    {
+      "file": "en/09-server-admin/04-loot-economy.md",
+      "line": 610,
+      "before": "07-persistence.md#the-storage_1-directory",
+      "after": "07-persistence.md#the-storage-1-directory",
+      "rendered_heading": {
+        "id": "the-storage-1-directory",
+        "level": 2,
+        "rawSource": "The storage_1/ Directory",
+        "text": "The storage_1/ Directory"
+      }
+    },
+    {
+      "file": "en/09-server-admin/08-performance.md",
+      "line": 173,
+      "before": "03-server-cfg.md#the-jobsystem-block-in-dayzsettingxml",
+      "after": "03-server-cfg.md#the-jobsystem-block-in-dayzsetting-xml",
+      "rendered_heading": {
+        "id": "the-jobsystem-block-in-dayzsetting-xml",
+        "level": 3,
+        "rawSource": "The jobsystem block in dayzsetting.xml",
+        "text": "The jobsystem block in dayzsetting.xml"
+      }
+    },
+    {
+      "file": "en/09-server-admin/09-access-control.md",
+      "line": 155,
+      "before": "03-server-cfg.md#network--security",
+      "after": "03-server-cfg.md#network-security",
+      "rendered_heading": {
+        "id": "network-security",
+        "level": 2,
+        "rawSource": "Network & Security",
+        "text": "Network & Security"
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "en/09-server-admin/01-server-setup.md",
+      "before_sha256_raw": "9eb7b685512839a6840248e9c91b76db6af22d273ca461d910ea2fb217d4fec0",
+      "before_sha256_lf": "3ff2c03476ac5bdd83d48d57cfd4dfe41afa402575fda775cc92c77d32518338",
+      "after_sha256_raw": "4daf36b80ecd152b61222ab9d4db96edb487f3c6be9f9784742191ee895bded7",
+      "after_sha256_lf": "2faedeb8dde0abbcb103e76a95d55bf3cc3f1ad82d23a0ee804beda8b4b941ef"
+    },
+    {
+      "path": "en/09-server-admin/02-directory-structure.md",
+      "before_sha256_raw": "b5d33f4e7ad7d7264822e0e7a04a06544f4586013b699fba411f8e2f8b09a19f",
+      "before_sha256_lf": "2347bb40d55151dfa30bfc5dced1b5f1cac6d581240aa4b44c5536f36b8f7ae4",
+      "after_sha256_raw": "278c2db23243b573bda267afbd33fbab97c8298bcaa59679503ad34da821d5c5",
+      "after_sha256_lf": "46333250ca4e7c0b33361ad831db2a39ea5b80df2f01c7794c8e229883043133"
+    },
+    {
+      "path": "en/09-server-admin/03-server-cfg.md",
+      "before_sha256_raw": "0d3bd14292727a7752d5175466d0cfbeb9485b54e4024876957fb0c821678996",
+      "before_sha256_lf": "405dde26d9a61b970503a9056b0873e4b2d3bfac4fbf462a8d478d793b4f6ec4",
+      "after_sha256_raw": "ec736aa5ebf2e0bd35b7dc0c6b9269572996a0d89d7b347676d4a82e5d4c01b2",
+      "after_sha256_lf": "979f23f2fbb63da260d7f410a1452835962390420c27724de3774ccc6e918792"
+    },
+    {
+      "path": "en/09-server-admin/04-loot-economy.md",
+      "before_sha256_raw": "7ffe958e13891ddaca32409f8912840fd8228d834527a3ef3b0f9d2ac981e830",
+      "before_sha256_lf": "84e40672a7b6f1fe38b8f8f4b76be785efcfb95c2cba6991b3c3146a427bc0c4",
+      "after_sha256_raw": "f1b6f81a3e62b32db3551fb3cf6e12aa20637bf2fde3a00b850b903e98bb9b22",
+      "after_sha256_lf": "b558aaa3ba815e87464e131a5ff7e72435d9d28847fe8914e667c9ba32d13921"
+    },
+    {
+      "path": "en/09-server-admin/08-performance.md",
+      "before_sha256_raw": "24e8aaf097cb30d312f0c4b37afce2c82b3a549388d6c75f82ad7d9e8d444cef",
+      "before_sha256_lf": "95c3952f5311aebbe3fd35e04bc8830d4e002ebc295badf47cc513cb77596e5f",
+      "after_sha256_raw": "ac711df6f323f2036ed08508ea00673fbf510603a7421ecf53bae759265d12b6",
+      "after_sha256_lf": "cfcc81b9c8d6af245af34c6d42f3e73bf83f9330df7f2006c944fdf8ebe95254"
+    },
+    {
+      "path": "en/09-server-admin/09-access-control.md",
+      "before_sha256_raw": "aac968e574f7cc6da5c4c9351771abfcb33c456bc474b1d05fb193d96dff0bd0",
+      "before_sha256_lf": "4ae065361d1eefdda15197f9d8d08bc53c7a59b3c2a2a613ca9d951d530715fd",
+      "after_sha256_raw": "7606e0047742e5adb5f91915dfdbecab51b87de8e5726d5d978705f49d795a40",
+      "after_sha256_lf": "14da786b5502975f2d4ccf577e975d8c64db23c59f4f98b1474e36ffafbbbbdd"
+    }
+  ],
+  "baseline_dead": 42,
+  "copied_dead": 51,
+  "inherited_changed_spelling": {
+    "entry": {
+      "file": "en/09-server-admin/08-performance.md",
+      "line": 16,
+      "col": 39,
+      "href": "#serverdzcfg-performance-settings",
+      "anchor": "serverdzcfg-performance-settings",
+      "target": "en/09-server-admin/08-performance.md",
+      "candidates": [
+        {
+          "id": "serverdz-cfg-performance-settings",
+          "level": 2,
+          "rawSource": "serverDZ.cfg Performance Settings",
+          "text": "serverDZ.cfg Performance Settings"
+        }
+      ]
+    },
+    "predecessor_href": "#serverdzycfg-performance-settings",
+    "reason": "Same pre-existing broken TOC link at line 16 with corrected filename spelling; remains outside new-defect repair scope."
+  }
+}
