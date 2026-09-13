@@ -1,0 +1,80 @@
+{
+  "review": "independent final diff council verification for tutorials repairs",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "reviewed_at": "2026-09-13",
+  "verdict": "approved for commit",
+  "runtime_tested": false,
+  "full_build_run": false,
+  "content_files_edited_by_reviewer": false,
+  "scope": {
+    "changed_pages": 10,
+    "accepted_findings": 17,
+    "excluded_page": "en/08-tutorials/12-trading-system.md",
+    "excluded_page_matches_baseline": true
+  },
+  "diff_verification": {
+    "method": "Each baseline blob was reopened with git show, only the council-approved exact/revised replacements were applied in memory, and LF-normalized expected bytes were compared with the working page.",
+    "all_pages_equal_expected": true,
+    "unapproved_hunks": 0,
+    "omitted_approved_repairs": 0,
+    "quote_or_escape_errors": 0,
+    "incorrect_insertions": 0,
+    "tp2_009": "Verified heading, prose, and the two actual CfgVehicles literals in WeaponRegistry changed to CfgWeapons; the unrelated generic CfgVehicles checklist remains unchanged."
+  },
+  "findings": [
+    {"id":"TP2-001","disposition":"implemented revised exact repair","verified":true},
+    {"id":"TP2-002","disposition":"implemented revised exact repair","verified":true},
+    {"id":"TP2-003","disposition":"implemented exact repair","verified":true},
+    {"id":"TP2-004","disposition":"implemented revised exact insertion immediately before GetConfigPath","verified":true},
+    {"id":"TP2-005","disposition":"implemented revised coordinated paragraph and comparison-cell repair","verified":true},
+    {"id":"TP2-006","disposition":"implemented exact repair","verified":true},
+    {"id":"TP2-007","disposition":"implemented revised exact repair","verified":true},
+    {"id":"TP2-008","disposition":"implemented revised cautious exact repair","verified":true},
+    {"id":"TP2-009","disposition":"implemented coordinator-clarified exact repair using two block literals, not the council prose's incorrect count of three","verified":true},
+    {"id":"TP2-010","disposition":"rejected; GetGame().GetTickTime() usage remains unchanged","verified":true},
+    {"id":"TP2-011","disposition":"implemented exact repair","verified":true},
+    {"id":"TP2-012","disposition":"implemented revised exact repair","verified":true},
+    {"id":"TP2-013","disposition":"implemented revised coordinated prose and table repair","verified":true},
+    {"id":"TP2-014","disposition":"implemented exact repair","verified":true},
+    {"id":"TP2-014B","disposition":"implemented exact repair","verified":true},
+    {"id":"TP2-015","disposition":"implemented exact repair","verified":true},
+    {"id":"TP2-016","disposition":"implemented exact repair","verified":true},
+    {"id":"TP2-017","disposition":"unresolved and excluded with trading page; no edit applied","verified":true},
+    {"id":"TP2-018","disposition":"unresolved and excluded with trading page; no edit applied","verified":true},
+    {"id":"TP2-019","disposition":"implemented exact repair","verified":true}
+  ],
+  "page_hashes": [
+    {"path":"en/07-patterns/01-singletons.md","raw_sha256":"E9561D42F6820D376DD0ED71AF4E8B806D11DB227B2D67304E6254C2CD74218C","lf_normalized_sha256":"2AD32130D1A1233A6B972668E501CF403BEA5B49F40E2250D095B0D09336BC57","eol":{"crlf":600,"lf":2},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/07-patterns/02-module-systems.md","raw_sha256":"E813F31F8B8D10EF52C685460061A5C4A0003941FB7FA05FD29D5AB07DD7899E","lf_normalized_sha256":"FD2ADB2566BDB414E7326C6B78176E346A744A6E5D713B98D3848E3954F02062","eol":{"crlf":720,"lf":7},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/07-patterns/03-rpc-patterns.md","raw_sha256":"1D828AFE6CAE294C7B2F1BC8F3B1417F69F12DBA0EC645714606B96F244C05EA","lf_normalized_sha256":"1D828AFE6CAE294C7B2F1BC8F3B1417F69F12DBA0EC645714606B96F244C05EA","eol":{"crlf":0,"lf":851},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/07-patterns/05-permissions.md","raw_sha256":"20D4CBC703FE525C1CA3590D30B572308CCC06FE5C06D6800F8DC0C2F6F917DA","lf_normalized_sha256":"6AEA6AC876BC2FDD64E96937EA0EB8D78F9C7AFEE6364BA1E3EBF586B188BEBD","eol":{"crlf":662,"lf":1},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/07-patterns/06-events.md","raw_sha256":"C56857C0BAE3A9768EEA04014F65B6FE66685E2ACDB024305646FB0686D4BE06","lf_normalized_sha256":"F05DB3D81078BA0A38ECC126BB487B1DDEBFFF2A5686F95E425AE776BE2F43B1","eol":{"crlf":672,"lf":1},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/07-patterns/07-performance.md","raw_sha256":"92103119119D6546DB53208AC347A7F05EC7AC021BA3FBF24D3D533D5AABDD85","lf_normalized_sha256":"0C9D32C506B290B27EE049A1EB1CD4393231DCBEC351917939EF7711C3A170DD","eol":{"crlf":821,"lf":4},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/08-tutorials/01-first-mod.md","raw_sha256":"0C674883D2F681EC366EADC0D2AB564905B7BDEFD4CA1FC1D342439CB5045683","lf_normalized_sha256":"E299BA486952B90D2A34566F81962C33F8FBE5B5255ECD70293DB0F196BE4061","eol":{"crlf":596,"lf":2},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/08-tutorials/02-custom-item.md","raw_sha256":"510D02FD489D2DF3876D8FB5BFDB5E71C92A936541D84C1F21A216F8B7089C57","lf_normalized_sha256":"E6CCD95113E21AAEA78065D337D470723A811F02F73CD9E198F8C0D50527BAA7","eol":{"crlf":885,"lf":5},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/08-tutorials/11-clothing-mod.md","raw_sha256":"BBD4683BF09F19CB966F9497FBFD620E2FF2DA8D066E5176D2226D5997818BAF","lf_normalized_sha256":"69395869980F110C0FAECCE8A71F1693A84B21B8063B81D942CA75DAD1D4B4A0","eol":{"crlf":521,"lf":1},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/08-tutorials/13-diag-menu.md","raw_sha256":"F86F68E8D67BE9171C44F728AAE0FAA3B4BDCC5FBB519AB1752148571EE583E9","lf_normalized_sha256":"909F184BDC3ACC1F546FEB6F0936606BFD44D9D0FA2E409329390B24198CFE23","eol":{"crlf":911,"lf":1},"receipt_match":true,"expected_diff_match":true}
+  ],
+  "excluded_page_hash": {"path":"en/08-tutorials/12-trading-system.md","raw_sha256":"80C16740AE965DD7E72F2D3BA44234A3FBBCF649717CD305CE08BDD82B1B91B8","matches_baseline":true},
+  "reopened_sources": [
+    {"path":"D:/DayZ Projects/scripts/4_world/plugins/pluginbase.c","sha256":"D48AEE5C96277E87EA9FBB779FD9286DAFE7582365EFFE7BFC89BF4EA1863F7E","lines":"6-8, 134-150"},
+    {"path":"D:/DayZ Projects/scripts/3_game/tools/jsonfileloader.c","sha256":"2D96C61DFABD99967683D0856EE5E2B1C7D06C18166B7F245BBA4DA1617BFFF4","lines":"42-61"},
+    {"path":"D:/DayZ Projects/scripts/3_game/global/game.c","sha256":"CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158","lines":"702, 913"},
+    {"path":"D:/DayZ Projects/scripts/3_game/systems/tftests/enprofilertests.c","sha256":"A22F15C87EF9EA9B654701E54C7635A8170AB977ADA5FD79E37A47C45B5159FD","lines":"709-791"},
+    {"path":"D:/DayZ Projects/scripts/3_game/systems/tftests/scriptinvokertests.c","sha256":"6219E68D6B8AB156B04FEE44BBB3B404C795E94A6FF28CF3CCD6572AD00E5D6C"},
+    {"path":"D:/DayZ Projects/bin/constants.xml","sha256":"A2757261E565F84B04B19EB8FF6CE25D7DB60C047F09F4D2A92CB96576746BCE","lines":"463, 505, 567"}
+  ],
+  "validation": {
+    "vitepress_renderer":"All 10 pages rendered through scripts/check-links.mjs makeIdReader; each has exactly one rendered H1.",
+    "balanced_fences":"pass on all 10 pages",
+    "dead_file_links":0,
+    "scoped_dead_anchors":{"current":8,"baseline":8,"semantic_new":0,"note":"The module-systems entry moved from line 546 to 549 solely because TP2-004 inserted three lines; file, href, anchor, and target are unchanged."},
+    "git_diff_check":{"exit_code":0}
+  },
+  "limitations": [
+    "No full build or game/runtime, network, UI, CE, asset, packing, or compilation test was run.",
+    "Official wiki URLs remained subject to the council's HTTP 403 limitation; no whole-page web hash is claimed.",
+    "Several pages use mixed CRLF/LF bytes, so both raw and LF-normalized SHA-256 values are recorded.",
+    "Approval applies only to the ten receipt pages; the trading page and unrelated working-tree changes are excluded."
+  ]
+}

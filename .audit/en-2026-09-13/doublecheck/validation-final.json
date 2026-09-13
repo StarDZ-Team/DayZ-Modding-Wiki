@@ -1,0 +1,212 @@
+{
+  "baseline": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "commands": [
+    {
+      "command": "node scripts/check-links.mjs --anchors --strict en --json=.audit/en-2026-09-13/doublecheck/validation-final-links.json",
+      "exit_code": 1,
+      "files_scanned": 105,
+      "dead_file_links": 0,
+      "dead_anchors": 210,
+      "pages_with_dead_anchors": 41,
+      "interpretation": "Strict checker fails for unchanged pre-existing anchor errors."
+    },
+    {
+      "command": "git diff --check -- en",
+      "exit_code": 0
+    }
+  ],
+  "anchor_identity_comparison": {
+    "key": [
+      "file",
+      "href",
+      "target",
+      "anchor"
+    ],
+    "baseline": 210,
+    "final": 210,
+    "introduced": 0,
+    "removed": 0,
+    "line_number_shifts_ignored": true
+  },
+  "changed_page_count": 35,
+  "changed_pages": [
+    {
+      "path": "en/01-enforce-script/01-variables-types.md",
+      "sha256_raw": "62ea48ed2b4d4ca84e379e596d824fd46ed4ababb7a3aa15f1bcb6cedc84e990",
+      "sha256_lf": "62ea48ed2b4d4ca84e379e596d824fd46ed4ababb7a3aa15f1bcb6cedc84e990"
+    },
+    {
+      "path": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "sha256_raw": "22f682c5e3b7ce2c0e9b8e525a0da389ba8df5d4b4ad85c4d3bcb730a5db18ae",
+      "sha256_lf": "22f682c5e3b7ce2c0e9b8e525a0da389ba8df5d4b4ad85c4d3bcb730a5db18ae"
+    },
+    {
+      "path": "en/01-enforce-script/04-modded-classes.md",
+      "sha256_raw": "f4d1ea71f8f2ea3bf4c3a2a48e9e5e08b4b92001b13ce6bee8281cfb8e1049b8",
+      "sha256_lf": "f4d1ea71f8f2ea3bf4c3a2a48e9e5e08b4b92001b13ce6bee8281cfb8e1049b8"
+    },
+    {
+      "path": "en/01-enforce-script/05-control-flow.md",
+      "sha256_raw": "ad6448ec8d1454cfce475ca9f9879776204f8adf656f5cb3ba8de238e1775c33",
+      "sha256_lf": "c68a587e5450e8a7512014f2f5fff0f419cf1e4a2cd4bcfadd0136ed58082dda"
+    },
+    {
+      "path": "en/01-enforce-script/06-strings.md",
+      "sha256_raw": "e1e82f51caba520c15f26cf521e9de7ffd4adbb5bf18981438bb118d996ef4f1",
+      "sha256_lf": "e1e82f51caba520c15f26cf521e9de7ffd4adbb5bf18981438bb118d996ef4f1"
+    },
+    {
+      "path": "en/01-enforce-script/09-casting-reflection.md",
+      "sha256_raw": "f2f3b99d0a9a787a15a85d6e3be605738062b65823e486cbb568ba6e61181b00",
+      "sha256_lf": "19f012df51e5c32ccc4dc7c95944dd2a35ae2fb5a45b1ad1c374bda7031e66e7"
+    },
+    {
+      "path": "en/01-enforce-script/10-enums-preprocessor.md",
+      "sha256_raw": "0afb7e5cc41d2ff80aaa85bf3acec738e25b135c7894cba500fd9dcfcaac6cc5",
+      "sha256_lf": "0afb7e5cc41d2ff80aaa85bf3acec738e25b135c7894cba500fd9dcfcaac6cc5"
+    },
+    {
+      "path": "en/01-enforce-script/11-error-handling.md",
+      "sha256_raw": "e6e1b01c5a9ed612bbf4867c996b391583f9a461df119a63dfc30a979677bc72",
+      "sha256_lf": "e6e1b01c5a9ed612bbf4867c996b391583f9a461df119a63dfc30a979677bc72"
+    },
+    {
+      "path": "en/01-enforce-script/12-gotchas.md",
+      "sha256_raw": "ec33067e86cae538ead7bb4bda43fe8d5d5edb6667da96ce3d822734e4173644",
+      "sha256_lf": "ec33067e86cae538ead7bb4bda43fe8d5d5edb6667da96ce3d822734e4173644"
+    },
+    {
+      "path": "en/01-enforce-script/13-functions-methods.md",
+      "sha256_raw": "deabdb2c40382276d4604bf44ee15629493ebe77e461c96ea13f8c7f3391324e",
+      "sha256_lf": "deabdb2c40382276d4604bf44ee15629493ebe77e461c96ea13f8c7f3391324e"
+    },
+    {
+      "path": "en/02-mod-structure/01-five-layers.md",
+      "sha256_raw": "ec8f8b2a227a367f17254a73a362e87cf3290255d5684b16d6c3b22110dddaaf",
+      "sha256_lf": "f6b3dbac93953622aff6cf5f3b5185e3f90327d2665b49b7374f5353361e39cc"
+    },
+    {
+      "path": "en/03-gui-system/01-widget-types.md",
+      "sha256_raw": "4b22a8c665aa62711b3ec1eb9eea99cd723cdfa0ef2ac1e9d06567316a1adba6",
+      "sha256_lf": "921c30c8392b863d96244a37e5ea9b7bedeb6cd7f0d46659be59cb09bb5673cd"
+    },
+    {
+      "path": "en/03-gui-system/02-layout-files.md",
+      "sha256_raw": "0b86d1e1dc6699bb59b330b9d55551039eef0fd1e544c62929286070707eb896",
+      "sha256_lf": "0b86d1e1dc6699bb59b330b9d55551039eef0fd1e544c62929286070707eb896"
+    },
+    {
+      "path": "en/03-gui-system/05-programmatic-widgets.md",
+      "sha256_raw": "a9942a8f7cc9f6724d31a8c8ade7452e611d7130385e23f9891395488d9fc864",
+      "sha256_lf": "1243de875b20425bc373ca261defe5fb0b97c164c9c87a572d31486176e92c6e"
+    },
+    {
+      "path": "en/03-gui-system/08-dialogs-modals.md",
+      "sha256_raw": "30e2093adeed1bdd9723fa3a3a8915b810b5bde7d68911eb90dc1ffa43a5a848",
+      "sha256_lf": "30e2093adeed1bdd9723fa3a3a8915b810b5bde7d68911eb90dc1ffa43a5a848"
+    },
+    {
+      "path": "en/03-gui-system/09-real-mod-patterns.md",
+      "sha256_raw": "63d124a09bc79a4198fde513ded9d291de077fdd1135bfd4e5c760abcc909e84",
+      "sha256_lf": "be28896b078d66262379dfc5fc23f0a950ec1bf6acb6bc47d4f63a21fb3c0840"
+    },
+    {
+      "path": "en/04-file-formats/06-pbo-packing.md",
+      "sha256_raw": "d60f2be9d40c4b8def8373c24b780a2f8a62c31ed32895663f0a2bc314a4a586",
+      "sha256_lf": "6ce714794db73d19eed3773715d1d93aebeb678526ecf76a1ec8d0b3a4f57dbc"
+    },
+    {
+      "path": "en/05-config-files/05-server-configs.md",
+      "sha256_raw": "de6ba6277bb66dacb4125de0ddf43f2e31878f1717c3bf48bc0f446779b45454",
+      "sha256_lf": "de6ba6277bb66dacb4125de0ddf43f2e31878f1717c3bf48bc0f446779b45454"
+    },
+    {
+      "path": "en/06-engine-api/01-entity-system.md",
+      "sha256_raw": "84ded2a22e62a935c1aa0f98f0d32b1082473ae0c653df6b4d77c63e2d9c39e4",
+      "sha256_lf": "84ded2a22e62a935c1aa0f98f0d32b1082473ae0c653df6b4d77c63e2d9c39e4"
+    },
+    {
+      "path": "en/06-engine-api/06-notifications.md",
+      "sha256_raw": "2f49f60b5739b3da19dafdf5c41c44bc9bdcda6ecf540b2395a3e121e4deabf0",
+      "sha256_lf": "2f49f60b5739b3da19dafdf5c41c44bc9bdcda6ecf540b2395a3e121e4deabf0"
+    },
+    {
+      "path": "en/06-engine-api/10-central-economy.md",
+      "sha256_raw": "5f7c43886b6f4ce6f0850b9acd14d4a40dbcec86dc418d9ddf8ee9f8806b17a6",
+      "sha256_lf": "4aa0b62f1b7f0e3b7556daa4f7923c9d2cf94733c55e531f0b8109ee7fbc298a"
+    },
+    {
+      "path": "en/06-engine-api/13-input-system.md",
+      "sha256_raw": "8107d1cc5ffca3e8206b25a7cc3cff0d1cad95eb96b3b257c89bec2b1e19d610",
+      "sha256_lf": "8107d1cc5ffca3e8206b25a7cc3cff0d1cad95eb96b3b257c89bec2b1e19d610"
+    },
+    {
+      "path": "en/07-patterns/01-singletons.md",
+      "sha256_raw": "e9561d42f6820d376dd0ed71af4e8b806d11db227b2d67304e6254c2cd74218c",
+      "sha256_lf": "2ad32130d1a1233a6b972668e501cf403bea5b49f40e2250d095b0d09336bc57"
+    },
+    {
+      "path": "en/07-patterns/02-module-systems.md",
+      "sha256_raw": "e813f31f8b8d10ef52c685460061a5c4a0003941fb7fa05fd29d5ab07dd7899e",
+      "sha256_lf": "fd2adb2566bdb414e7326c6b78176e346a744a6e5d713b98d3848e3954f02062"
+    },
+    {
+      "path": "en/07-patterns/03-rpc-patterns.md",
+      "sha256_raw": "1d828afe6cae294c7b2f1bc8f3b1417f69f12dba0ec645714606b96f244c05ea",
+      "sha256_lf": "1d828afe6cae294c7b2f1bc8f3b1417f69f12dba0ec645714606b96f244c05ea"
+    },
+    {
+      "path": "en/07-patterns/05-permissions.md",
+      "sha256_raw": "20d4cbc703fe525c1ca3590d30b572308ccc06fe5c06d6800f8dc0c2f6f917da",
+      "sha256_lf": "6aea6ac876bc2fdd64e96937ea0eb8d78f9c7afee6364ba1e3ebf586b188bebd"
+    },
+    {
+      "path": "en/07-patterns/06-events.md",
+      "sha256_raw": "c56857c0bae3a9768eea04014f65b6fe66685e2acdb024305646fb0686d4be06",
+      "sha256_lf": "f05db3d81078ba0a38ecc126bb487b1ddebfff2a5686f95e425ae776be2f43b1"
+    },
+    {
+      "path": "en/07-patterns/07-performance.md",
+      "sha256_raw": "92103119119d6546db53208ac347a7f05ec7ac021ba3fbf24d3d533d5aabdd85",
+      "sha256_lf": "0c9d32c506b290b27ee049a1eb1cd4393231dcbec351917939ef7711c3a170dd"
+    },
+    {
+      "path": "en/08-tutorials/01-first-mod.md",
+      "sha256_raw": "0c674883d2f681ec366eadc0d2ab564905b7bdefd4ca1fc1d342439cb5045683",
+      "sha256_lf": "e299ba486952b90d2a34566f81962c33f8fbe5b5255ecd70293db0f196be4061"
+    },
+    {
+      "path": "en/08-tutorials/02-custom-item.md",
+      "sha256_raw": "510d02fd489d2df3876d8fb5bfdb5e71c92a936541d84c1f21a216f8b7089c57",
+      "sha256_lf": "e6ccd95113e21aaea78065d337d470723a811f02f73cd9e198f8c0d50527baa7"
+    },
+    {
+      "path": "en/08-tutorials/11-clothing-mod.md",
+      "sha256_raw": "bbd4683bf09f19cb966f9497fbfd620e2ff2da8d066e5176d2226d5997818baf",
+      "sha256_lf": "69395869980f110c0faecce8a71f1693a84b21b8063b81d942ca75dad1d4b4a0"
+    },
+    {
+      "path": "en/08-tutorials/12-trading-system.md",
+      "sha256_raw": "6a390bc89b2e2c71beff46e490185646126087f03c9d0cce08d751fd5cf70291",
+      "sha256_lf": "8752491081912a566d4e4989f95735d5f9a34aec2c3b253db6e1b2acb5e729c5"
+    },
+    {
+      "path": "en/08-tutorials/13-diag-menu.md",
+      "sha256_raw": "f86f68e8d67be9171c44f728aae0faa3b4bdcc5fbb519ab1752148571ee583e9",
+      "sha256_lf": "909f184bdc3acc1f546feb6f0936606bfd44d9d0fa2e409329390b24198cfe23"
+    },
+    {
+      "path": "en/09-server-admin/01-server-setup.md",
+      "sha256_raw": "e7c8be9c7c383f76edc55c1f1f75395adff75cb1bb226a75a4e0707ebd46d6aa",
+      "sha256_lf": "5acd6af3df08b81244825b606a590e70533209f33e49c23456682a6157f912cd"
+    },
+    {
+      "path": "en/troubleshooting.md",
+      "sha256_raw": "3bece278bae706ce2be39e1f474f76de92f5d95fca584c28e6f7638202f2d9e7",
+      "sha256_lf": "3bece278bae706ce2be39e1f474f76de92f5d95fca584c28e6f7638202f2d9e7"
+    }
+  ],
+  "full_build_run": false,
+  "runtime_tests_run": false,
+  "scope_guard": "All tracked modifications are these 35 English Markdown pages; prior untracked files are not included."
+}

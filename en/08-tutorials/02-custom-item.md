@@ -61,7 +61,7 @@ MyFirstMod/
 
 ## Step 1: Define the Item Class in config.cpp
 
-Items in DayZ are defined in the `CfgVehicles` config class. Despite the name "Vehicles", this class holds ALL entity types: items, buildings, vehicles, animals, and everything else.
+Items such as this ration packet are defined in `CfgVehicles`. Firearms and magazines use `CfgWeapons` and `CfgMagazines` respectively.
 
 ### Create a Data config.cpp
 
@@ -283,7 +283,7 @@ That is the exact path vanilla `Crackers` uses, copied with its original casing.
    - Go to **File > Save As** and save as `.paa` format
    - Save it to `MyFirstMod/Data/Textures/ration_snack_co.paa`
 
-   The `_co` suffix is a naming convention meaning "color" (the diffuse/albedo texture). Other suffixes include `_nohq` (normal map), `_smdi` (specular), and `_as` (alpha/transparency).
+   The `_co` suffix is a naming convention meaning "color" (the diffuse/albedo texture). Other suffixes include `_nohq` (normal map), `_smdi` (specular), and `_as` (ambient shadow).
 
 ### Texture Naming Conventions
 
@@ -292,7 +292,7 @@ That is the exact path vanilla `Crackers` uses, copied with its original casing.
 | `_co` | Color (Diffuse) | The main color/appearance texture |
 | `_nohq` | Normal Map | Surface detail and lighting normals |
 | `_smdi` | Specular | Shininess and metallic properties |
-| `_as` | Alpha/Surface | Transparency or surface masking |
+| `_as` | Ambient shadow | Baked ambient-shadow/occlusion information |
 | `_de` | Detail | Additional detail overlay |
 
 For a first item, you only need the `_co` texture. The model will use default values for the others.
@@ -346,7 +346,7 @@ Open `types.xml` and add this block inside the root `<types>` element:
 | `name` | `"MFM_RationSnack"` | Must match your config.cpp class name exactly |
 | `nominal` | `10` | Target number of this item in the world at any time |
 | `lifetime` | `14400` | Seconds before a dropped item despawns (14400 = 4 hours) |
-| `restock` | `1800` | Seconds between respawn checks (1800 = 30 minutes) |
+| `restock` | `1800` | Minimum restock delay in seconds for this type; it is not the frequency of all Central Economy checks. |
 | `min` | `5` | Minimum number the Central Economy tries to maintain |
 | `quantmin` / `quantmax` | `-1` | Quantity range (-1 = not applicable, used for items with variable quantity like water bottles) |
 | `cost` | `100` | Economy priority weight (higher = spawns more readily) |
@@ -545,7 +545,7 @@ class Stage2
 
 To add a sound when the item is used or picked up:
 
-1. Create a `.ogg` audio file (OGG Vorbis format, the only format DayZ supports for custom sounds)
+1. Create a `.ogg` audio file in OGG Vorbis format.
 2. Define `CfgSoundShaders` and `CfgSoundSets` in your Data config.cpp:
 
 ```cpp

@@ -1,0 +1,92 @@
+{
+  "domain": "engine",
+  "status": "complete",
+  "outcome": "succeeded",
+  "role": "independent_council",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "reviewed_candidates": ["ENG-001", "ENG-002", "ENG-003", "ENG-004", "ENG-005"],
+  "runtime_testing": false,
+  "build_run": false,
+  "findings": [
+    {
+      "id": "ENG-001",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "page": "en/06-engine-api/01-entity-system.md",
+      "baseline_line": 1555,
+      "source_path": "D:/DayZ Projects/scripts/1_core/proto/enscript.c",
+      "source_lines": "80-110",
+      "source_sha256": "1CA3897DF3F842E6EAACB5E771A4A04ECE1D77E2A7C987F0A8174351770B43D4",
+      "source_hash_identity": "raw on-disk bytes; 24588 bytes; 1028 CRLF sequences",
+      "source_lf_normalized_sha256": "DB32B8CBDBD2D8A962319F36DEC55D0322C6183CFE612B2ECC1E461F0E07F565",
+      "reason": "Both Cast and CastTo are explicitly documented safe down-casts; invalid Cast returns null.",
+      "approved_new": "- **Use either documented safe-cast form.** `ClassName.Cast(source)` returns the cast value or `null`; `Class.CastTo(result, source)` returns `true` on success and writes the result. Choose the form that makes the surrounding null handling clearest."
+    },
+    {
+      "id": "ENG-002",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "page": "en/06-engine-api/06-notifications.md",
+      "baseline_line": 397,
+      "source_url": "https://github.com/Arkensor/DayZ-CommunityFramework/blob/0763e7e7548c9a0bed6626afff835de80693ebf3/JM/CF/Scripts/3_Game/CommunityFramework/Notification/NotificationSystem.c",
+      "source_commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "source_lines": "1-165",
+      "source_sha256": "84DEA071E55B1578394A00DFC2403CE8962306000B182BE35F2541BC769188F8",
+      "url_check": "HTTP 200 on 2026-09-13",
+      "approved_new": "- **Multi-Mod:** The vanilla `NotificationSystem` is shared by all mods, so simultaneous notifications can contend for its visible stack. Do not assume a framework is independent: CommunityFramework mods the vanilla `NotificationSystem`; inspect the specific framework/version before reasoning about queue or layer isolation."
+    },
+    {
+      "id": "ENG-003",
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "page": "en/06-engine-api/13-input-system.md",
+      "insert_after_baseline_line": 258,
+      "source_path": "D:/DayZ Projects/bin/constants.xml",
+      "source_lines": "463,505,567",
+      "source_sha256": "A2757261E565F84B04B19EB8FF6CE25D7DB60C047F09F4D2A92CB96576746BCE",
+      "official_sample_url": "https://github.com/BohemiaInteractive/DayZ-Samples/tree/da5e5437c9502620d9853fb6eed14701135ab2ea/Test_Inputs",
+      "official_sample_commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "url_check": "HTTP 200 on 2026-09-13",
+      "approved_new": "> **UA button names and raw `KeyCode` constants are different namespaces.** UA bindings use names such as `kLMenu`, `kRMenu`, and `kBackspace`; raw-key APIs use `KeyCode.KC_LMENU`, `KeyCode.KC_RMENU`, and `KeyCode.KC_BACK`. In the inspected build's `bin/constants.xml` button table, the corresponding UA button IDs are 505, 567, and 463. Prefer the names in XML and `BindCombo()` calls, and verify numeric IDs against the installed build before storing them."
+    },
+    {
+      "id": "ENG-004",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved; accept conservative exact repair",
+      "page": "en/06-engine-api/10-central-economy.md",
+      "baseline_lines": "341,344",
+      "source_path": "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c",
+      "source_lines": "578-598",
+      "source_sha256": "6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3",
+      "official_url": "https://community.bistudio.com/wiki/DayZ:Central_Economy_Configuration",
+      "url_check": "indexed current page; direct automated HEAD HTTP 403 on 2026-09-13",
+      "approved_delete": "string custom = ce.GetCEGlobalString(\"MyCustomVar\");     // returns \"\" if not found",
+      "approved_new": "`CEApi` exposes typed getters for entries loaded from `globals.xml`. The inspected declarations and official CE documentation do not establish whether arbitrary custom `<var>` names are supported in every build, so treat custom globals as version-specific until tested on the target server. Use a mod-owned config file when portability matters. The full parameter reference for the documented variables is in [Loot Economy Deep Dive](../09-server-admin/04-loot-economy.md#globalsxml----economy-parameters).",
+      "blocker": "No official extension contract, public native implementation, or target-server runtime test establishes arbitrary custom globals across builds."
+    },
+    {
+      "id": "ENG-005",
+      "classification": "unresolved uncertainty",
+      "disposition": "accept revised exact repair",
+      "page": "en/06-engine-api/01-entity-system.md",
+      "baseline_lines": "1444,1460,1554",
+      "source_paths": [
+        {"path": "D:/DayZ Projects/scripts/3_game/global/game.c", "lines": "704-706", "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"},
+        {"path": "D:/DayZ Projects/scripts/3_game/entities/object.c", "lines": "74-85", "sha256": "EBAC48FF196148AB4722A9D9A81C277796D4EA07896A5CF09742213D32424B4C"}
+      ],
+      "approved_new": [
+        "Invokes the native `ObjectDelete()` operation for the object. For synchronized gameplay objects, call it from authoritative server code; the inspected script declaration does not document replication timing or an all-clients guarantee.",
+        "// Direct native deletion call from authoritative code",
+        "- **Use `obj.Delete()` when deletion can wait until the next frame.** Its script implementation queues `GetGame().ObjectDelete()` on `CALL_CATEGORY_SYSTEM`, which avoids deleting the object in the current call stack. Use the native call directly only when that deferral is unsuitable and you have accounted for current references and iteration."
+      ],
+      "blocker": "No public native implementation or executed client/server trace establishes ObjectDelete replication scope or timing."
+    }
+  ],
+  "limitations": [
+    "No game/server/build or runtime harness was run.",
+    "Extraction declarations are static snapshot evidence and lack a build manifest.",
+    "Mod usage is corroboration only.",
+    "Direct automated access to the official BIKI CE pages returned HTTP 403; indexed official content was independently searched."
+  ],
+  "final_verification_required": "Compare the later applied diff byte-for-byte with approved repairs and record final page SHA-256 hashes; reject all unrelated English changes."
+}

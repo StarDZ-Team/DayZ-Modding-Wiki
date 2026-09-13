@@ -254,6 +254,8 @@ class ShopDemoManager
         return total;
     }
 
+    // Teaching reference only: the live handlers below never call these helpers.
+    // They do not implement rollback or a safe multi-step transaction.
     protected bool RemoveCurrency(PlayerBase player, int amount)
     {
         int remaining = amount;
@@ -309,76 +311,38 @@ class ShopDemoManager
 
     void HandleBuy(PlayerBase player, string className, int quantity)
     {
+        int balance = CountPlayerCurrency(player);
         if (quantity <= 0 || quantity > 10)
         {
-            SendResult(player, false, "Invalid quantity.", 0);
+            SendResult(player, false, "Invalid quantity.", balance);
             return;
         }
         ShopItem si = FindShopItem(className);
         if (!si)
         {
-            SendResult(player, false, "Item not in shop.", 0);
+            SendResult(player, false, "Item not in shop.", balance);
             return;
         }
-        int cost = si.BuyPrice * quantity;
-        int balance = CountPlayerCurrency(player);
-        if (balance < cost)
-        {
-            SendResult(player, false, "Need " + cost.ToString() + ", have " + balance.ToString(), balance);
-            return;
-        }
-        if (!RemoveCurrency(player, cost))
-        {
-            SendResult(player, false, "Currency removal failed.", CountPlayerCurrency(player));
-            return;
-        }
-        for (int i = 0; i < quantity; i++)
-        {
-            EntityAI sp = player.GetInventory().CreateInInventory(className);
-            if (!sp)
-                sp = EntityAI.Cast(GetGame().CreateObjectEx(className, player.GetPosition(), ECE_PLACE_ON_SURFACE));
-        }
-        int nb = CountPlayerCurrency(player);
-        SendResult(player, true, "Bought " + quantity.ToString() + "x " + si.DisplayName + " for " + cost.ToString(), nb);
-        Print("[ShopDemo] " + SafeName(player) + " bought " + quantity.ToString() + "x " + className);
+        SendResult(player, false, "Buying is disabled: this tutorial does not implement a safe inventory/currency transaction.", balance);
+        Print("[ShopDemo] refused buy for " + SafeName(player));
     }
 
     void HandleSell(PlayerBase player, string className, int quantity)
     {
+        int balance = CountPlayerCurrency(player);
         if (quantity <= 0 || quantity > 10)
         {
-            SendResult(player, false, "Invalid quantity.", 0);
+            SendResult(player, false, "Invalid quantity.", balance);
             return;
         }
         ShopItem si = FindShopItem(className);
         if (!si || si.SellPrice <= 0)
         {
-            SendResult(player, false, "Cannot sell this.", 0);
+            SendResult(player, false, "Cannot sell this.", balance);
             return;
         }
-        int removed = 0;
-        array<EntityAI> items = new array<EntityAI>;
-        player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
-        for (int i = 0; i < items.Count(); i++)
-        {
-            if (removed >= quantity)
-                break;
-            EntityAI ent = items.Get(i);
-            if (ent && ent.GetType() == className)
-            {
-                ent.DeleteSafe();
-                removed = removed + 1;
-            }
-        }
-        if (removed <= 0)
-        {
-            SendResult(player, false, "You don't have that item.", CountPlayerCurrency(player));
-            return;
-        }
-        int payout = si.SellPrice * removed;
-        GiveCurrency(player, payout);
-        SendResult(player, true, "Sold " + removed.ToString() + "x " + si.DisplayName + " for " + payout.ToString(), CountPlayerCurrency(player));
-        Print("[ShopDemo] " + SafeName(player) + " sold " + removed.ToString() + "x " + className);
+        SendResult(player, false, "Selling is disabled: this tutorial does not implement a safe inventory/currency transaction.", balance);
+        Print("[ShopDemo] refused sell for " + SafeName(player));
     }
 
     protected void SendResult(PlayerBase player, bool success, string message, int newBalance)
@@ -445,7 +409,7 @@ modded class PlayerBase
 };
 ```
 
-**Key decisions:** Currency removed *before* spawning items (prevents duplication). Always `DeleteSafe()` for networked items. Quantity clamped to 1-10 to prevent abuse.
+**Safety boundary:** The server binds requests to `sender.GetPlayer()`, checks the quantity bound, and looks up the item in the server catalog, but both handlers refuse before changing inventory. The helper methods remain only to explain the relevant inventory APIs; they are not transaction-safe building blocks. No atomic inventory-and-currency API or runtime-proven compensation protocol is demonstrated here, so do not enable these handlers for live trading without designing and testing that subsystem separately.
 
 > **Warning --- the ad-hoc string payload is fragile.** `OnShopDataReq` packs the shop into one string using `|`, `;`, `,`, and newline as delimiters. If any `DisplayName` (or a category name) contains one of those characters, the payload splits in the wrong place and the client parses garbage --- a display name like `"7,62 Ammo"` or `"Medical; Surgical"` will break the layout silently. Keep display names free of `| ; ,` and newlines, or replace this hand-rolled format with a structured RPC (write each field with `ctx.Write()` / read it back with `ctx.Read()`, or serialize the config object to a JSON string). The string approach is shown here because it is the shortest thing that teaches the round-trip; it is not what you want in production.
 
@@ -858,24 +822,24 @@ The manager writes this file at `$profile:ShopDemo/ShopConfig.json` on first ser
 
 ## Step 9: Build and Test
 
-1. Pack `ShopDemo/` into a PBO and place it in `@ShopDemo/addons/` on **both** server and client, then add `-mod=@ShopDemo` to both launch lines. The UI is client-side and the manager is server-side, so a one-sided install fails in a confusing way -- the menu opens and every transaction silently does nothing.
-2. Spawn currency (default `Rag`), press F6, browse, buy and sell.
-3. Check the server log for `[ShopDemo]` lines. The transaction logging in Step 3 is what tells you whether the server ran your buy at all, as opposed to the client never sending it.
+1. Pack `ShopDemo/` into a PBO and place it in `@ShopDemo/addons/` on **both** server and client, then add `-mod=@ShopDemo` to both launch lines. The UI is client-side and the manager is server-side, so a one-sided install can leave the menu unable to receive a server response.
+2. Spawn currency (default `Rag`), press F6, select a catalog item, and press Buy and Sell once each. Both requests must return the disabled message, and the displayed balance and inventory must remain unchanged.
+3. Check the server log for `[ShopDemo] refused` lines to confirm the server received each request.
 
 | Test Case | Expected |
 |-----------|----------|
-| Buy with no currency | "Need X, have 0" |
-| Buy unknown class (hacked) | "Item not in shop" |
-| Sell item not owned | "You don't have that item" |
-| Inventory full on buy | Item drops on ground |
+| Valid catalog buy | Disabled message; balance and inventory unchanged |
+| Valid sellable catalog item | Disabled message; balance and inventory unchanged |
+| Unknown class (crafted RPC) | `Item not in shop.` or `Cannot sell this.` |
+| Quantity outside 1-10 (crafted RPC) | `Invalid quantity.` |
 
 ---
 
 ## Security Considerations
 
 1. **NEVER trust client-sent prices.** Client sends `(className, qty)` only. Server looks up price.
-2. **Delete before spawn.** Remove currency first, then create items. Prevents duplication.
-3. **Validate existence.** Confirm item is in inventory before giving sell currency.
+2. **Keep this sample non-transactional.** Both handlers refuse before spawning, changing quantity, or deleting, so the sample itself cannot consume player assets.
+3. **Do not confuse ordering with recovery.** Debit-first can lose value and credit-first can duplicate value. Compensation may be possible in a larger design, but it requires explicit failure handling and runtime evidence that this tutorial does not provide.
 4. **Log everything.** Print player name, item, amount for every transaction.
 5. **Quantity bounds.** Reject `qty <= 0` or `qty > 10`.
 6. **Rate limit** in production: 500ms cooldown per player per transaction.
@@ -888,7 +852,7 @@ The manager writes this file at `$profile:ShopDemo/ShopConfig.json` on first ser
 |------|-------|---------|
 | `ShopDemoRPC.c` | 3_Game | RPC ID constants |
 | `ShopDemoData.c` | 3_Game | Data classes: ShopItem, ShopCategory, ShopConfig |
-| `ShopDemoManager.c` | 4_World | Server: config, buy/sell logic, inventory, RPC handlers |
+| `ShopDemoManager.c` | 4_World | Server: config, request validation/refusal, inventory API examples, RPC handlers |
 | `ShopDemoMenu.c` | 5_Mission | Client: UI, dynamic widgets, RPC send/receive |
 | `ShopDemoMission.c` | 5_Mission | Client mission hook: keybind polling, RPC routing |
 | `ShopDemoServer.c` | 5_Mission | Server mission hook: initializes `ShopDemoManager` |
@@ -900,7 +864,7 @@ The manager writes this file at `$profile:ShopDemo/ShopConfig.json` on first ser
 ## Best Practices
 
 - **Server is the single source of truth.** Client is a display terminal.
-- **Use `DeleteSafe()` not `Delete()`.** Vanilla describes it as deletion "synchronized between server and client": when the item is held by a living player it goes through that player's delete juncture rather than vanishing underneath the client, and it falls back to a plain `Delete()` when there is no live holder. (`DeleteSave()` is the same call under a misspelled legacy name -- vanilla says to use `DeleteSafe()`.)
+- **Understand `DeleteSafe()` before reusing the helper.** Vanilla describes it as deletion "synchronized between server and client" and routes held items through player deletion handling, but the method returns `void`; calling it is not proof that a larger trade committed or that compensation completed. (`DeleteSave()` is the misspelled legacy alias.)
 - **Data classes in 3_Game.** Visible to both 4_World and 5_Mission.
 - **Always call `super` in overrides.** Breaking the chain breaks other mods.
 - **Clean up dynamic widgets.** Every `CreateWidget` needs `Unlink` on close.
@@ -911,17 +875,18 @@ The manager writes this file at `$profile:ShopDemo/ShopConfig.json` on first ser
 |---------|--------|---------|
 | `JsonFileLoader.JsonLoadFile()` | Loads cleanly, reports errors | Returns `void` --- it cannot signal failure. A malformed file (trailing comma, bad type) leaves the object in a partial/default state with no error. Check the loaded object's state, and validate JSON externally. |
 | String RPC serialization | Simple | 500+ items may hit size limits. Paginate for large shops. |
-| `CreateInInventory()` | Always works | Returns null if inventory full. Always check. |
+| `CreateInInventory()` | Always works | Returns a created entity or `null`. Always check. |
+| Inventory/currency ordering | One order makes a trade safe | Neither order is atomic. A production design can use compensation or recovery, but this sample provides neither and therefore refuses before mutation. |
 | Listen server testing | Fast iteration | Hides network bugs. Test on dedicated server. |
 
 ## What You Learned
 
 - JSON config loading with `JsonFileLoader<T>` and auto-generation of defaults
 - Singleton pattern for server-side game managers
-- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning
+- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning APIs, with explicit transaction-safety limits
 - String serialization of complex data over RPC (categories, items, prices)
 - Dynamic widget creation for data-driven UI
-- Full buy/sell transaction flow with server-only authority
+- Server-authoritative request binding and validation, followed by a deliberate pre-mutation refusal
 - Security principles for multiplayer economy systems
 
 ## Common Mistakes
@@ -929,8 +894,8 @@ The manager writes this file at `$profile:ShopDemo/ShopConfig.json` on first ser
 | Mistake | Fix |
 |---------|-----|
 | Client sends price | Send `(className, qty)` only. Server decides price. |
-| Spawn before paying | Remove currency first, then create items. |
+| Treat either mutation order as a transaction | Design explicit compensation/recovery and prove it under failure; this sample refuses instead. |
 | Skip `super.OnRPC()` | Always call super -- other mods need the chain. |
-| `Delete()` on networked items | Use `DeleteSafe()`. |
-| Ignore `CreateInInventory` return | Check for null, fall back to ground spawn. |
+| Treat `DeleteSafe()` as a confirmed debit | It returns `void`; do not infer transaction completion from the call. |
+| Ignore creation returns | Check every result, and clean up or compensate without claiming success after partial creation. |
 | Redeclare vars in else-if | Declare once before the if-chain (Enforce Script rule). |

@@ -338,10 +338,9 @@ if (!ce)
 
 int zombieMax = ce.GetCEGlobalInt("ZombieMaxCount");     // returns int.MIN if not found
 float dmgMax = ce.GetCEGlobalFloat("LootDamageMax");     // returns float.MIN if not found
-string custom = ce.GetCEGlobalString("MyCustomVar");     // returns "" if not found
 ```
 
-This also works for **custom variables**: a server can add its own `<var>` entries to `globals.xml` and mod code can read them at runtime — a lightweight way to make server-side script behavior configurable per mission without shipping a config file. The full parameter reference for the vanilla variables is in [Loot Economy Deep Dive](../09-server-admin/04-loot-economy.md#globalsxml----economy-parameters).
+`CEApi` exposes typed getters for entries loaded from `globals.xml`. The inspected declarations and official CE documentation do not establish whether arbitrary custom `<var>` names are supported in every build, so treat custom globals as version-specific until tested on the target server. Use a mod-owned config file when portability matters. The full parameter reference for the documented variables is in [Loot Economy Deep Dive](../09-server-admin/04-loot-economy.md#globalsxml----economy-parameters).
 
 ---
 

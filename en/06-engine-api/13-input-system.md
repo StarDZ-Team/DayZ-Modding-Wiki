@@ -257,6 +257,8 @@ modded class MissionGameplay
 
 **Rule of thumb:** If a player will ever press this key, use UAInput with inputs.xml. Only use OnKeyPress for internal debug tools or prototype testing.
 
+> **UA button names and raw `KeyCode` constants are different namespaces.** UA bindings use names such as `kLMenu`, `kRMenu`, and `kBackspace`; raw-key APIs use `KeyCode.KC_LMENU`, `KeyCode.KC_RMENU`, and `KeyCode.KC_BACK`. In the inspected build's `bin/constants.xml` button table, the corresponding UA button IDs are 505, 567, and 463. Prefer the names in XML and `BindCombo()` calls, and verify numeric IDs against the installed build before storing them.
+
 ---
 
 ## KeyCode Reference

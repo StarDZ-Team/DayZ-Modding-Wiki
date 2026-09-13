@@ -179,7 +179,7 @@ class LNT_AlarmSystem
 
 ### No Default Parameter Expressions
 
-Default parameter values must be **literals** or `NULL` — `void Spawn(vector pos = Vector(0, 100, 0))` does not compile, while `void Spawn(vector pos = "0 100 0")` is fine (a vector string literal). For computed defaults, add a parameterless wrapper that calls the full version.
+Default parameter values may use literals, NULL, and supported compile-time constants such as enum members; runtime function calls are not valid defaults. For computed defaults, add a parameterless wrapper that calls the full version.
 
 Full coverage: [Functions & Methods](13-functions-methods.md).
 
@@ -357,9 +357,10 @@ Full coverage: [config.cpp Explained](../02-mod-structure/02-config-cpp.md).
 
 Code that looks valid but confuses the script parser — often with a misleading error message, sometimes with a crash.
 
-### No Multiline Function Calls
+### Multiline Function Calls Are Supported
 
-**What you would write:**
+Function calls may span lines. Keep delimiters and argument expressions balanced; line breaks alone do not cause a compile error.
+
 ```c
 string msg = string.Format(
     "Player %1 at %2",
@@ -367,15 +368,6 @@ string msg = string.Format(
     pos
 );
 ```
-
-**What happens:** Compile error. Enforce Script's parser does not reliably handle function calls split across multiple lines.
-
-**Correct solution:**
-```c
-string msg = string.Format("Player %1 at %2", name, pos);
-```
-
-Keep function calls on a single line. If the line is too long, break the work into intermediate variables.
 
 ### Not a Trap: `\\` and `\"` in String Literals
 

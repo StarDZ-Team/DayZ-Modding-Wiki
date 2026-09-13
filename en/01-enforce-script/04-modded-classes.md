@@ -291,7 +291,7 @@ modded class GameTuning
 }
 ```
 
-If you need to change a value that vanilla code derives from one of its own constants, do not try to redefine the constant --- override the **method** that uses it instead. That keeps the change visible, chainable by other mods, and independent of how the engine resolves constant lookups.
+A `modded class` can redefine an inherited or existing constant; the last loaded mod wins, so the result depends on mod load order. Prefer overriding a method when you need behavior that other mods can chain with `super`.
 
 ---
 
@@ -461,13 +461,13 @@ modded class PlayerBase
         m_LNT_GodMode = enabled;
     }
 
-    // Override damage to implement god mode
-    override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
+    // Veto calculated damage while god mode is enabled
+    override bool EEOnDamageCalculated(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
     {
         if (m_LNT_GodMode)
-            return;  // Skip damage entirely
+            return false;
 
-        super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
+        return super.EEOnDamageCalculated(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
     }
 
     protected void LNT_OnMinuteElapsed()
@@ -896,16 +896,12 @@ When you do intentionally skip `super`, document why:
 ```c
 modded class PlayerBase
 {
-    // Intentionally NOT calling super to completely disable fall damage
-    // WARNING: This will also prevent other mods from running their fall damage code
-    override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
+    override bool EEOnDamageCalculated(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
     {
-        // Check if this is fall damage
-        if (ammo == "FallDamage")
-            return;  // Silently ignore
+        if (damageType == DT_FALL)
+            return false;
 
-        // For all other damage, call the normal chain
-        super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
+        return super.EEOnDamageCalculated(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
     }
 }
 ```
@@ -1186,7 +1182,7 @@ Create a `modded class ItemBase` that adds a method `string GetInspectInfo()` wh
 Create a `modded class PlayerBase` that:
 1. Adds a god-mode flag field (with your own mod prefix)
 2. Adds `EnableGodMode()` and `DisableGodMode()` methods
-3. Overrides the damage method `EEHitBy` to skip damage when god mode is active
+3. Overrides the damage method `EEOnDamageCalculated` to skip damage when god mode is active
 4. Always calls `super` for normal (non-god-mode) damage
 
 ### Exercise 4: Vehicle Speed Logger
@@ -1210,7 +1206,7 @@ Create a `modded class PlayerBase` that adds a reputation system. When a player 
 | `super` | **Always call it** unless deliberately replacing behavior |
 | New fields | Add with mod-specific prefixes (`m_LNT_FieldName`) |
 | New methods | Fully supported; callable from anywhere that has a reference |
-| New constants | Can be added; to change a vanilla value, override the method that uses it |
+| New constants | Can be added or redefined; the last loaded mod wins, so redefinition is load-order-dependent |
 | Private access | Modded classes **can** access private members of the original |
 | `#ifdef` guards | Use for optional dependencies on other mods |
 | Common targets | `MissionServer`, `MissionGameplay`, `PlayerBase`, `ItemBase`, `DayZGame`, `CarScript` |

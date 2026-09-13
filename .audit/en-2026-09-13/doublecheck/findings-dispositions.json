@@ -1,0 +1,751 @@
+{
+  "schema": "second-pass-editorial-dispositions-v1",
+  "baseline": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "counts": {
+    "accepted": 55,
+    "rejected": 4,
+    "unresolved": 8
+  },
+  "total": 67,
+  "counting_notes": [
+    "Counts are editorial dispositions, not claims of runtime verification.",
+    "Accepted conservative wording may retain an unresolved underlying native/lifetime question.",
+    "Includes nine inherited language leads; seven remain unresolved.",
+    "Trading findings are counted once each after revised council approval; ENG-002 supplemental occurrence is not an additional finding.",
+    "Exact quotes, replacement text and source evidence are preserved in the linked council Markdown/JSON records."
+  ],
+  "items": [
+    {
+      "id": "AGUI-DC-001",
+      "page": "en/03-gui-system/01-widget-types.md",
+      "disposition": "accept exact repair",
+      "old_text": "- `switch normal` / `switch once` -- Values used by vanilla button layouts. For persistent on/off state, use `CheckBoxWidget` and explicitly read or set its state with `GetState()` / `SetState()`",
+      "final_new_text": "- `switch normal` / `switch once` -- Values used by vanilla button layouts. For persistent on/off state, use `CheckBoxWidget` and explicitly read or set its state with `IsChecked()` / `SetChecked()`",
+      "reason": "Pinned CheckBoxWidget declaration exposes IsChecked/SetChecked.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-002",
+      "page": "en/03-gui-system/01-widget-types.md",
+      "disposition": "accept exact repair",
+      "old_text": "| Create a toggle (on/off) | `CheckBoxWidget` with explicit `GetState()` / `SetState()` handling |",
+      "final_new_text": "| Create a toggle (on/off) | `CheckBoxWidget` with explicit `IsChecked()` / `SetChecked()` handling |",
+      "reason": "Pinned CheckBoxWidget declaration exposes IsChecked/SetChecked.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-003",
+      "page": "en/03-gui-system/02-layout-files.md",
+      "disposition": "accept exact repair",
+      "old_text": "| `switch` | `normal`, `once` | Both values occur in vanilla layouts; manage persistent on/off state explicitly with `CheckBoxWidget`, `GetState()` and `SetState()` |",
+      "final_new_text": "| `switch` | `normal`, `once` | Both values occur in vanilla layouts; manage persistent on/off state explicitly with `CheckBoxWidget`, `IsChecked()` and `SetChecked()` |",
+      "reason": "Pinned CheckBoxWidget declaration exposes IsChecked/SetChecked.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-004",
+      "page": "en/03-gui-system/05-programmatic-widgets.md",
+      "disposition": "accept with revised exact repair",
+      "old_text": "tw.SetTextExactSize(16);           // Font size in pixels",
+      "final_new_text": "tw.SetTextExactSize(16);           // Only works when the Exact Text flag is already enabled",
+      "additional_text_after_code_block": "`SetTextExactSize()` does not enable Exact Text mode; configure that flag in the widget's layout before relying on the requested size.",
+      "reason": "Prerequisite is explicit in the pinned declaration; revised wording avoids calling a programmatically created widget's origin a source layout.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-005",
+      "page": "en/03-gui-system/09-real-mod-patterns.md",
+      "disposition": "accept exact repair",
+      "old_text": "override void OnShow()\n{\n    SetFocus(GetLayoutRoot());\n}",
+      "final_new_text": "override void OnShow()\n{\n    super.OnShow();\n    SetActiveWindow(GetLayoutRoot(), true);\n}",
+      "reason": "Pinned UIScriptedMenu lifecycle and focus API comments directly support the repair.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-006",
+      "page": "en/03-gui-system/08-dialogs-modals.md",
+      "disposition": "accept exact repair",
+      "old_text": "Because Enforce Script has no closures or delegates, routing the result back by function name -- the target object plus a method name string -- is the standard way to give a reusable dialog a callback. Any admin-tool style dialog box that needs to hand a result back to an arbitrary caller uses this same name-based routing.",
+      "final_new_text": "This example routes results by target object and method name. DayZ also exposes `func` callbacks and `ScriptInvoker`; choose the callback mechanism supported by the API you are using and keep callback targets alive until the dialog finishes.",
+      "reason": "Pinned VideoWidget callback and ScriptInvoker APIs refute the universal name-string claim without asserting closures.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-007",
+      "page": "en/03-gui-system/07-styles-fonts.md",
+      "disposition": "reject",
+      "old_text": "| Imageset XML and native formats are equivalent | Both define sprite regions | The native brace format is what the engine processes fastest. XML format works but adds a parsing step; use native format for production |",
+      "final_new_text": null,
+      "reason": "LoadWidgetImageSet declaration proves neither accepted formats nor parser performance; proposed replacement remains speculative.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "rejected"
+    },
+    {
+      "id": "AGUI-DC-008",
+      "page": "en/04-file-formats/06-pbo-packing.md",
+      "disposition": "accept exact repair",
+      "old_text": "2. **Always set a prefix.** Without a prefix, the engine cannot resolve paths to your mod's content. Every PBO must have a correct `-prefix`.",
+      "final_new_text": "2. **Verify the PBO prefix.** Set `-prefix` explicitly when you need a specific virtual path; otherwise Addon Builder may calculate it automatically. In either case, confirm the stored prefix matches all resource references.",
+      "reason": "Official Addon Builder revision 341605 says an absent prefix is calculated automatically.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-009",
+      "page": "en/04-file-formats/06-pbo-packing.md",
+      "disposition": "accept exact repair",
+      "old_text": "| **Signing** | Supported (required for multiplayer) |",
+      "final_new_text": "| **Signing** | Supported; required when joining servers that enforce PBO signature verification |",
+      "reason": "Official server configuration makes verification a server-controlled setting, not an inherent multiplayer requirement.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "AGUI-DC-010",
+      "page": "en/04-file-formats/02-models.md",
+      "disposition": "reject",
+      "old_text": "> **Important:** When you pack a PBO with binarization enabled, your MLOD P3D files are automatically converted to ODOL. If you pack with `-packonly`, the MLOD files are included as-is. Both work in-game, but ODOL is preferred for release builds.",
+      "final_new_text": null,
+      "reason": "Binarization/model.cfg evidence does not establish or disprove retail MLOD loading; runtime claim remains unresolved.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "rejected"
+    },
+    {
+      "id": "SR2-001",
+      "page": "en/05-config-files/05-server-configs.md",
+      "disposition": "accept exact repair",
+      "old_text": "A JSON file in the mission root that the engine loads automatically if present.",
+      "final_new_text": "A JSON file in the mission root that the dedicated server loads when `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.",
+      "reason": "Pinned handler and official Gameplay Settings both establish the activation gate.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "SR2-002",
+      "page": "en/05-config-files/05-server-configs.md",
+      "disposition": "accept exact repair",
+      "old_text": "A JSON syntax error causes the file to be silently ignored --- the server runs with defaults and nothing in the log points at the file.",
+      "final_new_text": "A JSON load failure is reported through `ErrorEx(errorMessage)`. Check the script error output and validate the JSON before restarting; do not assume the file is silently ignored or that every setting falls back to its default.",
+      "reason": "Pinned handler explicitly calls ErrorEx and does not establish an all-default fallback.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "SR2-003",
+      "page": "en/05-config-files/05-server-configs.md",
+      "disposition": "accept exact repair",
+      "old_text": "Note that a JSON syntax error causes the whole file to be **silently ignored**, so admins should validate it after every edit.",
+      "final_new_text": "The loader reports JSON load failures through `ErrorEx(errorMessage)`, so admins should check the script error output and validate the file after every edit.",
+      "reason": "Pinned handler explicitly calls ErrorEx on LoadFile failure.",
+      "council_json": "council-early.json",
+      "council_report": "council-early-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "SR2-004",
+      "page": "en/09-server-admin/01-server-setup.md",
+      "line": 35,
+      "disposition": "reject",
+      "old_text": "DayZ Server is single-threaded for gameplay logic. Clock speed matters more than core count.",
+      "final_new_text": null,
+      "reason": "Replication workers and generic parallel-task processing do not prove that gameplay/script logic is multithreaded; the original sentence is expressly limited to gameplay logic.",
+      "council_json": "council-server-extra.json",
+      "council_report": "council-server-extra-REPORT.md",
+      "editorial_outcome": "rejected"
+    },
+    {
+      "id": "SR2-005",
+      "page": "en/09-server-admin/01-server-setup.md",
+      "line": 294,
+      "disposition": "accept exact repair",
+      "old_text": "This is normal. DayZ Server is single-threaded. Do not run multiple server instances on the same core -- use processor affinity or separate machines.",
+      "final_new_text": "High utilization on one core can reflect a main-thread bottleneck, but the server also uses parallel tasks and can use multithreaded replication. Check server FPS and profile the workload before assigning affinity; size replication workers through `dayzsettings.xml` when `multithreadedReplication` is enabled.",
+      "reason": "The unqualified whole-server statement conflicts with documented replication workers and -cpuCount parallel-task processing; the repair does not claim gameplay logic itself is multithreaded.",
+      "council_json": "council-server-extra.json",
+      "council_report": "council-server-extra-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "SR2-006",
+      "page": "en/troubleshooting.md",
+      "line": 259,
+      "disposition": "accept exact repair",
+      "old_text": "| `-filePatching` | Load unpacked files (requires DayZDiag) |",
+      "final_new_text": "| `-filePatching` | Context-dependent: use it with `DayZDiag_x64.exe` for unpacked-file development; Bohemia's dedicated-server reference currently describes the server flag as allowing only PBO data. Verify the executable-specific behavior on your target build. |",
+      "reason": "Official DayZDiag development instructions and the dedicated-server parameter table document different executable-specific meanings; the repair states both and preserves uncertainty.",
+      "council_json": "council-server-extra.json",
+      "council_report": "council-server-extra-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-001",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-002",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-003",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-004",
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-005",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "coordination": "paragraph and comparison table",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-006",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-007",
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-008",
+      "classification": "unresolved uncertainty",
+      "disposition": "accept revised cautious exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-009",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "coordination": "heading, prose, and three path literals",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-010",
+      "classification": "rejected claim",
+      "disposition": "reject",
+      "reason": "vanilla enprofilertests.c uses GetTickTime for elapsed measurement",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "rejected"
+    },
+    {
+      "id": "TP2-011",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-012",
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-013",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "coordination": "preceding prose and table row",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-014",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-014B",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-015",
+      "classification": "confirmed overclaim",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-016",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "TP2-017",
+      "classification": "essential omission",
+      "disposition": "accept revised repair after trading proposal review",
+      "submitted_repair": "reject",
+      "blocker": "requires exact checked staging or full rollback; reporting buyer loss is not repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted",
+      "prior_disposition": "unresolved",
+      "final_council_json": "council-trading.json",
+      "final_council_report": "council-trading-REPORT.md"
+    },
+    {
+      "id": "TP2-018",
+      "classification": "essential omission",
+      "disposition": "accept revised repair after trading proposal review",
+      "submitted_repair": "reject",
+      "blocker": "requires exact staged payout or checked restoration; reporting seller loss is not repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted",
+      "prior_disposition": "unresolved",
+      "final_council_json": "council-trading.json",
+      "final_council_report": "council-trading-REPORT.md"
+    },
+    {
+      "id": "TP2-019",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-tutorials_patterns.json",
+      "council_report": "council-tutorials_patterns-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-001",
+      "path": "en/01-enforce-script/01-variables-types.md",
+      "line": 486,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-002",
+      "path": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "line": 950,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-003",
+      "path": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "line": 560,
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-004",
+      "path": "en/01-enforce-script/04-modded-classes.md",
+      "line": 464,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "related_lines": [
+        899,
+        901,
+        1189
+      ],
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-005",
+      "path": "en/01-enforce-script/04-modded-classes.md",
+      "line": 294,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "related_lines": [
+        1213
+      ],
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-006",
+      "path": "en/01-enforce-script/05-control-flow.md",
+      "line": 59,
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-007",
+      "path": "en/01-enforce-script/06-strings.md",
+      "line": 34,
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "note": "Do not claim Length counts bytes; primary declaration does not say that.",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-008",
+      "path": "en/01-enforce-script/07-math-vectors.md",
+      "line": 664,
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "related_lines": [
+        700
+      ],
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "unresolved"
+    },
+    {
+      "id": "LANG-DC-009",
+      "path": "en/01-enforce-script/09-casting-reflection.md",
+      "line": 50,
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-010",
+      "path": "en/01-enforce-script/11-error-handling.md",
+      "line": 465,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-011",
+      "path": "en/01-enforce-script/11-error-handling.md",
+      "line": 673,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-012",
+      "path": "en/01-enforce-script/11-error-handling.md",
+      "line": 601,
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "blocker": "Runnable secure example requires allowlist, bounds, permission, and rate policy.",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-013",
+      "path": "en/01-enforce-script/12-gotchas.md",
+      "line": 360,
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-014",
+      "path": "en/01-enforce-script/12-gotchas.md",
+      "line": 182,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "related_paths": [
+        "en/01-enforce-script/13-functions-methods.md"
+      ],
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-015",
+      "path": "en/01-enforce-script/13-functions-methods.md",
+      "line": 397,
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "LANG-DC-016",
+      "path": "en/01-enforce-script/13-functions-methods.md",
+      "line": 859,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "related_line": 874,
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "ENG-001",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "page": "en/06-engine-api/01-entity-system.md",
+      "baseline_line": 1555,
+      "source_path": "D:/DayZ Projects/scripts/1_core/proto/enscript.c",
+      "source_lines": "80-110",
+      "source_sha256": "1CA3897DF3F842E6EAACB5E771A4A04ECE1D77E2A7C987F0A8174351770B43D4",
+      "source_hash_identity": "raw on-disk bytes; 24588 bytes; 1028 CRLF sequences",
+      "source_lf_normalized_sha256": "DB32B8CBDBD2D8A962319F36DEC55D0322C6183CFE612B2ECC1E461F0E07F565",
+      "reason": "Both Cast and CastTo are explicitly documented safe down-casts; invalid Cast returns null.",
+      "approved_new": "- **Use either documented safe-cast form.** `ClassName.Cast(source)` returns the cast value or `null`; `Class.CastTo(result, source)` returns `true` on success and writes the result. Choose the form that makes the surrounding null handling clearest.",
+      "council_json": "council-engine.json",
+      "council_report": "council-engine-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "ENG-002",
+      "classification": "confirmed error",
+      "disposition": "accept exact repair",
+      "page": "en/06-engine-api/06-notifications.md",
+      "baseline_line": 397,
+      "source_url": "https://github.com/Arkensor/DayZ-CommunityFramework/blob/0763e7e7548c9a0bed6626afff835de80693ebf3/JM/CF/Scripts/3_Game/CommunityFramework/Notification/NotificationSystem.c",
+      "source_commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "source_lines": "1-165",
+      "source_sha256": "84DEA071E55B1578394A00DFC2403CE8962306000B182BE35F2541BC769188F8",
+      "url_check": "HTTP 200 on 2026-09-13",
+      "approved_new": "- **Multi-Mod:** The vanilla `NotificationSystem` is shared by all mods, so simultaneous notifications can contend for its visible stack. Do not assume a framework is independent: CommunityFramework mods the vanilla `NotificationSystem`; inspect the specific framework/version before reasoning about queue or layer isolation.",
+      "council_json": "council-engine.json",
+      "council_report": "council-engine-REPORT.md",
+      "editorial_outcome": "accepted",
+      "supplemental_occurrence": {
+        "baseline_line": 296,
+        "council_json": "council-notification-extra.json",
+        "council_report": "council-notification-extra-REPORT.md",
+        "counted_as_new_finding": false
+      }
+    },
+    {
+      "id": "ENG-003",
+      "classification": "essential omission",
+      "disposition": "accept revised exact repair",
+      "page": "en/06-engine-api/13-input-system.md",
+      "insert_after_baseline_line": 258,
+      "source_path": "D:/DayZ Projects/bin/constants.xml",
+      "source_lines": "463,505,567",
+      "source_sha256": "A2757261E565F84B04B19EB8FF6CE25D7DB60C047F09F4D2A92CB96576746BCE",
+      "official_sample_url": "https://github.com/BohemiaInteractive/DayZ-Samples/tree/da5e5437c9502620d9853fb6eed14701135ab2ea/Test_Inputs",
+      "official_sample_commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "url_check": "HTTP 200 on 2026-09-13",
+      "approved_new": "> **UA button names and raw `KeyCode` constants are different namespaces.** UA bindings use names such as `kLMenu`, `kRMenu`, and `kBackspace`; raw-key APIs use `KeyCode.KC_LMENU`, `KeyCode.KC_RMENU`, and `KeyCode.KC_BACK`. In the inspected build's `bin/constants.xml` button table, the corresponding UA button IDs are 505, 567, and 463. Prefer the names in XML and `BindCombo()` calls, and verify numeric IDs against the installed build before storing them.",
+      "council_json": "council-engine.json",
+      "council_report": "council-engine-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "ENG-004",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved; accept conservative exact repair",
+      "page": "en/06-engine-api/10-central-economy.md",
+      "baseline_lines": "341,344",
+      "source_path": "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c",
+      "source_lines": "578-598",
+      "source_sha256": "6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3",
+      "official_url": "https://community.bistudio.com/wiki/DayZ:Central_Economy_Configuration",
+      "url_check": "indexed current page; direct automated HEAD HTTP 403 on 2026-09-13",
+      "approved_delete": "string custom = ce.GetCEGlobalString(\"MyCustomVar\");     // returns \"\" if not found",
+      "approved_new": "`CEApi` exposes typed getters for entries loaded from `globals.xml`. The inspected declarations and official CE documentation do not establish whether arbitrary custom `<var>` names are supported in every build, so treat custom globals as version-specific until tested on the target server. Use a mod-owned config file when portability matters. The full parameter reference for the documented variables is in [Loot Economy Deep Dive](../09-server-admin/04-loot-economy.md#globalsxml----economy-parameters).",
+      "blocker": "No official extension contract, public native implementation, or target-server runtime test establishes arbitrary custom globals across builds.",
+      "council_json": "council-engine.json",
+      "council_report": "council-engine-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "id": "ENG-005",
+      "classification": "unresolved uncertainty",
+      "disposition": "accept revised exact repair",
+      "page": "en/06-engine-api/01-entity-system.md",
+      "baseline_lines": "1444,1460,1554",
+      "source_paths": [
+        {
+          "path": "D:/DayZ Projects/scripts/3_game/global/game.c",
+          "lines": "704-706",
+          "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"
+        },
+        {
+          "path": "D:/DayZ Projects/scripts/3_game/entities/object.c",
+          "lines": "74-85",
+          "sha256": "EBAC48FF196148AB4722A9D9A81C277796D4EA07896A5CF09742213D32424B4C"
+        }
+      ],
+      "approved_new": [
+        "Invokes the native `ObjectDelete()` operation for the object. For synchronized gameplay objects, call it from authoritative server code; the inspected script declaration does not document replication timing or an all-clients guarantee.",
+        "// Direct native deletion call from authoritative code",
+        "- **Use `obj.Delete()` when deletion can wait until the next frame.** Its script implementation queues `GetGame().ObjectDelete()` on `CALL_CATEGORY_SYSTEM`, which avoids deleting the object in the current call stack. Use the native call directly only when that deferral is unsuitable and you have accounted for current references and iteration."
+      ],
+      "blocker": "No public native implementation or executed client/server trace establishes ObjectDelete replication scope or timing.",
+      "council_json": "council-engine.json",
+      "council_report": "council-engine-REPORT.md",
+      "editorial_outcome": "accepted"
+    },
+    {
+      "lead": "typename.Spawn constructor restriction",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "id": "LANG-INHERITED-001",
+      "editorial_outcome": "unresolved",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "omitted override dispatch",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "id": "LANG-INHERITED-002",
+      "editorial_outcome": "unresolved",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "autoptr equivalence",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "id": "LANG-INHERITED-003",
+      "editorial_outcome": "unresolved",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "static lifetime across mission restart",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "id": "LANG-INHERITED-004",
+      "editorial_outcome": "unresolved",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "absence of Object.IsDeleted",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "id": "LANG-INHERITED-005",
+      "editorial_outcome": "unresolved",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "no const for reference types",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "path": "en/01-enforce-script/10-enums-preprocessor.md",
+      "line": 275,
+      "id": "LANG-INHERITED-006",
+      "editorial_outcome": "accepted",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "SERVER/listen-server semantics",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "id": "LANG-INHERITED-007",
+      "editorial_outcome": "unresolved",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "global-scope Print load-order advice",
+      "classification": "unresolved uncertainty",
+      "disposition": "unresolved",
+      "id": "LANG-INHERITED-008",
+      "editorial_outcome": "unresolved",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "lead": "raw RPC IDs 1..3",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "path": "en/02-mod-structure/01-five-layers.md",
+      "lines": [
+        209,
+        210,
+        211
+      ],
+      "id": "LANG-INHERITED-009",
+      "editorial_outcome": "accepted",
+      "council_json": "council-language.json",
+      "council_report": "council-language-REPORT.md"
+    },
+    {
+      "id": "NOTIFY-EXTRA-001",
+      "page": "en/06-engine-api/06-notifications.md",
+      "baseline_line": 388,
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "editorial_outcome": "accepted",
+      "council_json": "council-notification-extra.json",
+      "council_report": "council-notification-extra-REPORT.md"
+    }
+  ]
+}

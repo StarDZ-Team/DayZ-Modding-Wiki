@@ -95,7 +95,7 @@ bool HasPermission(string plainId, string permission)
         return false;
 
     TStringArray perms;
-    if (!m_Permissions.Find(plainId, perms))
+    if (!m_Permissions.Find(plainId, perms) || !perms)
         return false;
 
     for (int i = 0; i < perms.Count(); i++)

@@ -473,7 +473,7 @@ The single most dangerous aspect of event-driven architecture in Enforce Script 
 
 1. **If the object extends `Managed`:** The weak reference in the invoker is automatically nulled. The invoker will call a null function --- which does nothing, but wastes cycles iterating dead entries.
 
-2. **If the object does NOT extend `Managed`:** The invoker holds a dangling function pointer. When the event fires, it calls into freed memory. **Crash.**
+2. **For other subscriber types:** remove the subscription before subscriber teardown. The extracted declarations/tests do not establish that every stale callback produces the same failure mode, so do not rely on an automatic cleanup guarantee.
 
 ### The Golden Rule
 

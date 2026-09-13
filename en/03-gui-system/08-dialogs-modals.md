@@ -1033,7 +1033,7 @@ void OnDialogResult(int result, string text)
 }
 ```
 
-Because Enforce Script has no closures or delegates, routing the result back by function name -- the target object plus a method name string -- is the standard way to give a reusable dialog a callback. Any admin-tool style dialog box that needs to hand a result back to an arbitrary caller uses this same name-based routing.
+This example routes results by target object and method name. DayZ also exposes `func` callbacks and `ScriptInvoker`; choose the callback mechanism supported by the API you are using and keep callback targets alive until the dialog finishes.
 
 ---
 

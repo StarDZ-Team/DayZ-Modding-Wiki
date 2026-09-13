@@ -1,0 +1,56 @@
+{
+  "domain": "tutorials_patterns",
+  "role": "independent council",
+  "baseline": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "head_verified": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "runtime_tests": [],
+  "internet_verification": {
+    "date": "2026-09-13",
+    "result": "current official URLs requested; HTTP 403 prevented independent content retrieval",
+    "urls": [
+      "https://community.bohemia.net/wiki/DayZ:Modding_Structure",
+      "https://community.bohemia.net/wiki/DayZ:Server_Configuration",
+      "https://community.bohemia.net/wiki/DayZ:Diag_Menu",
+      "https://community.bohemia.net/wiki/DayZ:Central_Economy_Configuration",
+      "https://community.bohemia.net/wiki/Texture_Map_Types",
+      "https://community.bohemia.net/wiki/DayZ:Modding_Basics"
+    ]
+  },
+  "decisions": [
+    {"id":"TP2-001","classification":"confirmed error","disposition":"accept revised exact repair"},
+    {"id":"TP2-002","classification":"confirmed error","disposition":"accept revised exact repair"},
+    {"id":"TP2-003","classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"TP2-004","classification":"essential omission","disposition":"accept revised exact repair"},
+    {"id":"TP2-005","classification":"confirmed error","disposition":"accept revised exact repair","coordination":"paragraph and comparison table"},
+    {"id":"TP2-006","classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"TP2-007","classification":"essential omission","disposition":"accept revised exact repair"},
+    {"id":"TP2-008","classification":"unresolved uncertainty","disposition":"accept revised cautious exact repair"},
+    {"id":"TP2-009","classification":"confirmed error","disposition":"accept revised exact repair","coordination":"heading, prose, and three path literals"},
+    {"id":"TP2-010","classification":"rejected claim","disposition":"reject","reason":"vanilla enprofilertests.c uses GetTickTime for elapsed measurement"},
+    {"id":"TP2-011","classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"TP2-012","classification":"essential omission","disposition":"accept revised exact repair"},
+    {"id":"TP2-013","classification":"confirmed error","disposition":"accept revised exact repair","coordination":"preceding prose and table row"},
+    {"id":"TP2-014","classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"TP2-014B","classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"TP2-015","classification":"confirmed overclaim","disposition":"accept exact repair"},
+    {"id":"TP2-016","classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"TP2-017","classification":"essential omission","disposition":"unresolved","submitted_repair":"reject","blocker":"requires exact checked staging or full rollback; reporting buyer loss is not repair"},
+    {"id":"TP2-018","classification":"essential omission","disposition":"unresolved","submitted_repair":"reject","blocker":"requires exact staged payout or checked restoration; reporting seller loss is not repair"},
+    {"id":"TP2-019","classification":"confirmed error","disposition":"accept exact repair"}
+  ],
+  "counts": {
+    "candidates": 20,
+    "accepted_exact_or_revised": 17,
+    "rejected": 1,
+    "unresolved": 2
+  },
+  "blockers": [
+    "TP2-017 exact transactional replacement",
+    "TP2-018 exact transactional replacement",
+    "final applied diff and post-edit SHA-256 values require council verification"
+  ],
+  "owned_files": [
+    ".audit/en-2026-09-13/doublecheck/council-tutorials_patterns-REPORT.md",
+    ".audit/en-2026-09-13/doublecheck/council-tutorials_patterns.json"
+  ]
+}

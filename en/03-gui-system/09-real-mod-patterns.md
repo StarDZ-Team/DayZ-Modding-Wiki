@@ -889,7 +889,8 @@ Without `SetFocus()`, keyboard events can still reach widgets behind the dialog.
 ```c
 override void OnShow()
 {
-    SetFocus(GetLayoutRoot());
+    super.OnShow();
+    SetActiveWindow(GetLayoutRoot(), true);
 }
 ```
 

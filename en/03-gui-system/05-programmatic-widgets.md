@@ -179,9 +179,11 @@ Names are important for `FindAnyWidget()` lookups and debugging.
 ```c
 TextWidget tw = TextWidget.Cast(w);
 tw.SetText("Hello World");
-tw.SetTextExactSize(16);           // Font size in pixels
+tw.SetTextExactSize(16);           // Only works when the Exact Text flag is already enabled
 tw.SetOutline(1, ARGB(255, 0, 0, 0));  // 1px black outline
 ```
+
+`SetTextExactSize()` does not enable Exact Text mode; configure that flag in the widget's layout before relying on the requested size.
 
 ### Setting Color
 

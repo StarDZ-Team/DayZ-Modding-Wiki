@@ -47,7 +47,7 @@ Class (root)
                       └─ DayZPlayer → PlayerBase
 ```
 
-Calling a method that doesn't exist on the base type causes a **runtime crash** — there is no compiler error because Enforce Script resolves virtual calls at runtime.
+Calling a method that is not declared on the variable's static type is a compile error. Cast to the appropriate derived type and check the result before calling derived-only methods.
 
 ---
 

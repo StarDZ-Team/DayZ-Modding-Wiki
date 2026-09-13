@@ -130,7 +130,7 @@ These apply to `WrapSpacerWidgetClass` and `GridSpacerWidgetClass`.
 
 | Attribute | Values | Description |
 |---|---|---|
-| `switch` | `normal`, `once` | Both values occur in vanilla layouts; manage persistent on/off state explicitly with `CheckBoxWidget`, `GetState()` and `SetState()` |
+| `switch` | `normal`, `once` | Both values occur in vanilla layouts; manage persistent on/off state explicitly with `CheckBoxWidget`, `IsChecked()` and `SetChecked()` |
 | `style` | style name | Visual style for the button |
 
 ### fixaspect Values

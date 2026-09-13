@@ -289,7 +289,7 @@ Add to your server's mission folder `types.xml`:
 
 - `nominal=4` — CE tries to keep 4 in the world (vanilla military jackets use 4)
 - `min=2` — CE starts spawning new ones when count drops below 2
-- `restock=600` — CE checks every 10 minutes if more are needed
+- `restock=600` — minimum restock delay of 600 seconds for this type; it is not a global CE check interval
 - `lifetime=14400` — items on the ground despawn after 4 hours
 - `count_in_map=1` — counts items on the ground toward the nominal
 - `count_in_player=0` — items worn by players do NOT count (so more spawn)

@@ -1,0 +1,66 @@
+{
+  "domain": "language-council",
+  "status": "COMPLETE",
+  "baseline": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "baseline_verified_as_head": true,
+  "internet_verified_on": "2026-09-13",
+  "official_urls": {
+    "biki_current": "https://community.bistudio.com/wiki/DayZ:Enforce_Script_Syntax",
+    "biki_pinned_revision": "https://community.bistudio.com/wiki?title=DayZ:Enforce_Script_Syntax&oldid=376851",
+    "dayz_script_diff": "https://github.com/BohemiaInteractive/DayZ-Script-Diff",
+    "dayz_script_diff_main_commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+    "community_framework_rpc": "https://github.com/Arkensor/DayZ-CommunityFramework/blob/production/JM/CF/Scripts/3_Game/CommunityFramework/RPC/RPCManager.c",
+    "community_framework_production_commit": "0763e7e7548c9a0bed6626afff835de80693ebf3"
+  },
+  "source_hash_corrections": {
+    "D:/DayZ Projects/scripts/1_core/proto/enscript.c": "1CA3897DF3F842E6EAACB5E771A4A04ECE1D77E2A7C987F0A8174351770B43D4",
+    "D:/DayZ Projects/scripts/3_game/systems/inventory/humaninventory.c": "5895C6B599776D57843EFA2C668DA1C0DADF0B434A9FB38EDE0E2239C9112DD7",
+    "D:/DayZ Projects/scripts/3_game/entities/entityai.c": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"
+  },
+  "stale_continuation_id_mapping": {
+    "LANG-DC-004": "original LANG-DC-005 constants",
+    "LANG-DC-005": "original LANG-DC-004 EEHitBy",
+    "LANG-DC-006": "original LANG-DC-006 null guard",
+    "LANG-DC-007": "original LANG-DC-007 UTF-8 length",
+    "LANG-DC-008": "original LANG-DC-009 static-type member lookup",
+    "LANG-DC-009": "original LANG-DC-010 logger thresholds",
+    "LANG-DC-010": "original LANG-DC-011 inventory ownership",
+    "LANG-DC-011": "original LANG-DC-012 framework RPC",
+    "LANG-DC-012": "original LANG-DC-014 default constants",
+    "LANG-DC-013": "original LANG-DC-013 multiline calls",
+    "LANG-DC-014": "original LANG-DC-015 spawn helper",
+    "LANG-DC-015": "original LANG-DC-016 GetTransform"
+  },
+  "findings": [
+    {"id":"LANG-DC-001","path":"en/01-enforce-script/01-variables-types.md","line":486,"classification":"confirmed error","disposition":"accept revised exact repair"},
+    {"id":"LANG-DC-002","path":"en/01-enforce-script/02-arrays-maps-sets.md","line":950,"classification":"confirmed error","disposition":"accept revised exact repair"},
+    {"id":"LANG-DC-003","path":"en/01-enforce-script/02-arrays-maps-sets.md","line":560,"classification":"essential omission","disposition":"accept revised exact repair"},
+    {"id":"LANG-DC-004","path":"en/01-enforce-script/04-modded-classes.md","line":464,"classification":"confirmed error","disposition":"accept revised exact repair","related_lines":[899,901,1189]},
+    {"id":"LANG-DC-005","path":"en/01-enforce-script/04-modded-classes.md","line":294,"classification":"confirmed error","disposition":"accept revised exact repair","related_lines":[1213]},
+    {"id":"LANG-DC-006","path":"en/01-enforce-script/05-control-flow.md","line":59,"classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"LANG-DC-007","path":"en/01-enforce-script/06-strings.md","line":34,"classification":"essential omission","disposition":"accept revised exact repair","note":"Do not claim Length counts bytes; primary declaration does not say that."},
+    {"id":"LANG-DC-008","path":"en/01-enforce-script/07-math-vectors.md","line":664,"classification":"unresolved uncertainty","disposition":"unresolved","related_lines":[700]},
+    {"id":"LANG-DC-009","path":"en/01-enforce-script/09-casting-reflection.md","line":50,"classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"LANG-DC-010","path":"en/01-enforce-script/11-error-handling.md","line":465,"classification":"confirmed error","disposition":"accept revised exact repair"},
+    {"id":"LANG-DC-011","path":"en/01-enforce-script/11-error-handling.md","line":673,"classification":"confirmed error","disposition":"accept revised exact repair"},
+    {"id":"LANG-DC-012","path":"en/01-enforce-script/11-error-handling.md","line":601,"classification":"essential omission","disposition":"accept revised exact repair","blocker":"Runnable secure example requires allowlist, bounds, permission, and rate policy."},
+    {"id":"LANG-DC-013","path":"en/01-enforce-script/12-gotchas.md","line":360,"classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"LANG-DC-014","path":"en/01-enforce-script/12-gotchas.md","line":182,"classification":"confirmed error","disposition":"accept revised exact repair","related_paths":["en/01-enforce-script/13-functions-methods.md"]},
+    {"id":"LANG-DC-015","path":"en/01-enforce-script/13-functions-methods.md","line":397,"classification":"confirmed error","disposition":"accept exact repair"},
+    {"id":"LANG-DC-016","path":"en/01-enforce-script/13-functions-methods.md","line":859,"classification":"confirmed error","disposition":"accept revised exact repair","related_line":874}
+  ],
+  "inherited_leads": [
+    {"lead":"typename.Spawn constructor restriction","classification":"unresolved uncertainty","disposition":"unresolved"},
+    {"lead":"omitted override dispatch","classification":"unresolved uncertainty","disposition":"unresolved"},
+    {"lead":"autoptr equivalence","classification":"unresolved uncertainty","disposition":"unresolved"},
+    {"lead":"static lifetime across mission restart","classification":"unresolved uncertainty","disposition":"unresolved"},
+    {"lead":"absence of Object.IsDeleted","classification":"unresolved uncertainty","disposition":"unresolved"},
+    {"lead":"no const for reference types","classification":"confirmed error","disposition":"accept revised exact repair","path":"en/01-enforce-script/10-enums-preprocessor.md","line":275},
+    {"lead":"SERVER/listen-server semantics","classification":"unresolved uncertainty","disposition":"unresolved"},
+    {"lead":"global-scope Print load-order advice","classification":"unresolved uncertainty","disposition":"unresolved"},
+    {"lead":"raw RPC IDs 1..3","classification":"confirmed error","disposition":"accept revised exact repair","path":"en/02-mod-structure/01-five-layers.md","lines":[209,210,211]}
+  ],
+  "runtime_tests_run": false,
+  "build_run": false,
+  "apply_gate": "Only exact accepted repairs in council-language-REPORT.md; unresolved items may not be promoted to fact. Final diff and changed-page hashes require council verification."
+}

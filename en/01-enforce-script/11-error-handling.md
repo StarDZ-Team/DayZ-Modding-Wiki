@@ -29,7 +29,7 @@
 - [Worked Examples](#worked-examples)
   - [Safe Function With Multiple Guards](#safe-function-with-multiple-guards)
   - [Safe Config Loading](#safe-config-loading)
-  - [Safe RPC Handler](#safe-rpc-handler)
+  - [Framework-Dependent RPC Handler Skeleton](#framework-dependent-rpc-handler-skeleton)
   - [Safe Inventory Operation](#safe-inventory-operation)
 - [Defensive Patterns Summary](#defensive-patterns-summary)
 - [Best Practices](#best-practices)
@@ -462,18 +462,17 @@ class LNT_Log
 
     private static void Log(LNT_LogLevel level, string source, string message)
     {
-        if (level < s_ConsoleMinLevel)
+        if (level < s_ConsoleMinLevel && level < s_FileMinLevel)
             return;
 
         string levelName = typename.EnumToString(LNT_LogLevel, level);
         string line = string.Format("[Lantern] [%1] [%2] %3", levelName, source, message);
-        Print(line);
 
-        // Also write to file if level meets file threshold
+        if (level >= s_ConsoleMinLevel)
+            Print(line);
+
         if (level >= s_FileMinLevel)
-        {
             WriteToFile(line);
-        }
     }
 
     private static void WriteToFile(string line)
@@ -598,7 +597,9 @@ static MyConfig LoadConfigSafe(string path)
 }
 ```
 
-### Safe RPC Handler
+### Framework-Dependent RPC Handler Skeleton
+
+This callback signature and `CallType` come from Community Framework's RPC manager, not vanilla DayZ. Register the handler through that framework and declare the dependency. The skeleton is not safe to expose to untrusted clients until you provide a server-owned permission implementation, an explicit spawn-class allowlist, finite and server-bounded position validation, and per-sender rate limiting.
 
 ```c
 void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
@@ -639,7 +640,7 @@ void RPC_SpawnItem(CallType type, ParamsReadContext ctx, PlayerIdentity sender, 
         return;
     }
 
-    // All guards passed — execute
+    // Execute only after the allowlist, position bounds, and rate limit described above pass
     Object obj = GetGame().CreateObjectEx(className, position, ECE_PLACE_ON_SURFACE);
     if (!obj)
     {
@@ -670,10 +671,9 @@ bool TransferItem(PlayerBase fromPlayer, PlayerBase toPlayer, EntityAI item)
         return false;
     }
 
-    // Guard: source actually has the item
-    EntityAI checkItem = fromPlayer.GetInventory().FindAttachment(
-        fromPlayer.GetInventory().FindUserReservedLocationIndex(item)
-    );
+    // This operation is server-authoritative, and the source must own the item
+    if (!GetGame().IsServer() || item.GetHierarchyRootPlayer() != fromPlayer)
+        return false;
 
     // Guard: target has space
     InventoryLocation il = new InventoryLocation();

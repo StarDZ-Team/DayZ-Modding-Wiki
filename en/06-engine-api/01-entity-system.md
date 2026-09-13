@@ -1441,7 +1441,7 @@ Deferred deletion --- the object is removed on the next frame via `CallQueue`. T
 proto native void ObjectDelete(Object obj);
 ```
 
-Immediate server-authoritative deletion. Removes the object from the server and replicates the removal to all clients.
+Invokes the native `ObjectDelete()` operation for the object. For synchronized gameplay objects, call it from authoritative server code; the inspected script declaration does not document replication timing or an all-clients guarantee.
 
 ### GetGame().ObjectDeleteOnClient()
 
@@ -1457,7 +1457,7 @@ Deletes the object only on clients. The server still keeps the object.
 // Preferred: deferred delete
 obj.Delete();
 
-// Immediate: when you need it gone right now
+// Direct native deletion call from authoritative code
 GetGame().ObjectDelete(obj);
 ```
 
@@ -1551,8 +1551,8 @@ void DamageEntity(EntityAI target, float amount)
 - **Always call `super` in lifecycle overrides.** Every `EEInit()`, `EEKilled()`, `EEHitBy()`, `EEItemAttached()`, and `OnVariablesSynchronized()` override must call `super` first, or you break the inheritance chain for vanilla and other mods.
 - **Use `CreateObjectEx()` with explicit ECE flags instead of `CreateObject()`.** The flags-based API gives you precise control over physics, AI, surface alignment, and persistence. Always include `ECE_CREATEPHYSICS` for items that need collision.
 - **Register net sync variables unconditionally, in one fixed place.** Server and client must register the same names in the same order, so never put a registration behind an `if`, a `#ifdef SERVER`, or a code path that can run twice. The constructor is the usual home for mods; vanilla `PlayerBase` uses `Init()` instead --- either is fine as long as it is unconditional.
-- **Prefer `obj.Delete()` (deferred) over `GetGame().ObjectDelete()` (immediate).** Immediate deletion during iteration or event processing can cause null pointer crashes. Deferred deletion is safe in all contexts.
-- **Cast with `Class.CastTo()` instead of direct casts.** `Class.CastTo(result, source)` returns false on failure without crashing, while a direct cast to a wrong type produces undefined behavior.
+- **Use `obj.Delete()` when deletion can wait until the next frame.** Its script implementation queues `GetGame().ObjectDelete()` on `CALL_CATEGORY_SYSTEM`, which avoids deleting the object in the current call stack. Use the native call directly only when that deferral is unsuitable and you have accounted for current references and iteration.
+- **Use either documented safe-cast form.** `ClassName.Cast(source)` returns the cast value or `null`; `Class.CastTo(result, source)` returns `true` on success and writes the result. Choose the form that makes the surrounding null handling clearest.
 - **`GetHealth()` and `GetHealth01()` throw on a client -- they are not merely "server-authoritative," they are refused at the call site.** See the dedicated warning below; do not assume any health read is safe on both sides just because it compiled.
 
 > **`GetHealth()` / `GetHealth01()` are server-only at runtime, and nothing before runtime warns you.** Both are declared `proto native` with no client/server note in their doc comments, so they compile cleanly in client-side script (a 5_Mission UI panel, an inventory screen). Call either one from a client and it throws:

@@ -1,0 +1,80 @@
+{
+  "review": "independent council review of server extra findings",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "reviewed_at": "2026-09-13",
+  "runtime_tested": false,
+  "build_run": false,
+  "english_files_edited": false,
+  "page_sources": [
+    {
+      "path": "en/09-server-admin/01-server-setup.md",
+      "sha256": "4DAF36B80ECD152B61222AB9D4DB96EDB487F3C6BE9F9784742191EE895BDED7"
+    },
+    {
+      "path": "en/troubleshooting.md",
+      "sha256": "F63C0C82F7BE34A8DDA4677496FAB971F908F13D1DF2330CC05A9FB9730FA73B"
+    }
+  ],
+  "web_evidence": {
+    "independently_reopened": true,
+    "method": "current indexed official page bodies; direct HTTP requests returned 403",
+    "whole_page_hash_claimed": false,
+    "sources": [
+      {
+        "url": "https://community.bohemia.net/wiki/DayZ%3AServer_Configuration",
+        "supports": [
+          "multithreadedReplication enables multithreaded processing of the replication system",
+          "replication worker count derives from dayzsettings.xml jobsystem maxcores minus reservedcores, with at least one worker",
+          "-cpuCount selects logical CPU cores for parallel task processing",
+          "the dedicated-server -filePatching entry says only PBOs are loaded and no unpacked data"
+        ]
+      },
+      {
+        "url": "https://community.bohemia.net/wiki/DayZ%3AModding_Basics",
+        "supports": [
+          "DayZDiag_x64.exe is launched with -filePatching for project-drive mod development in single-player and diagnostic server examples"
+        ]
+      },
+      {
+        "url": "https://community.bohemia.net/wiki/DayZ%3AWorkbench_Script_Debugging",
+        "supports": [
+          "DayZDiag_x64.exe supports direct modification and hotloading of project-drive scripts and can act as client or server"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "SR2-004",
+      "page": "en/09-server-admin/01-server-setup.md",
+      "line": 35,
+      "disposition": "reject",
+      "old_text": "DayZ Server is single-threaded for gameplay logic. Clock speed matters more than core count.",
+      "final_new_text": null,
+      "reason": "Replication workers and generic parallel-task processing do not prove that gameplay/script logic is multithreaded; the original sentence is expressly limited to gameplay logic."
+    },
+    {
+      "id": "SR2-005",
+      "page": "en/09-server-admin/01-server-setup.md",
+      "line": 294,
+      "disposition": "accept exact repair",
+      "old_text": "This is normal. DayZ Server is single-threaded. Do not run multiple server instances on the same core -- use processor affinity or separate machines.",
+      "final_new_text": "High utilization on one core can reflect a main-thread bottleneck, but the server also uses parallel tasks and can use multithreaded replication. Check server FPS and profile the workload before assigning affinity; size replication workers through `dayzsettings.xml` when `multithreadedReplication` is enabled.",
+      "reason": "The unqualified whole-server statement conflicts with documented replication workers and -cpuCount parallel-task processing; the repair does not claim gameplay logic itself is multithreaded."
+    },
+    {
+      "id": "SR2-006",
+      "page": "en/troubleshooting.md",
+      "line": 259,
+      "disposition": "accept exact repair",
+      "old_text": "| `-filePatching` | Load unpacked files (requires DayZDiag) |",
+      "final_new_text": "| `-filePatching` | Context-dependent: use it with `DayZDiag_x64.exe` for unpacked-file development; Bohemia's dedicated-server reference currently describes the server flag as allowing only PBO data. Verify the executable-specific behavior on your target build. |",
+      "reason": "Official DayZDiag development instructions and the dedicated-server parameter table document different executable-specific meanings; the repair states both and preserves uncertainty."
+    }
+  ],
+  "summary": {
+    "accept_exact": 2,
+    "reject": 1,
+    "unresolved": 0
+  }
+}

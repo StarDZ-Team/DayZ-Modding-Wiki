@@ -193,6 +193,9 @@ class LNT_AutoConfigPlugin : PluginBase
 
     void SaveConfig()
     {
+        if (!FileExist("$profile:LanternAdmin"))
+            MakeDirectory("$profile:LanternAdmin");
+
         string path = GetConfigPath();
         string error;
         if (!JsonFileLoader<LNT_PatrolConfig>.SaveFile(path, m_Config, error))
@@ -504,7 +507,7 @@ The base `LNT_ModuleBase` answers `true` to *both* `IsServer()` and `IsClient()`
 
 ## Module Lifecycle: The Universal Contract
 
-Despite implementation differences, all three approaches follow the same lifecycle contract:
+The following mission lifecycle is the contract of the custom managers in this chapter. Vanilla PluginBase supplies OnInit(), OnUpdate(), and OnDestroy(); mission-start and mission-finish forwarding requires your own integration.
 
 ```
 ┌─────────────────────────────────────────────────────┐

@@ -206,11 +206,13 @@ A mod does the same thing with its own identifier constants. Here is the Lantern
 // 3_Game/Lantern/LNT_RPCIds.c
 class LNT_RPCIds
 {
-    static const int RPC_REQUEST_STATUS = 1;
-    static const int RPC_SEND_STATUS    = 2;
-    static const int RPC_ADMIN_MESSAGE  = 3;
+    static const int RPC_REQUEST_STATUS = 1234501;
+    static const int RPC_SEND_STATUS    = 1234502;
+    static const int RPC_ADMIN_MESSAGE  = 1234503;
 };
 ```
+
+Choose IDs that do not overlap vanilla or another mod.
 
 Configuration base classes with JSON persistence also live at this layer -- see [Config Persistence](../07-patterns/04-config-persistence.md) for the full `LNT_ConfigBase` implementation.
 

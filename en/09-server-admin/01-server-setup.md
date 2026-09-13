@@ -291,7 +291,7 @@ Use your server's **public IP** or **LAN IP** depending on whether the client is
 
 ### Server Uses 100% of One CPU Core
 
-This is normal. DayZ Server is single-threaded. Do not run multiple server instances on the same core -- use processor affinity or separate machines.
+High utilization on one core can reflect a main-thread bottleneck, but the server also uses parallel tasks and can use multithreaded replication. Check server FPS and profile the workload before assigning affinity; size replication workers through `dayzsettings.xml` when `multithreadedReplication` is enabled.
 
 ### Players Spawn as Crows / Stuck in Loading
 

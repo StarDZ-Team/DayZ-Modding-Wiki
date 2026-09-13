@@ -272,7 +272,7 @@ switch (command)
 }
 ```
 
-> **Note:** There is no `const` for reference types (objects). You cannot make an object reference immutable.
+> **Note:** Reference variables can be declared const (vanilla uses const ref combinations); verify the exact rebinding/mutation semantics before relying on const for immutability.
 
 ---
 

@@ -1,0 +1,92 @@
+{
+  "audit": "final_trading_independent_diff_verification",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "decision": "approved_for_commit",
+  "scope": [
+    "en/08-tutorials/12-trading-system.md"
+  ],
+  "findings": [
+    {
+      "id": "TP2-017",
+      "implementation_disposition": "implemented_as_council_approved",
+      "evidence": "HandleBuy retains the 1-10 quantity bound and server-catalog lookup, then sends a disabled result and returns without calling RemoveCurrency, GiveCurrency, CreateInInventory, CreateObjectEx, DeleteSafe, or SetQuantity."
+    },
+    {
+      "id": "TP2-018",
+      "implementation_disposition": "implemented_as_council_approved",
+      "evidence": "HandleSell retains the 1-10 quantity bound and server-catalog/sellability lookup, then sends a disabled result and returns without inventory or currency mutation. The coordinated prose and test table describe refusal and unchanged state rather than successful live trades."
+    }
+  ],
+  "exact_diff_verification": {
+    "approved_replacements_expected": 11,
+    "approved_replacements_present_exactly_once": 11,
+    "rejected_or_unresolved_edits_present": 0,
+    "omitted_approved_replacements": 0,
+    "unexpected_content_deltas": 0,
+    "method": "Normalized the baseline blob and current worktree page to LF, applied every old/new block from council-trading.json exactly once to the baseline, and byte-compared the result with the current page; equality was true.",
+    "git_numstat": {
+      "added_lines": 31,
+      "deleted_lines": 66
+    }
+  },
+  "page_hashes_sha256": {
+    "baseline_git_blob_lf_raw": "5C729930B0B975E5B0FA5B84966B2A6A88910FC72FB6072B3165D917AD07E5DC",
+    "baseline_crlf_checkout_equivalent": "80C16740AE965DD7E72F2D3BA44234A3FBBCF649717CD305CE08BDD82B1B91B8",
+    "current_worktree_raw_crlf": "6A390BC89B2E2C71BEFF46E490185646126087F03C9D0CCE08D751FD5CF70291",
+    "current_lf_normalized": "8752491081912A566D4E4989F95735D5F9A34AEC2C3B253DB6E1B2ACB5E729C5"
+  },
+  "reopened_primary_sources": {
+    "checkout": "D:/TEMP/wiki-audit-20260911/DayZ-Script-Diff",
+    "commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+    "files": [
+      {
+        "path": "scripts/3_game/systems/inventory/inventory.c",
+        "raw_crlf_sha256": "F83FD3501DF9F99BB9BDEB2AACEE7608E1C15E101DB5A9F099458ABCD7C51C17",
+        "lf_normalized_sha256": "BC9082828E69EF664C946B5EE86887B357E53517266AB4C0A94FA784B4534BF1",
+        "reopened_lines": "870-893",
+        "observed": "CreateInInventory returns the created entity for attachment/cargo locations and returns null when no location is found."
+      },
+      {
+        "path": "scripts/3_game/global/game.c",
+        "raw_crlf_sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158",
+        "lf_normalized_sha256": "C99E24587D8FD7DBA4BFFE7D86A9603307EDA745BE2F25798B69E347CCF5558C",
+        "reopened_lines": "694-702",
+        "observed": "CreateObjectEx is declared with Object return type; the declaration provides no transaction guarantee."
+      },
+      {
+        "path": "scripts/3_game/entities/entityai.c",
+        "raw_crlf_sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5",
+        "lf_normalized_sha256": "7290A79E7298B6FDB9EBFC7A23D9CE7CCA7EF06C98F2DB8C7A883E24E8321479",
+        "reopened_lines": "786-810, 2247",
+        "observed": "DeleteSafe returns void and uses immediate, player-juncture, or deferred deletion paths; IsSetForDeletion exposes deletion state; SetQuantity returns bool and defaults to clamping."
+      }
+    ]
+  },
+  "validation": {
+    "git_diff_check": {
+      "exit_code": 0
+    },
+    "h1_count": 1,
+    "fence_lines": 28,
+    "fences_balanced": true,
+    "file_links": {
+      "command": "node scripts/check-links.mjs en/08-tutorials",
+      "exit_code": 0,
+      "files_checked": 13,
+      "dead_file_links": 0
+    },
+    "target_anchor_renderer_check": {
+      "method": "scripts/check-links.mjs makeIdReader/findDeadAnchors exports",
+      "anchors_checked": 13,
+      "dead_anchors": 4,
+      "baseline_dead_anchors": 4,
+      "new_dead_anchors": 0,
+      "removed_dead_anchors": 0,
+      "classification": "pre-existing and exactly matching baseline-links.json"
+    }
+  },
+  "limitations": [
+    "No full build or game/runtime test was run, as required by the task.",
+    "Approval covers the documentation diff and refusal boundary only; it does not claim a production transaction implementation."
+  ]
+}

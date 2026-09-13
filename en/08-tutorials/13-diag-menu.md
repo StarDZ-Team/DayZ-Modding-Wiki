@@ -94,7 +94,7 @@ These shortcuts work at any time while running DayZDiag, without needing to open
 
 > **Note:** Any mention of "Cheat Inputs" in the official documentation refers to inputs hardcoded on the C++ side, not accessible through script.
 
-> **On modifiers:** the official list writes plain **Ctrl** and **Alt** except where it names a side explicitly, as it does for `RCtrl + AltGr + W`. `AltGr` is the right Alt key on a US layout but a distinct modifier on layouts that have one (it behaves as Ctrl+Alt), so on a non-US keyboard try right Alt first and `Ctrl + Alt + W` if that does nothing. Where the source says plain Ctrl or Alt, either side should work; this chapter does not claim otherwise.
+> **On modifiers:** use the exact side named by the shortcut. Where the official table says only Ctrl or Alt, it does not specify whether both left and right variants work; treat that as unverified and test the current diagnostic build and keyboard layout.
 
 ---
 

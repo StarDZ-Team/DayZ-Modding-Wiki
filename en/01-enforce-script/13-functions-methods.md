@@ -397,7 +397,7 @@ Enforce Script supports default values for parameters. Parameters with defaults 
 void SpawnItem(string className, vector pos, float quantity = -1, bool withAttachments = true)
 {
     // quantity defaults to -1 (full), withAttachments defaults to true
-    EntityAI item = EntityAI.Cast(GetGame().CreateObject(className, pos, false, false, true));
+    ItemBase item = ItemBase.Cast(GetGame().CreateObject(className, pos, false, false, withAttachments));
     if (item && quantity >= 0)
         item.SetQuantity(quantity);
 }
@@ -856,11 +856,6 @@ protected event void OnUnPossess()
     // called by engine when the controller releases this pawn
 }
 
-event void GetTransform(inout vector transform[4])
-{
-    // engine calls this to get the entity's transform
-}
-
 // Event methods that supply data for networking
 protected event void ObtainMove(PawnMove pMove)
 {
@@ -868,17 +863,20 @@ protected event void ObtainMove(PawnMove pMove)
 }
 ```
 
-You typically `override` event methods in child classes rather than defining them from scratch:
+Event signatures are engine-defined and must be verified on the exact parent class and build feature set before overriding them. For example, `PawnMove.GetTransform` exists only when both `FEATURE_NETWORK_RECONCILIATION` and `DIAG_DEVELOPER` expose the relevant classes:
 
 ```c
-class MyVehicle extends Transport
+#ifdef FEATURE_NETWORK_RECONCILIATION
+#ifdef DIAG_DEVELOPER
+class MyMove extends PawnMove
 {
     override event void GetTransform(inout vector transform[4])
     {
-        // provide custom transform logic
         super.GetTransform(transform);
     }
 }
+#endif
+#endif
 ```
 
 The key takeaway: `event` is a declaration modifier, not something you invoke. The engine calls event methods at the appropriate time.
@@ -1059,7 +1057,7 @@ These conventions appear throughout the vanilla scripts and across the community
 | `thread` creates OS threads | Bohemia's keyword table does say it "runs the function on a new thread" | In practice threaded routines behave as cooperative coroutines yielding at `Sleep()`. The scheduling model is undocumented either way --- write code that never depends on parallel execution |
 | `out` parameters are write-only | Should not read initial value | Some vanilla code reads the `out` param before writing; safer to always treat as `inout` defensively |
 | `override` is optional | Could be inferred | Omitting it silently creates a new method instead of overriding; always include it |
-| Default parameter expressions | Should support function calls | Only literal values (`42`, `true`, `null`, `""`) are allowed; no expressions |
+| Default parameter expressions | Should support function calls | Literals, NULL, and supported compile-time constants such as enum members are allowed; runtime function calls are not |
 
 ---
 
@@ -1132,7 +1130,7 @@ JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg);
 
 ### 5. Using Expressions in Default Parameters
 
-Default parameter values must be compile-time literals. Expressions, function calls, and variable references are not allowed.
+Default parameter values may use literals, NULL, and supported compile-time constants such as enum members; runtime function calls are not valid defaults.
 
 ```c
 // COMPILE ERROR — expression in default
@@ -1182,7 +1180,7 @@ class MyMission extends MissionServer
 | `out` param | `void Fn(out int x)` | Write-only; caller receives value |
 | `inout` param | `void Fn(inout float x)` | Read + write; caller sees changes |
 | `notnull` param | `void Fn(notnull EntityAI e)` | Declares "null is a programming error here". Enforcement is undocumented — null-check at the call site regardless |
-| Default value | `void Fn(int x = 5)` | Literals only, no expressions |
+| Default value | `void Fn(int x = 5)` | Literals, NULL, and supported compile-time constants such as enum members; no runtime function calls |
 | Override | `override void Fn()` | Must match parent signature |
 | Call parent | `super.Fn()` | Inside override body |
 | Proto native | `proto native void Fn()` | Implemented in C++ |

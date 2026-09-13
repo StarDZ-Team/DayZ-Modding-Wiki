@@ -1,0 +1,47 @@
+{
+  "review": "independent council early evidence review",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "reviewed_at": "2026-09-13",
+  "runtime_tested": false,
+  "english_files_edited": false,
+  "primary_repository": {
+    "url": "https://github.com/BohemiaInteractive/DayZ-Script-Diff",
+    "commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+    "commit_subject": "Build 1.29.163709, Scripts Rev. 125372",
+    "fresh_clone_path": "D:/TEMP/wiki-audit-20260911/DayZ-Script-Diff",
+    "files": [
+      {"path":"scripts/1_core/proto/enwidgets.c","sha256":"6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E","local_extraction_match":true},
+      {"path":"scripts/3_game/tools/uiscriptedmenu.c","sha256":"69E45D6C74380BA23A30C8A66E0721A9CE618C49C8AD4AF08920639A2438484B","local_extraction_match":true},
+      {"path":"scripts/3_game/cfggameplayhandler.c","sha256":"C00C41C9AD8BBB28A8269E73971AD5ECC63A54025C7DDD8F0576692558217974","local_extraction_match":true},
+      {"path":"scripts/2_gamelib/tools.c","sha256":"48E8DAFACF8D8BD6D38A141896039720507488E45E1EFB369958B29BEC68D38B","local_extraction_match":null}
+    ]
+  },
+  "web_verification": {
+    "performed": true,
+    "direct_biki_result": "HTTP 403 on direct requests; official indexed page bodies were reopened where available",
+    "body_hash_available": false,
+    "urls": [
+      "https://community.bistudio.com/wiki/DayZ%3AGameplay_Settings?useskin=vector",
+      "https://community.bistudio.com/wiki/DayZ%3AServer_Configuration",
+      "https://community.bistudio.com/wiki/Addon_Builder?oldid=341605",
+      "https://community.bistudio.com/wiki/Model_Config",
+      "https://community.bistudio.com/wiki/DayZ:Doors_on_buildings"
+    ]
+  },
+  "findings": [
+    {"id":"AGUI-DC-001","page":"en/03-gui-system/01-widget-types.md","disposition":"accept exact repair","old_text":"- `switch normal` / `switch once` -- Values used by vanilla button layouts. For persistent on/off state, use `CheckBoxWidget` and explicitly read or set its state with `GetState()` / `SetState()`","final_new_text":"- `switch normal` / `switch once` -- Values used by vanilla button layouts. For persistent on/off state, use `CheckBoxWidget` and explicitly read or set its state with `IsChecked()` / `SetChecked()`","reason":"Pinned CheckBoxWidget declaration exposes IsChecked/SetChecked."},
+    {"id":"AGUI-DC-002","page":"en/03-gui-system/01-widget-types.md","disposition":"accept exact repair","old_text":"| Create a toggle (on/off) | `CheckBoxWidget` with explicit `GetState()` / `SetState()` handling |","final_new_text":"| Create a toggle (on/off) | `CheckBoxWidget` with explicit `IsChecked()` / `SetChecked()` handling |","reason":"Pinned CheckBoxWidget declaration exposes IsChecked/SetChecked."},
+    {"id":"AGUI-DC-003","page":"en/03-gui-system/02-layout-files.md","disposition":"accept exact repair","old_text":"| `switch` | `normal`, `once` | Both values occur in vanilla layouts; manage persistent on/off state explicitly with `CheckBoxWidget`, `GetState()` and `SetState()` |","final_new_text":"| `switch` | `normal`, `once` | Both values occur in vanilla layouts; manage persistent on/off state explicitly with `CheckBoxWidget`, `IsChecked()` and `SetChecked()` |","reason":"Pinned CheckBoxWidget declaration exposes IsChecked/SetChecked."},
+    {"id":"AGUI-DC-004","page":"en/03-gui-system/05-programmatic-widgets.md","disposition":"accept with revised exact repair","old_text":"tw.SetTextExactSize(16);           // Font size in pixels","final_new_text":"tw.SetTextExactSize(16);           // Only works when the Exact Text flag is already enabled","additional_text_after_code_block":"`SetTextExactSize()` does not enable Exact Text mode; configure that flag in the widget's layout before relying on the requested size.","reason":"Prerequisite is explicit in the pinned declaration; revised wording avoids calling a programmatically created widget's origin a source layout."},
+    {"id":"AGUI-DC-005","page":"en/03-gui-system/09-real-mod-patterns.md","disposition":"accept exact repair","old_text":"override void OnShow()\n{\n    SetFocus(GetLayoutRoot());\n}","final_new_text":"override void OnShow()\n{\n    super.OnShow();\n    SetActiveWindow(GetLayoutRoot(), true);\n}","reason":"Pinned UIScriptedMenu lifecycle and focus API comments directly support the repair."},
+    {"id":"AGUI-DC-006","page":"en/03-gui-system/08-dialogs-modals.md","disposition":"accept exact repair","old_text":"Because Enforce Script has no closures or delegates, routing the result back by function name -- the target object plus a method name string -- is the standard way to give a reusable dialog a callback. Any admin-tool style dialog box that needs to hand a result back to an arbitrary caller uses this same name-based routing.","final_new_text":"This example routes results by target object and method name. DayZ also exposes `func` callbacks and `ScriptInvoker`; choose the callback mechanism supported by the API you are using and keep callback targets alive until the dialog finishes.","reason":"Pinned VideoWidget callback and ScriptInvoker APIs refute the universal name-string claim without asserting closures."},
+    {"id":"AGUI-DC-007","page":"en/03-gui-system/07-styles-fonts.md","disposition":"reject","old_text":"| Imageset XML and native formats are equivalent | Both define sprite regions | The native brace format is what the engine processes fastest. XML format works but adds a parsing step; use native format for production |","final_new_text":null,"reason":"LoadWidgetImageSet declaration proves neither accepted formats nor parser performance; proposed replacement remains speculative."},
+    {"id":"AGUI-DC-008","page":"en/04-file-formats/06-pbo-packing.md","disposition":"accept exact repair","old_text":"2. **Always set a prefix.** Without a prefix, the engine cannot resolve paths to your mod's content. Every PBO must have a correct `-prefix`.","final_new_text":"2. **Verify the PBO prefix.** Set `-prefix` explicitly when you need a specific virtual path; otherwise Addon Builder may calculate it automatically. In either case, confirm the stored prefix matches all resource references.","reason":"Official Addon Builder revision 341605 says an absent prefix is calculated automatically."},
+    {"id":"AGUI-DC-009","page":"en/04-file-formats/06-pbo-packing.md","disposition":"accept exact repair","old_text":"| **Signing** | Supported (required for multiplayer) |","final_new_text":"| **Signing** | Supported; required when joining servers that enforce PBO signature verification |","reason":"Official server configuration makes verification a server-controlled setting, not an inherent multiplayer requirement."},
+    {"id":"AGUI-DC-010","page":"en/04-file-formats/02-models.md","disposition":"reject","old_text":"> **Important:** When you pack a PBO with binarization enabled, your MLOD P3D files are automatically converted to ODOL. If you pack with `-packonly`, the MLOD files are included as-is. Both work in-game, but ODOL is preferred for release builds.","final_new_text":null,"reason":"Binarization/model.cfg evidence does not establish or disprove retail MLOD loading; runtime claim remains unresolved."},
+    {"id":"SR2-001","page":"en/05-config-files/05-server-configs.md","disposition":"accept exact repair","old_text":"A JSON file in the mission root that the engine loads automatically if present.","final_new_text":"A JSON file in the mission root that the dedicated server loads when `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`.","reason":"Pinned handler and official Gameplay Settings both establish the activation gate."},
+    {"id":"SR2-002","page":"en/05-config-files/05-server-configs.md","disposition":"accept exact repair","old_text":"A JSON syntax error causes the file to be silently ignored --- the server runs with defaults and nothing in the log points at the file.","final_new_text":"A JSON load failure is reported through `ErrorEx(errorMessage)`. Check the script error output and validate the JSON before restarting; do not assume the file is silently ignored or that every setting falls back to its default.","reason":"Pinned handler explicitly calls ErrorEx and does not establish an all-default fallback."},
+    {"id":"SR2-003","page":"en/05-config-files/05-server-configs.md","disposition":"accept exact repair","old_text":"Note that a JSON syntax error causes the whole file to be **silently ignored**, so admins should validate it after every edit.","final_new_text":"The loader reports JSON load failures through `ErrorEx(errorMessage)`, so admins should check the script error output and validate the file after every edit.","reason":"Pinned handler explicitly calls ErrorEx on LoadFile failure."}
+  ],
+  "summary": {"accept_exact":10,"accept_revised":1,"reject":2,"unresolved":0}
+}

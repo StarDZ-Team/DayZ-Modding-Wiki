@@ -638,7 +638,7 @@ Development involves two testing modes. Choosing the right one for each situatio
 | **Speed** | Slower -- must rebuild PBO for each change |
 | **Setup** | Build PBO, place in `@mod/addons/` |
 | **Executable** | `DayZDiag_x64.exe` or retail `DayZ_x64.exe` |
-| **Signing** | Supported (required for multiplayer) |
+| **Signing** | Supported; required when joining servers that enforce PBO signature verification |
 | **Limitations** | Rebuild required for every change |
 | **Best for** | Final testing, multiplayer testing, release validation |
 
@@ -655,7 +655,7 @@ Development involves two testing modes. Choosing the right one for each situatio
 
 1. **Use `-packonly` for script PBOs.** Scripts are never binarized, so `-packonly` is always correct and much faster.
 
-2. **Always set a prefix.** Without a prefix, the engine cannot resolve paths to your mod's content. Every PBO must have a correct `-prefix`.
+2. **Verify the PBO prefix.** Set `-prefix` explicitly when you need a specific virtual path; otherwise Addon Builder may calculate it automatically. In either case, confirm the stored prefix matches all resource references.
 
 3. **Automate your builds.** Create a build script (batch or Python) from day one. Manual packing does not scale and is error-prone.
 

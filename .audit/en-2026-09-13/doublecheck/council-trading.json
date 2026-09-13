@@ -1,0 +1,122 @@
+{
+  "council_id": "TP2-017-018-independent-council",
+  "reviewed_proposal": "TP2-017-018-transaction-safety-v2",
+  "decision": "accept_revised",
+  "baseline": {
+    "commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+    "page": "en/08-tutorials/12-trading-system.md",
+    "page_sha256": "80C16740AE965DD7E72F2D3BA44234A3FBBCF649717CD305CE08BDD82B1B91B8"
+  },
+  "rationale": [
+    "Refusing before any inventory mutation is a proportionate, minimal safety boundary for a documentation audit; it preserves the UI, configuration, RPC, identity-binding, and inventory-API teaching material without pretending to deliver a production transaction subsystem.",
+    "The official source proves nullable CreateInInventory, a return-valued CreateObjectEx, void/deferred DeleteSafe paths, and bool/clamped SetQuantity. It does not prove that compensation is impossible; lack of a demonstrated atomic primitive and lack of a short, runtime-proven compensation protocol are different claims.",
+    "Terra's exact handlers require revision because they discard the bounded quantity and server-side catalog checks while the proposed prose says those checks remain demonstrated.",
+    "The proposal also leaves live-transaction claims in Complete Code Reference, Best Practices, and Common Mistakes, and leaves dangerous helpers visually reusable without an in-code scope guard. Those inconsistencies should be repaired in the same narrow edit."
+  ],
+  "official_evidence": [
+    {
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Script-Diff",
+      "commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+      "build": "1.29.163709, Scripts Rev. 125372",
+      "path": "scripts/3_game/systems/inventory/inventory.c",
+      "lines": "870-893",
+      "signature": "EntityAI CreateInInventory(string type)",
+      "finding": "The official comment says 'created entity or null' and the implementation returns null when no location is found.",
+      "raw_sha256": "BC9082828E69EF664C946B5EE86887B357E53517266AB4C0A94FA784B4534BF1"
+    },
+    {
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Script-Diff",
+      "commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+      "path": "scripts/3_game/global/game.c",
+      "lines": "694-702",
+      "signature": "proto native Object CreateObjectEx( string type, vector pos, int iFlags, int iRotation = RF_DEFAULT );",
+      "finding": "The declaration returns Object, but the inspected declaration supplies no all-or-nothing transaction or compensation guarantee.",
+      "raw_sha256": "C99E24587D8FD7DBA4BFFE7D86A9603307EDA745BE2F25798B69E347CCF5558C"
+    },
+    {
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Script-Diff",
+      "commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+      "path": "scripts/3_game/entities/entityai.c",
+      "lines": "786-810, 2247",
+      "signatures": [
+        "void DeleteSafe()",
+        "bool IsSetForDeletion()",
+        "bool SetQuantity(float value, bool destroy_config = true, bool destroy_forced = false, bool allow_client = false, bool clamp_to_stack_max = true);"
+      ],
+      "finding": "DeleteSafe has no success result and can route through Delete, JunctureDeleteItem, or AddItemToDelete; IsSetForDeletion exposes pending/prepared state, not a transaction commit result. SetQuantity returns bool and clamps to stack maximum by default.",
+      "raw_sha256": "7290A79E7298B6FDB9EBFC7A23D9CE7CCA7EF06C98F2DB8C7A883E24E8321479"
+    }
+  ],
+  "exact_final_replacements": [
+    {
+      "location": "ShopDemoManager.c code block, complete HandleBuy method, baseline lines 310-344",
+      "old": "void HandleBuy(PlayerBase player, string className, int quantity)\n    {\n        if (quantity <= 0 || quantity > 10)\n        {\n            SendResult(player, false, \"Invalid quantity.\", 0);\n            return;\n        }\n        ShopItem si = FindShopItem(className);\n        if (!si)\n        {\n            SendResult(player, false, \"Item not in shop.\", 0);\n            return;\n        }\n        int cost = si.BuyPrice * quantity;\n        int balance = CountPlayerCurrency(player);\n        if (balance < cost)\n        {\n            SendResult(player, false, \"Need \" + cost.ToString() + \", have \" + balance.ToString(), balance);\n            return;\n        }\n        if (!RemoveCurrency(player, cost))\n        {\n            SendResult(player, false, \"Currency removal failed.\", CountPlayerCurrency(player));\n            return;\n        }\n        for (int i = 0; i < quantity; i++)\n        {\n            EntityAI sp = player.GetInventory().CreateInInventory(className);\n            if (!sp)\n                sp = EntityAI.Cast(GetGame().CreateObjectEx(className, player.GetPosition(), ECE_PLACE_ON_SURFACE));\n        }\n        int nb = CountPlayerCurrency(player);\n        SendResult(player, true, \"Bought \" + quantity.ToString() + \"x \" + si.DisplayName + \" for \" + cost.ToString(), nb);\n        Print(\"[ShopDemo] \" + SafeName(player) + \" bought \" + quantity.ToString() + \"x \" + className);\n    }",
+      "new": "void HandleBuy(PlayerBase player, string className, int quantity)\n    {\n        int balance = CountPlayerCurrency(player);\n        if (quantity <= 0 || quantity > 10)\n        {\n            SendResult(player, false, \"Invalid quantity.\", balance);\n            return;\n        }\n        ShopItem si = FindShopItem(className);\n        if (!si)\n        {\n            SendResult(player, false, \"Item not in shop.\", balance);\n            return;\n        }\n        SendResult(player, false, \"Buying is disabled: this tutorial does not implement a safe inventory/currency transaction.\", balance);\n        Print(\"[ShopDemo] refused buy for \" + SafeName(player));\n    }"
+    },
+    {
+      "location": "ShopDemoManager.c code block, complete HandleSell method, baseline lines 346-382",
+      "old": "void HandleSell(PlayerBase player, string className, int quantity)\n    {\n        if (quantity <= 0 || quantity > 10)\n        {\n            SendResult(player, false, \"Invalid quantity.\", 0);\n            return;\n        }\n        ShopItem si = FindShopItem(className);\n        if (!si || si.SellPrice <= 0)\n        {\n            SendResult(player, false, \"Cannot sell this.\", 0);\n            return;\n        }\n        int removed = 0;\n        array<EntityAI> items = new array<EntityAI>;\n        player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);\n        for (int i = 0; i < items.Count(); i++)\n        {\n            if (removed >= quantity)\n                break;\n            EntityAI ent = items.Get(i);\n            if (ent && ent.GetType() == className)\n            {\n                ent.DeleteSafe();\n                removed = removed + 1;\n            }\n        }\n        if (removed <= 0)\n        {\n            SendResult(player, false, \"You don't have that item.\", CountPlayerCurrency(player));\n            return;\n        }\n        int payout = si.SellPrice * removed;\n        GiveCurrency(player, payout);\n        SendResult(player, true, \"Sold \" + removed.ToString() + \"x \" + si.DisplayName + \" for \" + payout.ToString(), CountPlayerCurrency(player));\n        Print(\"[ShopDemo] \" + SafeName(player) + \" sold \" + removed.ToString() + \"x \" + className);\n    }",
+      "new": "void HandleSell(PlayerBase player, string className, int quantity)\n    {\n        int balance = CountPlayerCurrency(player);\n        if (quantity <= 0 || quantity > 10)\n        {\n            SendResult(player, false, \"Invalid quantity.\", balance);\n            return;\n        }\n        ShopItem si = FindShopItem(className);\n        if (!si || si.SellPrice <= 0)\n        {\n            SendResult(player, false, \"Cannot sell this.\", balance);\n            return;\n        }\n        SendResult(player, false, \"Selling is disabled: this tutorial does not implement a safe inventory/currency transaction.\", balance);\n        Print(\"[ShopDemo] refused sell for \" + SafeName(player));\n    }"
+    },
+    {
+      "location": "Immediately before protected bool RemoveCurrency at baseline line 257",
+      "old": "    protected bool RemoveCurrency(PlayerBase player, int amount)",
+      "new": "    // Teaching reference only: the live handlers below never call these helpers.\n    // They do not implement rollback or a safe multi-step transaction.\n    protected bool RemoveCurrency(PlayerBase player, int amount)"
+    },
+    {
+      "location": "Key decisions paragraph, baseline line 448",
+      "old": "**Key decisions:** Currency removed *before* spawning items (prevents duplication). Always `DeleteSafe()` for networked items. Quantity clamped to 1-10 to prevent abuse.",
+      "new": "**Safety boundary:** The server binds requests to `sender.GetPlayer()`, checks the quantity bound, and looks up the item in the server catalog, but both handlers refuse before changing inventory. The helper methods remain only to explain the relevant inventory APIs; they are not transaction-safe building blocks. No atomic inventory-and-currency API or runtime-proven compensation protocol is demonstrated here, so do not enable these handlers for live trading without designing and testing that subsystem separately."
+    },
+    {
+      "location": "Step 9, baseline lines 861-870",
+      "old": "1. Pack `ShopDemo/` into a PBO and place it in `@ShopDemo/addons/` on **both** server and client, then add `-mod=@ShopDemo` to both launch lines. The UI is client-side and the manager is server-side, so a one-sided install fails in a confusing way -- the menu opens and every transaction silently does nothing.\n2. Spawn currency (default `Rag`), press F6, browse, buy and sell.\n3. Check the server log for `[ShopDemo]` lines. The transaction logging in Step 3 is what tells you whether the server ran your buy at all, as opposed to the client never sending it.\n\n| Test Case | Expected |\n|-----------|----------|\n| Buy with no currency | \"Need X, have 0\" |\n| Buy unknown class (hacked) | \"Item not in shop\" |\n| Sell item not owned | \"You don't have that item\" |\n| Inventory full on buy | Item drops on ground |",
+      "new": "1. Pack `ShopDemo/` into a PBO and place it in `@ShopDemo/addons/` on **both** server and client, then add `-mod=@ShopDemo` to both launch lines. The UI is client-side and the manager is server-side, so a one-sided install can leave the menu unable to receive a server response.\n2. Spawn currency (default `Rag`), press F6, select a catalog item, and press Buy and Sell once each. Both requests must return the disabled message, and the displayed balance and inventory must remain unchanged.\n3. Check the server log for `[ShopDemo] refused` lines to confirm the server received each request.\n\n| Test Case | Expected |\n|-----------|----------|\n| Valid catalog buy | Disabled message; balance and inventory unchanged |\n| Valid sellable catalog item | Disabled message; balance and inventory unchanged |\n| Unknown class (crafted RPC) | `Item not in shop.` or `Cannot sell this.` |\n| Quantity outside 1-10 (crafted RPC) | `Invalid quantity.` |"
+    },
+    {
+      "location": "Security Considerations items 2-3, baseline lines 877-878",
+      "old": "2. **Delete before spawn.** Remove currency first, then create items. Prevents duplication.\n3. **Validate existence.** Confirm item is in inventory before giving sell currency.",
+      "new": "2. **Keep this sample non-transactional.** Both handlers refuse before spawning, changing quantity, or deleting, so the sample itself cannot consume player assets.\n3. **Do not confuse ordering with recovery.** Debit-first can lose value and credit-first can duplicate value. Compensation may be possible in a larger design, but it requires explicit failure handling and runtime evidence that this tutorial does not provide."
+    },
+    {
+      "location": "Complete Code Reference ShopDemoManager row, baseline line 891",
+      "old": "| `ShopDemoManager.c` | 4_World | Server: config, buy/sell logic, inventory, RPC handlers |",
+      "new": "| `ShopDemoManager.c` | 4_World | Server: config, request validation/refusal, inventory API examples, RPC handlers |"
+    },
+    {
+      "location": "Best Practices DeleteSafe bullet, baseline line 903",
+      "old": "- **Use `DeleteSafe()` not `Delete()`.** Vanilla describes it as deletion \"synchronized between server and client\": when the item is held by a living player it goes through that player's delete juncture rather than vanishing underneath the client, and it falls back to a plain `Delete()` when there is no live holder. (`DeleteSave()` is the same call under a misspelled legacy name -- vanilla says to use `DeleteSafe()`.)",
+      "new": "- **Understand `DeleteSafe()` before reusing the helper.** Vanilla describes it as deletion \"synchronized between server and client\" and routes held items through player deletion handling, but the method returns `void`; calling it is not proof that a larger trade committed or that compensation completed. (`DeleteSave()` is the misspelled legacy alias.)"
+    },
+    {
+      "location": "Theory vs Practice table after baseline line 914",
+      "old": "| `CreateInInventory()` | Always works | Returns null if inventory full. Always check. |",
+      "new": "| `CreateInInventory()` | Always works | Returns a created entity or `null`. Always check. |\n| Inventory/currency ordering | One order makes a trade safe | Neither order is atomic. A production design can use compensation or recovery, but this sample provides neither and therefore refuses before mutation. |"
+    },
+    {
+      "location": "What You Learned bullets, baseline lines 921 and 924",
+      "old": "- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning\n- String serialization of complex data over RPC (categories, items, prices)\n- Dynamic widget creation for data-driven UI\n- Full buy/sell transaction flow with server-only authority",
+      "new": "- Inventory enumeration, counting, deletion (`DeleteSafe`), and spawning APIs, with explicit transaction-safety limits\n- String serialization of complex data over RPC (categories, items, prices)\n- Dynamic widget creation for data-driven UI\n- Server-authoritative request binding and validation, followed by a deliberate pre-mutation refusal"
+    },
+    {
+      "location": "Common Mistakes transaction rows, baseline lines 932, 934-935",
+      "old": "| Spawn before paying | Remove currency first, then create items. |\n| Skip `super.OnRPC()` | Always call super -- other mods need the chain. |\n| `Delete()` on networked items | Use `DeleteSafe()`. |\n| Ignore `CreateInInventory` return | Check for null, fall back to ground spawn. |",
+      "new": "| Treat either mutation order as a transaction | Design explicit compensation/recovery and prove it under failure; this sample refuses instead. |\n| Skip `super.OnRPC()` | Always call super -- other mods need the chain. |\n| Treat `DeleteSafe()` as a confirmed debit | It returns `void`; do not infer transaction completion from the call. |\n| Ignore creation returns | Check every result, and clean up or compensate without claiming success after partial creation. |"
+    }
+  ],
+  "prevention_vs_warning": {
+    "prevention": "The revised handlers retain server-side bounds and catalog validation, then return before every mutating helper. This prevents this sample's normal and crafted RPC paths from deleting, spawning, or changing quantity.",
+    "warning_limit": "Warnings cannot make the unused RemoveCurrency/GiveCurrency helpers safe for live reuse and cannot establish engine atomicity, deletion completion, or a correct compensation protocol. The in-code guard and surrounding prose must say so at the point of copying.",
+    "future_scope": "A live implementation may use reservation, escrow, compensation, or durable recovery; which design is correct cannot be decided from these signatures alone and requires dedicated-server fault testing beyond this audit."
+  },
+  "verification": {
+    "performed": [
+      "Read the complete current English tutorial and compared all transaction-related claims against the proposed replacements.",
+      "Confirmed the baseline page SHA-256.",
+      "Opened the official BohemiaInteractive files at the pinned commit and independently hashed their raw bytes."
+    ],
+    "not_performed": [
+      "No English page edit, build, runtime test, commit, or production transaction implementation."
+    ]
+  }
+}

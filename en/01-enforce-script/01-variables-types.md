@@ -483,7 +483,7 @@ Numeric conversions happen automatically:
 ```c
 void ImplicitConversions()
 {
-    // int to float (always safe, no data loss)
+    // int to float (large integer values can lose precision)
     int count = 42;
     float fCount = count;    // 42.0
 

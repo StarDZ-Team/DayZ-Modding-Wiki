@@ -318,9 +318,9 @@ The full script surface --- spawn flags, lifetime control from script, `EEOnCECr
 
 ## cfggameplay.json --- Gameplay Tuning
 
-A JSON file in the mission root that the engine loads automatically if present. It tunes gameplay systems without any scripting: stamina and movement, base-building placement checks, world temperatures and lighting, map UI behavior, and the JSON object spawner (`ObjectSpawnersArr`) that spawns static objects from files admins can edit.
+A JSON file in the mission root that the dedicated server loads when `enableCfgGameplayFile = 1` is set in `serverDZ.cfg`. It tunes gameplay systems without any scripting: stamina and movement, base-building placement checks, world temperatures and lighting, map UI behavior, and the JSON object spawner (`ObjectSpawnersArr`) that spawns static objects from files admins can edit.
 
-**Mod hook:** two things matter to modders. First, several hard checks your mod might fight against (hologram placement, base damage) are toggled here, not in script --- check `cfggameplay.json` before writing a workaround. Second, many values your users will ask you to make configurable are already admin-configurable here; point them at the file instead of duplicating the setting. Note that a JSON syntax error causes the whole file to be **silently ignored**, so admins should validate it after every edit.
+**Mod hook:** two things matter to modders. First, several hard checks your mod might fight against (hologram placement, base damage) are toggled here, not in script --- check `cfggameplay.json` before writing a workaround. Second, many values your users will ask you to make configurable are already admin-configurable here; point them at the file instead of duplicating the setting. The loader reports JSON load failures through `ErrorEx(errorMessage)`, so admins should check the script error output and validate the file after every edit.
 
 Full structure and field reference: [World Systems](../06-engine-api/23-world-systems.md).
 
@@ -391,7 +391,7 @@ Pasting mod entries into the vanilla `types.xml` works but breaks on game update
 
 ### cfggameplay.json Not Loading
 
-A JSON syntax error causes the file to be silently ignored --- the server runs with defaults and nothing in the log points at the file.
+A JSON load failure is reported through `ErrorEx(errorMessage)`. Check the script error output and validate the JSON before restarting; do not assume the file is silently ignored or that every setting falls back to its default.
 
 ### Wrong type in globals.xml
 

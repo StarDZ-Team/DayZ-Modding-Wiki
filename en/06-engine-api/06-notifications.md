@@ -293,7 +293,7 @@ class MyServerModule
 
 ## Building a Custom Notification Layer
 
-Several large public frameworks (CommunityFramework, DayZ-Expansion) ship their own notification channels that stack above the vanilla toasts, adding conveniences such as colored icons, localized strings, and per-server styling. You do not need a framework to get most of that --- a thin static wrapper over the vanilla `NotificationSystem` gives you named severity helpers, consistent icons, and a single choke point for logging, while still sharing the vanilla 5-notification stack.
+Notification features and rendering paths are framework-specific. At pinned CommunityFramework commit `0763e7e7548c9a0bed6626afff835de80693ebf3`, CF mods the vanilla `NotificationSystem` and feeds its inherited notification path rather than establishing an independent channel; inspect other frameworks and versions separately. You do not need a framework for the conveniences shown here --- a thin static wrapper over the vanilla `NotificationSystem` gives you named severity helpers, consistent icons, and a single choke point for logging while sharing the vanilla 5-notification stack.
 
 The example below wraps the `Extended` server-to-client call. Every helper routes through `SendNotificationToPlayerExtended`, so a Lantern notification behaves exactly like a vanilla one on the client:
 
@@ -385,7 +385,7 @@ For most mods, prefer the `Extended` wrapper above: it needs no shared data file
 ## Best Practices
 
 - **Use the `Extended` variants for custom notifications.** `SendNotificationToPlayerExtended` gives you full control over title, body, and icon. The typed `NotificationType` variants are limited to vanilla presets.
-- **Respect the 5-notification stack limit.** Sending many notifications in rapid succession pushes older ones off screen before players can read them. Batch related messages or use longer display times.
+- **Respect the 5-notification stack limit.** At most five notifications are visible. Additional notifications are appended to the deferred array and promoted as visible notifications expire. This script implementation promotes the last deferred entry first, so its overflow backlog is LIFO. Batch related messages or use longer display times.
 - **Always guard server notifications with `GetGame().IsServer()`.** Calling `SendNotificationToPlayerExtended` on the client has no effect and wastes a method call.
 - **Pass `null` as the identity for true broadcasts.** `SendNotificationToPlayerIdentityExtended(null, ...)` delivers to all connected players. Do not loop through players manually to send the same message.
 - **Keep notification text concise.** The toast popup has limited display width. Long titles or bodies will be clipped. Aim for titles under 30 characters and body text under 80 characters.
@@ -394,6 +394,6 @@ For most mods, prefer the `Extended` wrapper above: it needs no shared data file
 
 ## Compatibility & Impact
 
-- **Multi-Mod:** The vanilla `NotificationSystem` is shared by all mods. Multiple mods sending notifications simultaneously can overflow the 5-notification stack. Framework notification systems render on their own layer, independently of the vanilla stack.
+- **Multi-Mod:** The vanilla `NotificationSystem` is shared by all mods, so simultaneous notifications can contend for its visible stack. Do not assume a framework is independent: CommunityFramework mods the vanilla `NotificationSystem`; inspect the specific framework/version before reasoning about queue or layer isolation.
 - **Performance:** Notifications are lightweight (a single RPC per notification). However, broadcasting to all players every few seconds generates measurable network traffic on servers with 60+ players.
 - **Server/Client:** `SendNotificationToPlayer*` methods are server-to-client RPCs. `AddNotificationExtended` is client-only (local). The `Update()` tick runs on the client mission loop.

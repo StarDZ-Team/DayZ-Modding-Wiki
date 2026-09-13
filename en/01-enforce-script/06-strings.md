@@ -31,7 +31,7 @@ Print(original); // Still "DayZ"
 
 ### Length
 
-Returns the number of characters in the string.
+Returns the base string length. For the number of characters in UTF-8 text, use `LengthUtf8()`.
 
 ```c
 string s = "Hello";

@@ -256,7 +256,7 @@ Use these in the DayZDiag debug console or admin tools.
 
 | Parameter | Purpose |
 |-----------|---------|
-| `-filePatching` | Load unpacked files (requires DayZDiag) |
+| `-filePatching` | Context-dependent: use it with `DayZDiag_x64.exe` for unpacked-file development; Bohemia's dedicated-server reference currently describes the server flag as allowing only PBO data. Verify the executable-specific behavior on your target build. |
 | `-scriptDebug=true` | Enable script debug features |
 | `-doLogs` | Enable detailed logging |
 | `-adminLog` | Enable admin log on server |

@@ -1,0 +1,1953 @@
+{
+  "schema": "coverage-consolidated/v1",
+  "audit_date": "2026-09-13",
+  "baseline_artifact": ".audit/en-2026-09-13/doublecheck/coverage-baseline.json",
+  "page_count": 105,
+  "assignment_check": {
+    "expected": 105,
+    "actual": 105,
+    "distinct_pages": 105,
+    "duplicate_pages": [],
+    "omitted_pages": []
+  },
+  "entries": [
+    {
+      "page": "en/01-enforce-script/01-variables-types.md",
+      "domain": "language",
+      "baseline_sha256": "C60A36EF00D2611DC917174B728738A2B0ECDB214E1E696F7F541959E8011AE6",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/02-arrays-maps-sets.md",
+      "domain": "language",
+      "baseline_sha256": "254A6A2F6449C0A21AA3922BE3F40A1848D554F4825FCA67AD1A6A376700933E",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/03-classes-inheritance.md",
+      "domain": "language",
+      "baseline_sha256": "7D05A410A6773DFE5B576163F7998EB10A74D55D4792773B0CABE230C166FAD6",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/04-modded-classes.md",
+      "domain": "language",
+      "baseline_sha256": "1E0DB5E3BE3BC03B2983A864C8BE56D59282EF724CEF5F501D9AB9A3528F4550",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/05-control-flow.md",
+      "domain": "language",
+      "baseline_sha256": "74233761284A9606DAEBFF935978EA5EC7A09EA866B667A17DCEFB33483D2944",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/06-strings.md",
+      "domain": "language",
+      "baseline_sha256": "E6E0FEFFFDC3D404B040D2AA0260DC4366E3A0EDE1CEDC8154A9BC1E1CEB7C67",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/07-math-vectors.md",
+      "domain": "language",
+      "baseline_sha256": "E6D4D859FAC33A6CE1D9BF2A834FDBDD7E1A9137DBB91A487B9970A28B902295",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/08-memory-management.md",
+      "domain": "language",
+      "baseline_sha256": "F3CD556AC51B4AB84557133CFE32D1C36E4192D8012AC62D07133A594C84A31F",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/09-casting-reflection.md",
+      "domain": "language",
+      "baseline_sha256": "F7AA2FAF1D504F7765B332C287D5D4B429579D257B4270A650BF3B610F6F25C1",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/10-enums-preprocessor.md",
+      "domain": "language",
+      "baseline_sha256": "566E21C01001B41FF284EDC9E4140EC9AEDCC81802912B789C4A54BA9106E4CC",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/11-error-handling.md",
+      "domain": "language",
+      "baseline_sha256": "2C2356E8E22325BFC77A740DE12A3AC56C7D94A1EDD9078A13633C59F91BAC6F",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/12-gotchas.md",
+      "domain": "language",
+      "baseline_sha256": "95879B3BDC113B680AA5AB8DD0D74948BC0F49ECAB20F0612840218A81359885",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/01-enforce-script/13-functions-methods.md",
+      "domain": "language",
+      "baseline_sha256": "3E865C30946837207A47AB08285C361AFD5562D21BEDCD59571D2DD0C04EC48D",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/02-mod-structure/01-five-layers.md",
+      "domain": "language",
+      "baseline_sha256": "D9FE0A92D14D939759856B647D31993837BFA11B8B416E6CFCE96B15F5931AA2",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/02-mod-structure/02-config-cpp.md",
+      "domain": "language",
+      "baseline_sha256": "19E1D91A093068863189D8CA0A3B180D8085C79090D0F0AE70E2C1FEDD994ADE",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/02-mod-structure/03-mod-cpp.md",
+      "domain": "language",
+      "baseline_sha256": "4D71A46E202695D54B8FEFD248AC93500365534F8253472BED3AB9D24657B451",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/02-mod-structure/04-minimum-viable-mod.md",
+      "domain": "language",
+      "baseline_sha256": "BEDF6DFEAC18D9C16B55719B6E037036B0A4AF20CD126B150CDC82998B62B8B9",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/02-mod-structure/05-file-organization.md",
+      "domain": "language",
+      "baseline_sha256": "DBC7392EDFBEE15AB0A1B28090EBD02DD966508D6763101F0B13E89E28FECFC4",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/02-mod-structure/06-server-client-split.md",
+      "domain": "language",
+      "baseline_sha256": "DE5F09B879061E70060E13BEA51DAFB1A5294E75F80864B2BD734A8D58460ED4",
+      "completed_reading_provenance": "Sol continuation; Astra inherited; continuation reading_completed/coverage_override final",
+      "actual_checks": [
+        "Full page reading completed; stale inherited status ignored."
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/language.json",
+        ".audit/en-2026-09-13/doublecheck/language-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No correctness guarantee; no runtime, compiler, build, or complete primary-source verification."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/03-gui-system/01-widget-types.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "B0FAD63EC0A19810FCEFF7CE08772B6472C64FD79CEB281BF5169AD8A804B26F",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "widget declarations, casts, state APIs"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-001",
+        "AGUI-DC-002"
+      ]
+    },
+    {
+      "page": "en/03-gui-system/02-layout-files.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "8D1AD3846458FEFA37EBF5F991DB220F7A192AB2DD8726FC27048B373667B2F6",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "layout properties, widget state APIs"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-003"
+      ]
+    },
+    {
+      "page": "en/03-gui-system/03-sizing-positioning.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "875615C6F1F5BBC239199B096B7A9EF0E195249F60AD427330F0751731A6CC5E",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "flags, coordinate APIs, examples"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/03-gui-system/04-containers.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "F60ED7CAAB9F0A5AA18C368428CC33C80FDC25E44DFD39C79183BFD03D6A705A",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "container classes, hierarchy APIs, usages"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/03-gui-system/05-programmatic-widgets.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "129DCD9E13991802F4513FFE7248BA11D2AF7FE37E5AF019740C7903A9E64362",
+      "completed_reading_provenance": "completed_truncated_read",
+      "actual_checks": [
+        "CreateWidget(s), flags, cleanup, examples"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-004"
+      ]
+    },
+    {
+      "page": "en/03-gui-system/06-event-handling.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "FD3E180D24246BBDF2D59A708E9E57D932F63274460E648358B1089CFB83205F",
+      "completed_reading_provenance": "completed_truncated_read",
+      "actual_checks": [
+        "handler signatures, return values, callback registration"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/03-gui-system/07-styles-fonts.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "95909F8CE4B19D4F9364915653FE33361557A56D97E8C3DE87E40C2D7522C5C7",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "fonts, styles, imageset loader"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-007"
+      ]
+    },
+    {
+      "page": "en/03-gui-system/08-dialogs-modals.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "2E9684095A99714BA3794BDA78A383343A4F17B8DBCB92281074A74F5429CAB2",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "menu lifecycle, callbacks, cleanup"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-006"
+      ]
+    },
+    {
+      "page": "en/03-gui-system/09-real-mod-patterns.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "1A29C08A597EEC780FFE47C3730FAAAB9184DD134A863595DC80BD988255CCDB",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "menu lifecycle and focus APIs"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-005"
+      ]
+    },
+    {
+      "page": "en/03-gui-system/10-advanced-widgets.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "F8BDB4FC6D824ACB81E963D5EFAB0CF52BC8132CF692F82940B9BB4B960828E7",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "advanced widget declarations and usages"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/04-file-formats/01-textures.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "2B976BF1B8D141AA0B80328418D710E168F6D653D07EB21707237C4559E29C81",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "formats, suffixes, channels, conversion, compression"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/04-file-formats/02-models.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "D847E646348E3F763DCFB3655CC76AB2FA1FCCC4B8DA24C052004529D59A124E",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "MLOD/ODOL, LODs, selections, proxies, model.cfg"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-010"
+      ]
+    },
+    {
+      "page": "en/04-file-formats/03-materials.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "13E8B1E20AB6A67EDBCB8B95071E7EDBEC10F3BED8CDE42DFB2C0915394ACB2E",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "shader IDs/stages, texture channels, health materials"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/04-file-formats/04-audio.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "82E7BD104873740B6B16E41B9641D2CEFFA7A65CA761117F8B707B380A8CFC1D",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "formats, SoundShader/SoundSet fields, script calls"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/04-file-formats/05-dayz-tools.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "90F5FD6DC0212AB6037C0A79C0B9C4AC6C3821211088996F31F75F8B23830B5E",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "tool roles, workdrive, binarization, file patching"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/04-file-formats/06-pbo-packing.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "31C12CB095E308C2645E7E56163ABAEAA071C6967CB42A70C33DEFD5FD5D7601",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "Addon Builder flags, prefix, signing, binarization"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": [
+        "AGUI-DC-008",
+        "AGUI-DC-009"
+      ]
+    },
+    {
+      "page": "en/04-file-formats/07-workbench-guide.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "532C48DD4F1A41CFDFB5FA1284D4D7E759E246D7A318C2F3B09DD5AC80F289BE",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "gproj, debugger, console, preview, file patching"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/04-file-formats/08-building-modeling.md",
+      "domain": "assets_gui",
+      "baseline_sha256": "CB1EE08159DE966B275DF094A155365E7A51AA22712C82FC22A0B1450E7285E8",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "door and ladder model/config requirements against official guides and sample"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/assets_gui.json",
+        ".audit/en-2026-09-13/doublecheck/assets_gui-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No build or runtime execution; static evidence only."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/01-entity-system.md",
+      "domain": "engine",
+      "baseline_sha256": "AC6D0057EAF7966E207F18F6A3F233D2BD522BBD75AF56BC37BD3EA2D42FB164",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; entity signatures/lifecycle/network; ENG-001/005; native runtime untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/02-vehicles.md",
+      "domain": "engine",
+      "baseline_sha256": "6B071678EC8735B4A5DC6517A5DF73B20F727F3CE14F90462A8E4BDCE002431A",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; vehicle APIs/authority; no finding; physics untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/03-weather.md",
+      "domain": "engine",
+      "baseline_sha256": "7D449F0BB3883A0B9D6E6DC6B3C28473B17E466D71DEB0204FDEA334B9356C8E",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; declarations/BIKI; no finding; forecasts untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/04-cameras.md",
+      "domain": "engine",
+      "baseline_sha256": "8321CB13BBB50554EDF7A0DEFED554AE4ED639962E28D73F7D621BC4B8DADC47",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; cameras/projection/raycast; no finding; cost unmeasured"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/05-ppe.md",
+      "domain": "engine",
+      "baseline_sha256": "348E0942DC172B34A130283275E3340EA114232B34A8929F245FDE0E2648FE3B",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; PPE lifecycle/parameters; no finding; visuals untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/06-notifications.md",
+      "domain": "engine",
+      "baseline_sha256": "6C48FD6E520EE6227496A895567218EF6D2D2DD4F728D3F85D164ACF480931D0",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; vanilla/CF source; ENG-002"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/07-timers.md",
+      "domain": "engine",
+      "baseline_sha256": "7267CA26183144B278E8ECF928FC60B20F11C3F272378C9372184A9D05570C33",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; queues/timers/invokers/additional mod; no finding; failure modes untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/08-file-io.md",
+      "domain": "engine",
+      "baseline_sha256": "DB9BCBA5F37423BF152873B2CFA8820C3973108127B83185BC8AE39074512A42",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; file/JSON/path APIs; no finding; sandbox untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/09-networking.md",
+      "domain": "engine",
+      "baseline_sha256": "DFE5CEE28E0B1D16EA607D44EA2C5927F6A5D8BF778A6E239FDAF18E6F617B9D",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; RPC/serialization/authority; no finding; delivery untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/10-central-economy.md",
+      "domain": "engine",
+      "baseline_sha256": "67CFC993306873248E24AAA1ACB340157576813C4E94117C68B263946C404BF5",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; CE APIs/official docs; ENG-004"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/11-mission-hooks.md",
+      "domain": "engine",
+      "baseline_sha256": "77DDB34C6C591722A8F0797E3A2327B6B1234135C01260890DC807F3DCEB02BB",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; hooks/order/sides; no finding; order untraced"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/12-action-system.md",
+      "domain": "engine",
+      "baseline_sha256": "A40665BBD5714DA665C85209F095F21D845C1F71E0DDE6E6093F150E348CCBED",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; callbacks/conditions/authority; no finding; animations untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/13-input-system.md",
+      "domain": "engine",
+      "baseline_sha256": "968A5EC8D1CB3AC475E2E7077AF809D91A6946D34AC4A7DD44776A3525262DC3",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; UA/raw/combo/sample; ENG-003"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/14-player-system.md",
+      "domain": "engine",
+      "baseline_sha256": "7A316ED39C4F5DA37777CE00C59E890A11DF49B9EF204619EB68D0D2498BB5C2",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; identity/stats/modifiers/sides; no finding; sync untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/15-sound-system.md",
+      "domain": "engine",
+      "baseline_sha256": "16DCE2FFC39D5DACE9E85C535FA50FA4F8DBF710023CC50AE5409D3A2C5F22FE",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; sound lifecycle; no finding; playback untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/16-crafting-system.md",
+      "domain": "engine",
+      "baseline_sha256": "11033D0192D62CBBE060F0F24FE053053ECA7B5973E17848B7B0CA3C5FB2E681",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; recipes/results/authority; no finding; execution untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/17-construction-system.md",
+      "domain": "engine",
+      "baseline_sha256": "CDA6F6997163EFBA17073A26C5147FCC6C01B0F5B588A58EA1490FAA87B1D066",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; parts/actions/collision; no finding; geometry untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/18-animation-system.md",
+      "domain": "engine",
+      "baseline_sha256": "34FFD6C5EC23C2172AF51C513DA23A2AB794261428C3950DAC9BEC98B71FFE7B",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; commands/events/variables; no finding; graphs untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/19-terrain-queries.md",
+      "domain": "engine",
+      "baseline_sha256": "5B778982556C5BD20550FB911B381D91C59B0E79B4F3DFB6859D992593BCEB6E",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; terrain/raycast signatures; no finding; runtime untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/20-particle-effects.md",
+      "domain": "engine",
+      "baseline_sha256": "F43A09AE940F1BD84CFC6DCE41591839D302B989647E437D19EC120843DD1EF1",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; particles/ownership/sides; no finding; rendering untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/21-zombie-ai-system.md",
+      "domain": "engine",
+      "baseline_sha256": "B38520E4BB6694E7F8314F250DF199114BF2F8C9BC496666490AD6410049AF23",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; AI init/commands/spawn; no finding; AI runtime untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/22-admin-server.md",
+      "domain": "engine",
+      "baseline_sha256": "7CFD4CF365A718A95E8AD27A8E8976E8ABCDF293ED3ED849D11C67C143A8D4BE",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; admin identity/RPC authority; no finding; rejection unimplemented"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/23-world-systems.md",
+      "domain": "engine",
+      "baseline_sha256": "F61208E52B98E595AAC54D262AC98F3A0D75746AC9C876B98D7A6B78AB3555AC",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; world configs/BIKI; no finding; version differences retained"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/06-engine-api/quick-reference.md",
+      "domain": "engine",
+      "baseline_sha256": "5AC51A35FA5E3BA3982845318A11F413977085E4D496CA15851367300C22F86A",
+      "completed_reading_provenance": "Sol continuation / completed coverage",
+      "actual_checks": [
+        "full read; signature cross-check; no additional finding; native runtime untested"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/engine.json",
+        ".audit/en-2026-09-13/doublecheck/engine-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No game/server/build run by constraint.",
+        "Native declarations are static evidence.",
+        "Mod usage is corroboration only.",
+        "No page is guaranteed-correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/07-patterns/01-singletons.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "24A8AF22FD1EFAA3DA543753BCB25DAA6C559999B376CC16C8555B0E06298EE5",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/07-patterns/02-module-systems.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "1F2291B81FC04295EC559ED7AC296642A8D976B31312CCCD63EA58131641E910",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/07-patterns/03-rpc-patterns.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "EAC39002165A9BC1D4CD60F8953B39C994C9B7105E09798E4A0CB6BE7C02C941",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/07-patterns/04-config-persistence.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "33082B96074D4A1E1767426F070C333A4658FB822DBB33C6BAEB6786FFBC4374",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/07-patterns/05-permissions.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "DF0CABE5B566E00067C5AE41E356BFADDB2991144C32402E88281EA593C60956",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/07-patterns/06-events.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "26812086D1CDF41B7B20AA70314183EA5B92D6C5F96E10D93A6CEEAA75DD2183",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/07-patterns/07-performance.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "43A0A32945DEC9CC1C6BF48DD4E08DF388FFFF22AC8F34850E166E71503D2765",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/01-first-mod.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "D3C1C8F6692364FF7F061274E7D0EB258E9D9337C83EC3959F47577D603F5719",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/02-custom-item.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "F335438981ADCE12FA5E05E9D961CD730CDDDFA54530A0F2548F040FDE3126B6",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/03-admin-panel.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "4056869B82B1E435C7862090AB90BB4AC93B65EC500570E06F023F97C42F9DBB",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/04-chat-commands.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "01E02DB8560FF3CA0BDABC75EE75EABD7285A4AC5901D3909AB737DC59176857",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/05-mod-template.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "7B655B8D87F944A674C80029C4B1AF3877700D214BFF356DFC68FC8148EAB307",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/06-debugging-testing.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "D5A9C30FBCEFCF23A19CF58D5EDEBAC9E60753D43E873A0E16EA251D557433C8",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/07-publishing-workshop.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "7AF7DCD587F71677D3752363D1E43AD727E2CD10494CA2496C512063EF540DDD",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/08-hud-overlay.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "00D845A7ADDE01CF8F8852DE1D14EF648F74B92295D79DFE4366AD3B56BA4494",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/09-professional-template.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "2971A2DFC7A8E95F2E0710E31A885C225CCF60CA299F7A767A0E3789AF4271DE",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/10-vehicle-mod.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "50C8E03311C9BFB54CB5D907260FD2850A014E79869BF994793EA6027749B91D",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/11-clothing-mod.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "36A01DFE05160EDB26B9C71D625CF9A776269634AB88AF43EA72E94184930192",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/12-trading-system.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "80C16740AE965DD7E72F2D3BA44234A3FBBCF649717CD305CE08BDD82B1B91B8",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/08-tutorials/13-diag-menu.md",
+      "domain": "tutorials_patterns",
+      "baseline_sha256": "8FC7F38F92BED3314A5D12CD42C222ACA555300E6147D9FEDF64EC8EC2795939",
+      "completed_reading_provenance": null,
+      "actual_checks": [
+        null
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns.json",
+        ".audit/en-2026-09-13/doublecheck/tutorials_patterns-REPORT.md"
+      ],
+      "explicit_limits": [],
+      "finding_ids": [
+        null
+      ]
+    },
+    {
+      "page": "en/05-config-files/01-stringtable.md",
+      "domain": "server_reference",
+      "baseline_sha256": "FF51DE52F5B7CA23D188258B8FAD59A8FA5F7CD84F37EDA76BA019A13065353A",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "fallback/schema/collisions; runtime unresolved"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/05-config-files/02-inputs-xml.md",
+      "domain": "server_reference",
+      "baseline_sha256": "E6A7170E6169DE3A3CEBEECE84B4BAFC9EB37E06A6319386380F76A720D7A7D0",
+      "completed_reading_provenance": "inherited_partial_completed_sol",
+      "actual_checks": [
+        "schema/actions/modifier combos/UI; no runtime"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/05-config-files/03-credits-json.md",
+      "domain": "server_reference",
+      "baseline_sha256": "2650E77CCD39A190CAA5DDD6A4C7ECB40B6625BE2CCCE6D2AF358456F5D02529",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "schema/loading/examples; no runtime"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/05-config-files/04-imagesets.md",
+      "domain": "server_reference",
+      "baseline_sha256": "2C4E21F30702B1EF5BB9454365B9CD0FB4168F19BE62AF31555C878F3D246730",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "schemas/registration/conversion; runtime unresolved"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/05-config-files/05-server-configs.md",
+      "domain": "server_reference",
+      "baseline_sha256": "EF1632B9AE53C031E7DB0EB03257B63213654BA2C6C42C113A635728584D6E3B",
+      "completed_reading_provenance": "inherited_full",
+      "actual_checks": [
+        "CE merge and cfgGameplay lifecycle"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": [
+        "SR2-001",
+        "SR2-002",
+        "SR2-003"
+      ]
+    },
+    {
+      "page": "en/05-config-files/06-spawning-gear.md",
+      "domain": "server_reference",
+      "baseline_sha256": "4F542658D5CB9ED7743CEB3B18FF9CC8E886F2CD779BB58D6B1083DA52B6230E",
+      "completed_reading_provenance": "inherited_full_extended_sol",
+      "actual_checks": [
+        "preset schema/lifecycle/public corpus; no runtime"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/01-server-setup.md",
+      "domain": "server_reference",
+      "baseline_sha256": "4DAF36B80ECD152B61222AB9D4DB96EDB487F3C6BE9F9784742191EE895BDED7",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "prerequisites/install/launch/ports/CPU"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": [
+        "SR2-004",
+        "SR2-005"
+      ]
+    },
+    {
+      "page": "en/09-server-admin/02-directory-structure.md",
+      "domain": "server_reference",
+      "baseline_sha256": "278C2DB23243B573BDA267AFBD33FBAB97C8298BCAA59679503AD34DA821D5C5",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "server/mission tree/CE/persistence"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/03-server-cfg.md",
+      "domain": "server_reference",
+      "baseline_sha256": "EC736AA5EBF2E0BD35B7DC0C6B9269572996A0D89D7B347676D4A82E5D4C01B2",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "parameters/defaults/launch/jobsystem"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/04-loot-economy.md",
+      "domain": "server_reference",
+      "baseline_sha256": "F1B6F81A3E62B32DB3551FB3CF6E12AA20637BF2FDE3A00B850B903E98BB9B22",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "types/globals/events/economy; no live CE cycle"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/05-vehicle-spawning.md",
+      "domain": "server_reference",
+      "baseline_sha256": "04F8CE76802D350A8779ED669663B77E489E8B9B99B7A6A7B5A3FB0C4A3F7EFC",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "events/spawns/persistence/attachments"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/06-player-spawning.md",
+      "domain": "server_reference",
+      "baseline_sha256": "D4772FFED9ED1549EF2226A34EE162FD028453D660DB48A90925710DB60322CD",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "spawn XML/gear precedence/schema"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/07-persistence.md",
+      "domain": "server_reference",
+      "baseline_sha256": "A7B4DE6249D00E6AF6485F294B7869D44EA3541DE8FAE7B3C1BE8C01BFFCFC01",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "storage/wipe/backup/lifetime; no recovery test"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/08-performance.md",
+      "domain": "server_reference",
+      "baseline_sha256": "AC711DF6F323F2036ED08508EA00673FBF510603A7421ECF53BAE759265D12B6",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "threading/FPS/CE/network; no benchmark"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/09-access-control.md",
+      "domain": "server_reference",
+      "baseline_sha256": "7606E0047742E5ADB5F91915DFDBECAB51B87DE8E5726D5D978705F49D795A40",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "admin/lists/BE/RCon/signatures"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/10-mod-management.md",
+      "domain": "server_reference",
+      "baseline_sha256": "9FBE9D3FBDB79D5257429F13FA153E74717FEC3B64E00C567240D38F0C13B143",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "mod/serverMod/keys/order/update"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/11-troubleshooting.md",
+      "domain": "server_reference",
+      "baseline_sha256": "378A8E849B9300C4F21933C40D762F8BBCF5D1440A3A02324602F524CD5AFAA5",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "launch/ports/config/CE/storage/signatures"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/09-server-admin/12-advanced.md",
+      "domain": "server_reference",
+      "baseline_sha256": "8605A3AA971410C3D1A297D8E8697EB727FA6398CCCE206EED8317635CC0EF7F",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "instances/automation/backup/monitoring"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/cheatsheet.md",
+      "domain": "server_reference",
+      "baseline_sha256": "F6950521917493C71F9A680BD02C5D514DD7F43B2960D06AA8C98AB5D66C17D0",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "assigned server/config/API quick claims"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/faq.md",
+      "domain": "server_reference",
+      "baseline_sha256": "B2079A4573E68911E59B293329E6AF6B2B92F74061E212443D0A6FD6A6461D5B",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "server/mod answers/cross-links"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/glossary.md",
+      "domain": "server_reference",
+      "baseline_sha256": "627F3D7B9C8FAB397FCCC3F4DF3C3D723D77A3012DD6D2DAAD29FAB1E2F00354",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "all entries; domain terms selectively primary-checked"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/index.md",
+      "domain": "server_reference",
+      "baseline_sha256": "7852C6DBF7DB9889950EA6D826407D9C432C8F4340F52F6DEEC2403DF5A6B1B8",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "scope/version/setup/navigation"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/README.md",
+      "domain": "server_reference",
+      "baseline_sha256": "ACEE1AFEB662131E9D499128835189214953E749382C0F3E35D7B62E392CB5A4",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "scope/version/prerequisites/chapters"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": []
+    },
+    {
+      "page": "en/troubleshooting.md",
+      "domain": "server_reference",
+      "baseline_sha256": "F63C0C82F7BE34A8DDA4677496FAB971F908F13D1DF2330CC05A9FB9730FA73B",
+      "completed_reading_provenance": "sol_full",
+      "actual_checks": [
+        "server/RPC/CE/persistence/launch/examples"
+      ],
+      "sources": [
+        ".audit/en-2026-09-13/doublecheck/server_reference.json",
+        ".audit/en-2026-09-13/doublecheck/server_reference-REPORT.md"
+      ],
+      "explicit_limits": [
+        "No runtime tests or build.",
+        "Direct Bohemia wiki HTTP returned 403; web hashes cover exact indexed evidence excerpts, not whole pages.",
+        "Unreported claims are not guaranteed correct."
+      ],
+      "finding_ids": [
+        "SR2-006"
+      ]
+    }
+  ],
+"source_hash_checks": [{"path":"D:/DayZ Projects/bin/constants.xml","claimed_sha256":"A2757261E565F84B04B19EB8FF6CE25D7DB60C047F09F4D2A92CB96576746BCE","checked_local":true,"actual_sha256":"a2757261e565f84b04b19eb8ff6ce25d7db60c047f09f4d2a92cb96576746bce","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/engine.json"},{"path":"D:/DayZ Projects/scripts/1_core/proto/enscript.c","claimed_sha256":"1CA3897DF3F842E6EAACB5E771A4A04ECE1D77E2A7C987F0A8174351770B43D4","checked_local":true,"actual_sha256":"1ca3897df3f842e6eaacb5e771a4a04ece1d77e2a7c987f0a8174351770b43d4","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/engine.json"},{"path":"D:/DayZ Projects/scripts/2_gamelib/tests/testingframework.c","claimed_sha256":"08D8018943E87856141468616C820B843048A0356EC655A2EBC355F27DD73D33","checked_local":true,"actual_sha256":"08d8018943e87856141468616c820b843048a0356ec655a2ebc355f27dd73d33","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/tutorials_patterns.json"},{"path":"D:/DayZ Projects/scripts/3_game/autotest/autotestrunner.c","claimed_sha256":"46326A75CAFE28E9EFB123A9A9BC281A750E3D65AFB96C5369DAD96FF6F747A6","checked_local":true,"actual_sha256":"46326a75cafe28e9efb123a9a9bc281a750e3d65afb96c5369dad96ff6f747a6","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/tutorials_patterns.json"},{"path":"D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c","claimed_sha256":"6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3","checked_local":true,"actual_sha256":"6948b104db21f468e5e4967893b3ab8b7938944731c6b5bc8bc5706910f446a3","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/engine.json"},{"path":"D:/DayZ Projects/scripts/3_game/cfggameplayhandler.c","claimed_sha256":"c00c41c9ad8bbb28a8269e73971ad5ecc63a54025c7ddd8f0576692558217974","checked_local":true,"actual_sha256":"c00c41c9ad8bbb28a8269e73971ad5ecc63a54025c7ddd8f0576692558217974","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/server_reference.json"},{"path":"D:/DayZ Projects/scripts/3_game/dayzgame.c","claimed_sha256":"75CD42B6CBE689F0903F23CDEE46FD41545946B0046D3816B15B4F36044C8992","checked_local":true,"actual_sha256":"75cd42b6cbe689f0903f23cdee46fd41545946b0046d3816b15b4f36044c8992","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/tutorials_patterns.json"},{"path":"D:/DayZ Projects/scripts/3_game/global/game.c","claimed_sha256":"CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158","checked_local":true,"actual_sha256":"cf529055c48596108034ce6b11826b09bbf5d93e6c550e37785947873d8c3158","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/engine.json"},{"path":"D:/DayZ Projects/scripts/3_game/tools/jsonfileloader.c","claimed_sha256":"2D96C61DFABD99967683D0856EE5E2B1C7D06C18166B7F245BBA4DA1617BFFF4","checked_local":true,"actual_sha256":"2d96c61dfabd99967683d0856ee5e2b1c7d06c18166b7f245bba4da1617bfff4","result":"matches","artifact":".audit/en-2026-09-13/doublecheck/tutorials_patterns.json"},{"path":"Launch Parameters/-filePatching","claimed_sha256":"282d219412a96798bc7643fd853cd7cbe512979fcc138aadf3a181be9bf6fdd6","checked_local":false,"actual_sha256":null,"result":"not locally available; not adjudicated","artifact":".audit/en-2026-09-13/doublecheck/server_reference.json"},{"path":"multithreadedReplication/dayzsettings.xml jobsystem","claimed_sha256":"74e54ab4b3cb7687e824de15012bf6615841a550de404274c80d3dbc4de0c40c","checked_local":false,"actual_sha256":null,"result":"not locally available; not adjudicated","artifact":".audit/en-2026-09-13/doublecheck/server_reference.json"}],
+  "notes": [
+    "Language uses continuation final truth; stale statuses/candidate IDs ignored.",
+    "Baseline hashes preserved; approved current EN edits are not failures.",
+    "No page is labeled correct from no finding."
+  ]
+}

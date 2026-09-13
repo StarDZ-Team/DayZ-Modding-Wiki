@@ -349,9 +349,9 @@ m_WeatherTimer = 3.3;
 
 Repeated lookups of the same data are a common performance drain. Cache the results.
 
-### CfgVehicles Scan Cache
+### CfgWeapons Scan Cache
 
-Scanning `CfgVehicles` (the global config database of all item/vehicle classes) is expensive. It involves iterating thousands of config entries. Never do it more than once:
+Scanning `CfgWeapons` is expensive. It involves iterating thousands of config entries. Never do it more than once:
 
 ```c
 class WeaponRegistry
@@ -365,11 +365,11 @@ class WeaponRegistry
 
         s_AllWeapons = new array<string>();
 
-        int cfgCount = GetGame().ConfigGetChildrenCount("CfgVehicles");
+        int cfgCount = GetGame().ConfigGetChildrenCount("CfgWeapons");
         string className;
         for (int i = 0; i < cfgCount; i++)
         {
-            GetGame().ConfigGetChildName("CfgVehicles", i, className);
+            GetGame().ConfigGetChildName("CfgWeapons", i, className);
             if (GetGame().IsKindOf(className, "Weapon_Base"))
             {
                 s_AllWeapons.Insert(className);

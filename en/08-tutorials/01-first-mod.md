@@ -223,7 +223,7 @@ class CfgMods
 **CfgMods** tells the engine where your scripts live:
 
 - `dir = "MyFirstMod";` -- Root directory of the mod.
-- `type = "mod";` -- This is a client+server mod (as opposed to `"servermod"` for server-only).
+- `type = "mod";` -- Declares the required CfgMods mod type. To keep an addon server-side, load it with the server startup parameter `-serverMod=`; do not change this value to `"servermod"`.
 - `dependencies[] = { "Mission" };` -- Your code hooks into the Mission script module.
 - `class missionScriptModule` -- Tells the engine to compile all `.c` files found in `MyFirstMod/Scripts/5_Mission/`.
 
@@ -386,7 +386,7 @@ The fastest way to test is to launch DayZ in offline mode:
 DayZDiag_x64.exe "-mod=P:\Mods\@MyFirstMod" -filePatching
 ```
 
-Then in the main menu, click **Play** and select **Offline Mode** (or **Community Offline**). This starts a local single-player session without needing a server.
+For offline testing, install a compatible offline mission and launch it using that mission's documented procedure. “Community Offline Mode” is a separate community tool and is not installed by this tutorial; otherwise, test by starting a local DayZ server with the mod loaded and joining it.
 
 ---
 

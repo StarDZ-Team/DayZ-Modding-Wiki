@@ -1,0 +1,86 @@
+{
+  "review": "independent final diff council verification for early repairs",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "verdict": "approved for commit",
+  "reviewed_at": "2026-09-13",
+  "runtime_tested": false,
+  "full_build_run": false,
+  "content_files_edited_by_reviewer": false,
+  "scope": {
+    "implementation_receipts": [
+      ".audit/en-2026-09-13/doublecheck/implement-early.json",
+      ".audit/en-2026-09-13/doublecheck/implement-early-REPORT.md"
+    ],
+    "council_records": [
+      ".audit/en-2026-09-13/doublecheck/council-early.json",
+      ".audit/en-2026-09-13/doublecheck/council-early-REPORT.md",
+      ".audit/en-2026-09-13/doublecheck/council-server-extra.json",
+      ".audit/en-2026-09-13/doublecheck/council-server-extra-REPORT.md"
+    ],
+    "changed_pages": 9,
+    "accepted_repairs": 13,
+    "rejected_repairs": 3
+  },
+  "diff_verification": {
+    "method": "Reopened each baseline blob with git show, applied the council final_new_text transformations in memory exactly once (plus the separately approved AGUI-DC-004 paragraph insertion), LF-normalized both sides, and byte-compared the constructed result with the working page.",
+    "all_pages_equal_expected": true,
+    "unapproved_hunks": 0,
+    "omitted_approved_repairs": 0,
+    "quote_or_escape_errors": 0,
+    "incorrect_insertions": 0
+  },
+  "findings": [
+    {"id":"AGUI-DC-001","disposition":"implemented exactly","verified":true},
+    {"id":"AGUI-DC-002","disposition":"implemented exactly","verified":true},
+    {"id":"AGUI-DC-003","disposition":"implemented exactly","verified":true},
+    {"id":"AGUI-DC-004","disposition":"implemented revised exact repair, including the paragraph immediately after the intended code block","verified":true},
+    {"id":"AGUI-DC-005","disposition":"implemented exactly","verified":true},
+    {"id":"AGUI-DC-006","disposition":"implemented exactly","verified":true},
+    {"id":"AGUI-DC-007","disposition":"rejected; baseline text remains present and no replacement was applied","verified":true},
+    {"id":"AGUI-DC-008","disposition":"implemented exactly","verified":true},
+    {"id":"AGUI-DC-009","disposition":"implemented exactly","verified":true},
+    {"id":"AGUI-DC-010","disposition":"rejected; baseline text remains present and no replacement was applied","verified":true},
+    {"id":"SR2-001","disposition":"implemented exactly","verified":true},
+    {"id":"SR2-002","disposition":"implemented exactly","verified":true},
+    {"id":"SR2-003","disposition":"implemented exactly","verified":true},
+    {"id":"SR2-004","disposition":"rejected; baseline text remains present and no replacement was applied","verified":true},
+    {"id":"SR2-005","disposition":"implemented exactly","verified":true},
+    {"id":"SR2-006","disposition":"implemented exactly","verified":true}
+  ],
+  "page_hashes": [
+    {"path":"en/03-gui-system/01-widget-types.md","raw_sha256":"4B22A8C665AA62711B3EC1EB9EEA99CD723CDFA0EF2AC1E9D06567316A1ADBA6","lf_normalized_sha256":"921C30C8392B863D96244A37E5EA9B7BEDEB6CD7F0D46659BE59CB09BB5673CD","eol":{"crlf":481,"lf":2},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/03-gui-system/02-layout-files.md","raw_sha256":"0B86D1E1DC6699BB59B330B9D55551039EEF0FD1E544C62929286070707EB896","lf_normalized_sha256":"0B86D1E1DC6699BB59B330B9D55551039EEF0FD1E544C62929286070707EB896","eol":{"crlf":0,"lf":588},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/03-gui-system/05-programmatic-widgets.md","raw_sha256":"A9942A8F7CC9F6724D31A8C8ADE7452E611D7130385E23F9891395488D9FC864","lf_normalized_sha256":"1243DE875B20425BC373CA261DEFE5FB0B97C164C9C87A572D31486176E92C6E","eol":{"crlf":546,"lf":7},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/03-gui-system/08-dialogs-modals.md","raw_sha256":"30E2093ADEED1BDD9723FA3A3A8915B810B5BDE7D68911EB90DC1FFA43A5A848","lf_normalized_sha256":"30E2093ADEED1BDD9723FA3A3A8915B810B5BDE7D68911EB90DC1FFA43A5A848","eol":{"crlf":0,"lf":1201},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/03-gui-system/09-real-mod-patterns.md","raw_sha256":"63D124A09BC79A4198FDE513DED9D291DE077FDD1135BFD4E5C760ABCC909E84","lf_normalized_sha256":"BE28896B078D66262379DFC5FC23F0A950EC1BF6ACB6BC47D4F63A21FB3C0840","eol":{"crlf":927,"lf":5},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/04-file-formats/06-pbo-packing.md","raw_sha256":"D60F2BE9D40C4B8DEF8373C24B780A2F8A62C31ED32895663F0A2BC314A4A586","lf_normalized_sha256":"6CE714794DB73D19EED3773715D1D93AEBEB678526ECF76A1EC8D0B3A4F57DBC","eol":{"crlf":691,"lf":2},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/05-config-files/05-server-configs.md","raw_sha256":"DE6BA6277BB66DACB4125DE0DDF43F2E31878F1717C3BF48BC0F446779B45454","lf_normalized_sha256":"DE6BA6277BB66DACB4125DE0DDF43F2E31878F1717C3BF48BC0F446779B45454","eol":{"crlf":0,"lf":414},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/09-server-admin/01-server-setup.md","raw_sha256":"E7C8BE9C7C383F76EDC55C1F1F75395ADFF75CB1BB226A75A4E0707EBD46D6AA","lf_normalized_sha256":"5ACD6AF3DF08B81244825B606A590E70533209F33E49C23456682A6157F912CD","eol":{"crlf":303,"lf":1},"matches_implementation_receipt":true,"matches_exact_expected_diff":true},
+    {"path":"en/troubleshooting.md","raw_sha256":"3BECE278BAE706CE2BE39E1F474F76DE92F5D95FCA584C28E6F7638202F2D9E7","lf_normalized_sha256":"3BECE278BAE706CE2BE39E1F474F76DE92F5D95FCA584C28E6F7638202F2D9E7","eol":{"crlf":0,"lf":408},"matches_implementation_receipt":true,"matches_exact_expected_diff":true}
+  ],
+  "primary_sources": {
+    "repository":"https://github.com/BohemiaInteractive/DayZ-Script-Diff",
+    "reopened_commit":"86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+    "head_matches_pinned_commit":true,
+    "files":[
+      {"path":"scripts/1_core/proto/enwidgets.c","sha256":"6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E","reopened_lines":["192-193","418-423","588-590","694-698"]},
+      {"path":"scripts/3_game/tools/uiscriptedmenu.c","sha256":"69E45D6C74380BA23A30C8A66E0721A9CE618C49C8AD4AF08920639A2438484B","reopened_lines":["172-181"]},
+      {"path":"scripts/3_game/cfggameplayhandler.c","sha256":"C00C41C9AD8BBB28A8269E73971AD5ECC63A54025C7DDD8F0576692558217974","reopened_lines":["53-72"]},
+      {"path":"scripts/2_gamelib/tools.c","sha256":"48E8DAFACF8D8BD6D38A141896039720507488E45E1EFB369958B29BEC68D38B","reopened_lines":["115-127"]}
+    ],
+    "web_source_limitation":"The council's official BIKI evidence for AGUI-DC-008, AGUI-DC-009, SR2-005, and SR2-006 has no whole-page body hash and reported direct HTTP 403. This review preserves that static-source limitation and makes no runtime claim."
+  },
+  "validation": {
+    "vitepress_renderer":"All 9 pages rendered successfully through scripts/check-links.mjs makeIdReader using the installed VitePress renderer; each rendered page has exactly one H1.",
+    "balanced_fences":"pass on all 9 pages",
+    "dead_file_links":{"count":0},
+    "dead_anchors":{"current_count":62,"baseline_count":62,"new":0,"removed":0,"classification":"pre-existing entries from .audit/en-2026-09-13/doublecheck/baseline-links.json"},
+    "git_diff_check":{"exit_code":0},
+    "build":"not run by task restriction"
+  },
+  "limitations":[
+    "No full VitePress build or game/runtime test was run.",
+    "Several working pages contain mixed CRLF/LF bytes; both raw and LF-normalized SHA-256 values are therefore recorded.",
+    "Approval applies only to the nine English pages and exact early-repair inventory named above; unrelated working-tree changes were not reviewed."
+  ]
+}

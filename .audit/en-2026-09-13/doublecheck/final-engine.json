@@ -1,0 +1,64 @@
+{
+  "review": "independent final diff council verification for engine repairs",
+  "reviewed_at": "2026-09-13",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "verdict": "approved for commit",
+  "runtime_tested": false,
+  "full_build_run": false,
+  "content_files_edited_by_reviewer": false,
+  "scope": {
+    "pages": 4,
+    "unique_accepted_findings": ["ENG-001", "ENG-002", "ENG-003", "ENG-004", "ENG-005", "NOTIFY-EXTRA-001"],
+    "eng_002_supplement_counted_as_new_finding": false
+  },
+  "diff_verification": {
+    "method": "Reopened all four blobs at the original baseline, applied only the council exact/revised transformations in memory, including both ENG-002 occurrences and NOTIFY-EXTRA-001 on notifications, then byte-compared LF-normalized expected and working content.",
+    "all_pages_equal_expected": true,
+    "unapproved_hunks": 0,
+    "omitted_approved_repairs": 0,
+    "quote_or_escape_errors": 0,
+    "incorrect_insertions": 0
+  },
+  "findings": [
+    {"id":"ENG-001","disposition":"revised exact repair implemented correctly","verified":true},
+    {"id":"ENG-002","disposition":"exact Multi-Mod repair and revised exact earlier supplemental occurrence both implemented correctly; one unique finding","verified":true},
+    {"id":"ENG-003","disposition":"revised exact note inserted at approved UA/raw transition","verified":true},
+    {"id":"ENG-004","disposition":"approved conservative exact repair implemented; underlying custom-global behavior remains version-specific uncertainty","verified":true},
+    {"id":"ENG-005","disposition":"all three revised exact repairs implemented; no replication timing or all-client guarantee added","verified":true},
+    {"id":"NOTIFY-EXTRA-001","disposition":"revised exact repair implemented; LIFO claim remains limited to inspected script array operations","verified":true}
+  ],
+  "page_hashes": [
+    {"path":"en/06-engine-api/01-entity-system.md","raw_sha256":"84DED2A22E62A935C1AA0F98F0D32B1082473AE0C653DF6B4D77C63E2D9C39E4","lf_normalized_sha256":"84DED2A22E62A935C1AA0F98F0D32B1082473AE0C653DF6B4D77C63E2D9C39E4","eol":{"crlf":0,"lf":1577},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/06-engine-api/06-notifications.md","raw_sha256":"2F49F60B5739B3DA19DAFDF5C41C44BC9BDCDA6ECF540B2395A3E121E4DEABF0","lf_normalized_sha256":"2F49F60B5739B3DA19DAFDF5C41C44BC9BDCDA6ECF540B2395A3E121E4DEABF0","eol":{"crlf":0,"lf":399},"latest_notification_receipt_match":true,"combined_expected_diff_match":true},
+    {"path":"en/06-engine-api/10-central-economy.md","raw_sha256":"5F7C43886B6F4CE6F0850B9ACD14D4A40DBCEC86DC418D9DDF8EE9F8806B17A6","lf_normalized_sha256":"4AA0B62F1B7F0E3B7556DAA4F7923C9D2CF94733C55E531F0B8109EE7FBC298A","eol":{"crlf":497,"lf":0},"receipt_match":true,"expected_diff_match":true},
+    {"path":"en/06-engine-api/13-input-system.md","raw_sha256":"8107D1CC5FFCA3E8206B25A7CC3CFF0D1CAD95EB96B3B257C89BEC2B1E19D610","lf_normalized_sha256":"8107D1CC5FFCA3E8206B25A7CC3CFF0D1CAD95EB96B3B257C89BEC2B1E19D610","eol":{"crlf":0,"lf":963},"receipt_match":true,"expected_diff_match":true}
+  ],
+  "reopened_sources": [
+    {"path":"D:/DayZ Projects/scripts/1_core/proto/enscript.c","sha256":"1CA3897DF3F842E6EAACB5E771A4A04ECE1D77E2A7C987F0A8174351770B43D4","lines":"80-110"},
+    {"path":"D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c","sha256":"6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3","lines":"578-598"},
+    {"path":"D:/DayZ Projects/scripts/3_game/global/game.c","sha256":"CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158","lines":"704-706"},
+    {"path":"D:/DayZ Projects/scripts/3_game/entities/object.c","sha256":"EBAC48FF196148AB4722A9D9A81C277796D4EA07896A5CF09742213D32424B4C","lines":"74-85"},
+    {"path":"D:/DayZ Projects/bin/constants.xml","sha256":"A2757261E565F84B04B19EB8FF6CE25D7DB60C047F09F4D2A92CB96576746BCE","lines":"463,505,567"},
+    {"path":"D:/DayZ Projects/scripts/3_game/inputapi/uainput.c","sha256":"F6D2E840339E2F6E8517EDA07B9D2017086DB486F409B68BEDB002AABF34C8E0","lines":"33-34"},
+    {"path":"D:/DayZ Projects/scripts/3_game/client/notifications/notificationsystem.c","sha256":"B9970DE3A3623C5260EEA015052DF02673E45D108D8C5AA65B37F3BB4232D97C","lines":"75-113,192-230,235-266"},
+    {"path":"C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework/JM/CF/Scripts/3_Game/CommunityFramework/Notification/NotificationSystem.c","sha256":"84DEA071E55B1578394A00DFC2403CE8962306000B182BE35F2541BC769188F8","lines":"1-165","commit":"0763e7e7548c9a0bed6626afff835de80693ebf3"}
+  ],
+  "internet_provenance": {
+    "community_framework_head_and_production":"0763e7e7548c9a0bed6626afff835de80693ebf3",
+    "dayz_samples_head_and_master":"da5e5437c9502620d9853fb6eed14701135ab2ea",
+    "method":"fresh git ls-remote"
+  },
+  "validation": {
+    "vitepress_renderer":"All four pages rendered through scripts/check-links.mjs makeIdReader and each has one H1.",
+    "balanced_fences":"pass on all four pages",
+    "dead_file_links":0,
+    "scoped_dead_anchors":{"current":3,"baseline":3,"new":0,"removed":0,"classification":"pre-existing and out of scope"},
+    "git_diff_check":{"exit_code":0}
+  },
+  "limitations": [
+    "No full build or game/server/runtime test was run.",
+    "ENG-004 remains version-specific uncertainty; ENG-005 makes no native replication timing or all-client guarantee.",
+    "Numeric UA IDs remain build-qualified, NOTIFY-EXTRA-001 describes only inspected script operations, and CF conclusions apply only to the pinned commit.",
+    "Approval applies only to these four pages; other working-tree changes were not reviewed."
+  ]
+}

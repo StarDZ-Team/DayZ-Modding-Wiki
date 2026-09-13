@@ -557,7 +557,7 @@ void MapIndexAccess()
     data.Set("beta", 2);
     data.Set("gamma", 3);
 
-    // Access by internal index (O(n), order is insertion order)
+    // Access by internal index (O(n)); do not rely on a particular iteration order
     for (int i = 0; i < data.Count(); i++)
     {
         string key = data.GetKey(i);
@@ -579,11 +579,9 @@ void MapExtraction()
 
     // Get all keys as an array
     array<string> keys = prices.GetKeyArray();
-    // keys: ["AKM", "M4A1", "Mosin"]
 
     // Get all values as an array
     array<int> values = prices.GetValueArray();
-    // values: [5000, 7500, 2000]
 }
 ```
 
@@ -947,15 +945,12 @@ array<string> items3 = {"Test"};
 
 ### 4. `Insert` vs `Set` on Maps
 
-`Insert` does not update existing keys --- it returns `false` and leaves the value unchanged:
+`Set` is the documented create-or-update operation. Use it when the key may already exist; the public `Insert` declaration only documents insertion of a new element, so do not rely on an undocumented duplicate-key result.
 
 ```c
 map<string, int> data = new map<string, int>;
-data.Insert("key", 100);
-data.Insert("key", 200);   // Returns false, value is STILL 100!
-
-// Use Set to update
-data.Set("key", 200);      // Now value is 200
+data.Insert("key", 100);  // Insert a new key
+data.Set("key", 200);     // Create or update; value is now 200
 ```
 
 ### 5. Modifying a Collection During foreach

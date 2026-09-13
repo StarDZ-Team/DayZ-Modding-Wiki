@@ -56,7 +56,7 @@ void CheckPlayerState(PlayerBase player)
         Print("Player is alive");
     }
 
-    if (player.GetHealth("", "Blood") < 3000 || player.GetHealth("", "Health") < 25)
+    if (player && (player.GetHealth("", "Blood") < 3000 || player.GetHealth("", "Health") < 25))
     {
         Print("Player is in danger");
     }

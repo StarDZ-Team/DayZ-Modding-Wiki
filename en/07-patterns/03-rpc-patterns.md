@@ -726,13 +726,13 @@ The dispatcher is the single-id `modded DayZGame.OnRPC` from [Central Dispatch](
 #endif
 ```
 
-**Pros:** zero collision risk (mod namespace + function name is globally unique); no framework dependency; the engine is hooked exactly once; `CreateRPC()` removes header-writing boilerplate; handlers are easy to enumerate and clean up (`s_Handlers`). **Cons:** two extra string reads per RPC, and other mods cannot discover your routes through a shared registry.
+**Pros:** namespaced route keys reduce collisions inside this router; `CreateRPC()` removes header-writing boilerplate; handlers are easy to enumerate and clean up (`s_Handlers`). **Cons:** `LNT_RPC_ENGINE_ID` is still a global integer RPC ID that must not collide with other mods, route keys must remain unique, dispatch reads two extra strings, and independent mods do not automatically discover this registry.
 
 ### Comparison
 
 | Feature | Framework-Named | Integer-Range | String-Routed (LNT_RPC) |
 |---------|-----------------|---------------|-------------------------|
-| **Collision risk** | Low (named) | High | None (namespaced) |
+| **Collision risk** | Low (named) | High | Reduced inside the router; engine ID still global |
 | **Dependencies** | Framework (e.g. CF) | None | None |
 | **Handler shape** | Named callback | `switch` case | Handler object |
 | **Discoverability** | Framework registry | None | `LNT_RPC.s_Handlers` |
@@ -848,4 +848,4 @@ modded class MissionServer
 |---------------|--------------|
 | Use protocol buffers or schema-based serialization | Enforce Script has no protobuf support; you manually `Write`/`Read` primitives in matched order |
 | Validate all inputs with schema enforcement | No schema validation exists; every `ctx.Read()` return value must be checked individually |
-| RPCs should be idempotent | Practical only for query RPCs; mutation RPCs (spawn, delete, teleport) are inherently non-idempotent --- guard them with permission checks instead |
+| RPCs should be idempotent | Design retries explicitly: use request IDs and duplicate suppression for mutations such as spawning; permission checks alone do not prevent repeated authorized execution. |

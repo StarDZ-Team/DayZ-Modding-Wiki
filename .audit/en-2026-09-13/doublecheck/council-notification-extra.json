@@ -1,0 +1,68 @@
+{
+  "review": "bounded independent council on two notification claims",
+  "reviewed_at": "2026-09-13",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "english_files_edited": false,
+  "runtime_tested": false,
+  "build_run": false,
+  "page": {
+    "path": "en/06-engine-api/06-notifications.md",
+    "baseline_raw_sha256": "6C48FD6E520EE6227496A895567218EF6D2D2DD4F728D3F85D164ACF480931D0",
+    "current_raw_sha256": "679C254F9BCCE763182D6E5B661894259B3308F7F8B9C45D0C8696F0DBC9C248",
+    "current_note": "The current diff already repairs the ENG-002 Multi-Mod bullet at baseline line 397; baseline line 296 remains unchanged and requires the coordinated supplemental occurrence below."
+  },
+  "primary_evidence": [
+    {
+      "path": "D:/DayZ Projects/scripts/3_game/client/notifications/notificationsystem.c",
+      "sha256": "B9970DE3A3623C5260EEA015052DF02673E45D108D8C5AA65B37F3BB4232D97C",
+      "lines": "75-113, 192-230, 235-266",
+      "verified": "MAX_NOTIFICATIONS is 5; both add paths append overflow with m_DeferredArray.Insert; Update reads Get(count - 1) and removes index count - 1 after a visible notification expires."
+    },
+    {
+      "path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework/JM/CF/Scripts/3_Game/CommunityFramework/Notification/NotificationSystem.c",
+      "sha256": "84DEA071E55B1578394A00DFC2403CE8962306000B182BE35F2541BC769188F8",
+      "lines": "1-100",
+      "verified": "Pinned CF declares modded class NotificationSystem; its receive path constructs NotificationRuntimeData and calls m_Instance.AddNotif(data)."
+    }
+  ],
+  "community_framework_provenance": {
+    "repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+    "local_head": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+    "origin": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+    "internet_command": "git ls-remote https://github.com/Arkensor/DayZ-CommunityFramework.git HEAD refs/heads/production",
+    "internet_result": {
+      "HEAD": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "refs/heads/production": "0763e7e7548c9a0bed6626afff835de80693ebf3"
+    },
+    "verified": true
+  },
+  "findings": [
+    {
+      "id": "NOTIFY-EXTRA-001",
+      "classification": "confirmed error",
+      "disposition": "accept revised exact repair",
+      "baseline_line": 388,
+      "old_text": "- **Respect the 5-notification stack limit.** Sending many notifications in rapid succession pushes older ones off screen before players can read them. Batch related messages or use longer display times.",
+      "final_new_text": "- **Respect the 5-notification stack limit.** At most five notifications are visible. Additional notifications are appended to the deferred array and promoted as visible notifications expire. This script implementation promotes the last deferred entry first, so its overflow backlog is LIFO. Batch related messages or use longer display times.",
+      "reason": "The old text incorrectly says older visible entries are pushed away. The opened script instead retains overflow in a deferred array and explicitly selects/removes count - 1; describing this concrete script algorithm as LIFO does not extrapolate unpublished native behavior."
+    },
+    {
+      "id": "ENG-002",
+      "classification": "confirmed duplicate occurrence requiring coordinated supplement",
+      "disposition": "accept revised exact supplemental repair; map to existing ENG-002, do not create a new finding ID",
+      "baseline_line": 296,
+      "old_text": "Several large public frameworks (CommunityFramework, DayZ-Expansion) ship their own notification channels that stack above the vanilla toasts, adding conveniences such as colored icons, localized strings, and per-server styling. You do not need a framework to get most of that --- a thin static wrapper over the vanilla `NotificationSystem` gives you named severity helpers, consistent icons, and a single choke point for logging, while still sharing the vanilla 5-notification stack.",
+      "final_new_text": "Notification features and rendering paths are framework-specific. At pinned CommunityFramework commit `0763e7e7548c9a0bed6626afff835de80693ebf3`, CF mods the vanilla `NotificationSystem` and feeds its inherited notification path rather than establishing an independent channel; inspect other frameworks and versions separately. You do not need a framework for the conveniences shown here --- a thin static wrapper over the vanilla `NotificationSystem` gives you named severity helpers, consistent icons, and a single choke point for logging while sharing the vanilla 5-notification stack.",
+      "reason": "This is a separate earlier occurrence of the same false independence assertion already owned by ENG-002. The pinned CF implementation directly contradicts naming CommunityFramework as stacking above vanilla, while the evidence does not establish DayZ-Expansion behavior, so the replacement keeps other frameworks explicitly version-specific."
+    }
+  ],
+  "coordination": {
+    "existing_current_eng_002_repair": "- **Multi-Mod:** The vanilla `NotificationSystem` is shared by all mods, so simultaneous notifications can contend for its visible stack. Do not assume a framework is independent: CommunityFramework mods the vanilla `NotificationSystem`; inspect the specific framework/version before reasoning about queue or layer isolation.",
+    "instruction": "Keep the existing ENG-002 Multi-Mod repair and add the baseline-line-296 supplemental replacement as the same finding ID; do not duplicate the finding."
+  },
+  "limitations": [
+    "Static source review only; no notification UI, ordering, network, native, or runtime test was performed.",
+    "LIFO is asserted only for the opened script implementation's deferred-array operations, not unpublished native behavior.",
+    "CF conclusions apply only to the verified pinned commit; no behavior is asserted for DayZ-Expansion or other framework versions."
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "review": "independent final diff council verification for language repairs",
+  "baseline_commit": "bf7ae1947876071ed4e25578dc595d896f2e6263",
+  "verdict": "approved for commit",
+  "reviewed_at": "2026-09-13",
+  "runtime_tested": false,
+  "full_build_run": false,
+  "content_files_edited_by_reviewer": false,
+  "scope": {
+    "implementation_receipts": [
+      ".audit/en-2026-09-13/doublecheck/implement-language.json",
+      ".audit/en-2026-09-13/doublecheck/implement-language-REPORT.md"
+    ],
+    "council_records": [
+      ".audit/en-2026-09-13/doublecheck/council-language.json",
+      ".audit/en-2026-09-13/doublecheck/council-language-REPORT.md"
+    ],
+    "changed_pages": 11,
+    "approved_original_lang_dc_repairs": 15,
+    "approved_inherited_repairs": 2
+  },
+  "diff_verification": {
+    "method": "Reopened the baseline-to-working-tree patch for all 11 receipt pages and compared every hunk, old context, insertion point, code delimiter, quote, and escape against the council's exact repair text and original-ID mapping.",
+    "all_hunks_match_approved_repairs": true,
+    "unapproved_hunks": 0,
+    "omitted_approved_repairs": 0,
+    "quote_or_escape_errors": 0,
+    "incorrect_insertions": 0,
+    "authorized_extra": "The same-page Table of Contents label and target were changed with the renamed LANG-DC-012 RPC heading.",
+    "unresolved_or_rejected_repairs_applied": 0
+  },
+  "findings": [
+    {"id":"LANG-DC-001","disposition":"implemented revised exact repair","verified":true},
+    {"id":"LANG-DC-002","disposition":"implemented revised exact repair","verified":true},
+    {"id":"LANG-DC-003","disposition":"implemented revised exact repair, including deletion of both expected-order comments","verified":true},
+    {"id":"LANG-DC-004","disposition":"implemented revised exact repair at both examples and the exercise, using original-ID EEOnDamageCalculated mapping","verified":true},
+    {"id":"LANG-DC-005","disposition":"implemented revised exact repair at paragraph and summary table, using original-ID constant mapping","verified":true},
+    {"id":"LANG-DC-006","disposition":"implemented exact repair","verified":true},
+    {"id":"LANG-DC-007","disposition":"implemented revised exact repair without adding an unproved byte-count claim","verified":true},
+    {"id":"LANG-DC-008","disposition":"unresolved; no page change applied","verified":true},
+    {"id":"LANG-DC-009","disposition":"implemented exact repair","verified":true},
+    {"id":"LANG-DC-010","disposition":"implemented revised exact repair","verified":true},
+    {"id":"LANG-DC-011","disposition":"implemented revised exact repair","verified":true},
+    {"id":"LANG-DC-012","disposition":"implemented revised exact repair plus approved matching ToC label/target update","verified":true},
+    {"id":"LANG-DC-013","disposition":"implemented exact repair","verified":true},
+    {"id":"LANG-DC-014","disposition":"implemented revised exact repair at all four approved locations","verified":true},
+    {"id":"LANG-DC-015","disposition":"implemented exact repair","verified":true},
+    {"id":"LANG-DC-016","disposition":"implemented revised exact repair","verified":true}
+  ],
+  "inherited_findings": [
+    {"lead":"no const for reference types","disposition":"implemented revised exact repair","verified":true},
+    {"lead":"raw RPC IDs 1..3","disposition":"implemented revised exact repair with 1234501..1234503 and collision guidance","verified":true},
+    {"lead":"typename.Spawn constructor restriction","disposition":"unresolved; unchanged by this diff","verified":true},
+    {"lead":"omitted override dispatch","disposition":"unresolved; unchanged by this diff","verified":true},
+    {"lead":"autoptr equivalence","disposition":"unresolved; unchanged by this diff","verified":true},
+    {"lead":"static lifetime across mission restart","disposition":"unresolved; unchanged by this diff","verified":true},
+    {"lead":"absence of Object.IsDeleted","disposition":"unresolved; unchanged by this diff","verified":true},
+    {"lead":"SERVER/listen-server semantics","disposition":"unresolved; unchanged by this diff","verified":true},
+    {"lead":"global-scope Print load-order advice","disposition":"unresolved; unchanged by this diff","verified":true}
+  ],
+  "page_hashes": [
+    {"path":"en/01-enforce-script/01-variables-types.md","raw_sha256":"62EA48ED2B4D4CA84E379E596D824FD46ED4ABABB7A3AA15F1BCB6CEDC84E990","lf_normalized_sha256":"62EA48ED2B4D4CA84E379E596D824FD46ED4ABABB7A3AA15F1BCB6CEDC84E990","eol":{"crlf":0,"lf":760},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/02-arrays-maps-sets.md","raw_sha256":"22F682C5E3B7CE2C0E9B8E525A0DA389BA8DF5D4B4AD85C4D3BCB730A5DB18AE","lf_normalized_sha256":"22F682C5E3B7CE2C0E9B8E525A0DA389BA8DF5D4B4AD85C4D3BCB730A5DB18AE","eol":{"crlf":0,"lf":1049},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/04-modded-classes.md","raw_sha256":"F4D1EA71F8F2EA3BF4C3A2A48E9E5E08B4B92001B13CE6BEE8281CFB8E1049B8","lf_normalized_sha256":"F4D1EA71F8F2EA3BF4C3A2A48E9E5E08B4B92001B13CE6BEE8281CFB8E1049B8","eol":{"crlf":0,"lf":1218},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/05-control-flow.md","raw_sha256":"AD6448EC8D1454CFCE475CA9F9879776204F8ADF656F5CB3BA8DE238E1775C33","lf_normalized_sha256":"C68A587E5450E8A7512014F2F5FFF0F419CF1E4A2CD4BCFADD0136ED58082DDA","eol":{"crlf":608,"lf":1},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/06-strings.md","raw_sha256":"E1E82F51CABA520C15F26CF521E9DE7FFD4ADBB5BF18981438BB118D996EF4F1","lf_normalized_sha256":"E1E82F51CABA520C15F26CF521E9DE7FFD4ADBB5BF18981438BB118D996EF4F1","eol":{"crlf":0,"lf":538},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/09-casting-reflection.md","raw_sha256":"F2F3B99D0A9A787A15A85D6E3BE605738062B65823E486CBB568BA6E61181B00","lf_normalized_sha256":"19F012DF51E5C32CCC4DC7C95944DD2A35AE2FB5A45B1AD1C374BDA7031E66E7","eol":{"crlf":656,"lf":1},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/10-enums-preprocessor.md","raw_sha256":"0AFB7E5CC41D2FF80AAA85BF3ACEC738E25B135C7894CBA500FD9DCFCAAC6CC5","lf_normalized_sha256":"0AFB7E5CC41D2FF80AAA85BF3ACEC738E25B135C7894CBA500FD9DCFCAAC6CC5","eol":{"crlf":0,"lf":632},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/11-error-handling.md","raw_sha256":"E6E1B01C5A9ED612BBF4867C996B391583F9A461DF119A63DFC30A979677BC72","lf_normalized_sha256":"E6E1B01C5A9ED612BBF4867C996B391583F9A461DF119A63DFC30A979677BC72","eol":{"crlf":0,"lf":840},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/12-gotchas.md","raw_sha256":"EC33067E86CAE538EAD7BB4BDA43FE8D5D5EDB6667DA96CE3D822734E4173644","lf_normalized_sha256":"EC33067E86CAE538EAD7BB4BDA43FE8D5D5EDB6667DA96CE3D822734E4173644","eol":{"crlf":0,"lf":829},"matches_implementation_receipt":true},
+    {"path":"en/01-enforce-script/13-functions-methods.md","raw_sha256":"DEABDB2C40382276D4604BF44EE15629493EBE77E461C96EA13F8C7F3391324E","lf_normalized_sha256":"DEABDB2C40382276D4604BF44EE15629493EBE77E461C96EA13F8C7F3391324E","eol":{"crlf":0,"lf":1195},"matches_implementation_receipt":true},
+    {"path":"en/02-mod-structure/01-five-layers.md","raw_sha256":"EC8F8B2A227A367F17254A73A362E87CF3290255D5684B16D6C3B22110DDDAAF","lf_normalized_sha256":"F6B3DBAC93953622AFF6CF5F3B5185E3F90327D2665B49B7374F5353361E39CC","eol":{"crlf":619,"lf":7},"matches_implementation_receipt":true}
+  ],
+  "primary_sources": {
+    "snapshot_root": "D:/DayZ Projects/scripts",
+    "snapshot_git_metadata_present": false,
+    "files": [
+      {"path":"scripts/1_core/proto/enscript.c","sha256":"1CA3897DF3F842E6EAACB5E771A4A04ECE1D77E2A7C987F0A8174351770B43D4","reopened_lines":["860-925"]},
+      {"path":"scripts/1_core/proto/enstring.c","sha256":"AF20692799C41AEF141E594842AAD4D565C69A2B4B35B3443D32E6220CA56190","reopened_lines":["195-212"]},
+      {"path":"scripts/3_game/entities/object.c","sha256":"EBAC48FF196148AB4722A9D9A81C277796D4EA07896A5CF09742213D32424B4C","reopened_lines":["1136-1143"]},
+      {"path":"scripts/3_game/systems/inventory/humaninventory.c","sha256":"5895C6B599776D57843EFA2C668DA1C0DADF0B434A9FB38EDE0E2239C9112DD7","reopened_lines":["46-53"]},
+      {"path":"scripts/3_game/entities/entityai.c","sha256":"AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5","reopened_lines":["874-881"]},
+      {"path":"scripts/3_game/constants.c","sha256":"8D79C370A3A01026AD36429F7C3F7E23CC9D52CAEC89A914C40447CC306CF4A1","reopened_lines":["254-264"]},
+      {"path":"scripts/3_game/objectspawner.c","sha256":"6CC150C3AAF39B94E9BC1C92F8F4BB9819356E637619FBCA28779DAA7E0DF4B9","reopened_lines":["1-8"]},
+      {"path":"scripts/2_gamelib/tools.c","sha256":"48E8DAFACF8D8BD6D38A141896039720507488E45E1EFB369958B29BEC68D38B","reopened_lines":["115-123"]},
+      {"path":"scripts/3_game/particles/tests/pmtf.c","sha256":"0ACC6E8734BCF1C9DF448F17746912307E6DCBBFBFA9CD9A260629CD4B73C8A2","reopened_lines":["27-29"]},
+      {"path":"scripts/3_game/entities/pawn.c","sha256":"09E6748DCE4A7E8820757D3AC105DD8E00EDBF2DDFC99987410D110BADDD7643","reopened_lines":["1-2","83-131"]},
+      {"path":"scripts/4_world/entities/itembase.c","sha256":"BDFBA33084EF6B2F3680BAD152B9BFC385D7E7D15161649D4C51CE68A2431372","reopened_lines":["3337-3346"]}
+    ],
+    "corrected_council_hashes_recomputed_and_matched": ["scripts/1_core/proto/enscript.c","scripts/3_game/systems/inventory/humaninventory.c","scripts/3_game/entities/entityai.c"]
+  },
+  "validation": {
+    "renderer": "All 11 pages rendered through scripts/check-links.mjs makeIdReader; every rendered page has exactly one H1.",
+    "balanced_fences": "All 11 pages have an even count of opening/closing Markdown fences.",
+    "dead_file_links": {"count":0},
+    "affected_page_anchors": {"checked":167,"current_dead":28,"baseline_dead":28,"new":0,"removed":0,"classification":"pre-existing entries exactly matching .audit/en-2026-09-13/doublecheck/baseline-links.json"},
+    "full_english_anchor_count": {"checked":1278,"dead":210,"pages_affected":41,"exit_code":0,"classification":"returns recorded baseline count"},
+    "git_diff_check": {"exit_code":0},
+    "initial_targeted_renderer_attempt": "collect() was incorrectly given file paths and exited 1 with ENOTDIR; the corrected export-based invocation passed and is the result reported above.",
+    "build": "not run by task restriction"
+  },
+  "limitations": [
+    "No full VitePress build, Enforce compiler, game/runtime, server, RPC exploit, or inventory transaction test was run.",
+    "The local source snapshot has no enclosing Git metadata, so its files and exact lines were reopened and hashed but the snapshot commit identity could not be independently derived from that directory.",
+    "Approval applies only to the 11 English receipt pages; unrelated working-tree changes were not reviewed."
+  ]
+}

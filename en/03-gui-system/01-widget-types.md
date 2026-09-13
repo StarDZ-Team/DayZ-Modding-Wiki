@@ -280,7 +280,7 @@ bw.SetState(bool state);    // Set toggle state
 
 **Key layout attributes:**
 - `text "Label"` -- Button label text
-- `switch normal` / `switch once` -- Values used by vanilla button layouts. For persistent on/off state, use `CheckBoxWidget` and explicitly read or set its state with `GetState()` / `SetState()`
+- `switch normal` / `switch once` -- Values used by vanilla button layouts. For persistent on/off state, use `CheckBoxWidget` and explicitly read or set its state with `IsChecked()` / `SetChecked()`
 - `style Default` -- Visual style
 
 **Events fired:** `OnClick(Widget w, int x, int y, int button)`
@@ -422,7 +422,7 @@ ComboBoxWidgetTypeID
 | Show text with inline icons | `RichTextWidget` |
 | Display an image/icon | `ImageWidget` |
 | Create a clickable button | `ButtonWidget` |
-| Create a toggle (on/off) | `CheckBoxWidget` with explicit `GetState()` / `SetState()` handling |
+| Create a toggle (on/off) | `CheckBoxWidget` with explicit `IsChecked()` / `SetChecked()` handling |
 | Accept text input | `EditBoxWidget` |
 | Accept multi-line text input | `MultilineEditBoxWidget` |
 | Accept a password | `PasswordEditBoxWidget` |

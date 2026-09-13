@@ -192,7 +192,7 @@ class VehicleRegistry
 
     static void DestroyInstance()
     {
-        s_Instance = null;  // Drops the ref, destructor runs
+        s_Instance = null;  // Releases this strong reference; destruction waits until no strong references remain.
     }
 
     void ~VehicleRegistry()
@@ -597,6 +597,6 @@ Before shipping a singleton, verify:
 - Multiple mods each defining their own singletons coexist safely --- each has its own `s_Instance`. Conflicts only arise if two mods define the same class name.
 - Lazy singletons are unaffected by mod load order. Eager singletons created in `OnInit()` depend on the `modded class` chain order, which follows `config.cpp` `requiredAddons`.
 - On listen servers, static fields are shared between client and server contexts. A server-only singleton must guard construction with `GetGame().IsServer()`.
-- Enforce Script has no dependency injection. Singletons are the standard approach.
+- Enforce Script has no built-in dependency-injection container, but you can still pass dependencies explicitly through constructors or initialization methods. Singletons are one option, not a language requirement.
 - RPC handlers must be registered before any client connects, so eager init in `OnInit()` is often necessary.
 - Missions cycle within one process -- the client alone moves between the main-menu mission and a gameplay mission -- so singletons **must** be destroyed and recreated on each mission cycle. A server host that schedules a full process restart wipes static state anyway; `DestroyInstance()` in `OnMissionFinish` is what covers the case where it does not. See [Lifecycle Management](#lifecycle-management).
