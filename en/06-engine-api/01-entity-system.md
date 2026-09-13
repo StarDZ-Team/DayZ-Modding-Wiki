@@ -102,10 +102,10 @@ The engine-native entity. All proto native methods --- you cannot see their impl
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `VectorToParent` | `proto native vector VectorToParent(vector vec)` | Transform direction from local to world space |
-| `CoordToParent` | `proto native vector CoordToParent(vector coord)` | Transform point from local to world space |
-| `VectorToLocal` | `proto native vector VectorToLocal(vector vec)` | Transform direction from world to local space |
-| `CoordToLocal` | `proto native vector CoordToLocal(vector coord)` | Transform point from world to local space |
+| `VectorToParent` | `proto native external vector VectorToParent(vector vec)` | Transform direction from local to world space |
+| `CoordToParent` | `proto native external vector CoordToParent(vector coord)` | Transform point from local to world space |
+| `VectorToLocal` | `proto native external vector VectorToLocal(vector vec)` | Transform direction from world to local space |
+| `CoordToLocal` | `proto native external vector CoordToLocal(vector coord)` | Transform point from world to local space |
 
 ### Hierarchy
 
@@ -123,8 +123,8 @@ The engine-native entity. All proto native methods --- you cannot see their impl
 |--------|-----------|-------------|
 | `SetEventMask` | `proto native external EntityEvent SetEventMask(EntityEvent e)` | Enable event callbacks |
 | `ClearEventMask` | `proto native external EntityEvent ClearEventMask(EntityEvent e)` | Disable event callbacks |
-| `SetFlags` | `proto native external EntityFlags SetFlags(EntityFlags flags, bool recursivelyApply)` | Set entity flags (VISIBLE, SOLID, etc.) |
-| `ClearFlags` | `proto native external EntityFlags ClearFlags(EntityFlags flags, bool recursivelyApply)` | Clear entity flags |
+| `SetFlags` | `proto native external EntityFlags SetFlags(EntityFlags flags, bool recursively)` | Set entity flags (VISIBLE, SOLID, etc.) |
+| `ClearFlags` | `proto native external EntityFlags ClearFlags(EntityFlags flags, bool recursively)` | Clear entity flags |
 
 ### Event Callbacks
 
@@ -147,6 +147,8 @@ event protected void EOnLeave(IEntity other, int extra);
 ## Object
 
 **File:** `3_Game/entities/object.c` (1455 lines)
+
+> Line counts quoted in this chapter are from the unpacked script dump of the build this page was checked against. They move with every game patch --- use them as a rough sense of scale, not as a version check.
 
 Base class for all spatial objects in the game world. This is the first script-accessible level of the hierarchy --- `IEntity` is purely engine-native.
 
@@ -177,7 +179,7 @@ obj.SetPosition(newPos);
 proto native float GetHealth(string zoneName, string healthType);
 proto native float GetMaxHealth(string zoneName, string healthType);
 proto native void  SetHealth(string zoneName, string healthType, float value);
-proto native void  SetHealthMax(string zoneName, string healthType);
+void SetHealthMax(string zoneName = "", string healthType = "");   // script method, not proto native
 proto native void  DecreaseHealth(string zoneName, string healthType, float value);
 // NOTE: A 4-param overload with auto_delete exists as a regular script method, not proto native.
 proto native void  AddHealth(string zoneName, string healthType, float value);
@@ -203,17 +205,16 @@ obj.SetHealth("", "Health", maxHP * 0.5);
 bool IsAlive();
 ```
 
-`IsAlive()` is a regular script method on `Object`, not a proto native. It checks whether the object's health is above zero. Note that only `IsDamageDestroyed()` is proto native on `Object`.
-
-> **Gotcha:** In practice many modders have found `IsAlive()` unreliable on the base `Object` class. The safe pattern is to cast to `EntityAI` first:
+`IsAlive()` is a regular script method on `Object`, not a proto native, and its entire body is:
 
 ```c
-EntityAI eai;
-if (Class.CastTo(eai, obj) && eai.IsAlive())
+bool IsAlive()
 {
-    // Confirmed alive
+    return !IsDamageDestroyed();
 }
 ```
+
+`IsDamageDestroyed()` *is* `proto native`, so `IsAlive()` is a thin inversion of the engine's ruined flag --- not a health-above-zero test, and not something that can diverge from `IsDamageDestroyed()`. It is declared once on `Object` and is not overridden anywhere else in the vanilla script dump, so calling it through an `EntityAI`, `ItemBase` or `PlayerBase` reference runs the same code. Advice to "cast to `EntityAI` first for a reliable `IsAlive()`" has no basis in the script source; use whichever of the two reads more clearly at the call site.
 
 ### Type Checking
 
@@ -225,7 +226,7 @@ bool IsTransport();
 bool IsKindOf(string type);     // Check config inheritance
 ```
 
-These are regular script methods on `Object`, not proto native. Only `IsDamageDestroyed()` is proto native on `Object`.
+These type checks are regular script methods, not proto native --- the base implementations simply `return false` and concrete subclasses override them (`IsKindOf()` is the exception: it forwards to `CGame.ObjectIsKindOf()`). The related ruined check, `IsDamageDestroyed()`, *is* `proto native`. `Object` also declares plenty of other `proto native` members (`GetPosition`, `GetHealth`, `ToDelete`, ...); it is only this family of type/state predicates that is script-side.
 
 **Example:**
 
@@ -248,9 +249,11 @@ string GetDisplayName();
 
 ### Scale
 
+Inherited from `IEntity` (`1_Core/proto/enentity.c`), not declared on `Object`:
+
 ```c
-proto native void  SetScale(float scale);
-proto native float GetScale();
+proto native external void  SetScale(float scale);
+proto native external float GetScale();
 ```
 
 ### Bone Positions
@@ -308,7 +311,7 @@ proto native vector GetBoundingCenter();
 
 ## EntityAI
 
-**File:** `3_Game/entities/entityai.c` (4719 lines)
+**File:** `3_Game/entities/entityai.c` (4739 lines)
 
 The workhorse base for all interactive game entities. Adds inventory, damage events, temperature, energy management, and network synchronization.
 
@@ -576,7 +579,7 @@ for (int j = 0; j < fitCount; j++)
 proto native void SetHealth(string zoneName, string healthType, float value);
 proto native float GetHealth(string zoneName, string healthType);
 proto native float GetMaxHealth(string zoneName, string healthType);
-proto native void SetHealthMax(string zoneName, string healthType);
+void SetHealthMax(string zoneName = "", string healthType = "");   // script method, not proto native
 proto native void DecreaseHealth(string zoneName, string healthType, float value);
 // NOTE: A 4-param overload with auto_delete exists as a regular script method, not proto native.
 proto native void ProcessDirectDamage(int damageType, EntityAI source, string component,
@@ -622,7 +625,7 @@ enum DamageType
 }
 ```
 
-> **Note:** Older vanilla code (entityai.c, object.c) uses the constants `DT_CLOSE_COMBAT`, `DT_FIRE_ARM`, `DT_EXPLOSION`, `DT_CUSTOM` as integer aliases. Newer code uses the `DamageType` enum. Both refer to the same values.
+> **Note:** Vanilla call sites and the `ProcessDirectDamage()` doc comment in `object.c` still use bare `DT_CLOSE_COMBAT` / `DT_FIRE_ARM` / `DT_EXPLOSION` / `DT_CUSTOM` identifiers (see `entityai.c`, where `ProcessDirectDamage(DT_CUSTOM, ...)` is used for transport hits). These have no declaration anywhere in the script dump, so they are engine-provided constants rather than script `const int`s. They are used interchangeably with the `DamageType` members in vanilla, but because their values are not visible in script you cannot confirm the mapping from the dump alone --- prefer the `DamageType` enum in new code, where the value *is* readable.
 
 #### ProcessDirectDamageFlags
 
@@ -865,6 +868,8 @@ protected ref ScriptInvoker m_OnKilledInvoker;
 
 ### Type Checks
 
+Like the `IsMan()` family above, these are declared on `Object` (`3_Game/entities/object.c`) rather than on `EntityAI`, so they are available on any `Object` reference. The base implementations return `false` and concrete classes override them (`Transport`, for instance, overrides `IsTransport()`):
+
 ```c
 bool IsItemBase();
 bool IsClothing();
@@ -877,8 +882,15 @@ bool IsFood();
 
 ### Spawning Entities
 
+`SpawnEntityOnGroundPos()` is a method on `EntityAI` (`3_Game/entities/entityai.c`):
+
 ```c
 EntityAI SpawnEntityOnGroundPos(string object_name, vector pos);
+```
+
+`SpawnEntity()` is **not** an `EntityAI` method --- it is a global free function declared in `3_Game/gameplay.c`, callable from anywhere, and it is what `SpawnEntityOnGroundPos()` itself calls internally with `ECE_PLACE_ON_SURFACE` and `RF_DEFAULT`:
+
+```c
 EntityAI SpawnEntity(string object_name, notnull InventoryLocation inv_loc,
                      int iSetupFlags, int iRotation);
 ```
@@ -887,7 +899,7 @@ EntityAI SpawnEntity(string object_name, notnull InventoryLocation inv_loc,
 
 ## ItemBase
 
-**File:** `4_World/entities/itembase.c` (4986 lines)
+**File:** `4_World/entities/itembase.c` (4998 lines)
 
 Base for all inventory items. `typedef ItemBase Inventory_Base;` is used throughout vanilla code.
 
@@ -975,12 +987,14 @@ ItemBase extends the entity lifecycle with item-specific initialization, actions
 
 #### Initialization Order
 
-When an ItemBase is created, the following methods are called in order:
+When an ItemBase is created, the following run in order:
 
-1. **Constructor** (`void MyItem()`) --- Register net sync variables here
-2. **`InitItemVariables()`** --- Engine calls this to read config values (quantity, wetness, temperature, liquid type)
-3. **`EEInit()`** --- Called after full entity initialization (inventory ready, attachments loaded)
-4. **`SetActions()`** --- Register player actions that can be performed with this item
+1. **`InitItemVariables()`** --- called from the **`EntityAI` constructor** (`3_Game/entities/entityai.c`), alongside `InitDamageZoneMapping()`. Because base constructors run before derived ones, this fires *before* the body of your own constructor, not after it. It reads config values (quantity, wetness, temperature, liquid type).
+2. **Your constructor** (`void MyItem()`) --- register net sync variables here. Anything `InitItemVariables()` set is already in place, so this is where you override those defaults.
+3. **`DeferredInit()`** --- the `EntityAI` constructor queues this on `CALL_CATEGORY_SYSTEM` with a 34 ms delay, so it runs a frame or two later. Use it for work that must not happen during construction.
+4. **`EEInit()`** --- called by the engine after full entity initialization (inventory ready, attachments loaded).
+
+`SetActions()` is deliberately **not** in this list. It is not part of entity initialization: `ItemBase.InitializeActions()` calls it lazily the first time `GetActions()` is queried for that item *type*, and the resulting map is cached in the static `m_ItemTypeActionsMap`. That means it runs once per class, not once per instance, and at an unspecified point after creation --- never rely on it having run, and never put instance state in it.
 
 ```c
 class MyCustomItem extends ItemBase
@@ -993,7 +1007,7 @@ class MyCustomItem extends ItemBase
         RegisterNetSyncVariableBool("m_IsActivated");
     }
 
-    // Called during initialization to set up item variables
+    // Called from the EntityAI constructor -- BEFORE the MyCustomItem() body above
     override void InitItemVariables()
     {
         super.InitItemVariables();
@@ -1008,7 +1022,7 @@ class MyCustomItem extends ItemBase
         // Safe to access inventory, attachments, and other subsystems here
     }
 
-    // Register actions that players can perform with this item
+    // Called lazily, once per item TYPE, the first time GetActions() is queried
     override void SetActions()
     {
         super.SetActions();
@@ -1151,7 +1165,7 @@ class MyModdedKnife extends ItemBase
 
 ## PlayerBase
 
-**File:** `4_World/entities/manbase/playerbase.c` (9776 lines)
+**File:** `4_World/entities/manbase/playerbase.c` (9793 lines)
 
 The player entity. The largest class in the codebase.
 
@@ -1161,14 +1175,18 @@ The player entity. The largest class in the codebase.
 PlayerIdentity GetIdentity();
 ```
 
-From `PlayerIdentity`:
+From `PlayerIdentity` (the getters are declared on its base, `PlayerIdentityBase`, in `3_Game/gameplay.c`):
 
 ```c
-string GetName();       // Steam/platform display name
-string GetId();         // Unique player ID (BI ID)
-string GetPlainId();    // Steam64 ID
-int    GetPlayerId();   // Session player ID (int)
+proto string GetName();       // nick (short) name -- processed/shortened for display
+proto string GetPlainName();  // nick without any processing
+proto string GetFullName();   // full name of player
+proto string GetId();         // unique id (hashed) -- SAFE for databases and logs
+proto string GetPlainId();    // plaintext unique id -- NOT for databases or logs
+proto int    GetPlayerId();   // session id; reused after the player disconnects
 ```
+
+> **Pick the right id.** The vanilla doc comments are explicit and often read backwards by mods: `GetId()` is the hashed id that "can be used in database or logs", while `GetPlainId()` is the plaintext id that "cannot be used in database or logs". Key your persistence and your log lines on `GetId()`. Never key anything persistent on `GetPlayerId()` --- it is only a session slot and is handed out again to a later player.
 
 **Example --- get player info on server:**
 
@@ -1178,8 +1196,8 @@ PlayerIdentity identity = player.GetIdentity();
 if (identity)
 {
     string name = identity.GetName();
-    string steamId = identity.GetPlainId();
-    Print(string.Format("Player: %1 (Steam: %2)", name, steamId));
+    string stableId = identity.GetId();   // hashed id -- the one safe to log or persist
+    Print(string.Format("Player: %1 (id: %2)", name, stableId));
 }
 ```
 
@@ -1312,8 +1330,8 @@ proto native Object CreateObject(string type, vector pos,
 |-----------|-------------|
 | `type` | Config class name (e.g., `"AKM"`, `"ZmbF_JournalistNormal_Blue"`) |
 | `pos` | World position |
-| `create_local` | `true` = client-only, not replicated to server |
-| `init_ai` | `true` = initialize AI (for zombies, animals) |
+| `create_local` | `true` = the object is created **server-side only** and is not replicated to clients. The vanilla doc comment reads: *"if True, object is not spawned on clients only on server"* --- the doc addresses the server-caller case specifically and does not state behaviour for a client caller. It is not a "client-only" flag |
+| `init_ai` | `true` = initialize AI. The vanilla comment scopes this: *"if creating object is LightAI class, by this param is initialised AI or not"* |
 | `create_physics` | `true` = create collision geometry |
 
 **Example:**
@@ -1393,7 +1411,7 @@ int flags = ECE_SETUP | ECE_UPDATEPATHGRAPH | ECE_CREATEPHYSICS | ECE_NOLIFETIME
 Object building = GetGame().CreateObjectEx("Land_House", pos, flags, RF_IGNORE);
 ```
 
-**Spawn local-only (client side):**
+**Spawn local-only (on the calling machine, no network replication):**
 
 ```c
 Object local = GetGame().CreateObjectEx("HelpDeskItem", pos, ECE_LOCAL | ECE_CREATEPHYSICS);
@@ -1519,7 +1537,7 @@ void DamageEntity(EntityAI target, float amount)
 | Hierarchy | `IEntity` > `Object` > `EntityAI` > `ItemBase` / `PlayerBase` / `ZombieBase` |
 | Position | `GetPosition()` / `SetPosition()` available from `Object` upward |
 | Health | Zone-based: `GetHealth(zone, type)` / `SetHealth(zone, type, value)` |
-| IsAlive | Use on `EntityAI` or cast first: `EntityAI eai; Class.CastTo(eai, obj)` |
+| IsAlive | `Object.IsAlive()` is literally `!IsDamageDestroyed()`, declared once and never overridden --- no cast needed |
 | Inventory | `eai.GetInventory()` returns `GameInventory` with full CRUD |
 | Creating | `GetGame().CreateObjectEx(type, pos, ECE_flags)` is the preferred API |
 | Deleting | `obj.Delete()` (deferred) or `GetGame().ObjectDelete(obj)` (immediate) |
@@ -1532,7 +1550,7 @@ void DamageEntity(EntityAI target, float amount)
 
 - **Always call `super` in lifecycle overrides.** Every `EEInit()`, `EEKilled()`, `EEHitBy()`, `EEItemAttached()`, and `OnVariablesSynchronized()` override must call `super` first, or you break the inheritance chain for vanilla and other mods.
 - **Use `CreateObjectEx()` with explicit ECE flags instead of `CreateObject()`.** The flags-based API gives you precise control over physics, AI, surface alignment, and persistence. Always include `ECE_CREATEPHYSICS` for items that need collision.
-- **Register net sync variables only in the constructor, never conditionally.** The registration order must be identical on server and client. Adding variables outside the constructor or behind `if` checks causes desync.
+- **Register net sync variables unconditionally, in one fixed place.** Server and client must register the same names in the same order, so never put a registration behind an `if`, a `#ifdef SERVER`, or a code path that can run twice. The constructor is the usual home for mods; vanilla `PlayerBase` uses `Init()` instead --- either is fine as long as it is unconditional.
 - **Prefer `obj.Delete()` (deferred) over `GetGame().ObjectDelete()` (immediate).** Immediate deletion during iteration or event processing can cause null pointer crashes. Deferred deletion is safe in all contexts.
 - **Cast with `Class.CastTo()` instead of direct casts.** `Class.CastTo(result, source)` returns false on failure without crashing, while a direct cast to a wrong type produces undefined behavior.
 - **`GetHealth()` and `GetHealth01()` throw on a client -- they are not merely "server-authoritative," they are refused at the call site.** See the dedicated warning below; do not assume any health read is safe on both sides just because it compiled.
@@ -1555,5 +1573,5 @@ void DamageEntity(EntityAI target, float amount)
 ## Multi-Mod Considerations
 
 - If two mods both `modded class ItemBase` and override `EEInit()`, only the last-loaded mod's code runs unless both call `super`. This is the most common source of mod conflicts.
-- `RegisterNetSyncVariable*()` adds network traffic per entity. Keep synced variable count under 8 per entity. Use RPCs for infrequent updates.
+- `RegisterNetSyncVariable*()` adds network traffic per entity, multiplied by every client that knows the entity. There is no documented cap --- vanilla `PlayerBase` alone registers 33 --- so the limit is bandwidth, not a number. Quantize aggressively (`RegisterNetSyncVariableInt`/`Float` take `minValue`/`maxValue`, and `Float` takes a `precision`), and prefer an RPC for anything that changes rarely or that only one client needs.
 - `SetHealth()`, `ProcessDirectDamage()`, and `Delete()` are server-authoritative. Calling them on the client causes desync. `GetPosition()` and type checks are safe on both sides -- `GetHealth()`/`GetHealth01()` are not (see the warning above); use `GetHealthLevel()` or `IsDamageDestroyed()` client-side instead.

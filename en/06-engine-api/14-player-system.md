@@ -721,8 +721,8 @@ a common source of null-reference crashes. The split in
 |---------|---------------|----------------|
 | In the constructor, unguarded | *(none)* | `StaminaHandler`, `InjuryAnimationHandler`, `ShockHandler`, `HeatComfortAnimHandler`, `PlayerStats`, `ArrowManagerPlayer`, `SymptomManager`, `TransferValues`, `EmoteManager`, `SoftSkillsManager`, `WeaponManager`, `RandomGeneratorSyncManager` |
 | In the constructor, server side | `if (g_Game.IsServer())` (L414-427) | `PlayerStomach`, `NotifiersManager`, `PlayerAgentPool`, `BleedingSourcesManagerServer`, `Environment`, `ModifiersManager`, `PlayerSoundManagerServer` |
-| In the constructor, anything that is not a dedicated server | `if (!g_Game.IsDedicatedServer())` (L439-450) | `InventoryActionHandler`, **`BleedingSourcesManagerRemote`**, `PlayerSoundManagerClient`, `StanceIndicator` |
-| Later, by `GetInstanceType()` | `INSTANCETYPE_SERVER` / `INSTANCETYPE_CLIENT` (L6084-6100) | `ActionManagerServer` on `INSTANCETYPE_SERVER`; `ActionManagerClient` **and `CraftingManager`** on `INSTANCETYPE_CLIENT` |
+| In the constructor, anything that is not a dedicated server | `if (!g_Game.IsDedicatedServer())` (L440-457) | `InventoryActionHandler`, **`BleedingSourcesManagerRemote`**, `PlayerSoundManagerClient`, `StanceIndicator` |
+| Later, by `GetInstanceType()` | `INSTANCETYPE_SERVER` / `INSTANCETYPE_CLIENT` / `INSTANCETYPE_AI_SINGLEPLAYER` (L6083-6100) | `ActionManagerServer` on `INSTANCETYPE_SERVER` or `INSTANCETYPE_AI_SINGLEPLAYER`; `ActionManagerClient` **and `CraftingManager`** on `INSTANCETYPE_CLIENT` |
 
 **Read the guards literally, not as "client vs server."** `g_Game.IsServer()` is also true on
 a listen server, and `!g_Game.IsDedicatedServer()` means *not a dedicated server* rather than

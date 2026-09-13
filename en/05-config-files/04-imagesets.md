@@ -87,7 +87,7 @@ ImageSetClass {
 
 | Field | Description |
 |-------|-------------|
-| `mpix` | Minimum pixel level (mip level). `0` = lowest resolution, `1` = standard resolution. |
+| `mpix` | Selects which resolution variant this texture is **within this set**. It is a relative ordering, not a fixed scale --- see [Multi-Resolution Textures](#multi-resolution-textures). Do not assume `0` means "low" and `1` means "standard". |
 | `path` | Path to the `.edds` texture file, relative to the mod root. Can use Enfusion GUID format (`{GUID}path`) or plain relative paths. |
 
 ### Image Entry Fields
@@ -354,6 +354,8 @@ The `Flags` field in native-format imageset entries controls tiling behavior whe
 | `ISVerticalTile` | 2 | Tiles vertically when the widget is taller than the image. |
 | Both | 3 | Tiles in both directions (`ISHorizontalTile` + `ISVerticalTile`). |
 
+The field accepts either the symbolic name or the number: `dayz_gui.imageset` uses `Flags 0`, `Flags ISHorizontalTile`, `Flags ISVerticalTile` and the bare `Flags 3` (both) in the same file. The individual bit values are inferred from that combined `3`, not from published documentation --- if you need a specific tiling result, check it visually.
+
 ### Usage
 
 ```
@@ -388,14 +390,25 @@ Textures {
 }
 ```
 
-- `mpix 0` --- low resolution (used on low-quality settings or distant UI elements)
-- `mpix 1` --- standard/high resolution (default)
+Within a set that declares two textures, the **higher `mpix` is the higher-resolution (`@2x`) variant**. What it is *not* is a fixed global scale where `0` always means "low" and `1` always means "standard". The vanilla sets in `gui/imagesets/` use four different values, and the base/`@2x` pairing is not the same from set to set:
+
+| Imageset | `mpix` values present | Notes |
+|----------|----------------------|-------|
+| `dayz_gui` | `0`, `1` | `0` = base `.edds`, `1` = `@2x` |
+| `dayz_additional_gui` | `0`, `1` | same pairing as above |
+| `playstation_buttons` | `1`, `2` | `1` = base, `2` = `@2x` --- a different pair of numbers for the same idea |
+| `xbox_buttons` | `1`, `2` | same as above |
+| `bleedingdrops`, `map2d_ui` | `0` | single texture |
+| `console_toolbar`, `dayz_inventory` | `1` | single texture |
+| `ccgui_enforce`, `dayz_crosshairs`, `rover_imageset` | `3` | single texture |
+
+The safe reading is therefore relative: give your lowest-resolution texture the lowest `mpix` and each larger variant a higher one. A single-texture set works with any of these values --- vanilla single-texture sets use `0`, `1` and `3` interchangeably.
 
 The `@2x` naming convention is borrowed from Apple's Retina display system but is not enforced --- you can name the file anything.
 
 ### In Practice
 
-Most mods only include `mpix 1` (a single resolution). Multi-resolution support is primarily used by the vanilla game:
+Most mods ship a single texture, and so do most vanilla sets: only 4 of the 11 sets in `gui/imagesets/` declare two. A single-texture set looks like this:
 
 ```
 Textures {
@@ -774,7 +787,7 @@ While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can c
 
 - **Multi-Mod:** Set name collisions are the main risk. If two mods both define an imageset named `"icons"`, only one is loaded (last PBO wins). All references to `set:icons` in the losing mod break silently. Always use a mod-specific prefix.
 - **Performance:** Each unique imageset texture is one GPU texture load. Consolidating icons into fewer, larger atlases reduces draw calls. A mod with 10 separate 64x64 textures performs worse than one 512x512 atlas with 10 icons.
-- **Version:** The native `.imageset` format and `set:name image:name` reference syntax have been stable since DayZ 1.0. The XML format has been available as an alternative since early versions but is not officially documented by Bohemia.
+- **Version:** The native `.imageset` format (`ImageSetClass`/`ImageSetTextureClass`/`ImageSetDefClass`) and `set:name image:name` reference syntax match the current vanilla GUI files (e.g. `gui/imagesets/dayz_gui.imageset`) and current-generation mods. Both the native and XML formats are in active use today; treat specific claims about which patch first introduced either format as folklore rather than a documented fact.
 
 ---
 

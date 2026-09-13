@@ -13,15 +13,17 @@ DayZ uses a multi-layered camera system. The player camera is managed by the eng
 
 These methods are available anywhere and return the active camera's state regardless of camera type:
 
+Declared on `CGame` (`3_Game/global/game.c`), called through `GetGame()`:
+
 ```c
 // Current camera world position
-proto native vector GetGame().GetCurrentCameraPosition();
+proto native vector GetCurrentCameraPosition();
 
 // Current camera forward direction (unit vector)
-proto native vector GetGame().GetCurrentCameraDirection();
+proto native vector GetCurrentCameraDirection();
 
 // Convert world position to screen coordinates
-proto native vector GetGame().GetScreenPos(vector world_pos);
+proto native vector GetScreenPos(vector world_pos);
 // Returns: x = screen X (pixels), y = screen Y (pixels), z = depth (distance from camera)
 ```
 

@@ -14,11 +14,13 @@ DayZ provides several mechanisms for deferred and repeating function calls: `Scr
 All timer and call queue systems require a **call category** that determines when the deferred call executes within the frame:
 
 ```c
-const int CALL_CATEGORY_SYSTEM   = 0;   // System-level operations
-const int CALL_CATEGORY_GUI      = 1;   // UI updates
-const int CALL_CATEGORY_GAMEPLAY = 2;   // Gameplay logic
+const int CALL_CATEGORY_SYSTEM   = 0;   // Runs always
+const int CALL_CATEGORY_GUI      = 1;   // Runs always (on client)
+const int CALL_CATEGORY_GAMEPLAY = 2;   // Runs unless the ingame menu is opened
 const int CALL_CATEGORY_COUNT    = 3;   // Total number of categories
 ```
+
+The distinction that matters in practice: a `CALL_CATEGORY_GAMEPLAY` call pauses while the player has the ingame menu open, while `CALL_CATEGORY_SYSTEM` and `CALL_CATEGORY_GUI` keep ticking regardless.
 
 Access the queue for a category:
 
@@ -41,8 +43,12 @@ The primary mechanism for deferred function calls. Supports one-shot delays, rep
 ```c
 void CallLater(func fn, int delay = 0, bool repeat = false,
                void param1 = NULL, void param2 = NULL,
-               void param3 = NULL, void param4 = NULL);
+               void param3 = NULL, void param4 = NULL,
+               void param5 = NULL, void param6 = NULL,
+               void param7 = NULL, void param8 = NULL, void param9 = NULL);
 ```
+
+Up to nine optional parameters are supported (`param1`..`param9`); most calls only need the first few.
 
 | Parameter | Description |
 |-----------|-------------|
@@ -83,10 +89,12 @@ GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(
 
 ```c
 void Call(func fn, void param1 = NULL, void param2 = NULL,
-          void param3 = NULL, void param4 = NULL);
+          void param3 = NULL, void param4 = NULL,
+          void param5 = NULL, void param6 = NULL,
+          void param7 = NULL, void param8 = NULL, void param9 = NULL);
 ```
 
-Executes the function on the next frame (delay = 0, no repeat). Shorthand for `CallLater(fn, 0, false)`.
+Executes the function on the next frame (delay = 0, no repeat). Shorthand for `CallLater(fn, 0, false)`. Like `CallLater`, it accepts up to nine parameters.
 
 **Example:**
 
@@ -308,10 +316,12 @@ Unregister a callback function. The optional `flags` argument defaults to `EScri
 
 ```c
 void Invoke(void param1 = NULL, void param2 = NULL,
-            void param3 = NULL, void param4 = NULL);
+            void param3 = NULL, void param4 = NULL,
+            void param5 = NULL, void param6 = NULL,
+            void param7 = NULL, void param8 = NULL, void param9 = NULL);
 ```
 
-Call all registered functions with the provided parameters.
+Call all registered functions with the provided parameters (up to nine).
 
 ### Count
 
@@ -376,9 +386,16 @@ updater.Insert(this.OnFrame);
 
 // Remove when done
 updater.Remove(this.OnFrame);
+
+void OnFrame(float timeslice)
+{
+    // timeslice = seconds since the previous frame
+}
 ```
 
-Functions registered on the update queue are called every frame with no parameters. This is useful for per-frame logic without using `EntityEvent.FRAME`.
+`DayZGame.OnUpdate()` drives these queues with `GetUpdateQueue(category).Invoke(timeslice)`, so a registered function receives **one float argument**: the frame delta in seconds. Declare it. Vanilla listeners such as `RadialProgressBar.Update(float tDelta)` and `PluginManager.MainOnUpdate(float delta_time)` do exactly that. This is useful for per-frame logic without using `EntityEvent.FRAME`.
+
+Note the gating, which differs per category (`3_Game/dayzgame.c:2979-3057`, `OnUpdate()` in the supplied extraction): the `CALL_CATEGORY_SYSTEM` queue is ticked unconditionally; the `CALL_CATEGORY_GUI` queue sits inside `#ifndef NO_GUI` and is additionally skipped while the loading screen or the static login-time screen is up; the `CALL_CATEGORY_GAMEPLAY` queue sits **outside** `#ifndef NO_GUI` and is gated only by `if (gameIsRunning)` (true when the mission exists, simulation is enabled, and it is not paused) --- so `GAMEPLAY` still ticks on a `NO_GUI` build.
 
 ---
 

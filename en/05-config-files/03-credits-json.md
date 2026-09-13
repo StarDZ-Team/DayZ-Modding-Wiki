@@ -22,9 +22,32 @@
 
 ## Overview
 
-When a player views your mod's credits, the engine loads the file whose path you declare in the `creditsJson` key of your `CfgMods` block in `config.cpp` (for example, `creditsJson = "MyMod/Scripts/Data/Credits.json";`). The credits are then displayed in a scrolling view organized into departments and sections --- similar to movie credits.
+A mod credits file is a JSON document describing departments, sections and contributor lines, rendered in the main menu's scrolling credits view --- similar to movie credits.
 
-The file is optional. If you do not declare a `creditsJson` key, the file is never loaded and no credits appear for your mod. But including one is good practice: it acknowledges your team's work and gives your mod a professional appearance.
+> **Important --- `creditsJson` is a Community Framework feature, not a vanilla one.**
+
+Two separate things are often conflated here, and it matters for whether your credits ever appear:
+
+- **The JSON schema** (`Departments` / `Sections` / `SectionLines`) *is* vanilla. It is defined by `JsonDataCredits`, `JsonDataCreditsDepartment` and `JsonDataCreditsSection` in `3_Game/gui/credits/`, and the vanilla `CreditsMenu` renders exactly that shape.
+- **Loading a *mod's* credits file** is not vanilla. Vanilla `CreditsLoader.GetData()` loads one hard-coded path --- `scripts/data/credits.json`, the game's own credits --- and no vanilla script anywhere reads a `creditsJson` key from `CfgMods`.
+
+The `creditsJson` key is a convention introduced by **Community Framework** (originally from DayZ SA Epoch; CF's `CreditsLoader.c` changelog credits it to AWOL, 2019-01-20). CF supplies a `modded class CreditsLoader` that walks `ModLoader.GetMods()` and a `ModStructure` that reads `CfgMods <YourMod> creditsJson` and loads that file. Without CF --- or another mod that implements the same aggregation --- declaring `creditsJson` has no effect and your credits are never shown.
+
+So: write the JSON against the vanilla schema below, declare `creditsJson` in `CfgMods`, and treat CF (or an equivalent) as the dependency that actually makes it visible.
+
+Declare the key in your `CfgMods` block in `config.cpp`:
+
+```cpp
+class CfgMods
+{
+    class MyMod
+    {
+        creditsJson = "MyMod/Scripts/Data/Credits.json";
+    };
+};
+```
+
+The file is optional. Including one is good practice: it acknowledges your team's work and gives your mod a professional appearance.
 
 ---
 
@@ -74,7 +97,9 @@ The file uses a straightforward JSON structure with three levels of hierarchy:
 |-------|------|----------|-------------|
 | `Departments` | array | Yes | Array of department objects |
 
-The vanilla parser (`JsonDataCredits`) recognizes only the `Departments` array. There is no top-level `Header` field --- any `Header` key you add is silently ignored. To show a title at the top of the credits, use the first `DepartmentName` instead.
+The vanilla parser class `JsonDataCredits` (`3_Game/gui/credits/jsondatacredits.c`) declares exactly one field, `ref array<ref JsonDataCreditsDepartment> Departments`. There is no top-level `Header` field, so a `Header` key is simply not deserialized. To show a title at the top of the credits, use the first `DepartmentName` instead.
+
+Note that Community Framework, which is what actually loads a mod's file, may rewrite your first `DepartmentName` to your mod's `name` when the two do not resemble each other (`ModStructure.LoadData()`), so do not rely on that first entry surviving verbatim.
 
 ### Department Object
 
@@ -90,7 +115,7 @@ The vanilla parser (`JsonDataCredits`) recognizes only the `Departments` array. 
 | `SectionName` | string | Yes | Sub-header within the department |
 | `SectionLines` | array of strings | Yes | List of contributor names or text lines |
 
-The vanilla section class (`JsonDataCreditsSection`) recognizes only `SectionName` and `SectionLines`. You may see some mods use a `Names` key, but the engine never reads it --- a `Names` array is silently ignored and renders nothing. Always use `SectionLines` for the list of names.
+The vanilla section class `JsonDataCreditsSection` (`3_Game/gui/credits/jsondatacreditssection.c`) declares exactly two fields, `string SectionName` and `ref array<string> SectionLines`. You may see some mods use a `Names` key, but there is no such field to deserialize into --- it renders nothing. Always use `SectionLines` for the list of names.
 
 ---
 
@@ -122,7 +147,7 @@ The credits display follows this visual hierarchy:
 
 ### Empty Strings for Spacing
 
-You can use empty `DepartmentName` and `SectionName` strings, plus whitespace-only entries in `SectionLines`, to create visual spacing:
+An empty `DepartmentName` or `SectionName` is handled explicitly: the element hides both its title widget and its separator panel rather than drawing an empty heading. That makes empty names a reliable spacing device. Combine them with whitespace-only entries in `SectionLines`:
 
 ```json
 {
@@ -149,7 +174,7 @@ Section names can reference stringtable keys using the `#` prefix, just like UI 
 }
 ```
 
-When the engine renders this, it resolves `#STR_LNT_CREDITS_SCRIPTERS` to the localized text matching the player's language. This is useful if your mod supports multiple languages and you want the credits section headers to be translated.
+Every credits string --- department title, section title, and each `SectionLines` entry --- reaches the screen through `TextWidget.SetText()` (`CreditsDepartmentElement` / `CreditsDepartmentSection` in `5_Mission/gui/newui/credits/elements/`). So a `#`-prefixed value gets exactly the same handling any other widget text does; vanilla's own `credits.json` does not use stringtable keys, so verify the result in-game rather than assuming. If you want a guaranteed resolved string, you cannot intervene here --- the JSON is passed straight through.
 
 Department names can also use stringtable references:
 
@@ -380,13 +405,15 @@ The most common issue. JSON is strict about:
 
 Use a JSON validator before shipping.
 
-### Wrong File Name
+### Path Mismatch Between `creditsJson` and the Actual File
 
-The file must be named exactly `Credits.json` (capital C). On case-sensitive file systems, `credits.json` or `CREDITS.JSON` will not be found.
+There is no required file name. The loader takes whatever string you put in `creditsJson` and passes it straight to `JsonFileLoader.LoadFile()`, so the only requirement is that the two match. `Credits.json` is simply the community convention --- Community Framework, Community Online Tools, DayZ-Expansion, Dabs Framework and the DayZ SampleMod all happen to use that name, at differing paths.
+
+The realistic failure is a typo or a case difference between the `creditsJson` value and the packed path. A mismatch produces no credits and no crash.
 
 ### Using the `Names` Key
 
-Some mods write a `Names` array, but the engine never reads it. Only `SectionLines` is parsed:
+Some mods write a `Names` array, but `JsonDataCreditsSection` has no such field, so it is never deserialized. Only `SectionLines` is parsed:
 
 ```json
 {
@@ -405,8 +432,8 @@ Save the file as UTF-8. Non-ASCII characters (accented names, CJK characters) re
 
 ## Best Practices
 
-- Validate your JSON with an external tool before packing into a PBO -- the engine gives no useful error message for malformed JSON.
-- Use `SectionLines` for every name list. It is the only field the engine reads.
+- Validate your JSON with an external tool before packing into a PBO. Community Framework does surface a load failure, but only as a `CF_Log.Warn` line naming the path and the serializer's error message -- easy to miss unless you are reading the log.
+- Use `SectionLines` for every name list. It is the only list field the schema defines.
 - Include a "Legal Notices" department if your mod bundles third-party assets (fonts, icons, sounds) with attribution requirements.
 - Use the first `DepartmentName` as a title matching your mod's `name` in `mod.cpp` and `config.cpp` for a consistent identity.
 - Use empty `DepartmentName` and `SectionName` strings sparingly for visual spacing -- overuse makes credits look fragmented.
@@ -415,5 +442,5 @@ Save the file as UTF-8. Non-ASCII characters (accented names, CJK characters) re
 
 ## Compatibility & Impact
 
-- **Multi-Mod:** Each mod has its own independent `Credits.json`. There is no risk of collision -- the engine reads the file from within each mod's PBO separately.
-- **Performance:** Credits are loaded only when the player opens the mod details screen. File size has no impact on gameplay performance.
+- **Multi-Mod:** Each mod points `creditsJson` at its own file, so there is no file-level collision. Community Framework concatenates every mod's `Departments` into one list for the single credits screen, in `ModLoader.GetMods()` order, and appends the DayZ game credits after them --- so your entry's position depends on load order, not on anything you control.
+- **Performance:** Credits are parsed when the mod list is built and rendered when the player opens the Credits screen, never during gameplay. File size has no impact on gameplay performance.

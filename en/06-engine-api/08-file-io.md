@@ -64,7 +64,7 @@ enum FileMode
 }
 ```
 
-`FileHandle` is an integer handle. A return value of `0` indicates failure.
+`FileHandle` is declared as `typedef int[] FileHandle` (`1_Core/proto/ensystem.c`) --- an opaque handle, not a number you should do arithmetic on. Compare it against `0` to detect failure, exactly as vanilla's own examples do.
 
 **Example:**
 
@@ -129,6 +129,8 @@ proto int FGets(FileHandle file, string var);
 ```
 
 Reads one line from the file into `var`. Returns the number of characters read, or `-1` at end of file.
+
+> **Use `>= 0`, not `> 0`, as the loop condition.** The vanilla doc comment states that "end of file is EMPTY line", and vanilla's own example loops on `FGets(...) > 0`. That stops at the *first blank line* in the file, not at the end of it, because a blank line also returns `0`. Looping on `>= 0` reads blank lines as blank lines and still terminates correctly, since only true EOF returns `-1`.
 
 **Example --- read a file line by line:**
 
@@ -232,14 +234,18 @@ enum FileAttr
 }
 ```
 
+> **Caveat on testing `FileAttr`:** community frameworks commonly test file/directory type with the bit-test idiom `fileAttr & FileAttr.DIRECTORY` (Community Framework's `CF_File._SetAttributes()` and Community Online Tools' `FileAttributeToString()` both test all four members this way). This does not work as written: the script-side declaration above gives the enum no explicit values, so `DIRECTORY` is the zero-valued first member, and `fileAttr & FileAttr.DIRECTORY` evaluates to `0` for every possible `fileAttr` --- a bitmask test against `DIRECTORY` can never match, so code copied from `CF_File._SetAttributes()` reports every entry as not-a-directory. The engine side is native and Bohemia has not published the attribute encoding, and no vanilla script tests these bits --- all four vanilla `FindFile()` call sites (`2_GameLib/entities/worldsmenu.c:72`, `5_Mission/gui/newui/videoplayer.c:81`, `4_World/Plugins/PluginBase/PluginFileHandler/PluginConfigHandler/pluginconfigscene.c:112`, `4_World/Plugins/PluginBase/PluginFileHandler/PluginLocalProfile/pluginlocalprofilescene.c:72`) ignore `fileAttr` entirely; the two plugin sites additionally pass an uninitialised `flags` local (which resolves to `0`, i.e. `FindFileFlags.DIRECTORIES`) rather than a deliberate value. The examples below therefore do not filter by `FileAttr` at all --- if separating files from directories matters to your mod, confirm the behaviour on your target build rather than assuming either an ordinal or bitmask reading.
+
 ### FindFileFlags Enum
+
+`FindFileFlags` selects which storage location to search, not which entry types (files vs. directories) to return --- a script would have to read that distinction from `FileAttr.DIRECTORY` on each result instead, subject to the caveat above:
 
 ```c
 enum FindFileFlags
 {
-    DIRECTORIES,  // Return only directories
-    ARCHIVES,     // Return only files
-    ALL           // Return both
+    DIRECTORIES,  // Search the loose filesystem only (not packed .pak archives)
+    ARCHIVES,     // Search inside packed archives (.pak) only
+    ALL           // Search both loose filesystem and archives
 }
 ```
 
@@ -257,18 +263,12 @@ void ListJsonFiles()
     if (handle)
     {
         // Process first result
-        if (!(fileAttr & FileAttr.DIRECTORY))
-        {
-            Print("Found: " + fileName);
-        }
+        Print("Found: " + fileName);
 
         // Process remaining results
         while (FindNextFile(handle, fileName, fileAttr))
         {
-            if (!(fileAttr & FileAttr.DIRECTORY))
-            {
-                Print("Found: " + fileName);
-            }
+            Print("Found: " + fileName);
         }
 
         CloseFindFile(handle);
@@ -280,13 +280,15 @@ void ListJsonFiles()
 
 **Example --- count files in a directory:**
 
+`$profile:`/`$saves:` locations are loose filesystem, not packed `.pak` archives, so use `FindFileFlags.ALL` (or `DIRECTORIES`, meaning "loose filesystem") rather than `ARCHIVES` here. This example counts every entry `FindFile` returns; see the caveat above if you need to exclude directories:
+
 ```c
 int CountFiles(string pattern)
 {
     int count = 0;
     string fileName;
     FileAttr fileAttr;
-    FindFileHandle handle = FindFile(pattern, fileName, fileAttr, FindFileFlags.ARCHIVES);
+    FindFileHandle handle = FindFile(pattern, fileName, fileAttr, FindFileFlags.ALL);
 
     if (handle)
     {
@@ -344,14 +346,24 @@ class JsonFileLoader<Class T>
 }
 ```
 
-> **Critical Gotcha:** `JsonLoadFile()` returns `void`. You CANNOT use it in an `if` condition:
+> **Critical Gotcha:** `JsonLoadFile()` returns `void`, so there is no result for the caller to branch on:
 > ```c
-> // WRONG - will not compile or will always be false
+> // WRONG - JsonLoadFile returns void; there is nothing to test
 > if (JsonFileLoader<MyConfig>.JsonLoadFile(path, cfg)) { }
 >
 > // CORRECT - use the modern LoadFile() which returns bool
 > if (JsonFileLoader<MyConfig>.LoadFile(path, cfg, error)) { }
 > ```
+>
+> Be precise about *what* the legacy call does and does not tell you --- the three failure paths in `JsonFileLoader.JsonLoadFile()` behave differently:
+>
+> | Failure | What the legacy `JsonLoadFile()` does |
+> |---|---|
+> | File does not exist | The whole body is inside `if (FileExist(filename))`, so it returns having done nothing. No diagnostic at all |
+> | `OpenFile()` fails (handle `0`) | Early `return`. No diagnostic at all |
+> | JSON fails to parse | Calls `ErrorEx(...)` with the filename and the serializer's error --- this **is** reported, in the log |
+>
+> So the accurate statement is that the legacy API gives the *caller* no way to detect or handle any of these, and is genuinely silent for the two file-access failures; it is not true that it can never report anything. `LoadFile()` returns `false` and fills `errorMessage` for all three, which is why it is the one to use.
 
 ### Data Class Requirements
 
@@ -502,7 +514,7 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 | Concept | Key Point |
 |---------|-----------|
 | Path prefixes | `$profile:` (writable), `$mission:` (read), `$saves:` (writable) |
-| JsonLoadFile | **Returns void** --- use `LoadFile()` (bool) instead |
+| JsonLoadFile | **Returns void** --- the caller cannot detect failure; file-access failures are silent, parse failures only reach the log via `ErrorEx`. Use `LoadFile()` (bool) instead |
 | Data classes | Public fields with defaults, `ref` for arrays/maps |
 | Always close | Every `OpenFile` must have a matching `CloseFile` |
 | FindFile | Returns only filenames, not full paths |
@@ -512,7 +524,7 @@ Print("MaxPlayers: " + parsed.MaxPlayers);
 ## Best Practices
 
 - **Always wrap file operations in existence checks and close handles in all code paths.** An unclosed `FileHandle` leaks resources and can prevent the file from being written to disk. Use guard patterns: check `fh != 0`, do work, then `CloseFile(fh)` before every `return`.
-- **Use the modern `JsonFileLoader<T>.LoadFile()` (returns bool) instead of the legacy `JsonLoadFile()` (returns void).** The legacy API cannot report errors, and attempting to use its void return in a condition silently fails.
+- **Use the modern `JsonFileLoader<T>.LoadFile()` (returns bool) instead of the legacy `JsonLoadFile()` (returns void).** The legacy call gives the caller no way to detect failure: a missing file and a failed `OpenFile()` return with no diagnostic at all, and while a parse error does reach the log through `ErrorEx()`, your code still cannot branch on it. `LoadFile()` returns `false` and fills `errorMessage` in every one of those cases.
 - **Create directories with `MakeDirectory()` in order from parent to child.** `MakeDirectory` only creates the final directory segment. `MakeDirectory("$profile:A/B/C")` fails if `A/B` does not exist. Create each level sequentially.
 - **Use `CopyFile()` to create backups before overwriting config files.** JSON parse errors from corrupted saves are unrecoverable. A `.bak` copy lets server owners restore the last good state.
 - **Remember that `FindFile()` returns only filenames, not full paths.** You must concatenate the directory prefix yourself when loading files found via `FindFile`/`FindNextFile`.

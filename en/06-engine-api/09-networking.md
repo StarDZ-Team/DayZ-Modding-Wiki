@@ -330,10 +330,12 @@ proto native void RPCSelfSingleParam(Object target, int rpcType, Param param);
 
 ### Param Classes
 
+Declared in `1_Core/param.c`:
+
 ```c
 class Param1<Class T1> extends Param { T1 param1; };
 class Param2<Class T1, Class T2> extends Param { T1 param1; T2 param2; };
-// ... up to Param8
+// ... up to Param10
 ```
 
 **Example — legacy RPC:**
@@ -452,7 +454,7 @@ proto native void RegisterNetSyncVariableObject(string variableName);
 
 ### The Sync Lifecycle
 
-1. **Register** the variable by name, in the entity's constructor.
+1. **Register** the variable by name. Mods conventionally do this in the entity's constructor (DayZ-Expansion registers its sync variables in constructors such as `ExpansionCodeLock()` and its `modded class ItemBase`); vanilla `PlayerBase` instead registers its own in `Init()` (`4_World/entities/manbase/playerbase.c`). Either location runs before the entity starts synchronizing --- pick one and register each name exactly once.
 2. **Change** the member variable — on the server.
 3. Call **`SetSynchDirty()`** (`EntityAI`, "sets object synchronization dirty flag"; takes effect only in multiplayer, on the server side).
 4. Clients receive the new value and the engine calls **`OnVariablesSynchronized()`** on the client-side instance.

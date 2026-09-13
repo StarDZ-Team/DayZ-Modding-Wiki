@@ -183,7 +183,7 @@ Every crafting recipe is a class that extends `RecipeBase`. The constructor call
 
 For non-magazine items the **minimum**-quantity check --- and only that one --- is
 additionally skipped when `GetQuantityMax() == 0`. In `CheckConditions()`
-(`recipebase.c:429-475`) the `GetQuantityMax() != 0` guard sits on the
+(`recipebase.c:429-476`) the `GetQuantityMax() != 0` guard sits on the
 `m_MinQuantityIngredient` branch alone (L436); the `m_MaxQuantityIngredient` branch (L441)
 is **unguarded** and runs for every non-magazine ingredient regardless of `GetQuantityMax()`.
 That matters for the zero defaults above: a quantity-less item sails past the minimum check,

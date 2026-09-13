@@ -945,34 +945,35 @@ override void InvokeOnDisconnect(PlayerBase player)
 }
 ```
 
-### 7. Assuming InvokeOnConnect Fires Once Per Player
+### 7. Assuming InvokeOnConnect Fires on Every Kind of Connection
 
-`MissionServer.InvokeOnConnect()` runs **twice** for every single player connection, not once. Looking at the `OnEvent` table above: vanilla calls it from both the `ClientNewEventTypeID` arm (new character) and the `ClientReadyEventTypeID` arm (existing character loaded) -- and on a normal reconnect, **both** fire in sequence for the same player. Most tutorials and most instincts treat it as a single "player joined" hook, and code that is not idempotent breaks silently:
+`MissionServer.InvokeOnConnect()` fires exactly **once** for a brand-new character (from the `ClientNewEventTypeID` arm) or exactly once for a character loaded from the database on the player's first login of the session (from the `ClientReadyEventTypeID` arm) -- vanilla's `OnEvent` switch calls it from only one of those two arms per connection, never both. The gotcha is the arm it is **missing** from: a player who drops and reconnects to an already-alive character goes through `ClientReconnectEventTypeID` instead, whose handler calls only `OnClientReconnectEvent()` -- **`InvokeOnConnect()` is not called at all** on that path. Code that only hooks `InvokeOnConnect` to react to "a player is here" silently misses every mid-session reconnect:
 
 ```c
-// WRONG -- runs on EVERY InvokeOnConnect call, i.e. twice per connect
+// INCOMPLETE -- never runs for a player reconnecting to an already-alive character
 override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)
 {
     super.InvokeOnConnect(player, identity);
     if (!identity) return;
-    LoadPlayerData(identity.GetPlainId());   // reloads from disk and OVERWRITES the cache
-                                               // the SECOND time, discarding anything the
-                                               // first call's listeners already wrote into it
+    SendWelcomeData(player, identity.GetPlainId());
 }
 ```
 
-If the second invocation re-reads a file and replaces whatever is already cached, it silently throws away every write that happened between the two calls -- a "welcome bonus," a loaded stat, anything another system populated in response to the first call. The same applies to any other non-idempotent side effect placed in this hook: a webhook post, a one-shot grant, an analytics event -- all of them fire twice.
-
-**Fix:** make the operation idempotent (skip the work if it already happened), or move the side effect to a hook that genuinely fires once, such as your own event fired only after the first successful load:
+**Fix:** if your logic must also run when a player reconnects mid-session, override `OnClientReconnectEvent()` as well (or centralize both calls into one shared method):
 
 ```c
 override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)
 {
     super.InvokeOnConnect(player, identity);
     if (!identity) return;
-    string uid = identity.GetPlainId();
-    if (IsAlreadyLoaded(uid)) return;   // guard makes the double-fire harmless
-    LoadPlayerData(uid);
+    SendWelcomeData(player, identity.GetPlainId());
+}
+
+override void OnClientReconnectEvent(PlayerIdentity identity, PlayerBase player)
+{
+    super.OnClientReconnectEvent(identity, player);
+    if (!identity) return;
+    SendWelcomeData(player, identity.GetPlainId());   // this path skips InvokeOnConnect entirely
 }
 ```
 

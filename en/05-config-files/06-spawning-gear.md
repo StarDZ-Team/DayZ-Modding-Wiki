@@ -130,7 +130,7 @@ Each entry targets one slot:
 | `slotName` | string | The attachment slot name. Derived from CfgSlots. Common values: `"Body"`, `"Legs"`, `"Feet"`, `"Head"`, `"Back"`, `"Vest"`, `"Eyewear"`, `"Gloves"`, `"Hips"`, `"shoulderL"`, `"shoulderR"` |
 | `discreteItemSets` | array | Array of item variants that can fill this slot (one is chosen based on `spawnWeight`). Must contain at least one entry |
 
-> **Shoulder shortcuts:** You can use `"shoulderL"` and `"shoulderR"` as slot names. The engine translates them to the internal slot names — `shoulderL` becomes the `Shoulder` slot (rifles) and `shoulderR` becomes the `Melee` slot.
+> **The two shoulder names are special-cased.** `PlayerSpawnPresetSlotData.TranslateAndValidateSlot()` rewrites them before the `CfgSlots` lookup: `"shoulderL"` becomes `"Shoulder"` and `"shoulderR"` becomes `"Melee"`. Every other `slotName` is passed through to `InventorySlots.GetSlotIdFromString()` unchanged, so it must match a real `CfgSlots` entry exactly. Writing `"Shoulder"` or `"Melee"` directly also works; writing `"ShoulderL"` (capital L) does not, because the special case is case-sensitive and the literal name is not in `CfgSlots`.
 
 ```json
 {
@@ -715,7 +715,7 @@ override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 }
 ```
 
-> **Remember:** If valid presets are loaded through `spawnGearPresetFiles`, the JSON presets take priority and `StartingEquipSetup()` will not be called.
+> **Remember:** If valid presets are loaded through `spawnGearPresetFiles`, the JSON presets take priority and `StartingEquipSetup()` will not be called. Note also that the `clothesChosen` parameter is a legacy holdover documented in the vanilla `MissionServer.StartingEquipSetup()` signature as having no effect --- you can safely ignore its value.
 
 ### Mod Items in Presets
 

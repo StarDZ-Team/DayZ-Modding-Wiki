@@ -59,7 +59,6 @@ void main()
     }
 
     GetGame().GetWorld().SetDate(2024, 9, 15, 12, 0);
-    CreateCustomMission("dayzOffline.chernarusplus");
 }
 
 class CustomMission: MissionServer
@@ -90,6 +89,10 @@ Mission CreateCustomMission(string path)
 ```
 
 The `Hive` manages the CE database. Without `CreateHive()`, no items spawn and persistence is disabled. `CreateCharacter` creates the player entity at spawn, and `StartingEquipSetup` defines the items a fresh character receives. Other useful `MissionServer` overrides include `OnInit()`, `OnUpdate()`, `InvokeOnConnect()`, and `InvokeOnDisconnect()`.
+
+Note the division of labour: `main()` only sets up the Hive and the world date. It does **not** instantiate the mission. The engine calls the free function `CreateCustomMission(string path)` itself and uses the `Mission` you return from it --- calling it yourself from `main()` would build a second instance that nothing uses. Bohemia's own reference missions follow exactly this shape (`dayzOffline.chernarusplus/init.c` in the official [DayZ-Central-Economy](https://github.com/BohemiaInteractive/DayZ-Central-Economy) repository: `main()` ends after the date logic, and `CreateCustomMission` is defined at the bottom of the file).
+
+The `path` parameter the engine passes in is the mission folder name; the vanilla reference missions ignore it and always return the same class.
 
 ### What NOT to Do in init.c
 
@@ -160,10 +163,14 @@ Located at `db/economy.xml`. Toggles which CE subsystems are active:
     <animals init="1" load="0" respawn="1" save="0"/>
     <zombies init="1" load="0" respawn="1" save="0"/>
     <vehicles init="1" load="1" respawn="1" save="1"/>
+    <randoms init="0" load="0" respawn="1" save="0"/>
+    <custom init="0" load="0" respawn="0" save="0"/>
+    <building init="1" load="1" respawn="0" save="1"/>
+    <player init="1" load="1" respawn="1" save="1"/>
 </economy>
 ```
 
-Flags: `init` (spawn on startup), `load` (load persistence), `respawn` (respawn after cleanup), `save` (persist to database). Total-conversion servers disable subsystems here rather than zeroing out hundreds of types entries.
+This is the complete vanilla `db/economy.xml` element set (`DZ/worlds/chernarusplus/ce/db/economy.xml`); `dynamic`/`animals`/`zombies`/`vehicles` are the ones mods most commonly touch, but `randoms`, `custom`, `building`, and `player` (base-building and player-inventory persistence) are also toggled here. Flags: `init` (spawn on startup), `load` (load persistence), `respawn` (respawn after cleanup), `save` (persist to database). Total-conversion servers disable subsystems here rather than zeroing out hundreds of types entries.
 
 ---
 
@@ -255,9 +262,31 @@ Rules of the merge:
 4. **Register new root classes, if any** (rare; only for hierarchies outside the vanilla roots).
 5. **Verify.** Start the server and check the RPT/CE logs: schema errors and unknown-tag warnings are reported there, and a rejected file means the item silently never spawns.
 
-### cfglimitsdefinitionuser.xml --- Custom Tags
+### Registering New category/usage/value Names
 
-Any `category`, `usage`, or `value` used in a types file must exist in `cfglimitsdefinition.xml`. For additions, use the companion file `cfglimitsdefinitionuser.xml` so the vanilla file stays untouched and your tags survive game updates:
+Any `category`, `usage`, or `value` used in a types file must exist in `cfglimitsdefinition.xml`. A genuinely new tag name (one that does not already exist anywhere in vanilla) has to be added to `cfglimitsdefinition.xml` itself. `cfglimitsdefinitionuser.xml` serves a different, narrower purpose and does not accept new tag definitions:
+
+- `cfglimitsdefinition.xml` (root `<lists>`) is where every individual `category`, `tag`, `usage`, and `value` name is declared. This is the file a genuinely new tag must be added to; there is no separate "custom tags" file for brand-new names, so plan for a merge step on game updates.
+- `cfglimitsdefinitionuser.xml` (root `<user_lists>`, **not** `<lists>`) only defines named **combinations of already-existing** `usage`/`value` flags, referenced later as a single shorthand tag. It cannot introduce a name that isn't already in `cfglimitsdefinition.xml`. The vanilla file ships combos like this:
+
+```xml
+<user_lists>
+    <usageflags>
+        <user name="TownVillage">
+            <usage name="Town" />
+            <usage name="Village" />
+        </user>
+    </usageflags>
+    <valueflags>
+        <user name="Tier12">
+            <value name="Tier1" />
+            <value name="Tier2" />
+        </user>
+    </valueflags>
+</user_lists>
+```
+
+To add a wholly new tag such as `np_special`, append it to `cfglimitsdefinition.xml` directly:
 
 ```xml
 <lists>
@@ -278,8 +307,10 @@ Any `category`, `usage`, or `value` used in a types file must exist in `cfglimit
 Items created via `CreateInInventory()` are automatically CE-managed. For world spawns from script, use ECE flags:
 
 ```c
-EntityAI item = GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE);
+EntityAI item = EntityAI.Cast(GetGame().CreateObjectEx("AK74", position, ECE_PLACE_ON_SURFACE));
 ```
+
+`CreateObjectEx()` returns the base `Object` type (`proto native Object CreateObjectEx(string type, vector pos, int iFlags, int iRotation = RF_DEFAULT);` in `scripts/3_game/global/game.c`), so an explicit `EntityAI.Cast(...)` is required to use it as an `EntityAI`. Most vanilla call sites do exactly this (roughly 80 of the ~110 `CreateObjectEx()` calls in the script dump wrap the result in a `Cast`); the rest keep the plain `Object` return or discard it.
 
 The full script surface --- spawn flags, lifetime control from script, `EEOnCECreate` --- is documented in [Central Economy Script API](../06-engine-api/10-central-economy.md).
 
@@ -356,7 +387,7 @@ Items whose class hierarchy does not trace to a registered root class in `cfgeco
 
 ### Editing Vanilla Files Directly
 
-Pasting mod entries into the vanilla `types.xml` works but breaks on game updates and collides with other mods. Ship separate files registered through `cfgeconomycore.xml`, and use `cfglimitsdefinitionuser.xml` for custom tags.
+Pasting mod entries into the vanilla `types.xml` works but breaks on game updates and collides with other mods. Ship separate files registered through `cfgeconomycore.xml`. Brand-new `category`/`usage`/`value` names still have to be merged into `cfglimitsdefinition.xml` itself (see [Registering New category/usage/value Names](#registering-new-categoryusagevalue-names)); `cfglimitsdefinitionuser.xml` only aliases combinations of names that already exist there.
 
 ### cfggameplay.json Not Loading
 
@@ -377,7 +408,7 @@ Every mod adds items, and totals add up. Total `nominal` across all types files 
 | Concept | Theory | Reality |
 |---------|--------|---------|
 | `nominal` is a hard target | CE spawns exactly this many items | CE approaches nominal over time but fluctuates based on player interaction, cleanup cycles, and zone distance |
-| `restock=0` means instant respawn | Items reappear immediately after despawn | The CE batch processes restocking in cycles (typically every 30-60 seconds), so there is always a delay regardless of the restock value |
+| `restock=0` means instant respawn | Items reappear immediately after despawn | The CE processes restocking on its own internal loop rather than instantaneously per item, so expect some delay regardless of the restock value. Set `log_ce_loop="true"` in `cfgeconomycore.xml`'s `<defaults>` block if you need to observe your server's actual loop timing |
 | `cfggameplay.json` controls all gameplay | All tuning goes here | Many gameplay values are hardcoded in script or config.cpp and cannot be overridden by cfggameplay.json |
 | `init.c` runs only on server start | One-time initialization | `init.c` runs every time the mission loads, including after server restarts. Persistent state is managed by the Hive, not init.c |
 | Multiple types.xml files merge cleanly | CE reads all registered files | Files must be registered in cfgeconomycore.xml via `<ce folder="...">` directives. Simply placing extra XML files in `db/` does nothing |

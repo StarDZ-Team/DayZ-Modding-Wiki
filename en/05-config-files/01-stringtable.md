@@ -471,14 +471,14 @@ This breaks parsing because `Hello` and ` World` are read as separate columns. E
 |---------|--------|---------|
 | Column order does not matter | Engine identifies columns by header name | True, but some community tools and spreadsheet exports reorder columns. Keeping the standard order prevents confusion |
 | Fallback chain: language > english > original > raw key | Documented cascade | If both `english` and `original` are empty, the engine displays the raw key with the `#` prefix stripped -- useful for spotting missing translations in-game |
-| `Widget.TranslateString()` | Resolves at call time | The result is cached per session. Changing the game language requires a restart for stringtable lookups to update |
-| Multiple mods with same key | Last-loaded PBO wins | PBO load order is not guaranteed between mods. If two mods define `STR_CLOSE`, the displayed text depends on which mod loads last -- always use a mod prefix |
-| `#` prefix in `SetText()` | Engine auto-resolves localization keys | Works, but only on the first call. If you call `SetText("#STR_KEY")` and later call `SetText("literal text")`, switching back to `SetText("#STR_KEY")` works fine -- no caching issue at the widget level |
+| `Widget.TranslateString()` | Resolves at call time | `TranslateString()` is a native engine call (`proto` in `scripts/1_core/proto/enwidgets.c`). Bohemia has not published its internal caching behavior, so if translated text looks stale after a language change mid-session, verify against your target build rather than assuming a fixed cache lifetime |
+| Multiple mods with same key | Last-loaded PBO wins | Addon load order follows each PBO's `requiredAddons[]` dependencies in `CfgPatches` (a required addon loads before the addon that depends on it), plus the client/server mod list order --- it is not something an individual content mod controls. Always prefix keys with your mod name so a collision never matters |
+| `#` prefix in `SetText()` | Engine auto-resolves localization keys | `TextWidget.SetText()` is `proto native` (`scripts/1_core/proto/enwidgets.c`) and Bohemia has not published how it resolves the `#` prefix, so treat claims about per-call or first-call-only resolution as unverified. If you need a guaranteed resolved string, call `Widget.TranslateString("#STR_KEY")` yourself and pass the result |
 
 ---
 
 ## Compatibility & Impact
 
 - **Multi-Mod:** String key collisions are the primary risk. Two mods defining `STR_ADMIN_PANEL` will conflict silently. Always prefix keys with your mod name (`STR_MYMOD_ADMIN_PANEL`).
-- **Performance:** Stringtable lookup is fast (hash-based). Having thousands of keys across multiple mods has no measurable performance impact. The entire stringtable is loaded into memory at startup.
-- **Version:** The CSV-based stringtable format has been unchanged since DayZ Standalone alpha. The 15-column layout and fallback behavior have remained stable across all versions.
+- **Performance:** Stringtable parsing and lookup are handled by native engine code. Mods with thousands of keys ship routinely, and translation lookups are not a commonly reported performance concern.
+- **Version:** The vanilla `languagecore/stringtable.csv` header uses the 15-column layout described above (`Language,original,english,czech,german,russian,polish,hungarian,italian,spanish,french,chinese,japanese,portuguese,chinesesimp`), and this layout is what current mods target.

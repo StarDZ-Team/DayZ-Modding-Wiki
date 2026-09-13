@@ -1,0 +1,218 @@
+{
+  "scope": "Commit packaging of existing independently approved integrations; not a new factual audit",
+  "baseline": "d19ede0eb2d7419abde1bfa6bd328ac12a8142e6",
+  "branch": "wiki-reorg",
+  "approval_verdicts": {
+    "engine-config": "approved",
+    "engine-advanced": "approved",
+    "tutorials": "approved"
+  },
+  "approval_and_integration_records": [
+    {
+      "path": ".audit/en-2026-09-11/council-engine-PRECISION-ACCEPTANCE.json",
+      "sha256_raw": "30abff73ab8123e7f5d2ab31b9f83842f105e7490effe7238e2cdfdc6292f313"
+    },
+    {
+      "path": ".audit/en-2026-09-13/council-tutorials.json",
+      "sha256_raw": "982938b2ee8984d59ae912f2a0ce37f92739f289be78a39fa03a422f8aafea34"
+    },
+    {
+      "path": ".audit/en-2026-09-13/recovery-engine-exactbytes.json",
+      "sha256_raw": "fe09555dac6ca7906058780773c16530b2f53ffdd42af1b7fda373288e3d7e18"
+    },
+    {
+      "path": ".audit/en-2026-09-13/tutorials-integration.json",
+      "sha256_raw": "e01511951f2c5e02410ba5df5b2454388e89e208cbbe88970de3801948b46911"
+    },
+    {
+      "path": ".audit/en-2026-09-11/integrations/engine-config-20260913T194937656426Z.json",
+      "sha256_raw": "f2380af1079bd8bd6c77e80a28dafe2d2027c33741bf249f673631c18f2ae88b"
+    },
+    {
+      "path": ".audit/en-2026-09-11/integrations/engine-advanced-20260913T194937656426Z.json",
+      "sha256_raw": "c2685e57d8b0af52e9cd88e9909cdc247548239c99977d4fd65448ac65602551"
+    },
+    {
+      "path": ".audit/en-2026-09-11/integrations/tutorials-20260913T195514373631Z.json",
+      "sha256_raw": "8ab645501179bca5a7679c33278e4a1ba184c9ee325d7462cff82b05b68e6e23"
+    }
+  ],
+  "pages": [
+    {
+      "path": "en/05-config-files/01-stringtable.md",
+      "approved_sha256_raw": "ff51de52f5b7ca23d188258b8fad59a8fa5f7cd84f37eda76ba019a13065353a",
+      "approved_sha256_lf": "ff51de52f5b7ca23d188258b8fad59a8fa5f7cd84f37eda76ba019a13065353a",
+      "baseline_blob_sha256": "0660358a3579282b4621eb50d377926b7c46eeec06164e7f7061e1a875cbfd6a",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/05-config-files/02-inputs-xml.md",
+      "approved_sha256_raw": "e6a7170e6169de3a3cebeece84b4bafc9eb37e06a6319386380f76a720d7a7d0",
+      "approved_sha256_lf": "e6a7170e6169de3a3cebeece84b4bafc9eb37e06a6319386380f76a720d7a7d0",
+      "baseline_blob_sha256": "eaec1aecb258b3c5b04076805d2114a77bd625c42576e5edd40d3f5100c2c683",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/05-config-files/03-credits-json.md",
+      "approved_sha256_raw": "2650e77ccd39a190caa5ddd6a4c7ecb40b6625be2ccce6d2af358456f5d02529",
+      "approved_sha256_lf": "2650e77ccd39a190caa5ddd6a4c7ecb40b6625be2ccce6d2af358456f5d02529",
+      "baseline_blob_sha256": "719b2bb0856bb52a321b4b749112007137f13ea71b758a24ae64bc40f3d33b2a",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/05-config-files/04-imagesets.md",
+      "approved_sha256_raw": "2c4e21f30702b1ef5bb9454365b9cd0fb4168f19be62af31555c878f3d246730",
+      "approved_sha256_lf": "2c4e21f30702b1ef5bb9454365b9cd0fb4168f19be62af31555c878f3d246730",
+      "baseline_blob_sha256": "0a3dc7931b20b61bcacdace0270808bbd8d7fd15fcbe66b8ff9de19f66ecb4f4",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/05-config-files/05-server-configs.md",
+      "approved_sha256_raw": "f5ea1f25f7c4b808e78553bb1d377aa8b4dcb88209c1b9da354d6256fb625583",
+      "approved_sha256_lf": "f5ea1f25f7c4b808e78553bb1d377aa8b4dcb88209c1b9da354d6256fb625583",
+      "baseline_blob_sha256": "fbdc13fc9fcdd9b1c82e059b7bf4d9edc1dd84abe517ba0254a669b4d4f0851d",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/05-config-files/06-spawning-gear.md",
+      "approved_sha256_raw": "4f542658d5cb9ed7743ceb3b18ff9cc8e886f2cd779bb58d6b1083da52b6230e",
+      "approved_sha256_lf": "4f542658d5cb9ed7743ceb3b18ff9cc8e886f2cd779bb58d6b1083da52b6230e",
+      "baseline_blob_sha256": "9f6686caeec711b8788a5e46ac1e7eb2cc817873fdc00bd15708421a2d87faa3",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/01-entity-system.md",
+      "approved_sha256_raw": "ac6d0057eaf7966e207f18f6a3f233d2bd522bbd75af56bc37bd3ea2d42fb164",
+      "approved_sha256_lf": "ac6d0057eaf7966e207f18f6a3f233d2bd522bbd75af56bc37bd3ea2d42fb164",
+      "baseline_blob_sha256": "887b1266c3f68bce5bcb77c655f01ecb8659bf49e134704697af283d4693940e",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/02-vehicles.md",
+      "approved_sha256_raw": "6b071678ec8735b4a5dc6517a5df73b20f727f3ce14f90462a8e4bdce002431a",
+      "approved_sha256_lf": "6b071678ec8735b4a5dc6517a5df73b20f727f3ce14f90462a8e4bdce002431a",
+      "baseline_blob_sha256": "baa8886eabcd39b3c4280e032dd871b6dd50c472e50f552aeed37e5d59a4c4c8",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/03-weather.md",
+      "approved_sha256_raw": "7d449f0bb3883a0b9d6e6dc6b3c28473b17e466d71deb0204fdea334b9356c8e",
+      "approved_sha256_lf": "7d449f0bb3883a0b9d6e6dc6b3c28473b17e466d71deb0204fdea334b9356c8e",
+      "baseline_blob_sha256": "9d6fc0b0f39bfa4b6ed8ed603bc3cb2379d673aba2fef1ddc72ae49d8c0f849b",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/04-cameras.md",
+      "approved_sha256_raw": "8321cb13bbb50554edf7a0defed554ae4ed639962e28d73f7d621bc4b8dadc47",
+      "approved_sha256_lf": "a8033fc616a6f5fa74b884c340bb4face20f363a5de6643344a8b2d1b4f9ef00",
+      "baseline_blob_sha256": "0eb08f2b8715148eb473b5661f11ddc808ee0f086746fc23c7d1d035fe95edaa",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/05-ppe.md",
+      "approved_sha256_raw": "348e0942dc172b34a130283275e3340ea114232b34a8929f245fde0e2648fe3b",
+      "approved_sha256_lf": "db1180f8c3babca43a4bad3bd76cb95bd76c2571fcb33e6eb17f6b8c27b7d93c",
+      "baseline_blob_sha256": "db1180f8c3babca43a4bad3bd76cb95bd76c2571fcb33e6eb17f6b8c27b7d93c",
+      "changes_git_blob": false
+    },
+    {
+      "path": "en/06-engine-api/06-notifications.md",
+      "approved_sha256_raw": "6c48fd6e520ee6227496a895567218ef6d2d2dd4f728d3f85d164acf480931d0",
+      "approved_sha256_lf": "6c48fd6e520ee6227496a895567218ef6d2d2dd4f728d3f85d164acf480931d0",
+      "baseline_blob_sha256": "9f178062c4924c9b39442b41746660f342841800ebaca297c27a814017c66688",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/07-timers.md",
+      "approved_sha256_raw": "7267ca26183144b278e8ecf928fc60b20f11c3f272378c9372184a9d05570c33",
+      "approved_sha256_lf": "7267ca26183144b278e8ecf928fc60b20f11c3f272378c9372184a9d05570c33",
+      "baseline_blob_sha256": "c644757264badb92074dd8ce39e4c8a0f11afd4cd537d6a5e63eca2adba679ad",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/08-file-io.md",
+      "approved_sha256_raw": "db9bcba5f37423bf152873b2cfa8820c3973108127b83185bc8ae39074512a42",
+      "approved_sha256_lf": "db9bcba5f37423bf152873b2cfa8820c3973108127b83185bc8ae39074512a42",
+      "baseline_blob_sha256": "76500a94e9a50f05baf2959c7dbab8af4d369c2e2a2954ff370ea58d895c05da",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/09-networking.md",
+      "approved_sha256_raw": "dfe5cee28e0b1d16ea607d44ea2c5927f6a5d8bf778a6e239fdaf18e6f617b9d",
+      "approved_sha256_lf": "dfe5cee28e0b1d16ea607d44ea2c5927f6a5d8bf778a6e239fdaf18e6f617b9d",
+      "baseline_blob_sha256": "2b2f29b98b4d83068db77d99252f5aed9a554d90073fd7ac5e16659ebe7d6ffa",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/10-central-economy.md",
+      "approved_sha256_raw": "67cfc993306873248e24aaa1acb340157576813c4e94117c68b263946c404bf5",
+      "approved_sha256_lf": "46d81eed87b138a3f6ec4a144ab54226582967532872334934792579029ff377",
+      "baseline_blob_sha256": "46d81eed87b138a3f6ec4a144ab54226582967532872334934792579029ff377",
+      "changes_git_blob": false
+    },
+    {
+      "path": "en/06-engine-api/11-mission-hooks.md",
+      "approved_sha256_raw": "77ddb34c6c591722a8f0797e3a2327b6b1234135c01260890dc807f3dceb02bb",
+      "approved_sha256_lf": "a18abfb9d49fca872a87ec9076563d5f4870d7db73e28b5eb0f95b308dddbdc8",
+      "baseline_blob_sha256": "98b4c5780a28ba46ae9ddfefdd3a8d33782f50e59b07a04961abf76c46105544",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/12-action-system.md",
+      "approved_sha256_raw": "a40665bbd5714da665c85209f095f21d845c1f71e0dde6e6093f150e348ccbed",
+      "approved_sha256_lf": "a40665bbd5714da665c85209f095f21d845c1f71e0dde6e6093f150e348ccbed",
+      "baseline_blob_sha256": "dbe7b048690e50acd961a92e6f400c7bdbc98e5e9af4e20618a59132d57bed94",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/14-player-system.md",
+      "approved_sha256_raw": "7a316ed39c4f5da37777ce00c59e890a11df49b9ef204619eb68d0d2498bb5c2",
+      "approved_sha256_lf": "7a316ed39c4f5da37777ce00c59e890a11df49b9ef204619eb68d0d2498bb5c2",
+      "baseline_blob_sha256": "d958745dac92fa6c1da0c493823d8b04d1cf84239f852949d7fff8da24f3709d",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/06-engine-api/16-crafting-system.md",
+      "approved_sha256_raw": "11033d0192d62cbbe060f0f24fe053053eca7b5973e17848b7b0ca3c5fb2e681",
+      "approved_sha256_lf": "11033d0192d62cbbe060f0f24fe053053eca7b5973e17848b7b0ca3c5fb2e681",
+      "baseline_blob_sha256": "15f6c58bd0e551e9e3f721aafeaf489cb04717a4f320d9bfedbfab3df1c309d7",
+      "changes_git_blob": true
+    },
+    {
+      "path": "en/08-tutorials/06-debugging-testing.md",
+      "approved_sha256_raw": "d5a9c30fbcefcf23a19cf58d5edebac9e60753d43e873a0e16ea251d557433c8",
+      "approved_sha256_lf": "dc5a3a0882e4fea1e8c441d358a3d8d487917de42e9f467659ff7b9886575ab8",
+      "baseline_blob_sha256": "8de8cd086f447ee2ea1c3eee09d5758e0cf9e4a566dcd8b311c2f6d6c901cbd2",
+      "changes_git_blob": true
+    }
+  ],
+  "verified_approved_pages": 35,
+  "verified_chain_records": 5,
+  "excluded_user_file": {
+    "path": ".claude/workflows/wiki-sync-translations.js",
+    "sha256_raw": "8ed5f2a29e54382d0b8c00c4613104ea218683463393e4d675275005fec8591a"
+  },
+  "validation": {
+    "file_links": {
+      "exit": 0,
+      "files": 43,
+      "dead": 0
+    },
+    "anchors": {
+      "exit": 1,
+      "files": 43,
+      "checked": 380,
+      "dead": 59,
+      "baseline_dead": 58,
+      "added": [
+        {
+          "file": "en/05-config-files/05-server-configs.md",
+          "href": "#registering-new-categoryusagevalue-names"
+        }
+      ]
+    },
+    "diff_check_exit": 0,
+    "final_build": "pending; not run",
+    "graph_refresh": "pending; not run"
+  }
+}

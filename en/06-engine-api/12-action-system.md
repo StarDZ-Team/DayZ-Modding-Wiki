@@ -319,7 +319,7 @@ class CCINonRuined : CCIBase
 
 ### Target Conditions (CCTBase)
 
-Controls whether the target object (what the player is looking at) qualifies.
+Controls whether the target object (what the player is looking at) qualifies. The table below covers the components used most often; the directory also ships `CCTParent`, `CCTMan`, `CCTSurface`, `CCTWaterSurface`, `CCTTree`, `CCTCursorNoObject`, and `CCTCursorNoRuinCheck`.
 
 **File:** `4_World/classes/useractionscomponent/targetconditionscomponents/`
 
@@ -327,13 +327,13 @@ Controls whether the target object (what the player is looking at) qualifies.
 |-------|-------------|----------|
 | `CCTNone` | `CCTNone()` | Always passes --- no target needed |
 | `CCTDummy` | `CCTDummy()` | Passes if target object exists |
-| `CCTSelf` | `CCTSelf()` | Passes if player exists and is alive |
+| `CCTSelf` | `CCTSelf()` | Passes if the player exists and is not ruined (`!player.IsDamageDestroyed()`) --- no target needed |
 | `CCTObject` | `CCTObject(float dist)` | Target object within distance |
-| `CCTCursor` | `CCTCursor(float dist)` | Cursor hit position within distance |
-| `CCTNonRuined` | `CCTNonRuined(float dist)` | Target within distance AND not ruined |
+| `CCTCursor` | `CCTCursor(float dist)` | Cursor hit position within distance, and the object (or its parent) is not ruined |
+| `CCTNonRuined` | `CCTNonRuined(float dist)` | Target within distance, not ruined, and **not a player/AI** (`IsMan()` targets are rejected) |
 | `CCTCursorParent` | `CCTCursorParent(float dist)` | Cursor on parent object within distance |
 
-Distance is measured from **both** the player's root position and head bone position (whichever is closer). The `CCTObject` check:
+Most of these components measure distance from **both** the player's root position and head bone position and pass if *either* is within range --- but this is a per-component detail, not a system-wide rule. `CCTObject`, `CCTParent`, `CCTCursor`, and `CCTCursorParent` do the two-point check; `CCTNonRuined` compares against the player's root position only. Check the component you are actually using. The `CCTObject` check:
 
 ```c
 class CCTObject : CCTBase
@@ -386,7 +386,9 @@ Actions are registered on entities through the `SetActions()` / `AddAction()` / 
 The most common pattern. Override `SetActions()` in a `modded class`:
 
 ```c
-modded class MyCustomItem extends ItemBase
+// Use `modded class` only for a class that already exists (vanilla, or another mod's).
+// `extends` names the original class's own parent.
+modded class Apple extends Edible_Base
 {
     override void SetActions()
     {
@@ -396,10 +398,23 @@ modded class MyCustomItem extends ItemBase
 }
 ```
 
+For an item your own mod introduces, declare the script class normally --- there is no existing class to mod:
+
+```c
+class MyCustomItem extends ItemBase
+{
+    override void SetActions()
+    {
+        super.SetActions();
+        AddAction(MyCustomAction);
+    }
+}
+```
+
 To remove a vanilla action and add your own replacement:
 
 ```c
-modded class Bandage_Basic extends ItemBase
+modded class BandageDressing extends ItemBase
 {
     override void SetActions()
     {
@@ -409,6 +424,10 @@ modded class Bandage_Basic extends ItemBase
     }
 }
 ```
+
+`BandageDressing` is the vanilla bandage item class (`4_World/entities/itembase/bandagedressing.c`), and it is the class whose `SetActions()` calls `AddAction(ActionBandageTarget)`.
+
+> **Caution on `RemoveAction()`:** the `ItemBase.RemoveAction()` implementation resolves the action instance through `PlayerBase.Cast(g_Game.GetPlayer()).GetActionManager()` with no null guard, so it depends on a local player with an initialised action manager already existing. `AddAction()` has no such dependency --- it goes through the static `ActionManagerBase.GetAction()`. Treat `RemoveAction()` as the fragile half of the pair and verify it on your target build before relying on it.
 
 ### On BuildingBase (World Buildings)
 
@@ -538,8 +557,10 @@ Register it on an item:
 
 ```c
 // File: 4_World/entities/HealingKit.c
+// HealingKit is a new item introduced by this mod (declared in its config.cpp),
+// so it gets a plain script class, not `modded class`.
 
-modded class HealingKit extends ItemBase
+class HealingKit extends ItemBase
 {
     override void SetActions()
     {
@@ -767,7 +788,7 @@ Action components control _how_ the action progresses over time. They are create
 | `CAContinuousTime` | `float time` | Progress bar, completes after `time` seconds |
 | `CAContinuousRepeat` | `float time` | Repeating cycles, fires `OnFinishProgress` each cycle |
 | `CAContinuousQuantity` | `float quantity_used_per_second` | Consumes quantity over time |
-| `CAContinuousQuantityEdible` | `float quantity, float time` | Like Quantity but applies food/drink modifiers |
+| `CAContinuousQuantityEdible` | `float quantity_used_per_second, float time_to_repeat` | Like Quantity but routes the spent amount through `PlayerBase.Consume()` and scales the rate for hot items |
 
 ### CAContinuousTime
 
@@ -930,8 +951,8 @@ class ActionEatBigCB : ActionContinuousBaseCB
     override void CreateActionComponent()
     {
         m_ActionData.m_ActionComponent = new CAContinuousQuantityEdible(
-            UAQuantityConsumed.EAT_BIG,   // 25 units consumed per cycle
-            UATimeSpent.DEFAULT            // 1 second per cycle
+            UAQuantityConsumed.EAT_BIG,   // 25 units *per second*
+            UATimeSpent.DEFAULT            // cycle length: 1 second
         );
     }
 }
@@ -1030,7 +1051,13 @@ override bool HasProneException()
 }
 ```
 
-When `HasProneException()` returns true, the engine uses `m_CommandUIDProne` instead of `m_CommandUID` if the player is in prone stance.
+`HasProneException()` does three things at once in `ActionBase`/`AnimatedActionBase`, so it is more than an animation swap:
+
+- `GetActionCommand()` returns `m_CommandUID` while the player is in **crouch or erect**, and `m_CommandUIDProne` otherwise (prone *and* raised stances take the prone branch).
+- `IsFullBody()` ignores `m_FullBody` and instead returns `true` for any stance that is not crouch/erect --- the action becomes full-body while prone and additive while standing or crouched.
+- `GetStanceMask()` ignores `m_StanceMask` and narrows to crouch+erect, or prone, based on the player's current stance (returning `-1` for raised stances, which blocks the action).
+
+The vanilla comment on the method states the intent directly: "action have special fullbody animation for prone and additive for crouch and erect".
 
 ### Action Interruption
 
@@ -1099,7 +1126,7 @@ override bool IsLockTargetOnUse()
 
 **Wrong:**
 ```c
-modded class Apple extends ItemBase
+modded class Apple extends Edible_Base
 {
     override void SetActions()
     {
@@ -1113,7 +1140,7 @@ This **removes all vanilla actions** from the item. The player will no longer be
 
 **Correct:**
 ```c
-modded class Apple extends ItemBase
+modded class Apple extends Edible_Base
 {
     override void SetActions()
     {

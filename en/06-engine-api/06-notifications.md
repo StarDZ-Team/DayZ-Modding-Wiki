@@ -20,7 +20,8 @@ A static class that manages the notification queue. Notifications appear as smal
 ```c
 const int   DEFAULT_TIME_DISPLAYED = 10;    // Default display time in seconds
 const float NOTIFICATION_FADE_TIME = 3.0;   // Fade-out duration in seconds
-static const int MAX_NOTIFICATIONS = 5;     // Maximum visible notifications
+protected static const int MAX_NOTIFICATIONS = 5;  // Max simultaneously visible; it is
+                                            // protected, so mod script cannot read it
 ```
 
 ---
@@ -37,7 +38,7 @@ static void SendNotificationToPlayerExtended(
     float show_time,       // Display duration in seconds
     string title_text,     // Notification title
     string detail_text = "",  // Optional body text
-    string icon = ""       // Optional icon path (e.g., "set:dayz_gui image:icon_info")
+    string icon = ""       // Optional icon path (e.g., "set:dayz_gui image:notification_friend")
 );
 ```
 
@@ -131,7 +132,7 @@ void ShowLocalNotification(string title, string body)
         5.0,
         title,
         body,
-        "set:dayz_gui image:icon_info"
+        "set:dayz_gui image:notification_friend"
     );
 }
 ```
@@ -176,13 +177,15 @@ Icons use the DayZ image set syntax:
 "set:dayz_gui image:icon_name"
 ```
 
-Common icon names:
+The image name must actually exist in the referenced imageset. Verify it against the set file itself --- `gui/imagesets/dayz_gui.imageset` in the unpacked game data lists every `ImageSetDefClass` name it defines. A name that is not in the set resolves to nothing and the notification simply renders without an icon, with no error.
 
-| Icon | Set Path |
-|------|----------|
-| Info | `"set:dayz_gui image:icon_info"` |
-| Warning | `"set:dayz_gui image:icon_warning"` |
-| Skull | `"set:dayz_gui image:icon_skull"` |
+The only icon vanilla itself uses for notifications is the one its own presets reference in `scripts/data/notifications.json`:
+
+| Icon | Set Path | Used by |
+|------|----------|---------|
+| Friend | `"set:dayz_gui image:notification_friend"` | `FRIEND_CONNECTED`, `INVITE_FAIL_SAME_SERVER` |
+
+The remaining vanilla notification presets (`JOIN_FAIL_GET_SESSION`, `CONNECT_FAIL_GENERIC`, `DISCONNECTED`, `GENERIC_ERROR`) ship with `"m_Icon": ""` --- no icon at all. `dayz_gui` does contain other usable glyphs (`iconSkull`, `icon_engine_alert`, `icon_hammer`, `icon_close`, ...), but those are HUD/inventory art rather than a documented notification icon set, so check how each one looks at notification size before shipping it.
 
 You can also pass a direct path to an `.edds` image file:
 
@@ -203,6 +206,8 @@ ref ScriptInvoker m_OnNotificationAdded;
 ref ScriptInvoker m_OnNotificationRemoved;
 ```
 
+Both invokers are called with one argument --- the `NotificationRuntimeData` for the notification that was added or removed --- so your listeners must declare that parameter. Vanilla's own listeners (`NotificationUI.AddNotification` / `RemoveNotification` in `3_Game/client/notifications/notificationui.c`) have exactly this shape.
+
 **Example --- react to notifications:**
 
 ```c
@@ -216,14 +221,14 @@ void Init()
     }
 }
 
-void OnNotifAdded()
+void OnNotifAdded(NotificationRuntimeData data)
 {
-    Print("A notification was added");
+    Print("A notification was added: " + data.GetTitleText());
 }
 
-void OnNotifRemoved()
+void OnNotifRemoved(NotificationRuntimeData data)
 {
-    Print("A notification was removed");
+    Print("A notification was removed: " + data.GetTitleText());
 }
 ```
 
@@ -263,7 +268,7 @@ class MyServerModule
             12.0,
             title,
             body,
-            "set:dayz_gui image:icon_info"
+            "set:dayz_gui image:notification_friend"
         );
     }
 

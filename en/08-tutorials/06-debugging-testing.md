@@ -513,7 +513,7 @@ void ProcessEntity(Object obj)
 
 ## Testing Workflow
 
-DayZ modding has no automated test framework. Testing is manual: build, launch, play, observe, check logs. An efficient workflow is critical.
+In this chapter, you use a manual testing workflow: build, launch, play, observe, and check logs. Vanilla scripts also include a Script Testing Framework, documented in `scripts/2_gamelib/tests/testingframework.c`, and `scripts/3_game/autotest/autotestrunner.c` calls `TestHarness` to run tests. The workflow below focuses on manual in-game checks.
 
 ### The Basic Testing Cycle
 

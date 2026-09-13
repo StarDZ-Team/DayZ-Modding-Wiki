@@ -30,7 +30,7 @@ EntityAI
 
 ## Transport (Base)
 
-**File:** `3_Game/entities/transport.c`
+**File:** `3_Game/vehicles/transport.c`
 
 The abstract base for all vehicles. Provides seat management and crew access.
 
@@ -73,7 +73,7 @@ void EjectAllCrew(Transport vehicle)
 
 ## Car (Engine Native)
 
-**File:** `3_Game/entities/car.c`
+**File:** `3_Game/vehicles/car.c`
 
 Engine-level car physics. All `proto native` methods that drive the vehicle simulation.
 
@@ -126,7 +126,8 @@ void RefuelVehicle(Car car)
 ### Speed
 
 ```c
-proto native float GetSpeedometer();    // Speed in km/h (absolute value)
+proto native float GetSpeedometer();  // Speed in km/h -- NOT absolute
+float GetSpeedometerAbsolute();       // Math.AbsFloat(GetSpeedometer()) -- always non-negative
 ```
 
 ### Controls (Simulation)
@@ -182,40 +183,31 @@ car.SetHealth("FuelTank", "Health", 100);   // Repair the fuel tank
 
 ### Damage Zone Diagram
 
+This diagram shows three damage-zone names used by `CarScript`, not a complete zone list for every vehicle. `Engine` and `FuelTank` are passed to the health API in `carscript.c:2572-2576`; `Radiator` is optional and is checked in the vehicle's zone map before use (`carscript.c:857-859`).
+
 ```mermaid
 graph TD
     V[Vehicle] --> E[Engine]
     V --> FT[FuelTank]
-    V --> R[Radiator]
-    V --> B[Battery]
-    V --> W1[Wheel_1_1]
-    V --> W2[Wheel_1_2]
-    V --> W3[Wheel_2_1]
-    V --> W4[Wheel_2_2]
-    V --> D1[Door_1_1]
-    V --> D2[Door_2_1]
-    V --> H[Hood]
-    V --> T[Trunk]
+    V -.-> R["Radiator (if present in zone map)"]
 
     style E fill:#ff6b6b,color:#fff
     style FT fill:#ffa07a,color:#fff
     style R fill:#87ceeb,color:#fff
 ```
 
-Common damage zones for vehicles:
+Damage zones are **not a fixed global list**. Each vehicle declares its own in its `config.cpp` under `DamageSystem >> DamageZones`, and `EntityAI.InitDamageZoneMapping()` builds the runtime map from that config via `DamageSystem.GetDamageZoneMap()`. So the correct way to find a given vehicle's zones is to read that vehicle's config, not to reuse a list from another vehicle.
 
-| Zone | Description |
-|------|-------------|
-| `""` (global) | Overall vehicle health |
-| `"Engine"` | Engine part |
-| `"FuelTank"` | Fuel tank |
-| `"Radiator"` | Radiator (coolant) |
-| `"Battery"` | Battery |
-| `"SparkPlug"` | Spark plug |
-| `"FrontLeft"` / `"FrontRight"` | Front wheels |
-| `"RearLeft"` / `"RearRight"` | Rear wheels |
-| `"DriverDoor"` / `"CoDriverDoor"` | Front doors |
-| `"Hood"` / `"Trunk"` | Hood and trunk |
+These are the zone names vanilla *script* actually passes to the health API, and the ones you can rely on across the stock wheeled vehicles:
+
+| Zone | Description | Seen in |
+|------|-------------|---------|
+| `""` (global) | Overall vehicle health | `CarScript`, `BoatScript` |
+| `"Engine"` | Engine part | `CarScript.OnDamageCar()`, `BoatScript` |
+| `"FuelTank"` | Fuel tank | `CarScript` |
+| `"Radiator"` | Radiator (coolant) --- guarded with `m_DamageZoneMap.Contains("Radiator")` because not every car has one | `CarScript` |
+
+> **Do not invent zone names.** `"Battery"`, `"SparkPlug"`, `"FrontLeft"`/`"FrontRight"`, `"RearLeft"`/`"RearRight"`, `"DriverDoor"`/`"CoDriverDoor"`, `"Hood"` and `"Trunk"` do **not** appear as damage-zone strings anywhere in the vanilla script dump. `"SparkPlug"`, `"CarBattery"` and `"TruckBattery"` are *attachment slot* names (used with `FindAttachmentBySlotName()`), which is a different namespace. For the battery slots, see `actionswitchlights.c:44-45`; plain `"Battery"` is not the slot name. Vanilla's geometry-side zone selections are spelled differently again --- `dmgZone_engine`, `dmgZone_front`, `dmgZone_back`, `dmgZone_fender_1_1` and friends. Passing a name that is not in a vehicle's zone map does not error; it just quietly does nothing. Follow `CarScript`'s own pattern and guard with `GetEntityDamageZoneMap().Contains(zone)` (`EntityAI`, `entityai.c`) before using an optional zone --- `DamageSystem.GetDamageZoneMap()` is a static, two-argument method that returns `bool`, not the map itself, and `CarScript`'s actual guard reads its own protected `m_DamageZoneMap` directly, which an external caller cannot access through a vehicle reference.
 
 ### Lights
 
@@ -230,7 +222,7 @@ proto native void LightToggle();  // Toggle current light state
 
 ### Door Control
 
-Door state is queried with `GetCarDoorsState`, which returns a `CarDoorState` value (`DOORS_MISSING`, `DOORS_OPEN`, or `DOORS_CLOSED`):
+Door state is queried with `GetCarDoorsState`, which returns a `CarDoorState` value (`DOORS_MISSING`, `DOORS_OPEN`, or `DOORS_CLOSED`). Note that `slotType` is the **attachment slot name**, and vanilla's are prefixed per vehicle --- `"CivSedanDriverDoors"`, `"CivSedanCoDriverDoors"`, `"CivSedanHood"`, `"CivSedanTrunk"`, `"NivaDriverDoors"`, `"NivaHood"`, and so on (see `ActionAnimateSeats` and `ActionLockAttachment`). There is no generic `"DriverDoor"` slot; look up the names your target vehicle actually declares.
 
 ```c
 enum CarDoorState
@@ -416,6 +408,8 @@ void FindAllVehicles(out array<Transport> vehicles)
 ## Vehicle Configuration Changes (1.28+)
 
 > **Warning (1.28):** DayZ 1.28 introduced significant vehicle physics changes. If you are updating a vehicle mod from 1.27 or earlier, read this section carefully.
+>
+> **On the version numbers in this section:** the *content* of these changes was checked against the current unpacked game data, and where a claim is about script (the `Contact` class below) it is confirmed there. The *attribution of each change to a specific patch* comes from patch-note reporting, not from the game files, which carry no version history. Treat "1.28" and "1.29" here as approximate, and confirm against the official changelog for the build you actually target.
 
 ### `useNewNetworking` Parameter
 
@@ -480,21 +474,45 @@ The Bullet Physics library was updated to the latest Enfusion version. Subtle di
 
 ### Physics Contact API Changes (1.28)
 
-The `Contact` class was modified:
+The `Contact` class (`1_Core/physics/contact.c`, declared `sealed`) was reworked. The current shape, read directly from the unpacked scripts, is:
 
-**Removed:**
-- `MaterialIndex1`, `MaterialIndex2`
-- `Index1`, `Index2`
+```c
+sealed class Contact
+{
+    Physics Physics1;
+    Physics Physics2;
+    SurfaceProperties Material1;   // surface properties of Object1
+    SurfaceProperties Material2;   // surface properties of Object2
+    float   Impulse;               // impulse applied to resolve the collision
+    int     ShapeIndex1;           // index of collider on Object1
+    int     ShapeIndex2;           // index of collider on Object2
+    vector  Normal;                // collision axis at the contact point
+    vector  Position;              // contact point, world space
+    float   PenetrationDepth;      // penetration depth on Object1
 
-**Added:**
-- `ShapeIndex1`, `ShapeIndex2` --- identify which shape in a compound body was hit
-- `VelocityBefore1`, `VelocityBefore2` --- pre-collision velocities
-- `VelocityAfter1`, `VelocityAfter2` --- post-collision velocities
+    float   RelativeNormalVelocityBefore;
+    float   RelativeNormalVelocityAfter;
+    vector  RelativeVelocityBefore;
+    vector  RelativeVelocityAfter;
 
-**Changed:**
-- `Material1`, `Material2` --- type changed from `dMaterial` to `SurfaceProperties`
+    vector  VelocityBefore1;       // Object1 velocity before collision, world space
+    vector  VelocityBefore2;
+    vector  VelocityAfter1;        // Object1 velocity after collision, world space
+    vector  VelocityAfter2;
 
-Mods that read `Contact` data in `OnContact` must update to the new variable names and types.
+    proto native vector GetNormalImpulse();
+    proto native float  GetRelativeVelocityBefore(vector vel);
+    proto native float  GetRelativeVelocityAfter(vector vel);
+}
+```
+
+Relative to older mod code:
+
+- **Gone:** `MaterialIndex1` / `MaterialIndex2` and `Index1` / `Index2` --- none of these four names exist in the current scripts.
+- **Present instead:** `ShapeIndex1` / `ShapeIndex2` identify which collider of a compound body was hit, and `Material1` / `Material2` are now `SurfaceProperties` objects rather than integer material indices.
+- **Also available:** the pre/post collision velocity fields above, plus the three `proto native` helpers.
+
+Mods that read `Contact` data in `OnContact` must update to these names and types. Because the class is `sealed`, you cannot extend it --- read the fields directly.
 
 ---
 

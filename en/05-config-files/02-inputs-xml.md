@@ -283,7 +283,7 @@ modded class MissionGameplay
 
 ### Alternative: Using the Input Name Directly
 
-Many mods check inputs inline using the `UAInputAPI` methods with string names:
+Many mods check inputs inline using the `Input` class (from `GetGame().GetInput()`), which exposes string-keyed overloads instead of a `UAInput` object:
 
 ```c
 override void OnUpdate(float timeslice)
@@ -305,16 +305,21 @@ The `false` parameter in `LocalPress("name", false)` is the `check_focus` argume
 
 ## Input Methods Reference
 
-Once you have a `UAInput` reference (from `GetUApi().GetInputByName()`), or are using the `Input` class directly, these methods detect different input states:
+DayZ exposes **two distinct APIs** for reading an input's state, and their method sets are not identical:
 
-| Method | Returns | When True |
-|--------|---------|-----------|
-| `LocalPress()` | `bool` | The key was pressed **this frame** (single trigger on key-down) |
-| `LocalRelease()` | `bool` | The key was released **this frame** (single trigger on key-up) |
-| `LocalClick()` | `bool` | The key was pressed and released quickly (tap) |
-| `LocalHold()` | `bool` | The key has been held down for a threshold duration |
-| `LocalDoubleClick()` | `bool` | The key was tapped twice quickly |
-| `LocalValue()` | `float` | Current analog value (0.0 or 1.0 for digital keys; variable for analog axes) |
+- **`UAInput`** --- obtained via `GetUApi().GetInputByName("ActionName")`. Its state methods take **no arguments**; they always query the input object they were called on (`scripts/3_game/inputapi/uainput.c`).
+- **`Input`** --- obtained via `GetGame().GetInput()`. Its state methods take the action name as a **string**, plus an optional `check_focus` bool (default `true`) (`scripts/3_game/tools/input.c`).
+
+| `UAInput` method (no args) | `Input` method (string, bool) | Returns | When True |
+|---|---|---------|-----------|
+| `LocalPress()` | `LocalPress(name, check_focus)` | `bool` | The key was pressed **this frame** (single trigger on key-down) |
+| `LocalRelease()` | `LocalRelease(name, check_focus)` | `bool` | The key was released **this frame** (single trigger on key-up) |
+| `LocalClick()` | *(no equivalent on `Input`)* | `bool` | The key was pressed and released quickly (tap) --- only queryable through a `UAInput` reference |
+| `LocalHold()` | `LocalHold(name, check_focus)` | `bool` | The key has been held down for a threshold duration |
+| `LocalDoubleClick()` | `LocalDbl(name, check_focus)` | `bool` | The key was tapped twice quickly --- note the method is named `LocalDoubleClick` on `UAInput` but `LocalDbl` on `Input` |
+| `LocalValue()` | `LocalValue(name, check_focus)` | `float` | Current analog value (0.0 or 1.0 for digital keys; variable for analog axes) |
+
+`UAInput` additionally exposes `LocalHoldBegin()` (no `Input` equivalent), which fires once when a hold begins rather than repeatedly while held.
 
 ### Usage Patterns
 
@@ -359,9 +364,16 @@ if (input.LocalHold("UAMyModMapToggle"))
 
 ## Suppressing and Disabling Inputs
 
-### ForceDisable
+### ForceDisable / ForceEnable
 
-Temporarily disables a specific input. Commonly used when opening menus to prevent game actions from firing while a UI is active:
+`UAInput` declares a matched pair (`scripts/3_game/inputapi/uainput.c`), both taking a bool:
+
+```c
+proto native void ForceEnable(bool bEnable);   // force enable on/off
+proto native void ForceDisable(bool bEnable);  // force disable on/off
+```
+
+`ForceDisable` temporarily disables a specific input --- commonly used when opening menus to prevent game actions from firing while a UI is active:
 
 ```c
 // Disable the input while menu is open
@@ -371,17 +383,29 @@ GetUApi().GetInputByName("UAMyModToggle").ForceDisable(true);
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(false);
 ```
 
+`ForceEnable(true)` is the separate "force on" override, not the undo for `ForceDisable(true)` --- to undo a disable, pass `false` to the same method you used.
+
 ### SupressNextFrame
 
-Suppresses all input processing for the next frame. Used during input context transitions (e.g., closing menus) to prevent one-frame input bleed:
+```c
+proto native void SupressNextFrame(bool bForce);
+```
+
+Suppresses inputs for the next frame. The vanilla comment is more specific than the name suggests: it suppresses *"for nextframe (until key release - call this when leaving main menu and alike - to avoid button collision after character control returned)"*. So the suppression persists until the key is released, not strictly for one frame --- which is exactly what you want when handing control back after a menu closes:
 
 ```c
 GetUApi().SupressNextFrame(true);
 ```
 
+Note the spelling: one `p`, as in the engine declaration.
+
 ### UpdateControls
 
-After modifying input states, call `UpdateControls()` to apply changes immediately:
+```c
+proto native void UpdateControls();   // "call this on each change of exclusion"
+```
+
+The vanilla comment scopes this to exclusion changes. Call it after modifying input states so the change applies immediately:
 
 ```c
 GetUApi().GetInputByName("UAMyModToggle").ForceDisable(false);
@@ -390,14 +414,14 @@ GetUApi().UpdateControls();
 
 ### Input Excludes
 
-The vanilla mission system provides exclude groups. When a menu is active, you can exclude categories of inputs:
+The vanilla mission system provides exclude groups. `AddActiveInputExcludes()` / `RemoveActiveInputExcludes()` are methods on `Mission` (`scripts/3_game/gameplay.c`), so call them either from inside a `Mission`/`MissionGameplay`-derived class or through `GetGame().GetMission()`. When a menu is active, you can exclude categories of inputs (vanilla itself uses groups such as `"inventory"`, `"map"`, and `"swimming"`):
 
 ```c
 // Suppress gameplay inputs while inventory is open
-AddActiveInputExcludes({"inventory"});
+GetGame().GetMission().AddActiveInputExcludes({"inventory"});
 
 // Restore when closing
-RemoveActiveInputExcludes({"inventory"});
+GetGame().GetMission().RemoveActiveInputExcludes({"inventory"});
 ```
 
 ---
@@ -627,10 +651,10 @@ Choosing keys that conflict with vanilla bindings (like `W`, `A`, `S`, `D`, `Tab
 
 | Concept | Theory | Reality |
 |---------|--------|---------|
-| `visible="false"` hides from Controls menu | Input is registered but invisible | Hidden inputs still appear in the `<sorting>` block listing in some DayZ versions. Omitting from `<sorting>` is the reliable way to hide inputs |
-| `LocalPress()` fires once per key-down | Single trigger on the frame the key is pressed | If the game hitches (low FPS), `LocalPress()` can be missed entirely. For critical actions, also check `LocalValue() > 0` as a fallback |
-| Modifier combos via nested `<btn>` | Outer is modifier, inner is trigger | The modifier key alone also registers as a press on its own input (e.g., `kLControl` is vanilla Hold Breath, bound to `UAHoldBreath`; vanilla crouch/stance `UAStance` is on `kC`). Players holding Ctrl+Click will also trigger Hold Breath |
-| `ForceDisable(true)` suppresses input | Input is completely ignored | `ForceDisable` persists until explicitly re-enabled. If your mod crashes or the UI closes without calling `ForceDisable(false)`, the input stays disabled until game restart |
+| `visible="false"` hides from Controls menu | Input is registered but invisible | Omitting the action from `<sorting>` is the reliable way to hide it. Rely on that rather than `visible="false"` alone if a hidden input ever appears in the list |
+| `LocalPress()` fires once per key-down | Single trigger on the frame the key is pressed | Only for an unlimited input. The vanilla doc on `Input.LocalPress()` states: *"if the input is limited (click, hold, doubleclick), 'Press' event is limited as well, and reacts to the limiter only!"* --- so on an action bound as a hold or double-click, `LocalPress()` fires when the **limiter** is satisfied, not on the raw key-down. For critical actions you can also check `LocalValue() > 0` as a fallback |
+| Modifier combos via nested `<btn>` | Outer is modifier, inner is trigger | The modifier key alone also registers as a press on its own input -- vanilla's default binding maps `kLControl` to Hold Breath and `kC` to the crouch/stance action. Players holding Ctrl+Click will also trigger Hold Breath |
+| `ForceDisable(true)` suppresses input | Input is completely ignored | `ForceDisable` has no automatic re-enable; if your mod fails to call `ForceDisable(false)` (a crash, an early return), the input stays disabled for the rest of the session. Always pair the disable with a guaranteed re-enable path (a `finally`-style cleanup or an `OnUpdate` safety check) |
 | Multiple `<btn>` siblings | Both keys trigger the same action | Works correctly, but the Controls menu only displays the first key. The player can see and rebind the first key but may not realize the second default exists |
 
 ---
@@ -638,8 +662,8 @@ Choosing keys that conflict with vanilla bindings (like `W`, `A`, `S`, `D`, `Tab
 ## Compatibility & Impact
 
 - **Multi-Mod:** Action name collisions are the primary risk. If two mods define `UAOpenMenu`, only one works and the conflict is silent. There is no engine warning for duplicate action names across mods.
-- **Performance:** Input polling via `GetUApi().GetInputByName()` involves a string hash lookup. Polling 5-10 inputs per frame is negligible, but caching the `UAInput` reference is still recommended for mods with many inputs.
-- **Version:** The `inputs.xml` format and `<modded_inputs>` structure have been stable since DayZ 1.0. The `visible` attribute was added later (around 1.08) -- on older versions, all inputs are always visible in the Controls menu.
+- **Performance:** Polling 5-10 inputs per frame via `GetUApi().GetInputByName()` is unlikely to be a bottleneck, but caching the `UAInput` reference in a member variable and reusing it in `OnUpdate` avoids a repeated per-frame name lookup and is the pattern used by established frameworks.
+- **Version:** The `inputs.xml` / `<modded_inputs>` structure and the `visible` attribute are both present in the current vanilla input definitions (`bin/constants.xml`, e.g. `visible="false"` on `UAHoldBreathToggle`) and in use by current-generation mods; `visible` is an inputs-XML attribute, not a member of the `UAInput`/`UAInputAPI` script surface declared in `scripts/3_game/inputapi/uainput.c`.
 
 ---
 
