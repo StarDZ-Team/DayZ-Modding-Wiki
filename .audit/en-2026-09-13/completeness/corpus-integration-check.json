@@ -1,0 +1,7 @@
+{
+  "verifiedSourceHashes": 110,
+  "repairedMarkdownPaths": 110,
+  "reason": "Replaced literal PowerShell OrderedDictionary placeholder with corresponding JSON path; no technical findings changed",
+  "finalMarkdownSha256": "87A7957CA7797BDC8EB01CE01E64CC441898607D533636299ECE7FA6B69B0351",
+  "jsonSha256": "1CB6F0B9F80393E1A0760793E72E09E2AA0735BF17C63C4D8FAD1516B4076162"
+}

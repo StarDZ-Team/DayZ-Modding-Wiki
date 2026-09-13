@@ -1,0 +1,2277 @@
+{
+  "schema": "user-source-crosswalk-v1",
+  "observed_at": "2026-09-13T23:14:24.2721899Z",
+  "inventory_path": ".audit/en-2026-09-13/completeness/user-source-inventory.json",
+  "requested_count": 110,
+  "unique_paths": 110,
+  "hashes_recomputed": true,
+  "review_boundary": "Mechanical crosswalk, not technical approval. Full line reads and structural scans were performed for all paths; no source assertion, numeric limit, or complete recipe is accepted without specialist verification.",
+  "priority_batches": [
+    "B1 packaging_multi_pbo",
+    "B2 language_runtime",
+    "B3 gui_assets",
+    "B4 server_economy",
+    "B5 frameworks_security"
+  ],
+  "entries": [
+    {
+      "source_id": "USR-001",
+      "path": "D:/StarDZ/docs/AI/00-index.md",
+      "sha256": "FCFD872B742C9F5FED9FBFAE4F100126F8E66245A7D08891181358ECB96FC17A",
+      "bytes": 7451,
+      "lines": 112,
+      "read_scope": "full file mechanically read (lines 1-112); headings scanned at 1,8,23,25,30,35,42,47,52,58,62,71,77,84,105; provenance/status markers scanned at 10; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-002",
+      "path": "D:/StarDZ/docs/AI/01-colorful-ui.md",
+      "sha256": "91177BBFE484EF26BA6B365862BC117F73C879299136ADA3CA85BC2842574D78",
+      "bytes": 54083,
+      "lines": 1170,
+      "read_scope": "full file mechanically read (lines 1-1170); headings scanned at 1,10,14,36,49,208,210,225,229,247,266,309,337,339,345,370,437,467,491,502,506,521,527,568,613,628,642,657,668,679,696,710,726,738,752,767,780,793,805,823,837,839,865,882,890,900,907,911,915,918,923,932,934,951,961,972,974,981,1002,1009,1019,1028,1075,1077,1086,1102,1104,1114,1121,1131,1133,1138,1156,1167; provenance/status markers scanned at 3,219,236; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-003",
+      "path": "D:/StarDZ/docs/AI/02-community-framework.md",
+      "sha256": "0976BA1125D484EDDDBFFB3852C04809B41ACFE61A183CFDF8C6CE8B84CBCEAB",
+      "bytes": 61260,
+      "lines": 2193,
+      "read_scope": "full file mechanically read (lines 1-2193); headings scanned at 1,3,39,56,75,122,135,158,160,171,173,187,211,223,237,251,265,269,280,298,316,329,342,344,365,399,412,416,428,432,436,456,473,481,491,516,520,526,551,559,565,569,573,579,591,629,640,659,663,683,709,722,726,733,741,750,758,768,777,781,792,803,824,833,835,848,866,874,888,906,910,924,938,953,955,977,987,998,1009,1020,1022,1032,1043,1045,1059,1074,1078,1080,1092,1104,1122,1130,1141,1145,1151,1153,1167,1180,1184,1188,1191,1194,1201,1218,1222,1236,1253,1274,1285,1289,1313,1331,1341,1377,1379,1390,1397,1406,1410,1427,1443,1458,1460,1476,1491,1495,1521,1540,1542,1586,1607,1609,1624,1643,1645,1649,1659,1680,1691,1712,1716,1724,1726,1730,1734,1738,1750,1754,1768,1793,1816,1818,1826,1830,1847,1851,1867,1884,1894,1898,1912,1939,1945,1947,1973,1994,2020,2022,2059,2079,2081,2092,2121,2156; provenance/status markers scanned at 45,61,80; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "community frameworks and mod architecture",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/07-patterns/02-module-systems.md",
+        "en/07-patterns/03-rpc-patterns.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "RPC-C01",
+        "RPC-C02",
+        "SEC-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-004",
+      "path": "D:/StarDZ/docs/AI/03-dabs-framework.md",
+      "sha256": "60FC61185FA95F4747FA2BDADECCB089953C8E047608A2E8777FD282FA2346D7",
+      "bytes": 57375,
+      "lines": 1460,
+      "read_scope": "full file mechanically read (lines 1-1460); headings scanned at 1,3,28,49,83,85,97,99,111,124,137,150,152,169,177,187,189,193,206,218,227,238,247,255,263,273,279,299,304,312,332,341,349,363,371,381,385,397,403,405,416,422,430,438,447,458,474,479,488,497,506,516,525,534,542,550,555,563,582,589,595,597,605,614,620,626,632,638,665,669,675,685,690,695,700,708,713,721,726,731,738,742,750,758,763,771,776,781,789,796,800,830,832,843,848,861,872,877,892,903,912,921,926,937,946,959,998,1004,1015,1025,1027,1033,1039,1044,1047,1059,1065,1089,1101,1107,1121,1126,1131,1136,1140,1145,1156,1176,1183,1189,1200,1214,1218,1233,1240,1243,1249,1253,1259,1263,1269,1274,1279,1288,1294,1299,1301,1303,1311,1319,1327,1336,1350,1359,1369,1380,1387,1395,1405,1407,1420,1438,1450; provenance/status markers scanned at 21,30,56; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "community frameworks and mod architecture",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/07-patterns/02-module-systems.md",
+        "en/07-patterns/03-rpc-patterns.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "RPC-C01",
+        "RPC-C02",
+        "SEC-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-005",
+      "path": "D:/StarDZ/docs/AI/04-expansion-scripts.md",
+      "sha256": "28ABE534224617474B1A9FD086D7F5832658129554657362AE41DC78F980F7C6",
+      "bytes": 68204,
+      "lines": 1596,
+      "read_scope": "full file mechanically read (lines 1-1596); headings scanned at 1,3,15,17,31,49,63,75,77,133,140,203,227,236,247,256,264,315,341,369,408,425,444,461,473,484,490,497,531,559,573,580,589,596,633,642,659,695,715,729,736,763,788,793,797,803,812,819,836,864,872,879,900,924,931,953,964,971,1004,1016,1022,1030,1038,1044,1054,1062,1064,1086,1103,1119,1132,1136,1168,1187,1199,1212,1216,1220,1231,1235,1244,1255,1264,1268,1272,1281,1295,1304,1308,1312,1316,1320,1326,1330,1338,1357,1389,1391,1403,1410,1419,1427,1447,1458,1460,1488,1511,1534,1545,1547,1559,1566,1581; provenance/status markers scanned at 193,422,533; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "community frameworks and mod architecture",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/07-patterns/02-module-systems.md",
+        "en/07-patterns/03-rpc-patterns.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "RPC-C01",
+        "RPC-C02",
+        "SEC-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-006",
+      "path": "D:/StarDZ/docs/AI/05-vanilla-scripts.md",
+      "sha256": "08FA3E27F3DA5BD6F9A6767A566DA15028CABEB6C45A814F21E06AB4B6B5B889",
+      "bytes": 55447,
+      "lines": 1258,
+      "read_scope": "full file mechanically read (lines 1-1258); headings scanned at 1,9,11,15,32,50,52,82,93,148,158,166,173,175,195,209,211,258,275,315,335,344,357,374,383,389,397,405,409,500,562,590,622,678,704,724,756,763,770,791,811,827,841,848,855,863,877,879,915,948,977,989,1001,1011,1013,1037,1039,1046,1053,1060,1066,1071,1077,1121,1123,1146,1162,1177,1187,1204; provenance/status markers scanned at 3,151,188; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "Enforce Script language and vanilla declarations",
+      "en_targets": [
+        "en/01-enforce-script",
+        "en/06-engine-api/quick-reference.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "LANG-C01",
+        "LANG-C02",
+        "LANG-C03"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-007",
+      "path": "D:/StarDZ/docs/AI/06-samples.md",
+      "sha256": "62C06CBE515164EFC4EAD66E97E78361A0BC6963F8C27F709142D05D59212320",
+      "bytes": 68838,
+      "lines": 1791,
+      "read_scope": "full file mechanically read (lines 1-1791); headings scanned at 1,3,9,18,37,41,43,46,55,118,143,152,154,157,168,212,225,234,236,239,253,322,346,356,358,361,374,387,409,420,422,425,436,471,552,562,564,567,577,630,661,688,697,699,702,714,741,764,827,837,839,842,856,878,885,894,896,899,908,937,1041,1053,1055,1058,1067,1093,1208,1233,1244,1246,1249,1256,1268,1286,1295,1297,1300,1373,1492,1530,1547,1581,1631,1644,1646,1673,1697,1704,1714,1716,1726,1744,1763,1782; provenance/status markers scanned at 133,139,144; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-008",
+      "path": "D:/StarDZ/docs/AI/07-central-economy.md",
+      "sha256": "2A401244C2386025B0E004E212B56D201859ABBAE44DDEA86B54557FF66A4708",
+      "bytes": 62440,
+      "lines": 1469,
+      "read_scope": "full file mechanically read (lines 1-1469); headings scanned at 1,9,32,46,55,61,63,98,152,154,175,179,187,211,223,242,257,290,311,313,331,350,367,384,401,417,429,433,470,505,513,517,545,547,572,593,607,623,641,649,651,669,682,695,713,717,739,743,762,790,794,829,837,856,860,886,910,919,944,969,973,1021,1029,1031,1070,1074,1081,1085,1091,1093,1118,1140,1167,1187,1191,1195,1199,1203,1207,1213,1215,1231,1246,1269,1273,1283,1300,1308,1313,1317,1326,1328,1350,1362,1395,1397,1400,1403,1412,1422,1451; provenance/status markers scanned at 3,625,644; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "Central Economy and loot",
+      "en_targets": [
+        "en/06-engine-api/10-central-economy.md",
+        "en/09-server-admin/04-loot-economy.md"
+      ],
+      "coverage_findings": [
+        "CE-C01",
+        "CE-C02",
+        "CE-C03",
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-009",
+      "path": "D:/StarDZ/docs/AI/08-template-misc-docs.md",
+      "sha256": "C118E5AA293FFFB13E415F1FEBBEDC29775A9523D2829C10C0495F9D448A008D",
+      "bytes": 43286,
+      "lines": 963,
+      "read_scope": "full file mechanically read (lines 1-963); headings scanned at 1,7,9,24,59,63,77,80,83,84,87,91,95,111,126,157,167,184,189,191,203,244,277,294,296,310,320,331,340,348,350,357,362,367,371,377,385,389,396,402,410,412,423,425,434,442,456,466,477,484,489,496,505,507,516,532,534,565,567,577,592,602,614,624,636,651,666,680,696,709,722,737,749,765,777,789,802,815,832,843,857,867,880,893,908,910,916,919,927,933,939,943,948,952,959; provenance/status markers scanned at 89,328,417; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-010",
+      "path": "D:/StarDZ/docs/AI/09-dayz-modding-reference.md",
+      "sha256": "DA2F7CF5505A77EB29B5356C9571623E795FA083D053B03D3F69B3C122BB6D3C",
+      "bytes": 18376,
+      "lines": 581,
+      "read_scope": "full file mechanically read (lines 1-581); headings scanned at 1,8,10,23,42,53,86,88,97,144,165,169,178,189,198,205,221,223,228,241,253,270,272,279,300,306,316,326,328,333,363,375,385,393,400,404,409,428,430,436,442,444,447,450,454,463,465,472,481,488,490,493,508,511,523,529,534,545,547,551,577; provenance/status markers scanned at 468; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-011",
+      "path": "D:/StarDZ/docs/API_ENFORCE_TIPOS_E_CONTAINERS.md",
+      "sha256": "E3C6CC59D363990F6599A4B27B57E004B79EA4F83267D46D0BF24771396047B8",
+      "bytes": 106040,
+      "lines": 1778,
+      "read_scope": "full file mechanically read (lines 1-1778); headings scanned at 1,14,16,26,36,49,79,81,98,127,148,188,224,257,270,304,335,358,424,426,475,498,523,560,594,610,622,632,634,708,764,821,838,840,856,874,904,928,947,971,973,1014,1059,1079,1100,1147,1149,1167,1196,1218,1220,1258,1276,1298,1333,1359,1363,1389,1410,1432,1445,1460,1467,1481,1485,1503,1535,1548,1550,1564,1589,1599,1618,1628,1642,1704,1706,1742,1751,1767; provenance/status markers scanned at 1343,1365,1731; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "Enforce Script language and vanilla declarations",
+      "en_targets": [
+        "en/01-enforce-script",
+        "en/06-engine-api/quick-reference.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "LANG-C01",
+        "LANG-C02",
+        "LANG-C03"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-012",
+      "path": "D:/StarDZ/docs/API_TIMERS_EVENTOS_E_INPUT.md",
+      "sha256": "CBCA1AD91536EA14CDA971762E017771BD2238C0F25D9D203C686221EC21813A",
+      "bytes": 101937,
+      "lines": 2173,
+      "read_scope": "full file mechanically read (lines 1-2173); headings scanned at 1,24,59,116,173,242,268,291,327,360,382,398,404,420,468,505,559,593,610,639,650,667,682,725,739,744,758,785,814,885,924,926,955,998,1025,1092,1120,1147,1234,1254,1321,1381,1407,1437,1439,1460,1465,1479,1588,1632,1653,1694,1696,1701,1798,1812,1819,1926,1998,2026,2083,2147; provenance/status markers scanned at 946,1028,1442; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "timers, events, and input",
+      "en_targets": [
+        "en/06-engine-api/07-timers.md",
+        "en/06-engine-api/13-input-system.md",
+        "en/07-patterns/06-events.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "LANG-C01",
+        "LANG-C02",
+        "LANG-C03"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-013",
+      "path": "D:/StarDZ/docs/CF_COMPLETE_REFERENCE.md",
+      "sha256": "AB0428821B300FB42ADF3170B3BA9ED4C00302EF460362A4F4BD2FA98FD10A61",
+      "bytes": 58468,
+      "lines": 1794,
+      "read_scope": "full file mechanically read (lines 1-1794); headings scanned at 1,8,26,36,63,83,98,149,204,223,264,281,285,291,308,323,344,359,371,386,397,401,412,429,449,470,472,487,497,523,545,549,565,579,621,648,659,673,683,702,706,737,745,755,757,772,806,808,826,837,858,860,874,893,907,909,929,949,956,960,966,975,979,983,987,997,1001,1005,1011,1039,1041,1056,1090,1092,1188,1266,1295,1426,1505,1585,1678,1743,1773; provenance/status markers scanned at 3,4,22; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "community frameworks and mod architecture",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/07-patterns/02-module-systems.md",
+        "en/07-patterns/03-rpc-patterns.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "RPC-C01",
+        "RPC-C02",
+        "SEC-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-014",
+      "path": "D:/StarDZ/docs/COOKBOOK_RECEITAS_COMPLETAS.md",
+      "sha256": "0D05D8B011933D7E9ADC246CA3180C14A6EC2681F39CC91C655458509DEB9B9A",
+      "bytes": 15173,
+      "lines": 271,
+      "read_scope": "full file mechanically read (lines 1-271); headings scanned at 1,13,15,26,40,54,56,128,166,188,213,241; provenance/status markers scanned at 90; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-015",
+      "path": "D:/StarDZ/docs/DAYZ_ENFORCE_SCRIPT_REFERENCE.md",
+      "sha256": "2FD5EAC54A2EA849FCA334E613D55884A35D02D5843E60261F3DD88F15479FD5",
+      "bytes": 49120,
+      "lines": 1945,
+      "read_scope": "full file mechanically read (lines 1-1945); headings scanned at 1,10,20,22,43,45,81,89,108,124,131,145,152,160,176,185,213,233,235,253,272,281,298,354,392,402,427,437,453,526,561,563,588,605,622,641,661,692,722,752,779,844,895,922,961,980,990,1015,1017,1032,1040,1102,1129,1148,1159,1161,1187,1197,1215,1263,1277,1288,1297,1352,1366,1368,1394,1421,1444,1476,1519,1562,1609,1633,1658,1682,1727,1739,1762,1780,1845,1879,1893,1914,1916,1929; provenance/status markers scanned at 3,4,342; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "Enforce Script language and vanilla declarations",
+      "en_targets": [
+        "en/01-enforce-script",
+        "en/06-engine-api/quick-reference.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "LANG-C01",
+        "LANG-C02",
+        "LANG-C03"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-016",
+      "path": "D:/StarDZ/docs/DAYZ_GUI_REFERENCE.md",
+      "sha256": "F83CD7E9843AAD1001B36E40883E3FF876FE645489C958DBFD83067A35AB9063",
+      "bytes": 69254,
+      "lines": 2386,
+      "read_scope": "full file mechanically read (lines 1-2386); headings scanned at 1,8,23,27,40,56,71,100,104,124,133,135,151,160,171,177,194,208,221,228,235,242,257,267,301,352,430,432,436,445,468,482,497,516,523,532,558,568,579,589,598,607,617,628,638,650,658,675,697,703,729,758,794,796,817,824,837,847,862,879,886,894,904,911,922,932,945,955,957,1006,1058,1122,1155,1165,1187,1219,1236,1291,1358,1360,1384,1459,1572,1574,1632,1654,1666,1715,1761,1763,1772,1785,1794,1801,1811,1825,1845,1873,1915,1917,1955,1988,2021,2063,2079,2097,2099,2123,2137,2165,2192,2225,2238,2251,2269,2290,2307,2317,2339,2355; provenance/status markers scanned at 200,478,510; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-017",
+      "path": "D:/StarDZ/docs/DAYZ_MOD_ARCHITECTURE_PATTERNS.md",
+      "sha256": "315C4C07A240C46D239984288F903860D46076A34376AC9CEDF5281D57D87B5B",
+      "bytes": 63647,
+      "lines": 2338,
+      "read_scope": "full file mechanically read (lines 1-2338); headings scanned at 1,16,34,36,74,82,99,166,189,213,236,238,246,261,275,353,400,408,410,418,455,523,562,576,604,606,658,730,780,805,825,856,858,872,892,916,928,930,939,964,1000,1041,1073,1089,1091,1119,1144,1165,1194,1219,1246,1248,1282,1308,1342,1384,1418,1420,1468,1509,1529,1591,1622,1624,1675,1711,1732,1792,1794,1808,1845,1882,1913,1915,1939,1982,2002,2028,2049,2077,2079,2110,2147,2169,2200,2214,2242,2247,2259,2300,2316,2325; provenance/status markers scanned at 6,47,96; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-018",
+      "path": "D:/StarDZ/docs/DAYZ_VANILLA_SCRIPTS_REFERENCE.md",
+      "sha256": "00753D2A2D7EAF37ED257DE8319EA6753B665BA8C7A5815A7F8881BA14AF038D",
+      "bytes": 66843,
+      "lines": 1873,
+      "read_scope": "full file mechanically read (lines 1-1873); headings scanned at 1,9,31,36,68,85,133,175,199,201,228,236,263,265,283,308,324,330,332,416,451,520,595,630,632,677,718,744,746,770,803,834,836,883,896,906,918,920,982,1018,1052,1085,1109,1120,1122,1151,1166,1189,1203,1205,1263,1304,1317,1319,1338,1350,1363,1375,1391,1393,1428,1436,1485,1494,1516,1518,1566,1568,1637,1639,1674,1714,1716,1729,1734,1739,1747,1755,1762,1764,1776,1793,1808,1825,1842; provenance/status markers scanned at 3,54,163; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-019",
+      "path": "D:/StarDZ/docs/DayZ/Buldozer for Object Builder.md",
+      "sha256": "9052B25127877C26311696E1AA514531AF5CFEEF9A856CBA0CAED948E2F94ECC",
+      "bytes": 3947,
+      "lines": 65,
+      "read_scope": "full file mechanically read (lines 1-65); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "tools, packaging, and mod structure",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/04-file-formats/05-dayz-tools.md",
+        "en/04-file-formats/06-pbo-packing.md",
+        "en/08-tutorials/05-mod-template.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "DEP-C01",
+        "PKG-C01",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-020",
+      "path": "D:/StarDZ/docs/DayZ/Central Economy Configuration.md",
+      "sha256": "99508B8890DE7780F11D243EFA9506EAEA56E168550077FB57B737FC1BA56E70",
+      "bytes": 10649,
+      "lines": 387,
+      "read_scope": "full file mechanically read (lines 1-387); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "Central Economy and loot",
+      "en_targets": [
+        "en/06-engine-api/10-central-economy.md",
+        "en/09-server-admin/04-loot-economy.md"
+      ],
+      "coverage_findings": [
+        "CE-C01",
+        "CE-C02",
+        "CE-C03",
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-021",
+      "path": "D:/StarDZ/docs/DayZ/Central Economy mission files modding.md",
+      "sha256": "F49B20D4A362FFD0EF4E19429023C8A3CBFB7463E71C26408640DA78B6D9B09C",
+      "bytes": 3226,
+      "lines": 62,
+      "read_scope": "full file mechanically read (lines 1-62); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "Central Economy and loot",
+      "en_targets": [
+        "en/06-engine-api/10-central-economy.md",
+        "en/09-server-admin/04-loot-economy.md"
+      ],
+      "coverage_findings": [
+        "CE-C01",
+        "CE-C02",
+        "CE-C03",
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-022",
+      "path": "D:/StarDZ/docs/DayZ/Central Economy setup for custom terrains.md",
+      "sha256": "37B379A1217C586F5C5E86ED1AE1D67E258C91AAF33B9DBC5261F6C6ED88B422",
+      "bytes": 15654,
+      "lines": 272,
+      "read_scope": "full file mechanically read (lines 1-272); headings scanned at 133,135,137,139; provenance/status markers scanned at 231; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "Central Economy and loot",
+      "en_targets": [
+        "en/06-engine-api/10-central-economy.md",
+        "en/09-server-admin/04-loot-economy.md"
+      ],
+      "coverage_findings": [
+        "CE-C01",
+        "CE-C02",
+        "CE-C03",
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-023",
+      "path": "D:/StarDZ/docs/DayZ/CfgConvert.md",
+      "sha256": "56B9143140DC6DD92949B6B1C311096FA0D209CADE620F52776F8DBAA41EAE4A",
+      "bytes": 2206,
+      "lines": 50,
+      "read_scope": "full file mechanically read (lines 1-50); headings scanned at none; provenance/status markers scanned at 5,15,26; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "tools, packaging, and mod structure",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/04-file-formats/05-dayz-tools.md",
+        "en/04-file-formats/06-pbo-packing.md",
+        "en/08-tutorials/05-mod-template.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "DEP-C01",
+        "PKG-C01",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-024",
+      "path": "D:/StarDZ/docs/DayZ/Contaminated Areas Configuration.md",
+      "sha256": "98B1137615010B727801240E56D19F582EAFB1F51C7112A79E1F020E63CE9078",
+      "bytes": 9181,
+      "lines": 171,
+      "read_scope": "full file mechanically read (lines 1-171); headings scanned at none; provenance/status markers scanned at 20,34,155; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-025",
+      "path": "D:/StarDZ/docs/DayZ/Diag Menu.md",
+      "sha256": "58CAD3A5194F0237A99D30C08BE68F60B5B2A531C605817022E50397D14FE616",
+      "bytes": 46975,
+      "lines": 1592,
+      "read_scope": "full file mechanically read (lines 1-1592); headings scanned at 967,969,971,973,975,977,979,981; provenance/status markers scanned at 1,322,741; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "debugging and testing",
+      "en_targets": [
+        "en/08-tutorials/06-debugging-testing.md",
+        "en/09-server-admin/08-performance.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "PERF-C01",
+        "TUT-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-026",
+      "path": "D:/StarDZ/docs/DayZ/Doors on buildings.md",
+      "sha256": "C4CC65E7504741B94268A185FAD829E2A536A6A365E3E4E23A832248A4F94306",
+      "bytes": 13158,
+      "lines": 287,
+      "read_scope": "full file mechanically read (lines 1-287); headings scanned at none; provenance/status markers scanned at 73,85,103; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "world building and geometry",
+      "en_targets": [
+        "en/06-engine-api/17-construction-system.md",
+        "en/04-file-formats/08-building-modeling.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "TUT-C01",
+        "TUT-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-027",
+      "path": "D:/StarDZ/docs/DayZ/Enforce Script Syntax.md",
+      "sha256": "668281B26FD8212CA0995A524140BAB1B9706153E3095ECB19444E1B9290DFD9",
+      "bytes": 34518,
+      "lines": 1388,
+      "read_scope": "full file mechanically read (lines 1-1388); headings scanned at none; provenance/status markers scanned at 883; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "Enforce Script language and vanilla declarations",
+      "en_targets": [
+        "en/01-enforce-script",
+        "en/06-engine-api/quick-reference.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "LANG-C01",
+        "LANG-C02",
+        "LANG-C03"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-028",
+      "path": "D:/StarDZ/docs/DayZ/Gameplay Settings.md",
+      "sha256": "C7BC5E41EEBE4F0E0D0BBEDD441951F29D743B7617A8BFC564E6E5A384EB024F",
+      "bytes": 12160,
+      "lines": 462,
+      "read_scope": "full file mechanically read (lines 1-462); headings scanned at none; provenance/status markers scanned at 27,28,29; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-029",
+      "path": "D:/StarDZ/docs/DayZ/Geometric Occluders.md",
+      "sha256": "0DFA1FB677476154D63B02F542A32C7E51FD49FAF576E77392EAEE4A540C2EF0",
+      "bytes": 3059,
+      "lines": 38,
+      "read_scope": "full file mechanically read (lines 1-38); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "world building and geometry",
+      "en_targets": [
+        "en/06-engine-api/17-construction-system.md",
+        "en/04-file-formats/08-building-modeling.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "TUT-C01",
+        "TUT-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-030",
+      "path": "D:/StarDZ/docs/DayZ/Grass-clutter modelling.md",
+      "sha256": "8E2E71AD82465B3F7CB7390269C13A4D40E4FC604248F405FF9DA49DE52B81F4",
+      "bytes": 2342,
+      "lines": 24,
+      "read_scope": "full file mechanically read (lines 1-24); headings scanned at none; provenance/status markers scanned at 16; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-031",
+      "path": "D:/StarDZ/docs/DayZ/Hosting a Linux Server.md",
+      "sha256": "16F5BAC472EAB810737E7112347B6F3B3C7B216F71CA61A46654B5121E51FD5A",
+      "bytes": 6139,
+      "lines": 143,
+      "read_scope": "full file mechanically read (lines 1-143); headings scanned at 88,90,93,101,103,105,107,130; provenance/status markers scanned at 139; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-032",
+      "path": "D:/StarDZ/docs/DayZ/Ladders on buildings.md",
+      "sha256": "85661F69F3EC881F592F4F91E4F537442DE948583AF3BE8F3B6017F9A527D5C2",
+      "bytes": 3437,
+      "lines": 47,
+      "read_scope": "full file mechanically read (lines 1-47); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "world building and geometry",
+      "en_targets": [
+        "en/06-engine-api/17-construction-system.md",
+        "en/04-file-formats/08-building-modeling.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "TUT-C01",
+        "TUT-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-033",
+      "path": "D:/StarDZ/docs/DayZ/Modding Basics.md",
+      "sha256": "1A0B2C1F7A69E369E74D923CB77D4716B9DD21941B0C02DA5015FA7F708B5839",
+      "bytes": 9672,
+      "lines": 198,
+      "read_scope": "full file mechanically read (lines 1-198); headings scanned at none; provenance/status markers scanned at 9,76; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-034",
+      "path": "D:/StarDZ/docs/DayZ/Modding Structure.md",
+      "sha256": "4AD1DABE620A25FFF043077D012BEBAAA663953355575B3F0AB52936AADB5AFA",
+      "bytes": 3708,
+      "lines": 109,
+      "read_scope": "full file mechanically read (lines 1-109); headings scanned at none; provenance/status markers scanned at 106; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-035",
+      "path": "D:/StarDZ/docs/DayZ/Object Spawner.md",
+      "sha256": "1AD6E1FD3F3C8FCE5E911493E72C55E11E1DBF51A9FE53EE475AFA1D638E3A5D",
+      "bytes": 4453,
+      "lines": 163,
+      "read_scope": "full file mechanically read (lines 1-163); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-036",
+      "path": "D:/StarDZ/docs/DayZ/Player Spawning Configuration.md",
+      "sha256": "F62B47A35E34C01D42EF4CCC84095C8363353421AEAD2181BCC67ABA0ACEACD8",
+      "bytes": 6746,
+      "lines": 168,
+      "read_scope": "full file mechanically read (lines 1-168); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-037",
+      "path": "D:/StarDZ/docs/DayZ/Projection Layer.md",
+      "sha256": "AA4BF9053BBBD7ED0D35460CC3124EDD355C2CEDC92D34D7174B62A6821A5AD3",
+      "bytes": 15419,
+      "lines": 582,
+      "read_scope": "full file mechanically read (lines 1-582); headings scanned at none; provenance/status markers scanned at 45,57,71; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "world building and geometry",
+      "en_targets": [
+        "en/06-engine-api/17-construction-system.md",
+        "en/04-file-formats/08-building-modeling.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "TUT-C01",
+        "TUT-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-038",
+      "path": "D:/StarDZ/docs/DayZ/Server Configuration.md",
+      "sha256": "D7126F849E9A460887A3B640068CA8C88304324EDFD3AFA1526AE69E4BECAA8E",
+      "bytes": 13218,
+      "lines": 202,
+      "read_scope": "full file mechanically read (lines 1-202); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-039",
+      "path": "D:/StarDZ/docs/DayZ/Server manager.md",
+      "sha256": "398366E4EB41FC021D27659AC8BE291A7A058FEFF16893E23D3F8E29D164E3CE",
+      "bytes": 2153,
+      "lines": 63,
+      "read_scope": "full file mechanically read (lines 1-63); headings scanned at none; provenance/status markers scanned at 27; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-040",
+      "path": "D:/StarDZ/docs/DayZ/Spawning Gear Configuration.md",
+      "sha256": "6D87AE310354489FCD1BB6C7FF03CFD5C22B22D0ECF6661DD7CB9FE25735A608",
+      "bytes": 40147,
+      "lines": 1758,
+      "read_scope": "full file mechanically read (lines 1-1758); headings scanned at none; provenance/status markers scanned at 214,320; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "server administration and mission configuration",
+      "en_targets": [
+        "en/05-config-files/05-server-configs.md",
+        "en/05-config-files/06-spawning-gear.md",
+        "en/09-server-admin"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "OPS-C01",
+        "OPS-C02",
+        "OPS-C03",
+        "OPS-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-041",
+      "path": "D:/StarDZ/docs/DayZ/Tools Launcher.md",
+      "sha256": "14B4E44A29D8E3DBCE7B373D0691B3634D3A7B98FC69411C588629318313182A",
+      "bytes": 843,
+      "lines": 35,
+      "read_scope": "full file mechanically read (lines 1-35); headings scanned at none; provenance/status markers scanned at 6; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "tools, packaging, and mod structure",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/04-file-formats/05-dayz-tools.md",
+        "en/04-file-formats/06-pbo-packing.md",
+        "en/08-tutorials/05-mod-template.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "DEP-C01",
+        "PKG-C01",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-042",
+      "path": "D:/StarDZ/docs/DayZ/Underground Areas Configuration.md",
+      "sha256": "9E282CF1D7A43E00227574580B8742D2E6162EBCED35EAEEF52F29057664C853",
+      "bytes": 7713,
+      "lines": 128,
+      "read_scope": "full file mechanically read (lines 1-128); headings scanned at 9,11,24,26,28; provenance/status markers scanned at 15; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "world building and geometry",
+      "en_targets": [
+        "en/06-engine-api/17-construction-system.md",
+        "en/04-file-formats/08-building-modeling.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "TUT-C01",
+        "TUT-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-043",
+      "path": "D:/StarDZ/docs/DayZ/Weather Configuration.md",
+      "sha256": "BE3855DB162C0B42D86EC6C34DBF3736013DEF53299731EC17A5A0925BB0FCBE",
+      "bytes": 6132,
+      "lines": 121,
+      "read_scope": "full file mechanically read (lines 1-121); headings scanned at none; provenance/status markers scanned at 18; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "weather and world environment",
+      "en_targets": [
+        "en/06-engine-api/03-weather.md",
+        "en/06-engine-api/23-world-systems.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "TUT-C01",
+        "TUT-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-044",
+      "path": "D:/StarDZ/docs/DayZ/Workbench Script Debugging.md",
+      "sha256": "2E46B120066884C1D2EE5B10705D4214C35DFB08B69249100E7DF00F10146F16",
+      "bytes": 7992,
+      "lines": 184,
+      "read_scope": "full file mechanically read (lines 1-184); headings scanned at none; provenance/status markers scanned at 3,29,33; no substantive correctness review",
+      "source_type": "saved_official_docs",
+      "topic": "debugging and testing",
+      "en_targets": [
+        "en/08-tutorials/06-debugging-testing.md",
+        "en/09-server-admin/08-performance.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "PERF-C01",
+        "TUT-C04"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-045",
+      "path": "D:/StarDZ/docs/GUIA_AI_ZUMBIS_ANIMAIS.md",
+      "sha256": "B95F491ABA8CD98EB976E3E5DE598ACE82459BC3327DDFBE80EEFF8B9433D4E2",
+      "bytes": 104550,
+      "lines": 2033,
+      "read_scope": "full file mechanically read (lines 1-2033); headings scanned at 1,15,35,37,75,110,133,162,183,234,267,269,274,312,371,398,439,492,537,539,554,569,599,653,692,788,843,943,989,1010,1127,1174,1229,1234,1267,1331,1383,1465,1517,1554,1646,1670,1731,1780,1881,1900,1988; provenance/status markers scanned at 643,646,670; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-046",
+      "path": "D:/StarDZ/docs/GUIA_ANIMACAO.md",
+      "sha256": "3F7DB3CC786E900072F8D31B219C8F0B81C5F0561C470132517A67C0C39AF23A",
+      "bytes": 80970,
+      "lines": 1730,
+      "read_scope": "full file mechanically read (lines 1-1730); headings scanned at 1,22,35,37,76,95,106,108,132,136,170,191,204,225,279,297,302,358,435,482,515,582,664,711,818,844,906,975,1015,1017,1040,1051,1058,1065,1073,1078,1084,1095,1101,1103,1113,1123,1144,1153,1166,1190,1195,1202,1207,1212,1220,1228,1232,1242,1244,1270,1296,1330,1332,1385,1420,1436,1455,1460,1469,1480,1496,1509,1517,1521,1545,1554,1559,1566,1573,1577,1582,1588,1619,1621,1641,1652,1676,1711; provenance/status markers scanned at 253,254,255; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-047",
+      "path": "D:/StarDZ/docs/GUIA_BASE_BUILDING.md",
+      "sha256": "82F7DFB00A1340DFFAFA1225926CC2C975989D6DB3689CB9E2D02256F0AF00AA",
+      "bytes": 116706,
+      "lines": 2876,
+      "read_scope": "full file mechanically read (lines 1-2876); headings scanned at 1,18,44,81,102,126,167,190,200,245,250,287,324,360,364,379,397,448,482,518,613,647,658,699,713,747,763,784,842,866,919,935,947,967,989,994,1019,1094,1111,1122,1177,1192,1194,1219,1249,1274,1300,1322,1355,1393,1428,1430,1488,1522,1531,1574,1610,1653,1669,1741,1758,1822,1836,1862,1866,1914,1951,1963,1998,2019,2067,2069,2108,2132,2156,2160,2197,2217,2233,2239,2261,2265,2280,2295,2305,2319,2326,2335,2340,2346,2356,2362,2375,2381,2406,2411,2416,2429,2434,2439,2445,2452,2456,2473,2484,2504,2512,2523,2537,2556,2558,2565,2572,2578,2585,2591,2597,2604,2610,2616,2624,2630,2637,2644,2651,2659,2663,2694,2701,2717,2768,2770,2799,2807,2817; provenance/status markers scanned at 14,474,1002; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-048",
+      "path": "D:/StarDZ/docs/GUIA_CLIMA_E_AMBIENTE.md",
+      "sha256": "678217268743058FE85C1A9A83594929FE2F013C9D9F4F38698F84AAAE38AE79",
+      "bytes": 107263,
+      "lines": 2320,
+      "read_scope": "full file mechanically read (lines 1-2320); headings scanned at 1,16,53,58,81,128,155,226,258,260,279,345,370,398,411,416,469,542,596,614,657,661,694,702,742,801,803,817,852,869,886,901,903,951,978,1023,1081,1142,1161,1163,1184,1238,1254,1319,1384,1436,1464,1466,1535,1591,1593,1648,1712,1741,1780,1798,1802,1825,1843,1851,1860,1872,1880,1894,1900,1906,1912,1917,1924,1930,1935,1940,1946,1951,1958,1962,1977,1988,2012,2021,2037,2056,2072,2074,2151,2179,2189,2194,2199,2207,2213,2271; provenance/status markers scanned at 286,1179,1401; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-049",
+      "path": "D:/StarDZ/docs/GUIA_COMPLETO_MODDING_DAYZ.md",
+      "sha256": "209268A58A89BF0DA97979A2B01034FBB77E6E478E3136E19815344A11E9BE4B",
+      "bytes": 37353,
+      "lines": 1174,
+      "read_scope": "full file mechanically read (lines 1-1174); headings scanned at 1,2,6,23,25,30,44,53,55,59,61,64,67,70,74,92,94,99,104,112,119,121,133,137,149,179,191,206,208,211,223,239,251,278,297,311,326,346,356,369,371,381,406,420,435,446,448,451,454,457,458,460,463,467,484,503,505,512,517,524,526,531,536,543,545,571,604,621,630,643,663,683,701,703,735,753,799,836,842,866,870,880,891,893,904,906,911,918,923,931,940,947,960,962,1001,1019,1033,1036,1039,1043,1046,1050,1054,1061,1063,1067,1105,1121,1130,1159; provenance/status markers scanned at 96,143,200; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-050",
+      "path": "D:/StarDZ/docs/GUIA_CRAFTING_E_ACOES.md",
+      "sha256": "A76E623A95EA35D650851279B69E9A839C6E60B9CDF3C62B017B74B791FB816D",
+      "bytes": 112313,
+      "lines": 2268,
+      "read_scope": "full file mechanically read (lines 1-2268); headings scanned at 1,10,27,29,64,103,156,158,201,222,241,333,379,381,403,431,459,463,478,486,494,499,538,581,600,645,684,720,781,820,822,849,871,902,972,990,1027,1029,1067,1071,1082,1106,1125,1141,1158,1225,1277,1307,1331,1369,1388,1442,1484,1488,1509,1525,1529,1538,1546,1551,1558,1565,1570,1575,1580,1585,1603,1607,1612,1620,1632,1637,1642,1648,1650,1691,1725,1735,1747,1765,1774,1790,1798,1802,1806,1811,1815,1822,1830,1839,1843,1860,1876,1889,1894,1899,1903,1912,1924,1929,1939,1941,1958,1977,1994,1996,2099,2187,2244,2262; provenance/status markers scanned at 76,566,2255; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-051",
+      "path": "D:/StarDZ/docs/GUIA_CRIAR_ITEM_DO_ZERO.md",
+      "sha256": "E6D837BB74CA8ABD5BDA5E532EAAEB08C3E847E01FAA85F085C77FC94AADD359",
+      "bytes": 115941,
+      "lines": 2321,
+      "read_scope": "full file mechanically read (lines 1-2321); headings scanned at 1,23,46,51,67,78,91,102,131,147,174,176,200,202,243,271,292,318,334,362,377,394,396,407,447,473,495,497,532,553,590,606,629,670,672,682,713,725,764,802,865,931,992,1025,1050,1077,1079,1113,1140,1156,1158,1173,1189,1211,1235,1256,1258,1298,1336,1385,1390,1409,1417,1463,1471,1499,1544,1554,1556,1578,1579,1590,1636,1648,1695,1725,1747,1749,1757,1764,1770,1776,1782,1788,1797,1802,1811,1813,1819,1824,1833,1835,1839,1842,1847,1851,1856,1860,1865,1871,1878,1892,1896,1913,1924,1947,1965,1979,1983,1995,2013,2032,2046,2050,2055,2060,2065,2069,2075,2080,2085,2092,2097,2103,2105,2111,2118,2129,2136,2144,2151,2159,2169,2177,2202,2256,2258,2265,2271,2279,2291,2303,2309; provenance/status markers scanned at 387,508,718; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-052",
+      "path": "D:/StarDZ/docs/GUIA_DEBUG_E_PERFORMANCE.md",
+      "sha256": "86D3AD63EBA59C766FB1F75B277A38DC1C043C555DDF033837AC5266D5303835",
+      "bytes": 59650,
+      "lines": 1115,
+      "read_scope": "full file mechanically read (lines 1-1115); headings scanned at 1,19,21,38,58,69,83,85,152,176,218,254,279,318,361,425,447,470,501,524,528,550,561,582,590,597,608,616,621,626,636,644,646,669,680,695,710,727,729,744,762,777,793,851,853,880,902,914,918,920,933,956,972,985,991,1005,1010,1015,1026,1082; provenance/status markers scanned at 94,105,129; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-053",
+      "path": "D:/StarDZ/docs/GUIA_ECONOMIA_E_LOOT.md",
+      "sha256": "25EEB8790E5FBDAECFE6A3FC04E709BDC6F6B93E5DDC9DC38E6132045A465F75",
+      "bytes": 94984,
+      "lines": 2047,
+      "read_scope": "full file mechanically read (lines 1-2047); headings scanned at 1,30,46,48,66,90,135,163,184,221,251,253,264,275,303,311,330,340,362,375,387,404,434,501,528,555,587,640,674,693,757,781,830,853,881,927,966,1003,1041,1043,1068,1095,1104,1106,1158,1171,1178,1183,1188,1195,1207,1219,1221,1237,1248,1255,1264,1298,1308,1320,1326,1333,1340,1347,1355,1388,1392,1409,1421,1434,1464,1474,1476,1494,1507,1532,1546,1555,1566,1568,1595,1619,1639,1663,1693,1701,1708,1710,1742,1755,1771,1789,1804,1816,1832,1853,1874,1878,1897,1902,1907,1912,1918,1922,1927,1931,1936,1940,1945,1951,1957,1963,1965,1982,1996,2005,2017; provenance/status markers scanned at 1118,1784; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-054",
+      "path": "D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md",
+      "sha256": "2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9",
+      "bytes": 110585,
+      "lines": 2162,
+      "read_scope": "full file mechanically read (lines 1-2162); headings scanned at 1,13,32,34,57,68,83,91,125,149,178,234,236,261,270,276,333,358,429,464,497,539,578,592,634,688,721,745,751,793,853,855,879,962,1000,1037,1079,1115,1117,1131,1152,1181,1246,1251,1265,1283,1295,1337,1339,1344,1350,1355,1360,1368,1372,1376,1380,1385,1389,1396,1401,1452,1478,1484,1495,1515,1537,1544,1564,1570,1590,1604,1610,1616,1622,1629,1631,1673,1688,1700,1719,1721,1762,1770,1795,1819,1834,1858,1864,1881,1890,1910,1989,1991,2018,2024,2035,2046,2058,2122,2125,2126,2129,2133,2134,2135,2138; provenance/status markers scanned at 204,340,367; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-055",
+      "path": "D:/StarDZ/docs/GUIA_FRAMEWORKS_COMUNIDADE.md",
+      "sha256": "7AA185CDC38A6EB5DEBCACB7418B27D734AE202CC871C13214D62D4B205E8F73",
+      "bytes": 98011,
+      "lines": 1976,
+      "read_scope": "full file mechanically read (lines 1-1976); headings scanned at 1,12,30,43,56,58,76,94,139,179,203,222,224,284,308,322,341,361,426,518,681,709,714,744,784,805,821,827,844,893,954,978,997,1017,1022,1082,1119,1169,1173,1216,1253,1299,1330,1355,1388,1406,1434,1438,1455,1474,1487,1504,1528,1538,1549,1560,1567,1579,1588,1596,1605,1607,1622,1638,1663,1665,1672,1676,1683,1691,1699,1705,1712,1718,1726,1734,1783,1785,1816,1864,1868,1886,1890,1894,1899,1903,1907,1913,1916,1920,1924,1930; provenance/status markers scanned at 72,233,244; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-056",
+      "path": "D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md",
+      "sha256": "43AAECA6B5A5353499FE592C47615766EDE14DC8AB53B9E21B6551E32CFB07E8",
+      "bytes": 80278,
+      "lines": 1677,
+      "read_scope": "full file mechanically read (lines 1-1677); headings scanned at 1,19,31,33,42,67,84,136,165,185,187,236,257,315,332,389,424,564,592,734,807,874,876,889,904,917,929,936,942,952,963,970,974,1013,1035,1057,1079,1086,1113,1129,1143,1155,1173,1181,1188,1197,1203,1205,1239,1258,1271,1275,1341,1391,1420,1425,1452,1462,1526,1531,1543,1558,1572,1581,1595,1603,1620,1642,1654; provenance/status markers scanned at 748; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-057",
+      "path": "D:/StarDZ/docs/GUIA_VEICULOS.md",
+      "sha256": "5CF73CF29A47EA68982CEDBEAD70F0BAE6B0410A0467D867DF459ECF10D8BD0D",
+      "bytes": 134614,
+      "lines": 2425,
+      "read_scope": "full file mechanically read (lines 1-2425); headings scanned at 1,20,41,79,81,106,133,169,186,190,228,293,323,325,336,368,390,420,449,493,509,532,543,631,662,742,789,791,809,835,837,922,937,950,993,1020,1022,1060,1096,1121,1147,1170,1201,1241,1243,1264,1339,1366,1384,1396,1413,1435,1464,1490,1513,1515,1547,1583,1611,1631,1637,1652,1654,1658,1665,1672,1717,1742,1783,1812,1879,1883,1891,1910,2013,2023,2027,2040,2053,2059,2081,2087,2104,2106,2125,2148,2168,2181,2199,2201,2212,2216,2220,2242,2246,2263,2286,2302,2306,2315,2319,2323,2327,2331,2337,2383,2385,2393,2399,2405,2408; provenance/status markers scanned at 204,568,569; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-058",
+      "path": "D:/StarDZ/docs/plans/2026-03-18-stardz-ecosystem-unification.md",
+      "sha256": "2BEB2A0AE584EA278490E756452BA4F0723909C93A3C7F90082180F390E8D1BE",
+      "bytes": 34731,
+      "lines": 1132,
+      "read_scope": "full file mechanically read (lines 1-1132); headings scanned at 1,15,21,102,137,188,253,288,314,321,394,458,466,497,573,613,715,764,771,802,888,933,1039,1046,1079,1083,1094,1105; provenance/status markers scanned at 11,594,646; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-059",
+      "path": "D:/StarDZ/docs/plans/2026-03-19-stardz-full-ecosystem-refinement.md",
+      "sha256": "FA7A8DFF7F570A03DD44EBDF96715AE24504C85DB501DABF97C900A0176E024D",
+      "bytes": 15222,
+      "lines": 348,
+      "read_scope": "full file mechanically read (lines 1-348); headings scanned at 1,13,17,33,40,45,49,54,60,64,69,73,79,81,90,97,102,110,112,119,123,127,130,137,139,142,147,152,156,160,164,168,173,175,180,185,188,191,200,202,207,211,214,220,222,227,231,235,242,244,249,254,258,263,269,288,290,301,312,322,333; provenance/status markers scanned at 9,42,43; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-060",
+      "path": "D:/StarDZ/docs/plans/2026-03-20-stardz-admin-panel-redesign.md",
+      "sha256": "8CC5303AD89EB4E508B32E019CC515C0398B87F935BCFDFED6379445EF154BBE",
+      "bytes": 13400,
+      "lines": 348,
+      "read_scope": "full file mechanically read (lines 1-348); headings scanned at 1,6,10,25,27,40,110,132,157,159,168,176,186,195,197,206,213,223,231,233,240,247,254,260,262,269,277,284,290,297,299,308,313,318,323,338; provenance/status markers scanned at 4,81,82; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-061",
+      "path": "D:/StarDZ/docs/plans/SDZ_W_STATS_BRAINSTORM.md",
+      "sha256": "D525A39B4537C43F8B2AAFD4C9B70A7B8B01720013D1D29DEC9A22CCF084F2BB",
+      "bytes": 12286,
+      "lines": 257,
+      "read_scope": "full file mechanically read (lines 1-257); headings scanned at 1,3,41,43,52,61,65,71,86,98,108,117,128,140,142,168,179,189,191,216,218,223,228,233,238,252; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "weapons/attachments and stat composition",
+      "en_targets": [
+        "en/08-tutorials/02-custom-item.md",
+        "en/08-tutorials/10-vehicle-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-062",
+      "path": "D:/StarDZ/docs/plans/SDZ_W_WEAPON_OVERHAUL_DESIGN.md",
+      "sha256": "9D65B1C8C54FE1271BE00E18C2B1C18CDD5CF324A49112E9690F7C6FBD6546A0",
+      "bytes": 14557,
+      "lines": 387,
+      "read_scope": "full file mechanically read (lines 1-387); headings scanned at 1,3,16,18,31,57,59,66,116,118,132,138,145,147,166,183,185,188,211,231,235,250,263,265,274,282,290,299,301,328,346,348,354,361,368,374,382; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "weapons/attachments and stat composition",
+      "en_targets": [
+        "en/08-tutorials/02-custom-item.md",
+        "en/08-tutorials/10-vehicle-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-063",
+      "path": "D:/StarDZ/docs/plans/SDZ_W_WEAPON_REAL_DATA.md",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0,
+      "lines": 0,
+      "read_scope": "full file mechanically read (lines 1-0); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "weapons/attachments and stat composition",
+      "en_targets": [
+        "en/08-tutorials/02-custom-item.md",
+        "en/08-tutorials/10-vehicle-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-064",
+      "path": "D:/StarDZ/docs/plans/STARDZ_MOD_STRUCTURE_STANDARD.md",
+      "sha256": "DEEB2D61B2F2A9B24B3DFE331724D1763908C0295D5AEF8DC5E56F75F36A8BBB",
+      "bytes": 10596,
+      "lines": 157,
+      "read_scope": "full file mechanically read (lines 1-157); headings scanned at 1,3,36,66,68,75,81,90,97,124,137,147; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-065",
+      "path": "D:/StarDZ/docs/README.md",
+      "sha256": "B8CAB5D599B6B3E23EFBEF69F536B91E8B669BF822C3CE96C421982B50238F3E",
+      "bytes": 3735,
+      "lines": 49,
+      "read_scope": "full file mechanically read (lines 1-49); headings scanned at 1,6,19,31,38; provenance/status markers scanned at 19,27; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-066",
+      "path": "D:/StarDZ/docs/REFERENCE_MODS_DEEP_STUDY.md",
+      "sha256": "4EBFE0199D05526711FBA69070FB1C1D560ECD9994B1C5578796DA3CC96A6F91",
+      "bytes": 33812,
+      "lines": 909,
+      "read_scope": "full file mechanically read (lines 1-909); headings scanned at 1,7,11,91,122,154,187,219,240,269,283,294,298,352,384,421,453,484,507,525,538,542,584,609,663,692,733,773,802,833,845,859,861,870,879,889,898; provenance/status markers scanned at 3,265,641; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "community frameworks and mod architecture",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/07-patterns/02-module-systems.md",
+        "en/07-patterns/03-rpc-patterns.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "RPC-C01",
+        "RPC-C02",
+        "SEC-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-067",
+      "path": "D:/StarDZ/docs/REFERENCIA_LIMITES_E_MUROS.md",
+      "sha256": "726033DB527944DF57EED0767FB2F0329AB65438B3D48E6247E19D98DAE18EA0",
+      "bytes": 14172,
+      "lines": 304,
+      "read_scope": "full file mechanically read (lines 1-304); headings scanned at 1,10,24,31,43,58,63,80,105,118,136,145,156,176,182,190,198,213,224,237,258,263,279,286; provenance/status markers scanned at 77; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "engine limits and unsupported behavior",
+      "en_targets": [
+        "en/faq.md",
+        "en/troubleshooting.md",
+        "en/06-engine-api/quick-reference.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-068",
+      "path": "D:/StarDZ/docs/REFERENCIA_TIPOS_DE_ARQUIVO.md",
+      "sha256": "BCC70BBA5733111C8EF513A1B2A2735A9B9D71C5A282B1D70CC86643ECFAD1C1",
+      "bytes": 19579,
+      "lines": 506,
+      "read_scope": "full file mechanically read (lines 1-506); headings scanned at 1,6,15,36,38,62,78,89,122,124,149,167,183,200,230,232,268,294,327,365,395,416,418,423,428,451,453,470,477,494; provenance/status markers scanned at 99,100,102; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-069",
+      "path": "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md",
+      "sha256": "E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD",
+      "bytes": 63617,
+      "lines": 1297,
+      "read_scope": "full file mechanically read (lines 1-1297); headings scanned at 1,28,30,57,93,117,156,175,178,181,185,215,220,221,239,241,280,339,374,376,429,507,513,570,615,659,704,729,754,781,819,899,958,963,1004,1019,1036,1046,1058,1064,1069,1077,1113,1115,1125,1132,1138,1147,1155,1163,1170,1177,1192,1243,1277; provenance/status markers scanned at 57,161,245; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-070",
+      "path": "D:/StarDZ/docs/STARDZ_ADMIN_CONFIRM_FEEDBACK_SPEC.md",
+      "sha256": "6473980D436B3DFDF70CCB5616CB44A23944EF3AD97C650DC39E373F53E56930",
+      "bytes": 46850,
+      "lines": 625,
+      "read_scope": "full file mechanically read (lines 1-625); headings scanned at 1,11,82,84,103,127,169,195,210,251,285,297,310,312,339,347,382,389,430,501,549,571,591; provenance/status markers scanned at 3,5,57; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-071",
+      "path": "D:/StarDZ/docs/STARDZ_ADMIN_PANEL_SPEC.md",
+      "sha256": "81D2D09DA19E25C6435766864CC0E5414D324B01C5FD98BBA15D3861A0655130",
+      "bytes": 18146,
+      "lines": 282,
+      "read_scope": "full file mechanically read (lines 1-282); headings scanned at 1,7,44,46,58,63,83,96,116,123,137,139,150,160,171,180,190,196,209,211,220,225,241,250,257,263,272; provenance/status markers scanned at 3,12,145; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-072",
+      "path": "D:/StarDZ/docs/STARDZ_ADMIN_PRACTICALITY_SPEC.md",
+      "sha256": "D7C78137A949C642D02B9D53D37951781B1A07F138D2145D3DDEE8E2E5981ED5",
+      "bytes": 21774,
+      "lines": 295,
+      "read_scope": "full file mechanically read (lines 1-295); headings scanned at 1,11,43,83,94,113,123,168,208,241,263,278; provenance/status markers scanned at 3,14,37; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-073",
+      "path": "D:/StarDZ/docs/stardz_admin_redesign.html",
+      "sha256": "5FCFBEBC745BFC43EDBF55D5292A8471DA6151A8B0EC8036A9687322D84F4773",
+      "bytes": 59299,
+      "lines": 646,
+      "read_scope": "full file mechanically read (lines 1-646); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "UI_mockup/board",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-074",
+      "path": "D:/StarDZ/docs/STARDZ_AUTONOMOUS_TEST_LOOP.md",
+      "sha256": "78EDCBB17948E12C2089B246D14091580975214ECA294CCF9D527C1561F38207",
+      "bytes": 20495,
+      "lines": 299,
+      "read_scope": "full file mechanically read (lines 1-299); headings scanned at 1,3,24,44,89,98,102,130,192,203,223,252,266; provenance/status markers scanned at 246; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "debugging and testing",
+      "en_targets": [
+        "en/08-tutorials/06-debugging-testing.md",
+        "en/09-server-admin/08-performance.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "PERF-C01",
+        "TUT-C04"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-075",
+      "path": "D:/StarDZ/docs/STARDZ_BOARD_PLAN.md",
+      "sha256": "C832E8A8F528C7B05A48AB8935F5DF16A0B583A06F6654A775481BC90036D1A6",
+      "bytes": 16941,
+      "lines": 230,
+      "read_scope": "full file mechanically read (lines 1-230); headings scanned at 1,22,48,83,85,109,131,166,206,219; provenance/status markers scanned at 3,37,87; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-076",
+      "path": "D:/StarDZ/docs/STARDZ_COMMUNITY_TOOLS.md",
+      "sha256": "88F53020DD07ADD6CC6D103E351BE74A243EF97BD7F75E85D97A29FC7AF5A126",
+      "bytes": 26940,
+      "lines": 176,
+      "read_scope": "full file mechanically read (lines 1-176); headings scanned at 1,9,26,40,57,72,95,107,125,146,162; provenance/status markers scanned at 61,66,79; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "community frameworks and mod architecture",
+      "en_targets": [
+        "en/02-mod-structure",
+        "en/07-patterns/02-module-systems.md",
+        "en/07-patterns/03-rpc-patterns.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "RPC-C01",
+        "RPC-C02",
+        "SEC-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-077",
+      "path": "D:/StarDZ/docs/STARDZ_CORE_FULLSCREEN_PROPOSAL.md",
+      "sha256": "6D9BD30C15473DD37865EFB8A128CF3D8362ECE2C2EBCE3E60C9C3F8D42452E5",
+      "bytes": 23419,
+      "lines": 337,
+      "read_scope": "full file mechanically read (lines 1-337); headings scanned at 1,14,37,62,90,131,157,177,199,223,243,273,292,330; provenance/status markers scanned at 1,3,33; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-078",
+      "path": "D:/StarDZ/docs/STARDZ_CURRENCY_BRIDGE_CONTRACT.md",
+      "sha256": "2CCF77EDC3DC6F0E3CD3FD8AC7B3CBDB8A85EBCCB845C88223958AA15DA2EEE9",
+      "bytes": 7483,
+      "lines": 124,
+      "read_scope": "full file mechanically read (lines 1-124); headings scanned at 1,8,16,24,36,40,72,76,81,89,96,106,114,120; provenance/status markers scanned at 47,70; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "networking, trust, and persistence contracts",
+      "en_targets": [
+        "en/06-engine-api/09-networking.md",
+        "en/07-patterns/03-rpc-patterns.md",
+        "en/07-patterns/04-config-persistence.md",
+        "en/07-patterns/05-permissions.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "PERSIST-C01",
+        "PERSIST-C02",
+        "RPC-C01",
+        "RPC-C02",
+        "SEC-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-079",
+      "path": "D:/StarDZ/docs/stardz_decisions.html",
+      "sha256": "1BEDC1527DB0A7C41BC509889A6DC2696E0D389051CAC88B4E84B516EF9EA42D",
+      "bytes": 40401,
+      "lines": 797,
+      "read_scope": "full file mechanically read (lines 1-797); headings scanned at none; provenance/status markers scanned at none; no substantive correctness review",
+      "source_type": "UI_mockup/board",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-080",
+      "path": "D:/StarDZ/docs/STARDZ_DEV_REFERENCE.md",
+      "sha256": "8AA227292957A0E956C742AD74054F1FE083B6AC7C7B1FB6E8501DB89485D273",
+      "bytes": 8165,
+      "lines": 276,
+      "read_scope": "full file mechanically read (lines 1-276); headings scanned at 1,7,9,23,26,32,43,50,52,67,80,91,96,99,102,104,110,126,134,143,150,152,165,172,178,185,191,198,200,205,210,218,229,231,242,248,260,266; provenance/status markers scanned at 3,150,157; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-081",
+      "path": "D:/StarDZ/docs/STARDZ_ECOSYSTEM_IDEAS.md",
+      "sha256": "CEE68B992A2673F0E7CA3D50766DD8EA15D2A1105B9CDF77D72FA2406D39680C",
+      "bytes": 92793,
+      "lines": 519,
+      "read_scope": "full file mechanically read (lines 1-519); headings scanned at 3,5,11,28,52,58,60,74,94,96,112,130,132,144,166,168,176,202,206,218,240,244,256,278,282,418,446,471,475,485,488,493,498,504,509; provenance/status markers scanned at 126,158; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-082",
+      "path": "D:/StarDZ/docs/stardz_feature_board.html",
+      "sha256": "999C451FDEC15B21DAC30A5EF077136EC6EDDCFFE897DAE16E30AEABD9DB087A",
+      "bytes": 163363,
+      "lines": 743,
+      "read_scope": "full file mechanically read (lines 1-743); headings scanned at none; provenance/status markers scanned at 249,263,296; no substantive correctness review",
+      "source_type": "UI_mockup/board",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-083",
+      "path": "D:/StarDZ/docs/STARDZ_FEATURE_BOARD.json",
+      "sha256": "F6CB5F5D614315209AE2F1CBEB7A2B874C82BC09122CD881B758E495321034C4",
+      "bytes": 165615,
+      "lines": 4810,
+      "read_scope": "full file mechanically read (lines 1-4810); headings scanned at none; provenance/status markers scanned at 70,76,84; no substantive correctness review",
+      "source_type": "UI_mockup/board",
+      "topic": "admin tooling and product workflow",
+      "en_targets": [
+        "en/08-tutorials/03-admin-panel.md",
+        "en/06-engine-api/22-admin-server.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-084",
+      "path": "D:/StarDZ/docs/STARDZ_FEATURE_IDEAS.md",
+      "sha256": "B346DDDC47186E78A105CEB3003C7CFCAAFEADDF94117DFC25F20335B2BD1CE4",
+      "bytes": 56226,
+      "lines": 332,
+      "read_scope": "full file mechanically read (lines 1-332); headings scanned at 1,7,25,49,51,55,64,78,82,92,105,109,119,131,135,143,157,161,171,184,188,200,210,214,225,236,257,279,283,291,302,313,326; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-085",
+      "path": "D:/StarDZ/docs/STARDZ_HUD_CONTENT_SPEC.md",
+      "sha256": "171604CEC65E363CEAAA983C90F0ABD18689F7CAA2DF7EFC3D0232DDB14AAA83",
+      "bytes": 39800,
+      "lines": 552,
+      "read_scope": "full file mechanically read (lines 1-552); headings scanned at 1,23,25,51,80,102,124,132,147,160,162,168,172,176,192,203,217,225,229,243,251,253,262,265,268,273,290,296,304,307,314,321,323,328,332,335,346,357,365,373,376,386,393,395,400,403,406,414,421,427,435,438,444,450,452,456,459,464,474,480,486,494,497,505,507,520,526,533,538; provenance/status markers scanned at 16,76,126; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-086",
+      "path": "D:/StarDZ/docs/STARDZ_HUD_STANDARD.md",
+      "sha256": "E93D6AB7665443BA85AC06EA4B82701E364CFFC058C484949F71962676FCB51A",
+      "bytes": 65949,
+      "lines": 890,
+      "read_scope": "full file mechanically read (lines 1-890); headings scanned at 1,24,68,109,185,205,234,269,338,375,426,477,519,542,591,603,604,628,709,716,746,769,814,828,847,866; provenance/status markers scanned at 19,37,50; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-087",
+      "path": "D:/StarDZ/docs/STARDZ_I18N_CONTRACT.md",
+      "sha256": "1E22BDC7304F1B15443B52554FB7F99BF6F528E4C64CCDCBACEA1D31A8616F58",
+      "bytes": 34811,
+      "lines": 618,
+      "read_scope": "full file mechanically read (lines 1-618); headings scanned at 1,17,30,32,50,61,81,113,115,131,147,155,174,189,205,207,230,257,270,272,299,321,339,346,371,373,393,407,440,463,472,481,500,511,522,553,570,586,590,594,601,606,617; provenance/status markers scanned at 3,4,9; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-088",
+      "path": "D:/StarDZ/docs/STARDZ_ICON_PIPELINE_SPEC.md",
+      "sha256": "592AAE1BE64F883704353C1FF14A922E0CBDAF30A8C992277C3E7AC1B83D9347",
+      "bytes": 81609,
+      "lines": 180,
+      "read_scope": "full file mechanically read (lines 1-180); headings scanned at none; provenance/status markers scanned at 6,7,49; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-089",
+      "path": "D:/StarDZ/docs/STARDZ_ICON_SYSTEM.md",
+      "sha256": "99A23F0CBCAD82E5882DC7DCCD2349032A79228783ED48565FE748672FA100DE",
+      "bytes": 81262,
+      "lines": 139,
+      "read_scope": "full file mechanically read (lines 1-139); headings scanned at none; provenance/status markers scanned at 6,7,8; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-090",
+      "path": "D:/StarDZ/docs/STARDZ_LAYOUT_BUILDER_PRIOR_ART.md",
+      "sha256": "1AEF5A15F80DF848415DA369D41C6B335D94F6D789EACC4F44FF4C2255DA63F3",
+      "bytes": 46187,
+      "lines": 581,
+      "read_scope": "full file mechanically read (lines 1-581); headings scanned at 1,14,28,30,60,118,129,141,143,221,246,248,275,321,345,386,388,434,474,503,551,554,566,570; provenance/status markers scanned at 10,20,22; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-091",
+      "path": "D:/StarDZ/docs/STARDZ_LAYOUT_BUILDER.md",
+      "sha256": "869D6261860AD09C1B96556038803265A8E6F16D7E1125E926E478EAED2C5411",
+      "bytes": 44948,
+      "lines": 560,
+      "read_scope": "full file mechanically read (lines 1-560); headings scanned at 1,22,51,95,101,142,154,180,200,296,302,346,374,397,402,426,442,466,525; provenance/status markers scanned at 3,15,30; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-092",
+      "path": "D:/StarDZ/docs/STARDZ_MASTER_PLAN.md",
+      "sha256": "5D517F35C801507553B77A33F8D37B9AF0840A0245D16CBF776CAC025553A3A2",
+      "bytes": 49302,
+      "lines": 411,
+      "read_scope": "full file mechanically read (lines 1-411); headings scanned at 1,7,17,33,45,49,82,113,141,161,195,199,214,230,241,251,272,292,314,376,380,384,388,392,400; provenance/status markers scanned at 27,39,87; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-093",
+      "path": "D:/StarDZ/docs/STARDZ_PLAYER_DOSSIER_SPEC.md",
+      "sha256": "09CD3F3FA327B1A9CCAA743D2233DC5467E528FC027F3C07136555815CFF6E71",
+      "bytes": 22664,
+      "lines": 314,
+      "read_scope": "full file mechanically read (lines 1-314); headings scanned at 1,15,17,38,77,84,91,106,134,165,192,219,231,244,256,267,278,296; provenance/status markers scanned at 3,6; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-094",
+      "path": "D:/StarDZ/docs/STARDZ_PRODUCT_PROCESS.md",
+      "sha256": "841FBC506361F11E9C90B803DFDAC775A2B9483CFAD9E2E652891B73D4E48962",
+      "bytes": 17064,
+      "lines": 214,
+      "read_scope": "full file mechanically read (lines 1-214); headings scanned at 1,16,37,62,89,112,132,148,160,183,203; provenance/status markers scanned at 12,83,135; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-095",
+      "path": "D:/StarDZ/docs/STARDZ_PROGRESSION_ENGINE.md",
+      "sha256": "C3AB3CF0D8240537193DA7F3E96FB14BC4A14F47783D0B3FED371DD5855AA4D0",
+      "bytes": 22588,
+      "lines": 253,
+      "read_scope": "full file mechanically read (lines 1-253); headings scanned at 1,2,8,14,51,53,61,73,88,94,98,102,110,115,122,125,130,134,137,142,147,154,158,169,181,198,201,211,215,223,231,239,245,252; provenance/status markers scanned at 34; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-096",
+      "path": "D:/StarDZ/docs/STARDZ_PVE_HORROR_IDEAS.md",
+      "sha256": "ECA06BFA7BC5DE5AD6E1A49437B0D9A54488D865FD488FA7EBF33D1CED1CD6DD",
+      "bytes": 76571,
+      "lines": 279,
+      "read_scope": "full file mechanically read (lines 1-279); headings scanned at 1,7,26,49,51,55,64,76,80,84,94,100,109,113,117,126,137,141,145,153,167,171,182,193,204,218,222,229,240,251,263,275; provenance/status markers scanned at 66,155,161; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "animation and AI",
+      "en_targets": [
+        "en/06-engine-api/18-animation-system.md",
+        "en/06-engine-api/21-zombie-ai-system.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01",
+        "TUT-C01",
+        "TUT-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-097",
+      "path": "D:/StarDZ/docs/STARDZ_QOL_CS_IDEAS.md",
+      "sha256": "794F084EEADD54DCA5B2D829D89923DCC04A101AE9851F01530E786ABAE9E0B1",
+      "bytes": 34773,
+      "lines": 275,
+      "read_scope": "full file mechanically read (lines 1-275); headings scanned at 1,7,19,23,36,56,76,90,98,106,114,135,139,161,173,190,219,239,243,250,256,263; provenance/status markers scanned at 3,27,42; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-098",
+      "path": "D:/StarDZ/docs/STARDZ_REPO_MAP.md",
+      "sha256": "7A224F020C9B22417F99DE6FAC66D3924EB2B87562EEF58210C50F53DE066B16",
+      "bytes": 34363,
+      "lines": 320,
+      "read_scope": "full file mechanically read (lines 1-320); headings scanned at 1,3,9,11,37,57,75,91,108,124,139,179,196,225,259,287; provenance/status markers scanned at 29,100,211; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-099",
+      "path": "D:/StarDZ/docs/STARDZ_TYPOGRAPHY_STRATEGY.md",
+      "sha256": "68DA6DDEB08A8400D75BD66686B9A6D5A86E4EB8E877C8A025799A7B3D1436EB",
+      "bytes": 49438,
+      "lines": 133,
+      "read_scope": "full file mechanically read (lines 1-133); headings scanned at none; provenance/status markers scanned at 6,7,60; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-100",
+      "path": "D:/StarDZ/docs/STARDZ_UX_CHARTER.md",
+      "sha256": "5EA8C8FBF67EC0FEC3B649656ABF6E1001B58B900411013D09F130E2790AF997",
+      "bytes": 12275,
+      "lines": 174,
+      "read_scope": "full file mechanically read (lines 1-174); headings scanned at 1,10,20,32,34,45,53,66,78,80,86,92,99,106,119,142,162; provenance/status markers scanned at 94; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-101",
+      "path": "D:/StarDZ/docs/STARDZ_UX_ELEVATION_PLAN.md",
+      "sha256": "E16D1350B0D7840E92585AFAB8371BE648F4BDCA5D894FBF0A9ADCB1FAA105BC",
+      "bytes": 56410,
+      "lines": 175,
+      "read_scope": "full file mechanically read (lines 1-175); headings scanned at none; provenance/status markers scanned at 6,7,38; no substantive correctness review",
+      "source_type": "implementation_spec",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    },
+    {
+      "source_id": "USR-102",
+      "path": "D:/StarDZ/docs/TUTORIAL_CRIAR_ANEXOS.md",
+      "sha256": "DF3FDD6FA4E52CF24F7453392698172255DDD09AC4A339EC0AA0AF6D5C27271A",
+      "bytes": 12901,
+      "lines": 379,
+      "read_scope": "full file mechanically read (lines 1-379); headings scanned at 1,8,28,42,73,81,93,110,132,156,194,203,209,219,245,279,290,297,299,317,328,336,344,355,358,361; provenance/status markers scanned at 123,196,315; no substantive correctness review",
+      "source_type": "technical_reference",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Reopen relevant sections against pinned source and test quantitative or complete-recipe claims."
+    },
+    {
+      "source_id": "USR-103",
+      "path": "D:/StarDZ/docs/vanilla_metadata/bin.txt",
+      "sha256": "7187787633AFC1F73895E84BA54951668F033E2A037695ABAFBA0B5BDF3318F2",
+      "bytes": 43,
+      "lines": 3,
+      "read_scope": "full file mechanically read (lines 1-3); headings scanned at none; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "source_metadata",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Use only as extraction metadata; compare declarations to pinned source."
+    },
+    {
+      "source_id": "USR-104",
+      "path": "D:/StarDZ/docs/vanilla_metadata/core.txt",
+      "sha256": "985B61D81484939AD9E1D34916FD006EB5081B431C3BD268CAE222151C03AE92",
+      "bytes": 49,
+      "lines": 3,
+      "read_scope": "full file mechanically read (lines 1-3); headings scanned at none; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "source_metadata",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Use only as extraction metadata; compare declarations to pinned source."
+    },
+    {
+      "source_id": "USR-105",
+      "path": "D:/StarDZ/docs/vanilla_metadata/graphics.txt",
+      "sha256": "DF058F0A2C7A6A751E450D0F995D8550F6929596848D24CCE7C60D7C5B4EADD2",
+      "bytes": 48,
+      "lines": 3,
+      "read_scope": "full file mechanically read (lines 1-3); headings scanned at none; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "source_metadata",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Use only as extraction metadata; compare declarations to pinned source."
+    },
+    {
+      "source_id": "USR-106",
+      "path": "D:/StarDZ/docs/vanilla_metadata/gui.txt",
+      "sha256": "78202151426DEE0E10DEBE33B898FD152493B6307D1C17DB4D0F3CCA6CBFF8AC",
+      "bytes": 43,
+      "lines": 3,
+      "read_scope": "full file mechanically read (lines 1-3); headings scanned at none; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "source_metadata",
+      "topic": "GUI, HUD, layout, assets, and localization",
+      "en_targets": [
+        "en/03-gui-system",
+        "en/04-file-formats",
+        "en/05-config-files/01-stringtable.md",
+        "en/08-tutorials/08-hud-overlay.md"
+      ],
+      "coverage_findings": [
+        "ASSET-C01",
+        "CORPUS-C01",
+        "GUI-C01",
+        "GUI-C02",
+        "PKG-C02"
+      ],
+      "next_reviewer_task": "Use only as extraction metadata; compare declarations to pinned source."
+    },
+    {
+      "source_id": "USR-107",
+      "path": "D:/StarDZ/docs/vanilla_metadata/languagecore.txt",
+      "sha256": "CC58D1345D8D5D287E9211263EE1B1A17FAA018EAED5F45F0B6B7084E0FD2207",
+      "bytes": 52,
+      "lines": 3,
+      "read_scope": "full file mechanically read (lines 1-3); headings scanned at none; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "source_metadata",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Use only as extraction metadata; compare declarations to pinned source."
+    },
+    {
+      "source_id": "USR-108",
+      "path": "D:/StarDZ/docs/vanilla_metadata/scripts.txt",
+      "sha256": "158FCE5A5B47256FD0A5F922071D396967A52F6B3840C27BC5028D8652172A8F",
+      "bytes": 47,
+      "lines": 3,
+      "read_scope": "full file mechanically read (lines 1-3); headings scanned at none; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "source_metadata",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Use only as extraction metadata; compare declarations to pinned source."
+    },
+    {
+      "source_id": "USR-109",
+      "path": "D:/StarDZ/docs/vanilla_metadata/system.txt",
+      "sha256": "FFE4EBE475EEAC2B2238CF12953B5FFC4CAE00C0FC681B8B3262080126DAE6D3",
+      "bytes": 46,
+      "lines": 3,
+      "read_scope": "full file mechanically read (lines 1-3); headings scanned at none; provenance/status markers scanned at 3; no substantive correctness review",
+      "source_type": "source_metadata",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Use only as extraction metadata; compare declarations to pinned source."
+    },
+    {
+      "source_id": "USR-110",
+      "path": "D:/StarDZ/docs/WIKI_RESTRUCTURE_PLAN.md",
+      "sha256": "5055D484EFFCA48EF5B9E367026BE3C448CF9368A534F1891A40A75703817FA5",
+      "bytes": 11134,
+      "lines": 107,
+      "read_scope": "full file mechanically read (lines 1-107); headings scanned at 1,7,16,26,31,35,39,45,52,59,67,75,81,86,98,104; provenance/status markers scanned at 10,24,54; no substantive correctness review",
+      "source_type": "future_proposal",
+      "topic": "general DayZ modding reference",
+      "en_targets": [
+        "en/README.md",
+        "en/08-tutorials/01-first-mod.md"
+      ],
+      "coverage_findings": [
+        "CORPUS-C01"
+      ],
+      "next_reviewer_task": "Treat as design context only; verify DayZ behavior independently."
+    }
+  ]
+}
