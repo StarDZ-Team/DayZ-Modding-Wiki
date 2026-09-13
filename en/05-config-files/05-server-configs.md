@@ -387,7 +387,7 @@ Items whose class hierarchy does not trace to a registered root class in `cfgeco
 
 ### Editing Vanilla Files Directly
 
-Pasting mod entries into the vanilla `types.xml` works but breaks on game updates and collides with other mods. Ship separate files registered through `cfgeconomycore.xml`. Brand-new `category`/`usage`/`value` names still have to be merged into `cfglimitsdefinition.xml` itself (see [Registering New category/usage/value Names](#registering-new-categoryusagevalue-names)); `cfglimitsdefinitionuser.xml` only aliases combinations of names that already exist there.
+Pasting mod entries into the vanilla `types.xml` works but breaks on game updates and collides with other mods. Ship separate files registered through `cfgeconomycore.xml`. Brand-new `category`/`usage`/`value` names still have to be merged into `cfglimitsdefinition.xml` itself (see [Registering New category/usage/value Names](#registering-new-category-usage-value-names)); `cfglimitsdefinitionuser.xml` only aliases combinations of names that already exist there.
 
 ### cfggameplay.json Not Loading
 

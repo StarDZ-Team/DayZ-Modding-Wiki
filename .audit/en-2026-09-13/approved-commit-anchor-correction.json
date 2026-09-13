@@ -1,0 +1,25 @@
+{
+  "authorization": "Coordinator message msg_d85b61dacd3a: correct only the newly introduced uniquely matched rendered anchor",
+  "path": "en/05-config-files/05-server-configs.md",
+  "before_href": "#registering-new-categoryusagevalue-names",
+  "after_href": "#registering-new-category-usage-value-names",
+  "target_heading": "Registering New category/usage/value Names",
+  "target_level": 3,
+  "target_id": "registering-new-category-usage-value-names",
+  "target_evidence": "Existing scripts/check-links.mjs makeIdReader using installed VitePress renderer returned exactly one matching heading",
+  "approved_sha256_raw": "f5ea1f25f7c4b808e78553bb1d377aa8b4dcb88209c1b9da354d6256fb625583",
+  "corrected_sha256_raw": "ef1632b9ae53c031e7db0eb03257b63213654ba2c6c42c113a635728584d6e3b",
+  "corrected_sha256_lf": "ef1632b9ae53c031e7db0eb03257b63213654ba2c6c42c113a635728584d6e3b",
+  "change": "One link fragment only; factual prose and approval history preserved",
+  "approval_commit": "28fa218",
+  "validation": {
+    "file_links_dead": 0,
+    "files": 43,
+    "anchors_checked": 380,
+    "anchors_dead": 58,
+    "anchor_strict_exit": 1,
+    "baseline": "d19ede0",
+    "baseline_dead": 58,
+    "added_failures": []
+  }
+}

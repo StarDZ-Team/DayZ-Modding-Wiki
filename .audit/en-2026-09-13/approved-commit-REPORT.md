@@ -53,3 +53,11 @@ Raw and LF SHA-256 checks pass for all 35 current pages covered by the two counc
 Final graph refresh, final integrated-site build, anchor/LLM finalization, and server-domain acceptance/integration remain pending. No current-site build success or project completion is claimed. No runtime, translation, dependency, workflow, server-child, push or unrelated changes are included.
 
 The untracked user file `.claude/workflows/wiki-sync-translations.js` is excluded and preserved. Unselected audit evidence stays local. Post-commit receipts `approved-commit-receipt.json` and `approved-commit-receipt-REPORT.md` record the resulting SHA and actual committed scope; they are local receipts written after the commit and are not part of its own tree.
+
+---
+
+## Authorized navigation follow-up
+
+After the approved-content commit `28fa218`, coordinator message `msg_d85b61dacd3a` authorized correcting only the new anchor. The redirect was returned in the same tool result as the completed first commit, so the correction is recorded in a separate follow-up commit. The single fragment changes from `#registering-new-categoryusagevalue-names` to `#registering-new-category-usage-value-names`, uniquely matching the installed VitePress renderer's H3 ID for `Registering New category/usage/value Names`. Exact before/after SHA-256 values and authorization are in `approved-commit-anchor-correction.json`; the original factual approval digest remains intact.
+
+The final targeted check reports zero missing file links and 58 broken anchors. Comparison with baseline `d19ede0` through the same checker and renderer confirms 58 baseline failures and zero added failures. Strict anchor validation still exits 1 because those existing failures remain; the earlier statement that the newly introduced anchor remains unfixed is superseded by this follow-up. All remaining build, graph, server and finalization limitations above still apply.
