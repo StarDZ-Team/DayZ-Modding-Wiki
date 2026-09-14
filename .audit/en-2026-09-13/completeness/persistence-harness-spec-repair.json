@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-14",
+  "scope": "bounded final specification repair only; no runtime, tools, build, dev, commit, graph, fixture, research, or council file was changed",
+  "changedFiles": [
+    {
+      "path": ".audit/en-2026-09-13/completeness/persistence-harness-spec.md",
+      "sha256Before": "606362F343B7C5BE9122248C9F7904793DF42B5409A18637495634A37BBE9CC0",
+      "sha256After": "B030F71BA4E57F63392D6AFD580537FBC6F1C5A5266CDACB2F42BAF0C80D3A98"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/persistence-harness-spec.json",
+      "sha256Before": "679E04E1A2DAC3DB709AD85D06C0579A63FDE8145B1C6DA11987179E11AED26E",
+      "sha256After": "B6DDE60676CC666926717B24880637D0D37103EABE37ECD3EAA95AB886C11CE5"
+    }
+  ],
+  "receipt": [
+    {
+      "point": 1,
+      "change": "Budget now explicitly enumerates 13 fresh processes: 1 mandatory fixture-free no-mod control, 3 candidate smokes, 5 valid-chain processes, and 4 bad write/read processes; about 65 countdown minutes. It also states that the earlier 12/60 count excludes the control."
+    },
+    {
+      "point": 2,
+      "change": "The v2 set-true precondition now checks only schema, labels, charges, canonical PIDs, and locked=false. Omission API assertions are reserved for the matrix bad-write precondition."
+    },
+    {
+      "point": 3,
+      "change": "Canonical nonzero PID now means four present blocks with at least one nonzero, while zero-valued blocks remain valid. Partial PID means missing blocks, not mixed zero/nonzero values."
+    },
+    {
+      "point": 4,
+      "change": "Seed freshness is proved before process launch; because startup may create storage, post-CE seed validation checks zero existing fixture objects and retains the prelaunch proof rather than requiring storage nonexistence."
+    },
+    {
+      "point": 5,
+      "change": "The no-mod control must use a fixture-free mission/controller with neither typed fixture references nor the fixture ConfigIsExisting assertion, while keeping a comparable engine/CE/config baseline and recording exact differences."
+    }
+  ],
+  "preserved": {
+    "councilGates": ["HC-01", "HC-02", "HC-03", "HC-04", "HC-05", "HC-06", "HC-07", "HC-08"],
+    "runtimeEvidenceLimitations": true,
+    "apiGateStillOpen": true,
+    "apiGateNote": "No API gate was marked satisfied; fixture files were not inspected or changed by this repair."
+  },
+  "validation": {
+    "jsonParse": "passed with PowerShell ConvertFrom-Json",
+    "finalChangedSentencesRead": true
+  }
+}

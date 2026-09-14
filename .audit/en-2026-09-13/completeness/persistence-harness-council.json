@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-14",
+  "repoHeadInspected": "f1bb001c0a49d4e8fd727b79a8b6c12133846fed",
+  "scope": {
+    "reviewOnly": true,
+    "gameOrServerLaunched": false,
+    "clientLaunched": false,
+    "workbenchLaunched": false,
+    "compilerOrPackerLaunched": false,
+    "devOrBuildRun": false,
+    "installed": false,
+    "committed": false,
+    "fixtureOrEnglishEdited": false,
+    "ownedFiles": [
+      ".audit/en-2026-09-13/completeness/persistence-harness-council.md",
+      ".audit/en-2026-09-13/completeness/persistence-harness-council.json"
+    ]
+  },
+  "reviewedDelivery": {
+    "markdown": {"path": ".audit/en-2026-09-13/completeness/persistence-harness-research.md", "sha256": "1DD3FBE68B18ADAD21A0AADD03143902AB5A0E280FFCB9B30BAD4C17D1C52282"},
+    "json": {"path": ".audit/en-2026-09-13/completeness/persistence-harness-research.json", "sha256": "6A9D780FB26109ED2DD027B7C9BD6D725C6CB5C62B44DD3E3F8ADA3B7061DFAA"}
+  },
+  "decision": "conditionally-accepted-design-not-implementation-ready",
+  "implementationGate": {
+    "open": false,
+    "reason": "Existing fixture interface repair plus eight harness-contract corrections are required.",
+    "runtimeApproved": false,
+    "persistenceProven": false
+  },
+  "accepted": [
+    "CE custom types include syntax and complete flags field",
+    "controlled zero-spawn and long-lifetime type values as hypotheses",
+    "persistent creation-flag hypothesis with no no-persist/dynamic-persist/local flags",
+    "CE-finished plus per-run trigger readiness gate",
+    "instanceId 1 plus -storage branch mapping to storage_1 in the retained run",
+    "active messages countdown as the official scheduled-shutdown route",
+    "immutable same-v1, migration, true-resave/reload, and repeated bad/control matrix",
+    "fresh-process readback as the practical persistence criterion",
+    "public mods bounded to third-party implementation evidence"
+  ],
+  "rejectedOrCorrected": [
+    "CE eligibility plus flags guarantees persistence",
+    "the pinned commented messages.xml example is itself an active five-minute shutdown",
+    "types.xml alone proves Fence or WoodenCrate persistence",
+    "self-exit, delay, OnStoreSave, or hash changes prove commit or flush",
+    "public-mod behavior or native declarations prove persistence",
+    "crash, RestartMission, RequestExit, Ctrl+C, Stop-Process, or Kill counts as graceful completion"
+  ],
+  "minimumCorrections": [
+    {"id": "HC-01", "topic": "fixture-interface", "required": "Re-read repaired files and require v1 label setter plus label/charge getters; v2 label setter plus label/charge/locked getters; matrix full interface."},
+    {"id": "HC-02", "topic": "compile-smoke", "required": "Use positive module/type/config witnesses and candidate/new-error rejection with a narrow exact baseline allowlist; do not require zero SCRIPT (E) lines globally."},
+    {"id": "HC-03", "topic": "timing", "required": "For deadline 5, refuse state-changing trigger after T+180s, require phase-ready by T+210s and before shutdown state, wait to declared self-exit bound such as T+420s, then invalidate before cleanup."},
+    {"id": "HC-04", "topic": "correlation", "required": "Unique run ID/profile/logs and trigger; phase plus run ID in trigger and every marker; reject stale/unscoped markers."},
+    {"id": "HC-05", "topic": "persistent-id", "required": "Establish canonical per-label PIDs at seed if nonzero, otherwise first same-v1 reload; require clone-derived continuity for all valid records."},
+    {"id": "HC-06", "topic": "stage-assertions", "required": "Require exact schema/value callback sets before mutation and time-correlate required saves after mutation/phase-ready."},
+    {"id": "HC-07", "topic": "snapshot-isolation", "required": "Clone after self-exit and handle/port release; reject links/reparse points; require equal sorted path/size/SHA256 manifests and re-hash immutable sources."},
+    {"id": "HC-08", "topic": "bad-matrix", "required": "Set storageAutoFix=0 explicitly, require both valid controls, and preserve/report CE-init or control failure without blind timing variations."}
+  ],
+  "fixtureInterfaceObserved": {
+    "v1": {"sha256": "CD15FEBB6559B767D9ECC50F2632DC3D9F52D44326E72C6163C590607BD28205", "missing": ["SetFixtureCaseLabel", "GetFixtureCharges", "GetFixtureCaseLabel"]},
+    "v2": {"sha256": "4D745BE004293FDA27F094FF50BF473D1DD835969038DC0DB7B59DC9D565D85A", "present": ["SetFixtureLocked"], "missing": ["SetFixtureCaseLabel", "GetFixtureCharges", "GetFixtureCaseLabel", "GetFixtureLocked"]},
+    "matrix": {"sha256": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D", "fullRequiredInterface": true}
+  },
+  "timing": {
+    "deadlineMinutes": 5,
+    "countdownBegins": "server start",
+    "shutdownStateExpectedAtSeconds": 240,
+    "latestStateChangingTriggerSeconds": 180,
+    "latestPhaseReadySeconds": 210,
+    "recommendedSelfExitBoundSeconds": 420,
+    "plannedProcessCount": 12,
+    "nominalCountdownMinutes": 60,
+    "feasible": true,
+    "flushGuaranteed": false
+  },
+  "runtimeAcceptanceOrder": [
+    "three isolated compile/config-load smokes",
+    "self-exited seed-v1",
+    "fresh same-v1 readback",
+    "fresh v1-to-v2 migration then schema-2 resave",
+    "non-default v2 mutation then fresh schema-2 reload",
+    "two independent bad/control write/read trials with both controls intact"
+  ],
+  "unresolvedUntilRuntime": [
+    "custom-type CE profile and lifetime binding",
+    "actual persistence under the proposed creation flags",
+    "callback order and PID assignment timing",
+    "exact scheduled-shutdown markers and exit behavior",
+    "fresh-process readability of shutdown-written records",
+    "malformed-record disposition and following-record isolation",
+    "native commit or OS flush implementation"
+  ],
+  "sources": {
+    "officialRepositories": [
+      {"url": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git", "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6", "files": [
+        {"path": "dayzOffline.chernarusplus/init.c", "sha256": "73658FCA45ADE1C54D7EE729B31F78F3C27B46282FFD3D503D10B524B8A20AFB"},
+        {"path": "dayzOffline.chernarusplus/db/economy.xml", "sha256": "62C140967C6040C8E38C7BC5D9FBBFD3966B3EA97A2FEC2AF2D409621EC1F8F8"},
+        {"path": "dayzOffline.chernarusplus/cfgeconomycore.xml", "sha256": "095417FE00A264150D07AB2C1C1A922212D39A041D9554308134ED47408A4615"},
+        {"path": "dayzOffline.chernarusplus/db/types.xml", "sha256": "59093B764FB976B39BF3A6B74A9156D75529C065C2913B20F7310D42EF85AFA8"},
+        {"path": "dayzOffline.chernarusplus/db/messages.xml", "sha256": "55C9C2DBEC63CEB5059DC38310C4539BA1BFB46EE7AAAD73C8F063A3238B0C8A", "note": "deadline 600 example is commented"}
+      ]},
+      {"url": "https://github.com/BohemiaInteractive/DayZ-Samples.git", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea", "files": [
+        {"path": "Test_GardenPlot/config.cpp", "sha256": "2C66BE131A55CFFDED96712245DD74D78E25D003C21A4F51F0B94587C666CD37"}
+      ]}
+    ],
+    "extractedScripts": [
+      {"path": "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c", "sha256": "6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3"},
+      {"path": "D:/DayZ Projects/scripts/3_game/entities/entityai.c", "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"},
+      {"path": "D:/DayZ Projects/scripts/3_game/global/game.c", "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"},
+      {"path": "D:/DayZ Projects/scripts/3_game/objectspawner.c", "sha256": "6CC150C3AAF39B94E9BC1C92F8F4BB9819356E637619FBCA28779DAA7E0DF4B9"},
+      {"path": "D:/DayZ Projects/scripts/1_core/proto/ensystem.c", "sha256": "8BE625999A04DF22813052E93FE658C24C82C97B257EBEF86B106279A95DB188"}
+    ],
+    "publicRepositories": [
+      {"url": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/5_Mission/CommunityFramework/Mission/MissionBase.c", "sha256": "351EC4DFB278D059A35D90F2BB5857F93C60D7CF235C549CC2052B957F247942"},
+      {"url": "https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools.git", "commit": "41f2c2b99565d0e3970163e162efbf1283fdca62", "path": "JM/COT/Scripts/5_Mission/CommunityOnlineTools/MissionServer.c", "sha256": "608F0F18F6C8FFA92E0BDAA95197FCEB0B911577DBF0412B34559966741FE67E"},
+      {"url": "https://github.com/salutesh/DayZ-Expansion-Scripts.git", "commit": "6dacd00f6d943ebbd99e0cf1baad93f470d96419", "path": "DayZExpansion/Core/Scripts/5_Mission/DayZExpansion_Core/Mission/MissionServer.c", "sha256": "32C1A6FBED8F912E239DAFF0F3860DA2943B627523764D39E23CAACA25F58EEC"},
+      {"url": "https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git", "commit": "dc22e420df3b54e821055f9764da1e48f4a31e71", "files": [
+        {"path": "4_World/VPPAdminTools/Plugins/PluginBase/ItemManager/ItemManager.c", "sha256": "7130FBB6764792D4114D3FFB688FA2040C00A27B03D1A7E91B53D61E8E8CF17E"},
+        {"path": "4_World/VPPAdminTools/Plugins/PluginBase/ServerManager/ServerManager.c", "sha256": "5D4A26E0693089E16DA99E60F4E3346BFF97D36182B5E34F430773B1A2802756"}
+      ]}
+    ],
+    "runtimeSubstrate": {
+      "executable": {"path": "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64.exe", "productVersion": "1.29.0.163709", "bytes": 20245560, "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"},
+      "rpt": {"path": "TEMP/server-mission-council/profiles/instance-id-1/DayZDiag_x64_2026-09-13_22-12-07.RPT", "sha256": "40CC6FE9C4FA5287C9B33AC3D6A87BBBF478A882AB84D925738CF944552C41C1", "storageSelectionLine": 1442, "ceCompletionLine": 4654, "knownDiagnosticErrorLines": "1409-1416"}
+    },
+    "officialWeb": {
+      "accessed": "2026-09-14",
+      "method": "search-index body; direct opens returned HTTP 403",
+      "urls": [
+        "https://community.bohemia.net/wiki/DayZ:Server_Messages",
+        "https://community.bohemia.net/wiki/DayZ:Error_Codes",
+        "https://community.bohemia.net/wiki/DayZ:Server_Configuration",
+        "https://community.bohemia.net/wiki/DayZ:Central_Economy_Configuration",
+        "https://community.bohemia.net/wiki/DayZ:Central_Economy_mission_files_modding"
+      ]
+    }
+  }
+}

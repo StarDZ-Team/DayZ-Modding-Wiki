@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-14",
+  "scope": "Mechanical final repair: JSON plus authorized Markdown consistency corrections; prior persistence-harness-spec-repair.json is preserved unchanged.",
+  "changedFiles": [
+    {
+      "path": ".audit/en-2026-09-13/completeness/persistence-harness-spec.json",
+      "sha256Before": "B6DDE60676CC666926717B24880637D0D37103EABE37ECD3EAA95AB886C11CE5",
+      "sha256After": "4890A1B39DF3552469009AEF1A2DB99053E2BFC16A76774F748EE6FD604554C8"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/persistence-harness-spec.md",
+      "sha256Before": "B030F71BA4E57F63392D6AFD580537FBC6F1C5A5266CDACB2F42BAF0C80D3A98",
+      "sha256After": "0988F335D91C2411419F87032BBDC587E837CA57FCF332AFDD2745C687516286"
+    }
+  ],
+  "exactChanges": [
+    "Removed only the obsolete boolean property compile.noModControl: true; retained the corrected structured compile.noModControl object.",
+    "Qualified ordinary reloads to require all three fixtures, while bad reads require both valid controls, record faulty presence or absence, and reject unexpected or duplicate records.",
+    "Defined narrow baseline normalization only for run-variable timestamp, PID, and profile-path prefixes; exact diagnostic text, source-code stack locations, and count remain required, while physical RPT line numbers are explicitly excluded."
+  ],
+  "preserved": [
+    ".audit/en-2026-09-13/completeness/persistence-harness-spec-repair.json",
+    "Council and research artifacts"
+  ],
+  "validation": {
+    "method": "Python json.loads with an object_pairs_hook that raises on every duplicate key, recursively across nested objects.",
+    "status": "passed"
+  }
+}

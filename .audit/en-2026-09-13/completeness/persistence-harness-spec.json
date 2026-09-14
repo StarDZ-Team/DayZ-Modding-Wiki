@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-14",
+  "status": "implementation-contract-not-executed",
+  "ownedFiles": [
+    ".audit/en-2026-09-13/completeness/persistence-harness-spec.md",
+    ".audit/en-2026-09-13/completeness/persistence-harness-spec.json"
+  ],
+  "supersedes": {
+    "rejectedWordingFrom": ".audit/en-2026-09-13/completeness/persistence-harness-research.md",
+    "council": ".audit/en-2026-09-13/completeness/persistence-harness-council.md",
+    "preservesOriginalReports": true
+  },
+  "executionClaims": {
+    "gameServerClientToolBuildDevInstallOrCommitRun": false,
+    "runtimeApproved": false,
+    "persistenceProven": false
+  },
+  "implementationGate": {
+    "open": false,
+    "dependency": "repair2 fixture worker owns the fixture files; implementer/reviewer must re-read final files and record fresh hashes",
+    "requiredMethods": {
+      "v1": ["SetFixtureCaseLabel(string)", "GetFixtureCaseLabel()", "GetFixtureCharges()"],
+      "v2": ["SetFixtureCaseLabel(string)", "GetFixtureCaseLabel()", "GetFixtureCharges()", "SetFixtureLocked(bool)", "GetFixtureLocked()"],
+      "matrix": ["SetFixtureCaseLabel(string)", "GetFixtureCaseLabel()", "GetFixtureCharges()", "SetFixtureLocked(bool)", "GetFixtureLocked()", "SetFixtureOmitLockedOnSave(bool)", "GetFixtureOmitLockedOnSave()"]
+    }
+  },
+  "corrections": [
+    {"id":"HC-01","topic":"fixture-interface","contract":"Final re-read/hash gate and exact intended per-variant methods; no stale hash is represented as final."},
+    {"id":"HC-02","topic":"compile-smoke","contract":"No-mod baseline plus three candidate smokes use module/type/config/self-exit witnesses and exact baseline-relative error allowlist."},
+    {"id":"HC-03","topic":"timing","contract":"deadline=5 begins at start; no state change after T+180, ready by T+210 before shutdown, model shutdown near T+240, self-exit bound T+420; 13 countdowns budget about 65 minutes: 1 fixture-free no-mod control, 3 candidate smokes, 5 valid-chain processes, and 4 bad write/read processes. The earlier 12/60 count excludes the mandatory control."},
+    {"id":"HC-04","topic":"correlation","contract":"Every process, trigger, marker, profile, log set, port, and receipt is phase/run correlated; stale or unscoped material fails."},
+    {"id":"HC-05","topic":"persistent-id","contract":"A canonical nonzero PID has four present blocks with at least one nonzero; zero-valued blocks are legitimate. All-zero seed PIDs defer canonicalization to the first same-v1 reload; partial means missing blocks, not a mixed zero/nonzero tuple, and valid clone-derived records must continue the canonical PID."},
+    {"id":"HC-06","topic":"stage-assertions","contract":"Exact schema/value/callback sets precede mutation; required saves follow mutation and ready and precede self-exit."},
+    {"id":"HC-07","topic":"snapshot-isolation","contract":"Snapshots follow self-exit/release, reject links/reparse points, prove sorted path/size/SHA256 equality, and rehash immutable sources."},
+    {"id":"HC-08","topic":"bad-matrix","contract":"storageAutoFix=0 is explicit; two valid controls are mandatory; CE-init/control failure preserves artifacts and stops without timer variation."}
+  ],
+  "modelProposedTimingNotDemonstratedBehavior": true,
+  "settingsNotPersistenceProof": true,
+  "messages": {
+    "officialPinnedExample": "deadline=600 shutdown example is commented",
+    "privateActiveEntry": {"deadlineMinutes":5,"shutdown":1},
+    "runtimeSemanticsVerifiedOnPinnedExecutable": false
+  },
+  "compile": {
+    "variants": ["v1", "v2", "matrix"],
+    "positiveWitnesses": ["Game/World/Mission/private-init module-load markers", "never-called typed EntityPersistenceFixtureBattery parameter", "ConfigIsExisting CfgVehicles EntityPersistenceFixtureBattery=true", "timely self-exit"],
+    "errorPolicy": "candidate-attributable or new-vs-control errors fail; allow only pre-recorded baseline diagnostics after narrow normalization of run-variable timestamp, PID, and profile-path prefixes; diagnostic message text, source-code stack locations, and count must then match exactly, while physical RPT line numbers are not compared",
+    "noModControl": {
+      "fixtureFreeMissionController": true,
+      "forbiddenCandidateWitnesses": ["typed EntityPersistenceFixtureBattery reference", "ConfigIsExisting(\"CfgVehicles EntityPersistenceFixtureBattery\")=true assertion"],
+      "commonBaseline": "engine/CE/config baseline remains comparable to candidates; record exact fixture-free differences"
+    },
+    "persistenceAssertions": false
+  },
+  "oracle": {
+    "cases": {"control-false":"7500/7500","faulty-writer":"7502/7500","control-true":"7504/7500"},
+    "invariants": ["class", "label", "charges=17", "position within 0.75m", "four persistent-ID blocks"],
+    "canonicalPid": "four present blocks with at least one nonzero seed block, else first same-v1 reload; zero-valued blocks are legitimate, partial means missing blocks, and changes/missing IDs fail",
+    "persistenceCriterion": "exact fresh-process callback/readback only"
+  },
+  "matrix": [
+    {"phase":"seed-v1","variant":"v1","branch":"seed-v1","expect":"prelaunch fresh storage root absent; after startup/CE, zero existing fixture objects while retaining that prelaunch proof; then 3 schema-1 records; labels/charges/positions; save after ready"},
+    {"phase":"verify-v1","variant":"v1","branch":"clone(baseline-v1)","expect":"exactly 3 schema-1 LOAD_OK; canonical PID continuity; no spawn"},
+    {"phase":"migrate-v2-default","variant":"v2","branch":"clone(baseline-v1)","expect":"3 schema-1 migrations with locked=false then normal schema-2 saves"},
+    {"phase":"set-true-v2","variant":"v2","branch":"upgrade-chain","expect":"precondition exactly 3 schema-2 records with labels, charges, canonical PIDs, and locked=false; v2 has no omission getter/flag; mutate control-true only; normal saves"},
+    {"phase":"verify-true-v2","variant":"v2","branch":"upgrade-chain","expect":"schema-2 false/false/true then immutable pre-bad snapshot"},
+    {"phase":"bad-a-write/read","variant":"matrix","branch":"clone(pre-bad)","expect":"one omitted faulty locked write; both controls normal and later LOAD_OK"},
+    {"phase":"bad-b-write/read","variant":"matrix","branch":"independent clone(pre-bad)","expect":"repeat independent faulty/control trial"}
+  ],
+  "failurePolicy": "Ordinary reloads require all three fixtures and fail on missing, extra, or duplicate records. Each bad-read requires both valid controls, records faulty presence or absence without prescribing either, and rejects unexpected or duplicate records. Any cutoff, CE-init, control, callback-order, ID, count, save, or snapshot failure preserves branch/receipts and stops that branch; no blind retry or timer variation.",
+  "sources": {
+    "council": ".audit/en-2026-09-13/completeness/persistence-harness-council.md",
+    "research": ".audit/en-2026-09-13/completeness/persistence-harness-research.md",
+    "officialCentralEconomyCommit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+    "officialSamplesCommit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+    "runtimeSubstrate": "DayZDiag_x64.exe 1.29.0.163709; retained receipts in council report",
+    "webLimit": "official message semantics were search-index evidence; direct page access returned HTTP 403"
+  }
+}

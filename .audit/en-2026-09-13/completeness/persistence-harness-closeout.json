@@ -1,0 +1,70 @@
+{
+  "reviewedAtUtc": "2026-09-14T05:23:22.951169+00:00",
+  "reviewer": "root independent final specification review",
+  "disposition": "accepted implementation contract after council corrections and final consistency repairs; execution unapproved/unperformed",
+  "specHashes": {
+    "persistence-harness-spec.md": "0988F335D91C2411419F87032BBDC587E837CA57FCF332AFDD2745C687516286",
+    "persistence-harness-spec.json": "4890A1B39DF3552469009AEF1A2DB99053E2BFC16A76774F748EE6FD604554C8"
+  },
+  "councilCorrectionIdsVerified": [
+    "HC-01",
+    "HC-02",
+    "HC-03",
+    "HC-04",
+    "HC-05",
+    "HC-06",
+    "HC-07",
+    "HC-08"
+  ],
+  "finalReview": [
+    "Read full specification and compared all eight council corrections.",
+    "Fixed through delegated repairs: 13-process count, fixture-free control, v2 omission preconditions, PID tuple semantics, prelaunch seed proof, malformed-record exception and narrowly normalized diagnostic comparison.",
+    "Independently parsed final JSON with recursive duplicate-key rejection.",
+    "Reopened extracted objectspawner CE flags and pinned official CE messages/economy XML; scheduled shutdown remains proposed runtime behavior.",
+    "Reopened final committed fixture public interfaces and verified hashes; prior open API dependency is statically satisfied at this review."
+  ],
+  "fixtureInterface": [
+    {
+      "variant": "v1",
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v1\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "12D071E4A45D71FBB78FA233AC7E061ECDB082A9F2A37626F3DCC8736C026B35",
+      "methods": [
+        "SetFixtureCaseLabel(string)",
+        "GetFixtureCaseLabel()",
+        "GetFixtureCharges()"
+      ]
+    },
+    {
+      "variant": "v2",
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v2\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "E167090471C1C6D732366680C97663BA2AC205936E4A21CA1406B0056536EFE0",
+      "methods": [
+        "SetFixtureCaseLabel(string)",
+        "GetFixtureCaseLabel()",
+        "GetFixtureCharges()",
+        "SetFixtureLocked(bool)",
+        "GetFixtureLocked()"
+      ]
+    },
+    {
+      "variant": "matrix",
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\matrix\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D",
+      "methods": [
+        "SetFixtureCaseLabel(string)",
+        "GetFixtureCaseLabel()",
+        "GetFixtureCharges()",
+        "SetFixtureLocked(bool)",
+        "GetFixtureLocked()",
+        "SetFixtureOmitLockedOnSave(bool)",
+        "GetFixtureOmitLockedOnSave()"
+      ]
+    }
+  ],
+  "nextRequired": [
+    "Implement source-reviewed mission/controller and run/phase-correlated fixture diagnostics, including per-case SAVE values.",
+    "Independent final source review before launching baseline/three compilation smokes.",
+    "Run all same-version/migration/nondefault/bad-control phases with self-exit and independent storage snapshots."
+  ],
+  "runtimeEvidence": false
+}

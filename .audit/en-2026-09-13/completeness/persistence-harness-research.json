@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-14",
+  "repoHeadInspected": "bbfa203d036e8f02c733e50011c89b9dfbdf9ecf",
+  "task": {
+    "id": "task_5729ea949a91",
+    "dispatchId": "ctx_ba1f04a18757",
+    "agent": "Codex",
+    "children": 0
+  },
+  "scope": {
+    "researchOnly": true,
+    "gameOrServerLaunched": false,
+    "clientLaunched": false,
+    "compilerOrPackerLaunched": false,
+    "installed": false,
+    "committed": false,
+    "fixtureEdited": false,
+    "englishEdited": false,
+    "report": ".audit/en-2026-09-13/completeness/persistence-harness-research.md"
+  },
+  "decision": "implementation-ready-plan-runtime-unverified",
+  "fixtureInterfaceAtInspection": {
+    "v1": {"implemented": [], "missing": ["SetFixtureCaseLabel", "GetFixtureCharges", "GetFixtureCaseLabel"]},
+    "v2": {"implemented": ["SetFixtureLocked"], "missing": ["SetFixtureCaseLabel", "GetFixtureCharges", "GetFixtureCaseLabel", "GetFixtureLocked"]},
+    "matrix": {"implemented": ["SetFixtureCaseLabel", "SetFixtureLocked", "SetFixtureOmitLockedOnSave", "GetFixtureCharges", "GetFixtureCaseLabel", "GetFixtureLocked", "GetFixtureOmitLockedOnSave"], "missing": []}
+  },
+  "runtimeSubstrate": {
+    "executable": "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64.exe",
+    "bytes": 20245560,
+    "productVersion": "1.29.0.163709",
+    "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+    "instanceId": 1,
+    "storageMapping": "-storage=<branch-root> selects <branch-root>/storage_1/",
+    "productionCertified": false
+  },
+  "ceRegistration": {
+    "include": {
+      "folder": "EntityPersistenceFixture",
+      "file": "types.xml",
+      "type": "types"
+    },
+    "type": {
+      "name": "EntityPersistenceFixtureBattery",
+      "nominal": 0,
+      "lifetime": 3888000,
+      "restock": 0,
+      "min": 0,
+      "quantmin": -1,
+      "quantmax": -1,
+      "cost": 100,
+      "flags": {
+        "count_in_cargo": 0,
+        "count_in_hoarder": 0,
+        "count_in_map": 1,
+        "count_in_player": 0,
+        "crafted": 0,
+        "deloot": 0
+      }
+    },
+    "runtimeAssertions": [
+      "GetEconomyProfile() is non-null",
+      "GetEconomyProfile().GetLifetime() is logged and positive",
+      "GetLifetimeMax() and GetLifetime() are logged and positive"
+    ],
+    "persistenceFlagClaim": "No types.xml counting flag is represented as a persistence-enable switch."
+  },
+  "spawn": {
+    "api": "CGame.CreateObjectEx(string, vector, int, int)",
+    "flagsExpression": "ECE_SETUP | ECE_UPDATEPATHGRAPH | ECE_CREATEPHYSICS",
+    "forbiddenFlags": [
+      "ECE_NOPERSISTENCY_WORLD",
+      "ECE_DYNAMIC_PERSISTENCY",
+      "ECE_NOLIFETIME",
+      "ECE_LOCAL"
+    ],
+    "positionsXZ": {
+      "control-false": [7500, 7500],
+      "faulty-writer": [7502, 7500],
+      "control-true": [7504, 7500]
+    },
+    "yRecipe": "GetGame().SurfaceY(x, z) + 0.05",
+    "onlyPhaseAllowed": "seed-v1",
+    "preconditions": [
+      "seed storage_1 did not exist before launch",
+      "CE Init sequence finished marker observed",
+      "operator trigger matches CLI phase",
+      "sphere enumeration contains zero fixture instances"
+    ]
+  },
+  "readback": {
+    "api": "CGame.GetObjectsAtPosition3D",
+    "centerXZ": [7502, 7500],
+    "radius": 10.0,
+    "primaryIdentity": "persisted case label",
+    "continuityEvidence": ["four-block persistent ID", "fixed position"],
+    "reject": ["duplicate label", "unknown label", "position drift over 0.75 m horizontal", "phase-specific missing or extra valid control"]
+  },
+  "readinessGate": {
+    "requiredLogMarker": "[CE][Hive] :: Init sequence finished.",
+    "externalTrigger": "$profile:fixture-trigger.txt",
+    "triggerMustEqual": "-fixturePhase value",
+    "reloadAdditionalRequirement": "expected LOAD_OK/LOAD_FAIL markers or bounded 120-second post-CE failure",
+    "onInitSpawnAllowed": false
+  },
+  "shutdown": {
+    "mechanism": "mission db/messages.xml countdown with deadline=5 and shutdown=1",
+    "externalControllerAction": "wait for owned process self-exit; never Kill a passing run",
+    "officialSafetyClaim": "recommended to avoid negative effects on player characters and server storage saving",
+    "passingReceipt": [
+      "PHASE_READY_FOR_SHUTDOWN precedes shutdown state",
+      "shutdown/save/termination markers retained",
+      "process self-exited within bound",
+      "killedByHarness=false",
+      "no RestartMission call",
+      "pre/post recursive storage hash manifests retained"
+    ],
+    "flushProofBoundary": "Clean exit and file deltas are circumstantial. A following fresh process must successfully load and assert the exact label/ID/value record."
+  },
+  "matrix": [
+    {"phase": "seed-v1", "pbo": "v1", "branch": "seed-v1", "expected": "three uniquely labeled schema-1 records created once"},
+    {"phase": "verify-v1", "pbo": "v1", "branch": "clone(baseline-v1)", "expected": "same-version three-record LOAD_OK control"},
+    {"phase": "migrate-v2-default", "pbo": "v2", "branch": "upgrade-chain cloned from baseline-v1", "expected": "three schema-1 records load with locked=false"},
+    {"phase": "set-true-v2", "pbo": "v2", "branch": "upgrade-chain", "expected": "only control-true set true and saved"},
+    {"phase": "verify-true-v2", "pbo": "v2", "branch": "upgrade-chain", "expected": "true/false/false schema-2 values reload; freeze pre-bad"},
+    {"phase": "bad-a-write", "pbo": "matrix", "branch": "bad-a cloned from pre-bad", "expected": "one faulty locked omission plus valid true and false controls"},
+    {"phase": "bad-a-read", "pbo": "matrix", "branch": "bad-a", "expected": "fault locked-read failure; both controls LOAD_OK"},
+    {"phase": "bad-b-write/read", "pbo": "matrix", "branch": "independent bad-b clone from pre-bad", "expected": "repeat same bad/control trial"}
+  ],
+  "compileSmoke": {
+    "separate": true,
+    "spawn": false,
+    "persistenceAssertions": false,
+    "typedCompileWitness": "never-called method parameter EntityPersistenceFixtureBattery",
+    "runtimeCheck": "GetGame().ConfigIsExisting(\"CfgVehicles EntityPersistenceFixtureBattery\") == true",
+    "variants": ["v1", "v2", "matrix"],
+    "packageInspectionIsCompilation": false
+  },
+  "rejected": [
+    "configured inheritance alone proves CE binding",
+    "count_in_map is a persistence-enable flag",
+    "ECE_NOLIFETIME means persistence",
+    "ECE_DYNAMIC_PERSISTENCY works in a no-player harness",
+    "zero enumeration before CE completion authorizes spawn",
+    "direct RestartMission is a healthy loop",
+    "public-mod RequestExit or RestartMission code proves native flush",
+    "RequestExit, Ctrl+C, Stop-Process, and Kill are assumed equivalent to messages shutdown",
+    "zero exit code or changed storage hash proves flush",
+    "Diag Force Save implies an available script API"
+  ],
+  "sources": {
+    "repositories": [
+      {"url": "git@github.com:leonardommello/StarDZ.git", "commit": "24a465d28d7c322cfdaf1af5d2484614f7c1d690", "role": "local beta, non-authoritative negative control"},
+      {"url": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git", "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6"},
+      {"url": "https://github.com/BohemiaInteractive/DayZ-Samples.git", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea"},
+      {"url": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3"},
+      {"url": "https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools.git", "commit": "41f2c2b99565d0e3970163e162efbf1283fdca62"},
+      {"url": "https://github.com/salutesh/DayZ-Expansion-Scripts.git", "commit": "6dacd00f6d943ebbd99e0cf1baad93f470d96419"},
+      {"url": "https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git", "commit": "dc22e420df3b54e821055f9764da1e48f4a31e71"}
+    ],
+    "webAccessDate": "2026-09-14",
+    "web": [
+      {"url": "https://community.bohemia.net/wiki/DayZ:Server_Messages", "access": "search-index body; direct and API HTTP 403"},
+      {"url": "https://community.bohemia.net/wiki/DayZ:Error_Codes", "access": "search-index body"},
+      {"url": "https://community.bohemia.net/wiki/DayZ:Server_Configuration", "access": "search-index body"},
+      {"url": "https://community.bohemia.net/wiki/DayZ:Central_Economy_Configuration", "access": "search-index body"},
+      {"url": "https://community.bohemia.net/wiki/DayZ:Central_Economy_mission_files_modding", "access": "search-index body"},
+      {"url": "https://community.bohemia.net/wiki/DayZ:Diag_Menu", "access": "search-index body; direct HTTP 403"}
+    ],
+    "reviewedHashes": [
+      {"path": "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c", "sha256": "6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3"},
+      {"path": "D:/DayZ Projects/scripts/3_game/entities/entityai.c", "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"},
+      {"path": "D:/DayZ Projects/scripts/3_game/global/game.c", "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"},
+      {"path": "D:/DayZ Projects/scripts/3_game/objectspawner.c", "sha256": "6CC150C3AAF39B94E9BC1C92F8F4BB9819356E637619FBCA28779DAA7E0DF4B9"},
+      {"path": "D:/DayZ Projects/scripts/1_core/proto/ensystem.c", "sha256": "8BE625999A04DF22813052E93FE658C24C82C97B257EBEF86B106279A95DB188"},
+      {"path": "DayZ-Central-Economy/dayzOffline.chernarusplus/init.c", "sha256": "73658FCA45ADE1C54D7EE729B31F78F3C27B46282FFD3D503D10B524B8A20AFB"},
+      {"path": "DayZ-Central-Economy/dayzOffline.chernarusplus/db/types.xml", "sha256": "59093B764FB976B39BF3A6B74A9156D75529C065C2913B20F7310D42EF85AFA8"},
+      {"path": "DayZ-Central-Economy/dayzOffline.chernarusplus/db/economy.xml", "sha256": "62C140967C6040C8E38C7BC5D9FBBFD3966B3EA97A2FEC2AF2D409621EC1F8F8"},
+      {"path": "DayZ-Central-Economy/dayzOffline.chernarusplus/cfgeconomycore.xml", "sha256": "095417FE00A264150D07AB2C1C1A922212D39A041D9554308134ED47408A4615"},
+      {"path": "DayZ-Central-Economy/dayzOffline.chernarusplus/db/messages.xml", "sha256": "55C9C2DBEC63CEB5059DC38310C4539BA1BFB46EE7AAAD73C8F063A3238B0C8A"},
+      {"path": "DayZ-Samples/Test_GardenPlot/config.cpp", "sha256": "2C66BE131A55CFFDED96712245DD74D78E25D003C21A4F51F0B94587C666CD37"},
+      {"path": "DayZ-CommunityFramework/JM/CF/Scripts/5_Mission/CommunityFramework/Mission/MissionBase.c", "sha256": "351EC4DFB278D059A35D90F2BB5857F93C60D7CF235C549CC2052B957F247942"},
+      {"path": "DayZ-CommunityOnlineTools/JM/COT/Scripts/5_Mission/CommunityOnlineTools/MissionServer.c", "sha256": "608F0F18F6C8FFA92E0BDAA95197FCEB0B911577DBF0412B34559966741FE67E"},
+      {"path": "DayZ-Expansion-Scripts/DayZExpansion/Core/Scripts/5_Mission/DayZExpansion_Core/Mission/MissionServer.c", "sha256": "32C1A6FBED8F912E239DAFF0F3860DA2943B627523764D39E23CAACA25F58EEC"},
+      {"path": "VPP-Admin-Tools/4_World/VPPAdminTools/Plugins/PluginBase/ServerManager/ServerManager.c", "sha256": "5D4A26E0693089E16DA99E60F4E3346BFF97D36182B5E34F430773B1A2802756"},
+      {"path": "VPP-Admin-Tools/4_World/VPPAdminTools/Plugins/PluginBase/ItemManager/ItemManager.c", "sha256": "7130FBB6764792D4114D3FFB688FA2040C00A27B03D1A7E91B53D61E8E8CF17E"},
+      {"path": "D:/StarDZ/StarDZ_Systems/StarDZ_Systems_Server/Scripts/4_World/StarDZ_SystemsServer/SDZ_GroupStashServerRPC.c", "sha256": "D7F068DFF77E726CE9F7B35CC8DA076FC4E0A172A062C7AF9A72B2DD3E82BE3E"},
+      {"path": "D:/StarDZ/StarDZ_Systems/StarDZ_Systems/Scripts/3_Game/StarDZ_Systems/Groups/SDZ_GroupStash.c", "sha256": "4A8149C81E759084D7A1973A7E8E3173F8A2C5CE603198075EB44025474C47AA"},
+      {"path": "D:/StarDZ/docs/DayZ/Server Configuration.md", "sha256": "D7126F849E9A460887A3B640068CA8C88304324EDFD3AFA1526AE69E4BECAA8E"},
+      {"path": "D:/StarDZ/docs/DayZ/Central Economy mission files modding.md", "sha256": "F49B20D4A362FFD0EF4E19429023C8A3CBFB7463E71C26408640DA78B6D9B09C"},
+      {"path": "examples/en/entity-persistence/variants/v1/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "sha256": "CD15FEBB6559B767D9ECC50F2632DC3D9F52D44326E72C6163C590607BD28205"},
+      {"path": "examples/en/entity-persistence/variants/v2/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "sha256": "4D745BE004293FDA27F094FF50BF473D1DD835969038DC0DB7B59DC9D565D85A"},
+      {"path": "examples/en/entity-persistence/variants/matrix/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "sha256": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D"},
+      {"path": ".audit/en-2026-09-13/completeness/persistence-fixture-council.md", "sha256": "43F52A66F99E2DEB9A76FBF067CFC905FB50BC042BF450A6A85FE0C91CB97FA6"},
+      {"path": ".audit/en-2026-09-13/completeness/persistence-source-council.md", "sha256": "317093AD43155012AE0EBBA136CBD730C98239210F2C3650AADA257FFAC15398"},
+      {"path": ".audit/en-2026-09-13/completeness/server-mission-investigation.md", "sha256": "71F0DC51C1D094951FC4AEBF736B1B49D7D3098849E1E1BE16282EB89BE18269"},
+      {"path": ".audit/en-2026-09-13/completeness/server-mission-council.md", "sha256": "B38247EE24ED756153BBA093D97DB00D09D39F2A4F775A6141272AE51CCCD0CE"}
+    ]
+  },
+  "remainingRuntimeQuestions": [
+    "custom subclass economy profile and lifetime binding",
+    "native treatment of failed locked read and following-record isolation",
+    "persistent-ID assignment timing",
+    "exact messages-shutdown markers and exit status on the pinned diagnostic executable",
+    "native OS-level flush implementation remains unopened",
+    "stable DayZServer_x64 executable was not present at the inspected path"
+  ]
+}
