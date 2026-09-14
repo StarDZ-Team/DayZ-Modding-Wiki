@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-09-14T06:58:30.362344+00:00",
+  "repositoryHeadAtIntegrationCheck": "8635bd24a8e24530106952860ae70e4aaf86d5ed",
+  "scope": "Record rejected repair 3 and independent findings; no implementation approval",
+  "councilRepositoryHeadCaveat": "Council reports 5410d838 as repositoryHead; current integration HEAD is recorded separately. Acceptance/rejection is bound to the exact 26 reviewed input hashes, all rechecked here, not to its stale repository HEAD label.",
+  "reviewedInputCount": 26,
+  "allReviewedInputHashesMatch": true,
+  "reports": [
+    {
+      "path": "D:/StarDZ/docs/wiki/.audit/en-2026-09-13/completeness/persistence-harness-repair3.md",
+      "sha256": "3B11AF7357B6B2ED651F1D9F1EF8D606046811C6DD3697612E3C708CDC3481BF"
+    },
+    {
+      "path": "D:/StarDZ/docs/wiki/.audit/en-2026-09-13/completeness/persistence-harness-repair3.json",
+      "sha256": "B49D68025AFDEE39C27C4AEF3FC8802254F57149B12B72821CD139E35D490085"
+    },
+    {
+      "path": "D:/StarDZ/docs/wiki/.audit/en-2026-09-13/completeness/persistence-harness-repair3-council.md",
+      "sha256": "DD8AE6B7D2638E62359C541F7FCE97E32BA2E6D17F9163AFF1F1A2683B2F123C"
+    },
+    {
+      "path": "D:/StarDZ/docs/wiki/.audit/en-2026-09-13/completeness/persistence-harness-repair3-council.json",
+      "sha256": "CFA29856E2FDFA49CD05F3D2E98715B3F3947FC92603C57F26DCE7246862CB25"
+    }
+  ],
+  "preservedRejectedDelivery": "TEMP/entity-persistence-repair3-rejected-20260914-0658/preservation.json",
+  "nextTask": "Persistence harness repair 4; exact-final independent review required before runtime",
+  "runtimeLaunched": false,
+  "implementationAccepted": false
+}

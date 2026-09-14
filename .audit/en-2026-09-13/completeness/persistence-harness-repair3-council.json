@@ -1,0 +1,700 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUtc": "2026-09-14T06:54:50.412274+00:00",
+  "reviewer": {
+    "agent": "codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "evidence": "orca orchestration worker-show --dispatch ctx_a08179296af3; effective launch and provider projection both gpt-6-astra",
+    "dispatchId": "ctx_a08179296af3",
+    "taskId": "task_9ae59928a550"
+  },
+  "repositoryHead": "5410d8384d59f0e6b0c5815540914e64f5aa1918",
+  "decision": "rejected; runtime gate closed",
+  "reviewTaskOutcome": "succeeded",
+  "runtimeLaunched": false,
+  "enforceCompiled": false,
+  "packerRun": false,
+  "authorFilesEdited": false,
+  "commitMade": false,
+  "controllerSha256": "BE6692ABAAF5E68782E605683319F5E974E2B83DE3A6D7A3684063D81A3887B3",
+  "specCloseoutHashesMatch": true,
+  "preservedRejectedDelivery": {
+    "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-rejected-20260914-0609\\preservation.json",
+    "sha256": "5EAB0E10276F72EC642744F9ED0593FD024D892955EA4DD0DA3FFBA706A3B56C",
+    "bytes": 3457,
+    "allRecordedFileHashesMatch": true
+  },
+  "findings": [
+    {
+      "id": "PR3-B01",
+      "title": "Directory creation and snapshot routes cannot execute",
+      "severity": "blocker",
+      "disposition": "rejected",
+      "details": "**Blocker; controller:27,34,53,56,59,75.** `New-Item` has no `-LiteralPath` parameter in PowerShell 7.6.0. Every `New-Dir` therefore fails; the initially absent approved root has the same error. Reviewer `new-directory-supported-parameter` reproduces the exact parameter-binding error without launching anything. After that repair, the snapshot and clone destinations still have nonexistent immediate parents (`baseline-v1`, `verify-v1`, `upgrade-chain`, `pre-bad`, `bad-a`, `bad-b`), while `New-Dir` requires that parent to exist. `copy-fresh-nested-snapshot-parent` reproduces this independently, before directory creation. Create/check each ordinary parent within the approved root, preserve literal-path copy semantics, and test every real destination route. Preparation also calls `Get-Date -Format'yyyyMMdd-HHmmss'` without an argument separator (line 53); `prepare-date-format-argument` reproduces its Date conversion error. These failures currently happen before attempt receipts/finally."
+    },
+    {
+      "id": "PR3-B02",
+      "title": "Seed, migration, and nondefault SAVE oracles contradict the emitted protocol",
+      "severity": "blocker",
+      "disposition": "rejected",
+      "details": "**Blocker; controller:43,45–47,49,65; fixture v2:117; mission init-v2.c:86–95.** Seed `Load-State` returns immediately and no caller ever invokes `Oracle` with `seed-v1`; a fresh suite cannot produce its required oracle. Even with a reviewer-created valid oracle, normal v1 saves throw because the omission query accesses absent `fields.locked` under StrictMode. Honest schema-1 v2 loads emit `migratedLocked=false`, but `Record` requires `locked`, so migration throws too. Finally `Save-State` excludes `set-true-v2` from the true-control cases: the intended true save fails, while the incorrect all-false save passes. Five named probes reproduce these paths. Consume the actual variant schemas, initialize/adopt each label only from validated evidence, and bind the sealed oracle/anchor to successful seed and same-v1 receipts; currently neither file has such receipt bindings and verify-v1 writes it before the run succeeds."
+    },
+    {
+      "id": "PR3-B03",
+      "title": "Smoke/readiness and shutdown-state enforcement remains unsound",
+      "severity": "high",
+      "disposition": "rejected",
+      "details": "**High; controller:48,64–67; init-v1.c:27,51; init-v2.c:23,39; init-matrix.c:23,38; init-nomod.c:28,32.** All four templates print `SHUTDOWN_STATE` from an unconditional 240-second call-queue timer. That proves only timer execution after mission construction, not engine shutdown state or process-start-relative shutdown. The loop treats its substring as shutdown evidence. Smokes never require CE completion; `Smoke-State` accepts `ASSERT_FAIL` and reversed ready/shutdown order (reproduced). Missing ready/CE is not stopped at its cutoff; the loop can wait until T+420. A persistence trigger is written before the shutdown check, and only CE plus `Load-State` precedes it: native module/private-init/config/selected-storage/error checks happen after exit. Missing reload callbacks throw immediately on the first CE poll rather than remain pending through the bounded callback deadline. Event clock values are parsed but never compared with process start, trigger, cutoffs, or exit. Use genuine engine lifecycle evidence, an explicit bounded state transition gate, and current native module/private-init/storage witnesses before mutation. Exit code 0 and retained-process cleanup are improvements, but the synthetic timer must not certify scheduled self-exit."
+    },
+    {
+      "id": "PR3-B04",
+      "title": "Events are correlated but not a strict typed protocol",
+      "severity": "high",
+      "disposition": "rejected",
+      "details": "**High; controller:38–39,43,46,48–49.** Wrong-run events are rejected before filtering, but field extraction skips arbitrary text, accepts unknown kinds/fields and a second `position`, and does not consume the whole record. Integer casts accept schema `1.1` as 1; PID regex accepts blocks outside signed-int range. `Phase-State` accepts a run with no `SPAWN_OK`/`ENUM_OK`/phase assertion/lifetime observations, unexpected mutation callbacks, and loads indexed after ready. All are reproduced. Bad-read `LOAD_FAIL` can even name variant v1 with an unrelated PID; only its label/schema/stage are checked. Define exact event kinds, fields/types/cardinality/order per phase, validate all events including mutation/counter/failure observations, and reject malformed tokens before selecting the expected set. The private-init check at line 66 is an arbitrary whole-RPT path substring, not an exact parsed native module record."
+    },
+    {
+      "id": "PR3-B05",
+      "title": "SAVE observation policy rejects permitted observations and constrains native faulty fate",
+      "severity": "high",
+      "disposition": "rejected",
+      "details": "**High; controller:47; init-matrix.c:87–99.** `Set-Of` counts every SAVE in the run before checking its index, so harmless pre-ready saves plus a complete correct post-ready set fail (`SAVE count mismatch`). Pre-ready evidence must remain visible without satisfying the post-ready oracle. In a bad read the required save labels are only the two controls; a surviving faulty entity's ordinary SAVE is always rejected as an extra record, even though the mission explicitly permits it to remain. The reviewer reproduces that rejection. Preserve and classify the known faulty record's observations separately, require the two exact valid controls, and reject genuinely unknown/duplicate/conflicting callbacks without silently converting the accepted present-or-absent experiment into an absent-only save requirement. Actual native survival/save behavior remains unknown."
+    },
+    {
+      "id": "PR3-B06",
+      "title": "Diagnostic allowlisting is not reviewed or consistently comparable",
+      "severity": "high",
+      "disposition": "rejected",
+      "details": "**High; controller:37,40–41,51,66.** The repaired parser correctly terminates the retained six-frame stack and detects enveloped standalone errors; changed stack lines and counts fail. However, unchanneled compile errors are omitted, severity/channel distinctions collapse, and unrestricted `message.Replace(profilePath, ...)` changes message content rather than only structured prefixes. Those gaps have probes. Baseline mode unconditionally promotes every observed diagnostic to an allowlist, including an injected fatal unknown-type diagnostic; no pre-reviewed list is consumed. The allowlist file is not bound to the no-mod receipt or immutable manifest. Four different private mission paths also make the same retained `CreateCustomMission()` stack differ across control/candidates; line padding does not normalize the path, and a synthetic common stack reproduces the mismatch. Reconcile this with the accepted narrow normalization/common mission contract, preserve exact source locations/messages/counts, and apply candidate attribution plus the approved error policy to every phase. Malformed-record native diagnostics need explicit observation policy; there is no separate handling in the current controller."
+    },
+    {
+      "id": "PR3-B07",
+      "title": "The thirteen-process DAG can consume stale, failed, or changed inputs",
+      "severity": "high",
+      "disposition": "rejected",
+      "details": "**High; controller:17,52–56,60–66,69,75.** `Gate` validates a success wrapper/hash but never reads the referenced receipt's outcome/phase/suite fields or later failed attempts. Both a failed rerun behind an old success and a wrapper pointing at a failed unrelated receipt pass the probes. Smokes bypass `Gate` entirely, allowing candidate launch before the no-mod control. Immediate predecessors do not revalidate changed ancestor successes. Existing chain storage is recorded but never compared with the predecessor output, so an edited upgrade/bad branch can launch. `Open-Suite` records but does not rehash executable bytes/version before launch; the prepared dynamic CE/config values are labels, not checks of supplied inputs. Staged package equality is useful, but package source receipt lists are not checked for the exact current variant/member set. Enforce immutable, fully reopened successful predecessors, invalidate old authorizations on failed attempts, compare branch input to the exact parent output, bind/revalidate the executable and generated run config, and restrict differences to declared fields."
+    },
+    {
+      "id": "PR3-B08",
+      "title": "Snapshot and final-closure receipts are not authoritative",
+      "severity": "high",
+      "disposition": "rejected",
+      "details": "**High; controller:34–35,45,56,75.** Initial freeze copies do not prove source-before/source-after/destination equality. Later clones compare `f.files`, but never verify `f.manifestHash` or `parentReceiptSha256` or bind the snapshot receipt itself to a success ledger; changing the snapshot plus its manifest goes undetected by this design. Neither snapshot's original identity is anchored elsewhere. Final closure checks two current snapshot lists and existence of the bad-a-read success file, then writes the literal `processCount=13`; it does not reopen all thirteen successful exact-input receipts or verify both independent clone identities. It only runs when bad-b-read is last, although the DAG also permits bad-a-read last. Anchor freezes to validated exited/released parents, retain both clone identities, and derive final completion from the full validated DAG in either legal branch order."
+    },
+    {
+      "id": "PR3-B09",
+      "title": "Ownership, release, and failure receipts are incomplete",
+      "severity": "high",
+      "disposition": "rejected",
+      "details": "**High; controller:24–27,34,53–55,59–67,75.** Ancestor reparse checks and fail-closed single-file hardlink probes are meaningful repairs. But the lock uses check-then-`Set-Content`, not exclusive creation, and is acquired after context/storage/config/staging mutations. `owner.json` is never consulted or updated. Two dispatches can race; a failed attempt can overwrite an active lock. The fixed default port is reused, with no occupancy/release check, no process-handle disposal or file-release proof before clones. Preparation, `Storage`, staging, freeze/final-closure errors occur outside the attempt `try/finally`; even `Process.Refresh` in finally can abort receipt writing. Failed runs retain no log hashes (`logs` is assigned only on success), and successful receipts hash one RPT rather than the complete log set. External executable/PBO hardlink/ancestor status is not rechecked at consumption. Acquire exclusive ownership before mutations, validate consumed inputs physically, and make every dispatch/failure/cleanup path durably observable before it can authorize downstream work."
+    },
+    {
+      "id": "PR3-B10",
+      "title": "Operator instructions and static-validation claims remain stale",
+      "severity": "medium",
+      "disposition": "rejected",
+      "details": "**Medium; harness/README.md:10–32,42–75; controller:3–9,53,72,75; Test-EntityPersistenceHarness.ps1:6,21.** The guide names two rejected work roots instead of `entity-persistence-harness-repair3`, omits required three PBO paths for preparation and `SuiteRoot` for every runtime action, and advertises removed `-PboPath`. It describes one mission, automatic unique port triples/release proof, and interface/forbidden-call checks that the implementation does not perform. The 21 green tests do not execute nine phase routes; they search for their names. Repair the guide with concrete current preparation/suite commands and truthful validation scope, and add side-effect-free transition/negative coverage for the actual protocol paths above. No Enforce compilation claim is warranted."
+    }
+  ],
+  "priorFindings": [
+    {
+      "id": "PHIC-R01",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B01",
+        "PR3-B03"
+      ],
+      "note": "Explicit four states exist; CE/order/lifecycle gates remain unsound."
+    },
+    {
+      "id": "PHIC-R02",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B02",
+        "PR3-B07",
+        "PR3-B08"
+      ],
+      "note": "Reserved variable and per-label iteration fixed; seed origin is unreachable and oracle lacks successful receipt anchors."
+    },
+    {
+      "id": "PHIC-R03",
+      "disposition": "rejected",
+      "remainingFindings": [
+        "PR3-B01"
+      ],
+      "note": "Literal child copy loop improved; New-Item parameter and absent parent routes block execution."
+    },
+    {
+      "id": "PHIC-R04",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B06"
+      ],
+      "note": "Observed stack terminates and standalone enveloped errors/counts work; allowlist policy and normalization are not sufficient."
+    },
+    {
+      "id": "PHIC-R05",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B03",
+        "PR3-B04"
+      ],
+      "note": "Fake module labels removed; exact current native witness validation is after mutation and private init is only substring-matched."
+    },
+    {
+      "id": "PHIC-R06",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B06",
+        "PR3-B07",
+        "PR3-B08"
+      ],
+      "note": "Suite recording exists; predecessor, failed attempt, executable, branch storage and baseline bindings are incomplete."
+    },
+    {
+      "id": "PHIC-R07",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B03",
+        "PR3-B09"
+      ],
+      "note": "Missing-yet RPT pending and exit0 check improved; timer is not shutdown, cutoffs/order and failure receipts remain incomplete."
+    },
+    {
+      "id": "PHIC-R08",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B02",
+        "PR3-B03",
+        "PR3-B04"
+      ],
+      "note": "Wrong-run before filtering fixed; typed schema/cardinality/order and bounded callback pending state remain wrong."
+    },
+    {
+      "id": "PHIC-R09",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B02",
+        "PR3-B04",
+        "PR3-B05"
+      ],
+      "note": "Many values checked, but v1/migration/set-true and SAVE observation policy fail."
+    },
+    {
+      "id": "PHIC-R10",
+      "disposition": "mission-source repairs accepted; controller coverage remains rejected",
+      "remainingFindings": [
+        "PR3-B04",
+        "PR3-B05"
+      ],
+      "note": "Horizontal circle/SurfaceY, null-first access, bad-read local count/labels/controls are fixed; no world-wide absence or runtime proof."
+    },
+    {
+      "id": "PHIC-R11",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B01",
+        "PR3-B08"
+      ],
+      "note": "Before/after clone checks exist but initial freezes, manifest anchors and full closure are not enforced."
+    },
+    {
+      "id": "PHIC-R12",
+      "disposition": "partially repaired; rejected",
+      "remainingFindings": [
+        "PR3-B01",
+        "PR3-B09"
+      ],
+      "note": "Ancestor/reparse and failed hardlink checks improve; exclusive ownership and at-consumption physical validation incomplete."
+    },
+    {
+      "id": "PHIC-R13",
+      "disposition": "lifetime source repair accepted; receipts rejected",
+      "remainingFindings": [
+        "PR3-B04",
+        "PR3-B07",
+        "PR3-B09"
+      ],
+      "note": "All lifetime values observed in source; full input/log/failure provenance not enforced."
+    },
+    {
+      "id": "PHIC-R14",
+      "disposition": "rejected",
+      "remainingFindings": [
+        "PR3-B10"
+      ],
+      "note": "21 tests are real but nine are quoted phase-name searches, and guide/API claims exceed checks."
+    }
+  ],
+  "accepted": [
+    "Unchanged PBO payload/source/member/prefix/receipt/log hashes independently matched",
+    "Super-first native serialization and variant APIs unchanged",
+    "Horizontal circle, SurfaceY and null-first local enumeration repairs",
+    "Bad-read local count/known labels/mandatory controls",
+    "Explicit fixture-free no-mod and candidate smoke branches",
+    "Improved per-label isolated PID helpers",
+    "Positive CE profile/instance lifetime checks in mission source",
+    "Observed RPT stack termination and count/source-line comparisons"
+  ],
+  "tests": {
+    "authorStatic": {
+      "command": "pwsh -NoProfile -File examples/en/entity-persistence/harness/Invoke-EntityPersistenceHarness.ps1 -Action Static",
+      "exitCode": 0,
+      "count": 21,
+      "powershell": "7.6.0",
+      "receipt": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair3-council\\author-static-output.json",
+        "sha256": "4AA1CCFB906C95B2A742C88BD6B6B079AAED13A53C3F5A308772B366D98C09C5",
+        "bytes": 799
+      }
+    },
+    "reviewerProbes": {
+      "command": "pwsh -NoProfile -File TEMP/entity-persistence-repair3-council/probes.ps1",
+      "exitCode": 0,
+      "observations": 32,
+      "contractViolations": 29,
+      "confirmedExpectedRejections": 3,
+      "meaning": "Exit 0 records the observations; it does not certify the harness",
+      "script": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair3-council\\probes.ps1",
+        "sha256": "3554D83C3751B47A47DB76958EBE2D45D88A15F85F231A2562346F2F72A91AAD",
+        "bytes": 10833
+      },
+      "receipt": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair3-council\\probes.json",
+        "sha256": "AC0E0AEC47DD38C1C20A661CAF6F57F1302CA67635BF0F26470D4FB505C88490",
+        "bytes": 12451
+      }
+    },
+    "packageBytes": {
+      "command": "python TEMP/entity-persistence-repair3-council/archive-review.py",
+      "exitCode": 0,
+      "receipt": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair3-council\\archive-review.json",
+        "sha256": "B390C43B1325BA53B22F4C1111A71FFF54AB21CAFD8669ED1D02B6DCC9CA89EB",
+        "bytes": 8388
+      }
+    }
+  },
+  "sourceUse": [
+    {
+      "path": "D:\\DayZ Projects\\scripts.txt",
+      "sha256": "E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F",
+      "bytes": 47,
+      "linesOpened": "1-3",
+      "evidenceKind": "extraction metadata",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\3_game\\entities\\entityai.c",
+      "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5",
+      "bytes": 134702,
+      "linesOpened": "2913-3071;3371-3396",
+      "evidenceKind": "extracted declaration and implementation",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\3_game\\global\\game.c",
+      "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158",
+      "bytes": 55799,
+      "linesOpened": "596-621;691-711;911-932;1146-1171",
+      "evidenceKind": "extracted native declarations",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\3_game\\ce\\centraleconomy.c",
+      "sha256": "6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3",
+      "bytes": 30948,
+      "linesOpened": "7-41;751-764",
+      "evidenceKind": "extracted flags and lifetime declaration",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\1_core\\proto\\ensystem.c",
+      "sha256": "8BE625999A04DF22813052E93FE658C24C82C97B257EBEF86B106279A95DB188",
+      "bytes": 12237,
+      "linesOpened": "397-501",
+      "evidenceKind": "extracted file APIs",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\1_core\\proto\\serializer.c",
+      "sha256": "3C365E5EF418438220CD2A2012C57EF385DDCAD835D712D136D31E6DFE7D2F5D",
+      "bytes": 2439,
+      "linesOpened": "full",
+      "evidenceKind": "extracted serializer API",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\2_gamelib\\tools.c",
+      "sha256": "48E8DAFACF8D8BD6D38A141896039720507488E45E1EFB369958B29BEC68D38B",
+      "bytes": 7488,
+      "linesOpened": "52-67",
+      "evidenceKind": "extracted callback queue API",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\3_game\\dayzgame.c",
+      "sha256": "75CD42B6CBE689F0903F23CDEE46FD41545946B0046D3816B15B4F36044C8992",
+      "bytes": 103489,
+      "linesOpened": "2989-3010",
+      "evidenceKind": "engine script system queue tick",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\3_game\\objectspawner.c",
+      "sha256": "6CC150C3AAF39B94E9BC1C92F8F4BB9819356E637619FBCA28779DAA7E0DF4B9",
+      "bytes": 4540,
+      "linesOpened": "40-90",
+      "evidenceKind": "vanilla spawn pattern",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\4_world\\entities\\itembase\\battery9v.c",
+      "sha256": "98D4376AEF70324F7C9FD4DDEB5098D6E0B731EE9CDB4352A6A7166C03838A34",
+      "bytes": 1717,
+      "linesOpened": "full",
+      "evidenceKind": "vanilla base class",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\DayZ Projects\\DZ\\gear\\consumables\\config.cpp",
+      "sha256": "360DF711C194F9264C232C9296FD4DA5B92EBCE731FC25E0908036EA07CB745B",
+      "bytes": 79477,
+      "linesOpened": "908-962",
+      "evidenceKind": "extracted base config",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\REFERENCIA_VERSOES_E_MIGRACAO.md",
+      "sha256": "E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD",
+      "bytes": 63617,
+      "linesOpened": "374-422",
+      "evidenceKind": "local documentation lead, independently compared with declarations",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\StarDZ\\StarDZ_Systems\\StarDZ_Systems\\Scripts\\3_Game\\StarDZ_Systems\\Groups\\SDZ_GroupStash.c",
+      "sha256": "4A8149C81E759084D7A1973A7E8E3173F8A2C5CE603198075EB44025474C47AA",
+      "bytes": 10682,
+      "linesOpened": "43-70",
+      "evidenceKind": "beta comments explicitly admit untested persistence",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\cases\\post-integration-exact\\profiles\\DayZDiag_x64_2026-09-14_00-31-40.RPT",
+      "sha256": "48D4A4513A2B094811A0ABBD95D7CC953BEC60944F497714DD1106D15F9A8FC5",
+      "bytes": 540783,
+      "linesOpened": "235-238;316-320;1411-1449;full text parsed by Diagnostics",
+      "evidenceKind": "historical log, not persistence run",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-council\\profiles\\instance-id-1\\DayZDiag_x64_2026-09-13_22-12-07.RPT",
+      "sha256": "40CC6FE9C4FA5287C9B33AC3D6A87BBBF478A882AB84D925738CF944552C41C1",
+      "bytes": 491964,
+      "linesOpened": "1442;2937;4654",
+      "evidenceKind": "historical storage_1 and CE-finished evidence",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ\\DayZDiag_x64.exe",
+      "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+      "bytes": 20245560,
+      "linesOpened": "file metadata/hash only; not executed",
+      "evidenceKind": "installed executable 1.29.0.163709",
+      "unchangedFromPreviousCouncil": true,
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\init.c",
+      "sha256": "73658FCA45ADE1C54D7EE729B31F78F3C27B46282FFD3D503D10B524B8A20AFB",
+      "bytes": 2788,
+      "linesOpened": "full",
+      "evidenceKind": "pinned official source",
+      "unchangedFromPreviousCouncil": true,
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/init.c",
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\db\\economy.xml",
+      "sha256": "62C140967C6040C8E38C7BC5D9FBBFD3966B3EA97A2FEC2AF2D409621EC1F8F8",
+      "bytes": 520,
+      "linesOpened": "full",
+      "evidenceKind": "pinned official source",
+      "unchangedFromPreviousCouncil": true,
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/db/economy.xml",
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\db\\messages.xml",
+      "sha256": "55C9C2DBEC63CEB5059DC38310C4539BA1BFB46EE7AAAD73C8F063A3238B0C8A",
+      "bytes": 1232,
+      "linesOpened": "full",
+      "evidenceKind": "pinned official source",
+      "unchangedFromPreviousCouncil": true,
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/db/messages.xml",
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\cfgeconomycore.xml",
+      "sha256": "095417FE00A264150D07AB2C1C1A922212D39A041D9554308134ED47408A4615",
+      "bytes": 1944,
+      "linesOpened": "full",
+      "evidenceKind": "pinned official source",
+      "unchangedFromPreviousCouncil": true,
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/cfgeconomycore.xml",
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Samples\\Test_GardenPlot\\config.cpp",
+      "sha256": "2C66BE131A55CFFDED96712245DD74D78E25D003C21A4F51F0B94587C666CD37",
+      "bytes": 2366,
+      "linesOpened": "full",
+      "evidenceKind": "pinned official source",
+      "unchangedFromPreviousCouncil": true,
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Samples.git",
+      "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "repositoryPath": "Test_GardenPlot/config.cpp",
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-CommunityFramework\\JM\\CF\\Scripts\\5_Mission\\CommunityFramework\\Mission\\MissionBase.c",
+      "sha256": "351EC4DFB278D059A35D90F2BB5857F93C60D7CF235C549CC2052B957F247942",
+      "bytes": 1343,
+      "linesOpened": "full",
+      "evidenceKind": "pinned third-party implementation",
+      "unchangedFromPreviousCouncil": true,
+      "repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+      "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "repositoryPath": "JM/CF/Scripts/5_Mission/CommunityFramework/Mission/MissionBase.c",
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-CommunityFramework\\JM\\CF\\Scripts\\4_World\\CommunityFramework\\Entities\\ItemBase.c",
+      "sha256": "159DB6F8DC122BF7F7D00186107D33918A7C7B1C52CEBC226776AA10DF2A2C58",
+      "bytes": 1976,
+      "linesOpened": "full",
+      "evidenceKind": "pinned third-party implementation",
+      "unchangedFromPreviousCouncil": true,
+      "repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+      "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "repositoryPath": "JM/CF/Scripts/4_World/CommunityFramework/Entities/ItemBase.c",
+      "accessDate": "2026-09-14"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\reference\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\db\\economy.xml",
+      "sha256": "62C140967C6040C8E38C7BC5D9FBBFD3966B3EA97A2FEC2AF2D409621EC1F8F8",
+      "bytes": 520,
+      "linesOpened": "full",
+      "evidenceKind": "actual default mission input",
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/db/economy.xml",
+      "accessDate": "2026-09-14"
+    }
+  ],
+  "reviewedInputs": [
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\build.ps1",
+      "sha256": "A71E0B8DA79C31BC8A4FDEB966B21A67686131E62DB808BDB95D1365417BE9D4",
+      "bytes": 12426
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Invoke-EntityPersistenceHarness.ps1",
+      "sha256": "BE6692ABAAF5E68782E605683319F5E974E2B83DE3A6D7A3684063D81A3887B3",
+      "bytes": 33543
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\cfgeconomycore-fragment.xml",
+      "sha256": "95205A870A8D2BEC7F71E61FF821F7010F1925E2FFCD6FBAD7980619FF497DE3",
+      "bytes": 82
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\EntityPersistenceFixture\\types.xml",
+      "sha256": "6EA1CB2B623AD480690114B784E2D9044F32DCD0187E23620ED26CB0C6BFC97B",
+      "bytes": 458
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-matrix.c",
+      "sha256": "513011E1B826651321302DFFECDBFF501248B2A0D4822DEA71EBBAF1CFE00975",
+      "bytes": 6830
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-nomod.c",
+      "sha256": "4C21C2FBEDE193CA3BA8F0A667D81E5EC4412C9F1751E068645BD8BDDB8CF2F3",
+      "bytes": 1517
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-v1.c",
+      "sha256": "2BD53F78499D3AC9CC8843A77AAD4965746906C8690DC802DA90A106E43F4849",
+      "bytes": 6858
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-v2.c",
+      "sha256": "D68B2ADA83D8806AA41D97389CD89FE39AE650A46770EB9101B94CAD80659948",
+      "bytes": 5818
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\messages.xml",
+      "sha256": "8121B8EDBF6F1D1623E0589AB4F005E09C23E2DB8C3CE37ED0FAD811C4BFAB36",
+      "bytes": 215
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\README.md",
+      "sha256": "D68673F776CF6996D7EE9227A72DE4B686B0BB53E87BBDB8BFC87FB10DD7BB3B",
+      "bytes": 6822
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Test-EntityPersistenceHarness.ps1",
+      "sha256": "4E6F01B693E0ACDAD6015B32CE2262D11CFA83970B020EE02360D7CA053454AE",
+      "bytes": 4228
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\manifest.json",
+      "sha256": "4701E996F8A0A01EE6D28C20779E1D5C843019AC452C728DECA2A25B377D69E9",
+      "bytes": 405
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\README.md",
+      "sha256": "CFAA46F5A883BF4CFE9622194405FD49ADDE9E16C829004E4EA1470D7D39E16F",
+      "bytes": 3650
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\matrix\\config.cpp",
+      "sha256": "CA804F143033932C942ED18A185B0EAA9E44F127E8DCA100245413118B951D7C",
+      "bytes": 883
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\matrix\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "0573DFFDDEF375456E51459249C3367A8F2125FE085991AF4672E14F23A7A678",
+      "bytes": 5259
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v1\\config.cpp",
+      "sha256": "3C86A27699C7766F1C3EAA75DC9DF053520216216E7D090AFC5483C4CA51D82D",
+      "bytes": 872
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v1\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "169357CCCF2E8797D7791A2AA842DAA755ACDF8527DBB59A9FE6204C1A5536D2",
+      "bytes": 3550
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v2\\config.cpp",
+      "sha256": "7B817238ABB2E8A0FD0F288C9C7E1B09910B327EAFF5F263FDEB17F2770E0147",
+      "bytes": 872
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v2\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "10386F5419115F2F81F3B039499493D872BCB5FA37A65F837FD6CD04DBDE0818",
+      "bytes": 4458
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-spec.md",
+      "sha256": "0988F335D91C2411419F87032BBDC587E837CA57FCF332AFDD2745C687516286",
+      "bytes": 11988
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-spec.json",
+      "sha256": "4890A1B39DF3552469009AEF1A2DB99053E2BFC16A76774F748EE6FD604554C8",
+      "bytes": 7318
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-closeout.json",
+      "sha256": "8EDE17F911B642F7D014F66B6143972414BAA12F6A94C1177580B8D00258F576",
+      "bytes": 3287
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-implementation-council.md",
+      "sha256": "B440A79F6C0EC9E02990316F44BD2A43FC2FBA994CB890E4D270CB03338DA83B",
+      "bytes": 36124
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-implementation-council.json",
+      "sha256": "E21AAD4F6462544339EB8DBBCF70777E1FEEB2C0C60919C95F44E8A0359399DD",
+      "bytes": 58935
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-repair3.md",
+      "sha256": "3B11AF7357B6B2ED651F1D9F1EF8D606046811C6DD3697612E3C708CDC3481BF",
+      "bytes": 1443
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-repair3.json",
+      "sha256": "B49D68025AFDEE39C27C4AEF3FC8802254F57149B12B72821CD139E35D490085",
+      "bytes": 852
+    }
+  ],
+  "webAccess": [
+    {
+      "url": "https://raw.githubusercontent.com/BohemiaInteractive/DayZ-Central-Economy/9a21bb9f5fb9c62a7ce2761402196091588133e6/dayzOffline.chernarusplus/db/messages.xml",
+      "date": "2026-09-14",
+      "status": "read",
+      "scope": "commented scheduled shutdown example; not runtime evidence"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/BohemiaInteractive/DayZ-Samples/da5e5437c9502620d9853fb6eed14701135ab2ea/Test_GardenPlot/config.cpp",
+      "date": "2026-09-14",
+      "status": "read",
+      "scope": "World script module configuration"
+    }
+  ],
+  "nextRequired": [
+    "Author repairs PR3-B01 through PR3-B10 without discarding prior preserved source/evidence",
+    "Independent exact-final source review and meaningful pure transition tests",
+    "Only after acceptance: no-mod-control then smoke-v1, smoke-v2, smoke-matrix",
+    "Then nine phases seed-v1, verify-v1, migrate-v2-default, set-true-v2, verify-true-v2, bad-a-write, bad-a-read, bad-b-write, bad-b-read with two immutable snapshots and full closure"
+  ],
+  "unresolved": [
+    {
+      "id": "PHIC-U01",
+      "status": "unresolved",
+      "scope": "No Enforce compilation or 13-process runtime"
+    },
+    {
+      "id": "PHIC-U02",
+      "status": "unresolved",
+      "scope": "Native malformed-record fate/isolation and PID timing"
+    },
+    {
+      "id": "PHIC-U03",
+      "status": "unresolved",
+      "scope": "Extraction raw version 124588 not proven identical to installed 1.29.0.163709 executable"
+    },
+    {
+      "id": "PHIC-U04",
+      "status": "unresolved",
+      "scope": "Actual terrain/lifetime measurements and fixture-free CE diagnostic comparability"
+    }
+  ],
+  "report": {
+    "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\persistence-harness-repair3-council.md",
+    "sha256": "DD8AE6B7D2638E62359C541F7FCE97E32BA2E6D17F9163AFF1F1A2683B2F123C",
+    "bytes": 16996
+  }
+}
