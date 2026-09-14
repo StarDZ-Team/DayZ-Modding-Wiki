@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "status": "runtime_markers_confirmed",
+  "staging": {
+    "reviewedSource": "TEMP/multi-pbo-council/mission/dayzOffline.chernarusplus",
+    "target": "TEMP/multi-pbo-confirmation/mission/dayzOffline.chernarusplus",
+    "files": 43,
+    "memberHashManifestSha256": "1260F07AC011D4CFDA66BF0915D8475ECDD072776CCD3B2BE8A43EF4B3B7EA3E",
+    "sourceAndTargetMatched": true
+  },
+  "inputs": {
+    "fixtureManifestSha256": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42",
+    "buildReceiptSha256": "E8E483389F85C84FA819B16EE36C16EF2CE88DDB0E17F460076F765DAE487C1B",
+    "recipeSha256": "FBAC12CD27A18E254D72CB4F6C9AC5FCF34775BF24D8A3BBD567D980040C4E55",
+    "configSha256": "E1D27E0535C21CD10DB9F710FDABA1C8177F14EFE01456DE92A99DEF31933171",
+    "probePboSha256": "279970F47E0348D598B0CE5F7722FF3FC6CD84018107411F6AFC138FB2F63849",
+    "executableVersion": "1.29.0.163709",
+    "executableSha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"
+  },
+  "runtime": {
+    "case": "post-integration-exact",
+    "pid": 18416,
+    "instanceId": 780,
+    "ports": [26280, 26281, 26282],
+    "processRecordSha256": "1C385955A1B4F77978DDF2EC9F5F28D16C1E4AEB859B8ABA0865ED0F2EBC2B68",
+    "killedByHarness": true,
+    "exitCode": -1,
+    "portsAfterCleanup": [],
+    "rptSha256": "48D4A4513A2B094811A0ABBD95D7CC953BEC60944F497714DD1106D15F9A8FC5",
+    "scriptLogSha256": "9034724DC14FE8531A0CC874A3287A4FF78994542C6E35D495FB3B0B644992E2",
+    "markers": [
+      "BEGIN",
+      "FIXTURE=PBOExample",
+      "SERVER_COMPONENT=true",
+      "DATA_PATH=PBOExample/Data/data/example.txt",
+      "DATA_READ_BYTES=81",
+      "DATA_SENTINEL=This fixture's Data archive has a unique prefix and its own CfgPatches identity.",
+      "END"
+    ]
+  },
+  "limitations": [
+    "No claim about client join, signature enforcement, size limits, or general version compatibility.",
+    "CE XML parse warnings are not CE certification."
+  ]
+}

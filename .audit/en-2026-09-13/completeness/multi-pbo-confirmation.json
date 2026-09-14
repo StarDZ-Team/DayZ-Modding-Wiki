@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "status": "runtime_not_launched_prerequisite_failure",
+  "repository": {
+    "head": "23c336eb5740b6b5e5d2d8bc2329288b70ccc26c"
+  },
+  "fixtureComparison": {
+    "reviewedCopy": "TEMP/multi-pbo-council/sources/backslash-prefixes",
+    "filesCompared": 12,
+    "allMatched": true,
+    "manifestSha256": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42"
+  },
+  "build": {
+    "command": "examples/en/multi-pbo/build.ps1 -ToolRoot D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools -WorkRoot D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build",
+    "exitCode": 0,
+    "receipt": "TEMP/multi-pbo-confirmation/build/pboexample-20260914-002734-8140c691/receipt.json",
+    "receiptSha256": "E8E483389F85C84FA819B16EE36C16EF2CE88DDB0E17F460076F765DAE487C1B"
+  },
+  "runtime": {
+    "recipeSha256": "FBAC12CD27A18E254D72CB4F6C9AC5FCF34775BF24D8A3BBD567D980040C4E55",
+    "executable": "D:\\SteamLibrary\\steamapps\\common\\DayZ\\DayZDiag_x64.exe",
+    "executableVersion": "1.29.0.163709",
+    "executableSha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+    "probePboSha256": "279970F47E0348D598B0CE5F7722FF3FC6CD84018107411F6AFC138FB2F63849",
+    "ports": [26280, 26281, 26282],
+    "instanceId": 780,
+    "dayzDiagPresentBeforeLaunch": false,
+    "portsFreeBeforeLaunch": true,
+    "pid": null,
+    "launched": false,
+    "failure": "Private mission was not found: D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\mission\\dayzOffline.chernarusplus",
+    "markers": null,
+    "dataReadBytes": null,
+    "dataSentinel": null,
+    "rpt": null,
+    "scriptLog": null,
+    "dayzDiagPresentAfterFailure": false,
+    "portsFreeAfterFailure": true
+  },
+  "limits": [
+    "No runtime marker or data-read confirmation was obtained.",
+    "No claim about client join, signature enforcement, size limits, or general version compatibility."
+  ]
+}

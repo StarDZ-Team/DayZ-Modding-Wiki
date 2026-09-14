@@ -1,0 +1,158 @@
+{
+  "reviewedAtUtc": "2026-09-14T03:36:40.0011191Z",
+  "reviewer": "Root independent of Terra author",
+  "disposition": "Accept bounded post-integration runtime evidence",
+  "checks": [
+    {
+      "path": "examples/en/multi-pbo/manifest.json",
+      "sha256": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42"
+    },
+    {
+      "path": "TEMP/multi-pbo-confirmation/build/pboexample-20260914-002734-8140c691/receipt.json",
+      "sha256": "E8E483389F85C84FA819B16EE36C16EF2CE88DDB0E17F460076F765DAE487C1B"
+    },
+    {
+      "path": "TEMP/multi-pbo-confirmation/run-case.ps1",
+      "sha256": "FBAC12CD27A18E254D72CB4F6C9AC5FCF34775BF24D8A3BBD567D980040C4E55"
+    },
+    {
+      "path": "TEMP/multi-pbo-confirmation/runtime-26280.cfg",
+      "sha256": "E1D27E0535C21CD10DB9F710FDABA1C8177F14EFE01456DE92A99DEF31933171"
+    },
+    {
+      "path": "TEMP/multi-pbo-confirmation/runtime-mods/@MultiPboRuntimeProbeExact/Addons/MultiPboRuntimeProbe.pbo",
+      "sha256": "279970F47E0348D598B0CE5F7722FF3FC6CD84018107411F6AFC138FB2F63849"
+    },
+    {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64.exe",
+      "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"
+    },
+    {
+      "path": "TEMP/multi-pbo-confirmation/cases/post-integration-exact/process.json",
+      "sha256": "1C385955A1B4F77978DDF2EC9F5F28D16C1E4AEB859B8ABA0865ED0F2EBC2B68"
+    },
+    {
+      "path": "TEMP/multi-pbo-confirmation/cases/post-integration-exact/profiles/DayZDiag_x64_2026-09-14_00-31-40.RPT",
+      "sha256": "48D4A4513A2B094811A0ABBD95D7CC953BEC60944F497714DD1106D15F9A8FC5"
+    },
+    {
+      "path": "TEMP/multi-pbo-confirmation/cases/post-integration-exact/profiles/script_2026-09-14_00-31-42.log",
+      "sha256": "9034724DC14FE8531A0CC874A3287A4FF78994542C6E35D495FB3B0B644992E2"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Core.pbo",
+      "sha256": "6A20B58DF2FD56CE4CBFA76FBC11D0563090D27A93198ED708CE1E94F0C7A636"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Core.pbo.PBOExampleFixture.bisign",
+      "sha256": "1D16600386316C705010CC6D5F8AB2F6D156EBCF3C80861C1A9EC8A0174F2AF0"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Scripts.pbo",
+      "sha256": "23C2791D782EC81E442F791D6D411908878FDD65F997E2CEEC5EE8EE7BFE6116"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Scripts.pbo.PBOExampleFixture.bisign",
+      "sha256": "D9A1E175724B9F0631818FE0D2DA91A6C4D97DD827C3A8E06CA32BF66318E0F6"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Data.pbo",
+      "sha256": "1CE4ADB9D28C778E083CA506E0042217CE6A68FF2EC7FC085E2E19596D619071"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Data.pbo.PBOExampleFixture.bisign",
+      "sha256": "024A9E9854F30B84EBD7CF9459BABEB28DD46B5AA0B0C53627576259166B2D97"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExampleServer\\Addons\\PBOExample_Server.pbo",
+      "sha256": "0E8B08052E2777D33CA4FDC9664D42E42501CB35ED215578A4420B2D39467236"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExampleServer\\Addons\\PBOExample_Server.pbo.PBOExampleFixture.bisign",
+      "sha256": "BF6E9F351568DEE725D37362D2AA399D6CBA55C8B409944FCDA60BDA94B3C322"
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\DsUtils\\DSCheckSignatures.exe",
+      "sha256": "9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C"
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\DsUtils\\DSCreateKey.exe",
+      "sha256": "81A100EEB190FAB4492970D0E6F051DB5C025BF8A4ADC2815C57ED9FE3022067"
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\AddonBuilder\\AddonBuilder.exe",
+      "sha256": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1"
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\DsUtils\\DSSignFile.exe",
+      "sha256": "098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78"
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\PboUtils\\BankRev.exe",
+      "sha256": "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\build.ps1",
+      "sha256": "38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\manifest.json",
+      "sha256": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\README.md",
+      "sha256": "3449B09BBDD04A278A17DD8E3A79A1D27EEB76B173431A73A255C52EE23BC0CE"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\package\\Server\\mod.cpp",
+      "sha256": "726A2E560854E619DD2A851F5E9EA08D216D673278452CC8C6C5AE449C1DC2C8"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\package\\Shared\\mod.cpp",
+      "sha256": "8A3FB89471F6CA617674B997EFA37AF2DDCC2DB33DC471C68320D58A2FF2CFA9"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\src\\Core\\config.cpp",
+      "sha256": "E45F745E19E2EF1943A477E66B202D70D10A14A275EC6C7CE4FD56F80C2D712F"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\src\\Data\\config.cpp",
+      "sha256": "AB459018DC30DD5188820398E56B16A3DA426929BB0111C4A3F47819DCED5F31"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\src\\Data\\data\\example.txt",
+      "sha256": "C460C6E58E3051A463E565F55D835469415E3536B9EF6095178D3D60041CB941"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\src\\Scripts\\config.cpp",
+      "sha256": "0C2DB149738083D7FDA1F616051C7F0C8C548B0175222369F1171A1FA197D787"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\src\\Scripts\\scripts\\3_Game\\PBOExample.c",
+      "sha256": "537D9A11B33ED7CCBF2DC7A41353F457629EC9CEBDF96EB01D53652B6E7ACF8B"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\src\\Server\\config.cpp",
+      "sha256": "4FA89581708F159CFCA491252F494A5E9A6A1AE003D165370EA3F12F5245E102"
+    },
+    {
+      "path": "examples\\en\\multi-pbo\\src\\Server\\scripts\\5_Mission\\PBOExampleServer.c",
+      "sha256": "CCECF9E3AEDC044CA44A3C22537BE504BEE5AC71042EA4E6EA8DAA1567F12373"
+    }
+  ],
+  "fixtureFiles": 12,
+  "markersPerLog": 7,
+  "evidence": "Read actual probe source, recipe, process record, build receipt, RPT and script log. Verified final archives, signatures and tools against recorded hashes. Both logs contain the same probe event, not independent experiments.",
+  "cleanup": "PID 18416 absent and UDP ports 26280-26282 unbound at fresh review",
+  "limitations": [
+    "Harness stop is not a natural clean server shutdown.",
+    "No client, signature enforcement, archive boundary, Workshop or other-version proof.",
+    "CE staging member comparison was reported by author, not independently repeated here."
+  ],
+  "deliveryHashes": {
+    "multi-pbo-confirmation.json": "ECBFD705CB2CFFBC688C9AB59F95F6AEF5EC91E85644AC87F83D0DCB58871BBB",
+    "multi-pbo-confirmation.md": "6C8126175881955CF6B9ED66BF79EC4747044060A0EF2F984DE52DB18ABD16FA",
+    "multi-pbo-confirmation-runtime.md": "3DA1172BB4E78D9ACB9D78BD07AACDF5FE5DFD1081632105DCD4BE70239EB745",
+    "multi-pbo-confirmation-runtime.json": "5B3DC3174763F22C34017221BCD8666203CC209D4D611FDF2DC89AECF8DCA73C"
+  }
+}
