@@ -437,7 +437,9 @@ The repository provides [an isolated four-component fixture](../../examples/en/m
   -WorkRoot 'D:\StarDZ\docs\wiki\TEMP\pbo-example-run'
 ```
 
-It builds `Core`, `Scripts`, `Data`, and `Server` into two folder-level packages, verifies final names and prefixes, performs the global collision check before creating a key or signature, and writes a receipt beneath `WorkRoot`. The recorded accepted run used the official tools listed in the fixture's README on 2026-09-13; it validates static packaging and tool output only. It does **not** validate DayZ boot, Enforce compilation, mounted `CfgMods` resolution, client join/distribution, `requiredAddons` behavior, `verifySignatures = 2` enforcement, serverMod-only signature behavior, numeric size limits, or Workshop service behavior.
+It builds `Core`, `Scripts`, `Data`, and `Server` into two folder-level packages, verifies final names and prefixes, performs the global collision check before creating a key or signature, and writes a receipt beneath `WorkRoot`. The recorded accepted run used the official tools listed in the fixture's README on 2026-09-13. The checked-in fixture subsequently ran in one bounded headless DayZDiag `1.29.0.163709` server case: its script class and server component resolved, and it read the Data sentinel (`81` bytes). The harness stopped that server for cleanup, rather than observing a natural clean shutdown, and this runtime case does not run automatically.
+
+That one fixed-fixture case does **not** validate client join/distribution, dependency-control variations, `verifySignatures = 2` enforcement, serverMod-only signature behavior, numeric size limits, Workshop service behavior, or behavior on other game or tool versions.
 
 
 ---
@@ -457,7 +459,7 @@ Split an addon when it improves rebuild time, ownership, or release diagnosis. K
 
 ### Prefixes, Virtual Paths, and Dependencies
 
-The prefix mounts archive members into one virtual namespace. `CfgMods.inputs` and script-module `files[]` refer to those mounted virtual paths, not paths relative to a physical PBO root. A path authored in one configuration can be supplied by another archive only if the final mounted namespace resolves it; treat cross-PBO path arrangements as a packaged-runtime test, not syntax proof.
+The prefix mounts archive members into one virtual namespace. `CfgMods.inputs` and script-module `files[]` refer to those mounted virtual paths, not paths relative to a physical PBO root. A path authored in one configuration can be supplied by another archive only if the final mounted namespace resolves it; treat cross-PBO path arrangements as a packaged-runtime test, not syntax proof. The fixture's raw manifest stores PBO prefixes with backslashes (for example, `PBOExample\\Scripts`), while its `CfgMods` `files[]` values use forward-slash virtual paths (for example, `PBOExample/Scripts/scripts/3_Game`); retain the separator form required by each context.
 
 ```cpp
 // MyMod_Scripts/config.cpp, packed as MyMod_Scripts.pbo with prefix MyMod/Scripts

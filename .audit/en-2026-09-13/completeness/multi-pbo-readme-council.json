@@ -1,0 +1,12 @@
+{
+  "reviewedAtUtc": "2026-09-14T03:41:17.8443251Z",
+  "reviewer": "root independent of Terra author",
+  "disposition": "accepted final two-file diff",
+  "evidence": "Final diff compared against independently inspected runtime logs, fixed manifest, probe and council receipt; status accurately limits evidence to fixed headless Diag case. Both delivered page hashes and fresh scoped diff check passed.",
+  "pageHashes": {
+    "examples/en/multi-pbo/README.md": "9BAA9CAA1BDDDA70EC4F6C699F01E276829E4EED45F1A5BBD8C4A63F2C6564FF",
+    "en/04-file-formats/06-pbo-packing.md": "85826A8F40B7DFBA6DD32E0B686CE3DA7892BD8048AC2FEC0135460206226914"
+  },
+  "deliverySha256": "ED0738B63DB46CF5FAE20C400F3F12D8481982932EBDB5DEC3B988EC021A2334",
+  "limitations": "No fresh site build/rendered page verification; global integrated build remains required."
+}

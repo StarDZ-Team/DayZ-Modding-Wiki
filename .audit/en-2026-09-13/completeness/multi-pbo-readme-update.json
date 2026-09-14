@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-14",
+  "scope": [
+    "examples/en/multi-pbo/README.md",
+    "en/04-file-formats/06-pbo-packing.md"
+  ],
+  "reason": "Replace outdated staging-only runtime language with the accepted bounded headless DayZDiag confirmation, while retaining all untested boundaries.",
+  "acceptedEvidence": [
+    ".audit/en-2026-09-13/completeness/multi-pbo-confirmation-runtime.md",
+    ".audit/en-2026-09-13/completeness/multi-pbo-confirmation-runtime.json",
+    ".audit/en-2026-09-13/completeness/multi-pbo-confirmation-council.json"
+  ],
+  "evidenceSummary": "The council independently verified 34 hashes, twelve fixture source files, seven markers in each of two logs, and cleanup. The fixed fixture ran in bounded headless DayZDiag 1.29.0.163709; it resolved its script class and server component and read an 81-byte data sentinel. The harness stopped the server, so this is not natural clean-shutdown evidence.",
+  "beforeSha256": {
+    "examples/en/multi-pbo/README.md": "3449B09BBDD04A278A17DD8E3A79A1D27EEB76B173431A73A255C52EE23BC0CE",
+    "en/04-file-formats/06-pbo-packing.md": "3756718C2343029369BB7E5647E6793DE836F6EF90964C74B41C308D57637D09"
+  },
+  "afterSha256": {
+    "examples/en/multi-pbo/README.md": "9BAA9CAA1BDDDA70EC4F6C699F01E276829E4EED45F1A5BBD8C4A63F2C6564FF",
+    "en/04-file-formats/06-pbo-packing.md": "85826A8F40B7DFBA6DD32E0B686CE3DA7892BD8048AC2FEC0135460206226914"
+  },
+  "scopedDiffCheck": "2026-09-14: git diff --check over the two edited documentation files and this record returned no whitespace errors; the scoped review confirmed only the accepted runtime-status replacement and raw-manifest/backslash versus CfgMods/files[]/forward-slash clarification."
+}
