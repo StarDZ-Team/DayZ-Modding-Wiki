@@ -1,0 +1,45 @@
+{
+  "id": "NAV-C01",
+  "recordedAtUtc": "2026-09-14T03:20:00Z",
+  "revisionBeforeAndAfter": "ac5d4c10c592cd74be0a46d2876ce6e24f6c5ad6",
+  "scope": [
+    "en/README.md",
+    "en/index.md"
+  ],
+  "reason": "Both pages linked to ../CONTRIBUTING.md, but .vitepress/config.mts:188 excludes CONTRIBUTING.md from VitePress source discovery. The old relative links therefore do not identify a published wiki route; the configured CONTRIBUTING dead-link ignore pattern cannot establish that one exists.",
+  "upstreamEvidence": {
+    "retrievedAtUtc": "2026-09-14T03:19:24.5120460Z",
+    "repositoryRemote": "git@github.com:StarDZ-Team/DayZ-Modding-WIKI.git",
+    "mainRefFromGitLsRemote": "e8d971e3941c274befdd6596baba2e5119efb3e4",
+    "githubContentsApi": "https://api.github.com/repos/StarDZ-Team/DayZ-Modding-WIKI/contents/CONTRIBUTING.md?ref=main",
+    "githubApiFileSha": "04bab9adedf2f90c1d53e8a821304f8eaf34bbcd",
+    "publishedSourceUrl": "https://github.com/StarDZ-Team/DayZ-Modding-Wiki/blob/main/CONTRIBUTING.md",
+    "rawSourceUrl": "https://raw.githubusercontent.com/StarDZ-Team/DayZ-Modding-Wiki/main/CONTRIBUTING.md",
+    "observation": "The live GitHub Contents API returned this file object and canonical html_url; the GitHub page and raw source were also opened on the access date."
+  },
+  "edits": [
+    {
+      "path": "en/README.md",
+      "line": 193,
+      "before": "[CONTRIBUTING.md](../CONTRIBUTING.md)",
+      "after": "[CONTRIBUTING.md](https://github.com/StarDZ-Team/DayZ-Modding-Wiki/blob/main/CONTRIBUTING.md)",
+      "sha256Before": "5472366533CE34642FEE78A3F72E255602E6264874FADE8CAE3224615B73B19A",
+      "sha256After": "BA2F7097605DD47A1B78EA2346C52FEE21E889C6B71F7AD225A53CC57462F8C5"
+    },
+    {
+      "path": "en/index.md",
+      "line": 192,
+      "before": "[CONTRIBUTING.md](../CONTRIBUTING.md)",
+      "after": "[CONTRIBUTING.md](https://github.com/StarDZ-Team/DayZ-Modding-Wiki/blob/main/CONTRIBUTING.md)",
+      "sha256Before": "BCDA199EFB23A664353237DD10B273EB3F10F14AC5D844266A6680D030912718",
+      "sha256After": "A40A393FE26309381EB38A448BE1A463E2C3367665E2FFDDF7A41BEBF29650A4"
+    }
+  ],
+  "validation": {
+    "staticConfigRead": "Confirmed .vitepress/config.mts:188 contains srcExclude: ['AGENTS.md', 'CONTRIBUTING.md', 'CLAUDE.md'].",
+    "oldRelativeLinkSearch": "rg -n '\\]\\(\\.\\./CONTRIBUTING\\.md\\)' en/README.md en/index.md returned no matches (exit 1 handled as expected).",
+    "replacementLinkSearch": "rg found the canonical verified GitHub URL once in en/README.md:193 and once in en/index.md:192.",
+    "scopedDiffCheck": "git diff --check -- en/README.md en/index.md exited 0.",
+    "fullBuild": "Not run: task explicitly prohibited a full build. No claim is made that a missing warning proves route validity."
+  }
+}

@@ -189,7 +189,7 @@ The framework-style code that runs through this wiki belongs to **Lantern**, a f
 
 This documentation is written against the vanilla DayZ scripts and official Bohemia Interactive documentation and tools. Example code is written for the wiki rather than copied from a published mod, and the Lantern/NightPatrol framework is fictional (see above). Examples illustrate APIs and structure; they are not compiled or run as part of producing these pages, so verify anything you adopt against your own build.
 
-Pull requests welcome! See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+Pull requests welcome! See [CONTRIBUTING.md](https://github.com/StarDZ-Team/DayZ-Modding-Wiki/blob/main/CONTRIBUTING.md) for guidelines.
 
 ---
 

@@ -1,0 +1,33 @@
+{
+  "id": "NAV-C01",
+  "reviewedAtUtc": "2026-09-14T03:23:00.8496519Z",
+  "reviewer": "root independent of Terra author",
+  "disposition": "accepted scoped two-link repair",
+  "evidence": [
+    "Reopened live GitHub CONTRIBUTING page; document content includes Contributing to the DayZ Modding Wiki and submission instructions.",
+    "Reopened .vitepress/config.mts:188 and 198; CONTRIBUTING route excluded and ignored by dead-link validation.",
+    "Read full final diff: exactly one URL substitution in each EN entry page.",
+    "Recomputed both delivered file SHA256 values against author receipt; both matched.",
+    "Fresh git diff --check for the two pages exited 0."
+  ],
+  "deliverySha256": "D93CC0A80D997EB06097F5506D6EE1A2F85AEF4A42A7018B4E8A1315CA2B30D4",
+  "files": [
+    {
+      "path": "en/README.md",
+      "line": 193,
+      "before": "[CONTRIBUTING.md](../CONTRIBUTING.md)",
+      "after": "[CONTRIBUTING.md](https://github.com/StarDZ-Team/DayZ-Modding-Wiki/blob/main/CONTRIBUTING.md)",
+      "sha256Before": "5472366533CE34642FEE78A3F72E255602E6264874FADE8CAE3224615B73B19A",
+      "sha256After": "BA2F7097605DD47A1B78EA2346C52FEE21E889C6B71F7AD225A53CC57462F8C5"
+    },
+    {
+      "path": "en/index.md",
+      "line": 192,
+      "before": "[CONTRIBUTING.md](../CONTRIBUTING.md)",
+      "after": "[CONTRIBUTING.md](https://github.com/StarDZ-Team/DayZ-Modding-Wiki/blob/main/CONTRIBUTING.md)",
+      "sha256Before": "BCDA199EFB23A664353237DD10B273EB3F10F14AC5D844266A6680D030912718",
+      "sha256After": "A40A393FE26309381EB38A448BE1A463E2C3367665E2FFDDF7A41BEBF29650A4"
+    }
+  ],
+  "limitation": "Current integrated VitePress build and rendered-route verification remain pending; this acceptance covers the link destination and minimal source repair."
+}
