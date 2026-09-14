@@ -1,0 +1,65 @@
+{
+  "model": "Qwen/Qwen3-8B",
+  "model_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+  "translator_sha256": "e546ee83b11bfa2ac09e7f9239f290dcc3500c1e3d5a352bf5292a2c3d4be711",
+  "glossary_sha256": "fc2c1a39414cbe322e1944344e008215f03ed0d6b64e7c6e28a93ddfe4f67b96",
+  "source": "# Hello\n\nOpen the inventory to inspect the item. You must start the server before connecting.\n\nPlayerBase extends ManBase. Call GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n",
+  "started_utc": "2026-09-14T05:36:50.261498+00:00",
+  "results": [
+    {
+      "language": "pt",
+      "status": "passed",
+      "output": "# Olá {#hello}\n\nAbra o inventário para inspecionar o item. Você deve iniciar o servidor antes de se conectar.\n\nPlayerBase estende ManBase. Chame GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "de",
+      "status": "passed",
+      "output": "# Hallo {#hello}\n\nÖffnen Sie das Inventar, um das Item zu inspizieren. Sie müssen den Server vor dem Verbinden starten.\n\nPlayerBase erweitert ManBase. Rufen Sie GetGame() auf.\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "ru",
+      "status": "passed",
+      "output": "# Привет {#hello}\n\nОткрой инвентарь, чтобы осмотреть предмет. Вы должны запустить сервер перед подключением.\n\nPlayerBase расширяет ManBase. Вызовите GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "es",
+      "status": "passed",
+      "output": "# Hola {#hello}\n\nAbre el inventario para inspeccionar el artículo. Debes iniciar el servidor antes de conectar.\n\nPlayerBase extends ManBase. Llama a GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "fr",
+      "status": "passed",
+      "output": "# Bonjour {#hello}\n\nOuvrez l'inventaire pour inspecter l'objet. Vous devez démarrer le serveur avant de vous connecter.\n\nPlayerBase étends ManBase. Appelez GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "ja",
+      "status": "passed",
+      "output": "# こんにちは {#hello}\n\nインベントリを開いてアイテムを確認してください。接続する前にサーバーを起動する必要があります。\n\nPlayerBase は ManBase を拡張しています。GetGame() を呼び出してください。\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "zh-hans",
+      "status": "passed",
+      "output": "# 你好 {#hello}\n\n打开物品栏以检查物品。你必须在连接之前启动服务器。\n\nPlayerBase 继承自 ManBase。调用 GetGame()。\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "cs",
+      "status": "passed",
+      "output": "# Ahoj {#hello}\n\nOtevřete inventář, aby se mohl inspekční předmět prohlédnout. Musíte server spustit před tím, než se připojíte.\n\nPlayerBase rozšiřuje ManBase. Zavolejte GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "pl",
+      "status": "passed",
+      "output": "# Cześć {#hello}\n\nOtwórz ekwipunek, aby sprawdzić przedmiot. Musisz uruchomić serwer przed połączeniem.\n\nPlayerBase rozszerza ManBase. Wywołaj GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "hu",
+      "status": "passed",
+      "output": "# Üdvözöllek {#hello}\n\nNyisd meg az inventárt a tárgy megtekintéséhez. Először indítsd el a szervert, mielőtt csatlakoznál.\n\nPlayerBase kiterjeszti ManBase. Hívjuk meg GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    },
+    {
+      "language": "it",
+      "status": "passed",
+      "output": "# Ciao {#hello}\n\nApri l'inventario per esaminare l'oggetto. È necessario avviare il server prima di connettersi.\n\nPlayerBase estende ManBase. Chiama GetGame().\n\n```mermaid\ngraph TD\n    A[PlayerBase] --> B[EntityAI]\n```\n"
+    }
+  ]
+}

@@ -185,7 +185,7 @@ export default withMermaid(
     ],
 
     base: '/DayZ-Modding-Wiki/',
-    srcExclude: ['AGENTS.md', 'CONTRIBUTING.md', 'CLAUDE.md', 'TEMP/**'],
+    srcExclude: ['AGENTS.md', 'CONTRIBUTING.md', 'CLAUDE.md', 'TEMP/**', 'scripts/Translator/**'],
     // VitePress uses this for local-search indexing and for the page-rendering
     // pass; at 1260 pages the default of 64 keeps dozens of fully rendered pages
     // resident at once. It does NOT bound Rollup's bundling memory -- see
