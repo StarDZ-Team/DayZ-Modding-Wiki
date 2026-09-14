@@ -1,0 +1,47 @@
+{
+  "recordedAtUtc": "2026-09-14T05:25:00.5960126Z",
+  "revision": "c519ee74ed021991a23f31a16533f2ce6b47dcdb",
+  "goalStatus": "active; full EN scope remains incomplete",
+  "previousTurnClassification": "progress: council evidence changed next actions and worker settled",
+  "thisRoundClassification": "progress: source-backed EN repairs and reviewed fixture/contract integrated",
+  "commits": [
+    "bbfa203",
+    "f1bb001",
+    "5a4e9a6",
+    "326ab03",
+    "c519ee7"
+  ],
+  "orcaRun": "run_335030a972ec",
+  "workerCounts": {
+    "retained": 5,
+    "released": 56
+  },
+  "activeOrReclaimable": 0,
+  "userStagedPaths": [
+    ".agents/skills/speckit-analyze/SKILL.md",
+    ".agents/skills/speckit-checklist/SKILL.md",
+    ".agents/skills/speckit-clarify/SKILL.md",
+    ".agents/skills/speckit-constitution/SKILL.md",
+    ".agents/skills/speckit-converge/SKILL.md",
+    ".agents/skills/speckit-implement/SKILL.md",
+    ".agents/skills/speckit-plan/SKILL.md",
+    ".agents/skills/speckit-specify/SKILL.md",
+    ".agents/skills/speckit-tasks/SKILL.md",
+    ".agents/skills/speckit-taskstoissues/SKILL.md"
+  ],
+  "verification": [
+    "105 EN files / 1282 anchors / zero dead links reported by imageset implementation after final edits.",
+    "Root read full EN diff and reopened primary/pinned excerpts, verified final hashes.",
+    "Root parsed all three repaired PBOs and matched every payload byte to current config/scripts plus receipt/log hashes.",
+    "Root verified prior reader/writer nonblank text preserved except requested public methods.",
+    "Root checked eight harness gates, duplicate-free JSON, final API signatures and consistency repairs."
+  ],
+  "runtimeThisRound": "No game/server/client launched. Official Addon Builder and BankRev executed only for fixture packaging.",
+  "next": [
+    "Implement persistence harness and per-case/run/phase diagnostics using accepted persistence-harness-spec; final source review before no-mod control and three compile/load smokes.",
+    "Perform genuine 13-process valid/migration/non-default/fault/control matrix with self-exit and independent storage; 65 countdown minutes plus overhead is planning, not measured completion.",
+    "Complete GUI native resource creation/client render/Workbench tests; XML placeholder must not be brute-forced.",
+    "Continue all remaining page/topic/corpus coverage, client/server distribution, PBO boundary, RPC/security/CE/admin/tutorial/performance requirements.",
+    "Refresh generated docs and graph from final accepted content and verify integrated build/rendered routes."
+  ]
+}

@@ -2,6 +2,17 @@
 
 This is coordinator planning, not council approval or a narrower replacement goal. Consult [ACCEPTANCE.md](ACCEPTANCE.md) and the complete [coverage map](coverage-map.md).
 
+## Reviewed persistence fixture and imageset delivery — 2026-09-14 05:24 UTC
+
+This checkpoint supersedes the earlier dispatch and pending-scaffold statements below. See continuation-20260914-persistence-gui-closeout.json for fresh lifecycle and integration evidence; the complete coverage map and acceptance criteria remain binding.
+
+- 5a4e9a6 applies the four-page imageset corrections after independent source council, author repair and root final diff/source/hash review. The unsupported XML tutorial and loader/performance/format guarantees were removed or qualified. Custom brace teaching examples remain explicitly uncompiled/unrendered. Sources and council are preserved in f1bb001.
+- 326ab03 integrates the nine-file entity persistence scaffold and full repair history. All three canonical PBOs were packaged and independently parsed; payloads equal current source. Public v1/v2/matrix methods are present. This is archive/scaffold acceptance, not Enforce or runtime acceptance.
+- c519ee7 records the harness research, independent council and corrected implementation contract. Use persistence-harness-spec.md/json plus persistence-harness-closeout.json. Earlier reports contain superseded errors: count 13 processes including the fixture-free no-mod control; v2 has no omission API; a valid four-block PID may contain zero blocks; seed-root absence is a prelaunch check; bad reads require both valid controls while observing faulty presence; diagnostic comparison normalizes only recorded run-variable prefixes.
+- Next: implement the mission/controller and per-case, phase/run-correlated SAVE/LOAD diagnostics. The current fixture alone does not implement that telemetry or operator protocol. Review final source before baseline/three compilation smokes; only then run the genuine same-v1, migration, true-resave/reload and repeated bad/control matrix.
+- Do not repeat the completed multi-PBO confirmation. Remaining multi-PBO client/dependency/signature/distribution and actual size-boundary coverage are still required.
+- Current full build, rendered routes, GUI runtime, generated-doc and graph refresh remain pending. No game/server/client was launched in this round. Other locales and the ten user-staged skill files were preserved.
+
 ## Persistence repair and GUI follow-up wave — 2026-09-14
 
 This operational update supersedes older completion/ownership statements below. It does not supersede the full coverage map or acceptance requirements.
