@@ -1,0 +1,520 @@
+{
+  "schemaVersion": 1,
+  "artifact": "pbo-boundary-plan",
+  "status": "design_only_runtime_pending",
+  "designedUtcDate": "2026-09-14",
+  "repositoryRevision": "99c011b4d3ded81f4b45c5f30f326de7e92075b3",
+  "scope": {
+    "ownedFutureRoot": "TEMP/pbo-boundary-plan/runtime/<run-id>",
+    "englishOrLocaleEdits": false,
+    "largeFilesCreated": false,
+    "toolsOrGamesLaunched": false,
+    "commitsCreated": false,
+    "runtimeResult": "pending",
+    "claimBoundary": "Results apply only to exact retained bytes and recorded tool/game builds; finite success is not unlimited support."
+  },
+  "constants": {
+    "B31": 2147483648,
+    "B32": 4294967296,
+    "margin": 1048576,
+    "memberFieldMaximum": 4294967295,
+    "fieldEncoding": "unsigned little-endian 32-bit OriginalSize and DataSize per member",
+    "totalArchiveField": "none in the reviewed reverse-engineered layout",
+    "historicalOffsetField": "reserved/normally zero; not used to locate the contiguous member payloads"
+  },
+  "hypotheses": [
+    {
+      "id": "H-SIGNED-MEMBER",
+      "distinguishingCases": ["sum-i31-at", "member-i31-at"],
+      "interpretation": "Same filler sum and sentinel beyond B31; success of the split case with failure of the single case supports a per-member signed-length defect in the failing stage."
+    },
+    {
+      "id": "H-CUMULATIVE-I31",
+      "distinguishingCases": ["member-i31-minus", "sum-i31-at"],
+      "interpretation": "Failure only after the physical sentinel crosses B31 supports a cumulative/archive-position boundary in the failing stage."
+    },
+    {
+      "id": "H-CUMULATIVE-U32",
+      "distinguishingCases": ["sum-u32-minus", "sum-u32-at"],
+      "interpretation": "All member fields remain far below B31; only cumulative archive position crosses B32."
+    },
+    {
+      "id": "H-UNSIGNED-MEMBER-REPRESENTABILITY",
+      "distinguishingCases": ["member-u32-max", "member-u32-plus1"],
+      "interpretation": "B32-1 is representable; B32 is not. The plus-one case is tool-only and must not be misreported as an engine limit."
+    }
+  ],
+  "fixture": {
+    "layout": [
+      "config.cpp",
+      "payload/aa_filler_NN.txt",
+      "payload/zz_sentinel_<case>.txt"
+    ],
+    "prefix": "PBOBoundary\\<case>",
+    "config": "Unique dependency-free CfgPatches class per case; parser must prove config.cpp payload precedes fillers.",
+    "sentinelTemplate": "PBOBOUNDARY|schema=1|case=<case>|nonce=<run-id>|expected-path=PBOBoundary/<case>/payload/zz_sentinel_<case>.txt",
+    "sentinelEncoding": "ASCII, no BOM, no trailing newline",
+    "payloadGenerator": {
+      "sparse": false,
+      "compressedFilesystemAttribute": false,
+      "canonicalBlockBytes": 1048576,
+      "canonicalBlockAlgorithm": "Concatenate SHA-256(UTF-8('PBOBOUNDARY/v1/block/') || uint64-le(counter)) for counter 0..32767.",
+      "fileAlgorithm": "Repeat the canonical block and write its leading remainder to exact length using bounded buffers.",
+      "verification": [
+        "hash while generating",
+        "close and re-hash",
+        "require exact logical length",
+        "reject SparseFile or Compressed attributes",
+        "record physical-allocation check"
+      ],
+      "reason": "Deterministic and hashable; avoids a deliberately short repeating period within the documented 8 KiB LZSS window, while the parser still detects any compression."
+    },
+    "compressionGate": {
+      "requiredPackingMethod": 0,
+      "requiredRelation": "OriginalSize == DataSize == source length",
+      "unexpectedOutcome": "not_comparable_compression_changed",
+      "scopeLimit": "No compressed-member boundary claim is made."
+    }
+  },
+  "cases": [
+    {
+      "order": 0,
+      "id": "small-control",
+      "fillerSizes": [1048576],
+      "sentinelOffsetRule": "valid data-block position",
+      "engineEligibleIfValid": true,
+      "instanceId": 790,
+      "ports": [26300, 26301, 26302]
+    },
+    {
+      "order": 1,
+      "id": "member-i31-minus",
+      "fillerSizes": [2146435072],
+      "arithmetic": "B31 - margin",
+      "sentinelOffsetRule": "H + C + 2146435072 < B31; require H + C < margin",
+      "engineEligibleIfValid": true,
+      "instanceId": 791,
+      "ports": [26310, 26311, 26312]
+    },
+    {
+      "order": 2,
+      "id": "sum-i31-at",
+      "fillerSizes": [1073741824, 1073741824],
+      "arithmetic": "sum == B31; each member < B31",
+      "sentinelOffsetRule": "H + C + B31 > B31",
+      "engineEligibleIfValid": true,
+      "instanceId": 792,
+      "ports": [26320, 26321, 26322]
+    },
+    {
+      "order": 3,
+      "id": "member-i31-at",
+      "fillerSizes": [2147483648],
+      "arithmetic": "one member == B31; same filler sum as sum-i31-at",
+      "sentinelOffsetRule": "H + C + B31 > B31",
+      "engineEligibleIfValid": true,
+      "instanceId": 793,
+      "ports": [26330, 26331, 26332]
+    },
+    {
+      "order": 4,
+      "id": "sum-u32-minus",
+      "fillerSizes": [1073479680, 1073479680, 1073479680, 1073479680],
+      "arithmetic": "sum == B32 - margin; each member < B31",
+      "sentinelOffsetRule": "H + C + 4293918720 < B32; require H + C < margin",
+      "engineEligibleIfValid": true,
+      "instanceId": 794,
+      "ports": [26340, 26341, 26342]
+    },
+    {
+      "order": 5,
+      "id": "sum-u32-at",
+      "fillerSizes": [1073741824, 1073741824, 1073741824, 1073741824],
+      "arithmetic": "sum == B32; each member < B31",
+      "sentinelOffsetRule": "H + C + B32 > B32",
+      "engineEligibleIfValid": true,
+      "instanceId": 795,
+      "ports": [26350, 26351, 26352]
+    },
+    {
+      "order": 6,
+      "id": "member-u32-max",
+      "fillerSizes": [4294967295],
+      "arithmetic": "one member == B32 - 1",
+      "sentinelOffsetRule": "H + C + B32 - 1 > B32",
+      "engineEligibleIfValid": true,
+      "instanceId": 796,
+      "ports": [26360, 26361, 26362]
+    },
+    {
+      "order": 7,
+      "id": "member-u32-plus1",
+      "fillerSizes": [4294967296],
+      "arithmetic": "one member == B32 and cannot be represented in a u32 member-size field",
+      "sentinelOffsetRule": "no valid header value exists",
+      "engineEligibleIfValid": false,
+      "toolOnly": true
+    }
+  ],
+  "packaging": {
+    "referenceWorkflow": {
+      "path": "examples/en/multi-pbo/build.ps1",
+      "sha256": "38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956"
+    },
+    "addonBuilderArgvTemplate": [
+      "<sourceRoot>",
+      "<emptyBuildDir>",
+      "-packonly",
+      "-clear",
+      "-temp=<caseSpecificToolTemp>",
+      "-prefix=PBOBoundary\\<case>",
+      "-toolsDirectory=D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools"
+    ],
+    "requirements": [
+      "case-specific empty source/temp/output roots",
+      "record exact argv and UTC times",
+      "record exit and stdout/stderr",
+      "reject FATAL/ERROR text even with exit 0",
+      "require exactly one newly created non-empty PBO",
+      "discover actual output name and final-name once before hashing"
+    ],
+    "manualConstructionGate": "Only after Addon Builder failure is researched; must reproduce the small official-tool control structure and pass both parsers plus BankRev. It remains labelled non-official output."
+  },
+  "binaryValidation": {
+    "formula": "sentinelOffset = dataStart(H) + stored config bytes(C) + sum(prior member DataSize)",
+    "parserA": "Purpose-built PowerShell/.NET parser using UInt32 fields, checked UInt64 accumulation, 64-bit FileStream seeks, streaming hashes, exact footer/EOF checks.",
+    "parserB": "Independent Python parser using struct.unpack('<5I'), Python integer accumulation, bounded seek/read, and streaming hashes.",
+    "bankRev": ["-properties", "-logFull"],
+    "requiredAgreement": [
+      "dataStart",
+      "member order",
+      "packing method",
+      "OriginalSize and DataSize",
+      "physical start and end offsets",
+      "sentinel bytes and SHA-256",
+      "data end and footer start",
+      "archive length"
+    ],
+    "sourceIdentity": "Every archived filler range is stream-hashed and matched to the closed source before source deletion.",
+    "launchGate": "No engine launch unless both parsers prove exact sentinel bytes and required physical offset."
+  },
+  "stageOutcomes": {
+    "addonBuilder": ["accepted_exact", "rejected_nonzero", "rejected_error_text", "no_output", "wrong_output_count", "size_wrap_or_truncation", "resource_abort"],
+    "binaryParsing": ["valid_exact", "invalid_header", "invalid_member_range", "unexpected_compression", "footer_or_eof_mismatch", "sentinel_offset_wrong", "payload_hash_mismatch"],
+    "bankRev": ["listed_exact", "rejected_or_crashed", "wrong_members_or_prefix", "timeout"],
+    "dsSignFile": ["signed_pbo_unchanged", "rejected_or_crashed", "timeout"],
+    "dsCheckSignatures": ["one_exact_ok", "non_ok_stdout", "timeout"],
+    "runtime": ["read_exact", "mounted_but_read_failed", "addon_missing_or_skipped", "compile_failed", "process_crash", "timeout_no_marker", "resource_abort"]
+  },
+  "runtime": {
+    "executable": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64.exe",
+      "productVersion": "1.29.0.163709",
+      "bytes": 20245560,
+      "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"
+    },
+    "secondsPerCase": 45,
+    "verifySignatures": 0,
+    "recipe": {
+      "path": "TEMP/multi-pbo-confirmation/run-case.ps1",
+      "sha256": "FBAC12CD27A18E254D72CB4F6C9AC5FCF34775BF24D8A3BBD567D980040C4E55",
+      "missionFileCount": 43,
+      "missionManifestSha256": "1260F07AC011D4CFDA66BF0915D8475ECDD072776CCD3B2BE8A43EF4B3B7EA3E",
+      "requiredControls": [
+        "exactly one numeric instanceId",
+        "private mission containment",
+        "steamQueryPort equals game port plus one",
+        "three ports free before launch",
+        "captured-process-only cleanup and WaitForExit",
+        "ports empty after cleanup"
+      ]
+    },
+    "probe": {
+      "separateSmallPbo": true,
+      "readPrimitive": "OpenFile + ReadFile + CloseFile",
+      "fileExistAloneAccepted": false,
+      "requiredMarkers": [
+        "PBOBOUNDARY:RUNTIME:BEGIN",
+        "PBOBOUNDARY:RUNTIME:CASE=<case>",
+        "PBOBOUNDARY:RUNTIME:PATH=<full virtual path>",
+        "PBOBOUNDARY:RUNTIME:OPEN=true",
+        "PBOBOUNDARY:RUNTIME:READ_BYTES=<exact sentinel byte count>",
+        "PBOBOUNDARY:RUNTIME:SENTINEL=<exact sentinel text>",
+        "PBOBOUNDARY:RUNTIME:END"
+      ],
+      "success": "Complete exact marker block in both RPT and script log plus prelaunch parser proof that the sentinel begins on the required side of the boundary."
+    }
+  },
+  "environment": {
+    "observedUtc": "2026-09-14T05:39:42.7420737Z",
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "powerShell": "7.6.0",
+    "volume": {
+      "drive": "D:",
+      "fileSystem": "NTFS",
+      "health": "Healthy",
+      "sizeBytes": 1000186310656,
+      "freeBytes": 608304656384,
+      "freeGiBApprox": 566.53
+    },
+    "memory": {
+      "totalPhysicalBytes": 68137205760,
+      "totalGiBApprox": 63.46,
+      "freePhysicalBytes": 29921193984,
+      "freeGiBApprox": 27.87
+    },
+    "resourcePolicy": {
+      "ownedRootCapGiB": 40,
+      "requiredFreeDiskAtStartGiB": 64,
+      "stopBeforeNewCaseFreeDiskGiB": 48,
+      "abortRunningToolFreeDiskGiB": 40,
+      "stopBeforeNewCaseFreeMemoryGiB": 12,
+      "abortRunningToolFreeMemoryGiB": 8,
+      "abortCapturedToolPrivateBytesGiB": 16,
+      "expectedRetainedValidPbosGiBApprox": 18,
+      "sequence": "one case at a time"
+    },
+    "retention": {
+      "retain": [
+        "every parser-valid final PBO",
+        "any unexpected PBO from member-u32-plus1",
+        "small config and sentinel sources",
+        "deterministic generator and exact size recipe",
+        "source and archive member hashes",
+        "bisigns and public key",
+        "tool/runtime logs and receipts",
+        "crash artifacts"
+      ],
+      "deleteAfterVerifiedReceipt": [
+        "closed source filler files",
+        "case-specific Addon Builder temp directory",
+        "expected-unrepresentable source after tool receipt"
+      ],
+      "privateKey": "Never retain in public/release outputs; dispose only with exact owned-path cleanup receipt.",
+      "cleanupSafety": "Resolve each target; require it under the recorded run root; enumerate in cleanup.json; never delete by broad glob."
+    }
+  },
+  "trialBudget": {
+    "plannedPackagingAttempts": 8,
+    "plannedEngineLaunches": 7,
+    "maximumRetries": 2,
+    "absolutePackagingAttempts": 10,
+    "absoluteEngineLaunches": 9,
+    "retryRule": "Exact-byte rerun only after source research records a falsifiable cause and distinguishing result.",
+    "stopConditions": [
+      "small-control failure",
+      "source length or hash failure",
+      "parser invalidity or wrong sentinel placement",
+      "resource guard",
+      "process crash pending classification",
+      "paired comparison already discriminates behavior",
+      "trials cease producing distinguishing evidence"
+    ],
+    "excluded": [
+      "binary search for exact first failing byte",
+      "compression variants",
+      "alternate packers",
+      "client join or distribution",
+      "Workshop upload/download"
+    ]
+  },
+  "installedTools": [
+    {
+      "name": "AddonBuilder.exe",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/AddonBuilder.exe",
+      "bytes": 1479600,
+      "fileVersion": "1.0.240.639",
+      "sha256": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1"
+    },
+    {
+      "name": "FileBank.exe",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/FileBank.exe",
+      "bytes": 194480,
+      "fileVersion": null,
+      "sha256": "F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF"
+    },
+    {
+      "name": "BankRev.exe",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/BankRev.exe",
+      "bytes": 578480,
+      "fileVersion": "1.0.0.2",
+      "sha256": "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75"
+    },
+    {
+      "name": "DSSignFile.exe",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/DsUtils/DSSignFile.exe",
+      "bytes": 9467312,
+      "fileVersion": null,
+      "sha256": "098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78"
+    },
+    {
+      "name": "DSCheckSignatures.exe",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/DsUtils/DSCheckSignatures.exe",
+      "bytes": 9467400,
+      "fileVersion": null,
+      "sha256": "9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C"
+    }
+  ],
+  "sourceLedger": [
+    {
+      "kind": "audit checkpoint",
+      "path": ".audit/en-2026-09-13/completeness/NEXT-WAVE.md",
+      "scope": "lines 66-70 PBO boundary requirement",
+      "sha256": "02C93D546F8480BD32C9E3DA385DFDE2E45B5BD16B8B8AF6786727B2163C7FA7"
+    },
+    {
+      "kind": "accepted prior PBO audit",
+      "files": [
+        {"path": ".audit/en-2026-09-13/completeness/pbo-research.md", "sha256": "03FE483067A9259D6C0601A2F6FF9C9C7B6601201FAB6982343A8A15582D7949"},
+        {"path": ".audit/en-2026-09-13/completeness/pbo-evidence.json", "sha256": "38E257ED0D88E286C84E24828068B9F5C96E58F0F4B0D2375EA427ED6AFE1BBA"},
+        {"path": ".audit/en-2026-09-13/completeness/pbo-council.md", "sha256": "D19E6D52B353F1E61C720C15CA239557B05EA53C720ACA813F7654BF11C14A31"},
+        {"path": ".audit/en-2026-09-13/completeness/pbo-final-council.md", "sha256": "D971A5A4AD72E49AF5946556255E192ECA13CCC962572466451A47B603F75E02"},
+        {"path": ".audit/en-2026-09-13/completeness/pbo-repair-council.md", "sha256": "84880D7EB6BC7807C2B1590507220FF735C4C85EF63F302B135394C0B6244922"}
+      ],
+      "supports": "Per-member u32 fields, no total field, stage taxonomy, and unresolved controlled boundary matrix."
+    },
+    {
+      "kind": "accepted runtime recipe and council",
+      "files": [
+        {"path": ".audit/en-2026-09-13/completeness/multi-pbo-confirmation-runtime.md", "sha256": "3DA1172BB4E78D9ACB9D78BD07AACDF5FE5DFD1081632105DCD4BE70239EB745"},
+        {"path": ".audit/en-2026-09-13/completeness/multi-pbo-confirmation-runtime.json", "sha256": "5B3DC3174763F22C34017221BCD8666203CC209D4D611FDF2DC89AECF8DCA73C"},
+        {"path": ".audit/en-2026-09-13/completeness/multi-pbo-confirmation-council.json", "sha256": "3B3062D9E3F4A530B1C9322C793EC2E61030A580AA2E568338882FD706763BD4"}
+      ],
+      "supports": "Known-proven instanceId/port/private-mission cleanup recipe and exact ReadFile marker evidence on DayZDiag 1.29.0.163709.",
+      "limitation": "No size behavior, client, enforcement, or distribution proof."
+    },
+    {
+      "kind": "fallible local documentation",
+      "path": "D:/StarDZ/docs/REFERENCIA_LIMITES_E_MUROS.md",
+      "relevantLines": "224-231",
+      "sha256": "726033DB527944DF57EED0767FB2F0329AB65438B3D48E6247E19D98DAE18EA0",
+      "claim": "Reports >2 GB crash and >4 GB skip.",
+      "limitation": "Failing PBO, RPT, minidump, and immutable version receipt were not found."
+    },
+    {
+      "kind": "fallible local documentation",
+      "path": "D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md",
+      "relevantLines": ["793-839", "1631-1671", "1910-1979"],
+      "sha256": "2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9",
+      "claim": "Infers 4 GiB format and signed 2 GiB runtime boundaries.",
+      "limitation": "Per-member field width does not prove total size; historical artifacts are unavailable."
+    },
+    {
+      "kind": "beta packaging code",
+      "path": "D:/StarDZ/dev.py",
+      "relevantLines": ["35-45", "238-267", "384-403", "831-881", "1211-1258"],
+      "sha256": "E6862C2AB958B734B5A95B6FD3A0BA6B9B3AA066069188804A4BB2A0C23CC64F",
+      "supports": "Current conservative 1 GiB split target, Addon Builder output discovery, and historical claims.",
+      "limitation": "Project code and comments are not native-engine proof."
+    },
+    {
+      "kind": "current beta output metadata",
+      "paths": [
+        {"path": "D:/StarDZ/temp_pbo/@StarDZ_Weapons/addons/StarDZ_Weapons_Rifles.pbo", "bytes": 1166952349},
+        {"path": "D:/StarDZ/temp_pbo/@StarDZ_Weapons/addons/StarDZ_Weapons_Rifles2.pbo", "bytes": 998134225},
+        {"path": "D:/StarDZ/temp_pbo/@StarDZ_Weapons/addons/StarDZ_Weapons_Snipers.pbo", "bytes": 1471380601}
+      ],
+      "limitation": "Observed finite artifacts; not boundary fixtures."
+    },
+    {
+      "kind": "extracted metadata",
+      "files": [
+        {"path": "D:/DayZ Projects/scripts.txt", "sha256": "E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F", "content": "prefix=scripts\\; product=dayz; version=124588"},
+        {"path": "D:/DayZ Projects/scripts/3_game/global/pboapi.c", "sha256": "9C4B5770D5AA9605DE2E0324ED056BA52B4E5A2BE17BCDFF01812674FA146A61", "symbol": "PBOAPI.GetPBOVersion"}
+      ],
+      "limitation": "No size declaration; extraction version is not equated with runtime build."
+    },
+    {
+      "kind": "local parser implementation",
+      "path": "D:/StarDZ/tools/hud_previewer/vanilla_pbo_reader.py",
+      "sha256": "2815861C609E6AC3C0292237DA52C1968039C57852A46FB2F7C2418960E711FC",
+      "supports": "Unsigned <5I headers and Python-integer cumulative member offsets.",
+      "limitation": "Local implementation; its whole-member read helper must not be used for fillers."
+    },
+    {
+      "kind": "official installed-build receipt",
+      "files": [
+        {"path": "D:/SteamLibrary/steamapps/appmanifest_2909700.acf", "appId": 2909700, "name": "DayZ Experimental Tools", "buildId": "23909709", "sha256": "CC36D68C6020C38E60BC928DAE3B006FD6F3E8700EB9ED846D0C58539AC80160"},
+        {"path": "D:/SteamLibrary/steamapps/appmanifest_221100.acf", "appId": 221100, "name": "DayZ", "buildId": "24689949", "sha256": "C3C28D5B30D860C76827C461CC134192547754BBCD1095F9E78BC800F1AAFCF0"}
+      ]
+    },
+    {
+      "kind": "Bohemia community wiki reverse-engineered format",
+      "url": "https://community.bistudio.com/wiki/PBO",
+      "accessed": "2026-09-14",
+      "supports": "Unofficial/undocumented status; per-member header fields; contiguous data; reserved Offset; Cprs and 8 KiB-window LZSS description; optional 0+20-byte Arma/DayZ footer.",
+      "accessLimit": "Direct open returned HTTP 403; current indexed search content was inspected. No content hash was available."
+    },
+    {
+      "kind": "official cross-game tool documentation",
+      "url": "https://community.bistudio.com/wiki/Addon_Builder?oldid=341605",
+      "accessed": "2026-09-14",
+      "supports": "-packonly, -clear, -temp, -prefix, -sign, -include, and dependency-tool path options; no numeric PBO limit stated.",
+      "scopeLimit": "Arma 3 official-tool page applied to the installed DayZ Experimental Tools binary only through direct version/hash inspection and the prior accepted tool workflow.",
+      "accessLimit": "Direct open returned HTTP 403; indexed content was inspected."
+    },
+    {
+      "kind": "official DayZ documentation",
+      "url": "https://community.bistudio.com/wiki/DayZ:Modding_Basics",
+      "accessed": "2026-09-14",
+      "supports": "DayZ Tools/Add-on Builder packing and DS utils workflow.",
+      "accessLimit": "Indexed content inspected; no numeric size limit found."
+    },
+    {
+      "kind": "third-party parser/writer source",
+      "repository": "https://github.com/KoffeinFlummi/armake2.git",
+      "commit": "3cc3362101900ff41504db3e780dd1625634cf94",
+      "localPath": "C:/Users/Leonardo Mello/AppData/Local/Temp/pbo-research-armake2-20260913",
+      "file": "src/pbo.rs",
+      "relevantLines": ["18-25", "52-70", "97-142", "221-268"],
+      "sha256": "BEC43AC4560626FE4B154922938D0A2BDEDB0561D68118AE822AB9C030387549",
+      "supports": "u32 member fields, sequential data, whole-member read allocations, and usize-to-u32 writer cast.",
+      "limitation": "No armake2 checkout was found under the named wiki-audit-20260911 root; the exact existing checkout above was inspected. Not native proof."
+    },
+    {
+      "kind": "third-party current parser/writer source",
+      "repository": "https://github.com/BrettMayson/HEMTT.git",
+      "commit": "bf2168ce03d5bb8bd3849090e9b2996402624b1c",
+      "accessed": "2026-09-14",
+      "files": [
+        {"path": "libs/pbo/src/model/header.rs", "gitBlob": "eb7f48faa3767b26d77358964f360561c9b58864", "sha256": "D3D828D2B2881AB6CBBA5F8628B586E2212119CB237E808145FE7C9020176B66", "relevantLines": "9-118"},
+        {"path": "libs/pbo/src/file.rs", "gitBlob": "f95c9f69d7127e2ba9005eca3b3c66f0428eb3c1", "sha256": "77E5D829442A45F59B3E5A657902A09B1AABD16CF178114FAB30F76337FF1E2F", "relevantLines": "9-57"},
+        {"path": "libs/pbo/src/read.rs", "gitBlob": "e2a31630e317383aa4fb5340027d163aad93b217", "sha256": "9A8C1FA3382D45ADC4E220B0097B740A5A4C01437E3AB68FF0657A340221DF53", "relevantLines": "18-162"},
+        {"path": "libs/pbo/src/write.rs", "gitBlob": "c76974bfaffef25f6df615f5393a38eba91e898f", "sha256": "CBCB0355715DCC3330D7AA343F30478247447FF14D683F2AF7A4D20557B945F2", "relevantLines": ["33-46", "132-200"]}
+      ],
+      "supports": "u32 members, u64 cumulative offsets, explicit rejection above u32::MAX, and whole-member write buffering.",
+      "limitation": "Arma 3 third-party implementation; not DayZ native proof and not executed."
+    },
+    {
+      "kind": "third-party signed-length implementation example",
+      "repository": "https://github.com/KoffeinFlummi/armake.git",
+      "commit": "e4940fae0d28c4dd07d9d2c591f8e056545fee3f",
+      "accessed": "2026-09-14",
+      "files": [
+        {"path": "src/build.c", "gitBlob": "e413c6083f2c1aa165c2c3d82803f3c4cb11fef8", "sha256": "C68E3D02B59F62DBC18430BABF40C0122120A7763A3C551342410712ABB39012", "relevantLines": "85-180"},
+        {"path": "src/unpack.c", "gitBlob": "3e32b54db53febbe6a05141d9eaee7b132e81fa0", "sha256": "71D41F2693F1FF564768D816966D10FA3F7997EFF22C887F4F12DDC0F05EE505", "relevantLines": ["59-160", "213-303"]}
+      ],
+      "supports": "Writer assigns ftell to u32 header fields and signed int datasize; reader uses long positions and fseek.",
+      "limitation": "Third-party/platform-dependent behavior; demonstrates implementation risk only."
+    },
+    {
+      "kind": "internet search disposition",
+      "accessed": "2026-09-14",
+      "queries": [
+        "DayZ PBO 2GB crash ACCESS_VIOLATION PBO size limit",
+        "DayZ AddonBuilder PBO 4GB corrupted skipping",
+        "site:feedback.bistudio.com DayZ PBO 2GB",
+        "site:forums.dayz.com PBO size limit 2GB"
+      ],
+      "result": "No authoritative, versioned DayZ or Addon Builder numeric size ceiling was found. Results were wiki copies and unrelated community corruption reports; they are not used as evidence."
+    }
+  ],
+  "accessLimitations": [
+    "Bohemia Community Wiki direct fetches returned HTTP 403; indexed current content was available but not hashable.",
+    "No retained historical 2,165,383,988-byte PBO, RPT, minidump, or immutable runtime receipt was found in the reviewed prior audit.",
+    "Proprietary Addon Builder, BankRev, DSSignFile, and DayZ reader source is unavailable; installed binary hashes and controlled outcomes are therefore required.",
+    "No native or official source reviewed defines a numeric total-PBO ceiling.",
+    "No Discord evidence was used and no community message was sent.",
+    "Workshop/distribution behavior is outside this experiment."
+  ]
+}

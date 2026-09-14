@@ -1,0 +1,144 @@
+{
+  "schema": "en-edds-workflow-council-v1",
+  "reviewed_at": "2026-09-14",
+  "role": "independent_council",
+  "inputs": {
+    "markdown": {
+      "path": ".audit/en-2026-09-13/completeness/edds-workflow-research.md",
+      "sha256": "BF36CB2AEDC876184FA22DD17ACC5F06494F6198F3F979383CC2DA9F19D4C3AD"
+    },
+    "json": {
+      "path": ".audit/en-2026-09-13/completeness/edds-workflow-research.json",
+      "sha256": "60E5B03A5F8F7D5268D50B96F3625DC4FBB0C8715CB0BDA51765A0598FCD7B2E"
+    },
+    "reported_revision": "7dd37924983a71a7835c5a926b9cd7b284a84a3d",
+    "review_revision": "99c011b4d3ded81f4b45c5f30f326de7e92075b3"
+  },
+  "scope": {
+    "sources_reopened": true,
+    "tool_conversion_pack_build_or_runtime_launched": false,
+    "official_web": "Search-index text only; direct Bohemia page opens returned HTTP 403. Reforger material is sibling-product evidence."
+  },
+  "overall_disposition": "returned_with_repairs",
+  "decisions": [
+    {
+      "id": "EW-01",
+      "disposition": "accepted_bounded",
+      "decision": "Installed DayZ Workbench is the strongest baseline conversion hypothesis; its binary strings, extracted metadata, and pinned public source/output/meta triples corroborate it. Menu behavior, defaults, emitted bytes, and success remain unobserved."
+    },
+    {
+      "id": "EW-02",
+      "disposition": "accepted_with_repair",
+      "decision": "Never infer or transplant a GUID. Reforger supports copied {GUID}path identities, but DayZ Copy Resource Name(s) and GUID necessity are unproven; pinned Dabs Framework uses a plain EDDS path. Define a plain-path fallback for the same single attempt."
+    },
+    {
+      "id": "EW-03",
+      "disposition": "accepted_with_repair",
+      "decision": "Generic DDS samples did not reproduce the observed EDDS ENF1 and mip-table structure, so rename-only is not an evidence-backed recipe. Reject claims of native runtime rejection because none was tested, and inspect the table at 0x80 for legacy headers or 0x94 for DX10 headers."
+    },
+    {
+      "id": "EW-04",
+      "disposition": "accepted",
+      "decision": "Reopened ImageToPAA strings, BinMake rules, TexConvert configuration, and indexed official text establish PAA/PAC support, not an identified EDDS command."
+    },
+    {
+      "id": "EW-05",
+      "disposition": "accepted",
+      "decision": "The third-party writer remains a later candidate: inspected tests establish same-library parsing/round-trip behavior, not DayZ rendering, and the packer emits no Workbench metadata or allocated GUID."
+    }
+  ],
+  "unresolved": [
+    "Whether .edds.meta is runtime-required; include generated metadata only as a baseline control.",
+    "Whether plain virtual EDDS paths render in DayZ; public implementations are corroboration, not this council's runtime proof.",
+    "Whether DayZ Workbench exposes Copy Resource Name(s), its defaults, and its generated identity/metadata behavior.",
+    "Workbench conversion and client rendering for the proposed original-art fixture."
+  ],
+  "implementation_gate": {
+    "state": "not_ready_to_execute",
+    "blocking_prerequisites": [
+      "Mount and record the exact project/source root exposing P:/EDDSProbe; P: is absent now. Hash the selected .gproj.",
+      "Replace generic-DDS rejection language with structural non-equivalence and unresolved runtime behavior; make the table offset header-dependent.",
+      "If DayZ offers an exact EDDS resource name, use it; otherwise use EDDSProbe/GUI/imagesets/probe_ui.edds as the predeclared plain-path hypothesis without inventing a GUID.",
+      "Provide one standalone EDDSProbe client PBO: exact prefix/source layout, CfgPatches/CfgMods/imageset registration, Game/World/Mission dependencies, justified requiredAddons, missionScriptModule path, MissionGameplay.OnInit hook after super, null guards, and unique create/load log tokens.",
+      "Set widget color 1 1 1 1 with blend and source alpha, render the half-alpha cyan fixture across known contrasting backgrounds, and retain lossless pixel evidence plus the opaque magenta control. Do not infer exact alpha from human inspection alone."
+    ],
+    "stopping_condition": "One default Workbench import and one baseline client run, with at most one rerun for an objectively identified packaging/reference defect. No generic-DDS, metadata, GUID, compression, or third-party variation before the baseline passes.",
+    "after_repair": "Evidence is sufficient to implement the bounded experiment, not to claim it passed."
+  },
+  "evidence_receipt": {
+    "installed_workbench": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/Workbench/workbenchApp.exe",
+      "sha256": "B61D240394845EF9EAB3B5F459D487B50DBF3C42713FB9E9E50CE945F5A894C6",
+      "version": "1.29.163.401",
+      "observed_strings": [
+        "Register resource and import",
+        "Reimport",
+        "Resource manager",
+        "PNGResourceClass",
+        "TGAResourceClass",
+        "DDSResourceClass"
+      ],
+      "not_found_in_ascii_scan": "Copy Resource Name(s)"
+    },
+    "project": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/Workbench/dayz.gproj",
+      "sha256": "269DAAD629D0007176B4B81ADFB52740A23A11955C24C414B82727F15EE41928",
+      "note": "Maps Workdrive P:/ but contains local StarDZ entries; P: and P:/EDDSProbe were absent."
+    },
+    "edds_census": {
+      "root": "D:/DayZ Projects",
+      "edds_total": 454,
+      "dds_and_enf1": 454,
+      "legacy_table_0x80": 433,
+      "dx10_table_0x94": 21,
+      "metadata_total": 437,
+      "note": "Extraction records provenance but does not prove runtime metadata requirements."
+    },
+    "identity_counterexample": {
+      "metadata": "D:/DayZ Projects/gui/imagesets/bleedingdrops.edds.meta",
+      "metadata_sha256": "70615CD8100AA1C2D823A67DA4B79DFC0E6AEDC5885685872F1BB5F3847925DD",
+      "imageset_sha256": "D153C931D28560C50D5DE645D59E6AEAC6F88B2EBC4CB4FCA1E98A75E5CC5A19",
+      "note": "Metadata names source GUID FEAD63B1347867F9; imageset references EDDS GUID 35363C01F72D2EBE."
+    },
+    "plain_path_example": {
+      "repository": "https://github.com/InclementDab/DayZ-Dabs-Framework.git",
+      "commit": "fd859fd891f45a4a9c9089597db0c621ef3a9de5",
+      "imageset": "DabsFramework/GUI/icons/brands.imageset:7",
+      "imageset_sha256": "1DE25A2BA41771632814F126C2C326B5D8A2F1DF74BEA2344CF56120081D101D",
+      "config": "DabsFramework/Scripts/config.cpp:27-37,83-88",
+      "config_sha256": "74E0CC3791ADD0F6F7E650162B3BD96D2F8188A9F130209965AAE00E26D372D1"
+    },
+    "client_api": {
+      "widgets": "D:/DayZ Projects/scripts/1_core/proto/enwidgets.c:57-84,176-182,247-267",
+      "widgets_sha256": "6BB20A54119A25BAB3933607BF8B703C3123853B36BF2E4141AEAC83CF215C9E",
+      "mission": "D:/DayZ Projects/scripts/5_mission/mission/missiongameplay.c",
+      "mission_sha256": "E0A2157DBBF1C795F8228745BEF493218434A1B5125912F6EDFE032BFE457DB2"
+    },
+    "tool_boundary": {
+      "image_to_paa_sha256": "0B786037FC708931BCC85088BA69648BCF57463BCF3B1D3A21A35F29B9C2344A",
+      "binmake_rules_sha256": "916287C273749B5FA4F682005847D0425187BB60EE791B2E79B6D5FCFB595DD6",
+      "texconvert_sha256": "066202E8D7F7D30449FF192AD338AE42C04947515D93DBAB41D2D82004C8753E",
+      "workbench_api_sha256": "24931BEBAC51AFD59DC35216AE98FC6AD75C2271909A79936872DD14E41DD6A36"
+    },
+    "third_party": [
+      {
+        "repository": "https://github.com/WoozyMasta/edds.git",
+        "commit": "55a8e8620d444edf81d8e5aaf0bf671aa0bde20d"
+      },
+      {
+        "repository": "https://github.com/WoozyMasta/imageset-packer.git",
+        "commit": "3e70e3df55e7a142112298dfc6a61a90ee6b346a"
+      }
+    ],
+    "hash_audit": {
+      "research_source_entries_checked": 24,
+      "third_party_entries_checked": 8,
+      "mismatches": 0
+    }
+  },
+  "verification": {
+    "json_parsed": true,
+    "markdown_diff_check": "pass",
+    "json_diff_check": "pass"
+  }
+}

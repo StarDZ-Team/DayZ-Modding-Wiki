@@ -1,0 +1,156 @@
+{
+  "schema": "en-edds-workflow-research-v1",
+  "observed_at": "2026-09-14",
+  "timezone": "America/Sao_Paulo",
+  "wiki_revision": "7dd37924983a71a7835c5a926b9cd7b284a84a3d",
+  "execution": {
+    "en_or_locale_edited": false,
+    "conversion_run": false,
+    "workbench_or_game_launched": false,
+    "pack_or_build_run": false,
+    "install_run": false,
+    "commit_created": false,
+    "read_only_help_run": [
+      "ImageToPAA.exe -?",
+      "ImageToPAA.exe --help",
+      "ImageToPAA.exe -help"
+    ]
+  },
+  "outcome": {
+    "status": "implementable_experiment_not_runtime_verified",
+    "primary_hypothesis": "Place PNG/TGA source inside the DayZ Workbench source tree; use Resource Browser > Register resource and import; retain the generated EDDS and metadata; copy the resource name from the EDDS; use that whole reference in the imageset.",
+    "no_supported_cli_found": true,
+    "runtime_proven": false
+  },
+  "installed_tool": {
+    "product": "DayZ Experimental Tools",
+    "steam_app_id": 2909700,
+    "build_id": 23909709,
+    "depot_manifest": "8240607442694517654",
+    "workbench": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/Workbench/workbenchApp.exe",
+      "file_version_raw": "1.29.163.401",
+      "sha256": "B61D240394845EF9EAB3B5F459D487B50DBF3C42713FB9E9E50CE945F5A894C6",
+      "strings_observed": ["Register resource and import", "Reimport", "Resource manager", "PNGResourceClass", "TGAResourceClass", "DDSResourceClass"]
+    },
+    "image_to_paa": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/ImageToPAA/ImageToPAA.exe",
+      "file_version": "1.0.0.5",
+      "sha256": "0B786037FC708931BCC85088BA69648BCF57463BCF3B1D3A21A35F29B9C2344A",
+      "help_program_name": "pal2pace",
+      "help_options": ["-size=<n>"],
+      "edds_output_documented": false
+    }
+  },
+  "findings": [
+    {"id":"EW-01","verdict":"accepted_bounded","claim":"Installed DayZ Workbench is the primary source-art to EDDS conversion hypothesis via Register resource and import.","boundary":"Action text and artifacts are observed; current-build GUI execution was prohibited and not reproduced."},
+    {"id":"EW-02","verdict":"accepted_bounded","claim":"Copy the generated EDDS resource name and preserve the whole GUID-plus-virtual-path value.","boundary":"Official UI documentation is for Arma Reforger; DayZ action remains to be observed."},
+    {"id":"EW-03","verdict":"accepted","claim":"Reviewed EDDS is extended DDS with ENF1 and COPY/LZ4 mip blocks, not a renamed generic DDS."},
+    {"id":"EW-04","verdict":"rejected_unsupported","claim":"ImageToPAA, TexView, or Pal2PacE provides an established EDDS creation recipe.","reason":"Installed help/rules and official ImageToPAA outputs establish PAA/PAC, not EDDS."},
+    {"id":"EW-05","verdict":"candidate_only","claim":"WoozyMasta EDDS/imageset writer matches the observed container structure.","boundary":"No inspected DayZ client render receipt; no metadata or GUID output."}
+  ],
+  "extracted_metadata_census": {
+    "total": 437,
+    "groups": [
+      {"resource_class":"TGAResourceClass","source_extension":".tga","count":316},
+      {"resource_class":"DDSResourceClass","source_extension":".dds","count":96},
+      {"resource_class":"PNGResourceClass","source_extension":".png","count":24},
+      {"resource_class":"PNGResourceClass","source_extension":".tga","count":1,"note":"anomalous recorded pair"}
+    ],
+    "gui_meta_count": 197,
+    "gui_source_siblings_present": 0
+  },
+  "guid_counterexample": {
+    "imageset": "D:/DayZ Projects/gui/imagesets/bleedingdrops.imageset",
+    "imageset_reference": "{35363C01F72D2EBE}Gui/imagesets/BleedingDrops.edds",
+    "meta": "D:/DayZ Projects/gui/imagesets/bleedingdrops.edds.meta",
+    "meta_name": "{FEAD63B1347867F9}Gui/imagesets/BleedingDrops.png",
+    "conclusion": "Do not derive or copy an imageset EDDS GUID from metadata Name without selecting/copying the actual output resource."
+  },
+  "pinned_public_mods": [
+    {"repo":"https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git","commit":"dc22e420df3b54e821055f9764da1e48f4a31e71","opened":["GUI/Textures/vpp_icons.tga","GUI/Textures/vpp_icons.edds","GUI/Textures/vpp_icons.edds.meta","GUI/Textures/vpp_icons.imageset","GUI/Styles/DesignSystem.md:233-234"],"boundary":"DesignSystem requests reconversion but names no converter; referenced tools/build_ui_atlas.py is absent."},
+    {"repo":"https://github.com/salutesh/DayZ-Expansion-Scripts.git","commit":"6dacd00f6d943ebbd99e0cf1baad93f470d96419","opened":["DayZExpansion/Core/Scripts/config.cpp:12-56","DayZExpansion/Core/GUI/imagesets/expansion_gui.imageset:1-26","DayZExpansion/GUI/layouts/expansion_loading.layout:48-75"]},
+    {"repo":"https://github.com/InclementDab/DayZ-Editor.git","commit":"992e6b29b42b5d8e609632b59771335a23d205eb","opened":["DayZEditor/Scripts/config.cpp:10-37","DayZEditor/GUI/imagesets/dayz_editor_gui.imageset","DayZEditor/GUI/imagesets/dayz_editor_gui.edds","DayZEditor/GUI/imagesets/dayz_editor_gui.edds.meta","Sauce/ImageSets/dayz_editor_gui.tga"]},
+    {"repo":"https://github.com/Arkensor/DayZ-CommunityFramework.git","commit":"0763e7e7548c9a0bed6626afff835de80693ebf3","opened":["JM/CF/GUI/textures/cf_icon.edds","JM/CF/GUI/textures/cf_icon.edds.meta","JM/CF/Workbench/dayz.gproj:14-28"]}
+  ],
+  "third_party": [
+    {
+      "repo":"https://github.com/WoozyMasta/edds.git",
+      "commit":"55a8e8620d444edf81d8e5aaf0bf671aa0bde20d",
+      "tag":"v0.4.0",
+      "inspected":[
+        {"path":"format.go","sha256":"89EB5486E82D561DDDD0B12BB0E10142633F4321F6E2E447DF96324671553D77"},
+        {"path":"write.go","sha256":"41399AA0EA366F3E01CF5AB25B30C7851C6D97D1656489A39258FEBF38530284"},
+        {"path":"edds_test.go","sha256":"5EAE13D8B064579FC1F2E716A1301841F28E55C35CFFA32614D1762640E425D1"},
+        {"path":"testdata/corpus/README.md","sha256":"ABB992CD297777CDE49F5BA9AD9A6B4E294EE74A158D1C56EFF78CEBF637299D"}
+      ],
+      "test_boundary":"Self-round-trip plus parsing of a corpus claimed to be Workbench-generated; no DayZ runtime test observed."
+    },
+    {
+      "repo":"https://github.com/WoozyMasta/imageset-packer.git",
+      "commit":"3e70e3df55e7a142112298dfc6a61a90ee6b346a",
+      "tag":"v0.1.3",
+      "advertised_command":"imageset-packer pack ./icons ./out -F bgra8 -x 1 -P EDDSProbe/GUI/imagesets",
+      "inspected":[
+        {"path":"README.md","sha256":"2F571CE498BDACFA05D3B62AAA6E02326C050C8ED6CD09E304642BAEA5083443"},
+        {"path":"internal/cli/pack.go","sha256":"E149FDA2C92ED4C1CA9D9F928024041EBB13499F25ACCC3477C3A3C8067578B0"},
+        {"path":"internal/imageio/write.go","sha256":"6B4021E8C9535FB734774B9E388E0D025677C88B8C1108A7010241AE7093558A"},
+        {"path":"internal/imageio/write_test.go","sha256":"6A4B9358AD47D1E067178E6674CBA910CB7130D55ECD16F5974DACADBF3EA729"}
+      ],
+      "metadata_or_guid_output":false,
+      "runtime_proven":false
+    }
+  ],
+  "experiment": {
+    "fixture":{"path":"P:/EDDSProbe/GUI/imagesets/probe_ui.png","format":"64x32 RGBA8","art":"transparent canvas; opaque white asymmetric L in left 32x32 cell; 50%-alpha cyan square plus opaque magenta top-right marker in right cell"},
+    "conversion_success":["Workbench reports success","64x32 EDDS created","DDS magic at 0x00","ENF1 at 0x24","valid COPY/LZ4 mip table","metadata records PNGResourceClass and probe_ui.png","exact EDDS resource name captured"],
+    "conversion_stop":"One default attempt and one inspection of visible import settings after failure; no blind format/profile/GUID variations.",
+    "render_success":["both LoadImageFile calls return true","no relevant RESOURCES error","upright L","alpha and channels preserved","PBO virtual paths match","logs/screenshots/hashes retained"],
+    "render_stop":"At most one corrected rerun for an objective packaging/reference defect; defer all other A/B tests until the Workbench baseline passes.",
+    "third_party_ab":"After baseline passes, replace only EDDS bytes with v0.1.3 BGRA8 one-mip output and perform one controlled rerun."
+  },
+  "official_web": {
+    "access_date":"2026-09-14",
+    "search_index_read":[
+      "https://community.bohemia.net/wiki/ImageToPAA",
+      "https://community.bohemia.net/wiki/Arma_Reforger%3AResource_Manager",
+      "https://community.bohemia.net/wiki/Arma_Reforger%3AFile_Types",
+      "https://community.bohemia.net/wiki/Arma_Reforger%3ATextures",
+      "https://community.bohemia.net/wiki/DayZ%3AWorkbench_Script_Debugging"
+    ],
+    "direct_open_failures":[
+      {"url":"https://community.bohemia.net/wiki/ImageToPAA","status":403},
+      {"url":"https://community.bohemia.net/wiki/Arma_Reforger%3AResource_Manager","status":403},
+      {"url":"https://community.bohemia.net/wiki/Arma_Reforger%3AFile_Types","status":403},
+      {"url":"https://community.bohemia.net/wiki/DayZ%3AWorkbench_Script_Debugging?useskin=darkvector","status":403},
+      {"url":"https://community.bohemia.net/wiki/Arma_Reforger%3ATextures","status":400,"detail":"timeout fetching"}
+    ],
+    "retry_policy":"not retried or brute-forced"
+  },
+  "source_hashes": [
+    {"path":".audit/en-2026-09-13/completeness/imageset-followup-council.md","sha256":"F30633F89111AC8EE594AD8A05E089847FDDD71B10D3E450CC571F2CF43B1BCF"},
+    {"path":".audit/en-2026-09-13/completeness/imageset-followup-council.json","sha256":"11AFD261C4E501BEE5618765962B8ECD1DFD07FFCBE8188598F2E4DF7DE65D29"},
+    {"path":".audit/en-2026-09-13/completeness/imageset-en-closeout.json","sha256":"27001B3B9460A28F94C86E1AD19636A2150F64050AD1F4EA14A60DC7C6D2199E"},
+    {"path":"D:/StarDZ/docs/DAYZ_GUI_REFERENCE.md","sha256":"F83CD7E9843AAD1001B36E40883E3FF876FE645489C958DBFD83067A35AB9063"},
+    {"path":"D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md","sha256":"2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9"},
+    {"path":"D:/StarDZ/docs/REFERENCIA_TIPOS_DE_ARQUIVO.md","sha256":"BCC70BBA5733111C8EF513A1B2A2735A9B9D71C5A282B1D70CC86643ECFAD1C1"},
+    {"path":"D:/StarDZ/docs/STARDZ_ICON_PIPELINE_SPEC.md","sha256":"592AAE1BE64F883704353C1FF14A922E0CBDAF30A8C992277C3E7AC1B83D9347"},
+    {"path":"D:/DayZ Projects/gui/imagesets/dayz_gui.edds","sha256":"243EEE81BE40A3C4E03FBDBDA8AEAFFAE2759AF42B3051C831A940F60E4C96ED"},
+    {"path":"D:/DayZ Projects/gui/imagesets/dayz_gui.edds.meta","sha256":"29DE0F1413360C1833E698CB681CB99A70ECFB0A22BFB6897A1524CCD741DEDE"},
+    {"path":"D:/DayZ Projects/gui/imagesets/dayz_gui.imageset","sha256":"AD001B5391F351FFDC68CBB39B685D16E21F5313862C251CB48A65241FA1095A"},
+    {"path":"VPP-Admin-Tools/GUI/Textures/vpp_icons.tga","sha256":"EA4CF06FA1BA90107AFFC3F730631BB5CF93F9E12FE9DDDB155120BBC4FFFF4A"},
+    {"path":"VPP-Admin-Tools/GUI/Textures/vpp_icons.edds","sha256":"BF92B942FDB453A8360E0AEDA4BD7C239EA266574B93E42A9F01EBE65C61C150"},
+    {"path":"VPP-Admin-Tools/GUI/Textures/vpp_icons.edds.meta","sha256":"203E739939883365A60B0B4921C6F505CB2178DF3ABC2FDEC53836440780D0D7"},
+    {"path":"VPP-Admin-Tools/GUI/Textures/vpp_icons.imageset","sha256":"C80AE1549BF850399FE56AD133FD13ADBE3891982D55D49ED5502351A3B38546"},
+    {"path":"DayZ-Editor-extra/Sauce/ImageSets/dayz_editor_gui.tga","sha256":"E00B42A703C2011550BF6B2BDF9EA73535EBBFFBF86FDCA1B5B0A746EF175DE2"},
+    {"path":"DayZ-Editor-extra/DayZEditor/GUI/imagesets/dayz_editor_gui.edds","sha256":"FEE868547027C8A2286ED58DA930ADB9345BC86559A5B62D3B780781B7F1CA6B"},
+    {"path":"DayZ-Editor-extra/DayZEditor/GUI/imagesets/dayz_editor_gui.edds.meta","sha256":"78DCB9C1DAE7D431F8960091639A6A6F10E52715859F2AA66F3602A02E21BA40"}
+    ,{"path":"DayZ-Expansion-Scripts/DayZExpansion/Core/Scripts/config.cpp","sha256":"8973F7648357EF6B1FFA70F0E8168915052674F412EB15B7090E6E38B41826EA"}
+    ,{"path":"DayZ-Expansion-Scripts/DayZExpansion/Core/GUI/imagesets/expansion_gui.imageset","sha256":"F598C8741A4AB13F17B5E2534FDAD0A0512BFD5C9095C7A5ABAE2F8572326A9B"}
+    ,{"path":"DayZ-Expansion-Scripts/DayZExpansion/GUI/layouts/expansion_loading.layout","sha256":"88D29E0A21A7672F0B7EB4E5FB96654B53D4E550D42907EEF7031EED72E1E68A"}
+    ,{"path":"DayZ-Editor-extra/DayZEditor/Scripts/config.cpp","sha256":"1B0D5EC71A26F8B73BFBC2156CE303F65028C0CF6AFB09416AFA84F49A1BA39A"}
+    ,{"path":"DayZ-Editor-extra/DayZEditor/GUI/imagesets/dayz_editor_gui.imageset","sha256":"DD9A882D0AE0A3923C473F8A812DC12B35C8E2B31F3EE468B4DE422993F2F0A8"}
+    ,{"path":"DayZ-CommunityFramework/JM/CF/Workbench/dayz.gproj","sha256":"B9198EDDA2A7620C967F0DEBCAAB61DA261108E018BF45734936B0FCB73C757F"}
+    ,{"path":"DayZ-CommunityFramework/JM/CF/GUI/textures/cf_icon.edds.meta","sha256":"5E0698C326658D70128D107A6141D321911A3D7FC624047CD8CF7D8BF730065D"}
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "artifact": "pbo-boundary-council",
+  "reviewedUtcDate": "2026-09-14",
+  "role": "independent_council_not_author",
+  "verdict": "rejected_not_implementation_ready",
+  "gates": {
+    "implementation": "closed_until_C01_through_C12_repaired_in_MD_and_JSON_and_exact_diff_rereviewed",
+    "execution": "closed_until_implementation_static_council_then_small_control_all_stage_pass"
+  },
+  "executionPerformed": false,
+  "reviewedInputs": {
+    "markdown": {"path": ".audit/en-2026-09-13/completeness/pbo-boundary-plan.md", "sha256": "32191A96BCA74F1AAB27302430CA2AFF160344814445E8A44E80823AC09769F8"},
+    "json": {"path": ".audit/en-2026-09-13/completeness/pbo-boundary-plan.json", "sha256": "663CC823A25447550BD1592F3C088A28178C184617E092A75F42A30A83952131"}
+  },
+  "arithmetic": {
+    "formulaGate": "S_i=H_i+C_i+F_i only after exact observed member set/order; current-builder A_i=S_i+T_i+21",
+    "actualOffsets": "pending_no_case_archives_exist",
+    "cases": [
+      {"id":"small-control","F":1048576,"S":"H+C+1048576","gate":"full_pipeline_control"},
+      {"id":"member-i31-minus","F":2146435072,"S":"2147483648+H+C-1048576","gate":"A<2147483648"},
+      {"id":"sum-i31-at","F":2147483648,"S":"2147483648+H+C","gate":"two DataSize=1073741824"},
+      {"id":"member-i31-at","F":2147483648,"S":"2147483648+H+C","gate":"one DataSize=2147483648"},
+      {"id":"sum-u32-minus","F":4293918720,"S":"4294967296+H+C-1048576","gate":"A<4294967296"},
+      {"id":"sum-u32-at","F":4294967296,"S":"4294967296+H+C","gate":"four DataSize=1073741824"},
+      {"id":"member-u32-max","F":4294967295,"S":"4294967296+H+C-1","gate":"stored DataSize max; conditional runtime"},
+      {"id":"member-u32-plus1","F":4294967296,"S":null,"gate":"tool_only_no_manual_or_runtime"}
+    ],
+    "expectedValidFillerBytes": 19326304255,
+    "expectedValidFillerGiB": 17.999023436568677,
+    "projectedOwnedGiB": {"fourCurrentCopiesPlusFinals":34,"plusOneFullScratch":38,"cap":40}
+  },
+  "findings": [
+    {"id":"C01","disposition":"rejected","sections":["MD 58-60","JSON constants/binaryValidation"],"repair":"DataSize must equal source; OriginalSize may be 0 or source but all cases must match control; scope zero convention to DataSize; add unexpected_uncompressed_field_convention."},
+    {"id":"C02","disposition":"rejected","sections":["MD 30-31","JSON H-CUMULATIVE-I31"],"repair":"Both failures are unresolved, not a cumulative-offset diagnosis; retain aggregate extent, allocation, timeout, corruption/resource, and distinct-layout alternatives; similarly narrow 2^32 failure."},
+    {"id":"C03","disposition":"rejected","sections":["MD 66-81","JSON below cases"],"repair":"Require whole archive A below each threshold and record sentinel/data/footer/archive ranges."},
+    {"id":"C04","disposition":"rejected","sections":["MD 97-103","JSON binaryValidation"],"repair":"Bound strings/properties; exact Vers/terminator/member/order/ranges; streamed SHA-1 footer and SHA-256 payload verification; no multi-GiB allocation; hash both parser implementations."},
+    {"id":"C05","disposition":"rejected","sections":["MD fixture/packaging/runtime","JSON packaging/probe"],"repair":"Use underscore tokens/legal class names; exact dependency-free boundary config; exact independent probe CfgPatches/CfgMods/source placement and no boundary type dependency."},
+    {"id":"C06","disposition":"rejected","sections":["MD 137-151","JSON probe"],"repair":"Probe seven literal paths, require exactly one expected open/read, bind exact nonce/PBO/receipt across parser and both log copies."},
+    {"id":"C07","disposition":"rejected","sections":["MD 125-151","JSON secondsPerCase"],"repair":"Treat 45-second absence only as inconclusive timeout; record about 20.8-second small control context; fresh logs and sourced retry gate."},
+    {"id":"C08","disposition":"rejected","sections":["MD runtime/resources","JSON runtime/resourcePolicy"],"repair":"Capture/sample root and descendants by PID+creation time, kill only entire captured tree, wait and prove no observed identity remains for tools and DayZ."},
+    {"id":"C09","disposition":"rejected","sections":["MD 155-164","JSON resources/retention"],"repair":"Fresh roots; reject reparse/hard-link/sparse/compressed sources; canonical containment; allocated-byte/transient-copy projection and monitoring; literal receipt cleanup."},
+    {"id":"C10","disposition":"rejected","sections":["MD stages/stopping","JSON outcomes/trialBudget"],"repair":"Keep tool and parser outcomes independent; preserve exact artifacts; small control must pass all stages; no manual substitute."},
+    {"id":"C11","disposition":"rejected","sections":["MD scope","JSON exclusions"],"repair":"Explicitly leave all compressed OriginalSize/DataSize/allocation/mixed boundaries unresolved."},
+    {"id":"C12","disposition":"rejected","sections":["JSON installedTools/sourceLedger"],"repair":"Record installed and per-user configs, effective selection or unresolved status, and explicit include/exclude inputs."},
+    {"id":"C13","disposition":"accepted_scoped","finding":"Non-native layouts support separate UInt32 member fields, reserved-not-offset, sequential data, and wider cumulative arithmetic."},
+    {"id":"C14","disposition":"accepted","finding":"UInt32 max is conditional runtime; plus-one is tool-only with no manual/runtime substitute."},
+    {"id":"C15","disposition":"accepted","finding":"Stage and claim-boundary separation is conceptually correct."},
+    {"id":"C16","disposition":"accepted_after_repairs","finding":"Independent streaming parsers, exact tiny read, sequential wave, retry ceiling, and crash retention."},
+    {"id":"C17","disposition":"accepted_scoped","finding":"Compression may remain out of matrix only if explicitly unresolved."}
+  ],
+  "directControl": {
+    "path":"TEMP/multi-pbo-confirmation/build/pboexample-20260914-002734-8140c691/release/@PBOExample/Addons/PBOExample_Data.pbo",
+    "sha256":"1CE4ADB9D28C778E083CA506E0042217CE6A68FF2EC7FC085E2E19596D619071",
+    "length":441,"H":151,"members":[["config.cpp",0,0,188,151,339],["data\\example.txt",0,0,81,339,420]],
+    "footerStart":420,"storedAndComputedSha1":"B451A3F09D692D6CD01FD70619D69F8D942B7115"
+  },
+  "runtimeTiming": {
+    "processReceiptSha256":"1C385955A1B4F77978DDF2EC9F5F28D16C1E4AEB859B8ABA0865ED0F2EBC2B68",
+    "rptSha256":"48D4A4513A2B094811A0ABBD95D7CC953BEC60944F497714DD1106D15F9A8FC5",
+    "startedUtc":"2026-09-14T03:31:40.1072982Z","markerLocalClock":"00:32:00.912","approxSeconds":20.8,"largeTimingKnown":false
+  },
+  "localSources": [
+    {"path":"D:/StarDZ/docs/REFERENCIA_LIMITES_E_MUROS.md","lines":"224-231","sha256":"726033DB527944DF57EED0767FB2F0329AB65438B3D48E6247E19D98DAE18EA0","scope":"lead"},
+    {"path":"D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md","lines":["793-839","1631-1671","1910-1979"],"sha256":"2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9","scope":"lead"},
+    {"path":"D:/StarDZ/dev.py","lines":["35-45","238-267","384-403","831-881","1211-1258"],"sha256":"E6862C2AB958B734B5A95B6FD3A0BA6B9B3AA066069188804A4BB2A0C23CC64F","scope":"beta_policy"},
+    {"path":"D:/DayZ Projects/scripts.txt","sha256":"E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F","symbol":"extraction metadata version 124588"},
+    {"path":"D:/DayZ Projects/scripts/3_game/global/pboapi.c","sha256":"9C4B5770D5AA9605DE2E0324ED056BA52B4E5A2BE17BCDFF01812674FA146A61","symbol":"PBOAPI.GetPBOVersion"},
+    {"path":"D:/DayZ Projects/scripts/1_core/proto/ensystem.c","lines":"382-443","sha256":"8BE625999A04DF22813052E93FE658C24C82C97B257EBEF86B106279A95DB188","symbols":["FileMode","OpenFile","ReadFile","CloseFile"]},
+    {"path":"examples/en/multi-pbo/build.ps1","lines":"10-135","sha256":"38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956"},
+    {"path":"TEMP/multi-pbo-confirmation/run-case.ps1","lines":"15-98","sha256":"FBAC12CD27A18E254D72CB4F6C9AC5FCF34775BF24D8A3BBD567D980040C4E55"},
+    {"path":"TEMP/multi-pbo-council/probe-exact/config.cpp","sha256":"342608DA70A53F931D62662683A76BCB1C34C8914FE8DB20D96314B39FBF20D4"},
+    {"path":"TEMP/multi-pbo-council/probe-exact/scripts/5_Mission/multi_pbo_runtime_probe.c","sha256":"FAF495615C77E372498957487FE63156768B19C1DC2B85CEBE0E801B26E669C2"}
+  ],
+  "publicSources": [
+    {"repo":"https://github.com/KoffeinFlummi/armake2.git","commit":"3cc3362101900ff41504db3e780dd1625634cf94","path":"src/pbo.rs","lines":["18-25","52-70","97-142","221-281"],"sha256":"BEC43AC4560626FE4B154922938D0A2BDEDB0561D68118AE822AB9C030387549","access":"local checkout"},
+    {"repo":"https://github.com/BrettMayson/HEMTT.git","commit":"bf2168ce03d5bb8bd3849090e9b2996402624b1c","root":"libs/pbo/src","files":{"model/header.rs":{"lines":["8-15","86-115"],"sha256":"D3D828D2B2881AB6CBBA5F8628B586E2212119CB237E808145FE7C9020176B66"},"file.rs":{"lines":"7-55","sha256":"77E5D829442A45F59B3E5A657902A09B1AABD16CF178114FAB30F76337FF1E2F"},"read.rs":{"lines":["14-69","140-155"],"sha256":"9A8C1FA3382D45ADC4E220B0097B740A5A4C01437E3AB68FF0657A340221DF53"},"write.rs":{"lines":["30-44","122-185"],"sha256":"CBCB0355715DCC3330D7AA343F30478247447FF14D683F2AF7A4D20557B945F2"}},"access":"pinned raw HTTP 200"},
+    {"repo":"https://github.com/KoffeinFlummi/armake.git","commit":"e4940fae0d28c4dd07d9d2c591f8e056545fee3f","files":{"src/build.c":"C68E3D02B59F62DBC18430BABF40C0122120A7763A3C551342410712ABB39012","src/unpack.c":"71D41F2693F1FF564768D816966D10FA3F7997EFF22C887F4F12DDC0F05EE505"},"access":"pinned raw HTTP 200"}
+  ],
+  "installedEvidence": {
+    "toolRoot":"D:/SteamLibrary/steamapps/common/DayZ Experimental Tools",
+    "dayZDiag":{"version":"1.29.0.163709","bytes":20245560,"sha256":"34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"},
+    "toolsManifest":{"appId":2909700,"buildId":23909709,"sha256":"CC36D68C6020C38E60BC928DAE3B006FD6F3E8700EB9ED846D0C58539AC80160"},
+    "binaries":{"AddonBuilder.exe":"C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1","FileBank.exe":"F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF","BankRev.exe":"2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75","DSSignFile.exe":"098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78","DSCheckSignatures.exe":"9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C"},
+    "binaryPaths":{"AddonBuilder.exe":"Bin/AddonBuilder/AddonBuilder.exe","FileBank.exe":"Bin/PboUtils/FileBank.exe","BankRev.exe":"Bin/PboUtils/BankRev.exe","DSSignFile.exe":"Bin/DsUtils/DSSignFile.exe","DSCheckSignatures.exe":"Bin/DsUtils/DSCheckSignatures.exe"},
+    "configs":{"AddonBuilder.exe.config":"E614FCB04D8E3429FAB70466261F36383DE3BFCD230A058BC196AC0727482BBE","logger.xml":"1D24D7D4AFB5249EFBEF3435195BBEA4D1A2D6317292637C7F834B69F8470005","exclude.lst":"F678C872B0E146A51339F4D5C248D7E76ADEF31A80D439AD2FCC2E3CE07D099C","user_bpeqqsem2qv4tdbqrfa1jkk5wv5a3aob":"B52A097818CB036EC72AFD6BD0A6402C5892E1B29AE671115CA977D0348E33C7","user_nzb1gmauh5s0jgksoti3hjv0nqjtardy":"86F88CFCB6F908F26DB0D9882AF35C9D2087A16AE1F9CAC46FEF8028D6A57CB8"},
+    "configPaths":["D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/AddonBuilder.exe.config","D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/logger.xml","D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/exclude.lst","C:/Users/Leonardo Mello/AppData/Local/Bohemia_Interactive/AddonBuilder.exe_Url_bpeqqsem2qv4tdbqrfa1jkk5wv5a3aob/1.0.240.639/user.config","C:/Users/Leonardo Mello/AppData/Local/Bohemia_Interactive/AddonBuilder.exe_Url_nzb1gmauh5s0jgksoti3hjv0nqjtardy/1.0.240.639/user.config"],
+    "effectiveUserConfig":"unresolved"
+  },
+  "officialWeb": {
+    "accessed":"2026-09-14","directAccess":"HTTP 403; indexed current content reopened; no content hash",
+    "pbo":{"url":"https://community.bistudio.com/wiki/PBO","authority":"explicitly unofficial reverse-engineered","supports":"member fields/sequential data/optional footer/OriginalSize zero-or-size; no native numeric ceiling"},
+    "addonBuilder":{"url":"https://community.bistudio.com/wiki/Addon_Builder","authority":"official cross-game tool docs","numericLimitFound":false},
+    "dayZStructure":{"url":"https://community.bistudio.com/wiki/DayZ%3AModding_Structure","authority":"official DayZ structure docs"},
+    "prefix":{"url":"https://community.bistudio.com/wiki/Arma_3%3A_Creating_an_Addon","authority":"official cross-game guidance used only to remove fixture confound"}
+  },
+  "unresolved": [
+    "native DayZ member/total/cumulative/allocation/footer limits on 1.29.0.163709",
+    "signed DataSize interpretation at any current stage",
+    "all actual eight-case fields, offsets, tool and runtime outcomes",
+    "all compression, client, enforcement, Workshop/distribution, filesystem, and other-build behavior",
+    "effective Addon Builder user configuration"
+  ],
+  "claimBoundary": "No runtime or packing performed; reverse-engineered format and third-party implementations are not official native specifications; no reviewed official source defines a numeric total-PBO ceiling."
+}
