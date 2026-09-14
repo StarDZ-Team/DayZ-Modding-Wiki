@@ -1,0 +1,220 @@
+{
+  "schema": "en-assets-evidence-council-v1",
+  "observed_at": "2026-09-14T02:11:28Z",
+  "local_date": "2026-09-13",
+  "wiki_revision": "5714990e98d67ee4782bb5be85aa9b5519ae6462",
+  "reviewed_delivery": {
+    "markdown": {
+      "path": ".audit/en-2026-09-13/completeness/assets-evidence.md",
+      "sha256": "B1D893256493528304C699E457AD727D1AA19E7772679A63E2962C3E9777EAC9"
+    },
+    "json": {
+      "path": ".audit/en-2026-09-13/completeness/assets-evidence.json",
+      "sha256": "0F5EB0C2E76A70383EA00B3ABA87550CB49C5B1E88A45BE352CA320B38333BF7"
+    }
+  },
+  "boundaries": {
+    "english_files_edited": false,
+    "fixture_sources_edited": false,
+    "game_or_server_launched": false,
+    "commit_created": false,
+    "owned_paths": [
+      ".audit/en-2026-09-13/completeness/assets-evidence-council.md",
+      ".audit/en-2026-09-13/completeness/assets-evidence-council.json",
+      "TEMP/assets-council"
+    ],
+    "preserved_junction": {
+      "path": "TEMP/assets-evidence/tools/DayZTools",
+      "type": "Junction",
+      "target": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools"
+    }
+  },
+  "decisions": [
+    {
+      "id": "AGUI-DC-007",
+      "page": "en/03-gui-system/07-styles-fonts.md",
+      "page_sha256": "95909F8CE4B19D4F9364915653FE33361557A56D97E8C3DE87E40C2D7522C5C7",
+      "author_replacement_verdict": "approve_with_editorial_revision",
+      "reason": "Brace-delimited syntax is directly established by all 11 extracted vanilla imagesets; XML support, equivalence, and parsing-speed order are neither established nor disproved.",
+      "approved_reader_wording": "| Imageset resource format | Extracted vanilla `.imageset` files use brace-delimited `ImageSetClass` syntax | Use this format for DayZ imagesets. XML loader support and any parsing-speed difference are unverified. |",
+      "scope_limit": "Absence of XML in the inspected extraction is not proof of engine rejection."
+    },
+    {
+      "id": "AGUI-DC-010-line-39",
+      "page": "en/04-file-formats/02-models.md",
+      "page_sha256": "D847E646348E3F763DCFB3655CC76AB2FA1FCCC4B8DA24C052004529D59A124E",
+      "author_replacement_verdict": "approve_with_reader_facing_revision",
+      "reason": "The authoring and binarization pipeline is established; retail packed-MLOD compatibility and universal size/speed ordering are not.",
+      "approved_reader_wording": "- **Binarized vs. unbinarized:** Object Builder uses editable MLOD P3D files. Binarize converts them to ODOL for distribution. Current retail loading of MLOD from a packed PBO is not established, and no universal MLOD-versus-ODOL size or loading-speed rule has been demonstrated."
+    },
+    {
+      "id": "AGUI-DC-010-table",
+      "page": "en/04-file-formats/02-models.md",
+      "author_replacement_verdict": "reject_fixture_specific_rows_use_general_rows",
+      "reason": "The recorded byte counts are exact for one fixture but do not define either format generally.",
+      "approved_reader_wording": [
+        "| File size | Depends on the model | Depends on the model |",
+        "| Load behavior | Loading from a packed PBO in current retail DayZ is unverified | Intended as the engine-ready distribution format; no comparative benchmark is available |",
+        "| Pipeline role | Editable authoring source | Binarized distribution output |"
+      ]
+    },
+    {
+      "id": "AGUI-DC-010-callout",
+      "page": "en/04-file-formats/02-models.md",
+      "author_replacement_verdict": "approve_with_reader_facing_revision",
+      "reason": "Installed help, retained artifacts, fresh extraction, independent rebuild, and saved DayZ documentation establish pack-only preservation and binarized ODOL/config handling without establishing retail MLOD loading.",
+      "approved_reader_wording": "> **Important:** `-packonly` stores source files without binarizing them, so an included MLOD remains MLOD and `model.cfg` remains a separate source file. With binarization enabled, Addon Builder processes MLOD as ODOL, compiles `config.cpp` to `config.bin`, and consumes `model.cfg` into the model output instead of packing it separately. Packing success alone does not prove that current retail DayZ loads MLOD. Use binarized output for release builds unless you have version-matched runtime evidence for a different workflow."
+    }
+  ],
+  "imageset_extraction": {
+    "directory": "D:/DayZ Projects/gui/imagesets",
+    "count": 11,
+    "all_first_lines": "ImageSetClass {",
+    "files": [
+      ["bleedingdrops.imageset", "D153C931D28560C50D5DE645D59E6AEAC6F88B2EBC4CB4FCA1E98A75E5CC5A19"],
+      ["ccgui_enforce.imageset", "843B0064E416F77A2FFDC99201E5E58A2DAC98F770F468C894E03CA215301335"],
+      ["console_toolbar.imageset", "29489F6AD2E45D52E45D02894B1AA31C4611A0FD67998813B2CFECF6DE5ED560"],
+      ["dayz_additional_gui.imageset", "59255FC16E41D67B93A394467128B06DED43CFF99E1246046E8CA8CA02B53387"],
+      ["dayz_crosshairs.imageset", "78CE3277493B81E5AC7854DADFC3CC5CD58EB609C1881FF3FDCA88C650C325BF"],
+      ["dayz_gui.imageset", "AD001B5391F351FFDC68CBB39B685D16E21F5313862C251CB48A65241FA1095A"],
+      ["dayz_inventory.imageset", "739856A8460501CAFEC0CC7522DD441411FE10ED770E529A20067CF914B763F9"],
+      ["map2d_ui.imageset", "ADA8275288B9B85F4D2F28E1028F7B5EB8F84F66329B6A1B4274D76EB8138C27"],
+      ["playstation_buttons.imageset", "B47F8B0370328D8B5DF3937A7A17093E82ADD6C717D1B8589604C0B0D7C8E14A"],
+      ["rover_imageset.imageset", "4C3945606EEA224E5B4EAE81B9292CDCC2907B79D10089112B9DCA53CC54623E"],
+      ["xbox_buttons.imageset", "302702EEEB67A59B274B61B5152BE41AB46A9F82917AA3D03537F20DD846DC0A"]
+    ],
+    "metadata": {
+      "path": "D:/DayZ Projects/gui.txt",
+      "sha256": "842BADDDFAC0C005B23766ED0A8ED75A60A65AFF952166DA2A181930E6CAF258",
+      "content": ["prefix=gui\\", "product=dayz", "version=124588"]
+    }
+  },
+  "sources_reopened": [
+    {
+      "kind": "official_extraction",
+      "path": "D:/DayZ Projects/gui/imagesets/dayz_gui.imageset",
+      "lines": "1-14",
+      "bytes": 34741,
+      "sha256": "AD001B5391F351FFDC68CBB39B685D16E21F5313862C251CB48A65241FA1095A"
+    },
+    {
+      "kind": "official_extraction",
+      "path": "D:/DayZ Projects/scripts/1_core/proto/enwidgets.c",
+      "lines": "688-693",
+      "bytes": 24460,
+      "sha256": "6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E"
+    },
+    {
+      "kind": "official_repository",
+      "url": "https://github.com/BohemiaInteractive/DayZ-Samples.git",
+      "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "clean": true,
+      "files": [
+        ["Test_Building/model.cfg", 1180, "35BFFAB1F2247952C781DA1701A5AC66281594E73191B9FF7ECC078F2541E903"],
+        ["Test_Building/sample_building.p3d", 871437, "42BFBC79AB47252B6DB69EF206F595D03B7A4F67F2C43F90FD6DB7DD07FF2427"]
+      ]
+    },
+    {
+      "kind": "public_mod_repository",
+      "url": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+      "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "clean": true,
+      "path": "JM/CF/Workbench/dayz.gproj",
+      "lines": "14-28",
+      "sha256": "B9198EDDA2A7620C967F0DEBCAAB61DA261108E018BF45734936B0FCB73C757F",
+      "limitation": "Third-party project configuration, not loader or performance evidence."
+    },
+    {
+      "kind": "saved_official_dayz_page",
+      "path": "D:/StarDZ/docs/DayZ/Doors on buildings.md",
+      "lines": "6-10,25-35,106-111,267,286-287",
+      "sha256": "C4CC65E7504741B94268A185FAD829E2A536A6A365E3E4E23A832248A4F94306"
+    },
+    {
+      "kind": "installed_tool_rule",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/BinMake/binMakeRules.txt",
+      "lines": "5-10",
+      "bytes": 2242,
+      "sha256": "916287C23744823E02CF194A861014B3AF42A128ECED44C0ADDED9D65E52ADD6"
+    }
+  ],
+  "tool_versions": [
+    ["Addon Builder", "1.0.240.639", "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1"],
+    ["Binarize", "1.29.0.163401", "9D79B76F132EB5879821C617A1B509172DE38E2EDCBAFD9F0022882FDBB027C9"],
+    ["BankRev", "1.0.0.2", "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75"],
+    ["retail DayZ client inspected only", "1.29.0.163709", "6E1719275798A69D61DA4F80FA57FB5F2B8D1910C95477ACF1CDC73DA9AF3129"]
+  ],
+  "retained_hash_chain": {
+    "source_p3d": [871437, "MLOD", "42BFBC79AB47252B6DB69EF206F595D03B7A4F67F2C43F90FD6DB7DD07FF2427"],
+    "packonly_pbo": [872226, "EA0434CAA2E5C4B81BB6EA1B18DF63BE6D3496717577C1856319F82DDF2169D1"],
+    "packonly_fresh_extraction": {
+      "bankrev_exit_code": 0,
+      "config_cpp": [315, "A0A3659A456B7857E686D5DFA251D98CA1B27D3B9D5CCE860EAF2989B571E829"],
+      "model_cfg": [260, "B49E9BE369841EA34E34124B0D3094011D477856974C297120AD7BF95AFA680C"],
+      "p3d": [871437, "MLOD", "42BFBC79AB47252B6DB69EF206F595D03B7A4F67F2C43F90FD6DB7DD07FF2427"]
+    },
+    "binarized_pbo": [152807, "600C5A10091D150DAEB3EB3B56CE2B8DBB46BAD1A6D6F4BA466C31341F9855EC"],
+    "binarized_fresh_extraction": {
+      "bankrev_exit_code": 0,
+      "config_bin": [302, "0023938CA79A42F1A82B8C96BC7DCE3BD6BA0F36EE708E1B5D35F339E5CFE38D"],
+      "p3d": [152321, "ODOL", "8AE946383C5111978FD3C2AFBB1532527CC8C4B2804D100139DEC6A6D49476F0"],
+      "model_cfg_present": false
+    },
+    "matches_prior_extraction_hashes": true
+  },
+  "independent_rebuild": {
+    "packonly": {
+      "exit_code": 0,
+      "console_verdict": "Build Successful",
+      "pbo": [872226, "110237033C6F8CF003B6AFACE8A8DC9B4AF82403B484960E04395B06EE538DF6"],
+      "extracted_p3d": [871437, "MLOD", "42BFBC79AB47252B6DB69EF206F595D03B7A4F67F2C43F90FD6DB7DD07FF2427"],
+      "model_cfg_present": true,
+      "config_cpp_present": true
+    },
+    "binarized": {
+      "exit_code": 0,
+      "console_verdict": "Build Successful",
+      "pbo": [152807, "119F170ED6D0C7FADE14AD141CA04ACD5EC3BF526F5AD9E6BD3AFF2053BE9124"],
+      "extracted_p3d": [152321, "ODOL", "EAF6DC1463E1B3A697432E7260E230E36305240EB8425A59F0523B665660B029"],
+      "config_bin": [302, "0023938CA79A42F1A82B8C96BC7DCE3BD6BA0F36EE708E1B5D35F339E5CFE38D"],
+      "model_cfg_present": false
+    },
+    "deterministic_bytes_claim": false,
+    "note": "Rebuild PBO hashes and binarized ODOL hash differ from retained artifacts; file membership, magic, and sizes reproduced."
+  },
+  "original_log_limit": "No original Addon Builder console log file exists under TEMP/assets-evidence. The retained PBOs and extraction chain are directly verifiable, while original exit code and Build Successful are present only in the author report and README. Independent rebuilds supplied fresh exit-zero/Build Successful observations.",
+  "dz_model_inventory": {
+    "path": "D:/DayZ Projects/DZ",
+    "p3d_count": 8188,
+    "magic_counts": {"ODOL": 8188},
+    "version_mapping": "No adjacent metadata file maps this tree to a public build; inventory observation only."
+  },
+  "followup_claims": [
+    {
+      "page": "en/03-gui-system/07-styles-fonts.md",
+      "lines": "499,511,527-531,537-538",
+      "topics": ["batching", "atlas-size advice", "SDF threshold", "text scaling", "style prevalence", "tint multiplication", "collision order", "startup/GPU residency", "VRAM"]
+    },
+    {
+      "page": "en/05-config-files/04-imagesets.md",
+      "lines": "34,44,140-183,695-715,723-790",
+      "topics": ["XML loader and tutorial", "XML feature differences", "startup registration", "silent failure", "collision behavior", "mpix selection/fallback", "case behavior", "texture format absolutes", "power-of-two performance", "padding", "draw-call comparison", "active XML use"]
+    },
+    {
+      "page": "en/04-file-formats/02-models.md",
+      "lines": "32,38,45,58,179,558,577",
+      "topics": ["engine-ready/runtime conversion", "format contents", "fixed geometry triangle advice", "unbinarized file patching", "material/draw-call threshold"]
+    }
+  ],
+  "final_scope": {
+    "brace_format_observed": true,
+    "xml_loader_support_established": false,
+    "xml_loader_rejection_established": false,
+    "imageset_performance_order_established": false,
+    "packonly_mlod_preservation_established": true,
+    "binarized_odol_and_config_handling_established": true,
+    "retail_packed_mlod_loading_established": false,
+    "universal_mlod_odol_size_order_established": false,
+    "comparative_mlod_odol_load_speed_established": false
+  }
+}
