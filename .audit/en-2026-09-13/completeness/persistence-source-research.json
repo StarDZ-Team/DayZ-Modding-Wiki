@@ -1,0 +1,195 @@
+{
+  "finding_id": "PERSIST-C01",
+  "task_kind": "evidence_intake",
+  "date": "2026-09-14",
+  "wiki_revision": "23c336eb5740b6b5e5d2d8bc2329288b70ccc26c",
+  "scope": "Entity OnStoreSave/OnStoreLoad ordered serialization, version separation, read failure, hierarchy propagation, and migration.",
+  "out_of_scope": [
+    "general JSON/database persistence",
+    "backup and restore policy",
+    "game tests",
+    "builds",
+    "EN edits",
+    "council approval"
+  ],
+  "recommended_existing_page": {
+    "path": "en/06-engine-api/01-entity-system.md",
+    "placement": "after EntityAI Lifecycle Events",
+    "reason": "EntityAI owns the callbacks; the existing config-persistence chapter explicitly owns reflected JSON and would conflate formats.",
+    "long_term_option": "Create en/07-patterns/08-entity-persistence-migration.md for a full runnable lab and link it from the entity page."
+  },
+  "evidence": [
+    {
+      "kind": "extracted_game_file",
+      "path": "D:/DayZ Projects/scripts/3_game/entities/entityai.c",
+      "lines": "2913-2994,2994-3070",
+      "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5",
+      "establishes": ["server-side callbacks", "super propagation guidance", "same type/order contract", "bool read-failure returns", "engine-version gates at 103 and 140"],
+      "layer": "static_source"
+    },
+    {
+      "kind": "extracted_game_file",
+      "path": "D:/DayZ Projects/scripts/3_game/global/game.c",
+      "lines": "5,49-50",
+      "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158",
+      "establishes": ["GAME_STORAGE_VERSION is 142 in this snapshot", "CGame passes it to StorageVersion"],
+      "layer": "static_source"
+    },
+    {
+      "kind": "extraction_metadata",
+      "path": "D:/DayZ Projects/scripts.txt",
+      "lines": "1-3",
+      "sha256": "E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F",
+      "raw_version": "124588",
+      "limitation": "Does not authorize wholesale attribution of the extraction to retail build 1.29.163709."
+    },
+    {
+      "kind": "extracted_game_file",
+      "path": "D:/DayZ Projects/scripts/1_core/proto/serializer.c",
+      "lines": "1-65",
+      "sha256": "3C365E5EF418438220CD2A2012C57EF385DDCAD835D712D136D31E6DFE7D2F5D",
+      "establishes": ["Serializer Read and Write return bool", "supported static serialization categories"],
+      "layer": "static_source"
+    },
+    {
+      "kind": "extracted_game_file",
+      "path": "D:/DayZ Projects/scripts/4_world/entities/core/inherited/itemoptics.c",
+      "lines": "303-329",
+      "sha256": "814AB79D363BCC0AF6FB3434D391FE1059840562DCC0A5001193B489DE03B9B3",
+      "establishes": ["super-first pattern", "parent failure propagation", "engine version 126 gate"],
+      "layer": "static_source"
+    },
+    {
+      "kind": "extracted_game_file",
+      "path": "D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase.c",
+      "lines": "420-474",
+      "sha256": "22283A8E3869CAF8CE1D6BFE5606057575C4F2C315E766723D3F44DAA7E47F4F",
+      "establishes": ["four-field ordered write/read", "default plus false on read failure", "AfterStoreLoad restores derived state"],
+      "layer": "static_source"
+    },
+    {
+      "kind": "extracted_game_file",
+      "path": "D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase/fence.c",
+      "lines": "212-256",
+      "sha256": "38059886AF6313CF8442D1362A183021A863616E1CD12878D6663BFCC1C65B60",
+      "establishes": ["legacy/new engine-version branch preserves stream position", "read failure propagation"],
+      "layer": "static_source"
+    },
+    {
+      "kind": "local_document_lead",
+      "path": "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md",
+      "lines": "374-503",
+      "sha256": "E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD",
+      "assessment": "Useful source map and per-mod version recommendation; lines 460-461 overstate the callback engine version as the mechanism for a mod changing its own schema."
+    },
+    {
+      "kind": "local_document_lead",
+      "path": "D:/StarDZ/docs/DAYZ_MOD_ARCHITECTURE_PATTERNS.md",
+      "lines": "2242-2295",
+      "sha256": "315C4C07A240C46D239984288F903860D46076A34376AC9CEDF5281D57D87B5B",
+      "assessment": "CF-oriented example supports super/order/failure/version guidance but is not vanilla authority."
+    },
+    {
+      "kind": "local_document_lead",
+      "path": "D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md",
+      "lines": "1086-1195",
+      "sha256": "43AAECA6B5A5353499FE592C47615766EDE14DC8AB53B9E21B6551E32CFB07E8",
+      "assessment": "Supports serializer-not-authentication, stable-key, and check-every-read boundaries; does not establish persistence runtime."
+    },
+    {
+      "kind": "beta_mod",
+      "path": "D:/StarDZ/StarDZ_Systems/StarDZ_Systems/Scripts/3_Game/StarDZ_Systems/Groups/SDZ_GroupStash.c",
+      "lines": "1-251",
+      "sha256": "4A8149C81E759084D7A1973A7E8E3173F8A2C5CE603198075EB44025474C47AA",
+      "assessment": "Only comments mention entity callbacks; the implementation is separate JSON bookkeeping. The barrel-persistence expectation is explicitly untested and does not satisfy PERSIST-C01."
+    },
+    {
+      "kind": "public_framework",
+      "repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+      "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "accessed": "2026-09-14",
+      "checkout": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework",
+      "files": [
+        {"path": "JM/CF/Scripts/4_World/CommunityFramework/Entities/ItemBase.c", "lines": "1-87", "sha256": "159DB6F8DC122BF7F7D00186107D33918A7C7B1C52CEBC226776AA10DF2A2C58"},
+        {"path": "JM/CF/Scripts/4_World/CommunityFramework/ModStorage/CF_ModStorageObject.c", "lines": "25-161", "sha256": "4B37540E26D7F708AA8B53715C7D11B2F95C7FC18A9E7ADBF5D6E244A9B6F242"},
+        {"path": "JM/CF/Scripts/3_Game/CommunityFramework/ModStorage/CF_ModStorage.c", "lines": "1-305", "sha256": "6FCF72DDC889D751F02BE1097DBC19126F851E7712A90EC2F52FA61B4E59D7B0"},
+        {"path": "JM/CF/Scripts/3_Game/CommunityFramework/Mods/ModStructure.c", "lines": "302-315", "sha256": "E1257321B4F711A72C1703319DB980CDA376C7CFC24955723720BEDA23C131A8"}
+      ],
+      "assessment": "Shows a third-party framed, per-mod implementation; not vanilla authority."
+    }
+  ],
+  "en_findings": [
+    {
+      "id": "PERSIST-C01-A",
+      "path": "en/06-engine-api/01-entity-system.md",
+      "lines": "785-800,976-982",
+      "sha256": "84DED2A22E62A935C1AA0F98F0D32B1082473AE0C653DF6B4D77C63E2D9C39E4",
+      "type": "missing",
+      "proposal": "Add the canonical super-first, ordered-read/write, read-failure, engine-version versus mod-schema contract after EntityAI Lifecycle Events."
+    },
+    {
+      "id": "PERSIST-C01-B",
+      "path": "en/troubleshooting.md",
+      "lines": "196",
+      "sha256": "DA08530090F727F679BC051FB98899061A8AB80B9A58F26BDBD02A77E0053BE4",
+      "type": "misleading",
+      "original": "Always write a version number first. On load, read the version and handle old formats: if (version < CURRENT) ...",
+      "problem": "The same word version is used for both the engine callback argument and a mod-owned serialized field; first also fails to say first custom field after super.",
+      "proposal": "Name the callback argument engineVersion, read a separate schemaVersion after super, and branch on schemaVersion."
+    },
+    {
+      "id": "PERSIST-C01-C",
+      "path": "en/06-engine-api/17-construction-system.md",
+      "lines": "206-221",
+      "sha256": "CDA6F6997163EFBA17073A26C5147FCC6C01B0F5B588A58EA1490FAA87B1D066",
+      "type": "missing",
+      "proposal": "Add matching BaseBuildingBase OnStoreLoad order/failure behavior and clarify AfterStoreLoad's post-deserialization role."
+    },
+    {
+      "id": "PERSIST-C01-D",
+      "paths": [
+        "en/07-patterns/04-config-persistence.md",
+        "en/09-server-admin/07-persistence.md",
+        "en/09-server-admin/11-troubleshooting.md"
+      ],
+      "sha256": [
+        "33082B96074D4A1E1767426F070C333A4658FB822DBB33C6BAEB6786FFBC4374",
+        "7DE855D73B655D66019D6F99BB9D171B67893A181B72AE92439BB82E59FE6C53",
+        "00ED8F7FD2ADBE348CCB43FEBD295BDDD9DBC77DAF30A6D27D10F75372495BC2"
+      ],
+      "type": "cross_link_gap",
+      "proposal": "Keep JSON and operator material scoped; add contrast/link pointers to the canonical entity section."
+    }
+  ],
+  "proposed_contract": {
+    "save_order": ["super.OnStoreSave(ctx)", "mod schema version", "v1 common fields", "v2 appended fields"],
+    "load_order": ["super.OnStoreLoad(ctx, engineVersion) and propagate false", "read and validate separate schemaVersion", "read common fields with per-read false returns", "conditionally read fields introduced by schema", "supply explicit defaults for older supported schemas"],
+    "warnings": [
+      "GAME_STORAGE_VERSION and the callback engineVersion are not mod-controlled schema versions.",
+      "The schema marker is first in the mod's custom segment, not first in the entire inherited entity stream.",
+      "A marker must exist from the first supported schema or older unframed data needs a separately proven discriminator.",
+      "OnStoreSave returns void; no write-failure recovery behavior was established."
+    ]
+  },
+  "future_fixture": {
+    "entity": "isolated custom PCT_PersistBox",
+    "isolation": "dedicated storage_<instanceId>, never production storage_1",
+    "phases": [
+      {"name": "v1_control", "writes": ["schema=1", "charges=17", "label=v1-control"], "expected": "clean save and preserved storage copy"},
+      {"name": "v1_to_v2", "expected": "super succeeds, schema 1 values restore, locked defaults false, callback returns true; resave then second restart restores schema 2 locked value"},
+      {"name": "truncated_declared_v2", "writer": "writes schema=2, charges and label but omits required locked field", "expected": "normal v2 reader reports ctx.Read(locked)=false and returns false; engine treatment of the entity is observed, not assumed"},
+      {"name": "valid_v2_control", "expected": "same build and recipe loads complete v2 record"}
+    ],
+    "capture": ["executable version/hash", "fixture source and PBO hashes", "launch line", "storage hashes", "RPT and script log", "persistent ID/position", "each read result", "callback return", "post-load entity presence", "clean exit"],
+    "stopping_condition": "Stop after one complete valid chain and one independently repeated truncated/control pair agree. If truncated read succeeds, later records are affected, or results differ, preserve artifacts and return to source/council analysis instead of trying ad hoc byte mutations."
+  },
+  "runtime_behavior_tested": false,
+  "remaining_uncertainty": [
+    "Exact engine behavior after OnStoreLoad returns false.",
+    "Byte identity of each extracted persistence file against official Script Diff commit 86974a0f5bd16b1ee3e334ad828133c93dca80a1.",
+    "Compatibility when adding a marker to existing unframed records.",
+    "Direct callback coexistence across multiple mods and mod removal/reinstallation.",
+    "Compilation, packaging, save/restart/load, and corrupt-stream behavior of the proposed fixture."
+  ],
+  "disposition": "research_only_pending_author_and_independent_council"
+}

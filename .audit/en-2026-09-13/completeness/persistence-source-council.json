@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "review": {
+    "date": "2026-09-14",
+    "role": "independent council reviewer",
+    "repository_head": "23c336eb5740b6b5e5d2d8bc2329288b70ccc26c",
+    "scope": "Entity OnStoreSave/OnStoreLoad source research and proposed v1/v2/missing-field fixture",
+    "decision": "conditional_acceptance_after_wording_revisions",
+    "prose_approval": "approved_only_with_exact_council_revisions",
+    "example_approval": "static_source_review_only_uncompiled_unrun",
+    "en_edited": false,
+    "build_or_game_run": false
+  },
+  "author_delivery_hashes": [
+    {
+      "path": ".audit/en-2026-09-13/completeness/persistence-source-research.md",
+      "sha256": "AE2803D1FE5398BA16B13E6A1528C97842FBDDB505F671D5D05E7BF24E9B7525"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/persistence-source-research.json",
+      "sha256": "4FCBE564070F8518E20BEBB1B3031E7A0BFA794A144A723E9F9DEEB4CAFB11A1"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "PERSIST-C01-A",
+      "status": "revision_required_substance_accepted",
+      "accepted": [
+        "Canonical placement after EntityAI Lifecycle Events",
+        "super-first save/load and parent failure propagation",
+        "matching type/order/compatibility branches",
+        "separate mod schema for a custom entity layout"
+      ],
+      "rejected": [
+        "direct callbacks described as a framed custom segment",
+        "unconditional claim that missing/truncated/wrong-type input necessarily makes native Read return false",
+        "unqualified native identity claim between callback argument and GAME_STORAGE_VERSION"
+      ],
+      "exact_wording": "OnStoreSave() and OnStoreLoad() are server-side entity-persistence callbacks. In an override, call super.OnStoreSave(ctx) before writing your fields. On load, call super.OnStoreLoad(ctx, engineVersion) first and return false if the parent fails. Read the same types in the same order and under the same compatibility branches used when writing. Check every ctx.Read(...); if a required read returns false, return false. Supply a default and continue only when that omission is an explicitly supported older layout. The callback's engineVersion is engine-owned storage-version context; vanilla code uses it to select historical engine layouts. In the reviewed extraction, CGame registers GAME_STORAGE_VERSION = 142, but your mod does not control when that value changes. For a custom entity layout you control, write a separate mod schema integer as the first field added by your override after super, read it into a different variable, validate its supported range, and branch on that value. Introduce the marker in the first persisted schema. Existing unframed records, several mods extending the same class, and mod removal or reinstallation need a separately designed and tested compatibility/framing strategy.",
+      "example_label": "Source-reviewed skeleton — not yet compiled or run. This shows the ordering and version split for one custom leaf entity. A runnable fixture also needs entity configuration, script/PBO placement, a server spawn/save harness, and restart assertions."
+    },
+    {
+      "id": "PERSIST-C01-B",
+      "status": "accepted_with_version_qualification",
+      "exact_wording": "Call super first on both paths. Read the same types in the same order you wrote them, and return false as soon as any required ctx.Read(...) returns false. The callback's version is engine-owned storage-version context used by vanilla compatibility branches; it is not your mod's CURRENT_SCHEMA. For a custom entity layout you control, write a separate schema number as the first field added by your override after super, read it into a separate variable, validate it, and use that value to select your old/new layout. Older unframed records need a separately tested migration strategy."
+    },
+    {
+      "id": "PERSIST-C01-C",
+      "status": "accepted",
+      "exact_wording": "BaseBuildingBase.OnStoreLoad() first calls super.OnStoreLoad(ctx, version) and propagates failure. It then reads m_SyncParts01, m_SyncParts02, m_SyncParts03, and m_HasBase in exactly the order written, returning false when a read fails. AfterStoreLoad() runs the later reconstruction step (SetPartsAfterStoreLoad()); it does not replace deserializing those stored fields. For custom schema changes, follow the entity-persistence versioning contract in Entity System.",
+      "implementation_note": "Resolve and verify the final heading anchor."
+    },
+    {
+      "id": "PERSIST-C01-D",
+      "status": "partially_accepted_narrow_links",
+      "accepted": [
+        "one JSON/config contrast link",
+        "one operator link at a matching custom-mod update/restart symptom"
+      ],
+      "rejected": [
+        "generic link scattering across both server pages without matching context"
+      ],
+      "config_exact_wording": "This chapter covers reflected JSON configuration and explicit file I/O. It does not cover the ordered ParamsWriteContext / ParamsReadContext stream used by entity OnStoreSave() and OnStoreLoad() callbacks; see Entity System.",
+      "operator_exact_wording": "If custom entity fields disappear after a mod update, inspect the mod's OnStoreSave() / OnStoreLoad() order and schema migration before wiping storage; see Entity System. A failed callback's effect on the entity is runtime-dependent and is not established by this guide.",
+      "preferred_operator_page": "en/09-server-admin/11-troubleshooting.md"
+    }
+  ],
+  "source_review": {
+    "accepted_static_claims": [
+      "EntityAI documents server-side callbacks, hierarchy propagation, matching format/order, checked reads, and false on failed required reads in its example.",
+      "Vanilla callback readers use the callback version for historical engine layout branches.",
+      "The extraction's CGame registers GAME_STORAGE_VERSION 142.",
+      "Serializer Read and Write return bool and the Params contexts alias Serializer.",
+      "BaseBuildingBase and Fence demonstrate ordered consumption and later derived-state reconstruction."
+    ],
+    "qualifications": [
+      "EntityAI itself defaults one failed energy read and continues, so immediate false applies to required fields rather than every vanilla read.",
+      "The native forwarding path from StorageVersion to the callback argument was not opened.",
+      "The native direct serializer does not expose its framing or wrong-type behavior in the reviewed declarations.",
+      "CF v5's bounds/type checks are framework behavior.",
+      "CF logs a failed mod callback but returns true after the outer CF stream itself was completed."
+    ]
+  },
+  "fixture": {
+    "status": "feasible_in_principle_not_runnable_as_delivered",
+    "required_revisions": [
+      "Add CfgPatches/CfgVehicles, 4_World placement, exact PBO layout, spawn/save/clean-shutdown harness, and persistence prerequisites.",
+      "Reload v1 under v1 before upgrading.",
+      "After v1-to-v2 default false is observed, explicitly set locked true before the v2 save and verify true after restart.",
+      "Rename truncated case to declared-v2 missing-field fixture; it is semantic incompleteness, not proven byte-level truncation.",
+      "Treat Read(m_Locked)==false as a hypothesis and log preceding writes/reads because later stream data might be consumed.",
+      "Use valid controls around or separate from the bad entity and do not infer record isolation or deletion behavior.",
+      "Retain exact executable, source/config/PBO, command, storage, log, ID/position, and clean-exit receipts."
+    ],
+    "stopping_condition": "One complete valid chain and one independently repeated missing-field/control pair; stop and return to source analysis on inconsistent or surprising stream behavior."
+  },
+  "smallest_next_step": [
+    "Implement only the revised canonical subsection plus troubleshooting and construction corrections.",
+    "Independently review the exact EN diff and anchors.",
+    "Separately scaffold and compile the isolated fixture before any persistence runtime matrix."
+  ],
+  "source_hashes": [
+    {"path":"D:/DayZ Projects/scripts/3_game/entities/entityai.c","lines":"2913-3070","sha256":"AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"},
+    {"path":"D:/DayZ Projects/scripts/3_game/global/game.c","lines":"5,49-50","sha256":"CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"},
+    {"path":"D:/DayZ Projects/scripts/1_core/proto/serializer.c","lines":"1-65","sha256":"3C365E5EF418438220CD2A2012C57EF385DDCAD835D712D136D31E6DFE7D2F5D"},
+    {"path":"D:/DayZ Projects/scripts/3_game/gameplay.c","lines":"15-16","sha256":"AA12624843F51C70200D37449559FDBADB042D333D4EE74C989E0CA632D2F0FE"},
+    {"path":"D:/DayZ Projects/scripts/4_world/entities/core/inherited/itemoptics.c","lines":"303-331","sha256":"814AB79D363BCC0AF6FB3434D391FE1059840562DCC0A5001193B489DE03B9B3"},
+    {"path":"D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase.c","lines":"420-474","sha256":"22283A8E3869CAF8CE1D6BFE5606057575C4F2C315E766723D3F44DAA7E47F4F"},
+    {"path":"D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase/fence.c","lines":"212-256","sha256":"38059886AF6313CF8442D1362A183021A863616E1CD12878D6663BFCC1C65B60"},
+    {"path":"D:/DayZ Projects/scripts.txt","lines":"1-3","sha256":"E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F"},
+    {"path":"D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md","lines":"374-503","sha256":"E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD"},
+    {"path":"D:/StarDZ/docs/DAYZ_MOD_ARCHITECTURE_PATTERNS.md","lines":"2242-2295","sha256":"315C4C07A240C46D239984288F903860D46076A34376AC9CEDF5281D57D87B5B"},
+    {"path":"D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md","lines":"1086-1195","sha256":"43AAECA6B5A5353499FE592C47615766EDE14DC8AB53B9E21B6551E32CFB07E8"},
+    {"path":"D:/StarDZ/StarDZ_Systems/StarDZ_Systems/Scripts/3_Game/StarDZ_Systems/Groups/SDZ_GroupStash.c","lines":"1-251","sha256":"4A8149C81E759084D7A1973A7E8E3173F8A2C5CE603198075EB44025474C47AA"}
+  ],
+  "cf": {
+    "repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+    "checkout": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework",
+    "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+    "clean_when_reopened": true,
+    "accessed": "2026-09-14",
+    "files": [
+      {"path":"JM/CF/Scripts/4_World/CommunityFramework/Entities/ItemBase.c","lines":"1-87","sha256":"159DB6F8DC122BF7F7D00186107D33918A7C7B1C52CEBC226776AA10DF2A2C58"},
+      {"path":"JM/CF/Scripts/4_World/CommunityFramework/ModStorage/CF_ModStorageObject.c","lines":"25-161","sha256":"4B37540E26D7F708AA8B53715C7D11B2F95C7FC18A9E7ADBF5D6E244A9B6F242"},
+      {"path":"JM/CF/Scripts/3_Game/CommunityFramework/ModStorage/CF_ModStorage.c","lines":"1-305","sha256":"6FCF72DDC889D751F02BE1097DBC19126F851E7712A90EC2F52FA61B4E59D7B0"},
+      {"path":"JM/CF/Scripts/3_Game/CommunityFramework/Mods/ModStructure.c","lines":"302-315","sha256":"E1257321B4F711A72C1703319DB980CDA376C7CFC24955723720BEDA23C131A8"}
+    ]
+  },
+  "en_hashes_verified": [
+    {"path":"en/06-engine-api/01-entity-system.md","sha256":"84DED2A22E62A935C1AA0F98F0D32B1082473AE0C653DF6B4D77C63E2D9C39E4"},
+    {"path":"en/troubleshooting.md","sha256":"DA08530090F727F679BC051FB98899061A8AB80B9A58F26BDBD02A77E0053BE4"},
+    {"path":"en/06-engine-api/17-construction-system.md","sha256":"CDA6F6997163EFBA17073A26C5147FCC6C01B0F5B588A58EA1490FAA87B1D066"},
+    {"path":"en/07-patterns/04-config-persistence.md","sha256":"33082B96074D4A1E1767426F070C333A4658FB822DBB33C6BAEB6786FFBC4374"},
+    {"path":"en/09-server-admin/07-persistence.md","sha256":"7DE855D73B655D66019D6F99BB9D171B67893A181B72AE92439BB82E59FE6C53"},
+    {"path":"en/09-server-admin/11-troubleshooting.md","sha256":"00ED8F7FD2ADBE348CCB43FEBD295BDDD9DBC77DAF30A6D27D10F75372495BC2"}
+  ],
+  "unresolved": [
+    "Native propagation of StorageVersion into the callback argument",
+    "Direct persistence serializer behavior for omitted/wrong-type/trailing data",
+    "Engine behavior after OnStoreLoad false",
+    "Compatibility for old unframed data, shared modded inheritance, and mod removal/reinstallation",
+    "Byte identity of extracted files to the separately cited Script Diff commit",
+    "Compilation, packaging, save/restart/load, and missing-field runtime behavior"
+  ]
+}
