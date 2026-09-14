@@ -1,0 +1,130 @@
+{
+  "observedAt": "2026-09-13",
+  "status": "blocked-no-runtime-log",
+  "scope": {
+    "enEdits": false,
+    "commit": false,
+    "serverLaunched": false,
+    "publicEndpoint": false,
+    "inventoryPath": ".audit/en-2026-09-13/completeness/runtime-inventory.json",
+    "inventorySha256AtCloseout": "3B4DFE8A2AF2B872258516DB98F9AE6A2AC89BD281EE995327DE275E25B2483A"
+  },
+  "executables": {
+    "stableDiag": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64.exe",
+      "productVersion": "1.29.0.163709",
+      "bytes": 20245560,
+      "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"
+    },
+    "experimentalDiag": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Exp/DayZDiag_x64.exe",
+      "productVersion": "1.29.0.163401",
+      "launched": false
+    },
+    "experimentalServer": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Server Exp/DayZServer_x64.exe",
+      "productVersion": "1.29.0.163401",
+      "launched": false
+    },
+    "fileBank": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/FileBank.exe",
+      "sha256": "F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF",
+      "packExitCodes": [0, 0, 0, 0]
+    }
+  },
+  "harnessRoot": "TEMP/wiki-runtime-probes",
+  "probes": [
+    {
+      "id": "baseline",
+      "source": "TEMP/wiki-runtime-probes/source/baseline/Scripts/5_Mission/runtime_baseline.c",
+      "sourceSha256": "55B81C219633DE09922BEE542F4796A6219968AF23C93CFF27314FBEEB7E9526",
+      "pbo": "TEMP/wiki-runtime-probes/mods/@baseline/Addons/baseline.pbo",
+      "pboSha256": "FFFC1FD2601F888C006B497C9978297A41CBAB34DD2E6611453416A102A56ED2",
+      "pboBytes": 1963,
+      "targets": ["zero-vector-normalization", "typename-spawn-no-args", "omitted-override-dispatch", "autoptr-alias-lifetime", "same-callback-static-counter"],
+      "result": "no-runtime-marker-or-compiler-log"
+    },
+    {
+      "id": "spawn-argument-negative",
+      "source": "TEMP/wiki-runtime-probes/source/spawn-argument-negative/Scripts/5_Mission/runtime_spawn_argument_negative.c",
+      "sourceSha256": "E1E8E794220A9D005EB0988F104C57BF422DE47D2EE33926C42491B08C6F3AB2",
+      "pbo": "TEMP/wiki-runtime-probes/mods/@spawn-argument-negative/Addons/spawn-argument-negative.pbo",
+      "pboSha256": "3E09305AD0C6FACD6AA84D82BFD16C941AE4E5E347D6ECC72BB2D554C60FEF84",
+      "pboBytes": 1126,
+      "result": "packed-not-launched-after-observability-failure"
+    },
+    {
+      "id": "object-isdeleted-negative",
+      "source": "TEMP/wiki-runtime-probes/source/object-isdeleted-negative/Scripts/5_Mission/runtime_object_isdeleted_negative.c",
+      "sourceSha256": "936889E041E9E9F5F23CA4D74F41F88517DA57988F04EE544585F5BED6E7D6A9",
+      "pbo": "TEMP/wiki-runtime-probes/mods/@object-isdeleted-negative/Addons/object-isdeleted-negative.pbo",
+      "pboSha256": "F7455CD8C92A72C8457E2CE93B7EE6AFA8B7D4BA9CA4B9186B2540D531C6ADA7",
+      "pboBytes": 834,
+      "result": "packed-not-launched-after-observability-failure"
+    },
+    {
+      "id": "global-print-negative",
+      "source": "TEMP/wiki-runtime-probes/source/global-print-negative/Scripts/5_Mission/runtime_global_print_negative.c",
+      "sourceSha256": "9A449B67A3B9296D9D4914B02AEF6A76ED4484A39D2A1F187D02D9796C465982",
+      "pbo": "TEMP/wiki-runtime-probes/mods/@global-print-negative/Addons/global-print-negative.pbo",
+      "pboSha256": "D683C827DBD6FBF2A080A9A165E63521E8183B31C4A5504337AA1E899D182768",
+      "pboBytes": 652,
+      "result": "packed-not-launched-after-observability-failure"
+    }
+  ],
+  "runs": [
+    {
+      "id": "launch-check",
+      "ownedPid": 43384,
+      "arguments": "-profiles=\"D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\launch-check\" -noSplash",
+      "observed": ["RTP:PID=43384", "RTP:RUNNING=43384", "RTP:STOPPED"]
+    },
+    {
+      "id": "baseline",
+      "ownedPid": 40240,
+      "arguments": "-mod=\"D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\mods\\@baseline\" -profiles=\"D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\baseline2\" -doLogs -scriptDebug=true -noSplash -skipIntro -noPause",
+      "observed": ["present after 20 seconds", "CPU=0.0625", "owned stop issued", "no profile log"]
+    },
+    {
+      "id": "baseline-cleanup",
+      "ownedPid": 5612,
+      "observed": ["present during later check", "CPU=0.09375", "absent at cleanup check", "no profile log or fresh game-directory RPT"]
+    },
+    {
+      "id": "autotest-log-control",
+      "ownedPid": 49220,
+      "arguments": "-profiles=\"D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\autotest-log-check\" -doLogs -scriptDebug=true -autotest=\"D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\autotest-log-check\\missing.json\" -noSplash -skipIntro -noPause",
+      "observed": ["RTP:AUTOTEST_LOGCHECK_PID=49220", "still present at owned-process check", "CPU=0.109375", "owned stop issued", "no profile log"]
+    }
+  ],
+  "logs": {
+    "expectedOwnedRoots": [
+      "TEMP/wiki-runtime-probes/profiles/launch-check",
+      "TEMP/wiki-runtime-probes/profiles/baseline2",
+      "TEMP/wiki-runtime-probes/profiles/baseline-clean",
+      "TEMP/wiki-runtime-probes/profiles/autotest-log-check"
+    ],
+    "observedOwnedFiles": ["TEMP/wiki-runtime-probes/profiles/.gitkeep"],
+    "freshRtpMarkers": [],
+    "freshRpts": [],
+    "preexistingGameDirectoryRpts": [
+      "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64_2026-07-18_13-32-27.RPT",
+      "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64_2026-07-18_13-42-02.RPT"
+    ],
+    "applicationEventErrors": []
+  },
+  "conclusions": {
+    "passedRuntimeClaims": [],
+    "unverified": [
+      "zero-vector-normalization",
+      "typename-spawn-constructor-restriction",
+      "omitted-override-dispatch",
+      "autoptr-alias-lifetime",
+      "static-lifetime-across-mission-reload",
+      "Object.IsDeleted-availability",
+      "listen-server-semantics",
+      "global-Print-scope"
+    ],
+    "reason": "The stable diagnostic client launched as owned hidden processes but did not emit a configured-profile log, game-directory RPT, compiler diagnostic, or RTP marker before safe process cleanup."
+  }
+}

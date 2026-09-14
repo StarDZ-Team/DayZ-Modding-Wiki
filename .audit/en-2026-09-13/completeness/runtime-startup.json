@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-13",
+  "scope": {
+    "harness": "TEMP/wiki-runtime-probes",
+    "englishFilesEdited": false,
+    "previousRecordsEdited": false,
+    "commitCreated": false
+  },
+  "runtime": {
+    "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ\\DayZDiag_x64.exe",
+    "fileVersion": "1.29",
+    "productVersion": "1.29.0.163709",
+    "rptVersion": "1.29.163709",
+    "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+    "lastWriteTimeUtc": "2026-08-13T07:52:12.6409105Z"
+  },
+  "packer": {
+    "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\PboUtils\\FileBank.exe",
+    "sha256": "F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF",
+    "reportedExitCode": 0,
+    "qualification": "A zero FileBank exit code establishes packing only; the retained DayZ script logs establish compilation behavior."
+  },
+  "startupDiagnosis": {
+    "stalledPid": 40308,
+    "stalledMainThreadId": 39948,
+    "attemptedProfilesArgument": "-profiles=\"D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\startup-diag-client\"",
+    "sampleAfterSeconds": 5,
+    "sampleCpuSeconds": 0.09375,
+    "sampleWorkingSetApproxMiB": 32,
+    "threadWaitReason": "ExecutionDelay",
+    "liveProcessMemoryString": "\"D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\startup-diag-client\"\\DataCache\\cache_lock",
+    "staticInspection": {
+      "retryPathRva": "0x69956",
+      "waitWrapperRva": "0x37F960",
+      "waitArgumentHex": "0x3E8",
+      "interpretation": "Supports a one-second retry loop near the live invalid cache_lock path; not treated as a public API contract."
+    },
+    "stalledWindowObservation": "No top-level window was exposed by the stalled PID.",
+    "correctedPid": 37672,
+    "correctedProfilesArgument": "-profiles=D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\startup-corrected-client",
+    "correctedCpuSecondsObserved": 54.4,
+    "correctedWorkingSetApproxMiB": 2048,
+    "correctedOutputsCreated": true,
+    "correctedWindowObservation": "A DayZ top-level window appeared; no Steam or loader modal was observed.",
+    "conclusion": "In the tested PowerShell launch, literal quotes inside the -profiles value became part of the path and blocked startup in a cache_lock retry. Passing the complete option as one quote-free ProcessStartInfo.ArgumentList element corrected startup.",
+    "notConcluded": [
+      "Absence of a log by itself proves startup failure.",
+      "Steam or a modal dialog caused the stalled launch.",
+      "All Windows launchers parse argument quoting identically."
+    ]
+  },
+  "harnessCorrection": {
+    "initialBaselinePid": 16340,
+    "initialScriptLog": {
+      "path": "TEMP/wiki-runtime-probes/profiles/baseline-corrected/script_2026-09-13_20-21-01.log",
+      "sha256": "1103D76AB7F4135D045461CAD22D3E0966529CD5552076C3B31BB2152841F305",
+      "errorLine": 9,
+      "error": "Overriding function 'Label' but not marked as 'override'"
+    },
+    "fixes": [
+      "Added override to RTP_DispatchChild.Label in the positive baseline.",
+      "Moved the omitted-override compiler case into an isolated PBO.",
+      "Documented ProcessStartInfo.ArgumentList launch requirements."
+    ]
+  },
+  "probeSources": [
+    {
+      "path": "TEMP/wiki-runtime-probes/source/baseline/Scripts/5_Mission/runtime_baseline.c",
+      "sha256": "18A69ED1C8E7465300FF6D712EF1BC0FCBF139FE963F12D843C14ED2F75F0B17"
+    },
+    {
+      "path": "TEMP/wiki-runtime-probes/source/spawn-argument-negative/Scripts/5_Mission/runtime_spawn_argument_negative.c",
+      "sha256": "E1E8E794220A9D005EB0988F104C57BF422DE47D2EE33926C42491B08C6F3AB2"
+    },
+    {
+      "path": "TEMP/wiki-runtime-probes/source/omitted-override-negative/Scripts/5_Mission/runtime_omitted_override_negative.c",
+      "sha256": "BD3677A022E6B593A7E02F8D7FD38DEAA4218D9E93847EAAD86D1D61DC51FB2E"
+    },
+    {
+      "path": "TEMP/wiki-runtime-probes/source/object-isdeleted-negative/Scripts/5_Mission/runtime_object_isdeleted_negative.c",
+      "sha256": "936889E041E9E9F5F23CA4D74F41F88517DA57988F04EE544585F5BED6E7D6A9"
+    },
+    {
+      "path": "TEMP/wiki-runtime-probes/source/global-print-negative/Scripts/5_Mission/runtime_global_print_negative.c",
+      "sha256": "9A449B67A3B9296D9D4914B02AEF6A76ED4484A39D2A1F187D02D9796C465982"
+    },
+    {
+      "path": "TEMP/wiki-runtime-probes/source/server-context/Scripts/5_Mission/runtime_server_context.c",
+      "sha256": "DDCFEFAFF148ADA1BEF008E8D6DF3FC6CC8C226EBACE9AB745C244B61C8D1E37"
+    }
+  ],
+  "probes": [
+    {
+      "id": "baseline",
+      "pid": 48644,
+      "pbo": {
+        "path": "TEMP/wiki-runtime-probes/mods/@baseline/Addons/baseline.pbo",
+        "bytes": 1974,
+        "sha256": "B2C059E3D239DC57367E6D21E6FA2A4D83043991E8436A6917A01475132FC7F0"
+      },
+      "scriptLog": {
+        "path": "TEMP/wiki-runtime-probes/profiles/baseline-isolated/script_2026-09-13_20-25-40.log",
+        "sha256": "BABF4385BD4B864FEBF424416118BBF94B8FDF1E899D5A69F1C2234E301F26B3",
+        "markerLines": {
+          "36": "RTP:BASELINE:BEGIN",
+          "37": "RTP:ZERO:RETURN=0 VALUE=<0.000000, 0.000000, 0.000000>",
+          "38": "RTP:SPAWN:CTOR",
+          "39": "RTP:SPAWN:NONNULL",
+          "40": "RTP:DISPATCH:child-with-override",
+          "41": "RTP:AUTOPTR:ALIAS_ASSIGNED",
+          "42": "RTP:AUTOPTR:POST_SCOPE",
+          "43": "RTP:AUTOPTR:DESTRUCTOR",
+          "44": "RTP:STATIC:COUNTER=1",
+          "45": "RTP:STATIC:COUNTER=2",
+          "46": "RTP:BASELINE:END"
+        }
+      },
+      "rpt": {
+        "path": "TEMP/wiki-runtime-probes/profiles/baseline-isolated/DayZDiag_x64_2026-09-13_20-25-38.RPT",
+        "sha256": "FF324C5188DB2B9E1D178557CA4A45E148E7BF37D73681FD09FC1231B392CFD8"
+      },
+      "boundedResults": [
+        "Zero Normalize returned 0 and retained a zero vector.",
+        "A parameterless typename.Spawn succeeded.",
+        "Base-typed dispatch selected the child method marked override.",
+        "The tested autoptr destructor ran after POST_SCOPE at function exit.",
+        "The tested static counter retained state between two immediate calls only."
+      ]
+    },
+    {
+      "id": "spawn-one-int-argument",
+      "pid": 48612,
+      "pbo": {
+        "path": "TEMP/wiki-runtime-probes/mods/@spawn-argument-negative/Addons/spawn-argument-negative.pbo",
+        "bytes": 1126,
+        "sha256": "3E09305AD0C6FACD6AA84D82BFD16C941AE4E5E347D6ECC72BB2D554C60FEF84"
+      },
+      "scriptLog": {
+        "path": "TEMP/wiki-runtime-probes/profiles/spawn-argument-isolated/script_2026-09-13_20-26-53.log",
+        "sha256": "B526A0161D22225B9CAFC9815513FA3746376D0ED89E64919D29EBFFDCE4ECC6",
+        "markerLines": {
+          "36": "RTP:SPAWN_ARGUMENT:BEGIN",
+          "37": "RTP:SPAWN_ARGUMENT:CTOR=0",
+          "38": "RTP:SPAWN_ARGUMENT:NONNULL"
+        }
+      },
+      "rptSha256": "8CE4E4728993CEAFBF2627EAB9FDEF545DC80DBCA30DDAB29E074C36304F9F08",
+      "boundedResult": "Spawn instantiated the class and supplied integer zero; other signatures remain untested."
+    },
+    {
+      "id": "omitted-override",
+      "pid": 42660,
+      "pboSha256": "7D398952953952314002346ACE4861782551B2D678237B6FF560FBA192D41A1B",
+      "scriptLog": {
+        "path": "TEMP/wiki-runtime-probes/profiles/omitted-override-isolated/script_2026-09-13_20-29-22.log",
+        "sha256": "4E432020840281FCB59324A1DEFD600F6F137B9A9925CA3413DFDECF17AAB4D4",
+        "line9": "Overriding function 'Label' but not marked as 'override'",
+        "line10": "Can't compile Mission script module"
+      },
+      "boundedResult": "The omitted override is a compile error on this build, not a warning/new-method result."
+    },
+    {
+      "id": "object-isdeleted",
+      "pid": 49820,
+      "pboSha256": "F7455CD8C92A72C8457E2CE93B7EE6AFA8B7D4BA9CA4B9186B2540D531C6ADA7",
+      "scriptLog": {
+        "path": "TEMP/wiki-runtime-probes/profiles/object-isdeleted-isolated/script_2026-09-13_20-27-49.log",
+        "sha256": "FC4027982D586892A721CBDCEA5EF019F1EFD61F47581626EE4CCAFCB838090B",
+        "line9": "Undefined function 'Object.IsDeleted'",
+        "line10": "Can't compile Mission script module"
+      },
+      "boundedResult": "The tested Object instance call is not declared and does not compile."
+    },
+    {
+      "id": "global-print",
+      "pid": 24008,
+      "pboSha256": "D683C827DBD6FBF2A080A9A165E63521E8183B31C4A5504337AA1E899D182768",
+      "scriptLog": {
+        "path": "TEMP/wiki-runtime-probes/profiles/global-print-isolated/script_2026-09-13_20-28-38.log",
+        "sha256": "9BB9FA292E40CEFF294E507A9B2221CD4C4D7701BE4C98A8D2453B0C9E5D4572",
+        "line9": "Source line 1: Syntax error",
+        "line10": "Can't compile Mission script module"
+      },
+      "boundedResult": "A bare top-level Print call is a syntax error; global declarations were not disproved."
+    }
+  ],
+  "stableServer": {
+    "baselinePid": 3884,
+    "arguments": "-server -ip=127.0.0.1 -port=24042 with isolated -profiles, -storage, and -config",
+    "scriptLog": {
+      "path": "TEMP/wiki-runtime-probes/profiles/stable-server-local2/script_2026-09-13_20-32-07.log",
+      "sha256": "8BCE0F51517FF0C0DCE676707E387DF24A8486CF810880586FDE8883FC3E5DE1",
+      "loadedModules": ["GameLib", "Game", "World"],
+      "observedDefines": ["SERVER_FOR_WINDOWS", "SERVER", "NO_GUI", "NO_GUI_INGAME"]
+    },
+    "rpt": {
+      "path": "TEMP/wiki-runtime-probes/profiles/stable-server-local2/DayZDiag_x64_2026-09-13_20-32-04.RPT",
+      "sha256": "A5586DCAD4439F17297C0E69342FE9FB70AAF032E65F642A775C89B7D273E3D0",
+      "terminationCountdownLines": "436-445",
+      "successfulTerminationLine": 449
+    },
+    "serverContextPboSha256": "83CBDBD50A1C2CBEAE2343875A340E6BEC10EDF9A5166403457AB429253A701F",
+    "centralEconomyReference": {
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "commitDate": "2026-08-13T17:46:30+02:00"
+    },
+    "boundedResult": "Stable DayZDiag entered server mode and exposed server defines, but all retained mission attempts stopped after World-module loading. No MissionServer marker or listening endpoint is claimed."
+  },
+  "launcherIsolationIncident": {
+    "pid": 44964,
+    "badCommandFragment": "-profiles= D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\profiles\\baseline-arglist-bug",
+    "copiedArtifacts": [
+      {
+        "path": "TEMP/wiki-runtime-probes/profiles/baseline-arglist-bug/DayZDiag_x64_2026-09-13_20-23-30.RPT",
+        "sha256": "53938D1DBDF7BC730CBEA6989A62615B6E96F6474FCBF56B0583FC19A25B10DA"
+      },
+      {
+        "path": "TEMP/wiki-runtime-probes/profiles/baseline-arglist-bug/script_2026-09-13_20-23-32.log",
+        "sha256": "E4A56BA4BBB4E6BFCD90C87EFF8871E5018CCE0A295484CC28DA2F77F0E3B3A4"
+      }
+    ],
+    "cleanup": "Deleted only the two exact newly created originals from %LOCALAPPDATA%\\DayZ; both paths were confirmed absent."
+  },
+  "sources": [
+    {
+      "kind": "official-indexed-page",
+      "url": "https://community.bistudio.com/wiki/DayZ%3AWorkbench_Script_Debugging",
+      "accessDate": "2026-09-13",
+      "use": "DayZDiag client/server support with -server"
+    },
+    {
+      "kind": "official-indexed-page",
+      "url": "https://community.bistudio.com/wiki/DayZ%3AModding_Basics",
+      "accessDate": "2026-09-13",
+      "use": "Whole-argument quoting and diagnostic client/server launch syntax"
+    },
+    {
+      "kind": "official-indexed-page",
+      "url": "https://community.bistudio.com/wiki/DayZ%3AServer_Configuration",
+      "accessDate": "2026-09-13",
+      "use": "Server startup parameter descriptions"
+    },
+    {
+      "kind": "local-fallible-snapshot",
+      "path": "D:\\StarDZ\\docs\\DayZ\\Workbench Script Debugging.md",
+      "sha256": "2E46B120066884C1D2EE5B10705D4214C35DFB08B69249100E7DF00F10146F16"
+    },
+    {
+      "kind": "local-fallible-snapshot",
+      "path": "D:\\StarDZ\\docs\\DayZ\\Modding Basics.md",
+      "sha256": "1A0B2C1F7A69E369E74D923CB77D4716B9DD21941B0C02DA5015FA7F708B5839"
+    }
+  ],
+  "priorReportCorrections": [
+    "No fresh log was insufficient to infer that the environment never reached extracted scripts; the literal quoted profile path was the actual observed blocker.",
+    "Absence of a separate stable server executable is not evidence that stable server mode is unavailable; official documentation and the SERVER-defined run identify DayZDiag -server support.",
+    "The prior all-unverified status was appropriate then, but it is superseded for the exact cases with retained runtime/compiler logs in this record."
+  ],
+  "unresolved": [
+    "Static lifetime across mission restart",
+    "Safe behavior when dereferencing the alias after autoptr destruction",
+    "typename.Spawn behavior for constructor signatures other than the tested no-argument and one-int cases",
+    "A stable diagnostic MissionServer context and confirmed local listening endpoint"
+  ],
+  "cleanup": {
+    "ownedProcessIds": [40308, 37672, 16340, 44964, 48644, 48612, 49820, 24008, 42660, 3884, 46224, 15196, 45752, 37412, 14680],
+    "allOwnedProcessesStoppedOrExited": true,
+    "closeoutProcesses": []
+  }
+}

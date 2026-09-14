@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-13",
+  "report": ".audit/en-2026-09-13/completeness/runtime-council.md",
+  "scope": {
+    "englishEdited": false,
+    "originalArtifactsEdited": false,
+    "commitCreated": false,
+    "rerunRoot": "TEMP/runtime-council"
+  },
+  "reviewedBuild": {
+    "productVersion": "1.29.0.163709",
+    "rptVersion": "1.29.163709",
+    "exeSha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"
+  },
+  "artifactAudit": {
+    "runtimeStartupRecordedPairsChecked": 23,
+    "runtimeStartupRecordedPairMismatches": 0,
+    "pboPayloadSourceMatches": true,
+    "historicalRuntimeProbesPathsSuperseded": [
+      "TEMP/wiki-runtime-probes/source/baseline/Scripts/5_Mission/runtime_baseline.c",
+      "TEMP/wiki-runtime-probes/mods/@baseline/Addons/baseline.pbo"
+    ],
+    "details": "See Reviewed material and identity in the prose report."
+  },
+  "decisions": [
+    {"id": "zero-normalize", "disposition": "accepted-repair", "reportSection": "Accepted repairs #1"},
+    {"id": "typename-spawn-one-int", "disposition": "accepted-bounded-repair", "reportSection": "Accepted repairs #2"},
+    {"id": "omitted-override", "disposition": "accepted-repair", "reportSection": "Accepted repairs #3"},
+    {"id": "object-isdeleted", "disposition": "accepted-compile-specific-repair", "reportSection": "Accepted repairs #4"},
+    {"id": "bare-global-print", "disposition": "accepted-no-global-function-repair", "reportSection": "Accepted repairs #5"},
+    {"id": "autoptr-universal-equivalence", "disposition": "rejected-universal-claim", "reportSection": "Rejected or unsupported EN wording"},
+    {"id": "static-across-mission-restart", "disposition": "unresolved", "reportSection": "Rejected or unsupported EN wording"},
+    {"id": "autoptr-post-destruction-alias", "disposition": "unresolved", "reportSection": "Unresolved next tests #2"},
+    {"id": "typename-spawn-other-signatures", "disposition": "unresolved", "reportSection": "Unresolved next tests #3"},
+    {"id": "stable-mission-listener", "disposition": "unresolved", "reportSection": "Unresolved next tests #4"},
+    {"id": "launcher-literal-quotes", "disposition": "accepted-observation-rejected-generalization", "reportSection": "Launcher finding"}
+  ],
+  "freshReruns": [
+    {
+      "id": "positive",
+      "pid": 3808,
+      "sourceSha256": "6637C29EDEC39AE722CD4517E9B50176C1E7D3BF3AA650BC643A43213B9D3840",
+      "pboSha256": "C747659E3E8EFF742D91D24023E8B8E3E1B2D045B0965BF24913DC584CDA827B",
+      "scriptLogSha256": "70B888CD1F5E8C8775DCBE738E5233ABF0C479417EAE235CDECDC667EFE952A6",
+      "rptSha256": "B75B87259072BE217A206E440F4CFEDB0C8D3D991BD1E7F3FA0CD94DA0DF8C67",
+      "result": "passed-bounded"
+    },
+    {
+      "id": "omitted-override",
+      "pid": 32900,
+      "sourceSha256": "5AADAAE1172C75346720E064DD4B6E0035C730828C8757D86F6599D8A191EDFD",
+      "pboSha256": "BFEDF7007927476694501EA9F73AAECAD8A45F14376BA1E625D6AB5CF01B57CC",
+      "scriptLogSha256": "8D316F11BE16B3DA84D5801854CAF919C3FE9F85165DB474A9F5FE9A89B8DE1D",
+      "rptSha256": "410BE681EA9B8CF8E43D57029FF31C8A90F30B5B58C9084F07EC7CAA3A313CCE",
+      "result": "specific-compiler-error-observed"
+    },
+    {
+      "id": "object-isdeleted-control",
+      "pid": 2140,
+      "result": "inconclusive-stopped-before-mission-compile",
+      "reportSection": "Independent reruns"
+    }
+  ],
+  "discardedOwnedPids": [13892, 34740, 1276],
+  "allOwnedPids": [13892, 34740, 3808, 32900, 2140, 1276],
+  "cleanup": {
+    "ownedProcessesStoppedOrExited": true,
+    "closeoutProcesses": []
+  }
+}
