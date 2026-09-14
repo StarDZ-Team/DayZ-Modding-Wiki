@@ -35,9 +35,9 @@
     {
       "id": "BUILD-C01",
       "claim": "Current checkout includes 40 TEMP Markdown pages in VitePress discovery",
-      "status": "Final build must use clean controlled content checkout or explicitly reviewed exclusions; do not delete evidence or blindly build TEMP references"
+      "status": "Repaired in 63fde8a by reviewed root TEMP/** exclusion. Independent installed-VitePress discovery removed 65 TEMP pages and preserved all locale sets and both example routes. Current rendered-page and full integrated build verification remain pending; original observation counts above are historical."
     }
   ],
   "limits": "Static page discovery, not HTTP verification. PBO file is concurrently edited and line numbers can change. Existing full-build ignore rules can hide broken routes.",
-  "updatedAtUtc": "2026-09-14T03:34:17.4461487Z"
+  "updatedAtUtc": "2026-09-14T04:31:09.8171690Z"
 }

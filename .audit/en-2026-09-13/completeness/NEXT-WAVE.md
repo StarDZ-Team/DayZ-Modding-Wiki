@@ -2,6 +2,17 @@
 
 This is coordinator planning, not council approval or a narrower replacement goal. Consult [ACCEPTANCE.md](ACCEPTANCE.md) and the complete [coverage map](coverage-map.md).
 
+## Persistence repair and GUI follow-up wave — 2026-09-14
+
+This operational update supersedes older completion/ownership statements below. It does not supersede the full coverage map or acceptance requirements.
+
+- Commit 63fde8a excludes root TEMP Markdown from VitePress discovery. Independent before/after discovery preserved all 12 locale sets and both example routes; this is not a rendered-page or full-build pass.
+- Commit 75c41fa integrates the independently reviewed static-lifecycle wording after repair. The direct mission-restart experiment still crashed; no healthy restart or universal static-lifetime claim is approved.
+- The independent persistence-fixture council accepted archive production only and rejected migration-fixture completion. Concrete defects include inconsistent actual PBO filenames, no per-instance faulty-writer selection for valid controls, and insufficient fail-fast diagnostics. Mission/CE/save/clean-shutdown prerequisites and compilation/runtime remain required.
+- Repair dispatched to Terra high: task_baafaac584fb / ctx_f82153f7fb1b. Source research for the missing persistence harness dispatched separately to Sol high: task_5729ea949a91 / ctx_ba1f04a18757.
+- Remaining XML/native-imageset claims dispatched for bounded source research to Sol medium: task_20f0af99b71a / ctx_16eebcdfe84a.
+- These are dispatch records, not completion evidence. Query Orca run run_335030a972ec for current state. New deliveries require independent review of final files before integration. Do not repeat the completed multi-PBO confirmation.
+
 ## Latest continuation closeout
 
 The 2026-09-14 continuation checkpoint is [continuation-20260914-closeout.json](continuation-20260914-closeout.json). It supersedes the dated ownership and completed-work statements below; the full acceptance criteria and remaining coverage still apply.
