@@ -182,6 +182,7 @@ These instructions consolidate the user's decisions from the audit conversation 
 | Local documentation | `D:\StarDZ\docs` | Read relevant documents outside this wiki too; validate their claims independently. |
 | Official sources | Bohemia documentation, DayZ Samples, DayZ Script Diff, Central Economy repositories | Prefer direct, version-specific evidence and distinguish DayZ from other Bohemia games. |
 | Public mods | VPP Admin Tools, Community Framework, Community Online Tools, DayZ Expansion, DayZ Editor, and other relevant GitHub projects | Download and inspect relevant code, with pinned commits. Seek additional projects when existing references do not cover a topic. |
+| User-supplied knowledge and testing tools | [DayZ Modding Knowledge Pack](https://github.com/willy92wins/DayZ-Modding-Knowledge-Pack), [dayz-mcp](https://github.com/willy92wins/dayz-mcp) | Inspect their code, provenance, and tests at pinned commits. Distinguish upstream reports and mocked checks from locally reproduced game behavior. Initial checkout receipts are in `.audit/en-2026-09-13/completeness/willy-reference-intake.json`. |
 | Modding community | Discord community `https://discord.com/channels/452035973786632194`, when accessible through Orca | Use discussions as research leads and corroborating evidence. Do not send messages without explicit authorization. |
 
 - Actually open the relevant files. A clone, search result, repository name, or agent assertion is not evidence that code was examined.

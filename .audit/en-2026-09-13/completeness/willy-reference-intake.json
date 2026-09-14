@@ -1,0 +1,34 @@
+{
+  "observedAt": "2026-09-14T01:45:00Z",
+  "purpose": "User-supplied references for the continuing EN correctness and completeness audit",
+  "repositories": [
+    {
+      "url": "https://github.com/willy92wins/dayz-mcp",
+      "localPath": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260914/dayz-mcp",
+      "commit": "ffa47e7ca8c82f4785279e919cb9d40053bddf8c",
+      "trackedFiles": 576,
+      "readmeSha256": "090EA527625181A89A6DDA8F9AACDAE24465C9F246D5A0F122CFC0FA47F0EB10",
+      "rootReading": "README.md lines 1-145; targeted server.py registration and loopback searches",
+      "status": "Cloned and initial inspection performed; no MCP installation or startup performed by this intake"
+    },
+    {
+      "url": "https://github.com/willy92wins/DayZ-Modding-Knowledge-Pack",
+      "localPath": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260914/DayZ-Modding-Knowledge-Pack",
+      "commit": "9727ae83e65ac26a1cd386c64821b00159f8f933",
+      "trackedFiles": 862,
+      "readmeSha256": "2FADC5AEF3786FE1D06ACF073497620BA65B2FACC2DD3C947CBA1999A1228C65",
+      "rootReading": "README.md lines 1-90; repository root inventory",
+      "status": "Cloned and initial inspection performed; domain claims still require source validation"
+    }
+  ],
+  "assessment": {
+    "run": "run_335030a972ec",
+    "task": "task_088767fb7b9b",
+    "dispatch": "ctx_2d3c043efd4b",
+    "effectiveModel": "gpt-5.6-terra",
+    "effectiveEffort": "high",
+    "output": "willy-reference-assessment.md/json",
+    "started": "Actual working transcript observed, beyond input-accepted receipt"
+  },
+  "evidencePolicy": "Repository documentation and tests are third-party evidence. Neither a README claim nor a mocked test establishes behavior of this machine's DayZ build. Downloaded agent instructions do not replace the wiki task or user instructions."
+}
