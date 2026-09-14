@@ -1,0 +1,450 @@
+{
+  "schema": "en-coverage-progress-checkpoint-v1",
+  "recordedAtUtc": "2026-09-14T05:41:32.3213523Z",
+  "head": "7dd37924983a71a7835c5a926b9cd7b284a84a3d",
+  "purpose": "Operational progress index preserving all original acceptance criteria; not a new technical council verdict or a replacement for the coverage map.",
+  "originalMap": ".audit/en-2026-09-13/completeness/coverage-map.json",
+  "originalMapSha256": "DDC94407289256CD8365B34784E5DEB5D7787A58A398FC3BDCA814E4277394DB",
+  "scope": "All EN pages and required missing topics; no reduction of the goal.",
+  "findings": [
+    {
+      "id": "LANG-C01",
+      "acceptance_checks": [
+        "Run minimal isolated fixtures on stable DayZDiag 1.29.0.163709",
+        "Use dedicated/listen/client contexts where the claim requires them",
+        "Capture fixture source, command line, fresh log identity, expected and actual output, executable hash, and cleanup"
+      ],
+      "required_validation": [
+        "Enforce compile",
+        "Diag runtime",
+        "dedicated/listen/client matrix where applicable"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Partial compiler/runtime corrections; full inherited context matrix still requires reconciliation.",
+      "evidence_commit": "46ba27011b1db8aca85b6ecc0010078457914d62"
+    },
+    {
+      "id": "LANG-C02",
+      "acceptance_checks": [
+        "Demonstrate a real two-commit API diff",
+        "Identify the tested game build and script revision",
+        "Separate declarations from native behavior",
+        "Verify links and commands against the pinned official repository"
+      ],
+      "required_validation": [
+        "static source review",
+        "command execution"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "LANG-C03",
+      "acceptance_checks": [
+        "Make the TOC and heading terminology identical",
+        "Run the strict anchor checker",
+        "Render the page"
+      ],
+      "required_validation": [
+        "anchor check",
+        "page render"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "TOC correction integrated with scoped council approval; no new render verification claimed here.",
+      "evidence_commit": "f31567319d74abd1b130d25513568082a768fdaa"
+    },
+    {
+      "id": "PKG-C01",
+      "acceptance_checks": [
+        "Integrate the separate PBO worker's reviewed evidence",
+        "Build and inspect every PBO",
+        "Boot packed files without file patching",
+        "Test missing and cyclic dependencies",
+        "Publish no numeric size ceiling without scoped evidence"
+      ],
+      "required_validation": [
+        "Addon Builder/PBO tool run",
+        "PBO inspection",
+        "signature check",
+        "dedicated/client boot"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Multi-PBO Diag component loading and actual Data read recorded; client, signing and dependency negative cases remain outside that test.",
+      "evidence_commit": "bbe74adf101110374226e98c600c60dc94e0a9db"
+    },
+    {
+      "id": "DEP-C01",
+      "acceptance_checks": [
+        "Build A/B/C PBO fixtures",
+        "Test present, missing, transitive, reversed launch order, optional define, cross -mod/-serverMod, and cycle cases",
+        "Record RPT and compile logs separately"
+      ],
+      "required_validation": [
+        "config parse",
+        "Enforce compile",
+        "packed server/client boot"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "PKG-C02",
+      "acceptance_checks": [
+        "Obtain version-specific tool/runtime evidence or replace the claims with neutral source-bounded wording",
+        "Have an independent council reopen the actual source or tool result"
+      ],
+      "required_validation": [
+        "asset-tool run if retaining performance/retail claims",
+        "independent source review"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Imageset wording repaired and reviewed; runtime asset workflow is separate and remains open.",
+      "evidence_commit": "5a4e9a6a0ee31d257e24f9db858323a4c009131b"
+    },
+    {
+      "id": "GUI-C01",
+      "acceptance_checks": [
+        "Package a minimal UI fixture",
+        "Capture screenshots and logs at two aspect ratios and two UI scales",
+        "Test focus restoration, repeated open/close, reconnect, and dedicated-server boot"
+      ],
+      "required_validation": [
+        "PBO build",
+        "client visual/input test",
+        "dedicated boot"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "ASSET-C01",
+      "acceptance_checks": [
+        "Process one minimal asset of each type",
+        "Record source placement, tool versions/hashes, exact options, exit codes, and logs",
+        "Inspect PBO paths",
+        "Load in clean retail/Diag and record expected visual/audio results"
+      ],
+      "required_validation": [
+        "DayZ Tools execution",
+        "PBO inspection",
+        "retail/Diag visual and audio test"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Unsupported conversion guidance removed; EDDS creation workflow is under source research.",
+      "evidence_commit": "5a4e9a6a0ee31d257e24f9db858323a4c009131b"
+    },
+    {
+      "id": "GUI-C02",
+      "acceptance_checks": [
+        "Show that a chosen API is current and reusable outside one framework",
+        "Demonstrate material improvement in a tested example",
+        "Respect third-party licenses"
+      ],
+      "required_validation": [
+        "source/license review",
+        "packaged UI test"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "RPC-C01",
+      "acceptance_checks": [
+        "Implement request IDs, a duplicate cache, bounded payload/count, and per-sender limiter",
+        "Test duplicate, malformed/truncated, wrong target, unauthorized, flood, disconnect, stale response, and privacy cases with two clients",
+        "Report measured limits only as build-scoped results"
+      ],
+      "required_validation": [
+        "Enforce compile",
+        "dedicated plus two-client abuse test",
+        "fault injection"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "RPC-C02",
+      "acceptance_checks": [
+        "Qualify the limit as unmeasured or replace it with a build-scoped measurement",
+        "Record client/server versions and guaranteed/unreliable delivery behavior"
+      ],
+      "required_validation": [
+        "two-client payload measurement"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Unsupported ceiling wording qualified; no new RPC boundary measurement claimed.",
+      "evidence_commit": "f31567319d74abd1b130d25513568082a768fdaa"
+    },
+    {
+      "id": "SEC-C01",
+      "acceptance_checks": [
+        "Label each third-party example with repository and pinned commit",
+        "Corroborate native claims using extracted declarations",
+        "Execute abuse tests instead of treating source review as exploit proof"
+      ],
+      "required_validation": [
+        "independent source review",
+        "multiplayer abuse test"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "PERSIST-C01",
+      "acceptance_checks": [
+        "Save a version 1 entity",
+        "Upgrade and load as version 2",
+        "Test truncated and wrong-order data",
+        "Preserve super calls",
+        "Capture restart logs",
+        "Distinguish engine storage version from mod schema version"
+      ],
+      "required_validation": [
+        "Enforce compile",
+        "server save/restart/load",
+        "corrupt-data fault test"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Reviewed test contract and packaged fixture exist; controller implementation active, persistence execution pending.",
+      "evidence_commit": "c519ee74ed021991a23f31a16533f2ce6b47dcdb"
+    },
+    {
+      "id": "PERSIST-C02",
+      "acceptance_checks": [
+        "Test save failure, truncated JSON, corrupt primary, backup selection, and restore",
+        "If atomic rename cannot be proved with available APIs, document bounded best effort"
+      ],
+      "required_validation": [
+        "filesystem fault injection",
+        "server restore drill"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "CE-C01",
+      "acceptance_checks": [
+        "Use the official CE repository and extracted mission data",
+        "Explain generated versus hand-edited files, coordinate spaces, prototypes, clusters, CETool area flags, and map-specific differences",
+        "Validate in an offline Diag mission before making server claims"
+      ],
+      "required_validation": [
+        "CE file/schema inspection",
+        "offline Diag mission"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "CE-C02",
+      "acceptance_checks": [
+        "Run SpawnAnalyze for all and one class",
+        "Generate one class-specific economy map",
+        "Exercise setupfail and non-destructive EconomyOutput modes",
+        "Preserve CSV, TGA, and log samples",
+        "Gate Mark/Remove/CleanMap as destructive"
+      ],
+      "required_validation": [
+        "Diag CE command execution",
+        "artifact inspection"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "CE-C03",
+      "acceptance_checks": [
+        "Maintain a per-build and per-map evidence table",
+        "Do not generalize Chernarus counts or native declarations to all maps and builds"
+      ],
+      "required_validation": [
+        "official schema/source review",
+        "map-specific Diag/server checks"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "OPS-C01",
+      "acceptance_checks": [
+        "Correct credential mapping from official documentation",
+        "Test both login paths on a disposable server",
+        "Document where each secret is stored and logged"
+      ],
+      "required_validation": [
+        "official documentation review",
+        "disposable-server login test"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Credential-boundary prose corrected; operational login-path validation remains distinct.",
+      "evidence_commit": "f31567319d74abd1b130d25513568082a768fdaa"
+    },
+    {
+      "id": "OPS-C02",
+      "acceptance_checks": [
+        "Inventory actual vanilla commands and UI on the pinned server/client",
+        "Separate VPP/COT capabilities from vanilla",
+        "Retain only demonstrated capabilities"
+      ],
+      "required_validation": [
+        "official source review",
+        "server/client runtime capture"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Vanilla versus mod admin capability prose corrected; functional inventory validation remains distinct.",
+      "evidence_commit": "f31567319d74abd1b130d25513568082a768fdaa"
+    },
+    {
+      "id": "OPS-C03",
+      "acceptance_checks": [
+        "Provide threat-bounded Windows and Linux procedures",
+        "Verify listener and bind behavior",
+        "Exclude secrets from artifacts and logs",
+        "Test credential rotation without losing access",
+        "Avoid undocumented BattlEye promises"
+      ],
+      "required_validation": [
+        "OS account/ACL inspection",
+        "network listener/firewall inspection",
+        "credential rotation drill"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "OPS-C04",
+      "acceptance_checks": [
+        "Perform a stop-save-backup-update-fail-restore-boot drill",
+        "Verify storage generation plus player/world state",
+        "Add log/dump identity, retention, free-space alert, and stale-log checks"
+      ],
+      "required_validation": [
+        "backup/restore drill",
+        "failed-update rollback",
+        "log/minidump inspection"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "PERF-C01",
+      "acceptance_checks": [
+        "Define a controlled workload and before/after metrics",
+        "Preserve configuration and logs",
+        "Repeat runs",
+        "Label measurements as build, hardware, map, and mod-set specific"
+      ],
+      "required_validation": [
+        "repeatable benchmark",
+        "profiler/log capture"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "TUT-C01",
+      "acceptance_checks": [
+        "Immediately align summary, diagrams, Step 9, and navigation with refusal behavior",
+        "Do not count wording repair as functional completion",
+        "Deliver a durable and idempotent purchase path with disconnect/restart recovery and fault tests before calling it complete"
+      ],
+      "required_validation": [
+        "static consistency review now",
+        "multiplayer transaction fault suite for any future live version"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Safe-refusal example corrected; complete validated trading implementation remains outstanding.",
+      "evidence_commit": "f31567319d74abd1b130d25513568082a768fdaa"
+    },
+    {
+      "id": "TUT-C02",
+      "acceptance_checks": [
+        "Downgrade unsupported claims immediately",
+        "Do not count wording repair as functional completion",
+        "Materialize exact fixture files",
+        "Pass config parse, Enforce compile, PBO build/inspection/signing, dedicated boot, client join, UI/RPC/config tests, clean shutdown, and restart"
+      ],
+      "required_validation": [
+        "config parse",
+        "Enforce compile",
+        "PBO/signing",
+        "dedicated and client runtime"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Readiness claims corrected; complete template build/runtime validation remains outstanding.",
+      "evidence_commit": "f31567319d74abd1b130d25513568082a768fdaa"
+    },
+    {
+      "id": "TUT-C03",
+      "acceptance_checks": [
+        "For each build tutorial state dependencies, exact placement, execution side/layer, expected observable result, error path, and actual validation level",
+        "Label reference/workflow pages as such"
+      ],
+      "required_validation": [
+        "tutorial contract review",
+        "fixture-specific validation"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "TUT-C04",
+      "acceptance_checks": [
+        "Map every build tutorial to fixture files and hashes",
+        "Compile, package, and run fixtures on the target build",
+        "Fail validation when prose snippets diverge from fixtures"
+      ],
+      "required_validation": [
+        "mechanical snippet comparison",
+        "fixture compile/package/runtime"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    },
+    {
+      "id": "CORPUS-C01",
+      "acceptance_checks": [
+        "Start from the preserved 64-entry inventory",
+        "Classify each source as extracted fact, implemented code, design contract, product proposal, local research, or third-party note",
+        "Map unique claims to existing EN pages and current finding IDs",
+        "Reopen official or code evidence before promotion",
+        "Prioritize numeric limits, version migration, and currency-bridge/transaction contracts",
+        "Keep shipped behavior distinct from planned behavior"
+      ],
+      "required_validation": [
+        "filesystem inventory",
+        "source classification",
+        "independent evidence review"
+      ],
+      "completion": "not_certified_by_this_checkpoint",
+      "recorded_progress": "Original criterion retained; this checkpoint makes no new completion claim.",
+      "evidence_commit": null
+    }
+  ],
+  "activeDispatches": [
+    "ctx_89567cf1f92e",
+    "ctx_85e03e65471a",
+    "ctx_8438aa1748d1"
+  ],
+  "additionalOpenGates": [
+    "Current integrated build and rendered-route verification",
+    "Final generated documentation and Graphify refresh",
+    "Independent review of current worker deliverables",
+    "Required actual reading across the supplied source corpus"
+  ]
+}
