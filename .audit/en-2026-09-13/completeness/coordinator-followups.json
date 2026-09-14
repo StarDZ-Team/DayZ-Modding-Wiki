@@ -1,0 +1,16 @@
+{
+  "scope": "Additional observations during final integration; these are follow-up candidates, not independently proven defects",
+  "findings": [
+    {
+      "id": "PERF-MODCPP-01",
+      "coverageParent": "PERF-C01",
+      "path": "en/02-mod-structure/03-mod-cpp.md",
+      "lineAtObservation": 514,
+      "observedAtCommit": "5714990",
+      "claim": "mod.cpp is read once at startup; referenced images have no in-game performance impact",
+      "status": "needs_source_or_scoped_wording_review",
+      "reason": "This adjacent retained sentence was outside the two residual repairs. The reopened official Modding Structure snapshot establishes presentation metadata, but not exact read frequency, image lifetime, or a universal absence of performance impact.",
+      "next": "Include in the performance/presentation review. Do not infer a performance defect or a successful benchmark from this candidate."
+    }
+  ]
+}

@@ -1,24 +1,42 @@
 {
-  "checkpointUtc": "2026-09-14T00:50:19.8602000Z",
+  "checkpointUtc": "2026-09-14T02:41:24.6133157Z",
   "branch": "wiki-reorg",
   "commits": [
     "53403e6",
     "381f6d1",
-    "f315673"
+    "f315673",
+    "46ba270",
+    "103238a",
+    "0bf61b0",
+    "5714990",
+    "7171cb0",
+    "af3c36f",
+    "d91c619"
   ],
   "approvalRecords": [
     "pbo-repair-council.json",
     "runtime-council.json",
-    "critical-repair-council.json"
+    "critical-repair-council.json",
+    "language-runtime-repair-council.json",
+    "server-mission-council.json",
+    "pbo-en-residual-closeout.json",
+    "willy-reference-closeout.json",
+    "assets-evidence-council.json",
+    "multi-pbo-prefix-closeout.json"
   ],
   "integrationChecks": [
     "PBO 16 scoped file SHA256 values matched council before staging",
     "Runtime startup MD/JSON matched independent council recorded SHA256",
     "Critical 12 scoped SHA256 and git blobs matched council before staging",
     "Source fixture and critical content/config passed strict staged git diff --check",
-    "Audit report whitespace check allowed existing Markdown hard-break trailing spaces and final blank lines to preserve reviewed exact bytes; no global Git setting changed"
+    "Audit report whitespace check allowed existing Markdown hard-break trailing spaces and final blank lines to preserve reviewed exact bytes; no global Git setting changed",
+    "PBO prose: final two council-requested replacements reversed to prior reviewed identities; six other pages unchanged; all eight staged blobs matched final receipt",
+    "Willy source assessment: seven required corrections checked against independent council; 43 source/input/output/delivery hashes verified",
+    "Asset research: seven selected source/delivery hashes verified before preserving independent council and author reports",
+    "Multi-PBO: twelve checked-in files match tested copy, only four semantic prefix values changed, six cleanup records and seven retained success markers checked; Core digest transcription repaired",
+    "No post-integration rebuild/runtime, final site build or graph refresh performed"
   ],
-  "validationScope": "Tool fixture tests, bounded diagnostic runtime probes, strict inline Markdown file/anchor checks, Mermaid grammar and live EN/PT dev route inspection. No final integrated build or graph refresh claimed.",
+  "validationScope": "Independent source review, offline validator unit/baseline/candidate checks, official tool fixtures, bounded diagnostic runtime evidence, exact delivered source comparison, scoped links/rendering and staged whitespace checks. Whole-goal completion and final integrated build/graph remain open.",
   "evidenceRetention": "TEMP evidence roots and historical failed reports retained locally; no generated PBOs/private keys/logs staged with example. Inventory and corpus crosswalk are not full technical review.",
   "goalStatus": "active",
   "next": "NEXT-WAVE.md"
