@@ -1,0 +1,1 @@
+This fixture's Data archive has a unique prefix and its own CfgPatches identity.

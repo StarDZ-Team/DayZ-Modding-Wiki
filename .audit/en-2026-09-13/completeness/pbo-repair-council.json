@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "repo_head": "9dc36064459f3184404bdba4db9d95b843b6fcaa",
+  "branch": "wiki-reorg",
+  "reviewer": {
+    "agent": "codex",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "powershell": "7.6.0",
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "child_agents": 0
+  },
+  "scope": "Independent final review of the six pbo-final-council rejections; owned only pbo-repair-council.md/json and TEMP/pbo-repair-council; no EN or fixture edits and no game launch.",
+  "narrative": ".audit/en-2026-09-13/completeness/pbo-repair-council.md",
+  "decision": {
+    "overall": "accepted_for_scoped_commit",
+    "six_repairs": "accepted",
+    "further_repairs_required": false,
+    "research_substance": "accepted",
+    "evidence_ledger": "accepted",
+    "fixture": "accepted_static_and_official_tool_validation_only",
+    "full_wiki_approval": false,
+    "runtime_approval": false
+  },
+  "repair_dispositions": [
+    {"id": 1, "subject": "WIKI-FIVE-LAYERS evidence object", "status": "accepted", "basis": "unique record; path, review scope, lines, and SHA-256 verified"},
+    {"id": 2, "subject": "exhaustive DSCheck parsing", "status": "accepted", "basis": "valid full set accepted; partial, missing-key, wrong-signature, duplicate, and unexpected outputs rejected"},
+    {"id": 3, "subject": "collision scan before hashes/signatures", "status": "accepted", "basis": "code order verified; duplicate run produced 4 PBO, 0 bisign, 0 private key, 0 receipt"},
+    {"id": 4, "subject": "full-line BankRev parsing and exact prefix boundary", "status": "accepted", "basis": "spaced member preserved as one line; adjacent-prefix synthetic case rejected"},
+    {"id": 5, "subject": "fixture WorkRoot hygiene guard", "status": "accepted", "basis": "fixture root and descendant rejected before tools; PSScriptRoot-relative protection; fixture generated-file count 0"},
+    {"id": 6, "subject": "complete reruns and regenerated receipts", "status": "accepted", "basis": "retained author outputs reopened and fresh independent success/negative/edge matrix completed"}
+  ],
+  "source_evidence": {
+    "prior_checks_reused": 47,
+    "prior_checks_reason": "The prior council independently reopened them and pbo-research.md remains byte-identical; review concentrated on changed repairs.",
+    "new_source": {
+      "id": "WIKI-FIVE-LAYERS",
+      "path": "en/02-mod-structure/01-five-layers.md",
+      "record_count": 1,
+      "recorded_sha256": "1C8571C015339DD7508D92C519A0F6A563B3790D5120ED776832EFBA345C8413",
+      "actual_sha256": "1C8571C015339DD7508D92C519A0F6A563B3790D5120ED776832EFBA345C8413",
+      "relevant_lines": ["31-42", "358-445", "449-478"],
+      "reopened": true
+    }
+  },
+  "retained_revision_outputs": {
+    "success_receipt": {"path": "TEMP/pbo-second-revision/success-work/pboexample-20260913-211644-14a6980d/receipt.json", "sha256": "B9CD721C3B3C4AB59CC8C9822A6D1A28B1C1E8E72A65044E87C8FB61A9129E51", "four_pbo_hashes_match": true, "four_bisign_hashes_match": true, "member_arrays_match": true},
+    "hashes": {
+      "TEMP/pbo-second-revision/negative/partial/dscheck.log": "B304E90CF0C990E7C645020F02CC43F185F7897DC32C983BF9C35A2ABE5ADE37",
+      "TEMP/pbo-second-revision/negative/missing/dscheck.log": "55B44B596C10A94497B8261BE50DF906319F7FEE0CE769D124B93C507A9FA933",
+      "TEMP/pbo-second-revision/negative/wrong/dscheck.log": "BB39848C046B832AFEA58EA1B459B02A106DBCA37F3657B1228230862D45E5A3",
+      "TEMP/pbo-second-revision/negative/bad-tool-output/addonbuilder.log": "7A4A23EC513AD2AEE284E57352A8C8B0CEEED265D3980D5082DE5B920BAFB65E",
+      "TEMP/pbo-second-revision/duplicate.log": "5846A2D5CF7000D14A6BB2F1634828401DDD40B14A200F9DB3F24DA3000D3053",
+      "TEMP/pbo-second-revision/workroot-guard.log": "54510753F959B9504CABF75DA3DA86F869B462E80CB17269D06C89182AC44753",
+      "TEMP/pbo-second-revision/stale-work.log": "948FF809ADFDAB8BB2ADD7DFC22DC69BC59426072536545CEBD76B87306E9EC4",
+      "TEMP/pbo-second-revision/stale-work/pboexample-20260913-211845-6205897a/receipt.json": "1B4E39D2745E88146639BD4420DA742E7ACC92D081557EBC9A7ED3A9AD6B711E",
+      "TEMP/pbo-second-revision/space-work/pboexample-20260913-212329-5e8aab04/receipt.json": "D3790B24821FDACF0449B02119B78A07156560C58C434D4AD1A0911AF31E07F0"
+    }
+  },
+  "independent_success": {
+    "command": ".\\examples\\en\\multi-pbo\\build.ps1 -ToolRoot 'D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools' -WorkRoot 'D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-repair-council\\success-work'",
+    "exit_code": 0,
+    "run_root": "TEMP/pbo-repair-council/success-work/pboexample-20260913-212942-d64b7020",
+    "receipt_sha256": "CFF0D666723C8EF7DC34F874C1D05A4ADBEED14CC821F0371528EC1B72639C43",
+    "release": {"pbos": 4, "bisigns": 4, "private_keys": 0, "normalized_members": 7, "dscheck_packages": 2},
+    "bankrev_extracted_source_members": {"matched": 7, "total": 7},
+    "components": [
+      {"id": "Core", "pbo_sha256": "7D7D0749107BB888E328D9FF335154DAADF7588E8858EB0B11A47C40E6E24918", "bisign_sha256": "F57D798F7157B52F5D1AD59E61AF07301EFF11B3D7D0512F0E9D30D67D505C58", "members": 1},
+      {"id": "Scripts", "pbo_sha256": "435094EC2CCA116144B300524E017C6B4F70B6E8D9E2C574F6E448B0EA07A75D", "bisign_sha256": "9F130C7BF8E8D75186E0A626C4D27800D3F8D1EF1B151D7CEEA884FAF88B90B5", "members": 2},
+      {"id": "Data", "pbo_sha256": "9DB370CA067894ACB7BF6A5D3213F842ED9B1BFA7948B4D52032C27947C44A5C", "bisign_sha256": "0A9CFA9F8DB7ACD417DB32E9D5C0A63880DC4CC196405569C7FCC1C9F7BD0A71", "members": 2},
+      {"id": "Server", "pbo_sha256": "96C734B4BAD436D194DC3DC9E0AA05E3A616C62CC6B5B03483C7D3C6CBB38503", "bisign_sha256": "BBC930DFD6F6FEA5758AB4F53B64889CFA5E8BF08175F252B4870475764D57B6", "members": 2}
+    ]
+  },
+  "independent_negative_and_edge_cases": {
+    "dscheck_partial": {"tool_exit_code": 0, "observed": ["two OK", "No signature found"], "parser_rejected": true, "log_sha256": "69DDED0319DAB7D6472DCFED6C1886546D980B940C83C0A7967DF5F0159AB7D3"},
+    "dscheck_missing_key": {"tool_exit_code": 0, "observed": "Key not found", "parser_rejected": true, "log_sha256": "16401EF025A2E387C097C075B7AF2BA34B17A29455898D28B66B9E34163C0E36"},
+    "dscheck_wrong_signature": {"tool_exit_code": 0, "observed": "is wrong", "parser_rejected": true, "log_sha256": "610380017566F9F39E17ECCF63C94D8A216EA9E22514306C2C3618EF2B714C6C"},
+    "dscheck_synthetic": {"valid_full_set_accepted": true, "unexpected_line_rejected": true, "duplicate_line_rejected": true},
+    "duplicate_path": {"exit_code": 1, "pbos": 4, "bisigns": 0, "private_keys": 0, "receipts": 0, "transcript_sha256": "FF88D46BEE74F07097CA2BA0034767985E183473826BC20EE7846614F9DECFC1"},
+    "bad_tool_directory": {"tool_exit_code": 0, "error_text": true, "invoke_tool_rejected": true, "pbos": 0, "log_sha256": "F898C679D35F4402DB59C8B7356DFBB924F96542417DDC418E1CE65690D1AFB5"},
+    "stale_parent": {"fresh_run_exit_code": 0, "stale_preserved": true, "stale_sha256": "F80571E24EA97F8B637B9CCE1EDAF3AF7F072C92955313637DB6355BDA31DF22", "receipt_sha256": "B54C9D12A688815A811732C74358648AA5980A29261B7FCC9B29FD2931B42016"},
+    "spaced_member": {"exit_code": 0, "observed_full_line": "PBOExample/Data\\data\\member name.txt", "receipt_sha256": "CD5BFE4DF487C82A30263DA50B3B6EC4666DE62DF20404442DD12C0B6CC50905"},
+    "prefix_boundary": {"adjacent_prefix_rejected": true},
+    "workroot_guard": {"fixture_root_rejected": true, "fixture_descendant_rejected": true, "tools_invoked": false},
+    "test_summary": {"path": "TEMP/pbo-repair-council/test-summary.json", "sha256": "69F8EFE29B689D6C0B0E2767D5B1BE2643482A81D1A391749AD241F9E31FB792"}
+  },
+  "official_tools": [
+    {"name": "AddonBuilder.exe", "version": "1.0.240.639", "sha256": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1"},
+    {"name": "BankRev.exe", "version": "1.0.0.2", "sha256": "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75"},
+    {"name": "DSCreateKey.exe", "version": null, "sha256": "81A100EEB190FAB4492970D0E6F051DB5C025BF8A4ADC2815C57ED9FE3022067"},
+    {"name": "DSSignFile.exe", "version": null, "sha256": "098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78"},
+    {"name": "DSCheckSignatures.exe", "version": null, "sha256": "9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C"}
+  ],
+  "scoped_content_sha256": {
+    ".audit/en-2026-09-13/completeness/pbo-research.md": "03FE483067A9259D6C0601A2F6FF9C9C7B6601201FAB6982343A8A15582D7949",
+    ".audit/en-2026-09-13/completeness/pbo-evidence.json": "38E257ED0D88E286C84E24828068B9F5C96E58F0F4B0D2375EA427ED6AFE1BBA",
+    ".audit/en-2026-09-13/completeness/pbo-revision.md": "9826B798CA2E3AA0CFEEA7F700AF98F6BAAD5F0AFCBE0396812C9C73F23CDD29",
+    ".audit/en-2026-09-13/completeness/pbo-revision.json": "5A8079BD674250BB66520C52F3D207003A28B94A01D3E58B59B89C6FD61C3DEA",
+    "examples/en/multi-pbo/README.md": "3449B09BBDD04A278A17DD8E3A79A1D27EEB76B173431A73A255C52EE23BC0CE",
+    "examples/en/multi-pbo/build.ps1": "38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956",
+    "examples/en/multi-pbo/manifest.json": "63D5E5E9468AF98B37B30AB71C3CCEA69D45694E266377025F68E6953F088582",
+    "examples/en/multi-pbo/src/Core/config.cpp": "E45F745E19E2EF1943A477E66B202D70D10A14A275EC6C7CE4FD56F80C2D712F",
+    "examples/en/multi-pbo/src/Scripts/config.cpp": "0C2DB149738083D7FDA1F616051C7F0C8C548B0175222369F1171A1FA197D787",
+    "examples/en/multi-pbo/src/Scripts/scripts/3_Game/PBOExample.c": "537D9A11B33ED7CCBF2DC7A41353F457629EC9CEBDF96EB01D53652B6E7ACF8B",
+    "examples/en/multi-pbo/src/Data/config.cpp": "AB459018DC30DD5188820398E56B16A3DA426929BB0111C4A3F47819DCED5F31",
+    "examples/en/multi-pbo/src/Data/data/example.txt": "C460C6E58E3051A463E565F55D835469415E3536B9EF6095178D3D60041CB941",
+    "examples/en/multi-pbo/src/Server/config.cpp": "4FA89581708F159CFCA491252F494A5E9A6A1AE003D165370EA3F12F5245E102",
+    "examples/en/multi-pbo/src/Server/scripts/5_Mission/PBOExampleServer.c": "CCECF9E3AEDC044CA44A3C22537BE504BEE5AC71042EA4E6EA8DAA1567F12373",
+    "examples/en/multi-pbo/package/Shared/mod.cpp": "8A3FB89471F6CA617674B997EFA37AF2DDCC2DB33DC471C68320D58A2FF2CFA9",
+    "examples/en/multi-pbo/package/Server/mod.cpp": "726A2E560854E619DD2A851F5E9EA08D216D673278452CC8C6C5AE449C1DC2C8"
+  },
+  "fixture_tree_hygiene": {"generated_pbo_bisign_key_log_receipt_files": 0},
+  "validation": {"powershell_ast_parse": "passed", "json_parse": "passed", "vitepress_build": "not_run_no_content_or_fixture_edit"},
+  "unresolved": {
+    "runtime": ["DayZ boot", "Enforce compilation", "mounted CfgMods paths", "client join and folder-level serverMod distribution", "missing/renamed requiredAddons behavior"],
+    "limits": ["PBO format/entry/total/compression/tool/engine/distribution numeric boundary matrix"],
+    "signature_enforcement": ["verifySignatures=2 valid/modified/missing/wrong/rotated-key enforcement", "serverMod-only signature enforcement", "DSCheck is not PBO-byte-binding or server-enforcement proof"],
+    "workshop": ["Steam Workshop upload/download/update and service-side limits"]
+  }
+}

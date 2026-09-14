@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "review": {
+    "date": "2026-09-13",
+    "completed_at_utc": "2026-09-13T23:23:12Z",
+    "role": "independent council reviewer",
+    "scope": "PBO limits and multi-PBO packaging; no English wiki edits",
+    "repository_branch": "wiki-reorg",
+    "repository_head_reviewed": "aa75472098d73db6b3c19b046438e530efc290f9",
+    "decision": "conditional_acceptance",
+    "counts": {
+      "approved_as_proposed": 6,
+      "revision_required": 6
+    },
+    "implementation_ready": false,
+    "game_launched": false
+  },
+  "author_artifacts": [
+    {
+      "path": ".audit/en-2026-09-13/completeness/pbo-research.md",
+      "sha256": "D0FE639B64A588109F633F8634D4A2466048A825D62E566FA120A1064D480BCF"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/pbo-evidence.json",
+      "sha256": "2C9D44E0F21FE5E22D59B56F055693ECC75B6EF5A57A36DFB19D18A2CCFF8A15"
+    }
+  ],
+  "source_accounting": {
+    "status": "repair_required",
+    "verified": [
+      "All source paths with recorded hashes other than BIKI-SERVER matched their recorded SHA-256.",
+      "All child file hashes in DayZ Samples, CF, COT, VPP, Expansion, and Editor matched.",
+      "All seven pinned repository origins and HEAD commits, including armake2, matched."
+    ],
+    "defects": [
+      {
+        "artifact": "pbo-research.md",
+        "location": "line 28",
+        "recorded": "en/02-mod-structure/01-mod-overview.md",
+        "actual": "The path does not exist; the corresponding current page is en/02-mod-structure/01-five-layers.md.",
+        "acceptance": "Correct the path and accurately state the actual read scope."
+      },
+      {
+        "artifact": "pbo-evidence.json",
+        "source_id": "BIKI-SERVER",
+        "path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/BIKI-Server-council-20260913.txt",
+        "recorded_sha256": "B2D11EDE88C0B77B389244620933571492E9BD92200D3DC75D645879A0813997",
+        "actual_sha256": "B2D11B4CD7D973FF65FD9804406E02D4C091176F9926EE1AF1F04142FE4142F7",
+        "content_result": "Relevant lines support verifySignatures=2 and folder/subfolder -mod/-serverMod claims.",
+        "acceptance": "Correct the receipt or regenerate and identify a different immutable snapshot."
+      },
+      {
+        "artifact": "pbo-research.md/pbo-evidence.json",
+        "issue": "PBO-011 cites Editor and VPP but the proposal does not give explicit pinned-path bullets for them; most third-party source records omit local checkout paths.",
+        "acceptance": "Add complete pinned source records or remove unused evidence IDs."
+      }
+    ]
+  },
+  "dispositions": [
+    {
+      "id": "PBO-001",
+      "status": "approved_as_proposed",
+      "sources_reopened": ["BIKI-PBO-FORMAT", "BIKI-GENERIC-TYPES", "RETAIL-CORE-PBO", "ARMAKE2-PBO"],
+      "accepted_text": "Use the author's proposed correction with an explicit unofficial reverse-engineering disclaimer; OriginalSize and DataSize are member fields and Offset is unused/reserved in the reviewed layout."
+    },
+    {
+      "id": "PBO-002",
+      "status": "approved_as_proposed",
+      "sources_reopened": ["BIKI-PBO-FORMAT", "BIKI-GENERIC-TYPES", "ARMAKE2-PBO", "RETAIL-ADDONS-INVENTORY", "LOCAL-LIMIT-DOCS"],
+      "accepted_text": "The reviewed reverse-engineered layout can represent unsigned 32-bit sizes for individual members, up to 4,294,967,295 as a field-width fact. It does not establish a usable maximum member size or a maximum total PBO size. No current authoritative DayZ source reviewed here defines a total-PBO ceiling; engine, tool, distribution, and Workshop limits remain separate questions.",
+      "qualification": "The local 2,165,383,988-byte failure report is an unresolved project-specific historical lead, not evidence of a universal limit."
+    },
+    {
+      "id": "PBO-003",
+      "status": "approved_as_proposed",
+      "sources_reopened": ["BIKI-PBO-FORMAT", "TOOL-ADDONBUILDER", "TOOL-FILEBANK"],
+      "accepted_text": "Describe Cprs as a format marker in an unofficial description and state only that the reviewed installed Addon Builder/FileBank help has no compression switch."
+    },
+    {
+      "id": "PBO-004",
+      "status": "revision_required",
+      "sources_reopened": ["BIKI-MOD-BASICS", "BIKI-MOD-STRUCTURE", "BIKI-CFGPATCHES", "SAMPLES-REPO", "EXTRACT-SAKHAL", "CF-REPO", "COT-REPO", "EXPANSION-REPO", "RETAIL-CONFIGLESS-SCAN", "CFGCONVERT-EXPERIMENT"],
+      "accepted_text": "A mod-folder launch name, physical PBO filename, virtual prefix, and configuration-addon identity are different names. requiredAddons[] refers to CfgPatches class names and controls addon/configuration initialization dependencies. Do not claim one CfgPatches identity per PBO. CfgMods registers modules/inputs and virtual paths; its dependencies[] labels are not a substitute for requiredAddons[] or a physical-PBO dependency declaration.",
+      "reason": "A physical PBO and a configuration-addon identity are not guaranteed one-to-one; config syntax did not prove runtime resolution."
+    },
+    {
+      "id": "PBO-005",
+      "status": "revision_required",
+      "sources_reopened": ["STARDZ-RIFLES-1", "STARDZ-RIFLES-2", "RETAIL-PREFIX-SCAN"],
+      "accepted_text": "Sharing a prefix is not itself a dependency mechanism or proof of an error. As a release policy, normalize virtual paths case-insensitively across all PBOs and fail on duplicate paths by default. Permit a duplicate only through a documented allowlist backed by a controlled runtime test; never rely on textual launch order to choose a winner.",
+      "reason": "Disjoint paths are a conservative project policy, not a proven universal engine requirement; runtime winner remains unknown."
+    },
+    {
+      "id": "PBO-006",
+      "status": "revision_required",
+      "sources_reopened": ["TOOL-ADDONBUILDER", "TOOL-DSSIGNFILE", "TOOL-DSCHECK", "STARDZ-BUILD", "CF-REPO", "PACK-SIGN-EXPERIMENT"],
+      "accepted_text": "Use isolated source/temp/output directories, validated tool paths, log inspection, exact output discovery, manifest rename, independent prefix/member inspection, collision scanning, final-byte hashing/signing, stdout-aware checks, and durable receipts. Do not treat exit zero or DSCheckSignatures as an end-to-end PBO/signature pairing proof.",
+      "implementation_acceptance": [
+        "Runnable script or exact commands",
+        "Manifest and source trees/configs for Core, Scripts, Data, and Server",
+        "Separate temp/output paths and explicit tool dependencies",
+        "Exact output/log/prefix/member/collision/hash assertions",
+        "Sign final bytes and retain expected bisigns",
+        "Interpret DSCheck stdout and retain verifySignatures=2 runtime gate"
+      ]
+    },
+    {
+      "id": "PBO-007",
+      "status": "approved_as_proposed",
+      "sources_reopened": ["BIKI-SERVER", "BIKI-MOD-STRUCTURE", "STARDZ-CORE-SERVER"],
+      "accepted_text": "Document -mod and -serverMod at mod-folder/subfolder granularity; do not imply per-PBO selective server-only routing within one shared package.",
+      "runtime_gate": "Clean-client distribution/join test."
+    },
+    {
+      "id": "PBO-008",
+      "status": "revision_required",
+      "sources_reopened": ["SAMPLES-REPO", "EXTRACT-SAKHAL", "CFGCONVERT-EXPERIMENT"],
+      "accepted_text": "CfgMods.inputs and module files[] entries name mounted virtual paths, not paths relative to the physical PBO root. If one archive's configuration names a path supplied by another archive, validate that cross-PBO arrangement in the packaged runtime instead of presenting it as proven by syntax."
+    },
+    {
+      "id": "PBO-009",
+      "status": "approved_as_proposed",
+      "sources_reopened": ["BIKI-CFGPATCHES", "BIKI-MOD-BASICS", "COT-REPO", "EXPANSION-REPO"],
+      "accepted_text": "Launch arguments make mod folders available; CfgPatches.requiredAddons[] declares addon/configuration initialization dependencies. Textual -mod order is not a substitute for requiredAddons[].",
+      "qualification": "Do not generalize this to every possible command-line-order effect."
+    },
+    {
+      "id": "PBO-010",
+      "status": "revision_required",
+      "sources_reopened": ["BIKI-SERVER", "BIKI-CREATING-ADDON", "TOOL-DSCREATEKEY", "TOOL-DSSIGNFILE", "TOOL-DSCHECK", "PACK-SIGN-EXPERIMENT"],
+      "accepted_text": "Sign final PBO bytes; distribute only the public key; reuse an uncompromised available key across ordinary updates; rotate after compromise, private-key loss/unavailability, or intentional trust reset. Signature v3 default in DSSignFile is unrelated to verifySignatures=2. Treat DSCheckSignatures only as a stdout-interpreted signature/key check, not PBO-byte pairing proof, and use controlled server joins for enforcement.",
+      "runtime_gate": "verifySignatures=2 matrix and serverMod-only signature behavior."
+    },
+    {
+      "id": "PBO-011",
+      "status": "revision_required",
+      "sources_reopened": ["SAMPLES-REPO", "CF-REPO", "COT-REPO", "VPP-REPO", "EXPANSION-REPO", "EDITOR-REPO"],
+      "accepted_text": "Use pinned URL, commit, checkout path, file path/range, file hash, review date, and explicit official/third-party classification for every retained example.",
+      "reason": "Pinned commits and child hashes match, but the nonexistent wiki path, bad BIKI-SERVER snapshot hash, and incomplete Editor/VPP source bullets must be repaired."
+    },
+    {
+      "id": "PBO-012",
+      "status": "approved_as_proposed",
+      "sources_reopened": ["STEAMWORKS-WORKSHOP"],
+      "accepted_text": "Separate Workshop service constraints from PBO format/runtime constraints. Say only that the reviewed current implementation page supplied no fixed DayZ content ceiling; do not infer that no service/app-specific limit exists."
+    }
+  ],
+  "reopened_sources": {
+    "web_access_date": "2026-09-13",
+    "web": [
+      {"id": "BIKI-PBO-FORMAT", "url": "https://community.bistudio.com/wiki/PBO_File_Format", "classification": "unofficial reverse engineering on official community wiki"},
+      {"id": "BIKI-GENERIC-TYPES", "url": "https://community.bistudio.com/wiki/Generic_File_Format_Data_Types", "classification": "official community wiki type reference"},
+      {"id": "BIKI-ADDONBUILDER", "url": "https://community.bistudio.com/wiki/Addon_Builder?oldid=341605", "classification": "official tool documentation"},
+      {"id": "BIKI-MOD-BASICS", "url": "https://community.bistudio.com/wiki/DayZ:Modding_Basics", "classification": "official DayZ documentation"},
+      {"id": "BIKI-MOD-STRUCTURE", "url": "https://community.bistudio.com/wiki/DayZ:Modding_Structure", "classification": "official DayZ documentation/local snapshot corroborated"},
+      {"id": "BIKI-CFGPATCHES", "url": "https://community.bistudio.com/wiki/CfgPatches", "classification": "official cross-game documentation"},
+      {"id": "BIKI-SERVER", "url": "https://community.bistudio.com/wiki/DayZ:Server_Configuration", "classification": "official DayZ documentation/local snapshot corroborated"},
+      {"id": "BIKI-CREATING-ADDON", "url": "https://community.bistudio.com/wiki/Arma_3:_Creating_an_Addon", "classification": "official cross-game documentation"},
+      {"id": "STEAMWORKS-WORKSHOP", "url": "https://partner.steamgames.com/doc/features/workshop/implementation", "classification": "official platform documentation"}
+    ],
+    "access_limitation": "Direct BIKI requests intermittently returned HTTP 403; indexed current pages and exact local snapshots were reopened and corroborated with installed tools/code.",
+    "pinned_repositories": [
+      {"name": "DayZ-Samples", "url": "https://github.com/BohemiaInteractive/DayZ-Samples.git", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea", "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-Samples"},
+      {"name": "armake2", "url": "https://github.com/KoffeinFlummi/armake2.git", "commit": "3cc3362101900ff41504db3e780dd1625634cf94", "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/pbo-research-armake2-20260913"},
+      {"name": "DayZ-CommunityFramework", "url": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework"},
+      {"name": "DayZ-CommunityOnlineTools", "url": "https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools.git", "commit": "41f2c2b99565d0e3970163e162efbf1283fdca62", "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityOnlineTools"},
+      {"name": "VPP-Admin-Tools", "url": "https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git", "commit": "dc22e420df3b54e821055f9764da1e48f4a31e71", "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/VPP-Admin-Tools"},
+      {"name": "DayZ-Expansion-Scripts", "url": "https://github.com/salutesh/DayZ-Expansion-Scripts.git", "commit": "6dacd00f6d943ebbd99e0cf1baad93f470d96419", "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-Expansion-Scripts"},
+      {"name": "DayZ-Editor", "url": "https://github.com/InclementDab/DayZ-Editor.git", "commit": "992e6b29b42b5d8e609632b59771335a23d205eb", "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-Editor-extra"}
+    ],
+    "local_reference_hashes": {
+      "D:/StarDZ/docs/REFERENCIA_LIMITES_E_MUROS.md": "726033DB527944DF57EED0767FB2F0329AB65438B3D48E6247E19D98DAE18EA0",
+      "D:/StarDZ/docs/REFERENCIA_TIPOS_DE_ARQUIVO.md": "BCC70BBA5733111C8EF513A1B2A2735A9B9D71C5A282B1D70CC86643ECFAD1C1",
+      "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md": "E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD",
+      "D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md": "2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9",
+      "D:/StarDZ/docs/GUIA_DEBUG_E_PERFORMANCE.md": "86D3AD63EBA59C766FB1F75B277A38DC1C043C555DDF033837AC5266D5303835",
+      "D:/StarDZ/docs/DAYZ_MOD_ARCHITECTURE_PATTERNS.md": "315C4C07A240C46D239984288F903860D46076A34376AC9CEDF5281D57D87B5B",
+      "D:/StarDZ/docs/REFERENCE_MODS_DEEP_STUDY.md": "4EBFE0199D05526711FBA69070FB1C1D560ECD9994B1C5578796DA3CC96A6F91"
+    }
+  },
+  "experiment": {
+    "path": "TEMP/pbo-council",
+    "scope": "isolated config parse, pack, inspect, key creation, sign, and static signature check; no game launch",
+    "results": [
+      "Addon Builder without a correct toolsDirectory logged fatal missing-tool errors, returned exit code 0, and emitted no PBO.",
+      "With the installed toolsDirectory it emitted ComponentSource.pbo using the source-directory name; BankRev showed the requested prefix.",
+      "CfgConvert parsed the proposed Core and Scripts config fragments successfully; this proves syntax only.",
+      "DSSignFile did not modify the signed PBO and generated a bisign.",
+      "DSCheckSignatures printed OK for an old bisign beside a newly rebuilt, byte-different PBO and returned zero.",
+      "DSCheckSignatures printed Key not found for an empty keys directory but returned zero; an orphan bisign also returned zero without useful output."
+    ],
+    "conclusion": "Exit code alone is not a release assertion, and this DSCheck invocation is not an end-to-end PBO/signature pairing test."
+  },
+  "runtime_tests_outstanding": [
+    "Controlled total/member PBO-size boundary matrix with exact version receipts and retained failing artifacts",
+    "Duplicate normalized virtual-path winner across naming/order/build variants",
+    "Packaged cross-PBO CfgMods inputs/files resolution",
+    "requiredAddons missing/renamed dependency and initialization-order behavior",
+    "Clean-client -serverMod distribution and join",
+    "verifySignatures=2 valid/modified/missing-signature/wrong-key/rotated-key/reused-key matrix",
+    "Operational signing requirement for content loaded only through -serverMod",
+    "Current DayZ Workshop upload/update ceiling and download behavior"
+  ],
+  "validation": {
+    "performed": [
+      "Author artifact SHA-256 binding",
+      "Recorded local source and child-file SHA-256 recomputation",
+      "Pinned repository origin/HEAD verification",
+      "Installed tool help/version/hash review",
+      "Retail PBO inventory, prefix, and root-config scan",
+      "Isolated CfgConvert parse",
+      "Isolated Addon Builder/BankRev packaging inspection",
+      "Isolated DS key/sign/check behavior matrix"
+    ],
+    "not_performed": [
+      "English wiki edit",
+      "VitePress build",
+      "Enforce Script compilation",
+      "DayZ client/server launch",
+      "Steam Workshop upload"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "example": "PBOExample isolated four-component fixture",
+  "authority": "PBOExampleFixture",
+  "components": [
+    {
+      "id": "Core",
+      "source": "src/Core",
+      "pbo": "PBOExample_Core.pbo",
+      "prefix": "PBOExample/Core",
+      "addon": "PBOExample_Core",
+      "package": "@PBOExample"
+    },
+    {
+      "id": "Scripts",
+      "source": "src/Scripts",
+      "pbo": "PBOExample_Scripts.pbo",
+      "prefix": "PBOExample/Scripts",
+      "addon": "PBOExample_Scripts",
+      "package": "@PBOExample"
+    },
+    {
+      "id": "Data",
+      "source": "src/Data",
+      "pbo": "PBOExample_Data.pbo",
+      "prefix": "PBOExample/Data",
+      "addon": "PBOExample_Data",
+      "package": "@PBOExample"
+    },
+    {
+      "id": "Server",
+      "source": "src/Server",
+      "pbo": "PBOExample_Server.pbo",
+      "prefix": "PBOExample/Server",
+      "addon": "PBOExample_Server",
+      "package": "@PBOExampleServer"
+    }
+  ]
+}

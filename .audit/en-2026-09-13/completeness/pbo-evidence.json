@@ -1,0 +1,526 @@
+{
+  "schema_version": 1,
+  "audit": {
+    "date": "2026-09-13",
+    "scope": "PBO limits and multi-PBO architecture for the English DayZ wiki",
+    "report": ".audit/en-2026-09-13/completeness/pbo-research.md",
+    "repository_branch": "wiki-reorg",
+    "repository_head": "789abaf29df2642912c4b7c7e05b18ff514d1665",
+    "repository_state_note": "The worktree contained unrelated changes; each reviewed current wiki file is identified by SHA-256.",
+    "disposition": "research_for_independent_council_review",
+    "wiki_edited": false,
+    "commit_created": false,
+    "access_date_for_web_sources": "2026-09-13"
+  },
+  "environment": {
+    "os": "Windows",
+    "retail_dayz_executable": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ/DayZ_x64.exe",
+      "file_version": "1.29.0.163709",
+      "steam_build_id": "24689949"
+    },
+    "experimental_tools": {
+      "root": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools",
+      "steam_build_id": "23909709"
+    },
+    "extraction": {
+      "path": "D:/DayZ Projects",
+      "observed_extraction_date": "2026-09-11",
+      "limitation": "No immutable receipt tying the extraction to an exact DayZ game build was found."
+    }
+  },
+  "sources": [
+    {
+      "id": "WIKI-PBO",
+      "kind": "current_wiki",
+      "path": "en/04-file-formats/06-pbo-packing.md",
+      "sha256": "D60F2BE9D40C4B8DEF8373C24B780A2F8A62C31ED32895663F0A2BC314A4A586",
+      "reviewed": "full file",
+      "relevant_lines": ["34-47", "84-92", "103-228", "265-312", "316-368", "372-467", "516-565", "619-691"]
+    },
+    {
+      "id": "WIKI-CONFIG",
+      "kind": "current_wiki",
+      "path": "en/02-mod-structure/02-config-cpp.md",
+      "sha256": "8AF40F97A560E63F45AB69DD67694BBA22B56BEEC1C07019E37FBCAC135E0AB1",
+      "reviewed": "relevant sections",
+      "relevant_lines": ["96-135", "192-217", "270-308", "993-1014"]
+    },
+    {
+      "id": "WIKI-FIVE-LAYERS",
+      "kind": "current_wiki",
+      "path": "en/02-mod-structure/01-five-layers.md",
+      "sha256": "1C8571C015339DD7508D92C519A0F6A563B3790D5120ED776832EFBA345C8413",
+      "reviewed": "full file; five script-module hierarchy, compile-time visibility, and requiredAddons load-order claims",
+      "relevant_lines": ["31-42", "358-445", "449-478"]
+    },
+    {
+      "id": "WIKI-SPLIT",
+      "kind": "current_wiki",
+      "path": "en/02-mod-structure/06-server-client-split.md",
+      "sha256": "EFBBD4214B68F07B3AC30888823FA7E4A717CFA125AA829391104BD56B6DA05A",
+      "reviewed": "relevant sections",
+      "relevant_lines": ["186-254", "282-347", "711-785"]
+    },
+    {
+      "id": "WIKI-FILE-ORGANIZATION",
+      "kind": "current_wiki",
+      "path": "en/02-mod-structure/05-file-organization.md",
+      "sha256": "DBC7392EDFBEE15AB0A1B28090EBD02DD966508D6763101F0B13E89E28FECFC4",
+      "reviewed": "relevant mod-type and client/server package sections",
+      "relevant_lines": ["199-260", "333-418"]
+    },
+    {
+      "id": "WIKI-FIRST-MOD",
+      "kind": "current_wiki",
+      "path": "en/08-tutorials/01-first-mod.md",
+      "sha256": "5DE7FA29C84E2C5DF0CEFA22A7FBB271977DAF4972B2FD7FF86CDAEBDF2BC634",
+      "reviewed": "relevant config, packing, prefix, and verification sections"
+    },
+    {
+      "id": "WIKI-MOD-TEMPLATE",
+      "kind": "current_wiki",
+      "path": "en/08-tutorials/05-mod-template.md",
+      "sha256": "B2ADB62801BDADADC467EDA8A2F50E8BBC3B54FABC6458E7F20BE34F9FD2934D",
+      "reviewed": "relevant Addon Builder and automation sections"
+    },
+    {
+      "id": "WIKI-DEBUGGING",
+      "kind": "current_wiki",
+      "path": "en/08-tutorials/06-debugging-testing.md",
+      "sha256": "E51055AB8342A156CC38C59EDFAD08AD5CC2B508F9B6BC3CF11CE29228BBC0F5",
+      "reviewed": "relevant packed-mod, PBO-only, and automated build/test sections"
+    },
+    {
+      "id": "WIKI-PRO-TEMPLATE",
+      "kind": "current_wiki",
+      "path": "en/08-tutorials/09-professional-template.md",
+      "sha256": "D6CEFE1BC942F9716A18221E059437207CADC8BF56E48281DD2A89A85EB707FB",
+      "reviewed": "relevant multi-PBO build pipeline section",
+      "relevant_lines": ["1480-1545"]
+    },
+    {
+      "id": "WIKI-PUBLISH",
+      "kind": "current_wiki",
+      "path": "en/08-tutorials/07-publishing-workshop.md",
+      "sha256": "B7F98787CE9554A91A8B3A6B2C2FEE41C32E11491D48CCD2BAC7D8E2CA6C7A55",
+      "reviewed": "relevant sections",
+      "relevant_lines": ["56-89", "172-258", "382-414", "518-556", "613-650"]
+    },
+    {
+      "id": "BIKI-ADDONBUILDER",
+      "kind": "official_documentation",
+      "url": "https://community.bistudio.com/wiki/Addon_Builder?oldid=341605",
+      "revision": "341605",
+      "accessed": "2026-09-13",
+      "supports": ["pack-only option", "explicit prefix option", "automatic prefix calculation if absent", "signing option", "conversion/tool-path options"],
+      "limitation": "The direct site later returned HTTP 403; the opened revision and installed tool help were used together."
+    },
+    {
+      "id": "BIKI-MOD-BASICS",
+      "kind": "official_documentation",
+      "url": "https://community.bistudio.com/wiki/DayZ:Modding_Basics",
+      "accessed": "2026-09-13",
+      "supports": ["a mod may contain several PBOs", "CfgPatches and requiredAddons examples", "CfgMods script module registration"]
+    },
+    {
+      "id": "BIKI-MOD-STRUCTURE",
+      "kind": "official_documentation_snapshot",
+      "url": "https://community.bistudio.com/wiki/DayZ:Modding_Structure",
+      "local_path": "D:/StarDZ/docs/DayZ/Modding Structure.md",
+      "sha256": "4AD1DABE620A25FFF043077D012BEBAAA663953355575B3F0AB52936AADB5AFA",
+      "accessed": "2026-09-13",
+      "relevant_lines": ["6-14", "20-33", "37-85", "91"],
+      "supports": ["mod-folder layout", "CfgPatches role", "CfgMods script/input registration", "virtual module paths"],
+      "limitation": "Local saved documentation snapshot; direct site access later returned HTTP 403."
+    },
+    {
+      "id": "BIKI-PBO-FORMAT",
+      "kind": "community_wiki_reverse_engineering",
+      "url": "https://community.bistudio.com/wiki/PBO_File_Format",
+      "accessed": "2026-09-13",
+      "supports": ["member header field layout", "32-bit OriginalSize and DataSize fields", "Offset field described as unused", "contiguous data block", "Cprs packing marker", "empty folders not represented"],
+      "limitation": "The page explicitly says the PBO format is unofficial/undocumented. It is not a supported DayZ specification."
+    },
+    {
+      "id": "BIKI-CFGPATCHES",
+      "kind": "official_cross_game_documentation",
+      "url": "https://community.bistudio.com/wiki/CfgPatches",
+      "accessed": "2026-09-13",
+      "supports": ["requiredAddons names CfgPatches addon classes and controls initialization dependencies"],
+      "limitation": "Cross-game/Arma-oriented reference; DayZ-specific samples were required as corroboration."
+    },
+    {
+      "id": "BIKI-CREATING-ADDON",
+      "kind": "official_cross_game_documentation",
+      "url": "https://community.bistudio.com/wiki/Arma_3:_Creating_an_Addon",
+      "accessed": "2026-09-13",
+      "supports": ["private key signs an addon", "public key is installed by servers to check addon signatures", "a new key is not needed for every addon version because servers would need to update it"],
+      "limitation": "Arma 3 rather than DayZ documentation; DayZ-specific signature enforcement and installed DayZ DS tools were used to delimit the applicable mechanics."
+    },
+    {
+      "id": "BIKI-SERVER",
+      "kind": "official_documentation_snapshot",
+      "url": "https://community.bistudio.com/wiki/DayZ:Server_Configuration",
+      "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/BIKI-Server-council-20260913.txt",
+    "sha256": "B2D11B4CD7D973FF65FD9804406E02D4C091176F9926EE1AF1F04142FE4142F7",
+      "accessed": "2026-09-13",
+      "relevant_lines": ["27", "180-181"],
+      "supports": ["verifySignatures=2 behavior", "-mod selects mod folders", "-serverMod selects server-side mods not broadcast to clients"]
+    },
+    {
+      "id": "STEAMWORKS-WORKSHOP",
+      "kind": "official_documentation",
+      "url": "https://partner.steamgames.com/doc/features/workshop/implementation",
+      "accessed": "2026-09-13",
+      "supports": ["Workshop item content update APIs", "SteamCMD workshop_build_item workflow"],
+      "limitation": "No fixed DayZ item-content size ceiling was found on the reviewed page. Absence from this page does not prove that no service or app-specific limit exists."
+    },
+    {
+      "id": "TOOL-ADDONBUILDER",
+      "kind": "installed_official_tool",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/AddonBuilder.exe",
+      "bytes": 1479600,
+      "sha256": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1",
+      "file_version": "1.0.240.639",
+      "observed_help_version": "1.0.240639",
+      "invocation": "AddonBuilder.exe -help",
+      "observed_options": ["-packonly", "-clear", "-temp", "-prefix", "-project", "-sign", "-include", "-exclude", "-binarize", "-cfgconvert", "-filebank", "-dssignfile", "-pboversion"],
+      "negative_observation": "No compression option appeared in the installed help output."
+    },
+    {
+      "id": "TOOL-FILEBANK",
+      "kind": "installed_official_tool",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/FileBank.exe",
+      "bytes": 194480,
+      "sha256": "F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF",
+      "invocation": "FileBank.exe -help",
+      "observed_options": ["-property", "-exclude", "-dst"],
+      "negative_observation": "No -compress option appeared in the installed help output."
+    },
+    {
+      "id": "TOOL-DSCREATEKEY",
+      "kind": "installed_official_tool",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/DsUtils/DSCreateKey.exe",
+      "bytes": 9455024,
+      "sha256": "81A100EEB190FAB4492970D0E6F051DB5C025BF8A4ADC2815C57ED9FE3022067",
+      "observed_usage": "dsCreateKey authority_name"
+    },
+    {
+      "id": "TOOL-DSSIGNFILE",
+      "kind": "installed_official_tool",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/DsUtils/DSSignFile.exe",
+      "bytes": 9467312,
+      "sha256": "098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78",
+      "observed_usage": "DSSignFile private_key file_to_sign [-v2]",
+      "observed_note": "Tool output states v3 is the default and -v2 selects version 2."
+    },
+    {
+      "id": "TOOL-DSCHECK",
+      "kind": "installed_official_tool",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/DsUtils/DSCheckSignatures.exe",
+      "bytes": 9467400,
+      "sha256": "9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C",
+      "observed_usage": "dsCheckSignatures checked_dir keys_dir"
+    },
+    {
+      "id": "RETAIL-CORE-PBO",
+      "kind": "installed_game_binary_data",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ/dta/core.pbo",
+      "bytes": 9719186,
+      "sha256": "36ECFCE1062C31EAAEDC59F23D64CEA84DD79A52482145402582EB35BC1AB043",
+      "observations": ["Vers header", "prefix property Core", "sampled entry reserved/offset fields were zero", "member headers contained per-entry stored sizes"],
+      "limitation": "A sample archive and sampled entries do not prove every PBO or every runtime behavior."
+    },
+    {
+      "id": "RETAIL-ADDONS-INVENTORY",
+      "kind": "installed_game_inventory",
+      "path": "D:/SteamLibrary/steamapps/common/DayZ/Addons",
+      "dayz_file_version": "1.29.0.163709",
+      "pbo_count": 117,
+      "sum_bytes": 21638391975,
+      "largest_pbo": {
+        "name": "structures_data.pbo",
+        "bytes": 1216702399
+      },
+      "limitation": "Shipping observations are not minimums, maximums, or tested limits."
+    },
+    {
+      "id": "EXTRACT-SCRIPTS",
+      "kind": "official_tool_extraction",
+      "path": "D:/DayZ Projects/scripts/config.cpp",
+      "bytes": 64519,
+      "sha256": "F086DB66CDE5E60089C78FF170AA0488F5ABF7ABB37E6C13D404116D6D05A90A",
+      "relevant_lines": ["1-10"],
+      "supports": ["vanilla DZ_Scripts CfgPatches identity"]
+    },
+    {
+      "id": "EXTRACT-SAKHAL",
+      "kind": "official_tool_extraction",
+      "path": "D:/DayZ Projects/DZ/data_sakhal/config.cpp",
+      "bytes": 849,
+      "sha256": "D2074F7E019B1359A8BA00DF5ABEC5A9B459F3F4A0028A18A2D1C9CFB078FB34",
+      "relevant_lines": ["1-13", "14-30"],
+      "supports": ["DZ_Data_Sakhal requires DZ_Data", "CfgMods worldScriptModule uses full DZ/data_sakhal virtual path"]
+    },
+    {
+      "id": "SAMPLES-REPO",
+      "kind": "official_source_repository",
+      "url": "https://github.com/BohemiaInteractive/DayZ-Samples.git",
+      "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-Samples",
+      "files": [
+        {
+          "path": "Test_Inputs/config.cpp",
+          "sha256": "71B869D713C15D38037B0B8B6CC682CCAEA03599DDFF370DA786D42CD813121C",
+          "lines": "1-33",
+          "supports": ["CfgPatches", "full virtual input path", "full virtual script module paths"]
+        },
+        {
+          "path": "Test_Terrain/world/config.cpp",
+          "sha256": "ACEFEBF78C2E4312C5BE951F05AAF01867AC68CE82B4AA9B769AA43D05BDC4C1",
+          "lines": "1-80 and virtual-path references",
+          "supports": ["distinct addon identity", "requiredAddons", "virtual resource paths"]
+        },
+        {
+          "path": "Test_Terrain/data/config.cpp",
+          "sha256": "93D500BF71D1D0F44E4077DECBA4BB7F2540A853907F57639F155720B6C0D8F6",
+          "lines": "1-8",
+          "supports": ["separate terrain data addon identity"]
+        }
+      ]
+    },
+    {
+      "id": "ARMAKE2-PBO",
+      "kind": "third_party_source_repository",
+    "url": "https://github.com/KoffeinFlummi/armake2.git",
+    "commit": "3cc3362101900ff41504db3e780dd1625634cf94",
+    "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/pbo-research-armake2-20260913",
+      "file": "src/pbo.rs",
+      "sha256": "BEC43AC4560626FE4B154922938D0A2BDEDB0561D68118AE822AB9C030387549",
+      "relevant_lines": ["18-25", "52-70", "97-142", "221-268"],
+      "supports": ["five u32 member fields", "little-endian serialization", "sequential member data", "per-member sizes cast to u32"],
+      "limitation": "Third-party implementation; not proof of DayZ engine support or limits."
+    },
+    {
+      "id": "CF-REPO",
+      "kind": "third_party_mod_repository",
+    "url": "https://github.com/Arkensor/DayZ-CommunityFramework.git",
+    "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+    "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework",
+      "files": [
+        {"path": "JM/CF/Scripts/config.cpp", "sha256": "8DA49AD88AB7387B4F5E6D5D2FDBC07005F908B537E7F723152BD41B6BDD1D41", "lines": "1-103"},
+        {"path": "JM/CF/GUI/config.cpp", "sha256": "3AA877B37DE71F381C7DD04D9A7DBB23761621A7BA9D85798528F1B1AA36F3D0", "lines": "1-13"},
+        {"path": "JM/CF/Workbench/Batchfiles/Deploy.bat", "sha256": "3D034012639290F267B5303D2C6164597230E05E6E49F7B9FCDE5EEFB45D8ABE", "lines": "135-163,181-238"}
+      ],
+      "supports": ["separate GUI and Scripts addon identities", "virtual script paths", "third-party component discovery/build/sign workflow"],
+      "limitation": "Popular third-party implementation, not authoritative behavior."
+    },
+    {
+      "id": "COT-REPO",
+      "kind": "third_party_mod_repository",
+    "url": "https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools.git",
+    "commit": "41f2c2b99565d0e3970163e162efbf1283fdca62",
+    "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityOnlineTools",
+      "files": [
+        {"path": "JM/COT/Scripts/config.cpp", "sha256": "BD536BE5FB6E4053F8879D82779C8FE952FD95081F24B088D2C11BCC46EE2382", "lines": "1-13 and CfgMods"},
+        {"path": "JM/COT/GUI/config.cpp", "sha256": "6DD21E5532969098F833FF88E769CE09CC93D6F093D3F572BADA543E87817E82", "lines": "CfgPatches section"}
+      ],
+      "supports": ["Scripts addon depends on CF Scripts and COT GUI addon classes", "separate addon identities"],
+      "limitation": "Third-party implementation, not authoritative behavior."
+    },
+    {
+      "id": "VPP-REPO",
+      "kind": "third_party_mod_repository",
+    "url": "https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git",
+    "commit": "dc22e420df3b54e821055f9764da1e48f4a31e71",
+    "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/VPP-Admin-Tools",
+      "files": [
+        {"path": "config.cpp", "sha256": "39BD991B0E0CF043BAD82EF5D8F4C8FFCF9538D6E4E41C7B3CB81EC5A89E9061", "lines": "1-10"}
+      ],
+      "supports": ["a third-party monolithic/root config choice"],
+      "limitation": "Reviewed but not used as proof of a multi-PBO rule."
+    },
+    {
+      "id": "EXPANSION-REPO",
+      "kind": "third_party_mod_repository",
+    "url": "https://github.com/salutesh/DayZ-Expansion-Scripts.git",
+    "commit": "6dacd00f6d943ebbd99e0cf1baad93f470d96419",
+    "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-Expansion-Scripts",
+      "files": [
+        {"path": "DayZExpansion/Core/Scripts/config.cpp", "sha256": "8973F7648357EF6B1FFA70F0E8168915052674F412EB15B7090E6E38B41826EA", "lines": "1-110"},
+        {"path": "DayZExpansion/ModStorage/Scripts/config.cpp", "sha256": "D5430B041F28317887B62D5EFB09842179482821F85817B2EE260F34AA791915", "lines": "1-80"}
+      ],
+      "supports": ["multi-addon requiredAddons chain", "full virtual CfgMods script paths"],
+      "limitation": "Third-party implementation, not authoritative behavior."
+    },
+    {
+      "id": "EDITOR-REPO",
+      "kind": "third_party_mod_repository",
+    "url": "https://github.com/InclementDab/DayZ-Editor.git",
+    "commit": "992e6b29b42b5d8e609632b59771335a23d205eb",
+    "local_path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-Editor-extra",
+      "files": [
+        {"path": "DayZEditor/Scripts/config.cpp", "sha256": "1B0D5EC71A26F8B73BFBC2156CE303F65028C0CF6AFB09416AFA84F49A1BA39A", "lines": "CfgPatches and CfgMods sections"},
+        {"path": "DayZEditor/GUI/config.cpp", "sha256": "39952D741DC3075102A923D93D24B74A63EBA0DD04DA7D1FECB8B1C225DC7447", "lines": "CfgPatches section"}
+      ],
+      "supports": ["separate Scripts and GUI addon identities", "virtual module paths"],
+      "limitation": "Third-party implementation, not authoritative behavior."
+    },
+    {
+      "id": "STARDZ-BUILD",
+      "kind": "local_beta_project",
+      "path": "D:/StarDZ/dev.py",
+      "bytes": 142460,
+      "sha256": "E6862C2AB958B734B5A95B6FD3A0BA6B9B3AA066069188804A4BB2A0C23CC64F",
+      "relevant_lines": ["236-267", "847-920", "1235-1258", "1759-1781"],
+      "supports": ["project multi-PBO map", "output discovery and renaming", "orphan cleanup", "isolated staging", "shared temp/output concurrency hazard"],
+      "limitation": "Local beta implementation may contain bugs and is not authoritative."
+    },
+    {
+      "id": "STARDZ-CORE-CLIENT",
+      "kind": "local_beta_project",
+      "path": "D:/StarDZ/StarDZ_Core/StarDZ_Core/Scripts/config.cpp",
+      "sha256": "FAF4136778BD63623A61A1D26DF1B192052CD4001FF95D8858B3FAAAE96DFFC9",
+      "supports": ["client/shared addon identity", "full GUI and script virtual paths"]
+    },
+    {
+      "id": "STARDZ-CORE-SERVER",
+      "kind": "local_beta_project",
+      "path": "D:/StarDZ/StarDZ_Core/StarDZ_Core_Server/Scripts/config.cpp",
+      "sha256": "355BF1D7F55FA90A59D37B1257277C362B6026B719037277C89486F4C9DBBF99",
+      "supports": ["server addon requires shared client addon", "CfgMods type remains mod", "server script virtual paths"],
+      "limitation": "Local beta implementation, not authoritative."
+    },
+    {
+      "id": "STARDZ-LOCAL-BUILD-GUIDE",
+      "kind": "local_documentation",
+      "path": "D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md",
+      "bytes": 110585,
+      "sha256": "2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9",
+      "relevant_lines": ["793-839", "1631-1671", "1910-1979"],
+      "claims_reviewed": ["4 GiB inferred format ceiling", "2 GiB observed runtime warning", "unresolved Workshop/servermod/signing questions"],
+      "limitation": "The 2,165,383,988-byte failing artifact/logs were not found, and the 4 GiB total claim does not follow from per-member u32 fields alone."
+    },
+    {
+      "id": "STARDZ-LOCAL-DEBUG-GUIDE",
+      "kind": "local_documentation",
+      "path": "D:/StarDZ/docs/GUIA_DEBUG_E_PERFORMANCE.md",
+      "bytes": 59650,
+      "sha256": "86D3AD63EBA59C766FB1F75B277A38DC1C043C555DDF033837AC5266D5303835",
+      "relevant_lines": ["669-678"],
+      "claims_reviewed": ["repeats 2 GiB effective and 4 GiB format claims"],
+      "limitation": "Secondary local documentation; no independently replayable boundary evidence retained."
+    },
+    {
+      "id": "STARDZ-RIFLES-1",
+      "kind": "local_beta_pbo",
+      "path": "D:/StarDZ/temp_pbo/@StarDZ_Weapons/addons/StarDZ_Weapons_Rifles.pbo",
+      "bytes": 1166952349,
+      "sha256": "EB78111710486405344A55FA8C00E3061D2CA9990CEF250969C40A66B84E2DD8",
+      "prefix": "StarDZ_Weapons\\Data\\Weapons\\Rifles\\",
+      "parsed_member_count": 1060
+    },
+    {
+      "id": "STARDZ-RIFLES-2",
+      "kind": "local_beta_pbo",
+      "path": "D:/StarDZ/temp_pbo/@StarDZ_Weapons/addons/StarDZ_Weapons_Rifles2.pbo",
+      "bytes": 998134225,
+      "sha256": "C385E6DBB96C09FC6C1175317BB00EADB94915E039AA71A8F2C5B1EEFDF50FAD",
+      "prefix": "StarDZ_Weapons\\Data\\Weapons\\Rifles\\",
+      "parsed_member_count": 840
+    }
+  ],
+  "derived_observations": [
+    {
+      "id": "OBS-FIELDS-NOT-TOTAL",
+      "statement": "The reverse-engineered header's u32 OriginalSize and DataSize fields describe one member; the reviewed layout contains no single u32 total-archive-size field, and its historical Offset field is unused/reserved.",
+      "evidence": ["BIKI-PBO-FORMAT", "RETAIL-CORE-PBO", "ARMAKE2-PBO"],
+      "classification": "format inference, not runtime limit",
+      "confidence": "high for reviewed layout; none for a universal supported maximum"
+    },
+    {
+      "id": "OBS-U32-REPRESENTABILITY",
+      "statement": "4,294,967,295 is the largest value representable by an unsigned 32-bit member-size field; this is not asserted as a usable DayZ member or total-PBO limit.",
+      "evidence": ["BIKI-PBO-FORMAT", "ARMAKE2-PBO"],
+      "classification": "mathematical field-width fact"
+    },
+    {
+      "id": "OBS-SHIPPING-INVENTORY",
+      "statement": "Retail DayZ 1.29.0.163709 had 117 PBOs in Addons totaling 21,638,391,975 bytes, with largest observed PBO 1,216,702,399 bytes.",
+      "evidence": ["RETAIL-ADDONS-INVENTORY"],
+      "classification": "one installed-build observation, not a limit"
+    },
+    {
+      "id": "OBS-MULTIPBO-NAMESPACES",
+      "statement": "PBO filename, virtual prefix, CfgPatches class, and mod-folder launch name serve different purposes; requiredAddons references the CfgPatches identity.",
+      "evidence": ["BIKI-MOD-BASICS", "BIKI-MOD-STRUCTURE", "SAMPLES-REPO", "EXTRACT-SAKHAL", "COT-REPO", "EXPANSION-REPO"],
+      "classification": "official guidance corroborated by official and third-party source"
+    },
+    {
+      "id": "OBS-PATHS-VIRTUAL",
+      "statement": "CfgMods input and module file paths are written in the mounted virtual namespace rather than simply relative to the physical PBO root.",
+      "evidence": ["SAMPLES-REPO", "EXTRACT-SAKHAL", "CF-REPO", "EXPANSION-REPO"],
+      "classification": "official sample/extraction plus implementation corroboration"
+    },
+    {
+      "id": "OBS-SERVERMOD-PACKAGE-BOUNDARY",
+      "statement": "Official launch documentation describes -mod and -serverMod as loading mod folders/packages, with serverMod content not broadcast to clients; no per-PBO selective exclusion inside one package was documented.",
+      "evidence": ["BIKI-SERVER", "BIKI-MOD-STRUCTURE"],
+      "classification": "official documentation plus explicit absence boundary"
+    },
+    {
+      "id": "OBS-TOOL-COMPRESSION",
+      "statement": "The installed Addon Builder and FileBank help did not expose a compression switch, while the reverse-engineered format recognizes compressed members.",
+      "evidence": ["TOOL-ADDONBUILDER", "TOOL-FILEBANK", "BIKI-PBO-FORMAT"],
+      "classification": "version-specific tool observation and unofficial format description"
+    },
+    {
+      "id": "OBS-SAME-PREFIX-COLLISION",
+      "statement": "The two inspected StarDZ rifle PBOs shared one prefix and had two overlapping member paths: config.cpp and texHeaders.bin; texHeaders.bin stored sizes differed (94,879 and 93,139 bytes).",
+      "evidence": ["STARDZ-RIFLES-1", "STARDZ-RIFLES-2"],
+      "classification": "local binary inventory",
+      "limitation": "No controlled runtime test established which overlapping member wins."
+    },
+    {
+      "id": "OBS-LOCAL-2G-LEAD",
+      "statement": "Local documentation reports a crash for a 2,165,383,988-byte PBO and a boot for a 1,471,395,178-byte PBO, but the failing artifact and logs were not retained for replay.",
+      "evidence": ["STARDZ-LOCAL-BUILD-GUIDE", "STARDZ-LOCAL-DEBUG-GUIDE"],
+      "classification": "unverified project-specific historical lead",
+      "confidence": "insufficient for wiki numeric limit"
+    }
+  ],
+  "proposed_findings": [
+    {"id": "PBO-001", "target": "en/04-file-formats/06-pbo-packing.md", "summary": "Correct offset/header description and disclose reverse-engineered status.", "evidence": ["BIKI-PBO-FORMAT", "RETAIL-CORE-PBO", "ARMAKE2-PBO"]},
+    {"id": "PBO-002", "target": "en/04-file-formats/06-pbo-packing.md", "summary": "Add limit taxonomy; do not publish unproven 2 GiB/4 GiB total engine ceilings.", "evidence": ["BIKI-PBO-FORMAT", "ARMAKE2-PBO", "RETAIL-ADDONS-INVENTORY", "STARDZ-LOCAL-BUILD-GUIDE"]},
+    {"id": "PBO-003", "target": "en/04-file-formats/06-pbo-packing.md", "summary": "Separate format compression capability from current installed tool options.", "evidence": ["BIKI-PBO-FORMAT", "TOOL-ADDONBUILDER", "TOOL-FILEBANK"]},
+    {"id": "PBO-004", "target": "en/04-file-formats/06-pbo-packing.md and en/02-mod-structure/02-config-cpp.md", "summary": "Distinguish package, archive, prefix, and addon identity; explain requiredAddons and CfgMods roles.", "evidence": ["BIKI-MOD-BASICS", "BIKI-MOD-STRUCTURE", "SAMPLES-REPO", "EXTRACT-SAKHAL", "COT-REPO", "EXPANSION-REPO"]},
+    {"id": "PBO-005", "target": "en/04-file-formats/06-pbo-packing.md", "summary": "Make same-prefix virtual member collisions a build failure.", "evidence": ["STARDZ-RIFLES-1", "STARDZ-RIFLES-2"]},
+    {"id": "PBO-006", "target": "en/04-file-formats/06-pbo-packing.md and en/08-tutorials/09-professional-template.md", "summary": "Replace unreliable multi-PBO automation with isolated output discovery, final naming, inspection, and signing.", "evidence": ["TOOL-ADDONBUILDER", "TOOL-DSSIGNFILE", "TOOL-DSCHECK", "STARDZ-BUILD", "CF-REPO"]},
+    {"id": "PBO-007", "target": "en/04-file-formats/06-pbo-packing.md and en/02-mod-structure/06-server-client-split.md", "summary": "Describe client/server distribution at mod-folder/package granularity.", "evidence": ["BIKI-SERVER", "BIKI-MOD-STRUCTURE", "STARDZ-CORE-SERVER"]},
+    {"id": "PBO-008", "target": "en/02-mod-structure/02-config-cpp.md", "summary": "Describe inputs and script module files as mounted virtual paths.", "evidence": ["SAMPLES-REPO", "EXTRACT-SAKHAL"]},
+    {"id": "PBO-009", "target": "en/08-tutorials/07-publishing-workshop.md", "summary": "Do not treat textual -mod ordering as substitute for requiredAddons.", "evidence": ["BIKI-MOD-BASICS", "COT-REPO", "EXPANSION-REPO"]},
+    {"id": "PBO-010", "target": "en/04-file-formats/06-pbo-packing.md and en/08-tutorials/07-publishing-workshop.md", "summary": "Scope signature claims to verification, re-sign final bytes, and reuse uncompromised keys across updates.", "evidence": ["BIKI-SERVER", "BIKI-CREATING-ADDON", "TOOL-DSSIGNFILE", "TOOL-DSCHECK", "BIKI-ADDONBUILDER"]},
+    {"id": "PBO-011", "target": "en/04-file-formats/06-pbo-packing.md", "summary": "Replace vague real-mod observations with pinned commits, paths, and explicit third-party status.", "evidence": ["SAMPLES-REPO", "CF-REPO", "COT-REPO", "EXPANSION-REPO", "EDITOR-REPO", "VPP-REPO"]},
+    {"id": "PBO-012", "target": "en/08-tutorials/07-publishing-workshop.md", "summary": "Separate Steam Workshop service constraints from PBO format/runtime constraints.", "evidence": ["STEAMWORKS-WORKSHOP"]}
+  ],
+  "validation_not_performed": [
+    "VitePress build",
+    "new PBO packaging experiment",
+    "Enforce Script compilation",
+    "DSCheckSignatures release verification",
+    "verifySignatures=2 client/server join",
+    "serverMod clean-client distribution test",
+    "Steam Workshop upload/download test",
+    "controlled PBO size boundary test"
+  ],
+  "open_questions": [
+    "What exact DayZ/tool build and retained artifact reproduce the local greater-than-2-GiB failure?",
+    "Does any current authoritative DayZ source define a total-PBO runtime ceiling?",
+    "What output-naming behavior does current Addon Builder guarantee, if any?",
+    "Which resource-only PBO layouts without CfgPatches are supported and how are they ordered?",
+    "Which duplicate virtual path wins at runtime, and is behavior stable across launch order/builds?",
+    "Are bisigns operationally required or checked for content loaded only through -serverMod?",
+    "What current DayZ-specific Workshop content/upload limits apply, if any?"
+  ]
+}

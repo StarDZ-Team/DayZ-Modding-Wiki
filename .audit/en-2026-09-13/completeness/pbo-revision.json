@@ -1,0 +1,55 @@
+{
+  "schema_version": 2,
+  "date": "2026-09-13",
+  "scope": "Six pbo-final-council repairs only; no EN page edits or runtime validation.",
+  "historical_receipts_preserved": {
+    "directory": "TEMP/pbo-second-revision/pre-repair-receipts",
+    "pbo-revision.md": "A443203C0321F5FD313ED9FF67AB40D7BD7CC51DE14802AC60933A65E7405DD7",
+    "pbo-revision.json": "9301E870FFE255D71447C2812A309664145C1024CA4CA7EDA3AC5934288ACB78"
+  },
+  "source_accounting": {
+    "added_source": {"id":"WIKI-FIVE-LAYERS","kind":"current_wiki","path":"en/02-mod-structure/01-five-layers.md","sha256":"1C8571C015339DD7508D92C519A0F6A563B3790D5120ED776832EFBA345C8413","reviewed":"full file; five script-module hierarchy, compile-time visibility, and requiredAddons load-order claims","relevant_lines":["31-42","358-445","449-478"]},
+    "evidence_sha256": "38E257ED0D88E286C84E24828068B9F5C96E58F0F4B0D2375EA427ED6AFE1BBA"
+  },
+  "runner_repairs": ["global build/final-name/BankRev/collision phase before hashes, keys, or signatures","full trimmed BankRev lines with exact normalized prefix boundary","exhaustive one-to-one DSCheck OK matching and rejection of all unexpected/non-OK output","WorkRoot descendant-of-fixture guard"],
+  "success": {
+    "command": ".\\examples\\en\\multi-pbo\\build.ps1 -ToolRoot 'D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools' -WorkRoot 'D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-second-revision\\success-work'",
+    "exit_code": 0,
+    "run_root": "TEMP/pbo-second-revision/success-work/pboexample-20260913-211644-14a6980d",
+    "receipt_sha256": "B9CD721C3B3C4AB59CC8C9822A6D1A28B1C1E8E72A65044E87C8FB61A9129E51",
+    "tool_sha256": {"AddonBuilder.exe":"C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1","BankRev.exe":"2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75","DSCreateKey.exe":"81A100EEB190FAB4492970D0E6F051DB5C025BF8A4ADC2815C57ED9FE3022067","DSSignFile.exe":"098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78","DSCheckSignatures.exe":"9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C"},
+    "components": [
+      {"id":"Core","pbo_sha256":"0F6C0CB0CD4C352029F78A612AA4076CB44FD39172B547EEEB13692BF65A87A0","bisign_sha256":"F855201A207663437BA5FACA33D6773A0F72AA07FDC1A52C4DCB65233F17FC3E","member_lines":["PBOExample/Core\\config.cpp"]},
+      {"id":"Scripts","pbo_sha256":"2901BC2B730C9143E6E24778F7F8A7A0B7F7B619B77446AA0E39123B4ABB9333","bisign_sha256":"ED3ABC66A5D44EB4CC8BB75A41739DF3EA029B64F365A052063A43556E502BFE","member_lines":["PBOExample/Scripts\\scripts\\3_game\\pboexample.c","PBOExample/Scripts\\config.cpp"]},
+      {"id":"Data","pbo_sha256":"2638F46BD316F8D15C488D5ADD4E7F735EFC290B93BAEF8413CE1EB9159EAABF","bisign_sha256":"07A48F1C65FF3EC511763A77CB0E49029C7526FCB470B84650D0693FD5A196FF","member_lines":["PBOExample/Data\\data\\example.txt","PBOExample/Data\\config.cpp"]},
+      {"id":"Server","pbo_sha256":"EC66DCD8B71C6181965D4E631A79DFBFC531D4044920E481666DFE62B9B61638","bisign_sha256":"24644DEE80BC71230FFBB76FB3C0C8DC39F8780E277B4A30CFDE81B3B25FB4EF","member_lines":["PBOExample/Server\\scripts\\5_mission\\pboexampleserver.c","PBOExample/Server\\config.cpp"]}
+    ]
+  },
+  "negative_cases": {
+    "partial_signature": {"exit_code":0,"log":"TEMP/pbo-second-revision/negative/partial/dscheck.log","observed":["two OK","No signature found"],"runner_rejects":true},
+    "missing_key": {"exit_code":0,"log":"TEMP/pbo-second-revision/negative/missing/dscheck.log","observed":"Key not found","runner_rejects":true},
+    "wrong_signature": {"exit_code":0,"log":"TEMP/pbo-second-revision/negative/wrong/dscheck.log","observed":"is wrong","runner_rejects":true},
+    "duplicate_virtual_path": {"exit_code":1,"log":"TEMP/pbo-second-revision/duplicate.log","run_root":"TEMP/pbo-second-revision/duplicate-work/pboexample-20260913-211923-1f9fff8c","bisign_count":0,"private_key_count":0,"receipt_written":false},
+    "bad_tool_path": {"exit_code":0,"log":"TEMP/pbo-second-revision/negative/bad-tool-output/addonbuilder.log","observed":"[ERROR]","pbo_count":0,"runner_rejects_log":true},
+    "stale_parent_output": {"exit_code":0,"stale_file_preserved":true,"run_root":"TEMP/pbo-second-revision/stale-work/pboexample-20260913-211845-6205897a","receipt_sha256":"1B4E39D2745E88146639BD4420DA742E7ACC92D081557EBC9A7ED3A9AD6B711E"},
+    "workroot_fixture_guard": {"exit_code":1,"log":"TEMP/pbo-second-revision/workroot-guard.log"}
+    ,"bankrev_member_space": {"exit_code":0,"run_root":"TEMP/pbo-second-revision/space-work/pboexample-20260913-212329-5e8aab04","receipt_sha256":"D3790B24821FDACF0449B02119B78A07156560C58C434D4AD1A0911AF31E07F0","observed_full_line":"PBOExample/Data\\data\\member name.txt"}
+  },
+  "source_and_code_sha256": {
+    "examples/en/multi-pbo/README.md":"3449B09BBDD04A278A17DD8E3A79A1D27EEB76B173431A73A255C52EE23BC0CE",
+    "examples/en/multi-pbo/build.ps1":"38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956",
+    "examples/en/multi-pbo/manifest.json":"63D5E5E9468AF98B37B30AB71C3CCEA69D45694E266377025F68E6953F088582",
+    "examples/en/multi-pbo/src/Core/config.cpp":"E45F745E19E2EF1943A477E66B202D70D10A14A275EC6C7CE4FD56F80C2D712F",
+    "examples/en/multi-pbo/src/Scripts/config.cpp":"0C2DB149738083D7FDA1F616051C7F0C8C548B0175222369F1171A1FA197D787",
+    "examples/en/multi-pbo/src/Scripts/scripts/3_Game/PBOExample.c":"537D9A11B33ED7CCBF2DC7A41353F457629EC9CEBDF96EB01D53652B6E7ACF8B",
+    "examples/en/multi-pbo/src/Data/config.cpp":"AB459018DC30DD5188820398E56B16A3DA426929BB0111C4A3F47819DCED5F31",
+    "examples/en/multi-pbo/src/Data/data/example.txt":"C460C6E58E3051A463E565F55D835469415E3536B9EF6095178D3D60041CB941",
+    "examples/en/multi-pbo/src/Server/config.cpp":"4FA89581708F159CFCA491252F494A5E9A6A1AE003D165370EA3F12F5245E102",
+    "examples/en/multi-pbo/src/Server/scripts/5_Mission/PBOExampleServer.c":"CCECF9E3AEDC044CA44A3C22537BE504BEE5AC71042EA4E6EA8DAA1567F12373",
+    "examples/en/multi-pbo/package/Shared/mod.cpp":"8A3FB89471F6CA617674B997EFA37AF2DDCC2DB33DC471C68320D58A2FF2CFA9",
+    "examples/en/multi-pbo/package/Server/mod.cpp":"726A2E560854E619DD2A851F5E9EA08D216D673278452CC8C6C5AE449C1DC2C8",
+    ".audit/en-2026-09-13/completeness/pbo-research.md":"03FE483067A9259D6C0601A2F6FF9C9C7B6601201FAB6982343A8A15582D7949",
+    ".audit/en-2026-09-13/completeness/pbo-evidence.json":"38E257ED0D88E286C84E24828068B9F5C96E58F0F4B0D2375EA427ED6AFE1BBA"
+  },
+  "runtime_not_verified": ["DayZ boot","Enforce compilation","client/server distribution","mounted CfgMods paths","requiredAddons behavior","verifySignatures=2 enforcement","serverMod signature enforcement","PBO boundary tests","Workshop"]
+}

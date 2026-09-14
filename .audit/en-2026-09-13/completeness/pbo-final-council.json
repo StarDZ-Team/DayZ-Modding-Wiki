@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "repo_head": "9dc36064459f3184404bdba4db9d95b843b6fcaa",
+  "scope": "Independent final council for revised PBO research/evidence and examples/en/multi-pbo; no EN, fixture, author, or game-runtime edits",
+  "narrative": ".audit/en-2026-09-13/completeness/pbo-final-council.md",
+  "decision": {
+    "overall": "rejected_pending_repairs",
+    "scoped_commit": "do_not_commit_exact_reviewed_bundle",
+    "research_substance": "accepted",
+    "evidence_ledger": "rejected_missing_current_wiki_source_record",
+    "fixture": "rejected_runner_defects",
+    "full_wiki_approval": false
+  },
+  "reviewed_artifacts": [
+    { "path": ".audit/en-2026-09-13/completeness/pbo-council.md", "sha256": "D19E6D52B353F1E61C720C15CA239557B05EA53C720ACA813F7654BF11C14A31" },
+    { "path": ".audit/en-2026-09-13/completeness/pbo-council.json", "sha256": "3647BD3039A36A405A7BEBEF422055642C19B68DD22487D4ECD92A71AB95A6F5" },
+    { "path": ".audit/en-2026-09-13/completeness/pbo-revision.md", "sha256": "A443203C0321F5FD313ED9FF67AB40D7BD7CC51DE14802AC60933A65E7405DD7" },
+    { "path": ".audit/en-2026-09-13/completeness/pbo-revision.json", "sha256": "9301E870FFE255D71447C2812A309664145C1024CA4CA7EDA3AC5934288ACB78" },
+    { "path": ".audit/en-2026-09-13/completeness/pbo-research.md", "sha256": "03FE483067A9259D6C0601A2F6FF9C9C7B6601201FAB6982343A8A15582D7949", "disposition": "substance_accepted_bundle_pending" },
+    { "path": ".audit/en-2026-09-13/completeness/pbo-evidence.json", "sha256": "081584169BBC4D8FC2893C9C116B2570DC88A23829DC5AB60ACCE259385F2BF2", "disposition": "rejected" },
+    { "path": "examples/en/multi-pbo/README.md", "sha256": "84200850C3323C51218DD1163B293109AB99313E5EEDE7C24A3BC34731AFC7D0" },
+    { "path": "examples/en/multi-pbo/build.ps1", "sha256": "123E454ED89A87167262228D110DA5E81A71406CCBC445ABC8DED34769FCFBE8", "disposition": "rejected" },
+    { "path": "examples/en/multi-pbo/manifest.json", "sha256": "63D5E5E9468AF98B37B30AB71C3CCEA69D45694E266377025F68E6953F088582" },
+    { "path": "examples/en/multi-pbo/src/Core/config.cpp", "sha256": "E45F745E19E2EF1943A477E66B202D70D10A14A275EC6C7CE4FD56F80C2D712F" },
+    { "path": "examples/en/multi-pbo/src/Scripts/config.cpp", "sha256": "0C2DB149738083D7FDA1F616051C7F0C8C548B0175222369F1171A1FA197D787" },
+    { "path": "examples/en/multi-pbo/src/Scripts/scripts/3_Game/PBOExample.c", "sha256": "537D9A11B33ED7CCBF2DC7A41353F457629EC9CEBDF96EB01D53652B6E7ACF8B" },
+    { "path": "examples/en/multi-pbo/src/Data/config.cpp", "sha256": "AB459018DC30DD5188820398E56B16A3DA426929BB0111C4A3F47819DCED5F31" },
+    { "path": "examples/en/multi-pbo/src/Data/data/example.txt", "sha256": "C460C6E58E3051A463E565F55D835469415E3536B9EF6095178D3D60041CB941" },
+    { "path": "examples/en/multi-pbo/src/Server/config.cpp", "sha256": "4FA89581708F159CFCA491252F494A5E9A6A1AE003D165370EA3F12F5245E102" },
+    { "path": "examples/en/multi-pbo/src/Server/scripts/5_Mission/PBOExampleServer.c", "sha256": "CCECF9E3AEDC044CA44A3C22537BE504BEE5AC71042EA4E6EA8DAA1567F12373" },
+    { "path": "examples/en/multi-pbo/package/Shared/mod.cpp", "sha256": "8A3FB89471F6CA617674B997EFA37AF2DDCC2DB33DC471C68320D58A2FF2CFA9" },
+    { "path": "examples/en/multi-pbo/package/Server/mod.cpp", "sha256": "726A2E560854E619DD2A851F5E9EA08D216D673278452CC8C6C5AE449C1DC2C8" }
+  ],
+  "source_verification": {
+    "checks": 47,
+    "direct_file_hashes": 26,
+    "repo_head_and_origin": 7,
+    "repo_child_hashes": 14,
+    "mismatches": 0,
+    "corrected_wiki_path": {
+      "path": "en/02-mod-structure/01-five-layers.md",
+      "sha256": "1C8571C015339DD7508D92C519A0F6A563B3790D5120ED776832EFBA345C8413",
+      "exists_and_matches": true,
+      "missing_from_pbo_evidence_sources": true
+    },
+    "corrected_biki_server_snapshot": {
+      "path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/BIKI-Server-council-20260913.txt",
+      "sha256": "B2D11B4CD7D973FF65FD9804406E02D4C091176F9926EE1AF1F04142FE4142F7",
+      "exists_and_matches": true,
+      "relevant_lines_reopened": "180-181"
+    },
+    "live_biki_access": "HTTP 403 on final-council reopen; local identified snapshots used where recorded",
+    "steamworks_workshop_page_reopened": true
+  },
+  "retained_author_run": {
+    "run_root": "TEMP/pbo-author-revision-run/pboexample-20260913-203836-9d6aba33",
+    "receipt_sha256": "AF2366C97CC04686FB77866592318989FF0E2249F563E239108A53743B368C4C",
+    "all_recorded_pbo_and_bisign_hashes_match": true
+  },
+  "independent_success_run": {
+    "command": ".\\examples\\en\\multi-pbo\\build.ps1 -ToolRoot 'D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools' -WorkRoot 'D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-final-council\\success-work'",
+    "exit_code": 0,
+    "run_root": "TEMP/pbo-final-council/success-work/pboexample-20260913-205127-ba47a884",
+    "receipt_sha256": "EB8ED1F5E08236B2B744D64A1DDB10A74BF6D61737B32951CDE3CA908EC0C65B",
+    "release_layout": { "@PBOExample_pbos": 3, "@PBOExampleServer_pbos": 1, "bisigns": 4, "private_keys_in_release": 0 },
+    "components": [
+      { "id": "Core", "pbo": "PBOExample_Core.pbo", "prefix": "PBOExample/Core", "members": ["config.cpp"], "pbo_sha256": "496744B371AE7CF1EE3895BB0B53D54F0B9E563D53B286A12B3E2BBF5D2A471E", "bisign_sha256": "BD8B3E6FFA490BF058DC5E123D64DF965CDDA28B944CDA0D8A4B5483863C8973" },
+      { "id": "Scripts", "pbo": "PBOExample_Scripts.pbo", "prefix": "PBOExample/Scripts", "members": ["config.cpp", "scripts/3_game/pboexample.c"], "pbo_sha256": "C356135E8CD5A188F1246ED38A04E09086A2E2A867370908C8BFAA3B2DF0E3D1", "bisign_sha256": "84FCDFF5659E76348C61891296F746837BBFC1F5F75E0CF0295D36020EAFC08B" },
+      { "id": "Data", "pbo": "PBOExample_Data.pbo", "prefix": "PBOExample/Data", "members": ["config.cpp", "data/example.txt"], "pbo_sha256": "E16D865C90C37154C0299FCB0666398FD4B468107356EAACAA396E5BCF3EBA0F", "bisign_sha256": "69FBC655917B22A7D2E162E251243A442FE400F994F06D6A58805AFA968FF56A" },
+      { "id": "Server", "pbo": "PBOExample_Server.pbo", "prefix": "PBOExample/Server", "members": ["config.cpp", "scripts/5_mission/pboexampleserver.c"], "pbo_sha256": "1FF053D7344906BA8BD5AE2F75458D6418B5648E1DB4D9830F156C22068F86C6", "bisign_sha256": "C5769345905D06380C42F5ED3D0DBBF1361F82D23D9E6AD588CBB4A7487A4A80" }
+    ],
+    "bankrev_extracted_members_match_source_hashes": true,
+    "cfgconvert": { "component_exit_codes": { "Core": 0, "Scripts": 0, "Data": 0, "Server": 0 }, "outputs_created": 0, "interpretation": "bounded parser invocation only" }
+  },
+  "negative_tests": {
+    "addon_builder_bad_tools_directory": { "exit_code": 0, "logged_error": true, "pbo_count": 0, "fixture_log_regex_matches": true },
+    "dscheck_empty_keys": { "exit_code": 0, "key_not_found": true, "ok_count": 0, "fixture_rejects": true },
+    "dscheck_partial_signatures": { "pbo_count": 3, "bisign_count": 2, "exit_code": 0, "ok_count": 2, "no_signature_found": true, "current_fixture_condition_passes": true },
+    "duplicate_virtual_path": { "path": "pboexample/core/config.cpp", "fixture_rejects": true, "receipt_written": false, "bisigns_created_before_rejection": 4 },
+    "stale_parent_output": { "preserved": true, "fresh_run_succeeded": true },
+    "dscheck_rebuilt_bytes": { "old_pbo_sha256": "D4393588E1CD1A05B29CB3DF5ADD1C4CFCFAE6DA0492F17548A3A05D5A720D0E", "new_pbo_sha256": "496744B371AE7CF1EE3895BB0B53D54F0B9E563D53B286A12B3E2BBF5D2A471E", "bytes_differ": true, "exit_code": 0, "reported_ok": true }
+  },
+  "blocking_repairs": [
+    "Add the corrected 01-five-layers.md source object to pbo-evidence.json.",
+    "Require exhaustive one-to-one DSCheck OK output and reject missing-key/missing-signature/non-OK lines.",
+    "Run the global collision scan before hashing/signing any PBO.",
+    "Parse complete BankRev logFull lines, including member names containing spaces.",
+    "Prevent WorkRoot from writing generated keys/output inside the versioned fixture tree.",
+    "Regenerate revision receipts/hashes and obtain final-diff review."
+  ],
+  "fixture_tree_hygiene": {
+    "generated_pbo_bisign_key_log_receipt_files": 0,
+    "test_keys_in_versioned_example": false
+  },
+  "runtime_outstanding": [
+    "DayZ boot and Enforce compilation",
+    "clean-client join and folder-level serverMod distribution",
+    "mounted CfgMods path execution",
+    "requiredAddons missing/renamed behavior",
+    "verifySignatures=2 valid/modified/missing/wrong-key/rotated-key enforcement",
+    "serverMod-only signature enforcement",
+    "controlled PBO size boundary matrix",
+    "Steam Workshop upload/download"
+  ]
+}
