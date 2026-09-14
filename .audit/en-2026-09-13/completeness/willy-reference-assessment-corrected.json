@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "supersedes": {
+    "markdown": "willy-reference-assessment.md",
+    "json": "willy-reference-assessment.json",
+    "historical_originals_preserved_byte_for_byte": true,
+    "original_sha256": {
+      "markdown": "E3FE5DA884F6D7036725F8AF4FC43755E39234921FEA67415DE84A3246D22FE7",
+      "json": "4E5BF88AFF9693AFC07782D12EF973DBAE0593AC2BD969B47724C1A807A57523"
+    }
+  },
+  "scope": {
+    "mcp_dependencies_installed": false,
+    "mcp_started": false,
+    "game_or_dayzdiag_started": false,
+    "pbo_packed": false,
+    "en_edited": false,
+    "commit_created": false
+  },
+  "repositories": [
+    {"name":"dayz-mcp","origin":"https://github.com/willy92wins/dayz-mcp.git","commit":"ffa47e7ca8c82f4785279e919cb9d40053bddf8c","tree":"4d12f2d59eb1ab382aa1feb08123b84e3e2de34b"},
+    {"name":"DayZ-Modding-Knowledge-Pack","origin":"https://github.com/willy92wins/DayZ-Modding-Knowledge-Pack.git","commit":"9727ae83e65ac26a1cd386c64821b00159f8f933","tree":"e46b7fa0683f4567794cd49466d14de1183e617a"}
+  ],
+  "decision": "Limited revision-pinned offline evaluation of dayz-script-validator only; do not install, register, or adopt MCP from this assessment. A later disposable no-registration MCP smoke is separately scoped and coordinator-dispatched under standing isolated-test authorization.",
+  "corrections": [
+    {"id":"WC-002","decision":"Scope 1.29.163709 / Scripts Rev. 125372 to Script Diff commit 86974a0…0a1 and 1.29.0.163709 to the current executable; treat extraction files as hashable snapshots, not wholesale build attribution.","evidence":["doublecheck/REPORT.md:25","metadata-comparison.json","D:/DayZ Projects/scripts.txt"]},
+    {"id":"WC-004","decision":"MCP manifests declare mcp==1.27.2, Pillow==12.2.0, psutil==7.2.2; no install or resolution receipt exists.","evidence_hashes":{"dayz-mcp/tools/pyproject.toml":"337F2D8520D8087953C629E235137766BFBBD325B803A375EF6EB7CB2F3DD17F","dayz-mcp/tools/requirements-mcp.txt":"F434BF270EC62AEB3D90C062BDFD9A16AABEC280227578BFE8BC02E0B5F9BB98","dayz-mcp/tools/dependency-lock.json":"F1C682DA3D8C0DEDF57BE3ABFFFD353CDE0C95D4810F953487CDC244DB9176BA"}},
+    {"id":"WC-006","decision":"Both layout FAILs are detector false positives for the guarded optional probe; detectors lack namespace, use-site, and guard/control-flow analysis.","evidence_hashes":{"MCPDialogController.c":"FB527DB88F9490DC7D6A17923CFC4BF80FD3784D8FF88DC79DE6AAA21B207941","layout_prefix_detector":"D5A53E206B52C96147F569C4C696B17F7E4B7BCDF1E616D3EB99577072EDE7FA","missing_layout_detector":"D479D04F59DFF20CDECC791E9BA7AF50D8E19E16F1025E4E063DBF611BBD83A0"}},
+    {"id":"WC-007","decision":"Five exact-GetType warnings are semantic-review candidates; exact contracts may be intentional, so do not prescribe IsKindOf without per-site review."},
+    {"id":"WC-011","decision":"find/show/status are read-only; dayz_knowledge_prepare writes and publishes an index.","evidence":"dayz-mcp/tools/dayz_mcp/knowledge.py:615-690","sha256":"087146B0A8EF53C63804C496437C504F8C07898CF858B522151D45E34AEC3EA3"},
+    {"id":"WC-008","decision":"Vanilla-control FAIL is expected tree/baseline drift, not compile/runtime failure.","receipt":"TEMP/willy-reference-council/vanilla-control.json","receipt_sha256":"B11ECB0485D77F6B9BC1AFB79368917925AA70B22638C4D5C2E035C740443663","baseline_digest":"bdbc7d5a4ba337758a3512db1764e719c77e7a36a1a83b3bfbaba2a368967706","run_digest":"94fb3e56ffd06a86d7e233bf9f7ce3fbcd1f00c4710dede79689c9004508c336"},
+    {"id":"WC-009","decision":"Multi-PBO scan PASS covers eight files as a zero-finding static candidate scan only; no dependency/packing/signing/runtime proof. The 157 tests are offline fixture/unit coverage.","receipts":{"multi_pbo":"TEMP/willy-reference-council/script-validator-multi-pbo.json","multi_pbo_sha256":"473734B686E6B66144477500800D277ADB26D295407BDD79C61105A4DAE3F0F4","unit_tests":"TEMP/willy-reference-council/validator-unittest.txt","unit_tests_sha256":"E78B871ED7020FEC9620DFF470C4F8FE7AD4FA54635CF96292A6E9B8EE0B5960"}},
+    {"id":"WC-012","decision":"Retain no-adoption; future isolated MCP smoke is separately coordinator-dispatched, disposable, no-registration, and requires external-state before/after evidence; no new permission gate."}
+  ],
+  "retained_evidence":{"packctl_validate":"TEMP/willy-reference-assessment/packctl-validate.json","packctl_validate_sha256":"8574E2BE9E5A8550471FF7529BBA6E7125FFAFB6E492975510F241409B800E14","council":"willy-reference-council.md/json"}
+}

@@ -189,6 +189,7 @@ These instructions consolidate the user's decisions from the audit conversation 
 - Record repository URL and commit, file path and relevant lines or symbols, game/tool version when known, and access date for web sources. Use hashes when recording the exact local source or reviewed delivery.
 - Separate official behavior, third-party implementation choices, community advice, and inference. Popular mods can also contain bugs.
 - Corroborate disputed or consequential claims with independent evidence. Multiple projects copying the same implementation are not independent proof.
+- Before repeating runtime variations, consult relevant documentation, working public-mod implementations, and accessible modding-community discussions. Record the source-backed hypothesis, the result that would distinguish it, and a stopping condition. If trials stop producing useful evidence, consolidate the results and return to source research before launching more tests; the user explicitly prioritizes this to avoid wasted tokens.
 - Missing script declarations do not prove that a native feature is absent. Empty or incomplete extracted files cannot establish absence either.
 - State access failures and evidence limits honestly. Do not cite inaccessible material as if it was read.
 

@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "scope": {
+    "mcp_installed_or_started": false,
+    "game_or_dayzdiag_started": false,
+    "global_configuration_changed": false,
+    "wiki_en_changed": false,
+    "commit_created": false
+  },
+  "sources": [
+    {
+      "name": "dayz-mcp",
+      "origin": "https://github.com/willy92wins/dayz-mcp.git",
+      "commit": "ffa47e7ca8c82f4785279e919cb9d40053bddf8c",
+      "reviewed": [
+        "tools/dayz_mcp/server.py:3685-3730",
+        "tools/dayz_mcp/knowledge.py:129-314,358-411,615-690",
+        "tools/dayz_mcp/knowledge_pack.py:14,86-105,238-273",
+        "tools/dayz_mcp/host_config.py:216-419,1144-1205",
+        "tools/dayz_mcp/process_lifecycle.py:1680-1700,2238-2305,3035-3294",
+        "tools/pyproject.toml:1-20",
+        "tools/requirements-mcp.txt:1-3",
+        "addon/config.cpp:1-31",
+        "addon/scripts/5_Mission/MissionServer.c:1-29",
+        "addon/scripts/5_Mission/MCPBridge.c:585-620,2724-2868,3654-3682",
+        "addon/scripts/5_Mission/MCPDialogController.c:25-42",
+        "tools/tests/test_knowledge_tools.py:1-150",
+        "tools/tests/test_mcp_server.py:16-99",
+        "tools/tests/test_process_lifecycle.py:42-90",
+        "tools/tests/test_install_mcp.py:47-100"
+      ]
+    },
+    {
+      "name": "DayZ-Modding-Knowledge-Pack",
+      "origin": "https://github.com/willy92wins/DayZ-Modding-Knowledge-Pack.git",
+      "commit": "9727ae83e65ac26a1cd386c64821b00159f8f933",
+      "reviewed": [
+        "compatibility-matrix.md:7-55",
+        "sources/claims.schema.json:18-112",
+        "sources/source-map.schema.json:18-235",
+        "packctl/validation.py:1105-1122",
+        "tools/dayz-script-validator/README.md:1-66",
+        "tools/dayz-script-validator/scripts/script_validator.py:1-80",
+        "tools/dayz-odol-strict/README.md:1-18,121-129",
+        "pyproject.toml:1-25"
+      ]
+    },
+    {
+      "name": "local DayZ extraction",
+      "root": "D:/DayZ Projects/scripts",
+      "reviewed": [
+        "3_game/ce/centraleconomy.c:10-38",
+        "3_game/global/game.c:694-704",
+        "3_game/gameplay.c:104-117",
+        "3_game/dayzgame.c:3104-3115"
+      ],
+      "evidence_limit": "Static declarations and vanilla script behavior only; no native/runtime conclusion."
+    }
+  ],
+  "selected_file_sha256": {
+    "dayz-mcp/tools/dayz_mcp/server.py": "e244604ddb4f96614aa54ac1418c430fb3baf671a7d24386757d19d71a83a574",
+    "dayz-mcp/tools/dayz_mcp/knowledge.py": "087146b0a8ef53c63804c496437c504f8c07898cf858b522151d45e34aec3ea3",
+    "dayz-mcp/tools/dayz_mcp/host_config.py": "25cc02abee26b45112699df5493d00f0459db62070c0486377cc2698389106b0",
+    "dayz-mcp/tools/dayz_mcp/process_lifecycle.py": "0f9009cb75d165e20b34b758c4cc8f786eb07b40b7df1f8c45f5ed988bab6835",
+    "dayz-mcp/addon/scripts/5_Mission/MCPBridge.c": "8b4f8d835f40f5d4c05fc2d12fc793e399818e6f6732d25122e4e6c59dd9a64b",
+    "dayz-mcp/addon/scripts/5_Mission/MCPClientBridge.c": "72be8ef1f1e5b80b8e8bf039daa8333dd0f4a46c110e98939dfa65e49061b133",
+    "knowledge-pack/compatibility-matrix.md": "2451af7fc0fbdf3b46a501a0212d16fcf0816a608948f2ad4780f41b9f1dc851",
+    "knowledge-pack/sources/source-map.json": "811aedcf9920a2dd097bec46de61e4449c403b1df7eb5574b3f04f4f3c8ee4b6",
+    "knowledge-pack/sources/claims.json": "17a1b3e39c32e77097f78a83ce9bd90c113f71ca4c971f3ee78d51e353f15148",
+    "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c": "6948b104db21f468e5e4967893b3ab8b7938944731c6b5bc8bc5706910f446a3",
+    "D:/DayZ Projects/scripts/3_game/global/game.c": "cf529055c48596108034ce6b11826b09bbf5d93e6c550e37785947873d8c3158",
+    "D:/DayZ Projects/scripts/3_game/gameplay.c": "aa12624843f51c70200d37449559fbdadb042d333d4ee74c989e0ca632d2f0fe",
+    "D:/DayZ Projects/scripts/3_game/dayzgame.c": "75cd42b6cbe689f0903f23cdee46fd41545946b0046d3816b15b4f36044c8992"
+  },
+  "executed_checks": [
+    {
+      "command": "python -m packctl validate --root <pinned-pack> --report TEMP/willy-reference-assessment/packctl-validate.json",
+      "exit_code": 0,
+      "kind": "static pack self-validation",
+      "result": "PASS; eight check groups had zero findings",
+      "artifact": "TEMP/willy-reference-assessment/packctl-validate.json"
+    },
+    {
+      "command": "python tools/dayz-script-validator/scripts/script_validator.py <pinned-dayz-mcp/addon>",
+      "exit_code": 1,
+      "kind": "static source scan",
+      "result": "2 FAIL layout findings and 5 exact-GetType warnings across 11 files",
+      "artifact": "TEMP/willy-reference-assessment/script-validator-dayz-mcp-addon.txt"
+    }
+  ],
+  "test_evidence_classification": {
+    "dayz_mcp_tests": "Read-only review: local HTTP fixtures, temporary files, and fake launcher/guard objects; not executed and not game integration.",
+    "knowledge_pack_packctl": "Executed static integrity/provenance validation only.",
+    "knowledge_pack_script_validator": "Executed static heuristic scan only.",
+    "actual_game_integration": "Not performed."
+  },
+  "findings": [
+    {
+      "id": "WILLY-001",
+      "severity": "blocker_for_mcp_install",
+      "finding": "Knowledge Pack installation follows a moving remote branch rather than a pinned revision and can sync skills into a user profile.",
+      "evidence": "dayz-mcp/tools/dayz_mcp/knowledge_pack.py:14,86-105,238-273",
+      "disposition": "Use the already pinned clone only; do not call the installer in the first adoption test."
+    },
+    {
+      "id": "WILLY-002",
+      "severity": "version_scope",
+      "finding": "Knowledge Pack compatibility evidence targets 1.29.0.163451 and declares 1.29.0.163709 unreviewed.",
+      "evidence": "DayZ-Modding-Knowledge-Pack/compatibility-matrix.md:7-17; wiki doublecheck/source-use-REPORT.md authoritative extraction record",
+      "disposition": "Treat labels as historical leads until scoped source/retest work on the current extraction."
+    },
+    {
+      "id": "WILLY-003",
+      "severity": "offline_candidate",
+      "finding": "The static validator reports a profile-prefix layout and missing hot-layout failure, but the MCP source calls them an untested probe.",
+      "evidence": "MCPDialogController.c:33-42; TEMP/willy-reference-assessment/script-validator-dayz-mcp-addon.txt",
+      "disposition": "Record as a tool/source tension; require a minimal packaged UI test before calling it a defect."
+    },
+    {
+      "id": "WILLY-004",
+      "severity": "agreement_static_only",
+      "finding": "MCP world-spawn call and ECE values agree with the current local extraction declarations.",
+      "evidence": "MCPBridge.c:585-620,2724-2868; D:/DayZ Projects/scripts/3_game/global/game.c:694-704; 3_game/ce/centraleconomy.c:10-38",
+      "disposition": "No runtime inference; retain only as source-level agreement."
+    }
+  ],
+  "recommendation": {
+    "adopt_now": [
+      "Pinned Knowledge Pack source-map/claim distinction as an audit-recording pattern.",
+      "Isolated dayz-script-validator evaluation against frozen fixtures/extraction paths, subject to independent review."
+    ],
+    "do_not_adopt_now": [
+      "DayZ MCP installation, registration, daemon, bridge, lifecycle, or game-control path.",
+      "Knowledge Pack auto-update/sync installer."
+    ],
+    "smallest_next_test": "Use only the pinned clone's static script validator and vanilla-control baseline against a recorded local extraction; review every finding before any PBO or runtime work."
+  }
+}
