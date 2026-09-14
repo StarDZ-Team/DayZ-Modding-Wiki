@@ -1,0 +1,79 @@
+{
+  "schema": "en-edds-fixture-council-v1",
+  "reviewed_at": "2026-09-14",
+  "review_revision": "8635bd24a8e24530106952860ae70e4aaf86d5ed",
+  "reviewer": {"agent": "codex", "model": "gpt-5.6-sol", "effort": "high", "provenance": "dispatch-specified"},
+  "overall_disposition": "returned_with_blocking_static_repairs",
+  "execution_gate": "do_not_start_workbench_import",
+  "prohibited_actions_observed": [],
+  "actions_run": [
+    "python -B examples/en/edds-probe/scripts/verify_preparation.py",
+    "in-memory reproduction of generator output; no fixture write"
+  ],
+  "not_run": ["Workbench", "conversion", "Addon Builder", "BankRev", "PBO packing", "Enforce compilation", "wiki build/dev", "game", "client", "server"],
+  "decisions": [
+    {"id": "EF-01", "status": "accepted", "subject": "PNG generator, bytes, CRC, dimensions, alpha, and source-art provenance"},
+    {"id": "EF-02", "status": "accepted_bounded", "subject": "CfgPatches/CfgMods, DZ_Scripts dependency, imageset registration, rectangles, names, and plain-path hypothesis"},
+    {"id": "EF-03", "status": "blocking_repair", "subject": "explicit image stretch/clamp and exact background/marker geometry"},
+    {"id": "EF-04", "status": "blocking_repair", "subject": "persistent root, duplicate-init guard, partial-failure cleanup, OnMissionFinish teardown/super/log marker"},
+    {"id": "EF-05", "status": "blocking_repair", "subject": "DX10 FourCC offset and complete bounded EDDS table validation"},
+    {"id": "EF-06", "status": "blocking_repair", "subject": "BankRev exact prefix/member proof, helper ownership checks, and complete receipt"},
+    {"id": "EF-07", "status": "blocking_repair", "subject": "incorrect extracted-source hashes and overbroad static-check accounting"},
+    {"id": "EF-08", "status": "accepted_observation_pending", "subject": "private gproj syntax/source root/virtual child; native visibility and minimal dependency needs pending"},
+    {"id": "EF-09", "status": "accepted", "subject": "intentional EDDS/meta absence and no fabricated GUID"}
+  ],
+  "blocking_repairs": [
+    "In probe_ui.layout explicitly set stretch_w_h and clamp for both ImageWidgets; state that cyan crosses both backgrounds while the current top-right magenta marker is on the light half.",
+    "Persist the owned root, guard duplicate OnInit, unlink on partial widget failure, and add super-calling OnMissionFinish teardown with a unique marker.",
+    "Read DDS FourCC at 0x54, select 0x80/0x94 correctly, validate header sizes, 1..7 mips, every 8-byte table entry, positive block sizes, table bounds, and exact payload end.",
+    "Use BankRev -properties and exact normalized full-line seven-member comparison, including probe_ui.png; prove prefix EDDSProbe, harden WorkRoot equality/source binding/hierarchy checks, and retain full command/source/tool/table evidence.",
+    "Correct or supersede three mismatched extracted-source hashes and scope static checks to what they actually assert."
+  ],
+  "visibility_observation": {
+    "current_p_drive_present": false,
+    "direct_project_first": "Open only TEMP/edds-fixture-preparation/EDDSProbe.gproj later; retain project/PNG/Workbench hashes plus log and screenshot proving EDDSProbe/GUI/imagesets/probe_ui.png visibility before import.",
+    "failure_rule": "If the exact source is not visible, do not import; record the error.",
+    "owned_mapping_fallback": "Only if both Get-PSDrive P and subst positively show P: absent: subst P: D:\\StarDZ\\docs\\wiki\\examples\\en\\edds-probe\\source; use a separate private gproj naming P:/; before cleanup recheck the target, then subst P: /D. Never alter the installed dayz.gproj or replace an existing mapping.",
+    "dependency_boundary": "Full Dabs/CF editing-project blocks do not prove every imageset/style/script module is required for import-only visibility; add a project dependency only when the captured Workbench error identifies it."
+  },
+  "fixture": {
+    "png": {"dimensions": [64, 32], "format": "RGBA8", "bytes": 135, "sha256": "EDB68FB0779781BF8F672D2595897EB870792675EB576BDDDF08E4E231B7522C", "generator_byte_equal": true, "chunk_crc_valid": true, "pixels": {"transparent": 1152, "cyan_alpha_128": 560, "white_opaque": 320, "magenta_opaque": 16}},
+    "generated_edds_present": false,
+    "generated_meta_present": false,
+    "fabricated_guid_present": false
+  },
+  "reviewed_files": [
+    {"path": "examples/en/edds-probe/README.md", "bytes": 4723, "sha256": "CDC3EF688191389AF3F0B82DE30761C5C1620A24BB1252169E57A49B44B5D56F"},
+    {"path": "examples/en/edds-probe/build.ps1", "bytes": 4814, "sha256": "ECC128409E95DC9557AD9F237FB1E83545D792969374D21562D704687E2869AE"},
+    {"path": "examples/en/edds-probe/scripts/generate_probe_png.py", "bytes": 1737, "sha256": "117D1A2D40F7F460E8960E5986ED6DF47BB2209676449ED925E85F98C7831BF3"},
+    {"path": "examples/en/edds-probe/scripts/verify_preparation.py", "bytes": 7224, "sha256": "200A5633E1FA3EF58986DA21597AF71019E51F5484D52164DE4F9AEC83E8F21C"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/GUI/imagesets/probe_ui.png", "bytes": 135, "sha256": "EDB68FB0779781BF8F672D2595897EB870792675EB576BDDDF08E4E231B7522C"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/config.cpp", "bytes": 560, "sha256": "A399BA5FF8E4C10C113F4021400FA292BDE065A85C2802FF7A512860872E8CA9"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/GUI/imagesets/probe_ui.imageset", "bytes": 504, "sha256": "B4D648347F441E58466923F427D2BD97DDC6D47FCBE419B3922A9EF5B5140A98"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/GUI/layouts/probe_ui.layout", "bytes": 988, "sha256": "C4B5048565D985AD827C533651C85145BC04D59E84AF7609574E5E3A86F6B579"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/Scripts/5_Mission/EDDSProbeMission.c", "bytes": 1016, "sha256": "B1B7E775F777EC432E0918D133D0BAD184D2AB8EEF2F42CF70189C2F49D4C275"},
+    {"path": "TEMP/edds-fixture-preparation/EDDSProbe.gproj", "bytes": 392, "sha256": "A5632B06E21C4E87CA56BB51DFA4BEF7997C4881FF87B36D55D8E8AB90C03598"},
+    {"path": "TEMP/edds-fixture-preparation/README.md", "bytes": 1223, "sha256": "904AF137EDF81FD01A68493EB82899A872141607079D41368A9C220CAD3E1CA6"},
+    {"path": ".audit/en-2026-09-13/completeness/edds-workflow-repaired.md", "bytes": 4434, "sha256": "8A3CA8F99A92CE0235A3F2616C59810A370333AFA19E0FD5B4EBE8A0D83ADDB7"},
+    {"path": ".audit/en-2026-09-13/completeness/edds-workflow-repaired.json", "bytes": 2177, "sha256": "E3688A002B8A16230338B71EE1602EE1F86E77FC817DE39D583869B5D64DA4FF"},
+    {"path": ".audit/en-2026-09-13/completeness/edds-fixture-implementation.md", "bytes": 3246, "sha256": "B1E60758795268B783D87D0555E3ED4ADD57D0DBEFC86F13794B93BB047D27C8"},
+    {"path": ".audit/en-2026-09-13/completeness/edds-fixture-implementation.json", "bytes": 1656, "sha256": "C34222F4D6B0D1429EA033134654B77FDE604E1CFA7F5611C6E07607F884E459"},
+    {"path": ".audit/en-2026-09-13/completeness/edds-workflow-council.md", "bytes": 8727, "sha256": "4DBE29B8289B0FFC7572708122858F743B33C33A88C5F83D15ADE4CEECDB11AC"},
+    {"path": ".audit/en-2026-09-13/completeness/edds-workflow-council.json", "bytes": 7929, "sha256": "BCBCF80450889F4C81A21EEB42F62A56BC13B3778374E6AF14FBB711E08E2E31"}
+  ],
+  "source_evidence": [
+    {"path": "D:/DayZ Projects/scripts/config.cpp", "symbols": "CfgPatches/DZ_Scripts:1-9", "sha256": "F086DB66CDE5E60089C78FF170AA0488F5ABF7ABB37E6C13D404116D6D05A90A"},
+    {"path": "D:/DayZ Projects/scripts/1_core/proto/enwidgets.c", "symbols": "WidgetFlags:57-84; Widget.Unlink:173; WorkspaceWidget.CreateWidgets:176-182; ImageWidget.LoadImageFile/SetImage:247-267", "sha256": "6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E"},
+    {"path": "D:/DayZ Projects/scripts/5_mission/mission/missiongameplay.c", "symbols": "MissionGameplay.OnInit:96-125", "sha256": "E0A215D9E10300503CBC17F7A44BBABF58A2D1EF5CBB268D3DA1D279DC75C96A"},
+    {"path": "D:/DayZ Projects/gui/imagesets/dayz_gui.imageset", "symbols": "ImageSetClass/Textures/Images", "sha256": "AD001B5391F351FFDC68CBB39B685D16E21F5313862C251CB48A65241FA1095A"},
+    {"path": "D:/DayZ Projects/gui/layouts/day_z_hud_cars.layout", "symbols": "SpeedDial:23-38 blend/source-alpha/clamp/stretch", "sha256": "6E2893932679783D2618A9A63603966B83EEA225D1EF933301726C4B1068D7B2"},
+    {"path": "D:/DayZ Projects/DZ/water/ponds/data/pond_moss_ca.edds", "symbols": "legacy header; table 0x80; exact payload end", "sha256": "2EAADDF7EBB52B90E47212A0200E050E55BA4AD7599F47974C31767853D0676E"},
+    {"path": "D:/DayZ Projects/graphics/textures/water/dayzwater1_no.edds", "symbols": "DX10 FourCC 0x54; table 0x94; exact payload end", "sha256": "4DA58F017C48244E676F42E3D3B13A01B5B45A68335EB60869507D376FB8F9B0"}
+  ],
+  "hash_mismatches_in_author_evidence": [
+    {"path": "D:/DayZ Projects/scripts/1_core/proto/enwidgets.c", "reported": "6BB20A54119A25BAB3933607BF8B703C3123853B36BF2E4141AEAC83CF215C9E", "current": "6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E"},
+    {"path": "D:/DayZ Projects/scripts/5_mission/mission/missiongameplay.c", "reported": "E0A2157DBBF1C795F8228745BEF493218434A1B5125912F6EDFE032BFE457DB2", "current": "E0A215D9E10300503CBC17F7A44BBABF58A2D1EF5CBB268D3DA1D279DC75C96A"},
+    {"path": "D:/DayZ Projects/gui/layouts/day_z_hud_cars.layout", "reported": "6E2893932679783DBA2C2404B18D8CFC841DFD0EEA7C521A05400D3BBF8637C2", "current": "6E2893932679783D2618A9A63603966B83EEA225D1EF933301726C4B1068D7B2"}
+  ],
+  "bounded_next_gate": "After all blocking static repairs and a fresh independent exact-file review: one default Workbench import, structural output inspection, one exact-prefix/exact-member pack, one baseline client observation, and at most one objective packaging/reference correction."
+}

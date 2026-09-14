@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-09-14T07:03:33.564641+00:00",
+  "headAtCheck": "2c34cbcefd5a9b19c1827d7c3826f70759580ff1",
+  "scope": "Retain author reports and independent rejection, not approve import or fixture",
+  "reviewedFilesChecked": 17,
+  "allReviewedHashesMatch": true,
+  "preservation": "D:\\StarDZ\\docs\\wiki\\TEMP\\edds-fixture-rejected-20260914-0703\\preservation.json",
+  "sourceHashCorrectionConfirmed": {
+    "path": "D:/DayZ Projects/scripts/1_core/proto/enwidgets.c",
+    "actualSha256": "6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E"
+  },
+  "repairsRequired": [
+    "EF-03",
+    "EF-04",
+    "EF-05",
+    "EF-06",
+    "EF-07"
+  ],
+  "importAccepted": false,
+  "runtimeLaunched": false
+}

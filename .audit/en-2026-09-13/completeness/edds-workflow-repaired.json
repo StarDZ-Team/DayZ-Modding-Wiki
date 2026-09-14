@@ -1,0 +1,27 @@
+{
+  "schema": "en-edds-workflow-repaired-v1",
+  "prepared_at": "2026-09-14",
+  "scope": "source/project preparation only; historical research and council reports preserved",
+  "council_repairs": [
+    {"id": 1, "status": "repaired_observation_pending", "artifact": "TEMP/edds-fixture-preparation/EDDSProbe.gproj", "boundary": "P: absent; virtual-root visibility not tested"},
+    {"id": 2, "status": "repaired", "artifact": "examples/en/edds-probe/scripts/verify_preparation.py", "boundary": "structural inspection only; legacy table 0x80 and DX10 table 0x94"},
+    {"id": 3, "status": "repaired", "artifact": "examples/en/edds-probe/scripts/generate_probe_png.py", "boundary": "one future default import; generated fields are observations"},
+    {"id": 4, "status": "repaired", "artifact": "examples/en/edds-probe/source/EDDSProbe/GUI/imagesets/probe_ui.imageset", "boundary": "plain-path fallback only; no GUID"},
+    {"id": 5, "status": "repaired", "artifact": "examples/en/edds-probe/source/EDDSProbe/config.cpp", "boundary": "standalone client PBO source, not packed"},
+    {"id": 6, "status": "repaired", "artifact": "examples/en/edds-probe/source/EDDSProbe/Scripts/5_Mission/EDDSProbeMission.c", "boundary": "static source only; no Enforce compile"},
+    {"id": 7, "status": "repaired", "artifact": "examples/en/edds-probe/source/EDDSProbe/GUI/layouts/probe_ui.layout", "boundary": "render controls prepared; no visual/runtme claim"}
+  ],
+  "evidence": {
+    "installed_gproj_sha256": "269DAAD629D0007176B4B81ADFB52740A23A11955C24C414B82727F15EE41928",
+    "workbench_sha256": "B61D240394845EF9EAB3B5F459D487B50DBF3C42713FB9E9E50CE945F5A894C6",
+    "workbench_version_from_council": "1.29.163.401",
+    "p_drive_present": false,
+    "dabs_commit": "fd859fd891f45a4a9c9089597db0c621ef3a9de5",
+    "dabs_plain_path_sha256": "1DE25A2BA41771632814F126C2C326B5D8A2F1DF74BEA2344CF56120081D101D"
+  },
+  "tests": [
+    "python examples/en/edds-probe/scripts/generate_probe_png.py",
+    "python examples/en/edds-probe/scripts/verify_preparation.py"
+  ],
+  "not_run": ["Workbench import", "PBO packaging", "Enforce compilation", "DayZ client/server/game runtime", "wiki build"]
+}

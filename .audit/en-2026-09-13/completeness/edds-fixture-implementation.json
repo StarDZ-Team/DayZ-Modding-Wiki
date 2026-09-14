@@ -1,0 +1,28 @@
+{
+  "schema": "en-edds-fixture-implementation-v1",
+  "prepared_at": "2026-09-14",
+  "fixture": "EDDSProbe",
+  "pbo_prefix": "EDDSProbe",
+  "source_png": {
+    "path": "examples/en/edds-probe/source/EDDSProbe/GUI/imagesets/probe_ui.png",
+    "sha256": "EDB68FB0779781BF8F672D2595897EB870792675EB576BDDDF08E4E231B7522C",
+    "dimensions": [64, 32],
+    "format": "RGBA8 PNG, non-interlaced, filter-0 scanlines",
+    "pixel_controls": {"white_l": "x=4..11,y=4..27 plus x=4..27,y=20..27", "cyan": "x=36..59,y=4..27 rgba(0,255,255,128)", "magenta_marker": "x=56..59,y=4..7 rgba(255,0,255,255)"}
+  },
+  "private_project": {
+    "path": "TEMP/edds-fixture-preparation/EDDSProbe.gproj",
+    "sha256": "A5632B06E21C4E87CA56BB51DFA4BEF7997C4881FF87B36D55D8E8AB90C03598",
+    "physical_source_root": "D:/StarDZ/docs/wiki/examples/en/edds-probe/source",
+    "intended_virtual_root": "EDDSProbe",
+    "p_drive_present": false,
+    "mount_visibility": "unobserved"
+  },
+  "generated_edds": {"present": false, "reason": "intentionally absent until later Workbench import"},
+  "identity": {"current_descriptor_path": "EDDSProbe/GUI/imagesets/probe_ui.edds", "status": "predeclared plain-path fallback; no GUID", "replacement_rule": "only later exact copied Workbench output identity may replace it"},
+  "verification_run": {
+    "commands": ["python examples/en/edds-probe/scripts/generate_probe_png.py", "python examples/en/edds-probe/scripts/verify_preparation.py"],
+    "result": "passed static source-pixel/config/imageset/layout/script checks"
+  },
+  "not_run": ["Workbench", "conversion", "packing", "Enforce compiler", "DayZ client", "DayZ server", "wiki build"]
+}
