@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "decision": "controller_rejected_discovery_proposal_only_accepted",
+  "verifiedUtc": "2026-09-14T08:16:27.9596448Z",
+  "reviewedHead": "d795fca51eca92781a4dbdfc89d753790569fb4d",
+  "currentHead": "c2a4c1bf26565f2b94fa170d3187c8d946a540c3",
+  "note": "Council head is its earlier snapshot; all 27 final source hashes freshly verified before repair.",
+  "findings": "R4C-B01-B07",
+  "preservation": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\preservation.json",
+  "files": [
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\build.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\build.ps1",
+      "sha256": "A71E0B8DA79C31BC8A4FDEB966B21A67686131E62DB808BDB95D1365417BE9D4"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Dispatch.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Dispatch.ps1",
+      "sha256": "C5E059F426A102F2356E1B85A5B0E23AEB8BAEE683BC783B2FCB234FFEFE8CF0"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Invoke-EntityPersistenceHarness.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Invoke-EntityPersistenceHarness.ps1",
+      "sha256": "E70550F6EC9787633283ED4DB18C8301F0882E52C70E15E054DB17EA14160F39"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\cfgeconomycore-fragment.xml",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\mission-template\\cfgeconomycore-fragment.xml",
+      "sha256": "95205A870A8D2BEC7F71E61FF821F7010F1925E2FFCD6FBAD7980619FF497DE3"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\EntityPersistenceFixture\\types.xml",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\mission-template\\EntityPersistenceFixture\\types.xml",
+      "sha256": "6EA1CB2B623AD480690114B784E2D9044F32DCD0187E23620ED26CB0C6BFC97B"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-matrix.c",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\mission-template\\init-matrix.c",
+      "sha256": "EFFE214B005924727C9131C62C4336A98C3E151465EC4FA6490C93B8D63A03A5"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-nomod.c",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\mission-template\\init-nomod.c",
+      "sha256": "DB9FE7F51FF716F8E96831277FBE86688584EB44F9871C00B292148202C10C31"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-v1.c",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\mission-template\\init-v1.c",
+      "sha256": "AE4B40998659502E54331DFAB28642CFC39D3A83E04E77DFCBAB8FAE003B30A2"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\init-v2.c",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\mission-template\\init-v2.c",
+      "sha256": "3D6D29E1F75EC4ECBAE0CA74879C594BF212A1CE4E728210B66D6C2B11D21C25"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\mission-template\\messages.xml",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\mission-template\\messages.xml",
+      "sha256": "8121B8EDBF6F1D1623E0589AB4F005E09C23E2DB8C3CE37ED0FAD811C4BFAB36"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Observation.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Observation.ps1",
+      "sha256": "97556DBB669314E0BBEA4DDDA3507542789077393BE8309BA40876FC445EABC5"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Protocol.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Protocol.ps1",
+      "sha256": "2270C71F02D55692763653E52E142AF6BC703F87F7DF4A8B3AB7ABB22C4020D6"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\README.md",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\README.md",
+      "sha256": "6E65BAE579523D2E5B6C644AA3ECD7F25A41800B7964E1C9C705575DA7BE551C"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Runtime.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Runtime.ps1",
+      "sha256": "EE3F414DFFD3F1DE3261419DA1B6C5F8BA3A1741232E3769B66D4A3FCAD76484"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\shutdown-discovery.md",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\shutdown-discovery.md",
+      "sha256": "C065313B4F764E0F1DF4E28B74BC86B8F83B6A783986B927EDDA5453DF25BDE4"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Storage.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Storage.ps1",
+      "sha256": "1B015C861FF03DB357724E5F42DE0D74CAD49E0A850AB54A92824F402B107415"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Test-EntityPersistenceHarness.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Test-EntityPersistenceHarness.ps1",
+      "sha256": "AEEA3ABF077763994DC4CE3FE967BF15261866B5E519F06F7A6B832335FA8F2E"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Test-Receipts.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Test-Receipts.ps1",
+      "sha256": "BBB83270B78DEF214047604526F7AEAA9E50A3899A85A25CFF670D5EB17C7E43"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\harness\\Test-RuntimeAdapters.ps1",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\harness\\Test-RuntimeAdapters.ps1",
+      "sha256": "64770BF1DA6B21C4D3BC705B4EDBDCA7EB62A05E26C9BA795F7B8E617EC0A6EA"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\manifest.json",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\manifest.json",
+      "sha256": "4701E996F8A0A01EE6D28C20779E1D5C843019AC452C728DECA2A25B377D69E9"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\README.md",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\README.md",
+      "sha256": "1BA2723552B1EBCECF6DDE3433932E85527443682F575FBA091755F86AD3B7F4"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\matrix\\config.cpp",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\variants\\matrix\\config.cpp",
+      "sha256": "CA804F143033932C942ED18A185B0EAA9E44F127E8DCA100245413118B951D7C"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\matrix\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\variants\\matrix\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "0573DFFDDEF375456E51459249C3367A8F2125FE085991AF4672E14F23A7A678"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v1\\config.cpp",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\variants\\v1\\config.cpp",
+      "sha256": "3C86A27699C7766F1C3EAA75DC9DF053520216216E7D090AFC5483C4CA51D82D"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v1\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\variants\\v1\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "169357CCCF2E8797D7791A2AA842DAA755ACDF8527DBB59A9FE6204C1A5536D2"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v2\\config.cpp",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\variants\\v2\\config.cpp",
+      "sha256": "7B817238ABB2E8A0FD0F288C9C7E1B09910B327EAFF5F263FDEB17F2770E0147"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v2\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "copy": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4-rejected-20260914-0816\\variants\\v2\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+      "sha256": "10386F5419115F2F81F3B039499493D872BCB5FA37A65F837FD6CD04DBDE0818"
+    }
+  ],
+  "nativeRuntimeApproved": false
+}

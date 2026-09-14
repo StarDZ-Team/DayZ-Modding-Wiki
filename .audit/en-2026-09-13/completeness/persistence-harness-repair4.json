@@ -1,0 +1,747 @@
+{
+  "webAccess": [
+    {
+      "url": "https://community.bistudio.com/wiki/DayZ:Error_Codes",
+      "use": "research lead, not native runtime evidence",
+      "date": "2026-09-14",
+      "status": "search-index excerpt read, direct open HTTP403"
+    },
+    {
+      "url": "https://community.bohemia.net/wiki/DayZ:Server_Messages",
+      "use": "not cited as opened contents",
+      "date": "2026-09-14",
+      "status": "direct open HTTP403"
+    },
+    {
+      "url": "https://feedback.bistudio.com/T179734",
+      "use": "not cited as opened contents",
+      "date": "2026-09-14",
+      "status": "direct open HTTP403"
+    }
+  ],
+  "regressions": {
+    "receipt": {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4\\pure-37ff68a8f5a74b7e9d588aa52e0ecb37\\results.json",
+      "sha256": "180EB215DAF238D858F99440EADF6FEC4FB8EF09016C16A2196294C85D3EB390"
+    },
+    "actualInvocation": "PowerShell call operator in tool shell",
+    "exitCode": 0,
+    "passed": true,
+    "scope": "Synthetic transitions, local filesystem/ownership/receipt routes, production controller with fake process/clock/port/review adapters; no runtime proof",
+    "command": "PowerShell 7.6.0: & examples/en/entity-persistence/harness/Invoke-EntityPersistenceHarness.ps1 -Action Static",
+    "count": 115
+  },
+  "recordedUtc": "2026-09-14T07:51:42.1603184Z",
+  "reviewedDelivery": [
+    {
+      "path": "examples/en/entity-persistence/harness/Dispatch.ps1",
+      "sha256": "C5E059F426A102F2356E1B85A5B0E23AEB8BAEE683BC783B2FCB234FFEFE8CF0",
+      "bytes": 8885
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Invoke-EntityPersistenceHarness.ps1",
+      "sha256": "E70550F6EC9787633283ED4DB18C8301F0882E52C70E15E054DB17EA14160F39",
+      "bytes": 1802
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/mission-template/cfgeconomycore-fragment.xml",
+      "sha256": "95205A870A8D2BEC7F71E61FF821F7010F1925E2FFCD6FBAD7980619FF497DE3",
+      "bytes": 82
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/mission-template/EntityPersistenceFixture/types.xml",
+      "sha256": "6EA1CB2B623AD480690114B784E2D9044F32DCD0187E23620ED26CB0C6BFC97B",
+      "bytes": 458
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/mission-template/init-matrix.c",
+      "sha256": "EFFE214B005924727C9131C62C4336A98C3E151465EC4FA6490C93B8D63A03A5",
+      "bytes": 6864
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/mission-template/init-nomod.c",
+      "sha256": "DB9FE7F51FF716F8E96831277FBE86688584EB44F9871C00B292148202C10C31",
+      "bytes": 1278
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/mission-template/init-v1.c",
+      "sha256": "AE4B40998659502E54331DFAB28642CFC39D3A83E04E77DFCBAB8FAE003B30A2",
+      "bytes": 6622
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/mission-template/init-v2.c",
+      "sha256": "3D6D29E1F75EC4ECBAE0CA74879C594BF212A1CE4E728210B66D6C2B11D21C25",
+      "bytes": 5582
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/mission-template/messages.xml",
+      "sha256": "8121B8EDBF6F1D1623E0589AB4F005E09C23E2DB8C3CE37ED0FAD811C4BFAB36",
+      "bytes": 215
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Observation.ps1",
+      "sha256": "97556DBB669314E0BBEA4DDDA3507542789077393BE8309BA40876FC445EABC5",
+      "bytes": 12130
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Protocol.ps1",
+      "sha256": "2270C71F02D55692763653E52E142AF6BC703F87F7DF4A8B3AB7ABB22C4020D6",
+      "bytes": 23877
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/README.md",
+      "sha256": "6E65BAE579523D2E5B6C644AA3ECD7F25A41800B7964E1C9C705575DA7BE551C",
+      "bytes": 11036
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Runtime.ps1",
+      "sha256": "EE3F414DFFD3F1DE3261419DA1B6C5F8BA3A1741232E3769B66D4A3FCAD76484",
+      "bytes": 26234
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/shutdown-discovery.md",
+      "sha256": "C065313B4F764E0F1DF4E28B74BC86B8F83B6A783986B927EDDA5453DF25BDE4",
+      "bytes": 6608
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Storage.ps1",
+      "sha256": "1B015C861FF03DB357724E5F42DE0D74CAD49E0A850AB54A92824F402B107415",
+      "bytes": 16596
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Test-EntityPersistenceHarness.ps1",
+      "sha256": "AEEA3ABF077763994DC4CE3FE967BF15261866B5E519F06F7A6B832335FA8F2E",
+      "bytes": 19648
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Test-Receipts.ps1",
+      "sha256": "BBB83270B78DEF214047604526F7AEAA9E50A3899A85A25CFF670D5EB17C7E43",
+      "bytes": 15450
+    },
+    {
+      "path": "examples/en/entity-persistence/harness/Test-RuntimeAdapters.ps1",
+      "sha256": "64770BF1DA6B21C4D3BC705B4EDBDCA7EB62A05E26C9BA795F7B8E617EC0A6EA",
+      "bytes": 8949
+    },
+    {
+      "path": "examples/en/entity-persistence/README.md",
+      "sha256": "1BA2723552B1EBCECF6DDE3433932E85527443682F575FBA091755F86AD3B7F4",
+      "bytes": 3812
+    }
+  ],
+  "limits": [
+    "No reviewed positive native scheduled-state definition exists; all real launch remains blocked.",
+    "No real no-mod diagnostic baseline or bad-read native diagnostic review supplied.",
+    "Synthetic tests do not prove Enforce compilation, PID assignment timing, malformed record survival/isolation, terrain/lifetime values, or scheduled self-exit.",
+    "Extraction version124588 is not proven identical to installed DayZDiag1.29.0.163709.",
+    "TCP/UDP reservation/release checks cannot eliminate an unrelated application racing after prelaunch reservation release.",
+    "Invalid CLI or contested root emits a structured rejection to caller instead of writing without ownership; coordinator must retain execution output.",
+    "A dispatch-owner acquisition or release failure does not automatically recover a stale lease.",
+    "A native witness available only outside RPT requires separately reviewed adapter extension, not an invented match."
+  ],
+  "priorRuns": [
+    "Initial test helper shadowed phase names; corrected and reran.",
+    "First production adapter test used wrong synthetic runId; corrected and reran.",
+    "An intermediate adapter run rejected changed harness source after author edited a test file during that run; it is preserved as failed, not counted as final success."
+  ],
+  "sourceUse": [
+    {
+      "path": "D:/DayZ Projects/scripts.txt",
+      "sha256": "E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F",
+      "use": "extraction metadata",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "1-3"
+    },
+    {
+      "path": "D:/DayZ Projects/scripts/3_game/global/game.c",
+      "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158",
+      "use": "native exit requests do not expose an observed scheduled-state getter",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "215-222; shutdown/restart search"
+    },
+    {
+      "path": "D:/DayZ Projects/scripts/5_mission/mission/missionserver.c",
+      "sha256": "92A2FF171ED550BF2E93E7C983479613CFB0EE7A521D7C1958CECA9647B786F0",
+      "use": "player shutdown kick handling; no connected player in this experiment",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "704-739"
+    },
+    {
+      "path": "D:/DayZ Projects/scripts/3_game/entities/entityai.c",
+      "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5",
+      "use": "four-block persistent identity and instance lifetime declarations",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "3374-3400"
+    },
+    {
+      "path": "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c",
+      "sha256": "6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3",
+      "use": "CE profile lifetime declaration",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "748-767; shutdown search"
+    },
+    {
+      "path": "D:/DayZ Projects/scripts/3_game/dayzgame.c",
+      "sha256": "75CD42B6CBE689F0903F23CDEE46FD41545946B0046D3816B15B4F36044C8992",
+      "use": "no matching scheduled state declaration located; absence not proven",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "shutdown/restart search"
+    },
+    {
+      "path": "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md",
+      "sha256": "E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD",
+      "use": "fallible local migration documentation lead",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "374-423"
+    },
+    {
+      "path": "D:/StarDZ/StarDZ_Systems/StarDZ_Systems/Scripts/3_Game/StarDZ_Systems/Groups/SDZ_GroupStash.c",
+      "sha256": "4A8149C81E759084D7A1973A7E8E3173F8A2C5CE603198075EB44025474C47AA",
+      "use": "beta implementation comments explicitly disclaim local persistence verification",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "43-72"
+    },
+    {
+      "path": "D:/StarDZ/docs/wiki/TEMP/multi-pbo-confirmation/cases/post-integration-exact/profiles/DayZDiag_x64_2026-09-14_00-31-40.RPT",
+      "sha256": "48D4A4513A2B094811A0ABBD95D7CC953BEC60944F497714DD1106D15F9A8FC5",
+      "use": "historical native envelope and six-frame stack; not a persistence/shutdown success",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "1409-1432 and full diagnostic parser pass; shutdown search"
+    },
+    {
+      "path": "D:/StarDZ/docs/wiki/TEMP/server-mission-council/profiles/instance-id-1/DayZDiag_x64_2026-09-13_22-12-07.RPT",
+      "sha256": "40CC6FE9C4FA5287C9B33AC3D6A87BBBF478A882AB84D925738CF944552C41C1",
+      "use": "retained No Shutdown message present; not positive transition evidence",
+      "accessDate": "2026-09-14",
+      "linesOrSearch": "shutdown search matches 10,2937"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\init.c",
+      "sha256": "73658FCA45ADE1C54D7EE729B31F78F3C27B46282FFD3D503D10B524B8A20AFB",
+      "accessDate": "2026-09-14",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/init.c",
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "linesOrSearch": "full"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\db\\economy.xml",
+      "sha256": "62C140967C6040C8E38C7BC5D9FBBFD3966B3EA97A2FEC2AF2D409621EC1F8F8",
+      "accessDate": "2026-09-14",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/db/economy.xml",
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "linesOrSearch": "full"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\db\\messages.xml",
+      "sha256": "55C9C2DBEC63CEB5059DC38310C4539BA1BFB46EE7AAAD73C8F063A3238B0C8A",
+      "accessDate": "2026-09-14",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/db/messages.xml",
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "linesOrSearch": "full"
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260911\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\cfgeconomycore.xml",
+      "sha256": "095417FE00A264150D07AB2C1C1A922212D39A041D9554308134ED47408A4615",
+      "accessDate": "2026-09-14",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "repositoryPath": "dayzOffline.chernarusplus/cfgeconomycore.xml",
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "linesOrSearch": "full"
+    },
+    {
+      "path": "C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-Samples/Test_GardenPlot/config.cpp",
+      "sha256": "2C66BE131A55CFFDED96712245DD74D78E25D003C21A4F51F0B94587C666CD37",
+      "accessDate": "2026-09-14",
+      "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "repositoryPath": "Test_GardenPlot/config.cpp",
+      "repository": "https://github.com/BohemiaInteractive/DayZ-Samples.git",
+      "linesOrSearch": "full"
+    }
+  ],
+  "priorViolationsCovered": 29,
+  "repositoryHead": "d795fca51eca92781a4dbdfc89d753790569fb4d",
+  "delivery": "repair4 implemented, pending independent exact-final council; runtime gate closed",
+  "historicalDiagnostics": {
+    "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4\\historical-diagnostics.json",
+    "commonPreparedCreateCustomMissionLine": 511,
+    "sha256": "91218FC32F96C00FBA39E24EA0B9C335D3526D18A1E76ADC8ADFC43ACDD8BFC8",
+    "fullSixFrameStackRetained": true
+  },
+  "councilObservationCoverage": [
+    {
+      "councilObservation": "new-directory-supported-parameter",
+      "replacementTests": [
+        "new-directory-supported-parameter"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "prepare-date-format-argument",
+      "replacementTests": [
+        "prepare-date-format-argument"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "copy-fresh-nested-snapshot-parent",
+      "replacementTests": [
+        "copy-fresh-nested-baseline-v1-parent",
+        "copy-fresh-nested-pre-bad-parent",
+        "all-13-DAG-freezes-clones-final-b-read"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "seed-load-state-initializes-oracle",
+      "replacementTests": [
+        "positive-full-route-seed-v1",
+        "seed-zero-adopt-only-same-v1-complete-route",
+        "production-controller-simulated-seed-v1",
+        "production-controller-simulated-verify-v1"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "valid-v1-post-ready-saves",
+      "replacementTests": [
+        "positive-full-route-seed-v1",
+        "positive-full-route-verify-v1"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "valid-migration-emitted-fields",
+      "replacementTests": [
+        "migration-emitted-fields-complete-route"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "set-true-correct-post-mutation-saves",
+      "replacementTests": [
+        "set-true-correct-post-mutation-saves"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "set-true-incorrect-all-false-saves",
+      "replacementTests": [
+        "set-true-incorrect-all-false-saves"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "pre-ready-save-observations-plus-valid-post-ready",
+      "replacementTests": [
+        "pre-ready-save-observations-plus-valid-post-ready"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "event-unknown-kind",
+      "replacementTests": [
+        "event-unknown-kind"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "event-trailing-garbage",
+      "replacementTests": [
+        "event-trailing-garbage"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "event-duplicate-position",
+      "replacementTests": [
+        "event-duplicate-position"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "event-unknown-field",
+      "replacementTests": [
+        "event-unknown-field"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "event-wrong-run",
+      "replacementTests": [
+        "event-wrong-run"
+      ],
+      "priorContractViolation": false,
+      "passed": true
+    },
+    {
+      "councilObservation": "pid-int32-overflow",
+      "replacementTests": [
+        "pid-int32-overflow"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "numeric-schema-fraction",
+      "replacementTests": [
+        "numeric-schema-fraction"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "nomod-smoke-assert-fail",
+      "replacementTests": [
+        "nomod-smoke-assert-fail"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "nomod-smoke-reversed-order",
+      "replacementTests": [
+        "nomod-smoke-reversed-order"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "phase-missing-enumeration-and-assertion",
+      "replacementTests": [
+        "phase-missing-enumeration-and-assertion"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "phase-unexpected-mutation-callback",
+      "replacementTests": [
+        "phase-unexpected-mutation-callback"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "phase-loads-after-ready",
+      "replacementTests": [
+        "phase-loads-after-ready"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "bad-read-failure-wrong-variant-and-pid",
+      "replacementTests": [
+        "bad-read-failure-wrong-variant-and-pid"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "bad-read-surviving-faulty-save-observation",
+      "replacementTests": [
+        "bad-read-surviving-faulty-save-observation"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "diagnostic-no-channel-compile-error-detected",
+      "replacementTests": [
+        "diagnostic-no-channel-compile-error-detected"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "diagnostic-channel-severity-change",
+      "replacementTests": [
+        "diagnostic-channel-severity-change"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "diagnostic-profile-string-in-message-preserved",
+      "replacementTests": [
+        "diagnostic-profile-string-in-message-preserved"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "diagnostic-unreviewed-baseline-rejected",
+      "replacementTests": [
+        "diagnostic-unreviewed-baseline-rejected",
+        "fatal-even-if-proposed-in-allowlist-rejected",
+        "review-adapter-reject-wrong-suite"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "diagnostic-stack-line-change",
+      "replacementTests": [
+        "diagnostic-stack-line-change"
+      ],
+      "priorContractViolation": false,
+      "passed": true
+    },
+    {
+      "councilObservation": "diagnostic-count-change",
+      "replacementTests": [
+        "diagnostic-count-change"
+      ],
+      "priorContractViolation": false,
+      "passed": true
+    },
+    {
+      "councilObservation": "diagnostic-common-stack-across-private-missions",
+      "replacementTests": [
+        "diagnostic-common-stack-same-private-path",
+        "diagnostic-distinct-mission-source-path-must-not-normalize",
+        "actual-runtime-controller-all-13-with-fake-process-clock-and-ports"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "failed-rerun-invalidates-old-success",
+      "replacementTests": [
+        "failed-rerun-invalidates-old-success"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    },
+    {
+      "councilObservation": "ledger-reopens-and-validates-receipt-body",
+      "replacementTests": [
+        "ledger-reopens-and-validates-receipt-body"
+      ],
+      "priorContractViolation": true,
+      "passed": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "PR3-B01",
+      "disposition": "implemented; final council pending",
+      "repair": "Literal .NET directory construction creates checked nested parents, copies literal children including hidden files, compares source before/after/destination, and uses a supported date format.",
+      "files": [
+        "Storage.ps1",
+        "Runtime.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B02",
+      "disposition": "implemented; final council pending",
+      "repair": "Exact v1 and v2 schema-1 migratedLocked fields; correct true-save oracle; pure per-label seed/adoption proposals anchored only through successful seed and same-v1 receipts.",
+      "files": [
+        "Protocol.ps1",
+        "Runtime.ps1",
+        "Storage.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B03",
+      "disposition": "adapter/gates implemented; native definition remains unresolved by coordinator-approved decision",
+      "repair": "Timers removed; pre-trigger native modules/storage/CE/config/diagnostics/callback gate; bounded pending callbacks; strict start-relative clocks; real reviewed native RPT adapter and released natural exit. No default native definition supplied.",
+      "files": [
+        "Observation.ps1",
+        "Runtime.ps1",
+        "shutdown-discovery.md"
+      ]
+    },
+    {
+      "id": "PR3-B04",
+      "disposition": "implemented; final council pending",
+      "repair": "Exact source/kind/field sets, complete token consumption, signed int32s and finite positions, all phase assertions/lifetimes/setters/counts and order, exact bad-load identity/stage.",
+      "files": [
+        "Protocol.ps1",
+        "Observation.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B05",
+      "disposition": "implemented; final council pending",
+      "repair": "Pre-ready observations remain visible and cannot satisfy saves; exact controls/post-ready writes, known surviving faulty SAVE observation permitted, unexpected/conflicting records rejected.",
+      "files": [
+        "Protocol.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B06",
+      "disposition": "implemented; real reviewed baseline still required",
+      "repair": "Channel/severity/message/stack/count preserved; unchanneled compile errors detected; fatal compile cannot be allowlisted; common physical mission path/line; explicit reviewed baseline and bad-read diagnostics bound to suite and no-mod receipt.",
+      "files": [
+        "Observation.ps1",
+        "Runtime.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B07",
+      "disposition": "implemented; final council pending",
+      "repair": "Immutable 13-process DAG; recursive reopened predecessor bodies and ancestor ledger hashes; exactly one attempt; failed retry invalidates prior success; branch input equality; executable version/hash and exact source/member-set checks.",
+      "files": [
+        "Storage.ps1",
+        "Runtime.ps1",
+        "Dispatch.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B08",
+      "disposition": "implemented; final council pending",
+      "repair": "Triple manifests anchor each freeze to released parent through success ledger; revalidate manifest/parent/anchor before/after clones; derive closure from all13 receipts and both clone identities in either final bad-read order.",
+      "files": [
+        "Storage.ps1",
+        "Dispatch.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B09",
+      "disposition": "implemented; final council pending",
+      "repair": "Work-root mutex before creation, exclusive CreateNew lease, consulted owner record, owned process disposal/port/file release, finally receipts across preflight/staging/run/freeze/closure, complete profile hashes, no automatic lock/retry recovery.",
+      "files": [
+        "Storage.ps1",
+        "Runtime.ps1",
+        "Dispatch.ps1"
+      ]
+    },
+    {
+      "id": "PR3-B10",
+      "disposition": "implemented; final council pending",
+      "repair": "Current preparation and per-action SuiteRoot/review commands, actual process budget and all limits; full routes replace phase-name searches.",
+      "files": [
+        "README.md",
+        "shutdown-discovery.md",
+        "Test-EntityPersistenceHarness.ps1",
+        "Test-Receipts.ps1",
+        "Test-RuntimeAdapters.ps1"
+      ]
+    }
+  ],
+  "unchangedPackages": [
+    {
+      "receiptSha256": "142FD1D0FC4EAE6589E7A64618FDE094D28815675F91EC289622DA9090067981",
+      "variant": "v1",
+      "sources": [
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v1\\config.cpp",
+          "sha256": "3C86A27699C7766F1C3EAA75DC9DF053520216216E7D090AFC5483C4CA51D82D"
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v1\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+          "sha256": "169357CCCF2E8797D7791A2AA842DAA755ACDF8527DBB59A9FE6204C1A5536D2"
+        }
+      ],
+      "receipt": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair\\entity-persistence-v1-20260914-024309-ffe8e11c\\receipt.json",
+      "pbo": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair\\entity-persistence-v1-20260914-024309-ffe8e11c\\build\\EntityPersistenceFixture.pbo",
+      "sha256": "65684488B611F7A596D99C0301DF0B79C14F70D5A154F5BB2756574E26917D64",
+      "unchangedAgainstIndependentPackageReview": true
+    },
+    {
+      "receiptSha256": "A38821CF9AA5F0898F90956863E5AF776B46F319D915F4C2BAD71A1BE612E0CF",
+      "variant": "v2",
+      "sources": [
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v2\\config.cpp",
+          "sha256": "7B817238ABB2E8A0FD0F288C9C7E1B09910B327EAFF5F263FDEB17F2770E0147"
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\v2\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+          "sha256": "10386F5419115F2F81F3B039499493D872BCB5FA37A65F837FD6CD04DBDE0818"
+        }
+      ],
+      "receipt": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair\\entity-persistence-v2-20260914-024311-8a1f6fbf\\receipt.json",
+      "pbo": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair\\entity-persistence-v2-20260914-024311-8a1f6fbf\\build\\EntityPersistenceFixture.pbo",
+      "sha256": "8D778AB27F31A0D3308F84A59CC29365744E7AFFA993F6E2CBDD9D3F5BC36AF8",
+      "unchangedAgainstIndependentPackageReview": true
+    },
+    {
+      "receiptSha256": "2DD7C74EE3A4ADB503AA697121938EB76A608E0F18A4CC8AFD47CEF2041D2545",
+      "variant": "matrix",
+      "sources": [
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\matrix\\config.cpp",
+          "sha256": "CA804F143033932C942ED18A185B0EAA9E44F127E8DCA100245413118B951D7C"
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\examples\\en\\entity-persistence\\variants\\matrix\\scripts\\4_World\\EntityPersistenceFixture\\EntityPersistenceFixtureBattery.c",
+          "sha256": "0573DFFDDEF375456E51459249C3367A8F2125FE085991AF4672E14F23A7A678"
+        }
+      ],
+      "receipt": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair\\entity-persistence-matrix-20260914-024313-4f47e82e\\receipt.json",
+      "pbo": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair\\entity-persistence-matrix-20260914-024313-4f47e82e\\build\\EntityPersistenceFixture.pbo",
+      "sha256": "B9EDFE4C4116CA3FED3BA4FE0C9DD3A24EFE03DAFC95273D09365D560E06D449",
+      "unchangedAgainstIndependentPackageReview": true
+    }
+  ],
+  "author": {
+    "model": "gpt-6-astra",
+    "confirmation": "orca orchestration worker-show effective launch and provider projection",
+    "taskId": "task_e282ac564091",
+    "agent": "codex",
+    "effort": "high",
+    "dispatchId": "ctx_823a1000e1e6"
+  },
+  "schemaVersion": 1,
+  "nativeGateDecision": {
+    "decision": "Implement real suite-bound reviewed native witness adapter; preserve fail-closed gate; propose one later independently reviewed fixture-free discovery process separate from13; no runtime by repair worker.",
+    "questionId": "msg_446248e00b06",
+    "coordinatorReplyId": "msg_410b3d2c2b20"
+  },
+  "execution": {
+    "signerRun": false,
+    "packerRun": false,
+    "gameLaunched": false,
+    "nestedWorker": false,
+    "enforceCompilation": false,
+    "gitIndexModifiedByWorker": false,
+    "commitMade": false,
+    "devServerRun": false,
+    "installationRun": false,
+    "buildRun": false
+  },
+  "independentProbes": {
+    "interfaceNotes": [
+      "The exact same fourteen compatible probe bodies were AST-imported and run.",
+      "Legacy event fixtures omit engineVersion; negative parser cases are corroborated with current complete protocol fixtures in the main suite.",
+      "Legacy file-mutating Oracle/Load-State/Save-State signatures were replaced by pure receipt-bound proposal interfaces.",
+      "The literal malformed Get-Date command belongs to the old test body, not the repaired production command; current production preparation is exercised separately.",
+      "Distinct physical mission stack paths remain distinct; all production variants now execute at one common path."
+    ],
+    "exitCode": 0,
+    "receipt": {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-repair4\\independent-178800fb4fc24393ab6a915e65de6095\\results.json",
+      "sha256": "CC1914BEFF5775F28838E15E9226DA3E399178A86BB2B637C7AD98F9603FD1C3"
+    },
+    "passed": true,
+    "unchangedBodies": 14,
+    "command": "PowerShell 7.6.0: & TEMP/entity-persistence-repair4/run-independent-probes.ps1"
+  },
+  "report": {
+    "path": "D:/StarDZ/docs/wiki/.audit/en-2026-09-13/completeness/persistence-harness-repair4.md",
+    "sha256": "241EF3B586BE9692C9F65B4057CBDDEF24D66E7B534AD8A718F39D4FAC5CBD2B"
+  },
+  "finalHashVerification": {
+    "verifiedUtc": "2026-09-14T07:53:53.9966010Z",
+    "all19DeliveryHashesMatch": true,
+    "successfulAdapterManifestMatchesFinalSource": true
+  }
+}
