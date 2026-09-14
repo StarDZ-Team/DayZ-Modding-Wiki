@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "scope": "Narrow EN follow-up from independently reviewed retained server-mission evidence; no runtime test, build, install, staging, or commit was performed.",
+  "editedFiles": [
+    {
+      "path": "en/07-patterns/01-singletons.md",
+      "changes": [
+        "Replaced the blanket dedicated-server uncertainty with the bounded PID 33556 direct RestartMission observation and its limits.",
+        "Updated the missing-cleanup explanation and table without weakening the DestroyInstance guidance."
+      ],
+      "sha256": "13034647C9A6094391A8E69568378EB9175302639DA6EE0C4A895CAA90BCAC3C"
+    },
+    {
+      "path": "en/07-patterns/02-module-systems.md",
+      "changes": [
+        "Updated only the missing OnMissionFinish cleanup table row with the bounded observation and remaining uncertainty."
+      ],
+      "sha256": "B7A2DA10B1924E80876F957BF9E92EE75C42D9D123B013A3558DB3CBB55D3DDF"
+    }
+  ],
+  "retainedEvidence": [
+    {
+      "path": ".audit/en-2026-09-13/completeness/server-mission-investigation.md",
+      "sha256": "71F0DC51C1D094951FC4AEBF736B1B49D7D3098849E1E1BE16282EB89BE18269"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/server-mission-investigation.json",
+      "sha256": "241F2EC02B1E4689654EB65E9C98AF5B726B740DF041E720861B2503E1CE3A05"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/server-mission-council.md",
+      "sha256": "B38247EE24ED756153BBA093D97DB00D09D39F2A4F775A6141272AE51CCCD0CE"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/server-mission-council.json",
+      "sha256": "82E108E0308052D547A25E2F822C4A0902FC9F4F579B5D5FA45E2701891CF5E8"
+    },
+    {
+      "path": "TEMP/server-mission-investigation/profiles/lifecycle/script_2026-09-13_22-00-34.log",
+      "sha256": "6A285E1FF7ED2AF3A16E5E4F3F1E1798B3BA50FBBC15D08F077016E4ECD5E427",
+      "lines": "20-28, 38-41"
+    },
+    {
+      "path": "TEMP/server-mission-investigation/source/lifecycle/Scripts/4_World/world_state.c",
+      "sha256": "F489A4D7E07F74E420B028AEF1A8EC9E799AA43761705297C56D34171F6636F7"
+    },
+    {
+      "path": "TEMP/server-mission-investigation/source/lifecycle/Scripts/5_Mission/lifecycle.c",
+      "sha256": "69C2A3AAB8811989B6DAB0465CF435CE9EF19C14066E1423504AA376C3C27732"
+    },
+    {
+      "path": "TEMP/server-mission-investigation/lifecycle.process.json",
+      "sha256": "A69F57F7D1C4C1C4E2CB9BB1763FE4348145B16582818A0DB348CD9CFC9FC8F6"
+    }
+  ],
+  "observation": {
+    "runtime": "DayZDiag 1.29.0.163709",
+    "pid": 33556,
+    "invocation": "GetGame().RestartMission() from a scheduled MissionServer-owned callback",
+    "sameProcess": true,
+    "first": { "missionStatic": 101, "worldStatic": 201 },
+    "second": { "missionStatic": 101, "worldStatic": 202 },
+    "missionModuleReloadObserved": true,
+    "restartReturnMarkerObserved": false,
+    "cleanExitMarkerObserved": false,
+    "exitCode": "0xC0000005"
+  },
+  "limitsRetainedInEnglish": [
+    "Not a healthy restart demonstration or safe reusable restart recipe.",
+    "Not a universal static-lifetime guarantee; only the two tested fields are observed.",
+    "No authenticated administrator #restart, client reconnect, game-layer static field, or process-restart result is claimed."
+  ],
+  "validation": {
+    "diffCheck": "git diff --check -- en/07-patterns/01-singletons.md en/07-patterns/02-module-systems.md",
+    "linkCheck": "01-singletons.md's existing relative link to 02-module-systems.md resolves to an existing file; no link destination was edited.",
+    "buildRun": false,
+    "reasonNoBuild": "The dispatch prohibited new builds; the change is content-only."
+  }
+}

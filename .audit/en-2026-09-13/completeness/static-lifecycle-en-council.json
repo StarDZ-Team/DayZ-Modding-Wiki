@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "reviewedUtcDate": "2026-09-14",
+  "head": "5063a81ffe75ab7a44f5dec4bf6c7fc3ac51109f",
+  "verdict": "changes_required",
+  "scope": {
+    "implementationReceipt": ".audit/en-2026-09-13/completeness/static-lifecycle-en-implementation.json",
+    "reviewedEnglishFiles": [
+      "en/07-patterns/01-singletons.md",
+      "en/07-patterns/02-module-systems.md"
+    ],
+    "writes": [
+      ".audit/en-2026-09-13/completeness/static-lifecycle-en-council.md",
+      ".audit/en-2026-09-13/completeness/static-lifecycle-en-council.json"
+    ],
+    "prohibitedActionsPerformed": []
+  },
+  "observationVerified": {
+    "runtime": "DayZDiag 1.29.0.163709",
+    "pid": 33556,
+    "sameProcess": true,
+    "invocation": "GetGame().RestartMission() from a scheduled MissionServer-owned callback",
+    "first": {
+      "missionStatic": 101,
+      "worldStatic": 201
+    },
+    "second": {
+      "missionStatic": 101,
+      "worldStatic": 202
+    },
+    "missionModuleReloadObserved": true,
+    "restartReturnMarkerObserved": false,
+    "cleanExitMarkerObserved": false,
+    "signedExitCode": -1073741819,
+    "hexExitCode": "0xC0000005"
+  },
+  "accepted": [
+    {
+      "id": "A1",
+      "finding": "The new singleton lifecycle prose accurately reports Mission 101-to-101 and World 201-to-202 in PID 33556 across the failed direct RestartMission probe."
+    },
+    {
+      "id": "A2",
+      "finding": "The prose preserves the required exclusions: no healthy restart, general guarantee, administrator #restart, client reconnect, or game-layer conclusion."
+    },
+    {
+      "id": "A3",
+      "finding": "Both edited cleanup table rows remain conditional and defensive and do not universalize the two-field observation."
+    }
+  ],
+  "rejected": [
+    {
+      "id": "R1",
+      "path": "en/07-patterns/01-singletons.md",
+      "line": 155,
+      "finding": "The requested blanket static-process-lifetime sentence remains unchanged and conflicts with the retained Mission-module reinitialization observation.",
+      "replace": "A client therefore moves between the main-menu mission and a gameplay mission without relaunching, and static fields -- which live as long as the process -- survive that transition. That is exactly the situation that strands a stale `s_Instance`, dead objects and orphaned callbacks.",
+      "with": "A client therefore moves between the main-menu mission and a gameplay mission without relaunching. That transition creates a cleanup boundary for static references: do not assume a static field resets or persists without evidence for its script module and transition. Stale `s_Instance` values, dead objects and orphaned callbacks are therefore lifecycle risks."
+    },
+    {
+      "id": "R2",
+      "path": "en/07-patterns/01-singletons.md",
+      "line": 157,
+      "finding": "The phrases 'the only thing that saves you' and 'costs nothing' are unsupported design and performance absolutes.",
+      "replace": "Wiring `DestroyInstance()` into `OnMissionFinish` remains correct either way -- it is the only thing that saves you when the process *does* keep running, and it costs nothing when it does not.",
+      "with": "Wiring `DestroyInstance()` into `OnMissionFinish` remains a defensive cleanup step: it releases owned references when the field survives the transition and makes shutdown ownership explicit even when a later process exit clears static state."
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "U1",
+      "finding": "Healthy restart remains unverified because the direct call did not return and the planned clean-exit marker did not run."
+    },
+    {
+      "id": "U2",
+      "finding": "Client reconnect, authenticated administrator #restart, separate-process restart, and production lifecycle behavior remain untested."
+    },
+    {
+      "id": "U3",
+      "finding": "Behavior of other fields and script modules, including game-layer fields, remains unverified and no native guarantee is established."
+    }
+  ],
+  "hashes": {
+    "algorithm": "SHA-256",
+    "files": {
+      ".audit/en-2026-09-13/completeness/static-lifecycle-en-implementation.json": "0E7AA690F14836CDCE37026134647D5FD44DC900E2F9AA483D6AB4F18F1AC5F7",
+      ".audit/en-2026-09-13/completeness/server-mission-investigation.md": "71F0DC51C1D094951FC4AEBF736B1B49D7D3098849E1E1BE16282EB89BE18269",
+      ".audit/en-2026-09-13/completeness/server-mission-investigation.json": "241F2EC02B1E4689654EB65E9C98AF5B726B740DF041E720861B2503E1CE3A05",
+      ".audit/en-2026-09-13/completeness/server-mission-council.md": "B38247EE24ED756153BBA093D97DB00D09D39F2A4F775A6141272AE51CCCD0CE",
+      ".audit/en-2026-09-13/completeness/server-mission-council.json": "82E108E0308052D547A25E2F822C4A0902FC9F4F579B5D5FA45E2701891CF5E8",
+      "TEMP/server-mission-investigation/profiles/lifecycle/script_2026-09-13_22-00-34.log": "6A285E1FF7ED2AF3A16E5E4F3F1E1798B3BA50FBBC15D08F077016E4ECD5E427",
+      "TEMP/server-mission-investigation/source/lifecycle/Scripts/4_World/world_state.c": "F489A4D7E07F74E420B028AEF1A8EC9E799AA43761705297C56D34171F6636F7",
+      "TEMP/server-mission-investigation/source/lifecycle/Scripts/5_Mission/lifecycle.c": "69C2A3AAB8811989B6DAB0465CF435CE9EF19C14066E1423504AA376C3C27732",
+      "TEMP/server-mission-investigation/lifecycle.process.json": "A69F57F7D1C4C1C4E2CB9BB1763FE4348145B16582818A0DB348CD9CFC9FC8F6",
+      "en/07-patterns/01-singletons.md": "13034647C9A6094391A8E69568378EB9175302639DA6EE0C4A895CAA90BCAC3C",
+      "en/07-patterns/02-module-systems.md": "B7A2DA10B1924E80876F957BF9E92EE75C42D9D123B013A3558DB3CBB55D3DDF"
+    },
+    "reviewedDiffGitObjectSha1": "210f4c5fa149138a4cf355a7d40f285d01081e29"
+  },
+  "validation": {
+    "newBuild": false,
+    "newTest": false,
+    "newLaunch": false,
+    "newInstall": false,
+    "englishFilesEditedByCouncil": false
+  }
+}

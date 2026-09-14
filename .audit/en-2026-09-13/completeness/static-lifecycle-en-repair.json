@@ -1,0 +1,37 @@
+{
+  "receiptType": "static-lifecycle-en-council-repair",
+  "date": "2026-09-14",
+  "authority": ".audit/en-2026-09-13/completeness/static-lifecycle-en-council.md",
+  "scope": {
+    "edited": "en/07-patterns/01-singletons.md",
+    "notEdited": "en/07-patterns/02-module-systems.md"
+  },
+  "hashes": {
+    "singletonsBeforeSha256": "13034647C9A6094391A8E69568378EB9175302639DA6EE0C4A895CAA90BCAC3C",
+    "singletonsAfterSha256": "F672F2A84B5EFA0B10048CEE0FF1759C14E73BBCA07C5674CC193E96450E7969",
+    "moduleSystemsSha256Unchanged": "B7A2DA10B1924E80876F957BF9E92EE75C42D9D123B013A3558DB3CBB55D3DDF"
+  },
+  "replacements": [
+    {
+      "id": "R1",
+      "before": "A client therefore moves between the main-menu mission and a gameplay mission without relaunching, and static fields -- which live as long as the process -- survive that transition. That is exactly the situation that strands a stale `s_Instance`, dead objects and orphaned callbacks.",
+      "after": "A client therefore moves between the main-menu mission and a gameplay mission without relaunching. That transition creates a cleanup boundary for static references: do not assume a static field resets or persists without evidence for its script module and transition. Stale `s_Instance` values, dead objects and orphaned callbacks are therefore lifecycle risks.",
+      "reason": "Remove the unsupported universal process-lifetime claim and scope lifecycle behavior to the relevant script module and transition."
+    },
+    {
+      "id": "R2",
+      "before": "Wiring `DestroyInstance()` into `OnMissionFinish` remains correct either way -- it is the only thing that saves you when the process *does* keep running, and it costs nothing when it does not.",
+      "after": "Wiring `DestroyInstance()` into `OnMissionFinish` remains a defensive cleanup step: it releases owned references when the field survives the transition and makes shutdown ownership explicit even when a later process exit clears static state.",
+      "reason": "Remove unsupported claims that cleanup is the only solution and has zero cost while retaining the defensive-cleanup guidance."
+    }
+  ],
+  "scopedDiffCheck": {
+    "method": "Read the target immediately before and after editing; verify each exact council preimage is absent, each exact council replacement occurs once, and inspect the targeted diff.",
+    "result": "passed",
+    "details": "R1 and R2 preimages occur zero times; their replacements occur once each. No module-systems edit was made. The repository diff also contains the pre-existing implementation hunks in this file; this repair adds only the two council replacements above."
+  },
+  "validation": {
+    "buildOrRuntimeCommandsRun": false,
+    "reason": "The dispatch explicitly limited this work to the two mechanical council replacements and prohibited launches, tests, builds, installs, and new research."
+  }
+}
