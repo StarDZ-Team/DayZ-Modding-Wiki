@@ -63,10 +63,10 @@ The `@` prefix on the folder name is convention for Steam Workshop mods but not 
 | `author` | string | Author name | No |
 | `authorID` | string | Steam64 ID of the author | No |
 | `version` | string | Version string | No |
-| `type` | string | `"mod"` or `"servermod"` | No |
+| `type` | string | Undocumented community metadata; do not use it for routing | No |
 | `extra` | int | Reserved field (always 0) | No |
 
-> **What Bohemia documents.** The [Modding Structure](https://community.bistudio.com/wiki/DayZ:Modding_Structure) page lists ten `mod.cpp` keys -- `name`, `picture`, `logoSmall`, `logo`, `logoOver`, `tooltip`, `overview`, `action`, `author`, `version` -- and describes the file as holding "information for mod presentation". The rest of the table above (`tooltipOwned`, `actionURL`, `authorID`, `type`, `extra`) is community convention seen in published mods; it does no harm, but do not expect documented behaviour from it. In particular `type` is documented under `CfgMods` in a PBO's `config.cpp`, not here.
+> **What Bohemia documents.** The [Modding Structure](https://community.bistudio.com/wiki/DayZ:Modding_Structure) page lists ten `mod.cpp` keys -- `name`, `picture`, `logoSmall`, `logo`, `logoOver`, `tooltip`, `overview`, `action`, `author`, `version` -- and describes the file as holding "information for mod presentation". The rest of the table above (`tooltipOwned`, `actionURL`, `authorID`, `type`, `extra`) is community convention seen in published mods; do not expect documented behaviour from it. In particular `type` is documented under `CfgMods` in a PBO's `config.cpp`, not here.
 
 ---
 
@@ -174,11 +174,12 @@ versionPath = "MyMod/Scripts/Data/Version.hpp";   // This goes in config.cpp, NO
 
 ### type
 
-Declares whether this is a regular mod or server-only mod. When omitted, the default is `"mod"`.
+Some published mods include a `type` field, but Bohemia does not document it for `mod.cpp`. Do not use `type = "servermod";` to route a package or assume a default value. Select the whole folder with `-mod=` or `-serverMod=` instead; omitting this field also matches the repository's server-package fixture.
 
 ```cpp
-type = "mod";           // Loaded via -mod= (client + server)
-type = "servermod";     // Loaded via -servermod= (server only, not sent to clients)
+// Launch routing is outside mod.cpp:
+// -mod=@MyMod
+// -serverMod=@MyModServer
 ```
 
 ### extra
@@ -197,32 +198,30 @@ DayZ supports two mod loading mechanisms:
 
 ### Client Mod (`-mod=`)
 
-- Downloaded by clients from Steam Workshop
+- Clients must already have the package installed, normally through the launcher/Workshop workflow
 - Scripts run on BOTH client and server
 - Can include UI, HUD, models, textures, sounds
-- Requires key signing (`.bikey`) for server join
+- Signature acceptance depends on the server's verification configuration
 
 ```
 // Launch parameter:
 -mod=@MyMod
 
-// mod.cpp:
-type = "mod";
+// mod.cpp contains presentation metadata; no type field is needed.
 ```
 
-### Server Mod (`-servermod=`)
+### Server Mod (`-serverMod=`)
 
-- Runs ONLY on the dedicated server
-- Clients never download it
+- The server process loads this separate folder
+- The server does not broadcast this folder to clients
 - Cannot include client-side UI or `5_Mission` client code
-- No key signing required
+- Whether signing a serverMod-only PBO is required or useful remains deployment-specific; test the target server configuration
 
 ```
 // Launch parameter:
--servermod=@MyModServer
+-serverMod=@MyModServer
 
-// mod.cpp:
-type = "servermod";
+// mod.cpp contains presentation metadata; no type field is needed.
 ```
 
 ### Split Mod Pattern
@@ -231,17 +230,17 @@ Many mods ship as TWO packages -- a client mod and a server mod:
 
 ```
 @MyMod_Missions/           <-- Client mod (-mod=)
-  mod.cpp                   type = "mod"
+  mod.cpp                   presentation metadata
   Addons/
     MyMod_Missions.pbo     Scripts: UI, entity rendering, RPC receive
 
-@MyMod_MissionsServer/     <-- Server mod (-servermod=)
-  mod.cpp                   type = "servermod"
+@MyMod_MissionsServer/     <-- Server mod (-serverMod=)
+  mod.cpp                   presentation metadata; no type field required
   Addons/
     MyMod_MissionsServer.pbo   Scripts: spawning, logic, state management
 ```
 
-This keeps server-side logic private (never sent to clients) and reduces client download size.
+The documented launch boundary keeps the separate server folder from being broadcast to clients. Verify clean-client distribution in the target launcher/Workshop deployment; successful server startup alone does not prove the installed file set.
 
 ---
 
@@ -319,7 +318,6 @@ action = "https://discord.gg/mymod";
 author = "YourName";
 authorID = "76561198000000000";
 version = "1.2.3";
-type = "mod";
 ```
 
 ---
@@ -344,14 +342,13 @@ version = "0.3.0";
 
 ### Lantern Missions Server (Minimal Server Mod)
 
-The server half of a split mod. Players never see it in the launcher, so metadata stays minimal.
+The separately launched server half of a split mod. Keep its presentation metadata minimal but identifiable for operators.
 
 ```cpp
 name = "Lantern Missions Server";
 author = "Northlight";
 version = "0.3.0";
 extra = 0;
-type = "servermod";
 ```
 
 ### Lantern Core (Full-Featured)
@@ -370,7 +367,6 @@ action = "https://github.com/northlight/lantern";
 author = "Northlight";
 authorID = "76561198000000000";
 version = "1.2.0";
-type = "mod";
 ```
 
 ### Lantern Server Tools (Optional Fields Omitted)
@@ -419,7 +415,6 @@ tooltipOwned = "Lantern AI - Intelligent Bot Framework for DayZ";
 overview = "AI bot framework with human-like perception, combat tactics, and a developer API";
 author = "Northlight";
 version = "1.0.0";
-type = "mod";
 dependencies[] = {"Game", "World", "Mission"};
 class Defs
 {
@@ -469,13 +464,12 @@ During development, leave image paths empty. Add logos last, after everything wo
 
 ### 6. Server Mods Need Less
 
-Server-only mods need minimal mod.cpp since players never see them in a launcher:
+Separately launched server packages need only enough `mod.cpp` metadata for operators to identify them:
 
 ```cpp
 name = "My Server Mod";
 author = "YourName";
 version = "1.0.0";
-type = "servermod";
 ```
 
 ---
@@ -507,7 +501,7 @@ type = "servermod";
 | Concept | Theory | Reality |
 |---------|--------|---------|
 | `mod.cpp` is required | Every mod folder needs one | A mod loads fine without it, but the launcher shows no name or metadata |
-| `type` field controls loading | `"mod"` vs `"servermod"` | The launch parameter (`-mod=` vs `-servermod=`) is what actually controls loading; the `type` field is metadata only |
+| `type` field controls loading | `"mod"` vs `"servermod"` | Bohemia does not document `type` in `mod.cpp`; the package launch parameter (`-mod=` vs `-serverMod=`) controls routing |
 | Image paths support common formats | All texture formats work | Only `.edds`, `.paa`, and `.tga` work; `.png` and `.jpg` are silently ignored |
 | `authorID` links to Steam | Steam64 ID creates a clickable link | Only works on the Workshop page; the in-game mod list does not render it as a link |
 | `version` is validated | Engine checks version format | The engine treats it as a raw string; `"banana"` is technically valid |
@@ -516,5 +510,5 @@ type = "servermod";
 
 ## Compatibility & Impact
 
-- **Multi-Mod:** `mod.cpp` has no effect on load order or dependencies. Two mods with identical field values will not conflict -- only `CfgPatches` class names in `config.cpp` can collide.
+- **Multi-Mod:** `mod.cpp` has no effect on load order or dependencies. Identical `mod.cpp` presentation values do not create load-order conflicts; separately, duplicate `CfgPatches` names and duplicate mounted virtual paths can collide.
 - **Performance:** `mod.cpp` is read once at startup. Image files referenced here are loaded into memory for the launcher UI but have no in-game performance impact.

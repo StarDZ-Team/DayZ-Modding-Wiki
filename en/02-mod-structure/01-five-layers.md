@@ -418,7 +418,7 @@ class LNT_WorldLogic
 
 ### What Controls Load Order
 
-The **only** thing that determines mod load order is `requiredAddons[]` in `config.cpp` `CfgPatches`. Nothing else matters. Not the `-mod=` order on the command line, not folder names, not file names. The engine reads every PBO's `CfgPatches`, builds a dependency graph from `requiredAddons[]`, and sorts mods topologically.
+For loaded configuration addons, `requiredAddons[]` in `config.cpp` `CfgPatches` declares the initialization dependency graph. It uses `CfgPatches` class names, not `-mod=` order, folder names, or PBO filenames. The engine reads those addon declarations and sorts their dependencies topologically; the packages containing them must still be installed and present on the appropriate launch list.
 
 If your mod declares:
 

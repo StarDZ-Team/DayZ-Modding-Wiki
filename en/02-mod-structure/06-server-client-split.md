@@ -12,7 +12,7 @@
 - [The Fundamental Split](#the-fundamental-split)
 - [The Three Execution Contexts](#the-three-execution-contexts)
 - [Checking Where Your Code Runs](#checking-where-your-code-runs)
-- [The mod.cpp type Field](#the-mod-cpp-type-field)
+- [Folder-Level Launch Routing](#folder-level-launch-routing)
 - [The config.cpp type Field](#the-config-cpp-type-field)
 - [Multi-Package Mod Architecture](#multi-package-mod-architecture)
 - [The Golden Rules](#the-golden-rules)
@@ -183,37 +183,26 @@ void OnPlayerAction(PlayerBase player, int actionID)
 
 ---
 
-## The mod.cpp type Field
+## Folder-Level Launch Routing
 
-The `mod.cpp` file at the root of your mod folder commonly carries a `type` field. Treat it as **declarative metadata that should match how you actually launch the mod, not the mechanism that places it there**: what determines whether a PBO reaches clients or stays server-only is which launch flag loads it -- `-mod=` versus `-servermod=`. Bohemia's [Modding Structure](https://community.bistudio.com/wiki/DayZ:Modding_Structure) page documents `-mod=` as how a mod is loaded, and documents `type` under `CfgMods` in a PBO's `config.cpp` rather than as a `mod.cpp` key, so the `mod.cpp` copy is convention. Launcher and build tooling decides which launch list a package goes into from its own bookkeeping; the `type` field is where you record that intent so the launcher display and Workshop categorization stay consistent with it. Ship a `type = "servermod"` package but launch it with `-mod=` and you are not exercising some documented "servermod behavior" -- you are just launching a mod, with whatever that package's code assumes about being server-only left unverified.
+`-mod=` and `-serverMod=` select whole folders/packages, not individual PBOs inside one shared folder. Bohemia documents `-serverMod` folders as server-side and not broadcast to clients; it does not document selective server-only routing for one PBO inside a `-mod` package. The `type` field sometimes found in `mod.cpp` is undocumented community metadata and is not the routing mechanism.
 
-### type = "mod" (Both Sides)
+### Shared Package (`-mod=`)
 
-```
-name = "My Mod";
-type = "mod";
-```
+The server and each client launch the shared package with `-mod=@MyMod`. Clients must already have that package installed, normally through the launcher/Workshop workflow; `-mod` does not make the server stream it to them. Both processes then compile and execute the scripts applicable to their execution context.
 
-The mod is loaded on **both server and client**. The server loads it, clients download and load it. Both sides compile and execute the scripts.
+**When to use:** Most mods use this route. Put shared types such as entity definitions, config classes, RPC constants, and sync data structures in a package available to both processes.
 
-**When to use:** Most mods use this. Any mod that has shared types (entity definitions, config classes, RPC data structures) needs to be `type = "mod"` so both sides know about the same types.
-
-**Example:** This wiki's teaching mod **Lantern AI** --- a designed example, not a shipped product --- uses `type = "mod"` for its client package because both server and client need the AI entity class definitions, RPC constants, and sync data structures:
+**Example:** This wiki's teaching mod **Lantern AI** --- a designed example, not a shipped product --- puts those shared definitions in `@Lantern_AI` and launches it with `-mod=`. Its `mod.cpp` needs only presentation metadata:
 
 ```cpp
 // Lantern_AI/mod.cpp
 name = "Lantern AI";
-type = "mod";
 ```
 
-### type = "servermod" (Server Only)
+### Separate Server Package (`-serverMod=`)
 
-```
-name = "My Mod Server";
-type = "servermod";
-```
-
-The mod is loaded on the **server only**. Clients never see it, never download it, never know it exists. The server does not send it in the mod list.
+The server launches a separate folder such as `@MyModServer` with `-serverMod=`. The documented boundary says this folder is not broadcast to clients. Verify the installed files with a clean client in your target launcher/Workshop deployment before making a stronger distribution claim.
 
 **When to use:** Server-side logic that clients should never have access to. This includes:
 - Spawn algorithms (prevents players from predicting loot)
@@ -222,36 +211,35 @@ The mod is loaded on the **server only**. Clients never see it, never download i
 - Database connections and external API calls
 - Anti-cheat validation logic
 
-**Example:** The **Lantern AI Server** package uses `type = "servermod"` because clients should never see the AI brain, perception, combat, or spawning logic:
+**Example:** The **Lantern AI Server** package is a separate folder loaded with `-serverMod=` because clients should not receive the AI brain, perception, combat, or spawning logic:
 
 ```cpp
 // Lantern_AIServer/mod.cpp
 name = "Lantern AI Server";
-type = "servermod";
 ```
 
 ### Why This Matters for Security
 
-If your spawn logic is in a `type = "mod"` package, **every player downloads it**. They can decompile the PBO and read your spawn algorithms, loot tables, admin passwords, or anti-cheat logic. Always put sensitive server logic in a `type = "servermod"` package.
+If your spawn logic is in the shared package that clients install for `-mod=`, clients can read that distributed PBO. Put sensitive server logic in a separate `@MyModServer` package that the server loads with `-serverMod=`. Verify clean-client distribution for your target launcher/Workshop deployment rather than assuming a successful server startup proves the package boundary.
 
 ---
 
 ## The config.cpp type Field
 
-Inside `config.cpp` (in the `CfgMods` section), there is also a `type` field. This one controls how the engine treats the mod internally:
+Inside `config.cpp` (in the `CfgMods` section), there is also a `type` field; Bohemia's published example marks `type = "mod"` as required, but the reviewed sources do not establish another value or a routing behavior for the field:
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        type = "mod";          // or "servermod"
+        type = "mod";          // The only value documented by Bohemia
         // ...
     };
 };
 ```
 
-This field should match your `mod.cpp` type field for the same reason covered above: neither field is the mechanism that routes the PBO to server or client -- the launch flag (`-mod=` vs `-servermod=`) is. Two details are worth knowing before you lean on the declaration. Bohemia's `CfgMods` reference annotates `type = "mod";` as *required* and documents no other value. And in the vanilla scripts, `CfgMods` is read by `ModLoader` and `ModStructure` (`3_game/client/mods/modloader.c:17-23`), which enumerate the mod entries for the in-game mod list and never read `type` at all; the string `"servermod"` does not appear anywhere in the script extraction. That is not proof the engine ignores it -- the config is also read natively -- but it does mean no script-visible behaviour hangs on it. Keep the two fields consistent as hygiene and as documentation of intent; no specific engine error is documented for a mismatch.
+Bohemia's `CfgMods` reference annotates `type = "mod";` as *required* and documents no other value. Use that value in both shared and separately launched server packages; the folder-level launch flag (`-mod=` or `-serverMod=`) performs routing. Vanilla `ModLoader` and `ModStructure` scripts enumerate `CfgMods` entries for the in-game mod list without reading `type`, but that script-level observation does not prove what native engine code does. No reviewed source establishes `type = "servermod";` behavior, so this guide does not rely on it.
 
 The `config.cpp` also contains the `defines[]` array, which is how you enable preprocessor symbols for cross-mod detection:
 
@@ -269,7 +257,7 @@ class CfgMods
 {
     class Lantern_AIServer
     {
-        type = "servermod";
+        type = "mod";          // Folder is routed with -serverMod=
         defines[] = { "LANTERN_AI", "LANTERN_AISERVER" };  // Both defines available
     };
 };
@@ -283,18 +271,18 @@ Notice that the server mod re-declares `LANTERN_AI` and adds `LANTERN_AISERVER`.
 
 ### Why Split Into Multiple Packages?
 
-A single mod folder with `type = "mod"` ships everything to clients. For many mods, this is fine. But for mods with sensitive server logic, you need to split:
+A single shared folder launched with `-mod=` makes all of its PBOs part of the client-installed package. For many mods, this is fine. For mods with sensitive server logic, split the folders:
 
 ```
-@MyMod/                          <-- Client package (type = "mod")
-  mod.cpp                        <-- type = "mod"
+@MyMod/                          <-- Shared package (-mod=)
+  mod.cpp                        <-- presentation metadata
   Addons/
     MyMod_Scripts.pbo            <-- Shared: RPCs, config classes, entity defs
     MyMod_Data.pbo               <-- Shared: models, textures
     MyMod_GUI.pbo                <-- Client-only: layouts, imagesets
 
-@MyModServer/                    <-- Server package (type = "servermod")
-  mod.cpp                        <-- type = "servermod"
+@MyModServer/                    <-- Separate server package (-serverMod=)
+  mod.cpp                        <-- presentation metadata; no type field required
   Addons/
     MyModServer_Scripts.pbo      <-- Server-only: spawning, brain, admin
 ```
@@ -303,7 +291,7 @@ The server loads BOTH `@MyMod` and `@MyModServer`. Clients only load `@MyMod`.
 
 ### What Goes Where
 
-**Client package** (`type = "mod"`) contains:
+**Shared package** (`-mod=`) contains:
 - Entity class definitions (both sides need to know the class exists)
 - RPC ID constants and data structures (both sides send/receive)
 - Config classes for settings that affect client display
@@ -312,7 +300,7 @@ The server loads BOTH `@MyMod` and `@MyModServer`. Clients only load `@MyMod`.
 - Models, textures, sounds
 - `stringtable.csv` for localization
 
-**Server package** (`type = "servermod"`) contains:
+**Separate server package** (`-serverMod=`) contains:
 - Manager/controller classes (spawn logic, AI brains)
 - Server-side validation and anti-cheat
 - Config loading and file I/O (JSON configs, player data)
@@ -786,15 +774,15 @@ class LNT_AIAdminConfig
 
 ## Worked Split Examples
 
-The mods below --- **Lantern AI**, **NightPatrol**, and **Lantern Missions** --- are this wiki's designed teaching examples, not shipped products. Each shows the same idea from a different angle: shared and client-facing code lives in a `type = "mod"` package, and the sensitive logic lives in a `type = "servermod"` package the client never receives.
+The mods below --- **Lantern AI**, **NightPatrol**, and **Lantern Missions** --- are this wiki's designed teaching examples, not shipped products. Each shows the same idea from a different angle: shared and client-facing code lives in a folder launched with `-mod=`, while sensitive logic lives in a separate folder launched with `-serverMod=`. Confirm the clean-client file set for the target deployment.
 
 ### Example 1: Lantern AI (Client + Server)
 
 Lantern AI splits into two packages with a clear separation of concerns. The client package carries only what both sides must agree on plus the UI; everything that decides behavior is server-side and invisible to players.
 
 ```
-Lantern_AI/                             <-- Client package (type = "mod")
-  mod.cpp                               <-- type = "mod"
+Lantern_AI/                             <-- Shared package (-mod=)
+  mod.cpp                               <-- presentation metadata
   Scripts/
     config.cpp                          <-- defines[] = { "LANTERN_AI" }
     3_Game/                             <-- shared: config class, constants, RPC ids + data
@@ -802,8 +790,8 @@ Lantern_AI/                             <-- Client package (type = "mod")
     5_Mission/                          <-- client UI, wrapped in #ifndef SERVER
   GUI/layouts/                          <-- client-only: interaction prompt, voice bubble
 
-Lantern_AIServer/                       <-- Server package (type = "servermod")
-  mod.cpp                               <-- type = "servermod"
+Lantern_AIServer/                       <-- Separate server package (-serverMod=)
+  mod.cpp                               <-- presentation metadata; no type field required
   Scripts/
     config.cpp                          <-- requiredAddons[] includes Lantern_AI_Scripts
     3_Game/                             <-- server config loader, admin config bridge
@@ -818,32 +806,32 @@ The shape is deliberate: the client package holds a few shared and UI files; the
 **NightPatrol** (class prefix `NP_`) is a smaller content mod that patrols spawn points at night. It uses the same two-package split, which shows the pattern does not depend on one mod's file names:
 
 ```
-NightPatrol/                            <-- Client package (type = "mod")
+NightPatrol/                            <-- Shared package (-mod=)
   Scripts/
     config.cpp                          <-- defines[] = { "NIGHTPATROL" }
     3_Game/                             <-- NP_Constants, NP_RPC (shared ids + data)
     4_World/                            <-- NP_PatrolMarker (rendered on both sides)
     5_Mission/                          <-- NP_ClientHud (#ifndef SERVER)
 
-NightPatrol_Server/                     <-- Server package (type = "servermod")
+NightPatrol_Server/                     <-- Separate server package (-serverMod=)
   Scripts/
     config.cpp                          <-- requiredAddons[] includes NightPatrol_Scripts
     4_World/                            <-- NP_Scheduler, NP_SpawnDirector (night logic)
     5_Mission/                          <-- modded MissionServer hook
 ```
 
-The client renders patrol markers and a HUD; the server decides *when* and *where* patrols appear. A player who decompiles the client PBO learns nothing about the spawn schedule, because that code was never sent to them.
+The client renders patrol markers and a HUD; the server decides *when* and *where* patrols appear. Keeping the schedule code in the separate `-serverMod` folder prevents it from being part of the shared package; confirm the clean-client installed file set for the target deployment.
 
 ### Example 3: Lantern Missions (Client + Server)
 
 ```
-Lantern_Missions/                       <-- Client package (type = "mod")
+Lantern_Missions/                       <-- Shared package (-mod=)
   Scripts/
     3_Game/                             <-- mission type enums, RPC ids, display settings
     4_World/                            <-- proximity / radio helpers
     5_Mission/                          <-- client mission UI, admin panel module
 
-Lantern_MissionsServer/                 <-- Server package (type = "servermod")
+Lantern_MissionsServer/                 <-- Separate server package (-serverMod=)
   Scripts/
     3_Game/                             <-- server config loader, mission data structures
     4_World/                            <-- active mission instance, loot/objective spawner
@@ -893,7 +881,7 @@ void OnSpawnRequest(PlayerIdentity sender, ParamsReadContext ctx)
 ### Mistake 2: UI Code in Server-Only Mod
 
 ```c
-// WRONG: This is in a type = "servermod" package
+// WRONG: This is in a package loaded only with -serverMod=
 // The server has no display -- widget creation fails silently or crashes
 class MyServerPanel
 {
@@ -907,7 +895,7 @@ class MyServerPanel
 }
 ```
 
-**Fix:** All UI code belongs in the client package (`type = "mod"`), wrapped in `#ifndef SERVER`.
+**Fix:** All UI code belongs in the shared/client package launched with `-mod=`, wrapped in `#ifndef SERVER`.
 
 ### Mistake 3: GetGame().GetPlayer() on Server
 
@@ -1009,10 +997,10 @@ The failure is at **compile time**, not run time. Without Lantern Core in the bu
 ### Mistake 6: Putting Shared Types Only in the Server Package
 
 ```c
-// WRONG: RPC data class defined only in servermod
+// WRONG: RPC data class defined only in the -serverMod package
 // Client cannot deserialize the RPC because it does not know the class
 
-// In MyModServer (type = "servermod"):
+// In MyModServer (loaded with -serverMod=):
 class MyStateData  // Client has never heard of this class
 {
     int m_State;
@@ -1020,7 +1008,7 @@ class MyStateData  // Client has never heard of this class
 }
 ```
 
-**Fix:** Shared data structures (RPC data, entity definitions, config classes) go in the client package (`type = "mod"`) so both sides have them:
+**Fix:** Shared data structures (RPC data, entity definitions, config classes) go in the shared package launched with `-mod=` so both sides have them:
 
 ```c
 // In MyMod (type = "mod") -- 3_Game layer:
@@ -1059,10 +1047,10 @@ flowchart TD
     B -->|NO| E[SERVER]
     C -->|YES| F[CLIENT only]
     C -->|NO| G{Data class or RPC constant?}
-    G -->|YES| H["SHARED (client mod)"]
+    G -->|YES| H["SHARED (-mod package)"]
     G -->|NO| I{Reads/writes files or validates?}
-    I -->|YES| J["SERVER (servermod)"]
-    I -->|NO| K["SHARED (client mod,<br/>guard with IsServer/IsClient)"]
+    I -->|YES| J["SERVER (-serverMod package)"]
+    I -->|NO| K["SHARED (-mod package,<br/>guard with IsServer/IsClient)"]
 ```
 
 ---
@@ -1071,8 +1059,8 @@ flowchart TD
 
 Before publishing a split mod, verify:
 
-- [ ] Client package uses `type = "mod"` in both `mod.cpp` and `config.cpp`
-- [ ] Server package uses `type = "servermod"` in both `mod.cpp` and `config.cpp`
+- [ ] Shared package is installed on both sides and launched with `-mod=`; its `CfgMods` uses documented `type = "mod"`
+- [ ] Server-only code is in a separate folder launched only with `-serverMod=`; its `CfgMods` also uses documented `type = "mod"`, and `mod.cpp` does not need a `type` field
 - [ ] Server `config.cpp` lists client package in `requiredAddons[]`
 - [ ] All shared types (RPC data, entity classes, enums) are in the client package
 - [ ] All server logic (spawning, validation, AI brains) is in the server package

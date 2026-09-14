@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "scope": "Accepted PBO council conclusions in owned English pages only; fixture/config/locales/game/commit untouched.",
+  "proposal_mapping": {
+    "PBO-001-PBO-003": "Header-field, limits taxonomy, and scoped compression wording",
+    "PBO-004-PBO-005-PBO-008": "Package/archive/prefix/addon taxonomy; mounted paths; conservative collision policy",
+    "PBO-006": "Two-phase reliable workflow and linked accepted fixture",
+    "PBO-007": "Folder-level serverMod boundary",
+    "PBO-009": "requiredAddons replaces launch-string order advice",
+    "PBO-010": "Final-byte signing, DSCheck scope, and key rotation",
+    "PBO-011-PBO-012": "Pinned implementation provenance and Workshop-limit separation"
+  },
+  "validation": {
+    "strict_links_anchors": {"command": "node scripts/check-links.mjs --anchors --strict en", "result": "passed", "dead_file_links": 0, "dead_anchors": 0},
+    "diff_check": {"command": "git diff --check -- <owned EN paths>", "result": "passed"},
+    "mermaid": {"changed_fences": 0, "standalone_probe": "not runnable: Mermaid DOMPurify adapter failed under Node v24.14.0"},
+    "vitepress_build": {"command": "NODE_OPTIONS=--max-old-space-size=4096 npm run build", "node": "v24.14.0", "sessions": [{"exec_cell": "52", "pids": [49360, 50404]}, {"exec_cell": "53", "pids": [52016, 53224]}, {"exec_cell": "61", "pids": [23672, 41704]}], "liveness_recheck": "all six PIDs absent at 2026-09-13 22:16 America/Sao_Paulo", "result": "not passed; no observed zero exit or regenerated dist/index.html"}
+  },
+  "unresolved": ["DayZ boot and Enforce compilation", "mounted cross-PBO CfgMods paths", "missing requiredAddons behavior", "clean-client serverMod distribution", "verifySignatures=2 enforcement matrix", "serverMod-only signature behavior", "numeric PBO boundary matrix", "Workshop upload/download behavior"],
+  "content_sha256": {
+    "en/02-mod-structure/01-five-layers.md": "60269FB1AE83AED1D9C00BDE0AF94204ABF0056617EB16662E8ED0CC1574DA15",
+    "en/02-mod-structure/02-config-cpp.md": "1AEB9C620B3800C51CCAD3BB13005B684102EA04D02A2DD5688C15F5B9FAAE7A",
+    "en/02-mod-structure/03-mod-cpp.md": "CEB5B1E3E8BEC93D21177A1C3D092225BB19BA0909EA02EA48F822AE52AB3506",
+    "en/02-mod-structure/04-minimum-viable-mod.md": "A6209D15E139C5744B5D6A2479F9275C779FA0BF4B5610D98BA232FA38EF7C43",
+    "en/02-mod-structure/05-file-organization.md": "24AAAD4F0E5A522F23388891BC40393F763F27A1ADDC8C561526E59F04D3BC42",
+    "en/02-mod-structure/06-server-client-split.md": "498131A57D410CEB4A65C061A26ADDFFAC8182E2E5E2166DD0E8233F9D5A5081",
+    "en/04-file-formats/06-pbo-packing.md": "42FBEB3CBA2C689CB9728EC83D9B21E55FF244EFB2E59FF122827523B727DDF9",
+    "en/08-tutorials/07-publishing-workshop.md": "141D973FB307ECB7DA39693ABDFE18D97D9D8A038B0A5A1837C802C86C844E0E"
+  },
+  "narrative": ".audit/en-2026-09-13/completeness/pbo-en-implementation.md"
+}

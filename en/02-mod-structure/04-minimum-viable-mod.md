@@ -114,7 +114,7 @@ class CfgMods
 
 Two classes, two jobs:
 
-- **CfgPatches** declares the PBO to the engine. The class name (`HelloMod_Scripts`) must be globally unique across every loaded mod. `requiredAddons[] = { "DZ_Data" }` says "load me after vanilla DayZ data" -- this is what guarantees the vanilla classes you `modded` already exist when your scripts compile. A PBO without a `CfgPatches` entry is ignored.
+- **CfgPatches** declares this configuration addon to the engine. The class name (`HelloMod_Scripts`) must be globally unique across every loaded mod. `requiredAddons[] = { "DZ_Data" }` says "load me after vanilla DayZ data" -- this is what guarantees the vanilla classes you `modded` already exist when your scripts compile. This is the required declaration for the configuration addon in this tutorial; do not infer that every possible resource-only PBO has the same layout.
 - **CfgMods** tells the engine where your scripts live. HelloMod registers only a `missionScriptModule` pointing at `5_Mission`, because that is the layer where mission lifecycle hooks (`MissionServer`, `MissionGameplay`) are available. `dependencies[] = { "Mission" }` matches: it declares which vanilla script modules your mod plugs into.
 
 The full breakdown of every `config.cpp` section is in [config.cpp Deep Dive](02-config-cpp.md); the layer system behind `5_Mission` is in [The Five Script Layers](01-five-layers.md).
@@ -370,7 +370,7 @@ Check these in order:
 1. **Is the mod in the launch parameter?** Verify `-mod=HelloMod` or `-mod=@HelloMod` is in your launch command.
 2. **Is config.cpp in the right place?** It must be at the root of the PBO (or the root of the `Scripts/` folder when file-patching).
 3. **Are the script paths correct?** The `files[]` paths in `config.cpp` must match the actual directory structure. `"HelloMod/Scripts/5_Mission"` means the engine looks for that exact path.
-4. **Is there a CfgPatches class?** Without it, the PBO is ignored.
+4. **Does this configuration addon have a CfgPatches class?** Without it, the tutorial's addon configuration is not declared to the engine.
 
 ### SCRIPT (E): Undefined variable / Undefined type
 

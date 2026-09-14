@@ -2,7 +2,7 @@
 
 ---
 
-> **Summary:** The `config.cpp` file is the heart of every DayZ mod. It tells the engine what your mod depends on, where your scripts live, what items it defines, and how it integrates with the game. Every PBO must have one. Getting it wrong means your mod silently fails to load.
+> **Summary:** A `config.cpp` declares an addon's dependencies, scripts, items, and integration points. Most configuration addons have one at their PBO root; do not assume every physical PBO maps one-to-one to one configuration addon.
 
 ---
 
@@ -27,7 +27,7 @@
 
 ## Overview
 
-A DayZ mod typically has one or more PBO files, each containing a `config.cpp` at its root. The engine reads these configs during startup to determine:
+A DayZ mod typically has one or more PBO files, with configuration addons containing a `config.cpp` at their PBO root. The engine reads those configs during startup to determine:
 
 1. **What your mod depends on** (CfgPatches) — this chapter is the canonical reference for `requiredAddons` and mod load order
 2. **Where your scripts are** (CfgMods class defs)
@@ -52,7 +52,7 @@ A mod usually has separate PBOs for different concerns:
     MyMod_GUI.pbo             --> contains GUI/config.cpp (imagesets, styles)
 ```
 
-Each PBO has its own `config.cpp`. The engine reads them all. Multiple PBOs from the same mod are common -- this is standard practice, not an exception.
+Multiple PBOs from the same mod are common. Give every independently load-ordered configuration addon a unique `CfgPatches` class, but do not use that class name as evidence that each physical PBO has exactly one addon identity: a PBO can expose additional configuration roots, while shipping resource PBOs can exist without a root config.
 
 ---
 
@@ -102,7 +102,7 @@ This is the most critical field in the entire config, and this section is the wi
 1. **Load order:** Your PBO's config is merged and its scripts compile AFTER all listed addons
 2. **Hard dependency:** If a listed addon is missing, your mod fails to load with an error
 
-Each entry must match a `CfgPatches` class name from another PBO:
+Each entry must match a prerequisite `CfgPatches` class name. It is not a PBO filename, prefix, mod-folder name, or Workshop ID:
 
 | Dependency | requiredAddons Entry | When to Use |
 |-----------|---------------------|-------------|
@@ -130,9 +130,10 @@ requiredAddons[] =
 ### How the Engine Resolves Load Order
 
 - The engine builds a dependency graph from the `requiredAddons` of every loaded PBO, then merges configs and compiles scripts in dependency order.
-- If PBO A lists PBO B, then A's config classes can inherit from B's, and A's `modded` classes stack on top of B's.
+- If configuration addon A lists configuration addon B, then A's config classes can inherit from B's, and A's `modded` classes stack on top of B's.
 - Chains are **transitive**. If Mod_A depends on Mod_B, and Mod_B depends on `DZ_Data`, then Mod_A does not need to list `DZ_Data`. Listing explicit dependencies is still good practice for clarity and resilience against upstream changes.
 - The order of entries on the server's `-mod=` launch line is **not** a substitute for `requiredAddons`. If your mod needs another mod loaded first, declare it here -- never rely on launcher ordering.
+- The declaration does not install or discover its prerequisite. The package containing that addon must already be installed and present on the relevant `-mod` or `-serverMod` launch list.
 
 ### units[] and weapons[]
 
@@ -168,7 +169,7 @@ class CfgMods
         overview = "Description"; // Mod description
         picture = "";             // Logo image path
         action = "";              // URL (website/Discord)
-        type = "mod";             // Declares the mod's intended side
+        type = "mod";             // Required value documented by Bohemia
         extra = 0;                // Reserved, always 0
 
         // Keybind definitions (optional)
@@ -204,13 +205,13 @@ class CfgMods
 
 ### Key Fields Explained
 
-**`dir`** -- The root path prefix commonly written for the mod's own bookkeeping. Script-side `files[]` entries in `class defs` are full paths from the PBO prefix, so they work whether or not `dir` is present.
+**`dir`** -- The root path prefix commonly written for the mod's own bookkeeping. Script-side `files[]` entries are mounted virtual paths, so they work whether or not `dir` is present.
 
-**`type`** -- Declares the side the package is meant for: `"mod"` or `"servermod"`. Bohemia documents `type = "mod";` as required and lists no other value; what actually routes a package to clients or keeps it server-side is the launch flag that loads it (`-mod=` versus `-servermod=`). Keep the declaration consistent with how you ship the package -- see [Server vs Client Architecture](06-server-client-split.md#the-config-cpp-type-field).
+**`type`** -- Bohemia documents only `type = "mod";` and marks it required. Keep that documented value in `CfgMods` for both shared and separately launched server packages. Folder-level launch flags route the package: `-mod=` makes an installed shared package available to the client and server processes, while `-serverMod=` loads a separate folder only in the server process. No reviewed source documents `type = "servermod";` as the routing mechanism -- see [Server vs Client Architecture](06-server-client-split.md#the-config-cpp-type-field).
 
 **`dependencies`** -- Which vanilla script modules your mod extends. Almost always `{ "Game", "World", "Mission" }`. Possible values: `"Core"`, `"GameLib"`, `"Game"`, `"World"`, `"Mission"`.
 
-**`inputs`** -- Path to an `Inputs.xml` file that defines custom keybindings. The path is relative to the PBO root.
+**`inputs`** -- A mounted virtual path to an `Inputs.xml` file that defines custom keybindings, for example `samples/test_inputs/my_new_inputs.xml` in the official sample. It is not simply a path relative to a physical PBO root. As with `files[]`, another archive can supply the path only if the final mounted namespace resolves it; test that cross-PBO arrangement in a packaged runtime.
 
 ---
 
@@ -757,7 +758,7 @@ class CfgMods
 
 ### Server-Only Feature Mod: Lantern_MissionsServer
 
-Loaded via `-servermod=`, so none of this code ever reaches clients. It depends on both the client-side missions package and the core library.
+Loaded via `-serverMod=`, so this separate package is not broadcast to clients. It depends on both the client-side missions package and the core library.
 
 ```cpp
 class CfgPatches
@@ -778,7 +779,7 @@ class CfgMods
         name = "Lantern Missions Server";
         dir = "Lantern_MissionsServer";
         author = "Northlight";
-        type = "servermod";              // <-- Server-only mod
+        type = "mod";                    // Documented CfgMods value; -serverMod routes the folder
         defines[] = { "LANTERN_MISSIONSSERVER" };
         dependencies[] = { "Core", "Game", "World", "Mission" };
 

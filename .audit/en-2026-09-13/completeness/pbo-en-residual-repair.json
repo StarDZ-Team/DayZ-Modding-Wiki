@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "scope": "Exactly two council-identified English PBO residual sentences",
+  "files_changed": [
+    {
+      "path": "en/02-mod-structure/03-mod-cpp.md",
+      "finding": "EN-PBO-F06",
+      "line": 513,
+      "before": "Two mods with identical field values will not conflict -- only CfgPatches class names in config.cpp can collide.",
+      "after": "Identical mod.cpp presentation values do not create load-order conflicts; separately, duplicate CfgPatches names and duplicate mounted virtual paths can collide.",
+      "sha256_raw_bytes": "A5B78D9440C5876B4A9C8DE0C60ADFFB2D94B1D22FFCC452EE7D526605A2AAAE",
+      "normalized_git_blob": "1140bddb74229d09d447887dcdda4f8247d578b9"
+    },
+    {
+      "path": "en/02-mod-structure/06-server-client-split.md",
+      "finding": "EN-PBO-F03",
+      "line": 229,
+      "before": "Inside config.cpp (in the CfgMods section), there is also a type field. This one controls how the engine treats the mod internally:",
+      "after": "Inside config.cpp (in the CfgMods section), there is also a type field; Bohemia's published example marks type = \"mod\" as required, but the reviewed sources do not establish another value or a routing behavior for the field:",
+      "sha256_raw_bytes": "C20891B4D7F43C0C43B9623C589F10EC1D4262F2A9019F9020ACAC1849F45B0D",
+      "normalized_git_blob": "eda13db3399a0b0d26323c7880d27ee99b0ae2de"
+    }
+  ],
+  "approved_identity_verification": {
+    "files_checked": 6,
+    "matches": 6,
+    "mismatches": 0,
+    "paths": [
+      "en/02-mod-structure/01-five-layers.md",
+      "en/02-mod-structure/02-config-cpp.md",
+      "en/02-mod-structure/04-minimum-viable-mod.md",
+      "en/02-mod-structure/05-file-organization.md",
+      "en/04-file-formats/06-pbo-packing.md",
+      "en/08-tutorials/07-publishing-workshop.md"
+    ]
+  },
+  "validation": {
+    "diff_check": "passed",
+    "diff_check_exit": 0,
+    "build": "not run by instruction",
+    "runtime": "not run by instruction",
+    "council_final_exact_change_inspection": "required"
+  }
+}

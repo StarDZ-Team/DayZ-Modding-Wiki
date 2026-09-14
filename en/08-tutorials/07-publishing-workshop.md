@@ -171,14 +171,14 @@ Addon Builder can also auto-convert textures when packing PBOs if configured to 
 
 ## Step 4: Generate a Key Pair
 
-Key signing is **essential** for multiplayer. Almost all public servers enable signature verification, so without proper signatures players will be kicked when joining with your mod.
+Key signing supports multiplayer deployments where the server enforces signatures. Keep the private key secret, distribute the public key to server operators, and verify the actual client/server configuration before asserting that a package will be accepted.
 
 ### How Key Signing Works
 
 - You create a **key pair**: a `.biprivatekey` (private) and a `.bikey` (public)
 - You sign each `.pbo` with the private key, producing a `.bisign` file
 - You distribute the `.bikey` with your mod; server operators place it in their `keys/` folder
-- When a player joins, the server checks each `.pbo` against its `.bisign` using the `.bikey`
+- A server configured for signature verification can check client PBOs against `.bisign` files using installed `.bikey` files
 
 ### Generating Keys with DayZ Tools
 
@@ -208,7 +208,7 @@ This creates `MyMod.bikey` and `MyMod.biprivatekey` in the current directory.
 
 ## Step 5: Sign Your PBOs
 
-Every `.pbo` file in your mod must be signed with your private key. This produces `.bisign` files that sit alongside the PBOs.
+For a distributed shared/client package, sign every final PBO with your private key after its last byte-changing operation. This produces `.bisign` files beside those final PBOs. The signing requirement and operational value for a PBO loaded only through `-serverMod` remain deployment-specific and need a server test.
 
 ### Signing with DayZ Tools
 
@@ -217,7 +217,7 @@ Every `.pbo` file in your mod must be signed with your private key. This produce
 3. Select your `.biprivatekey` file
 4. Select the `.pbo` file to sign
 5. A `.bisign` file is created next to the PBO (e.g., `MyMod_Scripts.pbo.MyMod.bisign`)
-6. Repeat for every `.pbo` in your `addons/` folder
+6. Repeat for every final distributed PBO in your `addons/` folder
 
 ### Signing via Command Line
 
@@ -255,11 +255,15 @@ addons/
 └── MyMod_Data.pbo.MyMod.bisign
 ```
 
-Every `.pbo` must have a corresponding `.bisign`. If any `.bisign` is missing, players will be kicked from signature-verified servers.
+Every PBO in the distributed shared/client package should have the matching `.bisign` created for its final bytes. A missing or incorrect signature can be rejected by a server that enforces signatures; validate the target server rather than extrapolating from file presence alone.
 
 ### Place the Public Key
 
 Copy `MyMod.bikey` into your `@MyMod/keys/` folder. This is what server operators will copy into their server's `keys/` directory to allow your mod.
+
+### Tool Check Versus Server Enforcement
+
+`DSCheckSignatures.exe <checked-directory> <keys-directory>` is useful as a strict build check when you parse all stdout and require the expected `Signature ... is OK` lines. It is not an end-to-end proof: the recorded DayZ Tools experiment accepted an old `.bisign` beside rebuilt PBO bytes and returned exit code `0` when a public key was missing. Test valid, modified, missing-signature, wrong-key, and rotated-key cases through a clean `verifySignatures = 2` server join.
 
 ---
 
@@ -411,7 +415,7 @@ Then run SteamCMD as before. The `publishedfileid` tells Steam to update the exi
 
 ### Important: Use the Same Key
 
-Always sign updates with the **same private key** you used for the original release. If you sign with a different key, server operators must replace the old `.bikey` with your new one -- which means downtime and confusion. Only generate a new key pair if your private key is compromised.
+Reuse an available, uncompromised private key for ordinary updates. If you rotate after compromise, private-key loss or unavailability, or an intentional trust reset, re-sign the final PBOs and tell server operators to install the new `.bikey`. Do not rotate simply because an update is a breaking version.
 
 ---
 
@@ -540,20 +544,26 @@ Mods are loaded via the `-mod=` parameter, separated by semicolons:
 
 Use the **full relative path** from the server root. On Linux, paths are case-sensitive.
 
-### Load Order
+### Dependency Declarations
 
-Mods load in the order listed in `-mod=`. This matters when mods depend on each other:
+The launch list makes each package available to the server process. Declare addon initialization dependencies in `CfgPatches.requiredAddons[]`, using the prerequisite's `CfgPatches` class name; do not use textual `-mod=` order as a substitute. A dependency declaration also does not install or add a missing package to the launch list.
 
-- **Dependencies first.** If `@MyMod` requires `@CF`, list `@CF` before `@MyMod`.
-- **General rule:** frameworks first, content mods last.
-- If your mod declares `requiredAddons` in `config.cpp`, DayZ will attempt to resolve load order automatically, but explicit ordering in `-mod=` is safer.
+For example, make `@CF` and `@MyMod` available on the server when `MyMod` genuinely requires CF, then put CF's documented `CfgPatches` class in `MyMod`'s `requiredAddons[]`. This is a configuration dependency, not a promise that the launcher will download the package.
 
 ### Key Management
 
-- Place **one `.bikey` per mod** in the server's `keys/` directory
-- When a mod updates with the same key, no action needed -- existing `.bikey` still works
-- If a mod author changes keys, you must replace the old `.bikey` with the new one
+- Install every public `.bikey` that the server intentionally trusts for the loaded packages; a mod may use component keys, and a controlled rotation may temporarily require both old and new public keys
+- When a mod updates with an available, uncompromised key, no key change is needed -- the existing `.bikey` still represents that trust
+- When an author rotates keys, add the new `.bikey`, re-sign the final PBOs, and remove the old key only when your supported transition window ends and no accepted package still depends on it
 - The `keys/` folder path is relative to the server root (e.g., `DayZServer/keys/`)
+
+---
+
+## Package and Workshop Limits
+
+PBO member fields, total archive behavior, DayZ loading, Publisher/SteamCMD behavior, and Steam Workshop item storage are separate limits. The reviewed official Steamworks Workshop implementation page did not state a fixed DayZ item-content ceiling. Record a current authoritative limit or a reproducible upload failure before publishing a number.
+
+Splitting a mod into several PBOs does not by itself create several Workshop items or make a PBO private. Use an intentional package and Workshop layout; for a server-only component, use a separate folder loaded with `-serverMod=` and verify clean-client distribution. See [PBO size limits](../04-file-formats/06-pbo-packing.md#pbo-size-limits-what-is-and-is-not-established) for the boundary taxonomy.
 
 ---
 

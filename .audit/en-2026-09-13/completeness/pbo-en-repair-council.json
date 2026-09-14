@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "timezone": "America/Sao_Paulo",
+  "task_id": "task_bdc972e36e5b",
+  "dispatch_id": "ctx_2a2d33dcb9d3",
+  "baseline_head": "103238a83078784b7ee6cd6486f63d7973e3fe92",
+  "scope": "Independent final wording council for the exact eight English PBO pages against HEAD; owned only pbo-en-repair-council.md/json; no EN, fixture, config, runtime, build, or commit changes.",
+  "narrative": ".audit/en-2026-09-13/completeness/pbo-en-repair-council.md",
+  "decision": {
+    "overall": "rejected_pending_two_bounded_repairs",
+    "approved_pages": 6,
+    "rejected_pages": 2,
+    "wording_only": true,
+    "runtime_approval": false,
+    "signature_enforcement_approval": false,
+    "size_boundary_approval": false,
+    "workshop_approval": false
+  },
+  "files": [
+    {"path":"en/02-mod-structure/01-five-layers.md","disposition":"approved_previously_approved_unchanged","sha256_raw_bytes":"60269FB1AE83AED1D9C00BDE0AF94204ABF0056617EB16662E8ED0CC1574DA15","normalized_git_blob":"5acd4acc3227965aecfca47f7eefb5de7553af24","raw_git_blob":"a0427e8398045579cfc27af9b3bc1178a50b490a"},
+    {"path":"en/02-mod-structure/02-config-cpp.md","disposition":"approved","sha256_raw_bytes":"BDD728C3D49EA79A87AF331A7079AB8DDDC683FDC254F19A57603226F1BDDC06","normalized_git_blob":"45313abe4d250d9cc5375252f621b6567b9bcec6","raw_git_blob":"eb174a08987b55979494e33291e9e5c6c980014c"},
+    {"path":"en/02-mod-structure/03-mod-cpp.md","disposition":"rejected","sha256_raw_bytes":"00855928DF3601B91AE122DFF1F018B8D5E7129B662E6FD99B1F11FC2ECAB67A","normalized_git_blob":"856e66e34a407c0a0ee3d666ea995e7ed426d389","raw_git_blob":"b7d6a64da917dd5b6d66acd1a5c474cfc176874e","residual":"Line 513 says only CfgPatches class names can collide, contradicting the corrected mounted-virtual-path collision guidance."},
+    {"path":"en/02-mod-structure/04-minimum-viable-mod.md","disposition":"approved_previously_approved_unchanged","sha256_raw_bytes":"A6209D15E139C5744B5D6A2479F9275C779FA0BF4B5610D98BA232FA38EF7C43","normalized_git_blob":"3bb56cff59b2b9e17e2279932bda56d026ee6ed8","raw_git_blob":"3bb56cff59b2b9e17e2279932bda56d026ee6ed8"},
+    {"path":"en/02-mod-structure/05-file-organization.md","disposition":"approved_previously_approved_unchanged","sha256_raw_bytes":"24AAAD4F0E5A522F23388891BC40393F763F27A1ADDC8C561526E59F04D3BC42","normalized_git_blob":"ba5ee8dd733c2111f14ee01390dec6846024fb19","raw_git_blob":"ae6ea80a5056e8e4ba828dab1c004f2b90457b5f"},
+    {"path":"en/02-mod-structure/06-server-client-split.md","disposition":"rejected","sha256_raw_bytes":"56151172A2744AF937B95DE2A2029E621321D32045D281BD10D1047715C12AE3","normalized_git_blob":"b32a34bc6e9412c00485f4c33df9480539aedc4a","raw_git_blob":"5ddcda5a253d83d98ef7924ad1e52500e08dcb82","residual":"Line 229 positively says CfgMods.type controls internal engine treatment, contradicting the evidence boundary and line 242."},
+    {"path":"en/04-file-formats/06-pbo-packing.md","disposition":"approved_wording_only","sha256_raw_bytes":"3756718C2343029369BB7E5647E6793DE836F6EF90964C74B41C308D57637D09","normalized_git_blob":"9c86cfec10b3cec6972499943cecefe8868c43db","raw_git_blob":"5199702268d144293654b2bdae110ac0dc437dfd"},
+    {"path":"en/08-tutorials/07-publishing-workshop.md","disposition":"approved_wording_only","sha256_raw_bytes":"EA30075E8121EE03ECEF71F84EA2C5623EA687B03ECE9671EBD9B09C7B136CEF","normalized_git_blob":"41457260c5ed3b6bbc9ba80b957d4c719a24cf14","raw_git_blob":"fb92dc3fea896ebe78d63d4282eddc1bb1ac782c"}
+  ],
+  "findings": [
+    {"id":"EN-PBO-F03","status":"rejected_one_residual","page":"en/02-mod-structure/06-server-client-split.md","line":229,"repair":"Replace the positive internal-control claim with neutral documented-syntax wording; only type=mod is documented and launch flags route folders."},
+    {"id":"EN-PBO-F04","status":"approved_static_runtime_open"},
+    {"id":"EN-PBO-F05","status":"approved_static_enforcement_open"},
+    {"id":"EN-PBO-F06","status":"rejected_one_residual","page":"en/02-mod-structure/03-mod-cpp.md","line":513,"repair":"Limit the claim to identical presentation metadata and acknowledge both CfgPatches-name and mounted-virtual-path collisions."},
+    {"id":"EN-PBO-F07","status":"approved"},
+    {"id":"EN-PBO-F08","status":"approved_pinned_blob_file_symbol_links"},
+    {"id":"EN-PBO-F09","status":"approved_route_and_link_removal_runtime_open"}
+  ],
+  "evidence": {
+    "official_modding_structure":{"path":"D:/StarDZ/docs/DayZ/Modding Structure.md","sha256":"4AD1DABE620A25FFF043077D012BEBAAA663953355575B3F0AB52936AADB5AFA","lines":["6-14","20-91"]},
+    "official_server_configuration":{"path":"C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/BIKI-Server-council-20260913.txt","sha256":"B2D11B4CD7D973FF65FD9804406E02D4C091176F9926EE1AF1F04142FE4142F7","lines":["180-181"]},
+    "extracted_sakhal":{"path":"D:/DayZ Projects/DZ/data_sakhal/config.cpp","sha256":"D2074F7E019B1359A8BA00DF5ABEC5A9B459F3F4A0028A18A2D1C9CFB078FB34","lines":["1-30"],"limitation":"official-tool extraction without immutable exact-build receipt"},
+    "dayz_samples":{"commit":"da5e5437c9502620d9853fb6eed14701135ab2ea","path":"Test_Inputs/config.cpp","sha256":"71B869D713C15D38037B0B8B6CC682CCAEA03599DDFF370DA786D42CD813121C"},
+    "community_framework":{"commit":"0763e7e7548c9a0bed6626afff835de80693ebf3","files":{"JM/CF/GUI/config.cpp":"3AA877B37DE71F381C7DD04D9A7DBB23761621A7BA9D85798528F1B1AA36F3D0","JM/CF/Scripts/config.cpp":"8DA49AD88AB7387B4F5E6D5D2FDBC07005F908B537E7F723152BD41B6BDD1D41"}},
+    "community_online_tools":{"commit":"41f2c2b99565d0e3970163e162efbf1283fdca62","path":"JM/COT/Scripts/config.cpp","sha256":"BD536BE5FB6E4053F8879D82779C8FE952FD95081F24B088D2C11BCC46EE2382"},
+    "dayz_expansion_scripts":{"commit":"6dacd00f6d943ebbd99e0cf1baad93f470d96419","path":"DayZExpansion/Core/Scripts/config.cpp","sha256":"8973F7648357EF6B1FFA70F0E8168915052674F412EB15B7090E6E38B41826EA"},
+    "dayz_editor":{"commit":"992e6b29b42b5d8e609632b59771335a23d205eb","files":{"DayZEditor/Scripts/config.cpp":"1B0D5EC71A26F8B73BFBC2156CE303F65028C0CF6AFB09416AFA84F49A1BA39A","DayZEditor/GUI/config.cpp":"39952D741DC3075102A923D93D24B74A63EBA0DD04DA7D1FECB8B1C225DC7447"}},
+    "vpp_admin_tools":{"commit":"dc22e420df3b54e821055f9764da1e48f4a31e71","path":"config.cpp","sha256":"39BD991B0E0CF043BAD82EF5D8F4C8FFCF9538D6E4E41C7B3CB81EC5A89E9061"},
+    "fixture":{"server_config_sha256":"4FA89581708F159CFCA491252F494A5E9A6A1AE003D165370EA3F12F5245E102","server_mod_cpp_sha256":"726A2E560854E619DD2A851F5E9EA08D216D673278452CC8C6C5AE449C1DC2C8","readme_sha256":"3449B09BBDD04A278A17DD8E3A79A1D27EEB76B173431A73A255C52EE23BC0CE","manifest_sha256":"63D5E5E9468AF98B37B30AB71C3CCEA69D45694E266377025F68E6953F088582"},
+    "runtime_report":{"path":".audit/en-2026-09-13/completeness/multi-pbo-runtime.md","result":"fixture PBOs mounted, but PBOExample and PBOExampleServer classes were unresolved; no requested runtime success markers"}
+  },
+  "validation": {
+    "node":"v24.14.0",
+    "powershell":"7.6.0",
+    "exact_pages":8,
+    "h1_each":1,
+    "local_references_inspected":143,
+    "anchor_references_checked":117,
+    "dead_file_links":0,
+    "dead_anchors":0,
+    "fixture_readme_resolved":true,
+    "rendered_fixture_href":"./../../examples/en/multi-pbo/README.html",
+    "audit_pages_resolved":0,
+    "direct_manifest_link_present":false,
+    "diff_check":{"baseline":"HEAD","exit":0,"notes":"line-ending conversion notices only"},
+    "full_build":"not_run_by_instruction",
+    "game_or_tool_runtime":"not_run_by_instruction"
+  },
+  "unresolved": {
+    "runtime":["fixture PBOExample/PBOExampleServer class resolution","DayZ boot and Enforce compilation success","mounted cross-PBO CfgMods paths","missing/renamed requiredAddons behavior","clean-client serverMod distribution"],
+    "signature_enforcement":["verifySignatures=2 valid/modified/missing/wrong/rotated-key matrix","serverMod-only signature behavior","DSCheck is not PBO-byte or server-enforcement proof"],
+    "limits":["member usable boundary","total archive","compression","packer/signer","DayZ runtime","filesystem/deployment","Workshop service"],
+    "workshop":["upload","download","update","service-side limits"]
+  }
+}

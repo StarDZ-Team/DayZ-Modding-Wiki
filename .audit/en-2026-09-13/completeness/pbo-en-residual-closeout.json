@@ -1,0 +1,62 @@
+{
+  "observedAt": "2026-09-14T02:02:20.374868+00:00",
+  "reviewer": "root, independent of Luna residual author",
+  "decision": "approve_final_eight_page_wording_set",
+  "files": [
+    {
+      "path": "en/02-mod-structure/01-five-layers.md",
+      "sha256_raw_bytes": "60269FB1AE83AED1D9C00BDE0AF94204ABF0056617EB16662E8ED0CC1574DA15",
+      "normalized_git_blob": "5acd4acc3227965aecfca47f7eefb5de7553af24",
+      "disposition": "approved_prior_council_bytes_unchanged"
+    },
+    {
+      "path": "en/02-mod-structure/02-config-cpp.md",
+      "sha256_raw_bytes": "BDD728C3D49EA79A87AF331A7079AB8DDDC683FDC254F19A57603226F1BDDC06",
+      "normalized_git_blob": "45313abe4d250d9cc5375252f621b6567b9bcec6",
+      "disposition": "approved_prior_council_bytes_unchanged"
+    },
+    {
+      "path": "en/02-mod-structure/03-mod-cpp.md",
+      "sha256_raw_bytes": "A5B78D9440C5876B4A9C8DE0C60ADFFB2D94B1D22FFCC452EE7D526605A2AAAE",
+      "normalized_git_blob": "1140bddb74229d09d447887dcdda4f8247d578b9",
+      "disposition": "approved_exact_council_requested_residual_replacement"
+    },
+    {
+      "path": "en/02-mod-structure/04-minimum-viable-mod.md",
+      "sha256_raw_bytes": "A6209D15E139C5744B5D6A2479F9275C779FA0BF4B5610D98BA232FA38EF7C43",
+      "normalized_git_blob": "3bb56cff59b2b9e17e2279932bda56d026ee6ed8",
+      "disposition": "approved_prior_council_bytes_unchanged"
+    },
+    {
+      "path": "en/02-mod-structure/05-file-organization.md",
+      "sha256_raw_bytes": "24AAAD4F0E5A522F23388891BC40393F763F27A1ADDC8C561526E59F04D3BC42",
+      "normalized_git_blob": "ba5ee8dd733c2111f14ee01390dec6846024fb19",
+      "disposition": "approved_prior_council_bytes_unchanged"
+    },
+    {
+      "path": "en/02-mod-structure/06-server-client-split.md",
+      "sha256_raw_bytes": "C20891B4D7F43C0C43B9623C589F10EC1D4262F2A9019F9020ACAC1849F45B0D",
+      "normalized_git_blob": "eda13db3399a0b0d26323c7880d27ee99b0ae2de",
+      "disposition": "approved_exact_council_requested_residual_replacement"
+    },
+    {
+      "path": "en/04-file-formats/06-pbo-packing.md",
+      "sha256_raw_bytes": "3756718C2343029369BB7E5647E6793DE836F6EF90964C74B41C308D57637D09",
+      "normalized_git_blob": "9c86cfec10b3cec6972499943cecefe8868c43db",
+      "disposition": "approved_prior_council_bytes_unchanged"
+    },
+    {
+      "path": "en/08-tutorials/07-publishing-workshop.md",
+      "sha256_raw_bytes": "EA30075E8121EE03ECEF71F84EA2C5623EA687B03ECE9671EBD9B09C7B136CEF",
+      "normalized_git_blob": "41457260c5ed3b6bbc9ba80b957d4c719a24cf14",
+      "disposition": "approved_prior_council_bytes_unchanged"
+    }
+  ],
+  "method": "Reverse exactly one reviewed replacement in each changed page, restoring CRLF on that edited line if needed, and match the previous independent council SHA256; verify six other pages unchanged; recompute all final normalized blobs and run scoped strict diff check.",
+  "sourceReopened": "D:/StarDZ/docs/DayZ/Modding Structure.md:6-14,20-65; examples/en/multi-pbo/src/Server/config.cpp:1-28; prior council collision evidence and final surrounding paragraphs.",
+  "reportCaveat": "Author JSON before/after fields omit inline Markdown backticks. This receipt verifies the actual bytes including backticks; the two-page hashes in that report match.",
+  "limits": [
+    "Wording approval only. Failed multi-PBO runtime investigation is ongoing.",
+    "No full site build, client join, signature enforcement, numeric size boundary or Workshop test is approved by this receipt."
+  ]
+}

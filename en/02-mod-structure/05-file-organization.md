@@ -350,7 +350,7 @@ MyMod/                                    <-- Project root (development repo)
       layouts/
     Sounds/
 
-  MyMod_SubServer/                     <-- Server package (loaded via -servermod=)
+  MyMod_SubServer/                     <-- Server package (loaded via -serverMod=)
     mod.cpp
     Scripts/
       config.cpp                          <-- type = "servermod"
@@ -362,7 +362,7 @@ MyMod/                                    <-- Project root (development repo)
 ### Key Rules for Split Mods
 
 1. **The client package is loaded by everyone** (server and all clients via `-mod=`)
-2. **The server package is loaded only by the server** (via `-servermod=`)
+2. **The server package is loaded only by the server** (via `-serverMod=`)
 3. **The server package depends on the client package** (via `requiredAddons`)
 4. **Never put UI code in the server package** -- clients will not receive it
 5. **Keep secure/private logic in the server package** -- it is never sent to clients
@@ -406,7 +406,7 @@ Lantern_Missions/
     GUI/layouts/                          Mission panel layouts
     Sounds/                               Radio beep sounds
 
-  Lantern_MissionsServer/                 <-- Server (-servermod=)
+  Lantern_MissionsServer/                 <-- Server (-serverMod=)
     mod.cpp                               type = "servermod"
     Scripts/
       config.cpp                          requiredAddons: Lantern_Missions_Scripts, Lantern_Core_Scripts
@@ -506,7 +506,7 @@ Each PBO gets a descriptive name with the mod prefix:
     MyMod_Sounds.pbo          <-- Audio (sometimes bundled with Data)
 ```
 
-The PBO name does not need to match the CfgPatches class name, but keeping them aligned prevents confusion.
+The PBO filename, its virtual prefix, its `CfgPatches` class, and the containing `@` folder have separate roles. A filename does not need to match the `CfgPatches` class, although a clear manifest mapping prevents confusion. Do not assume a one-to-one PBO-to-addon mapping: a PBO can expose additional configuration roots, and resource archives can be laid out without a root config.
 
 ### @mod Folder Name
 
@@ -524,7 +524,7 @@ The `@` has no technical meaning to the engine. It is purely organizational conv
 Large mods split into multiple PBOs for several reasons:
 
 1. **Separate update cycles** -- update scripts without re-downloading 3D models
-2. **Optional components** -- GUI PBO is optional if mod works headless
+2. **Clear ownership** -- scripts, data, and GUI resources can have separate source and staging roots
 3. **Build pipeline** -- different PBOs built by different tools
 
 ```
@@ -534,7 +534,7 @@ Large mods split into multiple PBOs for several reasons:
     MyMod_Weapons_Data.pbo       <-- Weapon models, textures, configs
 ```
 
-Each PBO has its own `config.cpp` with its own `CfgPatches` entry. The `requiredAddons` between them controls the load order:
+Each independently load-ordered configuration addon needs a unique `CfgPatches` entry. `requiredAddons[]` uses those class names, not PBO filenames or prefixes, to declare initialization dependencies:
 
 ```cpp
 // Scripts/config.cpp
@@ -822,14 +822,14 @@ Before publishing your mod, verify:
 
 - [ ] `mod.cpp` is at the mod root (next to `Addons/` or `Scripts/`)
 - [ ] `stringtable.csv` is packed at a PBO root beside that PBO's `config.cpp` (not left only in the unpacked dev-tree "mod root" next to `mod.cpp`) -- verify the localized strings show up in-game
-- [ ] `config.cpp` exists in every PBO root
+- [ ] Every configuration addon has its `config.cpp` at that addon's PBO root
 - [ ] `requiredAddons[]` lists ALL dependencies
 - [ ] Script module `files[]` paths match the actual directory structure
 - [ ] Every `.c` file is inside a mod-namespaced subdirectory (e.g., `3_Game/MyMod/`)
 - [ ] Class names have a unique prefix to avoid collisions
 - [ ] Entity classes are in `4_World`, UI classes are in `5_Mission`, data classes are in `3_Game`
 - [ ] No secrets or debug code in the published PBOs
-- [ ] Server-only logic is in a separate `-servermod` package (if applicable)
+- [ ] Server-only logic is in a separate package loaded with `-serverMod=` (if applicable)
 
 ---
 
@@ -859,5 +859,5 @@ Before publishing your mod, verify:
 
 ## Compatibility & Impact
 
-- **Multi-Mod:** File organization itself does not cause conflicts. However, two mods placing files with the same path inside their PBOs (e.g., both using `3_Game/Config.c` without a mod subfolder) will collide at the engine level, causing one to silently override the other.
+- **Multi-Mod:** File organization itself does not cause conflicts. Treat duplicate normalized virtual paths as a release-build failure by default; same-prefix winner behavior needs a controlled runtime test before you permit a documented exception.
 - **Performance:** The engine recursively scans all listed `files[]` directories regardless of nesting depth. No published benchmark quantifies compile-time cost by directory depth, so treat "nesting is free" as a reasonable expectation rather than a measured fact; total script volume, not folder depth, is what drives compile time in practice. Organize for readability.

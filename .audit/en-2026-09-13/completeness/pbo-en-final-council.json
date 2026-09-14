@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "baseline": "0df58c20761f654cd91ece04d9469be4b1728c6b",
+  "head": "103238a83078784b7ee6cd6486f63d7973e3fe92",
+  "branch": "wiki-reorg",
+  "reviewer": {
+    "agent": "codex",
+    "model": "not exposed in dispatched worker preamble",
+    "powershell": "7.6.0",
+    "node": "v24.14.0",
+    "child_agents": 0
+  },
+  "scope": "Independent final review of the exact eight-file PBO English diff against 0df58c2; owned only pbo-en-final-council.md/json and TEMP/pbo-en-final-council; no EN/config/fixture/commit/game/full-build changes.",
+  "narrative": ".audit/en-2026-09-13/completeness/pbo-en-final-council.md",
+  "decision": {
+    "overall": "rejected_pending_bounded_repairs",
+    "accepted_files": 3,
+    "rejected_files": 5,
+    "runtime_approval": false,
+    "size_boundary_approval": false,
+    "workshop_approval": false
+  },
+  "files": [
+    {"path":"en/02-mod-structure/01-five-layers.md","disposition":"approved","sha256":"60269FB1AE83AED1D9C00BDE0AF94204ABF0056617EB16662E8ED0CC1574DA15","git_blob_oid":"a0427e8398045579cfc27af9b3bc1178a50b490a","baseline_blob_oid":"4adbbf5195b69c9b2db47f922aafb3b45b8ab1a6"},
+    {"path":"en/02-mod-structure/02-config-cpp.md","disposition":"rejected","sha256":"1AEB9C620B3800C51CCAD3BB13005B684102EA04D02A2DD5688C15F5B9FAAE7A","git_blob_oid":"1d43b77c03d0cf851f6f36a2fe0d90638e174a18","baseline_blob_oid":"7a82600c51575ce6caf8f9dfe0b901f2ca6117b5"},
+    {"path":"en/02-mod-structure/03-mod-cpp.md","disposition":"rejected","sha256":"CEB5B1E3E8BEC93D21177A1C3D092225BB19BA0909EA02EA48F822AE52AB3506","git_blob_oid":"6649fce42e852f9993869b73ba3d737670f3c5e5","baseline_blob_oid":"8855b1e6e7441b6ea0e5763d3d8331859cf213f9"},
+    {"path":"en/02-mod-structure/04-minimum-viable-mod.md","disposition":"approved","sha256":"A6209D15E139C5744B5D6A2479F9275C779FA0BF4B5610D98BA232FA38EF7C43","git_blob_oid":"3bb56cff59b2b9e17e2279932bda56d026ee6ed8","baseline_blob_oid":"459577e66d1334f23c8040235a48069fab95677c"},
+    {"path":"en/02-mod-structure/05-file-organization.md","disposition":"approved","sha256":"24AAAD4F0E5A522F23388891BC40393F763F27A1ADDC8C561526E59F04D3BC42","git_blob_oid":"ae6ea80a5056e8e4ba828dab1c004f2b90457b5f","baseline_blob_oid":"39f0ca93e9d873f9d440d7f4f8f8a9962bbe9e58"},
+    {"path":"en/02-mod-structure/06-server-client-split.md","disposition":"rejected","sha256":"498131A57D410CEB4A65C061A26ADDFFAC8182E2E5E2166DD0E8233F9D5A5081","git_blob_oid":"1f4c346a2eb7085d50d7042eb9cec9b7c0e95e17","baseline_blob_oid":"04111cb7f03ae3916a1d6e11f68c77e0f5936248"},
+    {"path":"en/04-file-formats/06-pbo-packing.md","disposition":"rejected","sha256":"42FBEB3CBA2C689CB9728EC83D9B21E55FF244EFB2E59FF122827523B727DDF9","git_blob_oid":"69e48cda8c806453549fcf61add192154f5362a3","baseline_blob_oid":"838f4d11b1b98813d7bc1f68be9bcb7f2beade64"},
+    {"path":"en/08-tutorials/07-publishing-workshop.md","disposition":"rejected","sha256":"141D973FB307ECB7DA39693ABDFE18D97D9D8A038B0A5A1837C802C86C844E0E","git_blob_oid":"d7b39ad7d92364e03e82d78a1bec7883ac4fe795","baseline_blob_oid":"6915cef5c0c78e1327edaab118ecfbc4c82148b2"}
+  ],
+  "findings": [
+    {"id":"EN-PBO-F01","subject":"per-member versus archive/tool/runtime/deployment/Workshop limits","status":"accepted_static_with_open_boundaries","files":["en/04-file-formats/06-pbo-packing.md"]},
+    {"id":"EN-PBO-F02","subject":"CfgPatches identity, launch availability, and mounted virtual paths","status":"accepted_static_runtime_unresolved","files":["en/02-mod-structure/01-five-layers.md","en/02-mod-structure/02-config-cpp.md","en/02-mod-structure/04-minimum-viable-mod.md","en/02-mod-structure/05-file-organization.md","en/04-file-formats/06-pbo-packing.md"]},
+    {"id":"EN-PBO-F03","subject":"CfgMods.type and linked fixture coherence","status":"rejected","files":["en/02-mod-structure/02-config-cpp.md","en/02-mod-structure/03-mod-cpp.md","en/02-mod-structure/06-server-client-split.md"],"repair":"Align undocumented metadata claims with folder-level launch routing and the fixture's type=mod/no mod.cpp type arrangement."},
+    {"id":"EN-PBO-F04","subject":"separate folder-level serverMod boundary","status":"rejected_remaining_contradictions","files":["en/02-mod-structure/03-mod-cpp.md","en/02-mod-structure/06-server-client-split.md"],"repair":"Remove server-streaming implication and absolute no-signing claim; keep clean-client distribution and serverMod-only signatures open."},
+    {"id":"EN-PBO-F05","subject":"two-phase build, final-byte signing, exhaustive DSCheck, key rotation","status":"accepted_new_passages_rejected_cross_file_absolutes","files":["en/04-file-formats/06-pbo-packing.md","en/08-tutorials/07-publishing-workshop.md","en/02-mod-structure/03-mod-cpp.md"],"repair":"Remove no-signing-required and exactly-one-bikey-per-mod absolutes."},
+    {"id":"EN-PBO-F06","subject":"prefix collision wording","status":"rejected","files":["en/04-file-formats/06-pbo-packing.md"],"repair":"Replace the claim that prefixes ensure no collisions."},
+    {"id":"EN-PBO-F07","subject":"packonly and CfgVehicles wording","status":"rejected","files":["en/04-file-formats/06-pbo-packing.md"],"repair":"Make the table agree that text configs can contain CfgVehicles; separate asset conversion needs."},
+    {"id":"EN-PBO-F08","subject":"meaningful public pinned citations","status":"rejected","files":["en/04-file-formats/06-pbo-packing.md"],"repair":"Use pinned blob/path/symbol citations rather than repository root trees; pin the DayZ Samples citation."},
+    {"id":"EN-PBO-F09","subject":"published fixture route and hidden audit links","status":"readme_accepted_manifest_unresolved","files":["en/04-file-formats/06-pbo-packing.md"],"repair":"Publish or remove the raw manifest.json link unless controlled build output proves it is emitted."},
+    {"id":"EN-PBO-F10","subject":"failed full-build accounting","status":"accepted_honest_pending_controlled_build","files":[".audit/en-2026-09-13/completeness/pbo-en-implementation.md"]}
+  ],
+  "evidence_verification": {
+    "pbo_research_sha256":"03FE483067A9259D6C0601A2F6FF9C9C7B6601201FAB6982343A8A15582D7949",
+    "pbo_evidence_sha256":"38E257ED0D88E286C84E24828068B9F5C96E58F0F4B0D2375EA427ED6AFE1BBA",
+    "repair_council_scoped_hashes":{"matched":14,"total":14},
+    "modding_structure_snapshot_sha256":"4AD1DABE620A25FFF043077D012BEBAAA663953355575B3F0AB52936AADB5AFA",
+    "server_configuration_snapshot_sha256":"B2D11B4CD7D973FF65FD9804406E02D4C091176F9926EE1AF1F04142FE4142F7",
+    "dayz_samples":{"commit":"da5e5437c9502620d9853fb6eed14701135ab2ea","test_inputs_sha256":"71B869D713C15D38037B0B8B6CC682CCAEA03599DDFF370DA786D42CD813121C"},
+    "sakhal_config_sha256":"D2074F7E019B1359A8BA00DF5ABEC5A9B459F3F4A0028A18A2D1C9CFB078FB34",
+    "armake2":{"commit":"3cc3362101900ff41504db3e780dd1625634cf94","pbo_rs_sha256":"BEC43AC4560626FE4B154922938D0A2BDEDB0561D68118AE822AB9C030387549"},
+    "dscheck_sha256":"9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C",
+    "retail_core_pbo_sha256":"36ECFCE1062C31EAAEDC59F23D64CEA84DD79A52482145402582EB35BC1AB043"
+  },
+  "validation": {
+    "exact_markdown_files":8,
+    "dead_file_links":0,
+    "dead_anchors":0,
+    "anchor_references_checked":117,
+    "vitepress_resolved_pages_at_review":1306,
+    "fixture_readme_resolved":true,
+    "resolved_audit_pages":0,
+    "audit_references_in_eight_files":0,
+    "manifest_json_public_copy":false,
+    "diff_check_exit":0,
+    "dist_index_present":false,
+    "full_build":"not_run_by_instruction",
+    "game_launch":"not_run_by_instruction"
+  },
+  "unresolved": {
+    "runtime":["DayZ boot","Enforce compilation","mounted cross-PBO CfgMods paths","missing/renamed requiredAddons","clean-client serverMod distribution"],
+    "signature_enforcement":["verifySignatures=2 valid/modified/missing/wrong/rotated-key matrix","serverMod-only signature behavior","DSCheck is not PBO-byte or server-enforcement proof"],
+    "limits":["member usable boundary","total archive","compression","packer/signer","DayZ runtime","filesystem/deployment","Workshop service"],
+    "workshop":["upload","download","update","service-side limits"]
+  }
+}
