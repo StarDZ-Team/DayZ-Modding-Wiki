@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 2,
+  "artifact": "pbo-boundary-plan-repaired",
+  "status": "pending_independent_exact_final_review_then_static_harness_review",
+  "executionPerformed": false,
+  "ownership": {
+    "allowedOutputs": [
+      ".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.md",
+      ".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.json",
+      "TEMP/pbo-boundary-plan-repair/hash-receipt.json"
+    ],
+    "futureRunRoot": "TEMP/pbo-boundary-plan/runtime/<run-id>",
+    "noHarnessOrExperiment": true,
+    "noNumericLimitOrRuntimePassClaim": true
+  },
+  "inputs": {
+    "originalPlanMarkdown": {"path": ".audit/en-2026-09-13/completeness/pbo-boundary-plan.md", "sha256": "32191A96BCA74F1AAB27302430CA2AFF160344814445E8A44E80823AC09769F8"},
+    "originalPlanJson": {"path": ".audit/en-2026-09-13/completeness/pbo-boundary-plan.json", "sha256": "663CC823A25447550BD1592F3C088A28178C184617E092A75F42A30A83952131"},
+    "councilMarkdown": {"path": ".audit/en-2026-09-13/completeness/pbo-boundary-council.md", "sha256": "DF5992CEACF659D0B63A1F46758BB0CCB9AAC7653A5354EB2ED3D7592DAD7271"},
+    "councilJson": {"path": ".audit/en-2026-09-13/completeness/pbo-boundary-council.json", "sha256": "2C67473ADB6D7CD1BDD330EA01142E282C4585FE930D72B0A9FA2748007D9367"}
+  },
+  "constants": {"B31": 2147483648, "B32": 4294967296, "margin": 1048576, "u32Maximum": 4294967295},
+  "claimBoundary": "Only stage outcomes for exact retained bytes/builds are possible. Reverse-engineered and third-party layouts are not native DayZ proof; no numeric native total-PBO limit is claimed.",
+  "tokens": {
+    "small-control": "small_control", "member-i31-minus": "member_i31_minus", "sum-i31-at": "sum_i31_at", "member-i31-at": "member_i31_at", "sum-u32-minus": "sum_u32_minus", "sum-u32-at": "sum_u32_at", "member-u32-max": "member_u32_max", "member-u32-plus1": "member_u32_plus1"
+  },
+  "fixture": {
+    "memberOrder": ["config.cpp", "payload/aa_filler_NN.txt", "payload/zz_sentinel_<token>.txt"],
+    "prefix": "PBOBoundary\\<token>",
+    "boundaryConfig": "CfgPatches class PBOBoundary_<token>; units/weapons empty; requiredVersion=0.1; requiredAddons[]={}; no scripts.",
+    "sentinel": "PBOBOUNDARY|schema=1|case=<token>|nonce=<run-id>|expected-path=PBOBoundary/<token>/payload/zz_sentinel_<token>.txt",
+    "sentinelEncoding": "ASCII_no_BOM_no_final_newline",
+    "generator": {"blockBytes": 1048576, "digestInput": "UTF-8 PBOBOUNDARY/v1/block/ || uint64-le(counter 0..32767)", "streamOnly": true, "rejectAttributes": ["ReparsePoint", "SparseFile", "Compressed"], "fileHardLinkCount": 1, "verify": ["generate SHA-256", "close", "fixed-buffer rehash", "exact logical and allocated length"]}
+  },
+  "observedLayout": {
+    "formula": "S=H+C+F only after both validators prove exact unique order; current Builder shape A=S+T+21",
+    "footer": "exact 00 followed by SHA-1 of all preceding archive bytes",
+    "directControl": {"path": "TEMP/multi-pbo-confirmation/build/pboexample-20260914-002734-8140c691/release/@PBOExample/Addons/PBOExample_Data.pbo", "sha256": "1CE4ADB9D28C778E083CA506E0042217CE6A68FF2EC7FC085E2E19596D619071", "length": 441, "headerRange": [0,151], "headerSha256": "386BD6CE8FAC2F38FA1538E13360FEF5A30CDEF708EF79DFCED4EBB25F6F6993", "H": 151, "members": [["config.cpp", 0, 0, 188, 151, 339], ["data\\example.txt", 0, 0, 81, 339, 420]], "footerStart": 420, "footerHex": "00B451A3F09D692D6CD01FD70619D69F8D942B7115", "footerSha256": "04EA3572087008D7F8768AC1C7DD5C8AB16F1C379C625D22679473262F62B1A5", "footerSha1": "B451A3F09D692D6CD01FD70619D69F8D942B7115"}
+  },
+  "cases": [
+    {"order": 0, "id": "small-control", "token": "small_control", "fillerSizes": [1048576], "gate": "full_pipeline_control", "runtime": {"instanceId": 790, "ports": [26300,26301,26302]}},
+    {"order": 1, "id": "member-i31-minus", "token": "member_i31_minus", "fillerSizes": [2146435072], "F": 2146435072, "S": "B31+H+C-M", "archiveGate": "A<B31", "runtime": {"instanceId": 791, "ports": [26310,26311,26312]}},
+    {"order": 2, "id": "sum-i31-at", "token": "sum_i31_at", "fillerSizes": [1073741824,1073741824], "F": 2147483648, "S": "B31+H+C>B31", "fieldGate": "exactly two DataSize=1073741824", "runtime": {"instanceId": 792, "ports": [26320,26321,26322]}},
+    {"order": 3, "id": "member-i31-at", "token": "member_i31_at", "fillerSizes": [2147483648], "F": 2147483648, "S": "B31+H+C>B31", "fieldGate": "exactly one DataSize=2147483648", "runtime": {"instanceId": 793, "ports": [26330,26331,26332]}},
+    {"order": 4, "id": "sum-u32-minus", "token": "sum_u32_minus", "fillerSizes": [1073479680,1073479680,1073479680,1073479680], "F": 4293918720, "S": "B32+H+C-M", "archiveGate": "A<B32", "runtime": {"instanceId": 794, "ports": [26340,26341,26342]}},
+    {"order": 5, "id": "sum-u32-at", "token": "sum_u32_at", "fillerSizes": [1073741824,1073741824,1073741824,1073741824], "F": 4294967296, "S": "B32+H+C>B32", "fieldGate": "exactly four DataSize=1073741824", "runtime": {"instanceId": 795, "ports": [26350,26351,26352]}},
+    {"order": 6, "id": "member-u32-max", "token": "member_u32_max", "fillerSizes": [4294967295], "F": 4294967295, "S": "B32+H+C-1>B32", "runtime": {"instanceId": 796, "ports": [26360,26361,26362], "onlyAfterAllValidation": true}},
+    {"order": 7, "id": "member-u32-plus1", "token": "member_u32_plus1", "fillerSizes": [4294967296], "F": 4294967296, "toolOnly": true, "runtime": false, "manualSubstitute": false}
+  ],
+  "uncompressedGate": {
+    "method": 0,
+    "dataSize": "must equal closed source length",
+    "smallControlOriginalSize": [0, "same_as_DataSize"],
+    "largeCaseRule": "each uncompressed member must match the observed small-control convention",
+    "zeroConventionScope": "stored DataSize only; no OriginalSize boundary claim",
+    "outcomes": ["unexpected_uncompressed_field_convention", "not_comparable_compression_changed"]
+  },
+  "validators": {
+    "A": "independent PowerShell/.NET: UInt32, checked UInt64, 64-bit FileStream, fixed buffers",
+    "B": "independent Python: struct.unpack('<5I'), Python integer positions, fixed buffers",
+    "bothMust": ["hash implementation", "bounded NUL strings/properties", "first and only Vers; four remaining fields zero", "exact all-zero 21-byte header terminator", "exact unique member names/order and fixture reserved-zero field", "checked ranges and contiguity", "dataEnd=footerStart", "exact footer/EOF/no trailing byte", "stream SHA-1 pre-footer", "stream SHA-256 source/member/sentinel", "never ReadAllBytes/read(size)/field-sized buffer"],
+    "agreement": ["H,C,F,T,S,A", "all fields/ranges/order", "source/member hashes", "sentinel bytes/hash", "footer SHA-1", "archive SHA-256"]
+  },
+  "packing": {
+    "argv": ["<sourceRoot>", "<emptyBuildDir>", "-packonly", "-clear", "-temp=<caseTemp>", "-prefix=PBOBoundary\\<token>", "-toolsDirectory=<toolRoot>", "-filebank=<retainedExperimentalFileBank>"],
+    "sourceInventory": "isolated root normalized expected set/hash immediately before launch; actual validator tables enforce archive membership",
+    "include": "not passed: static installed help says it directly copies matched files from an absolute wildcard-pattern file; it is not an exhaustive whitelist and no list syntax is inferred",
+    "knownOverridesOnly": "argv/input does not prove all configuration neutralized",
+    "builderOutcomes": ["accepted_exact", "rejected_nonzero", "rejected_error_text", "no_output", "wrong_output_count", "size_wrap_or_truncation", "resource_abort"],
+    "artifactRule": "preserve and parse any produced PBO even when Builder fails; parser outcome stays independent",
+    "otherStages": {"BankRev": "-properties and -logFull exact prefix/member result, no extraction", "DSSignFile": "only after parser agreement; PBO SHA-256 unchanged", "DSCheckSignatures": "exactly one is OK"},
+    "smallControlGate": "all source/Builder/validator A/validator B/agreement/BankRev/sign/check/runtime stages pass before a large case",
+    "manualPbo": "prohibited in this wave"
+  },
+  "runtime": {
+    "probe": {"prefix": "PBOBoundaryProbe", "source": "probe-source/scripts/5_Mission/PBOBoundaryProbe.c", "cfgPatches": "PBOBoundary_Probe requiredAddons[]={DZ_Data}", "cfgMods": "PBOBoundaryProbe dependencies[]={Mission}; mission files PBOBoundaryProbe/scripts/5_Mission", "boundaryTypeDependency": false, "operation": "seven literal paths; OpenFile READ, bounded ReadFile, CloseFile; print opened paths/raw bounded reads/open count only; fixed probe has no PBO hash or parser receipt embedded"},
+    "literalPaths": ["PBOBoundary/small_control/payload/zz_sentinel_small_control.txt", "PBOBoundary/member_i31_minus/payload/zz_sentinel_member_i31_minus.txt", "PBOBoundary/sum_i31_at/payload/zz_sentinel_sum_i31_at.txt", "PBOBoundary/member_i31_at/payload/zz_sentinel_member_i31_at.txt", "PBOBoundary/sum_u32_minus/payload/zz_sentinel_sum_u32_minus.txt", "PBOBoundary/sum_u32_at/payload/zz_sentinel_sum_u32_at.txt", "PBOBoundary/member_u32_max/payload/zz_sentinel_member_u32_max.txt"],
+    "context": "before packing immutable run-context-seed.json contains run/token/nonce/expected raw sentinel/source recipe; after parser receipt atomically write/re-read run-context.json binding seed hash to PBO SHA-256 and both parser receipt hashes; evaluator compares logs to context but never treats metadata as archive bytes",
+    "success": "external evaluator finds exactly one selected-token path and exact raw sentinel/nonce in one matching Print block copied to fresh RPT and script log, then binds external PBO/receipt metadata", "secondsPerCase": 45, "timeoutMeaning": "inconclusive timeout_no_marker only", "knownSmallTimingSecondsApprox": 20.8, "retry": "exact-byte only after sourced falsifiable cause and distinguishing result", "verifySignatures": 0
+  },
+  "processAndStorage": {
+    "process": "captured Windows Job/tree; record root/descendant PID,parent,creation time,image/argv and resource samples; on guard breach preserve evidence, recheck PID+creation time, terminate only captured identities/tree, wait all, prove none remains",
+    "paths": "fresh nonexistent roots; no reparse in root/target/existing ancestors; canonical physical containment; sources no reparse/sparse/compressed and link count exactly one",
+    "allocation": "GetCompressedFileSizeW actual allocated bytes; literal retained+live projection continuously enforced",
+    "guardsGiB": {"ownedCap": 40, "startDisk": 64, "beforeCaseDisk": 48, "beforeCaseMemory": 12, "duringDisk": 40, "duringMemory": 8, "toolPrivate": 16},
+    "cleanup": "only literal canonical receipt paths under recorded run root; verify absence; no glob or case-derived recursive target"
+  },
+  "trialBudget": {"plannedPackaging": 8, "plannedLaunches": 7, "maxRetries": 2, "absolutePackaging": 10, "absoluteLaunches": 9, "sequential": true, "stop": ["small-control stage failure", "source/hash/parser/placement failure", "resource guard", "crash pending classification", "already-discriminating pair", "no longer distinguishing"]},
+  "outcomes": {"parser": ["valid_exact", "invalid_header", "invalid_member_range", "unexpected_compression", "unexpected_uncompressed_field_convention", "footer_or_eof_mismatch", "sentinel_offset_wrong", "payload_hash_mismatch"], "runtime": ["read_exact", "mounted_but_read_failed", "addon_missing_or_skipped", "compile_failed", "process_crash", "timeout_no_marker", "resource_abort"]},
+  "reopenedSources": {
+    "engineApi": {"path": "D:/DayZ Projects/scripts/1_core/proto/ensystem.c", "lines": "382-443", "symbols": ["FileMode", "OpenFile", "ReadFile", "CloseFile"], "sha256": "8BE625999A04DF22813052E93FE658C24C82C97B257EBEF86B106279A95DB188"},
+    "configs": {"AddonBuilder.exe": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1", "embeddedHelp": "reopened static UTF-16BE resource: -include directly copies matched files from absolute wildcard-pattern file; -exclude pattern file; -filebank explicit path", "AddonBuilder.exe.config": "E614FCB04D8E3429FAB70466261F36383DE3BFCD230A058BC196AC0727482BBE", "logger.xml": "1D24D7D4AFB5249EFBEF3435195BBEA4D1A2D6317292637C7F834B69F8470005", "PboUtils/exclude.lst": "F678C872B0E146A51339F4D5C248D7E76ADEF31A80D439AD2FCC2E3CE07D099C", "user.config.bpeqqsem2qv4tdbqrfa1jkk5wv5a3aob": "B52A097818CB036EC72AFD6BD0A6402C5892E1B29AE671115CA977D0348E33C7", "user.config.nzb1gmauh5s0jgksoti3hjv0nqjtardy": "86F88CFCB6F908F26DB0D9882AF35C9D2087A16AE1F9CAC46FEF8028D6A57CB8", "effectiveUserConfig": "unresolved_without_observed_child/config_evidence"},
+    "priorHelpers": {"build": "38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956", "run": "FBAC12CD27A18E254D72CB4F6C9AC5FCF34775BF24D8A3BBD567D980040C4E55", "oldProbeConfig": "342608DA70A53F931D62662683A76BCB1C34C8914FE8DB20D96314B39FBF20D4", "oldProbeScript": "FAF495615C77E372498957487FE63156768B19C1DC2B85CEBE0E801B26E669C2"}
+  },
+  "repairs": [
+    {"id":"C01","disposition":"repaired_pending_review","sources":["directControl","council"],"change":"DataSize exact; OriginalSize zero-or-same control convention; no OriginalSize claim if zero."},
+    {"id":"C02","disposition":"repaired_pending_review","sources":["council"],"change":"shared bracket failure is correlation only; alternatives retained."},
+    {"id":"C03","disposition":"repaired_pending_review","sources":["council","matrix"],"change":"below controls require archive A below threshold."},
+    {"id":"C04","disposition":"repaired_pending_review","sources":["directControl","council"],"change":"two strict bounded streaming validators and exact footer/header/order rules."},
+    {"id":"C05","disposition":"repaired_pending_review","sources":["council","engineApi"],"change":"underscore tokens and standalone exact probe config/path."},
+    {"id":"C06","disposition":"repaired_pending_review","sources":["engineApi","council"],"change":"seven literal bounded reads; raw bytes bind token/nonce while an external immutable context binds PBO/receipt metadata."},
+    {"id":"C07","disposition":"repaired_pending_review","sources":["runtimeTiming","council"],"change":"45-second absence is inconclusive; fresh exact logs and source-gated retry."},
+    {"id":"C08","disposition":"repaired_pending_review","sources":["runHelper","council"],"change":"captured Windows process tree identities/creation times/guards/owned cleanup."},
+    {"id":"C09","disposition":"repaired_pending_review","sources":["council"],"change":"physical ancestry/attributes/link/allocation and continuous 40-GiB projection."},
+    {"id":"C10","disposition":"repaired_pending_review","sources":["council"],"change":"independent stage outcomes, parse preserved artifacts, all small stages before large, no substitute."},
+    {"id":"C11","disposition":"repaired_pending_review","sources":["council"],"change":"compression OriginalSize/DataSize/decompression/mixed boundaries explicit unresolved."},
+    {"id":"C12","disposition":"repaired_pending_review","sources":["configs","council"],"change":"all requested config inputs and static help recorded; effective configuration unresolved unless observed; -include not treated as whitelist and explicit argv limited to proven overrides."},
+    {"id":"C13","disposition":"retained_scoped","sources":["original plan/council"],"change":"none"},
+    {"id":"C14","disposition":"retained","sources":["original plan/council"],"change":"none"},
+    {"id":"C15","disposition":"retained","sources":["original plan/council"],"change":"none"},
+    {"id":"C16","disposition":"retained_after_repairs","sources":["original plan/council"],"change":"none"},
+    {"id":"C17","disposition":"retained_scoped","sources":["original plan/council"],"change":"none"}
+  ],
+  "unresolved": ["native DayZ member/total/cumulative/allocation/footer limits", "all actual tool/parser/runtime results", "compressed OriginalSize/DataSize/decompression/mixed cumulative boundaries", "client/signature enforcement/Workshop/distribution", "other filesystems/builds", "effective per-user AddonBuilder configuration"]
+}

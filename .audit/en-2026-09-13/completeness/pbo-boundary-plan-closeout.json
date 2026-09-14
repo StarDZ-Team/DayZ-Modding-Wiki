@@ -1,0 +1,24 @@
+{
+  "reviewedUtc": "2026-09-14T06:43:23.084868+00:00",
+  "reviewer": "root independent final repair review following Sol council",
+  "decision": "accepted specification for implementation; implemented harness review and all experimental outcomes still pending",
+  "finalFiles": {
+    ".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.md": "6BB0DE45770489FDF0A7801068C59C27BB29ABE78B2A25FB441E9F3A34343D79",
+    ".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.json": "A83E1054EB054221CA0BFD47D45FB00791F53BBF79EA8BA1964141E90A38EA20"
+  },
+  "checks": [
+    "Read full repaired Markdown and JSON against council C01-C12 and retained C13-C17.",
+    "Independently parsed retained 441-byte official-tool PBO: H151, method0/OriginalSize0, stored sizes188/81, contiguous payload end420 and matching SHA1 footer.",
+    "Reopened extracted ensystem.c OpenFile/ReadFile/CloseFile declarations and retained working Mission probe config/source.",
+    "Reopened installed AddonBuilder embedded help and executable config/exclude list; -include is direct-copy pattern input, not archive whitelist; -filebank is documented.",
+    "Required delegated final repairs for external context identity and include semantics; read final revised paragraphs and complete JSON.",
+    "Strict duplicate-key JSON parse, final hashes, eight-case arithmetic, whole-archive below controls and impossible-entry runtime prohibition passed."
+  ],
+  "implementationClarifications": [
+    "Eight planned packaging attempts refer to the eight boundary cases. Record the one fixed small probe setup separately; any rebuild or case retry must be explicitly accounted for and cannot silently evade attempt ceilings.",
+    "No source, packer, signer, game or large-file experiment ran in this final review.",
+    "Implementation must satisfy all source/config, two independent parser, process-tree, allocation, cleanup and small-control gates before large-case execution.",
+    "Compressed layouts, actual runtime limits and broader EN completeness remain open."
+  ],
+  "inspectionLimit": "Initial embedded-help display hit console encoding error after printing include help; bounded ASCII-escaped rerun succeeded. First closeout writer had a shell newline quoting error before execution; corrected writer completed. Neither was a packaging/runtime failure."
+}
