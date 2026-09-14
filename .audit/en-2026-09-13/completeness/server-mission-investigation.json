@@ -1,0 +1,1100 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-09-14T01:05:56.224085+00:00",
+  "report": ".audit/en-2026-09-13/completeness/server-mission-investigation.md",
+  "repoHeadAtStart": "0df58c20761f654cd91ece04d9469be4b1728c6b",
+  "worker": {
+    "agent": "Codex",
+    "exactModel": "not exposed in worker prompt; not inferred",
+    "taskId": "task_dc965e4b02fa",
+    "dispatchId": "ctx_f4fbd59e5a32",
+    "children": 0
+  },
+  "scope": {
+    "englishEditedByWorker": false,
+    "sharedConfigEditedByWorker": false,
+    "committed": false,
+    "buildRun": false
+  },
+  "runtime": {
+    "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ\\DayZDiag_x64.exe",
+    "bytes": 20245560,
+    "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+    "productVersion": "1.29.0.163709"
+  },
+  "packer": {
+    "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\PboUtils\\FileBank.exe",
+    "bytes": 194480,
+    "sha256": "F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF",
+    "exitCode": 0,
+    "arguments": [
+      "-property",
+      "prefix=WikiServerLifecycle",
+      "-dst",
+      "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\mods\\@lifecycle\\Addons",
+      "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\source\\lifecycle"
+    ]
+  },
+  "startup": {
+    "status": "mission-and-owned-game-endpoint-observed",
+    "cause": "Missing instanceId in retained server config",
+    "controlledConfigDelta": "instanceId = 1;",
+    "successfulPid": 47740,
+    "endpoint": "UDP 127.0.0.1:24962",
+    "binaryStringEvidence": {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\native-config-strings.json",
+      "bytes": 150,
+      "sha256": "9C09DF38E56733036267486E066517B94B5D124EF842FEA7F8569EE3D01A4368"
+    },
+    "mixedSlashCase": "Discarded as missing-config launcher error; not cause of prior backslash-based attempts"
+  },
+  "lifecycle": {
+    "status": "bounded-counter-observations-with-subsequent-access-violation",
+    "pid": 33556,
+    "invocation": "GetGame().RestartMission() from scheduled mission-owned callback",
+    "firstCounters": {
+      "Mission": 101,
+      "World": 201
+    },
+    "secondCounters": {
+      "Mission": 101,
+      "World": 202
+    },
+    "missionReloadObserved": true,
+    "sameProcess": true,
+    "exitCode": -1073741819,
+    "exitCodeHex": "0xC0000005",
+    "cleanExitMarkerObserved": false,
+    "adminHashRestartTested": false,
+    "nativeCrashCause": "unresolved"
+  },
+  "limitations": [
+    "Not a healthy restart demonstration",
+    "No authenticated #restart, reconnect, or process-restart probe",
+    "Diagnostic plugin stack and CE data warnings retained",
+    "Query socket bound 0.0.0.0:24963 despite loopback game bind; Steam initialization logged",
+    "No claim of zero external Steam traffic",
+    "No independent council approval in this delivery"
+  ],
+  "remainingPrerequisite": "Isolate callback/CE restoration failure to get stable post-restart operation and clean exit, then test authenticated #restart separately if needed.",
+  "cases": [
+    {
+      "name": "console-control",
+      "process": {
+        "case": "console-control",
+        "pid": 50100,
+        "startedUtc": "2026-09-14T00:54:54.2698235Z",
+        "arguments": [
+          "-server",
+          "-ip=127.0.0.1",
+          "-port=24962",
+          "-profiles=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\console-control",
+          "-storage=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\storage\\console-control",
+          "-config=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation/console-control.cfg",
+          "-mod=D:/StarDZ/docs/wiki/TEMP/wiki-runtime-probes/mods/@server-context",
+          "-doLogs",
+          "-scriptDebug=true",
+          "-noSplash",
+          "-limitFPS=30"
+        ],
+        "samples": [
+          {
+            "cpu": 5.796875,
+            "utc": "2026-09-14T00:55:00.2159586Z",
+            "endpoints": []
+          },
+          {
+            "cpu": 10.1875,
+            "utc": "2026-09-14T00:55:05.3623760Z",
+            "endpoints": []
+          },
+          {
+            "cpu": 12.90625,
+            "utc": "2026-09-14T00:55:10.5401269Z",
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 50100
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 50100
+              }
+            ]
+          },
+          {
+            "cpu": 12.953125,
+            "utc": "2026-09-14T00:55:15.6987229Z",
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 50100
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 50100
+              }
+            ]
+          }
+        ],
+        "exitedBeforeStop": true,
+        "exitCode": -1,
+        "closedUtc": "2026-09-14T00:55:20.7069383Z"
+      },
+      "config": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\console-control.cfg",
+        "bytes": 383,
+        "sha256": "1B21608FFB58628F74DCFD2F053B883933533080A4B76526FF5BBB446D8BE8D6"
+      },
+      "logs": [
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\console-control\\DayZDiag_x64_2026-09-13_21-54-54.RPT",
+          "bytes": 47137,
+          "sha256": "071652847087BD8E70591B4AB63C039E95AAB5F1B4BDC16F23A3F7777E771448",
+          "selectedLines": [
+            {
+              "line": 439,
+              "text": "21:55:08.288 [ERROR][Server config] :: Could not find server config 'D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation/console-control.cfg'. Make sure path is correct."
+            },
+            {
+              "line": 440,
+              "text": "21:55:08.288 [Server] :: termination in: 10"
+            },
+            {
+              "line": 453,
+              "text": "21:55:19.246  --- Termination successfully completed --- "
+            }
+          ]
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\console-control\\script_2026-09-13_21-54-56.log",
+          "bytes": 1432,
+          "sha256": "0AA5BC9784656FC31D8626BA8509BCBD2E5B0FC7072BC10D1BB8A09876BA6D17",
+          "selectedLines": []
+        }
+      ]
+    },
+    {
+      "name": "console-native",
+      "process": {
+        "case": "console-native",
+        "pid": 13756,
+        "startedUtc": "2026-09-14T00:55:58.2008423Z",
+        "arguments": [
+          "-server",
+          "-ip=127.0.0.1",
+          "-port=24962",
+          "-profiles=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\console-native",
+          "-storage=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\storage\\console-native",
+          "-config=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\console-native.cfg",
+          "-mod=D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\mods\\@server-context",
+          "-doLogs",
+          "-scriptDebug=true",
+          "-noSplash",
+          "-limitFPS=30"
+        ],
+        "samples": [
+          {
+            "cpu": 5.4375,
+            "utc": "2026-09-14T00:56:03.9262627Z",
+            "endpoints": []
+          },
+          {
+            "cpu": 9.90625,
+            "utc": "2026-09-14T00:56:09.0748153Z",
+            "endpoints": []
+          },
+          {
+            "cpu": 10.09375,
+            "utc": "2026-09-14T00:56:14.2641057Z",
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 13756
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 13756
+              }
+            ]
+          },
+          {
+            "cpu": 10.140625,
+            "utc": "2026-09-14T00:56:19.4127044Z",
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 13756
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 13756
+              }
+            ]
+          }
+        ],
+        "exitedBeforeStop": true,
+        "exitCode": -1,
+        "closedUtc": "2026-09-14T00:56:24.4233875Z"
+      },
+      "config": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\console-native.cfg",
+        "bytes": 383,
+        "sha256": "1B21608FFB58628F74DCFD2F053B883933533080A4B76526FF5BBB446D8BE8D6"
+      },
+      "logs": [
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\console-native\\DayZDiag_x64_2026-09-13_21-55-58.RPT",
+          "bytes": 46959,
+          "sha256": "364E2ADD342B303E9D0B4A23F542FCF8717ABC291E13BA07D1953FA55CF4931D",
+          "selectedLines": [
+            {
+              "line": 439,
+              "text": "21:56:09.198 [Server] :: termination in: 10"
+            },
+            {
+              "line": 452,
+              "text": "21:56:20.06   --- Termination successfully completed --- "
+            }
+          ]
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\console-native\\script_2026-09-13_21-56-00.log",
+          "bytes": 1431,
+          "sha256": "426E975FA8F3DF7E8D5F94BE79E000FDF2E25AF4AC5E47F0F17C016EA94BF55A",
+          "selectedLines": []
+        }
+      ]
+    },
+    {
+      "name": "instance-id",
+      "process": {
+        "case": "instance-id",
+        "pid": 47740,
+        "startedUtc": "2026-09-14T00:56:52.1203451Z",
+        "arguments": [
+          "-server",
+          "-ip=127.0.0.1",
+          "-port=24962",
+          "-profiles=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\instance-id",
+          "-storage=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\storage\\instance-id",
+          "-config=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\instance-id.cfg",
+          "-mod=D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\mods\\@server-context",
+          "-doLogs",
+          "-scriptDebug=true",
+          "-noSplash",
+          "-limitFPS=30"
+        ],
+        "samples": [
+          {
+            "cpu": 5.546875,
+            "endpoints": [],
+            "utc": "2026-09-14T00:56:57.8720208Z"
+          },
+          {
+            "cpu": 10.03125,
+            "endpoints": [],
+            "utc": "2026-09-14T00:57:03.0262854Z"
+          },
+          {
+            "cpu": 15.671875,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:08.1865086Z"
+          },
+          {
+            "cpu": 20.34375,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:13.3376813Z"
+          },
+          {
+            "cpu": 25.125,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:18.4788089Z"
+          },
+          {
+            "cpu": 29.6875,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:23.6444759Z"
+          },
+          {
+            "cpu": 34.703125,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:28.7804436Z"
+          },
+          {
+            "cpu": 40.015625,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:33.9446567Z"
+          },
+          {
+            "cpu": 44.96875,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:39.0564035Z"
+          },
+          {
+            "cpu": 50.09375,
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 47740
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 47740
+              }
+            ],
+            "utc": "2026-09-14T00:57:44.2089071Z"
+          }
+        ],
+        "exitedBeforeStop": false,
+        "exitCode": -1,
+        "closedUtc": "2026-09-14T00:57:45.1470027Z"
+      },
+      "config": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\instance-id.cfg",
+        "bytes": 402,
+        "sha256": "6B58D738CD4C41DC78EA9A8DA46CD3E71642CB5B87082A1E37EFEDAE39A5F694"
+      },
+      "logs": [
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\instance-id\\DayZDiag_x64_2026-09-13_21-56-52.RPT",
+          "bytes": 483706,
+          "sha256": "DC069FBC0C6A5E822F8AE79680EAE7A2EAA5E6544F5EE77E8D6DD92D0F10A0BB",
+          "selectedLines": [
+            {
+              "line": 439,
+              "text": "21:57:04.187 SUCCESS: SteamGameServer_Init(7f000001,8766,24962,24963,3,1.29.163709)"
+            },
+            {
+              "line": 1407,
+              "text": "21:57:20.180  SCRIPT       : Module: Mission; loaded 210x files; 444x classes; used 3652/33554 kB (10) of static memory; defines: \"DAYZ_1_29,SERVER_FOR_WINDOWS,SERVER,PLATFORM_WINDOWS,DIAG,DIAG_DEVELOPER,NO_GUI,NO_GUI_INGAME,sakhal,WikiRuntimeServerContext,DayZ,FEATURE_CURSOR,FEATURE_NETWORK_RECONCILIATION,FEATURE_NETWORK_RECONCILATION,LOG_TO_FILE,LOG_TO_SCRIPT,ENABLE_CAROUSEL\"; CRC32: 00000000"
+            },
+            {
+              "line": 1418,
+              "text": "21:57:20.327  SCRIPT       : RTP:SERVER:BEGIN"
+            },
+            {
+              "line": 1419,
+              "text": "21:57:20.327  SCRIPT       : RTP:SERVER:IS_SERVER=true"
+            },
+            {
+              "line": 1420,
+              "text": "21:57:20.327  SCRIPT       : RTP:SERVER:IS_MULTIPLAYER=true"
+            },
+            {
+              "line": 1421,
+              "text": "21:57:20.327  SCRIPT       : RTP:SERVER:DEFINE=1"
+            },
+            {
+              "line": 1422,
+              "text": "21:57:20.327  SCRIPT       : RTP:SERVER:END"
+            }
+          ]
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\instance-id\\script_2026-09-13_21-56-54.log",
+          "bytes": 3192,
+          "sha256": "5D0365B39C2A0369D053C363F87035B024AA63B533724D4A11EFC4F9700F2E91",
+          "selectedLines": [
+            {
+              "line": 9,
+              "text": " SCRIPT       : Module: Mission; loaded 210x files; 444x classes; used 3652/33554 kB (10%) of static memory; defines: \"DAYZ_1_29,SERVER_FOR_WINDOWS,SERVER,PLATFORM_WINDOWS,DIAG,DIAG_DEVELOPER,NO_GUI,NO_GUI_INGAME,sakhal,WikiRuntimeServerContext,DayZ,FEATURE_CURSOR,FEATURE_NETWORK_RECONCILIATION,FEATURE_NETWORK_RECONCILATION,LOG_TO_FILE,LOG_TO_SCRIPT,ENABLE_CAROUSEL\"; CRC32: 00000000"
+            },
+            {
+              "line": 20,
+              "text": " SCRIPT       : RTP:SERVER:BEGIN"
+            },
+            {
+              "line": 21,
+              "text": " SCRIPT       : RTP:SERVER:IS_SERVER=true"
+            },
+            {
+              "line": 22,
+              "text": " SCRIPT       : RTP:SERVER:IS_MULTIPLAYER=true"
+            },
+            {
+              "line": 23,
+              "text": " SCRIPT       : RTP:SERVER:DEFINE=1"
+            },
+            {
+              "line": 24,
+              "text": " SCRIPT       : RTP:SERVER:END"
+            }
+          ]
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\instance-id\\server_console.log",
+          "bytes": 45458,
+          "sha256": "3458AD80F8C90D17DCB93592FBCD0B3D1FC7CC5217246E9BA5BB6EDA16E0CBE8",
+          "selectedLines": [
+            {
+              "line": 1,
+              "text": "21:57:04 SUCCESS: SteamGameServer_Init(7f000001,8766,24962,24963,3,1.29.163709)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lifecycle",
+      "process": {
+        "case": "lifecycle",
+        "pid": 33556,
+        "startedUtc": "2026-09-14T01:00:31.8115176Z",
+        "arguments": [
+          "-server",
+          "-ip=127.0.0.1",
+          "-port=24962",
+          "-profiles=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\lifecycle",
+          "-storage=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\storage\\lifecycle",
+          "-config=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\lifecycle.cfg",
+          "-mod=D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\mods\\@lifecycle",
+          "-doLogs",
+          "-scriptDebug=true",
+          "-noSplash",
+          "-limitFPS=30"
+        ],
+        "samples": [
+          {
+            "endpoints": [],
+            "utc": "2026-09-14T01:00:37.6194567Z",
+            "cpu": 5.46875
+          },
+          {
+            "endpoints": [],
+            "utc": "2026-09-14T01:00:42.7763790Z",
+            "cpu": 9.609375
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:00:47.9377596Z",
+            "cpu": 14.859375
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:00:53.1113339Z",
+            "cpu": 19.40625
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:00:58.3045673Z",
+            "cpu": 23.875
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:01:03.4658972Z",
+            "cpu": 28.1875
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:01:08.6262937Z",
+            "cpu": 32.609375
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:01:13.7749053Z",
+            "cpu": 37.78125
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:01:18.9376185Z",
+            "cpu": 44.28125
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:01:24.1199798Z",
+            "cpu": 49.734375
+          },
+          {
+            "endpoints": [
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24964,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "0.0.0.0",
+                "LocalPort": 24963,
+                "OwningProcess": 33556
+              },
+              {
+                "LocalAddress": "127.0.0.1",
+                "LocalPort": 24962,
+                "OwningProcess": 33556
+              }
+            ],
+            "utc": "2026-09-14T01:01:29.2801891Z",
+            "cpu": 54.84375
+          }
+        ],
+        "exitedBeforeStop": true,
+        "exitCode": -1073741819,
+        "closedUtc": "2026-09-14T01:01:34.2933709Z"
+      },
+      "config": {
+        "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\lifecycle.cfg",
+        "bytes": 391,
+        "sha256": "497812C524961B54022647F4C5CB7521A9D9E537F6498FC1F73A048CF9060E5B"
+      },
+      "logs": [
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\lifecycle\\DayZDiag_x64_2026-09-13_22-00-31.RPT",
+          "bytes": 524250,
+          "sha256": "31B700F6059A7D83F3B45E8F5CA4810ED7FA0168B9C90A309901A1860C93D2A5",
+          "selectedLines": [
+            {
+              "line": 440,
+              "text": "22:00:45.94  SUCCESS: SteamGameServer_Init(7f000001,8766,24962,24963,3,1.29.163709)"
+            },
+            {
+              "line": 1408,
+              "text": "22:00:55.770  SCRIPT       : Module: Mission; loaded 210x files; 445x classes; used 3653/33554 kB (10) of static memory; defines: \"DAYZ_1_29,SERVER_FOR_WINDOWS,SERVER,PLATFORM_WINDOWS,DIAG,DIAG_DEVELOPER,NO_GUI,NO_GUI_INGAME,sakhal,WikiServerLifecycle,DayZ,FEATURE_CURSOR,FEATURE_NETWORK_RECONCILIATION,FEATURE_NETWORK_RECONCILATION,LOG_TO_FILE,LOG_TO_SCRIPT,ENABLE_CAROUSEL\"; CRC32: 00000000"
+            },
+            {
+              "line": 1419,
+              "text": "22:00:55.864  SCRIPT       : SMI:ON_INIT:BEFORE_SUPER"
+            },
+            {
+              "line": 1420,
+              "text": "22:00:55.875  SCRIPT       : SMI:ON_INIT:MISSION_STATIC=101 WORLD_STATIC=201"
+            },
+            {
+              "line": 1421,
+              "text": "22:00:55.876  SCRIPT       : SMI:CONTEXT:SERVER=true MULTIPLAYER=true"
+            },
+            {
+              "line": 1440,
+              "text": "22:00:56.43   SCRIPT       : SMI:ON_MISSION_START"
+            },
+            {
+              "line": 4752,
+              "text": "22:01:19.593 SCRIPT       : SMI:RESTART_MISSION:CALL"
+            },
+            {
+              "line": 4753,
+              "text": "22:01:20.101 SCRIPT       : SMI:ON_MISSION_FINISH:MISSION_STATIC=101 WORLD_STATIC=201"
+            },
+            {
+              "line": 4754,
+              "text": "22:01:20.101 SCRIPT       : SMI:MISSION_SERVER:DESTRUCTOR"
+            },
+            {
+              "line": 4755,
+              "text": "22:01:20.651 SCRIPT       : Module: Mission; loaded 210x files; 445x classes; used 3649/33554 kB (10) of static memory; defines: \"DAYZ_1_29,SERVER_FOR_WINDOWS,SERVER,PLATFORM_WINDOWS,DIAG,DIAG_DEVELOPER,NO_GUI,NO_GUI_INGAME,sakhal,WikiServerLifecycle,DayZ,FEATURE_CURSOR,FEATURE_NETWORK_RECONCILIATION,FEATURE_NETWORK_RECONCILATION,LOG_TO_FILE,LOG_TO_SCRIPT,ENABLE_CAROUSEL\"; CRC32: 00000000"
+            },
+            {
+              "line": 4766,
+              "text": "22:01:20.758 SCRIPT       : SMI:ON_INIT:BEFORE_SUPER"
+            },
+            {
+              "line": 4767,
+              "text": "22:01:20.758 SCRIPT       : SMI:ON_INIT:MISSION_STATIC=101 WORLD_STATIC=202"
+            },
+            {
+              "line": 4768,
+              "text": "22:01:20.758 SCRIPT       : SMI:CONTEXT:SERVER=true MULTIPLAYER=true"
+            },
+            {
+              "line": 4769,
+              "text": "22:01:20.774 SCRIPT       : SMI:ON_MISSION_START"
+            }
+          ]
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\lifecycle\\script_2026-09-13_22-00-34.log",
+          "bytes": 5060,
+          "sha256": "6A285E1FF7ED2AF3A16E5E4F3F1E1798B3BA50FBBC15D08F077016E4ECD5E427",
+          "selectedLines": [
+            {
+              "line": 9,
+              "text": " SCRIPT       : Module: Mission; loaded 210x files; 445x classes; used 3653/33554 kB (10%) of static memory; defines: \"DAYZ_1_29,SERVER_FOR_WINDOWS,SERVER,PLATFORM_WINDOWS,DIAG,DIAG_DEVELOPER,NO_GUI,NO_GUI_INGAME,sakhal,WikiServerLifecycle,DayZ,FEATURE_CURSOR,FEATURE_NETWORK_RECONCILIATION,FEATURE_NETWORK_RECONCILATION,LOG_TO_FILE,LOG_TO_SCRIPT,ENABLE_CAROUSEL\"; CRC32: 00000000"
+            },
+            {
+              "line": 20,
+              "text": " SCRIPT       : SMI:ON_INIT:BEFORE_SUPER"
+            },
+            {
+              "line": 21,
+              "text": " SCRIPT       : SMI:ON_INIT:MISSION_STATIC=101 WORLD_STATIC=201"
+            },
+            {
+              "line": 22,
+              "text": " SCRIPT       : SMI:CONTEXT:SERVER=true MULTIPLAYER=true"
+            },
+            {
+              "line": 23,
+              "text": " SCRIPT       : SMI:ON_MISSION_START"
+            },
+            {
+              "line": 24,
+              "text": "SCRIPT       : SMI:RESTART_MISSION:CALL"
+            },
+            {
+              "line": 25,
+              "text": "SCRIPT       : SMI:ON_MISSION_FINISH:MISSION_STATIC=101 WORLD_STATIC=201"
+            },
+            {
+              "line": 26,
+              "text": "SCRIPT       : SMI:MISSION_SERVER:DESTRUCTOR"
+            },
+            {
+              "line": 27,
+              "text": "SCRIPT       : Module: Mission; loaded 210x files; 445x classes; used 3649/33554 kB (10%) of static memory; defines: \"DAYZ_1_29,SERVER_FOR_WINDOWS,SERVER,PLATFORM_WINDOWS,DIAG,DIAG_DEVELOPER,NO_GUI,NO_GUI_INGAME,sakhal,WikiServerLifecycle,DayZ,FEATURE_CURSOR,FEATURE_NETWORK_RECONCILIATION,FEATURE_NETWORK_RECONCILATION,LOG_TO_FILE,LOG_TO_SCRIPT,ENABLE_CAROUSEL\"; CRC32: 00000000"
+            },
+            {
+              "line": 38,
+              "text": "SCRIPT       : SMI:ON_INIT:BEFORE_SUPER"
+            },
+            {
+              "line": 39,
+              "text": "SCRIPT       : SMI:ON_INIT:MISSION_STATIC=101 WORLD_STATIC=202"
+            },
+            {
+              "line": 40,
+              "text": "SCRIPT       : SMI:CONTEXT:SERVER=true MULTIPLAYER=true"
+            },
+            {
+              "line": 41,
+              "text": "SCRIPT       : SMI:ON_MISSION_START"
+            }
+          ]
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\lifecycle\\server_console.log",
+          "bytes": 62007,
+          "sha256": "287769688C25A1BEE715A6736ACD7998430C2F63D72C015AC5C5CCBE3D1307F8",
+          "selectedLines": [
+            {
+              "line": 1,
+              "text": "22:00:45 SUCCESS: SteamGameServer_Init(7f000001,8766,24962,24963,3,1.29.163709)"
+            }
+          ]
+        },
+        {
+          "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\profiles\\lifecycle\\smi-restart-requested.txt",
+          "bytes": 58,
+          "sha256": "66A3F4C3CCF53B0AF6173BD8565618F8B624395159F9F10FFFC9B5D16600A501"
+        }
+      ]
+    }
+  ],
+  "sourceSnapshots": [
+    {
+      "original": "D:/DayZ Projects/scripts/3_game/global/game.c",
+      "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\DayZ Projects\\scripts\\3_game\\global\\game.c"
+    },
+    {
+      "original": "D:/DayZ Projects/scripts/3_game/dayzgame.c",
+      "sha256": "75CD42B6CBE689F0903F23CDEE46FD41545946B0046D3816B15B4F36044C8992",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\DayZ Projects\\scripts\\3_game\\dayzgame.c"
+    },
+    {
+      "original": "D:/DayZ Projects/scripts/5_mission/mission/missionserver.c",
+      "sha256": "92A2FF171ED550BF2E93E7C983479613CFB0EE7A521D7C1958CECA9647B786F0",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\DayZ Projects\\scripts\\5_mission\\mission\\missionserver.c"
+    },
+    {
+      "original": "D:/DayZ Projects/scripts/5_mission/mission/missionbase.c",
+      "sha256": "144F347CD3BA41B01A0BC2C70D86E6D977755D3D141B64FD27F4E8CB4C913096",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\DayZ Projects\\scripts\\5_mission\\mission\\missionbase.c"
+    },
+    {
+      "original": "D:/DayZ Projects/scripts/5_mission/gui/ingamemenuxbox.c",
+      "sha256": "BDF8060E99ACD2A89C11A97C94CCE66F26717BCFDE69407AE49F20123C24D388",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\DayZ Projects\\scripts\\5_mission\\gui\\ingamemenuxbox.c"
+    },
+    {
+      "original": "D:/DayZ Projects/scripts/4_world/plugins/pluginbase/pluginitemdiagnostic.c",
+      "sha256": "18B1ABEA401E37EF8AA10A97BA92A673B82F2C15D911C8E89AF4BCF112DA25BD",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\DayZ Projects\\scripts\\4_world\\plugins\\pluginbase\\pluginitemdiagnostic.c"
+    },
+    {
+      "original": "D:/DayZ Projects/scripts/4_world/plugins/pluginmanager.c",
+      "sha256": "7FF3EFA542441C33A1EC5E617B719907086D4EAAB406F2D2A0DB150CB4A7E3EA",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\DayZ Projects\\scripts\\4_world\\plugins\\pluginmanager.c"
+    },
+    {
+      "original": "D:/StarDZ/docs/DayZ/Server Configuration.md",
+      "sha256": "D7126F849E9A460887A3B640068CA8C88304324EDFD3AFA1526AE69E4BECAA8E",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\StarDZ\\docs\\DayZ\\Server Configuration.md"
+    },
+    {
+      "original": "D:/StarDZ/docs/DayZ/Modding Basics.md",
+      "sha256": "1A0B2C1F7A69E369E74D923CB77D4716B9DD21941B0C02DA5015FA7F708B5839",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\StarDZ\\docs\\DayZ\\Modding Basics.md"
+    },
+    {
+      "original": "D:/StarDZ/docs/DayZ/Workbench Script Debugging.md",
+      "sha256": "2E46B120066884C1D2EE5B10705D4214C35DFB08B69249100E7DF00F10146F16",
+      "retained": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\local-snapshots\\D\\StarDZ\\docs\\DayZ\\Workbench Script Debugging.md"
+    }
+  ],
+  "extraSourcesOpened": [
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\reference\\DayZ-Central-Economy\\README.md",
+      "bytes": 1568,
+      "sha256": "F371A0A1304937189CC94ACEA68A03357D2A736AA2F013B423D2AB0504C4A697"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\reference\\DayZ-Central-Economy\\dayzOffline.chernarusplus\\init.c",
+      "bytes": 2788,
+      "sha256": "73658FCA45ADE1C54D7EE729B31F78F3C27B46282FFD3D503D10B524B8A20AFB"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\DayZ-Samples\\README.md",
+      "bytes": 1348,
+      "sha256": "FFFBAA0D9CCB00B69448F695BDF01ADB13F7E585095F03FD6BA27CB35BF4CC7F"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\reference\\DayZ-Samples\\Test_Inputs\\config.cpp",
+      "bytes": 476,
+      "sha256": "71B869D713C15D38037B0B8B6CC682CCAEA03599DDFF370DA786D42CD813121C"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\server-probe.cfg",
+      "bytes": 348,
+      "sha256": "5B37008FE2C422BD138193E6DDDFAEA7D42E70A71A607DB71CF8757927802C0F"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\source\\server-context\\config.cpp",
+      "bytes": 332,
+      "sha256": "564F996B9BFDC922941A85AE3D58FD8239ADD31D652793686C7F9B5EC7700B01"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\source\\server-context\\Scripts\\5_Mission\\runtime_server_context.c",
+      "bytes": 378,
+      "sha256": "DDCFEFAFF148ADA1BEF008E8D6DF3FC6CC8C226EBACE9AB745C244B61C8D1E37"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\mods\\@server-context\\Addons\\server-context.pbo",
+      "bytes": 957,
+      "sha256": "83CBDBD50A1C2CBEAE2343875A340E6BEC10EDF9A5166403457AB429253A701F"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\wiki-runtime-probes\\source\\baseline\\Scripts\\5_Mission\\runtime_baseline.c",
+      "bytes": 1426,
+      "sha256": "18A69ED1C8E7465300FF6D712EF1BC0FCBF139FE963F12D843C14ED2F75F0B17"
+    }
+  ],
+  "repositories": [
+    {
+      "url": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "status": ""
+    },
+    {
+      "url": "https://github.com/BohemiaInteractive/DayZ-Samples.git",
+      "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "status": ""
+    }
+  ],
+  "web": {
+    "accessDateLocal": "2026-09-13",
+    "officialServerConfig": "https://community.bistudio.com/wiki/DayZ%3AServer_Configuration",
+    "accessKind": "official-page text from web search index; no fresh full-body fetch claimed",
+    "githubApiOpen": "web tool safe-open failure; git clone succeeded"
+  },
+  "ceCopyVerification": {
+    "filesCompared": 43,
+    "allByteEqual": true
+  },
+  "priorReportCloseoutHashes": [
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\runtime-startup.md",
+      "bytes": 13920,
+      "sha256": "4F37104E11846A9A0B505200B673649EA2E47E478C0535350A3F1E3B60A60A42"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\runtime-startup.json",
+      "bytes": 13231,
+      "sha256": "BE842B97CDC82EE61570EECC22F25C0DE2ACFC5348126DCFFB1331AAD2D888CD"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\runtime-council.md",
+      "bytes": 15177,
+      "sha256": "7C5EBB815DB7D2508E51EA4A99B01612E272565C6FAE0F2DE2CAF4497DD2FD69"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\runtime-council.json",
+      "bytes": 3580,
+      "sha256": "07F1F69A51964F696F62896E16F05562E763C7D1211D1E5018938A0D6E4A829A"
+    }
+  ],
+  "cleanup": {
+    "checkedUtc": "2026-09-14T01:05:55.9296985Z",
+    "testEndpoints": [],
+    "selfExited": [
+      50100,
+      13756,
+      33556
+    ],
+    "stoppedByHarness": [
+      47740
+    ],
+    "ownedPids": [
+      50100,
+      13756,
+      47740,
+      33556
+    ],
+    "dayzProcesses": [],
+    "remainingOwnedPidRows": []
+  },
+  "manifest": "D:\\StarDZ\\docs\\wiki\\TEMP\\server-mission-investigation\\evidence-manifest.json"
+}

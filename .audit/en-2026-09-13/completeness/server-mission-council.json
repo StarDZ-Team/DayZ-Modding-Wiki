@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-09-14T01:18:24.1694938Z",
+  "report": ".audit/en-2026-09-13/completeness/server-mission-council.md",
+  "repoHead": "0df58c20761f654cd91ece04d9469be4b1728c6b",
+  "worker": {
+    "agent": "Codex",
+    "taskId": "task_5ff0780334c4",
+    "dispatchId": "ctx_4389a40372e6",
+    "children": 0
+  },
+  "scope": {
+    "verdict": "accepted-with-scope-qualifications",
+    "englishEdited": false,
+    "originalInvestigationArtifactsEdited": false,
+    "committed": false,
+    "newLifecycleLaunchRun": false,
+    "publicServerConnection": false,
+    "firewallOrAccountChange": false,
+    "productionCertification": false
+  },
+  "runtime": {
+    "path": "D:/SteamLibrary/steamapps/common/DayZ/DayZDiag_x64.exe",
+    "bytes": 20245560,
+    "productVersion": "1.29.0.163709",
+    "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+    "binaryDiagnostic": {
+      "offset": "0xED3050",
+      "text": "[ERROR][Server config] :: instanceId parameter is mandatory and must be valid 32-bit integer.",
+      "observedInFailedLog": false
+    }
+  },
+  "packer": {
+    "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/FileBank.exe",
+    "bytes": 194480,
+    "sha256": "F89AAEB22421B9158FBBF173F75D52B6F3DE69986CB462E58956C78DA82C4CAF",
+    "versionFields": "blank",
+    "retainedPackExitCode": 0,
+    "retainedArguments": [
+      "-property",
+      "prefix=WikiServerLifecycle",
+      "-dst",
+      "D:/StarDZ/docs/wiki/TEMP/server-mission-investigation/mods/@lifecycle/Addons",
+      "D:/StarDZ/docs/wiki/TEMP/server-mission-investigation/source/lifecycle"
+    ]
+  },
+  "independentStartup": {
+    "root": "TEMP/server-mission-council",
+    "ports": {
+      "game": 25972,
+      "query": 25973,
+      "additionalOwned": 25974
+    },
+    "hiddenLaunch": {
+      "useShellExecute": false,
+      "windowStyle": "Hidden",
+      "createNoWindow": true,
+      "argumentListElements": true
+    },
+    "configDelta": "instanceId = 1;",
+    "missingInstance": {
+      "pid": 48988,
+      "startedUtc": "2026-09-14T01:10:54.9055065Z",
+      "closedUtc": "2026-09-14T01:11:25.6412444Z",
+      "boundSeconds": 35,
+      "exitedBeforeCleanup": true,
+      "killedByHarness": false,
+      "exitCodeSigned": -1,
+      "exitCodeHex": "0xFFFFFFFF",
+      "highestScriptModule": "World",
+      "missionModuleObserved": false,
+      "missionOnInitMarkerObserved": false,
+      "serverConsoleObserved": false,
+      "ownedEndpointSamples": [
+        {
+          "utc": "2026-09-14T01:11:10.3557461Z",
+          "endpoints": ["127.0.0.1:25972/UDP", "127.0.0.1:25974/UDP"]
+        },
+        {
+          "utc": "2026-09-14T01:11:15.5036047Z",
+          "endpoints": ["127.0.0.1:25972/UDP", "127.0.0.1:25974/UDP"]
+        }
+      ],
+      "rptSelectedLines": {
+        "440-449": "ten-second server termination countdown",
+        "453": "Termination successfully completed"
+      }
+    },
+    "instanceId1": {
+      "pid": 61376,
+      "startedUtc": "2026-09-14T01:12:07.5594318Z",
+      "closedUtc": "2026-09-14T01:13:05.1252747Z",
+      "boundSeconds": 55,
+      "exitedBeforeCleanup": false,
+      "killedByHarness": true,
+      "exitCodeSigned": -1,
+      "exitCodeHex": "0xFFFFFFFF",
+      "missionModuleObserved": true,
+      "missionInitObserved": true,
+      "missionOnInitMarkerObserved": true,
+      "scriptSelectedLines": {
+        "9": "Module: Mission",
+        "10": "mission init.c",
+        "20": "RTP:SERVER:BEGIN",
+        "21": "RTP:SERVER:IS_SERVER=true",
+        "22": "RTP:SERVER:IS_MULTIPLAYER=true",
+        "23": "RTP:SERVER:DEFINE=1",
+        "24": "RTP:SERVER:END"
+      },
+      "rptSelectedLines": {
+        "439": "SUCCESS: SteamGameServer_Init(7f000001,8766,25972,25973,3,1.29.163709)",
+        "1418-1422": "RTP server-context markers"
+      },
+      "endpointOwnership": {
+        "firstObservedUtc": "2026-09-14T01:12:22.9790110Z",
+        "lastObservedUtc": "2026-09-14T01:13:04.1772301Z",
+        "everySampleInRangeOwnedByPid": true,
+        "game": "127.0.0.1:25972/UDP",
+        "additional": "127.0.0.1:25974/UDP",
+        "query": "0.0.0.0:25973/UDP",
+        "wholeProcessLoopbackOnly": false
+      }
+    }
+  },
+  "retainedLifecycle": {
+    "pid": 33556,
+    "invocation": "GetGame().RestartMission() from a scheduled MissionServer-owned callback",
+    "newLaunchByCouncil": false,
+    "first": {"missionStatic": 101, "worldStatic": 201},
+    "second": {"missionStatic": 101, "worldStatic": 202},
+    "missionModuleReloadObserved": true,
+    "missionInitReloadObserved": true,
+    "worldModuleReloadObserved": false,
+    "samePid": true,
+    "restartReturnMarkerObserved": false,
+    "cleanExitMarkerObserved": false,
+    "exitedBeforeHarnessStop": true,
+    "exitCodeSigned": -1073741819,
+    "exitCodeHex": "0xC0000005",
+    "adminHashRestartTested": false,
+    "nativeCrashCause": "unresolved",
+    "privateMissionComparison": {"officialFiles": 43, "privateFiles": 43, "hashDifferences": []}
+  },
+  "sourceProvenance": {
+    "centralEconomy": {
+      "url": "https://github.com/BohemiaInteractive/DayZ-Central-Economy.git",
+      "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "worktreeClean": true
+    },
+    "dayzSamples": {
+      "url": "https://github.com/BohemiaInteractive/DayZ-Samples.git",
+      "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "worktreeClean": true
+    },
+    "officialServerConfiguration": {
+      "url": "https://community.bistudio.com/wiki/DayZ:Server_Configuration",
+      "attemptedUtc": "2026-09-14T01:16:33.3395240Z",
+      "result": "HTTP 403; no fresh full body reviewed",
+      "localSnapshotUsedAsCurrentProof": false
+    }
+  },
+  "dispositions": {
+    "accepted": [
+      "The controlled missing-instanceId versus instanceId=1 transition is reproduced for DayZDiag 1.29.0.163709.",
+      "The successful run reached modded MissionServer.OnInit with server and multiplayer true and retained a PID-owned game endpoint through the bound.",
+      "The query socket bound 0.0.0.0, so the entire process was not loopback-only.",
+      "In the retained direct RestartMission run, the tested Mission static reinitialized and the tested World static persisted in one PID.",
+      "The lifecycle run exited with 0xC0000005 and did not demonstrate clean restart operation."
+    ],
+    "rejected": [
+      "The whole successful process was loopback-only.",
+      "The lifecycle probe is a safe reusable restart implementation.",
+      "Direct GetGame().RestartMission() is equivalent to authenticated admin #restart.",
+      "The truncated landscape warning or CE restoration is the proven crash cause.",
+      "These diagnostic probes certify public or production servers."
+    ],
+    "unresolved": [
+      "Why the failed log does not print the executable's missing-instanceId diagnostic.",
+      "The native cause of 0xC0000005.",
+      "Stable post-restart operation and clean exit.",
+      "Authenticated #restart lifecycle semantics.",
+      "Static behavior beyond the two tested fields, modules, and build.",
+      "Fresh full-body official Server Configuration page review because the direct request returned HTTP 403."
+    ]
+  },
+  "proposedEnglish": [
+    {
+      "path": "en/09-server-admin/03-server-cfg.md",
+      "action": "replace instanceId table row",
+      "text": "| `instanceId` | int | required in the tested build; no default established | Identifies the server instance and selects persistence under `storage_<instanceId>/`. In a controlled DayZDiag `1.29.0.163709` startup, omitting this key terminated before the Mission module loaded; adding only `instanceId = 1;` let `MissionServer.OnInit()` run and selected `storage_1`. Set an explicit, unique 32-bit integer for each instance. This scoped diagnostic result is not production-server certification. |"
+    },
+    {
+      "path": "en/09-server-admin/01-server-setup.md",
+      "action": "add after sample serverDZ.cfg block",
+      "text": "Keep `instanceId` explicit. In a controlled DayZDiag `1.29.0.163709` test, a config without it terminated before the Mission module loaded, while the otherwise identical config with `instanceId = 1;` reached `MissionServer.OnInit()`. This verifies the diagnostic startup path only; it does not certify `DayZServer_x64.exe`, client connectivity, or public production hosting."
+    },
+    {
+      "path": "en/09-server-admin/01-server-setup.md",
+      "action": "add to local-server verification discussion",
+      "text": "A loopback game bind does not prove that every socket in the process is loopback-only. In the same diagnostic run, the game endpoint was `127.0.0.1:<game-port>` but the configured Steam query endpoint was `0.0.0.0:<steamQueryPort>`. Check each PID-owned endpoint and your firewall separately; a wildcard bind alone does not prove public reachability."
+    },
+    {
+      "path": "en/01-enforce-script/08-memory-management.md",
+      "action": "replace first paragraph under Static State and Mission Lifecycle",
+      "text": "A controlled DayZDiag `1.29.0.163709` dedicated-server probe called `GetGame().RestartMission()` once from a `MissionServer` callback. In the same PID, the Mission script module and mission `init.c` loaded again: a Mission-module `static int` initializer ran again (`100` to `101` in each `OnInit()`), while a World-module `static int` was not reinitialized and advanced from `201` to `202`. The process then exited with `0xC0000005` before its clean-exit marker, so treat this as a bounded module-lifetime observation—not a safe restart recipe or evidence about authenticated `#restart`, reconnects, or process restarts."
+    }
+  ],
+  "cleanup": {
+    "checkedUtc": "2026-09-14T01:18:24.1694938Z",
+    "ownedPids": [48988, 61376],
+    "ownedPidProcesses": [],
+    "allDayZDiagOrServerProcesses": [],
+    "ownedOrTestPortEndpoints": [],
+    "receipt": "TEMP/server-mission-council/cleanup.json",
+    "receiptSha256": "A1FAE3000C8CFB2A19AC5F1D39576F03ABB4F8A40991DE94D9CCC9BFA95A5477"
+  },
+  "reviewedHashes": [
+    ["AGENTS.md", "6B905799605B8256D52AA49CB86969F6777FCEE41C16CC92F7FBEE1641E54CB8"],
+    ["CLAUDE.md", "66139889A8A85D657C514B757EF6C6DF5A1A2183B851C689C3F42A57B2518F9B"],
+    [".audit/en-2026-09-13/completeness/server-mission-investigation.md", "71F0DC51C1D094951FC4AEBF736B1B49D7D3098849E1E1BE16282EB89BE18269"],
+    [".audit/en-2026-09-13/completeness/server-mission-investigation.json", "241F2EC02B1E4689654EB65E9C98AF5B726B740DF041E720861B2503E1CE3A05"],
+    ["TEMP/server-mission-investigation/console-native.cfg", "1B21608FFB58628F74DCFD2F053B883933533080A4B76526FF5BBB446D8BE8D6"],
+    ["TEMP/server-mission-investigation/instance-id.cfg", "6B58D738CD4C41DC78EA9A8DA46CD3E71642CB5B87082A1E37EFEDAE39A5F694"],
+    ["TEMP/server-mission-investigation/launch-control-retained.ps1", "66A3D1DF4600F726E7A1B0E41DBB80ADF78A9BC44BBC0FDCD1C7169B96F0C0D6"],
+    ["TEMP/server-mission-investigation/console-native.arguments.json", "C08CDFABF5ED89B13A75DE3A2225D671E6D61EF36E7B1379FEE53F9F1790E975"],
+    ["TEMP/server-mission-investigation/console-native.process.json", "F9CEA541C683DDFA6A78CC20E83F866196F55867C8AA8172B75C8663F1E66667"],
+    ["TEMP/server-mission-investigation/instance-id.arguments.json", "BFA246BD3FC478BACF71EAA31B944F9F51F67EC8992C5E884928A1E018957D65"],
+    ["TEMP/server-mission-investigation/instance-id.process.json", "B0EE658C4CFAA758411B28DB3B999FFED1C46526A3F2802EFA1B50CA1E2BEC9E"],
+    ["TEMP/server-mission-investigation/native-config-strings.json", "9C09DF38E56733036267486E066517B94B5D124EF842FEA7F8569EE3D01A4368"],
+    ["TEMP/server-mission-investigation/profiles/console-native/DayZDiag_x64_2026-09-13_21-55-58.RPT", "364E2ADD342B303E9D0B4A23F542FCF8717ABC291E13BA07D1953FA55CF4931D"],
+    ["TEMP/server-mission-investigation/profiles/console-native/script_2026-09-13_21-56-00.log", "426E975FA8F3DF7E8D5F94BE79E000FDF2E25AF4AC5E47F0F17C016EA94BF55A"],
+    ["TEMP/server-mission-investigation/profiles/instance-id/DayZDiag_x64_2026-09-13_21-56-52.RPT", "DC069FBC0C6A5E822F8AE79680EAE7A2EAA5E6544F5EE77E8D6DD92D0F10A0BB"],
+    ["TEMP/server-mission-investigation/profiles/instance-id/script_2026-09-13_21-56-54.log", "5D0365B39C2A0369D053C363F87035B024AA63B533724D4A11EFC4F9700F2E91"],
+    ["TEMP/server-mission-investigation/profiles/instance-id/server_console.log", "3458AD80F8C90D17DCB93592FBCD0B3D1FC7CC5217246E9BA5BB6EDA16E0CBE8"],
+    ["TEMP/server-mission-investigation/source/lifecycle/config.cpp", "1F86BED974A652BC1B32D5440D2726C505C607B96CEA3D9D8AB9ABC627461543"],
+    ["TEMP/server-mission-investigation/source/lifecycle/Scripts/4_World/world_state.c", "F489A4D7E07F74E420B028AEF1A8EC9E799AA43761705297C56D34171F6636F7"],
+    ["TEMP/server-mission-investigation/source/lifecycle/Scripts/5_Mission/lifecycle.c", "69C2A3AAB8811989B6DAB0465CF435CE9EF19C14066E1423504AA376C3C27732"],
+    ["TEMP/server-mission-investigation/mods/@lifecycle/Addons/lifecycle.pbo", "4D2A20A0A4683ABABFF225CE9061D76E1C4542148A735D7406DC149DAA3F8D3B"],
+    ["TEMP/server-mission-investigation/lifecycle-pack.exit.txt", "13BF7B3039C63BF5A50491FA3CFD8EB4E699D1BA1436315AEF9CBE5711530354"],
+    ["TEMP/server-mission-investigation/lifecycle-pack.log", "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"],
+    ["TEMP/server-mission-investigation/lifecycle.process.json", "A69F57F7D1C4C1C4E2CB9BB1763FE4348145B16582818A0DB348CD9CFC9FC8F6"],
+    ["TEMP/server-mission-investigation/profiles/lifecycle/DayZDiag_x64_2026-09-13_22-00-31.RPT", "31B700F6059A7D83F3B45E8F5CA4810ED7FA0168B9C90A309901A1860C93D2A5"],
+    ["TEMP/server-mission-investigation/profiles/lifecycle/script_2026-09-13_22-00-34.log", "6A285E1FF7ED2AF3A16E5E4F3F1E1798B3BA50FBBC15D08F077016E4ECD5E427"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/DayZ Projects/scripts/3_game/global/game.c", "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/DayZ Projects/scripts/3_game/dayzgame.c", "75CD42B6CBE689F0903F23CDEE46FD41545946B0046D3816B15B4F36044C8992"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/DayZ Projects/scripts/5_mission/gui/ingamemenuxbox.c", "BDF8060E99ACD2A89C11A97C94CCE66F26717BCFDE69407AE49F20123C24D388"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/DayZ Projects/scripts/5_mission/mission/missionserver.c", "92A2FF171ED550BF2E93E7C983479613CFB0EE7A521D7C1958CECA9647B786F0"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/DayZ Projects/scripts/5_mission/mission/missionbase.c", "144F347CD3BA41B01A0BC2C70D86E6D977755D3D141B64FD27F4E8CB4C913096"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/StarDZ/docs/DayZ/Server Configuration.md", "D7126F849E9A460887A3B640068CA8C88304324EDFD3AFA1526AE69E4BECAA8E"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/StarDZ/docs/DayZ/Modding Basics.md", "1A0B2C1F7A69E369E74D923CB77D4716B9DD21941B0C02DA5015FA7F708B5839"],
+    ["TEMP/server-mission-investigation/reference/local-snapshots/D/StarDZ/docs/DayZ/Workbench Script Debugging.md", "2E46B120066884C1D2EE5B10705D4214C35DFB08B69249100E7DF00F10146F16"],
+    ["TEMP/wiki-runtime-probes/reference/DayZ-Central-Economy/README.md", "F371A0A1304937189CC94ACEA68A03357D2A736AA2F013B423D2AB0504C4A697"],
+    ["TEMP/wiki-runtime-probes/reference/DayZ-Central-Economy/dayzOffline.chernarusplus/init.c", "73658FCA45ADE1C54D7EE729B31F78F3C27B46282FFD3D503D10B524B8A20AFB"],
+    ["TEMP/server-mission-investigation/reference/DayZ-Samples/README.md", "FFFBAA0D9CCB00B69448F695BDF01ADB13F7E585095F03FD6BA27CB35BF4CC7F"],
+    ["TEMP/server-mission-investigation/reference/DayZ-Samples/Test_Inputs/config.cpp", "71B869D713C15D38037B0B8B6CC682CCAEA03599DDFF370DA786D42CD813121C"],
+    ["TEMP/wiki-runtime-probes/mods/@server-context/Addons/server-context.pbo", "83CBDBD50A1C2CBEAE2343875A340E6BEC10EDF9A5166403457AB429253A701F"],
+    ["TEMP/wiki-runtime-probes/source/server-context/config.cpp", "564F996B9BFDC922941A85AE3D58FD8239ADD31D652793686C7F9B5EC7700B01"],
+    ["TEMP/wiki-runtime-probes/source/server-context/Scripts/5_Mission/runtime_server_context.c", "DDCFEFAFF148ADA1BEF008E8D6DF3FC6CC8C226EBACE9AB745C244B61C8D1E37"],
+    ["TEMP/server-mission-council/missing-instance.cfg", "B36B6A2EE8FE8B5DDF7EEA6890752AC34D1495906E00B8AFFE0B40791669C59D"],
+    ["TEMP/server-mission-council/instance-id-1.cfg", "DD371CFCC4682D2B20E1F755B9FD509C36EF05D7F2100BD9FB2779998D6E291D"],
+    ["TEMP/server-mission-council/launch-case.ps1", "FF0FF8B37FE590070F5343BE67636428CA054B38ED2FE64598AE6BC1BFDB1979"],
+    ["TEMP/server-mission-council/missing-instance.arguments.json", "857749201F704CCA5D85D47E5A2AC73074584294915BE6CAF52681E132134824"],
+    ["TEMP/server-mission-council/missing-instance.process.json", "4066680E7BC2BDD8777B03D2A2089093C9FE1663281DB5596AF4A158CB852EB1"],
+    ["TEMP/server-mission-council/instance-id-1.arguments.json", "9D31DDCE9F7889DBF0CBBEC23CF8D1C65EDE8295386645DFADC73F8FC016DEFD"],
+    ["TEMP/server-mission-council/instance-id-1.process.json", "0B0D9B2939E1388EBD99C2B26D41E33FEA0DD53C7C1ECF362E0B71C985632C4E"],
+    ["TEMP/server-mission-council/profiles/missing-instance/DayZDiag_x64_2026-09-13_22-10-54.RPT", "E5139652DFB7F648A8FEFFB4672A07156ED876BD6DEB0431B222FCBB5DD544A9"],
+    ["TEMP/server-mission-council/profiles/missing-instance/script_2026-09-13_22-10-57.log", "35A937D288D958F168D5B59692AA998B2BF6C0A112B838702E9F72678E9C116E"],
+    ["TEMP/server-mission-council/profiles/instance-id-1/DayZDiag_x64_2026-09-13_22-12-07.RPT", "40CC6FE9C4FA5287C9B33AC3D6A87BBBF478A882AB84D925738CF944552C41C1"],
+    ["TEMP/server-mission-council/profiles/instance-id-1/script_2026-09-13_22-12-10.log", "4AD41E4A029CF171ED775FB6D2B7BF42F4B7E1BBE53E77561894B27B40209ED8"],
+    ["TEMP/server-mission-council/profiles/instance-id-1/server_console.log", "5556DAEB3C0BF00BA309CBBFB944198A84B60B931A85446174249C244F7017C9"],
+    ["TEMP/server-mission-council/cleanup.json", "A1FAE3000C8CFB2A19AC5F1D39576F03ABB4F8A40991DE94D9CCC9BFA95A5477"]
+  ]
+}
