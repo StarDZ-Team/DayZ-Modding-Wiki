@@ -799,6 +799,64 @@ void EEItemAttached(EntityAI item, string slot_name);   // Attachment added
 void EEItemDetached(EntityAI item, string slot_name);   // Attachment removed
 ```
 
+### Entity Persistence Callbacks
+
+`OnStoreSave()` and `OnStoreLoad()` are server-side entity-persistence callbacks. In an override, call `super.OnStoreSave(ctx)` before writing your fields. On load, call `super.OnStoreLoad(ctx, engineVersion)` first and return `false` if the parent fails. Read the same types in the same order and under the same compatibility branches used when writing. Check every `ctx.Read(...)`; if a required read returns `false`, return `false`. Supply a default and continue only when that omission is an explicitly supported older layout.
+
+The callback's `engineVersion` is engine-owned storage-version context; vanilla code uses it to select historical engine layouts. In the reviewed extraction, `CGame` registers `GAME_STORAGE_VERSION = 142`, but your mod does not control when that value changes. For a custom entity layout you control, write a separate mod schema integer as the first field added by your override after `super`, read it into a different variable, validate its supported range, and branch on that value. Introduce the marker in the first persisted schema. Existing unframed records, several mods extending the same class, and mod removal or reinstallation need a separately designed and tested compatibility/framing strategy.
+
+**Source-reviewed skeleton — not yet compiled or run.** This shows the ordering and version split for one custom leaf entity. A runnable fixture also needs entity configuration, script/PBO placement, a server spawn/save harness, and restart assertions.
+
+```c
+class PCT_PersistBox extends ItemBase
+{
+    static const int MOD_SCHEMA_VERSION = 2;
+
+    protected int m_Charges;
+    protected string m_Label;
+    protected bool m_Locked; // Added in v2
+
+    override void OnStoreSave(ParamsWriteContext ctx)
+    {
+        super.OnStoreSave(ctx);
+        ctx.Write(MOD_SCHEMA_VERSION);
+        ctx.Write(m_Charges);
+        ctx.Write(m_Label);
+        ctx.Write(m_Locked);
+    }
+
+    override bool OnStoreLoad(ParamsReadContext ctx, int engineVersion)
+    {
+        if (!super.OnStoreLoad(ctx, engineVersion))
+            return false;
+
+        int schemaVersion;
+        if (!ctx.Read(schemaVersion))
+            return false;
+        if (schemaVersion < 1 || schemaVersion > MOD_SCHEMA_VERSION)
+            return false;
+        if (!ctx.Read(m_Charges))
+            return false;
+        if (!ctx.Read(m_Label))
+            return false;
+
+        if (schemaVersion >= 2)
+        {
+            if (!ctx.Read(m_Locked))
+                return false;
+        }
+        else
+        {
+            m_Locked = false;
+        }
+
+        return true;
+    }
+}
+```
+
+`Serializer.Write(...)` returns `bool`, but `OnStoreSave(...)` returns `void`. The reviewed source and this unrun example do not establish how the persistence runtime handles a failed write.
+
 ### Network Sync Variables
 
 Register variables in the constructor to automatically synchronize them between server and client:

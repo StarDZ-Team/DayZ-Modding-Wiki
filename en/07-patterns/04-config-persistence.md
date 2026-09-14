@@ -10,6 +10,8 @@ Almost every DayZ mod needs to save and load configuration data: server settings
 
 This chapter covers the standard patterns for config persistence, from basic JSON load/save through versioned migration systems, directory management, and auto-save timers.
 
+This chapter covers reflected JSON configuration and explicit file I/O. It does not cover the ordered `ParamsWriteContext` / `ParamsReadContext` stream used by entity `OnStoreSave()` and `OnStoreLoad()` callbacks; see [Entity System](../06-engine-api/01-entity-system.md#entity-persistence-callbacks).
+
 ---
 
 ## Table of Contents

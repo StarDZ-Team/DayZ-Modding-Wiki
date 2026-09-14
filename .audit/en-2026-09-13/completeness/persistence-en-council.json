@@ -1,0 +1,41 @@
+{
+  "reviewedAtUtc": "2026-09-14T03:44:13.4590903Z",
+  "reviewer": "root final integration review independent of Terra implementation",
+  "disposition": "accepted exact council-qualified prose and explicitly unrun skeleton",
+  "evidence": [
+    "Read entire final four-file diff against persistence-source-council.md A/B/C and JSON contrast D.",
+    "Recomputed four final page hashes against author receipt.",
+    "Previously verified 18 cited source and author report hashes against independent council.",
+    "Fresh node scripts/check-links.mjs --anchors --strict en exited zero: 105 files, 1283 anchors, zero dead links/anchors.",
+    "Fresh scoped git diff --check passed."
+  ],
+  "files": [
+    {
+      "path": "en/06-engine-api/01-entity-system.md",
+      "sha256": "A307753F1E6B7F0158D50ABD30AAA94FE81578572864C5FDF6C0FAF924388717",
+      "reason": "Added the canonical Entity Persistence Callbacks heading, council-qualified engine-owned storage-version and mod-schema distinction, source-reviewed skeleton, and failed-write caveat."
+    },
+    {
+      "path": "en/troubleshooting.md",
+      "sha256": "A74CEE2011ECFF8CAFBA5FDE4A14CD2E025939D268455ACE225037038100195A",
+      "reason": "Replaced the ambiguous persistence mismatch recipe with council revision B, keeping engine-owned callback context distinct from a custom mod schema."
+    },
+    {
+      "path": "en/06-engine-api/17-construction-system.md",
+      "sha256": "9DA8F14C09EFFE55B878A0A43EBBC373F83763EEBEAA77481F2F05D783112017",
+      "reason": "Added council revision C's matching ordered reads, failure propagation, later reconstruction distinction, and canonical-anchor link."
+    },
+    {
+      "path": "en/07-patterns/04-config-persistence.md",
+      "sha256": "536870B3F0A45A10953508422DAD67A79107F7B1262DB2F1B55A555C93A16EA4",
+      "reason": "Added only council revision D's reflected-JSON versus ordered entity-stream contrast and canonical-anchor link."
+    }
+  ],
+  "deliverySha256": "575D6C8A89DF0E206A68C9502387B6344A35C6EB240255A3A7A0E4E0E322A066",
+  "limitations": [
+    "Skeleton remains uncompiled and unrun; not a complete configured fixture.",
+    "v1/v2 migration, missing-field controls, native failure handling and restart assertions remain required.",
+    "Current integrated site build, rendered review and graph refresh remain pending.",
+    "Operator crosslinks from finding D remain pending."
+  ]
+}

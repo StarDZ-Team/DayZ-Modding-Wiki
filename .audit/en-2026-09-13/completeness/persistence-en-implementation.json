@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-14",
+  "scope": "PERSIST-C01 accepted council prose in four owned English pages plus this implementation receipt; no server-admin cross-links, fixture, compilation, game run, staging, or commit.",
+  "council_source": ".audit/en-2026-09-13/completeness/persistence-source-council.md",
+  "decision": "Applied the exact accepted revisions A, B, C, and the JSON/config contrast from D. The source-reviewed skeleton remains explicitly uncompiled and unrun.",
+  "files": [
+    {
+      "path": "en/06-engine-api/01-entity-system.md",
+      "sha256": "A307753F1E6B7F0158D50ABD30AAA94FE81578572864C5FDF6C0FAF924388717",
+      "reason": "Added the canonical Entity Persistence Callbacks heading, council-qualified engine-owned storage-version and mod-schema distinction, source-reviewed skeleton, and failed-write caveat."
+    },
+    {
+      "path": "en/troubleshooting.md",
+      "sha256": "A74CEE2011ECFF8CAFBA5FDE4A14CD2E025939D268455ACE225037038100195A",
+      "reason": "Replaced the ambiguous persistence mismatch recipe with council revision B, keeping engine-owned callback context distinct from a custom mod schema."
+    },
+    {
+      "path": "en/06-engine-api/17-construction-system.md",
+      "sha256": "9DA8F14C09EFFE55B878A0A43EBBC373F83763EEBEAA77481F2F05D783112017",
+      "reason": "Added council revision C's matching ordered reads, failure propagation, later reconstruction distinction, and canonical-anchor link."
+    },
+    {
+      "path": "en/07-patterns/04-config-persistence.md",
+      "sha256": "536870B3F0A45A10953508422DAD67A79107F7B1262DB2F1B55A555C93A16EA4",
+      "reason": "Added only council revision D's reflected-JSON versus ordered entity-stream contrast and canonical-anchor link."
+    }
+  ],
+  "validation": {
+    "scoped_diff_check": {
+      "command": "git diff --check -- <four tracked owned EN paths>; git diff --no-index --check -- NUL .audit/en-2026-09-13/completeness/persistence-en-implementation.json",
+      "result": "passed"
+    },
+    "anchor_validation": {
+      "command": "node scripts/check-links.mjs --anchors --strict en",
+      "result": "passed",
+      "verified_anchor": "entity-persistence-callbacks"
+    },
+    "build": "not run by task instruction",
+    "compile_or_game_test": "not run by task instruction"
+  },
+  "unresolved": [
+    "Native forwarding from StorageVersion(...) to the callback argument was not opened.",
+    "Direct native serializer behavior for omitted, wrong-type, or trailing fields remains untested.",
+    "The runtime effect of OnStoreLoad() returning false remains unknown.",
+    "Existing unframed records, shared inheritance patches, and mod removal or reinstallation need a separately designed and tested strategy."
+  ]
+}

@@ -218,7 +218,7 @@ override void OnStoreSave(ParamsWriteContext ctx)
 }
 ```
 
-On load, `AfterStoreLoad()` calls `SetPartsAfterStoreLoad()` which reconstructs all part states from the bitmask, restores the base state flag, and synchronizes.
+`BaseBuildingBase.OnStoreLoad()` first calls `super.OnStoreLoad(ctx, version)` and propagates failure. It then reads `m_SyncParts01`, `m_SyncParts02`, `m_SyncParts03`, and `m_HasBase` in exactly the order written, returning `false` when a read fails. `AfterStoreLoad()` runs the later reconstruction step (`SetPartsAfterStoreLoad()`); it does not replace deserializing those stored fields. For custom schema changes, follow the entity-persistence versioning contract in [Entity System](01-entity-system.md#entity-persistence-callbacks).
 
 ---
 
