@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-09-14T01:12:56.6262970Z",
+  "observedAt": "2026-09-14T01:12:56.626297Z",
   "baseline": "0df58c20761f654cd91ece04d9469be4b1728c6b",
   "method": "Installed vitepress.resolvePages(process.cwd(), {srcExclude:[AGENTS.md,CONTRIBUTING.md,CLAUDE.md]}, console), and exact config/link reads",
   "observations": {
@@ -21,7 +21,7 @@
         "en/index.md:192"
       ],
       "claim": "Relative CONTRIBUTING.md link targets an explicitly excluded site page and is masked by ignoreDeadLinks",
-      "status": "verified-static-route-gap; repair and live route review pending"
+      "status": "Two EN links repaired in 23c336e and independently reviewed against the live GitHub destination; current integrated build/rendered-route verification remains pending."
     },
     {
       "id": "NAV-C02",
@@ -30,7 +30,7 @@
         "en/04-file-formats/06-pbo-packing.md:629"
       ],
       "claim": "New audit Markdown links have no resolved published page",
-      "status": "reported to active PBO owner for repair before delivery"
+      "status": "Unpublished audit/manifest links removed in 5714990; final integrated route verification remains pending."
     },
     {
       "id": "BUILD-C01",
@@ -38,5 +38,6 @@
       "status": "Final build must use clean controlled content checkout or explicitly reviewed exclusions; do not delete evidence or blindly build TEMP references"
     }
   ],
-  "limits": "Static page discovery, not HTTP verification. PBO file is concurrently edited and line numbers can change. Existing full-build ignore rules can hide broken routes."
+  "limits": "Static page discovery, not HTTP verification. PBO file is concurrently edited and line numbers can change. Existing full-build ignore rules can hide broken routes.",
+  "updatedAtUtc": "2026-09-14T03:34:17.4461487Z"
 }

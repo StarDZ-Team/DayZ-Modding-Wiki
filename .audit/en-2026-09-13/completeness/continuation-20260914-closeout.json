@@ -1,0 +1,295 @@
+{
+  "observedAtUtc": "2026-09-14T03:51:21.1188528Z",
+  "goal": "active; full ACCEPTANCE and coverage map remain binding",
+  "turnClassification": "progress",
+  "head": "c9cd5dbfdf0ccf94e6906608588823f34c0c788f",
+  "run": "run_335030a972ec",
+  "workers": [
+    {
+      "dispatch": "ctx_1f9ede1d42d5",
+      "task": "task_a155d6b407bc",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_5d39956c10aa",
+      "task": "task_32d95ff449e4",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_b4ce94f81ea5",
+      "task": "task_03e5e7b13396",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_8a671e5589da",
+      "task": "task_113cdcf92dfd",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_6feecc9d7abc",
+      "task": "task_78cb9a6ddd42",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_002028a93f62",
+      "task": "task_55be12dfa5b8",
+      "status": "completed",
+      "terminalState": "retained"
+    },
+    {
+      "dispatch": "ctx_234c22d01dc5",
+      "task": "task_616ac62f6192",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_b7e49ada5518",
+      "task": "task_cda6be369fdc",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_526dd47a8b0c",
+      "task": "task_d9c2e1f29794",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_67d41a98fcfe",
+      "task": "task_62d83946510c",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_187a9b94cc5d",
+      "task": "task_279127df77ff",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_57f37266117b",
+      "task": "task_ee358020f21d",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_6ffd9e7bee34",
+      "task": "task_b89801604946",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_6bc553093665",
+      "task": "task_6be1e86f617b",
+      "status": "completed",
+      "terminalState": "retained"
+    },
+    {
+      "dispatch": "ctx_e9a817779f6a",
+      "task": "task_6bc3deaad82f",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_977df8c210a7",
+      "task": "task_cd5cb342bf49",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_fa8de4a04f5d",
+      "task": "task_59c40aedea42",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_a701c0b01b1e",
+      "task": "task_83e68656069a",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_7859cfe706bb",
+      "task": "task_0ca917e1ef26",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_f4fbd59e5a32",
+      "task": "task_dc965e4b02fa",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_fd032d33219c",
+      "task": "task_299f3b3abcd4",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_4389a40372e6",
+      "task": "task_5ff0780334c4",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_f338e9c3bfac",
+      "task": "task_ecbeb383c1d7",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_00512d9925e2",
+      "task": "task_331fd7800d12",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_bb4c4625d47d",
+      "task": "task_3776aad0f6ce",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_19bbeb54ae46",
+      "task": "task_d0e47b0e07ab",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_9861a62e7c11",
+      "task": "task_90601a45da66",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_3ce0670fa321",
+      "task": "task_0dfaa707835a",
+      "status": "completed",
+      "terminalState": "retained"
+    },
+    {
+      "dispatch": "ctx_2d3c043efd4b",
+      "task": "task_088767fb7b9b",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_2a2d33dcb9d3",
+      "task": "task_bdc972e36e5b",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_a69aacc0ef26",
+      "task": "task_e0e5d410f6be",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_744c1129c442",
+      "task": "task_8693ecb17fc1",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_a18f663ab8c8",
+      "task": "task_9b2737b6f6b4",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_b9d88f10c3bb",
+      "task": "task_56c5ca6da3d5",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_305160d9fe25",
+      "task": "task_b5598e7e7f81",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_889c445a1f8e",
+      "task": "task_4f067a9366bf",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_188d40610cef",
+      "task": "task_6d7610bc5c51",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_7a19f59e9ca3",
+      "task": "task_0abb7aa35ecc",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_e3b7dab98d1f",
+      "task": "task_409c3db065d0",
+      "status": "completed",
+      "terminalState": "retained"
+    },
+    {
+      "dispatch": "ctx_ddd23aee9de8",
+      "task": "task_0ce8c85360a3",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_62fb84bad77f",
+      "task": "task_d44ef2f0700a",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_11798bb8626b",
+      "task": "task_672fa761d086",
+      "status": "completed",
+      "terminalState": "released"
+    },
+    {
+      "dispatch": "ctx_3e900246675d",
+      "task": "task_fce979cb170f",
+      "status": "completed",
+      "terminalState": "released"
+    }
+  ],
+  "lifecycleCounts": {
+    "retained": 4,
+    "released": 39
+  },
+  "completedCommits": [
+    "23c336e navigation contribution links",
+    "a66c5c2 verified multi-PBO runtime evidence",
+    "78c896b independently reviewed persistence sources",
+    "bbe74ad multi-PBO reader-facing verification status",
+    "76ca871 persistence callback/version/order prose",
+    "c9cd5db imageset/model pipeline prose"
+  ],
+  "verification": [
+    "105 EN files and 1283 anchors: zero dead file links/anchors before final assets prose-only edit.",
+    "Multi-PBO exact fixed fixture: seven runtime markers and 81-byte data read; root verified 34 hashes and process/ports cleanup.",
+    "Persistence source council: root verified 18 source/author hashes; skeleton uncompiled/unrun.",
+    "Assets final diff accepted; npm dev attempt stopped by root after 176 seconds without ready/listening port. No rendered-page or integrated build pass."
+  ],
+  "pending": [
+    "Full original coverage map and substantive remaining user-corpus reading.",
+    "Persistence configured fixture, compilation, same-v1 reload, v1-to-v2 migration, explicit v2 true-field persistence and missing-field controls.",
+    "Remaining adjacent GUI/imageset/model claims identified in assets source council.",
+    "Server/static lifecycle prose follow-ups and required healthy lifecycle tests.",
+    "Multi-PBO dependency/client/enforcement/distribution/size boundary evidence.",
+    "Other persistence/CE/security/RPC/tutorial/operations/performance gaps.",
+    "Final controlled build checkout, rendered-route checks, generated docs and graphify."
+  ],
+  "preserved": "Ten unrelated staged speckit skills unchanged; no push; TEMP evidence retained; obsolete assets-en-dispatch-checkpoint.json is historical and superseded by settled delivery."
+}

@@ -2,6 +2,15 @@
 
 This is coordinator planning, not council approval or a narrower replacement goal. Consult [ACCEPTANCE.md](ACCEPTANCE.md) and the complete [coverage map](coverage-map.md).
 
+## Latest continuation closeout
+
+The 2026-09-14 continuation checkpoint is [continuation-20260914-closeout.json](continuation-20260914-closeout.json). It supersedes the dated ownership and completed-work statements below; the full acceptance criteria and remaining coverage still apply.
+
+- All dispatched workers in this round settled; fresh Orca checks show no active or reclaimable workers. The delayed Luna delivery was finally received, reviewed and committed.
+- `23c336e` fixes the two EN contribution links. `a66c5c2` preserves the independently checked post-integration multi-PBO runtime evidence; `bbe74ad` updates its README and EN verification status. Do not repeat the already completed fixed-fixture confirmation.
+- `78c896b` records persistence research and independent council; `76ca871` applies the qualified callback/order/schema explanation in four EN pages. The configured migration fixture, compilation, restart and missing-field tests remain required.
+- `c9cd5db` applies the imageset and MLOD/ODOL wording reviewed by the assets council. Adjacent GUI/model claims remain open; retail compatibility/performance is not established.
+- Current integrated build, rendered-page verification and graph refresh remain unproven. A bounded npm dev attempt was stopped before readiness after 176 seconds; no compiler failure or rendered pass was observed. Preserve TEMP evidence and use the documented controlled build strategy.
 ## Current evidence and ownership
 
 Checkpoint: 2026-09-14 02:40 UTC. Re-query Run `run_335030a972ec` before relying on lifecycle pointers.
