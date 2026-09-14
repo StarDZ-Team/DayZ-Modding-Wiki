@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "artifact": "pbo-validator-b-implementation",
+  "status": "complete_pending_independent_council_and_integration",
+  "authorship": {
+    "agent": "Codex worker",
+    "runtimeModelDetail": "not exposed in worker preamble",
+    "validatorARead": false,
+    "validatorATestsRead": false,
+    "nestedWorkersUsed": false,
+    "repositoryHead": "d795fca51eca92781a4dbdfc89d753790569fb4d"
+  },
+  "contract": {
+    "path": "examples/en/pbo-boundary/validator-contract.json",
+    "sha256": "B49448E24F19378EBCF5E8F54B9908E156139D161D7923A8A21676FEB1928C6B"
+  },
+  "approvedInputs": [
+    {
+      "path": ".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.md",
+      "sha256": "6BB0DE45770489FDF0A7801068C59C27BB29ABE78B2A25FB441E9F3A34343D79"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.json",
+      "sha256": "A83E1054EB054221CA0BFD47D45FB00791F53BBF79EA8BA1964141E90A38EA20"
+    },
+    {
+      "path": ".audit/en-2026-09-13/completeness/pbo-boundary-plan-closeout.json",
+      "sha256": "84A1E41FF643D4F62E5274D60597B6448FD002252325EFBD20AFA8EACF07CB5C"
+    }
+  ],
+  "deliveries": {
+    "validator": {
+      "path": "examples/en/pbo-boundary/scripts/validate_pbo.py",
+      "sha256": "662B98FF32CB562A95032F21AC0A60E44B64A6B06016DA4BC2D6C8FA7700F1D3"
+    },
+    "tests": {
+      "path": "examples/en/pbo-boundary/scripts/test_validate_pbo.py",
+      "sha256": "02561D5852973D9146CB2549C842416AC8F4826DD453B5E4C4423C01A178C178"
+    },
+    "nativeInventory": {
+      "path": "TEMP/pbo-validator-b/native-441-inventory.json",
+      "sha256": "FD693188BDAC9CB30478D8F01ECCF3812BEE4E32CBC52937AA1DEDBA74ED2CF2"
+    },
+    "nativeReport": {
+      "path": "TEMP/pbo-validator-b/native-441-report.json",
+      "sha256": "2BF60E69CB5866383563DE9F5ED22C9BE47B4FD3A2EE05559BE829437387AD2F"
+    }
+  },
+  "sources": [
+    {
+      "repository": "https://github.com/KoffeinFlummi/armake2.git",
+      "commit": "3cc3362101900ff41504db3e780dd1625634cf94",
+      "path": "src/pbo.rs",
+      "sha256": "BEC43AC4560626FE4B154922938D0A2BDEDB0561D68118AE822AB9C030387549",
+      "relevantLines": ["18-25", "52-70", "97-142", "221-268"],
+      "symbols": ["PBOHeader", "PBOHeader::read", "PBOHeader::write", "PBO::read", "PBO::write"],
+      "accessed": "2026-09-14",
+      "classification": "third-party implementation; not native DayZ proof"
+    },
+    {
+      "repository": "https://github.com/BrettMayson/HEMTT.git",
+      "commit": "bf2168ce03d5bb8bd3849090e9b2996402624b1c",
+      "files": [
+        {"path": "libs/pbo/src/model/header.rs", "gitBlob": "eb7f48faa3767b26d77358964f360561c9b58864", "sha256": "D3D828D2B2881AB6CBBA5F8628B586E2212119CB237E808145FE7C9020176B66", "relevantLines": "9-118", "symbols": ["Header", "ReadPbo::read_pbo", "WritePbo::write_pbo"]},
+        {"path": "libs/pbo/src/file.rs", "gitBlob": "f95c9f69d7127e2ba9005eca3b3c66f0428eb3c1", "sha256": "77E5D829442A45F59B3E5A657902A09B1AABD16CF178114FAB30F76337FF1E2F", "relevantLines": "9-57", "symbols": ["File::new", "Read for File"]},
+        {"path": "libs/pbo/src/read.rs", "gitBlob": "e2a31630e317383aa4fb5340027d163aad93b217", "sha256": "9A8C1FA3382D45ADC4E220B0097B740A5A4C01437E3AB68FF0657A340221DF53", "relevantLines": "18-162", "symbols": ["ReadablePbo::from", "ReadablePbo::file", "ReadablePbo::file_raw", "ReadablePbo::file_offset"]},
+        {"path": "libs/pbo/src/write.rs", "gitBlob": "c76974bfaffef25f6df615f5393a38eba91e898f", "sha256": "CBCB0355715DCC3330D7AA343F30478247447FF14D683F2AF7A4D20557B945F2", "relevantLines": ["33-46", "132-200"], "symbols": ["WritablePbo::add_file", "WritablePbo::write"]}
+      ],
+      "accessed": "2026-09-14",
+      "classification": "third-party Arma 3 implementation; not native DayZ proof"
+    },
+    {
+      "repository": "https://github.com/KoffeinFlummi/armake.git",
+      "commit": "e4940fae0d28c4dd07d9d2c591f8e056545fee3f",
+      "files": [
+        {"path": "src/build.c", "gitBlob": "e413c6083f2c1aa165c2c3d82803f3c4cb11fef8", "sha256": "C68E3D02B59F62DBC18430BABF40C0122120A7763A3C551342410712ABB39012", "relevantLines": "85-180", "symbols": ["write_header_to_pbo", "write_data_to_pbo"]},
+        {"path": "src/unpack.c", "gitBlob": "3e32b54db53febbe6a05141d9eaee7b132e81fa0", "sha256": "71D41F2693F1FF564768D816966D10FA3F7997EFF22C887F4F12DDC0F05EE505", "relevantLines": ["59-160", "213-303"], "symbols": ["cmd_inspect", "cmd_unpack"]}
+      ],
+      "accessed": "2026-09-14",
+      "classification": "third-party platform-dependent implementation; not native DayZ proof"
+    }
+  ],
+  "verification": {
+    "pythonVersion": "3.14.4",
+    "commands": [
+      {
+        "command": "python examples\\en\\pbo-boundary\\scripts\\test_validate_pbo.py",
+        "exitCode": 0,
+        "result": "19 tests passed in 1.087 seconds"
+      },
+      {
+        "command": "python -m py_compile examples\\en\\pbo-boundary\\scripts\\validate_pbo.py examples\\en\\pbo-boundary\\scripts\\test_validate_pbo.py",
+        "exitCode": 0
+      },
+      {
+        "command": "git diff --check -- examples/en/pbo-boundary/scripts/validate_pbo.py examples/en/pbo-boundary/scripts/test_validate_pbo.py",
+        "exitCode": 0
+      },
+      {
+        "command": "python D:\\StarDZ\\docs\\wiki\\examples\\en\\pbo-boundary\\scripts\\validate_pbo.py --archive-path D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Data.pbo --expected-inventory-path D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\native-441-inventory.json --raw-small-fixture --report-path D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\native-441-report.json",
+        "exitCode": 0,
+        "outcome": "valid_exact"
+      }
+    ],
+    "native441": {
+      "provenanceScope": "retained exact bytes described by approved closeout; no new packing or runtime claim",
+      "archiveLengthDecimal": "441",
+      "archiveSha256": "1CE4ADB9D28C778E083CA506E0042217CE6A68FF2EC7FC085E2E19596D619071",
+      "HDecimal": "151",
+      "memberDataSizesDecimal": ["188", "81"],
+      "SDecimal": "339",
+      "dataEndDecimal": "420",
+      "sentinelEndDecimal": null,
+      "footerSha1": "B451A3F09D692D6CD01FD70619D69F8D942B7115",
+      "footerMatches": true
+    },
+    "vitepressBuildRun": false
+  },
+  "limitations": [
+    "No validator A/B agreement comparison or council approval has occurred.",
+    "No controller, packer, BankRev, signer, signature check, game/server/client, or large boundary case was run.",
+    "Pure parser tests and the retained raw-small control establish validator behavior only, not a native or universal PBO size limit.",
+    "Raw-small mode intentionally leaves source equality null and cannot accept a boundary case."
+  ]
+}

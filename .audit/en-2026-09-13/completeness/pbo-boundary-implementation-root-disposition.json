@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "artifact": "pbo-boundary-implementation-root-disposition",
+  "decision": "rejected_no_native_execution",
+  "verifiedUtc": "2026-09-14T08:12:39.0013608Z",
+  "reviewedHead": "d795fca51eca92781a4dbdfc89d753790569fb4d",
+  "councilTask": "task_986653517a9a",
+  "councilDispatch": "ctx_feeb7f43a944",
+  "modelConfirmedFromOrca": "gpt-6-astra",
+  "findings": "I01-I15",
+  "contractClarifications": "K01-K04",
+  "preservation": "TEMP/pbo-boundary-submitted-20260914-0800/preservation.json",
+  "reviewedFiles": [
+    {
+      "path": "examples/en/pbo-boundary/cases.json",
+      "sha256": "76DB65C51ADA5A608A53739BFB4A8E60EB2A518404AD75E7652172622FBE7253"
+    },
+    {
+      "path": "examples/en/pbo-boundary/probe-source/config.cpp",
+      "sha256": "759FC3E56EECC0A656493B0CC08DE391EE0347398CE013D6070316A698EC7350"
+    },
+    {
+      "path": "examples/en/pbo-boundary/probe-source/mod.cpp",
+      "sha256": "521E0EA921896A225F11F2FF794F65E663147412280C20521CA7966A96303F26"
+    },
+    {
+      "path": "examples/en/pbo-boundary/probe-source/scripts/5_Mission/PBOBoundaryProbe.c",
+      "sha256": "75E7BDD80FA7617D6CF33EB5BA0EE0C3B953E0E643C7CEE839C42B2F3BD0243D"
+    },
+    {
+      "path": "examples/en/pbo-boundary/README.md",
+      "sha256": "6F7F5F994C755B8EFB7A7EBB645A54FE32C9DE6D5E6CFC72D0BF2DBCB269E2EB"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/controller.ps1",
+      "sha256": "C4D247483473369B1160E65DCC499DFC1DF4F17E944F63C46D8EDF68B646F2AE"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/evaluate-runtime.ps1",
+      "sha256": "46728FCF73EC2B89BF09024D6435D96C8D75DDA61F382FECAF75A7EAED8A35BC"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/generate-fixture.ps1",
+      "sha256": "558A1F35F2F737256C4AB3B1DBDC01FC184CD2CC66644B649C3CF7C247820014"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/PboBoundary.Common.psm1",
+      "sha256": "D020F09F77EFE202E027FC7D15C5129A9850B33CAE11F2EC5769D6158B295A4F"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/test-static.ps1",
+      "sha256": "11F04F118187EBA20A992AFBA2D98142B36EBCF816682EC160658C4CE28BF943"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/test_validate_pbo.py",
+      "sha256": "02561D5852973D9146CB2549C842416AC8F4826DD453B5E4C4423C01A178C178"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/validate-pbo.ps1",
+      "sha256": "2DA69FE24F3731B3D3EBFDC863B8CDE8388C5A64BEBC8EAD11659CE5DDBAA0CA"
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/validate_pbo.py",
+      "sha256": "662B98FF32CB562A95032F21AC0A60E44B64A6B06016DA4BC2D6C8FA7700F1D3"
+    },
+    {
+      "path": "examples/en/pbo-boundary/validator-contract.json",
+      "sha256": "B49448E24F19378EBCF5E8F54B9908E156139D161D7923A8A21676FEB1928C6B"
+    }
+  ],
+  "nextAction": "Repair authors must address all assigned findings; independent exact-final council required before native small control."
+}

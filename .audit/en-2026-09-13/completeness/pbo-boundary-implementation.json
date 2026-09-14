@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "artifact": "pbo-boundary-implementation",
+  "status": "implemented_pending_independent_validator_b_integration_and_static_council",
+  "executionPerformed": {
+    "powershellSyntaxParse": true,
+    "tinyStaticTests": true,
+    "retained441ByteParse": true,
+    "benignContainedProcessTests": true,
+    "addonBuilder": false,
+    "fileBank": false,
+    "bankRev": false,
+    "signing": false,
+    "dayZ": false,
+    "workbench": false,
+    "largeFiles": false
+  },
+  "environment": {
+    "gitHead": "d795fca51eca92781a4dbdfc89d753790569fb4d",
+    "date": "2026-09-14",
+    "powerShell": "7.6.0",
+    "dotNet": "10.0.5",
+    "windows": "10.0.26200.0",
+    "assignedModel": "Sol high",
+    "subworkersCreated": false
+  },
+  "contract": {
+    "path": "examples/en/pbo-boundary/validator-contract.json",
+    "sha256": "B49448E24F19378EBCF5E8F54B9908E156139D161D7923A8A21676FEB1928C6B",
+    "pythonValidatorB": "external_dependency_pending_independent_delivery"
+  },
+  "files": [
+    {"path":"examples/en/pbo-boundary/README.md","bytes":7307,"sha256":"6F7F5F994C755B8EFB7A7EBB645A54FE32C9DE6D5E6CFC72D0BF2DBCB269E2EB"},
+    {"path":"examples/en/pbo-boundary/cases.json","bytes":1850,"sha256":"76DB65C51ADA5A608A53739BFB4A8E60EB2A518404AD75E7652172622FBE7253"},
+    {"path":"examples/en/pbo-boundary/validator-contract.json","bytes":8994,"sha256":"B49448E24F19378EBCF5E8F54B9908E156139D161D7923A8A21676FEB1928C6B"},
+    {"path":"examples/en/pbo-boundary/probe-source/config.cpp","bytes":507,"sha256":"759FC3E56EECC0A656493B0CC08DE391EE0347398CE013D6070316A698EC7350"},
+    {"path":"examples/en/pbo-boundary/probe-source/mod.cpp","bytes":88,"sha256":"521E0EA921896A225F11F2FF794F65E663147412280C20521CA7966A96303F26"},
+    {"path":"examples/en/pbo-boundary/probe-source/scripts/5_Mission/PBOBoundaryProbe.c","bytes":1313,"sha256":"75E7BDD80FA7617D6CF33EB5BA0EE0C3B953E0E643C7CEE839C42B2F3BD0243D"},
+    {"path":"examples/en/pbo-boundary/scripts/PboBoundary.Common.psm1","bytes":20914,"sha256":"D020F09F77EFE202E027FC7D15C5129A9850B33CAE11F2EC5769D6158B295A4F"},
+    {"path":"examples/en/pbo-boundary/scripts/controller.ps1","bytes":36538,"sha256":"C4D247483473369B1160E65DCC499DFC1DF4F17E944F63C46D8EDF68B646F2AE"},
+    {"path":"examples/en/pbo-boundary/scripts/evaluate-runtime.ps1","bytes":5517,"sha256":"46728FCF73EC2B89BF09024D6435D96C8D75DDA61F382FECAF75A7EAED8A35BC"},
+    {"path":"examples/en/pbo-boundary/scripts/generate-fixture.ps1","bytes":9340,"sha256":"558A1F35F2F737256C4AB3B1DBDC01FC184CD2CC66644B649C3CF7C247820014"},
+    {"path":"examples/en/pbo-boundary/scripts/test-static.ps1","bytes":16794,"sha256":"11F04F118187EBA20A992AFBA2D98142B36EBCF816682EC160658C4CE28BF943"},
+    {"path":"examples/en/pbo-boundary/scripts/validate-pbo.ps1","bytes":18090,"sha256":"2DA69FE24F3731B3D3EBFDC863B8CDE8388C5A64BEBC8EAD11659CE5DDBAA0CA"}
+  ],
+  "verification": {
+    "syntax": {"files":6,"errors":0},
+    "command": "pwsh -NoProfile -File .\\examples\\en\\pbo-boundary\\scripts\\test-static.ps1",
+    "exitCode": 0,
+    "passed": 26,
+    "failed": 0,
+    "receipt": "TEMP/pbo-boundary-implementation/test-73aa086a/static-tests.json",
+    "receiptSha256": "5BA1DB06662F392369FF2A6737350A283E323950429423FB2939635AF4E43D00",
+    "coverage": ["valid_exact","malformed_header","unterminated_name","invalid_utf8","duplicate_property","footer_mismatch","wrong_order","multiple_sentinel","zero_sentinel","raw_control_no_config","raw_control_multiple_config","required_prefix_absent","wrapped_range","OriginalSize_convention","deterministic_generator_remainder","retained_441","hardlink","reparse","report_alias","contained_exit","contained_descendant_timeout_cleanup","runtime_exact","wrong_open_count","error_marker","wrong_context","stale_receipt"]
+  },
+  "reopenedEvidence": [
+    {"path":".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.md","sha256":"6BB0DE45770489FDF0A7801068C59C27BB29ABE78B2A25FB441E9F3A34343D79"},
+    {"path":".audit/en-2026-09-13/completeness/pbo-boundary-plan-repaired.json","sha256":"A83E1054EB054221CA0BFD47D45FB00791F53BBF79EA8BA1964141E90A38EA20"},
+    {"path":".audit/en-2026-09-13/completeness/pbo-boundary-council.md","sha256":"DF5992CEACF659D0B63A1F46758BB0CCB9AAC7653A5354EB2ED3D7592DAD7271"},
+    {"path":".audit/en-2026-09-13/completeness/pbo-boundary-council.json","sha256":"2C67473ADB6D7CD1BDD330EA01142E282C4585FE930D72B0A9FA2748007D9367"},
+    {"path":"TEMP/multi-pbo-confirmation/build/pboexample-20260914-002734-8140c691/release/@PBOExample/Addons/PBOExample_Data.pbo","bytes":441,"sha256":"1CE4ADB9D28C778E083CA506E0042217CE6A68FF2EC7FC085E2E19596D619071"},
+    {"path":"D:/DayZ Projects/scripts/1_core/proto/ensystem.c","sha256":"8BE625999A04DF22813052E93FE658C24C82C97B257EBEF86B106279A95DB188","symbols":["FileMode","OpenFile","ReadFile","CloseFile"]},
+    {"path":"D:/SteamLibrary/steamapps/appmanifest_2909700.acf","sha256":"CC36D68C6020C38E60BC928DAE3B006FD6F3E8700EB9ED846D0C58539AC80160","buildId":"23909709"},
+    {"path":"D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/AddonBuilder.exe","sha256":"C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1","inspection":"bounded embedded-help search"},
+    {"path":"D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/AddonBuilder.exe.config","sha256":"E614FCB04D8E3429FAB70466261F36383DE3BFCD230A058BC196AC0727482BBE"},
+    {"path":"D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/logger.xml","sha256":"1D24D7D4AFB5249EFBEF3435195BBEA4D1A2D6317292637C7F834B69F8470005"},
+    {"path":"D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/exclude.lst","sha256":"F678C872B0E146A51339F4D5C248D7E76ADEF31A80D439AD2FCC2E3CE07D099C"},
+    {"path":"C:/Users/Leonardo Mello/AppData/Local/Bohemia_Interactive/AddonBuilder.exe_Url_bpeqqsem2qv4tdbqrfa1jkk5wv5a3aob/1.0.240.639/user.config","sha256":"B52A097818CB036EC72AFD6BD0A6402C5892E1B29AE671115CA977D0348E33C7"},
+    {"path":"C:/Users/Leonardo Mello/AppData/Local/Bohemia_Interactive/AddonBuilder.exe_Url_nzb1gmauh5s0jgksoti3hjv0nqjtardy/1.0.240.639/user.config","sha256":"86F88CFCB6F908F26DB0D9882AF35C9D2087A16AE1F9CAC46FEF8028D6A57CB8"}
+  ],
+  "gatesImplemented": ["C01","C02","C03","C04","C05","C06","C07","C08","C09","C10","C11","C12","C13_scoped","C14","C15","C16","C17_scoped"],
+  "pending": [
+    "independently authored Python validator B integration and review",
+    "combined validator agreement tests",
+    "independent exact final diff/static council",
+    "all actual tool, signer, BankRev and runtime stages",
+    "all multi-GiB boundary outcomes"
+  ],
+  "unresolved": [
+    "compressed OriginalSize/DataSize and decompression allocation",
+    "mixed compression cumulative behavior",
+    "native DayZ member, total, archive-position and footer limits",
+    "client/signature enforcement/Workshop/distribution",
+    "other filesystems and builds",
+    "effective per-user Addon Builder config selection"
+  ],
+  "claimBoundary": "Static implementation and tiny/retained control validation only; no numeric native PBO limit or runtime outcome is claimed."
+}

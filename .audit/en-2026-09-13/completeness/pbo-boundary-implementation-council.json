@@ -1,0 +1,1657 @@
+{
+  "schemaVersion": 1,
+  "artifact": "pbo-boundary-implementation-council",
+  "reviewedUtc": "2026-09-14T05:10:35.990497-03:00",
+  "reviewer": {
+    "agent": "Codex dispatched council worker",
+    "requestedModel": "Astra high",
+    "actualModel": "not independently exposed to worker; no unverified model claim",
+    "taskId": "task_986653517a9a",
+    "dispatchId": "ctx_feeb7f43a944",
+    "subworkers": 0
+  },
+  "decision": "rejected_requires_author_repairs_and_another_exact_final_review",
+  "smallControlExecutionAuthorized": false,
+  "boundaryExperimentAuthorized": false,
+  "gitHead": "d795fca51eca92781a4dbdfc89d753790569fb4d",
+  "reviewedFiles": [
+    {
+      "path": "examples/en/pbo-boundary/cases.json",
+      "bytes": 1850,
+      "sha256": "76DB65C51ADA5A608A53739BFB4A8E60EB2A518404AD75E7652172622FBE7253",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/probe-source/config.cpp",
+      "bytes": 507,
+      "sha256": "759FC3E56EECC0A656493B0CC08DE391EE0347398CE013D6070316A698EC7350",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/probe-source/mod.cpp",
+      "bytes": 88,
+      "sha256": "521E0EA921896A225F11F2FF794F65E663147412280C20521CA7966A96303F26",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/probe-source/scripts/5_Mission/PBOBoundaryProbe.c",
+      "bytes": 1313,
+      "sha256": "75E7BDD80FA7617D6CF33EB5BA0EE0C3B953E0E643C7CEE839C42B2F3BD0243D",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/README.md",
+      "bytes": 7307,
+      "sha256": "6F7F5F994C755B8EFB7A7EBB645A54FE32C9DE6D5E6CFC72D0BF2DBCB269E2EB",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/controller.ps1",
+      "bytes": 36538,
+      "sha256": "C4D247483473369B1160E65DCC499DFC1DF4F17E944F63C46D8EDF68B646F2AE",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/evaluate-runtime.ps1",
+      "bytes": 5517,
+      "sha256": "46728FCF73EC2B89BF09024D6435D96C8D75DDA61F382FECAF75A7EAED8A35BC",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/generate-fixture.ps1",
+      "bytes": 9340,
+      "sha256": "558A1F35F2F737256C4AB3B1DBDC01FC184CD2CC66644B649C3CF7C247820014",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/PboBoundary.Common.psm1",
+      "bytes": 20914,
+      "sha256": "D020F09F77EFE202E027FC7D15C5129A9850B33CAE11F2EC5769D6158B295A4F",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/test-static.ps1",
+      "bytes": 16794,
+      "sha256": "11F04F118187EBA20A992AFBA2D98142B36EBCF816682EC160658C4CE28BF943",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/test_validate_pbo.py",
+      "bytes": 24333,
+      "sha256": "02561D5852973D9146CB2549C842416AC8F4826DD453B5E4C4423C01A178C178",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/validate-pbo.ps1",
+      "bytes": 18090,
+      "sha256": "2DA69FE24F3731B3D3EBFDC863B8CDE8388C5A64BEBC8EAD11659CE5DDBAA0CA",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/scripts/validate_pbo.py",
+      "bytes": 37808,
+      "sha256": "662B98FF32CB562A95032F21AC0A60E44B64A6B06016DA4BC2D6C8FA7700F1D3",
+      "authorHashMatches": true
+    },
+    {
+      "path": "examples/en/pbo-boundary/validator-contract.json",
+      "bytes": 8994,
+      "sha256": "B49448E24F19378EBCF5E8F54B9908E156139D161D7923A8A21676FEB1928C6B",
+      "authorHashMatches": true
+    }
+  ],
+  "accepted": [
+    {
+      "id": "A01",
+      "disposition": "accepted_scoped",
+      "claim": "All 14 delivered fixture text files match the authors final hashes, including final neutral contract B49448E24F19378EBCF5E8F54B9908E156139D161D7923A8A21676FEB1928C6B. Thirty reopened source/input hashes match their expected receipts where provided.",
+      "evidence": "inspection-receipt.json"
+    },
+    {
+      "id": "A02",
+      "disposition": "accepted_scoped",
+      "claim": "Eight case sizes/tokens/order, one separate fixed probe setup, seven runtime-eligible cases and tool-only plus-one entry match approved plan data. This is data parity, not enforced execution proof.",
+      "evidence": "inspection-receipt.json:matrixArithmetic"
+    },
+    {
+      "id": "A03",
+      "disposition": "accepted_scoped",
+      "claim": "Independent Python digest-block generation reproduces the PowerShell 1048583-byte output SHA256 B47BD3579A0E4F74911E2D60A0A884D9250D92EB958A58FF9279EEDAC33DB039. Generator closes/reopens and records stream hashes; parser payload hashing uses fixed 1 MiB buffers.",
+      "evidence": "adversarial-results.json; generate-fixture.ps1"
+    },
+    {
+      "id": "A04",
+      "disposition": "accepted_scoped",
+      "claim": "Both separately authored parsers produce identical full agreement projections for a tiny normal source-backed fixture and retained 441-byte native control. Retained control H151, C188,F0,T0,S339,dataEnd420,sentinelEnd=null, A441; method/original/reserved zero; sizes188,81; raw footer 00B451A3F09D692D6CD01FD70619D69F8D942B7115, SHA256 1CE4ADB9D28C778E083CA506E0042217CE6A68FF2EC7FC085E2E19596D619071.",
+      "evidence": "native_441/a.json; native_441/b.json; adversarial-results.json"
+    },
+    {
+      "id": "A05",
+      "disposition": "accepted_scoped",
+      "claim": "A uint64 arithmetic accepts 2^32 and 2^64-1, rejects 2^64; B analogous pure checks pass. Both reject tiny uint32-max ranges beyond EOF. No giant file or native numeric limit was tested.",
+      "evidence": "a-arithmetic.json; author-b-tests.log; invalid-comparison.json"
+    },
+    {
+      "id": "A06",
+      "disposition": "accepted_scoped",
+      "claim": "Supplied PowerShell suite reran 26/26 and supplied Python suite reran 19/19 after source inspection. Tiny invalid headers/order/footer/compression/conventions and raw/probe null-sentinel controls pass their tested expectations. Their omissions include the blocking cases above.",
+      "evidence": "author-a-tests/static-tests.json; author-b-tests.log"
+    },
+    {
+      "id": "A07",
+      "disposition": "accepted_scoped",
+      "claim": "64-bit STARTUPINFO is size104 with dwFlags at offset60 (misleading field name show), handles80/88/96; observed redirects and normal exit work. Suspended assignment/job ownership works on tested success and descendant timeout paths; all five observed process identities absent after review. Startup failure remains rejected.",
+      "evidence": "all-layouts.json; job-adversaries.json; final-process-absence.json"
+    },
+    {
+      "id": "A08",
+      "disposition": "accepted_static_only",
+      "claim": "Probe config/module/path context matches approved standalone Mission design; seven literal opens, bounded ReadFile4096 and CloseFile align with independently reopened ensystem.c declarations382-443 and retained prior probe/log shape. No PBO/receipt hash embedded and no success claim is printed. New source has not been compiled or run.",
+      "evidence": "inspection-receipt.json; exact probe-source files"
+    },
+    {
+      "id": "A09",
+      "disposition": "accepted_scoped",
+      "claim": "Exact Builder flags use packonly/clear/temp/prefix/toolsDirectory/filebank and omit include; installed embedded help and config/logger/exclude/user configs were reopened. BankRev is not executed; retained properties/member/signature/build logs were read. Public parser source is third-party implementation evidence only.",
+      "evidence": "embedded-help.json; include-help.txt; inspection-receipt.json"
+    }
+  ],
+  "rejected": [
+    {
+      "id": "I01",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A",
+      "title": "Validator A overwrites member source while reporting valid_exact",
+      "location": "scripts/validate-pbo.ps1:13,39-45,90; PboBoundary.Common.psm1:135-147",
+      "evidence": "exact-alias-reproductions.json; alias-repro.py",
+      "observed": "ReportPath=the first member source passes all checks, atomically replaces cfg bytes with the success report, and exits 0. Only archive/inventory/sources-manifest names are protected; physical report ancestry and member source aliases are not protected.",
+      "requiredRepair": "Before any report write, protect all declared sources and all input identities through physical paths/file IDs; reject destination reparse ancestry and aliases on every failure path, preserving original bytes. Retest exact, case, hard-link, junction-parent and malformed-input alias cases.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I02",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "B",
+      "title": "Malformed CLI error reporting overwrites member source",
+      "location": "scripts/validate_pbo.py:_write_parse_error_if_safe, main",
+      "evidence": "exact-alias-reproductions.json; alias-repro.py",
+      "observed": "Adding --unknown with ReportPath pointing at a declared member source enters _write_parse_error_if_safe before sources are inspected; it overwrites cfg with contract_input_error JSON and exits 3. Normal-mode source alias rejection passes.",
+      "requiredRepair": "Use one fail-closed destination-safety policy for parse errors and regular execution; no report is preferable when protection of declared inputs cannot be established. Keep exact before/after hashes and malformed duplicate-option coverage.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I03",
+      "severity": "high",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A",
+      "title": "Validator A does not implement bounded strict JSON/source contract",
+      "location": "scripts/validate-pbo.ps1:31-45",
+      "evidence": "adversarial-results.json: duplicate_json, missing_case_id, malformed_json, case_keys",
+      "observed": "Duplicate schemaVersion and missing required caseId both produce valid_exact; malformed JSON becomes internal_error. Source map is a case-insensitive PowerShell hashtable even though inventory uniqueness is ordinal: K and k pass inventory then are rejected as duplicate source keys. Input JSON is read wholly without a byte/count cap; source key-set equality, canonical field types and uppercase hash syntax are not strictly checked.",
+      "requiredRepair": "Bound JSON bytes/depth/member/source counts before allocation; reject duplicate keys and required-field/type defects; require exact source-key set with agreed ordinal semantics; canonical decimal strings and uppercase hex; map invalid input to contract_input_error. The malformed JSON defect is definite; caps/extra-key policy should be made shared contract text.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I04",
+      "severity": "high",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A",
+      "title": "Valid field/property edge cases disagree between validators",
+      "location": "scripts/validate-pbo.ps1:55,72-78",
+      "evidence": "adversarial-results.json: empty_datasize, 1024_properties; invalid-comparison.json",
+      "observed": "A rejects a valid empty config (OriginalSize=DataSize=0) alongside nonempty DataSize-convention members as mixed, while B accepts. A rejects exactly 1024 properties before reading the terminating empty key; B accepts. Eight corrupted tiny archives were rejected by both, but failure projections all differ because B hashes archive before parse and preserves established fields earlier; oversized string outcomes also differ.",
+      "requiredRepair": "Count properties only after seeing a nonempty key; determine conventions from archive-wide compatibility, preserving the ambiguous zero-length case. Agree explicit failure projection and outcome rules without requiring identical independent diagnostic wording; add cross-validator edge-case tests.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I05",
+      "severity": "high",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "B",
+      "title": "Malformed schema shapes escape into internal errors",
+      "location": "scripts/validate_pbo.py:_parse_inventory,_parse_u64_decimal,_read_json",
+      "evidence": "adversarial-results.json: b_json_list_profile,b_long_decimal",
+      "observed": "fixtureProfile=[] triggers unhashable-type internal_error; a 5000-digit canonical decimal triggers Python integer conversion limit and internal_error. The contract calls input-invalid failures exit 3. Source validation opens aliases and checks only regular file/length/hash, so reparse/hard-link/sparse/compressed physical policy is not independently enforced.",
+      "requiredRepair": "Validate types before set membership, reject decimal length above 20 before int conversion, bound depth and classify JSON recursion/type failures. Agree which physical checks belong in each validator versus controller and fail closed for the physical paths required by the accepted harness.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I06",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/controller",
+      "title": "Forged validator reports accepted despite failed processes and wrong identity",
+      "location": "scripts/controller.ps1:76-77",
+      "evidence": "controller-adversaries.ps1; controller-adversaries.json:forgedValidatorAcceptance",
+      "observed": "Exact Run-Validators function accepts agreement=true and valid=true from two stub reports with implementation=forged-not-a-validator, wrong implementation hash, outcome=internal_error, exitCode=99, timedOut=true, resource guard breach and cleanup=false. The PBO argument is unrelated to the report.",
+      "requiredRepair": "Require exact schema/field types, distinct approved implementation IDs and full implementation/dependency hashes, valid_exact/exit0, no guard/timeout, proven cleanup, normal mode, exact archive/inventory/source identity and exact projection. Preserve separate parser verdicts when process fails, but never accept the stage from those alone. Canonicalization must preserve arrays versus scalars/nulls.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I07",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/evaluator",
+      "title": "Fabricated crash/abort receipt and unrelated seed produce read_exact",
+      "location": "scripts/evaluate-runtime.ps1:25-43; controller.ps1:115-116",
+      "evidence": "evaluator-adversary.py; forged-runtime/execution.json; forged-runtime/result.json",
+      "observed": "No runtime was launched. The evaluator accepts a receipt with executable=NEVER_LAUNCHED, root=null, no identities, access-violation exit, timeout, resource guard and cleanup=false. Fresh fake logs match an invented seed although actual archived sentinel is only the eight bytes sentinel, not the claimed case/nonce string. Hashing mutable external files is not proof of a run.",
+      "requiredRepair": "Bind an immutable approved launch context to exact deployed boundary/probe bytes, source recipe/sentinel hash, two independently valid agreed reports, executable/config/mission hashes, root identity/start/end and log paths/hashes; enforce runtime lifecycle and classify crash/resource/compile outcomes independently from read observation. Reject incomplete/forged/aliased receipts and bind claimed expected bytes to the parser sentinel range. Do not treat metadata as PBO-read bytes.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I08",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/controller",
+      "title": "Run state and attempts are trusted without provenance or sequential ownership",
+      "location": "scripts/controller.ps1:39-56,83-87,98-103,115",
+      "evidence": "controller-adversaries.json:unsafeStateAccepted; controller-adversaries.ps1",
+      "observed": "Require-Run accepts schemaVersion=999, unrelated recorded root, wrong controller/matrix/contract hashes, negative packaging count, runtimeLaunches=999, and a forged small-control pass/probe pointer. No prior case/receipt rehash, lock, next-case-order check or runtime launch ceiling check is enforced. Failure trap can write receipts/state in a supplied physical directory before its runtime-base containment was accepted.",
+      "requiredRepair": "Validate exact state schema/root/run ID, immutable approved code/matrix/contract and probe identities, prior case receipts and small-control all-stage proof before dispatch; use exclusive run ownership and bounded monotonic counters/order. Failure handling must not write outside an already accepted owned run root. Keep retries separately source-gated or explicitly unsupported.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I09",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/controller",
+      "title": "Cleanup accepts forged eligibility for retained evidence",
+      "location": "scripts/controller.ps1:59,119,129-130",
+      "evidence": "cleanup-simulation.ps1; cleanup-would-remove.json; cleanup-simulation.log",
+      "observed": "The exact Cleanup branch accepts schemaVersion=999, wrong manifest.runRoot, no receipts and a literal retained-parser-valid.pbo under RunRoot, and calls the recording Remove-Item stub with -Recurse. Its simulated output claims allAbsent=true. The original tiny target still exists: no real removal ran. Eligibility paths are not linked to reread parser/range receipts, and descendants are not individually checked for links before recursion.",
+      "requiredRepair": "Validate manifest schema and root, restrict eligible source/temp/key categories, require immutable receipt and hash eligibility with no retained/log/PBO overlap, validate descendants/ancestors without following links and recheck physical containment immediately before deletion. Confirm real absence only after successful bounded literal removal; protect process-live paths.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I10",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/common",
+      "title": "Failed native startup can leak an unowned suspended process and handles",
+      "location": "scripts/PboBoundary.Common.psm1:55-65,185",
+      "evidence": "exact source inspection; inspection-receipt.json",
+      "observed": "ContainedProcess.Start creates job/redirect files and may throw before returning ownership. If CreateProcessW succeeds but AssignProcessToJobObject fails, catch terminates the empty job, not the still-suspended root. Caller launcher stays null, so no disposal/wait occurs. Failures opening redirects or creating/setting a job also lack transactional disposal. SetHandleInformation return values are ignored.",
+      "requiredRepair": "Make startup transactional with safe handles/try-finally; retain and terminate/wait the exact newly created process handle when assignment fails, then close thread/process/job/redirect handles. Check inherited-handle setup and restrict inheritance to explicit handles; prove failure cleanup with a safe injectable native shim before any native experiment. No real assignment-failure test was attempted because current cleanup is unsafe.",
+      "verificationKind": "static_defect_not_dangerously_exercised"
+    },
+    {
+      "id": "I11",
+      "severity": "high",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/common",
+      "title": "Exit 259 is misclassified as a running process; census remains incomplete",
+      "location": "scripts/PboBoundary.Common.psm1:67-69,188-236",
+      "evidence": "job-adversaries.ps1; exit259/process.json; final-process-absence.json",
+      "observed": "A new PowerShell child executing exit 259 is absent, yet helper waits until timeout, records process_timeout/terminatedByHarness and null exitCode. Normal exit0, exit17 stdout/stderr, and a two-process timeout tree passed and all five observed identities were independently absent afterward. Polling records only descendants surviving a sample and does not hash child images; fast FileBank identity cannot be proved from a missing sample. Resource samples carry PID but no creation identity.",
+      "requiredRepair": "Wait on process handles/job events rather than treating GetExitCodeProcess==259 as liveness; retain actual exit code. Capture descendant creation/exit and image/hash provenance or explicitly fail unverifiable tool selection; bind each resource sample to the captured identity. Ensure cleanup always disposes even if queries fail.",
+      "verificationKind": "reproduced_plus_static_census_limit"
+    },
+    {
+      "id": "I12",
+      "severity": "blocking",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/controller",
+      "title": "Full eight-case allocation schedule cannot pass its own cap",
+      "location": "scripts/controller.ps1:61,111,119; README Cleanup",
+      "evidence": "inspection-receipt.json:matrixArithmetic; inspection-receipt.py",
+      "observed": "Each completed runtime case retains both canonical PBO and copied runtime Boundary.pbo; cleanup schedules only fillers/temp/key. Even after all eligible cleanup, before member-u32-max the lower-bound existing PBO bytes are 30062673920; adding source and three projected copies is 47242543100 (>40 GiB), before overhead. Thus the seventh expected-valid case aborts before Builder if earlier cases pass.",
+      "requiredRepair": "Account every retained/runtime/source/temp/scratch artifact in one schedule; retain one canonical immutable archive and safely remove redundant deployed copies after proven process cleanup and hash receipt, or revise the approved resource plan through council. Do not weaken the 40 GiB guard. Recompute all eight cases and probe overhead with no large files.",
+      "verificationKind": "pure_arithmetic"
+    },
+    {
+      "id": "I13",
+      "severity": "high",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/controller/common",
+      "title": "Source inventory and stage resource checks are incomplete",
+      "location": "scripts/controller.ps1:60-61,93,111; PboBoundary.Common.psm1:150-176,185; generate-fixture.ps1:75-78",
+      "evidence": "controller-adversaries.json:hiddenUnexpectedSourceAccepted; source inspection",
+      "observed": "Assert-ExactSource ignores hidden unexpected files because Get-ChildItem lacks -Force and does not bound inventory size or verify source records map exactly under Source. Allocation scan checks files but skips rejecting descendant reparse directories. The process starts before first during-resource check; mission/PBO Copy-Item and source rehash are not continuously guarded. Generator checks every 64 MiB after writes, so an actual hard cap has a possible overshoot.",
+      "requiredRepair": "Perform bounded physical tree traversal including hidden/system entries and all directories; validate exact source mapping and no links/sparse/compression; measure/check before launch or copy and during all lengthy stages. Reserve projected next writes so owned allocation cannot overshoot the hard cap; independently bound mission inventory and copied artifacts.",
+      "verificationKind": "reproduced"
+    },
+    {
+      "id": "I14",
+      "severity": "high",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/controller",
+      "title": "Small-control failures can still advance to signing/runtime; outputs lost from parsing",
+      "location": "scripts/controller.ps1:93,103-119",
+      "evidence": "exact RunCase/PrepareProbe stage nesting; inspection-receipt.json",
+      "observed": "RunCase proceeds from any discovered PBO to BankRev/sign/runtime when parsers agree even if Builder outcome is failure. The failure only halts after all later stages. If multiple PBOs exist, pbo=null so none is parsed; PrepareProbe throws on failed Builder before parsing its retained output. This contradicts stop-on-small-control-stage-failure plus independent artifact interpretation.",
+      "requiredRepair": "Preserve/discover and parse each bounded produced artifact independently after failed Builder, while halting downstream native stages until Builder accepted_exact. Journal each stage before invoking the next, preserve partial outcomes on exceptions, handle unexpected plus-one output explicitly and keep probe setup accounting separate. Add safe end-to-end stub state transition tests.",
+      "verificationKind": "static_defect"
+    },
+    {
+      "id": "I15",
+      "severity": "high",
+      "disposition": "rejected_requires_author_repair",
+      "owner": "A/controller",
+      "title": "Builder error log and tool identity gates are weaker than specified",
+      "location": "scripts/controller.ps1:69,73-74,79-80,109",
+      "evidence": "controller-adversaries.json:toolLogClassifications; installed logger.xml; retained Data tool logs",
+      "observed": "Tool-Outcome accepts 2026-09-14 01:23:45,000 [ERROR] 1: Example.Main - native builder failed at exit0. That shape is the installed RollingFile/Console pattern, and copied shared logs are not evaluated for failure. BankRev prefix check is substring rather than exact parsed property; DSCheck accepts exactly one arbitrary Signature ... is OK without matching the expected bisign; DSCreateKey process verdict is discarded. Child executable hashes/effective config are not established.",
+      "requiredRepair": "Parse actual retained log formats and separate invocation-scoped shared-log deltas; fail FATAL/ERROR at exit0 without rewriting parser results. Require exact BankRev property/member facts (allow only the explicitly observed trailing slash convention), exact expected signature identity/hash, key-create outcome and immutable scoped executable/config receipts. Keep effective user config unresolved unless observed.",
+      "verificationKind": "reproduced"
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "K01",
+      "disposition": "unresolved_contract_clarification",
+      "topic": "Failure projection",
+      "proposal": "Define whether agreementProjection applies only to valid_exact. Recommended: exact whole projection for valid_exact; on failure compare specified stage/outcome and only jointly established facts, with unavailable keys null and no fabricated zeros. A hashes archive late, B early; this is not by itself false evidence."
+    },
+    {
+      "id": "K02",
+      "disposition": "unresolved_contract_clarification",
+      "topic": "Canonical paths and source keys",
+      "proposal": "Define sourceKey ordinal case-sensitive uniqueness and reject empty/dot/dotdot/drive/UNC/device/ADS/NUL or forward-slash archive path components. Both validators currently accept matching inventory/header ..\\outside.txt; neither extracts it, so the reproduction did not write outside council data. Define source/report physical-identity safety and hard-link/reparse policy explicitly for both validators."
+    },
+    {
+      "id": "K03",
+      "disposition": "unresolved_contract_clarification",
+      "topic": "Bounded JSON and error taxonomy",
+      "proposal": "Specify shared JSON byte/depth/member/source caps and exact-required/type/duplicate-key behavior, unknown-field policy and bounds failures. Recommend contract_input_error/3 for malformed input; resource_guard_error/4 for explicit size/depth budget refusal; invalid_header/2 for corrupt archive. Both must include required report fields when safely writable."
+    },
+    {
+      "id": "K04",
+      "disposition": "unresolved_contract_clarification",
+      "topic": "Zero-length OriginalSize",
+      "proposal": "Zero-byte entries are compatible with both zero and dataSize. Determine one archive-wide compatible convention; respect an explicit compatible requested convention; when observe and every member is empty, choose documented zero precedence. Nonempty mixed fields must reject."
+    }
+  ],
+  "evidence": [
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/1024_properties/a.console.txt",
+      "sha256": "ED8CAA3F71B035D3A287696764F7474935695500A22B14BABEB4F342E011C4D3",
+      "bytes": 711
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/1024_properties/a.json",
+      "sha256": "DBD99847CBCF337A0F8C3E1C85499761F0D011E57C29E5B3CF32FDA7585633BE",
+      "bytes": 709
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/1024_properties/b.json",
+      "sha256": "A6316C79EBE2A675EAE23F1E4195694B08473695E0B7E3386F19CF6525207A5F",
+      "bytes": 31516
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/1024_properties/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/1024_properties/sources.json",
+      "sha256": "5E0821FB7F1CD227CC18CC44B54AEBFF36B0BB17A73C5EE9B39377BA0E58CA2C",
+      "bytes": 760
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/a-arithmetic.json",
+      "sha256": "8A12D1B5D8A545AAA2FEEDF6BF7374E25E3A1C10A9EC7FA3FDAEA220149C24CB",
+      "bytes": 352
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/adversarial-results.json",
+      "sha256": "E7020A6088831C98DAAA573058DAD108361FC5954720014491974A57DAC02C03",
+      "bytes": 6373
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/adversarial.log",
+      "sha256": "9AFB45F850A60D4EA3A281C4E613E41EA640D5B3837D08D60C59903FE444556F",
+      "bytes": 7434
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/adversarial.py",
+      "sha256": "C4A4C69036C8CCAD7143BF1BA59CB8DDABCF92ADF0FCDDF58229D43A5FA84771",
+      "bytes": 5839
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/alias-repro.log",
+      "sha256": "AC3A7829E3D26C1D4188B9B556925A8345C44244C209F2F341BBB946AA816379",
+      "bytes": 2473
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/alias-repro.py",
+      "sha256": "14D57B805F13D032500EFDD47EEB7A129B68B3FB80099889A1E82C02F24CC8A7",
+      "bytes": 1792
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/all-layouts.json",
+      "sha256": "01587610E3BD1D628323F530833031784C6B00AC1287922B0B03CA0A6BD7DB7C",
+      "bytes": 351
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/alias.log",
+      "sha256": "3D3987B5F29CC7F99E5AD8AC980D1816A704A942E05C660318598663B9ECAB06",
+      "bytes": 68
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/contained-exit/receipt.json",
+      "sha256": "FAC08D8726F23CBBDDC7BC085231B770E3D2AE422C638E4EAB6310C57AF56E47",
+      "bytes": 2789
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/contained-exit/stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/contained-exit/stdout.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/contained-tree/receipt.json",
+      "sha256": "DA0D7D0A8FC42EDADC690EC535BF96998312880B8B9065FA682567AA34A57BBE",
+      "bytes": 4234
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/contained-tree/stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/contained-tree/stdout.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/duplicate_properties/console.log",
+      "sha256": "9BC191C6AF5FD11306D00C93153BC15341D1EC76203376854813CF7BF6BD31CE",
+      "bytes": 710
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/duplicate_properties/report.json",
+      "sha256": "42D7BD1F02542CF5B0079B91FA51849DC67E8780EE3103B808A6E0AC44C1ED6E",
+      "bytes": 708
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/context.json",
+      "sha256": "E6566C6F3D3590A15A9FC147547B466A7423CD357FB1D547021907671130361C",
+      "bytes": 1020
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/error_marker/console.log",
+      "sha256": "AA3227EA6B725CA6B680ACC5603AFBD0C24427BC27E36ED63A9457D201A77415",
+      "bytes": 806
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/error_marker/report.json",
+      "sha256": "69077999216ED2D55A241FA150D24516DE06FCA075EC02AE9B6E57D9070310A5",
+      "bytes": 804
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/error_marker/script.log",
+      "sha256": "A16DC8E3CD4430BB378EA6C08C0DB70586C0D4C52854E16A6ED206AD7325A2D0",
+      "bytes": 381
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/runtime.json",
+      "sha256": "1CB782826D34C04DDEB01DDCE88C81C6B42AA1CF8030957BEB1C0163BAE306E4",
+      "bytes": 52
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/seed.json",
+      "sha256": "E96751B0001C513F3B406CFBE73D1E752EDABC3D2BE3B841CB6657CBF624AD43",
+      "bytes": 331
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/stale-context.json",
+      "sha256": "E6566C6F3D3590A15A9FC147547B466A7423CD357FB1D547021907671130361C",
+      "bytes": 1020
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/stale_receipt/console.log",
+      "sha256": "CAC5AFA0BB710E0AB9EAC46902AE84CA63BB5450044777865B9D2427FBEAB6F1",
+      "bytes": 813
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/stale_receipt/report.json",
+      "sha256": "C146A8D3094402306B11CBFA143C1DA967B00EA745182A6CDEB3DBC4AE346281",
+      "bytes": 811
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/stale_receipt/script.log",
+      "sha256": "6C31E691B410EEDDADF5C52CA597275C61E106A9570E7F620FABB0852871D6C0",
+      "bytes": 351
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/valid/console.log",
+      "sha256": "6AA0A26C3660988BEA99F87AA70578470F4645C08782764FA45A05A45E74471C",
+      "bytes": 2011
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/valid/report.json",
+      "sha256": "3083AA683BBA3CC35B8056C97E9FE385FBC22D1DB89BD49142245648CFAE0F78",
+      "bytes": 2009
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/valid/script.log",
+      "sha256": "6C31E691B410EEDDADF5C52CA597275C61E106A9570E7F620FABB0852871D6C0",
+      "bytes": 351
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/validator-a-copy.json",
+      "sha256": "129D37180CB153E201082DAE880818092C448A8ACE132BABD3A30FAA82D1B45C",
+      "bytes": 3733
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/validator-a.json",
+      "sha256": "7B14D18C1F9808E730922109F77200BF69CE4D0FFDD8253EDBD23311E9FD5AB5",
+      "bytes": 3730
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/wrong-context.json",
+      "sha256": "7C5F8CE7C07D0B1D23CC221A49C2373A7235D5B57A91A1C38E72A718234E94B5",
+      "bytes": 1020
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/wrong_context/console.log",
+      "sha256": "9CDC12122EA4E14CB932646AB205E03B20044022F1E983C87366F816CEDFA9EE",
+      "bytes": 797
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/wrong_context/report.json",
+      "sha256": "F4884C064DD363B99D86EAD2B8677514BC0FD707BA80EA70A59D498E8BCEA552",
+      "bytes": 795
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/wrong_context/script.log",
+      "sha256": "6C31E691B410EEDDADF5C52CA597275C61E106A9570E7F620FABB0852871D6C0",
+      "bytes": 351
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/wrong_open_count/console.log",
+      "sha256": "D11F9637E3CD702570420E04547221483A8FD7CFB64E7ECCF80DD5E0DBF510BC",
+      "bytes": 804
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/wrong_open_count/report.json",
+      "sha256": "64988BC331D18F1657029AE84DA287F8377FC9D02150B8B50C04BE227DD44578",
+      "bytes": 802
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/evaluator/wrong_open_count/script.log",
+      "sha256": "56A6D10764F4575B93C6D9D8B101277B6914DA11652E5293834270DF64E24B85",
+      "bytes": 351
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-a/expected-inventory.json",
+      "sha256": "6231E97E2A47A8331BFB0B671F00E4F3CC3AF2E8A2A1F0CFC38326EA6A002FCB",
+      "bytes": 628
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-a/expected-sources.json",
+      "sha256": "CEA518CB9E69614D1CD6FD58B699D284C3221C5DCADAB4CDA19D9D8F2C576602",
+      "bytes": 1024
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-a/prepare-receipt.json",
+      "sha256": "8EF904EB7FC7E7129C3EA7EC6B3680BBF2F889B889CB2CD5CA3FE975AC925380",
+      "bytes": 3615
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-a/run-context-seed.json",
+      "sha256": "D9AA1DD5DB20CA6B5F2E965ABFE8F496030C327E1FF5173AD7EAD5E33D959368",
+      "bytes": 813
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-a/source/payload/aa_filler_01.txt",
+      "sha256": "B47BD3579A0E4F74911E2D60A0A884D9250D92EB958A58FF9279EEDAC33DB039",
+      "bytes": 1048583
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-a/source/payload/zz_sentinel_small_control.txt",
+      "sha256": "10579104592944AA77FFD57E859BA044F7894D698F7229545DB8F12AFCF10FA1",
+      "bytes": 161
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-b/expected-inventory.json",
+      "sha256": "6231E97E2A47A8331BFB0B671F00E4F3CC3AF2E8A2A1F0CFC38326EA6A002FCB",
+      "bytes": 628
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-b/expected-sources.json",
+      "sha256": "1DB401ADE9956C580DEC84994D8CD2E71EEC896317A378C2524F44519DFF799A",
+      "bytes": 1024
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-b/prepare-receipt.json",
+      "sha256": "E8E39538292C0AE712083C1FEBA7CFD9C71ED8B2EFC13802EDA7164B72F5EB40",
+      "bytes": 3615
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-b/run-context-seed.json",
+      "sha256": "3633B22D1D6896381D793A559AC67088ED2C538CBFEB6429618BEBB8A6F812AB",
+      "bytes": 813
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-b/source/payload/aa_filler_01.txt",
+      "sha256": "B47BD3579A0E4F74911E2D60A0A884D9250D92EB958A58FF9279EEDAC33DB039",
+      "bytes": 1048583
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/generator-b/source/payload/zz_sentinel_small_control.txt",
+      "sha256": "B6FDF148B1BCBC792D3754A444164062FFB4CAB490FBE2F8516803CCDBD3143A",
+      "bytes": 161
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/invalid_utf8/console.log",
+      "sha256": "E5AE950A4BDEDA8F3EC7FAA4268EDADB57FBEB15D251EB7BBD278D6C910B3FBE",
+      "bytes": 707
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/invalid_utf8/report.json",
+      "sha256": "870C9907B7360178537CB41C0FB5A16F92BB6B98AF9B87B3B00D80B14B68251E",
+      "bytes": 705
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/inventory.json",
+      "sha256": "D61F34D3B626AA95CFB429C3D60AD5AE1FC82CFC637CE8E92C41C7E9C00E96AE",
+      "bytes": 560
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/malformed_footer/console.log",
+      "sha256": "A151AF9F65993D84D8A25B5E1EB7ADD8DDE74833B19B9798E157B0537119C53A",
+      "bytes": 1247
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/malformed_footer/report.json",
+      "sha256": "33AB0A4AB5E00A3E32841F669E382E5750E00E90742C6A6C907CBD653331C9AD",
+      "bytes": 1245
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/malformed_header/console.log",
+      "sha256": "86D62C347AF24CB5F34ACB5B4A12532F50A48DF1D1CA341464B685D1F64F3F9B",
+      "bytes": 721
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/malformed_header/report.json",
+      "sha256": "DC692106B061337496EA80B56EB2A11D7FE6656B4C33000F93EABD2D923DC3C9",
+      "bytes": 719
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/multiple-sentinel-inventory.json",
+      "sha256": "98AAD01B7C7C61040E69F7DF41A5E43DBF18CA41B882CD908E8AD48C75B721F7",
+      "bytes": 562
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/multiple_sentinel_contract/console.log",
+      "sha256": "6C20099AEF603D15DF719D8450314CD60795A8522793C992C4C424585AC59F6E",
+      "bytes": 719
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/multiple_sentinel_contract/report.json",
+      "sha256": "4EF6A72BE402A04D6F41AABEA7F06929561B41F1F540DBA3692F3C24EF972C62",
+      "bytes": 717
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/probe-inventory.json",
+      "sha256": "B8BFBD0B70B1F9EF9613BD1C63A84B32539D026DE0F6CC29BF88206636FFA628",
+      "bytes": 553
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/raw-no-config.json",
+      "sha256": "2679E26437C193916EE0394C1E88B5345C3AA4A8B1D1794714DEE22F76A8ADBE",
+      "bytes": 558
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/raw-two-config.json",
+      "sha256": "9D571FB185B72CB3683ABCA46DD6AC59FCFE4BC26311E378FECBB924240A9C48",
+      "bytes": 560
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/raw_control_multiple_config/console.log",
+      "sha256": "E6873A0BD11385883C288B798B91B4B68E7AAA1019B5BB46F1AB0CC2800C7009",
+      "bytes": 783
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/raw_control_multiple_config/report.json",
+      "sha256": "15D58B1EE3D9C0C1FB0776A4692547356BE0D76ECA00CF3DD4EAA11B9049C661",
+      "bytes": 781
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/raw_control_no_config/console.log",
+      "sha256": "2594900524EF8AA953AA9FE8A0458BBE338C5FD60E9E60EB1F67B3CBE0EE972A",
+      "bytes": 3726
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/raw_control_no_config/report.json",
+      "sha256": "DA072698DF801D9196655317644AEB50488B7A1716476DBF3DA7DBE76811077A",
+      "bytes": 3724
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/report_alias/console.log",
+      "sha256": "A318F56B08FBDC35505D95E59B6149E6642D3A48AD62FADA11ABDDBF0AAA127D",
+      "bytes": 3732
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/report_alias/report.json",
+      "sha256": "7B14D18C1F9808E730922109F77200BF69CE4D0FFDD8253EDBD23311E9FD5AB5",
+      "bytes": 3730
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/required-prefix.json",
+      "sha256": "19994057DC7C556484B07A4E706FE31769766182CB0A5B8DD7CCA18DA9599FEB",
+      "bytes": 571
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/required_prefix_absent/console.log",
+      "sha256": "EC0CF95C92C9630E1CEF3B8ECFDBACF327E7F9057EA7E9AB34EB57552A9B8A10",
+      "bytes": 757
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/required_prefix_absent/report.json",
+      "sha256": "6E3217753272A6A6BEF1577F5EAAF721AFB8A53FCBCB45110E32BE1ECED8E22A",
+      "bytes": 755
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/retained-inventory.json",
+      "sha256": "43C3BB2E70D213B91737A61BB8D1A72CFCD25AADADD4FD4C0A9C8D8EC2794086",
+      "bytes": 453
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/retained_441/console.log",
+      "sha256": "7C7770B4B6BE06D6CA8883C67AEE8D2F9E26247C27ED288162995C2046040AC5",
+      "bytes": 3297
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/retained_441/report.json",
+      "sha256": "A19C067676D7030FCCF413B2854F7586F0FCC0EE96E9E53048DF751576B16BAA",
+      "bytes": 3295
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/reverse-inventory.json",
+      "sha256": "B61BB46218567FDF87D48A0248F0BE5689ABF952E97F0C3C79FD2DB1D409D33A",
+      "bytes": 560
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/static-tests.json",
+      "sha256": "8678CB0703D4B2DE052F5891AA92F7E24E700345D864FB94778969FF02C62CCE",
+      "bytes": 3367
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/unterminated_name/console.log",
+      "sha256": "EC3A1890BCDF6042BB0408A91DB542D71441FBDB3E2CE32DA0B62500BAFCEB88",
+      "bytes": 724
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/unterminated_name/report.json",
+      "sha256": "9E3A05527D2AF81EF0C6B283FB643AA584EF06FAA01EE82B449620B91F6D6F94",
+      "bytes": 722
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/valid/console.log",
+      "sha256": "A318F56B08FBDC35505D95E59B6149E6642D3A48AD62FADA11ABDDBF0AAA127D",
+      "bytes": 3732
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/valid/report.json",
+      "sha256": "7B14D18C1F9808E730922109F77200BF69CE4D0FFDD8253EDBD23311E9FD5AB5",
+      "bytes": 3730
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/wrapped_range/console.log",
+      "sha256": "EDFC6A006213784E2897AEA205EFE127970B6B7FC8C978C905202A91382CE19A",
+      "bytes": 1235
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/wrapped_range/report.json",
+      "sha256": "C329160F1C588A8E715B81F70936F70436C5EDD3FFB3E44B053CB0FC580FB91C",
+      "bytes": 1233
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/wrong_order/console.log",
+      "sha256": "D4F9E2DA014D885D34696847D7B6C1A986DF37AA06D6E2E5A160D01E6E1C30EB",
+      "bytes": 1249
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/wrong_order/report.json",
+      "sha256": "881995957D5F2839CCE34900F4406919EAA095A8FD4400B2AEA2DAD306A7F787",
+      "bytes": 1247
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/wrong_original_convention/console.log",
+      "sha256": "F726B485B1BFDD86C79ED340051A65E2B80784D85C496646663D24A2B28E52EA",
+      "bytes": 1273
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/wrong_original_convention/report.json",
+      "sha256": "82B3C8E57E7FA72CB408AB0C07C0E5770B09D6149C75621DB6D957172533EB32",
+      "bytes": 1271
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/zero_sentinel_probe/console.log",
+      "sha256": "ADB1424973CAC4A925186F02C5BEE0AC733B07BEF00FD7D6E643866D3B6E6327",
+      "bytes": 3727
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests/zero_sentinel_probe/report.json",
+      "sha256": "D591E09CC6FC3828CC420E5D0879ED63C26D047EC18F3DEA8372132E7B21DFA9",
+      "bytes": 3725
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-a-tests.log",
+      "sha256": "B38D03DAA592B65CB219489ED891784DC4208794A776D87A455421F52D3EE194",
+      "bytes": 3369
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/author-b-tests.log",
+      "sha256": "CC1BF7DC8550C36141F38FC36F833E4CA79458B1882B02E976DBCC4C16BBBBF6",
+      "bytes": 2608
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-duplicate_properties.json",
+      "sha256": "8268AB1756C3ED2A9428127349D3C6137F591C9E98F38F0C351009C38422AE01",
+      "bytes": 645
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-invalid_utf8.json",
+      "sha256": "9DDD69B77BE03F6B112BEC3FF075BB362F16FD247D6A06A89621CD20F3DB62E2",
+      "bytes": 634
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-malformed_footer.json",
+      "sha256": "B1D841C648794D2189E2549970982952FD3FD2D3E4FD802F910E3A3E1E1544D5",
+      "bytes": 2867
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-malformed_header.json",
+      "sha256": "B5175B5AF022C53E3F48ED36DA73AE3C05C219FB7F829F1250581020F00FD692",
+      "bytes": 650
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-unterminated_name.json",
+      "sha256": "C20FFA9A68CC540FE667D2587A9812F34947C1C832E8D174A1FA4E20C5BA9A0A",
+      "bytes": 660
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-wrapped_range.json",
+      "sha256": "2B2D181F3AE77111B51DCAF8D1ED4FC61AAD9B6AC417693B098ABAB21397C910",
+      "bytes": 2297
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-wrong_order.json",
+      "sha256": "D63263C38A6B94C9DA28C6F30572CEAFB00E83EDFBDC30EB729B69EB4D88DD07",
+      "bytes": 649
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b-wrong_original_convention.json",
+      "sha256": "1404AC4D2869934AA34FD3C0878A22882604476B99BBC239F37371F70F032789",
+      "bytes": 2499
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_json_list_profile/a.console.txt",
+      "sha256": "9D491D84A0015D24604B0829938B6DEDF700672C2A3F6879B3C45AD1BAB4A407",
+      "bytes": 728
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_json_list_profile/a.json",
+      "sha256": "2FC28AEB64182A30F828F8B7544F5D1482697E288F0D20A40E5B265C82152965",
+      "bytes": 726
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_json_list_profile/b.json",
+      "sha256": "3B2F26402975FBDF6F98116801DB64BDBAFDC80C0846F5D804A328D71F39EE2D",
+      "bytes": 651
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_json_list_profile/inventory.json",
+      "sha256": "61FE66F75A80AC5CA83EAC34748DEAFA7897CB7538C162A8D9EB49C052831630",
+      "bytes": 394
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_json_list_profile/sources.json",
+      "sha256": "14D29AF5305086FC4C4256B631547223A375F59804A230B00A69D410897B8438",
+      "bytes": 772
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_long_decimal/a.console.txt",
+      "sha256": "4E94CB432E2BFB4018C309A8064412B3A8B6CA41A71D5DD9F655D52C6B91EB3F",
+      "bytes": 715
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_long_decimal/a.json",
+      "sha256": "B6DB53DC58D512DCE67D8771F45A4F231807A40F8C09908FBDA894E6C06EE26F",
+      "bytes": 713
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_long_decimal/b.json",
+      "sha256": "7183F22A655EB6E137BC0F211EED6B10925F6EC87F73F1ECB313EDE7C9DBCEA9",
+      "bytes": 727
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_long_decimal/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/b_long_decimal/sources.json",
+      "sha256": "5A919026C5F012A0E101651A9EE80706C6703ECFBDE97D61EC4733611DF66855",
+      "bytes": 5756
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/case_keys/a.console.txt",
+      "sha256": "3B3384681BA2FBC3F9A7C25389EAADC2DDD1CC2070AD8C23B0C4C32DAE3105E8",
+      "bytes": 702
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/case_keys/a.json",
+      "sha256": "496826E46C9EE6B4239919D414CA305CD41419396B931B83B585FFD186B088C1",
+      "bytes": 700
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/case_keys/b.json",
+      "sha256": "6BE31F7CB1AB493BB0D3FC8526E2F2102F3F0D5A8AFFC0AE42D3552983A407CD",
+      "bytes": 2896
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/case_keys/inventory.json",
+      "sha256": "8CD75CD6E3E0105AD10BA1525913FF793A974B2A1C6EEE8F8FEB9A779EDE3D31",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/case_keys/sources.json",
+      "sha256": "8D0444D99DA38798D379B14B4BCC9E0DDA828ECD6060120A7EF4BCAFA4070DA0",
+      "bytes": 742
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/cleanup-fake-run/cleanup.json",
+      "sha256": "B41085C6A6068584B7660F2F11F183F3D0FAE680942D43C977811E26B6F79EAA",
+      "bytes": 219
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/cleanup-fake-run/receipts/cleanup-20260914050115.json",
+      "sha256": "6D347A3ABA99606BE287BB3379FC72546BDA3C5489F24CD4CAB35FE2E16D1196",
+      "bytes": 340
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/cleanup-simulation.log",
+      "sha256": "4CE2DC4D52762EE62FF1DCD423F969E5551F80C9166504447C83AFD30E29C376",
+      "bytes": 342
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/cleanup-simulation.ps1",
+      "sha256": "C6F7763AE387F2B50FBCF4444C2D1DAD1B0601E33E0B4EAF0E80BF7EEADB0D0A",
+      "bytes": 1918
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/cleanup-would-remove.json",
+      "sha256": "9CB322990E38E57D30BF3794758FB3BE61E92279632655F42829A2B4178A71C6",
+      "bytes": 120
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/compare-invalid.py",
+      "sha256": "4D52FD02E0B87CBE89CA1C43D7F8F85A89830B1D9FD932FFCCB24BBD0330A09C",
+      "bytes": 1466
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-adversaries.json",
+      "sha256": "6FB525101FA1F00EC8EB9AC6E3C9342CD64D15839A834C370979F113A34D31F7",
+      "bytes": 10211
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-adversaries.log",
+      "sha256": "8A20C5FDA2CAE74422046901556E6B1311C5CE4117AD1FAFBB25F57BFE98BF0C",
+      "bytes": 10213
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-adversaries.ps1",
+      "sha256": "73E1FE51F2433579DD73F8C7B5BC1256D26BD31C303E77CD5F9FF531C9D308EC",
+      "bytes": 4502
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/449d1496883f49209fdd61621b592987.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/60aa3bf424c94ebcb7062ff8e9832cba.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/6319e821602841eca8fdb6bea917e417.log",
+      "sha256": "54B436E1E725ABA36A5F60DB145364FA53330B09168099E9ACEE767B7CE16FB9",
+      "bytes": 71
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/6e6000e19d1140dcb8b10af0bb65f32a.log",
+      "sha256": "135453A9C9F89C5E89A02F1116376CA9F04F4A45A6F176C17C39F0A5FDC8184D",
+      "bytes": 19
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/ceca7d7c31804688bb3e9cab832774dc.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/ded985cc63b645328fbd1f8e54642dcd.log",
+      "sha256": "9EEB8DB070E69DFF4ECA768CF2041C303484E41497787F3698EFD59331A8C576",
+      "bytes": 52
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/validator-a/report.json",
+      "sha256": "CC3DA729205C2CC29244091D881C63A3651E9203282DB3C466628DB3579B0386",
+      "bytes": 3877
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/controller-forged/validator-b/report.json",
+      "sha256": "CC3DA729205C2CC29244091D881C63A3651E9203282DB3C466628DB3579B0386",
+      "bytes": 3877
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/duplicate_json/a.console.txt",
+      "sha256": "7E08A509AFCDAFCFDA455BDE39CA4A34B21A5043FBF5999A8E85C9F5BAF14275",
+      "bytes": 3891
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/duplicate_json/a.json",
+      "sha256": "41D9F9F8CAC0770B8921CCA4AE02F4EE4D72C6F17954BDF3F3A796624F62982A",
+      "bytes": 3889
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/duplicate_json/b.json",
+      "sha256": "28EC85D372CDC6EA43E7981A83C6AA84F2C91982EAF6DEFCEE765362AAE3D8CD",
+      "bytes": 620
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/duplicate_json/inventory.json",
+      "sha256": "B94DBEB547F6ED4EECE98B2833AE7A4458C75B73F04A3647730431C4EE62C887",
+      "bytes": 422
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/duplicate_json/sources.json",
+      "sha256": "822E49CA6027E88A30465DA1392B7EC8FF8F3E61F4E1CB61A1A298F64CE6A1F4",
+      "bytes": 757
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/embedded-help.json",
+      "sha256": "5E00D100BF91DC3B23A8D1F4FF0761E32E8DF9D372A58384BD0CB06B38AFC7EF",
+      "bytes": 5344
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/empty_datasize/a.console.txt",
+      "sha256": "F1BF5645087455165B01E288B7C2B552ADC4919FEC3C490B9A1F911F88AFD788",
+      "bytes": 1263
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/empty_datasize/a.json",
+      "sha256": "F573D3A44C9D65A3BF6051A156D6EECFAA1170E45AF373E56184220AE5B0F069",
+      "bytes": 1261
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/empty_datasize/b.json",
+      "sha256": "C66BE62606BB5157B982A0E437742AB29C6310636C87D8520A46286E25BD8FC7",
+      "bytes": 2905
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/empty_datasize/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/empty_datasize/sources.json",
+      "sha256": "3F1FCF450797DE2DCD3AF3D2014E495D00BEEE2F03F0491E7E1D5CAD4ED7CDE8",
+      "bytes": 757
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/evaluator-adversary.log",
+      "sha256": "0B7723E374680F9EDEFC9AAD27CCAC8B4B401C1F5F4F6F5C0CA88B7628DD635C",
+      "bytes": 1963
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/evaluator-adversary.py",
+      "sha256": "3BC1CB2FC4AA54A64F9A721D0E94075151BF1F15C1AD39022A3CD8B31026DC99",
+      "bytes": 2148
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exact-alias-a/console.log",
+      "sha256": "7CFE69341BA61A61479521ED8EDDCCD32A056CC88B71F4192CB2726E9B452E9F",
+      "bytes": 3890
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exact-alias-a/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exact-alias-a/sources.json",
+      "sha256": "3E25EDBEB68DB074921FC5C0401549B6F21010763C4086E1342DEFBE467DE92D",
+      "bytes": 754
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exact-alias-b-malformed-cli/console.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exact-alias-b-malformed-cli/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exact-alias-b-malformed-cli/sources.json",
+      "sha256": "1AF5CFDD78FA4294F6F19852FF6FE93C57D556EA874CBF2C8F6EBA0E2C30801A",
+      "bytes": 796
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exact-alias-reproductions.json",
+      "sha256": "12849273FCE0FC8E205163A483B737DB6470D00715A0FD82B04293416AB5A55C",
+      "bytes": 2471
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exit259/process.json",
+      "sha256": "9D4DFF29EACFF276BBA7E78AFD9BF3908899283B5667565A7D373F1C8B194B29",
+      "bytes": 3092
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exit259/stderr.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/exit259/stdout.log",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "bytes": 0
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/fake-runtime/forged/state.json",
+      "sha256": "CA151EBA4741B04F4AF0B063CA181AFBFC04A41D5F9FDFDE2A1E9E57909A64B5",
+      "bytes": 377
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/final-process-absence.json",
+      "sha256": "0118B01B6A5765F50C1BDBB582E50974808E49E7581069DACD88F7FE45587DF0",
+      "bytes": 858
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/forged-runtime/context.json",
+      "sha256": "72EE16B6EDBCECECCB863A1F07920F29F6BA5DFAA14407C3650FED099A049D00",
+      "bytes": 904
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/forged-runtime/execution.json",
+      "sha256": "6A9069A1AD88ABD4954B0EBA14316035284679D5A5E0AC606032C04FDCB6A189",
+      "bytes": 3005
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/forged-runtime/fake-script.log",
+      "sha256": "6AD91CE11FABDF1543E2840A494E9BC3F603C26C4A6BBC93A29D3B9BA4A03B87",
+      "bytes": 349
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/forged-runtime/process.json",
+      "sha256": "C38D47CA27410888C8C76849A3A0942E03FB40B41670A827BB017EA6BC26E349",
+      "bytes": 232
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/forged-runtime/result.json",
+      "sha256": "02EC75493F61C1DBCA54BAEEB94633ED56A7BE9FFB01EC0990C4A00B02FF3156",
+      "bytes": 1959
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/forged-runtime/seed.json",
+      "sha256": "5C9F2B84B50699E9D9FF9F453224E41346D78B018E414A84548D5321D1836C85",
+      "bytes": 316
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/hidden-inventory.json",
+      "sha256": "66B8525C5D11A2C26EE2C35FB7E6C9A9297F460B8C4320AF03701531268312CF",
+      "bytes": 67
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/hidden-source/unexpected.txt",
+      "sha256": "E564B4081D7A9EA4B00DADA53BDAE70C99B87B6FCE869F0C3DD4D2BFA1E53E1C",
+      "bytes": 6
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/hidden-sources.json",
+      "sha256": "D91427D72FCC8FABB7B9494CFC82CF89DAEA0B70CE857C8605E6CCBAD30941A3",
+      "bytes": 288
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/include-help.txt",
+      "sha256": "534B514D662D29BFFA45E38209BCA1EA3AFCC6A3A06B4E3AF18B216E16A3871E",
+      "bytes": 752
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/inspection-receipt.json",
+      "sha256": "CC8264A58B4EA95A581DC42E87199B9C98C72A13432602773093C460681F0EA5",
+      "bytes": 14681
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/inspection-receipt.py",
+      "sha256": "DB616424E07D79C3B07D6198E0C980647007180A8DE9F4847A54534B92CD3DA1",
+      "bytes": 4664
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/invalid-comparison.json",
+      "sha256": "D374F8880D11DA794FAAF17D42CD24758A705650594CEB0BB2667EDDAC24258D",
+      "bytes": 1651
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/job-adversaries.json",
+      "sha256": "B32900BB07E62D7616B5FC79550853BE7EBE7A4D60F9627682F11DEF843753AC",
+      "bytes": 6903
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/job-adversaries.log",
+      "sha256": "46B614F70419F542C238C56F58FAC33CD3EF828230E14FA61A461C47336DF4C6",
+      "bytes": 6905
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/job-adversaries.ps1",
+      "sha256": "7AD49BD6F1626B130B3FE57C937635FC6DE94B2042B0D3843173F5A8E563DB89",
+      "bytes": 1094
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/malformed_json/a.console.txt",
+      "sha256": "E70C689E90074FE4CC8DDF01B040A41F2DFF418C9D508FC958100D35EE457368",
+      "bytes": 779
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/malformed_json/a.json",
+      "sha256": "A4F2D6DD3483F53E08327247EEBA630EB28C92ABC934E924B5DC51AC11A6B130",
+      "bytes": 777
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/malformed_json/b.json",
+      "sha256": "97A70A43F672146ADE24D2D43CB2DED1368FF9CA6996BB4738004E8EE178AF1C",
+      "bytes": 662
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/malformed_json/inventory.json",
+      "sha256": "021FB596DB81E6D02BF3D2586EE3981FE519F275C0AC9CA76BBCF2EBB4097D96",
+      "bytes": 1
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/malformed_json/sources.json",
+      "sha256": "BF53652BFC6D72DAA0D7653BB69F8858C0ADEA3FF86101BB00850C6B95A34B5D",
+      "bytes": 757
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/missing_case_id/a.console.txt",
+      "sha256": "6A769F3945FCF799FEBECE322D1E47DB3CBC78116DA9C3CD1E043C974E4BC4EC",
+      "bytes": 3892
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/missing_case_id/a.json",
+      "sha256": "4AED2646527582FEB75667C208CF4CB603DC23195FBC2CE00CAEEDC3A5DDCF3D",
+      "bytes": 3890
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/missing_case_id/b.json",
+      "sha256": "92AF4D057660B46A65AB97EAC657F8F5410518EBA22F1328A275B76C5D5BF6D5",
+      "bytes": 601
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/missing_case_id/inventory.json",
+      "sha256": "7D76A8ED545ABBC681DA92012A2948E0371DFEEAE9D34CE03F2B6B6026DA36CA",
+      "bytes": 384
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/missing_case_id/sources.json",
+      "sha256": "DF014C46C9EA4C1EC9BA3063E24C8E763CB8ABEB7098FFD2A367A2871516E8F7",
+      "bytes": 760
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/native_441/a.console.txt",
+      "sha256": "C128E1786DDEC488CDB59790293ACBF18DF7DF4DEE8060E962E9BB758B0062A2",
+      "bytes": 3238
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/native_441/a.json",
+      "sha256": "3DF240A781C38FCA43C4CE1E1842160777A8180C0F7EC776C7BEB2059DF59AA9",
+      "bytes": 3236
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/native_441/b.json",
+      "sha256": "87E0EA6725A169768D7305904CDCA544051540ABDC8FEDF8DA2408F66C9DB5B6",
+      "bytes": 2355
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/native_441/inventory.json",
+      "sha256": "EDA571191AA51D76F6086A5569F1B908DCBB56587EE9702BD3C452F335538FDC",
+      "bytes": 358
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/native_441/sources.json",
+      "sha256": "0C3E1B29908C75B5105BB4ACFA9A6F9BA68A58519D2C19DAD3D9026634A9C574",
+      "bytes": 745
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/normal/a.console.txt",
+      "sha256": "3952E48F6319757EE9630AA2D7CE886415B57A9B40DA9656C58A1B5A00CE3267",
+      "bytes": 3883
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/normal/a.json",
+      "sha256": "91C22CF5F806FD0AC0940CBD0A4A9F3D6911CE8373F74FE897FC2F6490A95721",
+      "bytes": 3881
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/normal/b.json",
+      "sha256": "47167887CF700D68F8DE1911F43E53818A220A16AD02C2477A68DB297CFEFCDB",
+      "bytes": 2893
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/normal/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/normal/sources.json",
+      "sha256": "705D68B8B41EB1B8D0E5A69270CBE677E57388E93C41F232F7369DFBF2724C69",
+      "bytes": 733
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/redirect-exit17/process.json",
+      "sha256": "6C4B80202633D4AEA6F5827B5EDFC85D6AA35F7C84219D5B4F93DB35D6372B9D",
+      "bytes": 2900
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/redirect-exit17/stderr.log",
+      "sha256": "CEDD30C8DC80F42847CFD79F6688400C45F72C79D05845D57FCB93FC533B5D15",
+      "bytes": 14
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/redirect-exit17/stdout.log",
+      "sha256": "79855686FC6592A7BD91629ACBC20DB499E76EE9F7168B12856F5651CEC2D6BB",
+      "bytes": 14
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/source_alias_a/a.console.txt",
+      "sha256": "4D9015BBA0B28439B23FE4FDA9A2BAE8B558C0A7710B739777FB05931D4727F0",
+      "bytes": 3891
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/source_alias_a/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/source_alias_a/sources.json",
+      "sha256": "7BD12A754D3AAC15A8B80611D8086A2ACE31EB6B229016189C900DE126BD5709",
+      "bytes": 757
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/source_alias_b/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/source_alias_b/sources.json",
+      "sha256": "E6EB58B05FAC92711978B79B45EA4F8289FEC5A938C32163BA44090B97806C17",
+      "bytes": 757
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/source_alias_b-bad-cli/inventory.json",
+      "sha256": "DDAD8B1A861CADD25F3B0EEAA1FCAE1DDA5C8025F76A0AB597DC584569304454",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/source_alias_b-bad-cli/sources.json",
+      "sha256": "9AF53672123A9D69734B90775FE2A639EFC4DE952007341188FD6B6084D43155",
+      "bytes": 781
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/traversal_name/a.console.txt",
+      "sha256": "89FAF59630407F7B5371C56783B1E670E8D1D6493DC4F0274A2C680C1B68C7FD",
+      "bytes": 3891
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/traversal_name/a.json",
+      "sha256": "54CE1CC681555CD22269578D1FAD9448A6D832C67CFFAEE80E55BA5BCE669C97",
+      "bytes": 3889
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/traversal_name/b.json",
+      "sha256": "B21745511BAA04D40329200678D1613856729C2E3B6BF7AE221834BCE2F0670C",
+      "bytes": 2901
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/traversal_name/inventory.json",
+      "sha256": "A9050CC85738C39D610C424533652DEFE7DD84F83CBABDF912EB7A2CAFF4F25D",
+      "bytes": 402
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/traversal_name/sources.json",
+      "sha256": "B5278C3593A67FE6456C02DA4B9F9313879E14A6E19DC7BBDF7C327CD0A64AE6",
+      "bytes": 757
+    },
+    {
+      "path": "TEMP/pbo-boundary-implementation-council/write-report.py",
+      "sha256": "F1AE9F65E2FEF5A56175B3F31D756EEC96A7F60744432318EFCB17C56CE8229C",
+      "bytes": 30764
+    }
+  ],
+  "sources": [
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-boundary-plan-repaired.md",
+      "sha256": "6BB0DE45770489FDF0A7801068C59C27BB29ABE78B2A25FB441E9F3A34343D79",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-boundary-plan-repaired.json",
+      "sha256": "A83E1054EB054221CA0BFD47D45FB00791F53BBF79EA8BA1964141E90A38EA20",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-boundary-council.md",
+      "sha256": "DF5992CEACF659D0B63A1F46758BB0CCB9AAC7653A5354EB2ED3D7592DAD7271",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-boundary-council.json",
+      "sha256": "2C67473ADB6D7CD1BDD330EA01142E282C4585FE930D72B0A9FA2748007D9367",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\release\\@PBOExample\\Addons\\PBOExample_Data.pbo",
+      "sha256": "1CE4ADB9D28C778E083CA506E0042217CE6A68FF2EC7FC085E2E19596D619071",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\DayZ Projects\\scripts\\1_core\\proto\\ensystem.c",
+      "sha256": "8BE625999A04DF22813052E93FE658C24C82C97B257EBEF86B106279A95DB188",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\appmanifest_2909700.acf",
+      "sha256": "CC36D68C6020C38E60BC928DAE3B006FD6F3E8700EB9ED846D0C58539AC80160",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\AddonBuilder\\AddonBuilder.exe",
+      "sha256": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\AddonBuilder\\AddonBuilder.exe.config",
+      "sha256": "E614FCB04D8E3429FAB70466261F36383DE3BFCD230A058BC196AC0727482BBE",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\AddonBuilder\\logger.xml",
+      "sha256": "1D24D7D4AFB5249EFBEF3435195BBEA4D1A2D6317292637C7F834B69F8470005",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools\\Bin\\PboUtils\\exclude.lst",
+      "sha256": "F678C872B0E146A51339F4D5C248D7E76ADEF31A80D439AD2FCC2E3CE07D099C",
+      "expectedMatches": true
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Bohemia_Interactive\\AddonBuilder.exe_Url_bpeqqsem2qv4tdbqrfa1jkk5wv5a3aob\\1.0.240.639\\user.config",
+      "sha256": "B52A097818CB036EC72AFD6BD0A6402C5892E1B29AE671115CA977D0348E33C7",
+      "expectedMatches": true
+    },
+    {
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Bohemia_Interactive\\AddonBuilder.exe_Url_nzb1gmauh5s0jgksoti3hjv0nqjtardy\\1.0.240.639\\user.config",
+      "sha256": "86F88CFCB6F908F26DB0D9882AF35C9D2087A16AE1F9CAC46FEF8028D6A57CB8",
+      "expectedMatches": true
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\sources\\armake2\\pbo.rs",
+      "repository": "https://github.com/KoffeinFlummi/armake2.git",
+      "commit": "3cc3362101900ff41504db3e780dd1625634cf94",
+      "sourcePath": "src/pbo.rs",
+      "sha256": "BEC43AC4560626FE4B154922938D0A2BDEDB0561D68118AE822AB9C030387549",
+      "expectedMatches": true,
+      "relevantLines": [
+        "18-25",
+        "52-70",
+        "97-142",
+        "221-268"
+      ]
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\sources\\hemtt\\model\\header.rs",
+      "repository": "https://github.com/BrettMayson/HEMTT.git",
+      "commit": "bf2168ce03d5bb8bd3849090e9b2996402624b1c",
+      "sourcePath": "libs/pbo/src/model/header.rs",
+      "sha256": "D3D828D2B2881AB6CBBA5F8628B586E2212119CB237E808145FE7C9020176B66",
+      "expectedMatches": true,
+      "relevantLines": "9-118"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\sources\\hemtt\\file.rs",
+      "repository": "https://github.com/BrettMayson/HEMTT.git",
+      "commit": "bf2168ce03d5bb8bd3849090e9b2996402624b1c",
+      "sourcePath": "libs/pbo/src/file.rs",
+      "sha256": "77E5D829442A45F59B3E5A657902A09B1AABD16CF178114FAB30F76337FF1E2F",
+      "expectedMatches": true,
+      "relevantLines": "9-57"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\sources\\hemtt\\read.rs",
+      "repository": "https://github.com/BrettMayson/HEMTT.git",
+      "commit": "bf2168ce03d5bb8bd3849090e9b2996402624b1c",
+      "sourcePath": "libs/pbo/src/read.rs",
+      "sha256": "9A8C1FA3382D45ADC4E220B0097B740A5A4C01437E3AB68FF0657A340221DF53",
+      "expectedMatches": true,
+      "relevantLines": "18-162"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\sources\\hemtt\\write.rs",
+      "repository": "https://github.com/BrettMayson/HEMTT.git",
+      "commit": "bf2168ce03d5bb8bd3849090e9b2996402624b1c",
+      "sourcePath": "libs/pbo/src/write.rs",
+      "sha256": "CBCB0355715DCC3330D7AA343F30478247447FF14D683F2AF7A4D20557B945F2",
+      "expectedMatches": true,
+      "relevantLines": [
+        "33-46",
+        "132-200"
+      ]
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\sources\\armake\\build.c",
+      "repository": "https://github.com/KoffeinFlummi/armake.git",
+      "commit": "e4940fae0d28c4dd07d9d2c591f8e056545fee3f",
+      "sourcePath": "src/build.c",
+      "sha256": "C68E3D02B59F62DBC18430BABF40C0122120A7763A3C551342410712ABB39012",
+      "expectedMatches": true,
+      "relevantLines": "85-180"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\pbo-validator-b\\sources\\armake\\unpack.c",
+      "repository": "https://github.com/KoffeinFlummi/armake.git",
+      "commit": "e4940fae0d28c4dd07d9d2c591f8e056545fee3f",
+      "sourcePath": "src/unpack.c",
+      "sha256": "71D41F2693F1FF564768D816966D10FA3F7997EFF22C887F4F12DDC0F05EE505",
+      "expectedMatches": true,
+      "relevantLines": [
+        "59-160",
+        "213-303"
+      ]
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-boundary-plan-closeout.json",
+      "sha256": "84A1E41FF643D4F62E5274D60597B6448FD002252325EFBD20AFA8EACF07CB5C"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-boundary-implementation.json",
+      "sha256": "5F8AE3EC04A6D5B6BC375BA474B9CAB1D1B4940B634BF8622A5D4CB6A3D5C519"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-boundary-implementation.md",
+      "sha256": "BDD73A60789F3D86DB6CD63916BD97266BB5578D067704CA1A7AFE8AC825B7BC"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-validator-b-implementation.json",
+      "sha256": "12CD9B7546BDADD37AA52BAE5F0DCE7172EE209414885E43FA9EAD7EB415DEA4"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\.audit\\en-2026-09-13\\completeness\\pbo-validator-b-implementation.md",
+      "sha256": "DA7656B8C9CC193C6C0EBC5A4151816669855AD8D5E4644EADA0590F37E936E4"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\receipt.json",
+      "sha256": "E8E483389F85C84FA819B16EE36C16EF2CE88DDB0E17F460076F765DAE487C1B"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\logs\\Data-addon-builder.log",
+      "sha256": "CA505D4573299BFE54C6FAE6B7C2876B0892FB05FC201810C42B1938204500ED"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\logs\\Data-bankrev-members.log",
+      "sha256": "045751CB4FA644185F8D441A3FC019FE7171488EE9CF924EE317713F1BCC3D1F"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\logs\\Data-bankrev-properties.log",
+      "sha256": "23235A76BA4A3947BEB049FAD9A25C2F3CB084CE25F80E31ED53DE85A36640A6"
+    },
+    {
+      "path": "D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-confirmation\\build\\pboexample-20260914-002734-8140c691\\logs\\Data-sign.log",
+      "sha256": "7EB70257593DA06F682A3DDDA54A9D260D4FC514F645237F5CA74B08F8DA61A6"
+    }
+  ],
+  "webSources": [
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow",
+      "accessed": "2026-09-14",
+      "scope": "layout and standard handles"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess",
+      "accessed": "2026-09-14",
+      "scope": "259 is ambiguous without process-object wait"
+    }
+  ],
+  "execution": {
+    "authorASuite": {
+      "exit": 0,
+      "passed": 26
+    },
+    "authorBSuite": {
+      "exit": 0,
+      "passed": 19
+    },
+    "safeCouncilParserAndStubCases": true,
+    "benignOwnedPowerShellProcessTests": true,
+    "nativePboTools": false,
+    "BankRev": false,
+    "signing": false,
+    "DayZ": false,
+    "EnforceCompilation": false,
+    "largeBoundaryFiles": false,
+    "buildsOrInstalls": false,
+    "authorCodeChanged": false,
+    "commits": false
+  },
+  "limitations": [
+    "No production/native experiment or new probe compilation performed; retained native bytes only validate parser interpretation.",
+    "Full production end-to-end state is rejected from exact source and targeted stubs; exhaustive all-branch fault injection remains required after repair, not counted as passed.",
+    "Job assignment/startup failure was not induced against a real process because current implementation could strand it; safe native shim tests are required.",
+    "Only installed 64-bit Windows layout was measured; polling cannot prove identities of already-exited unobserved descendants.",
+    "Original parser/source provenance remains scoped: extracted scripts metadata version124588 is not proven runtime1.29; third-party PBO writers are not native specification.",
+    "No graph refresh or wiki build is appropriate in this review-only scope; no accepted content changed.",
+    "Compressed, native limits, allocation, client/signature enforcement, distribution/Workshop, other builds and effective user settings remain unresolved."
+  ]
+}
