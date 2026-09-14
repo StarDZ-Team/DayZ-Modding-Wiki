@@ -1,0 +1,142 @@
+{
+  "schema": "en-edds-fixture-repair-council-v1",
+  "reviewed_at": "2026-09-14",
+  "review_revision": "d795fca51eca92781a4dbdfc89d753790569fb4d",
+  "reviewer": {
+    "agent": "codex",
+    "role": "independent exact-final reviewer",
+    "provenance": "Orca dispatch task_78c05615c58f"
+  },
+  "overall_disposition": "rejected_with_blocking_repairs",
+  "execution_gate": "do_not_open_workbench_or_import",
+  "reason": "EF-06 still permits a reparse-point-ancestor WorkRoot to alias the fixture source, the runtime-facing fallback sequence is not self-contained or faithful to the prior council gate, and the active fixture retains stale bytecode for the rejected verifier.",
+  "prohibited_actions_observed": [],
+  "not_run": [
+    "Workbench",
+    "PNG import or conversion",
+    "Addon Builder",
+    "BankRev",
+    "PBO packing",
+    "Enforce compilation",
+    "VitePress build or dev server",
+    "game",
+    "client",
+    "server"
+  ],
+  "decisions": [
+    {
+      "id": "EF-01",
+      "status": "accepted_no_regression",
+      "reason": "The generator reproduces the current 135-byte PNG byte-for-byte; current and preserved rejected-fixture PNG SHA-256 are both EDB68FB0779781BF8F672D2595897EB870792675EB576BDDDF08E4E231B7522C."
+    },
+    {
+      "id": "EF-02",
+      "status": "accepted_bounded_no_regression",
+      "reason": "Config/imageset names, exact 64x32 atlas rectangles, DZ_Scripts dependency, mission module and plain-path hypothesis are unchanged; no runtime acceptance is inferred."
+    },
+    {
+      "id": "EF-03",
+      "status": "accepted_static",
+      "reason": "Both ImageWidgets declare clamp and stretch_w_h. ProbeAlpha covers x=[84,212), the dark/light split is x=148, stretched cyan covers x=[100,196), and stretched magenta covers x=[180,196), so cyan crosses both backgrounds and magenta is on the light half only."
+    },
+    {
+      "id": "EF-04",
+      "status": "accepted_static_runtime_pending",
+      "reason": "The unique persistent root, duplicate-init return, partial-root Unlink/null cleanup, distinct left/alpha LoadImageFile results, separately logged SetImage results, and super-calling teardown match reopened native declarations and pinned CF lifecycle precedent. The script was not compiled."
+    },
+    {
+      "id": "EF-05",
+      "status": "accepted_structural_only",
+      "reason": "FourCC is read at 0x54; legacy/DX10 table offsets are 0x80/0x94; header sizes, exact dimensions, 1..7 mips, all signed-positive COPY/LZ4 entries, bounds and exact EOF are checked. Synthetic tests passed, but native acceptance and rendering remain pending."
+    },
+    {
+      "id": "EF-06",
+      "status": "rejected_blocking",
+      "reason": "Prefix/member parsing and receipt fields are materially repaired, but Require-OrdinaryDirectory checks only the final directory item. A WorkRoot below a junction targeting source/EDDSProbe passed both lexical overlap checks and reached Addon Builder lookup."
+    },
+    {
+      "id": "EF-07",
+      "status": "accepted_with_receipt_caveat",
+      "reason": "All three superseding extracted-source hashes are correct and verifier source claims are honestly limited to text/structure. The repair receipt's three negative helper runs have no durable command/output receipt; this council independently reproduced them. The active tree also retains stale pre-repair verifier bytecode, recorded separately as ERFC-03."
+    },
+    {
+      "id": "EF-08",
+      "status": "project_accepted_observation_pending_instructions_blocking",
+      "reason": "The private project remains a sourced, unobserved mount proposal and is not rejected for being unopened. However, current runtime-facing prose does not make the required direct-project-failure/positive dual P:-absence/separate fallback project/exact target-recheck cleanup sequence self-contained, so preparation is not safe enough to authorize observation yet."
+    },
+    {
+      "id": "EF-09",
+      "status": "accepted_no_regression",
+      "reason": "probe_ui.edds and probe_ui.edds.meta are absent, the PNG is unchanged, and no 16-hex brace resource identity was found. The GUID used only to make a future private run-directory suffix is not represented as a Workbench resource identity."
+    }
+  ],
+  "blocking_repairs": [
+    {
+      "id": "ERFC-01",
+      "artifact": "examples/en/edds-probe/build.ps1",
+      "problem": "Reparse-point ancestors are not rejected or resolved to physical targets before hierarchy comparisons.",
+      "proof": {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File TEMP/edds-fixture-repair-council/parser-and-path-check.ps1",
+        "lexical_work_root": "D:/StarDZ/docs/wiki/TEMP/edds-fixture-repair-council/junction-check/source-alias/GUI",
+        "physical_target": "D:/StarDZ/docs/wiki/examples/en/edds-probe/source/EDDSProbe/GUI",
+        "result": "The helper passed SourceRoot/WorkRoot and fixture/work overlap gates and failed only at missing AddonBuilder.exe in a deliberately empty fake ToolRoot; no native tool started."
+      },
+      "required_repair": "Before creating runRoot, reject reparse points in every existing path component used for fixture/source/work/tool roots or canonicalize their final physical targets with a demonstrated safe method, then compare physical equality and both ancestor directions. Add and retain a negative test proving a WorkRoot reached through a reparse ancestor into SourceRoot fails before tool lookup."
+    },
+    {
+      "id": "ERFC-02",
+      "artifacts": [
+        "examples/en/edds-probe/README.md",
+        "TEMP/edds-fixture-preparation/README.md"
+      ],
+      "problem": "The final operator instructions are incomplete: the fixture README proceeds from unresolved visibility to import, while the preparation README permits a P: fallback based only on absence and says the mechanism is not prescribed.",
+      "required_repair": "State the exact sequence: open/hash the private project first; import nothing unless EDDSProbe/GUI/imagesets/probe_ui.png is visibly exact; capture and stop on direct-project failure; only then positively require both Get-PSDrive P and subst to show P: absent; create the owned subst mapping to the exact source root; use a separate fallback project naming P:/; before cleanup recheck the exact mapping target and remove only it with subst P: /D; never edit the installed dayz.gproj. Retain one default import, structural inspection, one pack and one baseline client run, with at most one source-supported objective reference/pack correction."
+    },
+    {
+      "id": "ERFC-03",
+      "artifact": "examples/en/edds-probe/scripts/__pycache__/verify_preparation.cpython-314.pyc",
+      "problem": "The active fixture retains the preserved rejected verifier bytecode: its timestamp header records source size 7224 rather than the repaired source size 11423, and its code-object names omit verify_edds_bytes, synthetic_edds, and run_self_tests.",
+      "required_repair": "Remove stale generated __pycache__ artifacts from the active fixture and record the resulting inventory. Do not replace them with newly generated bytecode; the documented source commands are sufficient."
+    }
+  ],
+  "failure_receipt_assessment": {
+    "negative_test_receipts_found": false,
+    "finding": "edds-fixture-repair.md/json state that three safe negative invocations passed but do not retain their exact argv or output as a separate failure receipt.",
+    "independent_results": [
+      "Non-exact SourceRoot rejected before tool lookup.",
+      "SourceRoot/WorkRoot equality rejected before tool lookup.",
+      "WorkRoot equal to a lexical SourceRoot ancestor rejected before tool lookup.",
+      "WorkRoot below a reparse-point ancestor targeting SourceRoot was not rejected."
+    ]
+  },
+  "bankrev_parser_assessment": {
+    "retained_syntax_reopened": true,
+    "retained_properties_line": "prefix = PBOExample\\Data\\",
+    "retained_member_lines": [
+      "PBOExample\\Data\\data\\example.txt",
+      "PBOExample\\Data\\config.cpp"
+    ],
+    "result": "The exact functions extracted from the build.ps1 AST accepted the retained full lines, accepted the complete seven-member EDDS shape, and rejected a substring member, an outside-prefix line, and a duplicate normalized member.",
+    "boundary": "This validates parser behavior against retained syntax; it is not a BankRev execution or proof of future PBO output."
+  },
+  "private_project_decision": {
+    "gproj_sha256": "A5632B06E21C4E87CA56BB51DFA4BEF7997C4881FF87B36D55D8E8AB90C03598",
+    "physical_source_exists": true,
+    "p_drive_get_psdrive": "absent",
+    "p_drive_subst": "absent",
+    "installed_project_sha256": "269DAAD629D0007176B4B81ADFB52740A23A11955C24C414B82727F15EE41928",
+    "conclusion": "The private project itself remains reasonable for the bounded visibility-first observation, but the complete preparation is rejected until ERFC-01 and ERFC-02 are repaired and independently rereviewed."
+  },
+  "native_results_pending": [
+    "direct private-project visibility",
+    "whether import-only project dependencies need correction",
+    "default PNG import and generated bytes/metadata/identity",
+    "native EDDS acceptance",
+    "exact EDDSProbe PBO prefix/member output",
+    "Enforce compilation",
+    "baseline client rendering",
+    "cleanup behavior in the actual bounded observation"
+  ],
+  "evidence_path": "TEMP/edds-fixture-repair-council/verification.json",
+  "test_source_path": "TEMP/edds-fixture-repair-council/parser-and-path-check.ps1"
+}

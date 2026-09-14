@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "decision": "rejected_ERFC01_ERFC02_ERFC03",
+  "reviewedHead": "d795fca51eca92781a4dbdfc89d753790569fb4d",
+  "currentHead": "6034905d49a70d24618af680373be39471a31c73",
+  "verifiedUtc": "2026-09-14T08:20:20.4111385Z",
+  "exactPreservedHashesFoundInCouncil": 14,
+  "preservation": "TEMP/edds-fixture-repair1-rejected-20260914-0819/preservation.json",
+  "note": "Council revision is earlier snapshot; exact preserved 14 reviewed-file hashes checked before author repair2.",
+  "repairTask": "task_ea15db76744d",
+  "nativeGate": "closed until independent exact-final review"
+}

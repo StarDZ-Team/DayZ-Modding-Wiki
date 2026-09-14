@@ -1,0 +1,46 @@
+{
+  "schema": "en-edds-fixture-repair-v1",
+  "prepared_at": "2026-09-14",
+  "scope": "EF-03 through EF-07 static repair only; no native tool or runtime execution",
+  "supersedes": {
+    "historical_reports_preserved": [
+      ".audit/en-2026-09-13/completeness/edds-workflow-repaired.md",
+      ".audit/en-2026-09-13/completeness/edds-workflow-repaired.json"
+    ],
+    "corrected_extracted_source_hashes": [
+      {"path": "D:/DayZ Projects/scripts/1_core/proto/enwidgets.c", "historical_incorrect": "6BB20A54119A25BAB3933607BF8B703C3123853B36BF2E4141AEAC83CF215C9E", "current": "6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E"},
+      {"path": "D:/DayZ Projects/scripts/5_mission/mission/missiongameplay.c", "historical_incorrect": "E0A2157DBBF1C795F8228745BEF493218434A1B5125912F6EDFE032BFE457DB2", "current": "E0A215D9E10300503CBC17F7A44BBABF58A2D1EF5CBB268D3DA1D279DC75C96A"},
+      {"path": "D:/DayZ Projects/gui/layouts/day_z_hud_cars.layout", "historical_incorrect": "6E2893932679783DBA2C2404B18D8CFC841DFD0EEA7C521A05400D3BBF8637C2", "current": "6E2893932679783D2618A9A63603966B83EEA225D1EF933301726C4B1068D7B2"}
+    ]
+  },
+  "repairs": [
+    {"id": "EF-03", "status": "repaired_static", "artifacts": ["source/EDDSProbe/GUI/layouts/probe_ui.layout", "README.md"], "evidence": "D:/DayZ Projects/gui/layouts/day_z_hud_cars.layout:23-38; SHA256 6E2893932679783D2618A9A63603966B83EEA225D1EF933301726C4B1068D7B2", "boundary": "PNG art and bytes retained; no render claim"},
+    {"id": "EF-04", "status": "repaired_static", "artifacts": ["source/EDDSProbe/Scripts/5_Mission/EDDSProbeMission.c"], "evidence": ["D:/DayZ Projects/scripts/1_core/proto/enwidgets.c:173,176-182,247-267; SHA256 6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E", "D:/DayZ Projects/scripts/5_mission/mission/missiongameplay.c:96-125,257-267; SHA256 E0A215D9E10300503CBC17F7A44BBABF58A2D1EF5CBB268D3DA1D279DC75C96A", "Community Framework commit 0763e7e7548c9a0bed6626afff835de80693ebf3 MissionGameplay.c:11-16; SHA256 F064E36874A81356661F19D05941C86BF985509A536107ED65CEE392D98F46EA"], "boundary": "not compiled"},
+    {"id": "EF-05", "status": "repaired_static", "artifacts": ["scripts/verify_preparation.py"], "evidence": ["D:/DayZ Projects/DZ/water/ponds/data/pond_moss_ca.edds; SHA256 2EAADDF7EBB52B90E47212A0200E050E55BA4AD7599F47974C31767853D0676E", "D:/DayZ Projects/graphics/textures/water/dayzwater1_no.edds; SHA256 4DA58F017C48244E676F42E3D3B13A01B5B45A68335EB60869507D376FB8F9B0"], "synthetic_tests": "two valid in-memory cases and nine malformed rejections; not an EDDS writer or render proof"},
+    {"id": "EF-06", "status": "repaired_static", "artifacts": ["build.ps1", "scripts/verify_build_ast.ps1"], "evidence": "Retained BankRev -properties/-logFull logs in TEMP/multi-pbo-confirmation/build/pboexample-20260914-002734-8140c691/logs; neither tool was run for this repair", "boundary": "future pack-only helper; no PBO was produced"},
+    {"id": "EF-07", "status": "repaired_static", "artifacts": ["scripts/verify_preparation.py", "edds-fixture-repair.md", "edds-fixture-repair.json"], "boundary": "text/AST checks are explicitly limited and do not establish control flow or compilation"}
+  ],
+  "final_artifacts": [
+    {"path": "examples/en/edds-probe/README.md", "sha256": "C41D2A33F41CBB52F6659741EB2143CEF9D00A1970FDD9A1785E4A50817ED0EF"},
+    {"path": "examples/en/edds-probe/build.ps1", "sha256": "FBE7B49D683A9F77789D073FC84D31825EE604CEE53AA57525565380752A0FA3"},
+    {"path": "examples/en/edds-probe/scripts/generate_probe_png.py", "sha256": "117D1A2D40F7F460E8960E5986ED6DF47BB2209676449ED925E85F98C7831BF3"},
+    {"path": "examples/en/edds-probe/scripts/verify_preparation.py", "sha256": "7E2D1E06D30AF1B04D8C622C9E1B88B4F31E94F0FB875555E2EC7F58353C7581"},
+    {"path": "examples/en/edds-probe/scripts/verify_build_ast.ps1", "sha256": "1331A4706F19014C96758A287BE4BE3DAF094F96ED99E37D454CE94A985C4F45"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/config.cpp", "sha256": "A399BA5FF8E4C10C113F4021400FA292BDE065A85C2802FF7A512860872E8CA9"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/GUI/imagesets/probe_ui.imageset", "sha256": "B4D648347F441E58466923F427D2BD97DDC6D47FCBE419B3922A9EF5B5140A98"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/GUI/imagesets/probe_ui.png", "sha256": "EDB68FB0779781BF8F672D2595897EB870792675EB576BDDDF08E4E231B7522C"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/GUI/layouts/probe_ui.layout", "sha256": "0A4C807F438FD7C655D3E077D36B4287AD4FA0E54C99D7DF5DB1F4E3D759B4A7"},
+    {"path": "examples/en/edds-probe/source/EDDSProbe/Scripts/5_Mission/EDDSProbeMission.c", "sha256": "8F8E9B345618387BFFFD5AF08959624C73F73C9972940E17E59E66FDB444976F"}
+  ],
+  "verification": {
+    "commands": [
+      {"command": "python -B examples/en/edds-probe/scripts/verify_preparation.py", "result": "pass"},
+      {"command": "python -B examples/en/edds-probe/scripts/verify_preparation.py --self-test", "result": "pass; 2 valid synthetic structures, 9 malformed rejections"},
+      {"command": "powershell -NoProfile -ExecutionPolicy Bypass -File examples/en/edds-probe/scripts/verify_build_ast.ps1", "result": "pass; parsed 84 command expressions"},
+      {"command": "safe negative helper invocations", "result": "pass; non-exact SourceRoot, SourceRoot/WorkRoot equality, and a WorkRoot ancestor rejected before tool lookup"},
+      {"command": "git diff --check", "result": "pass; only unrelated existing CRLF warnings emitted"}
+    ],
+    "not_run": ["Workbench import", "conversion", "Addon Builder", "BankRev", "PBO packing", "Enforce compilation", "VitePress build/dev", "game", "client", "server"]
+  },
+  "remaining_gate": "The private project and absent P: mapping remain unobserved runtime concerns. A fresh independent exact-file review must accept the repaired bytes before the authorized single visibility/import/pack/client experiment."
+}
