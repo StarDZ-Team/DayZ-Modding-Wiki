@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "reviewed_utc": "2026-09-14",
+  "repository_head": "103238a83078784b7ee6cd6486f63d7973e3fe92",
+  "scope": {
+    "writes": ["TEMP/multi-pbo-runtime", ".audit/en-2026-09-13/completeness/multi-pbo-runtime.md", ".audit/en-2026-09-13/completeness/multi-pbo-runtime.json"],
+    "fixture_mutated": false,
+    "en_or_config_mutated": false,
+    "firewall_account_or_public_connection": false
+  },
+  "runtime": {
+    "executable": "D:\\SteamLibrary\\steamapps\\common\\DayZ\\DayZDiag_x64.exe",
+    "version_observed": "1.29.0.163709",
+    "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+    "ports": {"game": 26072, "query": 26073, "additional_game_owned": 26074},
+    "instance_id": 26072,
+    "private_ce_mission_file_count": 43
+  },
+  "fixture_build": {
+    "command": "examples/en/multi-pbo/build.ps1 -ToolRoot 'D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools' -WorkRoot 'D:\\StarDZ\\docs\\wiki\\TEMP\\multi-pbo-runtime'",
+    "result": "success",
+    "run_root": "TEMP/multi-pbo-runtime/pboexample-20260913-222858-1661085b",
+    "receipt": "TEMP/multi-pbo-runtime/pboexample-20260913-222858-1661085b/receipt.json",
+    "fixture_build_script_sha256": "38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956",
+    "manifest_sha256": "63D5E5E9468AF98B37B30AB71C3CCEA69D45694E266377025F68E6953F088582",
+    "tool_sha256": {
+      "AddonBuilder.exe": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1",
+      "BankRev.exe": "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75",
+      "DSCreateKey.exe": "81A100EEB190FAB4492970D0E6F051DB5C025BF8A4ADC2815C57ED9FE3022067",
+      "DSSignFile.exe": "098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78",
+      "DSCheckSignatures.exe": "9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C"
+    },
+    "pbo_sha256": {
+      "PBOExample_Core.pbo": "A1814154B07343E577EC1270709392B52F131397AE69FAB0B7DF2E22B9BBF963",
+      "PBOExample_Scripts.pbo": "83012028B8FF366A41DC3C24934D5F407A826C1E499BAA0AE929F9BFE0049F25",
+      "PBOExample_Data.pbo": "5E1B70D38A3999B6CC15B635A4C02F58BA53601BFA901E348DD9B168482F208E",
+      "PBOExample_Server.pbo": "EF70F72CD983B7A0628CD80BFC9D23DA31E8714CD42B89624E4E18CE1A6F4501"
+    },
+    "prefix_and_data": {
+      "data_member": "PBOExample/Data\\data\\example.txt",
+      "sentinel_source_sha256": "C460C6E58E3051A463E565F55D835469415E3536B9EF6095178D3D60041CB941",
+      "member_log": "TEMP/multi-pbo-runtime/pboexample-20260913-222858-1661085b/logs/Data-bankrev-members.log"
+    }
+  },
+  "probe": {
+    "separate_from_fixture": true,
+    "pbo": "TEMP/multi-pbo-runtime/runtime-mods/@MultiPboRuntimeProbe/Addons/MultiPboRuntimeProbe.pbo",
+    "pbo_sha256": "6CCE4CFEA58C569C3E499AAEBB7DFB356ADF37A43062826E9EF8D4D5322A94A8",
+    "source": "TEMP/multi-pbo-runtime/probe-source/scripts/5_Mission/multi_pbo_runtime_probe.c",
+    "source_sha256": "FAF495615C77E372498957487FE63156768B19C1DC2B85CEBE0E801B26E669C2",
+    "intended_actions": ["MissionServer.OnInit calls PBOExample.GetFixtureName()", "MissionServer.OnInit calls PBOExampleServer.IsServerComponent()", "OpenFile and ReadFile exact PBOExample/Data/data/example.txt"],
+    "actual_markers_observed": false
+  },
+  "cases": {
+    "main": {
+      "pid": 59096,
+      "seconds_bound": 45,
+      "launch_record": "TEMP/multi-pbo-runtime/main.process.json",
+      "rpt": "TEMP/multi-pbo-runtime/profiles/main/DayZDiag_x64_2026-09-13_22-31-30.RPT",
+      "rpt_sha256": "C8FE4237140B514D69DCB9CFD1D73AB104347A7C5955CA3B1F9FF6BEC25F3176",
+      "script_log": "TEMP/multi-pbo-runtime/profiles/main/script_2026-09-13_22-31-33.log",
+      "script_log_sha256": "88E33FCA01F127E15580CDE69D3D6A9B92D0B8DE0C362BEC63718123E18A3615",
+      "mounted_fixture_pbos": true,
+      "steam_init": "SteamGameServer_Init(7f000001,8766,26072,26073,3,1.29.163709)",
+      "endpoint_samples": ["127.0.0.1:26072/UDP", "127.0.0.1:26074/UDP", "0.0.0.0:26073/UDP"],
+      "result": "probe compilation failed before MissionServer.OnInit",
+      "diagnostics": ["Can't find variable 'PBOExample'", "Can't find variable 'PBOExampleServer'"]
+    },
+    "negative_missing_core": {
+      "pid": 60012,
+      "seconds_bound": 35,
+      "change": "copied Core PBO and bisign moved to owned quarantine; source fixture unchanged",
+      "rpt": "TEMP/multi-pbo-runtime/profiles/negative-missing-core/DayZDiag_x64_2026-09-13_22-34-10.RPT",
+      "rpt_sha256": "C239AD3B55E8C2F812CB31A2DBD65871207315311ADBE67B6FB87370F5A3E466",
+      "result": "no module, Steam, or owned endpoint observed before bounded harness stop; no fatal-behavior claim"
+    },
+    "negative_bad_script_path": {
+      "pid": 27444,
+      "seconds_bound": 35,
+      "change": "copied Scripts PBO repacked with files[] path PBOExample/Scripts/scripts/3_Game_DOES_NOT_EXIST",
+      "replacement_pbo_sha256": "B12F1494C9F2DDB18636727D68CE30BAFF54FB91BE57A75F95ABD862BC01BF25",
+      "rpt": "TEMP/multi-pbo-runtime/profiles/negative-bad-script-path/DayZDiag_x64_2026-09-13_22-35-12.RPT",
+      "rpt_sha256": "C83E9BA395E221911874B3C94843B41FB5659D6DC26A533603B6F1C4DDFEE266",
+      "script_log": "TEMP/multi-pbo-runtime/profiles/negative-bad-script-path/script_2026-09-13_22-35-14.log",
+      "script_log_sha256": "FA66065E44796FB3BAE126DC4601A2C2C52ABCD92BFBFBCE29A7E515AD1592B4",
+      "result": "reached Steam and endpoints, then produced same unresolved fixture-class diagnostics; no distinct bad-path conclusion"
+    }
+  },
+  "untested": ["successful fixture function calls", "successful exact sentinel read", "client join", "signature enforcement", "Workshop", "PBO size boundaries", "serverMod-only signature enforcement", "public reachability"],
+  "cleanup": {"owned_pids": [59096, 60012, 27444], "final_dayz_processes": [], "final_test_port_endpoints": []}
+}

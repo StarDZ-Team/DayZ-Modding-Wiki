@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "audit": "multi-pbo-prefix-integration",
+  "date": "2026-09-13",
+  "scope": {
+    "manifest": "examples/en/multi-pbo/manifest.json",
+    "tested_copy": "TEMP/multi-pbo-council/sources/backslash-prefixes/manifest.json",
+    "council_report": ".audit/en-2026-09-13/completeness/multi-pbo-runtime-council.md",
+    "council_receipt": "TEMP/multi-pbo-council/builds/backslash-prefixes/pboexample-20260913-230553-89a0b34e/receipt.json",
+    "runtime_performed": false,
+    "rebuild_performed": false
+  },
+  "hashes": {
+    "manifest_before": "63D5E5E9468AF98B37B30AB71C3CCEA69D45694E266377025F68E6953F088582",
+    "tested_copy": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42",
+    "manifest_after": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42",
+    "council_report_before": "E7DED0CDADBCDD8AE8E0921076ABD3101E36E5C5BE90B1D3F471BB80B50CCEAD",
+    "council_report_after": "453B77799BA7620CC530D2285019F3C1D8D09848D6D2A720534132C82CABA8A8",
+    "build_receipt": "60CC435CBE8A8E56DFED6C12DEDB9D95BD33705EE55BAEFE18FAFF3147AF74E0"
+  },
+  "manifest_delta": [
+    {"line": 10, "field": "components[0].prefix", "from": "PBOExample/Core", "to_json_source": "PBOExample\\\\Core"},
+    {"line": 18, "field": "components[1].prefix", "from": "PBOExample/Scripts", "to_json_source": "PBOExample\\\\Scripts"},
+    {"line": 26, "field": "components[2].prefix", "from": "PBOExample/Data", "to_json_source": "PBOExample\\\\Data"},
+    {"line": 34, "field": "components[3].prefix", "from": "PBOExample/Server", "to_json_source": "PBOExample\\\\Server"}
+  ],
+  "non_manifest_comparison": {
+    "baseline_file_count": 11,
+    "tested_copy_file_count": 11,
+    "byte_identical": true,
+    "files": [
+      "build.ps1",
+      "README.md",
+      "package/Server/mod.cpp",
+      "package/Shared/mod.cpp",
+      "src/Core/config.cpp",
+      "src/Data/config.cpp",
+      "src/Data/data/example.txt",
+      "src/Scripts/config.cpp",
+      "src/Scripts/scripts/3_Game/PBOExample.c",
+      "src/Server/config.cpp",
+      "src/Server/scripts/5_Mission/PBOExampleServer.c"
+    ]
+  },
+  "council_digest_correction": {
+    "literal": "Core PBO SHA-256 table entry",
+    "from": "366F6FE34072B71AF3FDCA7EDED117F3F1C574E1410110023FDB0D3F64092F",
+    "to": "366F6FE34072B71AF3FDCA7EDED117F3F3F1C574E1410110023FDB0D3F64092F",
+    "source": "TEMP/multi-pbo-council/builds/backslash-prefixes/pboexample-20260913-230553-89a0b34e/receipt.json"
+  },
+  "verification": ["manifest JSON parse succeeded", "scoped git diff --check pending final receipt check"]
+}

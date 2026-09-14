@@ -1,0 +1,322 @@
+{
+  "schema_version": 1,
+  "audit": "multi-pbo-runtime-council",
+  "executed_utc_date": "2026-09-14",
+  "executed_local_date": "2026-09-13",
+  "repository_revision": "5714990e98d67ee4782bb5be85aa9b5519ae6462",
+  "scope": {
+    "fixture": "examples/en/multi-pbo",
+    "prior_report": ".audit/en-2026-09-13/completeness/multi-pbo-runtime.md",
+    "prior_data": ".audit/en-2026-09-13/completeness/multi-pbo-runtime.json",
+    "retained_prior_runtime": "TEMP/multi-pbo-runtime",
+    "owned_runtime": "TEMP/multi-pbo-council",
+    "writes": [
+      "TEMP/multi-pbo-council",
+      ".audit/en-2026-09-13/completeness/multi-pbo-runtime-council.md",
+      ".audit/en-2026-09-13/completeness/multi-pbo-runtime-council.json"
+    ],
+    "versioned_fixture_mutated": false,
+    "english_content_mutated": false,
+    "full_site_build_run": false,
+    "commit_created": false,
+    "children_dispatched": false
+  },
+  "verdict_prior_evidence": {
+    "disposition": "accepted",
+    "accepted_observations": [
+      "the original fixture built and its four PBOs mounted",
+      "the exact Mission probe failed before OnInit because PBOExample and PBOExampleServer were unresolved",
+      "the prior run supplied no function, server-component, or data-read success"
+    ],
+    "prior_cause_was_unresolved": true,
+    "current_resolution": "fixture defect",
+    "not_supported": "retained harness or exact probe defect"
+  },
+  "verdict_proposed_repair": {
+    "disposition": "accepted for tested runtime",
+    "supported_cause": "Forward slashes written into the PBO prefix properties prevented DayZDiag 1.29.0.163709 from resolving the fixture script-module virtual paths; rebuilding the same copied fixture with backslash prefix properties resolved both classes and the exact data path.",
+    "minimal_verified_repair": {
+      "file": "examples/en/multi-pbo/manifest.json",
+      "changes": [
+        {"line": 10, "from": "PBOExample/Core", "to_json_source": "PBOExample\\\\Core", "value": "PBOExample\\Core"},
+        {"line": 18, "from": "PBOExample/Scripts", "to_json_source": "PBOExample\\\\Scripts", "value": "PBOExample\\Scripts"},
+        {"line": 26, "from": "PBOExample/Data", "to_json_source": "PBOExample\\\\Data", "value": "PBOExample\\Data"},
+        {"line": 34, "from": "PBOExample/Server", "to_json_source": "PBOExample\\\\Server", "value": "PBOExample\\Server"}
+      ],
+      "leave_unchanged": [
+        "CfgMods.defs.files[] forward-slash values",
+        "all config.cpp files",
+        "all Enforce Script files",
+        "mod.cpp files",
+        "build.ps1"
+      ],
+      "qualification": "Changing all four prefix records is the smallest fixture-wide repair verified; individual necessity of every prefix for every consumer was not tested."
+    },
+    "runtime_scope": "Windows DayZDiag 1.29.0.163709"
+  },
+  "fixture_comparison": {
+    "baseline_manifest_sha256": "63D5E5E9468AF98B37B30AB71C3CCEA69D45694E266377025F68E6953F088582",
+    "repair_manifest_sha256": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42",
+    "only_different_file": "manifest.json",
+    "non_manifest_files_compared": 11,
+    "non_manifest_files_byte_identical": true
+  },
+  "runtime": {
+    "executable": "D:\\SteamLibrary\\steamapps\\common\\DayZ\\DayZDiag_x64.exe",
+    "product_version": "1.29.0.163709",
+    "sha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A",
+    "private_mission": "TEMP/multi-pbo-council/mission/dayzOffline.chernarusplus",
+    "mission_file_count": 43,
+    "harness": {
+      "path": "TEMP/multi-pbo-council/run-case.ps1",
+      "sha256": "FBAC12CD27A18E254D72CB4F6C9AC5FCF34775BF24D8A3BBD567D980040C4E55",
+      "launch_flags": {"use_shell_execute": false, "create_no_window": true, "window_style": "Hidden"},
+      "validated": ["one numeric instanceId matching expected value", "private mission containment and 43-file count", "steamQueryPort equals game port plus one", "test ports free before launch"],
+      "cleanup": "kill and wait only for captured process object, then query test ports",
+      "ui_limit": "Native DayZDiag compile-error dialogs appeared on negative runs despite the hidden process settings; the positive run produced no compile dialog."
+    }
+  },
+  "builds": {
+    "baseline": {
+      "receipt": "TEMP/multi-pbo-council/builds/baseline/pboexample-20260913-224605-771a9529/receipt.json",
+      "receipt_sha256": "0C8A5D0E8F7B6F38C3074BD970AD3E8011676B6940DD276C29AD03EBC89F897D"
+    },
+    "backslash_prefixes": {
+      "receipt": "TEMP/multi-pbo-council/builds/backslash-prefixes/pboexample-20260913-230553-89a0b34e/receipt.json",
+      "receipt_sha256": "60CC435CBE8A8E56DFED6C12DEDB9D95BD33705EE55BAEFE18FAFF3147AF74E0",
+      "components": [
+        {"id": "Core", "prefix": "PBOExample\\Core", "member": "PBOExample\\Core\\config.cpp", "pbo_sha256": "366F6FE34072B71AF3FDCA7EDED117F3F3F1C574E1410110023FDB0D3F64092F"},
+        {"id": "Scripts", "prefix": "PBOExample\\Scripts", "member": "PBOExample\\Scripts\\scripts\\3_game\\pboexample.c", "pbo_sha256": "889797B200BA32302CC43B4BCF2D62734141B062D6C9E1D7C0EFF33162D4FEF2"},
+        {"id": "Data", "prefix": "PBOExample\\Data", "member": "PBOExample\\Data\\data\\example.txt", "pbo_sha256": "3A713D987C35356C428D09C2DD5175ABC4443B8084460E4B7189DA33313BD869"},
+        {"id": "Server", "prefix": "PBOExample\\Server", "member": "PBOExample\\Server\\scripts\\5_mission\\pboexampleserver.c", "pbo_sha256": "5BB685037CF0D37CA7B12FBC97152ED2F28B26E0D148C380F8508DD102974E82"}
+      ]
+    },
+    "tool_sha256": {
+      "AddonBuilder.exe": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1",
+      "BankRev.exe": "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75",
+      "DSCreateKey.exe": "81A100EEB190FAB4492970D0E6F051DB5C025BF8A4ADC2815C57ED9FE3022067",
+      "DSSignFile.exe": "098F28B46BFE40AD4CF5C60DD3E570E984FE74AE423090B6D3F2DA8D7C4E1E78",
+      "DSCheckSignatures.exe": "9BAFBBBDCE1E2792515039F99B7150CA1CE97ADF16AAB8CFC79BDC8938A8503C"
+    }
+  },
+  "probe": {
+    "source": "TEMP/multi-pbo-council/probe-exact/scripts/5_Mission/multi_pbo_runtime_probe.c",
+    "source_sha256": "FAF495615C77E372498957487FE63156768B19C1DC2B85CEBE0E801B26E669C2",
+    "byte_identical_to_prior_source": true,
+    "pbo": "TEMP/multi-pbo-council/runtime-mods/@MultiPboRuntimeProbeExact/Addons/MultiPboRuntimeProbe.pbo",
+    "pbo_sha256": "279970F47E0348D598B0CE5F7722FF3FC6CD84018107411F6AFC138FB2F63849"
+  },
+  "experiments": [
+    {
+      "case": "baseline-exact",
+      "change": "none; fresh unchanged fixture copy",
+      "result": "both variables unresolved; Mission compilation failed",
+      "pid": 53828,
+      "instance_id": 742,
+      "ports": [26120, 26121, 26122],
+      "process_record": "TEMP/multi-pbo-council/cases/baseline-exact/process.json",
+      "process_record_sha256": "59885F8B8E8271EDB468AC77A540289DD61AF1CA4D25EBB26FB95431C395BF78",
+      "rpt": "TEMP/multi-pbo-council/cases/baseline-exact/profiles/DayZDiag_x64_2026-09-13_22-48-02.RPT",
+      "rpt_sha256": "954736B010FD622CB80BFADC0D66126B38404BF922773454F432935E7A0ACB45",
+      "script_log": "TEMP/multi-pbo-council/cases/baseline-exact/profiles/script_2026-09-13_22-48-04.log",
+      "script_log_sha256": "FD4B2013B47B8B43CF4E0AE4119DD4539E454167B3F6E3FA1C15E44B58A71A0B",
+      "record_limit": "portsCheckedFreeBeforeLaunch was malformed by a PowerShell array-expression bug; the three intended ports were separately checked and observed, and the expression was fixed before later cases"
+    },
+    {
+      "case": "cfgmods-renamed",
+      "change": "renamed CfgMods identities",
+      "result": "both variables unresolved",
+      "pid": 53188,
+      "instance_id": 743,
+      "ports": [26130, 26131, 26132],
+      "process_record_sha256": "B21C94A559512E430D92CB26C345F1C154719383D59941681076CFA19B56D9B5",
+      "rpt_sha256": "5AAC49731806D3DE17023C406E4F15FA945ECB75EE13DF4D2CB64F08249DDE59",
+      "script_log_sha256": "03363FAEBEB29A69639C0CCFAC05783AC78BE0EEC269FF3F6110D5540332BBED"
+    },
+    {
+      "case": "flattened-exact",
+      "change": "removed extra source-side scripts nesting and adjusted files[]",
+      "result": "both variables unresolved",
+      "pid": 55836,
+      "instance_id": 745,
+      "ports": [26150, 26151, 26152],
+      "process_record_sha256": "A43786BFC1B4EC857F9349C7C2593EEDB10D288BF0B5964643B6AAFE4FD27772",
+      "rpt_sha256": "EC12EF8F398D1498AD20BD367694F901AA730E745DC43C19D6F85C26D1F5D333",
+      "script_log_sha256": "33A96FB63D4EAE60CFB8A0C31535E60CBA1494827F9ABA92D749494D81E2B0EB"
+    },
+    {
+      "case": "cfgmods-patch-identities-exact",
+      "change": "matched CfgMods names to CfgPatches identities",
+      "result": "both variables unresolved",
+      "pid": 59268,
+      "instance_id": 746,
+      "ports": [26160, 26161, 26162],
+      "process_record_sha256": "304552ED7B38E9AEA968AC91B7174DF5E740CE1C3B6BD14781B7E89232471477",
+      "rpt_sha256": "9DE4F24D0BDCD2D73C157361579E56097E7F1D963A0C17BD35959F0FF192AEBE",
+      "script_log_sha256": "0F8C11CCA107E1959D16176EDDA945C1D66144835BFE2B3A18F4DB5FDDC7F2AF"
+    },
+    {
+      "case": "modcpp-defs-exact",
+      "change": "added dependency and Defs material patterned after StarDZ_Weapons",
+      "result": "both variables unresolved",
+      "pid": 15020,
+      "instance_id": 747,
+      "ports": [26170, 26171, 26172],
+      "process_record_sha256": "D969EE5615FFE85413C8010BCE2C0834CD0B93E9568B55FE63D796D27599366F",
+      "rpt_sha256": "3BF7FAB4E6FA7BC686E226A6A3F1EDA9305E1206AF4E1F05FC0B9887749FDD51",
+      "script_log_sha256": "9A7C9FB5D51BB34B11D4FF183FEA54C92FF0A5EB677773BE17AAFAC912096AB9"
+    },
+    {
+      "case": "backslash-prefixes-exact",
+      "change": "only four manifest prefix values changed to backslashes",
+      "result": "both classes resolved, Mission compiled, exact 81-byte data read succeeded, CE initialized, player connections enabled",
+      "pid": 60068,
+      "instance_id": 748,
+      "ports": [26180, 26181, 26182],
+      "process_record": "TEMP/multi-pbo-council/cases/backslash-prefixes-exact/process.json",
+      "process_record_sha256": "E36CD5D7811861F9B04ECB1914F7073EE60B41BB5D973B365BEBC345F769406C",
+      "rpt": "TEMP/multi-pbo-council/cases/backslash-prefixes-exact/profiles/DayZDiag_x64_2026-09-13_23-06-09.RPT",
+      "rpt_sha256": "20F02A61993E12CAEC062775C8D8DA584312C03425475AAB7112CC5CAE68EF40",
+      "script_log": "TEMP/multi-pbo-council/cases/backslash-prefixes-exact/profiles/script_2026-09-13_23-06-11.log",
+      "script_log_sha256": "87B9B99558513AC80A7715F0DC65AEC0E3D28E6482B2E789B7FEF29D18DD185A",
+      "module_counts": {"game_files": 417, "game_classes": 1393, "mission_files": 211, "mission_classes": 445},
+      "markers": [
+        "MULTIPBO:RUNTIME:BEGIN",
+        "MULTIPBO:RUNTIME:FIXTURE=PBOExample",
+        "MULTIPBO:RUNTIME:SERVER_COMPONENT=true",
+        "MULTIPBO:RUNTIME:DATA_PATH=PBOExample/Data/data/example.txt",
+        "MULTIPBO:RUNTIME:DATA_READ_BYTES=81",
+        "MULTIPBO:RUNTIME:DATA_SENTINEL=This fixture's Data archive has a unique prefix and its own CfgPatches identity.",
+        "MULTIPBO:RUNTIME:END"
+      ],
+      "data_sentinel_sha256": "C460C6E58E3051A463E565F55D835469415E3536B9EF6095178D3D60041CB941",
+      "data_sentinel_copy_identity": "versioned source, baseline copy, and repaired copy all match this digest"
+    }
+  ],
+  "process_cleanup": {
+    "all_cases_killed_by_harness": true,
+    "all_exit_code_signed": -1,
+    "all_exit_code_hex": "0xFFFFFFFF",
+    "all_process_records_report_empty_ports_after_cleanup": true,
+    "final_dayzdiag_processes": 0,
+    "final_udp_endpoints_in_range_26120_26182": 0
+  },
+  "excluded_setup_trials": [
+    {
+      "name": "empty initial probe",
+      "cause": "Copy-Item -LiteralPath with a wildcard supplied an empty source tree",
+      "pbo": "TEMP/multi-pbo-council/probe-build/probe-baseline.pbo",
+      "bytes": 140,
+      "sha256": "D0C9FC4C23DF273FAAA5E70D19E348932F46953018CFA64F8A91CDDCF8C7F5FA",
+      "used_as_exact_probe": false,
+      "preserved": true
+    },
+    {
+      "name": "baseline-inspect",
+      "pid": 47848,
+      "instance_id": 744,
+      "ports": [26140, 26141, 26142],
+      "result": "Mission compiled but no intended inspect marker appeared within the bound; no class-resolution conclusion",
+      "process_record_sha256": "1ACAD98163773C19C5CB05B3190E4CF7C81F1A24C6FC93C63DCB1A57B36C9239",
+      "rpt_sha256": "8C5E77CDFCAACD99D9D0E9C7D26B477720D2BA2D12D4E6C08A149D63B190DED3",
+      "killed_by_harness": true,
+      "exit_code_signed": -1,
+      "ports_after_cleanup": []
+    }
+  ],
+  "sources": [
+    {
+      "kind": "user project, fallible corroboration",
+      "root": "D:\\StarDZ\\StarDZ_Weapons",
+      "enclosing_repository_revision": "24a465d28d7c322cfdaf1af5d2484614f7c1d690",
+      "files": [
+        {"path": "D:\\StarDZ\\dev.py", "lines": "238-263", "sha256": "E6862C2AB958B734B5A95B6FD3A0BA6B9B3AA066069188804A4BB2A0C23CC64F", "evidence": "raw backslash prefixes"},
+        {"path": "D:\\StarDZ\\StarDZ_Weapons\\StarDZ_Weapons\\Scripts\\config.cpp", "lines": "49-57", "sha256": "13BD0C693DD61F035581E59E3EC0AA52AF5B5E61693B4E456A8FD3D96E1F78FA", "evidence": "forward-slash files[] values"},
+        {"path": "D:\\StarDZ\\StarDZ_Weapons\\StarDZ_Weapons\\mod.cpp", "lines": "10-25", "sha256": "842E03136BE80A81E429E53690AFAA079C11C07212F0487B618AA87788122558", "evidence": "Defs pattern used for rejected control"},
+        {"path": "D:\\StarDZ\\temp_pbo\\@StarDZ_Weapons\\addons\\StarDZ_Weapons_Scripts.pbo", "sha256": "CA60692DB3BAFA657E7064E3174353164DAE9E9FFB6933C1F05FBA48C9836709", "evidence": "BankRev prefix = StarDZ_Weapons\\Scripts\\"}
+      ],
+      "bankrev_capture": "TEMP/multi-pbo-council/sources/stardz-weapons-bankrev.txt"
+    },
+    {
+      "kind": "current extracted game files",
+      "root": "D:\\DayZ Projects",
+      "files": [
+        {"path": "scripts.txt", "lines": "1-3", "sha256": "E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F", "evidence": "prefix=scripts\\, product=dayz, version=124588"},
+        {"path": "scripts/3_game/global/game.c", "lines": "554-570", "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158", "symbols": ["ConfigGetTextArray", "ConfigGetTextArrayRaw"]},
+        {"path": "scripts/5_mission/mission/missionserver.c", "line": 83, "sha256": "92A2FF171ED550BF2E93E7C983479613CFB0EE7A521D7C1958CECA9647B786F0", "symbol": "MissionServer.OnInit"}
+      ],
+      "version_caveat": "The extraction metadata version was not equated with the runtime executable build."
+    },
+    {
+      "kind": "official repository, contextual",
+      "url": "https://github.com/BohemiaInteractive/DayZ-Samples.git",
+      "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea",
+      "path": "Test_Inputs/config.cpp",
+      "lines": [21, 27],
+      "sha256": "71B869D713C15D38037B0B8B6CC682CCAEA03599DDFF370DA786D42CD813121C",
+      "evidence": "forward-slash files[] values; contextual only, not prefix-rule proof"
+    },
+    {
+      "kind": "publisher documentation, indexed access",
+      "url": "https://community.bistudio.com/wiki/Arma_3%3A_Creating_an_Addon",
+      "section": "Addon Prefix",
+      "evidence": "directory-like prefix pseudo-directories use backslash; allowed prefix characters include backslash",
+      "scope": "shared addon/PBO convention documented on an Arma 3 page, not DayZ runtime proof",
+      "access_limit": "direct page and MediaWiki API fetches returned HTTP 403; indexed page content was inspected"
+    },
+    {
+      "kind": "public DayZ implementation, corroborating",
+      "repository": "https://github.com/Arkensor/DayZ-CommunityFramework",
+      "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3",
+      "files": [
+        {"path": "JM/CF/Legacy/$PBOPREFIX$.txt", "blob_sha": "3c16824df7c1d62f283b462844b51a28d6100d18", "sha256": "0C5E704065EF126A8AA1FEEB588EBD7B3C569C168BA9D9EB800B2639E5EC9AFF", "evidence": "prefix=JM\\CF\\Defines;", "caveat": "Legacy path; syntax corroboration only"},
+        {"path": "JM/CF/Scripts/config.cpp", "lines": [66, 74, 82, 90, 98], "sha256": "C038EB43502E202B5D76A7FF115778B91DA6B1C983B63EF3C5759DDF7B021CCE", "evidence": "forward-slash files[] paths"}
+      ]
+    },
+    {
+      "kind": "public DayZ implementations, corroborating files[] convention",
+      "references": [
+        {"repository": "https://github.com/salutesh/DayZ-Expansion-Scripts", "commit": "6dacd00f6d943ebbd99e0cf1baad93f470d96419", "path": "DayZExpansion/Groups/Scripts/config.cpp", "lines": "52-55, 79-91", "sha256": "6099036A9D2001B0F66DC8BE8A09605C65E3B15608351CFE762FBD765AB19AC2"},
+        {"repository": "https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools", "commit": "41f2c2b99565d0e3970163e162efbf1283fdca62", "path": "JM/COT/Scripts/config.cpp", "lines": "68-101", "sha256": "3D73EF94A02524375A3DB02CA4ED9FB5FE810894410900F62DECB115299BEB73"},
+        {"repository": "https://github.com/InclementDab/DayZ-Editor", "commit": "992e6b29b42b5d8e609632b59771335a23d205eb", "path": "DayZEditor/Scripts/config.cpp", "lines": [48, 52, 56, 61], "sha256": "97CE7E88B66BBD01D87B5DBC6347F2D45112D556BEB72E41B53A4A0AEF080B34"}
+      ],
+      "evidence": "forward slashes are used in real CfgMods files[] paths; this supports leaving those values unchanged"
+    },
+    {
+      "kind": "community access failure",
+      "url": "https://discord.com/channels/452035973786632194",
+      "method": "read-only Orca embedded browser",
+      "result": "tab title loaded, accessibility snapshot returned no content, subsequent wait/snapshot timed out, tab closed",
+      "messages_sent": false,
+      "evidence_claimed": false
+    },
+    {
+      "kind": "supplied code reference, unused",
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260914\\dayz-mcp",
+      "commit": "ffa47e7ca8c82f4785279e919cb9d40053bddf8c",
+      "mcp_installed_or_started": false
+    },
+    {
+      "kind": "supplied code reference, unused",
+      "path": "C:\\Users\\Leonardo Mello\\AppData\\Local\\Temp\\wiki-audit-20260914\\DayZ-Modding-Knowledge-Pack",
+      "commit": "9727ae83e65ac26a1cd386c64821b00159f8f933"
+    }
+  ],
+  "artifact_incident": {
+    "cause": "incorrect exploratory BankRev option extracted a directory beside the source PBO",
+    "resolution": "validated source and destination, then moved directory intact into owned TEMP",
+    "preserved_at": "TEMP/multi-pbo-council/accidental-bankrev-output",
+    "deleted": false,
+    "outside_artifact_remaining": false
+  },
+  "limitations": [
+    "no client join test",
+    "no public reachability claim",
+    "no production server claim",
+    "no Workshop distribution test",
+    "no signature-enforcement or tamper-rejection test",
+    "no claim for other DayZ or tool versions",
+    "native compile dialogs were not suppressed on negative cases",
+    "no full VitePress build"
+  ]
+}

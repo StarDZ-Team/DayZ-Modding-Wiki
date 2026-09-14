@@ -1,0 +1,105 @@
+{
+  "observedAt": "2026-09-14T02:38:50.167192+00:00",
+  "reviewer": "root, independent final integration review",
+  "decision": "approve exact tested manifest integration and single report digest transcription repair",
+  "fixtureFiles": [
+    {
+      "path": "examples/en/multi-pbo/build.ps1",
+      "sha256": "38F24D830DBCB7985ABF1ED9636493C5BDFEA1E160169379FE10E8F50BADB956"
+    },
+    {
+      "path": "examples/en/multi-pbo/manifest.json",
+      "sha256": "679F31F1C7BB3440D37DE4FA7589203632B1A0D48799FFE41795CD7E20670C42"
+    },
+    {
+      "path": "examples/en/multi-pbo/package/Server/mod.cpp",
+      "sha256": "726A2E560854E619DD2A851F5E9EA08D216D673278452CC8C6C5AE449C1DC2C8"
+    },
+    {
+      "path": "examples/en/multi-pbo/package/Shared/mod.cpp",
+      "sha256": "8A3FB89471F6CA617674B997EFA37AF2DDCC2DB33DC471C68320D58A2FF2CFA9"
+    },
+    {
+      "path": "examples/en/multi-pbo/README.md",
+      "sha256": "3449B09BBDD04A278A17DD8E3A79A1D27EEB76B173431A73A255C52EE23BC0CE"
+    },
+    {
+      "path": "examples/en/multi-pbo/src/Core/config.cpp",
+      "sha256": "E45F745E19E2EF1943A477E66B202D70D10A14A275EC6C7CE4FD56F80C2D712F"
+    },
+    {
+      "path": "examples/en/multi-pbo/src/Data/config.cpp",
+      "sha256": "AB459018DC30DD5188820398E56B16A3DA426929BB0111C4A3F47819DCED5F31"
+    },
+    {
+      "path": "examples/en/multi-pbo/src/Data/data/example.txt",
+      "sha256": "C460C6E58E3051A463E565F55D835469415E3536B9EF6095178D3D60041CB941"
+    },
+    {
+      "path": "examples/en/multi-pbo/src/Scripts/config.cpp",
+      "sha256": "0C2DB149738083D7FDA1F616051C7F0C8C548B0175222369F1171A1FA197D787"
+    },
+    {
+      "path": "examples/en/multi-pbo/src/Scripts/scripts/3_Game/PBOExample.c",
+      "sha256": "537D9A11B33ED7CCBF2DC7A41353F457629EC9CEBDF96EB01D53652B6E7ACF8B"
+    },
+    {
+      "path": "examples/en/multi-pbo/src/Server/config.cpp",
+      "sha256": "4FA89581708F159CFCA491252F494A5E9A6A1AE003D165370EA3F12F5245E102"
+    },
+    {
+      "path": "examples/en/multi-pbo/src/Server/scripts/5_Mission/PBOExampleServer.c",
+      "sha256": "CCECF9E3AEDC044CA44A3C22537BE504BEE5AC71042EA4E6EA8DAA1567F12373"
+    }
+  ],
+  "semanticPrefixChanges": 4,
+  "unchangedOtherFixtureFiles": 11,
+  "cases": [
+    {
+      "case": "baseline-exact",
+      "pid": 53828,
+      "path": "TEMP/multi-pbo-council/cases/baseline-exact/process.json",
+      "sha256": "59885F8B8E8271EDB468AC77A540289DD61AF1CA4D25EBB26FB95431C395BF78"
+    },
+    {
+      "case": "cfgmods-renamed",
+      "pid": 53188,
+      "path": "TEMP/multi-pbo-council/cases/cfgmods-renamed/process.json",
+      "sha256": "B21C94A559512E430D92CB26C345F1C154719383D59941681076CFA19B56D9B5"
+    },
+    {
+      "case": "flattened-exact",
+      "pid": 55836,
+      "path": "TEMP/multi-pbo-council/cases/flattened-exact/process.json",
+      "sha256": "A43786BFC1B4EC857F9349C7C2593EEDB10D288BF0B5964643B6AAFE4FD27772"
+    },
+    {
+      "case": "cfgmods-patch-identities-exact",
+      "pid": 59268,
+      "path": "TEMP/multi-pbo-council/cases/cfgmods-patch-identities-exact/process.json",
+      "sha256": "304552ED7B38E9AEA968AC91B7174DF5E740CE1C3B6BD14781B7E89232471477"
+    },
+    {
+      "case": "modcpp-defs-exact",
+      "pid": 15020,
+      "path": "TEMP/multi-pbo-council/cases/modcpp-defs-exact/process.json",
+      "sha256": "D969EE5615FFE85413C8010BCE2C0834CD0B93E9568B55FE63D796D27599366F"
+    },
+    {
+      "case": "backslash-prefixes-exact",
+      "pid": 60068,
+      "path": "TEMP/multi-pbo-council/cases/backslash-prefixes-exact/process.json",
+      "sha256": "E36CD5D7811861F9B04ECB1914F7073EE60B41BB5D973B365BEBC345F769406C"
+    }
+  ],
+  "verifiedPriorRuntimeMarkers": 7,
+  "externalSourceRecordSha256": "428E5DD4084B98F7FCF19437F3CE132EB9B29CC976394168511B802FC2C7ED11",
+  "scopedDiffCheck": "passed",
+  "newRuntimeOrBuildPerformed": false,
+  "limitations": [
+    "Retained copied-fixture runtime evidence only; no post-integration rebuild/run performed.",
+    "README and EN verification-status prose need the scoped runtime follow-up.",
+    "Client join, signature enforcement, size boundaries, Workshop, other versions and final site build/graph remain open."
+  ],
+  "receiptNote": "The author integration JSON retains a pending-final-check string; this independent fresh diff check supersedes that stale status."
+}

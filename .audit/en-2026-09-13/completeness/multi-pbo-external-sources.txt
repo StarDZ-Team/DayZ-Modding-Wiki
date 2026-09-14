@@ -1,0 +1,78 @@
+External source access record
+Accessed: 2026-09-14 UTC (2026-09-13 America/Sao_Paulo)
+
+1. Bohemia Interactive Community Wiki (official publisher domain)
+URL: https://community.bistudio.com/wiki/Arma_3%3A_Creating_an_Addon
+Section: Addon Prefix
+Indexed page content inspected through web search states that directory-like addon prefixes use backslash separators and that permitted prefix characters include English letters, numbers, underscore, and backslash.
+Limitation: direct page and MediaWiki API fetches returned HTTP 403, so this was inspected through the indexed result rather than a direct page response; it is an Arma 3 page documenting the shared addon/PBO convention, not DayZ-specific runtime proof.
+
+URL: https://community.bistudio.com/wiki/DayZ%3AModding_Basics
+Section: Folder Structure and config.cpp
+Indexed page content inspected through web search uses files[] = { "FirstMod/Scripts/4_World" }.
+Limitation: direct page fetch returned HTTP 403; this supports forward slashes in CfgMods files[] only.
+
+URL: https://community.bistudio.com/wiki/Addon_Builder
+Section: Addon prefix / -prefix
+Indexed page content inspected through web search says -prefix sets the path prefix to the addon structure.
+Limitation: direct page fetch returned HTTP 403 and the excerpt does not independently specify a separator.
+
+2. Community Framework (primary repository)
+Repository: https://github.com/Arkensor/DayZ-CommunityFramework
+Branch resolved: production
+Commit: 0763e7e7548c9a0bed6626afff835de80693ebf3
+File URL: https://raw.githubusercontent.com/Arkensor/DayZ-CommunityFramework/0763e7e7548c9a0bed6626afff835de80693ebf3/JM/CF/Legacy/%24PBOPREFIX%24.txt
+Blob SHA from GitHub tree: 3c16824df7c1d62f283b462844b51a28d6100d18
+Downloaded bytes: 161
+Downloaded SHA-256: 0C5E704065EF126A8AA1FEEB588EBD7B3C569C168BA9D9EB800B2639E5EC9AFF
+Relevant property: prefix=JM\CF\Defines;
+Meaning: a real DayZ multi-PBO codebase records a multi-level PBO prefix with backslashes. The file is under Legacy, so it corroborates syntax but is not current-engine proof by itself.
+
+File URL: https://raw.githubusercontent.com/Arkensor/DayZ-CommunityFramework/0763e7e7548c9a0bed6626afff835de80693ebf3/JM/CF/Scripts/config.cpp
+Downloaded bytes: 1945
+Downloaded SHA-256: C038EB43502E202B5D76A7FF115778B91DA6B1C983B63EF3C5759DDF7B021CCE
+Relevant lines: 66, 74, 82, 90, 98 use JM/CF/Scripts/... with forward slashes in files[].
+
+3. DayZ Expansion Groups Scripts (primary repository)
+Repository: https://github.com/salutesh/DayZ-Expansion-Scripts
+Branch resolved: experimental
+Commit: 6dacd00f6d943ebbd99e0cf1baad93f470d96419
+File URL: https://raw.githubusercontent.com/salutesh/DayZ-Expansion-Scripts/6dacd00f6d943ebbd99e0cf1baad93f470d96419/DayZExpansion/Groups/Scripts/config.cpp
+Downloaded bytes: 1782
+Downloaded SHA-256: 6099036A9D2001B0F66DC8BE8A09605C65E3B15608351CFE762FBD765AB19AC2
+Relevant lines: 52-55 and 79-91 use DayZExpansion/Groups/Scripts/... with forward slashes in files[].
+
+4. Community Online Tools (primary repository)
+Repository: https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools
+Branch resolved: production
+Commit: 41f2c2b99565d0e3970163e162efbf1283fdca62
+File URL: https://raw.githubusercontent.com/Jacob-Mango/DayZ-CommunityOnlineTools/41f2c2b99565d0e3970163e162efbf1283fdca62/JM/COT/Scripts/config.cpp
+Downloaded bytes: 1797
+Downloaded SHA-256: 3D73EF94A02524375A3DB02CA4ED9FB5FE810894410900F62DECB115299BEB73
+Relevant lines: 68-101 use JM/COT/Scripts/... with forward slashes in files[].
+
+5. DayZ Editor (primary repository)
+Repository: https://github.com/InclementDab/DayZ-Editor
+HEAD resolved: 992e6b29b42b5d8e609632b59771335a23d205eb
+File URL: https://raw.githubusercontent.com/InclementDab/DayZ-Editor/992e6b29b42b5d8e609632b59771335a23d205eb/DayZEditor/Scripts/config.cpp
+Downloaded bytes: 4038
+Downloaded SHA-256: 97CE7E88B66BBD01D87B5DBC6347F2D45112D556BEB72E41B53A4A0AEF080B34
+Relevant lines: 48, 52, 56, 61 use DayZEditor/scripts/... with forward slashes in files[].
+
+6. VPP Admin Tools (primary repository and committed built PBO)
+Repository: https://github.com/VanillaPlusPlus/VPP-Admin-Tools
+Branch resolved: master
+Commit: 646fd89d38d6c7b4eb4da1a31cb69f271b2396c8
+File URL: https://raw.githubusercontent.com/VanillaPlusPlus/VPP-Admin-Tools/646fd89d38d6c7b4eb4da1a31cb69f271b2396c8/config.cpp
+Downloaded bytes: 145
+Downloaded SHA-256: 3685B08C7CEDF3D64ADFCCF1E4B6758B3F31EB8B083BAF28C6A77B54076BB446
+Built PBO URL: https://raw.githubusercontent.com/VanillaPlusPlus/VPP-Admin-Tools/646fd89d38d6c7b4eb4da1a31cb69f271b2396c8/Packed/Addons/VPPAdminTools.pbo
+HTTP range inspected: bytes 0-4095/75751962, status 206
+Observed PBO header property: prefix = VPPAdminTools
+Observed first members use backslashes, e.g. 3_Game\CommunityFramework\RPC\DayZGame.c.
+Meaning: real committed build corroborates the PBO header/member inspection method, but its prefix is single-level and does not discriminate separators.
+
+7. DayZ Modders Discord
+URL attempted read-only: https://discord.com/channels/452035973786632194
+Orca browser page ID: 59d11482-75f7-4837-9a7d-ba7a5dfc2472
+Result: the tab loaded title Discord, but accessibility snapshot yielded no content and the subsequent wait/snapshot timed out. The tab was closed. No messages were read, no search result was claimed, and nothing was sent.
