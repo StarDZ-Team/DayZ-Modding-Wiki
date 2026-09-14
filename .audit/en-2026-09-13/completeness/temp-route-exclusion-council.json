@@ -1,0 +1,31 @@
+{
+  "reviewedAtUtc": "2026-09-14T04:02:10.143Z",
+  "reviewer": "root independent of Terra author",
+  "disposition": "accepted one-line root TEMP exclusion",
+  "before": 1331,
+  "after": 1266,
+  "removedTemp": 65,
+  "unexpectedRemoved": [],
+  "localeSetsPreserved": [
+    "en",
+    "pt",
+    "de",
+    "ru",
+    "es",
+    "fr",
+    "ja",
+    "zh-hans",
+    "cs",
+    "pl",
+    "hu",
+    "it"
+  ],
+  "exampleRoutesPreserved": [
+    "examples/en/entity-persistence/README.md",
+    "examples/en/multi-pbo/README.md"
+  ],
+  "configSha256": "7cdc9d1149cc4f439ab7f89e310d99d39cfe77a5f66f73929458bea434a9f1d6",
+  "deliverySha256": "10d9d62a0e46ad9390a3b8217388eb020a0bb0d1da8816f3e0333476f0bc3fa2",
+  "source": "Reopened installed resolvePages implementation and reran actual page discovery for before/after exclusions.",
+  "limits": "Discovery only; rendered route checks and full integrated build remain required. No performance improvement claimed."
+}
