@@ -601,7 +601,7 @@ The client sends the request once per second (throttled by the update timer). Th
 
 This tutorial routes RPCs by overriding `OnRPC` on a `modded class PlayerBase` and branching on an integer `rpc_type`. That is the most direct way to add a single request/response pair, and it keeps the whole round-trip inside one mod. You will see other receive patterns elsewhere in this wiki, and they are not interchangeable in style:
 
-- The trading-system tutorial ([Trading System](12-trading-system.md)) and the professional template ([Professional Template](09-professional-template.md)) show progressively larger RPC surfaces where a raw integer `OnRPC` switch becomes hard to maintain.
+- The shop RPC tutorial ([Shop UI and Safe Refusal](12-trading-system.md)) and the professional template ([Professional Template](09-professional-template.md)) show progressively larger RPC surfaces where a raw integer `OnRPC` switch becomes hard to maintain.
 - The canonical approach for anything beyond a couple of messages is a **string-routed dispatcher** rather than a growing `switch` on magic integers. See [Networking and RPC](../06-engine-api/09-networking.md) for the engine mechanics and [RPC Patterns](../07-patterns/03-rpc-patterns.md) for the `LNT_RPC` register/route design the rest of the wiki treats as the reference.
 
 Recommendation: for a one-off overlay like this, the direct `OnRPC` override is fine. The moment your mod needs a third or fourth message, migrate to the string-routed pattern from [RPC Patterns](../07-patterns/03-rpc-patterns.md) so you register named handlers instead of hand-maintaining an integer switch.

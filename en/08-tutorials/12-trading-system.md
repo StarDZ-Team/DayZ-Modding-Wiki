@@ -1,9 +1,9 @@
-# Building a Trading System
+# Shop UI, Catalog RPC, and Safe Refusal
 
 
 ---
 
-> **Summary:** Build a complete NPC-less shop system: JSON config, server-validated buy/sell, categorized UI, currency-based transactions. The most complex tutorial in this wiki -- covers data modeling, RPC roundtrips, inventory manipulation, and anti-cheat principles.
+> **Summary:** Build a non-transactional shop prototype with JSON catalog data, a categorized UI, server-owned validation, and buy/sell requests that intentionally refuse before inventory or currency changes. This chapter teaches the request/response boundary; it does not implement a working trading transaction.
 
 ---
 
@@ -20,14 +20,14 @@
 - [Step 8: Shop Config JSON](#step-8-shop-config-json)
 - [Step 9: Build and Test](#step-9-build-and-test)
 - [Security Considerations](#security-considerations)
-- [Complete Code Reference](#complete-code-reference)
+- [Provided Code Reference](#provided-code-reference)
 - [Best Practices / Common Mistakes / What You Learned](#best-practices)
 
 ---
 
 ## What We Are Building
 
-Players press F6 to open a shop menu, browse items by category (Weapons, Food, Medical), and buy/sell using a currency item. The server validates every transaction -- the client never decides prices or spawns items.
+Players press F6 to open a shop menu and browse server-supplied categories and items. Buy and sell requests bind to the authenticated sender, validate quantity and the server catalog, and then return a disabled result without changing inventory or currency. The refusal is intentional: this chapter does not provide the persistence, idempotency, compensation, and failure handling required for a working trading system.
 
 ```mermaid
 sequenceDiagram
@@ -35,30 +35,27 @@ sequenceDiagram
     participant UI as ShopMenu
     participant S as ShopManager (Server)
 
-    P->>UI: Opens shop (keybind)
-    UI->>S: RPC: RequestShopData
-    S-->>UI: RPC: ShopDataResponse(categories, items)
-    UI->>UI: Populate UI with items
-    P->>UI: Clicks "Buy AKM"
-    UI->>S: RPC: BuyItem("AKM")
-    S->>S: Validate currency count
-    S->>S: Delete currency items
-    S->>S: Spawn purchased item
-    S-->>UI: RPC: TransactionResult(success)
-    UI->>UI: Update balance display
+    P->>UI: Open shop
+    UI->>S: RequestShopData
+    S-->>UI: ShopDataResponse(categories, items)
+    P->>UI: Click Buy or Sell
+    UI->>S: Request(className, quantity)
+    S->>S: Bind sender, validate quantity and catalog
+    S->>S: Refuse before mutation
+    S-->>UI: TransactionResult(false, reason, unchanged balance)
 ```
 
 ```
 CLIENT                                SERVER
-1. Press F6 --> REQUEST_SHOP_DATA ->  2. Load config, count currency
-                                         SHOP_DATA_RESPONSE ->
-3. Show categories + items
-   Click Buy --> BUY_ITEM (cls,qty) -> 4. Validate, remove currency, spawn
-                                         TRANSACTION_RESULT ->
-5. Show result, update balance
+1. Press F6 -> REQUEST_SHOP_DATA ->   2. Load catalog and count currency
+                                          SHOP_DATA_RESPONSE ->
+3. Show categories and items
+   Click Buy/Sell -> REQUEST ------>  4. Bind sender, validate, refuse
+                                          TRANSACTION_RESULT(false) ->
+5. Show disabled result; balance and inventory remain unchanged
 ```
 
-**Key rule:** Client sends `(className, quantity)` only. Server looks up the price.
+**Key rule:** The client sends `(className, quantity)` only. The server looks up the catalog entry, but the provided handlers never debit, credit, spawn, or delete items.
 
 ### Mod Structure
 
@@ -846,7 +843,7 @@ The manager writes this file at `$profile:ShopDemo/ShopConfig.json` on first ser
 
 ---
 
-## Complete Code Reference
+## Provided Code Reference
 
 | File | Layer | Purpose |
 |------|-------|---------|

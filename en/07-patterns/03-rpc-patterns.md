@@ -822,7 +822,7 @@ modded class MissionServer
 
 4. **Use reliable delivery for state changes.** Reserve unreliable delivery for rapid, self-correcting updates.
 
-5. **Keep payloads small.** DayZ has a practical per-RPC size ceiling; for large data (config sync, player lists), split across multiple RPCs or paginate.
+5. **Keep payloads deliberately bounded.** The reviewed DayZ script declarations do not publish a maximum `ScriptRPC` payload, fragmentation behavior, or drop threshold. Paginate large datasets and treat any size threshold as build- and delivery-mode-specific until you measure it.
 
 6. **Register handlers early.** `OnInit()` is safest --- clients can connect before `OnMissionStart()` completes.
 
@@ -837,7 +837,7 @@ modded class MissionServer
 - **Multi-Mod:** integer-range RPCs are collision-prone --- two mods choosing the same id silently intercept each other. Namespaced (string-routed) routing avoids this by keying on mod name plus function name.
 - **Load Order:** when several mods `modded class DayZGame` and override `OnRPC`, each must call `super.OnRPC()` for ids it does not own, or downstream mods never receive theirs. A single-id router sidesteps the whole issue by hooking once.
 - **Listen Server:** on a listen server, client and server run in one process, so an RPC the server sends with `recipient = null` is also received locally. Guard handlers with `GetGame().IsServer()` / `GetGame().IsClient()` as appropriate.
-- **Performance:** dispatch overhead is minimal (an integer switch or a map lookup). The real cost is payload size; there is a practical per-RPC limit, so paginate large data.
+- **Performance:** Both dispatch work and serialization/payload cost should be measured for the actual mod. Payload failure behavior has not been measured here; paginate large datasets, and report the client/server build plus the `guaranteed` mode with any observed threshold.
 - **Migration:** RPC ids are a mod-internal detail, unaffected by DayZ version updates. But if you change a wire format (add or remove fields), an old client talking to a new server will silently desync --- version your payloads or force client updates.
 
 ---

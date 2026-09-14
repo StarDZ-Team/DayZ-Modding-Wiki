@@ -17,7 +17,7 @@
 - [RCON (Remote Console)](#rcon-remote-console)
 - [Signature Verification](#signature-verification)
 - [The keys/ Directory](#the-keys-directory)
-- [In-Game Admin Tools](#in-game-admin-tools)
+- [Vanilla Administration Boundary](#vanilla-administration-boundary)
 - [Common Mistakes](#common-mistakes)
 
 ---
@@ -30,12 +30,12 @@ The `passwordAdmin` parameter in **serverDZ.cfg** sets the admin password for yo
 passwordAdmin = "YourSecretPassword";
 ```
 
-You use this password in two ways:
+Bohemia documents `passwordAdmin` as the password used to become an in-game server administrator. It is not the BattlEye RCon credential:
 
-1. **In-game** -- open the chat and type `#login YourSecretPassword` to gain admin privileges for that session.
-2. **RCON** -- connect with a BattlEye RCON client using this password (see the RCON section below).
+1. **In-game administration** — use `#login <password>` with the `passwordAdmin` value. The command path still needs a disposable-server runtime check.
+2. **BattlEye RCon** — configure a separate `RConPassword` in the BattlEye server configuration described below.
 
-Keep the admin password long and unique. Anyone with it has full control over the running server.
+Keep the two secrets distinct and restrict both configuration files to the server service account. Store the in-game secret in the file passed with `-config`; store the RCon secret in the BattlEye configuration resolved by `-BEpath` and `-profiles`. This static review did not determine whether successful or failed credentials are echoed to any log, so inspect fresh server, admin, BattlEye, and RCon logs during the required runtime test before making a logging-safety claim.
 
 ---
 
@@ -180,17 +180,13 @@ If you add a new mod and forget to copy its `.bikey`, every player running that 
 
 ---
 
-## In-Game Admin Tools
+## Vanilla Administration Boundary
 
-Once you log in with `#login <password>` in chat, you gain access to the admin tools:
+The reviewed official sources do not establish a retail in-game admin panel unlocked by `#login`. The vanilla multiplayer pause menu does synchronize a player list, but the extracted UI uses it for player names, mute state, and platform gamercards; it does not expose the SteamID, kick, or ban controls claimed by the previous version of this page.
 
-- **Player list** -- view all connected players with their SteamIDs.
-- **Kick/ban** -- remove or ban players directly from the player list.
-- **Teleport** -- use the admin map to teleport to any position.
-- **Admin log** -- server-side log of player actions (kills, connections, disconnections) written to `*.ADM` files in the profile directory.
-- **Free camera** -- detach from your character and fly around the map.
+Bohemia documents teleport and free camera in the Diag Menu, which is available in `DayZDiag_x64.exe`, not as a `passwordAdmin` feature of the retail client. Use BattlEye RCon for the documented remote-administration path. Admin maps, teleport panels, spectate or free-camera tools, and richer player management are supplied by mods such as Community Online Tools and VPP Admin Tools; document the selected mod and its own permission model rather than calling those features vanilla.
 
-These tools are built into the vanilla game. Third-party admin mods (such as Community Online Tools or VPP Admin Tools) extend admin capabilities significantly.
+A retail dedicated-server/client capture is still required before this wiki lists any additional vanilla `#login` commands or administrator UI. Keep admin-log configuration separate from claims about an in-game tool panel.
 
 ---
 

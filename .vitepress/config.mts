@@ -134,7 +134,7 @@ function sidebar(lang: string = 'en') {
         { text: 'Professional Template', link: `${l}/08-tutorials/09-professional-template` },
         { text: 'Vehicle Mod', link: `${l}/08-tutorials/10-vehicle-mod` },
         { text: 'Clothing Mod', link: `${l}/08-tutorials/11-clothing-mod` },
-        { text: 'Trading System', link: `${l}/08-tutorials/12-trading-system` },
+        { text: lang === 'en' ? 'Shop UI & Safe Refusal' : 'Trading System', link: `${l}/08-tutorials/12-trading-system` },
       ]
     },
     {

@@ -1,0 +1,71 @@
+{
+  "schema": "en-critical-final-council-v1",
+  "generatedAt": "2026-09-13",
+  "baselineRevision": "9dc36064459f3184404bdba4db9d95b843b6fcaa",
+  "headAtReview": "9dc36064459f3184404bdba4db9d95b843b6fcaa",
+  "scope": {
+    "contentFiles": 11,
+    "englishContentEdited": false,
+    "runtimeLaunched": false,
+    "sharedConfigReviewedForNavigationOnly": true
+  },
+  "overallDecision": "rejected",
+  "rejectionReasons": [
+    {
+      "path": "README.md",
+      "line": 77,
+      "current": "Production-ready starter",
+      "replacement": "Feature-rich illustrative starter (not runtime-validated)"
+    },
+    {
+      "path": "en/08-tutorials/05-mod-template.md",
+      "line": 57,
+      "current": "Chapter 8.9 is the full production template.",
+      "replacement": "Chapter 8.9 is the feature-rich illustrative template (not runtime-validated)."
+    },
+    {
+      "path": "en/08-tutorials/12-trading-system.md",
+      "line": 44,
+      "current": "S->>S: Bind sender; validate quantity and catalog",
+      "replacement": "S->>S: Bind sender, validate quantity and catalog",
+      "reason": "Installed Mermaid parser treats the semicolon as a statement terminator and rejects the diagram."
+    },
+    {
+      "path": ".vitepress/config.mts",
+      "line": 137,
+      "current": "Trading System",
+      "replacement": "Shop UI & Safe Refusal",
+      "scope": "outside eleven content files; required navigation consistency repair"
+    }
+  ],
+  "findings": [
+    {"id": "OPS-C01", "proseDecision": "accepted", "functionalDecision": "unresolved"},
+    {"id": "OPS-C02", "proseDecision": "accepted", "functionalDecision": "unresolved"},
+    {"id": "TUT-C01", "proseDecision": "rejected", "functionalDecision": "unresolved"},
+    {"id": "TUT-C02", "proseDecision": "rejected", "functionalDecision": "unresolved"},
+    {"id": "LANG-C03", "proseDecision": "accepted", "functionalDecision": "accepted-after-static-check"},
+    {"id": "RPC-C02", "proseDecision": "accepted", "functionalDecision": "unresolved"}
+  ],
+  "validation": {
+    "strictLinksAnchors": {"command": "node scripts/check-links.mjs --anchors --strict", "exitCode": 0, "markdownFiles": 1265, "deadFileLinks": 0, "englishFiles": 105, "fragments": 1278, "deadAnchors": 0},
+    "mermaid": {"method": "installed mermaid.parse() on changed fence", "passed": false, "errorToken": "NEWLINE", "errorAt": "Bind sender; validate quantity and catalog"},
+    "diffCheck": {"command": "git diff --check 9dc3606... -- <eleven files>", "exitCode": 0},
+    "vitepressBuildRun": false,
+    "gameOrToolRuntimeRun": false
+  },
+  "functionalWorkStillOpen": ["OPS-C01", "OPS-C02", "TUT-C01", "TUT-C02", "RPC-C02"],
+  "files": [
+    {"path": "README.md", "decision": "rejected", "gitBlob": "cd7fd1e9d9e6b895a023f08be6d9b299a8379752", "sha256": "E0EF643ED1ACF985A086116AC12FE79E6AFAF5BC2D404FDA823A2334D289519E"},
+    {"path": "en/01-enforce-script/09-casting-reflection.md", "decision": "accepted", "gitBlob": "037e600e7012bb75c0953ba89d81abc4fec4a8f7", "sha256": "24DB725C3D0B6B2C098B0446C2970F3CD0463E1AB871ACE688393563FD4FCE2C"},
+    {"path": "en/07-patterns/03-rpc-patterns.md", "decision": "accepted", "gitBlob": "20331ed0c688953ba257c468f1f4d78db1b1e526", "sha256": "7185F4FE065041BFE705A78641C6967771FEE1D0C5443C83AA21768DE50EDFEA"},
+    {"path": "en/08-tutorials/05-mod-template.md", "decision": "rejected", "gitBlob": "732a197a79a6f323ccee23b056779f22dcea4159", "sha256": "2B8E601D3DFD4783C1212CDA1B6730083BE489295DF7B00CBD081709AA55756B"},
+    {"path": "en/08-tutorials/08-hud-overlay.md", "decision": "accepted", "gitBlob": "dd98fdd6e7c726c87fcb1fbc44f8f5c4c11ab93a", "sha256": "5FF49B0CB3808A4D02797A53126CA1C0C82A5568400ED06C76D4051A3856597C"},
+    {"path": "en/08-tutorials/09-professional-template.md", "decision": "accepted", "gitBlob": "47a16d1cacf37357eeb0b1b8c2923e29e43ce6f0", "sha256": "F324AB2DB983293666500FA34F7965D2FD25CE4A5C06E4F343865DD13521053E"},
+    {"path": "en/08-tutorials/12-trading-system.md", "decision": "rejected", "gitBlob": "14a58a214db1f36d4db0830882db82fbdd693a51", "sha256": "63FEA7F7098FB06BF51D450E8ABA7D5CF62EEFED2D2A34F4E8702D850D83B77B"},
+    {"path": "en/09-server-admin/09-access-control.md", "decision": "accepted", "gitBlob": "5666591e927541b325fd1216c6b12355863c9259", "sha256": "04908C8185ABD19391FC1406C5AA0A4A39F82D71CFB41F861330AF7922B76A77"},
+    {"path": "en/README.md", "decision": "accepted", "gitBlob": "38a5a956538f225ece6452322ebe9956f6418c94", "sha256": "5472366533CE34642FEE78A3F72E255602E6264874FADE8CAE3224615B73B19A"},
+    {"path": "en/glossary.md", "decision": "accepted", "gitBlob": "38de9cc78089a86b7bdc9b161d82e3a50e44684f", "sha256": "F7DF274111CB8DC3066AA872771814296EA37308606584D7FC37D5EA2BAB365B"},
+    {"path": "en/index.md", "decision": "accepted", "gitBlob": "81b7ddcf32f3aa1c19adba12d48c42da18d16142", "sha256": "BCDA199EFB23A664353237DD10B273EB3F10F14AC5D844266A6680D030912718"}
+  ],
+  "report": ".audit/en-2026-09-13/completeness/critical-final-council.md"
+}

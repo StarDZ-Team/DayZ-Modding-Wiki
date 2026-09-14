@@ -11,7 +11,7 @@
 - [Type.Cast — Alternative Casting](#type-cast-—-alternative-casting)
 - [CastTo vs Type.Cast — When to Use Which](#castto-vs-type-cast-—-when-to-use-which)
 - [obj.IsInherited — Runtime Type Checking](#obj-isinherited-—-runtime-type-checking)
-- [obj.IsKindOf — String-Based Type Checking](#obj-iskindof-—-config-based-type-checking)
+- [obj.IsKindOf — Config-Based Type Checking](#obj-iskindof-—-config-based-type-checking)
 - [obj.Type — Get Runtime Type](#obj-type-—-get-runtime-type)
 - [typename — Storing Type References](#typename-—-storing-type-references)
 - [Reflection API](#reflection-api)

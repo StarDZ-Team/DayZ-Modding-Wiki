@@ -848,7 +848,7 @@ Base class for requesting post-process visual effects. Multiple requesters can b
 **Chapter:** [8.6 Debugging & Testing](08-tutorials/06-debugging-testing.md) | [1.11 Error Handling](01-enforce-script/11-error-handling.md)
 
 ### Professional Template
-A full-featured mod template with config system, singleton manager, RPC, UI panel, keybinds, localization, and build automation. Copy-paste ready.
+A full-featured mod template with config system, singleton manager, RPC, UI panel, keybinds, localization, and build automation. Illustrative only; the combined fixture has not been runtime-validated.
 
 **Chapter:** [8.9 Professional Mod Template](08-tutorials/09-professional-template.md)
 **See also:** [Mod Template](#mod-template)
@@ -1123,10 +1123,10 @@ Managed timer class for repeating or delayed function calls. Alternative to `Scr
 **Chapter:** [6.7 Timers & CallQueue](06-engine-api/07-timers.md)
 **See also:** [CallLater](#calllater), [ScriptCallQueue](#scriptcallqueue)
 
-### Trading System
-A shop system with JSON config, server-validated buy/sell, categorized UI, and currency-based transactions.
+### Shop UI and Safe Refusal
+A shop prototype with JSON catalog data, categorized UI, server-owned validation, and buy/sell requests that intentionally refuse before currency or inventory changes.
 
-**Chapter:** [8.12 Building a Trading System](08-tutorials/12-trading-system.md)
+**Chapter:** [8.12 Shop UI, Catalog RPC, and Safe Refusal](08-tutorials/12-trading-system.md)
 
 ### Transport
 Base class for all vehicle entities. Subclasses: `Car` (land vehicles via `CarScript`) and `Boat` (watercraft via `BoatScript`).

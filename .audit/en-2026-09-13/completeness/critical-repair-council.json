@@ -1,0 +1,109 @@
+{
+  "schema": "en-critical-repair-council-v1",
+  "generatedAt": "2026-09-13",
+  "baselineRevision": "9dc36064459f3184404bdba4db9d95b843b6fcaa",
+  "headAtReview": "381f6d18f3d2e31800ca352fadaabb04bea6b084",
+  "unrelatedCommitsAlterScopedFiles": false,
+  "sourceReportsBase": ".audit/en-2026-09-13/",
+  "priorCouncil": [
+    "completeness/critical-final-council.md",
+    "completeness/critical-final-council.json"
+  ],
+  "overallDecision": "approved-for-scoped-commit",
+  "scope": {
+    "contentFiles": 11,
+    "configFiles": 1,
+    "contentOrConfigEditedByReviewer": false,
+    "gameOrToolRuntimeLaunched": false,
+    "fullVitePressBuildRun": false
+  },
+  "repairs": [
+    {
+      "path": "README.md",
+      "line": 77,
+      "decision": "accepted",
+      "gitNormalizedReverseCheckMatchedPriorBlob": true,
+      "priorBlob": "cd7fd1e9d9e6b895a023f08be6d9b299a8379752"
+    },
+    {
+      "path": "en/08-tutorials/05-mod-template.md",
+      "line": 57,
+      "decision": "accepted",
+      "gitNormalizedReverseCheckMatchedPriorBlob": true,
+      "priorBlob": "732a197a79a6f323ccee23b056779f22dcea4159"
+    },
+    {
+      "path": "en/08-tutorials/12-trading-system.md",
+      "line": 43,
+      "decision": "accepted",
+      "gitNormalizedReverseCheckMatchedPriorBlob": true,
+      "priorBlob": "14a58a214db1f36d4db0830882db82fbdd693a51"
+    },
+    {
+      "path": ".vitepress/config.mts",
+      "line": 137,
+      "decision": "accepted",
+      "routeUnchanged": true,
+      "englishLabel": "Shop UI & Safe Refusal",
+      "otherLocaleLabel": "Trading System"
+    }
+  ],
+  "priorAcceptedFilesUnchanged": true,
+  "validation": {
+    "strictLinksAnchors": {
+      "command": "node scripts/check-links.mjs --anchors --strict",
+      "exitCode": 0,
+      "markdownFiles": 1265,
+      "deadFileLinks": 0,
+      "englishFiles": 105,
+      "fragments": 1278,
+      "deadAnchors": 0
+    },
+    "mermaid": {
+      "method": "installed mermaid.parse() on changed fence",
+      "version": "11.13.0",
+      "passed": true
+    },
+    "diffCheck": {
+      "command": "git diff --check 9dc36064459f3184404bdba4db9d95b843b6fcaa -- <twelve scoped files>",
+      "exitCode": 0
+    },
+    "devRender": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 5177",
+      "browser": "Chrome 152.0.7977.84 (headless CDP)",
+      "english": {
+        "route": "/DayZ-Modding-Wiki/en/08-tutorials/12-trading-system",
+        "title": "Shop UI, Catalog RPC, and Safe Refusal | DayZ Modding Wiki",
+        "heading": "Shop UI, Catalog RPC, and Safe Refusal",
+        "sidebarLabel": "Shop UI & Safe Refusal"
+      },
+      "nonEnglishControl": {
+        "locale": "pt",
+        "route": "/DayZ-Modding-Wiki/pt/08-tutorials/12-trading-system",
+        "title": "Construindo um Sistema de Comércio | DayZ Modding Wiki",
+        "heading": "Construindo um Sistema de Comércio",
+        "sidebarLabel": "Trading System"
+      },
+      "passed": true
+    },
+    "nodeVersion": "v24.14.0",
+    "npmVersion": "11.17.0",
+    "fullVitePressBuildRun": false
+  },
+  "functionalWorkStillOpen": ["OPS-C01", "OPS-C02", "TUT-C01", "TUT-C02", "RPC-C02"],
+  "files": [
+    {"path": "README.md", "decision": "approved", "gitBlob": "5b96bc9f1eb3d97d2fd16350f437b59bdded0f7e", "sha256": "4E19D18AC2D96CF6FB2E01C1D30094E110281C8A045F48C73E543A47165AFFCB"},
+    {"path": "en/01-enforce-script/09-casting-reflection.md", "decision": "approved", "gitBlob": "037e600e7012bb75c0953ba89d81abc4fec4a8f7", "sha256": "24DB725C3D0B6B2C098B0446C2970F3CD0463E1AB871ACE688393563FD4FCE2C"},
+    {"path": "en/07-patterns/03-rpc-patterns.md", "decision": "approved", "gitBlob": "20331ed0c688953ba257c468f1f4d78db1b1e526", "sha256": "7185F4FE065041BFE705A78641C6967771FEE1D0C5443C83AA21768DE50EDFEA"},
+    {"path": "en/08-tutorials/05-mod-template.md", "decision": "approved", "gitBlob": "947460e7cf3bb46d77014f70929fbdc8fa9924f2", "sha256": "E16C07E5362649AB67B3EE4CF1127EAF572963DCA164E7D5663A58642B4324D1"},
+    {"path": "en/08-tutorials/08-hud-overlay.md", "decision": "approved", "gitBlob": "dd98fdd6e7c726c87fcb1fbc44f8f5c4c11ab93a", "sha256": "5FF49B0CB3808A4D02797A53126CA1C0C82A5568400ED06C76D4051A3856597C"},
+    {"path": "en/08-tutorials/09-professional-template.md", "decision": "approved", "gitBlob": "47a16d1cacf37357eeb0b1b8c2923e29e43ce6f0", "sha256": "F324AB2DB983293666500FA34F7965D2FD25CE4A5C06E4F343865DD13521053E"},
+    {"path": "en/08-tutorials/12-trading-system.md", "decision": "approved", "gitBlob": "e87b795d92d2c9831751272e1a673125d7087968", "sha256": "5C96B201F1ABE116682D2D43090E4EF47B8E4E621331AB101D51398076A08756"},
+    {"path": "en/09-server-admin/09-access-control.md", "decision": "approved", "gitBlob": "5666591e927541b325fd1216c6b12355863c9259", "sha256": "04908C8185ABD19391FC1406C5AA0A4A39F82D71CFB41F861330AF7922B76A77"},
+    {"path": "en/README.md", "decision": "approved", "gitBlob": "38a5a956538f225ece6452322ebe9956f6418c94", "sha256": "5472366533CE34642FEE78A3F72E255602E6264874FADE8CAE3224615B73B19A"},
+    {"path": "en/glossary.md", "decision": "approved", "gitBlob": "38de9cc78089a86b7bdc9b161d82e3a50e44684f", "sha256": "F7DF274111CB8DC3066AA872771814296EA37308606584D7FC37D5EA2BAB365B"},
+    {"path": "en/index.md", "decision": "approved", "gitBlob": "81b7ddcf32f3aa1c19adba12d48c42da18d16142", "sha256": "BCDA199EFB23A664353237DD10B273EB3F10F14AC5D844266A6680D030912718"},
+    {"path": ".vitepress/config.mts", "decision": "approved", "gitBlob": "e0f8327928c8ea4cff65714b0f96febf74859a0b", "sha256": "269BAC4F8B88B0E8A96049444B3BB20E88BCA70D2246298D646DDB9B0A2FD371"}
+  ],
+  "report": ".audit/en-2026-09-13/completeness/critical-repair-council.md"
+}

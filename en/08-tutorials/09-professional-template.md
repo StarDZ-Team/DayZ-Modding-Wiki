@@ -3,14 +3,14 @@
 
 ---
 
-> **Summary:** This chapter provides a complete, production-ready mod template with every file you need for a professional DayZ mod. Unlike [Chapter 8.5](05-mod-template.md), which shows how to scaffold from a minimal reusable skeleton, this is a full-featured template with a config system, singleton manager, client-server RPC, UI panel, keybinds, localization, and build automation. Every file is copy-paste ready and heavily commented to explain **why** each line exists.
+> **Summary:** This chapter presents an illustrative, feature-rich DayZ mod skeleton with a config system, singleton manager, client-server RPC, UI panel, keybinds, localization, and packing automation. The listings have not been materialized and passed compiler, packer/signing, dedicated-server, or client tests as one fixture; treat them as a starting point, not as production-ready or copy-paste-validated code.
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Complete Directory Structure](#complete-directory-structure)
+- [Provided Directory Structure](#provided-directory-structure)
 - [mod.cpp](#mod-cpp)
 - [config.cpp](#config-cpp)
 - [Constants File (3_Game)](#constants-file-3-game)
@@ -33,26 +33,26 @@
 
 ## Overview
 
-A "Hello World" mod proves the toolchain works. A professional mod needs much more:
+A “Hello World” mod proves only a small part of the toolchain. This illustrative skeleton adds more moving parts:
 
-| Concern | Hello World | Professional Template |
-|---------|-------------|----------------------|
-| Configuration | Hardcoded values | JSON config with load/save/defaults |
-| Communication | Print statements | String-routed RPC (client to server and back) |
-| Architecture | One file, one function | Singleton manager, layered scripts, clean lifecycle |
-| User interface | None | Layout-driven UI panel with open/close |
-| Input binding | None | Custom keybind in Options > Controls |
-| Localization | None | stringtable.csv with 13 languages |
-| Build pipeline | Manual Addon Builder | One-click batch script |
-| Cleanup | None | Proper shutdown on mission end, no leaks |
+| Concern | Hello World | Illustrative Template |
+|---------|-------------|-----------------------|
+| Configuration | Hardcoded values | JSON config load/save/default pattern |
+| Communication | Print statements | String-routed RPC example |
+| Architecture | One file, one function | Singleton manager and layered lifecycle hooks |
+| User interface | None | Layout-driven UI panel example |
+| Input binding | None | Custom keybind example |
+| Localization | None | `stringtable.csv` entries for 13 languages |
+| Build pipeline | Manual Addon Builder | Batch wrapper around Addon Builder |
+| Cleanup | None | Cleanup hooks whose runtime behavior remains unverified |
 
-This template gives you all of these out of the box. You rename the identifiers, delete the systems you do not need, and start building your actual feature on a solid foundation.
+Use this as a candidate starting point after you materialize, rename, inspect, compile, pack, and test it. Delete systems you do not need only after the renamed fixture passes the relevant checks.
 
 ---
 
-## Complete Directory Structure
+## Provided Directory Structure
 
-This is the full source layout. Every file listed below is provided as a complete template in this chapter.
+This is the intended source layout for the listings below. It is not evidence that the files have been assembled and validated as one working fixture.
 
 ```
 MyProfessionalMod/                          <-- Source root (lives on P: drive)
@@ -1538,7 +1538,6 @@ if %ERRORLEVEL% NEQ 0 (
     echo Common causes:
     echo   - DayZ Tools path is wrong
     echo   - Source folder does not exist
-    echo   - A .c file has a syntax error that prevents packing
     pause
     exit /b 1
 )
@@ -1561,6 +1560,8 @@ echo   DayZDiag_x64.exe -mod=P:\@MyProfessionalMod
 echo.
 pause
 ```
+
+> **Build boundary:** This batch file packs the `Scripts` directory and copies `mod.cpp`. It does not compile Enforce Script, sign the PBO, produce or copy a `.bikey`, or create Workshop `meta.cpp`. The distributable tree shown above therefore requires separate compilation/runtime validation, signing, key-copy, and Workshop-metadata steps. Addon Builder success alone does not prove that the `.c` files compile.
 
 ---
 
@@ -1633,15 +1634,18 @@ Perform these replacements **in order** (longest strings first to avoid partial 
 | `m_MyMod` | `m_MyBounty` | Client mission hook member variables |
 | `74291` | `58432` | RPC ID (your chosen unique number) |
 
-### Step 4: Verify
+### Step 4: Validate the Renamed Fixture
 
-After renaming, do a project-wide search for "MyMod" and "MyProfessionalMod" to catch anything you missed. Then build and test:
+The following is a required validation checklist, not a record of results:
 
-```batch
-DayZDiag_x64.exe -mod=P:\MyBountySystem -filePatching
-```
+1. Materialize every listed file and confirm the paths and PBO prefix.
+2. Compile the Enforce Script through the intended game/tool workflow and preserve diagnostics.
+3. Pack the PBO, inspect its contents and prefix, sign it, and verify the copied public key and Workshop metadata.
+4. Boot a dedicated server with the packaged mod and preserve configuration and script logs.
+5. Join with a matching client and exercise the keybind, UI open/close, RPC request/response, config creation/reload, disconnect, clean shutdown, and restart.
+6. Record the DayZ and DayZ Tools builds, commands, fixture hash, expected results, actual results, and any known limitations.
 
-Check the script log for your tag (e.g., `[MyBounty]`) to confirm everything loaded.
+Until those checks pass, describe the chapter as illustrative and unvalidated.
 
 ---
 

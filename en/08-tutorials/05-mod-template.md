@@ -54,7 +54,7 @@ A good scaffold includes everything a mod needs to compile and load -- and nothi
 
 The scaffold follows the standard 5-layer script hierarchy documented in [Chapter 2.1: The 5-Layer Script Hierarchy](../02-mod-structure/01-five-layers.md). All three script layers are wired up in `config.cpp` so you can immediately drop code into any layer without touching the configuration again.
 
-> A scaffold is deliberately *minimal*. When you want a richer starting point -- one that already ships a config system, a singleton manager, client-server RPC, a UI panel, keybinds, and localization -- use the full [Chapter 8.9: Professional Mod Template](09-professional-template.md) instead. This chapter is about the smallest reusable skeleton; Chapter 8.9 is the full production template.
+> A scaffold is deliberately *minimal*. When you want a richer starting point -- one that already ships a config system, a singleton manager, client-server RPC, a UI panel, keybinds, and localization -- use the full [Chapter 8.9: Professional Mod Template](09-professional-template.md) instead. This chapter is about the smallest reusable skeleton; Chapter 8.9 is the feature-rich illustrative template (not runtime-validated).
 
 ---
 
@@ -64,7 +64,7 @@ You have three ways to obtain a scaffold. Pick whichever fits how you like to wo
 
 ### Option A: Trim Down the Professional Template
 
-The wiki's [Chapter 8.9: Professional Mod Template](09-professional-template.md) is a complete, production-ready mod you can copy in full. To turn it into a lean scaffold, copy it once and delete the systems you do not want as defaults -- the manager singleton, RPC files, UI panel, keybinds -- leaving just the empty layer folders and the two config files. Save the result as your personal skeleton. You get a battle-tested `config.cpp` and directory layout without carrying features you may not need.
+Chapter 8.9 is a feature-rich illustrative skeleton, not a validated production fixture. If you use it as a personal scaffold, first materialize and test the renamed version, then remove systems you do not want while repeating the relevant checks.
 
 ### Option B: Assemble a Minimal Skeleton by Hand
 

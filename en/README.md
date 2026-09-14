@@ -142,7 +142,7 @@ Step-by-step guides.
 | [8.9](08-tutorials/09-professional-template.md) | Professional Mod Template |
 | [8.10](08-tutorials/10-vehicle-mod.md) | Creating a Vehicle Mod |
 | [8.11](08-tutorials/11-clothing-mod.md) | Creating a Clothing Mod |
-| [8.12](08-tutorials/12-trading-system.md) | Building a Trading System |
+| [8.12](08-tutorials/12-trading-system.md) | Shop UI, Catalog RPC, and Safe Refusal |
 | [8.13](08-tutorials/13-diag-menu.md) | Diag Menu Reference |
 
 ### Part 9: Server Administration

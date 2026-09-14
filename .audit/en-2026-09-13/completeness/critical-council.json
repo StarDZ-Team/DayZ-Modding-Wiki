@@ -1,0 +1,111 @@
+{
+  "schema": "en-critical-council-v1",
+  "generatedAt": "2026-09-13",
+  "repositoryRevision": "9dc36064459f3184404bdba4db9d95b843b6fcaa",
+  "scope": ["OPS-C01", "OPS-C02", "TUT-C01", "TUT-C02", "LANG-C03", "RPC-C02"],
+  "scopeLimit": "Static council for six findings only; not a complete 27-finding or 110-document audit.",
+  "runtime": {"launched": false, "reason": "A separate worker owns runtime launch.", "untestedBehaviorPreserved": true},
+  "proseReport": ".audit/en-2026-09-13/completeness/critical-council.md",
+  "reviewInputs": [
+    {"path": ".audit/en-2026-09-13/completeness/coverage-map.json", "lines": "138,226,303-314,358-369", "sha256": "DDC94407289256CD8365B34784E5DEB5D7787A58A398FC3BDCA814E4277394DB"},
+    {"path": "en/09-server-admin/09-access-control.md", "sha256": "EA194B15CCEE5C095343DD9E635268A3396F0BA427841732218012B4627D7402"},
+    {"path": "en/08-tutorials/12-trading-system.md", "sha256": "3461153FAFC68F8430D23A39274D097BAF26C52F6302B0BC65E3B95F3585D961"},
+    {"path": "en/08-tutorials/09-professional-template.md", "sha256": "D6CEFE1BC942F9716A18221E059437207CADC8BF56E48281DD2A89A85EB707FB"},
+    {"path": "en/01-enforce-script/09-casting-reflection.md", "sha256": "9B2015D2006504A4389407EBFFDA5DBE2F626D4CE60EB8F8C9B9912B57F40430"},
+    {"path": "en/07-patterns/03-rpc-patterns.md", "sha256": "84F2CC3731D44BD07DB409FC999A2E09275128405B3E39E258F93F6E7ADC9688"}
+  ],
+  "findings": [
+    {
+      "id": "OPS-C01",
+      "decision": {"currentClaim": "reject", "immediateCorrection": "approve", "functionalCompletion": "unresolved"},
+      "locations": ["en/09-server-admin/09-access-control.md:33-38", "en/09-server-admin/09-access-control.md:115-124"],
+      "replacementRef": "critical-council.md#ops-c01--separate-passwordadmin-from-battleye-rconpassword",
+      "implementation": "Separate passwordAdmin from BattlEye RConPassword and retain the runtime/log caveat.",
+      "remaining": "Test both login paths with distinct canaries and inspect server/admin/BattlEye/RCon logs."
+    },
+    {
+      "id": "OPS-C02",
+      "decision": {"currentClaim": "reject", "immediateCorrection": "approve", "functionalCompletion": "unresolved"},
+      "locations": ["en/09-server-admin/09-access-control.md:20", "en/09-server-admin/09-access-control.md:183-193"],
+      "replacementRef": "critical-council.md#ops-c02--remove-the-unsupported-vanilla-admin-tool-inventory",
+      "implementation": "Replace the vanilla tool list with the retail player-list, Diag, and third-party-mod boundary.",
+      "remaining": "Capture retail pre/post-login commands, menus, fields, privileges, and logs without admin mods."
+    },
+    {
+      "id": "TUT-C01",
+      "decision": {"currentClaim": "reject", "immediateCorrection": "approve", "functionalCompletion": "unresolved"},
+      "locations": ["en/08-tutorials/12-trading-system.md:1-61", "en/08-tutorials/12-trading-system.md:326", "en/08-tutorials/12-trading-system.md:344", "en/08-tutorials/12-trading-system.md:412", "en/08-tutorials/12-trading-system.md:849", ".vitepress/config.mts:137", "README.md:57", "en/README.md:145", "en/index.md:144", "en/glossary.md:1126-1129", "en/08-tutorials/08-hud-overlay.md:604"],
+      "replacementRef": "critical-council.md#tut-c01--describe-the-trading-chapter-as-a-safe-refusal-prototype",
+      "implementation": "Rename and reframe the chapter, diagrams, code-reference heading, and navigation as Shop UI, Catalog RPC, and Safe Refusal.",
+      "remaining": "A durable server-owned transaction state machine, two-client dedicated-server fixture, and injected debit/create/persistence/disconnect/restart/RPC failures."
+    },
+    {
+      "id": "TUT-C02",
+      "decision": {"currentClaim": "reject", "immediateCorrection": "approve", "functionalCompletion": "unresolved"},
+      "locations": ["en/08-tutorials/09-professional-template.md:6", "en/08-tutorials/09-professional-template.md:36-55", "en/08-tutorials/09-professional-template.md:83-92", "en/08-tutorials/09-professional-template.md:1484-1563", "en/08-tutorials/09-professional-template.md:1636-1644", "README.md:77", "en/08-tutorials/05-mod-template.md:57,67", "en/glossary.md:851"],
+      "replacementRef": "critical-council.md#tut-c02--downgrade-unvalidated-production-ready-template-claims",
+      "implementation": "Remove production/copy-paste/completeness claims, correct the packing boundary, and add the exact fixture checklist.",
+      "remaining": "Materialize, rename, hash, compile, pack/inspect/sign, dedicated-server boot, client join, UI/RPC/config/lifecycle, and negative-path evidence."
+    },
+    {
+      "id": "LANG-C03",
+      "decision": {"currentClaim": "reject", "immediateCorrection": "approve", "functionalCompletion": "approve-after-edit"},
+      "locations": ["en/01-enforce-script/09-casting-reflection.md:14", "en/01-enforce-script/09-casting-reflection.md:201-226"],
+      "replacementRef": "critical-council.md#lang-c03--correct-iskindof-terminology-in-the-toc",
+      "implementation": "Change only the TOC label from String-Based to Config-Based Type Checking.",
+      "remaining": "Verify the unchanged anchor."
+    },
+    {
+      "id": "RPC-C02",
+      "decision": {"currentClaim": "reject", "immediateCorrection": "approve", "functionalCompletion": "unresolved"},
+      "locations": ["en/07-patterns/03-rpc-patterns.md:825", "en/07-patterns/03-rpc-patterns.md:840"],
+      "replacementRef": "critical-council.md#rpc-c02--remove-the-unmeasured-per-rpc-ceiling-claim",
+      "implementation": "Replace both ceiling/limit statements with explicit unknown and build/mode-scoped measurement language.",
+      "remaining": "Two-client matrix across directions, guaranteed modes, serialization shapes, sizes, repetitions, checksums, latency, drops/timeouts/disconnects, and logs."
+    }
+  ],
+  "sources": [
+    {
+      "id": "official-script-diff",
+      "url": "https://github.com/BohemiaInteractive/DayZ-Script-Diff",
+      "commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1",
+      "version": "Build 1.29.163709, Scripts Rev. 125372",
+      "accessed": "2026-09-13",
+      "files": [
+        {"path": "scripts/3_game/gameplay.c", "lines": "104-117", "sha256": "AA12624843F51C70200D37449559FDBADB042D333D4EE74C989E0CA632D2F0FE"},
+        {"path": "scripts/3_game/entities/object.c", "lines": "513-520", "sha256": "EBAC48FF196148AB4722A9D9A81C277796D4EA07896A5CF09742213D32424B4C"},
+        {"path": "scripts/3_game/global/game.c", "lines": "694-702", "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"},
+        {"path": "scripts/3_game/systems/inventory/inventory.c", "lines": "870-893", "sha256": "F83FD3501DF9F99BB9BDEB2AACEE7608E1C15E101DB5A9F099458ABCD7C51C17"},
+        {"path": "scripts/3_game/entities/entityai.c", "lines": "786-810", "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"},
+        {"path": "scripts/5_mission/gui/ingamemenuxbox.c", "lines": "189-225", "sha256": "BDF8060E99ACD2A89C11A97C94CCE66F26717BCFDE69407AE49F20123C24D388"},
+        {"path": "scripts/5_mission/gui/ingamemenu_xbox/playerlistentryscriptedwidget.c", "lines": "18-35", "sha256": "EAB836286CBC02181AF92ADE0719DA73187778BE82BB4FA32D928D01F3D24D32"},
+        {"path": "scripts/3_game/client/syncplayer.c", "lines": "1-12", "sha256": "B42FF2DD82D09F3F47ECC8A6C4FB9829D6C9B8798820AA14897BA046B2A6ACB7"},
+        {"path": "scripts/4_world/plugins/pluginbase/plugindeveloper/developerfreecamera.c", "lines": "1-93", "sha256": "7862CA2430C97C2353C04E7E89B499145B9E99BB6D25456E1382ACA1B5E98149"},
+        {"path": "scripts/4_world/plugins/pluginbase/plugindeveloper.c", "lines": "61-100", "sha256": "18B6DEA92E951A62216AB6070F2A464F5A700C5B183DF58F5853B983F079FBF4"}
+      ],
+      "mirror": "D:/DayZ Projects/scripts; cited files byte-identical; last modified 2026-09-10"
+    },
+    {"id": "official-server-config", "url": "https://community.bistudio.com/wiki/DayZ:Server_Configuration", "path": "D:/StarDZ/docs/DayZ/Server Configuration.md", "lines": "1-202; especially 19,150-175", "sha256": "D7126F849E9A460887A3B640068CA8C88304324EDFD3AFA1526AE69E4BECAA8E", "accessed": "2026-09-13", "limit": "Live BIKI returned HTTP 403; saved snapshot read."},
+    {"id": "official-diag-menu", "url": "https://community.bistudio.com/wiki/DayZ:Diag_Menu", "path": "D:/StarDZ/docs/DayZ/Diag Menu.md", "lines": "1,690-694,801-854", "sha256": "58CAD3A5194F0237A99D30C08BE68F60B5B2A531C605817022E50397D14FE616", "accessed": "2026-09-13"},
+    {"id": "battleye-docs", "url": "https://www.battleye.com/support/documentation/", "lines": "downloaded HTML 115-120", "sha256": "3C971A531EC63E87F35D443DFC43363ABA1893D6E326538FE273E09DEB1865D3", "accessed": "2026-09-13"},
+    {"id": "community-framework", "url": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/3_Game/CommunityFramework/RPC/RPCManager.c", "lines": "45-215", "sha256": "377E40A999D5465EC754DDAD98EE96AC16218613187261CEAFBFA29A0F21C622", "limit": "Third-party implementation, not engine authority."},
+    {"id": "community-online-tools", "url": "https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools.git", "commit": "41f2c2b99565d0e3970163e162efbf1283fdca62", "paths": ["JM/COT/Scripts/5_Mission/CommunityOnlineTools/modules/COTMap/JMMapModule.c:1-40", "JM/COT/Scripts/5_Mission/CommunityOnlineTools/modules/Player/JMPlayerModule.c:1-40"], "sha256": ["9CE6B779EA5D1848F3A887D3447993205A74616C08D8F74B079E477B41313536", "A40D2E6626B55C2E2CF069C210D44AB21208DFFF371C54E4EFA267D97E1AC5ED"], "limit": "Third-party implementation, not proof of vanilla absence."},
+    {"id": "vpp-admin-tools", "url": "https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git", "commit": "dc22e420df3b54e821055f9764da1e48f4a31e71", "remoteHeadAtAccess": "646fd89d38d6c7b4eb4da1a31cb69f271b2396c8", "paths": ["4_World/VPPAdminTools/Plugins/PluginManager.c:19-44", "4_World/VPPAdminTools/Plugins/PluginBase/TeleportManager/TeleportManager.c:267-317", "5_Mission/VPPAdminTools/Freecamera.c:1-25"], "sha256": ["0C1E74E4595A1B05E98A653F501DF03E3D4A377735010CC56308CF23D632592A", "A042E545E75871795374F3EFBCB99D5164DF23E9BA0C0A4873FE5C4A905EBCB4", "58BE976F775AEED2F9642EB175799B04A792A6843DDCA0BB57EDB4988121D28A"], "limit": "Pinned third-party implementation; remote HEAD was not substituted."}
+  ],
+  "corpusReading": [
+    {"path": "D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md", "sha256": "43AAECA6B5A5353499FE592C47615766EDE14DC8AB53B9E21B6551E32CFB07E8", "ranges": ["185-330", "929-1195", "1526-1620"], "scope": "RPC declarations, trust/auth, rate limiting, idempotency, unicast, and unmeasured limits"},
+    {"path": "D:/StarDZ/docs/CF_COMPLETE_REFERENCE.md", "sha256": "AB0428821B300FB42ADF3170B3BA9ED4C00302EF460362A4F4BD2FA98FD10A61", "ranges": ["281-386", "1295-1415"], "scope": "CF RPCManager summary and source pointers"},
+    {"path": "D:/StarDZ/docs/COOKBOOK_RECEITAS_COMPLETAS.md", "sha256": "0D05D8B011933D7E9ADC246CA3180C14A6EC2681F39CC91C655458509DEB9B9A", "ranges": ["1-271"], "scope": "complete-example criteria, validation loop, and pack-vs-compile boundary"},
+    {"path": "D:/StarDZ/docs/STARDZ_CURRENCY_BRIDGE_CONTRACT.md", "sha256": "2CCF77EDC3DC6F0E3CD3FD8AC7B3CBDB8A85EBCCB845C88223958AA15DA2EEE9", "ranges": ["1-124"], "scope": "status, debit-first risk, IDs, outcomes/timeouts, idempotency, sequence, and missing Enforce boot"},
+    {"path": "D:/StarDZ/docs/DAYZ_MOD_ARCHITECTURE_PATTERNS.md", "sha256": "315C4C07A240C46D239984288F903860D46076A34376AC9CEDF5281D57D87B5B", "ranges": ["1-130", "408-605", "1792-1913"], "scope": "readiness claims, architecture/RPC/lifecycle patterns, and validation framing"},
+    {"path": "D:/StarDZ/docs/DayZ/Server Configuration.md", "sha256": "D7126F849E9A460887A3B640068CA8C88304324EDFD3AFA1526AE69E4BECAA8E", "ranges": ["1-202", "19", "150-175"], "scope": "official saved passwordAdmin, BattlEye/RCon, profile/path/log configuration"}
+  ],
+  "boundedTerraImplementation": [
+    "OPS-C01 separate credentials and retain login/log testing",
+    "OPS-C02 replace vanilla tool claims and retain retail inventory testing",
+    "TUT-C01 reframe as safe refusal and retain the full transaction fixture",
+    "TUT-C02 remove readiness claims and retain the end-to-end fixture",
+    "LANG-C03 correct one TOC label and verify its anchor",
+    "RPC-C02 qualify both limit claims and retain the two-client measurement"
+  ]
+}

@@ -54,7 +54,7 @@ This wiki was built by studying the **2,800+ vanilla DayZ script files** and the
 | **5** | [Configuration Files](en/05-config-files/01-stringtable.md) | 6 | stringtable.csv, inputs.xml, imagesets, server configs, spawn gear |
 | **6** | [Engine API Reference](en/06-engine-api/01-entity-system.md) | 23 | Entity, player, vehicle, sound, crafting, construction, animation, zombie/AI, terrain, particles, admin |
 | **7** | [Patterns & Best Practices](en/07-patterns/01-singletons.md) | 7 | Singletons, modules, RPC, permissions, events, performance |
-| **8** | [Tutorials](en/08-tutorials/01-first-mod.md) | 13 | Hello World → Custom Items → Admin Panel → Vehicles → Trading System |
+| **8** | [Tutorials](en/08-tutorials/01-first-mod.md) | 13 | Hello World → Custom Items → Admin Panel → Vehicles → Shop UI & Safe Refusal |
 | **9** | [Server Administration](en/09-server-admin/01-server-setup.md) | 12 | Server setup, loot economy, vehicles, persistence, performance, troubleshooting |
 | | [Quick Reference](en/06-engine-api/quick-reference.md) | 5 | API quick reference, cheatsheet, glossary, FAQ, troubleshooting |
 
@@ -74,7 +74,7 @@ This wiki was built by studying the **2,800+ vanilla DayZ script files** and the
 
 **Experienced developer?** Jump to:
 - [API Quick Reference](en/06-engine-api/quick-reference.md) — Condensed method reference
-- [Professional Mod Template](en/08-tutorials/09-professional-template.md) — Production-ready starter
+- [Professional Mod Template](en/08-tutorials/09-professional-template.md) — Feature-rich illustrative starter (not runtime-validated)
 - [UI Architecture Patterns](en/03-gui-system/09-real-mod-patterns.md) — How to structure a non-trivial mod UI
 - [Troubleshooting Guide](en/troubleshooting.md) — Symptom / cause / fix tables across nine problem areas
 
