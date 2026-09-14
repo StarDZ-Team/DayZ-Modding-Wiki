@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-14",
+  "status": "implemented-static-and-package-validated-runtime-not-run",
+  "scope": {
+    "owned": [
+      "examples/en/entity-persistence/**",
+      "TEMP/entity-persistence-harness-implementation/**",
+      "TEMP/entity-persistence-repair/**",
+      ".audit/en-2026-09-13/completeness/persistence-harness-implementation.md",
+      ".audit/en-2026-09-13/completeness/persistence-harness-implementation.json"
+    ],
+    "gameServerClientWorkbenchLaunched": false,
+    "wikiBuildDevInstallCommitRun": false,
+    "persistenceProven": false
+  },
+  "sourceBasisReopened": {
+    "extracted": [
+      "D:/DayZ Projects/scripts/3_game/entities/entityai.c:2913-3070,3378-3392",
+      "D:/DayZ Projects/scripts/3_game/global/game.c:611,702,929",
+      "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c:9-16,761",
+      "D:/DayZ Projects/scripts/1_core/proto/ensystem.c:397-501"
+    ],
+    "contractPinnedOfficial": {
+      "centralEconomy": "9a21bb9f5fb9c62a7ce2761402196091588133e6",
+      "samples": "da5e5437c9502620d9853fb6eed14701135ab2ea"
+    },
+    "pinnedPublicImplementation": "CF 0763e7e7548c9a0bed6626afff835de80693ebf3 MissionBase.c reopened only as a non-authoritative mission-loaded pattern",
+    "runtimeRecipe": "DayZDiag_x64.exe 1.29.0.163709 retained multi-pbo instanceId=1 recipe"
+  },
+  "finalSourceSha256": {
+    "controller": "10CFBB244750D6A8E9193CF147FA7583023BD7001D907126A7EDDB4CAC3C68A8",
+    "v1Fixture": "169357CCCF2E8797D7791A2AA842DAA755ACDF8527DBB59A9FE6204C1A5536D2",
+    "v2Fixture": "10386F5419115F2F81F3B039499493D872BCB5FA37A65F837FD6CD04DBDE0818",
+    "matrixFixture": "0573DFFDDEF375456E51459249C3367A8F2125FE085991AF4672E14F23A7A678",
+    "typesTemplate": "6EA1CB2B623AD480690114B784E2D9044F32DCD0187E23620ED26CB0C6BFC97B",
+    "messagesTemplate": "8121B8EDBF6F1D1623E0589AB4F005E09C23E2DB8C3CE37ED0FAD811C4BFAB36"
+  },
+  "staticValidation": {
+    "command": "./examples/en/entity-persistence/harness/Invoke-EntityPersistenceHarness.ps1 -Action Static",
+    "result": "passed",
+    "checks": ["PowerShell AST", "XML", "variant APIs", "v1/v2 forbidden-method checks", "fixture-free no-mod witness checks"],
+    "prepareAllVariants": "passed; generated CreateCustomMission line=511",
+    "gitDiffCheck": "passed; CRLF conversion warnings only"
+  },
+  "packageReceipts": [
+    {"variant": "v1", "pboSha256": "65684488B611F7A596D99C0301DF0B79C14F70D5A154F5BB2756574E26917D64", "receipt": "TEMP/entity-persistence-repair/entity-persistence-v1-20260914-024309-ffe8e11c/receipt.json"},
+    {"variant": "v2", "pboSha256": "8D778AB27F31A0D3308F84A59CC29365744E7AFFA993F6E2CBDD9D3F5BC36AF8", "receipt": "TEMP/entity-persistence-repair/entity-persistence-v2-20260914-024311-8a1f6fbf/receipt.json"},
+    {"variant": "matrix", "pboSha256": "B9EDFE4C4116CA3FED3BA4FE0C9DD3A24EFE03DAFC95273D09365D560E06D449", "receipt": "TEMP/entity-persistence-repair/entity-persistence-matrix-20260914-024313-4f47e82e/receipt.json"}
+  ],
+  "runtimeGates": [
+    "independent final source/package review",
+    "fixture-free no-mod control",
+    "v1/v2/matrix compile smokes",
+    "nine phase fresh-process persistence matrix",
+    "no conclusion from shutdown, storage hashes, or SAVE markers without next-process readback"
+  ]
+}
