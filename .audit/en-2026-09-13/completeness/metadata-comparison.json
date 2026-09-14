@@ -1,0 +1,126 @@
+{
+  "observedAt": "2026-09-13T23:31:32.1260467Z",
+  "readScope": "Full contents of all 14 short metadata text files",
+  "limitation": "Raw version properties are not automatically public DayZ build identifiers or proof that all extracted files share one runtime revision",
+  "entries": [
+    {
+      "component": "scripts",
+      "savedPath": "D:/StarDZ/docs/vanilla_metadata/scripts.txt",
+      "savedContent": [
+        "prefix=scripts\\",
+        "product=dayz",
+        "version=121029"
+      ],
+      "savedSha256": "158FCE5A5B47256FD0A5F922071D396967A52F6B3840C27BC5028D8652172A8F",
+      "extractionPath": "D:/DayZ Projects/scripts.txt",
+      "extractionContent": [
+        "prefix=scripts\\",
+        "product=dayz",
+        "version=124588"
+      ],
+      "extractionSha256": "E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F"
+    },
+    {
+      "component": "bin",
+      "savedPath": "D:/StarDZ/docs/vanilla_metadata/bin.txt",
+      "savedContent": [
+        "prefix=bin\\",
+        "product=dayz",
+        "version=120569"
+      ],
+      "savedSha256": "7187787633AFC1F73895E84BA54951668F033E2A037695ABAFBA0B5BDF3318F2",
+      "extractionPath": "D:/DayZ Projects/bin.txt",
+      "extractionContent": [
+        "prefix=bin\\",
+        "product=dayz",
+        "version=120569"
+      ],
+      "extractionSha256": "7187787633AFC1F73895E84BA54951668F033E2A037695ABAFBA0B5BDF3318F2"
+    },
+    {
+      "component": "core",
+      "savedPath": "D:/StarDZ/docs/vanilla_metadata/core.txt",
+      "savedContent": [
+        "prefix=Core\\",
+        "product=undefined",
+        "version=120565"
+      ],
+      "savedSha256": "985B61D81484939AD9E1D34916FD006EB5081B431C3BD268CAE222151C03AE92",
+      "extractionPath": "D:/DayZ Projects/core.txt",
+      "extractionContent": [
+        "prefix=Core\\",
+        "product=undefined",
+        "version=120565"
+      ],
+      "extractionSha256": "985B61D81484939AD9E1D34916FD006EB5081B431C3BD268CAE222151C03AE92"
+    },
+    {
+      "component": "graphics",
+      "savedPath": "D:/StarDZ/docs/vanilla_metadata/graphics.txt",
+      "savedContent": [
+        "prefix=graphics\\",
+        "product=dayz",
+        "version=121029"
+      ],
+      "savedSha256": "DF058F0A2C7A6A751E450D0F995D8550F6929596848D24CCE7C60D7C5B4EADD2",
+      "extractionPath": "D:/DayZ Projects/graphics.txt",
+      "extractionContent": [
+        "prefix=graphics\\",
+        "product=dayz",
+        "version=124578"
+      ],
+      "extractionSha256": "B14D65B5A20ABB580D057BFE8D5B9EB3BC265CDA73F9F7A66693274CE60564FD"
+    },
+    {
+      "component": "gui",
+      "savedPath": "D:/StarDZ/docs/vanilla_metadata/gui.txt",
+      "savedContent": [
+        "prefix=gui\\",
+        "product=dayz",
+        "version=121029"
+      ],
+      "savedSha256": "78202151426DEE0E10DEBE33B898FD152493B6307D1C17DB4D0F3CCA6CBFF8AC",
+      "extractionPath": "D:/DayZ Projects/gui.txt",
+      "extractionContent": [
+        "prefix=gui\\",
+        "product=dayz",
+        "version=124588"
+      ],
+      "extractionSha256": "842BADDDFAC0C005B23766ED0A8ED75A60A65AFF952166DA2A181930E6CAF258"
+    },
+    {
+      "component": "languagecore",
+      "savedPath": "D:/StarDZ/docs/vanilla_metadata/languagecore.txt",
+      "savedContent": [
+        "prefix=languagecore\\",
+        "product=dayz",
+        "version=121029"
+      ],
+      "savedSha256": "CC58D1345D8D5D287E9211263EE1B1A17FAA018EAED5F45F0B6B7084E0FD2207",
+      "extractionPath": "D:/DayZ Projects/languagecore.txt",
+      "extractionContent": [
+        "prefix=languagecore\\",
+        "product=dayz",
+        "version=124578"
+      ],
+      "extractionSha256": "31596A7DB47602F6807D40E077BDD1DB23F3C3309F648A3546C417FC89EF050D"
+    },
+    {
+      "component": "system",
+      "savedPath": "D:/StarDZ/docs/vanilla_metadata/system.txt",
+      "savedContent": [
+        "prefix=system\\",
+        "product=dayz",
+        "version=121029"
+      ],
+      "savedSha256": "FFE4EBE475EEAC2B2238CF12953B5FFC4CAE00C0FC681B8B3262080126DAE6D3",
+      "extractionPath": "D:/DayZ Projects/system.txt",
+      "extractionContent": [
+        "prefix=system\\",
+        "product=dayz",
+        "version=124578"
+      ],
+      "extractionSha256": "5100B733F8FE098FA70EDC754855E18CB8416234F8C45A49451D8E8B8CBFD806"
+    }
+  ]
+}

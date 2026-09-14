@@ -1,0 +1,148 @@
+{
+  "observedAt": "2026-09-14T00:49:13.7172808Z",
+  "run": "run_335030a972ec",
+  "coordinator": "term_21c4c30a-a530-43d2-90a1-ca3dfec14e63",
+  "head": "f31567319d74abd1b130d25513568082a768fdaa",
+  "counts": {
+    "retained": 2,
+    "released": 15
+  },
+  "workers": [
+    {
+      "dispatch": "ctx_1f9ede1d42d5",
+      "task": "task_a155d6b407bc",
+      "terminal": "term_60b7742b-1d72-4287-b229-d5cad7ec4642",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_5d39956c10aa",
+      "task": "task_32d95ff449e4",
+      "terminal": "term_de22edf9-8d80-465e-83b3-0d3b9f5d624d",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_b4ce94f81ea5",
+      "task": "task_03e5e7b13396",
+      "terminal": "term_26edb944-c194-46e1-861e-b6b9f550ac5b",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_8a671e5589da",
+      "task": "task_113cdcf92dfd",
+      "terminal": "term_acc066a3-6257-4562-8acb-69e3c2f33f60",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_6feecc9d7abc",
+      "task": "task_78cb9a6ddd42",
+      "terminal": "term_fa6d93a8-1d50-4f71-83a4-8718194a41e4",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_002028a93f62",
+      "task": "task_55be12dfa5b8",
+      "terminal": "term_9aa310a0-e891-44f1-bb93-6538944e59fe",
+      "dispatchStatus": "completed",
+      "terminalState": "retained",
+      "retainedReason": "user_takeover"
+    },
+    {
+      "dispatch": "ctx_234c22d01dc5",
+      "task": "task_616ac62f6192",
+      "terminal": "term_a1839ab1-9f89-4ce6-86e5-0ecc4e7d8604",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_b7e49ada5518",
+      "task": "task_cda6be369fdc",
+      "terminal": "term_0977e414-6456-490c-acfa-67db8b11bf48",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_526dd47a8b0c",
+      "task": "task_d9c2e1f29794",
+      "terminal": "term_b23ff45e-3373-422d-a88b-1f1e22a76409",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_67d41a98fcfe",
+      "task": "task_62d83946510c",
+      "terminal": "term_aa0a0f02-79fc-442f-945c-486d4ece6ea3",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_187a9b94cc5d",
+      "task": "task_279127df77ff",
+      "terminal": "term_bccd8e6f-044a-4c17-99b3-2f046948d177",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_57f37266117b",
+      "task": "task_ee358020f21d",
+      "terminal": "term_e7de9588-f9c4-4742-a0d4-c0a8bf37ed8e",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_6ffd9e7bee34",
+      "task": "task_b89801604946",
+      "terminal": "term_11c2c7e9-53ba-4576-9a26-ef5bcf8e2dfe",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_6bc553093665",
+      "task": "task_6be1e86f617b",
+      "terminal": "term_f42e935a-1e2e-4121-b20f-53f5831d4e83",
+      "dispatchStatus": "completed",
+      "terminalState": "retained",
+      "retainedReason": "user_takeover"
+    },
+    {
+      "dispatch": "ctx_e9a817779f6a",
+      "task": "task_6bc3deaad82f",
+      "terminal": "term_a13581fe-e764-4143-983e-48109c10eeb8",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_977df8c210a7",
+      "task": "task_cd5cb342bf49",
+      "terminal": "term_f61d045b-a5a6-493c-87f0-94529cf9aa48",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    },
+    {
+      "dispatch": "ctx_fa8de4a04f5d",
+      "task": "task_59c40aedea42",
+      "terminal": "term_508baf3d-ebe1-4f23-82d8-1bcb5ba9e6ba",
+      "dispatchStatus": "completed",
+      "terminalState": "released",
+      "retainedReason": null
+    }
+  ]
+}

@@ -1,0 +1,556 @@
+{
+  "schema": "en-completeness-coverage-map-v1",
+  "generated_at": "2026-09-13",
+  "repository": {
+    "path": "D:/StarDZ/docs/wiki",
+    "content_inventory_base_revision": "8fa131365f59a343602cefd682290535cd435cc2",
+    "current_revision_at_final_review": "aa75472098d73db6b3c19b046438e530efc290f9",
+    "scope": "en/",
+    "markdown_pages": 105,
+    "anchor_status": {
+      "commit": "789abaf29df2642912c4b7c7e05b18ff514d1665",
+      "reviewed": true,
+      "files_scanned": 105,
+      "fragments_checked": 1278,
+      "dead_fragments": 0,
+      "dead_file_links": 0,
+      "evidence": ".audit/en-2026-09-13/completeness/anchors-REPORT.md"
+    }
+  },
+  "classification": {
+    "observed_gap": "The live wiki omits a necessary topic, explicitly disclaims it, contradicts itself, or retains unsupported wording.",
+    "verification_gap": "Relevant prose exists, but the behavior or example has not been validated at the required compiler, tool, runtime, multiplayer, or operational level.",
+    "candidate": "Potentially useful future breadth whose necessity has not been established; not counted as a defect."
+  },
+  "methodology": [
+    "Used the existing Graphify graph for relationship orientation only.",
+    "Inventoried all EN Markdown files and level 1-3 headings, then read the pages targeted by the matrix.",
+    "Reopened the prior double-check report, consolidated report, source-use report, language and trading council reports, and findings-dispositions ledger.",
+    "Opened representative extracted game declarations, local non-wiki documentation, StarDZ beta code, official repositories, and pinned public mod implementations.",
+    "Separated static declaration evidence, third-party implementation, runtime proof, and inference."
+  ],
+  "inventory": [
+    {
+      "domain": "language_runtime",
+      "path": "en/01-enforce-script",
+      "pages": 13,
+      "existing_coverage": ["types", "collections", "classes", "modded classes", "control flow", "strings", "math", "memory", "reflection", "preprocessor", "errors", "gotchas", "functions"],
+      "judgment": "Broad reference; eight runtime/compiler leads remain and a reproducible version-compatibility workflow is absent.",
+      "finding_ids": ["LANG-C01", "LANG-C02", "LANG-C03"]
+    },
+    {
+      "domain": "mod_structure",
+      "path": "en/02-mod-structure",
+      "pages": 6,
+      "existing_coverage": ["script modules", "config.cpp", "mod.cpp", "minimal mod", "file organization", "client/server split"],
+      "judgment": "Broad overview; multi-PBO and dependency behavior is fragmented and has not been validated as a build/load matrix.",
+      "finding_ids": ["PKG-C01", "DEP-C01"]
+    },
+    {
+      "domain": "gui",
+      "path": "en/03-gui-system",
+      "pages": 10,
+      "existing_coverage": ["widgets", "layouts", "sizing", "containers", "creation", "events", "styles", "dialogs", "production patterns", "advanced widgets"],
+      "judgment": "Broad script/UI reference; packaged asset registration and focus/input behavior lack client evidence, and unsupported performance wording remains.",
+      "finding_ids": ["PKG-C02", "GUI-C01", "GUI-C02"]
+    },
+    {
+      "domain": "assets_tools",
+      "path": "en/04-file-formats",
+      "pages": 8,
+      "existing_coverage": ["textures", "models", "materials", "audio", "tools", "PBOs", "Workbench", "buildings"],
+      "judgment": "Broad descriptive coverage; examples have not traversed the source-to-tool-to-PBO-to-retail pipeline.",
+      "finding_ids": ["PKG-C01", "PKG-C02", "ASSET-C01"]
+    },
+    {
+      "domain": "configuration",
+      "path": "en/05-config-files",
+      "pages": 6,
+      "existing_coverage": ["localization", "inputs", "credits", "imagesets", "server and mission config", "spawn gear"],
+      "judgment": "Good file-by-file reference; schema/version provenance and negative fixtures are inconsistent.",
+      "finding_ids": ["ASSET-C01", "OPS-C01"]
+    },
+    {
+      "domain": "engine_api",
+      "path": "en/06-engine-api",
+      "pages": 24,
+      "existing_coverage": ["entity", "vehicles", "world systems", "I/O", "RPC", "CE", "hooks", "actions", "player", "sound", "crafting", "construction", "animation", "terrain", "particles", "AI", "admin", "quick reference"],
+      "judgment": "Large static API survey; native outcomes remain unexecuted and entity persistence extension plus API-version migration are conspicuous omissions.",
+      "finding_ids": ["LANG-C02", "RPC-C01", "RPC-C02", "SEC-C01", "PERSIST-C01", "PERSIST-C02", "CE-C02", "CE-C03"]
+    },
+    {
+      "domain": "patterns",
+      "path": "en/07-patterns",
+      "pages": 7,
+      "existing_coverage": ["singleton", "modules", "RPC", "config persistence", "permissions", "events", "performance"],
+      "judgment": "Useful patterns; there is no executed fault-injection suite, durable transaction pattern, or entity persistence migration pattern.",
+      "finding_ids": ["RPC-C01", "RPC-C02", "SEC-C01", "PERSIST-C01", "PERSIST-C02", "PERF-C01"]
+    },
+    {
+      "domain": "tutorials",
+      "path": "en/08-tutorials",
+      "pages": 13,
+      "existing_coverage": ["first mod", "content mods", "admin/RPC/UI", "scaffolding", "debugging", "publishing", "templates", "trading", "Diag tools"],
+      "judgment": "High apparent usability, but no tutorial received recorded compile/package/runtime validation; trading and production-ready claims require immediate attention.",
+      "finding_ids": ["TUT-C01", "TUT-C02", "TUT-C03", "TUT-C04"]
+    },
+    {
+      "domain": "server_administration",
+      "path": "en/09-server-admin",
+      "pages": 12,
+      "existing_coverage": ["install", "layout", "configuration", "CE", "spawning", "persistence", "tuning", "access", "mods", "troubleshooting", "advanced operations"],
+      "judgment": "Broad operator coverage; hardening, restore drills, update rollback, log/crash operations, and access-control assertions remain incomplete or unverified.",
+      "finding_ids": ["DEP-C01", "CE-C01", "CE-C02", "CE-C03", "OPS-C01", "OPS-C02", "OPS-C03", "OPS-C04", "PERF-C01"]
+    },
+    {
+      "domain": "root_references",
+      "path": "en",
+      "pages": 6,
+      "existing_coverage": ["index", "README", "cheatsheet", "FAQ", "glossary", "troubleshooting"],
+      "judgment": "Useful navigation that must follow canonical-page changes; one casting terminology mismatch is live.",
+      "finding_ids": ["LANG-C03"]
+    }
+  ],
+  "findings": [
+    {
+      "id": "LANG-C01",
+      "priority": "P0",
+      "classification": ["verification_gap"],
+      "domain": "language_runtime",
+      "observation": "Eight inherited compiler/runtime leads remain unresolved.",
+      "targets": ["en/01-enforce-script", "en/02-mod-structure/06-server-client-split.md", ".audit/en-2026-09-13/completeness/runtime-probes"],
+      "acceptance_checks": ["Run minimal isolated fixtures on stable DayZDiag 1.29.0.163709", "Use dedicated/listen/client contexts where the claim requires them", "Capture fixture source, command line, fresh log identity, expected and actual output, executable hash, and cleanup"],
+      "validation": ["Enforce compile", "Diag runtime", "dedicated/listen/client matrix where applicable"],
+      "source_refs": [".audit/en-2026-09-13/doublecheck/findings-dispositions.json", ".audit/en-2026-09-13/completeness/runtime-inventory.json"]
+    },
+    {
+      "id": "LANG-C02",
+      "priority": "P1",
+      "classification": ["observed_gap"],
+      "domain": "language_runtime",
+      "observation": "No EN page explains build pinning, DayZ-Script-Diff, normalized extraction comparison, obsolete-signature review, or a compatibility matrix.",
+      "targets": ["expand en/01-enforce-script/12-gotchas.md and related references or add en/01-enforce-script/14-versioning-api-migration.md", "en/08-tutorials/06-debugging-testing.md", "en/06-engine-api/quick-reference.md"],
+      "acceptance_checks": ["Demonstrate a real two-commit API diff", "Identify the tested game build and script revision", "Separate declarations from native behavior", "Verify links and commands against the pinned official repository"],
+      "validation": ["static source review", "command execution"],
+      "source_refs": ["https://github.com/BohemiaInteractive/DayZ-Script-Diff/tree/86974a0f5bd16b1ee3e334ad828133c93dca80a1", "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md:156-235"]
+    },
+    {
+      "id": "LANG-C03",
+      "priority": "P2",
+      "classification": ["observed_gap", "correction"],
+      "domain": "language_runtime",
+      "observation": "The casting page TOC labels IsKindOf as String-Based while the section heading labels it Config-Based.",
+      "targets": ["en/01-enforce-script/09-casting-reflection.md:14"],
+      "acceptance_checks": ["Make the TOC and heading terminology identical", "Run the strict anchor checker", "Render the page"],
+      "validation": ["anchor check", "page render"],
+      "source_refs": ["en/01-enforce-script/09-casting-reflection.md:201"]
+    },
+    {
+      "id": "PKG-C01",
+      "priority": "P0",
+      "classification": ["observed_gap", "verification_gap"],
+      "domain": "packaging_multi_pbo",
+      "observation": "Multi-PBO guidance is fragmented; no single three-PBO client/server example proves prefixes, CfgPatches, requiredAddons, CfgMods, build order, signing, deployment, and expected load logs.",
+      "targets": ["en/04-file-formats/06-pbo-packing.md", "en/04-file-formats/09-multi-pbo-design.md", "en/02-mod-structure/02-config-cpp.md", "en/02-mod-structure/06-server-client-split.md"],
+      "acceptance_checks": ["Integrate the separate PBO worker's reviewed evidence", "Build and inspect every PBO", "Boot packed files without file patching", "Test missing and cyclic dependencies", "Publish no numeric size ceiling without scoped evidence"],
+      "validation": ["Addon Builder/PBO tool run", "PBO inspection", "signature check", "dedicated/client boot"],
+      "source_refs": ["https://community.bistudio.com/wiki/DayZ:Modding_Basics", "https://community.bistudio.com/wiki/DayZ:Modding_Structure", "https://github.com/BohemiaInteractive/DayZ-Samples/tree/da5e5437c9502620d9853fb6eed14701135ab2ea"]
+    },
+    {
+      "id": "DEP-C01",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "dependencies",
+      "observation": "The relationships among requiredAddons, CfgMods.dependencies, defines, -mod, -serverMod, and Workshop Required Items are not verified as a dependency/load matrix.",
+      "targets": ["en/02-mod-structure/02-config-cpp.md", "en/09-server-admin/10-mod-management.md"],
+      "acceptance_checks": ["Build A/B/C PBO fixtures", "Test present, missing, transitive, reversed launch order, optional define, cross -mod/-serverMod, and cycle cases", "Record RPT and compile logs separately"],
+      "validation": ["config parse", "Enforce compile", "packed server/client boot"],
+      "source_refs": ["en/02-mod-structure/02-config-cpp.md:130-135", "en/09-server-admin/10-mod-management.md:117-124"]
+    },
+    {
+      "id": "PKG-C02",
+      "priority": "P1",
+      "classification": ["observed_gap", "correction"],
+      "domain": "packaging_assets",
+      "observation": "The prior council rejected the proposed evidence for native-imageset performance and retail MLOD loading, but the original unsupported wording remains live.",
+      "targets": ["en/03-gui-system/07-styles-fonts.md:530", "en/04-file-formats/02-models.md:39", "en/04-file-formats/02-models.md:60"],
+      "acceptance_checks": ["Obtain version-specific tool/runtime evidence or replace the claims with neutral source-bounded wording", "Have an independent council reopen the actual source or tool result"],
+      "validation": ["asset-tool run if retaining performance/retail claims", "independent source review"],
+      "source_refs": [".audit/en-2026-09-13/doublecheck/findings-dispositions.json"]
+    },
+    {
+      "id": "GUI-C01",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "gui",
+      "observation": "Layouts, imagesets, focus, input exclusion, scaling, and widgets are described without packaged evidence across aspect ratios, UI scales, lifecycle events, or dedicated-server separation.",
+      "targets": ["en/03-gui-system/02-layout-files.md", "en/03-gui-system/03-sizing-positioning.md", "en/03-gui-system/06-event-handling.md", "en/03-gui-system/08-dialogs-modals.md", "en/08-tutorials/08-hud-overlay.md"],
+      "acceptance_checks": ["Package a minimal UI fixture", "Capture screenshots and logs at two aspect ratios and two UI scales", "Test focus restoration, repeated open/close, reconnect, and dedicated-server boot"],
+      "validation": ["PBO build", "client visual/input test", "dedicated boot"],
+      "source_refs": ["en/03-gui-system", "en/08-tutorials/08-hud-overlay.md"]
+    },
+    {
+      "id": "ASSET-C01",
+      "priority": "P0",
+      "classification": ["verification_gap"],
+      "domain": "assets_tools",
+      "observation": "Texture, model, material, audio, and building examples have not been processed with installed DayZ Tools and then loaded from a PBO in retail or Diag.",
+      "targets": ["en/04-file-formats/01-textures.md", "en/04-file-formats/02-models.md", "en/04-file-formats/03-materials.md", "en/04-file-formats/04-audio.md", "en/04-file-formats/05-dayz-tools.md", "en/04-file-formats/08-building-modeling.md", "en/08-tutorials/02-custom-item.md", "en/08-tutorials/10-vehicle-mod.md"],
+      "acceptance_checks": ["Process one minimal asset of each type", "Record source placement, tool versions/hashes, exact options, exit codes, and logs", "Inspect PBO paths", "Load in clean retail/Diag and record expected visual/audio results"],
+      "validation": ["DayZ Tools execution", "PBO inspection", "retail/Diag visual and audio test"],
+      "source_refs": ["https://github.com/BohemiaInteractive/DayZ-Samples/tree/da5e5437c9502620d9853fb6eed14701135ab2ea/Test_Building"]
+    },
+    {
+      "id": "GUI-C02",
+      "priority": "P2",
+      "classification": ["candidate"],
+      "domain": "gui",
+      "observation": "Animation helpers and MVC-style binding are not covered as named advanced APIs, but simpler native patterns already satisfy the core teaching need.",
+      "targets": ["possible future advanced GUI chapter"],
+      "acceptance_checks": ["Show that a chosen API is current and reusable outside one framework", "Demonstrate material improvement in a tested example", "Respect third-party licenses"],
+      "validation": ["source/license review", "packaged UI test"],
+      "source_refs": ["D:/StarDZ/docs/DAYZ_GUI_REFERENCE.md"]
+    },
+    {
+      "id": "RPC-C01",
+      "priority": "P0",
+      "classification": ["observed_gap", "verification_gap"],
+      "domain": "rpc_server_authority",
+      "observation": "RPC guidance does not implement replay suppression, response correlation, bounded queues, timeout/cancel behavior, disconnect cleanup, or per-sender rate limiting.",
+      "targets": ["en/07-patterns/03-rpc-patterns.md", "en/06-engine-api/09-networking.md"],
+      "acceptance_checks": ["Implement request IDs, a duplicate cache, bounded payload/count, and per-sender limiter", "Test duplicate, malformed/truncated, wrong target, unauthorized, flood, disconnect, stale response, and privacy cases with two clients", "Report measured limits only as build-scoped results"],
+      "validation": ["Enforce compile", "dedicated plus two-client abuse test", "fault injection"],
+      "source_refs": ["D:/DayZ Projects/scripts/3_game/gameplay.c:104-117", "D:/DayZ Projects/scripts/3_game/dayzgame.c:3104-3118", "D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md:929-1195"]
+    },
+    {
+      "id": "RPC-C02",
+      "priority": "P1",
+      "classification": ["verification_gap", "correction"],
+      "domain": "rpc_server_authority",
+      "observation": "The RPC pattern page states that there is a practical per-RPC ceiling without a native source or measurement.",
+      "targets": ["en/07-patterns/03-rpc-patterns.md:825", "en/07-patterns/03-rpc-patterns.md:840"],
+      "acceptance_checks": ["Qualify the limit as unmeasured or replace it with a build-scoped measurement", "Record client/server versions and guaranteed/unreliable delivery behavior"],
+      "validation": ["two-client payload measurement"],
+      "source_refs": ["D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md:1572-1601", "D:/DayZ Projects/scripts/3_game/gameplay.c:104-117"]
+    },
+    {
+      "id": "SEC-C01",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "security",
+      "observation": "Public and beta mods supply useful authorization patterns but cannot establish native guarantees or exploit resistance.",
+      "targets": ["en/06-engine-api/22-admin-server.md", "en/07-patterns/05-permissions.md", "en/07-patterns/03-rpc-patterns.md"],
+      "acceptance_checks": ["Label each third-party example with repository and pinned commit", "Corroborate native claims using extracted declarations", "Execute abuse tests instead of treating source review as exploit proof"],
+      "validation": ["independent source review", "multiplayer abuse test"],
+      "source_refs": ["https://github.com/VanillaPlusPlus/VPP-Admin-Tools/tree/dc22e420df3b54e821055f9764da1e48f4a31e71", "D:/StarDZ/StarDZ_Core/StarDZ_Core_Server/Scripts/4_World/StarDZ_CoreServer/SDZ_ServerAdminRPC.c:46-130", "D:/StarDZ/StarDZ_Market_Hub/StarDZ_MarketHub_Server/Scripts/4_World/RPC/MHRPCServerHandler.c:1-130"]
+    },
+    {
+      "id": "PERSIST-C01",
+      "priority": "P0",
+      "classification": ["observed_gap"],
+      "domain": "persistence",
+      "observation": "There is no canonical entity OnStoreSave/OnStoreLoad migration guide covering ordered fields, per-mod versions, read failures, super calls, and GAME_STORAGE_VERSION.",
+      "targets": ["expand en/07-patterns/04-config-persistence.md or add en/07-patterns/08-entity-persistence-migration.md", "en/06-engine-api/01-entity-system.md", "en/06-engine-api/17-construction-system.md", "en/09-server-admin/07-persistence.md", "en/09-server-admin/11-troubleshooting.md"],
+      "acceptance_checks": ["Save a version 1 entity", "Upgrade and load as version 2", "Test truncated and wrong-order data", "Preserve super calls", "Capture restart logs", "Distinguish engine storage version from mod schema version"],
+      "validation": ["Enforce compile", "server save/restart/load", "corrupt-data fault test"],
+      "source_refs": ["D:/DayZ Projects/scripts/3_game/entities/entityai.c:2913-2995", "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md:374-503", "https://github.com/Arkensor/DayZ-CommunityFramework/tree/0763e7e7548c9a0bed6626afff835de80693ebf3"]
+    },
+    {
+      "id": "PERSIST-C02",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "persistence",
+      "observation": "JSON guidance suggests backups but does not prove an atomic replacement/recovery protocol; server backup guidance includes no restore drill.",
+      "targets": ["en/06-engine-api/08-file-io.md", "en/07-patterns/04-config-persistence.md", "en/09-server-admin/07-persistence.md"],
+      "acceptance_checks": ["Test save failure, truncated JSON, corrupt primary, backup selection, and restore", "If atomic rename cannot be proved with available APIs, document bounded best effort"],
+      "validation": ["filesystem fault injection", "server restore drill"],
+      "source_refs": ["en/06-engine-api/08-file-io.md", "en/07-patterns/04-config-persistence.md", "en/09-server-admin/07-persistence.md"]
+    },
+    {
+      "id": "CE-C01",
+      "priority": "P0",
+      "classification": ["observed_gap"],
+      "domain": "central_economy",
+      "observation": "The server CE chapter explicitly omits mapgrouppos.xml, mapgroupcluster files, mapclusterproto.xml, mapgroupdirt.xml, and areaflags.map, which are needed for custom terrain and non-building loot placement.",
+      "targets": ["expand en/09-server-admin/04-loot-economy.md or add a focused CE terrain-authoring chapter", "en/06-engine-api/19-terrain-queries.md", "en/04-file-formats/08-building-modeling.md"],
+      "acceptance_checks": ["Use the official CE repository and extracted mission data", "Explain generated versus hand-edited files, coordinate spaces, prototypes, clusters, CETool area flags, and map-specific differences", "Validate in an offline Diag mission before making server claims"],
+      "validation": ["CE file/schema inspection", "offline Diag mission"],
+      "source_refs": ["en/09-server-admin/04-loot-economy.md:67-72", "https://github.com/BohemiaInteractive/DayZ-Central-Economy/tree/9a21bb9f5fb9c62a7ce2761402196091588133e6", "D:/StarDZ/docs/GUIA_ECONOMIA_E_LOOT.md:434-551"]
+    },
+    {
+      "id": "CE-C02",
+      "priority": "P1",
+      "classification": ["observed_gap", "verification_gap"],
+      "domain": "central_economy",
+      "observation": "CE diagnostics are named but there is no task-oriented item-does-not-spawn lab with inputs, outputs, interpretation, and destructive-operation boundaries.",
+      "targets": ["en/09-server-admin/04-loot-economy.md", "en/09-server-admin/11-troubleshooting.md"],
+      "acceptance_checks": ["Run SpawnAnalyze for all and one class", "Generate one class-specific economy map", "Exercise setupfail and non-destructive EconomyOutput modes", "Preserve CSV, TGA, and log samples", "Gate Mark/Remove/CleanMap as destructive"],
+      "validation": ["Diag CE command execution", "artifact inspection"],
+      "source_refs": ["D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c:157-208", "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c:285-309", "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c:505-530", "D:/StarDZ/docs/GUIA_ECONOMIA_E_LOOT.md:1708-1851"]
+    },
+    {
+      "id": "CE-C03",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "central_economy",
+      "observation": "Some CE semantics and ranges remain build- or map-specific, including custom globals, cluster flags, event limit modes, and restart respawn behavior.",
+      "targets": ["en/06-engine-api/10-central-economy.md", "en/09-server-admin/04-loot-economy.md", "en/09-server-admin/05-vehicle-spawning.md"],
+      "acceptance_checks": ["Maintain a per-build and per-map evidence table", "Do not generalize Chernarus counts or native declarations to all maps and builds"],
+      "validation": ["official schema/source review", "map-specific Diag/server checks"],
+      "source_refs": ["https://github.com/BohemiaInteractive/DayZ-Central-Economy/tree/9a21bb9f5fb9c62a7ce2761402196091588133e6", "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c"]
+    },
+    {
+      "id": "OPS-C01",
+      "priority": "P0",
+      "classification": ["observed_gap", "correction"],
+      "domain": "server_administration",
+      "observation": "The access-control page says passwordAdmin is also used for RCON, then configures the separate RConPassword; the page contradicts itself and official indexed documentation separates the settings.",
+      "targets": ["en/09-server-admin/09-access-control.md:27-38", "en/09-server-admin/09-access-control.md:115"],
+      "acceptance_checks": ["Correct credential mapping from official documentation", "Test both login paths on a disposable server", "Document where each secret is stored and logged"],
+      "validation": ["official documentation review", "disposable-server login test"],
+      "source_refs": ["https://community.bistudio.com/wiki/DayZ:Server_Configuration", "en/09-server-admin/09-access-control.md"]
+    },
+    {
+      "id": "OPS-C02",
+      "priority": "P1",
+      "classification": ["verification_gap", "correction"],
+      "domain": "server_administration",
+      "observation": "The access-control page attributes player list, teleport, admin map, and free camera to built-in vanilla admin tools without a primary source or runtime capture; these may be third-party features.",
+      "targets": ["en/09-server-admin/09-access-control.md:183-193"],
+      "acceptance_checks": ["Inventory actual vanilla commands and UI on the pinned server/client", "Separate VPP/COT capabilities from vanilla", "Retain only demonstrated capabilities"],
+      "validation": ["official source review", "server/client runtime capture"],
+      "source_refs": ["https://github.com/VanillaPlusPlus/VPP-Admin-Tools/tree/dc22e420df3b54e821055f9764da1e48f4a31e71"]
+    },
+    {
+      "id": "OPS-C03",
+      "priority": "P1",
+      "classification": ["observed_gap"],
+      "domain": "server_security",
+      "observation": "No EN page covers least-privilege service identity, secret handling and rotation, RCON bind/firewall exposure, file ACLs, or separation of server, SteamCMD, backup, and webhook credentials.",
+      "targets": ["en/09-server-admin/09-access-control.md", "en/09-server-admin/01-server-setup.md"],
+      "acceptance_checks": ["Provide threat-bounded Windows and Linux procedures", "Verify listener and bind behavior", "Exclude secrets from artifacts and logs", "Test credential rotation without losing access", "Avoid undocumented BattlEye promises"],
+      "validation": ["OS account/ACL inspection", "network listener/firewall inspection", "credential rotation drill"],
+      "source_refs": ["en/09-server-admin/09-access-control.md", "https://community.bistudio.com/wiki/DayZ:Server_Configuration"]
+    },
+    {
+      "id": "OPS-C04",
+      "priority": "P1",
+      "classification": ["observed_gap", "verification_gap"],
+      "domain": "server_operations",
+      "observation": "There is no checksum-backed restore drill, recovery objective, update rollback gate, log rotation/retention, disk alert, or native crash/minidump triage workflow.",
+      "targets": ["en/09-server-admin/07-persistence.md", "en/09-server-admin/10-mod-management.md", "en/09-server-admin/11-troubleshooting.md", "en/09-server-admin/12-advanced.md"],
+      "acceptance_checks": ["Perform a stop-save-backup-update-fail-restore-boot drill", "Verify storage generation plus player/world state", "Add log/dump identity, retention, free-space alert, and stale-log checks"],
+      "validation": ["backup/restore drill", "failed-update rollback", "log/minidump inspection"],
+      "source_refs": ["en/09-server-admin/07-persistence.md", "en/09-server-admin/10-mod-management.md", "en/09-server-admin/11-troubleshooting.md"]
+    },
+    {
+      "id": "PERF-C01",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "performance",
+      "observation": "Performance pages mix declarations, rules of thumb, recommendations, and unmeasured causal statements without a repeatable build-specific baseline protocol.",
+      "targets": ["en/07-patterns/07-performance.md", "en/09-server-admin/08-performance.md", "en/08-tutorials/06-debugging-testing.md"],
+      "acceptance_checks": ["Define a controlled workload and before/after metrics", "Preserve configuration and logs", "Repeat runs", "Label measurements as build, hardware, map, and mod-set specific"],
+      "validation": ["repeatable benchmark", "profiler/log capture"],
+      "source_refs": ["D:/StarDZ/docs/GUIA_DEBUG_E_PERFORMANCE.md", "en/07-patterns/07-performance.md", "en/09-server-admin/08-performance.md"]
+    },
+    {
+      "id": "TUT-C01",
+      "priority": "P0",
+      "classification": ["observed_gap", "correction"],
+      "domain": "tutorials",
+      "observation": "The trading tutorial promises and diagrams a complete transaction while both handlers refuse and the safety boundary states that no transaction protocol exists; the missing functional example remains required even after wording is corrected.",
+      "targets": ["en/08-tutorials/12-trading-system.md:6", "en/08-tutorials/12-trading-system.md:28-59", "en/08-tutorials/12-trading-system.md:326", "en/08-tutorials/12-trading-system.md:344", "en/08-tutorials/12-trading-system.md:412", "functional transaction fixture"],
+      "acceptance_checks": ["Immediately align summary, diagrams, Step 9, and navigation with refusal behavior", "Do not count wording repair as functional completion", "Deliver a durable and idempotent purchase path with disconnect/restart recovery and fault tests before calling it complete"],
+      "validation": ["static consistency review now", "multiplayer transaction fault suite for any future live version"],
+      "source_refs": [".audit/en-2026-09-13/doublecheck/council-trading-REPORT.md", "D:/StarDZ/StarDZ_Market_Hub/StarDZ_MarketHub_Server/Scripts/4_World/Models/MHSerializedItem.c:80-180"]
+    },
+    {
+      "id": "TUT-C02",
+      "priority": "P0",
+      "classification": ["verification_gap", "correction"],
+      "domain": "tutorials",
+      "observation": "The professional template calls itself complete, production-ready, and copy-paste ready although the recorded audit ran no compiler, packer, server, or client validation; a wording downgrade is only an interim correction and does not satisfy usable-template coverage.",
+      "targets": ["en/08-tutorials/09-professional-template.md:6", "related scaffold pages that call the template battle-tested", "exact functional template fixture"],
+      "acceptance_checks": ["Downgrade unsupported claims immediately", "Do not count wording repair as functional completion", "Materialize exact fixture files", "Pass config parse, Enforce compile, PBO build/inspection/signing, dedicated boot, client join, UI/RPC/config tests, clean shutdown, and restart"],
+      "validation": ["config parse", "Enforce compile", "PBO/signing", "dedicated and client runtime"],
+      "source_refs": ["en/08-tutorials/09-professional-template.md"]
+    },
+    {
+      "id": "TUT-C03",
+      "priority": "P1",
+      "classification": ["observed_gap"],
+      "domain": "tutorials",
+      "observation": "Only 6 of 13 tutorials have an explicit Prerequisites heading, 7 have a Complete File/Code Reference heading, and 4 contain the word expected; these lexical indicators expose inconsistent teaching contracts but do not by themselves prove defects.",
+      "targets": ["en/08-tutorials/03-admin-panel.md", "en/08-tutorials/04-chat-commands.md", "en/08-tutorials/09-professional-template.md", "en/08-tutorials/10-vehicle-mod.md", "en/08-tutorials/11-clothing-mod.md", "en/08-tutorials/12-trading-system.md"],
+      "acceptance_checks": ["For each build tutorial state dependencies, exact placement, execution side/layer, expected observable result, error path, and actual validation level", "Label reference/workflow pages as such"],
+      "validation": ["tutorial contract review", "fixture-specific validation"],
+      "source_refs": ["en/08-tutorials"]
+    },
+    {
+      "id": "TUT-C04",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "tutorials",
+      "observation": "Complete snippets remain embedded in Markdown rather than mapped to buildable fixtures, allowing repeated snippets to drift.",
+      "targets": ["versioned tutorial fixture directories outside prose", "all build tutorials under en/08-tutorials"],
+      "acceptance_checks": ["Map every build tutorial to fixture files and hashes", "Compile, package, and run fixtures on the target build", "Fail validation when prose snippets diverge from fixtures"],
+      "validation": ["mechanical snippet comparison", "fixture compile/package/runtime"],
+      "source_refs": ["en/08-tutorials"]
+    },
+    {
+      "id": "CORPUS-C01",
+      "priority": "P1",
+      "classification": ["verification_gap"],
+      "domain": "cross_domain_source_coverage",
+      "observation": "The user-supplied local corpus is wider than the representative documents opened for this bounded map. Its 64 requested entries are preserved as inventoried or enumerated, not reviewed; no claim is made that all GUIA, REFERENCIA, API, DAYZ reference, architecture, deep-study, cookbook, CF, plans, vanilla_metadata, AI, DayZ, or StarDZ specification/contract/HTML/JSON sources were read, authoritative, or implemented.",
+      "targets": ["durable local-corpus-to-EN crosswalk under .audit/en-2026-09-13/completeness", "only independently verified follow-up proposals for affected EN pages"],
+      "acceptance_checks": ["Start from the preserved 64-entry inventory", "Classify each source as extracted fact, implemented code, design contract, product proposal, local research, or third-party note", "Map unique claims to existing EN pages and current finding IDs", "Reopen official or code evidence before promotion", "Prioritize numeric limits, version migration, and currency-bridge/transaction contracts", "Keep shipped behavior distinct from planned behavior"],
+      "validation": ["filesystem inventory", "source classification", "independent evidence review"],
+      "source_refs": [".audit/en-2026-09-13/completeness/user-source-paths.txt", ".audit/en-2026-09-13/completeness/user-source-inventory.json", "D:/StarDZ/docs", "D:/StarDZ"]
+    }
+  ],
+  "unresolved_prior_leads": [
+    {
+      "id": "LANG-DC-008",
+      "claim": "Zero-vector normalization produces NaN.",
+      "locations": ["en/01-enforce-script/07-math-vectors.md:664", "en/01-enforce-script/07-math-vectors.md:700"],
+      "probe": "Log pre/post vector and returned length for zero and controls, including finite/NaN checks, in a fresh Diag fixture.",
+      "evidence_limit": "The extracted declaration documents only a nonzero example."
+    },
+    {
+      "id": "LANG-INHERITED-001",
+      "claim": "typename.Spawn works only with a parameterless constructor.",
+      "locations": ["en/01-enforce-script/09-casting-reflection.md:313", "en/01-enforce-script/09-casting-reflection.md:582"],
+      "probe": "Compile and run classes with no explicit constructor, a parameterless constructor, and only a parameterized constructor; capture diagnostics and returned object/null.",
+      "evidence_limit": "The exposed method accepts no arguments but does not document failure behavior."
+    },
+    {
+      "id": "LANG-INHERITED-002",
+      "claim": "Omitting override creates a distinct method selected by static type.",
+      "locations": ["en/01-enforce-script/03-classes-inheritance.md:901", "en/01-enforce-script/13-functions-methods.md:746", "en/01-enforce-script/13-functions-methods.md:1068"],
+      "probe": "Compile parent/child fixtures with and without override and call through parent- and child-typed references; capture warnings and output.",
+      "evidence_limit": "No compiler/runtime fixture has been run."
+    },
+    {
+      "id": "LANG-INHERITED-003",
+      "claim": "autoptr is equivalent to an ordinary strong reference and adds nothing.",
+      "locations": ["en/01-enforce-script/08-memory-management.md:215-245", "en/01-enforce-script/08-memory-management.md:699", "en/01-enforce-script/08-memory-management.md:729", "en/01-enforce-script/08-memory-management.md:753"],
+      "probe": "Retain an alias outside autoptr scope, compare with ref/plain controls, and log destruction plus alias validity across repeated runs.",
+      "evidence_limit": "The alias-lifetime behavior has not been observed on the target build."
+    },
+    {
+      "id": "LANG-INHERITED-004",
+      "claim": "Static variables survive mission restart/reconnect and initialize once per process.",
+      "locations": ["en/01-enforce-script/08-memory-management.md:469-497"],
+      "probe": "Increment layer-specific static markers and test reconnect, #restart, mission reload, dedicated restart, listen host, and client process restart separately.",
+      "evidence_limit": "Mission and process boundaries have not been measured."
+    },
+    {
+      "id": "LANG-INHERITED-005",
+      "claim": "Object.IsDeleted does not exist.",
+      "locations": ["en/01-enforce-script/08-memory-management.md:499"],
+      "probe": "Use conservative declaration-bounded wording, then run a negative compile fixture for the pinned build if a stronger statement is needed.",
+      "evidence_limit": "Absence from public scripts cannot prove global native absence."
+    },
+    {
+      "id": "LANG-INHERITED-007",
+      "claim": "Categorical SERVER/listen/client truth tables and load-phase behavior.",
+      "locations": ["en/02-mod-structure/06-server-client-split.md:79-140", "en/02-mod-structure/06-server-client-split.md:416-707", "en/01-enforce-script/12-gotchas.md:704"],
+      "probe": "Emit compile-time SERVER and runtime IsDedicatedServer/IsServer/IsClient/IsMultiplayer markers from early and mission hooks in dedicated, remote client, offline, and listen contexts.",
+      "evidence_limit": "Extracted declarations do not prove the full context/load matrix."
+    },
+    {
+      "id": "LANG-INHERITED-008",
+      "claim": "Global-scope Print load-order advice.",
+      "locations": [],
+      "probe": "Identify the exact live claim before testing; compile top-level Print fixtures in each module and record whether and when they execute.",
+      "evidence_limit": "The prior ledger does not identify a precise candidate location."
+    }
+  ],
+  "tutorial_readiness": [
+    {"tutorial": "01-first-mod", "status": "static_workflow_only", "required_proof": ["exact fixture", "Addon Builder result", "packed retail/Diag load", "fresh log marker"]},
+    {"tutorial": "02-custom-item", "status": "static_workflow_only", "required_proof": ["binarized asset", "PBO inspection", "inventory and CE spawn", "material/render check"]},
+    {"tutorial": "03-admin-panel", "status": "static_workflow_only", "required_proof": ["two-client authorization", "malformed RPC", "timeout/disconnect", "focus restore", "dedicated boot"]},
+    {"tutorial": "04-chat-commands", "status": "contains_conceptual_permission_block", "required_proof": ["real permission source", "ambiguous names", "unauthorized/crafted input", "response routing"]},
+    {"tutorial": "05-mod-template", "status": "static_workflow_only", "required_proof": ["materialized scaffold", "rename", "compile", "pack", "stale identifier/prefix scan"]},
+    {"tutorial": "06-debugging-testing", "status": "reference_workflow", "required_proof": ["commands/tools on pinned build", "fresh-log identity", "controlled failure"]},
+    {"tutorial": "07-workshop-publishing", "status": "deployment_checklist", "required_proof": ["private/disposable Workshop item or explicit unexecuted label", "key rotation", "rollback"]},
+    {"tutorial": "08-hud-overlay", "status": "static_workflow_only", "required_proof": ["PBO build", "two resolutions/scales", "reconnect", "missing response", "focus cleanup", "dedicated boot"]},
+    {"tutorial": "09-professional-template", "status": "unproved_production_claim", "required_proof": ["materialized fixture", "config parse", "compile", "pack/sign", "server/client run", "shutdown/restart"]},
+    {"tutorial": "10-vehicle-mod", "status": "static_workflow_only", "required_proof": ["binarize/load", "physics", "doors/wheels", "event spawn", "placeholder labeling"]},
+    {"tutorial": "11-clothing-mod", "status": "static_workflow_only", "required_proof": ["binarize/load", "wearable model/slot/attachments", "inventory/CE spawn", "client visual test"]},
+    {"tutorial": "12-trading-system", "status": "non_transactional_handlers_refuse", "required_proof": ["immediate honest relabeling", "durable idempotent design for any live version", "disconnect/restart recovery", "fault tests"]},
+    {"tutorial": "13-diag-menu", "status": "reference_workflow", "required_proof": ["shortcut/menu availability", "developer-only operation checks on pinned Diag"]}
+  ],
+  "sources": [
+    {"kind": "official_repository", "url": "https://github.com/BohemiaInteractive/DayZ-Script-Diff", "commit": "86974a0f5bd16b1ee3e334ad828133c93dca80a1", "accessed": "2026-09-13"},
+    {"kind": "official_repository", "url": "https://github.com/BohemiaInteractive/DayZ-Samples", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea", "accessed": "2026-09-13"},
+    {"kind": "official_repository", "url": "https://github.com/BohemiaInteractive/DayZ-Central-Economy", "commit": "9a21bb9f5fb9c62a7ce2761402196091588133e6", "accessed": "2026-09-13"},
+    {"kind": "official_sample_file", "repository": "https://github.com/BohemiaInteractive/DayZ-Samples", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea", "path": "Test_Inputs/config.cpp", "lines": "1-33", "sha256": "71B869D713C15D38037B0B8B6CC682CCAEA03599DDFF370DA786D42CD813121C"},
+    {"kind": "official_sample_file", "repository": "https://github.com/BohemiaInteractive/DayZ-Samples", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea", "path": "Test_Building/config.cpp", "lines": "1-124", "sha256": "3A6FB41F49D418637A8513383D3CB1E2F84B95EFE962EE0FD755F1B6268F56EE"},
+    {"kind": "official_documentation", "urls": ["https://community.bistudio.com/wiki/DayZ:Modding_Basics", "https://community.bistudio.com/wiki/DayZ:Modding_Structure", "https://community.bistudio.com/wiki/DayZ:Server_Configuration", "https://community.bistudio.com/wiki/DayZ:Central_Economy_Configuration", "https://community.bistudio.com/wiki/DayZ:Central_Economy_setup_for_custom_terrains"], "accessed": "2026-09-13", "limitation": "Direct page GETs returned HTTP 403; only search-indexed official text was readable."},
+    {"kind": "extracted_game_file", "path": "D:/DayZ Projects/scripts/3_game/gameplay.c", "lines": "104-117", "sha256": "AA12624843F51C70200D37449559FDBADB042D333D4EE74C989E0CA632D2F0FE"},
+    {"kind": "extracted_game_file", "path": "D:/DayZ Projects/scripts/3_game/dayzgame.c", "lines": "3104-3118", "sha256": "75CD42B6CBE689F0903F23CDEE46FD41545946B0046D3816B15B4F36044C8992"},
+    {"kind": "extracted_game_file", "path": "D:/DayZ Projects/scripts/3_game/entities/entityai.c", "lines": "2913-2995", "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"},
+    {"kind": "extracted_game_file", "path": "D:/DayZ Projects/scripts/3_game/ce/centraleconomy.c", "lines": "157-208,285-309,505-530", "sha256": "6948B104DB21F468E5E4967893B3AB8B7938944731C6B5BC8BC5706910F446A3"},
+    {"kind": "extracted_game_file", "path": "D:/DayZ Projects/scripts/1_core/proto/enconvert.c", "lines": "140-156,521-530", "sha256": "ABF20B92773A0872EB890F5A36EA3E4A228E4D4724BB9CD3ED86FC534A718CD4"},
+    {"kind": "extracted_game_file", "path": "D:/DayZ Projects/scripts/3_game/global/game.c", "lines": "1120-1127", "sha256": "CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"},
+    {"kind": "local_document_lead", "path": "D:/StarDZ/docs/GUIA_SEGURANCA_E_MULTIPLAYER.md", "lines": "929-1008,1086-1195,1572-1601", "sha256": "43AAECA6B5A5353499FE592C47615766EDE14DC8AB53B9E21B6551E32CFB07E8"},
+    {"kind": "local_document_lead", "path": "D:/StarDZ/docs/GUIA_ECONOMIA_E_LOOT.md", "lines": "434-551,1708-1851", "sha256": "25EEB8790E5FBDAECFE6A3FC04E709BDC6F6B93E5DDC9DC38E6132045A465F75"},
+    {"kind": "local_document_lead", "path": "D:/StarDZ/docs/REFERENCIA_VERSOES_E_MIGRACAO.md", "lines": "156-235,374-503", "sha256": "E3BBC9D5295202BA063F7D3B3659B2928F32171F811BBA8B8B0A201B6F97EFCD"},
+    {"kind": "public_framework", "repository": "https://github.com/Arkensor/DayZ-CommunityFramework", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/3_Game/CommunityFramework/RPC/RPCManager.c", "lines": "45-215", "sha256": "377E40A999D5465EC754DDAD98EE96AC16218613187261CEAFBFA29A0F21C622", "limitation": "Framework behavior, not vanilla authority."},
+    {"kind": "public_framework", "repository": "https://github.com/Arkensor/DayZ-CommunityFramework", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/3_Game/CommunityFramework/ModStorage/CF_ModStorage.c", "lines": "1-125", "sha256": "6FCF72DDC889D751F02BE1097DBC19126F851E7712A90EC2F52FA61B4E59D7B0", "limitation": "Framework-owned storage behavior, not vanilla authority."},
+    {"kind": "public_mod", "repository": "https://github.com/VanillaPlusPlus/VPP-Admin-Tools", "commit": "dc22e420df3b54e821055f9764da1e48f4a31e71", "path": "4_World/VPPAdminTools/Plugins/PluginBase/AdminTools/AdminTools.c", "lines": "1-95", "sha256": "1806BF6FD6C4E07E6D81AF0142254AFF7233CB0C1A109CEA057C517072BC9208", "limitation": "Public mod behavior, not vanilla authority."},
+    {"kind": "beta_mod", "path": "D:/StarDZ/StarDZ_Core/StarDZ_Core_Server/Scripts/4_World/StarDZ_CoreServer/SDZ_ServerAdminRPC.c", "lines": "46-130", "sha256": "C2EDCD688061EC589674F7D6084B6B96EF100896FCA410D204632EAF48A3C03E", "limitation": "Private beta and potentially defective."},
+    {"kind": "beta_mod", "path": "D:/StarDZ/StarDZ_Market_Hub/StarDZ_MarketHub_Server/Scripts/4_World/RPC/MHRPCServerHandler.c", "lines": "1-130", "sha256": "7A24F9EB3095F041B5BC3FDFEB59AFE1E3332E74B3F140B98DEDCCE025A3F0F7", "limitation": "Private beta and potentially defective."},
+    {"kind": "beta_mod", "path": "D:/StarDZ/StarDZ_Market_Hub/StarDZ_MarketHub_Server/Scripts/4_World/Models/MHSerializedItem.c", "lines": "80-180", "sha256": "9A3EDA11E88A8E28CAA5FCD76873747D12788EB1A2F750BEBFF2E7D2E9555CB4", "limitation": "Private beta and does not prove transaction recovery."}
+  ],
+  "recommended_tasks": [
+    {"order": 1, "priority": "P0", "task": "Run the eight bounded language fixtures on inventoried stable/experimental binaries and draft edits only from observed results."},
+    {"order": 2, "priority": "P0", "task": "Repair trading tutorial claims to match refusal behavior, then deliver the still-missing functional transaction fixture with a state machine and fault matrix; wording repair alone does not satisfy coverage."},
+    {"order": 3, "priority": "P0", "task": "Integrate reviewed deep-PBO evidence and build one three-PBO client/server dependency, signing, and deployment fixture."},
+    {"order": 4, "priority": "P0", "task": "Implement and test a versioned entity persistence migration chapter including corrupt, truncated, and upgrade cases."},
+    {"order": 5, "priority": "P1", "task": "Build a hardened RPC example with replay, bounds, rate, correlation, timeout, disconnect cleanup, and two-client abuse tests."},
+    {"order": 6, "priority": "P1", "task": "Add version/provenance guidance using Script Diff and normalized local extraction comparison."},
+    {"order": 7, "priority": "P1", "task": "Add a CE terrain and diagnostics lab with preserved Diag outputs."},
+    {"order": 8, "priority": "P1", "task": "Correct operator credential and vanilla-admin claims, then add least privilege, network exposure, rotation, retention, rollback, and restore drills."},
+    {"order": 9, "priority": "P1", "task": "Materialize and validate tutorial fixtures 01, 03, 04, 08, 09, 10, 11, and 12 in increasing risk order."},
+    {"order": 10, "priority": "P1", "task": "Inventory and crosswalk the newly supplied local corpus against EN, classify implemented behavior separately from plans/contracts, and independently verify any claim before promotion; prioritize limits, migration, and currency-bridge contracts."},
+    {"order": 11, "priority": "P2", "task": "After reliability work, separately assess optional MVC/animation, accessibility, terrain creation, firearm authoring, REST/backend, database, and CI breadth."}
+  ],
+  "sufficient_coverage_criteria": [
+    "Every existing domain has an explicit capability map, prerequisites, supported-build provenance, and links to adjacent workflows.",
+    "Every hard limit or native behavior has a current official source or a versioned reproducible measurement; recommendations and community practice are labeled.",
+    "All eight unresolved language leads have runtime/compiler dispositions or conservative wording that preserves uncertainty.",
+    "A packed, inspected, booted fixture demonstrates multi-PBO dependencies, client/server separation, build, signing, deployment, update, and rollback.",
+    "Consequential RPC, permission, persistence, CE, and transaction examples include risk-appropriate authorization, malformed input, replay, disconnect, restart, partial failure, and recovery checks.",
+    "Entity persistence migration and CE terrain/diagnostic workflows are taught and validated, not merely named.",
+    "Every tutorial states dependencies, placement, execution context, expected result, error path, and validation level; strong readiness claims have fresh proof.",
+    "Operator guidance covers credential separation, least privilege, network exposure, observability, clean shutdown, verified restore, rollback, and build/mod compatibility.",
+    "The supplied local corpus has a source-classified crosswalk to EN, and planned contracts or beta behavior are not represented as shipped behavior without independent evidence.",
+    "Current EN links/anchors and VitePress build pass after integration, and affected generated artifacts plus the graph are refreshed and reviewed.",
+    "Remaining unknowns and optional candidates remain visible; page count, build success, or worker completion is not treated as proof of perfect correctness."
+  ],
+  "artifact_validation": {
+    "json_parse": "passed with PowerShell ConvertFrom-Json -Depth 100",
+    "unique_finding_ids_in_json": 27,
+    "unique_finding_ids_in_markdown": 27,
+    "finding_id_sets_match": true,
+    "unresolved_prior_leads": 8,
+    "tutorial_readiness_records": 13,
+    "inventory_finding_references_missing": 0,
+    "unexpected_missing_existing_page_paths": 0,
+    "trailing_whitespace_lines": 0,
+    "vitepress_build": "not run; only .audit artifacts changed"
+  },
+  "limitations": [
+    "No compiler, game, server, client, asset tool, PBO build, exploit, transaction, performance, backup/restore, Workshop, or CE diagnostic command was executed for this map.",
+    "Direct BIKI page bodies returned HTTP 403; search-indexed official text and pinned official repositories were used with that access limitation recorded.",
+    "Local extraction and non-wiki documents are snapshots; missing declarations cannot prove native absence.",
+    "Local beta and public mod code is fallible and was used as implementation evidence only.",
+    "Only source paths explicitly listed as opened in this artifact were reviewed for this bounded map; the wider 64-entry corpus is preserved in user-source-paths.txt and user-source-inventory.json but requires CORPUS-C01, because inventory status is not review status.",
+    "The separate PBO research and language runtime probes were still in flight and require reviewed integration before overall closeout; the anchor repair is integrated and independently reviewed.",
+    "This is a bounded sufficiency map, not a claim of universal completeness or author approval."
+  ]
+}
