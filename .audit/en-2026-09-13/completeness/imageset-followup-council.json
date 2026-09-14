@@ -1,0 +1,96 @@
+{
+  "schema": "en-imageset-followup-council-v1",
+  "observed_at": "2026-09-14",
+  "wiki_revision": "bbfa203d036e8f02c733e50011c89b9dfbdf9ecf",
+  "role": "independent_council",
+  "overall": "returned_with_repairs",
+  "execution": {
+    "en_edited": false,
+    "game_or_tool_run": false,
+    "build_or_pack_run": false,
+    "commit_created": false
+  },
+  "inputs": [
+    {"path": ".audit/en-2026-09-13/completeness/imageset-followup-research.md", "sha256": "5C487CDFFB6719AD639341064E1E9CC2D9590868AE4A393CEA6ABBCECA35ED7A"},
+    {"path": ".audit/en-2026-09-13/completeness/imageset-followup-research.json", "sha256": "8ADD18CBB86EF4DBF7ABE5EC2A0A3D1C363357A5CD807712CEBC909E4CA95A0A"}
+  ],
+  "author_hash_audit": {"source_use_entries": 29, "matched": 29, "mismatched": 0},
+  "decisions": [
+    {"id":"IS-01","verdict":"accept_with_wording_repair","authorized":"An imageset names rectangular regions and can reference one or more atlas texture resources.","not_established":["every texture is a variant","single texture only"]},
+    {"id":"IS-02","verdict":"unresolved_remove_quantifier","not_established":["most common image source"]},
+    {"id":"IS-03","verdict":"accepted","authorized":"set:<internal-set-Name> image:<internal-image-Name>"},
+    {"id":"IS-04","verdict":"partial","accepted":["observed brace class/member syntax","Groups present in all reopened native/pinned brace files","RefSize is coordinate reference space"],"unresolved":["Groups mandatory","complete declared grammar"]},
+    {"id":"IS-05","verdict":"partial","accepted":["used by extracted vanilla","used by reviewed pinned implementations"],"rejected":["most mods"]},
+    {"id":"IS-06","verdict":"accept_bounded","accepted":["observed mpix values and file pairings"],"unresolved":["selection","ordering","fallback","DPI semantics","quality-setting semantics"]},
+    {"id":"IS-07","verdict":"returned_for_repair","reason":"stock excerpt alone removes required custom placement/registration/consumption context","required":["custom teaching template","file placement","non-literal resource reference placeholder","CfgMods registration","layout consumption","checked client-side LoadImageFile consumption","untested fixture label"]},
+    {"id":"IS-08","verdict":"accept_mechanism_not_universal_requirement","accepted":["CfgMods.defs.imageSets.files[] automatic mod registration pattern"],"rejected":["only possible mechanism","never loads without CfgMods"]},
+    {"id":"IS-09","verdict":"accept_observed_pattern_runtime_unresolved","accepted":["reviewed Expansion/Editor register and consume without repository LoadWidgetImageSet call"],"unresolved":["global scope","startup timing","GPU residency","collision order","silent failure","server availability","runtime guarantee"]},
+    {"id":"IS-10","verdict":"partial","load_widget_image_set":"declaration proves string parameter named filename and bool return type only","load_image_file":"comment documents true when image loaded and false otherwise"},
+    {"id":"IS-11","verdict":"reject_and_remove_all_endorsements","reason":"matching StarDZ XML is explicitly an unfinished placeholder; no native contract or adapter found","removal_scope":["TOC","XML section","worked example","best practice","theory table","active-use statement"]},
+    {"id":"IS-12","verdict":"partial","accepted":["reviewed imagesets reference EDDS","reviewed EDDS has DDS magic and ENF1 marker"],"unresolved":["Workbench import/create procedure","Mikero or Pal2PacE procedure","generic DDS acceptance or rejection","universal GUI pipeline"]},
+    {"id":"IS-13","verdict":"accept_narrow_guidance","authorized":"preserve the EDDS resource referenced by the imageset and its virtual path","not_established":["binarizer conversion rule"]},
+    {"id":"IS-14","verdict":"partial","accepted":["reviewed gproj files contain GameProjectConfigClass.imageSets lists"],"unresolved":["required for preview","missing-resource preview behavior","mandatory duplication of every CfgMods entry"]}
+  ],
+  "authorized_en_scope": {
+    "en/03-gui-system/07-styles-fonts.md": ["remove prevalence and single-texture claims","retain repaired custom brace example and context","bound RefSize and mpix language","bound CfgMods and client consumption claims","remove unverified batching/global/startup/GPU claims"],
+    "en/05-config-files/04-imagesets.md": ["remove all XML endorsements and examples","retain contextual custom brace tutorial","bound CfgMods mechanism","bound resource-path language","remove unsupported mpix semantics","correct RefSize semantics","remove unverified EDDS workflow and runtime/performance claims"],
+    "en/04-file-formats/01-textures.md": ["retain reviewed EDDS-reference fact","replace unverified Workbench/import recipe with evidence limitation"],
+    "en/04-file-formats/06-pbo-packing.md": ["retain narrow EDDS preservation guidance"],
+    "en/04-file-formats/07-workbench-guide.md": ["retain observed gproj imageSets structure","mark preview effects and duplication requirement untested"]
+  },
+  "key_sources": [
+    {"path":"en/03-gui-system/07-styles-fonts.md","sha256":"FBF0A50A5BA392359BB70D5D41F9BB1FA75379A0E16D66A23BF4F452DAFF7601"},
+    {"path":"en/05-config-files/04-imagesets.md","sha256":"6759F4E2F50E1B293D7549D726A9616C08B5D9AE30890A9C3A6ECA3D886C7A8C"},
+    {"path":"en/04-file-formats/01-textures.md","sha256":"2B976BF1B8D141AA0B80328418D710E168F6D653D07EB21707237C4559E29C81"},
+    {"path":"en/04-file-formats/06-pbo-packing.md","sha256":"85826A8F40B7DFBA6DD32E0B686CE3DA7892BD8048AC2FEC0135460206226914"},
+    {"path":"en/04-file-formats/07-workbench-guide.md","sha256":"532C48DD4F1A41CFDFB5FA1284D4D7E759E246D7A318C2F3B09DD5AC80F289BE"},
+    {"path":"D:/DayZ Projects/gui/imagesets/dayz_gui.imageset","sha256":"AD001B5391F351FFDC68CBB39B685D16E21F5313862C251CB48A65241FA1095A"},
+    {"path":"D:/DayZ Projects/gui/imagesets/playstation_buttons.imageset","sha256":"B47F8B0370328D8B5DF3937A7A17093E82ADD6C717D1B8589604C0B0D7C8E14A"},
+    {"path":"D:/DayZ Projects/gui/imagesets/bleedingdrops.imageset","sha256":"D153C931D28560C50D5DE645D59E6AEAC6F88B2EBC4CB4FCA1E98A75E5CC5A19"},
+    {"path":"D:/DayZ Projects/scripts/1_core/proto/enwidgets.c","sha256":"6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E"},
+    {"path":"D:/DayZ Projects/gui/imagesets/dayz_gui.edds","sha256":"243EEE81BE40A3C4E03FBDBDA8AEAFFAE2759AF42B3051C831A940F60E4C96ED","dds_dimensions":"1024x1024"},
+    {"path":"D:/DayZ Projects/gui/imagesets/dayz_gui@2x.edds","sha256":"8C45EEE54B90662558C16E8A3CF2052D0EBAB2535138E4ADBEEC5317B9B25F27","dds_dimensions":"2048x2048"},
+    {"path":"D:/DayZ Projects/gui.txt","sha256":"842BADDDFAC0C005B23766ED0A8ED75A60A65AFF952166DA2A181930E6CAF258"},
+    {"path":"D:/DayZ Projects/scripts.txt","sha256":"E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F"},
+    {"path":"C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/BIKI-Modding-Structure.txt","sha256":"192AC8BA4359CBD18BA643508E6615B72B1BEB1282D3361900D832ADA9837126"},
+    {"path":"D:/StarDZ/StarDZ_Market_Hub/StarDZ_MarketHub/GUI/imagesets/mh_icons.imageset","sha256":"650C76F789C2E9568BE558B57AAA65F9C557D00820C4B2F30D1E149BD102B19E","classification":"unfinished XML placeholder; no EDDS sibling"},
+    {"path":"D:/StarDZ/StarDZ_Core/StarDZ_Core/GUI/icons/brands.imageset","sha256":"3CB0C7322D4675C6B13718BEEA4874F89FFB991D66B74F5E689A93CEE9C3C83D","classification":"beta brace set with plain path; not runtime proof"},
+    {"path":"C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework/JM/CF/Scripts/3_Game/CommunityFramework/XML/CF_XML.c","sha256":"E8FABC34831789D1A0E97CE8DBF57A0963224B0F9EFD5913E8CC80A26FA76A6C"},
+    {"path":"C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework/JM/CF/Scripts/3_Game/CommunityFramework/XML/CF_XML_Document.c","sha256":"2BDABA2ACF7AC97F40DD3681823DE9519FCED18264CD11FBCF38F4EE35040F81"},
+    {"path":"C:/Users/Leonardo Mello/AppData/Local/Temp/wiki-audit-20260911/DayZ-CommunityFramework/JM/CF/Scripts/3_Game/CommunityFramework/Mods/ModStructure.c","sha256":"E1257321B4F711A72C1703319DB980CDA376C7CFC24955723720BEDA23C131A8"}
+  ],
+  "pinned_repositories_verified": [
+    {"url":"https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git","commit":"dc22e420df3b54e821055f9764da1e48f4a31e71"},
+    {"url":"https://github.com/Arkensor/DayZ-CommunityFramework.git","commit":"0763e7e7548c9a0bed6626afff835de80693ebf3"},
+    {"url":"https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools.git","commit":"41f2c2b99565d0e3970163e162efbf1283fdca62"},
+    {"url":"https://github.com/salutesh/DayZ-Expansion-Scripts.git","commit":"6dacd00f6d943ebbd99e0cf1baad93f470d96419"},
+    {"url":"https://github.com/InclementDab/DayZ-Editor.git","commit":"992e6b29b42b5d8e609632b59771335a23d205eb"},
+    {"url":"https://github.com/BohemiaInteractive/DayZ-Samples.git","commit":"da5e5437c9502620d9853fb6eed14701135ab2ea"}
+  ],
+  "corpus_observations": {
+    "extracted_imagesets_reopened": 11,
+    "pinned_custom_brace_imagesets_reopened": 12,
+    "all_reopened_brace_sets_have_groups": true,
+    "all_extracted_and_pinned_custom_texture_refs_have_guid_prefix": true,
+    "stardz_beta_plain_path_brace_sets": 5,
+    "plain_path_runtime_support_established": false
+  },
+  "official_web": {
+    "url":"https://community.bohemia.net/wiki/DayZ:Modding_Structure",
+    "accessed":"2026-09-14",
+    "direct_access":"HTTP 403",
+    "search_index_exact_imagesets_block":true,
+    "cached_full_text":true,
+    "cached_text_has_embedded_capture_receipt":false,
+    "supported_claim":"optional CfgMods.defs.imageSets.files[] registration shape"
+  },
+  "unresolved_gates": [
+    "minimal brace fixture compile/pack/client load/render",
+    "Groups omission A/B",
+    "GUID-prefixed versus plain resource-reference A/B",
+    "RefSize and mpix behavior tests",
+    "source-backed EDDS creation/import workflow",
+    "Workbench gproj imageSets omission A/B",
+    "documented XML schema or concrete adapter before XML testing"
+  ]
+}

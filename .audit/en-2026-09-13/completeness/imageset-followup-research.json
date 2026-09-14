@@ -1,0 +1,95 @@
+{
+  "schema": "en-imageset-followup-research-v1",
+  "observed_at": "2026-09-14",
+  "wiki_revision": "bbfa203d036e8f02c733e50011c89b9dfbdf9ecf",
+  "scope": {
+    "primary": [
+      "en/03-gui-system/07-styles-fonts.md",
+      "en/04-file-formats/01-textures.md",
+      "en/04-file-formats/06-pbo-packing.md",
+      "en/04-file-formats/07-workbench-guide.md"
+    ],
+    "xml_example_reopened": "en/05-config-files/04-imagesets.md:140-183",
+    "english_files_edited": false,
+    "runtime_or_tool_execution": false,
+    "commit_created": false
+  },
+  "conclusion": {
+    "native_brace_imageset_supported_by_sources": true,
+    "cfgmods_imageset_registration_supported_by_sources": true,
+    "gproj_imageset_listing_supported_by_sources": true,
+    "xml_example_native_support_established": false,
+    "xml_example_native_rejection_established": false,
+    "custom_xml_imageset_adapter_found": false,
+    "load_widget_imageset_declaration": "proto native bool LoadWidgetImageSet(string filename);",
+    "declaration_documents_accepted_grammar": false
+  },
+  "decisions": [
+    {"id":"IS-01","verdict":"reject_as_written","claim":"imageset is a single texture file","replacement":"one named rectangle map with one or more atlas texture variants"},
+    {"id":"IS-02","verdict":"unresolved","claim":"imagesets are the most common image source"},
+    {"id":"IS-03","verdict":"accept_with_precision","claim":"set:<set-name> image:<image-name>","precision":"set-name is internal ImageSetClass.Name"},
+    {"id":"IS-04","verdict":"accept_with_repairs","claim":"brace native structure","repairs":["include Groups block","describe RefSize as coordinate reference size"]},
+    {"id":"IS-05","verdict":"partial","claim":"used by vanilla and most mods","accepted":"vanilla and reviewed VPP/Expansion/Editor resources","rejected":"most mods quantifier"},
+    {"id":"IS-06","verdict":"accept_bounded","claim":"mpix patterns vary; copy a matching shipped pattern and test"},
+    {"id":"IS-07","verdict":"revise","claim":"current invented native example","replacement_source":"D:/DayZ Projects/gui/imagesets/bleedingdrops.imageset"},
+    {"id":"IS-08","verdict":"accept","claim":"CfgMods.defs.imageSets.files[] registration"},
+    {"id":"IS-09","verdict":"accept_narrowly","claim":"registered set can be consumed without explicit LoadWidgetImageSet","limits":["owning client mod/PBO loaded","no collision-order claim","no eager/GPU claim","no failure-mode claim"]},
+    {"id":"IS-10","verdict":"partial_unresolved","claim":"LoadWidgetImageSet contract","accepted":"filename parameter and bool return","unresolved":["grammar","XML","timing","caching","errors"]},
+    {"id":"IS-11","verdict":"reject_pending_evidence","claim":"current XML imageset tutorial is native/working","reason":"no native contract, matching resource, or custom adapter found"},
+    {"id":"IS-12","verdict":"accept_scoped","claim":"reviewed shipped imagesets reference EDDS atlases"},
+    {"id":"IS-13","verdict":"accept_as_guidance","claim":"package the EDDS format referenced by the imageset"},
+    {"id":"IS-14","verdict":"accept_structure_runtime_untested","claim":"gproj imageSets supplies Workbench project resources"}
+  ],
+  "repositories": [
+    {"name":"VPP Admin Tools","url":"https://github.com/VanillaPlusPlus/VPP-Admin-Tools.git","commit":"dc22e420df3b54e821055f9764da1e48f4a31e71"},
+    {"name":"Community Framework","url":"https://github.com/Arkensor/DayZ-CommunityFramework.git","commit":"0763e7e7548c9a0bed6626afff835de80693ebf3"},
+    {"name":"Community Online Tools","url":"https://github.com/Jacob-Mango/DayZ-CommunityOnlineTools.git","commit":"41f2c2b99565d0e3970163e162efbf1283fdca62"},
+    {"name":"DayZ Expansion Scripts","url":"https://github.com/salutesh/DayZ-Expansion-Scripts.git","commit":"6dacd00f6d943ebbd99e0cf1baad93f470d96419"},
+    {"name":"DayZ Editor","url":"https://github.com/InclementDab/DayZ-Editor.git","commit":"992e6b29b42b5d8e609632b59771335a23d205eb"},
+    {"name":"DayZ Samples","url":"https://github.com/BohemiaInteractive/DayZ-Samples.git","commit":"da5e5437c9502620d9853fb6eed14701135ab2ea"}
+  ],
+  "source_use": [
+    {"path":".audit/en-2026-09-13/completeness/assets-evidence-council.md","lines":"Decision 1, primary sources, follow-up claims","sha256":"D9E2A51C1DA526CEF953635C733A69BE3483FA3AD2A2FB0DB9F678988B8DD9A3"},
+    {"path":".audit/en-2026-09-13/completeness/assets-en-council.json","lines":"full file","sha256":"C7DB67DC64B37567BB0321BABBA1AC46B18BA354237DF91884C767E30533617C"},
+    {"path":"en/03-gui-system/07-styles-fonts.md","lines":"232-249,317-448,497-538","sha256":"FBF0A50A5BA392359BB70D5D41F9BB1FA75379A0E16D66A23BF4F452DAFF7601"},
+    {"path":"en/04-file-formats/01-textures.md","lines":"1-59,337-345,408-416","sha256":"2B976BF1B8D141AA0B80328418D710E168F6D653D07EB21707237C4559E29C81"},
+    {"path":"en/04-file-formats/06-pbo-packing.md","lines":"258-275","sha256":"85826A8F40B7DFBA6DD32E0B686CE3DA7892BD8048AC2FEC0135460206226914"},
+    {"path":"en/04-file-formats/07-workbench-guide.md","lines":"115-160,225-251","sha256":"532C48DD4F1A41CFDFB5FA1284D4D7E759E246D7A318C2F3B09DD5AC80F289BE"},
+    {"path":"en/05-config-files/04-imagesets.md","lines":"130-250","sha256":"6759F4E2F50E1B293D7549D726A9616C08B5D9AE30890A9C3A6ECA3D886C7A8C"},
+    {"path":"D:/DayZ Projects/gui/imagesets/dayz_gui.imageset","lines":"1-25","sha256":"AD001B5391F351FFDC68CBB39B685D16E21F5313862C251CB48A65241FA1095A"},
+    {"path":"D:/DayZ Projects/gui/imagesets/playstation_buttons.imageset","lines":"1-20","sha256":"B47F8B0370328D8B5DF3937A7A17093E82ADD6C717D1B8589604C0B0D7C8E14A"},
+    {"path":"D:/DayZ Projects/gui/imagesets/bleedingdrops.imageset","lines":"1-35","sha256":"D153C931D28560C50D5DE645D59E6AEAC6F88B2EBC4CB4FCA1E98A75E5CC5A19"},
+    {"path":"D:/DayZ Projects/scripts/1_core/proto/enwidgets.c","lines":"247-291,688-693","sha256":"6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E"},
+    {"path":"D:/DayZ Projects/gui/looknfeel/dayzwidgets.styles","lines":"1-25","sha256":"5F7DD4DEC94FAC2B937A3ED1209ED4D17B15220BBCD74A77FB28FA5F0D286240"},
+    {"path":"D:/StarDZ/docs/DAYZ_GUI_REFERENCE.md","lines":"194-205,1360-1380","sha256":"F83CD7E9843AAD1001B36E40883E3FF876FE645489C958DBFD83067A35AB9063"},
+    {"path":"D:/StarDZ/docs/REFERENCIA_TIPOS_DE_ARQUIVO.md","lines":"78-118,327-363","sha256":"BCC70BBA5733111C8EF513A1B2A2735A9B9D71C5A282B1D70CC86643ECFAD1C1"},
+    {"path":"D:/StarDZ/docs/GUIA_FERRAMENTAS_E_BUILD.md","lines":"270-324","sha256":"2ECAC825A7CC0995A2A97F5040CA26291A484E2CB5F5E42EBCC0195C5E9367D9"},
+    {"path":"VPP-Admin-Tools/GUI/Textures/vpp_icons.imageset","lines":"1-20","sha256":"C80AE1549BF850399FE56AD133FD13ADBE3891982D55D49ED5502351A3B38546"},
+    {"path":"VPP-Admin-Tools/5_Mission/VPPAdminTools/GUI/UIHelpers/VPPCollapsibleSection.c","lines":"24-32","sha256":"FA4CC67DB449AAE44CAD8E5C0A0306D2E1F284E459867041012CC3C3418DBF76"},
+    {"path":"DayZ-CommunityFramework/JM/CF/Workbench/dayz.gproj","lines":"14-28","sha256":"B9198EDDA2A7620C967F0DEBCAAB61DA261108E018BF45734936B0FCB73C757F"},
+    {"path":"DayZ-CommunityFramework/JM/CF/Scripts/3_Game/CommunityFramework/XML/CF_XML.c","lines":"1-66","sha256":"E8FABC34831789D1A0E97CE8DBF57A0963224B0F9EFD5913E8CC80A26FA76A6C"},
+    {"path":"DayZ-CommunityFramework/JM/CF/Scripts/3_Game/CommunityFramework/XML/CF_XML_Document.c","lines":"1-180","sha256":"2BDABA2ACF7AC97F40DD3681823DE9519FCED18264CD11FBCF38F4EE35040F81"},
+    {"path":"DayZ-CommunityOnlineTools/JM/COT/Workbench/dayz.gproj","lines":"14-29","sha256":"DAE014105C1143D120B714673C10B183886408369E16C2FA5869204E32F94429"},
+    {"path":"DayZ-Expansion-Scripts/DayZExpansion/Core/Scripts/config.cpp","lines":"12-56","sha256":"8973F7648357EF6B1FFA70F0E8168915052674F412EB15B7090E6E38B41826EA"},
+    {"path":"DayZ-Expansion-Scripts/DayZExpansion/Core/GUI/imagesets/expansion_gui.imageset","lines":"1-26","sha256":"F598C8741A4AB13F17B5E2534FDAD0A0512BFD5C9095C7A5ABAE2F8572326A9B"},
+    {"path":"DayZ-Expansion-Scripts/DayZExpansion/GUI/layouts/expansion_loading.layout","lines":"48-75","sha256":"88D29E0A21A7672F0B7EB4E5FB96654B53D4E550D42907EEF7031EED72E1E68A"},
+    {"path":"DayZ-Editor-extra/DayZEditor/Scripts/config.cpp","lines":"10-37","sha256":"1B0D5EC71A26F8B73BFBC2156CE303F65028C0CF6AFB09416AFA84F49A1BA39A"},
+    {"path":"DayZ-Editor-extra/DayZEditor/GUI/imagesets/dayz_editor_gui.imageset","lines":"1-30","sha256":"DD9A882D0AE0A3923C473F8A812DC12B35C8E2B31F3EE468B4DE422993F2F0A8"},
+    {"path":"DayZ-Editor-extra/DayZEditor/GUI/layouts/hud/EditorHud.layout","lines":"2290-2350","sha256":"CC5481DD19B6EAF82C6ABB7310EC69B6EFCA31C2F4E3880B50A49F20492A8674"}
+  ],
+  "official_web": {
+    "url":"https://community.bohemia.net/wiki/DayZ:Modding_Structure",
+    "accessed":"2026-09-14",
+    "search_index_excerpt_observed":true,
+    "direct_access":"HTTP 403",
+    "supported_claim":"CfgMods.defs.imageSets.files[] optional custom imageset registration"
+  },
+  "required_followup_evidence": [
+    "minimal brace fixture config compile/PBO receipt/client load/render",
+    "ImageWidget.LoadImageFile boolean result plus logs and screenshot",
+    "identified XML loader contract or adapter before any XML runtime trial",
+    "CfgMods and LoadWidgetImageSet XML trials only after source-backed schema exists",
+    "Workbench preview A/B observation for gproj imageSets"
+  ],
+  "council_required_before_en_edit": true
+}
