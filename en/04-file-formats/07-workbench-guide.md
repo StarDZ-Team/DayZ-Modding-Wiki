@@ -108,7 +108,7 @@ Replace the first path with your actual DayZ installation path. After this, the 
 
 ## Project Files (.gproj)
 
-The `.gproj` file is Workbench's project configuration. It tells Workbench where to find scripts, which image sets to load for layout preview, and which widget styles are available.
+The `.gproj` file is Workbench's project configuration. Reviewed projects list script paths, image sets, and widget styles in it.
 
 ### File Location
 
@@ -240,7 +240,7 @@ ScriptModulePathClass {
 
 Some frameworks override the module entry point -- if a dependency ships its own `.gproj`, mirror whatever `EntryPoint` value it declares.
 
-**imageSets / widgetStyles** -- Required for layout preview. Without vanilla image sets, layout files show missing images. Include the vanilla image sets your layouts reference; the exact list varies (the default `dayz.gproj` ships roughly a dozen, e.g. `ccgui_enforce`, `dayz_gui`, `dayz_inventory`, `dayz_crosshairs`), then append your own.
+**imageSets / widgetStyles** -- Reviewed `.gproj` files list these resources, including [Community Framework's pinned project configuration](https://github.com/Arkensor/DayZ-CommunityFramework/blob/0763e7e7548c9a0bed6626afff835de80693ebf3/JM/CF/Workbench/dayz.gproj#L13-L31). The effect of omitting an entry on layout preview was not A/B tested; add entries when maintaining a Workbench project that needs those resources. This project list is separate from packaged runtime registration through `CfgMods`.
 
 ### Path Prefix Resolution
 

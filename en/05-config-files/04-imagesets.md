@@ -3,7 +3,7 @@
 
 ---
 
-> **Summary:** ImageSets define named sprite regions within a texture atlas. They are DayZ's primary mechanism for referencing icons, UI graphics, and sprite sheets from layout files and scripts. Instead of loading hundreds of individual image files, you pack all icons into a single texture and describe each icon's position and size in an imageset definition file.
+> **Summary:** ImageSets define named rectangular regions in an atlas coordinate space. Reviewed DayZ GUI resources use them from layouts and `ImageWidget.LoadImageFile()` through internal set and image names.
 
 ---
 
@@ -12,7 +12,6 @@
 - [Overview](#overview)
 - [How ImageSets Work](#how-imagesets-work)
 - [DayZ Native ImageSet Format](#dayz-native-imageset-format)
-- [XML ImageSet Format](#xml-imageset-format)
 - [Registering ImageSets in config.cpp](#registering-imagesets-in-config-cpp)
 - [Referencing Images in Layouts](#referencing-images-in-layouts)
 - [Referencing Images in Scripts](#referencing-images-in-scripts)
@@ -27,11 +26,11 @@
 
 ## Overview
 
-A texture atlas is a single large image (typically in `.edds` format) containing many smaller icons arranged in a grid or freeform layout. An imageset file maps human-readable names to rectangular regions within that atlas.
+A texture atlas contains smaller icons arranged in a grid or freeform layout. An imageset maps human-readable names to rectangular regions and can reference one or more atlas texture resources.
 
 For example, a 1024x1024 texture might contain 64 icons at 64x64 pixels each. The imageset file says "the icon named `arrow_down` is at position (128, 64) and is 64x64 pixels." Your layout files and scripts reference `arrow_down` by name, and the engine extracts the correct sub-rectangle from the atlas at render time.
 
-This approach is efficient: one GPU texture load serves all icons, reducing draw calls and memory overhead.
+The reviewed source excerpts establish the resource syntax and named-region mapping, not general GPU, draw-call, or memory behavior.
 
 ---
 
@@ -39,18 +38,18 @@ This approach is efficient: one GPU texture load serves all icons, reducing draw
 
 The data flow:
 
-1. **Texture atlas** (`.edds` file) --- a single image containing all icons
+1. **Texture atlas resources** (`.edds` in the reviewed imagesets) --- one or more resources containing the named regions
 2. **ImageSet definition** (`.imageset` file) --- maps names to regions in the atlas
-3. **config.cpp registration** --- tells the engine to load the imageset at startup
+3. **Optional `CfgMods` registration** --- a supported way to list a packaged mod's custom imageset
 4. **Layout/script reference** --- uses `set:name image:iconName` syntax to render a specific icon
 
-Once registered, any widget in any layout file can reference any image from the set by name.
+The pinned [DayZ Expansion configuration](https://github.com/salutesh/DayZ-Expansion-Scripts/blob/6dacd00f6d943ebbd99e0cf1baad93f470d96419/DayZExpansion/Core/Scripts/config.cpp#L40-L54) registers imagesets, and its [layout](https://github.com/salutesh/DayZ-Expansion-Scripts/blob/6dacd00f6d943ebbd99e0cf1baad93f470d96419/DayZExpansion/GUI/layouts/expansion_loading.layout#L44-L76) consumes internal names without a repository call to `LoadWidgetImageSet`. That observation does not establish scope, timing, or failure behavior.
 
 ---
 
 ## DayZ Native ImageSet Format
 
-The native format uses the Enfusion engine's class-based syntax (similar to config.cpp). This is the format used by the vanilla game and most established mods.
+Extracted vanilla DayZ and the reviewed public mod resources use the native brace-delimited format below. Native support for the XML schema formerly shown on this page is not established.
 
 ### Structure
 
@@ -60,8 +59,8 @@ ImageSetClass {
  RefSize 1024 1024
  Textures {
   ImageSetTextureClass {
-   mpix 1
-   path "MyMod/GUI/imagesets/my_icons.edds"
+   mpix 0
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -72,23 +71,27 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
+
+This is an observed brace-format shape. The intended definition placement is `MyMod/GUI/imagesets/my_icons.imageset`; `<YOUR-COMPLETE-RESOURCE-REFERENCE>` replaces the entire quoted `path` value. `Groups {}` is consistently observed in the reviewed brace resources, not proven required grammar.
 
 ### Top-Level Fields
 
 | Field | Description |
 |-------|-------------|
-| `Name` | The set name. Used in the `set:` part of image references. Must be unique across all loaded mods. |
-| `RefSize` | Reference dimensions of the texture (width height). Used for coordinate mapping. |
-| `Textures` | Contains one or more `ImageSetTextureClass` entries for different resolution mip levels. |
+| `Name` | The set name. Used in the `set:` part of image references. |
+| `RefSize` | Coordinate reference dimensions for `Pos` and `Size`. It need not equal every physical texture resource. |
+| `Textures` | Contains one or more observed `ImageSetTextureClass` entries. |
 
 ### Texture Entry Fields
 
 | Field | Description |
 |-------|-------------|
-| `mpix` | Selects which resolution variant this texture is **within this set**. It is a relative ordering, not a fixed scale --- see [Multi-Resolution Textures](#multi-resolution-textures). Do not assume `0` means "low" and `1` means "standard". |
-| `path` | Path to the `.edds` texture file, relative to the mod root. Can use Enfusion GUID format (`{GUID}path`) or plain relative paths. |
+| `mpix` | Extracted sets use values `0`, `1`, `2`, and `3`; their selection and fallback semantics are not documented by the sources reviewed here. See [Multi-Resolution Textures](#multi-resolution-textures) for observed pairings. |
+| `path` | Complete resource reference and virtual path. Reviewed extracted/pinned files use GUID-prefixed virtual paths, while StarDZ beta sets also contain plain paths; this review does not establish whether either spelling is mandatory or interchangeable. Preserve the reference and virtual path recorded for your own resource. |
 
 ### Image Entry Fields
 
@@ -96,7 +99,7 @@ Each image is an `ImageSetDefClass` inside the `Images` block:
 
 | Field | Description |
 |-------|-------------|
-| Class name | Must match the `Name` field (used for engine lookups) |
+| Class name | Reviewed examples use the same class name and `Name` value. |
 | `Name` | The image identifier. Used in the `image:` part of references. |
 | `Pos` | Top-left corner position in the atlas (x y), in pixels |
 | `Size` | Dimensions (width height), in pixels |
@@ -132,61 +135,16 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
 
 ---
 
-## XML ImageSet Format
-
-An alternative XML-based format exists and is used by some mods. It is simpler but offers fewer features (no multi-resolution support).
-
-### Structure
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<imageset name="lnt_icons" file="Lantern_Core/GUI/imagesets/lnt_icons.edds">
-  <image name="icon_settings" pos="0 0" size="64 64" />
-  <image name="icon_player" pos="64 0" size="64 64" />
-  <image name="icon_wallet" pos="128 0" size="64 64" />
-</imageset>
-```
-
-### XML Attributes
-
-**`<imageset>` element:**
-
-| Attribute | Description |
-|-----------|-------------|
-| `name` | The set name (equivalent to native `Name`) |
-| `file` | Path to the texture file (equivalent to native `path`) |
-
-**`<image>` element:**
-
-| Attribute | Description |
-|-----------|-------------|
-| `name` | Image identifier |
-| `pos` | Top-left position as `"x y"` |
-| `size` | Dimensions as `"width height"` |
-
-### When to Use Which Format
-
-| Feature | Native Format | XML Format |
-|---------|---------------|------------|
-| Multi-resolution (mip levels) | Yes | No |
-| Tiling flags | Yes | No |
-| Enfusion GUID paths | Yes | Yes |
-| Simplicity | Lower | Higher |
-| Used by vanilla DayZ | Yes | No |
-| Used by content mods | Common | Occasionally |
-
-**Recommendation:** Use the native format for production mods. Use the XML format for quick prototyping or simple icon sets that do not need tiling or multi-resolution support.
-
----
-
 ## Registering ImageSets in config.cpp
 
-ImageSet files must be registered in your mod's `config.cpp` under the `CfgMods` > `class defs` > `class imageSets` block. Without this registration, the engine never loads the imageset and your image references fail silently.
+To register a packaged mod's custom imageset through `CfgMods`, list its virtual `.imageset` path under `CfgMods > defs > imageSets > files[]`. This is a supported registration mechanism, not a complete native loader contract: `LoadWidgetImageSet(string filename)` also exists, but its accepted grammar and runtime behavior are not documented by the declaration.
 
 ### Syntax
 
@@ -213,7 +171,7 @@ class CfgMods
 
 ### Example: A Framework With Several Sets
 
-A framework mod often splits its graphics across a few purpose-built sets --- one for standalone HUD icons, one for reusable UI primitives, and one for its icon-font atlas. The Lantern framework used throughout this wiki registers three:
+A framework can split its graphics across a few purpose-built sets --- one for standalone HUD icons, one for reusable UI primitives, and one for its icon-font atlas. The constructed Lantern framework used throughout this wiki registers three:
 
 ```cpp
 class defs
@@ -232,7 +190,7 @@ class defs
 
 ### Example: A Single-Atlas Mod
 
-Most content mods ship a single atlas. One entry is all you need:
+A single-atlas configuration uses one entry:
 
 ```cpp
 class defs
@@ -375,7 +333,7 @@ Most icons use `Flags 0` (no tiling). Tiling flags are primarily for UI elements
 
 ## Multi-Resolution Textures
 
-The native format supports multiple resolution textures for the same imageset. This allows the engine to use higher-resolution artwork on high-DPI displays.
+Extracted native imagesets can contain multiple texture entries. The sources reviewed here show their values and file pairings, but do not define selection, ordering, fallback, DPI, or quality-setting behavior.
 
 ```
 Textures {
@@ -390,7 +348,7 @@ Textures {
 }
 ```
 
-Within a set that declares two textures, the **higher `mpix` is the higher-resolution (`@2x`) variant**. What it is *not* is a fixed global scale where `0` always means "low" and `1` always means "standard". The vanilla sets in `gui/imagesets/` use four different values, and the base/`@2x` pairing is not the same from set to set:
+The vanilla sets in `gui/imagesets/` use four different values, and the observed base/`@2x` pairings are not identical from set to set:
 
 | Imageset | `mpix` values present | Notes |
 |----------|----------------------|-------|
@@ -402,47 +360,15 @@ Within a set that declares two textures, the **higher `mpix` is the higher-resol
 | `console_toolbar`, `dayz_inventory` | `1` | single texture |
 | `ccgui_enforce`, `dayz_crosshairs`, `rover_imageset` | `3` | single texture |
 
-The safe reading is therefore relative: give your lowest-resolution texture the lowest `mpix` and each larger variant a higher one. A single-texture set works with any of these values --- vanilla single-texture sets use `0`, `1` and `3` interchangeably.
-
-The `@2x` naming convention is borrowed from Apple's Retina display system but is not enforced --- you can name the file anything.
-
-### In Practice
-
-Most mods ship a single texture, and so do most vanilla sets: only 4 of the 11 sets in `gui/imagesets/` declare two. A single-texture set looks like this:
-
-```
-Textures {
- ImageSetTextureClass {
-  mpix 1
-  path "Lantern_Core/GUI/icons/lnt_solid.edds"
- }
-}
-```
+Use the pairing in a matching shipped resource only as a starting point, and validate the intended scale in your target client. These observations do not establish a general rule for single-texture values or an `@2x` naming requirement.
 
 ---
 
 ## Creating Custom Icon Sets
 
-### Step-by-Step Workflow
+### Teaching Template
 
-**1. Create the Texture Atlas**
-
-Use an image editor (Photoshop, GIMP, etc.) to arrange your icons on a single canvas:
-- Choose a power-of-two size (256x256, 512x512, 1024x1024, etc.)
-- Arrange icons in a grid for easy coordinate calculation
-- Leave some padding between icons to prevent texture bleeding
-- Save as `.tga` or `.png`
-
-**2. Convert to EDDS**
-
-DayZ uses `.edds` (Enfusion DDS) format for textures. Use the DayZ Workbench or Mikero's tools to convert:
-- Import your `.tga` into DayZ Workbench
-- Or use `Pal2PacE.exe` to convert `.paa` to `.edds`
-- The output must be an `.edds` file
-
-**3. Write the ImageSet Definition**
-
-Map each icon to a named region. If your icons are on a 64-pixel grid:
+Place a custom definition at `MyMod/GUI/imagesets/mymod_icons.imageset`, preserve the `.edds` resource and virtual path it names, and map your own named regions in its coordinate reference space. The fixture below is a teaching template only: its resource-reference marker and coordinates must be replaced, and it has not been compiled, packed, or rendered in a DayZ client.
 
 ```
 ImageSetClass {
@@ -450,8 +376,8 @@ ImageSetClass {
  RefSize 512 512
  Textures {
   ImageSetTextureClass {
-   mpix 1
-   path "MyMod/GUI/imagesets/mymod_icons.edds"
+   mpix 0
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -474,24 +400,34 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
 
-**4. Register in config.cpp**
+`<YOUR-COMPLETE-RESOURCE-REFERENCE>` is deliberately non-literal and replaces the entire quoted `path` value. Use the complete reference recorded for your own resource; do not reuse a sample GUID.
 
-Add the imageset path to your mod's config.cpp:
+### Register the Teaching Template
+
+To register this packaged custom imageset through `CfgMods`, use its virtual `.imageset` path:
 
 ```cpp
-class imageSets
+class CfgMods
 {
-    files[] =
+    class MyMod
     {
-        "MyMod/GUI/imagesets/mymod_icons.imageset"
+        class defs
+        {
+            class imageSets
+            {
+                files[] = { "MyMod/GUI/imagesets/mymod_icons.imageset" };
+            };
+        };
     };
 };
 ```
 
-**5. Use in Layouts and Scripts**
+### Use in a Client Layout and Script
 
 ```
 ImageWidgetClass SettingsIcon {
@@ -502,18 +438,30 @@ ImageWidgetClass SettingsIcon {
 }
 ```
 
+After the client-side widget exists, check the documented `LoadImageFile` return value before selecting the slot:
+
+```c
+ImageWidget settingsIcon = ImageWidget.Cast(layoutRoot.FindAnyWidget("SettingsIcon"));
+if (settingsIcon && settingsIcon.LoadImageFile(0, "set:mymod_icons image:settings"))
+{
+    settingsIcon.SetImage(0);
+}
+```
+
+Reviewed Expansion and Editor repositories use registered-set references without a repository call to `LoadWidgetImageSet`. That does not prove scope, startup timing, resource residency, or failure behavior.
+
 ---
 
 ## Icon Font Atlas Pattern
 
-A powerful pattern is to convert an existing **icon font** (a font whose glyphs are pictograms rather than letters) into DayZ imagesets. This gives a mod access to hundreds or thousands of consistent, professional-quality icons without hand-drawing any artwork.
+An icon-font atlas pattern uses atlas resources derived from an **icon font** (a font whose glyphs are pictograms rather than letters). It can provide a consistent library of named icons, subject to the font's license and an independently validated asset pipeline.
 
 ### How It Works
 
 1. Each glyph in the icon font is rendered to a texture atlas at a fixed grid size (e.g. 64x64 per icon)
 2. Each font weight gets its own imageset: for example `lnt_solid`, `lnt_regular`, `lnt_light`, `lnt_brands`
 3. Icon names in the imageset match the font's glyph names (e.g. `circle`, `arrow_down`, `gear`), so the same name resolves across every weight
-4. The imagesets are registered in config.cpp and become available to any layout or script
+4. A mod can list the imagesets through the bounded `CfgMods` registration mechanism described above
 
 ### Per-Weight Icon Sets
 
@@ -563,8 +511,8 @@ ImageSetClass {
  RefSize 1024 1024
  Textures {
   ImageSetTextureClass {
-   mpix 1
-   path "Lantern_Core/GUI/icons/lnt_solid.edds"
+   mpix 0
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -581,6 +529,8 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
 
@@ -588,7 +538,7 @@ ImageSetClass {
 
 ## Worked Examples
 
-> The examples below use the wiki's constructed teaching mods (Lantern, NightPatrol). They are illustrations, not dumps of any shipped mod. Every GUID is shown as `{0000000000000000}` --- DayZ Workbench generates a real GUID for each asset when you import it, so you never type these by hand.
+> The examples below use the wiki's constructed teaching mods (Lantern, NightPatrol). They are illustrations, not dumps of any shipped mod. Each resource-reference marker is deliberately non-literal and replaces the entire quoted `path` value; each coordinate is illustrative. Replace them with values recorded for your own resource. None of these fixtures has been compiled, packed, or rendered in a DayZ client.
 
 ### Freeform Admin Atlas
 
@@ -600,8 +550,8 @@ ImageSetClass {
  RefSize 1920 1080
  Textures {
   ImageSetTextureClass {
-   mpix 1
-   path "{0000000000000000}Lantern_Admin/GUI/imagesets/lnt_admin_icons.edds"
+   mpix 0
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -617,6 +567,8 @@ ImageSetClass {
    Size 62 62
    Flags 0
   }
+ }
+ Groups {
  }
 }
 ```
@@ -636,8 +588,8 @@ ImageSetClass {
  RefSize 2048 2048
  Textures {
   ImageSetTextureClass {
-   mpix 1
-   path "{0000000000000000}NightPatrol/GUI/imagesets/np_weapon_icons.edds"
+   mpix 0
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -654,6 +606,8 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
 
@@ -669,8 +623,8 @@ ImageSetClass {
  RefSize 256 256
  Textures {
   ImageSetTextureClass {
-   mpix 1
-   path "{0000000000000000}Lantern_Core/GUI/imagesets/lnt_prefabs.edds"
+   mpix 0
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -687,32 +641,12 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
 
 Notable: image names can contain spaces when quoted (e.g. `"Alpha 10"`). However, referencing these in layouts requires the exact name including the space.
-
-### Simple Set (XML Format)
-
-A small XML imageset for a single module:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<imageset name="lnt_icons" file="Lantern_Core/GUI/imagesets/lnt_icons.edds">
-  <image name="icon_settings" pos="0 0" size="64 64" />
-  <image name="icon_player" pos="64 0" size="64 64" />
-  <image name="icon_wallet" pos="128 0" size="64 64" />
-  <image name="icon_group" pos="192 0" size="64 64" />
-  <image name="icon_map" pos="0 64" size="64 64" />
-  <image name="icon_success" pos="0 192" size="64 64" />
-  <image name="icon_error" pos="64 192" size="64 64" />
-</imageset>
-```
-
-Referenced as:
-```
-image0 "set:lnt_icons image:icon_settings"
-```
 
 ---
 
@@ -720,52 +654,36 @@ image0 "set:lnt_icons image:icon_settings"
 
 ### Forgetting config.cpp Registration
 
-The most common issue. If your imageset file exists but is not listed in `class imageSets { files[] = { ... }; };` in config.cpp, the engine never loads it. All image references will fail silently (widgets appear blank).
-
-### Set Name Collisions
-
-If two mods register imagesets with the same `Name`, only one is loaded (the last one wins). Use a unique prefix:
-
-```
-Name "mymod_icons"     -- Good
-Name "icons"           -- Risky, too generic
-```
+When your fixture uses `CfgMods` registration, confirm that its virtual `.imageset` path appears under `defs > imageSets > files[]` and then test the packaged client result. The reviewed sources do not establish a universal failure mode when that entry is absent.
 
 ### Wrong Texture Path
 
-The `path` must be relative to the PBO root (how the file appears inside the packed PBO):
-
-```
-path "MyMod/GUI/imagesets/icons.edds"     -- Correct if MyMod is the PBO root
-path "GUI/imagesets/icons.edds"            -- Wrong if the PBO root is MyMod/
-path "C:/Users/dev/icons.edds"            -- Wrong: absolute paths do not work
-```
+Preserve the complete resource reference and virtual path recorded for the `.edds` resource named by your imageset. The reviewed data does not establish that GUID-prefixed and plain spelling are interchangeable.
 
 ### Mismatched RefSize
 
-The `RefSize` must match the actual pixel dimensions of your texture. If you specify `RefSize 512 512` but your texture is 1024x1024, all icon positions will be off by a factor of two.
+`RefSize` defines the coordinate reference space for `Pos` and `Size`; it need not equal every physical texture variant. Extracted `dayz_gui` keeps `RefSize 1024 1024` while its two referenced resources are 1024×1024 and 2048×2048. Validate your own coordinates at the intended scale.
 
 ### Pos Coordinates Off by One
 
 `Pos` is the top-left corner of the icon region. If your icons are at 64-pixel intervals but you accidentally offset by 1 pixel, icons will have a thin slice of the adjacent icon visible.
 
-### Using .png or .tga Directly
+### Assuming a Conversion Recipe
 
-The engine requires `.edds` format for texture atlases referenced by imagesets. Raw `.png` or `.tga` files will not load. Always convert to `.edds` using DayZ Workbench or Mikero's tools.
+Reviewed imagesets reference `.edds`, but this review did not validate a Workbench, Mikero, or other conversion/import procedure. Do not assume that a generic DDS export, renamed file, or untested conversion is a usable DayZ EDDS resource.
 
 ### Spaces in Image Names
 
-While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can cause issues in some parsing contexts. Prefer underscores: `Alpha_10`.
+If you use a name with spaces, keep the exact internal `Name` in the reference and validate it in the intended layout or script context.
 
 ---
 
 ## Best Practices
 
-- Always use a unique, mod-prefixed set name (e.g., `"mymod_icons"` instead of `"icons"`). Set name collisions between mods cause one set to silently overwrite the other.
-- Use power-of-two texture dimensions (256x256, 512x512, 1024x1024). Non-power-of-two textures work but may have reduced rendering performance on some GPUs.
-- Add 1-2 pixels of padding between icons in the atlas to prevent texture bleeding at the edges, especially when the texture is displayed at non-native sizes.
-- Prefer the native `.imageset` format over XML for production mods. It supports multi-resolution textures and tiling flags that XML format lacks.
-- Verify `RefSize` matches the actual texture dimensions exactly. A mismatch causes all icon coordinates to be wrong by a proportional factor.
+- Use a clear, mod-specific internal set name and keep `set:`/`image:` references aligned with the resource's internal `Name` fields.
+- Preserve the `.edds` resource and complete virtual path named by the imageset when packaging your mod.
+- Include the observed `Groups {}` block in a brace-format fixture, without treating its presence as a proven grammar requirement.
+- Treat the teaching templates as starting points: substitute the resource reference and coordinates, then compile, pack, and render-test them before shipping.
 
 ---
 
@@ -775,19 +693,16 @@ While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can c
 
 | Concept | Theory | Reality |
 |---------|--------|---------|
-| config.cpp registration is required | ImageSets must be listed in `class imageSets` | Correct, and this is the most common source of "blank icon" bugs. The engine gives no error if the registration is missing -- widgets simply render empty |
-| `RefSize` maps coordinates | Coordinates are in `RefSize` space | `RefSize` must match actual texture pixel dimensions. If your texture is 1024x1024 but `RefSize` says 512x512, all `Pos` values are interpreted at double scale |
-| XML format is simpler | Fewer features but works the same | XML imagesets cannot specify tiling flags or multi-resolution mip levels. For icons this is fine, but for repeating UI elements (borders, gradients) you need the native format |
-| Multiple `mpix` entries | Engine selects by quality setting | In practice, most mods ship only `mpix 1`. The engine falls back gracefully if only one mip level is provided -- no visual glitch, just no high-DPI optimization |
-| Image names are case-sensitive | `"MyIcon"` and `"myicon"` are different | True in the imageset definition, but `LoadImageFile()` in script performs case-insensitive lookup on some engine builds. Always match case exactly to be safe |
+| `CfgMods` registration | A packaged custom imageset can be listed in `defs > imageSets > files[]` | This is a supported registration mechanism, not the only native loader route or a documented failure contract. |
+| `RefSize` maps coordinates | Coordinates are in `RefSize` space | It is a coordinate reference size and need not equal every physical texture variant. |
+| Multiple `mpix` entries | Extracted sets contain several values and pairings | The reviewed sources do not define selection, fallback, DPI, or quality-setting behavior. |
 
 ---
 
 ## Compatibility & Impact
 
-- **Multi-Mod:** Set name collisions are the main risk. If two mods both define an imageset named `"icons"`, only one is loaded (last PBO wins). All references to `set:icons` in the losing mod break silently. Always use a mod-specific prefix.
-- **Performance:** Each unique imageset texture is one GPU texture load. Consolidating icons into fewer, larger atlases reduces draw calls. A mod with 10 separate 64x64 textures performs worse than one 512x512 atlas with 10 icons.
-- **Version:** The native `.imageset` format (`ImageSetClass`/`ImageSetTextureClass`/`ImageSetDefClass`) and `set:name image:name` reference syntax match the current vanilla GUI files (e.g. `gui/imagesets/dayz_gui.imageset`) and current-generation mods. Both the native and XML formats are in active use today; treat specific claims about which patch first introduced either format as folklore rather than a documented fact.
+- **Runtime limits:** The reviewed sources do not establish collision order, silent-failure behavior, global scope, startup timing, GPU residency, or general performance characteristics. Test those properties in the target client build.
+- **Version evidence:** The native `ImageSetClass` resource shape and `set:name image:name` syntax are present in the extracted DayZ GUI files and the reviewed pinned public mod sources. This page makes no claim about when the format was introduced.
 
 ---
 
@@ -797,5 +712,5 @@ While the engine supports spaces in image names (e.g., `"Alpha 10"`), they can c
 |---------|--------|
 | Icon-font atlases | An icon font is rendered to large per-weight atlases (see the [Icon Font Atlas Pattern](#icon-font-atlas-pattern) above), providing hundreds of consistent icons via sets like `set:lnt_solid`, `set:lnt_regular` |
 | Freeform atlas layout | Icons arranged non-uniformly on a full-screen atlas with varying sizes, maximizing texture-space usage |
-| Per-feature small atlases | Each sub-module ships its own small imageset rather than one massive atlas, keeping PBO sizes minimal |
+| Per-feature small atlases | Each sub-module can have its own imageset rather than one large shared teaching example |
 | 300x300 inventory icons | Large icon sizes for weapon/attachment inventory slots where detail matters, unlike 64x64 UI icons |

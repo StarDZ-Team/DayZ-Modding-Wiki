@@ -233,7 +233,7 @@ int color = tw.GetOutlineColor();         // Read outline color (ARGB)
 
 ### Imageset References
 
-The most common way to display images. An imageset is a sprite atlas -- a single texture file with multiple named sub-images.
+An imageset names rectangular regions and can reference one or more atlas texture resources.
 
 In a layout file:
 
@@ -246,7 +246,7 @@ ImageWidgetClass MyIcon {
 }
 ```
 
-The format is `"set:<imageset_name> image:<image_name>"`.
+The format is `"set:<imageset_name> image:<image_name>"`. Both names come from the imageset's internal `Name` fields, not necessarily from filenames.
 
 Common vanilla imagesets and images:
 
@@ -320,7 +320,7 @@ An imageset file (`.imageset`) defines named regions within a sprite atlas textu
 
 ### DayZ Native Format
 
-Used by vanilla DayZ and most mods. This is **not** XML -- it uses the same brace-delimited format as layout files.
+Extracted vanilla DayZ and the reviewed public mod resources use this brace-delimited format. Native support for an XML imageset schema is not established by this review.
 
 ```
 ImageSetClass {
@@ -329,7 +329,7 @@ ImageSetClass {
  Textures {
   ImageSetTextureClass {
    mpix 0
-   path "MyMod/GUI/imagesets/my_icons.edds"
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -352,14 +352,16 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
 
 Key fields:
 - `Name` -- Imageset name (used in `"set:<name>"`)
-- `RefSize` -- Reference size of the source texture in pixels (width height)
-- `path` -- Path to the texture file (`.edds`)
-- `mpix` -- Identifies which texture variant a `Textures` entry corresponds to when an imageset ships more than one resolution tier. This is not a simple `0 = standard, 1 = 2x` flag: vanilla `gui/imagesets/playstation_buttons.imageset` pairs `mpix 1` with its base texture and `mpix 2` with an `@2x` file, while other single-texture imagesets (e.g. `bleedingdrops.imageset`) use `mpix 0` as their only entry, and others (`ccgui_enforce.imageset`, `rover_imageset.imageset`) use `mpix 3` with a single texture. Copy the texture-tier setup from a matching vanilla imageset and test the intended display scaling.
+- `RefSize` -- Coordinate reference size for `Pos` and `Size`; it need not match every physical texture resource. For example, extracted `dayz_gui` uses `RefSize 1024 1024` with 1024×1024 and 2048×2048 resources.
+- `path` -- Complete resource reference and virtual path to the texture resource. Replace the entire quoted placeholder value above with the reference recorded for your own resource.
+- `mpix` -- Extracted files use values `0`, `1`, `2`, and `3`; `dayz_gui` pairs `0`/`1` with base/`@2x` resources, while `playstation_buttons` pairs `1`/`2`. The loader's selection, fallback, and quality behavior are not established here, so copy a matching shipped shape and validate the intended scale.
 - Each image entry defines `Name`, `Pos` (x y in pixels), `Size` (width height in pixels), and `Flags` (for example, `0` or `ISVerticalTile` as on the vanilla `Gradient` image).
 
 
@@ -371,9 +373,7 @@ To create your own imageset for a mod:
 
 ### Step 1: Create the Sprite Atlas Texture
 
-Use an image editor (Photoshop, GIMP, etc.) to create a single texture that contains all your icons/images arranged on a grid. Common sizes are 256x256, 512x512, or 1024x1024 pixels.
-
-Export your source artwork and create the `.edds` GUI texture resource through Workbench; use a matching shipped atlas as the resource template. TexView 2/ImageToPAA belong to the PAA material-texture workflow.
+Prepare an atlas and record the coordinate system you intend to use for its named rectangles. This review did not validate an EDDS creation, import, or conversion workflow; preserve the resource and virtual path named by your imageset when you package it.
 
 ### Step 2: Create the Imageset File
 
@@ -386,7 +386,7 @@ ImageSetClass {
  Textures {
   ImageSetTextureClass {
    mpix 0
-   path "MyMod/GUI/imagesets/mymod_icons.edds"
+   path "<YOUR-COMPLETE-RESOURCE-REFERENCE>"
   }
  }
  Images {
@@ -403,12 +403,16 @@ ImageSetClass {
    Flags 0
   }
  }
+ Groups {
+ }
 }
 ```
 
+Place this teaching fixture at `MyMod/GUI/imagesets/mymod_icons.imageset`. `<YOUR-COMPLETE-RESOURCE-REFERENCE>` is the entire quoted `path` value, not a prefix; replace it and the coordinates with values recorded for your own resource.
+
 ### Step 3: Register in config.cpp
 
-In your mod's `config.cpp`, register the imageset under `CfgMods`:
+To register a packaged mod's custom imageset through `CfgMods`, list its virtual `.imageset` path under `defs > imageSets > files[]`:
 
 ```cpp
 class CfgMods
@@ -440,13 +444,17 @@ ImageWidgetClass MissionIcon {
 }
 ```
 
-In code:
+In client-side UI code, after the widget exists:
 
 ```c
-ImageWidget icon;
-// Images from registered imagesets are available by set:name image:name
-// No additional loading step needed after config.cpp registration
+ImageWidget icon = ImageWidget.Cast(layoutRoot.FindAnyWidget("MissionIcon"));
+if (icon && icon.LoadImageFile(0, "set:mymod_icons image:icon_mission"))
+{
+    icon.SetImage(0);
+}
 ```
+
+Reviewed Expansion and Editor sources register sets and consume their internal names without a repository call to `LoadWidgetImageSet`; this does not establish global scope or loader timing. This template has not been compiled, packed, or rendered in a DayZ client.
 
 ---
 
@@ -496,7 +504,7 @@ This is a pattern used by client theming mods; the version above is this wiki's 
 
 ## Best Practices
 
-1. **Use imageset references** instead of direct file paths where possible -- imagesets are batched more efficiently by the engine.
+1. **Use internal names consistently** in `set:` and `image:` references.
 
 2. **Use SDF fonts** (`sdf_MetronBook24`) for text that needs to look sharp at any scale.
 
@@ -506,9 +514,9 @@ This is a pattern used by client theming mods; the version above is this wiki's 
 
 5. **Set `"src alpha" 1`** on image widgets to get proper transparency.
 
-6. **Register custom imagesets** in `config.cpp` so they are available globally without manual loading.
+6. **Use the `CfgMods` registration shape** above when registering a packaged custom imageset through `CfgMods`.
 
-7. **Keep sprite atlases reasonably sized** -- 512x512 or 1024x1024 is typical. Larger textures waste memory if most of the space is empty.
+7. **Validate your intended UI scale** after packaging; the reviewed sources do not establish general size or memory recommendations.
 
 ---
 
@@ -535,4 +543,4 @@ This is a pattern used by client theming mods; the version above is this wiki's 
 ## Compatibility & Impact
 
 - **Multi-Mod:** Style names are global. If two mods register a `.styles` file defining the same style name, the last-loaded mod wins. Prefix custom style names with your mod identifier (e.g., `MyMod_PanelDark`).
-- **Performance:** Imagesets are loaded once into GPU memory at startup. Adding large sprite atlases (2048x2048+) increases VRAM usage. Keep atlases at 512x512 or 1024x1024 and split across multiple imagesets if needed.
+- **Imageset limits:** The reviewed sources do not establish startup timing, GPU residency, collision order, or general atlas-size limits. Validate those characteristics in the target client build.

@@ -1,0 +1,95 @@
+{
+  "schema": "en-imageset-implementation-v1",
+  "implemented_at": "2026-09-14",
+  "timezone": "America/Sao_Paulo",
+  "scope": {
+    "edited": [
+      "en/03-gui-system/07-styles-fonts.md",
+      "en/05-config-files/04-imagesets.md",
+      "en/04-file-formats/01-textures.md",
+      "en/04-file-formats/07-workbench-guide.md"
+    ],
+    "new_reports": [
+      ".audit/en-2026-09-13/completeness/imageset-en-implementation.md",
+      ".audit/en-2026-09-13/completeness/imageset-en-implementation.json"
+    ],
+    "explicitly_unchanged": [
+      "en/04-file-formats/06-pbo-packing.md",
+      "all locale pages",
+      "all pre-existing audit reports"
+    ]
+  },
+  "inputs": {
+    "council": {
+      "markdown": ".audit/en-2026-09-13/completeness/imageset-followup-council.md",
+      "json": ".audit/en-2026-09-13/completeness/imageset-followup-council.json"
+    },
+    "research": {
+      "markdown": ".audit/en-2026-09-13/completeness/imageset-followup-research.md",
+      "json": ".audit/en-2026-09-13/completeness/imageset-followup-research.json"
+    }
+  },
+  "before_after_sha256": [
+    {
+      "path": "en/03-gui-system/07-styles-fonts.md",
+      "before": "FBF0A50A5BA392359BB70D5D41F9BB1FA75379A0E16D66A23BF4F452DAFF7601",
+      "after": "EF8A50E2A689DE88E15ABB14265A5A399D1CB25E7BC995E40B54A64A2409B484"
+    },
+    {
+      "path": "en/05-config-files/04-imagesets.md",
+      "before": "6759F4E2F50E1B293D7549D726A9616C08B5D9AE30890A9C3A6ECA3D886C7A8C",
+      "after": "319A97B0F78C093044E7501487CABCCA7B9D3324C1BC1BD7D5FFD8CFA7FAB040"
+    },
+    {
+      "path": "en/04-file-formats/01-textures.md",
+      "before": "2B976BF1B8D141AA0B80328418D710E168F6D653D07EB21707237C4559E29C81",
+      "after": "A733F705B5BDD13000B4C24937D408D4984743EA86A8BEB8743EFA11EA99BDC1"
+    },
+    {
+      "path": "en/04-file-formats/07-workbench-guide.md",
+      "before": "532C48DD4F1A41CFDFB5FA1284D4D7E759E246D7A318C2F3B09DD5AC80F289BE",
+      "after": "ACAA8F66B4AC73A265266F50DC4CF278C6239BD48F8CFA1BF60CD437F6743504"
+    }
+  ],
+  "reopened_evidence": [
+    {
+      "path": "D:/DayZ Projects/gui/imagesets/dayz_gui.imageset",
+      "sha256": "AD001B5391F351FFDC68CBB39B685D16E21F5313862C251CB48A65241FA1095A",
+      "used_for": ["brace shape", "Groups observation", "RefSize counterexample", "mpix pairing"]
+    },
+    {
+      "path": "D:/DayZ Projects/gui/imagesets/playstation_buttons.imageset",
+      "sha256": "B47F8B0370328D8B5DF3937A7A17093E82ADD6C717D1B8589604C0B0D7C8E14A",
+      "used_for": ["mpix 1/2 pairing"]
+    },
+    {
+      "path": "D:/DayZ Projects/scripts/1_core/proto/enwidgets.c",
+      "sha256": "6BB20BAD5EFA498E584C7AE8976A1BF5310BCD9019215F31CB2990AF21CE0C9E",
+      "used_for": ["LoadImageFile documented boolean", "LoadWidgetImageSet declaration boundary"]
+    },
+    {
+      "url": "https://github.com/salutesh/DayZ-Expansion-Scripts/blob/6dacd00f6d943ebbd99e0cf1baad93f470d96419/DayZExpansion/Core/Scripts/config.cpp#L40-L54",
+      "accessed": "2026-09-14",
+      "used_for": ["pinned CfgMods imageSets registration shape"]
+    },
+    {
+      "url": "https://github.com/salutesh/DayZ-Expansion-Scripts/blob/6dacd00f6d943ebbd99e0cf1baad93f470d96419/DayZExpansion/GUI/layouts/expansion_loading.layout#L44-L76",
+      "accessed": "2026-09-14",
+      "used_for": ["pinned set:name image:name layout consumption"]
+    },
+    {
+      "url": "https://github.com/Arkensor/DayZ-CommunityFramework/blob/0763e7e7548c9a0bed6626afff835de80693ebf3/JM/CF/Workbench/dayz.gproj#L13-L31",
+      "accessed": "2026-09-14",
+      "used_for": ["observed GameProjectConfigClass imageSets structure"]
+    }
+  ],
+  "council_dispositions_implemented": [
+    "IS-01 through IS-14, with the council's narrower wording where the research proposal was returned for repair"
+  ],
+  "validation": {
+    "strict_en_anchor_links": "passed: 105 files, 1,282 anchors, 0 dead anchors; 0 dead file links",
+    "scoped_git_diff_check": "passed: exit 0",
+    "vitepress_build": "not run by task constraint",
+    "game_client_workbench_packer_compile": "not run by task constraint"
+  }
+}

@@ -56,7 +56,7 @@ The general workflow is: **Source (TGA/PNG) --> DayZ Tools conversion --> PAA (g
 
 **EDDS** is an engine texture format used by the GUI resource pipeline. Shipped imagesets reference `.edds` atlases, for example `gui/imagesets/dayz_gui.imageset`. Keep these references and their resources together when packaging a GUI mod.
 
-Use Workbench to manage GUI texture resources. Use TexView 2 or ImageToPAA for TGA/PNG-to-PAA conversion when authoring model materials. A generic DDS export is not automatically an EDDS resource, and the PAA build workflow below does not imply an automatic EDDS-to-PAA conversion.
+Reviewed imagesets reference `.edds` resources, but this review did not validate an EDDS creation, import, or conversion recipe. A DDS header alone does not establish that an arbitrary export or renamed file is a usable DayZ EDDS resource. Use TexView 2 or ImageToPAA only for the PAA material-texture workflow described below.
 
 ---
 
