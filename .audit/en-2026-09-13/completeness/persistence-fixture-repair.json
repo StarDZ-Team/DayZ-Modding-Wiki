@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-14",
+  "repository_head": "bbfa203d036e8f02c733e50011c89b9dfbdf9ecf",
+  "scope": "Superseding repair receipt for EPF-C03 through EPF-C07; historical implementation and council reports are preserved.",
+  "dispositions": {
+    "EPF-C03": "repaired: helper renames and verifies the sole fresh output as manifest pbo EntityPersistenceFixture.pbo",
+    "EPF-C04": "repaired: matrix variant has per-instance NonSerialized omit flag default false, case/locked setters, and assertion getters",
+    "EPF-C05": "repaired: v1/v2/matrix validate schema before fields, stop after each required failure, and emit parent/unsupported/LOAD_OK/LOAD_FAIL markers",
+    "EPF-C06": "repaired: helper restricts WorkRoot to repository TEMP/entity-persistence-repair, verifies resolved/unique clear paths, complete members, and log hashes",
+    "EPF-C07": "repaired: source ledger records opened Battery9V/config/Samples/CF paths, exact commits, hashes, and tool versions"
+  },
+  "static_checks": {
+    "powershell_ast_parse": "passed",
+    "manifest_json_parse": "passed",
+    "dangerous_workroot": {
+      "input": "D:/StarDZ/docs/wiki",
+      "result": "rejected before packer operation",
+      "message": "WorkRoot must not be the repository root or an ancestor of it."
+    },
+    "not_run": [
+      "VitePress dev/build",
+      "Enforce compilation",
+      "DayZ game/server/client/Workbench launch",
+      "persistence save, restart, or load"
+    ]
+  },
+  "tools": {
+    "addon_builder": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/AddonBuilder/AddonBuilder.exe",
+      "file_version": "1.0.240.639",
+      "sha256": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1"
+    },
+    "bankrev": {
+      "path": "D:/SteamLibrary/steamapps/common/DayZ Experimental Tools/Bin/PboUtils/BankRev.exe",
+      "file_version": "1.0.0.2",
+      "sha256": "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75"
+    }
+  },
+  "fresh_archive_runs": [
+    {
+      "variant": "v1",
+      "run_root": "TEMP/entity-persistence-repair/entity-persistence-v1-20260914-014139-5db8983a",
+      "receipt": "TEMP/entity-persistence-repair/entity-persistence-v1-20260914-014139-5db8983a/receipt.json",
+      "pbo": {"name": "EntityPersistenceFixture.pbo", "bytes": 3362, "sha256": "B08F692885597DE0FE87DC3C82F25C49696BA93CCFDA7AAA5F42BB801DA45D79"},
+      "log_sha256": {"addon_builder": "1CC411424CE07B88C9BCA95B42F4FA3D371005BF760962603D09253F7838DC39", "bankrev_properties": "566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1", "bankrev_members": "A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"}
+    },
+    {
+      "variant": "v2",
+      "run_root": "TEMP/entity-persistence-repair/entity-persistence-v2-20260914-014152-c2958384",
+      "receipt": "TEMP/entity-persistence-repair/entity-persistence-v2-20260914-014152-c2958384/receipt.json",
+      "pbo": {"name": "EntityPersistenceFixture.pbo", "bytes": 4145, "sha256": "A499F69E2A801226D6200941EC2965E9F778A6CFD61A716F38EF9BEA4DF5C5CA"},
+      "log_sha256": {"addon_builder": "5F22AE65CADF7CE3920753E26FA725FB4E44851D6CD9737AFD7CEB6444F649EB", "bankrev_properties": "566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1", "bankrev_members": "A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"}
+    },
+    {
+      "variant": "matrix",
+      "run_root": "TEMP/entity-persistence-repair/entity-persistence-matrix-20260914-014154-34d9c618",
+      "receipt": "TEMP/entity-persistence-repair/entity-persistence-matrix-20260914-014154-34d9c618/receipt.json",
+      "pbo": {"name": "EntityPersistenceFixture.pbo", "bytes": 5340, "sha256": "94950B74AD00A1B7658BA54C5B40A4A85C6101BA0FC47E48F11BA2EA34933782"},
+      "log_sha256": {"addon_builder": "D96C8F923AC12BFED57E7908F59F14F106C695D14CAC39754EBDFBCDBC50E4F9", "bankrev_properties": "566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1", "bankrev_members": "A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"}
+    }
+  ],
+  "member_receipt": {
+    "prefix": "EntityPersistenceFixture",
+    "expected_case_insensitive_members": [
+      "EntityPersistenceFixture/config.cpp",
+      "EntityPersistenceFixture/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c"
+    ],
+    "actual_members_log_sha256": "A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"
+  },
+  "raw_source_hashes": [
+    {"path": "examples/en/entity-persistence/README.md", "before": "568E0102C7DBA4A65251CAD27E4B11916BC7BF070293D4C847297E2BBFA3AEAA", "after": "8C762FC90C02B097ACCD41F83CAA672B597F811565583C63C4A2938B34F31FFF"},
+    {"path": "examples/en/entity-persistence/manifest.json", "before": "41861A5D91D079C4FC96D6CDEC60F62225546A0C420F7ADD8ACFE957CD4CCF44", "after": "4701E996F8A0A01EE6D28C20779E1D5C843019AC452C728DECA2A25B377D69E9"},
+    {"path": "examples/en/entity-persistence/build.ps1", "before": "D85843609BAE0395B6975BC19EA1FD61F06ABDBAC7C07DCB3F01C7C4DC30F6D8", "after": "B70F3C378EEE774501424B71A683742A3349FD7CEA58259A2CE3FD86E6DC44C7"},
+    {"path": "examples/en/entity-persistence/variants/v1/config.cpp", "before": "D9AB275AD77AE11CB5CC32EE7F7B8A16D81157C1ED554F1A2B04C3DBE26AF241", "after": "D9AB275AD77AE11CB5CC32EE7F7B8A16D81157C1ED554F1A2B04C3DBE26AF241"},
+    {"path": "examples/en/entity-persistence/variants/v1/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "before": "0BA2A5B2848895869D6D00B22DC9B571211BDD3CB048959A291AB0A6D75345E9", "after": "CD15FEBB6559B767D9ECC50F2632DC3D9F52D44326E72C6163C590607BD28205"},
+    {"path": "examples/en/entity-persistence/variants/v2/config.cpp", "before": "04295EC0927CF0ACF0913F2071765F70D87BD8ECB93DD4A74B71E4892AFF9C00", "after": "04295EC0927CF0ACF0913F2071765F70D87BD8ECB93DD4A74B71E4892AFF9C00"},
+    {"path": "examples/en/entity-persistence/variants/v2/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "before": "5D0CD1745B654348937F972FED39BD1B5A43BB8682C128DE949A94CA0755326C", "after": "4D745BE004293FDA27F094FF50BF473D1DD835969038DC0DB7B59DC9D565D85A"},
+    {"path": "examples/en/entity-persistence/variants/declared-v2-missing-field/config.cpp -> variants/matrix/config.cpp", "before": "27CDE1B215676C87F0CF8811F7D6D9ECE511F1EF6C7E659C151F09E67B0C1B91", "after": "04530A93C2C6D4E7FF5EA72C5BC1D25CCA3CF31DD0E985AFECB3BD59BBF3186E"},
+    {"path": "examples/en/entity-persistence/variants/declared-v2-missing-field/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c -> variants/matrix/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "before": "963F91C1BE77E6EB02F82B80E05726553E0AA663C0F849581B5BA2E4B23A8C74", "after": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D"}
+  ],
+  "source_use": {
+    "extracted_snapshot": {"scripts_metadata": {"path": "D:/DayZ Projects/scripts.txt", "raw_version": 124588, "sha256": "E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F"}, "battery9v": "98D4376AEF70324F7C9FD4DDEB5098D6E0B731EE9CDB4352A6A7166C03838A34", "consumables_config": "360DF711C194F9264C232C9296FD4DA5B92EBCE731FC25E0908036EA07CB745B", "entityai": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5", "serializer": "3C365E5EF418438220CD2A2012C57EF385DDCAD835D712D136D31E6DFE7D2F5D"},
+    "dayz_samples": {"repository": "https://github.com/BohemiaInteractive/DayZ-Samples.git", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea", "path": "Test_GardenPlot/config.cpp", "sha256": "2C66BE131A55CFFDED96712245DD74D78E25D003C21A4F51F0B94587C666CD37"},
+    "community_framework": {"repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "files": [{"path": "JM/CF/Scripts/4_World/CommunityFramework/ModStorage/CF_ModStorageObject.c", "sha256": "4B37540E26D7F708AA8B53715C7D11B2F95C7FC18A9E7ADBF5D6E244A9B6F242"}, {"path": "JM/CF/Scripts/3_Game/CommunityFramework/ModStorage/CF_ModStorage.c", "sha256": "6FCF72DDC889D751F02BE1097DBC19126F851E7712A90EC2F52FA61B4E59D7B0"}], "classification": "third-party comparison only"}
+  },
+  "remaining_gates": [
+    "Independent review of the exact repaired fixture and receipts",
+    "Council-approved config/script compilation and class-resolution smoke gate",
+    "Pending separate research: Central Economy eligibility, deterministic harness, save timing, graceful shutdown",
+    "Controlled runtime persistence matrix with fixed positions, persistent IDs, assertion getters, storage hashes, and clean exit evidence"
+  ]
+}

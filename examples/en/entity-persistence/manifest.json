@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "fixture": "EntityPersistenceFixture isolated entity persistence variants",
+  "pbo": "EntityPersistenceFixture.pbo",
+  "prefix": "EntityPersistenceFixture",
+  "patch": "EntityPersistenceFixture",
+  "configuredClass": "EntityPersistenceFixtureBattery",
+  "baseClass": "Battery9V",
+  "variants": ["v1", "v2", "matrix"],
+  "archiveOnly": true,
+  "runtimeStorage": "none included"
+}

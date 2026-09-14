@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "review": {
+    "date": "2026-09-14",
+    "role": "independent final reviewer; not the author",
+    "repository_head": "bbfa203d036e8f02c733e50011c89b9dfbdf9ecf",
+    "archive_scaffold_integration": "rejected_pending_bounded_repairs",
+    "full_migration_completion": "unresolved_separate_runtime_work",
+    "actions_run": [
+      "read-only source, report, receipt, and log inspection",
+      "SHA-256 hashing",
+      "JSON parsing",
+      "PowerShell AST parsing",
+      "direct read-only PBO header and uncompressed payload parsing"
+    ],
+    "actions_not_run": [
+      "game, server, client, or Workbench",
+      "Addon Builder or BankRev",
+      "compiler",
+      "VitePress build or dev",
+      "install",
+      "commit",
+      "sub-worker"
+    ]
+  },
+  "dispositions": [
+    {
+      "id": "EPF-C03",
+      "status": "accepted_current_archives",
+      "finding": "All three retained build directories contain exactly one PBO named EntityPersistenceFixture.pbo; receipt names, bytes, and hashes match, with no stale variant-named PBO in those build directories."
+    },
+    {
+      "id": "EPF-C04",
+      "status": "matrix_accepted_upgrade_interface_rejected",
+      "finding": "Matrix has a default-false NonSerialized per-instance omission flag, omits only locked, persists a case label, and declares all seven matrix setters/getters; multiple controls can retain false while one bad instance is true.",
+      "repair": "Add SetFixtureCaseLabel/GetFixtureCharges/GetFixtureCaseLabel to v1 and v2, and GetFixtureLocked to v2, then repackage affected variants."
+    },
+    {
+      "id": "EPF-C05",
+      "status": "accepted_static_only",
+      "finding": "All readers propagate parent failure, validate schema before fields, return immediately after each failed required read, and emit LOAD_OK/LOAD_FAIL with stage/schema/label/position/four ID blocks.",
+      "limit": "No compilation, load, callback, or runtime behavior was tested."
+    },
+    {
+      "id": "EPF-C06",
+      "status": "actual_archives_accepted_helper_rejected",
+      "finding": "Direct PBO parsing proves exactly two current-source payloads per retained archive, but the helper lacks reparse-chain rejection, does not prove the candidate run did not pre-exist before New-Item -Force, and does not enforce count/uniqueness in its member comparison.",
+      "repair": "Reject reparse points from repository TEMP through WorkRoot/run/clear paths; require a nonexistent candidate run, create without -Force, recheck ordinary-directory containment, and enforce equal member count plus case-insensitive uniqueness."
+    },
+    {
+      "id": "EPF-C07",
+      "status": "source_ledger_accepted_config_wording_rejected",
+      "finding": "Battery9V/config, EntityAI, serializer, pinned Samples, and pinned CF hashes and classifications are correct, but all three CfgMods files[] strings use backslashes contrary to the reopened forward-slash sources and retained runtime distinction; the single-level manifest prefix contains no slash.",
+      "repair": "Use EntityPersistenceFixture/scripts/4_World in all three configs, repackage, and replace README raw-backslash wording with an explicit distinction between the single-level prefix and forward-slash CfgMods virtual path."
+    }
+  ],
+  "integration_blockers": [
+    "CfgMods worldScriptModule files[] separator and README prefix wording",
+    "build helper reparse/pre-existing-run ownership safety and duplicate-member check",
+    "missing v1/v2 public label/assertion API"
+  ],
+  "pbo_verification": [
+    {
+      "variant": "v1",
+      "receipt_sha256": "BC6A70FECE9AFEBF9C49649FB374A11DD4B603E5707A063A81562E9385A95719",
+      "pbo": {"bytes": 3362, "sha256": "B08F692885597DE0FE87DC3C82F25C49696BA93CCFDA7AAA5F42BB801DA45D79"},
+      "payloads": {"config.cpp": "D9AB275AD77AE11CB5CC32EE7F7B8A16D81157C1ED554F1A2B04C3DBE26AF241", "scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c": "CD15FEBB6559B767D9ECC50F2632DC3D9F52D44326E72C6163C590607BD28205"},
+      "addon_log_sha256": "1CC411424CE07B88C9BCA95B42F4FA3D371005BF760962603D09253F7838DC39"
+    },
+    {
+      "variant": "v2",
+      "receipt_sha256": "FC90DDE9006779640FB729646EE3BDA30949208CD43A41D2FB4B931D7155DC31",
+      "pbo": {"bytes": 4145, "sha256": "A499F69E2A801226D6200941EC2965E9F778A6CFD61A716F38EF9BEA4DF5C5CA"},
+      "payloads": {"config.cpp": "04295EC0927CF0ACF0913F2071765F70D87BD8ECB93DD4A74B71E4892AFF9C00", "scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c": "4D745BE004293FDA27F094FF50BF473D1DD835969038DC0DB7B59DC9D565D85A"},
+      "addon_log_sha256": "5F22AE65CADF7CE3920753E26FA725FB4E44851D6CD9737AFD7CEB6444F649EB"
+    },
+    {
+      "variant": "matrix",
+      "receipt_sha256": "A1FE50E3FE9BDE6B85F321A7A043965BE652862ADFEEAAC28A1C8B4648A77C6D",
+      "pbo": {"bytes": 5340, "sha256": "94950B74AD00A1B7658BA54C5B40A4A85C6101BA0FC47E48F11BA2EA34933782"},
+      "payloads": {"config.cpp": "04530A93C2C6D4E7FF5EA72C5BC1D25CCA3CF31DD0E985AFECB3BD59BBF3186E", "scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D"},
+      "addon_log_sha256": "D96C8F923AC12BFED57E7908F59F14F106C695D14CAC39754EBDFBCDBC50E4F9"
+    }
+  ],
+  "common_log_hashes": {
+    "bankrev_properties": "566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1",
+    "bankrev_members": "A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"
+  },
+  "delivery_hashes": [
+    {"path": "examples/en/entity-persistence/README.md", "sha256": "8C762FC90C02B097ACCD41F83CAA672B597F811565583C63C4A2938B34F31FFF"},
+    {"path": "examples/en/entity-persistence/manifest.json", "sha256": "4701E996F8A0A01EE6D28C20779E1D5C843019AC452C728DECA2A25B377D69E9"},
+    {"path": "examples/en/entity-persistence/build.ps1", "sha256": "B70F3C378EEE774501424B71A683742A3349FD7CEA58259A2CE3FD86E6DC44C7"},
+    {"path": "examples/en/entity-persistence/variants/v1/config.cpp", "sha256": "D9AB275AD77AE11CB5CC32EE7F7B8A16D81157C1ED554F1A2B04C3DBE26AF241"},
+    {"path": "examples/en/entity-persistence/variants/v1/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "sha256": "CD15FEBB6559B767D9ECC50F2632DC3D9F52D44326E72C6163C590607BD28205"},
+    {"path": "examples/en/entity-persistence/variants/v2/config.cpp", "sha256": "04295EC0927CF0ACF0913F2071765F70D87BD8ECB93DD4A74B71E4892AFF9C00"},
+    {"path": "examples/en/entity-persistence/variants/v2/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "sha256": "4D745BE004293FDA27F094FF50BF473D1DD835969038DC0DB7B59DC9D565D85A"},
+    {"path": "examples/en/entity-persistence/variants/matrix/config.cpp", "sha256": "04530A93C2C6D4E7FF5EA72C5BC1D25CCA3CF31DD0E985AFECB3BD59BBF3186E"},
+    {"path": "examples/en/entity-persistence/variants/matrix/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c", "sha256": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D"}
+  ],
+  "report_hashes": [
+    {"path": ".audit/en-2026-09-13/completeness/persistence-fixture-council.md", "sha256": "43F52A66F99E2DEB9A76FBF067CFC905FB50BC042BF450A6A85FE0C91CB97FA6"},
+    {"path": ".audit/en-2026-09-13/completeness/persistence-fixture-council.json", "sha256": "A442D9EF2F030BEE438ED40EF5B280A787D729A809B7E4C2351F0B9FE2581805"},
+    {"path": ".audit/en-2026-09-13/completeness/persistence-fixture-repair.md", "sha256": "0C45BCC10240B93E8BB86E3D7542EF17964DE70E0BFADB883CC53B5E613E5928"},
+    {"path": ".audit/en-2026-09-13/completeness/persistence-fixture-repair.json", "sha256": "94BFF201702DA788CED99E9CB74A106C8D5333B2FCFC47B3C205DB867D5C391F"},
+    {"path": ".audit/en-2026-09-13/completeness/persistence-source-council.md", "sha256": "317093AD43155012AE0EBBA136CBD730C98239210F2C3650AADA257FFAC15398"},
+    {"path": ".audit/en-2026-09-13/completeness/persistence-source-council.json", "sha256": "5BA2DDF9531365447183944ADA17E93F7195DA52850CC646147DA921F78A821F"}
+  ],
+  "source_hashes": [
+    {"path": "D:/DayZ Projects/scripts/4_world/entities/itembase/battery9v.c", "sha256": "98D4376AEF70324F7C9FD4DDEB5098D6E0B731EE9CDB4352A6A7166C03838A34"},
+    {"path": "D:/DayZ Projects/DZ/gear/consumables/config.cpp", "sha256": "360DF711C194F9264C232C9296FD4DA5B92EBCE731FC25E0908036EA07CB745B"},
+    {"path": "D:/DayZ Projects/scripts/3_game/entities/entityai.c", "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"},
+    {"path": "D:/DayZ Projects/scripts/1_core/proto/serializer.c", "sha256": "3C365E5EF418438220CD2A2012C57EF385DDCAD835D712D136D31E6DFE7D2F5D"},
+    {"repository": "https://github.com/BohemiaInteractive/DayZ-Samples.git", "commit": "da5e5437c9502620d9853fb6eed14701135ab2ea", "path": "Test_GardenPlot/config.cpp", "sha256": "2C66BE131A55CFFDED96712245DD74D78E25D003C21A4F51F0B94587C666CD37"},
+    {"repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/config.cpp", "sha256": "8DA49AD88AB7387B4F5E6D5D2FDBC07005F908B537E7F723152BD41B6BDD1D41"},
+    {"repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/4_World/CommunityFramework/ModStorage/CF_ModStorageObject.c", "sha256": "4B37540E26D7F708AA8B53715C7D11B2F95C7FC18A9E7ADBF5D6E244A9B6F242"},
+    {"repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/3_Game/CommunityFramework/ModStorage/CF_ModStorage.c", "sha256": "6FCF72DDC889D751F02BE1097DBC19126F851E7712A90EC2F52FA61B4E59D7B0"}
+  ],
+  "historical_hash_qualification": "The repair report's Before hashes were not freshly recomputed from verified pre-edit filesystem files in this review; they remain historical values from the prior council record.",
+  "evidence_boundary": "Packonly and archive inspection are not config parsing, Enforce compilation, script-module/class load, callback execution, persistence, restart, or record-isolation evidence."
+}

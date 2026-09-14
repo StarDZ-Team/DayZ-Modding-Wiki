@@ -1,0 +1,95 @@
+{
+  "reviewedAtUtc": "2026-09-14T05:14:24.288542+00:00",
+  "reviewer": "root independent final scaffold/source/archive review",
+  "disposition": "accepted archive scaffold after three bounded council repairs; no compilation or runtime approval",
+  "finalFiles": [
+    {
+      "path": "examples/en/entity-persistence/README.md",
+      "before": "8C762FC90C02B097ACCD41F83CAA672B597F811565583C63C4A2938B34F31FFF",
+      "after": "9C05BDEFF9926082671FB595CE9B571DFC1D0BDE2CCB67088FD321092F46F380"
+    },
+    {
+      "path": "examples/en/entity-persistence/build.ps1",
+      "before": "B70F3C378EEE774501424B71A683742A3349FD7CEA58259A2CE3FD86E6DC44C7",
+      "after": "A71E0B8DA79C31BC8A4FDEB966B21A67686131E62DB808BDB95D1365417BE9D4"
+    },
+    {
+      "path": "examples/en/entity-persistence/variants/v1/config.cpp",
+      "before": "D9AB275AD77AE11CB5CC32EE7F7B8A16D81157C1ED554F1A2B04C3DBE26AF241",
+      "after": "3C86A27699C7766F1C3EAA75DC9DF053520216216E7D090AFC5483C4CA51D82D"
+    },
+    {
+      "path": "examples/en/entity-persistence/variants/v1/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c",
+      "before": "CD15FEBB6559B767D9ECC50F2632DC3D9F52D44326E72C6163C590607BD28205",
+      "after": "12D071E4A45D71FBB78FA233AC7E061ECDB082A9F2A37626F3DCC8736C026B35"
+    },
+    {
+      "path": "examples/en/entity-persistence/variants/v2/config.cpp",
+      "before": "04295EC0927CF0ACF0913F2071765F70D87BD8ECB93DD4A74B71E4892AFF9C00",
+      "after": "7B817238ABB2E8A0FD0F288C9C7E1B09910B327EAFF5F263FDEB17F2770E0147"
+    },
+    {
+      "path": "examples/en/entity-persistence/variants/v2/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c",
+      "before": "4D745BE004293FDA27F094FF50BF473D1DD835969038DC0DB7B59DC9D565D85A",
+      "after": "E167090471C1C6D732366680C97663BA2AC205936E4A21CA1406B0056536EFE0"
+    },
+    {
+      "path": "examples/en/entity-persistence/variants/matrix/config.cpp",
+      "before": "04530A93C2C6D4E7FF5EA72C5BC1D25CCA3CF31DD0E985AFECB3BD59BBF3186E",
+      "after": "CA804F143033932C942ED18A185B0EAA9E44F127E8DCA100245413118B951D7C"
+    },
+    {
+      "path": "examples/en/entity-persistence/variants/matrix/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c",
+      "before": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D",
+      "after": "A3A8FCD3387773D915A31C2CA5035C07FB8A49CE7877867D37E629E2081A090D"
+    },
+    {
+      "path": "examples/en/entity-persistence/manifest.json",
+      "before": "4701E996F8A0A01EE6D28C20779E1D5C843019AC452C728DECA2A25B377D69E9",
+      "after": "4701E996F8A0A01EE6D28C20779E1D5C843019AC452C728DECA2A25B377D69E9"
+    }
+  ],
+  "archives": [
+    {
+      "variant": "v1",
+      "pbo_sha256": "EF6A8861099403779B1BB9583A0FC4339568ECEB73466C51824F2CA051DD4EDC",
+      "receipt_sha256": "83E17EC1EE874B2001AB84E67CE6C6BC1F11B2A8EA1D2E27BC6E4DEA31454D63",
+      "members": [
+        "config.cpp",
+        "scripts/4_world/entitypersistencefixture/entitypersistencefixturebattery.c"
+      ],
+      "source_payloads_identical": true
+    },
+    {
+      "variant": "v2",
+      "pbo_sha256": "9A9F2924D14479C7939BDF6868D73882DA4D5629F77F4D980E842E03A7A473C7",
+      "receipt_sha256": "0DD7826C929F2F1668E700B2436C254227782457BDBC660844C39742981A96E7",
+      "members": [
+        "config.cpp",
+        "scripts/4_world/entitypersistencefixture/entitypersistencefixturebattery.c"
+      ],
+      "source_payloads_identical": true
+    },
+    {
+      "variant": "matrix",
+      "pbo_sha256": "B666AFD5BB75E737231CE9698644260323DBAF9C1F80A61EF28E7C8DEE706B5D",
+      "receipt_sha256": "05C7CA696F042F4B5407D4BDB00B1CCAA884972B7FEC1ABDFA73C2FFE6E90696",
+      "members": [
+        "config.cpp",
+        "scripts/4_world/entitypersistencefixture/entitypersistencefixturebattery.c"
+      ],
+      "source_payloads_identical": true
+    }
+  ],
+  "manualReview": [
+    "Read complete final helper; ordinary/reparse checks and no-force new run precede owned AddonBuilder clear; uniqueness/cardinality checks present.",
+    "Read final v1/v2 methods and confirmed public API additions without v1 locked field.",
+    "Reopened final config/script paths and preserve single-level PBO prefix distinction."
+  ],
+  "remaining": [
+    "Compilation/config/module load smokes",
+    "Harness marker correlation and execution implementation",
+    "Genuine persistence migration/fault/control runtime matrix"
+  ],
+  "preservedReaderWriterCheck": "Compared v1/v2 against payloads of council-reviewed prior PBOs: after removing only added public methods, all nonblank lines match. Matrix script hash unchanged."
+}

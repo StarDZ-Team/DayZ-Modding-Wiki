@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-14",
+  "scope": "Isolated entity-persistence fixture source, package-only archive receipts, and implementation record; no EN prose, game/server process, real storage, production config, signing key, staging, or commit.",
+  "decision": "Implemented a source-reviewed fixture with v1, v2, and declared-v2-missing-field variants. Packaging and archive inspection passed; Enforce compilation and runtime persistence remain pending.",
+  "fixture": {
+    "root": "examples/en/entity-persistence",
+    "configured_class": "EntityPersistenceFixtureBattery",
+    "base_class": "Battery9V",
+    "same_upgrade_identity": {
+      "cfg_patch": "EntityPersistenceFixture",
+      "cfg_vehicles_class": "EntityPersistenceFixtureBattery",
+      "pbo": "EntityPersistenceFixture.pbo",
+      "prefix": "EntityPersistenceFixture"
+    },
+    "variants": [
+      { "id": "v1", "fields": ["schema=1", "charges=17", "label=v1-control"] },
+      { "id": "v2", "fields": ["schema=2", "charges", "label", "locked"], "v1_default": "locked=false" },
+      { "id": "declared-v2-missing-field", "fields_written": ["schema=2", "charges", "label"], "field_omitted": "locked", "claim_limit": "semantic incomplete layout, not byte-level truncation" }
+    ]
+  },
+  "source_evidence": {
+    "extracted_snapshot": {
+      "scripts_metadata": "D:/DayZ Projects/scripts.txt: product=dayz, version=124588",
+      "entityai": { "path": "D:/DayZ Projects/scripts/3_game/entities/entityai.c", "lines": "2913-3070", "sha256": "AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5" },
+      "serializer": { "path": "D:/DayZ Projects/scripts/1_core/proto/serializer.c", "lines": "1-65", "sha256": "3C365E5EF418438220CD2A2012C57EF385DDCAD835D712D136D31E6DFE7D2F5D" },
+      "gameplay_contexts": { "path": "D:/DayZ Projects/scripts/3_game/gameplay.c", "lines": "15-16", "sha256": "AA12624843F51C70200D37449559FDBADB042D333D4EE74C989E0CA632D2F0FE" },
+      "itemoptics": { "path": "D:/DayZ Projects/scripts/4_world/entities/core/inherited/itemoptics.c", "lines": "303-331", "sha256": "814AB79D363BCC0AF6FB3434D391FE1059840562DCC0A5001193B489DE03B9B3" },
+      "basebuildingbase": { "path": "D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase.c", "lines": "420-474", "sha256": "22283A8E3869CAF8CE1D6BFE5606057575C4F2C315E766723D3F44DAA7E47F4F" },
+      "fence": { "path": "D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase/fence.c", "lines": "212-256", "sha256": "38059886AF6313CF8442D1362A183021A863616E1CD12878D6663BFCC1C65B60" },
+      "spawn_api": { "path": "D:/DayZ Projects/scripts/3_game/global/game.c", "line": 702, "symbol": "CGame.CreateObjectEx" },
+      "mission_hook": { "path": "D:/DayZ Projects/scripts/5_mission/mission/missionserver.c", "lines": "83-91", "symbol": "MissionServer.OnInit" }
+    },
+    "official_sample": { "path": "TEMP/server-mission-investigation/reference/DayZ-Samples/Test_Building/config.cpp", "symbols": ["CfgPatches", "CfgVehicles"], "use": "config-layout reference only" },
+    "community_framework": { "repository": "https://github.com/Arkensor/DayZ-CommunityFramework.git", "commit": "0763e7e7548c9a0bed6626afff835de80693ebf3", "path": "JM/CF/Scripts/4_World/CommunityFramework/ModStorage/CF_ModStorageObject.c", "lines": "25-161", "sha256": "4B37540E26D7F708AA8B53715C7D11B2F95C7FC18A9E7ADBF5D6E244A9B6F242", "boundary": "framework framing is not vanilla proof" }
+  },
+  "validation": {
+    "package_only_command_template": ".\\examples\\en\\entity-persistence\\build.ps1 -ToolRoot 'D:\\SteamLibrary\\steamapps\\common\\DayZ Experimental Tools' -WorkRoot 'D:\\StarDZ\\docs\\wiki\\TEMP\\entity-persistence-fixture\\build' -Variant <variant>",
+    "tool_sha256": { "addon_builder": "C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1", "bankrev": "2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75" },
+    "successful_archives": [
+      { "variant": "v1", "receipt": "TEMP/entity-persistence-fixture/final-build/entity-persistence-v1-20260914-010328-553331bb/receipt.json", "pbo_sha256": "146890DF99DC32188BB87C39D39ECE3A2A11E9A77B4E50042178D0CFE2FE0730", "bytes": 2373 },
+      { "variant": "v2", "receipt": "TEMP/entity-persistence-fixture/final-build/entity-persistence-v2-20260914-010331-dff0b183/receipt.json", "pbo_sha256": "1EAC1A7207E94EE346C789AD78076DA81E101CDED1B0D4E0E2DCD8C908719A3A", "bytes": 3111 },
+      { "variant": "declared-v2-missing-field", "receipt": "TEMP/entity-persistence-fixture/final-build/entity-persistence-declared-v2-missing-field-20260914-010334-08ae8700/receipt.json", "pbo_sha256": "73E348B80FCDF4516BFD95815A56DC3D6A34C1B8386A4431625BB0DEA3CB6753", "bytes": 2621 }
+    ],
+    "bankrev": "All successful archives report prefix EntityPersistenceFixture and contain config.cpp plus the 4_World fixture script.",
+    "enforce_compilation": "pending; -packonly is not script compilation and no standalone compilation workflow was established",
+    "runtime": "not run by author-task instruction"
+  },
+  "future_matrix": ["same-v1 reload", "preserved-v1 storage to v2 with locked=false", "set locked=true then v2 persist/reload", "declared-v2-missing-field bounded by valid v2 controls"],
+  "residual_unknowns": ["native storage-version forwarding", "vanilla framing and omitted/wrong-type Read behavior", "OnStoreLoad(false) consequences", "record isolation and subsequent record behavior", "generic server save/clean-shutdown API", "shared inheritance patches and mod removal/reinstallation"]
+}

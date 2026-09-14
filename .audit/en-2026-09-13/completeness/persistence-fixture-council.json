@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "review": {
+    "date": "2026-09-14",
+    "role": "independent council reviewer",
+    "repository_head": "63fde8a84c4766ab7e587afa811882b7dccdf448",
+    "agent": "Codex",
+    "model_identifier": "not exposed by the Orca terminal receipt",
+    "decision": "accept_packaged_scaffold_with_qualifications_reject_migration_fixture_completion",
+    "packaged_scaffold": "accepted as archive-only scaffold with required report/helper/source repairs",
+    "migration_fixture": "incomplete",
+    "executable_matrix": "rejected_not_possible_as_delivered",
+    "enforce_compilation": "not attempted and not approved",
+    "runtime_persistence": "not attempted and not approved",
+    "actions_run": [
+      "read-only file and Git checkout inspection",
+      "SHA-256 hashing",
+      "JSON parsing",
+      "PowerShell AST parsing"
+    ],
+    "actions_not_run": [
+      "game/server/client/Workbench launch",
+      "VitePress dev or full build",
+      "Addon Builder or BankRev execution",
+      "Enforce compilation",
+      "persistence save/restart/load"
+    ]
+  },
+  "dispositions": [
+    {
+      "id": "EPF-C01",
+      "status": "accepted_static_scaffold",
+      "finding": "All configs share patch/class/base/prefix/4_World identity and require DZ_Gear_Consumables; Battery9V and the module/config patterns were reopened.",
+      "limit": "No config parse, module load, class resolution, or Enforce compile evidence."
+    },
+    {
+      "id": "EPF-C02",
+      "status": "accepted_archive_only",
+      "finding": "Final receipt source hashes match current files; actual Addon Builder logs say Build Successful and BankRev logs show the requested prefix and two expected members.",
+      "limit": "One earlier v1 run is unreceipted; archive evidence does not establish compilation or runtime."
+    },
+    {
+      "id": "EPF-C03",
+      "status": "rejected_claim",
+      "finding": "The common EntityPersistenceFixture.pbo name is not produced or checked; actual names are v1.pbo, v2.pbo, and declared-v2-missing-field.pbo.",
+      "exact_repair": "Rename/copy the sole output to manifest.pbo, enforce that name, rebuild and reinspect; or remove the claim and document a verified deployment rename."
+    },
+    {
+      "id": "EPF-C04",
+      "status": "rejected_matrix",
+      "finding": "The bad writer is global to its selected variant and cannot coexist with valid v2 writers for separate instances.",
+      "exact_repair": "Add one matrix build with a non-persisted per-instance omit-locked flag, unique persisted case labels, normal/bad setters, and readback/assertion markers; explicitly mark the current matrix unrunnable until then."
+    },
+    {
+      "id": "EPF-C05",
+      "status": "repair_required",
+      "finding": "v1 and bad readers attempt later reads after an earlier required failure; v2 rejects unsupported schema only after common-field reads; diagnostic markers lack parent-failure, unique case identity, and terminal success/failure markers.",
+      "exact_repair": "Validate schema before schema fields, return immediately after each failed required read, and log LOAD_OK/LOAD_FAIL stage, schema, unique label, position, and persistent-ID blocks."
+    },
+    {
+      "id": "EPF-C06",
+      "status": "accepted_helper_with_limits",
+      "finding": "PowerShell parses; unique run scoping, LiteralPath usage, and fixture-tree rejection bound -clear to the generated temp path.",
+      "exact_repair": "Enforce manifest PBO name and complete member set, record log hashes, validate the fresh resolved run stays under a disposable root, and reject repository/fixture paths and ancestors as WorkRoot."
+    },
+    {
+      "id": "EPF-C07",
+      "status": "repair_required",
+      "finding": "Battery source/config hashes and the official Samples commit are absent; Test_Building does not support the worldScriptModule claim.",
+      "exact_repair": "Record DayZ-Samples commit da5e5437c9502620d9853fb6eed14701135ab2ea and cite Test_GardenPlot for worldScriptModule; add Battery9V script/config hashes."
+    },
+    {
+      "id": "EPF-C08",
+      "status": "unresolved_required_prerequisites",
+      "finding": "No mission/operator harness, spawn-once rule, case identity, custom-class persistence/lifetime decision, save trigger, clean-shutdown controller, or evidence collector exists.",
+      "exact_repair": "Deliver and independently review those prerequisites before any persistence matrix."
+    }
+  ],
+  "smallest_compilation_gate": {
+    "gate": "Disposable dedicated-server startup smoke with a canonical PBO, only required base game plus the fixture, an otherwise-known-good minimal mission, isolated profile/log paths, and pinned executable hash.",
+    "pass_condition": "Configuration load, worldScriptModule compilation, Battery9V inheritance, and EntityPersistenceFixtureBattery class resolution complete without config/script errors.",
+    "stop_condition": "Stop cleanly before spawning, saving, or interpreting persistence.",
+    "why": "Addon Builder -packonly and BankRev do not compile Enforce, and no standalone Enforce compiler command was established in reopened evidence.",
+    "prerequisites": [
+      "canonical PBO name and deployment layout",
+      "repaired diagnostic source",
+      "known-good minimal mission and exact launch/exit procedure",
+      "pinned/hash-recorded server executable",
+      "independent preflight review"
+    ]
+  },
+  "missing_runtime_harness": [
+    "isolated mod deployment and exact mod order",
+    "disposable mission/profile/storage",
+    "custom-class CE/persistence registration and lifetime decision",
+    "deterministic spawn-once and duplicate prevention",
+    "fixed positions and persistent-ID capture",
+    "per-instance unique labels and writer selection",
+    "locked setters plus readback/assertions",
+    "source-backed save trigger or controlled wait",
+    "externally controlled graceful shutdown and exit receipt",
+    "before/after storage and log hashes",
+    "hash-identified v1 baseline restore procedure"
+  ],
+  "delivery_hashes": [
+    {"path":"examples/en/entity-persistence/README.md","bytes":4295,"sha256":"568E0102C7DBA4A65251CAD27E4B11916BC7BF070293D4C847297E2BBFA3AEAA"},
+    {"path":"examples/en/entity-persistence/manifest.json","bytes":424,"sha256":"41861A5D91D079C4FC96D6CDEC60F62225546A0C420F7ADD8ACFE957CD4CCF44"},
+    {"path":"examples/en/entity-persistence/build.ps1","bytes":6338,"sha256":"D85843609BAE0395B6975BC19EA1FD61F06ABDBAC7C07DCB3F01C7C4DC30F6D8"},
+    {"path":"examples/en/entity-persistence/variants/v1/config.cpp","bytes":872,"sha256":"D9AB275AD77AE11CB5CC32EE7F7B8A16D81157C1ED554F1A2B04C3DBE26AF241"},
+    {"path":"examples/en/entity-persistence/variants/v1/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c","bytes":1262,"sha256":"0BA2A5B2848895869D6D00B22DC9B571211BDD3CB048959A291AB0A6D75345E9"},
+    {"path":"examples/en/entity-persistence/variants/v2/config.cpp","bytes":872,"sha256":"04295EC0927CF0ACF0913F2071765F70D87BD8ECB93DD4A74B71E4892AFF9C00"},
+    {"path":"examples/en/entity-persistence/variants/v2/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c","bytes":2000,"sha256":"5D0CD1745B654348937F972FED39BD1B5A43BB8682C128DE949A94CA0755326C"},
+    {"path":"examples/en/entity-persistence/variants/declared-v2-missing-field/config.cpp","bytes":884,"sha256":"27CDE1B215676C87F0CF8811F7D6D9ECE511F1EF6C7E659C151F09E67B0C1B91"},
+    {"path":"examples/en/entity-persistence/variants/declared-v2-missing-field/scripts/4_World/EntityPersistenceFixture/EntityPersistenceFixtureBattery.c","bytes":1498,"sha256":"963F91C1BE77E6EB02F82B80E05726553E0AA663C0F849581B5BA2E4B23A8C74"},
+    {"path":".audit/en-2026-09-13/completeness/persistence-fixture-implementation.md","bytes":7507,"sha256":"12235F9984D6142EF1247C46261CECAF4C63822AF7C7B803BEB080EB393BD6E6"},
+    {"path":".audit/en-2026-09-13/completeness/persistence-fixture-implementation.json","bytes":5539,"sha256":"1318BBA4F35B003956ED2EE229ADF872246D938EC55EF78FF681BEFC6BA7E82A"},
+    {"path":".audit/en-2026-09-13/completeness/persistence-source-council.md","bytes":17163,"sha256":"317093AD43155012AE0EBBA136CBD730C98239210F2C3650AADA257FFAC15398"},
+    {"path":".audit/en-2026-09-13/completeness/persistence-source-council.json","bytes":12408,"sha256":"5BA2DDF9531365447183944ADA17E93F7195DA52850CC646147DA921F78A821F"}
+  ],
+  "retained_build_runs": [
+    {"run":"TEMP/entity-persistence-fixture/build/entity-persistence-declared-v2-missing-field-20260914-010007-9bce819b","receipt_sha256":"970934BC29801AD0F1CE95FEED6C60FA08A646B55AFA08BD9799964E45FE7847","pbo":"declared-v2-missing-field.pbo","pbo_bytes":2623,"pbo_sha256":"A58990C1E45C66F3EF6B330E77EA94B68EBA5B557FCEED79A3C8E72C36815266","addon_log_sha256":"5960D2A6CF69B58B6F5FE8CA7AA9F1DAE08C9FF8852EE17E6276398623FBC19F","properties_log_sha256":"566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1","members_log_sha256":"A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"},
+    {"run":"TEMP/entity-persistence-fixture/build/entity-persistence-v1-20260914-005911-3e3dab59","receipt_sha256":null,"pbo":"v1.pbo","pbo_bytes":2375,"pbo_sha256":"9AE8770BE2387D9E46082E8DC0079AF4F52C11889155129324BFF5C5ED77E113","addon_log_sha256":"6B370764CA3FD6AEC3EAF1EA8DB2356B75A6F4BC95543E341CD2B1C875286E62","properties_log_sha256":"566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1","members_log_sha256":"A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934","note":"preliminary artifact has successful logs but no receipt"},
+    {"run":"TEMP/entity-persistence-fixture/build/entity-persistence-v1-20260914-010003-3add2b8e","receipt_sha256":"451A90AE0CE1977F27F5DE32513DF065406167632BC7877C9316487CFD9C2F36","pbo":"v1.pbo","pbo_bytes":2375,"pbo_sha256":"901284AAF237302C1D090ED85AEB5F855851A95808702F789374BD7870E0C5C5","addon_log_sha256":"DF02C0B8A8DE0032A5C00E5971FFF0260CD698F68AABC994E4DD62B45CE46A63","properties_log_sha256":"566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1","members_log_sha256":"A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"},
+    {"run":"TEMP/entity-persistence-fixture/build/entity-persistence-v2-20260914-010005-56dc6e93","receipt_sha256":"0446193718DF569690F921EBB6FF178980F04856569CDC303250E9EA1302FBD1","pbo":"v2.pbo","pbo_bytes":3113,"pbo_sha256":"1DE86B780B77B6B72FCA3470CBB473DA7E87D6166B9BCEA0A5AF1153292DDA89","addon_log_sha256":"7241218EAC9C0144901A067AAE26C698689C6A0CE5515374354616F40444215D","properties_log_sha256":"566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1","members_log_sha256":"A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934"},
+    {"run":"TEMP/entity-persistence-fixture/final-build/entity-persistence-declared-v2-missing-field-20260914-010334-08ae8700","receipt_sha256":"40FCDDA9123FF5EBC8CE85CD5435723F21C5457BE5EE7B4E92415B627507FDDF","pbo":"declared-v2-missing-field.pbo","pbo_bytes":2621,"pbo_sha256":"73E348B80FCDF4516BFD95815A56DC3D6A34C1B8386A4431625BB0DEA3CB6753","addon_log_sha256":"1F757CDB56C390AFF7F911E5BEFC151DC5678DA9379CA009761ED8712C079F83","properties_log_sha256":"566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1","members_log_sha256":"A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934","current_source_match":true},
+    {"run":"TEMP/entity-persistence-fixture/final-build/entity-persistence-v1-20260914-010328-553331bb","receipt_sha256":"AF62F2264AB2217710972A4D9DEC121D4E333511DCA561B5F85CA9DE3BF3636C","pbo":"v1.pbo","pbo_bytes":2373,"pbo_sha256":"146890DF99DC32188BB87C39D39ECE3A2A11E9A77B4E50042178D0CFE2FE0730","addon_log_sha256":"D512F035E43B2249711E67DCB263D9D1942BA10A597A7493DFB93ACB435C34D1","properties_log_sha256":"566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1","members_log_sha256":"A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934","current_source_match":true},
+    {"run":"TEMP/entity-persistence-fixture/final-build/entity-persistence-v2-20260914-010331-dff0b183","receipt_sha256":"45AF99453B74DE64B40395C11B3D8A746E68C6FE5EFDA784FBA60D2F03D2C703","pbo":"v2.pbo","pbo_bytes":3111,"pbo_sha256":"1EAC1A7207E94EE346C789AD78076DA81E101CDED1B0D4E0E2DCD8C908719A3A","addon_log_sha256":"D3710C3A9C5CE3BB474E36C005B0F741284771D42CCE6F99FE2FD61A7424A31A","properties_log_sha256":"566CF2D405F145D6E57560A3B91F5A13147DC2460CD2BD2741FB29E45DEB22A1","members_log_sha256":"A4D6294CCAFF3BA4CE181CFCC86B27F49AD1F4FD891DC5C39789064194F4B934","current_source_match":true}
+  ],
+  "source_hashes": [
+    {"path":"D:/DayZ Projects/scripts/4_world/entities/itembase/battery9v.c","sha256":"98D4376AEF70324F7C9FD4DDEB5098D6E0B731EE9CDB4352A6A7166C03838A34"},
+    {"path":"D:/DayZ Projects/DZ/gear/consumables/config.cpp","sha256":"360DF711C194F9264C232C9296FD4DA5B92EBCE731FC25E0908036EA07CB745B"},
+    {"path":"D:/DayZ Projects/scripts/3_game/entities/entityai.c","sha256":"AD08181C307BE03549ABC8AFD6A6CEB8532ECA88DA5DA648686CA9FD682A57F5"},
+    {"path":"D:/DayZ Projects/scripts/1_core/proto/serializer.c","sha256":"3C365E5EF418438220CD2A2012C57EF385DDCAD835D712D136D31E6DFE7D2F5D"},
+    {"path":"D:/DayZ Projects/scripts/3_game/gameplay.c","sha256":"AA12624843F51C70200D37449559FDBADB042D333D4EE74C989E0CA632D2F0FE"},
+    {"path":"D:/DayZ Projects/scripts/4_world/entities/core/inherited/itemoptics.c","sha256":"814AB79D363BCC0AF6FB3434D391FE1059840562DCC0A5001193B489DE03B9B3"},
+    {"path":"D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase.c","sha256":"22283A8E3869CAF8CE1D6BFE5606057575C4F2C315E766723D3F44DAA7E47F4F"},
+    {"path":"D:/DayZ Projects/scripts/4_world/entities/itembase/basebuildingbase/fence.c","sha256":"38059886AF6313CF8442D1362A183021A863616E1CD12878D6663BFCC1C65B60"},
+    {"path":"D:/DayZ Projects/scripts/3_game/global/game.c","sha256":"CF529055C48596108034CE6B11826B09BBF5D93E6C550E37785947873D8C3158"},
+    {"path":"D:/DayZ Projects/scripts/5_mission/mission/missionserver.c","sha256":"92A2FF171ED550BF2E93E7C983479613CFB0EE7A521D7C1958CECA9647B786F0"},
+    {"path":"D:/DayZ Projects/scripts.txt","sha256":"E45D501E4FB29587FA1E8BF553B0A7B33B751AA32C5AA5ECB1D03B8B6026F55F"},
+    {"repository":"https://github.com/BohemiaInteractive/DayZ-Samples.git","commit":"da5e5437c9502620d9853fb6eed14701135ab2ea","path":"Test_Building/config.cpp","sha256":"3A6FB41F49D418637A8513383D3CB1E2F84B95EFE962EE0FD755F1B6268F56EE"},
+    {"repository":"https://github.com/BohemiaInteractive/DayZ-Samples.git","commit":"da5e5437c9502620d9853fb6eed14701135ab2ea","path":"Test_GardenPlot/config.cpp","sha256":"2C66BE131A55CFFDED96712245DD74D78E25D003C21A4F51F0B94587C666CD37"},
+    {"repository":"https://github.com/Arkensor/DayZ-CommunityFramework.git","commit":"0763e7e7548c9a0bed6626afff835de80693ebf3","path":"JM/CF/Scripts/4_World/CommunityFramework/ModStorage/CF_ModStorageObject.c","sha256":"4B37540E26D7F708AA8B53715C7D11B2F95C7FC18A9E7ADBF5D6E244A9B6F242"},
+    {"repository":"https://github.com/Arkensor/DayZ-CommunityFramework.git","commit":"0763e7e7548c9a0bed6626afff835de80693ebf3","path":"JM/CF/Scripts/3_Game/CommunityFramework/ModStorage/CF_ModStorage.c","sha256":"6FCF72DDC889D751F02BE1097DBC19126F851E7712A90EC2F52FA61B4E59D7B0"},
+    {"repository":"https://github.com/Arkensor/DayZ-CommunityFramework.git","commit":"0763e7e7548c9a0bed6626afff835de80693ebf3","path":"JM/CF/Scripts/config.cpp","sha256":"8DA49AD88AB7387B4F5E6D5D2FDBC07005F908B537E7F723152BD41B6BDD1D41"}
+  ],
+  "tool_hashes": {
+    "addon_builder": {"version":"1.0.240.639","sha256":"C113DE9CAB5E91D27CA0630E360DB0A3ECA190EC797E1DCAD9CDFA70466B45E1"},
+    "bankrev": {"sha256":"2C35799EB437DEACB3720F8D322A399D935739537EBA335839E873AA21A26A75"}
+  },
+  "unresolved": [
+    "Enforce compilation and config/module/class loading",
+    "custom-class CE persistence eligibility and lifetime",
+    "native omitted-field/wrong-type/trailing-data behavior",
+    "OnStoreLoad(false) entity and subsequent-record effects",
+    "native engine storage-version forwarding",
+    "save trigger/timing and demonstrated graceful shutdown",
+    "all v1/v2/missing-field runtime cases",
+    "shared inheritance, mod removal/reinstallation, and pre-marker records"
+  ]
+}
