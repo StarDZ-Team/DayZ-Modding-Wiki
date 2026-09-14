@@ -527,7 +527,7 @@ This is a pattern used by client theming mods; the version above is this wiki's 
 | SDF fonts scale to any size | `sdf_MetronBook24` is crisp at all sizes | True for sizes above ~10px. Below that, SDF fonts can appear blurry compared to bitmap fonts at their native size |
 | `"exact text" 1` gives pixel-perfect sizing | Font renders at the exact pixel size specified | DayZ applies internal scaling, so `"exact text size" 16` may render slightly differently across resolutions. Test on 1080p and 1440p |
 | Built-in styles cover all needs | `Default`, `blank`, `Colorable` are sufficient | Most professional mods define their own `.styles` files because built-in styles have limited visual variety |
-| Imageset XML and native formats are equivalent | Both define sprite regions | The native brace format is what the engine processes fastest. XML format works but adds a parsing step; use native format for production |
+| Imageset resource format | Extracted vanilla `.imageset` files use brace-delimited `ImageSetClass` syntax | Use this format for DayZ imagesets. XML loader support and any parsing-speed difference are unverified. |
 | `SetColor()` overrides layout color | Runtime color replaces the layout value | `SetColor()` tints the widget's existing visual. On styled widgets, the tint multiplies with the style's base color, producing unexpected results |
 
 ---

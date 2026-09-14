@@ -36,7 +36,7 @@ This chapter covers the P3D format structure, the LOD system, named selections, 
 - **Binary format:** Not human-readable. Created and edited exclusively with Object Builder.
 - **Multi-LOD container:** A single P3D file contains multiple LOD (Level of Detail) meshes, each with a different purpose.
 - **Engine-native:** The DayZ engine loads P3D directly. No runtime conversion occurs.
-- **Binarized vs. unbinarized:** Source P3D files from Object Builder are "MLOD" (editable). Binarize converts them to "ODOL" (optimized, read-only). The game can load both, but ODOL loads faster and is smaller.
+- **Binarized vs. unbinarized:** Object Builder uses editable MLOD P3D files. Binarize converts them to ODOL for distribution. Current retail loading of MLOD from a packed PBO is not established, and no universal MLOD-versus-ODOL size or loading-speed rule has been demonstrated.
 
 ### File Types You Will Encounter
 
@@ -52,12 +52,11 @@ This chapter covers the P3D format structure, the LOD system, named selections, 
 |----------|---------------|-------------------|
 | Created by | Object Builder | Binarize |
 | Editable | Yes | No |
-| File size | Larger | Smaller |
-| Load speed | Slower | Faster |
-| Used during | Development | Release |
-| Contains | Full edit data, named selections | Optimized mesh data |
+| File size | Depends on the model | Depends on the model |
+| Load behavior | Loading from a packed PBO in current retail DayZ is unverified | Intended as the engine-ready distribution format; no comparative benchmark is available |
+| Pipeline role | Editable authoring source | Binarized distribution output |
 
-> **Important:** When you pack a PBO with binarization enabled, your MLOD P3D files are automatically converted to ODOL. If you pack with `-packonly`, the MLOD files are included as-is. Both work in-game, but ODOL is preferred for release builds.
+> **Important:** `-packonly` stores source files without binarizing them, so an included MLOD remains MLOD and `model.cfg` remains a separate source file. With binarization enabled, Addon Builder processes MLOD as ODOL, compiles `config.cpp` to `config.bin`, and consumes `model.cfg` into the model output instead of packing it separately. Packing success alone does not prove that current retail DayZ loads MLOD. Use binarized output for release builds unless you have version-matched runtime evidence for a different workflow.
 
 ---
 

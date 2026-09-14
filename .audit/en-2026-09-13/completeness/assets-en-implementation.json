@@ -1,0 +1,31 @@
+{
+  "scope": [
+    "en/03-gui-system/07-styles-fonts.md",
+    "en/04-file-formats/02-models.md"
+  ],
+  "council_input": {
+    "path": ".audit/en-2026-09-13/completeness/assets-evidence-council.md",
+    "sha256": "D9E2A51C1DA526CEF953635C733A69BE3483FA3AD2A2FB0DB9F678988B8DD9A3",
+    "decisions": [1, 2]
+  },
+  "files": [
+    {
+      "path": "en/03-gui-system/07-styles-fonts.md",
+      "before_sha256": "95909F8CE4B19D4F9364915653FE33361557A56D97E8C3DE87E40C2D7522C5C7",
+      "after_sha256": "FBF0A50A5BA392359BB70D5D41F9BB1FA75379A0E16D66A23BF4F452DAFF7601",
+      "reason": "Decision 1 withdraws unsupported XML equivalence, parsing-speed, and production-performance assertions while retaining the observed brace-delimited ImageSetClass format."
+    },
+    {
+      "path": "en/04-file-formats/02-models.md",
+      "before_sha256": "D847E646348E3F763DCFB3655CC76AB2FA1FCCC4B8DA24C052004529D59A124E",
+      "after_sha256": "A3B529E1B17637F45E46150CCE6D2F2D19B80EF17D4C8852D8529210BA1B6197",
+      "reason": "Decision 2 replaces unsupported universal MLOD/ODOL size, speed, and runtime-compatibility claims with evidence-bounded pipeline, comparison, and packaging wording."
+    }
+  ],
+  "validation": {
+    "command": "git diff --check -- en/03-gui-system/07-styles-fonts.md en/04-file-formats/02-models.md",
+    "result": "passed",
+    "scoped_diff_read": "passed",
+    "build_or_runtime": "not run per task constraints"
+  }
+}
