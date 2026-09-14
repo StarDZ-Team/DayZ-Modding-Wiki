@@ -330,7 +330,7 @@ if (!obj)            // idiomatic null check (preferred)
 
 ### No RAII for Engine Handles
 
-Objects *are* cleaned up at end of scope: Bohemia documents `autoptr` as destroying its target "upon end of variable lifetime (end of scope or deletion of class which contains it)", and automatic reference counting destroys an object when its last strong reference goes away — local variables and function arguments being strong by default. [Memory Management](08-memory-management.md) covers both.
+Bohemia documents `autoptr` as destroying its target when the variable lifetime ends, with function return and destruction of the containing class as examples. A `1.29` probe found an `autoptr` declared inside nested braces still alive after those braces and destroyed as the function returned; that does not establish every brace pair as a scope boundary, universal equivalence with plain locals, or safe stale-alias use. [Memory Management](08-memory-management.md) covers the evidence limits.
 
 What gets no such treatment is an opaque engine handle. A `FileHandle` is an integer, not a managed object, so it stays open until you call `CloseFile()` yourself:
 

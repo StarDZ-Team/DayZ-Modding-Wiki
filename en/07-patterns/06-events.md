@@ -530,7 +530,7 @@ class PlayerTracker : Managed
 
 ### Pattern: EventBus Cleanup Nulls Everything
 
-The `LNT_EventBus.Cleanup()` method sets all invokers to `null`, which drops all subscriber references at once. This is the nuclear option --- it guarantees no stale subscribers survive across mission restarts:
+The `LNT_EventBus.Cleanup()` method sets all invokers to `null`, which drops all subscriber references at once. This is defensive lifecycle cleanup; the `1.29` probe did not establish subscriber or static-state persistence across mission restarts:
 
 ```c
 static void Cleanup()
@@ -644,7 +644,7 @@ OnKillEvent.Invoke(killData);
 
 7. **Initialize the EventBus early.** Events can fire before `OnMissionStart()`. Call `Init()` during `OnInit()` or use the lazy pattern (check for `null` before `Insert`).
 
-8. **Clean up the EventBus on mission finish.** Null all invokers to prevent stale references across mission restarts.
+8. **Clean up the EventBus on mission finish.** Null all invokers as defensive lifecycle cleanup; cross-restart persistence remains unverified.
 
 9. **Never use anonymous functions as event subscribers.** You cannot unsubscribe them.
 

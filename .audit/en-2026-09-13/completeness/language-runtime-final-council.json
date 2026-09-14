@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-13",
+  "baseCommit": "0df58c20761f654cd91ece04d9469be4b1728c6b",
+  "headAtReview": "0df58c20761f654cd91ece04d9469be4b1728c6b",
+  "verdict": "rejected-repair-required",
+  "commitState": "uncommitted-working-tree-diff",
+  "requiredRepair": {
+    "path": "en/01-enforce-script/13-functions-methods.md",
+    "linesReviewed": "1070-1082",
+    "defect": "The good/bad code block declares CustomPlayer twice, so the block is not a coherent compilable unit.",
+    "repair": "Use one CustomPlayer class containing the commented omitted-override member and the active marked override member."
+  },
+  "fileIdentities": [
+    {"path":"en/01-enforce-script/03-classes-inheritance.md","baselineBlob":"5b03b7738954535e94533b266fe251cc01633916","reviewedBlob":"dedfccfbc87f5ac575ba93e4b1663ed94857882e","reviewedSha256":"E7F62E8E9A3247AF7F40658265A3BDBA3DDE68ADB1A78F143F507AFBA6C6FCE9","disposition":"accepted"},
+    {"path":"en/01-enforce-script/07-math-vectors.md","baselineBlob":"5df20285a89a3366faa1fb2224a53c73be8bce11","reviewedBlob":"9609cb6ac1c649179861253e5d233cb67d68db6d","reviewedSha256":"847492C278E49631F52EB16327BA9729CA1879E98C1380B3A0FC37B55624F5AA","disposition":"accepted"},
+    {"path":"en/01-enforce-script/08-memory-management.md","baselineBlob":"3711b6e81ab3fed820b888cab2d8afccde1d5704","reviewedBlob":"a296a8a9a2314b0a9f06e280edcc2873797151c6","reviewedSha256":"599F6F656E8E87F297F58CF2838C551A8E3C33AF1FB4ADB2AC1191CD4CF4D076","disposition":"accepted"},
+    {"path":"en/01-enforce-script/09-casting-reflection.md","baselineBlob":"037e600e7012bb75c0953ba89d81abc4fec4a8f7","reviewedBlob":"e61a85032acea55786a57dac85bf3148c6ed8a20","reviewedSha256":"6DCC7D5119FA070574C312A930375C40E247992CFE26A251322F38D7767B859F","disposition":"accepted"},
+    {"path":"en/01-enforce-script/12-gotchas.md","baselineBlob":"cc417be121b9f0c87fd4cb8fd1df803b1c3ebab3","reviewedBlob":"97000f4d4ae44c7951927371b8dbefc10494f581","reviewedSha256":"55AA05DF8B89EEE5F6374ADB02B2CC74EF80F64B2AC710A577E9B6F7D66EE09F","disposition":"accepted"},
+    {"path":"en/01-enforce-script/13-functions-methods.md","baselineBlob":"fb7f5777685199be08d4bbd709b40f37f8cc331d","reviewedBlob":"d32d299973b68fdb2fc8b073cd6f2ff39451ef02","reviewedSha256":"F1359D4A73BE7970B2217D63438CFFA0A96EB4821D13597D886AC91D1D332B84","disposition":"rejected-repair-required"},
+    {"path":"en/07-patterns/01-singletons.md","baselineBlob":"56faa9367a178c88fef8cbf02baee47e72642b91","reviewedBlob":"0424756771bf222de8078a6122217974ba4ef1ba","reviewedSha256":"5EF4AF4604B35E4F714E56E61726EAC870B484B8195EF5445BA9401C3E144F55","disposition":"accepted"},
+    {"path":"en/07-patterns/02-module-systems.md","baselineBlob":"dd0f2b8cb535b5ee0f8f7a2a0c2a86577ab1f8f0","reviewedBlob":"9435fafab7559c8953b80fd9c3dcfb84a0f4d1c1","reviewedSha256":"36178D0ADF5E8D72F89A8E2BCB5463C11618279D19350C7CB5F7DC79186D3BD9","disposition":"accepted"},
+    {"path":"en/07-patterns/06-events.md","baselineBlob":"ea9412613d6d5e94323184603f5f8cf991fcc51f","reviewedBlob":"b1909fadba37a2c8f479817091bab0921ccd169d","reviewedSha256":"1C34099B5A2F23C8190C01FD1ECC9EA74AF1D8EEF9AF907988538CCB639DC6F3","disposition":"accepted"},
+    {"path":"en/glossary.md","baselineBlob":"38de9cc78089a86b7bdc9b161d82e3a50e44684f","reviewedBlob":"9af7e1a5f94ca88c052f3b0e492bdaa012d4ff95","reviewedSha256":"29C821A526C00308CF1F03C8AB03DE6CCB77CDA823633D20E38D5138A1FC8A99","disposition":"accepted"}
+  ],
+  "claimDecisions": {
+    "zeroNormalize": "accepted-build-specific",
+    "typenameSpawn": "accepted-bounded",
+    "omittedOverrideWording": "accepted-build-and-module-specific",
+    "objectIsDeleted": "accepted-tested-call-only",
+    "autoptr": "accepted-variable-lifetime-and-single-sequence-only",
+    "staticLifecycle": "accepted-single-callback-only",
+    "globalFunctionDeclarationsPreserved": true,
+    "unsupportedUniversalClaimInChangedProse": false
+  },
+  "reopenedEvidence": {
+    "enconvertSha256": "ABF20B92773A0872EB890F5A36EA3E4A228E4D4724BB9CD3ED86FC534A718CD4",
+    "objectScriptSha256": "EBAC48FF196148AB4722A9D9A81C277796D4EA07896A5CF09742213D32424B4C",
+    "enforceSyntaxSnapshotSha256": "668281B26FD8212CA0995A524140BAB1B9706153E3095ECB19444E1B9290DFD9",
+    "councilPositiveSourceSha256": "6637C29EDEC39AE722CD4517E9B50176C1E7D3BF3AA650BC643A43213B9D3840",
+    "councilPositivePboSha256": "C747659E3E8EFF742D91D24023E8B8E3E1B2D045B0965BF24913DC584CDA827B",
+    "councilPositiveLogSha256": "70B888CD1F5E8C8775DCBE738E5233ABF0C479417EAE235CDECDC667EFE952A6",
+    "councilPositiveRptSha256": "B75B87259072BE217A206E440F4CFEDB0C8D3D991BD1E7F3FA0CD94DA0DF8C67",
+    "councilOmittedOverrideSourceSha256": "5AADAAE1172C75346720E064DD4B6E0035C730828C8757D86F6599D8A191EDFD",
+    "councilOmittedOverridePboSha256": "BFEDF7007927476694501EA9F73AAECAD8A45F14376BA1E625D6AB5CF01B57CC",
+    "councilOmittedOverrideLogSha256": "8D316F11BE16B3DA84D5801854CAF919C3FE9F85165DB474A9F5FE9A89B8DE1D",
+    "councilOmittedOverrideRptSha256": "410BE681EA9B8CF8E43D57029FF31C8A90F30B5B58C9084F07EC7CAA3A313CCE",
+    "retainedOmittedOverrideLogSha256": "4E432020840281FCB59324A1DEFD600F6F137B9A9925CA3413DFDECF17AAB4D4",
+    "retainedObjectIsDeletedSourceSha256": "936889E041E9E9F5F23CA4D74F41F88517DA57988F04EE544585F5BED6E7D6A9",
+    "retainedObjectIsDeletedLogSha256": "FC4027982D586892A721CBDCEA5EF019F1EFD61F47581626EE4CCAFCB838090B",
+    "retainedGlobalPrintSourceSha256": "9A449B67A3B9296D9D4914B02AEF6A76ED4484A39D2A1F187D02D9796C465982",
+    "retainedGlobalPrintLogSha256": "9BB9FA292E40CEFF294E507A9B2221CD4C4D7701BE4C98A8D2453B0C9E5D4572"
+  },
+  "validation": {
+    "scopedDiffCheckExit": 0,
+    "oneH1Each": true,
+    "balancedFencesEach": true,
+    "missingRelativeFileTargets": 0,
+    "canonicalCommand": "node scripts/check-links.mjs --anchors --strict",
+    "canonicalExit": 1,
+    "filesChecked": 1265,
+    "deadFileLinks": 0,
+    "englishAnchorsChecked": 1282,
+    "deadEnglishAnchors": 1,
+    "outsideScopeFailure": "en/04-file-formats/06-pbo-packing.md:613 -> ../../.audit/en-2026-09-13/completeness/pbo-research.md#pbo-011--replace-vague-real-mods-claims-with-pinned-examples"
+  },
+  "runtimeRerun": false,
+  "contentFilesEditedByReviewer": false,
+  "remainingRuntimeGates": [
+    "typename.Spawn() string/object/vector/multiple-scalar/inheritance constructor probes",
+    "autoptr post-return alias probe",
+    "static state across mission teardown and #restart probe",
+    "stable diagnostic Mission/listener recipe"
+  ]
+}

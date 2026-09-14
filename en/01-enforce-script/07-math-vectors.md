@@ -661,7 +661,7 @@ array<vector> GetSpawnRing(vector center, float radius, int count)
 
 - Use `vector.DistanceSq()` and compare against `radius * radius` in tight loops -- it avoids the expensive `sqrt` inside `Distance()`.
 - Always multiply by `Math.DEG2RAD` before passing angles to `Sin()`/`Cos()` -- all trig functions work in radians.
-- Check `v.Length() > 0` before calling `Normalize()` -- normalizing a zero-length vector produces `NaN` values.
+- On DayZDiag `1.29.0.163709`, normalizing `vector.Zero` returned `0` and left the vector `<0,0,0>`; it did not produce NaN. Still guard with `LengthSq() > 0` when your later logic requires a meaningful direction.
 - Use `Math.Clamp()` to bound health, damage, and UI values rather than writing manual `if` chains.
 - Prefer `Math.RandomIntInclusive()` when the max value should be reachable (e.g., dice rolls) -- `RandomInt()` max is exclusive.
 
@@ -697,7 +697,7 @@ These patterns appear throughout the vanilla DayZ scripts and are worth adopting
 | Passing degrees to `Math.Sin()` / `Math.Cos()` | Trig functions expect radians | Multiply by `Math.DEG2RAD` first |
 | Using `Math.RandomInt(0, 10)` and expecting 10 | Max is exclusive | Use `Math.RandomIntInclusive(0, 10)` for inclusive max |
 | Computing `vector.Distance()` in a tight loop | `Distance` uses `sqrt`, which is slow | Use `vector.DistanceSq()` and compare against squared distance |
-| Normalizing a zero-length vector | Division by zero, produces NaN | Check `v.Length() > 0` before normalizing |
+| Normalizing a zero-length vector | On DayZDiag `1.29.0.163709`, `vector.Zero.Normalize()` returned `0` and left the vector zero | Guard with `LengthSq() > 0` when later logic needs a meaningful direction |
 | Forgetting that DayZ Y is up | `pos[1]` is height, not Z | `[0]` = X (East), `[1]` = Y (Up), `[2]` = Z (North) |
 | Using `Lerp` with t outside [0,1] | Extrapolates beyond the range | Clamp t with `Math.Clamp(t, 0, 1)` |
 | Confusing `SqrFloat` with `Sqrt` | `SqrFloat` squares the value; `Sqrt` takes the square root | `Math.SqrFloat(5)` = 25, `Math.Sqrt(25)` = 5 |

@@ -709,7 +709,7 @@ Choose the approach that matches your mod's dependency profile. For zero externa
 
 | Mistake | Impact | Fix |
 |---------|--------|-----|
-| Missing `OnMissionFinish` cleanup in a module | Collections, timers, and event subscriptions survive across mission restarts, causing stale data or crashes | Override `OnMissionFinish`, clear all `ref` collections, unsubscribe all events |
+| Missing `OnMissionFinish` cleanup in a module | Mutable state may outlive the lifecycle your design expects; cross-restart persistence is unverified | As defensive design, override `OnMissionFinish`, clear all `ref` collections, and unsubscribe all events |
 | Dispatching lifecycle events twice on listen servers | Server modules run client logic and vice versa; duplicate spawns, double RPC sends | Use `IsServer()` / `IsClient()` guards or typed module subclasses that enforce the split |
 | Registering RPCs in `OnMissionStart` instead of `OnInit` | Clients that connect during mission setup can send RPCs before handlers are ready --- messages are silently dropped | Always register RPC handlers in `OnInit()`, which runs during module registration before any client connects |
 | One "God module" handling everything | Impossible to debug, test, or extend; merge conflicts when multiple developers work on it | Split into focused modules with a single responsibility each |

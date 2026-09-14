@@ -310,7 +310,7 @@ Class instance = t.Spawn();  // Creates a new instance
 Class instance2 = GetGame().CreateObjectEx("AK101", pos, ECE_PLACE_ON_SURFACE);
 ```
 
-> **Note:** `typename.Spawn()` only works for classes with a parameterless constructor. For DayZ entities, use `GetGame().CreateObject()` or `CreateObjectEx()`.
+> **Note:** `typename.Spawn()` accepts no explicit argument list. On DayZDiag `1.29.0.163709`, it created both a class with a no-argument constructor and a class whose constructor declared one required `int`; that `int` arrived as `0`, the type's default scalar value. This does not establish behavior for other parameter types, multiple parameters, inheritance cases, or every native constructor. Use explicit `new` or an `Init(...)` method when initialization data matters. Create DayZ world entities through the engine factories such as `CreateObject()` / `CreateObjectEx()`.
 
 ---
 
@@ -579,7 +579,7 @@ class EventDispatcher
 |---------|--------|---------|
 | `Object.IsAlive()` | Might expect it only on `EntityAI` | Actually defined on `Object` (object.c:523) as `!IsDamageDestroyed()` -- works on any Object reference |
 | `EnScript.SetClassVar` returns `int` | Returns 1 on success, 0 on failure | Returns `0` silently on wrong field name with no error message -- easy to miss |
-| `typename.Spawn()` | Creates any class instance | Only works for classes with a parameterless constructor; for game entities use `CreateObject` |
+| `typename.Spawn()` | Creates an instance dynamically | Takes no explicit arguments; a tested one-`int` constructor received `0` on DayZDiag `1.29.0.163709`. Other signatures remain unverified. For game entities use `CreateObject` |
 
 ---
 

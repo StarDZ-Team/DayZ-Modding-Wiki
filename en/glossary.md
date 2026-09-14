@@ -72,7 +72,7 @@ Dynamic resizable collection `array<T>`. Methods: `Insert`, `Get`, `Find`, `Remo
 **See also:** [map](#map)
 
 ### autoptr
-Scoped strong reference pointer. Object is destroyed when `autoptr` goes out of scope. Rarely used in DayZ -- prefer `ref`.
+`autoptr` is documented to destroy its target when the variable lifetime ends. A `1.29` probe observed destruction at function return after nested braces, but does not establish every lexical-block or alias behavior. Rarely used in DayZ; follow your project's ownership convention.
 
 **Chapter:** [1.8 Memory Management](01-enforce-script/08-memory-management.md)
 **See also:** [ref](#ref), [ARC](#arc-automatic-reference-counting)
@@ -640,7 +640,7 @@ Static utility class for scalar operations: `Math.AbsFloat()`, `Math.Clamp()`, `
 **Chapter:** [1.7 Math & Vectors](01-enforce-script/07-math-vectors.md)
 
 ### Memory Management
-Enforce Script uses ARC (automatic reference counting) with three pointer types: raw (weak), `ref` (strong), `autoptr` (scoped strong).
+Enforce Script uses ARC (automatic reference counting) with raw and `ref` references plus `autoptr`, whose documented variable-lifetime behavior should not be generalized to every scope or alias case without a focused test.
 
 **Chapter:** [1.8 Memory Management](01-enforce-script/08-memory-management.md)
 **See also:** [ARC](#arc-automatic-reference-counting), [ref](#ref)

@@ -715,7 +715,7 @@ class CombatModule extends BaseModule
 
 ### Rules for Overriding
 
-1. **`override` keyword is required** --- without it, you create a new method that hides the parent's, instead of replacing it.
+1. **`override` keyword is required** --- on DayZDiag `1.29.0.163709`, omitting it from a same-signature child method emits `Overriding function '<name>' but not marked as 'override'` and prevents the Mission module from compiling.
 
 2. **Signature must match exactly** --- same return type, same parameter types, same parameter count.
 
@@ -743,7 +743,7 @@ class Child extends Parent
 
 ### GOTCHA: Forgetting override
 
-If you omit `override`, the compiler may emit a warning but will **not** error. Your method silently becomes a new method instead of replacing the parent's. The parent's version runs whenever the object is referenced through a parent-type variable.
+On DayZDiag `1.29.0.163709`, a child method with the same signature as a parent method must be marked `override`. Omitting the keyword emits `Overriding function '<name>' but not marked as 'override'` and prevents the Mission module from compiling. A positive probe showed base-typed dispatch selecting the child method when it was explicitly marked `override`.
 
 ```c
 class Animal
@@ -753,8 +753,8 @@ class Animal
 
 class Dog extends Animal
 {
-    // BAD: Missing override — creates a NEW method
-    void Speak() { Print("Woof!"); }
+    // BAD: uncommenting this produces the omitted-override compiler error.
+    // void Speak() { Print("Woof!"); }
 
     // GOOD: Properly overrides
     override void Speak() { Print("Woof!"); }
@@ -1056,7 +1056,7 @@ These conventions appear throughout the vanilla scripts and across the community
 | Method overloading | Standard OOP feature | Supported (vanilla `InputUtils` overloads by parameter type), but vanilla style is distinct names, the `Ex()` suffix or default parameters |
 | `thread` creates OS threads | Bohemia's keyword table does say it "runs the function on a new thread" | In practice threaded routines behave as cooperative coroutines yielding at `Sleep()`. The scheduling model is undocumented either way --- write code that never depends on parallel execution |
 | `out` parameters are write-only | Should not read initial value | Some vanilla code reads the `out` param before writing; safer to always treat as `inout` defensively |
-| `override` is optional | Could be inferred | Omitting it silently creates a new method instead of overriding; always include it |
+| `override` is optional | Could be inferred | On DayZDiag `1.29.0.163709`, omitting it for a same-signature child method prevents the Mission module from compiling; always include it |
 | Default parameter expressions | Should support function calls | Literals, NULL, and supported compile-time constants such as enum members are allowed; runtime function calls are not |
 
 ---
@@ -1065,18 +1065,15 @@ These conventions appear throughout the vanilla scripts and across the community
 
 ### 1. Forgetting override When Replacing a Parent Method
 
-Without `override`, your method becomes a new method that hides the parent's. The parent's version will still be called when the object is referenced through a parent type.
+On DayZDiag `1.29.0.163709`, a child method with the same signature as a parent method must be marked `override`. Omitting the keyword emits `Overriding function '<name>' but not marked as 'override'` and prevents the Mission module from compiling.
 
 ```c
-// BAD — silently creates a new method
 class CustomPlayer extends PlayerBase
 {
-    void OnConnect() { Print("Custom!"); }
-}
+    // BAD: uncommenting this produces the omitted-override compiler error.
+    // void OnConnect() { Print("Custom!"); }
 
-// GOOD — properly overrides
-class CustomPlayer extends PlayerBase
-{
+    // GOOD: properly overrides.
     override void OnConnect() { Print("Custom!"); }
 }
 ```

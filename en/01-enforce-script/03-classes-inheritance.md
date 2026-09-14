@@ -898,7 +898,7 @@ Every pattern in this chapter appears in the vanilla game code — worth reading
 
 | Concept | Theory | Reality |
 |---------|--------|---------|
-| Omitting `override` keyword | Should create a new method | Often creates a subtle bug where the parent method runs instead of the child's |
+| Omitting `override` keyword | Might create a distinct child method | On DayZDiag `1.29.0.163709`, the compiler emits `Overriding function '<name>' but not marked as 'override'` and prevents the Mission module from compiling |
 | Multiple constructors (overloading) | Standard OOP feature | Do not rely on it -- mismatched constructor signatures across a hierarchy fail with `Overloaded function '<Class>' not compatible`; use one parameterless constructor plus an `Init()` method |
 | `sealed` classes/methods | Prevents inheritance or override (compile-time error); keyword listed under MODDING → ADDED in the 1.28 release notes | Almost never used in DayZ modding because extensibility is the whole point |
 
@@ -936,7 +936,7 @@ class GoodManager
 
 ### 2. Forgetting `override` Keyword
 
-If you intend to override a parent method but forget the `override` keyword, you get a **new** method that hides the parent's method instead of replacing it. The compiler may warn about this.
+On DayZDiag `1.29.0.163709`, a child method with the same signature as a parent method must be marked `override`. Omitting the keyword emits `Overriding function '<name>' but not marked as 'override'` and prevents the Mission module from compiling.
 
 ```c
 class Parent
@@ -946,8 +946,8 @@ class Parent
 
 class Child extends Parent
 {
-    // BAD: creates a new method, doesn't override
-    void DoWork() { Print("Child"); }
+    // BAD: uncommenting this produces the omitted-override compiler error.
+    // void DoWork() { Print("Child"); }
 
     // GOOD: properly overrides
     override void DoWork() { Print("Child"); }

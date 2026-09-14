@@ -460,7 +460,7 @@ class GameState
 
 ### 2. Missing DestroyInstance
 
-If you forget cleanup, the singleton persists across mission restarts with stale data:
+If cleanup is missing, stale state is a lifecycle risk. Static state persisted across two calls in one `1.29` probe callback, but persistence across a mission restart remains unverified:
 
 ```c
 // BAD: No cleanup path
@@ -584,7 +584,7 @@ Before shipping a singleton, verify:
 
 | Mistake | Impact | Fix |
 |---------|--------|-----|
-| Missing `DestroyInstance()` call in `OnMissionFinish` | Stale data and dead entity references carry over across mission restarts, causing crashes or ghost state | Always call `DestroyInstance()` from `OnMissionFinish` or a centralized `ShutdownAll()` |
+| Missing `DestroyInstance()` call in `OnMissionFinish` | Mutable state may outlive the lifecycle your design expects; cross-restart persistence is unverified | As defensive design, call `DestroyInstance()` from `OnMissionFinish` or a centralized `ShutdownAll()` |
 | Calling `GetInstance()` inside another singleton's constructor | Triggers re-entrant construction; `s_Instance` is still null, so a second instance is created | Defer cross-singleton access to an `Initialize()` method called after construction |
 | Using `public static ref` instead of `private static ref` | Any code can set `s_Instance = null` or replace it, breaking the single-instance guarantee | Always declare `s_Instance` as `private static ref` |
 | Not guarding eager init on listen servers | Singleton is constructed twice (once from server path, once from client path) if `Create()` lacks a null check | Always check `if (!s_Instance)` inside `Create()` |

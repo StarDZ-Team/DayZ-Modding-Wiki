@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-13",
+  "baseCommit": "0df58c20761f654cd91ece04d9469be4b1728c6b",
+  "sourceCouncil": {
+    "markdown": ".audit/en-2026-09-13/completeness/runtime-council.md",
+    "json": ".audit/en-2026-09-13/completeness/runtime-council.json",
+    "reviewedBuild": "DayZDiag 1.29.0.163709",
+    "exeSha256": "34F6377BE4FD065D104E67263E0C96AC2CB2E348119A4838EBA08D2E61B7A69A"
+  },
+  "fileBlobs": [
+    {"path":"en/01-enforce-script/03-classes-inheritance.md","baseline":"5b03b7738954535e94533b266fe251cc01633916","final":"dedfccfbc87f5ac575ba93e4b1663ed94857882e"},
+    {"path":"en/01-enforce-script/07-math-vectors.md","baseline":"5df20285a89a3366faa1fb2224a53c73be8bce11","final":"9609cb6ac1c649179861253e5d233cb67d68db6d"},
+    {"path":"en/01-enforce-script/08-memory-management.md","baseline":"3711b6e81ab3fed820b888cab2d8afccde1d5704","final":"a296a8a9a2314b0a9f06e280edcc2873797151c6"},
+    {"path":"en/01-enforce-script/09-casting-reflection.md","baseline":"037e600e7012bb75c0953ba89d81abc4fec4a8f7","final":"e61a85032acea55786a57dac85bf3148c6ed8a20"},
+    {"path":"en/01-enforce-script/12-gotchas.md","baseline":"cc417be121b9f0c87fd4cb8fd1df803b1c3ebab3","final":"97000f4d4ae44c7951927371b8dbefc10494f581"},
+    {"path":"en/01-enforce-script/13-functions-methods.md","baseline":"fb7f5777685199be08d4bbd709b40f37f8cc331d","final":"d32d299973b68fdb2fc8b073cd6f2ff39451ef02"},
+    {"path":"en/07-patterns/01-singletons.md","baseline":"56faa9367a178c88fef8cbf02baee47e72642b91","final":"0424756771bf222de8078a6122217974ba4ef1ba"},
+    {"path":"en/07-patterns/02-module-systems.md","baseline":"dd0f2b8cb535b5ee0f8f7a2a0c2a86577ab1f8f0","final":"9435fafab7559c8953b80fd9c3dcfb84a0f4d1c1"},
+    {"path":"en/07-patterns/06-events.md","baseline":"ea9412613d6d5e94323184603f5f8cf991fcc51f","final":"b1909fadba37a2c8f479817091bab0921ccd169d"},
+    {"path":"en/glossary.md","baseline":"38de9cc78089a86b7bdc9b161d82e3a50e44684f","final":"9af7e1a5f94ca88c052f3b0e492bdaa012d4ff95"}
+  ],
+  "validation": {
+    "diffCheckExit": 0,
+    "changedPageStructuralCheck": "passed",
+    "canonicalLinkAnchorCommand": "node scripts/check-links.mjs --anchors --strict",
+    "canonicalDeadFileLinks": 0,
+    "canonicalEnglishAnchorsChecked": 1280,
+    "canonicalDeadEnglishAnchors": 1,
+    "canonicalDeadEnglishAnchorOutsideScope": "en/04-file-formats/06-pbo-packing.md:30 -> #evidence-and-validation-scope",
+    "vitepressBuildRun": false,
+    "dayzLaunchRun": false
+  },
+  "remainingRuntimeGates": [
+    "typename.Spawn() string/object/vector/multiple-scalar/inheritance constructor probes",
+    "autoptr post-return alias probe",
+    "static state across mission teardown and #restart probe",
+    "stable diagnostic Mission/listener recipe"
+  ]
+}
